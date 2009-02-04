@@ -152,9 +152,9 @@ public class StringParam extends Param {
      * (java.lang.String)
      */
     @Override
-    public String independentValueToInternalValue(User user,
-            String independentValue) throws WdkModelException {
-        String rawValue = decompressValue(independentValue);
+    public String dependentValueToInternalValue(User user,
+            String dependentValue) throws WdkModelException {
+        String rawValue = decompressValue(dependentValue);
         if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
         rawValue = rawValue.replaceAll("'", "''");
         if (quote) rawValue = "'" + rawValue + "'";

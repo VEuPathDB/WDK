@@ -284,9 +284,9 @@ public class AnswerFilterInstance extends WdkModelBase {
             if (param.getFullName().equals(answerParam.getFullName()))
                 continue;
 
-            String independentValue = paramValueMap.get(param.getName());
-            String internal = param.independentValueToInternalValue(user,
-                    independentValue);
+            String dependentValue = paramValueMap.get(param.getName());
+            String internal = param.dependentValueToInternalValue(user,
+                    dependentValue);
             filterSql = param.replaceSql(filterSql, internal);
         }
         return filterSql;

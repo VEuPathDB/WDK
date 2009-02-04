@@ -73,7 +73,7 @@ public abstract class Param extends WdkModelBase {
             String independentValue) throws NoSuchAlgorithmException,
             WdkModelException, SQLException, JSONException, WdkUserException;
 
-    public abstract String independentValueToInternalValue(User user,
+    public abstract String dependentValueToInternalValue(User user,
             String independentValue) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException;
