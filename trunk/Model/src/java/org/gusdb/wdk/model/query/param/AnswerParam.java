@@ -179,11 +179,13 @@ public class AnswerParam extends Param {
      * (java.lang.String)
      */
     @Override
-    public String independentValueToInternalValue(User user,
-            String independentValue) throws WdkModelException,
+    public String dependentValueToInternalValue(User user,
+            String dependentValue) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        AnswerValue answerValue = getAnswerValue(user, independentValue);
+        int stepId = Integer.parseInt(dependentValue);
+        Step step = user.getStep(stepId);
+        AnswerValue answerValue = step.getAnswer().getAnswerValue();
         return answerValue.getIdSql();
     }
 

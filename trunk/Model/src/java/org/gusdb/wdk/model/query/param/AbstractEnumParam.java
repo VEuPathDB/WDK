@@ -318,14 +318,14 @@ public abstract class AbstractEnumParam extends Param {
      * (org.gusdb.wdk.model.user.User, java.lang.String)
      */
     @Override
-    public String independentValueToInternalValue(User user,
-            String independentValue) throws WdkModelException,
+    public String dependentValueToInternalValue(User user,
+            String dependentValue) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        if (independentValue == null || independentValue.length() == 0)
-            independentValue = emptyValue;
+        if (dependentValue == null || dependentValue.length() == 0)
+            dependentValue = emptyValue;
 
-        String rawValue = decompressValue(independentValue);
+        String rawValue = decompressValue(dependentValue);
         String[] terms = getTerms(rawValue);
         StringBuffer buf = new StringBuffer();
         for (String term : terms) {
