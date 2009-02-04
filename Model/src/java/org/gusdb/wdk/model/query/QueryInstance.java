@@ -320,10 +320,8 @@ public abstract class QueryInstance {
             Param param = params.get(paramName);
 
             String dependentValue = values.get(paramName);
-            String independentValue = param.dependentValueToIndependentValue(
-                    user, dependentValue);
-            String internalValue = param.independentValueToInternalValue(user,
-                    independentValue);
+            String internalValue = param.dependentValueToInternalValue(user,
+                    dependentValue);
             internalValues.put(paramName, internalValue);
         }
         return internalValues;

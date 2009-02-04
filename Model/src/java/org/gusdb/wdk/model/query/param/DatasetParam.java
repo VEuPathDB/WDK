@@ -125,11 +125,12 @@ public class DatasetParam extends Param {
      * (org.gusdb.wdk.model.user.User, java.lang.String)
      */
     @Override
-    public String independentValueToInternalValue(User user,
-            String independentValue) throws WdkModelException,
+    public String dependentValueToInternalValue(User user,
+            String dependentValue) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        Dataset dataset = user.getDataset(independentValue);
+        int userDatasetId = Integer.parseInt(dependentValue);
+        Dataset dataset = user.getDataset(userDatasetId);
         return Integer.toString(dataset.getDatasetId());
 
         // to be compatible with previous model, it returns dataset_id;
