@@ -37,7 +37,7 @@ public class UnitTestHelper {
     private static final Logger logger = Logger.getLogger(UnitTestHelper.class);
 
     // use a fixed random number generator in order to use cache.
-    private static Random random = new Random();
+    private static Random random = new Random(2);
 
     private static WdkModel wdkModel;
     private static User guest;
@@ -75,6 +75,8 @@ public class UnitTestHelper {
             WdkModel wdkModel = getModel();
             guest = wdkModel.getUserFactory().createGuestUser();
         }
+        guest.deleteStrategies();
+        guest.deleteSteps();
         return guest;
     }
 
@@ -94,6 +96,8 @@ public class UnitTestHelper {
                         REGISTERED_USER_PASSWORD);
             }
         }
+        registeredUser.deleteStrategies();
+        registeredUser.deleteSteps();
         return registeredUser;
     }
 

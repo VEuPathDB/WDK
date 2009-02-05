@@ -77,8 +77,8 @@ public class QueryTest {
                 Query query = question.getQuery();
 
                 // skip any combined queries and process queries
-                if (query.isCombined() || (query instanceof ProcessQuery))
-                    continue;
+                if (query.isCombined() || query.getDoNotTest()
+                        || (query instanceof ProcessQuery)) continue;
 
                 String queryName = query.getFullName();
                 if (!testedQueries.contains(queryName)) {
@@ -99,8 +99,9 @@ public class QueryTest {
             int minRows = valueSet.getMinRows();
             int maxRows = valueSet.getMaxRows();
             Map<String, String> rawValues = valueSet.getParamValues();
-            Map<String, String> dependentValues = query.rawOrDependentValuesToDependentValues(user, rawValues);
-            
+            Map<String, String> dependentValues = query.rawOrDependentValuesToDependentValues(
+                    user, rawValues);
+
             // try to make a query instance
             QueryInstance instance = query.makeInstance(user, dependentValues);
             int rows = instance.getResultSize();
