@@ -82,7 +82,7 @@ public class User /* implements Serializable */{
     private Map<String, String> projectPreferences;
 
     // cache the history count in memory
-    private int stepCount;
+    private Integer stepCount;
     private Integer strategyCount;
 
     // keep track of user's open strategies; don't serialize
@@ -103,8 +103,6 @@ public class User /* implements Serializable */{
 
         globalPreferences = new LinkedHashMap<String, String>();
         projectPreferences = new LinkedHashMap<String, String>();
-
-        stepCount = 0;
 
         setWdkModel(model);
     }
@@ -413,15 +411,19 @@ public class User /* implements Serializable */{
             AnswerFilterInstance filter) throws WdkUserException,
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException {
-        return stepFactory.createStep(this, question, paramValues, filter);
+        int endIndex = getItemsPerPage();
+        return createStep(question, paramValues, filter, 1,
+                endIndex, false);
     }
 
     public Step createStep(Question question, Map<String, String> paramValues,
             AnswerFilterInstance filter, int pageStart, int pageEnd,
             boolean deleted) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        return stepFactory.createStep(this, question, paramValues, filter,
+        Step step =  stepFactory.createStep(this, question, paramValues, filter,
                 pageStart, pageEnd, deleted);
+        if (stepCount != null) stepCount++;
+        return step;
     }
 
     public Strategy createStrategy(Step step, boolean saved)
@@ -475,11 +477,12 @@ public class User /* implements Serializable */{
         // user
         ArrayList<Integer> oldActiveStrategies = user.getActiveStrategies();
         if (oldActiveStrategies != null) {
+            activeStrategies = new ArrayList<Integer>();
             for (Integer strategyId : oldActiveStrategies) {
                 this.activeStrategies.add(strategiesMap.get(strategyId));
             }
         }
-       
+
         // then import the steps that do not belong to any strategies; that is,
         // only the root steps who are not imported yet.
         for (Step step : user.getSteps()) {
@@ -573,7 +576,7 @@ public class User /* implements Serializable */{
             }
             list.add(strategy);
         }
-	return category;
+        return category;
     }
 
     public Map<String, List<Strategy>> getUnsavedStrategiesByCategory()
@@ -732,7 +735,7 @@ public class User /* implements Serializable */{
             JSONException {
         stepFactory.deleteStep(this, displayId);
         // decrement the history count
-        stepCount--;
+        if (stepCount != null) stepCount--;
     }
 
     public void deleteStrategy(int strategyId) throws WdkUserException,
@@ -751,6 +754,9 @@ public class User /* implements Serializable */{
     }
 
     public int getStepCount() throws WdkUserException {
+        if (stepCount == null) {
+            stepCount = stepFactory.getStepCount(this);
+        }
         return stepCount;
     }
 
@@ -762,14 +768,6 @@ public class User /* implements Serializable */{
 
     public void setStrategyCount(int strategyCount) {
         this.strategyCount = strategyCount;
-    }
-
-    /**
-     * @param stepCount
-     *            The stepCount to set.
-     */
-    void setStepCount(int stepCount) {
-        this.stepCount = stepCount;
     }
 
     public void setProjectPreference(String prefName, String prefValue) {
@@ -1085,6 +1083,7 @@ public class User /* implements Serializable */{
         newStrategy.setSavedName(oldStrategy.getSavedName());
         newStrategy.setIsSaved(oldStrategy.getIsSaved());
         newStrategy.update(true);
+        if (strategyCount != null) strategyCount++;
         return newStrategy;
     }
 
@@ -1128,7 +1127,7 @@ public class User /* implements Serializable */{
         return userId;
     }
 
-    public Step createBooleanStep(Step leftStep, Step rigtStep,
+    public Step createBooleanStep(Step leftStep, Step rightStep,
             String booleanOperator, boolean useBooleanFilter, String filterName)
             throws NoSuchAlgorithmException, WdkModelException,
             WdkUserException, SQLException, JSONException {
@@ -1137,7 +1136,7 @@ public class User /* implements Serializable */{
         AnswerFilterInstance filter = null;
         if (filterName != null)
             filter = question.getRecordClass().getFilter(filterName);
-        return createBooleanStep(leftStep, rigtStep, operator,
+        return createBooleanStep(leftStep, rightStep, operator,
                 useBooleanFilter, filter);
     }
 
