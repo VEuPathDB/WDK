@@ -499,10 +499,6 @@ public class UserFactory {
             // load user's preferences
             loadPreferences(user);
 
-            // load history count
-            int historyCount = stepFactory.getStepCount(user);
-            user.setStepCount(historyCount);
-
             return user;
         } finally {
             SqlUtils.closeResultSet(rsUser);

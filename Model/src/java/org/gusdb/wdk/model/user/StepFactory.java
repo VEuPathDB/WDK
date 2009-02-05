@@ -85,15 +85,6 @@ public class StepFactory {
         this.wdkSchema = userDB.getWdkEngineSchema();
     }
 
-    Step createStep(User user, Question question,
-            Map<String, String> displayParams, AnswerFilterInstance filter)
-            throws SQLException, WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, JSONException {
-        int pageEnd = user.getItemsPerPage();
-        return createStep(user, question, displayParams, filter, 1, pageEnd,
-                false);
-    }
-
     // parse boolexp to pass left_child_id, right_child_id to loadAnswer
     Step createStep(User user, Question question,
             Map<String, String> dependentValues, AnswerFilterInstance filter,
@@ -214,8 +205,6 @@ public class StepFactory {
         // update step dependencies
         updateStepTree(user, step);
         step.setValid(true);
-
-        user.setStepCount(getStepCount(user));
 
         return step;
     }
@@ -521,8 +510,7 @@ public class StepFactory {
             AnswerFactory answerFactory = wdkModel.getAnswerFactory();
             Answer answer = answerFactory.getAnswer(user, answerChecksum);
             step.setAnswer(answer);
-            
-            
+
             String questionName = answer.getQuestionName();
             Question question = wdkModel.getQuestion(questionName);
             RecordClass recordClass = question.getRecordClass();
@@ -713,6 +701,9 @@ public class StepFactory {
     Strategy importStrategy(User user, Strategy oldStrategy)
             throws WdkUserException, WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException {
+        logger.debug("import strategy #" + oldStrategy.getInternalId()
+                + "(internal) to user #" + user.getUserId());
+
         Step oldRootStep = oldStrategy.getLatestStep();
         String answerIdColumn = AnswerFactory.COLUMN_ANSWER_ID;
         ResultSet rsStrategy = null;
@@ -730,7 +721,7 @@ public class StepFactory {
                             + UserFactory.COLUMN_USER_ID + " = ? AND sr."
                             + COLUMN_PROJECT_ID + " = ? AND sr."
                             + COLUMN_ROOT_STEP_ID + " = sp."
-                            + COLUMN_DISPLAY_ID + "AND sp." + answerIdColumn
+                            + COLUMN_DISPLAY_ID + " AND sp." + answerIdColumn
                             + " = a." + answerIdColumn + " AND a."
                             + AnswerFactory.COLUMN_ANSWER_CHECKSUM + " = ?");
             psStrategy.setInt(1, user.getUserId());
@@ -755,11 +746,10 @@ public class StepFactory {
         }
     }
 
-    Step importStep(User user, Step oldStep) throws WdkUserException,
+    Step importStep(User newUser, Step oldStep) throws WdkUserException,
             WdkModelException, SQLException, NoSuchAlgorithmException,
             JSONException {
-        String userSignature = user.getSignature();
-        UserFactory userFactory = wdkModel.getUserFactory();
+        User oldUser = oldStep.getUser();
 
         // Is this answer a boolean? Import depended steps first.
         AnswerValue answerValue = oldStep.getAnswer().getAnswerValue();
@@ -768,35 +758,30 @@ public class StepFactory {
 
         Map<String, Param> params = question.getParamMap();
 
-        Map<String, String> paramValues = new LinkedHashMap<String, String>();
+        Map<String, String> paramValues = oldStep.getDisplayParams();
         for (String paramName : paramValues.keySet()) {
             Param param = params.get(paramName);
             String paramValue = paramValues.get(paramName);
 
             if (param instanceof AnswerParam) {
-                String[] parts = paramValue.split(":");
-                String oldUserSignature = parts[0];
-                int oldStepId = Integer.parseInt(parts[1]);
-
-                User oldUser = userFactory.getUser(oldUserSignature);
+                int oldStepId = Integer.parseInt(paramValue);
                 Step oldChildStep = oldUser.getStep(oldStepId);
-
-                Step childStep = importStep(user, oldChildStep);
-                paramValue = userSignature + ":" + childStep.getDisplayId();
+                Step newChildStep = importStep(newUser, oldChildStep);
+                paramValue = Integer.toString(newChildStep.getDisplayId());
             } else if (param instanceof DatasetParam) {
-                String[] parts = paramValue.split(":");
-                String oldUserSignature = parts[0];
-                int oldUserDatasetId = Integer.parseInt(parts[1]);
-
-                User oldUser = userFactory.getUser(oldUserSignature);
-                Dataset dataset = oldUser.getDataset(oldUserDatasetId);
-
-                paramValue = userSignature + ":" + dataset.getUserDatasetId();
+                int oldUserDatasetId = Integer.parseInt(paramValue);
+                Dataset oldDataset = oldUser.getDataset(oldUserDatasetId);
+                Dataset newDataset = newUser.getDataset(oldDataset.getChecksum());
+                paramValue = Integer.toString(newDataset.getUserDatasetId());
             }
             paramValues.put(paramName, paramValue);
         }
 
-        return createStep(user, question, paramValues, filter);
+        int startIndex = answerValue.getStartIndex();
+        int endIndex = answerValue.getEndIndex();
+        boolean deleted = oldStep.isDeleted();
+        return newUser.createStep(question, paramValues, filter, startIndex,
+                endIndex, deleted);
     }
 
     Strategy loadStrategy(User user, int displayId) throws WdkUserException,
@@ -847,7 +832,8 @@ public class StepFactory {
                 // strategy.getName());
                 // Remove any * (and everything after it) from name, set as
                 // saved name
-                strategy.setSavedName(strategy.getName().replaceAll("(\\([\\d]+\\))?\\*$", ""));
+                strategy.setSavedName(strategy.getName().replaceAll(
+                        "(\\([\\d]+\\))?\\*$", ""));
             }
 
             // Now add step_id to a stack, and go into while loop
@@ -963,17 +949,17 @@ public class StepFactory {
                 // modifying
                 // it. We need to get an unsaved copy to modify. Generate
                 // unsaved name
-                PreparedStatement psCheck = SqlUtils.getPreparedStatement(dataSource,
-                        "SELECT 1, " + COLUMN_NAME + " FROM " + userSchema
-                                + TABLE_STRATEGY + " WHERE " + userIdColumn
-                                + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND "
-                                + COLUMN_NAME + " = ? UNION "
-                        + "SELECT 2, " + COLUMN_NAME + " FROM " + userSchema
-                                + TABLE_STRATEGY + " WHERE " + userIdColumn
-                                + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND ("
-                                + COLUMN_NAME + " LIKE ? OR "
-                                + COLUMN_NAME + " LIKE ?)"
-                                + "ORDER BY 1, " + COLUMN_NAME);
+                PreparedStatement psCheck = SqlUtils.getPreparedStatement(
+                        dataSource, "SELECT 1, " + COLUMN_NAME + " FROM "
+                                + userSchema + TABLE_STRATEGY + " WHERE "
+                                + userIdColumn + " = ? AND "
+                                + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME
+                                + " = ? UNION " + "SELECT 2, " + COLUMN_NAME
+                                + " FROM " + userSchema + TABLE_STRATEGY
+                                + " WHERE " + userIdColumn + " = ? AND "
+                                + COLUMN_PROJECT_ID + " = ? AND ("
+                                + COLUMN_NAME + " LIKE ? OR " + COLUMN_NAME
+                                + " LIKE ?)" + "ORDER BY 1, " + COLUMN_NAME);
                 psCheck.setInt(1, userId);
                 psCheck.setString(2, wdkModel.getProjectId());
                 psCheck.setString(3, strategy.getSavedName() + "*");
@@ -984,16 +970,17 @@ public class StepFactory {
                 rsStrategy = psCheck.executeQuery();
 
                 String append = "*";
-		String savedAppend = "*";
+                String savedAppend = "*";
                 String name;
                 int current = 1;
                 while (rsStrategy.next()) {
                     name = rsStrategy.getString(COLUMN_NAME);
-                    if (name.equals(strategy.getSavedName() + append) ||
-			name.equals(strategy.getSavedName() + savedAppend)) {
-			append = "(" + ++current + ")*";
-			savedAppend = "(" + current + ")";
-		    }
+                    if (name.equals(strategy.getSavedName() + append)
+                            || name.equals(strategy.getSavedName()
+                                    + savedAppend)) {
+                        append = "(" + ++current + ")*";
+                        savedAppend = "(" + current + ")";
+                    }
                 }
 
                 Strategy newStrat = createStrategy(user,
@@ -1060,13 +1047,14 @@ public class StepFactory {
                 psCheckName = SqlUtils.getPreparedStatement(dataSource,
                         "SELECT 1, " + COLUMN_NAME + " FROM " + userSchema
                                 + TABLE_STRATEGY + " WHERE " + userIdColumn
-                                + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND ("
-                                + COLUMN_NAME + " = 'New Strategy*' OR "
-                                + COLUMN_NAME + " = 'New Strategy')"
-                                + " UNION "
-                        + "SELECT 2, " + COLUMN_NAME + " FROM " + userSchema
-                                + TABLE_STRATEGY + " WHERE " + userIdColumn
-                                + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND ("
+                                + " = ? AND " + COLUMN_PROJECT_ID
+                                + " = ? AND (" + COLUMN_NAME
+                                + " = 'New Strategy*' OR " + COLUMN_NAME
+                                + " = 'New Strategy')" + " UNION "
+                                + "SELECT 2, " + COLUMN_NAME + " FROM "
+                                + userSchema + TABLE_STRATEGY + " WHERE "
+                                + userIdColumn + " = ? AND "
+                                + COLUMN_PROJECT_ID + " = ? AND ("
                                 + COLUMN_NAME + " LIKE 'New Strategy(%)*' OR "
                                 + COLUMN_NAME + " LIKE 'New Strategy(%)')"
                                 + "ORDER BY 1, " + COLUMN_NAME);
@@ -1077,15 +1065,15 @@ public class StepFactory {
                 rsCheckName = psCheckName.executeQuery();
 
                 int current = 1;
-		String append = "*";
-		String savedAppend = "";
+                String append = "*";
+                String savedAppend = "";
                 while (rsCheckName.next()) {
                     name = rsCheckName.getString(COLUMN_NAME);
-		    if (name.equals("New Strategy" + append) ||
-			name.equals("New Strategy" + savedAppend)) {
-			append = "(" + ++current + ")*";
-			savedAppend = "(" + current + ")";
-		    }
+                    if (name.equals("New Strategy" + append)
+                            || name.equals("New Strategy" + savedAppend)) {
+                        append = "(" + ++current + ")*";
+                        savedAppend = "(" + current + ")";
+                    }
                 }
                 name = "New Strategy" + append;
             }
