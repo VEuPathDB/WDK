@@ -963,26 +963,37 @@ public class StepFactory {
                 // modifying
                 // it. We need to get an unsaved copy to modify. Generate
                 // unsaved name
-                PreparedStatement psCheck = SqlUtils.getPreparedStatement(
-                        dataSource, "SELECT " + COLUMN_NAME + " FROM "
-                                + userSchema + TABLE_STRATEGY + " WHERE "
-                                + userIdColumn + " = ? AND "
-                                + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME
-                                + " LIKE ? ORDER BY " + COLUMN_NAME);
+                PreparedStatement psCheck = SqlUtils.getPreparedStatement(dataSource,
+                        "SELECT 1, " + COLUMN_NAME + " FROM " + userSchema
+                                + TABLE_STRATEGY + " WHERE " + userIdColumn
+                                + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND "
+                                + COLUMN_NAME + " = ? UNION "
+                        + "SELECT 2, " + COLUMN_NAME + " FROM " + userSchema
+                                + TABLE_STRATEGY + " WHERE " + userIdColumn
+                                + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND ("
+                                + COLUMN_NAME + " LIKE ? OR "
+                                + COLUMN_NAME + " LIKE ?)"
+                                + "ORDER BY 1, " + COLUMN_NAME);
                 psCheck.setInt(1, userId);
                 psCheck.setString(2, wdkModel.getProjectId());
-                psCheck.setString(3, strategy.getSavedName() + "%");
-                System.out.println("About to run name check query.");
+                psCheck.setString(3, strategy.getSavedName() + "*");
+                psCheck.setInt(4, userId);
+                psCheck.setString(5, wdkModel.getProjectId());
+                psCheck.setString(6, strategy.getSavedName() + "(%)*");
+                psCheck.setString(7, strategy.getSavedName() + "(%)");
                 rsStrategy = psCheck.executeQuery();
-                System.out.println("Done running name check query.");
 
                 String append = "*";
+		String savedAppend = "*";
                 String name;
                 int current = 1;
                 while (rsStrategy.next()) {
                     name = rsStrategy.getString(COLUMN_NAME);
-                    if (name.equals(strategy.getSavedName() + append))
+                    if (name.equals(strategy.getSavedName() + append) ||
+			name.equals(strategy.getSavedName() + savedAppend)) {
 			append = "(" + ++current + ")*";
+			savedAppend = "(" + current + ")";
+		    }
                 }
 
                 Strategy newStrat = createStrategy(user,
@@ -1047,21 +1058,34 @@ public class StepFactory {
                             rsCheckName.getInt(COLUMN_DISPLAY_ID));
             } else {// otherwise, generate default name
                 psCheckName = SqlUtils.getPreparedStatement(dataSource,
-                        "SELECT " + COLUMN_NAME + " FROM " + userSchema
+                        "SELECT 1, " + COLUMN_NAME + " FROM " + userSchema
                                 + TABLE_STRATEGY + " WHERE " + userIdColumn
-                                + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND "
-                                + COLUMN_NAME + " LIKE 'New Strategy%' "
-                                + "ORDER BY " + COLUMN_NAME);
+                                + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND ("
+                                + COLUMN_NAME + " = 'New Strategy*' OR "
+                                + COLUMN_NAME + " = 'New Strategy')"
+                                + " UNION "
+                        + "SELECT 2, " + COLUMN_NAME + " FROM " + userSchema
+                                + TABLE_STRATEGY + " WHERE " + userIdColumn
+                                + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND ("
+                                + COLUMN_NAME + " LIKE 'New Strategy(%)*' OR "
+                                + COLUMN_NAME + " LIKE 'New Strategy(%)')"
+                                + "ORDER BY 1, " + COLUMN_NAME);
                 psCheckName.setInt(1, userId);
                 psCheckName.setString(2, wdkModel.getProjectId());
+                psCheckName.setInt(3, userId);
+                psCheckName.setString(4, wdkModel.getProjectId());
                 rsCheckName = psCheckName.executeQuery();
 
                 int current = 1;
 		String append = "*";
+		String savedAppend = "";
                 while (rsCheckName.next()) {
                     name = rsCheckName.getString(COLUMN_NAME);
-		    if (name.equals("New Strategy" + append))
+		    if (name.equals("New Strategy" + append) ||
+			name.equals("New Strategy" + savedAppend)) {
 			append = "(" + ++current + ")*";
+			savedAppend = "(" + current + ")";
+		    }
                 }
                 name = "New Strategy" + append;
             }
