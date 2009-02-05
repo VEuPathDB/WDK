@@ -82,9 +82,9 @@ public class Category extends WdkModelBase {
 
             // make sure the recordClass matches
             if (!question.getRecordClass().getFullName().equals(recordClassRef))
-                throw new WdkModelException("Question "
-                        + question.getFullName()
-                        + " cannot be included in categories " + recordClassRef);
+                logger.warn("Question " + question.getFullName()
+                        + " should not be included in categories of "
+                        + recordClassRef);
 
             questions.add(question);
         }

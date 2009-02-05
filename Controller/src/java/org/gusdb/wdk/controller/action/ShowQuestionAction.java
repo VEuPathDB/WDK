@@ -156,7 +156,8 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             String paramName = param.getName();
             String[] paramValues = request.getParameterValues(paramName);
 
-            if (paramValues == null || paramValues.length == 0) paramValues = null;
+            if (paramValues == null || paramValues.length == 0)
+                paramValues = null;
 
             // handle the additional information
             if (param instanceof EnumParamBean) {
@@ -194,9 +195,15 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                     datasetParam.setCombinedKey(paramValues[0]);
                     DatasetBean dataset = datasetParam.getDataset();
                     request.setAttribute(paramName, dataset);
-                } else paramValues = new String[] { param.getDefault() };
-            } else {
-                if (paramValues == null) paramValues = new String[] { param.getDefault() };
+                } else {
+                    String defaultValue = param.getDefault();
+                    if (defaultValue != null) paramValues = new String[] { param.getDefault() };
+                    else paramValues = new String[0];
+                }
+            } else if (paramValues == null) {
+                String defaultValue = param.getDefault();
+                if (defaultValue != null) paramValues = new String[] { param.getDefault() };
+                else paramValues = new String[0];
             }
             if (paramValues == null) hasAllParams = false;
             else qForm.setMyMultiProp(paramName, paramValues);
