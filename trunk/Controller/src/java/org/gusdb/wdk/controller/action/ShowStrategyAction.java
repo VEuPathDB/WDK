@@ -79,7 +79,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         StringBuffer url = new StringBuffer(showSummary.getPath());
         url.append("?strategy=" + URLEncoder.encode(strStratId, "utf-8"));
         if (strBranchId != null) {
-            url.append("_" + URLEncoder.encode(strStratId, "utf-8"));
+            url.append("_" + URLEncoder.encode(strBranchId, "utf-8"));
         }
         String viewStep = request.getParameter("step");
         if (viewStep != null && viewStep.length() != 0) {

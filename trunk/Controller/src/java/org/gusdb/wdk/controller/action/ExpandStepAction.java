@@ -66,10 +66,6 @@ public class ExpandStepAction extends Action {
         }
 
         StepBean step = latestStep.getStepByDisplayId(Integer.parseInt(strStepId));
-        System.out.println("Target step: " + strStepId);
-        System.out.println("Actual step: " + step.getStepId());
-        System.out.println("Step collapsed name: " + step.getCollapsedName());
-        System.out.println("Step collapsible? : " + step.getIsCollapsible());
 
         if (step.getParentStep() == null) {
             throw new WdkModelException("Only top-row steps can be expanded!");
@@ -94,9 +90,7 @@ public class ExpandStepAction extends Action {
         ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
         StringBuffer url = new StringBuffer(showSummary.getPath());
         url.append("?strategy=" + URLEncoder.encode(strStratId, "UTF-8"));
-        if (strBranchId != null) {
-            url.append("_" + URLEncoder.encode(strBranchId, "UTF-8"));
-        }
+	url.append("_" + URLEncoder.encode(Integer.toString(step.getStepId()), "UTF-8"));
         ActionForward forward = new ActionForward(url.toString());
         forward.setRedirect(false);
         return forward;
