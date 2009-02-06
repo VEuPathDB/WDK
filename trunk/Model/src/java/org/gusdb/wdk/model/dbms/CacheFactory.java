@@ -242,6 +242,44 @@ public class CacheFactory {
         } finally {}
     }
 
+    public void showCache() throws SQLException, WdkModelException {
+        // get query instance summary
+        StringBuffer sqlInstance = new StringBuffer("SELECT ");
+        sqlInstance.append("i.").append(COLUMN_QUERY_ID).append(", ");
+        sqlInstance.append("q.").append(COLUMN_QUERY_NAME).append(", ");
+        sqlInstance.append("q.").append(COLUMN_TABLE_NAME).append(", ");
+        sqlInstance.append("count(*) AS instances FROM ");
+        sqlInstance.append(TABLE_INSTANCE).append(" i, ");
+        sqlInstance.append(TABLE_QUERY).append(" q ");
+        sqlInstance.append(" WHERE q.").append(COLUMN_QUERY_ID);
+        sqlInstance.append(" = i.").append(COLUMN_QUERY_ID);
+        sqlInstance.append(" GROUP BY i.").append(COLUMN_QUERY_ID).append(", ");
+        sqlInstance.append(" q.").append(COLUMN_QUERY_NAME).append(", ");
+        sqlInstance.append(" q.").append(COLUMN_TABLE_NAME);
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource,
+                sqlInstance.toString());
+        System.err.println("========================= Cache Stattistics =========================");
+        int queryCount = 0;
+        while (resultSet.next()) {
+            int queryId = resultSet.getInt(COLUMN_QUERY_ID);
+            String queryName = resultSet.getString(COLUMN_QUERY_NAME);
+            String cacheTable = resultSet.getString(COLUMN_TABLE_NAME);
+            int instanceCount = resultSet.getInt("instances");
+
+            String sqlSize = "SELECT count(*) FROM " + cacheTable;
+            Object objSize = SqlUtils.executeScalar(dataSource, sqlSize);
+            int size = Integer.parseInt(objSize.toString());
+
+            System.err.println("CACHE [" + queryId + "] " + queryName + ": "
+                    + instanceCount + " instances, total " + size + " rows");
+            queryCount++;
+        }
+        System.err.println();
+        System.err.println("Total: " + queryCount + " cache tables.");
+        System.err.println("====================== End of Cache Stattistics ======================");
+        SqlUtils.closeResultSet(resultSet);
+    }
+
     private void createQueryTable() {
         // create the cache index table
         StringBuffer sql = new StringBuffer("CREATE TABLE ");
@@ -308,7 +346,7 @@ public class CacheFactory {
 
     private void dropCacheTables() {
         queryInfoMap.clear();
-        
+
         // get a list of cache tables
         StringBuffer sql = new StringBuffer("SELECT DISTINCT ");
         sql.append(COLUMN_TABLE_NAME).append(" FROM ").append(TABLE_QUERY);
