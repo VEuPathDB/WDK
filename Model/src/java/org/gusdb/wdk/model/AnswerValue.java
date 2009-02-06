@@ -144,8 +144,9 @@ public class AnswerValue {
         this.endIndex = endIndex;
 
         // get sorting columns
-        if (sortingMap == null)
-            sortingMap = new LinkedHashMap<String, Boolean>();
+        if (sortingMap == null) {
+            sortingMap = question.getSortingAttributeMap();
+	}
         this.sortingMap = sortingMap;
         this.summaryFieldMap = new LinkedHashMap<String, AttributeField>();
 
@@ -805,9 +806,8 @@ public class AnswerValue {
     public void setSortingMap(Map<String, Boolean> sortingMap)
             throws WdkModelException {
         if (sortingMap == null) {
-            this.sortingMap.clear();
-            return;
-        }
+            sortingMap = question.getSortingAttributeMap();
+	}
         // make sure all sorting columns exist
         Map<String, AttributeField> attributes = question.getAttributeFieldMap();
         for (String attributeName : sortingMap.keySet()) {
