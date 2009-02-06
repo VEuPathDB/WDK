@@ -481,6 +481,11 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 cloneStep = updateTransform(user, cloneStep,
                         Integer.parseInt(prevStepId));
             }
+	    // Carry custom name, collapsible flag, and collapsed name from cloned step
+	    cloneStep.setIsCollapsible(step.getStep(i).getIsCollapsible());
+	    cloneStep.setCollapsedName(step.getStep(i).getCollapsedName());
+	    cloneStep.setCustomName(step.getStep(i).getBaseCustomName());
+	    cloneStep.update(false);
             prevStepId = Integer.toString(cloneStep.getStepId());
         }
         return cloneStep;
