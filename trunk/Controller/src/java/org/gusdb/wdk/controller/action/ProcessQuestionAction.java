@@ -114,6 +114,7 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                     FormFile file = (FormFile) qform.getMyPropObject(paramName
                             + "_file");
                     uploadFile = file.getFileName();
+                    logger.debug("upload file: " + uploadFile);
                     data = new String(file.getFileData());
                 }
 
