@@ -23,6 +23,7 @@ public class CacheCLI extends BaseCLI {
     private static final String ARG_RECREATE = "recreate";
     private static final String ARG_FORCE_DROP = "forceDrop";
     private static final String ARG_NO_SCHEMA = "noSchemaOutput";
+    private static final String ARG_SHOW = "show";
 
     /**
      * @param args
@@ -76,8 +77,9 @@ public class CacheCLI extends BaseCLI {
         addNonValueOption(ARG_RECREATE, false, "drop any existing cache tables"
                 + ", and drop cache index table, sorting table and sequences, "
                 + "and then recreate them.");
+        addNonValueOption(ARG_SHOW, false, "display the cache usage.");
         addGroup(true, ARG_CREATE, ARG_DROP, ARG_RESET, ARG_RECREATE,
-                ARG_DROP_SINGLE);
+                ARG_DROP_SINGLE, ARG_SHOW);
 
         addNonValueOption(ARG_FORCE_DROP, false, "this optional argument "
                 + "will be ignored when [" + ARG_CREATE + "] or ["
@@ -104,6 +106,7 @@ public class CacheCLI extends BaseCLI {
         boolean dropCache = (Boolean) getOptionValue(ARG_DROP);
         boolean dropSingleCache = (getOptionValue(ARG_DROP_SINGLE) != null);
         boolean recreateCache = (Boolean) getOptionValue(ARG_RECREATE);
+        boolean showCache = (Boolean) getOptionValue(ARG_SHOW);
         // boolean noSchemaOutput = (Boolean) getOptionValue(ARG_NO_SCHEMA);
         // boolean forceDrop = (Boolean) getOptionValue(ARG_FORCE_DROP);
 
@@ -118,6 +121,7 @@ public class CacheCLI extends BaseCLI {
             else if (resetCache) factory.resetCache();
             else if (dropCache) factory.dropCache();
             else if (recreateCache) factory.recreateCache();
+            else if (showCache) factory.showCache();
             else if (dropSingleCache) {
                 String value = (String) getOptionValue(ARG_DROP_SINGLE);
                 if (value.matches("\\d+")) {
