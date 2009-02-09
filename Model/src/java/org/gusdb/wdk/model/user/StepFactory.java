@@ -807,10 +807,10 @@ public class StepFactory {
         try {
             psStrategy = SqlUtils.getPreparedStatement(dataSource, "SELECT "
                     + COLUMN_STRATEGY_INTERNAL_ID + ", " + COLUMN_NAME + ", "
-                    + COLUMN_IS_SAVED + ", " + COLUMN_ROOT_STEP_ID + " FROM "
-                    + userSchema + TABLE_STRATEGY + " WHERE " + userIdColumn
-                    + " = ? AND " + COLUMN_DISPLAY_ID + " = ? AND "
-                    + COLUMN_PROJECT_ID + " = ?");
+                    + COLUMN_IS_SAVED + ", " + COLUMN_ROOT_STEP_ID + ", "
+                    + COLUMN_CREATE_TIME + " FROM " + userSchema + TABLE_STRATEGY
+                    + " WHERE " + userIdColumn + " = ? AND " + COLUMN_DISPLAY_ID
+                    + " = ? AND " + COLUMN_PROJECT_ID + " = ?");
             psStrategy.setInt(1, user.getUserId());
             psStrategy.setInt(2, displayId);
             psStrategy.setString(3, wdkModel.getProjectId());
@@ -825,6 +825,7 @@ public class StepFactory {
             Strategy strategy = new Strategy(this, user, displayId, internalId,
                     rsStrategy.getString(COLUMN_NAME));
             strategy.setIsSaved(rsStrategy.getBoolean(COLUMN_IS_SAVED));
+	    strategy.setCreatedTime(rsStrategy.getTimestamp(COLUMN_CREATE_TIME));
 
             // Set saved name, if any
             if (!strategy.getName().matches("^New Strategy(\\([\\d]+\\))?\\*$")) {
