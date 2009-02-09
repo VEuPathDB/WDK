@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.user;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -23,6 +24,7 @@ public class Strategy {
     private int internalId;
     private boolean isSaved;
     private boolean isDeleted = false;
+    private Date createdTime;
     private String name;
     private String savedName = null;
 
@@ -90,6 +92,28 @@ public class Strategy {
 
     void setInternalId(int internalId) {
         this.internalId = internalId;
+    }
+
+    /**
+     * @return Returns the createTime.
+     */
+    public Date getCreatedTime() {
+        return createdTime;
+    }
+
+    /**
+     * @param createTime
+     *            The createTime to set.
+     */
+    void setCreatedTime(Date createdTime) {
+        this.createdTime = createdTime;
+    }
+
+    /**
+     * @return Returns the lastRunTime.
+     */
+    public Date getLastRunTime() {
+        return latestStep.getLastRunTime();
     }
 
     public Step getStep(int index) {
