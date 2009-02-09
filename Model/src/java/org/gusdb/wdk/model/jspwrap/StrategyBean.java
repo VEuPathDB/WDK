@@ -2,6 +2,8 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.sql.SQLException;
 import java.security.NoSuchAlgorithmException;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
@@ -47,6 +49,24 @@ public class StrategyBean {
 
     public boolean getIsSaved() {
         return strategy.getIsSaved();
+    }
+
+    public String getLastRunTimeFormatted() {
+        return DateFormat.getDateTimeInstance(DateFormat.SHORT,
+                DateFormat.SHORT).format(strategy.getLastRunTime());
+    }
+
+    public Date getLastRunTime() {
+        return strategy.getLastRunTime();
+    }
+
+    public String getCreatedTimeFormatted() {
+        return DateFormat.getDateTimeInstance(DateFormat.SHORT,
+                DateFormat.SHORT).format(strategy.getCreatedTime());
+    }
+
+    public Date getCreatedTime() {
+        return strategy.getCreatedTime();
     }
 
     public StepBean getLatestStep() {

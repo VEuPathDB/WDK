@@ -188,6 +188,7 @@ CREATE TABLE wdkuser.strategies
      root_step_id NUMERIC(12) NOT NULL,
      project_id varchar(50) NOT NULL,
      is_saved BOOLEAN NOT NULL,
+     create_time TIMESTAMP DEFAULT NOW(),
      name varchar(200),
      CONSTRAINT "STRATEGIES_PK" PRIMARY KEY (strategy_id),
      CONSTRAINT "STRATEGIES_UNIQUE" UNIQUE (user_id, display_id, project_id),
