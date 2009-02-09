@@ -281,8 +281,10 @@ public class StepFactory {
             sql.append(" AND ").append(COLUMN_DISPLAY_ID);
             sql.append(" NOT IN (SELECT ").append(COLUMN_ROOT_STEP_ID);
             sql.append(" FROM ").append(strategyTable);
-            if (!allProjects)
+            if (!allProjects) {
                 sql.append(" WHERE ").append(COLUMN_PROJECT_ID).append(" = ? ");
+                sql.append(" AND ").append(userIdColumn).append(" = ? ");
+            }
             sql.append(") ");
             psDeleteSteps = SqlUtils.getPreparedStatement(dataSource,
                     sql.toString());
@@ -292,6 +294,7 @@ public class StepFactory {
                 String projectId = wdkModel.getProjectId();
                 psDeleteSteps.setString(2, projectId);
                 psDeleteSteps.setString(3, projectId);
+                psDeleteSteps.setInt(4, user.getUserId());
             }
             psDeleteSteps.executeUpdate();
         } finally {
@@ -713,33 +716,39 @@ public class StepFactory {
             // Note: Could also modify to take export user ID, check if export
             // user has this strategy (by answer ID), and import that
             // instance of the strategy.
-            PreparedStatement psStrategy = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT sr." + COLUMN_DISPLAY_ID + " FROM "
-                            + userSchema + TABLE_STRATEGY + " sr, "
-                            + userSchema + TABLE_STEP + " sp, " + wdkSchema
-                            + AnswerFactory.TABLE_ANSWER + " a WHERE sr."
-                            + UserFactory.COLUMN_USER_ID + " = ? AND sr."
-                            + COLUMN_PROJECT_ID + " = ? AND sr."
-                            + COLUMN_ROOT_STEP_ID + " = sp."
-                            + COLUMN_DISPLAY_ID + " AND sp." + answerIdColumn
-                            + " = a." + answerIdColumn + " AND a."
-                            + AnswerFactory.COLUMN_ANSWER_CHECKSUM + " = ?");
-            psStrategy.setInt(1, user.getUserId());
-            psStrategy.setString(2, wdkModel.getProjectId());
-            psStrategy.setString(3, oldRootStep.getAnswer().getAnswerChecksum());
-            rsStrategy = psStrategy.executeQuery();
 
-            if (rsStrategy.next()) {
-                int strategyId = rsStrategy.getInt(COLUMN_DISPLAY_ID);
-                return loadStrategy(user, strategyId);
-            }
+            // JERRIC - always import strategies, doesn't match with existing
+            // ones.
+            
+            // PreparedStatement psStrategy = SqlUtils.getPreparedStatement(
+            // dataSource, "SELECT sr." + COLUMN_DISPLAY_ID + " FROM "
+            // + userSchema + TABLE_STRATEGY + " sr, "
+            // + userSchema + TABLE_STEP + " sp, " + wdkSchema
+            // + AnswerFactory.TABLE_ANSWER + " a WHERE sr."
+            // + UserFactory.COLUMN_USER_ID + " = ? AND sr."
+            // + COLUMN_PROJECT_ID + " = ? AND sr."
+            // + COLUMN_ROOT_STEP_ID + " = sp."
+            // + COLUMN_DISPLAY_ID + " AND sp." + answerIdColumn
+            // + " = a." + answerIdColumn + " AND a."
+            // + AnswerFactory.COLUMN_ANSWER_CHECKSUM + " = ?");
+            // psStrategy.setInt(1, user.getUserId());
+            // psStrategy.setString(2, wdkModel.getProjectId());
+            // psStrategy.setString(3,
+            // oldRootStep.getAnswer().getAnswerChecksum());
+            // rsStrategy = psStrategy.executeQuery();
+            //
+            // if (rsStrategy.next()) {
+            // int strategyId = rsStrategy.getInt(COLUMN_DISPLAY_ID);
+            // return loadStrategy(user, strategyId);
+            // }
 
             // If user does not already have a copy of this strategy, need to
             // look up the answers recursively, construct step objects.
             Step latestStep = importStep(user, oldRootStep);
             // Need to create strategy & then load it so that all AnswerValues
             // are created properly
-            Strategy strategy = createStrategy(user, latestStep, null, false);
+            Strategy strategy = createStrategy(user, latestStep,
+                    oldStrategy.getName(), oldStrategy.getIsSaved());
             return loadStrategy(user, strategy.getDisplayId());
         } finally {
             SqlUtils.closeResultSet(rsStrategy);
@@ -780,8 +789,9 @@ public class StepFactory {
         int startIndex = answerValue.getStartIndex();
         int endIndex = answerValue.getEndIndex();
         boolean deleted = oldStep.isDeleted();
-        return newUser.createStep(question, paramValues, filter, startIndex,
-                endIndex, deleted);
+        Step newStep = newUser.createStep(question, paramValues, filter,
+                startIndex, endIndex, deleted);
+        return newStep;
     }
 
     Strategy loadStrategy(User user, int displayId) throws WdkUserException,
