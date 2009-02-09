@@ -57,7 +57,7 @@ public class MergeUserTest {
         guest.createStrategy(step, false);
 
         User registeredUser = UnitTestHelper.getRegisteredUser();
-        int count = guest.getStepCount() + registeredUser.getStrategyCount();
+        int count = guest.getStrategyCount() + registeredUser.getStrategyCount();
         int unsavedCount = countStrategies(registeredUser.getUnsavedStrategiesByCategory());
 
         registeredUser.mergeUser(guest);
@@ -74,14 +74,15 @@ public class MergeUserTest {
         guest.createStrategy(step, true);
 
         User registeredUser = UnitTestHelper.getRegisteredUser();
-        int count = guest.getStepCount() + registeredUser.getStrategyCount();
-        int savedCount = countStrategies(registeredUser.getSavedStrategiesByCategory());
+        int count = guest.getStrategyCount() + registeredUser.getStrategyCount();
+        int savedCount = countStrategies(guest.getSavedStrategiesByCategory());
+        savedCount += countStrategies(registeredUser.getSavedStrategiesByCategory());
 
         registeredUser.mergeUser(guest);
 
         int newCount = countStrategies(registeredUser.getSavedStrategiesByCategory());
         Assert.assertEquals(count, registeredUser.getStrategyCount());
-        Assert.assertEquals(savedCount + 1, newCount);
+        Assert.assertEquals(savedCount, newCount);
     }
 
     @Test
@@ -91,7 +92,7 @@ public class MergeUserTest {
         guest.createStrategy(UnitTestHelper.createNormalStep(guest), false);
 
         User registeredUser = UnitTestHelper.getRegisteredUser();
-        int count = guest.getStepCount() + registeredUser.getStrategyCount();
+        int count = guest.getStrategyCount() + registeredUser.getStrategyCount();
 
         registeredUser.mergeUser(guest);
 
@@ -112,9 +113,10 @@ public class MergeUserTest {
         Step boolean3 = guest.createBooleanStep(boolean2, step3, "OR", false,
                 null);
         strategy.addStep(boolean3);
+        strategy.update(true);
 
         User registeredUser = UnitTestHelper.getRegisteredUser();
-        int count = guest.getStepCount() + registeredUser.getStrategyCount();
+        int count = guest.getStrategyCount() + registeredUser.getStrategyCount();
 
         registeredUser.mergeUser(guest);
 

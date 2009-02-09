@@ -128,14 +128,16 @@ public class Strategy {
         return latestStep.getLength();
     }
 
-    public void addStep(Step step) throws WdkUserException {
+    public void addStep(Step step) throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         if (latestStep != null) {
             latestStep.addStep(step);
         }
         setLatestStep(step);
     }
 
-    public void setLatestStep(Step step) throws WdkUserException {
+    public void setLatestStep(Step step) throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
         this.latestStep = step;
     }
 

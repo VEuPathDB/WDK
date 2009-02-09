@@ -24,7 +24,7 @@ public class StrategyBean {
     }
 
     public boolean getIsDeleted() {
-	return strategy.isDeleted();
+        return strategy.isDeleted();
     }
 
     public String getName() {
@@ -91,11 +91,13 @@ public class StrategyBean {
         return latestStep.getAllSteps();
     }
 
-    public void addStep(StepBean step) throws WdkUserException {
+    public void addStep(StepBean step) throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
         strategy.addStep(step.step);
     }
 
-    public void setLatestStep(StepBean step) throws WdkUserException {
+    public void setLatestStep(StepBean step) throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
         strategy.setLatestStep(step.step);
     }
 
@@ -116,27 +118,27 @@ public class StrategyBean {
         strategy.update(overwrite);
     }
 
-    public Map<Integer,Integer> addStep(int targetStepId, StepBean step) 
-	throws WdkModelException, WdkUserException, JSONException, 
-	       NoSuchAlgorithmException, SQLException {
-	return strategy.addStep(targetStepId, step.step);
+    public Map<Integer, Integer> addStep(int targetStepId, StepBean step)
+            throws WdkModelException, WdkUserException, JSONException,
+            NoSuchAlgorithmException, SQLException {
+        return strategy.addStep(targetStepId, step.step);
     }
 
-    public Map<Integer,Integer> editOrInsertStep(int targetStepId, StepBean step) 
-	throws WdkModelException, WdkUserException, JSONException, 
-	       NoSuchAlgorithmException, SQLException {
-	return strategy.editOrInsertStep(targetStepId, step.step);
+    public Map<Integer, Integer> editOrInsertStep(int targetStepId,
+            StepBean step) throws WdkModelException, WdkUserException,
+            JSONException, NoSuchAlgorithmException, SQLException {
+        return strategy.editOrInsertStep(targetStepId, step.step);
     }
 
-    public Map<Integer,Integer> moveStep(int moveFromId, int moveToId, String branch) 
-	throws WdkModelException, WdkUserException, JSONException, 
-	       NoSuchAlgorithmException, SQLException {
-	return strategy.moveStep(moveFromId, moveToId, branch);
+    public Map<Integer, Integer> moveStep(int moveFromId, int moveToId,
+            String branch) throws WdkModelException, WdkUserException,
+            JSONException, NoSuchAlgorithmException, SQLException {
+        return strategy.moveStep(moveFromId, moveToId, branch);
     }
 
-    public Map<Integer,Integer> deleteStep(int stepId, boolean isBranch) 
-	throws WdkModelException, WdkUserException, JSONException, 
-	       NoSuchAlgorithmException, SQLException {
-	return strategy.deleteStep(stepId, isBranch);
+    public Map<Integer, Integer> deleteStep(int stepId, boolean isBranch)
+            throws WdkModelException, WdkUserException, JSONException,
+            NoSuchAlgorithmException, SQLException {
+        return strategy.deleteStep(stepId, isBranch);
     }
 }

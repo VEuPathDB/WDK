@@ -412,15 +412,14 @@ public class User /* implements Serializable */{
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException {
         int endIndex = getItemsPerPage();
-        return createStep(question, paramValues, filter, 1,
-                endIndex, false);
+        return createStep(question, paramValues, filter, 1, endIndex, false);
     }
 
     public Step createStep(Question question, Map<String, String> paramValues,
             AnswerFilterInstance filter, int pageStart, int pageEnd,
             boolean deleted) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        Step step =  stepFactory.createStep(this, question, paramValues, filter,
+        Step step = stepFactory.createStep(this, question, paramValues, filter,
                 pageStart, pageEnd, deleted);
         if (stepCount != null) stepCount++;
         return step;
@@ -488,6 +487,7 @@ public class User /* implements Serializable */{
         for (Step step : user.getSteps()) {
             if (stepFactory.isStepDepended(user, step.getDisplayId()))
                 continue;
+            if (importedSteps.contains(step.getDisplayId())) continue;
 
             stepFactory.importStep(this, step);
         }
@@ -717,7 +717,8 @@ public class User /* implements Serializable */{
     public void deleteSteps(boolean allProjects) throws WdkUserException,
             SQLException {
         stepFactory.deleteSteps(this, allProjects);
-        stepCount = 0;
+        cachedStep = null;
+        stepCount = null;
     }
 
     public void deleteInvalidSteps() throws WdkUserException,
@@ -735,6 +736,8 @@ public class User /* implements Serializable */{
             JSONException {
         stepFactory.deleteStep(this, displayId);
         // decrement the history count
+        if (cachedStep != null && cachedStep.getDisplayId() == displayId)
+            cachedStep = null;
         if (stepCount != null) stepCount--;
     }
 
@@ -1080,8 +1083,6 @@ public class User /* implements Serializable */{
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
         Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy);
-        newStrategy.setSavedName(oldStrategy.getSavedName());
-        newStrategy.setIsSaved(oldStrategy.getIsSaved());
         newStrategy.update(true);
         if (strategyCount != null) strategyCount++;
         return newStrategy;
