@@ -33,20 +33,24 @@ public class ProcessBooleanExpressionAction extends Action {
             throws Exception {
         try {
             BooleanExpressionForm beForm = (BooleanExpressionForm) form;
-            String strategyIdStr = processBooleanExpression(request, beForm);
-
+            StrategyBean strategy = processBooleanExpression(request, beForm);
+	    String strategyIdStr = Integer.toString(strategy.getStrategyId());
+	    String stepIdStr = Integer.toString(strategy.getLatestStep().getStepId());
+	    logger.info("Done processing: " + strategyIdStr);
             ActionForward fwd = mapping.findForward(CConstants.PROCESS_BOOLEAN_EXPRESSION_MAPKEY);
             String path = fwd.getPath();
             if (path.indexOf("?") > 0) {
                 if (path.indexOf(CConstants.WDK_STRATEGY_ID_KEY) < 0) {
                     path += "&" + CConstants.WDK_STRATEGY_ID_KEY + "="
-                            + strategyIdStr;
+                            + strategyIdStr + "&" + CConstants.WDK_STEP_ID_KEY
+		        + "=" + stepIdStr;
                 }
             } else {
                 path += "?" + CConstants.WDK_STRATEGY_ID_KEY + "="
-                        + strategyIdStr;
+                        + strategyIdStr + "&" + CConstants.WDK_STEP_ID_KEY
+		    + "=" + stepIdStr;
             }
-
+	    logger.info("Path leaving ProcesBooleanExpression: " + path);
             return new ActionForward(path);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -54,7 +58,7 @@ public class ProcessBooleanExpressionAction extends Action {
         }
     }
 
-    private String processBooleanExpression(HttpServletRequest request,
+    private StrategyBean processBooleanExpression(HttpServletRequest request,
             BooleanExpressionForm beForm) throws WdkModelException,
             WdkUserException, NoSuchAlgorithmException, SQLException,
             JSONException {
@@ -65,11 +69,10 @@ public class ProcessBooleanExpressionAction extends Action {
 
         StepBean step = wdkUser.combineStep(expression, useBooleanFilter);
         StrategyBean strategy = wdkUser.createStrategy(step, false);
-        int strategyId = strategy.getStrategyId();
-
+  
         logger.info("Boolean Expression: " + expression);
         logger.info("Use Boolean Filter: " + useBooleanFilter);
 
-        return Integer.toString(strategyId);
+        return strategy;
     }
 }
