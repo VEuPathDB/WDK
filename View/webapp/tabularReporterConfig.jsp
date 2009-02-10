@@ -34,7 +34,7 @@
   <table>
   <tr><td valign="top"><b>Columns:</b></td>
       <td>
-        <input type="hidden" name="wdk_history_id" value="${history_id}">
+        <input type="hidden" name="wdk_history_id" value="${step_id}">
         <input type="hidden" name="wdkReportFormat" value="${format}">
         <c:set var="attributeFields" value="${wdkAnswer.allReportMakerAttributes}"/>
         <c:set var="numPerLine" value="2"/>
