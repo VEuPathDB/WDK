@@ -96,6 +96,7 @@ public class DownloadStepAnswerValueAction extends Action {
         if ( stepIdstr != null ) {
             int stepId = Integer.parseInt( stepIdstr );
             request.setAttribute( "step_id", stepId );
+            request.setAttribute( "history_id", stepId );
             
             UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
                     CConstants.WDK_USER_KEY );
