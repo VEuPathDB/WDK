@@ -17,23 +17,15 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
 public class DatasetParamBean extends ParamBean {
 
     private DatasetParam datasetParam;
-    private String checksum;
 
     public DatasetParamBean(DatasetParam datasetParam) {
         super(datasetParam);
         this.datasetParam = datasetParam;
     }
 
-    /**
-     * @param checksum
-     */
-    public void setCombinedKey(String checksum) {
-        this.checksum = checksum;
-    }
-
     public DatasetBean getDataset() throws WdkModelException, WdkUserException,
             SQLException {
-        return user.getDataset(checksum);
+        return user.getDataset(dependentValue);
     }
 
     /**

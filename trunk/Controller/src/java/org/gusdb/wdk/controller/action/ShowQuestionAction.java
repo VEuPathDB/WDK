@@ -192,7 +192,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
 
                 // check if the param value is assigned
                 if (paramValues != null) {
-                    datasetParam.setCombinedKey(paramValues[0]);
+                    datasetParam.setDependentValue(paramValues[0]);
                     DatasetBean dataset = datasetParam.getDataset();
                     request.setAttribute(paramName, dataset);
                 } else {

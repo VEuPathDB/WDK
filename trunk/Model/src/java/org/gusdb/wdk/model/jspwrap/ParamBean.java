@@ -19,7 +19,7 @@ public class ParamBean {
 
     protected UserBean user;
     protected Param param;
-    protected String paramValue;
+    protected String dependentValue;
     protected int truncateLength;
 
     public ParamBean(Param param) {
@@ -96,26 +96,27 @@ public class ParamBean {
         param.validate(user.getUser(), rawOrDependentValue);
     }
 
-    public void setParamValue(String paramValue) {
-        this.paramValue = paramValue;
+    public void setDependentValue(String dependentValue) {
+        this.dependentValue = dependentValue;
+    }
+
+    public String getRawValue() throws NoSuchAlgorithmException,
+            WdkModelException, WdkUserException, SQLException, JSONException {
+        return param.dependentValueToRawValue(user.getUser(), dependentValue);
+    }
+
+    public String getBriefRawValue() throws NoSuchAlgorithmException,
+            WdkModelException, WdkUserException, SQLException, JSONException {
+        String rawValue = getRawValue();
+        if (rawValue.length() > truncateLength)
+            rawValue = rawValue.substring(0, truncateLength) + "...";
+        return rawValue;
     }
 
     public void setTruncateLength(int truncateLength) {
         if (truncateLength >= 0) {
             this.truncateLength = truncateLength;
         }
-    }
-
-    public String getDecompressedValue() throws WdkModelException {
-        String value = param.decompressValue(paramValue);
-        if (value == null) return null;
-
-        // truncation only happens if truncateLength is > 0; otherwise, use
-        // original value
-        if (truncateLength > 0 && value.length() > truncateLength) {
-            value = value.substring(0, truncateLength) + "...";
-        }
-        return value;
     }
 
     /**
@@ -186,10 +187,11 @@ public class ParamBean {
      * @see org.gusdb.wdk.model.query.param.Param#rawValueToIndependentValue(org.gusdb.wdk.model.user.User,
      *      java.lang.String)
      */
-    public String rawOrDependentValueToDependentValue(UserBean user, String rawValue)
-            throws NoSuchAlgorithmException, WdkModelException,
-            WdkUserException, SQLException, JSONException {
-        return param.rawOrDependentValueToDependentValue(user.getUser(), rawValue);
+    public String rawOrDependentValueToDependentValue(UserBean user,
+            String rawValue) throws NoSuchAlgorithmException,
+            WdkModelException, WdkUserException, SQLException, JSONException {
+        return param.rawOrDependentValueToDependentValue(user.getUser(),
+                rawValue);
     }
 
 }
