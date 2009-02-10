@@ -384,6 +384,14 @@ public class ModelXmlParser extends XmlParser {
 
         configureNode(
                 digester,
+                "wdkModel/recordClassSet/recordClass/answerFilter/instance/displayName",
+                WdkModelText.class, "addDisplayName");
+        digester.addCallMethod(
+                "wdkModel/recordClassSet/recordClass/answerFilter/instance/displayName",
+                "setText", 0);
+
+        configureNode(
+                digester,
                 "wdkModel/recordClassSet/recordClass/answerFilter/instance/description",
                 WdkModelText.class, "addDescription");
         digester.addCallMethod(
