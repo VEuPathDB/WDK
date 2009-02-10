@@ -77,7 +77,7 @@
           <c:set var="i" value="0"/>
 
           <tr><td colspan="${numPerLine}">
-          <html:multibox property="selectedFields" onclick="uncheck(1);">all</html:multibox>
+          <html:multibox property="selectedFields" onclick="uncheckFields(1);">all</html:multibox>
           Default (same as in <a href="showSummary.do?wdk_history_id=${history_id}">result</a>), or...
           </td></tr>
           <tr><td colspan="${numPerLine}">&nbsp;</td></tr>
@@ -90,7 +90,7 @@
             <c:set var="i" value="${i+1}"/>
             <c:set var="br" value=""/>
             <c:if test="${i % numPerLine == 0}"><c:set var="br" value="</tr><tr>"/></c:if>
-            <td><html:multibox property="selectedFields" onclick="uncheck(0);">
+            <td><html:multibox property="selectedFields" onclick="uncheckFields(0);">
                   ${rmAttr.name}
                 </html:multibox>
                   <c:choose>
@@ -122,8 +122,8 @@
         </td></tr>
 
   <tr><td valign="top">&nbsp;</td>
-      <td align="center"><input type="button" value="select all" onclick="check(1)">
-          <input type="button" value="clear all" selected="yes" onclick="check(0)">
+      <td align="center"><input type="button" value="select all" onclick="checkFields(1)">
+          <input type="button" value="clear all" selected="yes" onclick="checkFields(0)">
         </td></tr>
 
   <tr><td valign="top"><b>Column names: </b></td>

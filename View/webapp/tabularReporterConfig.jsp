@@ -43,7 +43,7 @@
         <table>
           <tr>
             <td colspan="${numPerLine}">
-              <input type="checkbox" name="selectedFields" value="default" onclick="uncheck(1);" checked>
+              <input type="checkbox" name="selectedFields" value="default" onclick="uncheckFields(1);" checked>
               Default (same as in <a href="showSummary.do?wdk_history_id=${history_id}">result</a>), or...
             </td>
           </tr>
@@ -56,7 +56,7 @@
                 <%-- this is a hack, why some reportMakerAttributes have no name? --%>
                 <c:choose>
                   <c:when test="${rmAttr.name != null && rmAttr.name != ''}">
-                    <input type="checkbox" name="selectedFields" value="${rmAttr.name}" onclick="uncheck(0);">
+                    <input type="checkbox" name="selectedFields" value="${rmAttr.name}" onclick="uncheckFields(0);">
                     <c:choose>
                       <c:when test="${rmAttr.displayName == null || rmAttr.displayName == ''}">
                         ${rmAttr.name}
@@ -89,8 +89,8 @@
     </tr>
 
   <tr><td valign="top">&nbsp;</td>
-      <td align="center"><input type="button" value="select all" onclick="check(1)">
-          <input type="button" value="clear all" selected="yes" onclick="check(0)">
+      <td align="center"><input type="button" value="select all" onclick="checkFields(1)">
+          <input type="button" value="clear all" selected="yes" onclick="checkFields(0)">
         </td></tr>
 
   <tr><td valign="top"><b>Column names: </b></td>
