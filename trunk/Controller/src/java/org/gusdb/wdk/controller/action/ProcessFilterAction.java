@@ -285,10 +285,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             if (!isTransform) {
                                 // check if we've changed the query itself, or
                                 // just the operation
-				logger.info("targetStepId: " + targetStepId);
-				logger.info("newStep: " + newStep.getStepId());
-				logger.info("newStep: " + newStep.getCustomName());
-				logger.info("newStep: " + newStep.getIsBoolean());
+				logger.debug("targetStepId: " + targetStepId);
+				logger.debug("newStep: " + newStep.getStepId());
+				logger.debug("newStep: " + newStep.getCustomName());
+				logger.debug("newStep: " + newStep.getIsBoolean());
                                 newStep.setCustomName(targetStep.getChildStep().getBaseCustomName());
                                 newStep.update(false);
                                 // build standard boolExp for non-first step
