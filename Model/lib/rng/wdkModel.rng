@@ -752,9 +752,11 @@
               
               <oneOrMore>
                 <element name="instance">
-                  <attribute name="name" />
-                  <attribute name="displayName" />
-                  <ref name="IncludeExclude"/>
+                <attribute name="name" />
+                <ref name="IncludeExclude"/>
+                <optional>
+                    <attribute name="displayName" />
+                </optional>
                   <optional>
                     <attribute name="default">
                       <data type="boolean" />
@@ -768,6 +770,10 @@
                   
                   <zeroOrMore>
                     <choice>
+                        <element name="displayName">
+                          <ref name="IncludeExclude"/>
+                          <text />
+                        </element>
                         <element name="description">
                           <ref name="IncludeExclude"/>
                           <text />
