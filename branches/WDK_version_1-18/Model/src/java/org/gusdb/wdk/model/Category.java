@@ -74,7 +74,7 @@ public class Category extends WdkModelBase {
                 question = (Question) model.resolveReference(ref.getText().trim());
             } catch (WdkModelException ex) {
                 // relax a bit, just ignore the missing questions
-                logger.warn("The question [" + ref.getText() + "] is defined in "
+                logger.debug("The question [" + ref.getText() + "] is defined in "
                         + "category [" + name + "], but doesn't exist in the "
                         + "model.");
                 continue;
@@ -82,7 +82,7 @@ public class Category extends WdkModelBase {
 
             // make sure the recordClass matches
             if (!question.getRecordClass().getFullName().equals(recordClassRef))
-                throw new WdkModelException("Question "
+                logger.debug("Question "
                         + question.getFullName()
                         + " cannot be included in categories " + recordClassRef);
 

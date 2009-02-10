@@ -26,9 +26,11 @@ import org.json.JSONException;
 public class AnswerFilterInstance extends WdkModelBase {
 
     private String name;
-    private String displayName;
     private boolean isDefault;
     private boolean isBooleanExpansion;
+
+    private List<WdkModelText> displayNameList = new ArrayList<WdkModelText>();
+    private String displayName;
 
     private List<WdkModelText> descriptionList = new ArrayList<WdkModelText>();
     private String description;
@@ -70,6 +72,10 @@ public class AnswerFilterInstance extends WdkModelBase {
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+
+    public void addDisplayName(WdkModelText displayName) {
+        this.displayNameList.add(displayName);
     }
 
     /**
@@ -173,6 +179,20 @@ public class AnswerFilterInstance extends WdkModelBase {
      */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
+        // exclude the display names
+        for (WdkModelText text : displayNameList) {
+            if (text.include(projectId)) {
+                text.excludeResources(projectId);
+                if (displayName != null)
+                    throw new WdkModelException("Display Name of "
+                            + "answerFilterInstance '" + name + "' in "
+                            + recordClass.getFullName()
+                            + " is included more than once.");
+                this.displayName = text.getText();
+            }
+        }
+        displayNameList = null;
+
         // exclude the descriptions
         for (WdkModelText text : descriptionList) {
             if (text.include(projectId)) {
