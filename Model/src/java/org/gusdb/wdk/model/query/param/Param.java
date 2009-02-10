@@ -61,7 +61,7 @@ public abstract class Param extends WdkModelBase {
             WdkModelException, WdkUserException, SQLException, JSONException;
 
     public abstract String dependentValueToRawValue(User user,
-            String independentValue) throws WdkModelException,
+            String dependentValue) throws WdkModelException,
             NoSuchAlgorithmException, WdkUserException, SQLException,
             JSONException;
 

@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
 /**
@@ -20,8 +21,6 @@ import org.json.JSONException;
 public class AnswerParamBean extends ParamBean {
 
     private AnswerParam answerParam;
-
-    private String answerChecksum;
 
     public AnswerParamBean(AnswerParam answerParam) {
         super(answerParam);
@@ -35,20 +34,13 @@ public class AnswerParamBean extends ParamBean {
         return user.getSteps(recordClass.getFullName());
     }
 
-    /**
-     * It's okay to set bean property, since the bean is created for every
-     * request and thus has a local (request) level life span.
-     * 
-     * @param checksum
-     */
-    public void setAnswerChecksum(String checksum) {
-        this.answerChecksum = checksum;
-    }
-
     public AnswerValueBean getAnswerValue() throws Exception {
         try {
-            AnswerValue answerValue = answerParam.getAnswerValue(
-                    user.getUser(), answerChecksum);
+            User user = this.user.getUser();
+            String independentValue = answerParam.dependentValueToIndependentValue(
+                    user, dependentValue);
+            AnswerValue answerValue = answerParam.getAnswerValue(user,
+                    independentValue);
             return new AnswerValueBean(answerValue);
         } catch (Exception ex) {
             ex.printStackTrace();
