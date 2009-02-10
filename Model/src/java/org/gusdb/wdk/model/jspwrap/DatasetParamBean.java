@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.json.JSONException;
 
 /**
  * @author xingao
@@ -24,8 +25,10 @@ public class DatasetParamBean extends ParamBean {
     }
 
     public DatasetBean getDataset() throws WdkModelException, WdkUserException,
-            SQLException {
-        return user.getDataset(dependentValue);
+            SQLException, NoSuchAlgorithmException, JSONException {
+        String independentValue = param.dependentValueToIndependentValue(
+                user.getUser(), dependentValue);
+        return user.getDataset(independentValue);
     }
 
     /**
