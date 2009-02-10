@@ -33,6 +33,8 @@ display the parameter values for an non-boolean answer.
                        <c:set var="pNam" value="${p.key}"/>
                        <c:set var="qP" value="${p.value}"/>
                        <c:set var="aP" value="${params[pNam]}"/>
+                       <jsp:setProperty name="qP" property="user" value="${sessionScope.wdkUser}" />
+                       <jsp:setProperty name="qP" property="dependentValue" value="${aP}" />
                        <c:if test="${qP.isVisible}">
                           <tr>
                              <td align="right" valign="top" nowrap class="medium"><b><i>${qP.prompt}</i><b></td>
@@ -40,7 +42,6 @@ display the parameter values for an non-boolean answer.
                              <td class="medium">
                                 <c:choose>
                                    <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.DatasetParamBean'}">
-                                      <jsp:setProperty name="qP" property="combinedId" value="${aP}" />
                                       <c:set var="dataset" value="${qP.dataset}" />  
                                       "${dataset.summary}"
                                       <c:if test='${fn:length(dataset.uploadFile) > 0}'>
@@ -48,13 +49,11 @@ display the parameter values for an non-boolean answer.
                                       </c:if>
                                    </c:when>
                                    <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.AnswerParamBean'}">
-                                      <jsp:setProperty name="qP" property="answerChecksum" value="${aP}" />
                                       <wdk:showParams wdkAnswer="${qP.answer}" />
                                    </c:when>
                                    <c:otherwise>
-                                      <jsp:setProperty name="qP" property="paramValue" value="${aP}" />
                                       <jsp:setProperty name="qP" property="truncateLength" value="1000" />
-                                      ${qP.decompressedValue}
+                                      ${qP.briefRawValue}
                                    </c:otherwise>
                                 </c:choose>
                              </td>
