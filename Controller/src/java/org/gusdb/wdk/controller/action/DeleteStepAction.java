@@ -98,6 +98,7 @@ public class DeleteStepAction extends ProcessFilterAction {
 	    StringBuffer url = new StringBuffer(forward.getPath());
 	    url.append("?strategy="
 		       + URLEncoder.encode(strStratId, "utf-8"));
+	    url.append("&getXml=true");
 	    forward = new ActionForward(url.toString());
 	    forward.setRedirect(true);
 	    return forward;
