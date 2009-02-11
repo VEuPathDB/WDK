@@ -427,7 +427,7 @@ public class CacheFactory {
             SqlUtils.closeStatement(psInsert);
         }
         String queryKey = getQueryKey(query.getFullName(), query.getChecksum());
-        queryInfoMap.put(queryKey, queryInfo);
+        //queryInfoMap.put(queryKey, queryInfo);
         return queryInfo;
     }
 
@@ -462,7 +462,7 @@ public class CacheFactory {
                 queryInfo.setQueryId(resultSet.getInt(COLUMN_QUERY_ID));
                 queryInfo.setCacheTable(resultSet.getString(COLUMN_TABLE_NAME));
 
-                queryInfoMap.put(queryKey, queryInfo);
+                // queryInfoMap.put(queryKey, queryInfo);
             }
         } finally {
             SqlUtils.closeResultSet(resultSet);
