@@ -400,10 +400,10 @@ public class User /* implements Serializable */{
             String filterName) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         AnswerFilterInstance filter = null;
+        RecordClass recordClass = question.getRecordClass();
         if (filterName != null) {
-            RecordClass recordClass = question.getRecordClass();
             filter = recordClass.getFilter(filterName);
-        }
+        } else  filter = recordClass.getDefaultFilter();
         return createStep(question, paramValues, filter);
     }
 
