@@ -59,15 +59,26 @@ public class ProcessRenameHistoryAction extends Action {
         
         ActionForward forward = new ActionForward();
         forward.setRedirect( true );
-        String forwardUrl;
+        String path;
         if ( originUrl != null ) {
-            forwardUrl = originUrl;
+            path = originUrl;
             request.getSession().setAttribute( CConstants.WDK_ORIGIN_URL_KEY,
                     null );
         } else {
-            forwardUrl = referer;
+            path =  referer;
         }
-        forward.setPath( forwardUrl );
+	if (histIdstr != null && path.contains("showSummary")) {
+	    if (path.indexOf("?") > 0) {
+		if (path.indexOf(CConstants.WDK_HISTORY_ID_KEY) < 0) {
+		    path += "&" + CConstants.WDK_HISTORY_ID_KEY + "="
+			+ histIdstr;
+		}
+	    } else {
+		path += "?" + CConstants.WDK_HISTORY_ID_KEY + "="
+		    + histIdstr;
+	    }
+	}
+        forward.setPath( path );
         
         return forward;
     }
