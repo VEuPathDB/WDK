@@ -24,6 +24,7 @@ public class DeleteStrategyAction extends Action {
             throws Exception {
 
         String[] stratIdstr = request.getParameterValues(CConstants.WDK_STRATEGY_ID_KEY);
+	boolean getXml = Boolean.valueOf(request.getParameter("getXml")).booleanValue();
 		
 	if (stratIdstr != null && stratIdstr.length != 0) {
 	    for (int i = 0; i < stratIdstr.length; ++i) {
@@ -46,7 +47,11 @@ public class DeleteStrategyAction extends Action {
 	    throw new Exception("no strategy id is given for deletion");
 	}
 	
-        ActionForward forward = mapping.findForward(CConstants.DELETE_HISTORY_MAPKEY);
+        ActionForward forward;
+	if (!getXml)
+	    forward = mapping.findForward(CConstants.DELETE_HISTORY_MAPKEY);
+	else
+	    forward = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
 	
         return forward;
     }
