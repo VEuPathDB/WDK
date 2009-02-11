@@ -154,6 +154,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             }
 
             // check if we want to skip to other pages
+            boolean noSkip = request.getParameterMap().containsKey("noskip");
             ActionForward forward;
             if (request.getParameterMap().containsKey(
                     CConstants.WDK_SKIPTO_DOWNLOAD_PARAM)) {
@@ -162,7 +163,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 String path = forward.getPath() + "?"
                         + CConstants.WDK_STEP_ID_PARAM + "=" + step.getStepId();
                 return new ActionForward(path, true);
-            } else if (wdkAnswerValue.getResultSize() == 1
+            } else if (!noSkip && wdkAnswerValue.getResultSize() == 1
                     && !wdkAnswerValue.getIsDynamic()
                     && wdkAnswerValue.getQuestion().isNoSummaryOnSingleRecord()) {
                 RecordBean rec = (RecordBean) wdkAnswerValue.getRecords().next();
