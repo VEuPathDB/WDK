@@ -168,8 +168,11 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 qForm.setMyValues(paramName, getLengthBoundedLabels(terms));
 
                 // if no default is assigned, use the first enum item
-                if (paramValues == null)
-                    paramValues = new String[] { terms[0] };
+                if (paramValues == null) {
+                    String defaultValue = param.getDefault();
+                    if (defaultValue == null) defaultValue = terms[0];
+                    paramValues = new String[] { defaultValue };
+                }
             } else if (param instanceof AnswerParamBean) {
                 AnswerParamBean answerParam = (AnswerParamBean) param;
                 StepBean[] steps = answerParam.getSteps(user);

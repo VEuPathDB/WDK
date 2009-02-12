@@ -17,10 +17,10 @@ Provides form input element for a given term tree node of EnumParam.
 <div id="${pNam}-info" class="term-node">
     <c:choose>
         <c:when test="${fn:length(children) == 0}">
-            <img src="images/spacer.gif" width="19" height="19" />
+            <img src="images/spacer.gif" width="13" height="13" />
         </c:when>
         <c:otherwise>
-            <img class="switch plus" src="images/plus.gif" width="19" height="19" onclick="toggleChildren(this)"/>
+            <img class="switch plus" src="images/plus.gif" width="13" height="13" onclick="toggleChildren(this)"/>
         </c:otherwise>
     </c:choose>
     
