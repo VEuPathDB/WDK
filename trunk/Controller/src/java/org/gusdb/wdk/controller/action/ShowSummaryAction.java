@@ -224,7 +224,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
             // forward to the results page, if requested
             if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
-                forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
+		forward = getForward(request, step.getAnswerValue(), mapping, step.getStepId());
+                //forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
             }
             // otherwise, forward to the full summary page
             else {
@@ -239,6 +240,54 @@ public class ShowSummaryAction extends ShowQuestionAction {
             throw ex;
         }
 
+    }
+
+    private ActionForward getForward(HttpServletRequest request,
+            AnswerValueBean wdkAnswer, ActionMapping mapping, int stepId)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
+        logger.debug("start getting forward");
+
+        ServletContext svltCtx = getServlet().getServletContext();
+        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+        String customViewFile1 = customViewDir + File.separator
+                + wdkAnswer.getQuestion().getFullName() + ".summary.jsp";
+        String customViewFile2 = customViewDir + File.separator
+                + wdkAnswer.getRecordClass().getFullName() + ".summary.jsp";
+        ActionForward forward = null;
+
+        if (request.getParameterMap().containsKey(CConstants.WDK_SKIPTO_DOWNLOAD_PARAM)) {
+            // go to download page directly
+            forward = mapping.findForward(CConstants.SKIPTO_DOWNLOAD_MAPKEY);
+            String path = forward.getPath() + "?"
+                    + CConstants.WDK_STEP_ID_PARAM + "=" + stepId;
+            return new ActionForward(path, true);
+        } /*else if (wdkAnswer.getResultSize() == 1 && !wdkAnswer.getIsDynamic()
+		   && wdkAnswer.getQuestion().isNoSummaryOnSingleRecord()) {
+            RecordBean rec = (RecordBean) wdkAnswer.getRecords().next();
+            forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
+            String path = forward.getPath() + "?name="
+                    + rec.getRecordClass().getFullName();
+
+            Map<String, Object> pkValues = rec.getPrimaryKey().getValues();
+            for (String pkColumn : pkValues.keySet()) {
+                Object value = pkValues.get(pkColumn);
+                path += "&" + pkColumn + "=" + value;
+            }
+            return new ActionForward(path, true);
+	    }*/
+
+        if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
+            forward = new ActionForward(customViewFile1);
+        } else if (ApplicationInitListener.resourceExists(customViewFile2,
+                svltCtx)) {
+            forward = new ActionForward(customViewFile2);
+        } else {
+            forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
+        }
+
+        logger.debug("end getting forward");
+        return forward;
     }
 
     protected void handleDatasetParams(UserBean user, QuestionBean question,
