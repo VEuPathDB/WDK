@@ -213,8 +213,11 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
 
                 // get the value
                 String cgiParamVal = request.getParameter(p.getName());
-                if (cgiParamVal == null)
-                    cgiParamVal = qForm.getMyMultiProp(p.getName())[0];
+                if (cgiParamVal == null) {
+                    String[] vals = qForm.getMyMultiProp(p.getName());
+                    if (vals != null && vals.length > 0)
+                        cgiParamVal = vals[0];
+                }
                 if (cgiParamVal == null) {
                     // just select the first one as the default
                     if (values.length > 0) pVal = new String[] { values[0] };
