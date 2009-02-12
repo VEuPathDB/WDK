@@ -9,5 +9,5 @@
 --%>
 
 
-
+<link rel="stylesheet" type="text/css" href="<c:url value='/assets/css/wdkCommon.css' />">
 <link rel="stylesheet" type="text/css" href="<c:url value='/assets/css/wdkFilter.css' />">
