@@ -359,4 +359,9 @@ public class StepBean {
             WdkModelException, JSONException, WdkUserException, SQLException {
         return step.isFiltered();
     }
+
+    public String getFilterDisplayName() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
+        return step.getFilterDisplayName();
+    }
 }
