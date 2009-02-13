@@ -32,6 +32,7 @@ public class ProcessRenameStrategyAction extends Action {
 	logger.debug("Entering Rename Strategy...");
         String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
         String customName = request.getParameter("name");
+        boolean save = Boolean.valueOf(request.getParameter("save")).booleanValue();
         boolean checkName = Boolean.valueOf(request.getParameter("checkName")).booleanValue();
         // TEST
         if (customName == null || customName.length() == 0) {
@@ -48,12 +49,8 @@ public class ProcessRenameStrategyAction extends Action {
 
 	// if we haven't been asked to check the user-specified name, or a
 	// strategy with that name does not already exist, do the rename
-        if (!checkName || !wdkUser.checkNameExists(strategy, customName)) {
+        if (!checkName || !wdkUser.checkNameExists(strategy, customName, save)) {
 	    logger.debug("failed check.  either not checking name, or strategy doesn't already exist.");
-
-	    strategy.setName(customName);
-	    strategy.setIsSaved(true);
-	    
 	    ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
 	    int index = -1;
 
@@ -65,6 +62,25 @@ public class ProcessRenameStrategyAction extends Action {
 		activeStrategies.remove(index);
 	    }
 
+	    if (save) {
+		if (wdkUser.isGuest()) {
+		    throw new Exception("You must be logged in to save a strategy!");
+		}
+		// if we're saving, and the strat is already saved (which means savedName is not null),
+		// and the new name to save with is different from the savedName (which means we're
+		// doing a "save as"), then make a new copy of this strategy.
+		if (strategy.getSavedName() != null
+		    && strategy.getSavedName().trim().length() != 0
+		    && !customName.equals(strategy.getSavedName()))
+		    strategy = wdkUser.createStrategy(strategy.getLatestStep(), false);
+
+		// mark the strategy as saved, set saved name
+		strategy.setSavedName(customName);
+		strategy.setIsSaved(true);
+	    }
+
+	    // whether its a save or rename, set new name specified by user.
+	    strategy.setName(customName);
 	    strategy.update(true);
 	    
 	    if (activeStrategies != null && index >= 0) {
