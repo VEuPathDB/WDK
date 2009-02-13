@@ -428,13 +428,21 @@ public class User /* implements Serializable */{
     public Strategy createStrategy(Step step, boolean saved)
             throws WdkUserException, WdkModelException, SQLException,
             JSONException {
-        return createStrategy(step, null, saved);
+        return createStrategy(step, null, null, saved);
     }
 
+    // Transitional method...how to handle savedName properly?
+    // Probably by expecting it if a name is given?
     public Strategy createStrategy(Step step, String name, boolean saved)
             throws WdkUserException, WdkModelException, SQLException,
             JSONException {
-        Strategy strategy = stepFactory.createStrategy(this, step, name, saved);
+        return createStrategy(step, name, null, saved);
+    }
+
+    public Strategy createStrategy(Step step, String name, String savedName, boolean saved)
+            throws WdkUserException, WdkModelException, SQLException,
+            JSONException {
+        Strategy strategy = stepFactory.createStrategy(this, step, name, savedName, saved);
         if (strategyCount != null) strategyCount++;
         return strategy;
     }
@@ -1096,9 +1104,9 @@ public class User /* implements Serializable */{
         this.activeStrategies = activeStrategies;
     }
 
-    public boolean checkNameExists(Strategy strategy, String name)
+    public boolean checkNameExists(Strategy strategy, String name, boolean saved)
             throws SQLException {
-        return stepFactory.checkNameExists(strategy, name);
+        return stepFactory.checkNameExists(strategy, name, saved);
     }
 
     /*
