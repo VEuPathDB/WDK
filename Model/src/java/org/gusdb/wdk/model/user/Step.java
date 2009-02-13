@@ -529,4 +529,12 @@ public class Step {
 
         return (!defaultFilter.getName().equals(filter.getName()));
     }
+
+    public String getFilterDisplayName() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
+        AnswerValue answerValue = answer.getAnswerValue();
+        AnswerFilterInstance filter = answerValue.getFilter();
+        if (filter == null) return null;
+        return filter.getDisplayName();
+    }
 }
