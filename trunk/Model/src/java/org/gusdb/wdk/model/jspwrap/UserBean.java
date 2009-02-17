@@ -691,19 +691,23 @@ public class UserBean /* implements Serializable */{
     }
 
     public Map<String, List<StrategyBean>> getStrategiesByCategory()
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
-        Map<String, List<Strategy>> strategies = user.getStrategiesByCategory();
-        Map<String, List<StrategyBean>> category = new LinkedHashMap<String, List<StrategyBean>>();
-        for (String type : strategies.keySet()) {
-            List<Strategy> list = strategies.get(type);
-            List<StrategyBean> beans = new ArrayList<StrategyBean>();
-            for (Strategy strategy : list) {
-                beans.add(new StrategyBean(strategy));
+            throws Exception {
+        try {
+            Map<String, List<Strategy>> strategies = user.getStrategiesByCategory();
+            Map<String, List<StrategyBean>> category = new LinkedHashMap<String, List<StrategyBean>>();
+            for (String type : strategies.keySet()) {
+                List<Strategy> list = strategies.get(type);
+                List<StrategyBean> beans = new ArrayList<StrategyBean>();
+                for (Strategy strategy : list) {
+                    beans.add(new StrategyBean(strategy));
+                }
+                category.put(type, beans);
             }
-            category.put(type, beans);
+            return category;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
         }
-        return category;
     }
 
     public StrategyBean[] getInvalidStrategies() throws WdkUserException,
@@ -958,8 +962,8 @@ public class UserBean /* implements Serializable */{
         return user.setSummaryAttributes(questionFullName, summaryNames);
     }
 
-    public boolean checkNameExists(StrategyBean strategy, String name, boolean saved)
-            throws SQLException {
+    public boolean checkNameExists(StrategyBean strategy, String name,
+            boolean saved) throws SQLException {
         return user.checkNameExists(strategy.strategy, name, saved);
     }
 
