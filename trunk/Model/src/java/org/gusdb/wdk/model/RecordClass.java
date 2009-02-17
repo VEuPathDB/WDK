@@ -341,6 +341,10 @@ public class RecordClass extends WdkModelBase implements
     Query getAttributeQuery(String queryFullName) {
         return attributeQueries.get(queryFullName);
     }
+    
+    public Map<String, Query> getAttributeQueries() {
+        return new LinkedHashMap<String, Query>(this.attributeQueries);
+    }
 
     AttributeField getAttributeField(String attributeName)
             throws WdkModelException {

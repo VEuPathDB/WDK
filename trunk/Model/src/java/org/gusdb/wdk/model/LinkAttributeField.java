@@ -16,6 +16,8 @@ public class LinkAttributeField extends AttributeField {
     public LinkAttributeField() {
         displayTexts = new ArrayList<WdkModelText>();
         urls = new ArrayList<WdkModelText>();
+        // by default, don't show linked attributes in the download
+        this.inReportMaker = false;
     }
 
     public void addUrl(WdkModelText url) {

@@ -2,7 +2,9 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -23,6 +25,9 @@ import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 public class WdkModelBean {
 
     WdkModel model;
+
+    private String inputType;
+    private String outputType;
 
     public WdkModelBean(WdkModel model) {
         this.model = model;
@@ -226,5 +231,26 @@ public class WdkModelBean {
             WdkModelException, IOException {
         return model.getSecretKey();
     }
-    
+
+    public void setInputType(String inputType) {
+        this.inputType = inputType;
+    }
+
+    public void setOutputType(String outputType) {
+        this.outputType = outputType;
+    }
+
+    public List<QuestionBean> getTransformQuestions() throws WdkModelException {
+        RecordClass input = model.getRecordClass(inputType);
+        RecordClass output = null;
+        if (outputType != null && outputType.length() > 0)
+            output = model.getRecordClass(outputType);
+
+        List<Question> questions = model.getTransformQuestions(input, output);
+        List<QuestionBean> beans = new ArrayList<QuestionBean>();
+        for (Question question : questions) {
+            beans.add(new QuestionBean(question));
+        }
+        return beans;
+    }
 }
