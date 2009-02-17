@@ -16,6 +16,10 @@ public class AnswerFilterInstanceBean {
     AnswerFilterInstanceBean(AnswerFilterInstance instance) {
         this.instance = instance;
     }
+    
+    AnswerFilterInstance getFilter() {
+        return instance;
+    }
 
     /**
      * @return
