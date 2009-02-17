@@ -12,7 +12,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.BooleanOperator;
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
@@ -121,8 +123,10 @@ public class BooleanExpression {
             BooleanOperator operator = BooleanOperator.parse(triplet[1]);
 
             // create boolean answer that wraps the children
+            Question question = left.getAnswer().getAnswerValue().getQuestion();
+            AnswerFilterInstance filter = question.getRecordClass().getDefaultFilter();
             return user.createBooleanStep(left, right, operator,
-                    useBooleanFilter, null);
+                    useBooleanFilter, filter);
         }
     }
 
