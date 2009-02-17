@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -748,5 +749,19 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     public String getShortDisplayName() {
         return (shortDisplayName == null) ? getDisplayName() : shortDisplayName;
+    }
+
+    public AnswerParam[] getTransformParams(RecordClass recordClass) {
+        List<AnswerParam> list = new ArrayList<AnswerParam>();
+        for (Param param : query.getParams()) {
+            if (param instanceof AnswerParam) {
+                AnswerParam answerParam = (AnswerParam) param;
+                if (answerParam.getRecordClassRef().equals(
+                        recordClass.getFullName())) list.add(answerParam);
+            }
+        }
+        AnswerParam[] array = new AnswerParam[list.size()];
+        list.toArray(array);
+        return array;
     }
 }

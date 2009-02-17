@@ -2,8 +2,10 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.AnswerFilterInstance;
@@ -35,6 +37,11 @@ public class QuestionBean {
     private static final long serialVersionUID = 6353373897551871273L;
 
     Question question;
+    
+    /**
+     * the recordClass full name for the answerParams input type.
+     */
+    private String inputType;
 
     public QuestionBean(Question question) {
         this.question = question;
@@ -330,4 +337,16 @@ public class QuestionBean {
         return question.getQuery().isTransform();
     }
 
+    public void setInputType(String inputType) {
+        this.inputType = inputType;
+    }
+    
+    public List<AnswerParamBean> getTransformParams() throws WdkModelException {
+        List<AnswerParamBean> beans = new ArrayList<AnswerParamBean>();
+        RecordClass input = question.getWdkModel().getRecordClass(inputType);
+        for(AnswerParam answerParam : question.getTransformParams(input)) {
+            beans.add(new AnswerParamBean(answerParam));
+        }
+        return beans;
+    }
 }
