@@ -17,7 +17,7 @@ public class TextAttributeField extends AttributeField {
         this.texts.add(text);
     }
 
-    String getText() {
+    public String getText() {
         return text;
     }
 
