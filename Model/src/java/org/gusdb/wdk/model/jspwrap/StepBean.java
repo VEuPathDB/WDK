@@ -164,7 +164,7 @@ public class StepBean {
 
     public boolean getIsTransform() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
-        return step.getAnswer().getAnswerValue().getIdsQueryInstance().getQuery().isTransform();
+        return step.isTransform();
     }
 
     public String getBooleanExpression() {
