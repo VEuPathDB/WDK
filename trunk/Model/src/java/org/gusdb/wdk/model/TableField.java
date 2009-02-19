@@ -24,7 +24,7 @@ public class TableField extends Field implements AttributeFieldContainer {
     private List<WdkModelText> descriptions = new ArrayList<WdkModelText>();
     private String description;
 
-    Query getQuery() {
+    public Query getQuery() {
         return query;
     }
 
