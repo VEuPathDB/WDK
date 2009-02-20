@@ -25,6 +25,7 @@ import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
+import org.gusdb.wdk.model.user.Answer;
 import org.gusdb.wdk.model.user.AnswerFactory;
 import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.user.StepFactory;
@@ -1039,5 +1040,12 @@ public class WdkModel {
             }
         }
         return list;
+    }
+
+    public AnswerValue getAnswerValue(User user, String answerChecksum)
+            throws SQLException, NoSuchAlgorithmException, WdkModelException,
+            JSONException, WdkUserException {
+        Answer answer = answerFactory.getAnswer(user, answerChecksum);
+        return answer.getAnswerValue();
     }
 }
