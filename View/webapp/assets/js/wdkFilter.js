@@ -56,7 +56,8 @@ function WdkFilter() {
             $.get(countUrl, 
                   '', 
                   function (data) {
-                      link.text(data);
+                      if (data.match(/\d+/g)) link.text(data);
+                      else link.text("error");
                       wdkFilter.loadFilterCount();
                   },
                   "text");
