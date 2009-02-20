@@ -10,7 +10,7 @@
 
 <c:set var="layout" value="${requestScope.filter_layout}"/>
 
-<table border="1" cellspacing="1">
+<table border="0" cellspacing="0" cellspacing="0">
   <c:choose>
     <c:when test="layout.vertical"> <%-- vertically aligned table --%>
       <c:forEach items="${layout.instances}" var="instance">
