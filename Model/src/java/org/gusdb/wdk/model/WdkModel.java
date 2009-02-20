@@ -487,6 +487,9 @@ public class WdkModel {
 
         // resolve references in the model objects
         resolveReferences();
+
+        // create boolean questions
+        createBooleanQuestions();
     }
 
     public ModelConfig getModelConfig() {
@@ -783,6 +786,15 @@ public class WdkModel {
             internalQuestionSet.setInternal(true);
             internalQuestionSet.setName(Utilities.INTERNAL_QUESTION_SET);
             addQuestionSet(internalQuestionSet);
+        }
+    }
+
+    private void createBooleanQuestions() throws NoSuchAlgorithmException,
+            WdkModelException, SQLException, JSONException, WdkUserException {
+        for (RecordClassSet recordClassSet : getAllRecordClassSets()) {
+            for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
+                getBooleanQuestion(recordClass);
+            }
         }
     }
 
