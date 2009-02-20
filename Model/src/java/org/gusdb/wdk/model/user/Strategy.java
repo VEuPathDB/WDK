@@ -182,17 +182,35 @@ public class Strategy {
                 // if there are at least two steps, we need to turn the child
                 // step
                 // of step 2 into a first step (no operation)
-                System.out.println("Moving to second step to replace first step...");
-                targetStepId = step.getNextStep().getDisplayId();
-                step = step.getNextStep().getChildStep();
-            } else if (isBranch) {
+		while (step.getNextStep() != null && step.getNextStep().isTransform()) {
+		    step = step.getNextStep();
+		}
+		if (step.getNextStep() == null) {
+		    if (!isBranch) {
+			System.out.println("Step is only non-transform step in main strategy...");
+			this.setDeleted(true);
+		    }
+		    else {
+			System.out.println("Step is only non-transform step in branch...");
+			step = step.getParentStep();
+			targetStepId = step.getDisplayId();
+			step = step.getPreviousStep();
+		    }
+			
+		}
+		else {
+		    System.out.println("Moving to second step to replace first step...");
+		    targetStepId = step.getNextStep().getDisplayId();
+		    step = step.getNextStep().getChildStep();
+		}
+	    }
+	    else if (isBranch) {
                 System.out.println("Step is only step in a branch...");
-                // If this is the only step in a branch, unexpand the step &
-                // return nothing? ui will have to know to close?
-                step.setCollapsible(false);
-                step.setCollapsedName(null);
-                step.update(false);
-            } else {
+		step = step.getParentStep();
+		targetStepId = step.getDisplayId();
+		step = step.getPreviousStep();
+	    }
+	    else {
                 System.out.println("Step is only step in main strategy...");
                 this.setDeleted(true);
             }
@@ -305,6 +323,13 @@ public class Strategy {
         newStep.setCollapsedName(targetStep.getCollapsedName());
         newStep.update(false);
 
+	// Make sure target step is made uncollapsible so that
+	// we don't have incorrect references in the step tree
+	targetStep.setParentStep(null);
+	targetStep.setCollapsible(false);
+	targetStep.setCollapsedName(null);
+	targetStep.update(false);
+
         // if step has a parent step, need to continue
         // updating the rest of the strategy.
         while (newStep.getParentStep() != null) {
@@ -340,6 +365,13 @@ public class Strategy {
             newStep.setCollapsible(targetStep.isCollapsible());
             newStep.setCollapsedName(targetStep.getCollapsedName());
             newStep.update(false);
+
+	    // Make sure target step is made uncollapsible so that
+	    // we don't have incorrect references in the step tree
+	    targetStep.setParentStep(null);
+	    targetStep.setCollapsible(false);
+	    targetStep.setCollapsedName(null);
+	    targetStep.update(false);
         }
 
         this.setLatestStep(newStep);
