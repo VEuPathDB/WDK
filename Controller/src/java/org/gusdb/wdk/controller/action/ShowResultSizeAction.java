@@ -17,6 +17,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
@@ -38,6 +39,7 @@ public class ShowResultSizeAction extends Action {
 
         String answerChecksum = request.getParameter("answer");
         String filterName = request.getParameter("filter");
+        String stepId = request.getParameter("step");
 
         String key = answerChecksum;
         if (filterName != null) key += ":" + filterName;
@@ -56,10 +58,9 @@ public class ShowResultSizeAction extends Action {
         if (sizeCache.containsKey(key)) {
             size = sizeCache.get(key);
         } else {// size is not cached get it and cache it
-            WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
             UserBean user = ActionUtility.getUser(servlet, request);
-            AnswerValueBean answerValue = wdkModel.getAnswerValue(user,
-                    answerChecksum);
+            StepBean step = user.getStep(Integer.parseInt(stepId));
+            AnswerValueBean answerValue = step.getAnswerValue();
             size = (filterName == null) ? answerValue.getResultSize()
                     : answerValue.getFilterSize(filterName);
 
