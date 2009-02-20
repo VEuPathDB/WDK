@@ -719,6 +719,9 @@
           <element name="answerFilterLayout">
             <attribute name="name" />
             <attribute name="displayName" />
+            <optional>
+              <attribute name="fileName" />
+            </optional>
             <ref name="IncludeExclude" />
 
             <optional>
