@@ -39,4 +39,9 @@ public class ActionUtility {
             throw new RuntimeException(ex);
         }
     }
+
+    public static WdkModelBean getWdkModel(ActionServlet servlet) {
+        return (WdkModelBean) servlet.getServletContext().getAttribute(
+                CConstants.WDK_MODEL_KEY);
+    }
 }

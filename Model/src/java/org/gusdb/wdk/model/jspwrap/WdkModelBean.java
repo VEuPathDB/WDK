@@ -2,12 +2,14 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.RecordClass;
@@ -15,8 +17,10 @@ import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
+import org.json.JSONException;
 
 /**
  * A wrapper on a {@link WdkModel} that provides simplified access for
@@ -253,4 +257,25 @@ public class WdkModelBean {
         }
         return beans;
     }
+
+    /**
+     * @param user
+     * @param answerChecksum
+     * @return
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
+     * @throws WdkModelException
+     * @throws JSONException
+     * @throws WdkUserException
+     * @see org.gusdb.wdk.model.WdkModel#getAnswerValue(org.gusdb.wdk.model.user.User,
+     *      java.lang.String)
+     */
+    public AnswerValueBean getAnswerValue(UserBean user, String answerChecksum)
+            throws SQLException, NoSuchAlgorithmException, WdkModelException,
+            JSONException, WdkUserException {
+        AnswerValue answerValue = model.getAnswerValue(user.getUser(),
+                answerChecksum);
+        return new AnswerValueBean(answerValue);
+    }
+
 }
