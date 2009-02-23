@@ -2,11 +2,11 @@
  * styles for WDK params
  * -------------------------------------------------------------------------- */
 
-.param-group {
-    text-align: center;
+.param-group .group-title {
+    padding: 5px;
 }
 
-.param-group[type='show-hide'] {
+.param-group[type='ShowHide'] {
     background-color: #DEDEDE;
 }
 
@@ -14,12 +14,16 @@
     font-weight: bold;
 }
 
-.param-group[type='show-hide'] .group-handle {
-    cursor: hand;
+.param-group[type='ShowHide'] .group-handle {
+    cursor: pointer;
 }
 
-.param-group[type='show-hide'] .group-detail {
+.param-group[type='ShowHide'] .group-detail {
 
+}
+
+.param-group td, .param-group th {
+    padding: 3px;
 }
 
 /* css for the tree box enum param */
