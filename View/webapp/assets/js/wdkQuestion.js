@@ -1,16 +1,16 @@
 // =============================================================================
 // The js related to the display on question page
 $(document).ready(function() {
-    var question = new question();
-	question.registerGroups();
+    var question = new Question();
+    question.registerGroups();
 });
 
 
 function Question() {
-	var wdk = new WDK();
-    this.registerGroups = function() {
 
-        $(".param-group[type='show-hide']").each(function() {
+    this.registerGroups = function() {
+        var wdk = new WDK();
+        $(".param-group[type='ShowHide']").each(function() {
             // register the click event
             var name = $(this).attr("name");
             var expire = 365;   // in days
