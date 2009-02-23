@@ -6,6 +6,10 @@
 
 <script type="text/javascript" src='<c:url value="/assets/js/lib/jquery-1.2.6.js"/>'></script>
 
+<script type="text/javascript" src='<c:url value="/assets/js/lib/wdkCommon.js"/>'></script>
+
+<script type="text/javascript" src='<c:url value="/assets/js/lib/wdkQuestion.js"/>'></script>
+
 --%>
 
 

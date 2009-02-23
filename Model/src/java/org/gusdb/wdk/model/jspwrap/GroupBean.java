@@ -11,13 +11,13 @@ import org.gusdb.wdk.model.Group;
  * @updated: Mar 2, 2007
  */
 public class GroupBean {
-    
+
     private Group group;
-    
-    public GroupBean( Group group ) {
+
+    public GroupBean(Group group) {
         this.group = group;
     }
-    
+
     /**
      * @return
      * @see org.gusdb.wdk.model.Group#getDescription()
@@ -25,7 +25,7 @@ public class GroupBean {
     public String getDescription() {
         return group.getDescription();
     }
-    
+
     /**
      * @return
      * @see org.gusdb.wdk.model.Group#getDisplayName()
@@ -33,7 +33,7 @@ public class GroupBean {
     public String getDisplayName() {
         return group.getDisplayName();
     }
-    
+
     /**
      * @return
      * @see org.gusdb.wdk.model.Group#getDisplayType()
@@ -41,15 +41,15 @@ public class GroupBean {
     public String getDisplayType() {
         return group.getDisplayType();
     }
-    
+
     /**
      * @return
      * @see org.gusdb.wdk.model.Group#getGroupSet()
      */
     public GroupSetBean getGroupSet() {
-        return new GroupSetBean( group.getGroupSet() );
+        return new GroupSetBean(group.getGroupSet());
     }
-    
+
     /**
      * @return
      * @see org.gusdb.wdk.model.Group#getName()
@@ -71,11 +71,11 @@ public class GroupBean {
      * @return
      * @see java.lang.Object#equals(java.lang.Object)
      */
-    public boolean equals( Object obj ) {
+    public boolean equals(Object obj) {
         if (obj instanceof GroupBean) {
-            GroupBean groupBean = (GroupBean)obj;
+            GroupBean groupBean = (GroupBean) obj;
             String fullName = group.getFullName();
-            return fullName.equals( groupBean.getFullName() );
+            return fullName.equals(groupBean.getFullName());
         } else return false;
     }
 
@@ -85,5 +85,13 @@ public class GroupBean {
      */
     public int hashCode() {
         return group.getFullName().hashCode();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.Group#isVisible()
+     */
+    public boolean isVisible() {
+        return group.isVisible();
     }
 }
