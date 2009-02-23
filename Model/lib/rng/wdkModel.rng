@@ -1120,7 +1120,17 @@
       <attribute name="displayName" />
       <ref name="IncludeExclude" />
       <optional>
-        <attribute name="displayType" />
+          <attribute name="visible">
+            <data type="boolean" />
+          </attribute>
+      </optional>
+      <optional>
+        <attribute name="displayType">
+            <choice>
+              <value>empty</value>
+              <value>ShowHide</value>
+            </choice>
+        </attribute>
       </optional>
       <zeroOrMore>
         <element name="description">

@@ -22,6 +22,7 @@ public class Group extends WdkModelBase {
     private String description;
 
     private String displayType;
+    private boolean visible;
 
     private GroupSet groupSet;
 
@@ -50,7 +51,7 @@ public class Group extends WdkModelBase {
 
     /**
      * @param description
-     *                the description to set
+     *            the description to set
      */
     public void addDescription(WdkModelText description) {
         this.descriptions.add(description);
@@ -65,7 +66,7 @@ public class Group extends WdkModelBase {
 
     /**
      * @param displayName
-     *                the displayName to set
+     *            the displayName to set
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
@@ -80,7 +81,7 @@ public class Group extends WdkModelBase {
 
     /**
      * @param groupSet
-     *                the groupSet to set
+     *            the groupSet to set
      */
     public void setGroupSet(GroupSet groupSet) {
         this.groupSet = groupSet;
@@ -95,7 +96,7 @@ public class Group extends WdkModelBase {
 
     /**
      * @param name
-     *                the name to set
+     *            the name to set
      */
     public void setName(String name) {
         this.name = name;
@@ -115,7 +116,7 @@ public class Group extends WdkModelBase {
 
     /**
      * @param displayType
-     *                the displayType to set
+     *            the displayType to set
      */
     public void setDisplayType(String displayType) {
         this.displayType = displayType;
@@ -151,5 +152,20 @@ public class Group extends WdkModelBase {
             }
         }
         descriptions = null;
+    }
+
+    /**
+     * @return the visible
+     */
+    public boolean isVisible() {
+        return visible;
+    }
+
+    /**
+     * @param visible
+     *            the visible to set
+     */
+    public void setVisible(boolean visible) {
+        this.visible = visible;
     }
 }
