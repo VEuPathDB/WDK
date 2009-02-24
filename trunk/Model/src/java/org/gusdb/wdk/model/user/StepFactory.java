@@ -1226,7 +1226,7 @@ public class StepFactory {
             psCheckName.setInt(1, strategy.getUser().getUserId());
             psCheckName.setString(2, wdkModel.getProjectId());
             psCheckName.setString(3, name);
-	    psCheckName.setBoolean(4, saved);
+	    psCheckName.setBoolean(4, (saved || strategy.getIsSaved()));
 	    psCheckName.setBoolean(5, false);
             psCheckName.setInt(6, strategy.getDisplayId());
             rsCheckName = psCheckName.executeQuery();
