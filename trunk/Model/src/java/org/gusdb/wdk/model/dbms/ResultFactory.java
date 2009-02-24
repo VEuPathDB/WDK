@@ -17,7 +17,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Column;
-import org.gusdb.wdk.model.query.ProcessQueryInstance;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.json.JSONException;
@@ -131,22 +130,22 @@ public class ResultFactory {
         connection.setAutoCommit(false);
         try {
             // add instance into cache index table, and get instanceId back
-            int instanceId = addCacheInstance(connection, queryInfo, instance);
+            // get a new id for the instance
+            int instanceId = platform.getNextId(null,
+                    CacheFactory.TABLE_INSTANCE);
 
             // check whether need to create the cache;
             String cacheTable = queryInfo.getCacheTable();
             if (!platform.checkTableExists(null, cacheTable)) {
+                // create the cache using the result of the first query
                 instance.createCache(connection, cacheTable, instanceId);
                 createCacheTableIndex(connection, cacheTable, indexColumns);
-
-                // the SqlQuery create & insert data at the same time; but
-                // ProcessQuery does it in two steps
-                if (instance instanceof ProcessQueryInstance)
-                    instance.insertToCache(connection, cacheTable, instanceId);
-            } else {
-                // insert result into existing cache table
+            } else {// insert result into existing cache table
                 instance.insertToCache(connection, cacheTable, instanceId);
             }
+            // instance record is added after the cache is created to make sure
+            // if there is something wrong with the query, nothing was cached.
+            addCacheInstance(connection, queryInfo, instance, instanceId);
 
             connection.commit();
             return instanceId;
@@ -206,13 +205,10 @@ public class ResultFactory {
         }
     }
 
-    private int addCacheInstance(Connection connection, QueryInfo queryInfo,
-            QueryInstance instance) throws SQLException,
+    private void addCacheInstance(Connection connection, QueryInfo queryInfo,
+            QueryInstance instance, int instanceId) throws SQLException,
             NoSuchAlgorithmException, WdkModelException, JSONException,
             WdkUserException {
-        // get a new id for the instance
-        int instanceId = platform.getNextId(null, CacheFactory.TABLE_INSTANCE);
-
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(CacheFactory.TABLE_INSTANCE).append(" (");
         sql.append(CacheFactory.COLUMN_INSTANCE_ID).append(", ");
@@ -229,8 +225,6 @@ public class ResultFactory {
             ps.setString(3, instance.getChecksum());
             platform.setClobData(ps, 4, instance.getResultMessage(), false);
             ps.executeUpdate();
-
-            return instanceId;
         } finally {
             // close the statement manually, since we cannot close the
             // connection; it's not committed yet.
