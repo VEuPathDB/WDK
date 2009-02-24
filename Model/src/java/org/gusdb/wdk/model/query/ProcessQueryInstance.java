@@ -50,9 +50,10 @@ public class ProcessQueryInstance extends QueryInstance {
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
-    public ProcessQueryInstance(User user, ProcessQuery query, Map<String, String> values)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+    public ProcessQueryInstance(User user, ProcessQuery query,
+            Map<String, String> values) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         super(user, query, values);
         this.query = query;
     }
@@ -296,6 +297,9 @@ public class ProcessQueryInstance extends QueryInstance {
         try {
             stmt = connection.createStatement();
             stmt.execute(sqlTable.toString());
+
+            // also insert the result into the cache
+            insertToCache(connection, tableName, instanceId);
         } finally {
             if (stmt != null) stmt.close();
         }
