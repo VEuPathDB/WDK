@@ -36,7 +36,6 @@ public class DeleteStepAction extends ProcessFilterAction {
         String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
         String strBranchId = null;
 
-        System.out.println("Strategy: " + strStratId);
         if (strStratId == null || strStratId.length() == 0) {
             throw new WdkModelException(
                     "No strategy was specified for deleting a step!");
@@ -84,7 +83,6 @@ public class DeleteStepAction extends ProcessFilterAction {
             activeStrategies.remove(index);
         }
 
-	System.out.println("Deleting step: " + deleteStep);
 	Map<Integer,Integer> stepIdsMap = strategy.deleteStep(Integer.valueOf(deleteStep), (strBranchId != null));
 	// If a branch was specified, look up the new branch id in the stepIdsMap
 	if (strBranchId != null) {
@@ -131,7 +129,6 @@ public class DeleteStepAction extends ProcessFilterAction {
         if (subQuery != null && subQuery.length() != 0) {
             url.append("&subquery=" + URLEncoder.encode(subQuery, "UTF-8"));
         }
-        System.out.println(url.toString());
         ActionForward forward = new ActionForward(url.toString());
         forward.setRedirect(true);
         return forward;
