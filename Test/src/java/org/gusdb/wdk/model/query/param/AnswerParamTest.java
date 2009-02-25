@@ -8,7 +8,9 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.UnitTestHelper;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.junit.Assert;
@@ -21,6 +23,7 @@ import org.junit.Test;
 public class AnswerParamTest {
 
     private User user;
+    Question question;
 
     /**
      * @throws Exception
@@ -28,6 +31,15 @@ public class AnswerParamTest {
      */
     public AnswerParamTest() throws Exception {
         user = UnitTestHelper.getRegisteredUser();
+        WdkModel wdkModel = UnitTestHelper.getModel();
+        for(QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
+            for(Question question : questionSet.getQuestions()) {
+                if (question.getQuery().isTransform()){
+                    this.question = question;
+                    return;
+                }
+            }
+        }
     }
 
     @Test
@@ -36,7 +48,6 @@ public class AnswerParamTest {
         Step step = UnitTestHelper.createNormalStep(user);
         String paramValue = step.getAnswer().getAnswerChecksum();
 
-        Question question = UnitTestHelper.getAnswerParamQuestion();
         for (Param param : question.getParams()) {
             if (param instanceof AnswerParam) {
                 AnswerParam answerParam = (AnswerParam) param;
@@ -50,8 +61,6 @@ public class AnswerParamTest {
 
     @Test
     public void testUseAnswerParam() throws Exception {
-        Question question = UnitTestHelper.getAnswerParamQuestion();
-
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
         for (Param param : question.getParams()) {
             String paramValue;

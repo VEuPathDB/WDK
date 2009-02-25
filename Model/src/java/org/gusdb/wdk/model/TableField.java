@@ -96,16 +96,18 @@ public class TableField extends Field implements AttributeFieldContainer {
      * org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel model) throws WdkModelException, NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         // resolve Query
-        Query query = (Query) model.resolveReference(queryTwoPartName);
+        Query query = (Query) wdkModel.resolveReference(queryTwoPartName);
 
         // validate the query
         recordClass.validateQuery(query);
 
         // prepare the query and add primary key params
         String[] paramNames = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
-        query = recordClass.prepareQuery(query, paramNames);
+        query = RecordClass.prepareQuery(wdkModel, query, paramNames);
         this.query = query;
 
         Column[] columns = query.getColumns();
