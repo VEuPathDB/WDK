@@ -122,6 +122,48 @@ public class MergeUserTest {
 
         Assert.assertEquals(count, registeredUser.getStrategyCount());
     }
+    
+    @Test
+    public void testMergeUserWithStrategiesOfSameName() throws Exception {
+        String existName = "Name" + UnitTestHelper.getRandom().nextInt();
+        User guest = UnitTestHelper.getGuest();
+        Step step = UnitTestHelper.createNormalStep(guest);
+        guest.createStrategy(step,existName, false);
+        
+        User registeredUser = UnitTestHelper.getRegisteredUser();
+        Step newStep = UnitTestHelper.createNormalStep(registeredUser);
+        Strategy expected = registeredUser.createStrategy(newStep, existName, false);
+        
+        int count = registeredUser.getStrategyCount() + guest.getStrategyCount();
+        
+        registeredUser.mergeUser(guest);
+        
+        Assert.assertEquals(count, registeredUser.getStrategyCount());
+        
+        Strategy actual = registeredUser.getStrategy(expected.getDisplayId());
+        StrategyTest.compareStrategy(expected, actual);
+    }
+    
+    @Test
+    public void testMergeUserWithSavedStrategiesOfSameName() throws Exception {
+        String existName = "Name" + UnitTestHelper.getRandom().nextInt();
+        User guest = UnitTestHelper.getGuest();
+        Step step = UnitTestHelper.createNormalStep(guest);
+        guest.createStrategy(step,existName, false);
+        
+        User registeredUser = UnitTestHelper.getRegisteredUser();
+        Step newStep = UnitTestHelper.createNormalStep(registeredUser);
+        Strategy expected = registeredUser.createStrategy(newStep, existName, true);
+        
+        int count = registeredUser.getStrategyCount() + guest.getStrategyCount();
+        
+        registeredUser.mergeUser(guest);
+        
+        Assert.assertEquals(count, registeredUser.getStrategyCount());
+        
+        Strategy actual = registeredUser.getStrategy(expected.getDisplayId());
+        StrategyTest.compareStrategy(expected, actual);
+    }
 
     private int countStrategies(Map<String, List<Strategy>> strategies) {
         int count = 0;
