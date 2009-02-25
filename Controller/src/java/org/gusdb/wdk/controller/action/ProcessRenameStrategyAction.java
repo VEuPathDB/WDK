@@ -69,9 +69,7 @@ public class ProcessRenameStrategyAction extends Action {
 		// if we're saving, and the strat is already saved (which means savedName is not null),
 		// and the new name to save with is different from the savedName (which means we're
 		// doing a "save as"), then make a new copy of this strategy.
-		if (strategy.getSavedName() != null
-		    && strategy.getSavedName().trim().length() != 0
-		    && !customName.equals(strategy.getSavedName()))
+		if (strategy.getIsSaved() && !customName.equals(strategy.getSavedName()))
 		    strategy = wdkUser.createStrategy(strategy.getLatestStep(), false);
 
 		// mark the strategy as saved, set saved name

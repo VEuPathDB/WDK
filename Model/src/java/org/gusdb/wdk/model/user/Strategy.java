@@ -187,11 +187,11 @@ public class Strategy {
 		}
 		if (step.getNextStep() == null) {
 		    if (!isBranch) {
-			System.out.println("Step is only non-transform step in main strategy...");
+			logger.debug("Step is only non-transform step in main strategy...");
 			this.setDeleted(true);
 		    }
 		    else {
-			System.out.println("Step is only non-transform step in branch...");
+			logger.debug("Step is only non-transform step in branch...");
 			step = step.getParentStep();
 			targetStepId = step.getDisplayId();
 			step = step.getPreviousStep();
@@ -199,27 +199,27 @@ public class Strategy {
 			
 		}
 		else {
-		    System.out.println("Moving to second step to replace first step...");
+		    logger.debug("Moving to second step to replace first step...");
 		    targetStepId = step.getNextStep().getDisplayId();
 		    step = step.getNextStep().getChildStep();
 		}
 	    }
 	    else if (isBranch) {
-                System.out.println("Step is only step in a branch...");
+                logger.debug("Step is only step in a branch...");
 		step = step.getParentStep();
 		targetStepId = step.getDisplayId();
 		step = step.getPreviousStep();
 	    }
 	    else {
-                System.out.println("Step is only step in main strategy...");
+                logger.debug("Step is only step in main strategy...");
                 this.setDeleted(true);
             }
         } else {
-            System.out.println("Moving to previous step to replace non-first step...");
+            logger.debug("Moving to previous step to replace non-first step...");
             step = step.getPreviousStep();
         }
 
-        System.out.println("Updating step tree to delete target step...");
+        logger.debug("Updating step tree to delete target step...");
         return updateStepTree(targetStepId, step);
     }
 
