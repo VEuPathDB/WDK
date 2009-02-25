@@ -24,9 +24,9 @@ function changeFormat(e)
 
 <!-- display question and param values and result size for wdkAnswer -->
 <c:choose>
-    <c:when test="${wdkAnswer.isBoolean}">
+    <c:when test="${wdkAnswer.isCombined}">
         <div>
-            <%-- boolean question --%>
+            <%-- combined question --%>
             <nested:root name="wdkAnswer">
                 <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
             </nested:root>

@@ -9,20 +9,30 @@
 <dir>
 
   <!-- is node if current position of wdkAnswer is boolean -->
-  <nested:define id="isNode" property="isBoolean"/> 
+  <nested:define id="isNode" property="isCombined"/>
+  <nested:define id="isBoolean" property="isBoolean"/>
   <c:choose>
     <c:when test="${isNode}">
     <div>
-       <nested:write property="booleanOperation"/><br>
+       <c:choose>
+         <c:when test="${isBoolean}">
+           <nested:write property="booleanOperation"/><br>
+         </c:when>
+         <c:otherwise>
+           <nested:write property="question.displayName"/><br/>
+         </c:otherwise>
+       </c:choose>
        <nested:nest property="firstChildAnswer">
           <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
        </nested:nest>
     </div>
+    <c:if test="${isBoolean}">
     <div>
        <nested:nest property="secondChildAnswer">
           <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
        </nested:nest>
     </div>
+    </c:if>
     </c:when>	
     <c:otherwise>
          <nested:define id="currentAnswer" property="this/"/>
