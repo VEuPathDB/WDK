@@ -113,11 +113,6 @@ public class UnitTestHelper {
         return normalQuestions.get(random.nextInt(normalQuestions.size()));
     }
 
-    public static Question getAnswerParamQuestion() throws Exception {
-        if (answerQuestions == null) loadQuestions();
-        return answerQuestions.get(random.nextInt(answerQuestions.size()));
-    }
-
     public static Question getDatasetParamQuestion() throws Exception {
         if (datasetQuestions == null) loadQuestions();
         return datasetQuestions.get(random.nextInt(datasetQuestions.size()));
