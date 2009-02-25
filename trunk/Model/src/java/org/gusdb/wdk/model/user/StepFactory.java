@@ -1176,9 +1176,11 @@ public class StepFactory {
                     dataSource, "SELECT count(*) AS num FROM " + userSchema
                             + TABLE_STRATEGY + " WHERE "
                             + UserFactory.COLUMN_USER_ID + " = ? AND "
+                            + COLUMN_IS_DELETED + " = ? AND "
                             + COLUMN_PROJECT_ID + " = ? ");
             psStrategy.setInt(1, user.getUserId());
-            psStrategy.setString(2, wdkModel.getProjectId());
+	    psStrategy.setBoolean(2, false);
+            psStrategy.setString(3, wdkModel.getProjectId());
             rsStrategy = psStrategy.executeQuery();
             rsStrategy.next();
             return rsStrategy.getInt("num");
