@@ -221,7 +221,7 @@ public class SanityTester {
 
             int minRows = -1;
             int maxRows = -1;
-            if (queryType.equals("attribute")) {
+            if (queryType.equals(QuerySet.TYPE_ATTRIBUTE)) {
                 // discover number of entities expected in each attribute query
                 String testRowCountSql = querySet.getTestRowCountSql();
                 if (testRowCountSql != null) {
@@ -237,7 +237,7 @@ public class SanityTester {
             for (Query query : querySet.getQueries()) {
                 if (query.getDoNotTest()) continue;
                 for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
-                    if (!queryType.equals("attribute")) {
+                    if (!queryType.equals(QuerySet.TYPE_ATTRIBUTE)) {
                         minRows = paramValuesSet.getMinRows();
                         maxRows = paramValuesSet.getMaxRows();
                     }
@@ -273,11 +273,15 @@ public class SanityTester {
         Exception caughtException = null;
 
         try {
-            if (queryType.equals("attribute")) {
+            if (queryType.equals(QuerySet.TYPE_ATTRIBUTE)) {
                 count = testAttributeQuery_Count(query, paramValuesSet);
                 start = System.currentTimeMillis();
                 testAttributeQuery_Time(query, paramValuesSet, count);
             } else {
+		if (queryType.equals(QuerySet.TYPE_TABLE)) {
+		    query = RecordClass.prepareQuery(wdkModel, query,
+						     paramValuesSet.getParamNames());
+		}
                 params = " -params " + paramValuesSet.getCmdLineString();
                 start = System.currentTimeMillis();
                 count = testNonAttributeQuery(querySet, query, paramValuesSet);
