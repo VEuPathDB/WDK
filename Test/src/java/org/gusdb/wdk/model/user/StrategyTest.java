@@ -265,7 +265,7 @@ public class StrategyTest {
         Assert.assertTrue(false);
     }
 
-    private void compareStrategy(Strategy expected, Strategy actual)
+    static void compareStrategy(Strategy expected, Strategy actual)
             throws NoSuchAlgorithmException, WdkModelException, JSONException,
             WdkUserException, SQLException {
         Assert.assertEquals("internal strategy id", expected.getInternalId(),
