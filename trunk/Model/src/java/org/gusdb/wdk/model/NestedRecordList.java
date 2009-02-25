@@ -49,20 +49,20 @@ public class NestedRecordList extends WdkModelBase {
     }
 
     @Override
-    public void resolveReferences(WdkModel model) throws WdkModelException,
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        this.question = (Question) model.resolveReference(questionTwoPartName);
-        question.resolveReferences(model);
+        this.question = (Question) wdkModel.resolveReference(questionTwoPartName);
+        question.resolveReferences(wdkModel);
 
         // validate the query
         Query query = question.getQuery();
-        query.resolveReferences(model);
+        query.resolveReferences(wdkModel);
         parentRecordClass.validateQuery(query);
         String[] paramNames = parentRecordClass.getPrimaryKeyAttributeField().getColumnRefs();
 
         // prepare the query and add primary key params
-        query = parentRecordClass.prepareQuery(query, paramNames);
+        query = RecordClass.prepareQuery(wdkModel, query, paramNames);
         question.setQuery(query);
     }
 
