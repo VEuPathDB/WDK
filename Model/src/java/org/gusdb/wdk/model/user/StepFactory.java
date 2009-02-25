@@ -744,7 +744,7 @@ public class StepFactory {
                 names.add(rsNames.getString(COLUMN_NAME));
 
             String name = oldStrategy.getName();
-            Pattern pattern = Pattern.compile("(.+?)\\((\\d+\\))");
+            Pattern pattern = Pattern.compile("(.+?)\\((\\d+)\\)");
             while (names.contains(name)) {
                 Matcher matcher = pattern.matcher(name);
                 if (matcher.matches()) {
