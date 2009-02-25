@@ -50,6 +50,10 @@ public class ParamValuesSet extends WdkModelBase {
         return paramValues;
     }
 
+    public String[] getParamNames() {
+	return (String[]) paramValues.keySet().toArray();
+    }
+
     public void updateWithDefaults(ParamValuesSet defaults) {
         if (defaults == null) return;
         if (minRows == null) minRows = defaults.getMinRows();
