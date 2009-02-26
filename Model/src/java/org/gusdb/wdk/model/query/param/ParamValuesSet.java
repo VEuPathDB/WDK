@@ -51,7 +51,8 @@ public class ParamValuesSet extends WdkModelBase {
     }
 
     public String[] getParamNames() {
-	return (String[]) paramValues.keySet().toArray();
+	String[] example = {};
+	return (String[]) paramValues.keySet().toArray(example);
     }
 
     public void updateWithDefaults(ParamValuesSet defaults) {
