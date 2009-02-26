@@ -153,7 +153,7 @@ public class AnswerValue {
         // get the view
         this.filter = filter;
 
-        logger.debug("Answer created.");
+        //logger.debug("Answer created.");
     }
 
     /**
