@@ -249,19 +249,15 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 			    newStep.setCustomName(targetStep.getBaseCustomName());
                             newStep.update(false);
 
-                            boolean isChild = (targetStep.getParentStep() != null);
                             StepBean parent = targetStep.getNextStep();
-                            if (isChild) parent = targetStep.getParentStep();
 
                             if (parent.getIsTransform()) {
                                 targetStep = updateTransform(wdkUser, parent,
                                         newStepId);
                             } else {
-                                StepBean previous = isChild
-                                        ? parent.getPreviousStep() : newStep;
-                                StepBean child = isChild ? newStep
-                                        : parent.getChildStep();
-                                String operator = (op == null) ? parent.getOperation() : op;
+                                StepBean previous = newStep;
+                                StepBean child = parent.getChildStep();
+                                String operator = parent.getOperation();
                                 boolean useBooleanFilter = parent.isUseBooleanFilter();
                                 AnswerFilterInstanceBean filter = parent.getAnswerValue().getFilter();
                                 String bfName = (filter == null) ? null

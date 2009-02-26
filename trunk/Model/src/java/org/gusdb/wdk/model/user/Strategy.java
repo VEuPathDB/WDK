@@ -9,8 +9,12 @@ import java.util.HashMap;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.BooleanOperator;
+import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.json.JSONException;
 
 public class Strategy {
@@ -306,7 +310,9 @@ public class Strategy {
         while (targetStep.getNextStep() != null) {
             targetStep = targetStep.getNextStep();
             if (targetStep.isTransform()) {
-                newStep = updateTransform(targetStep, newStep.getDisplayId());
+                newStep = updateTransform(targetStep, 
+			    newStep.getAnswer().getAnswerValue().getQuestion().getRecordClass(),
+			    newStep.getDisplayId());
             } else {
                 BooleanOperator operator = BooleanOperator.parse(targetStep.getOperation());
                 AnswerFilterInstance targetFilter = targetStep.getAnswer().getAnswerValue().getFilter();
@@ -350,6 +356,7 @@ public class Strategy {
                 // no boolean expression; we need to update history param
                 if (targetStep.isTransform()) {
                     newStep = updateTransform(targetStep,
+			    newStep.getAnswer().getAnswerValue().getQuestion().getRecordClass(),
                             newStep.getDisplayId());
                 } else {
                     operator = BooleanOperator.parse(targetStep.getOperation());
@@ -380,32 +387,24 @@ public class Strategy {
         return stepIdsMap;
     }
 
-    private Step updateTransform(Step step, int newStepId)
+    private Step updateTransform(Step step, RecordClass recordClass, int newStepId)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        /*
-         * TODO: Need to convert this to use backend objects now, unless
-         * transforms are filters? Question wdkQuestion; Map<String, String>
-         * internalParams;
-         * 
-         * // Get question wdkQuestion =
-         * step.getAnswer().getAnswerValue().getQuestion(); Param[] params =
-         * wdkQuestion.getParams(); // Get internal params internalParams =
-         * step.getAnswer().getAnswerValue().getParams(); // Change HistoryParam
-         * AnswerParam answerParam = null; for (Param param : params) { if
-         * (param instanceof AnswerParam) { answerParam = (AnswerParam) param; }
-         * }
-         * 
-         * internalParams.put(answerParam.getName(), user.getSignature() + ":" +
-         * newStepId);
-         * 
-         * AnswerFilterInstance filter = step.getAnswerValue().getFilter();
-         * String filterName = (filter == null) ? null : filter.getName();
-         * 
-         * Step newStep = user.createStep(wdkQuestion, internalParams,
-         * filterName); newStep.setCustomName(step.getBaseCustomName());
-         * newStep.update(false); return newStep;
-         */
-        return step;
+	// Get question
+	Question wdkQuestion = step.getAnswer().getAnswerValue().getQuestion();
+	Param[] params = wdkQuestion.getParams();
+        // Get internal params
+	Map<String,String> internalParams = step.getAnswer().getAnswerValue().getIdsQueryInstance().getValues();
+	// Change HistoryParam
+        AnswerParam[] answerParams = wdkQuestion.getTransformParams(recordClass);
+	for (AnswerParam p : answerParams) {
+	    internalParams.put(p.getName(), Integer.toString(newStepId));
+	}
+	AnswerFilterInstance filter = step.getAnswer().getAnswerValue().getFilter();
+	String filterName = (filter == null) ? null : filter.getName();
+	
+	Step newStep = user.createStep(wdkQuestion, internalParams, filterName);
+	newStep.setCustomName(step.getBaseCustomName());
+	newStep.update(false); return newStep;
     }
 }
