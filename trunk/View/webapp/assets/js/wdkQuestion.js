@@ -1,12 +1,12 @@
 // =============================================================================
 // The js related to the display on question page
 $(document).ready(function() {
-    var question = new Question();
+    var question = new WdkQuestion();
     question.registerGroups();
 });
 
 
-function Question() {
+function WdkQuestion() {
 
     this.registerGroups = function() {
         var wdk = new WDK();
