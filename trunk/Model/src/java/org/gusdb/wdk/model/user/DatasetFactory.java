@@ -34,7 +34,7 @@ public class DatasetFactory {
 
     public static final String TABLE_DATASET_VALUE = "dataset_values";
     public static final String TABLE_DATASET_INDEX = "dataset_indices";
-    private static final String TABLE_USER_DATASET = "user_datasets";
+    private static final String TABLE_USER_DATASET = "user_datasets2";
 
     public static final String COLUMN_DATASET_ID = "dataset_id";
     public static final String COLUMN_DATASET_VALUE = "dataset_value";
