@@ -165,7 +165,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 String[] terms = enumParam.getVocab();
                 String[] labels = enumParam.getDisplays();
                 qForm.setMyLabels(paramName, getLengthBoundedLabels(labels));
-                qForm.setMyValues(paramName, getLengthBoundedLabels(terms));
+                qForm.setMyValues(paramName, terms);
 
                 // if no default is assigned, use the first enum item
                 if (paramValues == null) {
@@ -185,7 +185,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                             + step.getCustomName();
                 }
                 qForm.setMyLabels(paramName, getLengthBoundedLabels(labels));
-                qForm.setMyValues(paramName, getLengthBoundedLabels(terms));
+                qForm.setMyValues(paramName, terms);
 
                 // if no step is assigned, use the first step
                 if (paramValues == null)
@@ -233,7 +233,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
         int halfLen = maxLength / 2;
         for (String l : labels) {
             int len = l.length();
-            if (len > CConstants.MAX_PARAM_LABEL_LEN) {
+            if (len > maxLength) {
                 l = l.substring(0, halfLen) + "..."
                         + l.substring(len - halfLen, len);
             }
