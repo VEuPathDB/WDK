@@ -8,6 +8,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
@@ -490,33 +491,22 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     protected StepBean updateTransform(UserBean wdkUser, StepBean step,
             int newStepId) throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        QuestionBean wdkQuestion;
-        Map<String, String> internalParams;
-
-        // Get question
-        wdkQuestion = step.getAnswerValue().getQuestion();
-        ParamBean[] params = wdkQuestion.getParams();
+	// Get question
+	QuestionBean wdkQuestion = step.getAnswerValue().getQuestion();
+	ParamBean[] params = wdkQuestion.getParams();
         // Get internal params
-        internalParams = step.getAnswerValue().getParams();
-        // Change HistoryParam
-        AnswerParamBean answerParam = null;
-        for (ParamBean param : params) {
-            if (param instanceof AnswerParamBean) {
-                answerParam = (AnswerParamBean) param;
-            }
-        }
-
-        internalParams.put(answerParam.getName(), wdkUser.getSignature() + ":"
-                + newStepId);
-
-        AnswerFilterInstanceBean filter = step.getAnswerValue().getFilter();
-        String filterName = (filter == null) ? null : filter.getName();
-
-        StepBean newStep = wdkUser.createStep(wdkQuestion, internalParams,
-                filterName);
-        newStep.setCustomName(step.getBaseCustomName());
-        newStep.update(false);
-        return newStep;
+	Map<String,String> internalParams = step.getAnswerValue().getInternalParams();
+	// Change HistoryParam
+	wdkQuestion.setInputType(step.getAnswerValue().getRecordClass().getFullName());
+        List<AnswerParamBean> answerParams = wdkQuestion.getTransformParams();
+	for (AnswerParamBean p : answerParams) {
+	    internalParams.put(p.getName(), Integer.toString(newStepId));
+	}
+	AnswerFilterInstanceBean filter = step.getAnswerValue().getFilter();
+	String filterName = (filter == null) ? null : filter.getName();
+	
+	StepBean newStep = wdkUser.createStep(wdkQuestion, internalParams, filterName);
+	newStep.setCustomName(step.getBaseCustomName());
+	newStep.update(false); return newStep;
     }
-
 }
