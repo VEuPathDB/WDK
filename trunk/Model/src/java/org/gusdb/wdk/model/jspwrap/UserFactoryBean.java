@@ -33,6 +33,10 @@ public class UserFactoryBean {
         this.userFactory = userFactory;
     }
 
+    public static String encrypt(String str) throws NoSuchAlgorithmException {
+	return UserFactory.encrypt(str);
+    }
+
     /*
      * (non-Javadoc)
      * 
