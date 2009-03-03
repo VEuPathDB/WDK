@@ -91,18 +91,10 @@ public class ProcessLoginAction extends Action {
 
             String secretValue = wdkModel.getSecretKey();
 
-            secretValue = loginCookie.getValue() + secretValue;
-
-            MessageDigest digest = MessageDigest.getInstance("MD5");
-            byte[] encrypted = digest.digest(secretValue.getBytes());
-            // convert each byte into hex format
-            StringBuffer buffer = new StringBuffer();
-            for (byte code : encrypted) {
-                buffer.append(Integer.toHexString(code & 0xFF));
-            }
+            secretValue = factory.encrypt(loginCookie.getValue() + secretValue);
 
             loginCookie.setValue(loginCookie.getValue() + "-"
-                    + buffer.toString());
+                    + secretValue);
 
             // make sure the cookie is good for whole site, not just webapp
             loginCookie.setPath("/");
@@ -110,8 +102,7 @@ public class ProcessLoginAction extends Action {
             response.addCookie(loginCookie);
 
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
-            request.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY,
-                    "");
+            request.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
 
             if (originUrl != null) {
                 forwardUrl = originUrl;
