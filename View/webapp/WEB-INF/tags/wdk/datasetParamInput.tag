@@ -81,7 +81,7 @@ function chooseType(paramName, type) {
             </td>
         </tr>
     </c:if>
-    <tr>
+    <tr class="dataset-file">
         <td align="left" valign="top" nowrap>
             <input type="radio" name="${pNam}_radio"  
                    onclick="chooseType('${pNam}', 'FILE');" />
