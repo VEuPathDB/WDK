@@ -78,10 +78,8 @@ public class CheckLoginFilter implements Filter {
                     String signature;
                     String[] cookieParts = loginCookie.getValue().split("-");
 		    
-                    signature = factory.encrypt(cookieParts[0] + "_" + cookieParts[1]);
+                    signature = cookieParts[0];
 
-		    logger.debug("Trying to load user " + cookieParts[0] + " with email "
-				 + cookieParts[1] + " by signature " + signature);
                     UserBean user = factory.getUser(signature);
                     if (loginCookie.getValue().contains("remember")) {
                         loginCookie.setMaxAge(java.lang.Integer.MAX_VALUE / 256);

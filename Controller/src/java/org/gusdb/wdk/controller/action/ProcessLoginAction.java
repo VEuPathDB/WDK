@@ -80,7 +80,7 @@ public class ProcessLoginAction extends Action {
 
             // Create & send cookie
             Cookie loginCookie = new Cookie(CConstants.WDK_LOGIN_COOKIE_KEY,
-                    user.getUserId() + "-" + user.getEmail());
+                    user.getSignature());
 
             if (remember) {
                 loginCookie.setMaxAge(java.lang.Integer.MAX_VALUE / 256);
