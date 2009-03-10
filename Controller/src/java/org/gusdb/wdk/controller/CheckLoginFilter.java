@@ -54,7 +54,7 @@ public class CheckLoginFilter implements Filter {
         }
 	
         if (loginCookie != null) {
-            if (wdkUser == null || !loginCookie.getValue().contains(wdkUser.getEmail())) {
+            if (wdkUser == null || !loginCookie.getValue().contains(wdkUser.getSignature())) {
                 try {
                     UserFactoryBean factory = wdkModel.getUserFactory();
 		    
