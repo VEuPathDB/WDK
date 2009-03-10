@@ -715,7 +715,12 @@ public class User /* implements Serializable */{
 
     public Strategy getStrategy(int userStrategyId) throws WdkUserException,
             WdkModelException, JSONException, SQLException {
-        return stepFactory.loadStrategy(this, userStrategyId);
+        return getStrategy(userStrategyId, false);
+    }
+
+    public Strategy getStrategy(int userStrategyId, boolean allowDeleted) throws WdkUserException,
+            WdkModelException, JSONException, SQLException {
+        return stepFactory.loadStrategy(this, userStrategyId, allowDeleted);
     }
 
     public void deleteSteps() throws WdkUserException, SQLException {
@@ -1083,7 +1088,7 @@ public class User /* implements Serializable */{
         String userSignature = parts[0];
         int displayId = Integer.parseInt(parts[1]);
         User user = userFactory.getUser(userSignature);
-        Strategy oldStrategy = user.getStrategy(displayId);
+        Strategy oldStrategy = user.getStrategy(displayId, true);
         return importStrategy(oldStrategy);
     }
 

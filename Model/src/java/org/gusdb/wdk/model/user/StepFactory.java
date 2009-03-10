@@ -708,7 +708,7 @@ public class StepFactory {
             int strategyId;
             while (rsStrategyIds.next()) {
                 strategyId = rsStrategyIds.getInt(COLUMN_DISPLAY_ID);
-                strategy = loadStrategy(user, strategyId);
+                strategy = loadStrategy(user, strategyId, false);
                 userStrategies.put(strategyId, strategy);
             }
 
@@ -762,7 +762,7 @@ public class StepFactory {
             // are created properly
             Strategy strategy = createStrategy(user, latestStep, name, null,
                     oldStrategy.getIsSaved());
-            return loadStrategy(user, strategy.getDisplayId());
+            return loadStrategy(user, strategy.getDisplayId(), false);
         } finally {
             SqlUtils.closeResultSet(rsNames);
         }
@@ -807,7 +807,7 @@ public class StepFactory {
         return newStep;
     }
 
-    Strategy loadStrategy(User user, int displayId) throws WdkUserException,
+    Strategy loadStrategy(User user, int displayId, boolean allowDeleted) throws WdkUserException,
             WdkModelException, JSONException, SQLException {
         String userIdColumn = UserFactory.COLUMN_USER_ID;
 
@@ -816,18 +816,24 @@ public class StepFactory {
         ResultSet rsStrategy = null;
         ResultSet rsAnswerTree = null;
         try {
-            psStrategy = SqlUtils.getPreparedStatement(dataSource, "SELECT "
-                    + COLUMN_STRATEGY_INTERNAL_ID + ", " + COLUMN_NAME + ", "
-                    + COLUMN_IS_SAVED + ", " + COLUMN_ROOT_STEP_ID + ", "
-                    + COLUMN_CREATE_TIME + ", " + COLUMN_SAVED_NAME + " FROM "
-                    + userSchema + TABLE_STRATEGY + " WHERE " + userIdColumn
-                    + " = ? AND " + COLUMN_DISPLAY_ID + " = ? AND "
-                    + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_IS_DELETED
-                    + " = ?");
+	    String query = "SELECT "
+		+ COLUMN_STRATEGY_INTERNAL_ID + ", " + COLUMN_NAME + ", "
+		+ COLUMN_IS_SAVED + ", " + COLUMN_ROOT_STEP_ID + ", "
+		+ COLUMN_CREATE_TIME + ", " + COLUMN_SAVED_NAME + " FROM "
+		+ userSchema + TABLE_STRATEGY + " WHERE " + userIdColumn
+		+ " = ? AND " + COLUMN_DISPLAY_ID + " = ? AND "
+		+ COLUMN_PROJECT_ID + " = ?";
+	    if (!allowDeleted) {
+		query += " AND " + COLUMN_IS_DELETED
+		+ " = ?";
+	    }
+            psStrategy = SqlUtils.getPreparedStatement(dataSource, query);
             psStrategy.setInt(1, user.getUserId());
             psStrategy.setInt(2, displayId);
             psStrategy.setString(3, wdkModel.getProjectId());
-            psStrategy.setBoolean(4, false);
+	    if (!allowDeleted) {
+		psStrategy.setBoolean(4, false);
+	    }
             rsStrategy = psStrategy.executeQuery();
             if (!rsStrategy.next()) {
                 throw new WdkUserException("The strategy " + displayId
@@ -1072,7 +1078,7 @@ public class StepFactory {
 
                 if (rsCheckName.next())
                     return loadStrategy(user,
-                            rsCheckName.getInt(COLUMN_DISPLAY_ID));
+                            rsCheckName.getInt(COLUMN_DISPLAY_ID), false);
             } else {// otherwise, generate default name
                 psCheckName = SqlUtils.getPreparedStatement(dataSource,
                         "SELECT 1, " + COLUMN_NAME + " FROM " + userSchema
@@ -1165,7 +1171,7 @@ public class StepFactory {
             SqlUtils.closeResultSet(rsMax);
         }
 
-        return loadStrategy(user, displayId);
+        return loadStrategy(user, displayId, false);
     }
 
     int getStrategyCount(User user) throws WdkUserException, SQLException {
