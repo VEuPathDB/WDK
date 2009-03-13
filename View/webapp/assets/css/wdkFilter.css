@@ -48,6 +48,8 @@
     border: 3px double #997733;
     background-color: #DEEEFF;
     padding: 3px;
+    min-width: 200px;
+    max-width: 600px;
 }
 
 .filter-instance .instance-detail .display {
