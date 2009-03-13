@@ -4,10 +4,6 @@
     cursor: pointer;
 }
 
-.filter-layout .layout-info .display {
-    font-weight: bold;
-}
-
 .filter-layout .layout-detail .description {
     color: #333333;
 }
@@ -19,6 +15,7 @@
 .filter-layout .layout-detail td, .filter-layout .layout-detail th {
     text-align: center;
     border: 1px solid black;
+    font-weight: normal;
 }
 
 .layout-detail th {
