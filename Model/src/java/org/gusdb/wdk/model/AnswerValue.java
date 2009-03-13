@@ -146,14 +146,14 @@ public class AnswerValue {
         // get sorting columns
         if (sortingMap == null) {
             sortingMap = question.getSortingAttributeMap();
-	}
+        }
         this.sortingMap = sortingMap;
         this.summaryFieldMap = new LinkedHashMap<String, AttributeField>();
 
         // get the view
         this.filter = filter;
 
-        //logger.debug("Answer created.");
+        // logger.debug("Answer created.");
     }
 
     /**
@@ -668,6 +668,7 @@ public class AnswerValue {
         WdkModel wdkModel = question.getWdkModel();
         for (String fieldName : sortingMap.keySet()) {
             AttributeField field = fields.get(fieldName);
+            if (field == null) continue;
             boolean ascend = sortingMap.get(fieldName);
             for (AttributeField dependent : field.getDependents()) {
                 if (!(dependent instanceof ColumnAttributeField)) continue;
@@ -807,7 +808,7 @@ public class AnswerValue {
             throws WdkModelException {
         if (sortingMap == null) {
             sortingMap = question.getSortingAttributeMap();
-	}
+        }
         // make sure all sorting columns exist
         Map<String, AttributeField> attributes = question.getAttributeFieldMap();
         for (String attributeName : sortingMap.keySet()) {
@@ -863,7 +864,7 @@ public class AnswerValue {
         Map<String, AttributeField> fields = question.getAttributeFieldMap();
         for (String attributeName : attributeNames) {
             AttributeField field = fields.get(attributeName);
-            summaryFields.put(attributeName, field);
+            if (field != null) summaryFields.put(attributeName, field);
         }
         summaryFieldMap.clear();
         summaryFieldMap.putAll(summaryFields);
