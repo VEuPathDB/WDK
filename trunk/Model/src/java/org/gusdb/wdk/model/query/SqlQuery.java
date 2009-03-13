@@ -31,9 +31,11 @@ public class SqlQuery extends Query {
     protected String sql;
     private List<WdkModelText> sqlMacroList;
     private Map<String, String> sqlMacroMap;
+    private boolean clobRow;
 
     public SqlQuery() {
         super();
+        clobRow = false;
         sqlList = new ArrayList<WdkModelText>();
         sqlMacroList = new ArrayList<WdkModelText>();
         sqlMacroMap = new LinkedHashMap<String, String>();
@@ -41,6 +43,7 @@ public class SqlQuery extends Query {
 
     public SqlQuery(SqlQuery query) {
         super(query);
+        this.clobRow = query.clobRow;
         this.sql = query.sql;
         this.sqlMacroMap = new LinkedHashMap<String, String>(query.sqlMacroMap);
     }
@@ -176,5 +179,20 @@ public class SqlQuery extends Query {
     @Override
     public Query clone() {
         return new SqlQuery(this);
+    }
+
+    /**
+     * @return the clobRow
+     */
+    public boolean isClobRow() {
+        return clobRow;
+    }
+
+    /**
+     * @param clobRow
+     *            the clobRow to set
+     */
+    public void setClobRow(boolean clobRow) {
+        this.clobRow = clobRow;
     }
 }

@@ -600,6 +600,11 @@
   <define name="sqlQuery">
     <element name="sqlQuery">
       <ref name="QueryBaseContents" />
+      <optional>
+        <attribute name="clobRow">
+          <data type="boolean" />
+        </attribute>
+      </optional>
       <oneOrMore>
         <choice>
           <ref name="sqlColumns" />
