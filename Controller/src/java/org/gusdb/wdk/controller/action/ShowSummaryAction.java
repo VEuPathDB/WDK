@@ -443,10 +443,12 @@ public class ShowSummaryAction extends ShowQuestionAction {
             UserBean user, StepBean step) throws NoSuchAlgorithmException,
             WdkUserException, WdkModelException, JSONException, SQLException {
         AnswerValueBean answerValue = step.getAnswerValue();
-        int totalSize = answerValue.getResultSize();
         int start = getPageStart(request);
         int pageSize = getPageSize(request, user);
         int end = start + pageSize - 1;
+        answerValue.setPageIndex(start, end);
+        
+        int totalSize = answerValue.getResultSize();
 
         List<String> editedParamNames = new ArrayList<String>();
         for (Enumeration<?> en = request.getParameterNames(); en.hasMoreElements();) {
