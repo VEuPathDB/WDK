@@ -544,4 +544,12 @@ public class AnswerValueBean {
         return answerValue.getStartIndex();
     }
 
+    /**
+     * @param startIndex
+     * @param endIndex
+     * @see org.gusdb.wdk.model.AnswerValue#setPageIndex(int, int)
+     */
+    public void setPageIndex(int startIndex, int endIndex) {
+        answerValue.setPageIndex(startIndex, endIndex);
+    }
 }

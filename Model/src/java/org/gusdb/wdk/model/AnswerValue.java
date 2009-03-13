@@ -998,4 +998,11 @@ public class AnswerValue {
             return ((BooleanQueryInstance) idsQueryInstance).isUseBooleanFilter();
         } else return false;
     }
+    
+    public void setPageIndex(int startIndex, int endIndex) {
+        this.startIndex = startIndex;
+        this.endIndex = endIndex;
+        this.pagedIdSql = null;
+        this.pageRecordInstances = null;
+    }
 }
