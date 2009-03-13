@@ -28,7 +28,7 @@
         var pageNumber = document.getElementById(pager_id + "_pageNumber").value;
         var psSelect = document.getElementById(pager_id + "_pageSize");
         var pageSize = psSelect.options[psSelect.selectedIndex].value;
-        
+
         var pageUrl = document.getElementById("pageUrl").value;
         
         var pageOffset = (pageNumber - 1) * pageSize;
@@ -39,23 +39,25 @@
         GetResultsPage(gotoPageUrl, true);
     }
     
-	function openAdvancedPaging(ele, open_close){
-		var a = document.getElementById("advancedPaging");
-		if(open_close){
-		//	a.style.display = "block";
-			a.style.left = "450px";
-			a.style.top = "410px";
-			a.style.zIndex = "500";
-			ele.attributes[1].value = "openAdvancedPaging(this,false)";
-			ele.value = "Cancel";
+    function openAdvancedPaging(element){
+        var button = $(element);
+       
+        var isOpen = (button.val() == "Advanced Paging");
+        var panel = button.next(".advanced-paging");
+        var offset = button.position();
+        offset.left += button.width() + 20;
+        offset.top -= 20;
+		if(isOpen){
+                        panel.css({"display" : "block",
+                                   "left": offset.left + "px",
+                                   "top": offset.top + "px",
+                                   "z-index" : 500});
+                        button.val("Cancel");
 		}else{
-		//	a.style.display = "none";
-			a.style.left = "-999px";
-			a.style.top = "-999px";
-			ele.attributes[1].value = "openAdvancedPaging(this,true)";
-			ele.value = "Advanced Paging";
+                        panel.css({"display" : "none"});
+                        button.val("Advanced Paging");
 		}
-	}
+    }
 //-->
 </script>
 
@@ -108,8 +110,9 @@
    </c:if>
    
       <td>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input style="width:150px" type="button" value="Advanced Paging" onclick="openAdvancedPaging(this, true)"/>
-		<div id="advancedPaging" style="display:block; position:absolute; top:-999px; left:-999px; border:solid 2px #B2BFD4;background-color:#c2cee1;padding:5px">
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <input class="paging-button" style="width:150px" type="button" value="Advanced Paging" onclick="openAdvancedPaging(this)"/>
+		<div class="advanced-paging" style="display:none; position:absolute; border:solid 2px #B2BFD4;background-color:#c2cee1;padding:5px">
         <pg:page>
           Jump To page:
           <input type="text" id="${pager_id}_pageNumber" size="5" value="${currentPageNumber}"/>
