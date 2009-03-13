@@ -655,6 +655,7 @@ public class Answer {
         WdkModel wdkModel = question.getWdkModel();
         for (String fieldName : sortingMap.keySet()) {
             AttributeField field = fields.get(fieldName);
+            if (field == null) continue;
             boolean ascend = sortingMap.get(fieldName);
             for (AttributeField dependent : field.getDependents()) {
                 if (!(dependent instanceof ColumnAttributeField)) continue;
@@ -798,7 +799,7 @@ public class Answer {
         Map<String, AttributeField> fields = question.getAttributeFieldMap();
         for (String attributeName : attributeNames) {
             AttributeField field = fields.get(attributeName);
-            summaryFields.put(attributeName, field);
+            if (fields != null) summaryFields.put(attributeName, field);
         }
         summaryFieldMap.clear();
         summaryFieldMap.putAll(summaryFields);
