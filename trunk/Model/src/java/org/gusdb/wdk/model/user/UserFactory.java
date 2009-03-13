@@ -217,7 +217,8 @@ public class UserFactory {
             // if loginId exists, the operation failed
             if (isExist(email))
                 throw new WdkUserException("The email '" + email
-                        + "' has been registered. Please choose another one.");
+                        + "' has already been registered. "
+                        + "Please choose another one.");
 
             // get a new userId
             int userId = platform.getNextId(userSchema, "users");
@@ -357,7 +358,7 @@ public class UserFactory {
 
         // update user active timestamp
         updateUser(user);
-        
+
         return user;
     }
 

@@ -224,8 +224,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
             // forward to the results page, if requested
             if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
-		forward = getForward(request, step.getAnswerValue(), mapping, step.getStepId());
-                //forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
+                forward = getForward(request, step.getAnswerValue(), mapping,
+                        step.getStepId());
+                // forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
             }
             // otherwise, forward to the full summary page
             else {
@@ -256,26 +257,26 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 + wdkAnswer.getRecordClass().getFullName() + ".summary.jsp";
         ActionForward forward = null;
 
-        if (request.getParameterMap().containsKey(CConstants.WDK_SKIPTO_DOWNLOAD_PARAM)) {
+        if (request.getParameterMap().containsKey(
+                CConstants.WDK_SKIPTO_DOWNLOAD_PARAM)) {
             // go to download page directly
             forward = mapping.findForward(CConstants.SKIPTO_DOWNLOAD_MAPKEY);
             String path = forward.getPath() + "?"
                     + CConstants.WDK_STEP_ID_PARAM + "=" + stepId;
             return new ActionForward(path, true);
-        } /*else if (wdkAnswer.getResultSize() == 1 && !wdkAnswer.getIsDynamic()
-		   && wdkAnswer.getQuestion().isNoSummaryOnSingleRecord()) {
-            RecordBean rec = (RecordBean) wdkAnswer.getRecords().next();
-            forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
-            String path = forward.getPath() + "?name="
-                    + rec.getRecordClass().getFullName();
-
-            Map<String, Object> pkValues = rec.getPrimaryKey().getValues();
-            for (String pkColumn : pkValues.keySet()) {
-                Object value = pkValues.get(pkColumn);
-                path += "&" + pkColumn + "=" + value;
-            }
-            return new ActionForward(path, true);
-	    }*/
+        } /*
+           * else if (wdkAnswer.getResultSize() == 1 &&
+           * !wdkAnswer.getIsDynamic() &&
+           * wdkAnswer.getQuestion().isNoSummaryOnSingleRecord()) { RecordBean
+           * rec = (RecordBean) wdkAnswer.getRecords().next(); forward =
+           * mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY); String path =
+           * forward.getPath() + "?name=" + rec.getRecordClass().getFullName();
+           * 
+           * Map<String, Object> pkValues = rec.getPrimaryKey().getValues(); for
+           * (String pkColumn : pkValues.keySet()) { Object value =
+           * pkValues.get(pkColumn); path += "&" + pkColumn + "=" + value; }
+           * return new ActionForward(path, true); }
+           */
 
         if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
             forward = new ActionForward(customViewFile1);
@@ -321,26 +322,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
-        int start = 1;
-        if (request.getParameter("pager.offset") != null) {
-            start = Integer.parseInt(request.getParameter("pager.offset"));
-            start++;
-            if (start < 1) start = 1;
-        }
-        int pageSize = wdkUser.getItemsPerPage();
-        String pageSizeKey = request.getParameter(CConstants.WDK_PAGE_SIZE_KEY);
-        if (pageSizeKey != null) {
-            pageSize = Integer.parseInt(pageSizeKey);
-            wdkUser.setItemsPerPage(pageSize);
-        } else {
-            String altPageSizeKey = request.getParameter(CConstants.WDK_ALT_PAGE_SIZE_KEY);
-            if (altPageSizeKey != null)
-                pageSize = Integer.parseInt(altPageSizeKey);
-        }
-        // set the minimal page size
-        if (pageSize < CConstants.MIN_PAGE_SIZE)
-            pageSize = CConstants.MIN_PAGE_SIZE;
-
+        int start = getPageStart(request);
+        int pageSize = getPageSize(request, wdkUser);
         int end = start + pageSize - 1;
 
         logger.info("Make answer with start=" + start + ", end=" + end);
@@ -461,9 +444,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
             WdkUserException, WdkModelException, JSONException, SQLException {
         AnswerValueBean answerValue = step.getAnswerValue();
         int totalSize = answerValue.getResultSize();
-        int start = answerValue.getStartIndex();
-        int end = answerValue.getEndIndex();
-        int pageSize = user.getItemsPerPage();
+        int start = getPageStart(request);
+        int pageSize = getPageSize(request, user);
+        int end = start + pageSize - 1;
 
         List<String> editedParamNames = new ArrayList<String>();
         for (Enumeration<?> en = request.getParameterNames(); en.hasMoreElements();) {
@@ -546,5 +529,33 @@ public class ShowSummaryAction extends ShowQuestionAction {
         sizeCache.put(key, size);
 
         return size;
+    }
+
+    private static int getPageStart(HttpServletRequest request) {
+        int start = 1;
+        if (request.getParameter("pager.offset") != null) {
+            start = Integer.parseInt(request.getParameter("pager.offset"));
+            start++;
+            if (start < 1) start = 1;
+        }
+        return start;
+    }
+
+    private static int getPageSize(HttpServletRequest request, UserBean user)
+            throws WdkUserException {
+        int pageSize = user.getItemsPerPage();
+        String pageSizeKey = request.getParameter(CConstants.WDK_PAGE_SIZE_KEY);
+        if (pageSizeKey != null) {
+            pageSize = Integer.parseInt(pageSizeKey);
+            user.setItemsPerPage(pageSize);
+        } else {
+            String altPageSizeKey = request.getParameter(CConstants.WDK_ALT_PAGE_SIZE_KEY);
+            if (altPageSizeKey != null)
+                pageSize = Integer.parseInt(altPageSizeKey);
+        }
+        // set the minimal page size
+        if (pageSize < CConstants.MIN_PAGE_SIZE)
+            pageSize = CConstants.MIN_PAGE_SIZE;
+        return pageSize;
     }
 }
