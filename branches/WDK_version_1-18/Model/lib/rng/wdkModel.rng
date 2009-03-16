@@ -252,6 +252,9 @@
     <define name="datasetParam">
         <element name="datasetParam">
               <ref name="ParamBaseContents" />
+              <optional>
+                <attribute name="recordClassRef" />
+              </optional>
               <zeroOrMore>
                 <element name="suggest">
                     <ref name="SuggestContent" />
@@ -597,6 +600,11 @@
   <define name="sqlQuery">
     <element name="sqlQuery">
       <ref name="QueryBaseContents" />
+      <optional>
+        <attribute name="clobRow">
+            <data type="boolean" />
+        </attribute>
+      </optional>
       <oneOrMore>
         <choice>
             <ref name="sqlColumns" />
