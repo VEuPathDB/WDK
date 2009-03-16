@@ -252,6 +252,9 @@
   <define name="datasetParam">
     <element name="datasetParam">
       <ref name="ParamBaseContents" />
+      <optional>
+        <attribute name="recordClassRef" />
+      </optional>
       <zeroOrMore>
         <element name="suggest">
           <ref name="SuggestContent" />

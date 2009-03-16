@@ -6,6 +6,7 @@ package org.gusdb.wdk.model.query.param;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -32,12 +33,16 @@ import org.json.JSONObject;
 public class DatasetParam extends Param {
 
     private String columnName = DatasetFactory.COLUMN_DATASET_VALUE;
+    
+    private String recordClassRef;
+    private RecordClass recordClass;
 
     public DatasetParam() {}
 
     public DatasetParam(DatasetParam param) {
         super(param);
         this.columnName = param.columnName;
+        this.recordClass = param.recordClass;
     }
 
     /*
@@ -49,6 +54,10 @@ public class DatasetParam extends Param {
     @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
         this.wdkModel = model;
+        if (recordClassRef != null) {
+            recordClass = (RecordClass)wdkModel.resolveReference(recordClassRef);
+            recordClassRef = null;
+        }
     }
 
     /*
@@ -228,4 +237,19 @@ public class DatasetParam extends Param {
         int userDatasetId = Integer.parseInt(dependentValue);
         user.getDataset(userDatasetId);
     }
+
+    /**
+     * @return the recordClass
+     */
+    public RecordClass getRecordClass() {
+        return recordClass;
+    }
+
+    /**
+     * @param recordClassRef the recordClassRef to set
+     */
+    public void setRecordClassRef(String recordClassRef) {
+        this.recordClassRef = recordClassRef;
+    }
+    
 }
