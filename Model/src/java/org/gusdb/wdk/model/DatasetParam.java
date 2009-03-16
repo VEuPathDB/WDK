@@ -17,6 +17,7 @@ public class DatasetParam extends Param {
 
     private UserFactory userFactory;
     private DatasetFactory datasetFactory;
+    private String recordClassRef;
 
     public DatasetParam() {}
 
@@ -127,7 +128,20 @@ public class DatasetParam extends Param {
      */
     @Override
     protected void appendJSONContent(JSONObject jsParam) {
-    // TODO Auto-generated method stub
+        // nothing to append
+    }
 
+    /**
+     * @return the recordClassRef
+     */
+    public String getRecordClassRef() {
+        return recordClassRef;
+    }
+
+    /**
+     * @param recordClassRef the recordClassRef to set
+     */
+    public void setRecordClassRef(String recordClassRef) {
+        this.recordClassRef = recordClassRef;
     }
 }
