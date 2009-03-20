@@ -141,4 +141,8 @@ public class StrategyBean {
             NoSuchAlgorithmException, SQLException {
         return strategy.deleteStep(stepId, isBranch);
     }
+    
+    public String getImportId() {
+        return strategy.getUser().getSignature() + ":" + strategy.getDisplayId();
+    }
 }
