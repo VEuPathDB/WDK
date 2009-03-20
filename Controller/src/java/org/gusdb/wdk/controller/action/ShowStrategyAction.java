@@ -40,6 +40,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             throws Exception {
         logger.debug("Entering ShowStrategyAction...");
 
+        try {
         // Make sure a protocol is specified
         String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
         String strBranchId = null;
@@ -86,7 +87,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
 
         String output = request.getParameter("output");
-        if (output.equals("json")) {
+        if (output != null && output.equals("json")) {
             outputJSON(strategy, response);
             return null;
         }
@@ -112,6 +113,11 @@ public class ShowStrategyAction extends ShowQuestionAction {
         ActionForward forward = new ActionForward(url.toString());
         forward.setRedirect(false);
         return forward;
+        } catch (Exception ex) {
+            logger.error(ex);
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 
     private void outputJSON(StrategyBean strategy, HttpServletResponse response)
