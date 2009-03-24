@@ -537,4 +537,10 @@ public class Step {
         if (filter == null) return null;
         return filter.getDisplayName();
     }
+    
+    public Step getFirstStep() {
+        Step step = this;
+        while(step.getPreviousStep() != null) step = step.getPreviousStep();
+        return step;
+    }
 }

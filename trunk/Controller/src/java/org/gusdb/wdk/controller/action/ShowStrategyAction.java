@@ -41,78 +41,79 @@ public class ShowStrategyAction extends ShowQuestionAction {
         logger.debug("Entering ShowStrategyAction...");
 
         try {
-        // Make sure a protocol is specified
-        String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-        String strBranchId = null;
+            // Make sure a protocol is specified
+            String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+            String strBranchId = null;
 
-        if (strStratId == null || strStratId.length() == 0) {
-            throw new WdkModelException(
-                    "No strategy was specified for loading!");
-        }
+            if (strStratId == null || strStratId.length() == 0) {
+                throw new WdkModelException(
+                        "No strategy was specified for loading!");
+            }
 
-        // load model, user
-        WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
-                CConstants.WDK_MODEL_KEY);
-        UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                CConstants.WDK_USER_KEY);
-        if (wdkUser == null) {
-            wdkUser = wdkModel.getUserFactory().getGuestUser();
-            request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
-        }
+            // load model, user
+            WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
+                    CConstants.WDK_MODEL_KEY);
+            UserBean wdkUser = (UserBean) request.getSession().getAttribute(
+                    CConstants.WDK_USER_KEY);
+            if (wdkUser == null) {
+                wdkUser = wdkModel.getUserFactory().getGuestUser();
+                request.getSession().setAttribute(CConstants.WDK_USER_KEY,
+                        wdkUser);
+            }
 
-        if (strStratId.indexOf("_") > 0) {
-            strBranchId = strStratId.split("_")[1];
-            strStratId = strStratId.split("_")[0];
-        }
+            if (strStratId.indexOf("_") > 0) {
+                strBranchId = strStratId.split("_")[1];
+                strStratId = strStratId.split("_")[0];
+            }
 
-        StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+            StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 
-        ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
+            ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
 
-        if (activeStrategies == null) {
-            activeStrategies = new ArrayList<Integer>();
-        }
-        if (!activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
-            activeStrategies.add(0, new Integer(strategy.getStrategyId()));
-        }
-        wdkUser.setActiveStrategies(activeStrategies);
+            if (activeStrategies == null) {
+                activeStrategies = new ArrayList<Integer>();
+            }
+            if (!activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
+                activeStrategies.add(0, new Integer(strategy.getStrategyId()));
+            }
+            wdkUser.setActiveStrategies(activeStrategies);
 
-        if (strBranchId == null) {
-            request.setAttribute(CConstants.WDK_STEP_KEY,
-                    strategy.getLatestStep());
-        } else {
-            request.setAttribute(CConstants.WDK_STEP_KEY,
-                    strategy.getStepById(Integer.parseInt(strBranchId)));
-        }
-        request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
+            if (strBranchId == null) {
+                request.setAttribute(CConstants.WDK_STEP_KEY,
+                        strategy.getLatestStep());
+            } else {
+                request.setAttribute(CConstants.WDK_STEP_KEY,
+                        strategy.getStepById(Integer.parseInt(strBranchId)));
+            }
+            request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
 
-        String output = request.getParameter("output");
-        if (output != null && output.equals("json")) {
-            outputJSON(strategy, response);
-            return null;
-        }
+            String output = request.getParameter("output");
+            if (output != null && output.equals("json")) {
+                outputJSON(strategy, response);
+                return null;
+            }
 
-        // forward to strategyPage.jsp
-        ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
-        StringBuffer url = new StringBuffer(showSummary.getPath());
-        url.append("?strategy=" + URLEncoder.encode(strStratId, "utf-8"));
-        if (strBranchId != null) {
-            url.append("_" + URLEncoder.encode(strBranchId, "utf-8"));
-        }
-        String viewStep = request.getParameter("step");
-        if (viewStep != null && viewStep.length() != 0) {
-            url.append("&step=" + URLEncoder.encode(viewStep, "utf-8"));
-        }
-        String subQuery = request.getParameter("subquery");
-        if (subQuery != null && subQuery.length() != 0) {
-            url.append("&subquery=" + URLEncoder.encode(subQuery, "utf-8"));
-        }
+            // forward to strategyPage.jsp
+            ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
+            StringBuffer url = new StringBuffer(showSummary.getPath());
+            url.append("?strategy=" + URLEncoder.encode(strStratId, "utf-8"));
+            if (strBranchId != null) {
+                url.append("_" + URLEncoder.encode(strBranchId, "utf-8"));
+            }
+            String viewStep = request.getParameter("step");
+            if (viewStep != null && viewStep.length() != 0) {
+                url.append("&step=" + URLEncoder.encode(viewStep, "utf-8"));
+            }
+            String subQuery = request.getParameter("subquery");
+            if (subQuery != null && subQuery.length() != 0) {
+                url.append("&subquery=" + URLEncoder.encode(subQuery, "utf-8"));
+            }
 
-        logger.debug("URL: " + url);
+            logger.debug("URL: " + url);
 
-        ActionForward forward = new ActionForward(url.toString());
-        forward.setRedirect(false);
-        return forward;
+            ActionForward forward = new ActionForward(url.toString());
+            forward.setRedirect(false);
+            return forward;
         } catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
@@ -123,6 +124,23 @@ public class ShowStrategyAction extends ShowQuestionAction {
     private void outputJSON(StrategyBean strategy, HttpServletResponse response)
             throws JSONException, NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException, IOException {
+        JSONObject jsMessage = new JSONObject();
+        jsMessage.put("type", "strategy");
+        
+        // get a list of strategy checksums
+        UserBean user = strategy.getUser();
+        JSONArray jsStrategies = new JSONArray();
+        for(StrategyBean strat : user.getOpenedStrategies()) {
+            jsStrategies.put(strat.getStrategyId(), strat.getChecksum());
+        }
+        jsMessage.put("strategies", jsStrategies);
+        jsMessage.put("strategy", outputStrategy(strategy));
+        
+        PrintWriter writer = response.getWriter();
+        writer.print(jsMessage.toString());
+    }
+    
+    private JSONObject outputStrategy(StrategyBean strategy) throws JSONException, NoSuchAlgorithmException, WdkModelException, WdkUserException, SQLException {
         JSONObject jsStrategy = new JSONObject();
         jsStrategy.put("name", strategy.getName());
         jsStrategy.put("id", strategy.getStrategyId());
@@ -131,45 +149,98 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStrategy.put("importId", strategy.getImportId());
 
         JSONArray jsSteps = new JSONArray();
-        for (StepBean step : strategy.getLatestStep().getAllSteps()) {
-            JSONObject jsStep = new JSONObject();
-            jsStep.put("name", step.getCustomName());
-            jsStep.put("customName", step.getCustomName());
-            jsStep.put("id", step.getStepId());
-            jsStep.put("answerId", step.getAnswerId());
-            jsStep.put("isCollapsed", step.getIsCollapsible());
-            jsStep.put("dataType", step.getDataType());
-            jsStep.put("shortName", step.getShortDisplayName());
-            jsStep.put("results", step.getResultSize());
-            jsStep.put("questionName", step.getQuestionName());
-            jsStep.put("displayName",
-                    step.getAnswerValue().getQuestion().getDisplayName());
-            jsStep.put("isboolean", step.getIsBoolean());
-            jsStep.put("istransform", step.getIsTransform());
-            jsStep.put("filtered", step.isFiltered());
-            jsStep.put("filterName", step.getFilterDisplayName());
-            jsStep.put("urlParams",
-                    step.getAnswerValue().getQuestionUrlParams());
-
-            JSONArray jsParams = new JSONArray();
-            Map<String, ParamBean> params = step.getAnswerValue().getQuestion().getParamsMap();
-            Map<String, String> paramValues = step.getParams();
-            for (String paramName : step.getParams().keySet()) {
-                ParamBean param = params.get(paramName);
-                JSONObject jsParam = new JSONObject();
-                jsParam.put("name", paramName);
-                jsParam.put("prompt", param.getPrompt());
-                jsParam.put("value", paramValues.get(paramName));
-                jsParam.put("visible", param.getIsVisible());
-                jsParam.put("className", param.getClass().getName());
-                jsParams.put(jsParam);
-            }
-            jsStep.put("params", jsParams);
-            jsSteps.put(jsStep);
+        StepBean step = strategy.getFirstStep();
+        while (step != null) {
+            jsSteps.put(outputStep(step, strategy.getStrategyId(), false));
+            step = step.getNextStep();
         }
         jsStrategy.put("steps", jsSteps);
-
-        PrintWriter writer = response.getWriter();
-        writer.print(jsStrategy.toString());
+        return jsStrategy;
     }
+
+    private JSONObject outputStep(StepBean step, int strategyId, boolean showSubStrategy) throws JSONException,
+            NoSuchAlgorithmException, WdkModelException, WdkUserException,
+            SQLException {
+        JSONObject jsStep = new JSONObject();
+        jsStep.put("name", step.getCustomName());
+        jsStep.put("customName", step.getCustomName());
+        jsStep.put("id", step.getStepId());
+        jsStep.put("answerId", step.getAnswerId());
+        jsStep.put("isCollapsed", step.getIsCollapsible());
+        jsStep.put("dataType", step.getDataType());
+        jsStep.put("shortName", step.getShortDisplayName());
+        jsStep.put("results", step.getResultSize());
+        jsStep.put("questionName", step.getQuestionName());
+        jsStep.put("displayName",
+                step.getAnswerValue().getQuestion().getDisplayName());
+        jsStep.put("isboolean", step.getIsBoolean());
+        jsStep.put("istransform", step.getIsTransform());
+        jsStep.put("filtered", step.isFiltered());
+        jsStep.put("filterName", step.getFilterDisplayName());
+
+        // determine the types of the step
+        if (showSubStrategy && step.getIsCollapsible()) {
+            outputSubStrategy(step, jsStep, strategyId);
+        } else if (step.getIsBoolean()) {
+            outputBooleanStep(step, jsStep, strategyId);
+        } else {    // both transform and normal steps
+            outputNormalStep(step, jsStep);
+        }
+
+        return jsStep;
+    }
+
+    private void outputBooleanStep(StepBean step, JSONObject jsStep, int strategyId)
+            throws NoSuchAlgorithmException, JSONException, WdkModelException,
+            WdkUserException, SQLException {
+        jsStep.put("operation", step.getOperation());
+
+        StepBean childStep = step.getChildStep();
+        jsStep.put("step", outputStep(childStep, strategyId, true));
+    }
+
+    private void outputNormalStep(StepBean step, JSONObject jsStep)
+            throws NoSuchAlgorithmException, JSONException, WdkModelException,
+            WdkUserException, SQLException {
+        jsStep.put("urlParams", step.getAnswerValue().getQuestionUrlParams());
+
+        JSONArray jsParams = new JSONArray();
+        Map<String, ParamBean> params = step.getAnswerValue().getQuestion().getParamsMap();
+        Map<String, String> paramValues = step.getParams();
+        for (String paramName : step.getParams().keySet()) {
+            ParamBean param = params.get(paramName);
+            JSONObject jsParam = new JSONObject();
+            jsParam.put("name", paramName);
+            jsParam.put("prompt", param.getPrompt());
+            jsParam.put("value", paramValues.get(paramName));
+            jsParam.put("visible", param.getIsVisible());
+            jsParam.put("className", param.getClass().getName());
+            jsParams.put(jsParam);
+        }
+        jsStep.put("params", jsParams);
+    }
+
+    private void outputSubStrategy(StepBean step, JSONObject jsStep, int strategyId)
+            throws NoSuchAlgorithmException, JSONException, WdkModelException,
+            WdkUserException, SQLException {
+        JSONObject jsStrategy = new JSONObject();
+        
+        jsStrategy.put("name", step.getCollapsedName());
+        jsStrategy.put("id", strategyId + "_" + step.getStepId());
+        jsStrategy.put("saved", "false");
+        jsStrategy.put("savedName", step.getCollapsedName());
+        jsStrategy.put("importId", "");
+        
+        // repeat the step again
+        JSONArray jsSteps = new JSONArray();
+        StepBean subStep = step.getFirstStep();
+        while (subStep != null) {
+            jsSteps.put(outputStep(subStep, strategyId, false));
+            subStep = subStep.getNextStep();
+        }
+        jsStrategy.put("steps", jsSteps);
+        
+        jsStep.append("strategy", jsStrategy);
+    }
+
 }

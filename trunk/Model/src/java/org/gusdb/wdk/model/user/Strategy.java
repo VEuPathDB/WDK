@@ -186,35 +186,32 @@ public class Strategy {
                 // if there are at least two steps, we need to turn the child
                 // step
                 // of step 2 into a first step (no operation)
-		while (step.getNextStep() != null && step.getNextStep().isTransform()) {
-		    step = step.getNextStep();
-		}
-		if (step.getNextStep() == null) {
-		    if (!isBranch) {
-			logger.debug("Step is only non-transform step in main strategy...");
-			this.setDeleted(true);
-		    }
-		    else {
-			logger.debug("Step is only non-transform step in branch...");
-			step = step.getParentStep();
-			targetStepId = step.getDisplayId();
-			step = step.getPreviousStep();
-		    }
-			
-		}
-		else {
-		    logger.debug("Moving to second step to replace first step...");
-		    targetStepId = step.getNextStep().getDisplayId();
-		    step = step.getNextStep().getChildStep();
-		}
-	    }
-	    else if (isBranch) {
+                while (step.getNextStep() != null
+                        && step.getNextStep().isTransform()) {
+                    step = step.getNextStep();
+                }
+                if (step.getNextStep() == null) {
+                    if (!isBranch) {
+                        logger.debug("Step is only non-transform step in main strategy...");
+                        this.setDeleted(true);
+                    } else {
+                        logger.debug("Step is only non-transform step in branch...");
+                        step = step.getParentStep();
+                        targetStepId = step.getDisplayId();
+                        step = step.getPreviousStep();
+                    }
+
+                } else {
+                    logger.debug("Moving to second step to replace first step...");
+                    targetStepId = step.getNextStep().getDisplayId();
+                    step = step.getNextStep().getChildStep();
+                }
+            } else if (isBranch) {
                 logger.debug("Step is only step in a branch...");
-		step = step.getParentStep();
-		targetStepId = step.getDisplayId();
-		step = step.getPreviousStep();
-	    }
-	    else {
+                step = step.getParentStep();
+                targetStepId = step.getDisplayId();
+                step = step.getPreviousStep();
+            } else {
                 logger.debug("Step is only step in main strategy...");
                 this.setDeleted(true);
             }
@@ -310,9 +307,10 @@ public class Strategy {
         while (targetStep.getNextStep() != null) {
             targetStep = targetStep.getNextStep();
             if (targetStep.isTransform()) {
-                newStep = updateTransform(targetStep, 
-			    newStep.getAnswer().getAnswerValue().getQuestion().getRecordClass(),
-			    newStep.getDisplayId());
+                newStep = updateTransform(
+                        targetStep,
+                        newStep.getAnswer().getAnswerValue().getQuestion().getRecordClass(),
+                        newStep.getDisplayId());
             } else {
                 BooleanOperator operator = BooleanOperator.parse(targetStep.getOperation());
                 AnswerFilterInstance targetFilter = targetStep.getAnswer().getAnswerValue().getFilter();
@@ -329,12 +327,12 @@ public class Strategy {
         newStep.setCollapsedName(targetStep.getCollapsedName());
         newStep.update(false);
 
-	// Make sure target step is made uncollapsible so that
-	// we don't have incorrect references in the step tree
-	targetStep.setParentStep(null);
-	targetStep.setCollapsible(false);
-	targetStep.setCollapsedName(null);
-	targetStep.update(false);
+        // Make sure target step is made uncollapsible so that
+        // we don't have incorrect references in the step tree
+        targetStep.setParentStep(null);
+        targetStep.setCollapsible(false);
+        targetStep.setCollapsedName(null);
+        targetStep.update(false);
 
         // if step has a parent step, need to continue
         // updating the rest of the strategy.
@@ -355,8 +353,9 @@ public class Strategy {
                 // need to check if step is a transform (in which case there's
                 // no boolean expression; we need to update history param
                 if (targetStep.isTransform()) {
-                    newStep = updateTransform(targetStep,
-			    newStep.getAnswer().getAnswerValue().getQuestion().getRecordClass(),
+                    newStep = updateTransform(
+                            targetStep,
+                            newStep.getAnswer().getAnswerValue().getQuestion().getRecordClass(),
                             newStep.getDisplayId());
                 } else {
                     operator = BooleanOperator.parse(targetStep.getOperation());
@@ -373,12 +372,12 @@ public class Strategy {
             newStep.setCollapsedName(targetStep.getCollapsedName());
             newStep.update(false);
 
-	    // Make sure target step is made uncollapsible so that
-	    // we don't have incorrect references in the step tree
-	    targetStep.setParentStep(null);
-	    targetStep.setCollapsible(false);
-	    targetStep.setCollapsedName(null);
-	    targetStep.update(false);
+            // Make sure target step is made uncollapsible so that
+            // we don't have incorrect references in the step tree
+            targetStep.setParentStep(null);
+            targetStep.setCollapsible(false);
+            targetStep.setCollapsedName(null);
+            targetStep.update(false);
         }
 
         this.setLatestStep(newStep);
@@ -387,24 +386,29 @@ public class Strategy {
         return stepIdsMap;
     }
 
-    private Step updateTransform(Step step, RecordClass recordClass, int newStepId)
-            throws WdkModelException, WdkUserException,
+    private Step updateTransform(Step step, RecordClass recordClass,
+            int newStepId) throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-	// Get question
-	Question wdkQuestion = step.getAnswer().getAnswerValue().getQuestion();
-	Param[] params = wdkQuestion.getParams();
+        // Get question
+        Question wdkQuestion = step.getAnswer().getAnswerValue().getQuestion();
+        Param[] params = wdkQuestion.getParams();
         // Get internal params
-	Map<String,String> internalParams = step.getAnswer().getAnswerValue().getIdsQueryInstance().getValues();
-	// Change HistoryParam
+        Map<String, String> internalParams = step.getAnswer().getAnswerValue().getIdsQueryInstance().getValues();
+        // Change HistoryParam
         AnswerParam[] answerParams = wdkQuestion.getTransformParams(recordClass);
-	for (AnswerParam p : answerParams) {
-	    internalParams.put(p.getName(), Integer.toString(newStepId));
-	}
-	AnswerFilterInstance filter = step.getAnswer().getAnswerValue().getFilter();
-	String filterName = (filter == null) ? null : filter.getName();
-	
-	Step newStep = user.createStep(wdkQuestion, internalParams, filterName);
-	newStep.setCustomName(step.getBaseCustomName());
-	newStep.update(false); return newStep;
+        for (AnswerParam p : answerParams) {
+            internalParams.put(p.getName(), Integer.toString(newStepId));
+        }
+        AnswerFilterInstance filter = step.getAnswer().getAnswerValue().getFilter();
+        String filterName = (filter == null) ? null : filter.getName();
+
+        Step newStep = user.createStep(wdkQuestion, internalParams, filterName);
+        newStep.setCustomName(step.getBaseCustomName());
+        newStep.update(false);
+        return newStep;
+    }
+
+    public Step getFirstStep() {
+        return latestStep.getFirstStep();
     }
 }
