@@ -247,7 +247,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         }
         jsStrategy.put("steps", jsSteps);
         
-        jsStep.append("strategy", jsStrategy);
+        jsStep.put("strategy", jsStrategy);
     }
 
 }
