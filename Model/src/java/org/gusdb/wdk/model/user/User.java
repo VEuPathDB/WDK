@@ -403,7 +403,7 @@ public class User /* implements Serializable */{
         RecordClass recordClass = question.getRecordClass();
         if (filterName != null) {
             filter = recordClass.getFilter(filterName);
-        } else  filter = recordClass.getDefaultFilter();
+        } else filter = recordClass.getDefaultFilter();
         return createStep(question, paramValues, filter);
     }
 
@@ -439,10 +439,11 @@ public class User /* implements Serializable */{
         return createStrategy(step, name, null, saved);
     }
 
-    public Strategy createStrategy(Step step, String name, String savedName, boolean saved)
-            throws WdkUserException, WdkModelException, SQLException,
-            JSONException {
-        Strategy strategy = stepFactory.createStrategy(this, step, name, savedName, saved);
+    public Strategy createStrategy(Step step, String name, String savedName,
+            boolean saved) throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
+        Strategy strategy = stepFactory.createStrategy(this, step, name,
+                savedName, saved);
         if (strategyCount != null) strategyCount++;
         return strategy;
     }
@@ -702,14 +703,14 @@ public class User /* implements Serializable */{
     public Step getStep(int displayId) throws WdkUserException,
             WdkModelException, SQLException, JSONException,
             NoSuchAlgorithmException {
-        //if (cachedStep == null || cachedStep.getDisplayId() != displayId) {
-            cachedStep = stepFactory.loadStep(this, displayId);
-//        } else { // update the sorting and summary attributes
-//            AnswerValue answerValue = cachedStep.getAnswer().getAnswerValue();
-//            String questionName = answerValue.getQuestion().getFullName();
-//            answerValue.setSortingMap(getSortingAttributes(questionName));
-//            answerValue.setSumaryAttributes(getSummaryAttributes(questionName));
-//        }
+        // if (cachedStep == null || cachedStep.getDisplayId() != displayId) {
+        cachedStep = stepFactory.loadStep(this, displayId);
+        // } else { // update the sorting and summary attributes
+        // AnswerValue answerValue = cachedStep.getAnswer().getAnswerValue();
+        // String questionName = answerValue.getQuestion().getFullName();
+        // answerValue.setSortingMap(getSortingAttributes(questionName));
+        // answerValue.setSumaryAttributes(getSummaryAttributes(questionName));
+        // }
         return cachedStep;
     }
 
@@ -718,8 +719,9 @@ public class User /* implements Serializable */{
         return getStrategy(userStrategyId, false);
     }
 
-    public Strategy getStrategy(int userStrategyId, boolean allowDeleted) throws WdkUserException,
-            WdkModelException, JSONException, SQLException {
+    public Strategy getStrategy(int userStrategyId, boolean allowDeleted)
+            throws WdkUserException, WdkModelException, JSONException,
+            SQLException {
         return stepFactory.loadStrategy(this, userStrategyId, allowDeleted);
     }
 
@@ -1207,5 +1209,16 @@ public class User /* implements Serializable */{
         leftStep.setNextStep(booleanStep);
         rightStep.setParentStep(booleanStep);
         return booleanStep;
+    }
+
+    public Strategy[] getOpenedStrategies() throws WdkUserException,
+            WdkModelException, JSONException, SQLException {
+        List<Strategy> strategies = new ArrayList<Strategy>();
+        for (int strategyId : activeStrategies) {
+            strategies.add(getStrategy(strategyId));
+        }
+        Strategy[] array = new Strategy[strategies.size()];
+        strategies.toArray(array);
+        return array;
     }
 }

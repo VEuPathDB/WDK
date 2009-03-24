@@ -1040,4 +1040,14 @@ public class UserBean /* implements Serializable */{
         return new StepBean(step);
     }
 
+    public StrategyBean[] getOpenedStrategies() throws WdkUserException,
+            WdkModelException, JSONException, SQLException {
+        List<StrategyBean> strategies = new ArrayList<StrategyBean>();
+        for (Strategy strategy : user.getOpenedStrategies()) {
+            strategies.add(new StrategyBean(strategy));
+        }
+        StrategyBean[] array = new StrategyBean[strategies.size()];
+        strategies.toArray(array);
+        return array;
+    }
 }
