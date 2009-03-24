@@ -141,8 +141,18 @@ public class StrategyBean {
             NoSuchAlgorithmException, SQLException {
         return strategy.deleteStep(stepId, isBranch);
     }
-    
+
     public String getImportId() {
-        return strategy.getUser().getSignature() + ":" + strategy.getDisplayId();
+        return strategy.getUser().getSignature() + ":"
+                + strategy.getDisplayId();
+    }
+
+    public StepBean getFirstStep() {
+        return new StepBean(strategy.getFirstStep());
+    }
+    
+    public String getChecksum() {
+        // TODO - need to get a checksum that has all states
+        return "";
     }
 }

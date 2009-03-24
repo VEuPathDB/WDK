@@ -364,4 +364,8 @@ public class StepBean {
             WdkModelException, JSONException, WdkUserException, SQLException {
         return step.getFilterDisplayName();
     }
+    
+    public StepBean getFirstStep() {
+        return new StepBean(step.getFirstStep());
+    }
 }
