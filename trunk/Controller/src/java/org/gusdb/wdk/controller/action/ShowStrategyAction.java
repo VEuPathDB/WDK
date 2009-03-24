@@ -129,9 +129,10 @@ public class ShowStrategyAction extends ShowQuestionAction {
         
         // get a list of strategy checksums
         UserBean user = strategy.getUser();
-        JSONArray jsStrategies = new JSONArray();
+        JSONObject jsStrategies = new JSONObject();
         for(StrategyBean strat : user.getOpenedStrategies()) {
-            jsStrategies.put(strat.getStrategyId(), strat.getChecksum());
+            int stratId = strat.getStrategyId();
+            jsStrategies.put(Integer.toString(stratId), strat.getChecksum());
         }
         jsMessage.put("strategies", jsStrategies);
         jsMessage.put("strategy", outputStrategy(strategy));
@@ -148,11 +149,14 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStrategy.put("savedName", strategy.getSavedName());
         jsStrategy.put("importId", strategy.getImportId());
 
-        JSONArray jsSteps = new JSONArray();
+        JSONObject jsSteps = new JSONObject();
         StepBean step = strategy.getFirstStep();
+        int frontId = 1;
         while (step != null) {
-            jsSteps.put(outputStep(step, strategy.getStrategyId(), false));
+            JSONObject jsStep = outputStep(step, strategy.getStrategyId(), false);
+            jsSteps.put(Integer.toString(frontId), jsStep);
             step = step.getNextStep();
+            frontId++;
         }
         jsStrategy.put("steps", jsSteps);
         return jsStrategy;
@@ -232,11 +236,14 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStrategy.put("importId", "");
         
         // repeat the step again
-        JSONArray jsSteps = new JSONArray();
+        JSONObject jsSteps = new JSONObject();
         StepBean subStep = step.getFirstStep();
+        int frontId = 1;
         while (subStep != null) {
-            jsSteps.put(outputStep(subStep, strategyId, false));
+            JSONObject jsSubStep = outputStep(subStep, strategyId, false);
+            jsSteps.put(Integer.toString(frontId), jsSubStep);
             subStep = subStep.getNextStep();
+            frontId++;
         }
         jsStrategy.put("steps", jsSteps);
         
