@@ -186,6 +186,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("istransform", step.getIsTransform());
         jsStep.put("filtered", step.isFiltered());
         jsStep.put("filterName", step.getFilterDisplayName());
+        jsStep.put("urlParams", step.getAnswerValue().getQuestionUrlParams());
 
         // determine the types of the step
         if (showSubStrategy && step.getIsCollapsible()) {
@@ -211,7 +212,6 @@ public class ShowStrategyAction extends ShowQuestionAction {
     private void outputNormalStep(StepBean step, JSONObject jsStep)
             throws NoSuchAlgorithmException, JSONException, WdkModelException,
             WdkUserException, SQLException {
-        jsStep.put("urlParams", step.getAnswerValue().getQuestionUrlParams());
 
         JSONArray jsParams = new JSONArray();
         Map<String, ParamBean> params = step.getAnswerValue().getQuestion().getParamsMap();
