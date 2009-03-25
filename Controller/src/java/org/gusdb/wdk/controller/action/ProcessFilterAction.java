@@ -1,17 +1,12 @@
 package org.gusdb.wdk.controller.action;
 
-import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -19,7 +14,6 @@ import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -97,17 +91,16 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 activeStrategies.remove(index);
             }
 
-	    // Get operation from request params.  If it is non-null
-	    // but contains only whitespace, set it to null.
+            // Get operation from request params. If it is non-null
+            // but contains only whitespace, set it to null.
             String op = request.getParameter("booleanExpression");
-	    if (op != null) {
-		op = op.trim();
-                if (op.length() == 0)
-		    op = null;
-	    }
+            if (op != null) {
+                op = op.trim();
+                if (op.length() == 0) op = null;
+            }
 
             String insertStratIdStr = request.getParameter("insertStrategy");
-	    String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+            String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
 
             String filterName = request.getParameter("filter");
             boolean hasFilter = (filterName != null && filterName.length() > 0);
@@ -119,9 +112,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             String insertStep = request.getParameter("insert");
             boolean isInsert = (insertStep != null && insertStep.length() != 0);
 
-	    System.out.println("isRevise: " + isRevise);
-	    System.out.println("qFullName? " + (qFullName == null || qFullName.trim().length() == 0));
-	    System.out.println("qFullName: " + qFullName);
+            System.out.println("isRevise: " + isRevise);
+            System.out.println("qFullName? "
+                    + (qFullName == null || qFullName.trim().length() == 0));
+            System.out.println("qFullName: " + qFullName);
             // are we inserting an existing step?
             StepBean newStep;
             if (insertStratIdStr != null && insertStratIdStr.length() != 0) {
@@ -131,43 +125,36 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 newStep.setIsCollapsible(true);
                 newStep.setCollapsedName("Copy of " + insertStrat.getName());
                 newStep.update(false);
-            } else if (isRevise && hasFilter || isRevise && (qFullName == null || qFullName.trim().length() == 0)) {
+            } else if (isRevise && hasFilter || isRevise
+                    && (qFullName == null || qFullName.trim().length() == 0)) {
                 logger.debug("change filter: " + filterName);
                 // change the filter of an existing step, which can be a child
                 // step,
                 // or a boolean step
                 StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
-		if (hasFilter)
-		    newStep = oldStep.createStep(filterName);
-		else {
-		    newStep = oldStep.getChildStep();
-		}
+                if (hasFilter) newStep = oldStep.createStep(filterName);
+                else {
+                    newStep = oldStep.getChildStep();
+                }
             } else {
                 // no: get question
-		wdkQuestion = getQuestionByFullName(qFullName);
-		// QuestionForm fForm = prepareQuestionForm(wdkQuestion,
-		// request, (QuestionForm) form);
-		QuestionForm fForm = (QuestionForm) form;
-		
-		// validate & parse params
-		Map<String, String> params = prepareParams(wdkUser, request,
-							   fForm);
-		
-		try {
-		    newStep = ShowSummaryAction.summaryPaging(request,
-							      wdkQuestion, params, filterName);
-		} catch (Exception ex) {
-		    logger.error(ex);
-		    ex.printStackTrace();
-		    return showError(wdkModel, wdkUser, mapping, request,
-				     response);
-		}
-		
-		// We only set isTransform = true if we're running a new query &
-		// it's a transform
-		// If we're inserting a strategy, it has to be a boolean (given
-		// current operations, at least)
-		isTransform = newStep.getIsTransform();
+                wdkQuestion = getQuestionByFullName(qFullName);
+                // QuestionForm fForm = prepareQuestionForm(wdkQuestion,
+                // request, (QuestionForm) form);
+                QuestionForm fForm = (QuestionForm) form;
+
+                // validate & parse params
+                Map<String, String> params = prepareParams(wdkUser, request,
+                        fForm);
+
+                newStep = ShowSummaryAction.summaryPaging(request, wdkQuestion,
+                        params, filterName);
+
+                // We only set isTransform = true if we're running a new query &
+                // it's a transform
+                // If we're inserting a strategy, it has to be a boolean (given
+                // current operations, at least)
+                isTransform = newStep.getIsTransform();
             }
 
             int newStepId = newStep.getStepId();
@@ -175,7 +162,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
             Map<Integer, Integer> stepIdsMap;
             int targetStepId;
-
 
             // get root step of a strategy or a branch
             StepBean rootStep;
@@ -207,7 +193,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
                     StepBean previousStep = parentStep.getPreviousStep();
                     StepBean childStep = newStep;
-		    String operator = (op == null) ? parentStep.getOperation() : op;
+                    String operator = (op == null) ? parentStep.getOperation()
+                            : op;
                     boolean useBooleanFilter = parentStep.isUseBooleanFilter();
                     AnswerFilterInstanceBean filter = parentStep.getAnswerValue().getFilter();
                     String bfName = (filter == null) ? null : filter.getName();
@@ -247,7 +234,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         if (isRevise) {
                             // carry over custom name from original query, if
                             // any
-			    newStep.setCustomName(targetStep.getBaseCustomName());
+                            newStep.setCustomName(targetStep.getBaseCustomName());
                             newStep.update(false);
 
                             StepBean parent = targetStep.getNextStep();
@@ -268,7 +255,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                         bfName);
                                 newStepId = newStep.getStepId();
                             }
-			    targetStepId = parent.getStepId();
+                            targetStepId = parent.getStepId();
                         } else {
                             // if inserting before first step, there has to be a
                             // boolean expression
@@ -282,18 +269,21 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             if (!isTransform) {
                                 // check if we've changed the query itself, or
                                 // just the operation
-				logger.debug("targetStepId: " + targetStepId);
-				logger.debug("newStep: " + newStep.getStepId());
-				logger.debug("newStep: " + newStep.getCustomName());
-				logger.debug("newStep: " + newStep.getIsBoolean());
+                                logger.debug("targetStepId: " + targetStepId);
+                                logger.debug("newStep: " + newStep.getStepId());
+                                logger.debug("newStep: "
+                                        + newStep.getCustomName());
+                                logger.debug("newStep: "
+                                        + newStep.getIsBoolean());
                                 newStep.setCustomName(targetStep.getChildStep().getBaseCustomName());
                                 newStep.update(false);
                                 // build standard boolExp for non-first step
                                 StepBean parent = targetStep;
                                 StepBean previous = parent.getPreviousStep();
                                 StepBean child = newStep;
-                                String operator = (op == null) ? parent.getOperation() : op;
-				boolean useBooleanFilter = parent.isUseBooleanFilter();
+                                String operator = (op == null)
+                                        ? parent.getOperation() : op;
+                                boolean useBooleanFilter = parent.isUseBooleanFilter();
                                 AnswerFilterInstanceBean filter = parent.getAnswerValue().getFilter();
                                 String bfName = (filter == null) ? null
                                         : filter.getName();
@@ -368,95 +358,97 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             System.out.println("Leaving ProcessFilterAction...");
             return forward;
         } catch (Exception ex) {
+            logger.error(ex);
             ex.printStackTrace();
-            throw ex;
+            ShowStrategyAction.outputErrorJSON(ex, response);
+            return null;
         }
     }
-
-    private ActionForward showError(WdkModelBean wdkModel, UserBean wdkUser,
-            ActionMapping mapping, HttpServletRequest request,
-            HttpServletResponse response) throws WdkModelException,
-            WdkUserException, SQLException, JSONException,
-            NoSuchAlgorithmException {
-        // TEST
-        logger.info("Show the details of an invalid step/question");
-
-        String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-        Map<String, String> params;
-        Map<String, String> paramNames;
-        String customName;
-        if (qFullName == null || qFullName.length() == 0) {
-            String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
-            int stepId = Integer.parseInt(strHistId);
-            StepBean step = wdkUser.getStep(stepId);
-            params = step.getParams();
-            paramNames = step.getParamNames();
-            qFullName = step.getQuestionName();
-            customName = step.getCustomName();
-        } else {
-            params = new LinkedHashMap<String, String>();
-            paramNames = new LinkedHashMap<String, String>();
-            customName = qFullName;
-
-            // get params from request
-            Map<?, ?> parameters = request.getParameterMap();
-            for (Object object : parameters.keySet()) {
-                try {
-                    String pName;
-                    pName = URLDecoder.decode((String) object, "utf-8");
-                    Object objValue = parameters.get(object);
-                    String pValue = null;
-                    if (objValue != null) {
-                        pValue = objValue.toString();
-                        if (objValue instanceof String[]) {
-                            StringBuffer sb = new StringBuffer();
-                            String[] array = (String[]) objValue;
-                            for (String v : array) {
-                                if (sb.length() > 0) sb.append(", ");
-                                sb.append(v);
-                            }
-                            pValue = sb.toString();
-                        }
-                        pValue = URLDecoder.decode(pValue, "utf-8");
-                    }
-                    if (pName.startsWith("myProp(")) {
-                        pName = pName.substring(7, pName.length() - 1).trim();
-                        params.put(pName, pValue);
-
-                        String displayName = wdkModel.queryParamDisplayName(pName);
-                        if (displayName == null) displayName = pName;
-                        paramNames.put(pName, displayName);
-                    }
-                } catch (UnsupportedEncodingException ex) {
-                    throw new WdkModelException(ex);
-                }
-            }
-        }
-        String qDisplayName = wdkModel.getQuestionDisplayName(qFullName);
-        if (qDisplayName == null) qDisplayName = qFullName;
-
-        request.setAttribute("questionDisplayName", qDisplayName);
-        request.setAttribute("customName", customName);
-        request.setAttribute("params", params);
-        request.setAttribute("paramNames", paramNames);
-
-        ServletContext svltCtx = getServlet().getServletContext();
-        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
-        String customViewFile = customViewDir + File.separator
-                + CConstants.WDK_CUSTOM_SUMMARY_ERROR_PAGE;
-
-        String url;
-        if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
-            url = customViewFile;
-        } else {
-            ActionForward forward = mapping.findForward(CConstants.SHOW_ERROR_MAPKEY);
-            url = forward.getPath();
-        }
-
-        ActionForward forward = new ActionForward(url);
-        forward.setRedirect(false);
-        return forward;
-    }
+//
+//    private ActionForward showError(WdkModelBean wdkModel, UserBean wdkUser,
+//            ActionMapping mapping, HttpServletRequest request,
+//            HttpServletResponse response) throws WdkModelException,
+//            WdkUserException, SQLException, JSONException,
+//            NoSuchAlgorithmException {
+//        // TEST
+//        logger.info("Show the details of an invalid step/question");
+//
+//        String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+//        Map<String, String> params;
+//        Map<String, String> paramNames;
+//        String customName;
+//        if (qFullName == null || qFullName.length() == 0) {
+//            String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
+//            int stepId = Integer.parseInt(strHistId);
+//            StepBean step = wdkUser.getStep(stepId);
+//            params = step.getParams();
+//            paramNames = step.getParamNames();
+//            qFullName = step.getQuestionName();
+//            customName = step.getCustomName();
+//        } else {
+//            params = new LinkedHashMap<String, String>();
+//            paramNames = new LinkedHashMap<String, String>();
+//            customName = qFullName;
+//
+//            // get params from request
+//            Map<?, ?> parameters = request.getParameterMap();
+//            for (Object object : parameters.keySet()) {
+//                try {
+//                    String pName;
+//                    pName = URLDecoder.decode((String) object, "utf-8");
+//                    Object objValue = parameters.get(object);
+//                    String pValue = null;
+//                    if (objValue != null) {
+//                        pValue = objValue.toString();
+//                        if (objValue instanceof String[]) {
+//                            StringBuffer sb = new StringBuffer();
+//                            String[] array = (String[]) objValue;
+//                            for (String v : array) {
+//                                if (sb.length() > 0) sb.append(", ");
+//                                sb.append(v);
+//                            }
+//                            pValue = sb.toString();
+//                        }
+//                        pValue = URLDecoder.decode(pValue, "utf-8");
+//                    }
+//                    if (pName.startsWith("myProp(")) {
+//                        pName = pName.substring(7, pName.length() - 1).trim();
+//                        params.put(pName, pValue);
+//
+//                        String displayName = wdkModel.queryParamDisplayName(pName);
+//                        if (displayName == null) displayName = pName;
+//                        paramNames.put(pName, displayName);
+//                    }
+//                } catch (UnsupportedEncodingException ex) {
+//                    throw new WdkModelException(ex);
+//                }
+//            }
+//        }
+//        String qDisplayName = wdkModel.getQuestionDisplayName(qFullName);
+//        if (qDisplayName == null) qDisplayName = qFullName;
+//
+//        request.setAttribute("questionDisplayName", qDisplayName);
+//        request.setAttribute("customName", customName);
+//        request.setAttribute("params", params);
+//        request.setAttribute("paramNames", paramNames);
+//
+//        ServletContext svltCtx = getServlet().getServletContext();
+//        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+//        String customViewFile = customViewDir + File.separator
+//                + CConstants.WDK_CUSTOM_SUMMARY_ERROR_PAGE;
+//
+//        String url;
+//        if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
+//            url = customViewFile;
+//        } else {
+//            ActionForward forward = mapping.findForward(CConstants.SHOW_ERROR_MAPKEY);
+//            url = forward.getPath();
+//        }
+//
+//        ActionForward forward = new ActionForward(url);
+//        forward.setRedirect(false);
+//        return forward;
+//    }
 
     private StepBean cloneStrategy(UserBean user, StepBean step)
             throws WdkUserException, WdkModelException,
@@ -478,11 +470,12 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 cloneStep = updateTransform(user, cloneStep,
                         Integer.parseInt(prevStepId));
             }
-	    // Carry custom name, collapsible flag, and collapsed name from cloned step
-	    cloneStep.setIsCollapsible(step.getStep(i).getIsCollapsible());
-	    cloneStep.setCollapsedName(step.getStep(i).getCollapsedName());
-	    cloneStep.setCustomName(step.getStep(i).getBaseCustomName());
-	    cloneStep.update(false);
+            // Carry custom name, collapsible flag, and collapsed name from
+            // cloned step
+            cloneStep.setIsCollapsible(step.getStep(i).getIsCollapsible());
+            cloneStep.setCollapsedName(step.getStep(i).getCollapsedName());
+            cloneStep.setCustomName(step.getStep(i).getBaseCustomName());
+            cloneStep.update(false);
             prevStepId = Integer.toString(cloneStep.getStepId());
         }
         return cloneStep;
@@ -491,22 +484,24 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     protected StepBean updateTransform(UserBean wdkUser, StepBean step,
             int newStepId) throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-	// Get question
-	QuestionBean wdkQuestion = step.getAnswerValue().getQuestion();
-	ParamBean[] params = wdkQuestion.getParams();
+        // Get question
+        QuestionBean wdkQuestion = step.getAnswerValue().getQuestion();
+        ParamBean[] params = wdkQuestion.getParams();
         // Get internal params
-	Map<String,String> internalParams = step.getAnswerValue().getInternalParams();
-	// Change HistoryParam
-	wdkQuestion.setInputType(step.getAnswerValue().getRecordClass().getFullName());
+        Map<String, String> internalParams = step.getAnswerValue().getInternalParams();
+        // Change HistoryParam
+        wdkQuestion.setInputType(step.getAnswerValue().getRecordClass().getFullName());
         List<AnswerParamBean> answerParams = wdkQuestion.getTransformParams();
-	for (AnswerParamBean p : answerParams) {
-	    internalParams.put(p.getName(), Integer.toString(newStepId));
-	}
-	AnswerFilterInstanceBean filter = step.getAnswerValue().getFilter();
-	String filterName = (filter == null) ? null : filter.getName();
-	
-	StepBean newStep = wdkUser.createStep(wdkQuestion, internalParams, filterName);
-	newStep.setCustomName(step.getBaseCustomName());
-	newStep.update(false); return newStep;
+        for (AnswerParamBean p : answerParams) {
+            internalParams.put(p.getName(), Integer.toString(newStepId));
+        }
+        AnswerFilterInstanceBean filter = step.getAnswerValue().getFilter();
+        String filterName = (filter == null) ? null : filter.getName();
+
+        StepBean newStep = wdkUser.createStep(wdkQuestion, internalParams,
+                filterName);
+        newStep.setCustomName(step.getBaseCustomName());
+        newStep.update(false);
+        return newStep;
     }
 }

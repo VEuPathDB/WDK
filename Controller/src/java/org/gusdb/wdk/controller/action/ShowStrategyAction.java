@@ -2,6 +2,7 @@ package org.gusdb.wdk.controller.action;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
@@ -23,6 +24,7 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -89,7 +91,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
             String output = request.getParameter("output");
             if (output != null && output.equals("json")) {
-                outputJSON(strategy, response);
+                outputStrategyJSON(strategy, response);
                 return null;
             }
 
@@ -117,13 +119,53 @@ public class ShowStrategyAction extends ShowQuestionAction {
         } catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
-            throw ex;
+            outputErrorJSON(ex, response);
+            return null;
         }
     }
 
-    private void outputJSON(StrategyBean strategy, HttpServletResponse response)
-            throws JSONException, NoSuchAlgorithmException, WdkUserException,
-            WdkModelException, SQLException, IOException {
+    static void outputErrorJSON(Exception ex, HttpServletResponse response)
+            throws JSONException, IOException {
+        JSONObject jsMessage = new JSONObject();
+        jsMessage.put("type", "error");
+        jsMessage.put("exception", ex.getClass().getName());
+        jsMessage.put("message", ex.getMessage());
+
+        if (ex instanceof WdkModelException) {
+            WdkModelException wmex = (WdkModelException) ex;
+            Map<Param, String[]> paramexs = wmex.getBooBoos();
+            if (paramexs != null) {
+                JSONObject jsParams = new JSONObject();
+                for (Param param : paramexs.keySet()) {
+                    JSONObject jsParam = new JSONObject();
+                    jsParam.put("name", param.getName());
+                    jsParam.put("prompt", param.getPrompt());
+                    JSONArray jsMessages = new JSONArray();
+                    for (String message : paramexs.get(param)) {
+                        jsMessages.put(message);
+                    }
+                    jsParam.put("messages", jsMessages);
+                    jsParams.put(param.getName(), jsParam);
+                }
+                jsParams.put("length", paramexs.size());
+                jsMessage.put("params", jsParams);
+            }
+        }
+
+        // export the stack trace
+        StringWriter buffer = new StringWriter();
+        ex.printStackTrace(new PrintWriter(buffer));
+        jsMessage.put("stackTrace", buffer.toString());
+        buffer.close();
+
+        PrintWriter writer = response.getWriter();
+        writer.print(jsMessage.toString());
+    }
+
+    static void outputStrategyJSON(StrategyBean strategy,
+            HttpServletResponse response) throws JSONException,
+            NoSuchAlgorithmException, WdkUserException, WdkModelException,
+            SQLException, IOException {
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", "strategy");
 
@@ -141,7 +183,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         writer.print(jsMessage.toString());
     }
 
-    private JSONObject outputStrategy(StrategyBean strategy)
+    static private JSONObject outputStrategy(StrategyBean strategy)
             throws JSONException, NoSuchAlgorithmException, WdkModelException,
             WdkUserException, SQLException {
         JSONObject jsStrategy = new JSONObject();
@@ -166,7 +208,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         return jsStrategy;
     }
 
-    private JSONObject outputStep(StepBean step, int strategyId,
+    static private JSONObject outputStep(StepBean step, int strategyId,
             boolean showSubStrategy) throws JSONException,
             NoSuchAlgorithmException, WdkModelException, WdkUserException,
             SQLException {
@@ -200,7 +242,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         return jsStep;
     }
 
-    private void outputBooleanStep(StepBean step, JSONObject jsStep,
+    static private void outputBooleanStep(StepBean step, JSONObject jsStep,
             int strategyId) throws NoSuchAlgorithmException, JSONException,
             WdkModelException, WdkUserException, SQLException {
         jsStep.put("operation", step.getOperation());
@@ -209,7 +251,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("step", outputStep(childStep, strategyId, true));
     }
 
-    private void outputNormalStep(StepBean step, JSONObject jsStep)
+    static private void outputNormalStep(StepBean step, JSONObject jsStep)
             throws NoSuchAlgorithmException, JSONException, WdkModelException,
             WdkUserException, SQLException {
 
@@ -229,7 +271,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("params", jsParams);
     }
 
-    private void outputSubStrategy(StepBean step, JSONObject jsStep,
+    static private void outputSubStrategy(StepBean step, JSONObject jsStep,
             int strategyId) throws NoSuchAlgorithmException, JSONException,
             WdkModelException, WdkUserException, SQLException {
         JSONObject jsStrategy = new JSONObject();
@@ -255,5 +297,4 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
         jsStep.put("strategy", jsStrategy);
     }
-
 }
