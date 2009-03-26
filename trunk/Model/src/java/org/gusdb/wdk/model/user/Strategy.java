@@ -11,11 +11,13 @@ import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.BooleanOperator;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Strategy {
 
@@ -410,5 +412,23 @@ public class Strategy {
 
     public Step getFirstStep() {
         return latestStep.getFirstStep();
+    }
+
+    public String getChecksum() throws JSONException, NoSuchAlgorithmException,
+            WdkModelException {
+        JSONObject jsStrategy = getJSONContent();
+        return Utilities.encrypt(jsStrategy.toString());
+    }
+
+    public JSONObject getJSONContent() throws JSONException {
+        JSONObject jsStrategy = new JSONObject();
+        jsStrategy.put("id", this.displayId);
+        jsStrategy.put("name", this.name);
+        jsStrategy.put("savedName", this.savedName);
+        jsStrategy.put("saved", this.isSaved);
+        jsStrategy.put("deleted", this.isDeleted);
+        jsStrategy.put("latestStep", latestStep.getJSONContent());
+
+        return jsStrategy;
     }
 }

@@ -159,7 +159,7 @@ public class StepBean {
 
     public boolean getIsBoolean() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
-        return step.getAnswer().getAnswerValue().getIdsQueryInstance().getQuery().isBoolean();
+        return step.isBoolean();
     }
 
     public boolean getIsTransform() throws NoSuchAlgorithmException,
