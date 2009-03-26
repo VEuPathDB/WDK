@@ -30,13 +30,9 @@ public class DeleteStrategyAction extends Action {
 	    for (int i = 0; i < stratIdstr.length; ++i) {
 		int stratId = Integer.parseInt(stratIdstr[i]);
 		UserBean wdkUser = (UserBean) request.getSession().getAttribute(CConstants.WDK_USER_KEY);
-		ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
 		try {
 		    wdkUser.deleteStrategy(stratId);
-		    if (activeStrategies.contains(Integer.parseInt(stratIdstr[i]))) {
-			activeStrategies.remove(activeStrategies.indexOf(Integer.parseInt(stratIdstr[i])));
-			wdkUser.setActiveStrategies(activeStrategies);
-		    }
+		    wdkUser.removeActiveStrategy(Integer.toString(stratId));
 		} catch (Exception e) {
 		    e.printStackTrace();
 		    // prevent refresh of page after delete from breaking

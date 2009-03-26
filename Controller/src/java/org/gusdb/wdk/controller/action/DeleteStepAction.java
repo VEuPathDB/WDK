@@ -13,6 +13,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -70,18 +71,7 @@ public class DeleteStepAction extends ProcessFilterAction {
 
         strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 
-        // ArrayList<Integer> activeStrategies =
-        // (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
-        ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
-        int index = -1;
-
-        if (activeStrategies != null
-                && activeStrategies.contains(new Integer(
-                        strategy.getStrategyId()))) {
-            index = activeStrategies.indexOf(new Integer(
-                    strategy.getStrategyId()));
-            activeStrategies.remove(index);
-        }
+	int oldStrategyId = strategy.getStrategyId();
 
 	Map<Integer,Integer> stepIdsMap = strategy.deleteStep(Integer.valueOf(deleteStep), (strBranchId != null));
 	// If a branch was specified, look up the new branch id in the stepIdsMap
@@ -102,10 +92,12 @@ public class DeleteStepAction extends ProcessFilterAction {
 	    return forward;
 	}
 
-        if (activeStrategies != null && index >= 0) {
-            activeStrategies.add(index, new Integer(strategy.getStrategyId()));
-        }
-        wdkUser.setActiveStrategies(activeStrategies);
+	try {
+	    wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId), Integer.toString(strategy.getStrategyId()));
+	} catch (WdkUserException ex) {
+	    // Need to add strategy to active strategies list
+	    // which will be handled by ShowStrategyAction
+	}
 
         // 5. forward to strategy page
         ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);

@@ -206,16 +206,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             request.setAttribute("wdk_query_string", queryString);
             request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
 
-            ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
-
-            if (activeStrategies == null) {
-                activeStrategies = new ArrayList<Integer>();
-            }
-
-            if (!activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
-                activeStrategies.add(0, new Integer(strategy.getStrategyId()));
-            }
-            wdkUser.setActiveStrategies(activeStrategies);
+	    wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));	    
 
             logger.debug("preparing forward");
 
@@ -224,6 +215,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
             // forward to the results page, if requested
             if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
+		wdkUser.setViewResults(strategy.getStrategyId(), step.getStepId());
                 forward = getForward(request, step.getAnswerValue(), mapping,
                         step.getStepId());
                 // forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);

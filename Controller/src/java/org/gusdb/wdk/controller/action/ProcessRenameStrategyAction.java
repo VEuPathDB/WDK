@@ -15,6 +15,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
@@ -51,16 +52,7 @@ public class ProcessRenameStrategyAction extends Action {
 	// strategy with that name does not already exist, do the rename
         if (!checkName || !wdkUser.checkNameExists(strategy, customName, save)) {
 	    logger.debug("failed check.  either not checking name, or strategy doesn't already exist.");
-	    ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
-	    int index = -1;
-
-	    if (activeStrategies != null
-                && activeStrategies.contains(new Integer(
-                        strategy.getStrategyId()))) {
-		index = activeStrategies.indexOf(new Integer(
-                    strategy.getStrategyId()));
-		activeStrategies.remove(index);
-	    }
+	    int oldStrategyId = strategy.getStrategyId();
 
 	    if (save) {
 		if (wdkUser.isGuest()) {
@@ -81,10 +73,11 @@ public class ProcessRenameStrategyAction extends Action {
 	    strategy.setName(customName);
 	    strategy.update(true);
 	    
-	    if (activeStrategies != null && index >= 0) {
-		activeStrategies.add(index, new Integer(strategy.getStrategyId()));
+	    try {
+		wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId), Integer.toString(strategy.getStrategyId()));
+	    } catch (WdkUserException ex) {
+		// Adding active strat will be handled by ShowStrategyAction
 	    }
-	    wdkUser.setActiveStrategies(activeStrategies);
 	    
 	    request.setAttribute(CConstants.WDK_STEP_KEY, strategy.getLatestStep());
 	    request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);

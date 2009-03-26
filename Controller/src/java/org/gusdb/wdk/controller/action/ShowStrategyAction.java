@@ -70,15 +70,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
             StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 
-            ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
-
-            if (activeStrategies == null) {
-                activeStrategies = new ArrayList<Integer>();
-            }
-            if (!activeStrategies.contains(new Integer(strategy.getStrategyId()))) {
-                activeStrategies.add(0, new Integer(strategy.getStrategyId()));
-            }
-            wdkUser.setActiveStrategies(activeStrategies);
+	    wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
 
             if (strBranchId == null) {
                 request.setAttribute(CConstants.WDK_STEP_KEY,

@@ -78,18 +78,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             // get strategy
             StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 
-            // ArrayList<Integer> activeStrategies =
-            // (ArrayList<Integer>)request.getSession().getAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY);
-            ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
-            int index = -1;
-
-            if (activeStrategies != null
-                    && activeStrategies.contains(new Integer(
-                            strategy.getStrategyId()))) {
-                index = activeStrategies.indexOf(new Integer(
-                        strategy.getStrategyId()));
-                activeStrategies.remove(index);
-            }
+            int oldStrategyId = strategy.getStrategyId();
 
             // Get operation from request params. If it is non-null
             // but contains only whitespace, set it to null.
@@ -333,13 +322,12 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
             }
 
-            if (activeStrategies != null && index >= 0) {
-                activeStrategies.add(index, new Integer(
-                        strategy.getStrategyId()));
-            }
-            // request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY,
-            // activeStrategies);
-            wdkUser.setActiveStrategies(activeStrategies);
+	    try {
+		wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId), Integer.toString(strategy.getStrategyId()));
+            } catch (WdkUserException ex) {
+		// Replace failed, need to add strategy to active list
+		// which is handled by ShowStrategyAction
+	    }
 
             ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
             StringBuffer url = new StringBuffer(showStrategy.getPath());

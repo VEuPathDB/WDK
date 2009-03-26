@@ -13,6 +13,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -72,16 +73,7 @@ public class MoveStepAction extends ProcessFilterAction {
 
         StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 
-        ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
-        int index = -1;
-
-        if (activeStrategies != null
-                && activeStrategies.contains(new Integer(
-                        strategy.getStrategyId()))) {
-            index = activeStrategies.indexOf(new Integer(
-                    strategy.getStrategyId()));
-            activeStrategies.remove(index);
-        }
+	int oldStrategyId = strategy.getStrategyId();
 
         int moveFromId = Integer.valueOf(strMoveFromId);
         int moveToId = Integer.valueOf(strMoveToId);
@@ -92,12 +84,11 @@ public class MoveStepAction extends ProcessFilterAction {
 	    strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
 	}
         
-        if (activeStrategies != null && index >= 0) {
-            activeStrategies.add(index, new Integer(strategy.getStrategyId()));
-        }
-        // request.getSession().setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY,
-        // activeStrategies);
-        wdkUser.setActiveStrategies(activeStrategies);
+	try {
+	    wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId), Integer.toString(strategy.getStrategyId()));
+	} catch (WdkUserException ex) {
+	    // Need to add active strategy; handled by ShowStrategyAction
+	}
 
         // Forward to ShowStrategyAction
         ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);

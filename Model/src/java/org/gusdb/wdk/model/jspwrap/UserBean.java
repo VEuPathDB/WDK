@@ -869,12 +869,26 @@ public class UserBean /* implements Serializable */{
         return this.user.toString();
     }
 
-    public ArrayList<Integer> getActiveStrategies() {
+    public Map<String,Integer> getActiveStrategies() {
         return user.getActiveStrategies();
     }
 
-    public void setActiveStrategies(ArrayList<Integer> activeStrategies) {
+    public void setActiveStrategies(Map<String,Integer> activeStrategies) {
         user.setActiveStrategies(activeStrategies);
+    }
+
+    public void addActiveStrategy(String strategyId) {
+	user.addActiveStrategy(strategyId);
+    }
+
+    public void removeActiveStrategy(String strategyId)
+	throws WdkUserException {
+	user.removeActiveStrategy(strategyId);
+    }
+
+    public void replaceActiveStrategy(String oldStrategyId, String newStrategyId)
+	throws WdkUserException {
+	user.replaceActiveStrategy(oldStrategyId, newStrategyId);
     }
 
     /**
@@ -1038,6 +1052,18 @@ public class UserBean /* implements Serializable */{
         Step step = user.createBooleanStep(leftStep.step, rightStep.step,
                 operator, useBooleanFilter, filterName);
         return new StepBean(step);
+    }
+
+    public void setViewResults(int strategyId, int stepId) {
+	user.setViewResults(strategyId, stepId);
+    }
+
+    public Integer getViewStrategyId() {
+	return user.getViewStrategyId();
+    }
+
+    public Integer getViewStepId() {
+	return user.getViewStepId();
     }
 
     public StrategyBean[] getOpenedStrategies() throws WdkUserException,
