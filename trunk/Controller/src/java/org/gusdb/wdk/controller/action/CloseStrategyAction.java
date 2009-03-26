@@ -38,18 +38,12 @@ public class CloseStrategyAction extends Action {
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
         }
 
-        ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
+	String stratIdstr = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+	if (stratIdstr == null || stratIdstr.length() == 0) {
+	    throw new Exception("No strategy specified to close!");
+	}
 
-        if (activeStrategies != null) {
-            String stratIdstr = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-            if (stratIdstr == null || stratIdstr.length() == 0) {
-                throw new Exception("No strategy specified to close!");
-            }
-            if (activeStrategies.contains(Integer.parseInt(stratIdstr))) {
-                activeStrategies.remove(activeStrategies.indexOf(Integer.parseInt(stratIdstr)));
-                wdkUser.setActiveStrategies(activeStrategies);
-            }
-        }
+        wdkUser.removeActiveStrategy(stratIdstr);
 
         return null;
     }

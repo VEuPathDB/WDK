@@ -85,8 +85,12 @@ public class User /* implements Serializable */{
     private Integer stepCount;
     private Integer strategyCount;
 
-    // keep track of user's open strategies; don't serialize
-    private transient ArrayList<Integer> activeStrategies;
+    // keep track in session , but don't serialize:
+    //  currently open strategies
+    private transient Map<String,Integer> activeStrategies;
+    //  currently viewed results, identified by strategy id & step id
+    private transient Integer viewStrategyId = null;
+    private transient Integer viewStepId = null;
 
     /**
      * cache the last step. This data may have impact on the memory usage.
@@ -468,7 +472,7 @@ public class User /* implements Serializable */{
 
         // first of all we import all the strategies
         Set<Integer> importedSteps = new LinkedHashSet<Integer>();
-        Map<Integer, Integer> strategiesMap = new LinkedHashMap<Integer, Integer>();
+        Map<String, String> strategiesMap = new LinkedHashMap<String, String>();
         for (Strategy strategy : user.getStrategies()) {
             // the root step is considered as imported
             Step rootStep = strategy.getLatestStep();
@@ -477,17 +481,17 @@ public class User /* implements Serializable */{
             Strategy newStrategy = this.importStrategy(strategy);
 
             importedSteps.add(rootStep.getDisplayId());
-            strategiesMap.put(strategy.getDisplayId(),
-                    newStrategy.getDisplayId());
+            strategiesMap.put(Integer.toString(strategy.getDisplayId()),
+                    Integer.toString(newStrategy.getDisplayId()));
         }
 
         // update list of active strategies so ids are correct for logged in
         // user
-        ArrayList<Integer> oldActiveStrategies = user.getActiveStrategies();
+        Map<String,Integer> oldActiveStrategies = user.getActiveStrategies();
         if (oldActiveStrategies != null) {
-            activeStrategies = new ArrayList<Integer>();
-            for (Integer strategyId : oldActiveStrategies) {
-                this.activeStrategies.add(strategiesMap.get(strategyId));
+            activeStrategies = new LinkedHashMap<String,Integer>();
+            for (String strategyId : oldActiveStrategies.keySet()) {
+                this.activeStrategies.put(strategiesMap.get(strategyId), oldActiveStrategies.get(strategyId));
             }
         }
 
@@ -1103,12 +1107,68 @@ public class User /* implements Serializable */{
         return newStrategy;
     }
 
-    public ArrayList<Integer> getActiveStrategies() {
+    public Map<String, Integer> getActiveStrategies() {
         return activeStrategies;
     }
 
-    public void setActiveStrategies(ArrayList<Integer> activeStrategies) {
+    public void setActiveStrategies(Map<String,Integer> activeStrategies) {
         this.activeStrategies = activeStrategies;
+    }
+
+    public void addActiveStrategy(String strategyId) {
+	Integer oldOrder;
+	if (activeStrategies == null)
+	    activeStrategies = new LinkedHashMap<String, Integer>();
+	if (!activeStrategies.containsKey(strategyId)) {
+	    for (String id : activeStrategies.keySet()) {
+		if ((strategyId.contains("_") && id.contains(strategyId.substring(0, strategyId.indexOf("_")+1))) ||
+		    (!strategyId.contains("_") && !id.contains("_"))) {
+		    oldOrder = activeStrategies.get(id);
+		    activeStrategies.put(id, (oldOrder+1));
+		}
+	    }
+	    activeStrategies.put(strategyId, 1);
+	}
+    }
+
+    public void removeActiveStrategy(String strategyId)
+	throws WdkUserException {
+	if (activeStrategies == null)
+	    throw new WdkUserException("Attempted to close an active strategy, but no strategies are open!");
+	Integer orderNumber = activeStrategies.remove(strategyId);
+	Integer oldOrder;
+	if (orderNumber == null)
+	    throw new WdkUserException("Attempted to close an active strategy, but specified ID does not exist in active strategies!");
+	for (String id : activeStrategies.keySet()) {
+	    if ((strategyId.contains("_") && id.contains(strategyId.substring(0, strategyId.indexOf("_")+1))) ||
+		(!strategyId.contains("_") && !id.contains("_"))) {
+		oldOrder = activeStrategies.get(id);
+		activeStrategies.put(id, (oldOrder-1));
+	    }
+	}
+    }
+
+    public void replaceActiveStrategy(String oldStrategyId, String newStrategyId)
+	throws WdkUserException {
+	if (activeStrategies == null)
+	    throw new WdkUserException("Attempted to replace an active strategy, but no strategies are open!");
+	Integer orderNumber = activeStrategies.remove(oldStrategyId);
+	if (orderNumber == null)
+	    throw new WdkUserException("Attempted to replace an active strategy, but specified ID does not exist in active strategies!");
+	activeStrategies.put(newStrategyId, orderNumber);
+    }
+
+    public void setViewResults(int strategyId, int stepId) {
+	this.viewStrategyId = new Integer(strategyId);
+	this.viewStepId = new Integer(stepId);
+    }
+
+    public Integer getViewStrategyId() {
+	return viewStrategyId;
+    }
+
+    public Integer getViewStepId() {
+	return viewStepId;
     }
 
     public boolean checkNameExists(Strategy strategy, String name, boolean saved)
@@ -1213,10 +1273,25 @@ public class User /* implements Serializable */{
 
     public Strategy[] getOpenedStrategies() throws WdkUserException,
             WdkModelException, JSONException, SQLException {
-        List<Strategy> strategies = new ArrayList<Strategy>();
-        for (int strategyId : activeStrategies) {
-            strategies.add(getStrategy(strategyId));
-        }
+	if (activeStrategies == null)
+	    return new Strategy[0];
+        ArrayList<Strategy> strategies = new ArrayList<Strategy>();
+	// First, put placeholders in strategies ArrayList so we
+	// can put Strategy objects in the correct order when
+	// we run through the activeStrategies a second time
+        for (String strategyId : activeStrategies.keySet()) {
+	    // only get strategy if the id is not a substrategy id.
+	    if (!strategyId.contains("_")) {
+		strategies.add(null);
+	    }
+	}
+        for (String strategyId : activeStrategies.keySet()) {
+	    // only get strategy if the id is not a substrategy id.
+	    if (!strategyId.contains("_")) {
+		int index = activeStrategies.get(strategyId) - 1;
+		strategies.set(index, getStrategy(Integer.parseInt(strategyId)));
+	    }
+	}
         Strategy[] array = new Strategy[strategies.size()];
         strategies.toArray(array);
         return array;

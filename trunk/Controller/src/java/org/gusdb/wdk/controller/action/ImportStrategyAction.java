@@ -44,15 +44,7 @@ public class ImportStrategyAction extends Action {
 
         StrategyBean strategy = wdkUser.importStrategy(strategyKey);
 
-        ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
-
-        if (activeStrategies == null) {
-            activeStrategies = new ArrayList<Integer>();
-        }
-        activeStrategies.remove(new Integer(strategy.getStrategyId()));
-        activeStrategies.add(0, new Integer(strategy.getStrategyId()));
-
-        wdkUser.setActiveStrategies(activeStrategies);
+	wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
 
         ActionForward forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
         forward = new ActionForward(forward.getPath(), true);
