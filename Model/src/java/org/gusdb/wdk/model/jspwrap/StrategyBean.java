@@ -150,9 +150,9 @@ public class StrategyBean {
     public StepBean getFirstStep() {
         return new StepBean(strategy.getFirstStep());
     }
-    
-    public String getChecksum() {
-        // TODO - need to get a checksum that has all states
-        return "";
+
+    public String getChecksum() throws NoSuchAlgorithmException, JSONException,
+            WdkModelException {
+        return strategy.getChecksum();
     }
 }

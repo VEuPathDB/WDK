@@ -90,32 +90,34 @@ public class ShowStrategyAction extends ShowQuestionAction {
             request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
 
             String output = request.getParameter("output");
-            if (output != null && output.equals("json")) {
+            if (output != null && output.equals("xml")) {
+                // forward to strategyPage.jsp
+                ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
+                StringBuffer url = new StringBuffer(showSummary.getPath());
+                url.append("?strategy="
+                        + URLEncoder.encode(strStratId, "utf-8"));
+                if (strBranchId != null) {
+                    url.append("_" + URLEncoder.encode(strBranchId, "utf-8"));
+                }
+                String viewStep = request.getParameter("step");
+                if (viewStep != null && viewStep.length() != 0) {
+                    url.append("&step=" + URLEncoder.encode(viewStep, "utf-8"));
+                }
+                String subQuery = request.getParameter("subquery");
+                if (subQuery != null && subQuery.length() != 0) {
+                    url.append("&subquery="
+                            + URLEncoder.encode(subQuery, "utf-8"));
+                }
+
+                logger.debug("URL: " + url);
+
+                ActionForward forward = new ActionForward(url.toString());
+                forward.setRedirect(false);
+                return forward;
+            } else {    // by default, JSON output
                 outputStrategyJSON(strategy, response);
                 return null;
             }
-
-            // forward to strategyPage.jsp
-            ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
-            StringBuffer url = new StringBuffer(showSummary.getPath());
-            url.append("?strategy=" + URLEncoder.encode(strStratId, "utf-8"));
-            if (strBranchId != null) {
-                url.append("_" + URLEncoder.encode(strBranchId, "utf-8"));
-            }
-            String viewStep = request.getParameter("step");
-            if (viewStep != null && viewStep.length() != 0) {
-                url.append("&step=" + URLEncoder.encode(viewStep, "utf-8"));
-            }
-            String subQuery = request.getParameter("subquery");
-            if (subQuery != null && subQuery.length() != 0) {
-                url.append("&subquery=" + URLEncoder.encode(subQuery, "utf-8"));
-            }
-
-            logger.debug("URL: " + url);
-
-            ActionForward forward = new ActionForward(url.toString());
-            forward.setRedirect(false);
-            return forward;
         } catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
