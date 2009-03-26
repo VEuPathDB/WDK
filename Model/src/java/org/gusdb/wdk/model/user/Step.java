@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.query.BooleanQueryInstance;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * @author Charles Treatman
@@ -542,5 +543,26 @@ public class Step {
         Step step = this;
         while(step.getPreviousStep() != null) step = step.getPreviousStep();
         return step;
+    }
+    
+    public boolean isBoolean() throws NoSuchAlgorithmException, WdkModelException, JSONException, WdkUserException, SQLException {
+        return this.answer.getAnswerValue().getIdsQueryInstance().getQuery().isBoolean();
+    }
+    
+    public JSONObject getJSONContent() throws JSONException {
+        JSONObject jsStep = new JSONObject();
+        jsStep.put("id", this.displayId);
+        jsStep.put("customName", this.customName);
+        jsStep.put("answer", this.answer.getAnswerChecksum());
+        jsStep.put("collapsed", this.isCollapsible);
+        jsStep.put("collapsedName", this.collapsedName);
+        jsStep.put("deleted", isDeleted);
+        if (this.previousStep != null) {
+            jsStep.put("previous", previousStep.getJSONContent());
+        }
+        if (this.childStep != null) {
+            jsStep.put("child", childStep.getJSONContent());
+        }
+        return jsStep;
     }
 }
