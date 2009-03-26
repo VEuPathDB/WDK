@@ -39,37 +39,7 @@ public class ShowApplicationAction extends ShowSummaryAction {
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
         }
 
-        ArrayList<Integer> activeStrategies = wdkUser.getActiveStrategies();
-
-        StrategyBean strategy = null;
-        ArrayList<StrategyBean> strategyObjects = null;
-        if (activeStrategies != null) {
-            strategyObjects = new ArrayList<StrategyBean>(
-                    activeStrategies.size());
-            for (int i = 0; i < activeStrategies.size(); ++i) {
-                strategy = wdkUser.getStrategy(activeStrategies.get(i).intValue());
-                strategyObjects.add(strategy);
-            }
-        }
-        /* End */
-        if (strategy != null) {
-            StepBean step = strategy.getLatestStep();
-            AnswerValueBean answerValue = step.getAnswerValue();
-            Map<String, String> params = step.getParams();
-
-            // reformulate the AnswerValueBean in order to set all necessary
-            // request attributes
-            step = summaryPaging(request, step);
-
-            request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY, params);
-            request.setAttribute(CConstants.WDK_ANSWER_KEY, answerValue);
-            request.setAttribute(CConstants.WDK_STEP_KEY, step);
-            // Attaching as history also, b/c UI still expects it.
-            request.setAttribute(CConstants.WDK_HISTORY_KEY, step);
-            request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
-            // request.setAttribute("wdk_summary_url", requestUrl);
-            // request.setAttribute("wdk_query_string", queryString);
-        }
+	StrategyBean[] strategyObjects = wdkUser.getOpenedStrategies();
 
         String showHist = request.getParameter("showHistory");
         if (showHist != null && Boolean.valueOf(showHist)) {
