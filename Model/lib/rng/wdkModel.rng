@@ -617,6 +617,11 @@
             <attribute name="name" />
             <text />
           </element>
+          
+          <element name="dependentTable">
+            <ref name="IncludeExclude"/>
+            <text />
+          </element>
 
           <element name="sql">
             <ref name="IncludeExclude"/>
