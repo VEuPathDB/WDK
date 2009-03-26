@@ -32,6 +32,9 @@ public class SqlQuery extends Query {
     private List<WdkModelText> sqlMacroList;
     private Map<String, String> sqlMacroMap;
     private boolean clobRow;
+    
+    private List<WdkModelText> dependentTableList;
+    private Map<String, String> dependentTableMap;
 
     public SqlQuery() {
         super();
@@ -39,6 +42,8 @@ public class SqlQuery extends Query {
         sqlList = new ArrayList<WdkModelText>();
         sqlMacroList = new ArrayList<WdkModelText>();
         sqlMacroMap = new LinkedHashMap<String, String>();
+        dependentTableList = new ArrayList<WdkModelText>();
+        dependentTableMap = new LinkedHashMap<String, String>();
     }
 
     public SqlQuery(SqlQuery query) {
@@ -46,6 +51,7 @@ public class SqlQuery extends Query {
         this.clobRow = query.clobRow;
         this.sql = query.sql;
         this.sqlMacroMap = new LinkedHashMap<String, String>(query.sqlMacroMap);
+        this.dependentTableMap = new LinkedHashMap<String, String>(query.dependentTableMap);
     }
 
     public void addSql(WdkModelText sql) {
@@ -124,6 +130,16 @@ public class SqlQuery extends Query {
         }
         sqlList = null;
 
+        // exclude sql
+        for (WdkModelText dependentTable : dependentTableList) {
+            if (dependentTable.include(projectId)) {
+                dependentTable.excludeResources(projectId);
+                String table = dependentTable.getText();
+                this.dependentTableMap.put(table, table);
+            }
+        }
+        dependentTableList = null;
+
         // exclude macros
         for (WdkModelText macro : sqlMacroList) {
             if (macro.include(projectId)) {
@@ -194,5 +210,15 @@ public class SqlQuery extends Query {
      */
     public void setClobRow(boolean clobRow) {
         this.clobRow = clobRow;
+    }
+    
+    public void addDependentTable(WdkModelText dependentTable) {
+        this.dependentTableList.add(dependentTable);
+    }
+    
+    public String[] getDependentTables() {
+        String[] array = new String[dependentTableMap.size()];
+        dependentTableMap.keySet().toArray(array);
+        return array;
     }
 }
