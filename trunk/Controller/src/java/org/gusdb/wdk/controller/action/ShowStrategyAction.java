@@ -182,7 +182,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             WdkUserException, SQLException {
         JSONObject jsStrategy = new JSONObject();
         jsStrategy.put("name", strategy.getName());
-        jsStrategy.put("id", strategy.getStrategyId());
+        jsStrategy.put("id", Integer.toString(strategy.getStrategyId()));
         jsStrategy.put("saved", strategy.getIsSaved());
         jsStrategy.put("savedName", strategy.getSavedName());
         jsStrategy.put("importId", strategy.getImportId());
@@ -209,7 +209,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         JSONObject jsStep = new JSONObject();
         jsStep.put("name", step.getCustomName());
         jsStep.put("customName", step.getCustomName());
-        jsStep.put("id", step.getStepId());
+        jsStep.put("id", Integer.toString(step.getStepId()));
         jsStep.put("answerId", step.getAnswerId());
         jsStep.put("isCollapsed", step.getIsCollapsible());
         jsStep.put("dataType", step.getDataType());
