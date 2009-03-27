@@ -882,9 +882,9 @@ public class UserBean /* implements Serializable */{
 	user.removeActiveStrategy(strategyId);
     }
 
-    public void replaceActiveStrategy(String oldStrategyId, String newStrategyId)
+    public void replaceActiveStrategy(String oldStrategyId, String newStrategyId, Map<Integer,Integer> stepIdsMap)
 	throws WdkUserException {
-	user.replaceActiveStrategy(oldStrategyId, newStrategyId);
+	user.replaceActiveStrategy(oldStrategyId, newStrategyId, stepIdsMap);
     }
 
     /**
@@ -1071,5 +1071,10 @@ public class UserBean /* implements Serializable */{
         StrategyBean[] array = new StrategyBean[strategies.size()];
         strategies.toArray(array);
         return array;
+    }
+
+    public Integer[] getOpenedStrategyIds() throws WdkUserException,
+            WdkModelException, JSONException, SQLException {
+	return user.getOpenedStrategyIds();
     }
 }

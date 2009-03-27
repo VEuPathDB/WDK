@@ -39,14 +39,14 @@ public class ShowApplicationAction extends ShowSummaryAction {
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
         }
 
-	StrategyBean[] strategyObjects = wdkUser.getOpenedStrategies();
+	Integer[] strategyIds = wdkUser.getOpenedStrategyIds();
 
         String showHist = request.getParameter("showHistory");
         if (showHist != null && Boolean.valueOf(showHist)) {
             request.setAttribute("showHistory", Boolean.valueOf(showHist));
         }
         request.setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY,
-                strategyObjects);
+                strategyIds);
 
         ActionForward forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
 
