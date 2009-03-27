@@ -3,7 +3,6 @@ package org.gusdb.wdk.controller.action;
 import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -25,7 +24,6 @@ import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
 
 /**
@@ -43,6 +41,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             throws Exception {
         logger.debug("Entering ProcessFilterAction...");
 
+        UserBean wdkUser = ActionUtility.getUser(servlet, request);
         try {
             // Make sure a strategy is specified
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
@@ -51,18 +50,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 throw new WdkModelException(
                         "No strategy was specified for processing!");
             }
-
-            // load model, user
-            WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
-                    CConstants.WDK_MODEL_KEY);
-            UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                    CConstants.WDK_USER_KEY);
-            if (wdkUser == null) {
-                wdkUser = wdkModel.getUserFactory().getGuestUser();
-                request.getSession().setAttribute(CConstants.WDK_USER_KEY,
-                        wdkUser);
-            }
-
             String strBranchId = null;
 
             QuestionBean wdkQuestion;
@@ -322,16 +309,17 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
             }
 
-	    try {
-		wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId), Integer.toString(strategy.getStrategyId()));
+            try {
+                wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId),
+                        Integer.toString(strategy.getStrategyId()));
 		for (Integer keyId : stepIdsMap.keySet()) {
 		    wdkUser.replaceActiveStrategy(strategy.getStrategyId() + "_" + keyId,
 						  strategy.getStrategyId() + "_" + stepIdsMap.get(keyId));
 		}
             } catch (WdkUserException ex) {
-		// Replace failed, need to add strategy to active list
-		// which is handled by ShowStrategyAction
-	    }
+                // Replace failed, need to add strategy to active list
+                // which is handled by ShowStrategyAction
+            }
 
             ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
             StringBuffer url = new StringBuffer(showStrategy.getPath());
@@ -352,95 +340,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         } catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
-            ShowStrategyAction.outputErrorJSON(ex, response);
+            ShowStrategyAction.outputErrorJSON(wdkUser, ex, response);
             return null;
         }
     }
-//
-//    private ActionForward showError(WdkModelBean wdkModel, UserBean wdkUser,
-//            ActionMapping mapping, HttpServletRequest request,
-//            HttpServletResponse response) throws WdkModelException,
-//            WdkUserException, SQLException, JSONException,
-//            NoSuchAlgorithmException {
-//        // TEST
-//        logger.info("Show the details of an invalid step/question");
-//
-//        String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-//        Map<String, String> params;
-//        Map<String, String> paramNames;
-//        String customName;
-//        if (qFullName == null || qFullName.length() == 0) {
-//            String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
-//            int stepId = Integer.parseInt(strHistId);
-//            StepBean step = wdkUser.getStep(stepId);
-//            params = step.getParams();
-//            paramNames = step.getParamNames();
-//            qFullName = step.getQuestionName();
-//            customName = step.getCustomName();
-//        } else {
-//            params = new LinkedHashMap<String, String>();
-//            paramNames = new LinkedHashMap<String, String>();
-//            customName = qFullName;
-//
-//            // get params from request
-//            Map<?, ?> parameters = request.getParameterMap();
-//            for (Object object : parameters.keySet()) {
-//                try {
-//                    String pName;
-//                    pName = URLDecoder.decode((String) object, "utf-8");
-//                    Object objValue = parameters.get(object);
-//                    String pValue = null;
-//                    if (objValue != null) {
-//                        pValue = objValue.toString();
-//                        if (objValue instanceof String[]) {
-//                            StringBuffer sb = new StringBuffer();
-//                            String[] array = (String[]) objValue;
-//                            for (String v : array) {
-//                                if (sb.length() > 0) sb.append(", ");
-//                                sb.append(v);
-//                            }
-//                            pValue = sb.toString();
-//                        }
-//                        pValue = URLDecoder.decode(pValue, "utf-8");
-//                    }
-//                    if (pName.startsWith("myProp(")) {
-//                        pName = pName.substring(7, pName.length() - 1).trim();
-//                        params.put(pName, pValue);
-//
-//                        String displayName = wdkModel.queryParamDisplayName(pName);
-//                        if (displayName == null) displayName = pName;
-//                        paramNames.put(pName, displayName);
-//                    }
-//                } catch (UnsupportedEncodingException ex) {
-//                    throw new WdkModelException(ex);
-//                }
-//            }
-//        }
-//        String qDisplayName = wdkModel.getQuestionDisplayName(qFullName);
-//        if (qDisplayName == null) qDisplayName = qFullName;
-//
-//        request.setAttribute("questionDisplayName", qDisplayName);
-//        request.setAttribute("customName", customName);
-//        request.setAttribute("params", params);
-//        request.setAttribute("paramNames", paramNames);
-//
-//        ServletContext svltCtx = getServlet().getServletContext();
-//        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
-//        String customViewFile = customViewDir + File.separator
-//                + CConstants.WDK_CUSTOM_SUMMARY_ERROR_PAGE;
-//
-//        String url;
-//        if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
-//            url = customViewFile;
-//        } else {
-//            ActionForward forward = mapping.findForward(CConstants.SHOW_ERROR_MAPKEY);
-//            url = forward.getPath();
-//        }
-//
-//        ActionForward forward = new ActionForward(url);
-//        forward.setRedirect(false);
-//        return forward;
-//    }
 
     private StepBean cloneStrategy(UserBean user, StepBean step)
             throws WdkUserException, WdkModelException,

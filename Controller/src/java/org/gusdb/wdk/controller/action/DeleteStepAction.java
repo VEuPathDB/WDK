@@ -1,7 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,7 +13,6 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -53,9 +51,9 @@ public class DeleteStepAction extends ProcessFilterAction {
         }
 
         StrategyBean strategy;
-        StepBean targetStep;
-        StepBean step, newStep;
-        String boolExp;
+        // StepBean targetStep;
+        // StepBean step, newStep;
+        // String boolExp;
 
         // Are we revising or deleting a step?
         String deleteStep = request.getParameter("step");
@@ -71,37 +69,40 @@ public class DeleteStepAction extends ProcessFilterAction {
 
         strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 
-	int oldStrategyId = strategy.getStrategyId();
+        int oldStrategyId = strategy.getStrategyId();
 
-	Map<Integer,Integer> stepIdsMap = strategy.deleteStep(Integer.valueOf(deleteStep), (strBranchId != null));
-	// If a branch was specified, look up the new branch id in the stepIdsMap
-	if (strBranchId != null) {
-	    strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
-	}
+        Map<Integer, Integer> stepIdsMap = strategy.deleteStep(
+                Integer.valueOf(deleteStep), (strBranchId != null));
+        // If a branch was specified, look up the new branch id in the
+        // stepIdsMap
+        if (strBranchId != null) {
+            strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
+        }
 
-	// If strategy was marked for deletion as a result of deleting
-	// the step, forward to DeleteStrategy
-	if (strategy.getIsDeleted()) {
-	    ActionForward forward = mapping.findForward(CConstants.DELETE_STRATEGY_MAPKEY);
-	    StringBuffer url = new StringBuffer(forward.getPath());
-	    url.append("?strategy="
-		       + URLEncoder.encode(strStratId, "utf-8"));
-	    url.append("&getXml=true");
-	    forward = new ActionForward(url.toString());
-	    forward.setRedirect(true);
-	    return forward;
-	}
+        // If strategy was marked for deletion as a result of deleting
+        // the step, forward to DeleteStrategy
+        if (strategy.getIsDeleted()) {
+            ActionForward forward = mapping.findForward(CConstants.DELETE_STRATEGY_MAPKEY);
+            StringBuffer url = new StringBuffer(forward.getPath());
+            url.append("?strategy=" + URLEncoder.encode(strStratId, "utf-8"));
+            url.append("&getXml=true");
+            forward = new ActionForward(url.toString());
+            forward.setRedirect(true);
+            return forward;
+        }
 
-	try {
-	    wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId), Integer.toString(strategy.getStrategyId()));
-	    for (Integer keyId : stepIdsMap.keySet()) {
-		wdkUser.replaceActiveStrategy(strategy.getStrategyId() + "_" + keyId,
-					      strategy.getStrategyId() + "_" + stepIdsMap.get(keyId));
-	    }
-	} catch (WdkUserException ex) {
-	    // Need to add strategy to active strategies list
-	    // which will be handled by ShowStrategyAction
-	}
+        try {
+            wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId),
+                    Integer.toString(strategy.getStrategyId()));
+            for (Integer keyId : stepIdsMap.keySet()) {
+                wdkUser.replaceActiveStrategy(strategy.getStrategyId() + "_"
+                        + keyId, strategy.getStrategyId() + "_"
+                        + stepIdsMap.get(keyId));
+            }
+        } catch (WdkUserException ex) {
+            // Need to add strategy to active strategies list
+            // which will be handled by ShowStrategyAction
+        }
 
         // 5. forward to strategy page
         ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
