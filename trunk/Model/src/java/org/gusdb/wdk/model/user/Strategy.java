@@ -3,8 +3,8 @@ package org.gusdb.wdk.model.user;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerFilterInstance;
@@ -14,8 +14,8 @@ import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -427,7 +427,7 @@ public class Strategy {
         jsStrategy.put("savedName", this.savedName);
         jsStrategy.put("saved", this.isSaved);
         jsStrategy.put("deleted", this.isDeleted);
-        jsStrategy.put("latestStep", latestStep.getJSONContent());
+        jsStrategy.put("latestStep", latestStep.getJSONContent(this.displayId));
 
         return jsStrategy;
     }
