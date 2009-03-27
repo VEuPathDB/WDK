@@ -549,7 +549,7 @@ public class Step {
         return this.answer.getAnswerValue().getIdsQueryInstance().getQuery().isBoolean();
     }
     
-    public JSONObject getJSONContent() throws JSONException {
+    public JSONObject getJSONContent(int strategyId) throws JSONException {
         JSONObject jsStep = new JSONObject();
         jsStep.put("id", this.displayId);
         jsStep.put("customName", this.customName);
@@ -558,10 +558,16 @@ public class Step {
         jsStep.put("collapsedName", this.collapsedName);
         jsStep.put("deleted", isDeleted);
         if (this.previousStep != null) {
-            jsStep.put("previous", previousStep.getJSONContent());
+            jsStep.put("previous", previousStep.getJSONContent(strategyId));
         }
         if (this.childStep != null) {
-            jsStep.put("child", childStep.getJSONContent());
+            jsStep.put("child", childStep.getJSONContent(strategyId));
+        }
+        if (this.isCollapsible) {   // a sub-strategy, needs to get order number
+            String subStratId = strategyId + "_" + this.displayId;
+            Integer order = user.getActiveStrategies().get(subStratId);
+            if (order == null) order = 0; // the sub-strategy is not displayed
+            jsStep.put("order", order);
         }
         return jsStep;
     }
