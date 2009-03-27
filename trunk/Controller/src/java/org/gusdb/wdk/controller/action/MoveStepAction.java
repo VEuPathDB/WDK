@@ -85,11 +85,9 @@ public class MoveStepAction extends ProcessFilterAction {
 	}
         
 	try {
-	    wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId), Integer.toString(strategy.getStrategyId()));
-	    for (Integer keyId : stepIdsMap.keySet()) {
-		wdkUser.replaceActiveStrategy(strategy.getStrategyId() + "_" + keyId,
-					      strategy.getStrategyId() + "_" + stepIdsMap.get(keyId));
-	    }
+	    wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId),
+                                Integer.toString(strategy.getStrategyId()),
+                                stepIdsMap);
 	} catch (WdkUserException ex) {
 	    // Need to add active strategy; handled by ShowStrategyAction
 	}

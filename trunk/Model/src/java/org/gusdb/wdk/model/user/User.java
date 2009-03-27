@@ -6,6 +6,7 @@ package org.gusdb.wdk.model.user;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.TreeMap;
@@ -489,10 +490,12 @@ public class User /* implements Serializable */{
         // user
         Map<String,Integer> oldActiveStrategies = user.getActiveStrategies();
         if (oldActiveStrategies != null) {
-            activeStrategies = new LinkedHashMap<String,Integer>();
-            for (String strategyId : oldActiveStrategies.keySet()) {
-                this.activeStrategies.put(strategiesMap.get(strategyId), oldActiveStrategies.get(strategyId));
-            }
+	    synchronized(activeStrategies) {
+		initActiveStrategies();
+		for (String strategyId : oldActiveStrategies.keySet()) {
+		    this.activeStrategies.put(strategiesMap.get(strategyId), oldActiveStrategies.get(strategyId));
+		}
+	    }
         }
 
         // then import the steps that do not belong to any strategies; that is,
@@ -1111,55 +1114,78 @@ public class User /* implements Serializable */{
         return activeStrategies;
     }
 
-    protected void setActiveStrategies(Map<String,Integer> activeStrategies) {
-        this.activeStrategies = activeStrategies;
+    private void setActiveStrategies(Map<String,Integer> activeStrategies) {
+        this.activeStrategies = Collections.synchronizedMap(activeStrategies);
+    }
+
+    private void initActiveStrategies() {
+	this.activeStrategies = Collections.synchronizedMap(new LinkedHashMap<String,Integer>());
     }
 
     public void addActiveStrategy(String strategyId) {
 	Integer oldOrder;
 	if (activeStrategies == null)
-	    activeStrategies = new LinkedHashMap<String, Integer>();
-	LinkedHashMap<String,Integer> tempActiveStrategies = new LinkedHashMap<String, Integer>(activeStrategies);
-	if (!activeStrategies.containsKey(strategyId)) {
-	    for (String id : activeStrategies.keySet()) {
-		if ((strategyId.contains("_") && id.contains(strategyId.substring(0, strategyId.indexOf("_")+1))) ||
-		    (!strategyId.contains("_") && !id.contains("_"))) {
-		    oldOrder = tempActiveStrategies.get(id);
-		    tempActiveStrategies.put(id, (oldOrder+1));
+	    initActiveStrategies();
+	synchronized(activeStrategies) {
+	    if (!activeStrategies.containsKey(strategyId)) {
+		Set<String> keys = activeStrategies.keySet();
+		for (String id : keys) {
+		    if ((strategyId.contains("_") && id.contains(strategyId.substring(0, strategyId.indexOf("_")+1))) ||
+			(!strategyId.contains("_") && !id.contains("_"))) {
+			oldOrder = activeStrategies.get(id);
+			activeStrategies.put(id, (oldOrder+1));
+		    }
 		}
+		activeStrategies.put(strategyId, 1);
 	    }
-	    tempActiveStrategies.put(strategyId, 1);
 	}
-	setActiveStrategies(tempActiveStrategies);
     }
 
     public void removeActiveStrategy(String strategyId)
 	throws WdkUserException {
 	if (activeStrategies == null)
 	    throw new WdkUserException("Attempted to close an active strategy, but no strategies are open!");
-	Integer orderNumber = activeStrategies.remove(strategyId);
-	Integer oldOrder;
-	if (orderNumber == null)
-	    return;
-	LinkedHashMap<String,Integer> tempActiveStrategies = new LinkedHashMap<String, Integer>(activeStrategies);
-	for (String id : activeStrategies.keySet()) {
-	    if ((strategyId.contains("_") && id.contains(strategyId.substring(0, strategyId.indexOf("_")+1))) ||
-		(!strategyId.contains("_") && !id.contains("_"))) {
-		oldOrder = tempActiveStrategies.get(id);
-		tempActiveStrategies.put(id, (oldOrder-1));
+	synchronized(activeStrategies) {
+	    Integer orderNumber = activeStrategies.remove(strategyId);
+	    Integer oldOrder;
+	    if (orderNumber == null)
+		return;
+	    Set<String> keys = activeStrategies.keySet();
+	    for (String id : keys) {
+		// If we closed a root-level strategy, also close any related substrategies
+		if (!strategyId.contains("_") && id.contains(strategyId + "_")) {
+		    activeStrategies.remove(id);
+		}
+		else if ((strategyId.contains("_") && id.contains(strategyId.substring(0, strategyId.indexOf("_")+1))) ||
+		    (!strategyId.contains("_") && !id.contains("_"))) {
+		    oldOrder = activeStrategies.get(id);
+		    activeStrategies.put(id, (oldOrder-1));
+		}
 	    }
 	}
-	setActiveStrategies(tempActiveStrategies);
     }
 
-    public void replaceActiveStrategy(String oldStrategyId, String newStrategyId)
+    public void replaceActiveStrategy(String oldStrategyId, String newStrategyId, Map<Integer,Integer> stepIdsMap)
 	throws WdkUserException {
 	if (activeStrategies == null)
 	    throw new WdkUserException("Attempted to replace an active strategy, but no strategies are open!");
-	Integer orderNumber = activeStrategies.remove(oldStrategyId);
-	if (orderNumber == null)
-	    return;
-	activeStrategies.put(newStrategyId, orderNumber);
+	synchronized(activeStrategies) {
+	    Integer orderNumber = activeStrategies.remove(oldStrategyId);
+	    if (orderNumber == null)
+		return;
+	    activeStrategies.put(newStrategyId, orderNumber);
+	    Set<String> keys = activeStrategies.keySet();
+	    for (String id : keys) {
+		// If we replaced a root-level strategy, also replace any related substrategies
+		if (!oldStrategyId.contains("_") && id.contains(oldStrategyId + "_")) {
+		    orderNumber = activeStrategies.remove(id);
+		    if (stepIdsMap != null)
+			activeStrategies.put(newStrategyId + "_" + stepIdsMap.get(id.split("_")[1]), orderNumber);
+		    else
+			activeStrategies.put(newStrategyId + "_" + id.split("_")[1], orderNumber);
+		}
+	    }
+	}
     }
 
     public void setViewResults(int strategyId, int stepId) {
@@ -1280,25 +1306,52 @@ public class User /* implements Serializable */{
 	if (activeStrategies == null)
 	    return new Strategy[0];
         ArrayList<Strategy> strategies = new ArrayList<Strategy>();
-	// First, put placeholders in strategies ArrayList so we
-	// can put Strategy objects in the correct order when
-	// we run through the activeStrategies a second time
-	LinkedHashMap<String,Integer> tempActiveStrategies = new LinkedHashMap<String,Integer>(activeStrategies);
-        for (String strategyId : tempActiveStrategies.keySet()) {
-	    // only get strategy if the id is not a substrategy id.
-	    if (!strategyId.contains("_")) {
-		strategies.add(null);
+	synchronized(activeStrategies) {
+	    // First, put placeholders in ArrayList, since keys
+	    // may not come back ordered by value (orderNumber).
+	    for (String strategyId : activeStrategies.keySet()) {
+		// we only care about proper strategies in this case
+		if (!strategyId.contains("_")) {
+		    strategies.add(null);
+		}
+	    }
+	    // Load Strategy objects and put them in the correct
+	    // position in the ArrayList, replacing the placeholder
+	    for (String strategyId : activeStrategies.keySet()) {
+		// only get strategy if the id is not a substrategy id.
+		if (!strategyId.contains("_")) {
+		    int index = activeStrategies.get(strategyId) - 1;
+		    strategies.set(index, getStrategy(Integer.parseInt(strategyId)));
+		}
 	    }
 	}
-        for (String strategyId : tempActiveStrategies.keySet()) {
-	    // only get strategy if the id is not a substrategy id.
-	    if (!strategyId.contains("_")) {
-		int index = tempActiveStrategies.get(strategyId) - 1;
-		strategies.set(index, getStrategy(Integer.parseInt(strategyId)));
+	Strategy[] array = new Strategy[strategies.size()];
+	strategies.toArray(array);
+	return array;
+    }
+
+    public Integer[] getOpenedStrategyIds() throws WdkUserException,
+	    WdkModelException, JSONException, SQLException {
+	if (activeStrategies == null)
+	    return new Integer[0];
+        ArrayList<Integer> strategies = new ArrayList<Integer>();
+	synchronized(activeStrategies) {
+	    for (String strategyId : activeStrategies.keySet()) {
+		// we only care about proper strategies in this case
+		if (!strategyId.contains("_")) {
+		    strategies.add(null);
+		}
+	    }
+	    for (String strategyId : activeStrategies.keySet()) {
+		// only get strategy if the id is not a substrategy id.
+		if (!strategyId.contains("_")) {
+		    int index = activeStrategies.get(strategyId) - 1;
+		    strategies.set(index, Integer.parseInt(strategyId));
+		}
 	    }
 	}
-        Strategy[] array = new Strategy[strategies.size()];
-        strategies.toArray(array);
-        return array;
+	Integer[] array = new Integer[strategies.size()];
+	strategies.toArray(array);
+	return array;
     }
 }
