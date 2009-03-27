@@ -94,6 +94,10 @@ public class DeleteStepAction extends ProcessFilterAction {
 
 	try {
 	    wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId), Integer.toString(strategy.getStrategyId()));
+	    for (Integer keyId : stepIdsMap.keySet()) {
+		wdkUser.replaceActiveStrategy(strategy.getStrategyId() + "_" + keyId,
+					      strategy.getStrategyId() + "_" + stepIdsMap.get(keyId));
+	    }
 	} catch (WdkUserException ex) {
 	    // Need to add strategy to active strategies list
 	    // which will be handled by ShowStrategyAction

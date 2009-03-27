@@ -1111,7 +1111,7 @@ public class User /* implements Serializable */{
         return activeStrategies;
     }
 
-    public void setActiveStrategies(Map<String,Integer> activeStrategies) {
+    protected void setActiveStrategies(Map<String,Integer> activeStrategies) {
         this.activeStrategies = activeStrategies;
     }
 
@@ -1119,16 +1119,18 @@ public class User /* implements Serializable */{
 	Integer oldOrder;
 	if (activeStrategies == null)
 	    activeStrategies = new LinkedHashMap<String, Integer>();
+	LinkedHashMap<String,Integer> tempActiveStrategies = new LinkedHashMap<String, Integer>(activeStrategies);
 	if (!activeStrategies.containsKey(strategyId)) {
 	    for (String id : activeStrategies.keySet()) {
 		if ((strategyId.contains("_") && id.contains(strategyId.substring(0, strategyId.indexOf("_")+1))) ||
 		    (!strategyId.contains("_") && !id.contains("_"))) {
-		    oldOrder = activeStrategies.get(id);
-		    activeStrategies.put(id, (oldOrder+1));
+		    oldOrder = tempActiveStrategies.get(id);
+		    tempActiveStrategies.put(id, (oldOrder+1));
 		}
 	    }
-	    activeStrategies.put(strategyId, 1);
+	    tempActiveStrategies.put(strategyId, 1);
 	}
+	setActiveStrategies(tempActiveStrategies);
     }
 
     public void removeActiveStrategy(String strategyId)
@@ -1138,14 +1140,16 @@ public class User /* implements Serializable */{
 	Integer orderNumber = activeStrategies.remove(strategyId);
 	Integer oldOrder;
 	if (orderNumber == null)
-	    throw new WdkUserException("Attempted to close an active strategy, but specified ID does not exist in active strategies!");
+	    return;
+	LinkedHashMap<String,Integer> tempActiveStrategies = new LinkedHashMap<String, Integer>(activeStrategies);
 	for (String id : activeStrategies.keySet()) {
 	    if ((strategyId.contains("_") && id.contains(strategyId.substring(0, strategyId.indexOf("_")+1))) ||
 		(!strategyId.contains("_") && !id.contains("_"))) {
-		oldOrder = activeStrategies.get(id);
-		activeStrategies.put(id, (oldOrder-1));
+		oldOrder = tempActiveStrategies.get(id);
+		tempActiveStrategies.put(id, (oldOrder-1));
 	    }
 	}
+	setActiveStrategies(tempActiveStrategies);
     }
 
     public void replaceActiveStrategy(String oldStrategyId, String newStrategyId)
@@ -1154,7 +1158,7 @@ public class User /* implements Serializable */{
 	    throw new WdkUserException("Attempted to replace an active strategy, but no strategies are open!");
 	Integer orderNumber = activeStrategies.remove(oldStrategyId);
 	if (orderNumber == null)
-	    throw new WdkUserException("Attempted to replace an active strategy, but specified ID does not exist in active strategies!");
+	    return;
 	activeStrategies.put(newStrategyId, orderNumber);
     }
 
@@ -1279,16 +1283,17 @@ public class User /* implements Serializable */{
 	// First, put placeholders in strategies ArrayList so we
 	// can put Strategy objects in the correct order when
 	// we run through the activeStrategies a second time
-        for (String strategyId : activeStrategies.keySet()) {
+	LinkedHashMap<String,Integer> tempActiveStrategies = new LinkedHashMap<String,Integer>(activeStrategies);
+        for (String strategyId : tempActiveStrategies.keySet()) {
 	    // only get strategy if the id is not a substrategy id.
 	    if (!strategyId.contains("_")) {
 		strategies.add(null);
 	    }
 	}
-        for (String strategyId : activeStrategies.keySet()) {
+        for (String strategyId : tempActiveStrategies.keySet()) {
 	    // only get strategy if the id is not a substrategy id.
 	    if (!strategyId.contains("_")) {
-		int index = activeStrategies.get(strategyId) - 1;
+		int index = tempActiveStrategies.get(strategyId) - 1;
 		strategies.set(index, getStrategy(Integer.parseInt(strategyId)));
 	    }
 	}

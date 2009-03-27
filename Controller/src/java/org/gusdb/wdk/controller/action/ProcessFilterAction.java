@@ -324,6 +324,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
 	    try {
 		wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId), Integer.toString(strategy.getStrategyId()));
+		for (Integer keyId : stepIdsMap.keySet()) {
+		    wdkUser.replaceActiveStrategy(strategy.getStrategyId() + "_" + keyId,
+						  strategy.getStrategyId() + "_" + stepIdsMap.get(keyId));
+		}
             } catch (WdkUserException ex) {
 		// Replace failed, need to add strategy to active list
 		// which is handled by ShowStrategyAction
