@@ -7,6 +7,7 @@ import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -76,6 +77,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
                 request.setAttribute(CConstants.WDK_STEP_KEY,
                         strategy.getLatestStep());
             } else {
+		wdkUser.addActiveStrategy(strStratId + "_" + strBranchId);
                 request.setAttribute(CConstants.WDK_STEP_KEY,
                         strategy.getStepById(Integer.parseInt(strBranchId)));
             }
