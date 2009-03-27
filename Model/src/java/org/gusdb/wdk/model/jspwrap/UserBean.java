@@ -873,10 +873,6 @@ public class UserBean /* implements Serializable */{
         return user.getActiveStrategies();
     }
 
-    public void setActiveStrategies(Map<String,Integer> activeStrategies) {
-        user.setActiveStrategies(activeStrategies);
-    }
-
     public void addActiveStrategy(String strategyId) {
 	user.addActiveStrategy(strategyId);
     }
