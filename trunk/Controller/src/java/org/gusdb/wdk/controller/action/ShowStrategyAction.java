@@ -3,11 +3,10 @@ package org.gusdb.wdk.controller.action;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,7 +23,6 @@ import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,25 +41,16 @@ public class ShowStrategyAction extends ShowQuestionAction {
             throws Exception {
         logger.debug("Entering ShowStrategyAction...");
 
+        UserBean wdkUser = ActionUtility.getUser(servlet, request);
+
         try {
             // Make sure a protocol is specified
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
             String strBranchId = null;
 
             if (strStratId == null || strStratId.length() == 0) {
-                throw new WdkModelException(
-                        "No strategy was specified for loading!");
-            }
-
-            // load model, user
-            WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
-                    CConstants.WDK_MODEL_KEY);
-            UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                    CConstants.WDK_USER_KEY);
-            if (wdkUser == null) {
-                wdkUser = wdkModel.getUserFactory().getGuestUser();
-                request.getSession().setAttribute(CConstants.WDK_USER_KEY,
-                        wdkUser);
+                outputStrategyJSON(wdkUser, null, response);
+                return null;
             }
 
             if (strStratId.indexOf("_") > 0) {
@@ -71,61 +60,37 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
             StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 
-	    wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
+            wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
 
-            if (strBranchId == null) {
-                request.setAttribute(CConstants.WDK_STEP_KEY,
-                        strategy.getLatestStep());
-            } else {
-		wdkUser.addActiveStrategy(strStratId + "_" + strBranchId);
-                request.setAttribute(CConstants.WDK_STEP_KEY,
-                        strategy.getStepById(Integer.parseInt(strBranchId)));
-            }
-            request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
+            if (strBranchId != null)
+                wdkUser.addActiveStrategy(strStratId + "_" + strBranchId);
 
             String output = request.getParameter("output");
             if (output != null && output.equals("xml")) {
-                // forward to strategyPage.jsp
-                ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
-                StringBuffer url = new StringBuffer(showSummary.getPath());
-                url.append("?strategy="
-                        + URLEncoder.encode(strStratId, "utf-8"));
-                if (strBranchId != null) {
-                    url.append("_" + URLEncoder.encode(strBranchId, "utf-8"));
-                }
-                String viewStep = request.getParameter("step");
-                if (viewStep != null && viewStep.length() != 0) {
-                    url.append("&step=" + URLEncoder.encode(viewStep, "utf-8"));
-                }
-                String subQuery = request.getParameter("subquery");
-                if (subQuery != null && subQuery.length() != 0) {
-                    url.append("&subquery="
-                            + URLEncoder.encode(subQuery, "utf-8"));
-                }
-
-                logger.debug("URL: " + url);
-
-                ActionForward forward = new ActionForward(url.toString());
-                forward.setRedirect(false);
+                ActionForward forward = outputStrategyXML(strategy,
+                        strBranchId, request, mapping);
                 return forward;
-            } else {    // by default, JSON output
-                outputStrategyJSON(strategy, response);
+            } else { // by default, JSON output
+                outputStrategyJSON(wdkUser, strategy, response);
                 return null;
             }
         } catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
-            outputErrorJSON(ex, response);
+            outputErrorJSON(wdkUser, ex, response);
             return null;
         }
     }
 
-    static void outputErrorJSON(Exception ex, HttpServletResponse response)
-            throws JSONException, IOException {
+    static void outputErrorJSON(UserBean user, Exception ex,
+            HttpServletResponse response) throws JSONException, IOException,
+            NoSuchAlgorithmException, WdkUserException, WdkModelException,
+            SQLException {
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", "error");
         jsMessage.put("exception", ex.getClass().getName());
         jsMessage.put("message", ex.getMessage());
+        jsMessage.put("strategies", outputStrategyChecksums(user));
 
         if (ex instanceof WdkModelException) {
             WdkModelException wmex = (WdkModelException) ex;
@@ -158,7 +123,42 @@ public class ShowStrategyAction extends ShowQuestionAction {
         writer.print(jsMessage.toString());
     }
 
-    static void outputStrategyJSON(StrategyBean strategy,
+    static ActionForward outputStrategyXML(StrategyBean strategy,
+            String strBranchId, HttpServletRequest request,
+            ActionMapping mapping) throws UnsupportedEncodingException {
+        if (strBranchId == null) {
+            request.setAttribute(CConstants.WDK_STEP_KEY,
+                    strategy.getLatestStep());
+        } else {
+            request.setAttribute(CConstants.WDK_STEP_KEY,
+                    strategy.getStepById(Integer.parseInt(strBranchId)));
+        }
+        request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
+
+        // forward to strategyPage.jsp
+        ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
+        StringBuffer url = new StringBuffer(showSummary.getPath());
+        url.append("?strategy=" + strategy.getStrategyId());
+        if (strBranchId != null) {
+            url.append("_" + URLEncoder.encode(strBranchId, "utf-8"));
+        }
+        String viewStep = request.getParameter("step");
+        if (viewStep != null && viewStep.length() != 0) {
+            url.append("&step=" + URLEncoder.encode(viewStep, "utf-8"));
+        }
+        String subQuery = request.getParameter("subquery");
+        if (subQuery != null && subQuery.length() != 0) {
+            url.append("&subquery=" + URLEncoder.encode(subQuery, "utf-8"));
+        }
+
+        logger.debug("URL: " + url);
+
+        ActionForward forward = new ActionForward(url.toString());
+        forward.setRedirect(false);
+        return forward;
+    }
+
+    static void outputStrategyJSON(UserBean user, StrategyBean strategy,
             HttpServletResponse response) throws JSONException,
             NoSuchAlgorithmException, WdkUserException, WdkModelException,
             SQLException, IOException {
@@ -166,17 +166,24 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsMessage.put("type", "strategy");
 
         // get a list of strategy checksums
-        UserBean user = strategy.getUser();
-        JSONObject jsStrategies = new JSONObject();
-        for (StrategyBean strat : user.getOpenedStrategies()) {
-            int stratId = strat.getStrategyId();
-            jsStrategies.put(Integer.toString(stratId), strat.getChecksum());
-        }
-        jsMessage.put("strategies", jsStrategies);
+        jsMessage.put("strategies", outputStrategyChecksums(user));
         jsMessage.put("strategy", outputStrategy(strategy));
 
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
+    }
+
+    static private JSONObject outputStrategyChecksums(UserBean user)
+            throws WdkUserException, WdkModelException, JSONException,
+            SQLException, NoSuchAlgorithmException {
+        JSONObject jsStrategies = new JSONObject();
+        StrategyBean[] openedStrategies = user.getOpenedStrategies();
+        for (StrategyBean strat : openedStrategies) {
+            int stratId = strat.getStrategyId();
+            jsStrategies.put(Integer.toString(stratId), strat.getChecksum());
+        }
+        jsStrategies.put("length", openedStrategies.length);
+        return jsStrategies;
     }
 
     static private JSONObject outputStrategy(StrategyBean strategy)
