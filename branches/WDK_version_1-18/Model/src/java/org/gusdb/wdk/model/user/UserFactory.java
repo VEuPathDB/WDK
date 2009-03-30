@@ -861,8 +861,20 @@ public class UserFactory {
             // now compute the dependencies of the histories
             History[] array = new History[histories.size()];
             histories.values().toArray(array);
+            List<Integer> toBeRemoved = new ArrayList<Integer>();
             for (History history : histories.values()) {
-                history.computeDependencies(array);
+                try {
+                    history.computeDependencies(array);
+                } catch (Exception ex) {
+                    history.setValid(false);
+                    logger.warn(ex);
+                    ex.printStackTrace();
+                    invalidHistories.put(history.getHistoryId(), history);
+                    toBeRemoved.add(history.getHistoryId());
+                }
+            }
+            for (int historyId : toBeRemoved) {
+                histories.remove(historyId);
             }
         } finally {
             SqlUtils.closeResultSet(rsHistory);
