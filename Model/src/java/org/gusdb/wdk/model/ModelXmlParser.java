@@ -593,6 +593,7 @@ public class ModelXmlParser extends XmlParser {
         digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/display");
         digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/term");
         digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/internal");
+        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/parentTerm");
     }
 
     private void configureQuestionSet(Digester digester) {
