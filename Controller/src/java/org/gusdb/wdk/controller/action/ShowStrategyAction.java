@@ -40,7 +40,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
     static final String MESSAGE_TYPE_OUT_OF_SYNC_ERROR = "out-of-sync";
     static final String MESSAGE_TYPE_GENERAL_ERROR = "general-error";
     
-    static final int TRUNCATE_LENGTH = 500;
+    static final int TRUNCATE_LENGTH = 200;
     
     private static final Logger logger = Logger.getLogger(ProcessFilterAction.class);
 
