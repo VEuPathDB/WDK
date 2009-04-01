@@ -1169,26 +1169,52 @@ public class User /* implements Serializable */{
     public void replaceActiveStrategy(String oldStrategyId,
             String newStrategyId, Map<Integer, Integer> stepIdsMap)
             throws WdkUserException {
+	System.out.println("Check 1");
         if (activeStrategies == null)
             throw new WdkUserException("Attempted to replace an active "
                     + "strategy, but no strategies are open!");
+	System.out.println("Check 2");
         synchronized (activeStrategies) {
+	    System.out.println("Check 3");
             Integer orderNumber = activeStrategies.remove(oldStrategyId);
+	    System.out.println("Check 4");
             if (orderNumber == null) return;
+	    System.out.println("Check 5");
             activeStrategies.put(newStrategyId, orderNumber);
+	    System.out.println("Check 6");
             String[] keys = new String[activeStrategies.size()];
+	    System.out.println("Check 7");
             activeStrategies.keySet().toArray(keys);
+	    System.out.println("Check 8");
+	    int deletedKeys = 0;
+	    System.out.println("Check 9");
             for (String id : keys) {
+		System.out.println("Check 10");
                 // If we replaced a root-level strategy, also replace any
                 // related substrategies
                 if (!oldStrategyId.contains("_")
                         && id.contains(oldStrategyId + "_")) {
+		    System.out.println("Check 11");
                     orderNumber = activeStrategies.remove(id);
-                    if (stepIdsMap != null) activeStrategies.put(newStrategyId
-                            + "_" + stepIdsMap.get(id.split("_")[1]),
-                            orderNumber);
+		    System.out.println("Check 12");
+                    if (stepIdsMap != null) {
+			System.out.println("Check 13");
+			if (stepIdsMap.containsKey(id.split("_")[1])) {
+			    System.out.println("Check 14a");
+			    activeStrategies.put(newStrategyId
+						 + "_" + stepIdsMap.get(id.split("_")[1]),
+						 (orderNumber - deletedKeys));
+			}
+			else {
+			    System.out.println("Check 14b");
+			    // If the substrat step id was not
+			    // found in the step map, it must have been deleted
+			    deletedKeys++;
+			}
+		    }
                     else activeStrategies.put(newStrategyId + "_"
-                            + id.split("_")[1], orderNumber);
+                            + id.split("_")[1], (orderNumber - deletedKeys));
+		    System.out.println("Check 15");
                 }
             }
         }
@@ -1197,6 +1223,11 @@ public class User /* implements Serializable */{
     public void setViewResults(int strategyId, int stepId) {
         this.viewStrategyId = new Integer(strategyId);
         this.viewStepId = new Integer(stepId);
+    }
+
+    public void resetViewResults() {
+	this.viewStrategyId = null;
+	this.viewStepId = null;
     }
 
     public Integer getViewStrategyId() {

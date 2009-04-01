@@ -33,7 +33,10 @@ public class DeleteStrategyAction extends Action {
                 for (int i = 0; i < stratIdstr.length; ++i) {
                     int stratId = Integer.parseInt(stratIdstr[i]);
                     wdkUser.deleteStrategy(stratId);
-                    wdkUser.removeActiveStrategy(Integer.toString(stratId));
+		    if (wdkUser.getActiveStrategies() != null) 
+			wdkUser.removeActiveStrategy(Integer.toString(stratId));
+		    if (wdkUser.getViewStrategyId() != null && wdkUser.getViewStrategyId() == stratId)
+			wdkUser.resetViewResults();
                 }
             } else {
                 throw new Exception("no strategy id is given for deletion");
