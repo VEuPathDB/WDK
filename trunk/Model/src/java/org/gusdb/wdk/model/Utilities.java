@@ -91,7 +91,7 @@ public class Utilities {
         return text;
     }
 
-    public static String[] toArray(String data, String delimiter) {
+    public static String[] toArray(String data) {
         if (data == null || data.length() == 0) {
             String[] values = new String[0];
             return values;
