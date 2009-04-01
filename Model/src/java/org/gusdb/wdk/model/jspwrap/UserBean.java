@@ -1054,6 +1054,10 @@ public class UserBean /* implements Serializable */{
 	user.setViewResults(strategyId, stepId);
     }
 
+    public void resetViewResults() {
+	user.resetViewResults();
+    }
+
     public Integer getViewStrategyId() {
 	return user.getViewStrategyId();
     }

@@ -68,13 +68,22 @@ public class DeleteStepAction extends ProcessFilterAction {
 
             int oldStrategyId = strategy.getStrategyId();
 
+	    if (wdkUser.getViewStrategyId() != null &&
+		wdkUser.getViewStrategyId() == oldStrategyId &&
+		wdkUser.getViewStepId() == Integer.parseInt(deleteStep)) {
+		wdkUser.resetViewResults();
+	    }
+
             Map<Integer, Integer> stepIdsMap = strategy.deleteStep(
                     Integer.valueOf(deleteStep), (strBranchId != null));
             // If a branch was specified, look up the new branch id in the
             // stepIdsMap
-            if (strBranchId != null) {
-                strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
-            }
+	    if (strBranchId != null) {
+		if (stepIdsMap.containsKey(Integer.valueOf(strBranchId)))
+		    strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
+		else
+		    strBranchId = null;
+	    }
 
             // If strategy was marked for deletion as a result of deleting
             // the step, forward to DeleteStrategy
