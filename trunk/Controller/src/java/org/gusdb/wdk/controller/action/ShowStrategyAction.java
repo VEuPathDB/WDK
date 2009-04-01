@@ -17,6 +17,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -108,11 +109,9 @@ public class ShowStrategyAction extends ShowQuestionAction {
                     JSONObject jsParam = new JSONObject();
                     jsParam.put("name", param.getName());
                     jsParam.put("prompt", param.getPrompt());
-                    JSONArray jsMessages = new JSONArray();
-                    for (String message : paramexs.get(param)) {
-                        jsMessages.put(message);
-                    }
-                    jsParam.put("messages", jsMessages);
+                    String[] messages = paramexs.get(param);
+                    String message = Utilities.fromArray(messages, "; ");
+                    jsParam.put("message", message);
                     jsParams.put(param.getName(), jsParam);
                 }
                 jsParams.put("length", paramexs.size());

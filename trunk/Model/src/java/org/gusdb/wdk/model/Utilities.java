@@ -91,7 +91,7 @@ public class Utilities {
         return text;
     }
 
-    public static String[] toArray(String data) {
+    public static String[] toArray(String data, String delimiter) {
         if (data == null || data.length() == 0) {
             String[] values = new String[0];
             return values;
@@ -103,11 +103,14 @@ public class Utilities {
         data = data.replace('\r', ' ');
         return data.trim().split("\\s+");
     }
-
     public static String fromArray(String[] data) {
+        return fromArray(data, ",");
+    }
+
+    public static String fromArray(String[] data, String delimiter) {
         StringBuffer sb = new StringBuffer();
         for (String value : data) {
-            if (sb.length() > 0) sb.append(",");
+            if (sb.length() > 0) sb.append(delimiter);
             sb.append(value);
         }
         return sb.toString();
