@@ -71,6 +71,9 @@ Otherwise a standard select menu is used.
         </c:forEach>
         <c:remove var="recurse_term_node" scope="request"/>
         <c:remove var="recurse_enum_param" scope="request"/>
+
+        <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
+
     </c:when>
 
     <c:otherwise>
