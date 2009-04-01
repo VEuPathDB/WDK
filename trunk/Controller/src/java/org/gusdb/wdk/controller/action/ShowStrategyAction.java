@@ -40,6 +40,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
     static final String MESSAGE_TYPE_OUT_OF_SYNC_ERROR = "out-of-sync";
     static final String MESSAGE_TYPE_GENERAL_ERROR = "general-error";
     
+    static final int TRUNCATE_LENGTH = 500;
+    
     private static final Logger logger = Logger.getLogger(ProcessFilterAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
@@ -280,7 +282,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         } else if (step.getIsBoolean()) {
             outputBooleanStep(user, step, jsStep, strategyId);
         } else { // both transform and normal steps
-            outputNormalStep(step, jsStep);
+            outputNormalStep(user, step, jsStep);
         }
 
         return jsStep;
@@ -295,7 +297,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("step", outputStep(user, childStep, strategyId, true));
     }
 
-    static private void outputNormalStep(StepBean step, JSONObject jsStep)
+    static private void outputNormalStep(UserBean user, StepBean step, JSONObject jsStep)
             throws NoSuchAlgorithmException, JSONException, WdkModelException,
             WdkUserException, SQLException {
 
@@ -307,9 +309,13 @@ public class ShowStrategyAction extends ShowQuestionAction {
             JSONObject jsParam = new JSONObject();
             jsParam.put("name", paramName);
             jsParam.put("prompt", param.getPrompt());
-            jsParam.put("value", paramValues.get(paramName));
             jsParam.put("visible", param.getIsVisible());
             jsParam.put("className", param.getClass().getName());
+            String dependentValue = paramValues.get(paramName);
+            param.setDependentValue(dependentValue);
+            param.setUser(user);
+            param.setTruncateLength(TRUNCATE_LENGTH);
+            jsParam.put("value", param.getBriefRawValue());
             jsParams.put(jsParam);
         }
         jsStep.put("params", jsParams);
