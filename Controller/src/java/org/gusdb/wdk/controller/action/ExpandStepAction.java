@@ -15,7 +15,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * This Action handles expanding a step in a search strategy (i.e., turning the
@@ -30,70 +29,77 @@ public class ExpandStepAction extends Action {
             throws Exception {
         logger.debug("Entering ExpandStepAction...");
 
-        String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-        String strStepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
-        String strBranchId = null;
+        UserBean wdkUser = ActionUtility.getUser(servlet, request);
+        try {
+            String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+            String strStepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
+            String strBranchId = null;
 
-        if (strStratId == null || strStratId.length() == 0) {
-            throw new WdkModelException(
-                    "No strategy was specified for expanding a step!");
-        }
-        if (strStepId == null || strStepId.length() == 0) {
-            throw new WdkModelException("No step specified to expand!");
-        }
-
-        // load model, user
-        WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
-                CConstants.WDK_MODEL_KEY);
-        UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                CConstants.WDK_USER_KEY);
-        if (wdkUser == null) {
-            wdkUser = wdkModel.getUserFactory().getGuestUser();
-            request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
-        }
-
-        if (strStratId.indexOf("_") > 0) {
-            strBranchId = strStratId.split("_")[1];
-            strStratId = strStratId.split("_")[0];
-        }
-
-        StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
-        StepBean latestStep;
-        if (strBranchId == null) {
-            latestStep = strategy.getLatestStep();
-        } else {
-            latestStep = strategy.getStepById(Integer.parseInt(strBranchId));
-        }
-
-        StepBean step = latestStep.getStepByDisplayId(Integer.parseInt(strStepId));
-
-        if (step.getParentStep() == null) {
-            throw new WdkModelException("Only top-row steps can be expanded!");
-        }
-
-        if (!step.getIsCollapsible()) {
-            String branch = request.getParameter("collapsedName");
-            if (branch == null || branch.length() == 0) {
+            if (strStratId == null || strStratId.length() == 0) {
                 throw new WdkModelException(
-                        "No collapsed name given for newly expanded step!");
+                        "No strategy was specified for expanding a step!");
             }
-            step.setIsCollapsible(true);
-            step.setCollapsedName(branch);
-            step.update(false);
+            if (strStepId == null || strStepId.length() == 0) {
+                throw new WdkModelException("No step specified to expand!");
+            }
+
+            if (strStratId.indexOf("_") > 0) {
+                strBranchId = strStratId.split("_")[1];
+                strStratId = strStratId.split("_")[0];
+            }
+
+            StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+            // verify the checksum
+            String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
+            if (checksum != null && !strategy.getChecksum().equals(checksum)) {
+                ShowStrategyAction.outputOutOfSyncJSON(strategy, response);
+                return null;
+            }
+
+            StepBean latestStep;
+            if (strBranchId == null) {
+                latestStep = strategy.getLatestStep();
+            } else {
+                latestStep = strategy.getStepById(Integer.parseInt(strBranchId));
+            }
+
+            StepBean step = latestStep.getStepByDisplayId(Integer.parseInt(strStepId));
+
+            if (step.getParentStep() == null) {
+                throw new WdkModelException(
+                        "Only top-row steps can be expanded!");
+            }
+
+            if (!step.getIsCollapsible()) {
+                String branch = request.getParameter("collapsedName");
+                if (branch == null || branch.length() == 0) {
+                    throw new WdkModelException(
+                            "No collapsed name given for newly expanded step!");
+                }
+                step.setIsCollapsible(true);
+                step.setCollapsedName(branch);
+                step.update(false);
+            }
+
+            // Add branch (Step object) to request as strategy
+            request.setAttribute(CConstants.WDK_STEP_KEY, step);
+            request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
+
+            // forward to strategyPage.jsp
+            ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
+            StringBuffer url = new StringBuffer(showSummary.getPath());
+            url.append("?strategy=" + URLEncoder.encode(strStratId, "UTF-8"));
+            url.append("_"
+                    + URLEncoder.encode(Integer.toString(step.getStepId()),
+                            "UTF-8"));
+            ActionForward forward = new ActionForward(url.toString());
+            forward.setRedirect(false);
+            return forward;
+        } catch (Exception ex) {
+            logger.error(ex);
+            ex.printStackTrace();
+            ShowStrategyAction.outputErrorJSON(wdkUser, ex, response);
+            return null;
         }
-
-        // Add branch (Step object) to request as strategy
-        request.setAttribute(CConstants.WDK_STEP_KEY, step);
-        request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
-
-        // forward to strategyPage.jsp
-        ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
-        StringBuffer url = new StringBuffer(showSummary.getPath());
-        url.append("?strategy=" + URLEncoder.encode(strStratId, "UTF-8"));
-	url.append("_" + URLEncoder.encode(Integer.toString(step.getStepId()), "UTF-8"));
-        ActionForward forward = new ActionForward(url.toString());
-        forward.setRedirect(false);
-        return forward;
-
     }
 }

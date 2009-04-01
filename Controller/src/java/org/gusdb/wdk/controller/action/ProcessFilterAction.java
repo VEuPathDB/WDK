@@ -65,6 +65,13 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             // get strategy
             StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 
+            // verify the checksum
+            String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
+            if (checksum != null && !strategy.getChecksum().equals(checksum)) {
+                ShowStrategyAction.outputOutOfSyncJSON(strategy, response);
+                return null;
+            }
+
             int oldStrategyId = strategy.getStrategyId();
 
             // Get operation from request params. If it is non-null
@@ -311,8 +318,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
             try {
                 wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId),
-                        Integer.toString(strategy.getStrategyId()),
-			stepIdsMap);
+                        Integer.toString(strategy.getStrategyId()), stepIdsMap);
             } catch (WdkUserException ex) {
                 // Replace failed, need to add strategy to active list
                 // which is handled by ShowStrategyAction

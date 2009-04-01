@@ -34,6 +34,12 @@ import org.json.JSONObject;
  */
 
 public class ShowStrategyAction extends ShowQuestionAction {
+    
+    static final String MESSAGE_TYPE_SUCCESS = "success";
+    static final String MESSAGE_TYPE_PARAM_ERROR = "param-error";
+    static final String MESSAGE_TYPE_OUT_OF_SYNC_ERROR = "out-of-sync";
+    static final String MESSAGE_TYPE_GENERAL_ERROR = "general-error";
+    
     private static final Logger logger = Logger.getLogger(ProcessFilterAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
@@ -49,7 +55,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             String strBranchId = null;
 
             if (strStratId == null || strStratId.length() == 0) {
-                outputStrategyJSON(wdkUser, null, response);
+                outputSuccessJSON(wdkUser, response);
                 return null;
             }
 
@@ -71,7 +77,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
                         strBranchId, request, mapping);
                 return forward;
             } else { // by default, JSON output
-                outputStrategyJSON(wdkUser, strategy, response);
+                outputSuccessJSON(strategy, response);
                 return null;
             }
         } catch (Exception ex) {
@@ -87,7 +93,6 @@ public class ShowStrategyAction extends ShowQuestionAction {
             NoSuchAlgorithmException, WdkUserException, WdkModelException,
             SQLException {
         JSONObject jsMessage = new JSONObject();
-        jsMessage.put("type", "error");
         jsMessage.put("exception", ex.getClass().getName());
         jsMessage.put("message", ex.getMessage());
         jsMessage.put("strategies", outputStrategyChecksums(user));
@@ -110,7 +115,10 @@ public class ShowStrategyAction extends ShowQuestionAction {
                 }
                 jsParams.put("length", paramexs.size());
                 jsMessage.put("params", jsParams);
+                jsMessage.put("type", MESSAGE_TYPE_PARAM_ERROR);
             }
+        } else {
+            jsMessage.put("type", MESSAGE_TYPE_GENERAL_ERROR);
         }
 
         // export the stack trace
@@ -123,7 +131,23 @@ public class ShowStrategyAction extends ShowQuestionAction {
         writer.print(jsMessage.toString());
     }
 
-    static ActionForward outputStrategyXML(StrategyBean strategy,
+    static void outputOutOfSyncJSON(StrategyBean strategy,
+            HttpServletResponse response) throws JSONException,
+            NoSuchAlgorithmException, WdkUserException, WdkModelException,
+            SQLException, IOException {
+        JSONObject jsMessage = new JSONObject();
+        jsMessage.put("type", MESSAGE_TYPE_OUT_OF_SYNC_ERROR);
+
+        // get a list of strategy checksums
+        UserBean user = strategy.getUser();
+        jsMessage.put("strategies", outputStrategyChecksums(user));
+        jsMessage.put("strategy", outputStrategy(user, strategy));
+
+        PrintWriter writer = response.getWriter();
+        writer.print(jsMessage.toString());
+    }
+
+    private static ActionForward outputStrategyXML(StrategyBean strategy,
             String strBranchId, HttpServletRequest request,
             ActionMapping mapping) throws UnsupportedEncodingException {
         if (strBranchId == null) {
@@ -158,14 +182,29 @@ public class ShowStrategyAction extends ShowQuestionAction {
         return forward;
     }
 
-    static void outputStrategyJSON(UserBean user, StrategyBean strategy,
+    static void outputSuccessJSON(UserBean user,
             HttpServletResponse response) throws JSONException,
             NoSuchAlgorithmException, WdkUserException, WdkModelException,
             SQLException, IOException {
         JSONObject jsMessage = new JSONObject();
-        jsMessage.put("type", "strategy");
+        jsMessage.put("type", MESSAGE_TYPE_SUCCESS);
 
         // get a list of strategy checksums
+        jsMessage.put("strategies", outputStrategyChecksums(user));
+
+        PrintWriter writer = response.getWriter();
+        writer.print(jsMessage.toString());
+    }
+
+    static void outputSuccessJSON(StrategyBean strategy,
+            HttpServletResponse response) throws JSONException,
+            NoSuchAlgorithmException, WdkUserException, WdkModelException,
+            SQLException, IOException {
+        JSONObject jsMessage = new JSONObject();
+        jsMessage.put("type", MESSAGE_TYPE_SUCCESS);
+
+        // get a list of strategy checksums
+        UserBean user = strategy.getUser();
         jsMessage.put("strategies", outputStrategyChecksums(user));
         jsMessage.put("strategy", outputStrategy(user, strategy));
 
