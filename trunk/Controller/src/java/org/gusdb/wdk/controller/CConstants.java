@@ -58,6 +58,7 @@ public class CConstants {
     public static final String WDK_RESULT_SIZE_ONLY_KEY = "resultSizeOnly";
     public static final String WDK_RESULT_SET_ONLY_KEY = "resultsOnly";
     public static final String WDK_FILTER_KEY = "wdkFilter";
+    public static final String WDK_STRATEGY_CHECKSUM_KEY = "strategy_checksum";
 
     // params used in the url
     public static final String WDK_STEP_ID_PARAM = "step";

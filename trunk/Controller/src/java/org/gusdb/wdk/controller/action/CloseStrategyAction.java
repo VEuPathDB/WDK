@@ -1,7 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.util.ArrayList;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -11,7 +9,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
@@ -28,23 +25,21 @@ public class CloseStrategyAction extends Action {
             throws Exception {
         logger.debug("Entering CloseStrategyAction");
 
-        // load model, user
-        WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
-                CConstants.WDK_MODEL_KEY);
-        UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                CConstants.WDK_USER_KEY);
-        if (wdkUser == null) {
-            wdkUser = wdkModel.getUserFactory().getGuestUser();
-            request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
+        UserBean wdkUser = ActionUtility.getUser(servlet, request);
+        try {
+            String stratIdstr = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+            if (stratIdstr == null || stratIdstr.length() == 0) {
+                throw new Exception("No strategy specified to close!");
+            }
+            wdkUser.removeActiveStrategy(stratIdstr);
+
+            ShowStrategyAction.outputSuccessJSON(wdkUser, response);
+            return null;
+        } catch (Exception ex) {
+            logger.error(ex);
+            ex.printStackTrace();
+            ShowStrategyAction.outputErrorJSON(wdkUser, ex, response);
+            return null;
         }
-
-	String stratIdstr = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-	if (stratIdstr == null || stratIdstr.length() == 0) {
-	    throw new Exception("No strategy specified to close!");
-	}
-
-        wdkUser.removeActiveStrategy(stratIdstr);
-
-        return null;
     }
 }

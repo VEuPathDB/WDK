@@ -1,7 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
-import java.util.ArrayList;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,11 +12,8 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * This Action handles moving a step in a search strategy to a different
@@ -34,83 +30,85 @@ public class MoveStepAction extends ProcessFilterAction {
             throws Exception {
         logger.debug("Entering MoveStepAction...");
 
-        // Make sure strategy, step, and moveto are defined
-        String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-        String strBranchId = null;
-        String strMoveFromId = request.getParameter("movefrom");
-        String op = request.getParameter("op");
-        String strMoveToId = request.getParameter("moveto");
+        UserBean wdkUser = ActionUtility.getUser(servlet, request);
+        try {
+            // Make sure strategy, step, and moveto are defined
+            String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+            String strBranchId = null;
+            String strMoveFromId = request.getParameter("movefrom");
+            String op = request.getParameter("op");
+            String strMoveToId = request.getParameter("moveto");
 
-        // Make sure necessary arguments are provided
-        if (strStratId == null || strStratId.length() == 0) {
-            throw new WdkModelException(
-                    "No strategy was specified for moving steps!");
-        }
-        if (strMoveFromId == null || strMoveFromId.length() == 0) {
-            throw new WdkModelException("No step was specified for moving!");
-        } else if (op == null || op.length() == 0) {
-            throw new WdkModelException(
-                    "No operation specified for moving first step.");
-        }
-        if (strMoveToId == null || strMoveToId.length() == 0) {
-            throw new WdkModelException(
-                    "No destination was specified for moving!");
-        }
+            // Make sure necessary arguments are provided
+            if (strStratId == null || strStratId.length() == 0) {
+                throw new WdkModelException(
+                        "No strategy was specified for moving steps!");
+            }
+            if (strMoveFromId == null || strMoveFromId.length() == 0) {
+                throw new WdkModelException("No step was specified for moving!");
+            } else if (op == null || op.length() == 0) {
+                throw new WdkModelException(
+                        "No operation specified for moving first step.");
+            }
+            if (strMoveToId == null || strMoveToId.length() == 0) {
+                throw new WdkModelException(
+                        "No destination was specified for moving!");
+            }
 
-        // load model, user
-        WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
-                CConstants.WDK_MODEL_KEY);
-        UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                CConstants.WDK_USER_KEY);
-        if (wdkUser == null) {
-            wdkUser = wdkModel.getUserFactory().getGuestUser();
-            request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
-        }
-        if (strStratId.indexOf("_") > 0) {
-            strBranchId = strStratId.split("_")[1];
-            strStratId = strStratId.split("_")[0];
-        }
+            if (strStratId.indexOf("_") > 0) {
+                strBranchId = strStratId.split("_")[1];
+                strStratId = strStratId.split("_")[0];
+            }
 
-        StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+            StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
 
-	int oldStrategyId = strategy.getStrategyId();
+            // verify the checksum
+            String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
+            if (checksum != null && !strategy.getChecksum().equals(checksum)) {
+                ShowStrategyAction.outputOutOfSyncJSON(strategy, response);
+                return null;
+            }
 
-        int moveFromId = Integer.valueOf(strMoveFromId);
-        int moveToId = Integer.valueOf(strMoveToId);
+            int oldStrategyId = strategy.getStrategyId();
 
-	Map<Integer,Integer> stepIdsMap = strategy.moveStep(moveFromId, moveToId, strBranchId);
-	
-	if (strBranchId != null) {
-	    strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
-	}
-        
-	try {
-	    wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId),
-                                Integer.toString(strategy.getStrategyId()),
-                                stepIdsMap);
-	} catch (WdkUserException ex) {
-	    // Need to add active strategy; handled by ShowStrategyAction
-	}
+            int moveFromId = Integer.valueOf(strMoveFromId);
+            int moveToId = Integer.valueOf(strMoveToId);
 
-        // Forward to ShowStrategyAction
-        ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
-        StringBuffer url = new StringBuffer(showSummary.getPath());
-        url.append("?strategy="
-                + URLEncoder.encode(Integer.toString(strategy.getStrategyId()),
-                        "UTF-8"));
-        if (strBranchId != null) {
-            url.append("_" + URLEncoder.encode(strBranchId, "UTF-8"));
+            Map<Integer, Integer> stepIdsMap = strategy.moveStep(moveFromId,
+                    moveToId, strBranchId);
+
+            if (strBranchId != null) {
+                strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
+            }
+
+            wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId),
+                    Integer.toString(strategy.getStrategyId()), stepIdsMap);
+
+            // Forward to ShowStrategyAction
+            ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
+            StringBuffer url = new StringBuffer(showSummary.getPath());
+            url.append("?strategy="
+                    + URLEncoder.encode(
+                            Integer.toString(strategy.getStrategyId()), "UTF-8"));
+            if (strBranchId != null) {
+                url.append("_" + URLEncoder.encode(strBranchId, "UTF-8"));
+            }
+            String viewStep = request.getParameter("step");
+            if (viewStep != null && viewStep.length() != 0) {
+                url.append("&step=" + URLEncoder.encode(viewStep, "UTF-8"));
+            }
+            String subQuery = request.getParameter("subquery");
+            if (subQuery != null && subQuery.length() != 0) {
+                url.append("&subquery=" + URLEncoder.encode(subQuery, "UTF-8"));
+            }
+            ActionForward forward = new ActionForward(url.toString());
+            forward.setRedirect(true);
+            return forward;
+        } catch (Exception ex) {
+            logger.error(ex);
+            ex.printStackTrace();
+            ShowStrategyAction.outputErrorJSON(wdkUser, ex, response);
+            return null;
         }
-        String viewStep = request.getParameter("step");
-        if (viewStep != null && viewStep.length() != 0) {
-            url.append("&step=" + URLEncoder.encode(viewStep, "UTF-8"));
-        }
-        String subQuery = request.getParameter("subquery");
-        if (subQuery != null && subQuery.length() != 0) {
-            url.append("&subquery=" + URLEncoder.encode(subQuery, "UTF-8"));
-        }
-        ActionForward forward = new ActionForward(url.toString());
-        forward.setRedirect(true);
-        return forward;
     }
 }
