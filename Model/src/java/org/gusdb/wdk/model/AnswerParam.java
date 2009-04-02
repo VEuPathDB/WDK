@@ -11,6 +11,17 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class AnswerParam extends Param {
+    
+    
+    /**
+     * dependent input is a step_id:user_checksum combo;
+     */
+    private static final String INPUT_DEPENDENT = "\\d+\\:\\w+";
+    
+    /**
+     * independent input is an answer_checksum:filter_name;
+     */
+    private static final String INPUT_INDEPENDENT = "\\w+\\:.+";
 
     // ///////////////////////////////////////////////////////////////////
     // /////////// Public properties ////////////////////////////////////
