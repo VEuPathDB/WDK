@@ -100,6 +100,8 @@ public class BooleanQuery extends SqlQuery {
         prepareColumns(recordClass);
 
         this.sql = constructSql();
+        
+        this.setDoNotTest(true);
     }
 
     private BooleanQuery(BooleanQuery query) {

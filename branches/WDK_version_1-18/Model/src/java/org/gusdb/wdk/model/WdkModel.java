@@ -766,6 +766,7 @@ public class WdkModel {
         if (!querySets.containsKey(Utilities.INTERNAL_QUERY_SET)) {
             QuerySet internalQuerySet = new QuerySet();
             internalQuerySet.setName(Utilities.INTERNAL_QUERY_SET);
+            internalQuerySet.setDoNotTest(true);
             addSet(internalQuerySet, querySets);
         }
 
@@ -775,6 +776,7 @@ public class WdkModel {
             QuestionSet internalQuestionSet = new QuestionSet();
             internalQuestionSet.setInternal(true);
             internalQuestionSet.setName(Utilities.INTERNAL_QUESTION_SET);
+            internalQuestionSet.setDoNotTest(true);
             addSet(internalQuestionSet, questionSets);
         }
     }
