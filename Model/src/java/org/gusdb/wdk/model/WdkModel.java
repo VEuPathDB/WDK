@@ -406,6 +406,7 @@ public class WdkModel {
 
             booleanQuery.excludeResources(projectId);
             booleanQuery.resolveReferences(this);
+            booleanQuery.setDoNotTest(true);
 
             internalQuerySet.addQuery(booleanQuery);
         }
@@ -770,6 +771,7 @@ public class WdkModel {
         if (!hasSet) {
             QuerySet internalQuerySet = new QuerySet();
             internalQuerySet.setName(Utilities.INTERNAL_QUERY_SET);
+            internalQuerySet.setDoNotTest(true);
             addQuerySet(internalQuerySet);
         }
 
@@ -785,6 +787,7 @@ public class WdkModel {
             QuestionSet internalQuestionSet = new QuestionSet();
             internalQuestionSet.setInternal(true);
             internalQuestionSet.setName(Utilities.INTERNAL_QUESTION_SET);
+            internalQuestionSet.setDoNotTest(true);
             addQuestionSet(internalQuestionSet);
         }
     }

@@ -229,7 +229,7 @@ public abstract class QueryInstance {
         return factory.getCachedResults(this);
     }
 
-    public String getCachedSql() throws NoSuchAlgorithmException, SQLException,
+    protected String getCachedSql() throws NoSuchAlgorithmException, SQLException,
             WdkModelException, JSONException, WdkUserException {
         CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
         QueryInfo queryInfo = cacheFactory.getQueryInfo(getQuery());
