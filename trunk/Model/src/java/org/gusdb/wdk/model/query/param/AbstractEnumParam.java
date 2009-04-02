@@ -152,23 +152,7 @@ public abstract class AbstractEnumParam extends Param {
     public String getDefault() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        if (defaultValue == null || defaultValue.length() == 0) {
-            // select a tree branch by default
-            EnumParamTermNode[] roots = getVocabTreeRoots();
-            StringBuffer buffer = new StringBuffer();
-            Stack<EnumParamTermNode> stack = new Stack<EnumParamTermNode>();
-            stack.push(roots[0]);
-            while (!stack.empty()) {
-                EnumParamTermNode node = stack.pop();
-                if (buffer.length() > 0) buffer.append(",");
-                buffer.append(node.getTerm());
-
-                for (EnumParamTermNode child : node.getChildren()) {
-                    stack.push(child);
-                }
-            }
-            return buffer.toString();
-        } else return defaultValue;
+        return defaultValue;
     }
 
     /**
@@ -266,6 +250,8 @@ public abstract class AbstractEnumParam extends Param {
     public String[] getTerms(String termList) throws NoSuchAlgorithmException,
             WdkModelException, SQLException, JSONException, WdkUserException {
         // the input is a list of terms
+        if (termList == null) return new String[0];
+
         String[] terms;
         if (multiPick) {
             terms = termList.split(",");
@@ -318,14 +304,12 @@ public abstract class AbstractEnumParam extends Param {
      * (org.gusdb.wdk.model.user.User, java.lang.String)
      */
     @Override
-    public String dependentValueToInternalValue(User user,
-            String dependentValue) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        if (dependentValue == null || dependentValue.length() == 0)
-            dependentValue = emptyValue;
-
+    public String dependentValueToInternalValue(User user, String dependentValue)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         String rawValue = decompressValue(dependentValue);
+        if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
+
         String[] terms = getTerms(rawValue);
         StringBuffer buf = new StringBuffer();
         for (String term : terms) {

@@ -170,8 +170,8 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 // if no default is assigned, use the first enum item
                 if (paramValues == null) {
                     String defaultValue = param.getDefault();
-                    if (defaultValue == null) defaultValue = terms[0];
-                    paramValues = new String[] { defaultValue };
+                    if (defaultValue == null) paramValues = new String[0];
+                    else paramValues = new String[] { defaultValue };
                 }
             } else if (param instanceof AnswerParamBean) {
                 AnswerParamBean answerParam = (AnswerParamBean) param;
