@@ -470,7 +470,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
         // the id query is forced to be cache-able.
         query = (Query) model.resolveReference(queryTwoPartName);
-        query.setIsCacheable(true);
+        // query.setIsCacheable(true);
 
         // dynamic attribute set need to be initialized after the id query.
         if (dynamicAttributeSet != null) {
