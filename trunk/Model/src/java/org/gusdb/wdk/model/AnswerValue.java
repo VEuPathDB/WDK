@@ -569,7 +569,7 @@ public class AnswerValue {
         if (dynaQuery != null && queryName.equals(dynaQuery.getFullName())) {
             // the dynamic query doesn't have sql defined, the sql will be
             // constructed from the id query cache table.
-            return idsQueryInstance.getCachedSql();
+            return idsQueryInstance.getSql();
         } else {
             // make an instance from the attribute query, and attribute query
             // has no params
