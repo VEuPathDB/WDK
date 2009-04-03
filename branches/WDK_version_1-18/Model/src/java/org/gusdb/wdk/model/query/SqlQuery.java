@@ -80,7 +80,8 @@ public class SqlQuery extends Query {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.query.Query#appendJSONContent(org.json.JSONObject)
+     * @see
+     * org.gusdb.wdk.model.query.Query#appendJSONContent(org.json.JSONObject)
      */
     @Override
     protected void appendJSONContent(JSONObject jsQuery) throws JSONException {
@@ -136,20 +137,24 @@ public class SqlQuery extends Query {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.query.Query#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     * @see
+     * org.gusdb.wdk.model.query.Query#resolveReferences(org.gusdb.wdk.model
+     * .WdkModel)
      */
     @Override
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
         super.resolveReferences(wdkModel);
 
         // apply the sql macros into sql
+        if (sql == null)
+            throw new WdkModelException("null sql in "
+                    + getQuerySet().getName() + "." + getName());
         for (String paramName : sqlMacroMap.keySet()) {
             String pattern = "&&" + paramName + "&&";
             String value = sqlMacroMap.get(paramName);
             // escape the & $ \ chars in the value
             sql = sql.replaceAll(pattern, Matcher.quoteReplacement(value));
         }
-	if (sql == null) throw new WdkModelException("null sql in " + getQuerySet().getName() + "." + getName());
         // verify the all param macros have been replaced
         Matcher matcher = Pattern.compile("&&([^&]+)&&").matcher(sql);
         if (matcher.find())
@@ -177,7 +182,8 @@ public class SqlQuery extends Query {
     }
 
     /**
-     * @param clobRow the clobRow to set
+     * @param clobRow
+     *            the clobRow to set
      */
     public void setClobRow(boolean clobRow) {
         this.clobRow = clobRow;
