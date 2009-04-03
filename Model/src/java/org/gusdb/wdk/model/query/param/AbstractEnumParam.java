@@ -155,7 +155,11 @@ public abstract class AbstractEnumParam extends Param {
     }
 
     @Override
-    public String getDefault() {
+    public String getDefault() throws NoSuchAlgorithmException,
+            WdkModelException, SQLException, JSONException, WdkUserException {
+        initVocabMap();
+        if (defaultValue != null && defaultValue.length() == 0)
+            defaultValue = null;
         return defaultValue;
     }
 
@@ -381,16 +385,16 @@ public abstract class AbstractEnumParam extends Param {
     }
 
     protected void applySelectMode() {
-        if (getDefault() != null) return;
-        
+        if (defaultValue == null || defaultValue.length() == 0) return;
+
         if (selectMode == null) selectMode = SELECT_MODE_NONE;
         if (selectMode.equalsIgnoreCase(SELECT_MODE_ALL)) {
             StringBuilder builder = new StringBuilder();
-            for(String term: termInternalMap.keySet()) {
+            for (String term : termInternalMap.keySet()) {
                 if (builder.length() > 0) builder.append(",");
                 builder.append(term);
             }
-           this.defaultValue = builder.toString();
+            this.defaultValue = builder.toString();
         } else if (selectMode.equalsIgnoreCase(SELECT_MODE_FIRST)) {
             StringBuilder builder = new StringBuilder();
             Stack<EnumParamTermNode> stack = new Stack<EnumParamTermNode>();
@@ -399,7 +403,7 @@ public abstract class AbstractEnumParam extends Param {
                 EnumParamTermNode node = stack.pop();
                 if (builder.length() > 0) builder.append(",");
                 builder.append(node.getTerm());
-                for(EnumParamTermNode child : node.getChildren()) {
+                for (EnumParamTermNode child : node.getChildren()) {
                     stack.push(child);
                 }
             }

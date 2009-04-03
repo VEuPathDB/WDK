@@ -36,26 +36,27 @@ public class EnumParam extends AbstractEnumParam {
     // ///////////////////////////////////////////////////////////////////
 
     protected void initVocabMap() throws WdkModelException {
-        if (termInternalMap == null) {
-            termInternalMap = new LinkedHashMap<String, String>();
-            termDisplayMap = new LinkedHashMap<String, String>();
+        if (termInternalMap != null) return;
 
-            Map<String, String> termParentMap = new LinkedHashMap<String, String>();
+        termInternalMap = new LinkedHashMap<String, String>();
+        termDisplayMap = new LinkedHashMap<String, String>();
 
-            EnumItem[] enumItems = enumItemList.getEnumItems();
-            for (EnumItem item : enumItems) {
-                String term = item.getTerm();
-                termInternalMap.put(term, item.getInternal());
-                termDisplayMap.put(term, item.getDisplay());
-                termParentMap.put(term, item.getParentTerm());
-            }
-            // check if the result is empty
-            if (termInternalMap.isEmpty())
-                throw new WdkModelException("The EnumParam [" + getFullName()
-                        + "] doesn't have any value");
+        Map<String, String> termParentMap = new LinkedHashMap<String, String>();
 
-            initTreeMap(termParentMap);
+        EnumItem[] enumItems = enumItemList.getEnumItems();
+        for (EnumItem item : enumItems) {
+            String term = item.getTerm();
+            termInternalMap.put(term, item.getInternal());
+            termDisplayMap.put(term, item.getDisplay());
+            termParentMap.put(term, item.getParentTerm());
         }
+        // check if the result is empty
+        if (termInternalMap.isEmpty())
+            throw new WdkModelException("The EnumParam [" + getFullName()
+                    + "] doesn't have any value");
+
+        initTreeMap(termParentMap);
+        applySelectMode();
     }
 
     /*
@@ -121,8 +122,6 @@ public class EnumParam extends AbstractEnumParam {
         if (sb.length() > 0) {
             this.defaultValue = sb.toString();
         }
-        
-        applySelectMode();
     }
 
     /*

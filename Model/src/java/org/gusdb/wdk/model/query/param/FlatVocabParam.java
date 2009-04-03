@@ -88,7 +88,7 @@ public class FlatVocabParam extends AbstractEnumParam {
         paramSet.addParam(param);
         query.addParam(param);
         this.query = query;
-        
+
         applySelectMode();
     }
 
@@ -110,46 +110,44 @@ public class FlatVocabParam extends AbstractEnumParam {
     protected void initVocabMap() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
+        if (termInternalMap != null) return;
 
-        if (termInternalMap == null) {
-            termInternalMap = new LinkedHashMap<String, String>();
-            termDisplayMap = new LinkedHashMap<String, String>();
+        termInternalMap = new LinkedHashMap<String, String>();
+        termDisplayMap = new LinkedHashMap<String, String>();
 
-            // check if the query has "display" column
-            boolean hasDisplay = query.getColumnMap().containsKey(
-                    COLUMN_DISPLAY);
-            boolean hasParent = query.getColumnMap().containsKey(
-                    COLUMN_PARENT_TERM);
+        // check if the query has "display" column
+        boolean hasDisplay = query.getColumnMap().containsKey(COLUMN_DISPLAY);
+        boolean hasParent = query.getColumnMap().containsKey(COLUMN_PARENT_TERM);
 
-            Map<String, String> termParentMap = new LinkedHashMap<String, String>();
+        Map<String, String> termParentMap = new LinkedHashMap<String, String>();
 
-            // prepare param values
-            Map<String, String> values = new LinkedHashMap<String, String>();
-            values.put(PARAM_SERVED_QUERY, servedQueryName);
+        // prepare param values
+        Map<String, String> values = new LinkedHashMap<String, String>();
+        values.put(PARAM_SERVED_QUERY, servedQueryName);
 
-            User user = wdkModel.getSystemUser();
-            QueryInstance instance = query.makeInstance(user, values);
-            ResultList result = instance.getResults();
-            while (result.next()) {
-                String term = result.get(COLUMN_TERM).toString();
-                String value = result.get(COLUMN_INTERNAL).toString();
-                String display = hasDisplay
-                        ? result.get(COLUMN_DISPLAY).toString() : term;
-                String parentTerm = null;
-                if (hasParent) {
-                    Object parent = result.get(COLUMN_PARENT_TERM);
-                    if (parent != null) parentTerm = parent.toString();
-                }
-                termParentMap.put(term, parentTerm);
-
-                termInternalMap.put(term, value);
-                termDisplayMap.put(term, display);
+        User user = wdkModel.getSystemUser();
+        QueryInstance instance = query.makeInstance(user, values);
+        ResultList result = instance.getResults();
+        while (result.next()) {
+            String term = result.get(COLUMN_TERM).toString();
+            String value = result.get(COLUMN_INTERNAL).toString();
+            String display = hasDisplay ? result.get(COLUMN_DISPLAY).toString()
+                    : term;
+            String parentTerm = null;
+            if (hasParent) {
+                Object parent = result.get(COLUMN_PARENT_TERM);
+                if (parent != null) parentTerm = parent.toString();
             }
-            if (termInternalMap.isEmpty())
-                throw new WdkModelException("No item returned by the query of"
-                        + " FlatVocabParam " + getFullName());
-            initTreeMap(termParentMap);
+            termParentMap.put(term, parentTerm);
+
+            termInternalMap.put(term, value);
+            termDisplayMap.put(term, display);
         }
+        if (termInternalMap.isEmpty())
+            throw new WdkModelException("No item returned by the query of"
+                    + " FlatVocabParam " + getFullName());
+        initTreeMap(termParentMap);
+        applySelectMode();
     }
 
     /*
