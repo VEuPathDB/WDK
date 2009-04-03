@@ -384,14 +384,14 @@ public abstract class AbstractEnumParam extends Param {
         if (getDefault() != null) return;
         
         if (selectMode == null) selectMode = SELECT_MODE_NONE;
-        if (selectMode.equals(SELECT_MODE_ALL)) {
+        if (selectMode.equalsIgnoreCase(SELECT_MODE_ALL)) {
             StringBuilder builder = new StringBuilder();
             for(String term: termInternalMap.keySet()) {
                 if (builder.length() > 0) builder.append(",");
                 builder.append(term);
             }
            this.defaultValue = builder.toString();
-        } else if (selectMode.equals(SELECT_MODE_FIRST)) {
+        } else if (selectMode.equalsIgnoreCase(SELECT_MODE_FIRST)) {
             StringBuilder builder = new StringBuilder();
             Stack<EnumParamTermNode> stack = new Stack<EnumParamTermNode>();
             if (termTreeList.size() > 0) stack.push(termTreeList.get(0));
