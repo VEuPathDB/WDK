@@ -120,6 +120,11 @@ public abstract class Param extends WdkModelBase {
     protected QueryFactory queryFactory;
     protected WdkModel wdkModel;
 
+    /**
+     * this property is only used by abstractEnumParams, but have to be initialized from suggest.
+     */
+    protected String selectMode;
+
     public Param() {
         visible = true;
         readonly = false;
@@ -145,6 +150,7 @@ public abstract class Param extends WdkModelBase {
         this.emptyValue = param.emptyValue;
         this.paramSet = param.paramSet;
         this.wdkModel = param.wdkModel;
+        this.selectMode = param.selectMode;
     }
 
     /**
@@ -341,6 +347,8 @@ public abstract class Param extends WdkModelBase {
                     sample = suggest.getSample();
                     allowEmpty = suggest.isAllowEmpty();
                     emptyValue = suggest.getEmptyValue();
+                    selectMode = suggest.getSelectMode();
+                    
                     hasSuggest = true;
                 }
             }

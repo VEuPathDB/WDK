@@ -32,6 +32,10 @@ public abstract class AbstractEnumParam extends Param {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException;
 
+    static final String SELECT_MODE_NONE = "none";
+    static final String SELECT_MODE_ALL = "all";
+    static final String SELECT_MODE_FIRST = "first";
+
     protected boolean multiPick = false;
     protected Map<String, String> termInternalMap;
     protected Map<String, String> termDisplayMap;
@@ -44,7 +48,9 @@ public abstract class AbstractEnumParam extends Param {
 
     private String displayType;
 
-    public AbstractEnumParam() {}
+    public AbstractEnumParam() {
+        this.selectMode = SELECT_MODE_NONE;
+    }
 
     public AbstractEnumParam(AbstractEnumParam param) {
         super(param);
@@ -149,9 +155,7 @@ public abstract class AbstractEnumParam extends Param {
     }
 
     @Override
-    public String getDefault() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public String getDefault() {
         return defaultValue;
     }
 
@@ -368,4 +372,38 @@ public abstract class AbstractEnumParam extends Param {
                     + getFullName() + " cannot be empty");
     }
 
+    /**
+     * @param selectMode
+     *            the selectMode to set
+     */
+    public void setSelectMode(String selectMode) {
+        this.selectMode = selectMode;
+    }
+
+    protected void applySelectMode() {
+        if (getDefault() != null) return;
+        
+        if (selectMode == null) selectMode = SELECT_MODE_NONE;
+        if (selectMode.equals(SELECT_MODE_ALL)) {
+            StringBuilder builder = new StringBuilder();
+            for(String term: termInternalMap.keySet()) {
+                if (builder.length() > 0) builder.append(",");
+                builder.append(term);
+            }
+           this.defaultValue = builder.toString();
+        } else if (selectMode.equals(SELECT_MODE_FIRST)) {
+            StringBuilder builder = new StringBuilder();
+            Stack<EnumParamTermNode> stack = new Stack<EnumParamTermNode>();
+            if (termTreeList.size() > 0) stack.push(termTreeList.get(0));
+            while (!stack.empty()) {
+                EnumParamTermNode node = stack.pop();
+                if (builder.length() > 0) builder.append(",");
+                builder.append(node.getTerm());
+                for(EnumParamTermNode child : node.getChildren()) {
+                    stack.push(child);
+                }
+            }
+            this.defaultValue = builder.toString();
+        }
+    }
 }

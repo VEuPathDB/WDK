@@ -26,6 +26,7 @@ public class ParamReference extends Reference {
     private String emptyValue;
     private String displayType;
     private Boolean visible;
+    private String selectMode;
 
     public ParamReference() {
     }
@@ -163,6 +164,20 @@ public class ParamReference extends Reference {
      */
     public void setVisible(Boolean visible) {
         this.visible = visible;
+    }
+
+    /**
+     * @return the selectMode
+     */
+    public String getSelectMode() {
+        return selectMode;
+    }
+
+    /**
+     * @param selectMode the selectMode to set
+     */
+    public void setSelectMode(String selectMode) {
+        this.selectMode = selectMode;
     }
     
 }

@@ -17,6 +17,7 @@ public class ParamSuggestion extends WdkModelBase {
     private String defaultValue;
     private boolean allowEmpty = false;
     private String emptyValue = "";
+    private String selectMode = AbstractEnumParam.SELECT_MODE_NONE;
 
     /**
      * the default constructor is used by the digester
@@ -30,6 +31,8 @@ public class ParamSuggestion extends WdkModelBase {
         this.sample = suggestion.sample;
         this.defaultValue = suggestion.defaultValue;
         this.allowEmpty = suggestion.allowEmpty;
+        this.emptyValue = suggestion.emptyValue;
+        this.selectMode = suggestion.selectMode;
     }
 
     /**
@@ -114,4 +117,20 @@ public class ParamSuggestion extends WdkModelBase {
     public void setEmptyValue(String emptyValue) {
         this.emptyValue = emptyValue;
     }
+
+    /**
+     * @return the selectMode
+     */
+    public String getSelectMode() {
+        return selectMode;
+    }
+
+    /**
+     * @param selectMode
+     *            the selectMode to set
+     */
+    public void setSelectMode(String selectMode) {
+        this.selectMode = selectMode;
+    }
+
 }
