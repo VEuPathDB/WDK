@@ -390,6 +390,7 @@ public abstract class Query extends WdkModelBase {
         Boolean visible = paramRef.getVisible();
         String queryRef = paramRef.getQueryRef();
         String displayType = paramRef.getDisplayType();
+        String selectMode = paramRef.getSelectMode();
         if (param instanceof AbstractEnumParam) {
             if (param instanceof FlatVocabParam)
                 ((FlatVocabParam) param).setServedQueryName(getFullName());
@@ -422,12 +423,15 @@ public abstract class Query extends WdkModelBase {
             // if displayType is set, overrides the value in param
             if (displayType != null)
                 ((AbstractEnumParam) param).setDisplayType(displayType);
+
+            if (selectMode != null)
+                ((AbstractEnumParam) param).setSelectMode(selectMode);
         } else if (multiPick != null || useTermOnly != null
-                || displayType != null) {
+                || displayType != null || selectMode != null) {
             throw new WdkModelException("The paramRef to '" + twoPartName
                     + "' is not a flatVocabParam nor enumParam. The "
-                    + "'multiPick', 'useTermOnly', 'displayType' property "
-                    + "can only be applied to "
+                    + "'multiPick', 'useTermOnly', 'displayType', "
+                    + "'selectMode' property can only be applied to "
                     + "paramRefs of flatVocabParams or enumParams.");
         } else if (param instanceof StringParam) {
             // if quote is set, it overrides the value of the param
