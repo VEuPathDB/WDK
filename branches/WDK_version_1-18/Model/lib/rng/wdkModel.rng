@@ -276,6 +276,9 @@
                 <choice>
                     <element name="suggest">
                         <ref name="SuggestContent" />
+                        <optional>
+                            <ref name="SelectModeContents" />
+                        </optional>
                     </element>
                     <ref name="useTermOnly" />
                 </choice>
@@ -329,7 +332,10 @@
                    <element name="suggest">
                       <ref name="SuggestContent" />
                       <optional>
+                        <choice>
                             <attribute name="default" />
+                            <ref name="SelectModeContents" />
+                        </choice>
                       </optional>
                    </element>
                    <ref name="useTermOnly" />
@@ -362,7 +368,18 @@
        </optional>
 
     </define>
+
   
+  <define name="SelectModeContents">
+      <attribute name="selectMode">
+        <choice>
+          <value>none</value>
+          <value>all</value>
+          <value>first</value>
+        </choice>
+      </attribute>
+  </define>
+
 
   <!-- Schema grouping elements  -->
   <define name="queries">
@@ -462,7 +479,10 @@
         <attribute name="ref" />
         <ref name="IncludeExclude" />
         <optional>
-           <attribute name="default" />
+          <choice>
+            <attribute name="default" />
+            <ref name="SelectModeContents" />
+          </choice>
         </optional>
         <optional>
             <attribute name="multiPick">
