@@ -110,6 +110,7 @@ class ActiveStrategyFactory {
         ActiveStrategy strategy = getStrategy(strategyKey);
         if (strategy == null || strategy.strategyKey == null) return 0;
         int order = 1;
+System.out.println("current: " + strategyKey + ", parent: " + strategy.parent.strategyKey + ", children: " + strategy.parent.children.size());
         for (ActiveStrategy sibling : strategy.parent.children.values()) {
             if (strategy.equals(sibling)) return order;
             order++;
@@ -124,6 +125,7 @@ class ActiveStrategyFactory {
     private String getParentKey(String strategyKey) throws WdkUserException,
             WdkModelException, JSONException, SQLException {
         int pos = strategyKey.indexOf('_');
+        if (pos < 0) return null;
         int strategyId = Integer.parseInt(strategyKey.substring(0, pos));
         int stepId = Integer.parseInt(strategyKey.substring(pos + 1));
         Strategy strategy = user.getStrategy(strategyId);
@@ -132,7 +134,7 @@ class ActiveStrategyFactory {
             parent = parent.getNextStep();
         }
         // check if the parent is top level
-        if (parent.getParentStep() == null) return null;
+        if (parent.getParentStep() == null) return Integer.toString(strategyId);
         else return strategyId + "_" + parent.getDisplayId();
     }
 
@@ -142,10 +144,16 @@ class ActiveStrategyFactory {
     }
     
     private void replaceStrategy(ActiveStrategy oldStrategy, ActiveStrategy newStrategy, Map<Integer, Integer> stepMap) {
+System.out.println("replace old: " + oldStrategy.strategyKey + ", new: " + newStrategy.strategyKey);
+for(int old : stepMap.keySet()) {
+    System.out.println("step " + old + "->" + stepMap.get(old));
+}
         for(ActiveStrategy oldChild : oldStrategy.children.values()) {
             String oldKey = oldChild.strategyKey;
             int oldId = Integer.parseInt(oldKey.substring(oldKey.indexOf('_') + 1));
-            String newKey = newStrategy.strategyId + "_" + stepMap.get(oldId);
+            Integer newId = stepMap.get(oldId);
+            if (newId == null) newId = oldId;
+            String newKey = newStrategy.strategyId + "_" + newId;
             ActiveStrategy newChild = new ActiveStrategy(newKey);
             newChild.parent = newStrategy;
             replaceStrategy(oldChild, newChild, stepMap);
