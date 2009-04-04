@@ -90,8 +90,8 @@ public class ProcessRenameStrategyAction extends Action {
 
                 try {
                     wdkUser.replaceActiveStrategy(
-                            Integer.toString(oldStrategyId),
-                            Integer.toString(strategy.getStrategyId()), null);
+                            oldStrategyId,
+                            strategy.getStrategyId(), null);
                 } catch (WdkUserException ex) {
                     // Adding active strat will be handled by ShowStrategyAction
                 }

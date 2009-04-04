@@ -869,11 +869,7 @@ public class UserBean /* implements Serializable */{
         return this.user.toString();
     }
 
-    public Map<String,Integer> getActiveStrategies() {
-        return user.getActiveStrategies();
-    }
-
-    public void addActiveStrategy(String strategyId) {
+    public void addActiveStrategy(String strategyId) throws NumberFormatException, WdkUserException, WdkModelException, JSONException, SQLException {
 	user.addActiveStrategy(strategyId);
     }
 
@@ -882,7 +878,7 @@ public class UserBean /* implements Serializable */{
 	user.removeActiveStrategy(strategyId);
     }
 
-    public void replaceActiveStrategy(String oldStrategyId, String newStrategyId, Map<Integer,Integer> stepIdsMap)
+    public void replaceActiveStrategy(int oldStrategyId, int newStrategyId, Map<Integer,Integer> stepIdsMap)
 	throws WdkUserException {
 	user.replaceActiveStrategy(oldStrategyId, newStrategyId, stepIdsMap);
     }
@@ -1066,10 +1062,10 @@ public class UserBean /* implements Serializable */{
 	return user.getViewStepId();
     }
 
-    public StrategyBean[] getOpenedStrategies() throws WdkUserException,
+    public StrategyBean[] getActiveStrategies() throws WdkUserException,
             WdkModelException, JSONException, SQLException {
         List<StrategyBean> strategies = new ArrayList<StrategyBean>();
-        for (Strategy strategy : user.getOpenedStrategies()) {
+        for (Strategy strategy : user.getActiveStrategies()) {
             strategies.add(new StrategyBean(strategy));
         }
         StrategyBean[] array = new StrategyBean[strategies.size()];
@@ -1077,8 +1073,22 @@ public class UserBean /* implements Serializable */{
         return array;
     }
 
-    public Integer[] getOpenedStrategyIds() throws WdkUserException,
-            WdkModelException, JSONException, SQLException {
-	return user.getOpenedStrategyIds();
+    /**
+     * @param strategyKey
+     * @return
+     * @see org.gusdb.wdk.model.user.User#getStrategyOrder(java.lang.String)
+     */
+    public int getStrategyOrder(String strategyKey) {
+        return user.getStrategyOrder(strategyKey);
     }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.User#getActiveStrategyIds()
+     */
+    public int[] getActiveStrategyIds() {
+        return user.getActiveStrategyIds();
+    }
+
+    
 }
