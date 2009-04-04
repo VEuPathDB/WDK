@@ -81,8 +81,8 @@ public class MoveStepAction extends ProcessFilterAction {
                 strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
             }
 
-            wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId),
-                    Integer.toString(strategy.getStrategyId()), stepIdsMap);
+            wdkUser.replaceActiveStrategy(oldStrategyId,
+                    strategy.getStrategyId(), stepIdsMap);
 
             // Forward to ShowStrategyAction
             ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);

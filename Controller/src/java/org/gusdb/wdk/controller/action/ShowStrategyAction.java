@@ -35,14 +35,14 @@ import org.json.JSONObject;
  */
 
 public class ShowStrategyAction extends ShowQuestionAction {
-    
+
     static final String MESSAGE_TYPE_SUCCESS = "success";
     static final String MESSAGE_TYPE_PARAM_ERROR = "param-error";
     static final String MESSAGE_TYPE_OUT_OF_SYNC_ERROR = "out-of-sync";
     static final String MESSAGE_TYPE_GENERAL_ERROR = "general-error";
-    
+
     static final int TRUNCATE_LENGTH = 200;
-    
+
     private static final Logger logger = Logger.getLogger(ProcessFilterAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
@@ -183,10 +183,9 @@ public class ShowStrategyAction extends ShowQuestionAction {
         return forward;
     }
 
-    static void outputSuccessJSON(UserBean user,
-            HttpServletResponse response) throws JSONException,
-            NoSuchAlgorithmException, WdkUserException, WdkModelException,
-            SQLException, IOException {
+    static void outputSuccessJSON(UserBean user, HttpServletResponse response)
+            throws JSONException, NoSuchAlgorithmException, WdkUserException,
+            WdkModelException, SQLException, IOException {
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", MESSAGE_TYPE_SUCCESS);
 
@@ -217,7 +216,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             throws WdkUserException, WdkModelException, JSONException,
             SQLException, NoSuchAlgorithmException {
         JSONObject jsStrategies = new JSONObject();
-        StrategyBean[] openedStrategies = user.getOpenedStrategies();
+        StrategyBean[] openedStrategies = user.getActiveStrategies();
         for (StrategyBean strat : openedStrategies) {
             int stratId = strat.getStrategyId();
             jsStrategies.put(Integer.toString(stratId), strat.getChecksum());
@@ -296,9 +295,9 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("step", outputStep(user, childStep, strategyId, true));
     }
 
-    static private void outputNormalStep(UserBean user, StepBean step, JSONObject jsStep)
-            throws NoSuchAlgorithmException, JSONException, WdkModelException,
-            WdkUserException, SQLException {
+    static private void outputNormalStep(UserBean user, StepBean step,
+            JSONObject jsStep) throws NoSuchAlgorithmException, JSONException,
+            WdkModelException, WdkUserException, SQLException {
 
         JSONArray jsParams = new JSONArray();
         Map<String, ParamBean> params = step.getAnswerValue().getQuestion().getParamsMap();
@@ -325,7 +324,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             JSONException, WdkModelException, WdkUserException, SQLException {
         JSONObject jsStrategy = new JSONObject();
         String subStratId = strategyId + "_" + step.getStepId();
-        Integer order = user.getActiveStrategies().get(subStratId);
+        Integer order = user.getStrategyOrder(subStratId);
         if (order == null) order = 0; // the sub-strategy is not displayed
 
         jsStrategy.put("name", step.getCollapsedName());

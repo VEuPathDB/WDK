@@ -1,8 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.util.ArrayList;
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -11,9 +8,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
-import org.gusdb.wdk.model.jspwrap.StepBean;
-import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
@@ -39,7 +33,7 @@ public class ShowApplicationAction extends ShowSummaryAction {
             request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
         }
 
-	Integer[] strategyIds = wdkUser.getOpenedStrategyIds();
+        int[] strategyIds = wdkUser.getActiveStrategyIds();
 
         String showHist = request.getParameter("showHistory");
         if (showHist != null && Boolean.valueOf(showHist)) {
