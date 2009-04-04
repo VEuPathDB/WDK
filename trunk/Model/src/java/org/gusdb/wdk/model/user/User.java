@@ -1259,7 +1259,9 @@ public class User /* implements Serializable */{
     }
 
     public int getStrategyOrder(String strategyKey) {
-        return activeStrategyFactory.getOrder(strategyKey);
+        int order = activeStrategyFactory.getOrder(strategyKey);
+        System.out.println("order: " + order);
+        return order;
     }
     
     public int[] getActiveStrategyIds() {
