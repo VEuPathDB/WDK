@@ -317,8 +317,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             }
 
             try {
-                wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId),
-                        Integer.toString(strategy.getStrategyId()), stepIdsMap);
+                wdkUser.replaceActiveStrategy(oldStrategyId,
+                        strategy.getStrategyId(), stepIdsMap);
             } catch (WdkUserException ex) {
                 // Replace failed, need to add strategy to active list
                 // which is handled by ShowStrategyAction

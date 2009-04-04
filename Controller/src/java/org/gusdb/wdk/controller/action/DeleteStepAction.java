@@ -68,22 +68,21 @@ public class DeleteStepAction extends ProcessFilterAction {
 
             int oldStrategyId = strategy.getStrategyId();
 
-	    if (wdkUser.getViewStrategyId() != null &&
-		wdkUser.getViewStrategyId() == oldStrategyId &&
-		wdkUser.getViewStepId() == Integer.parseInt(deleteStep)) {
-		wdkUser.resetViewResults();
-	    }
+            if (wdkUser.getViewStrategyId() != null
+                    && wdkUser.getViewStrategyId() == oldStrategyId
+                    && wdkUser.getViewStepId() == Integer.parseInt(deleteStep)) {
+                wdkUser.resetViewResults();
+            }
 
             Map<Integer, Integer> stepIdsMap = strategy.deleteStep(
                     Integer.valueOf(deleteStep), (strBranchId != null));
             // If a branch was specified, look up the new branch id in the
             // stepIdsMap
-	    if (strBranchId != null) {
-		if (stepIdsMap.containsKey(Integer.valueOf(strBranchId)))
-		    strBranchId = stepIdsMap.get(Integer.valueOf(strBranchId)).toString();
-		else
-		    strBranchId = null;
-	    }
+            if (strBranchId != null) {
+                if (stepIdsMap.containsKey(Integer.valueOf(strBranchId))) strBranchId = stepIdsMap.get(
+                        Integer.valueOf(strBranchId)).toString();
+                else strBranchId = null;
+            }
 
             // If strategy was marked for deletion as a result of deleting
             // the step, forward to DeleteStrategy
@@ -99,8 +98,8 @@ public class DeleteStepAction extends ProcessFilterAction {
             }
 
             try {
-                wdkUser.replaceActiveStrategy(Integer.toString(oldStrategyId),
-                        Integer.toString(strategy.getStrategyId()), stepIdsMap);
+                wdkUser.replaceActiveStrategy(oldStrategyId,
+                        strategy.getStrategyId(), stepIdsMap);
             } catch (WdkUserException ex) {
                 // Need to add strategy to active strategies list
                 // which will be handled by ShowStrategyAction

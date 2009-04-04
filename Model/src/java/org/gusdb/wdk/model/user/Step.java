@@ -565,7 +565,7 @@ public class Step {
         }
         if (this.isCollapsible) {   // a sub-strategy, needs to get order number
             String subStratId = strategyId + "_" + this.displayId;
-            Integer order = user.getActiveStrategies().get(subStratId);
+            Integer order = user.getStrategyOrder(subStratId);
             if (order == null) order = 0; // the sub-strategy is not displayed
             jsStep.put("order", order);
         }

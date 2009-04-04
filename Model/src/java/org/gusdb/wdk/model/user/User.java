@@ -6,14 +6,13 @@ package org.gusdb.wdk.model.user;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashMap;
-import java.util.TreeMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerFilterInstance;
@@ -88,7 +87,8 @@ public class User /* implements Serializable */{
 
     // keep track in session , but don't serialize:
     // currently open strategies
-    private transient Map<String, Integer> activeStrategies;
+    private transient ActiveStrategyFactory activeStrategyFactory;
+
     // currently viewed results, identified by strategy id & step id
     private transient Integer viewStrategyId = null;
     private transient Integer viewStepId = null;
@@ -110,6 +110,8 @@ public class User /* implements Serializable */{
         projectPreferences = new LinkedHashMap<String, String>();
 
         setWdkModel(model);
+
+        activeStrategyFactory = new ActiveStrategyFactory(this);
     }
 
     /**
@@ -473,7 +475,7 @@ public class User /* implements Serializable */{
 
         // first of all we import all the strategies
         Set<Integer> importedSteps = new LinkedHashSet<Integer>();
-        Map<String, String> strategiesMap = new LinkedHashMap<String, String>();
+        Map<Integer, Integer> strategiesMap = new LinkedHashMap<Integer, Integer>();
         for (Strategy strategy : user.getStrategies()) {
             // the root step is considered as imported
             Step rootStep = strategy.getLatestStep();
@@ -482,21 +484,16 @@ public class User /* implements Serializable */{
             Strategy newStrategy = this.importStrategy(strategy);
 
             importedSteps.add(rootStep.getDisplayId());
-            strategiesMap.put(Integer.toString(strategy.getDisplayId()),
-                    Integer.toString(newStrategy.getDisplayId()));
+            strategiesMap.put(strategy.getDisplayId(),
+                    newStrategy.getDisplayId());
         }
 
-        // update list of active strategies so ids are correct for logged in
-        // user
-        Map<String, Integer> oldActiveStrategies = user.getActiveStrategies();
-        if (oldActiveStrategies != null) {
-            synchronized (activeStrategies) {
-                initActiveStrategies();
-                for (String strategyId : oldActiveStrategies.keySet()) {
-                    this.activeStrategies.put(strategiesMap.get(strategyId),
-                            oldActiveStrategies.get(strategyId));
-                }
-            }
+        // the current implementation can only keep the root level of the
+        // imported strategies open;
+        int[] oldActiveStrategies = user.activeStrategyFactory.getRootStrategies();
+        for (int oldStrategyId : oldActiveStrategies) {
+            int newStrategyId = strategiesMap.get(oldStrategyId);
+            activeStrategyFactory.openActiveStrategy(Integer.toString(newStrategyId));
         }
 
         // then import the steps that do not belong to any strategies; that is,
@@ -766,15 +763,20 @@ public class User /* implements Serializable */{
 
     public void deleteStrategy(int strategyId) throws WdkUserException,
             WdkModelException, SQLException {
+        String strategyKey = Integer.toString(strategyId);
+        int order = activeStrategyFactory.getOrder(strategyKey);
+        if (order > 0) activeStrategyFactory.closeActiveStrategy(strategyKey);
         stepFactory.deleteStrategy(this, strategyId);
         if (strategyCount != null) strategyCount--;
     }
 
     public void deleteStrategies() throws SQLException {
+        activeStrategyFactory.clear();
         deleteStrategies(false);
     }
 
     public void deleteStrategies(boolean allProjects) throws SQLException {
+        activeStrategyFactory.clear();
         stepFactory.deleteStrategies(this, allProjects);
         strategyCount = 0;
     }
@@ -1111,113 +1113,31 @@ public class User /* implements Serializable */{
         return newStrategy;
     }
 
-    public Map<String, Integer> getActiveStrategies() {
-        return activeStrategies;
-    }
-
-    private void setActiveStrategies(Map<String, Integer> activeStrategies) {
-        this.activeStrategies = Collections.synchronizedMap(activeStrategies);
-    }
-
-    private void initActiveStrategies() {
-        this.activeStrategies = Collections.synchronizedMap(new LinkedHashMap<String, Integer>());
-    }
-
-    public void addActiveStrategy(String strategyId) {
-        Integer oldOrder;
-        if (activeStrategies == null) initActiveStrategies();
-        synchronized (activeStrategies) {
-            if (!activeStrategies.containsKey(strategyId)) {
-                Set<String> keys = activeStrategies.keySet();
-                for (String id : keys) {
-                    if ((strategyId.contains("_") && id.contains(strategyId.substring(
-                            0, strategyId.indexOf("_") + 1)))
-                            || (!strategyId.contains("_") && !id.contains("_"))) {
-                        oldOrder = activeStrategies.get(id);
-                        activeStrategies.put(id, (oldOrder + 1));
-                    }
-                }
-                activeStrategies.put(strategyId, 1);
-            }
+    public Strategy[] getActiveStrategies() throws WdkUserException,
+            WdkModelException, JSONException, SQLException {
+        int[] ids = activeStrategyFactory.getRootStrategies();
+        Strategy[] strategies = new Strategy[ids.length];
+        for (int i = 0; i < ids.length; i++) {
+            strategies[i] = getStrategy(ids[i]);
         }
+        return strategies;
     }
 
-    public void removeActiveStrategy(String strategyId) throws WdkUserException {
-        if (activeStrategies == null)
-            throw new WdkUserException(
-                    "Attempted to close an active strategy, but no strategies are open!");
-        synchronized (activeStrategies) {
-            Integer orderNumber = activeStrategies.remove(strategyId);
-            Integer oldOrder;
-            if (orderNumber == null) return;
-            Set<String> keys = activeStrategies.keySet();
-            for (String id : keys) {
-                // If we closed a root-level strategy, also close any related
-                // substrategies
-                if (!strategyId.contains("_") && id.contains(strategyId + "_")) {
-                    activeStrategies.remove(id);
-                } else if ((strategyId.contains("_") && id.contains(strategyId.substring(
-                        0, strategyId.indexOf("_") + 1)))
-                        || (!strategyId.contains("_") && !id.contains("_"))) {
-                    oldOrder = activeStrategies.get(id);
-                    activeStrategies.put(id, (oldOrder - 1));
-                }
-            }
-        }
+    public void addActiveStrategy(String strategyKey)
+            throws NumberFormatException, WdkUserException, WdkModelException,
+            JSONException, SQLException {
+        activeStrategyFactory.openActiveStrategy(strategyKey);
     }
 
-    public void replaceActiveStrategy(String oldStrategyId,
-            String newStrategyId, Map<Integer, Integer> stepIdsMap)
+    public void removeActiveStrategy(String strategyKey)
             throws WdkUserException {
-	System.out.println("Check 1");
-        if (activeStrategies == null)
-            throw new WdkUserException("Attempted to replace an active "
-                    + "strategy, but no strategies are open!");
-	System.out.println("Check 2");
-        synchronized (activeStrategies) {
-	    System.out.println("Check 3");
-            Integer orderNumber = activeStrategies.remove(oldStrategyId);
-	    System.out.println("Check 4");
-            if (orderNumber == null) return;
-	    System.out.println("Check 5");
-            activeStrategies.put(newStrategyId, orderNumber);
-	    System.out.println("Check 6");
-            String[] keys = new String[activeStrategies.size()];
-	    System.out.println("Check 7");
-            activeStrategies.keySet().toArray(keys);
-	    System.out.println("Check 8");
-	    int deletedKeys = 0;
-	    System.out.println("Check 9");
-            for (String id : keys) {
-		System.out.println("Check 10");
-                // If we replaced a root-level strategy, also replace any
-                // related substrategies
-                if (!oldStrategyId.contains("_")
-                        && id.contains(oldStrategyId + "_")) {
-		    System.out.println("Check 11");
-                    orderNumber = activeStrategies.remove(id);
-		    System.out.println("Check 12");
-                    if (stepIdsMap != null) {
-			System.out.println("Check 13");
-			if (stepIdsMap.containsKey(id.split("_")[1])) {
-			    System.out.println("Check 14a");
-			    activeStrategies.put(newStrategyId
-						 + "_" + stepIdsMap.get(id.split("_")[1]),
-						 (orderNumber - deletedKeys));
-			}
-			else {
-			    System.out.println("Check 14b");
-			    // If the substrat step id was not
-			    // found in the step map, it must have been deleted
-			    deletedKeys++;
-			}
-		    }
-                    else activeStrategies.put(newStrategyId + "_"
-                            + id.split("_")[1], (orderNumber - deletedKeys));
-		    System.out.println("Check 15");
-                }
-            }
-        }
+        activeStrategyFactory.closeActiveStrategy(strategyKey);
+    }
+
+    public void replaceActiveStrategy(int oldStrategyId, int newStrategyId,
+            Map<Integer, Integer> stepIdsMap) throws WdkUserException {
+        activeStrategyFactory.replaceStrategy(oldStrategyId, newStrategyId,
+                stepIdsMap);
     }
 
     public void setViewResults(int strategyId, int stepId) {
@@ -1226,8 +1146,8 @@ public class User /* implements Serializable */{
     }
 
     public void resetViewResults() {
-	this.viewStrategyId = null;
-	this.viewStepId = null;
+        this.viewStrategyId = null;
+        this.viewStepId = null;
     }
 
     public Integer getViewStrategyId() {
@@ -1338,56 +1258,11 @@ public class User /* implements Serializable */{
         return booleanStep;
     }
 
-    public Strategy[] getOpenedStrategies() throws WdkUserException,
-            WdkModelException, JSONException, SQLException {
-        if (activeStrategies == null) return new Strategy[0];
-        ArrayList<Strategy> strategies = new ArrayList<Strategy>();
-        synchronized (activeStrategies) {
-            // First, put placeholders in ArrayList, since keys
-            // may not come back ordered by value (orderNumber).
-            for (String strategyId : activeStrategies.keySet()) {
-                // we only care about proper strategies in this case
-                if (!strategyId.contains("_")) {
-                    strategies.add(null);
-                }
-            }
-            // Load Strategy objects and put them in the correct
-            // position in the ArrayList, replacing the placeholder
-            for (String strategyId : activeStrategies.keySet()) {
-                // only get strategy if the id is not a substrategy id.
-                if (!strategyId.contains("_")) {
-                    int index = activeStrategies.get(strategyId) - 1;
-                    strategies.set(index,
-                            getStrategy(Integer.parseInt(strategyId)));
-                }
-            }
-        }
-        Strategy[] array = new Strategy[strategies.size()];
-        strategies.toArray(array);
-        return array;
+    public int getStrategyOrder(String strategyKey) {
+        return activeStrategyFactory.getOrder(strategyKey);
     }
-
-    public Integer[] getOpenedStrategyIds() throws WdkUserException,
-            WdkModelException, JSONException, SQLException {
-        if (activeStrategies == null) return new Integer[0];
-        ArrayList<Integer> strategies = new ArrayList<Integer>();
-        synchronized (activeStrategies) {
-            for (String strategyId : activeStrategies.keySet()) {
-                // we only care about proper strategies in this case
-                if (!strategyId.contains("_")) {
-                    strategies.add(null);
-                }
-            }
-            for (String strategyId : activeStrategies.keySet()) {
-                // only get strategy if the id is not a substrategy id.
-                if (!strategyId.contains("_")) {
-                    int index = activeStrategies.get(strategyId) - 1;
-                    strategies.set(index, Integer.parseInt(strategyId));
-                }
-            }
-        }
-        Integer[] array = new Integer[strategies.size()];
-        strategies.toArray(array);
-        return array;
+    
+    public int[] getActiveStrategyIds() {
+        return activeStrategyFactory.getRootStrategies();
     }
 }
