@@ -166,6 +166,9 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 if (paramValues == null) {
                     String defaultValue = param.getDefault();
                     if (defaultValue != null) paramValues = defaultValue;
+                } else {
+                    paramValues = param.dependentValueToRawValue(user,
+                            paramValues);
                 }
             } else if (param instanceof AnswerParamBean) {
                 AnswerParamBean answerParam = (AnswerParamBean) param;
@@ -182,8 +185,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 qForm.setMyValues(paramName, terms);
 
                 // if no step is assigned, use the first step
-                if (paramValues == null)
-                    paramValues = terms[0];
+                if (paramValues == null) paramValues = terms[0];
             } else if (param instanceof DatasetParamBean) {
                 DatasetParamBean datasetParam = (DatasetParamBean) param;
 
@@ -197,8 +199,14 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                     if (defaultValue != null) paramValues = defaultValue;
                 }
             } else if (paramValues == null) {
-                String defaultValue = param.getDefault();
-                if (defaultValue != null) paramValues = defaultValue;
+                paramValues = param.dependentValueToRawValue(user, paramValues);
+                if (paramValues == null) {
+                    String defaultValue = param.getDefault();
+                    if (defaultValue != null) paramValues = defaultValue;
+                } else {
+                    paramValues = param.dependentValueToRawValue(user,
+                            paramValues);
+                }
             }
             if (paramValues == null) hasAllParams = false;
             else qForm.setMyProp(paramName, paramValues);
