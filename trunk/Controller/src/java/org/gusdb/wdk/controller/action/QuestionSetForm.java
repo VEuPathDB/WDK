@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
+import org.gusdb.wdk.model.Utilities;
 
 /**
  * form bean for showing a wdk question from a question set
@@ -55,7 +56,8 @@ public class QuestionSetForm extends ActionForm {
             buffer.append(value.trim());
         }
         // logger.debug(key + "='" + buffer + "'");
-        myProps.put(key, buffer.toString().intern());
+        String value = Utilities.fromArray(values);
+        myProps.put(key, value.intern());
     }
 
     public String getMyProp(String key) {
