@@ -101,6 +101,7 @@ class ActiveStrategyFactory {
         ActiveStrategy oldStrategy = root.children.get(Integer.toString(oldId));
         ActiveStrategy newStrategy = new ActiveStrategy(Integer.toString(newId));
         newStrategy.parent = root;
+        if (stepMap == null) stepMap = new LinkedHashMap<Integer, Integer>();
         replaceStrategy(oldStrategy, newStrategy, stepMap);
         root.children.remove(oldStrategy.strategyKey);
         root.children.put(newStrategy.strategyKey, newStrategy);

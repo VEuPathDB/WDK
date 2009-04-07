@@ -108,6 +108,7 @@ public class Utilities {
     }
 
     public static String fromArray(String[] data, String delimiter) {
+        if (data == null) return null;
         StringBuffer sb = new StringBuffer();
         for (String value : data) {
             if (sb.length() > 0) sb.append(delimiter);
