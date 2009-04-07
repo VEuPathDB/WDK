@@ -45,14 +45,15 @@ class ActiveStrategyFactory {
     int[] getRootStrategies() {
         int[] ids = new int[root.children.size()];
         int i = 0;
-        for(ActiveStrategy strategy : root.children.values()) {
+        for (ActiveStrategy strategy : root.children.values()) {
             ids[i++] = strategy.strategyId;
         }
         return ids;
     }
 
-    synchronized void openActiveStrategy(String strategyKey) throws NumberFormatException,
-            WdkUserException, WdkModelException, JSONException, SQLException {
+    synchronized void openActiveStrategy(String strategyKey)
+            throws NumberFormatException, WdkUserException, WdkModelException,
+            JSONException, SQLException {
         if (getStrategy(strategyKey) != null) return;
 
         ActiveStrategy strategy = new ActiveStrategy(strategyKey);
@@ -74,7 +75,8 @@ class ActiveStrategyFactory {
      *            that is, they should siblings.
      * @throws WdkUserException
      */
-    synchronized void orderActiveStrategies(String[] strategyKeys) throws WdkUserException {
+    synchronized void orderActiveStrategies(String[] strategyKeys)
+            throws WdkUserException {
         if (strategyKeys.length == 0) return;
         ActiveStrategy strategy = getStrategy(strategyKeys[0]);
         if (strategy == null || strategy.strategyKey == null)
@@ -96,13 +98,16 @@ class ActiveStrategyFactory {
         strategy.parent.children.clear();
         strategy.parent.children.putAll(map);
     }
-    
-    synchronized void replaceStrategy(int oldId, int newId, Map<Integer, Integer> stepMap) {
+
+    synchronized void replaceStrategy(User user, int oldId, int newId,
+            Map<Integer, Integer> stepMap) throws WdkUserException,
+            WdkModelException, JSONException, SQLException {
         ActiveStrategy oldStrategy = root.children.get(Integer.toString(oldId));
         ActiveStrategy newStrategy = new ActiveStrategy(Integer.toString(newId));
         newStrategy.parent = root;
         if (stepMap == null) stepMap = new LinkedHashMap<Integer, Integer>();
-        replaceStrategy(oldStrategy, newStrategy, stepMap);
+        Strategy strategy = user.getStrategy(newId);
+        replaceStrategy(strategy, oldStrategy, newStrategy, stepMap);
         root.children.remove(oldStrategy.strategyKey);
         root.children.put(newStrategy.strategyKey, newStrategy);
     }
@@ -111,14 +116,16 @@ class ActiveStrategyFactory {
         ActiveStrategy strategy = getStrategy(strategyKey);
         if (strategy == null || strategy.strategyKey == null) return 0;
         int order = 1;
-System.out.println("current: " + strategyKey + ", parent: " + strategy.parent.strategyKey + ", children: " + strategy.parent.children.size());
+        System.out.println("current: " + strategyKey + ", parent: "
+                + strategy.parent.strategyKey + ", children: "
+                + strategy.parent.children.size());
         for (ActiveStrategy sibling : strategy.parent.children.values()) {
             if (strategy.equals(sibling)) return order;
             order++;
         }
         return 0;
     }
-    
+
     synchronized void clear() {
         root.children.clear();
     }
@@ -143,21 +150,32 @@ System.out.println("current: " + strategyKey + ", parent: " + strategy.parent.st
         if (strategyKey == null) return root;
         else return root.getDescendent(strategyKey);
     }
-    
-    private void replaceStrategy(ActiveStrategy oldStrategy, ActiveStrategy newStrategy, Map<Integer, Integer> stepMap) {
-System.out.println("replace old: " + oldStrategy.strategyKey + ", new: " + newStrategy.strategyKey);
-for(int old : stepMap.keySet()) {
-    System.out.println("step " + old + "->" + stepMap.get(old));
-}
-        for(ActiveStrategy oldChild : oldStrategy.children.values()) {
+
+    private void replaceStrategy(Strategy strategy, ActiveStrategy oldStrategy,
+            ActiveStrategy newStrategy, Map<Integer, Integer> stepMap) {
+        System.out.println("replace old: " + oldStrategy.strategyKey
+                + ", new: " + newStrategy.strategyKey);
+        for (int old : stepMap.keySet()) {
+            System.out.println("step " + old + "->" + stepMap.get(old));
+        }
+        for (ActiveStrategy oldChild : oldStrategy.children.values()) {
             String oldKey = oldChild.strategyKey;
             int oldId = Integer.parseInt(oldKey.substring(oldKey.indexOf('_') + 1));
             Integer newId = stepMap.get(oldId);
-            if (newId == null) newId = oldId;
+            if (newId == null) {
+                Step step;
+                try {
+                    step = strategy.getStepById(oldId);
+                    if (step == null) throw new WdkModelException();
+                    newId = oldId;
+                } catch (Exception ex) { // step no longer exist
+                    continue; // skip this branch
+                }
+            }
             String newKey = newStrategy.strategyId + "_" + newId;
             ActiveStrategy newChild = new ActiveStrategy(newKey);
             newChild.parent = newStrategy;
-            replaceStrategy(oldChild, newChild, stepMap);
+            replaceStrategy(strategy, oldChild, newChild, stepMap);
             newStrategy.children.put(newKey, newChild);
         }
     }
