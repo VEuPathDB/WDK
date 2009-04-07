@@ -452,6 +452,11 @@ public class User /* implements Serializable */{
         Strategy strategy = stepFactory.createStrategy(this, step, name,
                 savedName, saved);
         if (strategyCount != null) strategyCount++;
+        
+        // set the view to this one
+        this.viewStrategyId = strategy.getDisplayId();
+        this.viewStepId = step.getDisplayId();
+        
         return strategy;
     }
 
