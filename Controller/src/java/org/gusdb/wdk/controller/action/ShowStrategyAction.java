@@ -95,6 +95,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             HttpServletResponse response) throws JSONException, IOException,
             NoSuchAlgorithmException, WdkUserException, WdkModelException,
             SQLException {
+        logger.debug("output JSON error message: " + ex);
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("exception", ex.getClass().getName());
         jsMessage.put("message", ex.getMessage());
@@ -136,6 +137,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             HttpServletResponse response) throws JSONException,
             NoSuchAlgorithmException, WdkUserException, WdkModelException,
             SQLException, IOException {
+        logger.debug("output JSON out-of-sync message: " + strategy.getStrategyId());
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", MESSAGE_TYPE_OUT_OF_SYNC_ERROR);
 
@@ -186,6 +188,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
     static void outputSuccessJSON(UserBean user, HttpServletResponse response)
             throws JSONException, NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException, IOException {
+        logger.debug("output JSON success message without strategy");
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", MESSAGE_TYPE_SUCCESS);
 
@@ -200,6 +203,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             HttpServletResponse response) throws JSONException,
             NoSuchAlgorithmException, WdkUserException, WdkModelException,
             SQLException, IOException {
+        logger.debug("output JSON success message with strategy");
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", MESSAGE_TYPE_SUCCESS);
 
