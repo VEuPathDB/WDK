@@ -99,6 +99,9 @@ public class ProcessRenameStrategyAction extends Action {
                 request.setAttribute(CConstants.WDK_STEP_KEY,
                         strategy.getLatestStep());
                 request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
+            } else {    // name already exists
+                ShowStrategyAction.outputDuplcicateNameJSON(strategy, response);
+                return null;
             }
 
             // forward to strategyPage.jsp

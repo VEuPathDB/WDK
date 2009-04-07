@@ -39,6 +39,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
     static final String MESSAGE_TYPE_SUCCESS = "success";
     static final String MESSAGE_TYPE_PARAM_ERROR = "param-error";
     static final String MESSAGE_TYPE_OUT_OF_SYNC_ERROR = "out-of-sync";
+    static final String MESSAGE_TYPE_DUP_NAME_ERROR = "dup-name-error";
     static final String MESSAGE_TYPE_GENERAL_ERROR = "general-error";
 
     static final int TRUNCATE_LENGTH = 200;
@@ -140,6 +141,23 @@ public class ShowStrategyAction extends ShowQuestionAction {
         logger.debug("output JSON out-of-sync message: " + strategy.getStrategyId());
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", MESSAGE_TYPE_OUT_OF_SYNC_ERROR);
+
+        // get a list of strategy checksums
+        UserBean user = strategy.getUser();
+        jsMessage.put("strategies", outputStrategyChecksums(user));
+        jsMessage.put("strategy", outputStrategy(user, strategy));
+
+        PrintWriter writer = response.getWriter();
+        writer.print(jsMessage.toString());
+    }
+
+    static void outputDuplcicateNameJSON(StrategyBean strategy,
+            HttpServletResponse response) throws JSONException,
+            NoSuchAlgorithmException, WdkUserException, WdkModelException,
+            SQLException, IOException {
+        logger.debug("output JSON dup-name-error message: " + strategy.getStrategyId());
+        JSONObject jsMessage = new JSONObject();
+        jsMessage.put("type", MESSAGE_TYPE_DUP_NAME_ERROR);
 
         // get a list of strategy checksums
         UserBean user = strategy.getUser();
