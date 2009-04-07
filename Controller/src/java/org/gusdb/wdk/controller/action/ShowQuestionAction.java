@@ -4,6 +4,7 @@ import java.io.File;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Vector;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -16,6 +17,7 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
@@ -119,17 +121,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
         return wdkQuestion;
     }
 
-    protected QuestionForm prepareQuestionForm(QuestionBean wdkQuestion,
-            HttpServletRequest request) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
-
-        QuestionForm qForm = new QuestionForm();
-
-        return prepareQuestionForm(wdkQuestion, request, qForm);
-    }
-
-    protected QuestionForm prepareQuestionForm(QuestionBean wdkQuestion,
+    private QuestionForm prepareQuestionForm(QuestionBean wdkQuestion,
             HttpServletRequest request, QuestionForm qForm)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
@@ -150,13 +142,16 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
         qForm.setServlet(servlet);
 
         boolean hasAllParams = true;
+        Map<String, String> paramValueMap = qForm.getMyProps();
         ParamBean[] params = wdkQuestion.getParams();
         for (ParamBean param : params) {
             param.setUser(user);
             String paramName = param.getName();
-            String[] paramValues = request.getParameterValues(paramName);
+            String paramValues = paramValueMap.get(paramName);
 
-            if (paramValues == null || paramValues.length == 0)
+            if (paramValues == null || paramValues.length() == 0)
+                paramValues = Utilities.fromArray(request.getParameterValues(paramName));
+            if (paramValues == null || paramValues.length() == 0)
                 paramValues = null;
 
             // handle the additional information
@@ -170,8 +165,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 // if no default is assigned, use the first enum item
                 if (paramValues == null) {
                     String defaultValue = param.getDefault();
-                    if (defaultValue == null) paramValues = new String[0];
-                    else paramValues = new String[] { defaultValue };
+                    if (defaultValue != null) paramValues = defaultValue;
                 }
             } else if (param instanceof AnswerParamBean) {
                 AnswerParamBean answerParam = (AnswerParamBean) param;
@@ -189,34 +183,34 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
 
                 // if no step is assigned, use the first step
                 if (paramValues == null)
-                    paramValues = new String[] { terms[0] };
+                    paramValues = terms[0];
             } else if (param instanceof DatasetParamBean) {
                 DatasetParamBean datasetParam = (DatasetParamBean) param;
 
                 // check if the param value is assigned
                 if (paramValues != null) {
-                    datasetParam.setDependentValue(paramValues[0]);
+                    datasetParam.setDependentValue(paramValues);
                     DatasetBean dataset = datasetParam.getDataset();
                     request.setAttribute(paramName, dataset);
                 } else {
                     String defaultValue = param.getDefault();
-                    if (defaultValue != null) paramValues = new String[] { param.getDefault() };
-                    else paramValues = new String[0];
+                    if (defaultValue != null) paramValues = defaultValue;
                 }
             } else if (paramValues == null) {
                 String defaultValue = param.getDefault();
-                if (defaultValue != null) paramValues = new String[] { param.getDefault() };
-                else paramValues = new String[0];
+                if (defaultValue != null) paramValues = defaultValue;
             }
             if (paramValues == null) hasAllParams = false;
-            else qForm.setMyMultiProp(paramName, paramValues);
+            else qForm.setMyProp(paramName, paramValues);
+            logger.debug("param: " + paramName + "='" + paramValues + "'");
         }
 
         qForm.setQuestion(wdkQuestion);
         qForm.setParamsFilled(hasAllParams);
 
-        if (request.getParameter(CConstants.VALIDATE_PARAM) == "0")
-            qForm.setNonValidating();
+        // if (request.getParameter(CConstants.VALIDATE_PARAM) == "0")
+        // always ignore the validating on ShowQuestionAction
+        qForm.setNonValidating();
 
         request.setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
         request.setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
