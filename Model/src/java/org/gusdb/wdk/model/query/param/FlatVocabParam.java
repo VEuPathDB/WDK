@@ -89,7 +89,6 @@ public class FlatVocabParam extends AbstractEnumParam {
         query.addParam(param);
         this.query = query;
 
-        applySelectMode();
     }
 
     /*
