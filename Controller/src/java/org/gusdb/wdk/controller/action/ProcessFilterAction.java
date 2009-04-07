@@ -68,6 +68,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             // verify the checksum
             String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
             if (checksum != null && !strategy.getChecksum().equals(checksum)) {
+                logger.error("strategy checksum: " + strategy.getChecksum() + ", but the input checksum: " + checksum);
                 ShowStrategyAction.outputOutOfSyncJSON(strategy, response);
                 return null;
             }
