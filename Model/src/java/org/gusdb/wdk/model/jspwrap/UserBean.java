@@ -879,7 +879,8 @@ public class UserBean /* implements Serializable */{
     }
 
     public void replaceActiveStrategy(int oldStrategyId, int newStrategyId, Map<Integer,Integer> stepIdsMap)
-	throws WdkUserException {
+	throws WdkUserException,
+            WdkModelException, JSONException, SQLException {
 	user.replaceActiveStrategy(oldStrategyId, newStrategyId, stepIdsMap);
     }
 

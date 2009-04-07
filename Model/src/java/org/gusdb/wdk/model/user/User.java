@@ -1135,9 +1135,10 @@ public class User /* implements Serializable */{
     }
 
     public void replaceActiveStrategy(int oldStrategyId, int newStrategyId,
-            Map<Integer, Integer> stepIdsMap) throws WdkUserException {
-        activeStrategyFactory.replaceStrategy(oldStrategyId, newStrategyId,
-                stepIdsMap);
+            Map<Integer, Integer> stepIdsMap) throws WdkUserException,
+            WdkModelException, JSONException, SQLException {
+        activeStrategyFactory.replaceStrategy(this, oldStrategyId,
+                newStrategyId, stepIdsMap);
     }
 
     public void setViewResults(int strategyId, int stepId) {
@@ -1263,7 +1264,7 @@ public class User /* implements Serializable */{
         System.out.println("order: " + order);
         return order;
     }
-    
+
     public int[] getActiveStrategyIds() {
         return activeStrategyFactory.getRootStrategies();
     }
