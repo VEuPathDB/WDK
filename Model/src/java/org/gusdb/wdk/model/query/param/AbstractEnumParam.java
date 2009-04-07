@@ -49,7 +49,6 @@ public abstract class AbstractEnumParam extends Param {
     private String displayType;
 
     public AbstractEnumParam() {
-        this.selectMode = SELECT_MODE_NONE;
     }
 
     public AbstractEnumParam(AbstractEnumParam param) {
@@ -385,9 +384,10 @@ public abstract class AbstractEnumParam extends Param {
     }
 
     protected void applySelectMode() {
-        if (defaultValue == null || defaultValue.length() == 0) return;
+        logger.debug("select mode: '" + selectMode + "'");
+        if (defaultValue != null && defaultValue.length() > 0) return;
 
-        if (selectMode == null) selectMode = SELECT_MODE_NONE;
+        if (selectMode == null) selectMode = SELECT_MODE_FIRST;
         if (selectMode.equalsIgnoreCase(SELECT_MODE_ALL)) {
             StringBuilder builder = new StringBuilder();
             for (String term : termInternalMap.keySet()) {

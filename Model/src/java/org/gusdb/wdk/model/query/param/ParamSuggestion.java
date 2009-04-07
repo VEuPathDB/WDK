@@ -17,7 +17,7 @@ public class ParamSuggestion extends WdkModelBase {
     private String defaultValue;
     private boolean allowEmpty = false;
     private String emptyValue = "";
-    private String selectMode = AbstractEnumParam.SELECT_MODE_NONE;
+    private String selectMode;
 
     /**
      * the default constructor is used by the digester
