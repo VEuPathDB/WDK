@@ -112,7 +112,8 @@
       <td>
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <input class="paging-button" style="width:150px" type="button" value="Advanced Paging" onclick="openAdvancedPaging(this)"/>
-		<div class="advanced-paging" style="display:none; position:absolute; border:solid 2px #B2BFD4;background-color:#c2cee1;padding:5px">
+		<div class="advanced-paging" style="">
+			<span id="CAP" onclick="openAdvancedPaging($('input.paging-button'))">[x]</span>
         <pg:page>
           Jump To page:
           <input type="text" id="${pager_id}_pageNumber" size="5" value="${currentPageNumber}"/>
