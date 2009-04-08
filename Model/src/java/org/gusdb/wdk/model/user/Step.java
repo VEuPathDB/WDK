@@ -195,6 +195,10 @@ public class Step {
         }
         return name;
     }
+    
+    public String getDisplayName() {
+        return answer.getAnswerValue().getQuestion().getDisplayName();
+    }
 
     /**
      * @param customName
