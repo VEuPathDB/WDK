@@ -195,8 +195,9 @@ public class Step {
         }
         return name;
     }
-    
-    public String getDisplayName() {
+
+    public String getDisplayName() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
         return answer.getAnswerValue().getQuestion().getDisplayName();
     }
 
@@ -542,17 +543,19 @@ public class Step {
         if (filter == null) return null;
         return filter.getDisplayName();
     }
-    
+
     public Step getFirstStep() {
         Step step = this;
-        while(step.getPreviousStep() != null) step = step.getPreviousStep();
+        while (step.getPreviousStep() != null)
+            step = step.getPreviousStep();
         return step;
     }
-    
-    public boolean isBoolean() throws NoSuchAlgorithmException, WdkModelException, JSONException, WdkUserException, SQLException {
+
+    public boolean isBoolean() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
         return this.answer.getAnswerValue().getIdsQueryInstance().getQuery().isBoolean();
     }
-    
+
     public JSONObject getJSONContent(int strategyId) throws JSONException {
         JSONObject jsStep = new JSONObject();
         jsStep.put("id", this.displayId);
@@ -567,7 +570,7 @@ public class Step {
         if (this.childStep != null) {
             jsStep.put("child", childStep.getJSONContent(strategyId));
         }
-        if (this.isCollapsible) {   // a sub-strategy, needs to get order number
+        if (this.isCollapsible) { // a sub-strategy, needs to get order number
             String subStratId = strategyId + "_" + this.displayId;
             Integer order = user.getStrategyOrder(subStratId);
             if (order == null) order = 0; // the sub-strategy is not displayed
