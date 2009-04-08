@@ -278,7 +278,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             NoSuchAlgorithmException, WdkModelException, WdkUserException,
             SQLException {
         JSONObject jsStep = new JSONObject();
-        jsStep.put("name", step.getCustomName());
+        jsStep.put("name", step.getDisplayName());
         jsStep.put("customName", step.getCustomName());
         jsStep.put("id", step.getStepId());
         jsStep.put("answerId", step.getAnswerId());

@@ -94,6 +94,22 @@ public class StepBean {
             SQLException {
         return step.getShortDisplayName();
     }
+    
+    
+
+    /**
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws WdkModelException
+     * @throws JSONException
+     * @throws WdkUserException
+     * @throws SQLException
+     * @see org.gusdb.wdk.model.user.Step#getDisplayName()
+     */
+    public String getDisplayName() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
+        return step.getDisplayName();
+    }
 
     public int getResultSize() throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
