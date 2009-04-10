@@ -43,7 +43,8 @@ public class NestedRecord extends WdkModelBase {
         String[] paramNames = parentRecordClass.getPrimaryKeyAttributeField().getColumnRefs();
 
         // prepare the query and add primary key params
-        query = parentRecordClass.prepareQuery(query, paramNames);
+        WdkModel wdkModel = parentRecordClass.getWdkModel();
+        query = RecordClass.prepareQuery(wdkModel, query, paramNames);
         question.setQuery(query);
     }
 

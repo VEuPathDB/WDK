@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.user.User;
@@ -15,7 +16,56 @@ import org.json.JSONException;
 public class RecordClass extends WdkModelBase implements
         AttributeFieldContainer {
 
-    // private static final Logger logger = Logger.getLogger(RecordClass.class);
+    private static final Logger logger = Logger.getLogger(RecordClass.class);
+
+    public static Query prepareQuery(WdkModel wdkModel, Query query,
+            String[] paramNames) throws WdkModelException {
+        Map<String, Column> columns = query.getColumnMap();
+        Map<String, Param> originalParams = query.getParamMap();
+        Query newQuery = query.clone();
+
+        // find the new params to be created
+        List<String> newParams = new ArrayList<String>();
+        for (String column : paramNames) {
+            if (!originalParams.containsKey(column)) newParams.add(column);
+        }
+
+        // create the missing params for the query
+        ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
+        for (String columnName : newParams) {
+            StringParam param;
+            if (paramSet.contains(columnName)) {
+                param = (StringParam) paramSet.getParam(columnName);
+            } else {
+                param = new StringParam();
+                Column column = columns.get(columnName);
+                ColumnType type = column.getType();
+                boolean quote = type.isText();
+                param.setName(columnName);
+                param.setQuote(quote);
+                param.resolveReferences(wdkModel);
+                param.setResources(wdkModel);
+                paramSet.addParam(param);
+            }
+            newQuery.addParam(param);
+        }
+
+        // if the new query is SqlQuery, modify the sql
+        if (newQuery instanceof SqlQuery && newParams.size() > 0) {
+            StringBuffer sql = new StringBuffer("SELECT f.* FROM (");
+            sql.append(((SqlQuery) newQuery).getSql());
+            sql.append(") f WHERE ");
+            boolean firstColumn = true;
+            for (String columnName : newParams) {
+                if (firstColumn) firstColumn = false;
+                else sql.append(" AND ");
+                sql.append("f.").append(columnName);
+                sql.append(" = $$").append(columnName).append("$$");
+            }
+            ((SqlQuery) newQuery).setSql(sql.toString());
+        }
+        return newQuery;
+    }
 
     private WdkModel wdkModel;
 
@@ -399,7 +449,7 @@ public class RecordClass extends WdkModelBase implements
                 attributeFieldsMap.put(fieldName, field);
             }
 
-            Query attributeQuery = prepareQuery(query, paramNames);
+            Query attributeQuery = prepareQuery(wdkModel, query, paramNames);
             attributeQueries.put(query.getFullName(), attributeQuery);
         }
 
@@ -611,55 +661,6 @@ public class RecordClass extends WdkModelBase implements
         return orderedAttsMap;
     }
 
-    Query prepareQuery(Query query, String[] paramNames)
-            throws WdkModelException {
-        Map<String, Column> columns = query.getColumnMap();
-        Map<String, Param> originalParams = query.getParamMap();
-        Query newQuery = query.clone();
-
-        // find the new params to be created
-        List<String> newParams = new ArrayList<String>();
-        for (String column : paramNames) {
-            if (!originalParams.containsKey(column)) newParams.add(column);
-        }
-
-        // create the missing params for the query
-        ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
-        for (String columnName : newParams) {
-            StringParam param;
-            if (paramSet.contains(columnName)) {
-                param = (StringParam) paramSet.getParam(columnName);
-            } else {
-                param = new StringParam();
-                Column column = columns.get(columnName);
-                ColumnType type = column.getType();
-                boolean quote = type.isText();
-                param.setName(columnName);
-                param.setQuote(quote);
-                param.resolveReferences(wdkModel);
-                param.setResources(wdkModel);
-                paramSet.addParam(param);
-            }
-            newQuery.addParam(param);
-        }
-
-        // if the new query is SqlQuery, modify the sql
-        if (newQuery instanceof SqlQuery && newParams.size() > 0) {
-            StringBuffer sql = new StringBuffer("SELECT f.* FROM (");
-            sql.append(((SqlQuery) newQuery).getSql());
-            sql.append(") f WHERE ");
-            boolean firstColumn = true;
-            for (String columnName : newParams) {
-                if (firstColumn) firstColumn = false;
-                else sql.append(" AND ");
-                sql.append("f.").append(columnName);
-                sql.append(" = $$").append(columnName).append("$$");
-            }
-            ((SqlQuery) newQuery).setSql(sql.toString());
-        }
-        return newQuery;
-    }
-
     private Query prepareAliasQuery(Query query) throws WdkModelException {
         // the alias query should also return columns for old primary key
         // columns, with a prefix "old_".
@@ -671,7 +672,7 @@ public class RecordClass extends WdkModelBase implements
         }
 
         // and it should be a valid attribute query too
-        return prepareQuery(query, paramNames);
+        return prepareQuery(wdkModel, query, paramNames);
     }
 
     /*
@@ -980,7 +981,7 @@ public class RecordClass extends WdkModelBase implements
 
         return map;
     }
-    
+
     public Query getAliasQuery() {
         return aliasQuery;
     }

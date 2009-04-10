@@ -273,6 +273,10 @@ public class SanityTester {
                 start = System.currentTimeMillis();
                 testAttributeQuery_Time(query, paramValuesSet, count);
             } else {
+                if (queryType.equals(QuerySet.TYPE_TABLE)) {
+                    query = RecordClass.prepareQuery(wdkModel, query,
+                            paramValuesSet.getParamNames());
+                }
                 params = " -params " + paramValuesSet.getCmdLineString();
                 start = System.currentTimeMillis();
                 count = testNonAttributeQuery(querySet, query, paramValuesSet);
