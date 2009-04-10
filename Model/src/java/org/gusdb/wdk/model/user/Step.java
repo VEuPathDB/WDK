@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.BooleanQueryInstance;
+import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.json.JSONException;
@@ -521,6 +522,50 @@ public class Step {
         int endIndex = answer.getAnswerValue().getEndIndex();
         return user.createStep(question, params, filter, startIndex, endIndex,
                 isDeleted);
+    }
+
+    /**
+     * deep clone a step, the step will get a new id, and if the step contains
+     * other sub-steps, all those sub steps are cloned recursively.
+     * 
+     * @throws SQLException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * 
+     */
+    public Step deepClone() throws NoSuchAlgorithmException, WdkModelException,
+            JSONException, WdkUserException, SQLException {
+        Step step;
+        if (!isCombined()) {
+            step = user.createStep(answer.getAnswerValue(), isDeleted);
+        } else {
+            AnswerValue answerValue = answer.getAnswerValue();
+            Question question = answerValue.getQuestion();
+            Map<String, String> paramValues = new LinkedHashMap<String, String>();
+            Map<String, Param> params = question.getParamMap();
+            for (String paramName : displayParams.keySet()) {
+                Param param = params.get(paramName);
+                String paramValue = displayParams.get(paramName);
+                if (param instanceof AnswerParam) {
+                    Step child = user.getStep(Integer.parseInt(paramValue));
+                    child = child.deepClone();
+                    paramValue = Integer.toString(child.getDisplayId());
+                }
+                paramValues.put(paramName, paramValue);
+            }
+            AnswerFilterInstance filter = answerValue.getFilter();
+            int pageStart = answerValue.getStartIndex();
+            int pageEnd = answerValue.getEndIndex();
+            step = user.createStep(question, paramValues, filter, pageStart,
+                    pageEnd, isDeleted);
+        }
+        step.collapsedName = collapsedName;
+        step.customName = customName;
+        step.isCollapsible = isCollapsible;
+        step.update(false);
+        return step;
     }
 
     public boolean isFiltered() throws NoSuchAlgorithmException,
