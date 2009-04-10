@@ -18,7 +18,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerFilterInstanceBean;
 import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
-import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
@@ -68,7 +67,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             // verify the checksum
             String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
             if (checksum != null && !strategy.getChecksum().equals(checksum)) {
-                logger.error("strategy checksum: " + strategy.getChecksum() + ", but the input checksum: " + checksum);
+                logger.error("strategy checksum: " + strategy.getChecksum()
+                        + ", but the input checksum: " + checksum);
                 ShowStrategyAction.outputOutOfSyncJSON(strategy, response);
                 return null;
             }
@@ -105,7 +105,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             if (insertStratIdStr != null && insertStratIdStr.length() != 0) {
                 // yes: load step, create a new step w/ same answervalue
                 StrategyBean insertStrat = wdkUser.getStrategy(Integer.parseInt(insertStratIdStr));
-                newStep = cloneStrategy(wdkUser, insertStrat.getLatestStep());
+                // deep clone the root step of the input strategy
+                newStep = insertStrat.getLatestStep().deepClone();
                 newStep.setIsCollapsible(true);
                 newStep.setCollapsedName("Copy of " + insertStrat.getName());
                 newStep.update(false);
@@ -347,37 +348,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             ShowStrategyAction.outputErrorJSON(wdkUser, ex, response);
             return null;
         }
-    }
-
-    private StepBean cloneStrategy(UserBean user, StepBean step)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
-        StepBean cloneStep = null;
-        String prevStepId = null;
-        for (int i = 0; i < step.getLength(); ++i) {
-            cloneStep = step.getStep(i);
-            AnswerValueBean answerValue = cloneStep.getAnswerValue();
-            String childStepId = null;
-            String op = null;
-            if (cloneStep.getChildStep() != null) {
-                childStepId = cloneStrategy(user, cloneStep.getChildStep()).getStepId()
-                        + "";
-                op = answerValue.getBooleanOperation();
-                String cloneBoolExp = prevStepId + " " + op + " " + childStepId;
-                cloneStep = user.combineStep(cloneBoolExp, false);
-            } else if (cloneStep.getIsTransform()) {
-                cloneStep = updateTransform(user, cloneStep,
-                        Integer.parseInt(prevStepId));
-            }
-            // Carry custom name, collapsible flag, and collapsed name from
-            // cloned step
-            cloneStep.setIsCollapsible(step.getStep(i).getIsCollapsible());
-            cloneStep.setCollapsedName(step.getStep(i).getCollapsedName());
-            cloneStep.setCustomName(step.getStep(i).getBaseCustomName());
-            cloneStep.update(false);
-            prevStepId = Integer.toString(cloneStep.getStepId());
-        }
-        return cloneStep;
     }
 
     protected StepBean updateTransform(UserBean wdkUser, StepBean step,

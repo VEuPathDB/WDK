@@ -384,4 +384,19 @@ public class StepBean {
     public StepBean getFirstStep() {
         return new StepBean(step.getFirstStep());
     }
+
+    /**
+     * @return
+     * @throws NoSuchAlgorithmException
+     * @throws WdkModelException
+     * @throws JSONException
+     * @throws WdkUserException
+     * @throws SQLException
+     * @see org.gusdb.wdk.model.user.Step#deepClone()
+     */
+    public StepBean deepClone() throws NoSuchAlgorithmException, WdkModelException,
+            JSONException, WdkUserException, SQLException {
+        return new StepBean(step.deepClone());
+    }
+    
 }
