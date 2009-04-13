@@ -20,7 +20,8 @@ public class AnswerParamBean extends ParamBean {
 
     private AnswerParam answerParam;
 
-    private String answerChecksum;
+    private String answerKey;
+    private String historyKey;
 
     public AnswerParamBean(AnswerParam answerParam) {
         super(answerParam);
@@ -40,13 +41,20 @@ public class AnswerParamBean extends ParamBean {
      * @param checksum
      */
     public void setAnswerChecksum(String checksum) {
-        this.answerChecksum = checksum;
+        this.answerKey = checksum;
+    }
+
+    public void setHistoryKey(String historyKey) {
+        this.historyKey = historyKey;
     }
 
     public AnswerBean getAnswer() throws Exception {
         try {
-        Answer answer = answerParam.getAnswer(answerChecksum);
-        return new AnswerBean(answer);
+            if (historyKey != null)
+                answerKey = answerParam.getInternalValue(historyKey);
+
+            Answer answer = answerParam.getAnswer(answerKey);
+            return new AnswerBean(answer);
         } catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
