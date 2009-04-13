@@ -309,8 +309,15 @@ public class Answer {
     }
 
     public String getChecksum() throws WdkModelException,
-            NoSuchAlgorithmException, JSONException {
+            NoSuchAlgorithmException, JSONException, SQLException, WdkUserException {
         return idsQueryInstance.getChecksum();
+    }
+
+    public String getAnswerKey() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, SQLException, WdkUserException {
+        String answerKey = this.getChecksum();
+        if (this.filter != null) answerKey += ":" + filter.getName();
+        return answerKey;
     }
 
     // ///////////////////////////////////////////////////////////////////

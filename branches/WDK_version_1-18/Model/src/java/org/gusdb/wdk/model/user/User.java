@@ -410,7 +410,7 @@ public class User /* implements Serializable */{
                     continue;
                 }
 
-                // histories with components, the components need ed to be
+                // histories with components, the components need to be
                 // merged first
                 boolean canMerge = true;
                 for (Integer compId : components) {

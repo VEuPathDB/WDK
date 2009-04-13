@@ -35,7 +35,7 @@ public class HistoryBean {
      * @see org.gusdb.wdk.model.user.History#getChecksum()
      */
     public String getChecksum() throws WdkModelException,
-            NoSuchAlgorithmException, JSONException {
+            NoSuchAlgorithmException, JSONException, SQLException, WdkUserException {
         return history.getChecksum();
     }
 

@@ -38,13 +38,13 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AnswerFilterInstance;
-import org.gusdb.wdk.model.BooleanExpression;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.wdk.model.query.QueryInstance;
 import org.json.JSONException;
 
 /**
@@ -858,24 +858,6 @@ public class UserFactory {
                 if (history.isValid()) histories.put(historyId, history);
                 else invalidHistories.put(historyId, history);
             }
-            // now compute the dependencies of the histories
-            History[] array = new History[histories.size()];
-            histories.values().toArray(array);
-            List<Integer> toBeRemoved = new ArrayList<Integer>();
-            for (History history : histories.values()) {
-                try {
-                    history.computeDependencies(array);
-                } catch (Exception ex) {
-                    history.setValid(false);
-                    logger.warn(ex);
-                    ex.printStackTrace();
-                    invalidHistories.put(history.getHistoryId(), history);
-                    toBeRemoved.add(history.getHistoryId());
-                }
-            }
-            for (int historyId : toBeRemoved) {
-                histories.remove(historyId);
-            }
         } finally {
             SqlUtils.closeResultSet(rsHistory);
         }
@@ -883,7 +865,7 @@ public class UserFactory {
     }
 
     History loadHistory(User user, int historyId) throws WdkUserException,
-            SQLException, JSONException {
+            SQLException, JSONException, WdkModelException {
         String hisTable = loginSchema + "histories";
         String ansTable = wdkModel.getAnswerFactory().getAnswerTable();
         ResultSet rsHistory = null;
@@ -915,7 +897,7 @@ public class UserFactory {
     }
 
     private History loadHistory(User user, int historyId, ResultSet rsHistory)
-            throws JSONException, SQLException {
+            throws JSONException, SQLException, WdkModelException {
         History history = new History(this, user, historyId);
 
         // load history info
@@ -935,24 +917,11 @@ public class UserFactory {
         history.setFilterName(rsHistory.getString("answer_filter"));
 
         // get and cache the param values
-        AnswerFactory answerFactory = wdkModel.getAnswerFactory();
-        Map<String, Object> params = answerFactory.getParams(answerChecksum);
-        history.setParams(params);
-
-        if (history.isBoolean()) {
-            // get expression from the latest position
-            String expression = platform.getClobData(rsHistory,
-                    "display_params");
-
-            // if it doesn't exist, get the expression from the previous
-            // position
-            if (expression == null || expression.length() == 0)
-                expression = (String) params.get(BooleanExpression.BOOLEAN_EXPRESSION);
-            history.setBooleanExpression(expression);
-        }
+        String params = platform.getClobData(rsHistory, "display_params");
 
         // re-construct the answer
         try {
+            history.setParams(params);
             constructAnswer(history, answerChecksum);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -979,7 +948,7 @@ public class UserFactory {
         AnswerFilterInstance filter = recordClass.getFilterMap().get(filterName);
         if (filterName != null && filter == null) history.setValid(false);
         else answer.setFilter(filter);
-        
+
         // apply the sorting & summary fields
         String questionName = answer.getQuestion().getFullName();
         User user = history.getUser();
@@ -987,7 +956,7 @@ public class UserFactory {
         answer.setSortingMap(sortingMap);
         String[] summary = user.getSummaryAttributes(questionName);
         answer.setSumaryAttributes(summary);
-        
+
         history.setAnswer(answer);
     }
 
@@ -1005,6 +974,9 @@ public class UserFactory {
             customName = customName.substring(0, 4000);
         AnswerFilterInstance filter = answer.getFilter();
         String filterName = (filter == null) ? null : filter.getName();
+
+        QueryInstance instance = answer.getIdsQueryInstance();
+        String params = instance.getDependentParamJSONObject().toString();
 
         String hisTable = loginSchema + "histories";
 
@@ -1047,7 +1019,7 @@ public class UserFactory {
                 psHistory.setString(7, customName);
                 psHistory.setBoolean(8, isBoolean);
                 psHistory.setBoolean(9, deleted);
-                platform.updateClobData(psHistory, 10, booleanExpression, false);
+                platform.updateClobData(psHistory, 10, params, false);
                 psHistory.executeUpdate();
 
                 // query to get the new history id

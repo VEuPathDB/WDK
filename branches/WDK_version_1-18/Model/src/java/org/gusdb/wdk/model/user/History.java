@@ -6,20 +6,23 @@ package org.gusdb.wdk.model.user;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.BooleanExpression;
+import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * @author xingao
@@ -221,7 +224,8 @@ public class History {
     }
 
     public String getChecksum() throws WdkModelException,
-            NoSuchAlgorithmException, JSONException {
+            NoSuchAlgorithmException, JSONException, SQLException,
+            WdkUserException {
         return answer.getChecksum();
     }
 
@@ -264,10 +268,19 @@ public class History {
      * @throws WdkModelException
      */
     public Set<Integer> getComponentHistories() throws WdkModelException {
-        if (isBoolean) {
-            BooleanExpression parser = new BooleanExpression(user);
-            return parser.getOperands(booleanExpression);
-        } else return new LinkedHashSet<Integer>();
+        Set<Integer> predicates = new LinkedHashSet<Integer>();
+        Map<String, Param> params = answer.getQuestion().getParamMap();
+        for (String paramName : this.params.keySet()) {
+            Param param = params.get(paramName);
+            if (param instanceof AnswerParam) {
+                // the value of an answer param is user_checksum:history_id
+                Object paramValue = this.params.get(paramName);
+                String[] parts = paramValue.toString().split(":");
+                int historyId = Integer.parseInt(parts[1].trim());
+                predicates.add(historyId);
+            }
+        }
+        return predicates;
     }
 
     public String getDescription() {
@@ -305,8 +318,30 @@ public class History {
         this.isValid = isValid;
     }
 
-    public void setParams(Map<String, Object> params) throws JSONException {
-        this.params = new LinkedHashMap<String, Object>(params);
+    public void setParams(String strParams) throws JSONException,
+            WdkModelException {
+        params = new LinkedHashMap<String, Object>();
+        JSONObject jsParams = new JSONObject(strParams);
+        Iterator<?> keys = jsParams.keys();
+        while (keys.hasNext()) {
+            String key = (String) keys.next();
+            Object value = jsParams.get(key).toString();
+            params.put(key, value);
+        }
+        // recreate the boolean expression
+        if (isBoolean) {
+            WdkModel wdkModel = user.getWdkModel();
+            Question question = (Question) wdkModel.resolveReference(questionName);
+            BooleanQuery query = (BooleanQuery) question.getQuery();
+            String leftParam = query.getLeftOperandParam().getName();
+            String rightParam = query.getRightOperandParam().getName();
+            String operatorParam = query.getOperatorParam().getName();
+            String leftOperand = params.get(leftParam).toString().split(":")[1];
+            String rightOperand = params.get(rightParam).toString().split(":")[1];
+            String operator = params.get(operatorParam).toString();
+            this.booleanExpression = leftOperand + " " + operator + " "
+                    + rightOperand;
+        }
     }
 
     public Map<String, Object> getParams() {
