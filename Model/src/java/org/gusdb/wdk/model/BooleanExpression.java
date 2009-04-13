@@ -24,7 +24,7 @@ import org.json.JSONException;
 public class BooleanExpression {
 
     public static final String BOOLEAN_EXPRESSION = "Boolean Expression";
-    
+
     private static final String STUB_PREFIX = "__STUB__";
 
     private User user;
@@ -38,7 +38,7 @@ public class BooleanExpression {
         this.user = user;
     }
 
-    public Answer parseExpression(String expression, boolean useBooleanFilter)
+    public History parseExpression(String expression, boolean useBooleanFilter)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         this.orgExp = expression;
@@ -99,7 +99,7 @@ public class BooleanExpression {
         return sb.toString();
     }
 
-    private Answer parseBlock(String block, Map<String, String> replace,
+    private History parseBlock(String block, Map<String, String> replace,
             boolean useBooleanFilter) throws WdkUserException,
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException {
@@ -117,8 +117,8 @@ public class BooleanExpression {
             return parseBlock(triplet[0], replace, useBooleanFilter);
         } else { // a triplet
             // get the answers that represents each piece
-            Answer left = parseBlock(triplet[0], replace, useBooleanFilter);
-            Answer right = parseBlock(triplet[2], replace, useBooleanFilter);
+            History left = parseBlock(triplet[0], replace, useBooleanFilter);
+            History right = parseBlock(triplet[2], replace, useBooleanFilter);
 
             String operator = BooleanOperator.parse(triplet[1]).getOperator();
 
@@ -127,7 +127,7 @@ public class BooleanExpression {
         }
     }
 
-    private Answer buildLeaf(String block, Map<String, String> replace)
+    private History buildLeaf(String block, Map<String, String> replace)
             throws WdkUserException, WdkModelException, SQLException,
             JSONException {
         // the block must be a history id or an id starting with '#'
@@ -145,7 +145,7 @@ public class BooleanExpression {
             throw new WdkUserException("The history #" + historyId
                     + " is invalid.");
 
-        return history.getAnswer();
+        return history;
     }
 
     /**
@@ -214,13 +214,13 @@ public class BooleanExpression {
         return operands;
     }
 
-    private Answer makeBooleanAnswer(Answer leftOperand, Answer rightOperand,
-            String operator, boolean useBooleanFilter)
+    private History makeBooleanAnswer(History leftOperand,
+            History rightOperand, String operator, boolean useBooleanFilter)
             throws WdkModelException, NoSuchAlgorithmException,
             WdkUserException, SQLException, JSONException {
         // verify the record type of the operands
-        RecordClass leftRecordClass = leftOperand.getQuestion().getRecordClass();
-        RecordClass rightRecordClass = rightOperand.getQuestion().getRecordClass();
+        RecordClass leftRecordClass = leftOperand.getAnswer().getQuestion().getRecordClass();
+        RecordClass rightRecordClass = rightOperand.getAnswer().getQuestion().getRecordClass();
         if (!leftRecordClass.getFullName().equals(
                 rightRecordClass.getFullName()))
             throw new WdkUserException("Boolean operation cannot be applied "
@@ -235,22 +235,21 @@ public class BooleanExpression {
 
         Map<String, Object> params = new LinkedHashMap<String, Object>();
 
-        String leftChecksum = leftOperand.getAnswerInfo().getAnswerChecksum();
-        AnswerFilterInstance leftFilter = leftOperand.getFilter();
-        if (leftFilter != null) leftChecksum += ":" + leftFilter.getName();
-        params.put(query.getLeftOperandParam().getName(), leftChecksum);
+        String signature = user.getSignature();
+        String leftHistoryKey = signature + ":" + leftOperand.getHistoryId();
+        params.put(query.getLeftOperandParam().getName(), leftHistoryKey);
 
-        String rightChecksum = rightOperand.getAnswerInfo().getAnswerChecksum();
-        AnswerFilterInstance rightFilter = rightOperand.getFilter();
-        if (rightFilter != null) rightChecksum += ":" + rightFilter.getName();
-        params.put(query.getRightOperandParam().getName(),
-                rightChecksum);
+        String rightHistoryKey = signature + ":" + rightOperand.getHistoryId();
+        params.put(query.getRightOperandParam().getName(), rightHistoryKey);
 
         params.put(query.getOperatorParam().getName(), operator);
         params.put(query.getUseBooleanFilter().getName(),
                 Boolean.toString(useBooleanFilter));
 
         // create a boolean answer with default page size
-        return question.makeAnswer(params);
+        Answer answer = question.makeAnswer(params);
+        History history = user.createHistory(answer);
+        history.setCustomName(history.getBooleanExpression());
+        return history;
     }
 }
