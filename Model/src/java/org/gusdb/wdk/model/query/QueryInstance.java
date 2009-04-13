@@ -13,6 +13,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -136,7 +137,7 @@ public abstract class QueryInstance {
     }
 
     public String getChecksum() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException {
+            WdkModelException, JSONException, SQLException, WdkUserException {
         if (checksum == null) {
             JSONObject jsQuery = getJSONContent();
             checksum = Utilities.encrypt(jsQuery.toString());
@@ -145,12 +146,12 @@ public abstract class QueryInstance {
     }
 
     public JSONObject getJSONContent() throws JSONException,
-            NoSuchAlgorithmException, WdkModelException {
+            NoSuchAlgorithmException, WdkModelException, SQLException, WdkUserException {
         JSONObject jsInstance = new JSONObject();
         jsInstance.put("query", query.getFullName());
         jsInstance.put("querySignature", query.getChecksum());
 
-        jsInstance.put("params", getParamJSONObject());
+        jsInstance.put("params", getIndependentParamJSONObject());
 
         // include extra info from child
         appendSJONContent(jsInstance);
@@ -158,15 +159,40 @@ public abstract class QueryInstance {
         return jsInstance;
     }
 
-    public JSONObject getParamJSONObject() throws JSONException {
+    public JSONObject getDependentParamJSONObject() throws JSONException,
+            NoSuchAlgorithmException, WdkModelException, SQLException,
+            WdkUserException {
         // construct param-value map; param is sorted by name
         String[] paramNames = new String[values.size()];
         values.keySet().toArray(paramNames);
         Arrays.sort(paramNames);
 
+        Map<String, Param> params = query.getParamMap();
         JSONObject jsParams = new JSONObject();
         for (String paramName : paramNames) {
-            jsParams.put(paramName, values.get(paramName));
+            Object paramValue = values.get(paramName);
+            jsParams.put(paramName, paramValue);
+        }
+        return jsParams;
+    }
+
+    public JSONObject getIndependentParamJSONObject() throws JSONException,
+            NoSuchAlgorithmException, WdkModelException, SQLException,
+            WdkUserException {
+        // construct param-value map; param is sorted by name
+        String[] paramNames = new String[values.size()];
+        values.keySet().toArray(paramNames);
+        Arrays.sort(paramNames);
+
+        Map<String, Param> params = query.getParamMap();
+        JSONObject jsParams = new JSONObject();
+        for (String paramName : paramNames) {
+            Object paramValue = values.get(paramName);
+            Param param = params.get(paramName);
+            if (param instanceof AnswerParam) {
+                paramValue = ((AnswerParam) param).getInternalValue(paramValue);
+            }
+            jsParams.put(paramName, paramValue);
         }
         return jsParams;
     }

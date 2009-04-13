@@ -155,7 +155,7 @@ public class AnswerBean {
     }
 
     public String getChecksum() throws WdkModelException,
-            NoSuchAlgorithmException, JSONException {
+            NoSuchAlgorithmException, JSONException, SQLException, WdkUserException {
         return answer.getChecksum();
     }
 
@@ -189,8 +189,8 @@ public class AnswerBean {
         BooleanQuery query = (BooleanQuery) answer.getIdsQueryInstance().getQuery();
         Map<String, Object> params = answer.getIdsQueryInstance().getValues();
         AnswerParam param = query.getLeftOperandParam();
-        String checkSum = (String) params.get(param.getName());
-        return new AnswerBean(param.getAnswer(checkSum));
+        String historyKey = (String) params.get(param.getName());
+        return new AnswerBean(param.getAnswer(historyKey));
     }
 
     /**
@@ -211,8 +211,8 @@ public class AnswerBean {
         BooleanQuery query = (BooleanQuery) answer.getIdsQueryInstance().getQuery();
         Map<String, Object> params = answer.getIdsQueryInstance().getValues();
         AnswerParam param = query.getRightOperandParam();
-        String checkSum = (String) params.get(param.getName());
-        return new AnswerBean(param.getAnswer(checkSum));
+        String historyKey = (String) params.get(param.getName());
+        return new AnswerBean(param.getAnswer(historyKey));
     }
 
     public int getPageSize() throws NoSuchAlgorithmException,

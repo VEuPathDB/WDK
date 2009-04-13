@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QueryInstance;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -73,7 +74,8 @@ public class AnswerFactory {
             answerInfo.setQuestionName(question.getFullName());
             answerInfo.setResultMessage(answer.getResultMessage());
 
-            String paramClob = answer.getIdsQueryInstance().getParamJSONObject().toString();
+            QueryInstance instance = answer.getIdsQueryInstance();
+            String paramClob = instance.getIndependentParamJSONObject().toString();
             saveAnswerInfo(answerInfo, paramClob);
         }
         answer.setAnswerInfo(answerInfo);
