@@ -230,7 +230,7 @@ public class AnswerParam extends Param {
         if (!(objHistoryKey instanceof String))
             throw new WdkUserException(errMessage);
         String historyKey = (String) objHistoryKey;
-        if (historyKey.matches(HISTORY_KEY))
+        if (!historyKey.matches(HISTORY_KEY))
             throw new WdkUserException(errMessage);
 
         String[] parts = historyKey.split(":");
