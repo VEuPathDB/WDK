@@ -754,9 +754,10 @@ public class User /* implements Serializable */{
             NoSuchAlgorithmException, SQLException, JSONException {
         logger.debug("Boolean expression: " + expression);
         BooleanExpression exp = new BooleanExpression(this);
-        Answer answer = exp.parseExpression(expression, useBooleanFilter);
-
-        logger.debug("Boolean answer size: " + answer.getResultSize());
+        History history = exp.parseExpression(expression, useBooleanFilter);
+        Answer answer = history.getAnswer();
+        history.setCustomName(expression);
+        history.setDeleted(deleted);
 
         // save summary list, if no summary list exists
         String summaryKey = answer.getQuestion().getFullName()
@@ -772,7 +773,8 @@ public class User /* implements Serializable */{
             save();
         }
 
-        return createHistory(answer, expression, deleted);
+        history.update(false);
+        return history;
     }
 
     public void validateExpression(String expression) throws WdkModelException,
