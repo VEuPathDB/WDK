@@ -161,7 +161,7 @@ public abstract class QueryInstance {
         jsInstance.put("query", query.getFullName());
         jsInstance.put("querySignature", query.getChecksum());
 
-        jsInstance.put("params", getIndependentParanValuesJSONObject());
+        jsInstance.put("params", getIndependentParamValuesJSONObject());
 
         // include extra info from child
         appendSJONContent(jsInstance);
@@ -169,7 +169,7 @@ public abstract class QueryInstance {
         return jsInstance;
     }
 
-    public JSONObject getIndependentParanValuesJSONObject()
+    public JSONObject getIndependentParamValuesJSONObject()
             throws JSONException, NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException {
         // the values are dependent values. need to convert it into independent
