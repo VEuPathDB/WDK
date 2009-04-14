@@ -70,7 +70,7 @@ public class AnswerFactory {
             answer.setQueryChecksum(question.getQuery().getChecksum());
             answer.setQuestionName(question.getFullName());
 
-            JSONObject independentValues = answerValue.getIdsQueryInstance().getIndependentParanValuesJSONObject();
+            JSONObject independentValues = answerValue.getIdsQueryInstance().getIndependentParamValuesJSONObject();
             String paramClob = independentValues.toString();
             saveAnswer(answer, paramClob);
         }
