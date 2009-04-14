@@ -234,7 +234,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         writer.print(jsMessage.toString());
     }
 
-    static private JSONObject outputStrategyChecksums(UserBean user)
+    static JSONObject outputStrategyChecksums(UserBean user)
             throws WdkUserException, WdkModelException, JSONException,
             SQLException, NoSuchAlgorithmException {
         JSONObject jsStrategies = new JSONObject();
