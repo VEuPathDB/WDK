@@ -66,13 +66,13 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 
         // construct the filter query for the first child
         AnswerParam leftParam = booleanQuery.getLeftOperandParam();
-        String leftChecksum = (String) values.get(leftParam.getName());
-        String leftSql = constructOperandSql(leftParam, leftChecksum,
+        String leftValue = (String) values.get(leftParam.getName());
+        String leftSql = constructOperandSql(leftParam, leftValue,
                 booleanFlag);
 
         AnswerParam rightParam = booleanQuery.getRightOperandParam();
-        String rightChecksum = (String) values.get(rightParam.getName());
-        String rightSql = constructOperandSql(rightParam, rightChecksum,
+        String rightValue = (String) values.get(rightParam.getName());
+        String rightSql = constructOperandSql(rightParam, rightValue,
                 booleanFlag);
 
         Object operator = values.get(booleanQuery.getOperatorParam().getName());
@@ -92,14 +92,15 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     }
 
     private String constructOperandSql(AnswerParam answerParam,
-            String answerChecksum, boolean booleanFlag)
+            String historyKey, boolean booleanFlag)
             throws NoSuchAlgorithmException, WdkModelException, SQLException,
             JSONException, WdkUserException {
         RecordClass recordClass = booleanQuery.getRecordClass();
+        String answerKey = answerParam.getInternalValue(historyKey);
 
         // create a template sql, and use answerParam to do the replacement
         String innerSql = "$$" + answerParam.getName() + "$$";
-        innerSql = answerParam.replaceSql(innerSql, answerChecksum);
+        innerSql = answerParam.replaceSql(innerSql, answerKey);
 
         // apply the filter query if needed
         AnswerFilterInstance filter = recordClass.getBooleanExpansionFilter();
