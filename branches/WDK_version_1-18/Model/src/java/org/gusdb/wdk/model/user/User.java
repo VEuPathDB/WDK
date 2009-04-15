@@ -445,7 +445,7 @@ public class User /* implements Serializable */{
                                 + newId.toString() + "WDK");
                     }
                     expression = expression.replaceAll("WDK", "");
-                    newHistory = combineHistory(expression, history.isDeleted());
+                    newHistory = combineHistory(expression, history.isUseBooleanFilter());
                 } else {
                     // merge histories with DatasetParam/HistoryParam
                     Answer answer = history.getAnswer();

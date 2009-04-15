@@ -404,4 +404,11 @@ public class History {
     public void setQuestionName(String questionName) {
         this.questionName = questionName;
     }
+    
+    public boolean isUseBooleanFilter() {
+        if (!isBoolean) return false;
+        Object useBoolean = params.get(BooleanQuery.USE_BOOLEAN_FILTER_PARAM);
+        if (useBoolean == null) return false;
+        return Boolean.parseBoolean(useBoolean.toString());
+    }
 }
