@@ -72,7 +72,7 @@ public class BooleanExpressionForm extends ActionForm {
 
             logger.info("Validating boolean expression: " + expression);
 
-            wdkUser.validateExpression(expression);
+            wdkUser.validateExpression(expression, useBooleanFilter);
             if (errMsg != null) {
                 errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
                         "mapped.properties", "booleanExpression", errMsg));

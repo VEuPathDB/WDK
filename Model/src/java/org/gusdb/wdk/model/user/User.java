@@ -777,12 +777,12 @@ public class User /* implements Serializable */{
         return history;
     }
 
-    public void validateExpression(String expression) throws WdkModelException,
+    public void validateExpression(String expression, boolean useBooleanFilter) throws WdkModelException,
             NoSuchAlgorithmException, WdkUserException, SQLException,
             JSONException {
         // construct BooleanQuestionNode
         BooleanExpression be = new BooleanExpression(this);
-        be.parseExpression(expression, false);
+        be.parseExpression(expression, useBooleanFilter);
     }
 
     public Map<String, Boolean> getSortingAttributes(String questionFullName)
