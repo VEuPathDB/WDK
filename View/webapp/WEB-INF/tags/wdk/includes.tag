@@ -3,7 +3,8 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 
-<script type="text/javascript" src='<c:url value="/assets/js/lib/jquery-1.2.6.js"/>'></script>
+<%--<script type="text/javascript" src='<c:url value="/assets/js/lib/jquery-1.3.2.js"/>'></script>--%>
+<script type="text/javascript" src="/assets/js/lib/jquery-1.3.2.js"></script>
 
 <script type="text/javascript" src='<c:url value="/assets/js/wdkCommon.js"/>'></script>
 
