@@ -190,7 +190,7 @@ public class AnswerBean {
         Map<String, Object> params = answer.getIdsQueryInstance().getValues();
         AnswerParam param = query.getLeftOperandParam();
         String historyKey = (String) params.get(param.getName());
-        return new AnswerBean(param.getAnswer(historyKey));
+        return new AnswerBean(param.getHistory(historyKey).getAnswer());
     }
 
     /**
@@ -212,7 +212,7 @@ public class AnswerBean {
         Map<String, Object> params = answer.getIdsQueryInstance().getValues();
         AnswerParam param = query.getRightOperandParam();
         String historyKey = (String) params.get(param.getName());
-        return new AnswerBean(param.getAnswer(historyKey));
+        return new AnswerBean(param.getHistory(historyKey).getAnswer());
     }
 
     public int getPageSize() throws NoSuchAlgorithmException,

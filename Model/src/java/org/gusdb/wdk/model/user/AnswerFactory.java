@@ -81,32 +81,32 @@ public class AnswerFactory {
         answer.setAnswerInfo(answerInfo);
         return answerInfo;
     }
-
-    public Answer getAnswer(AnswerInfo answerInfo) throws WdkModelException,
-            NoSuchAlgorithmException, JSONException, WdkUserException,
-            SQLException {
-        // get question
-        Question question = (Question) wdkModel.resolveReference(answerInfo.getQuestionName());
-
-        // check if the query checksum matches
-        Query query = question.getQuery();
-        String queryChecksum = query.getChecksum();
-        String savedChecksum = answerInfo.getQueryChecksum();
-        if (!queryChecksum.equals(savedChecksum)) {
-            throw new WdkModelException("the query checksum in database for "
-                    + savedChecksum + " does not match the one in the "
-                    + "model (" + queryChecksum + "). The query may have been "
-                    + "changed, and the answer is no longer usable.");
-        }
-
-        // get and parse the params
-        Map<String, Object> pvalues = getParams(answerInfo.getAnswerChecksum());
-
-        // create the answer with default page size
-        Answer answer = question.makeAnswer(pvalues);
-        answer.setAnswerInfo(answerInfo);
-        return answer;
-    }
+//
+//    public Answer getAnswer(AnswerInfo answerInfo) throws WdkModelException,
+//            NoSuchAlgorithmException, JSONException, WdkUserException,
+//            SQLException {
+//        // get question
+//        Question question = (Question) wdkModel.resolveReference(answerInfo.getQuestionName());
+//
+//        // check if the query checksum matches
+//        Query query = question.getQuery();
+//        String queryChecksum = query.getChecksum();
+//        String savedChecksum = answerInfo.getQueryChecksum();
+//        if (!queryChecksum.equals(savedChecksum)) {
+//            throw new WdkModelException("the query checksum in database for "
+//                    + savedChecksum + " does not match the one in the "
+//                    + "model (" + queryChecksum + "). The query may have been "
+//                    + "changed, and the answer is no longer usable.");
+//        }
+//
+//        // get and parse the params
+//        Map<String, Object> pvalues = getParams(answerInfo.getAnswerChecksum());
+//
+//        // create the answer with default page size
+//        Answer answer = question.makeAnswer(pvalues);
+//        answer.setAnswerInfo(answerInfo);
+//        return answer;
+//    }
 
     /**
      * @param answerChecksum

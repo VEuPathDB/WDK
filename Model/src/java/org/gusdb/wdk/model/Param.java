@@ -34,6 +34,10 @@ public abstract class Param extends WdkModelBase {
     protected abstract void appendJSONContent(JSONObject jsParam)
             throws JSONException;
 
+    public abstract Object dependentValueToIndependentValue(
+            Object dependentValue) throws WdkModelException, SQLException,
+            JSONException, WdkUserException, NoSuchAlgorithmException;
+
     protected String id;
     protected String name;
     protected String prompt;
@@ -242,7 +246,7 @@ public abstract class Param extends WdkModelBase {
         // check if the value is already been compressed
         String strValue;
         if (value == null) strValue = "";
-        else if (value instanceof String) strValue = (String)value;
+        else if (value instanceof String) strValue = (String) value;
         else if (value instanceof String[]) {
             String[] array = (String[]) value;
             StringBuffer buffer = new StringBuffer();
@@ -251,8 +255,7 @@ public abstract class Param extends WdkModelBase {
                 buffer.append(item);
             }
             strValue = buffer.toString();
-        }
-        else strValue = value.toString();
+        } else strValue = value.toString();
 
         if (strValue.startsWith(Utilities.COMPRESSED_VALUE_PREFIX))
             return strValue;

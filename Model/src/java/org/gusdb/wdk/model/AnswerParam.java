@@ -5,8 +5,7 @@ import java.sql.SQLException;
 
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.QueryInfo;
-import org.gusdb.wdk.model.user.AnswerFactory;
-import org.gusdb.wdk.model.user.AnswerInfo;
+import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.History;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
@@ -17,16 +16,14 @@ import org.json.JSONObject;
  * @author xingao
  * 
  *         external value of the AnswerParam should be history id; the value
- *         stored in the history.displayparams should be history ids too; the
- *         value stored in the answer.params should be answer_checksum:filter;
- *         the internal value is answer_checksum;
+ *         stored in the history.displayparams should be history ids too;
+ * 
+ *         the independent stored in the answer.params should be
+ *         answer_checksum:filter;
+ * 
+ *         the internal value should be historyKey too;
  */
 public class AnswerParam extends Param {
-
-    /**
-     * dependent input is a step_id:user_checksum combo;
-     */
-    private static final String ANSWER_CHECKSUM = "\\w+\\:\\w+";
 
     /**
      * independent input is an answer_checksum:filter_name;
@@ -50,7 +47,9 @@ public class AnswerParam extends Param {
         this.wdkModel = param.wdkModel;
     }
 
-    /* (non-Javadoc)
+    /*
+     * (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.Param#validateValue(java.lang.Object)
      */
     public String validateValue(Object objHistoryKey) throws WdkModelException {
@@ -58,7 +57,8 @@ public class AnswerParam extends Param {
         try {
             History history = getHistory(objHistoryKey);
             if (history == null || !history.isValid())
-                throw new WdkModelException("The history " + objHistoryKey + " is invalid.");
+                throw new WdkModelException("The history " + objHistoryKey
+                        + " is invalid.");
         } catch (Exception ex) {
             throw new WdkModelException(ex);
         }
@@ -120,12 +120,10 @@ public class AnswerParam extends Param {
      * @see org.gusdb.wdk.model.Param#getInternalValue(java.lang.Object)
      */
     @Override
-    public String getInternalValue(Object objHistoryKey) throws WdkModelException,
-            SQLException, NoSuchAlgorithmException, JSONException,
-            WdkUserException {
-        History history = getHistory(objHistoryKey);
-        Answer answer = history.getAnswer();
-        return answer.getAnswerKey();
+    public String getInternalValue(Object objHistoryKey)
+            throws WdkModelException, SQLException, NoSuchAlgorithmException,
+            JSONException, WdkUserException {
+        return objHistoryKey.toString();
     }
 
     /*
@@ -135,28 +133,20 @@ public class AnswerParam extends Param {
      * java.lang.String)
      */
     @Override
-    public String replaceSql(String sql, String answerKey) throws SQLException,
-            NoSuchAlgorithmException, WdkModelException, JSONException,
-            WdkUserException {
-        String[] parts = parseChecksum(answerKey);
-        String answerChecksum = parts[0];
-        String filterName = parts[1];
+    public String replaceSql(String sql, String historyKey)
+            throws SQLException, NoSuchAlgorithmException, WdkModelException,
+            JSONException, WdkUserException {
+        History history = getHistory(historyKey);
 
         // get answer info
-        AnswerFactory answerFactory = wdkModel.getAnswerFactory();
-        AnswerInfo answerInfo = answerFactory.getAnswerInfo(answerChecksum);
-        if (answerInfo == null)
-            throw new WdkModelException("The answer of given checksum '"
-                    + answerChecksum + "' does not exist");
 
         // get cache table name
-        String questionName = answerInfo.getQuestionName();
-        Question question = (Question) wdkModel.resolveReference(questionName);
-        CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
-        QueryInfo queryInfo = cacheFactory.getQueryInfo(question.getQuery());
 
         // get query instance id
-        Answer answer = answerFactory.getAnswer(answerInfo);
+        Answer answer = history.getAnswer();
+        CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
+        Query query = answer.getIdsQueryInstance().getQuery();
+        QueryInfo queryInfo = cacheFactory.getQueryInfo(query);
         int instanceId = answer.getIdsQueryInstance().getInstanceId();
 
         // construct the inner query that will replace the answerParam macro
@@ -167,37 +157,13 @@ public class AnswerParam extends Param {
 
         // apply filter if needed
         String inner = innerSql.toString();
-        if (filterName != null) {
-            AnswerFilterInstance filter = recordClass.getFilter(filterName);
-            inner = filter.applyFilter(inner);
-        }
+        AnswerFilterInstance filter = answer.getFilter();
+        if (filter != null) inner = filter.applyFilter(inner);
 
         // replace the answer param with the nested sql
         sql = sql.replaceAll("\\$\\$" + name + "\\$\\$", "(" + inner + ")");
 
         return sql;
-    }
-
-    public Answer getAnswer(String answerKey) throws WdkModelException,
-            NoSuchAlgorithmException, JSONException, WdkUserException,
-            SQLException {
-        String[] parts = parseChecksum(answerKey);
-        String checksum = parts[0];
-        String filterName = parts[1];
-
-        AnswerFactory answerFactory = wdkModel.getAnswerFactory();
-        AnswerInfo answerInfo = answerFactory.getAnswerInfo(checksum);
-        if (answerInfo == null)
-            throw new WdkModelException("The answer of given id '" + checksum
-                    + "' does not exist");
-        Answer answer = answerFactory.getAnswer(answerInfo);
-
-        // verify the existance of the filter
-        if (filterName != null) {
-            AnswerFilterInstance filter = recordClass.getFilter(filterName);
-            answer.setFilter(filter);
-        }
-        return answer;
     }
 
     /*
@@ -210,21 +176,8 @@ public class AnswerParam extends Param {
     // nothing to add
     }
 
-    private String[] parseChecksum(String value) {
-        value = value.trim();
-        // check if the filter is specified
-        int pos = value.indexOf(":");
-        String checksum = value;
-        String filter = null;
-        if (pos >= 0) {
-            filter = value.substring(pos + 1);
-            if (filter.length() == 0) filter = null;
-            checksum = value.substring(0, pos);
-        }
-        return new String[] { checksum, filter };
-    }
-
-    private History getHistory(Object objHistoryKey) throws WdkModelException, SQLException, JSONException, WdkUserException {
+    public History getHistory(Object objHistoryKey) throws WdkModelException,
+            SQLException, JSONException, WdkUserException {
         String errMessage = "the input of the answerParam [" + getName()
                 + "] should be of format user_checksum:history_id";
         if (!(objHistoryKey instanceof String))
@@ -239,5 +192,13 @@ public class AnswerParam extends Param {
         UserFactory userFactory = wdkModel.getUserFactory();
         User user = userFactory.loadUserBySignature(signature);
         return user.getHistory(historyId);
+    }
+
+    @Override
+    public Object dependentValueToIndependentValue(Object dependentValue)
+            throws WdkModelException, SQLException, JSONException,
+            WdkUserException, NoSuchAlgorithmException {
+        History history = getHistory(dependentValue);
+        return history.getAnswer().getAnswerKey();
     }
 }

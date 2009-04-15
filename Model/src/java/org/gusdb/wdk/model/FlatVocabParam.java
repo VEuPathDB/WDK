@@ -156,4 +156,11 @@ public class FlatVocabParam extends AbstractEnumParam {
         // add underlying query name to it
         jsParam.append("query", query.getFullName());
     }
+
+    @Override
+    public Object dependentValueToIndependentValue(Object dependentValue)
+            throws WdkModelException, SQLException, JSONException,
+            WdkUserException, NoSuchAlgorithmException {
+        return dependentValue;
+    }
 }

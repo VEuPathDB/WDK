@@ -96,11 +96,11 @@ public class BooleanQueryInstance extends SqlQueryInstance {
             throws NoSuchAlgorithmException, WdkModelException, SQLException,
             JSONException, WdkUserException {
         RecordClass recordClass = booleanQuery.getRecordClass();
-        String answerKey = answerParam.getInternalValue(historyKey);
+        String internalValue = answerParam.getInternalValue(historyKey);
 
         // create a template sql, and use answerParam to do the replacement
         String innerSql = "$$" + answerParam.getName() + "$$";
-        innerSql = answerParam.replaceSql(innerSql, answerKey);
+        innerSql = answerParam.replaceSql(innerSql, internalValue);
 
         // apply the filter query if needed
         AnswerFilterInstance filter = recordClass.getBooleanExpansionFilter();
