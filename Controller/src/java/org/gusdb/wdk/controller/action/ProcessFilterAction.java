@@ -42,6 +42,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
         try {
+            String state = request.getParameter(CConstants.WDK_STATE_KEY);
+
             // Make sure a strategy is specified
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
 
@@ -69,7 +71,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             if (checksum != null && !strategy.getChecksum().equals(checksum)) {
                 logger.error("strategy checksum: " + strategy.getChecksum()
                         + ", but the input checksum: " + checksum);
-                ShowStrategyAction.outputOutOfSyncJSON(strategy, response);
+                ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response, state);
                 return null;
             }
 
@@ -328,15 +330,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
             ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
             StringBuffer url = new StringBuffer(showStrategy.getPath());
-            url.append("?strategy="
-                    + URLEncoder.encode(
-                            Integer.toString(strategy.getStrategyId()), "UTF-8"));
-            if (strBranchId != null) {
-                url.append("_" + URLEncoder.encode(strBranchId, "UTF-8"));
-            }
-            if (isRevise && hasFilter) {
-                url.append("&step=" + baseNewStepId);
-            }
+            url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
 
             ActionForward forward = new ActionForward(url.toString());
             forward.setRedirect(true);
@@ -345,7 +339,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         } catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
-            ShowStrategyAction.outputErrorJSON(wdkUser, ex, response);
+            ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
             return null;
         }
     }

@@ -3,10 +3,11 @@ package org.gusdb.wdk.controller.action;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -52,55 +53,71 @@ public class ShowStrategyAction extends ShowQuestionAction {
         logger.debug("Entering ShowStrategyAction...");
 
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
-
         try {
             // Make sure a protocol is specified
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-            String strBranchId = null;
-
             if (strStratId == null || strStratId.length() == 0) {
-                outputSuccessJSON(wdkUser, response);
-                return null;
+                String strBranchId = null;
+                if (strStratId.indexOf("_") > 0) {
+                    strBranchId = strStratId.split("_")[1];
+                    strStratId = strStratId.split("_")[0];
+                }
+
+                StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+                wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
+                if (strBranchId != null)
+                    wdkUser.addActiveStrategy(strStratId + "_" + strBranchId);
             }
 
-            if (strStratId.indexOf("_") > 0) {
-                strBranchId = strStratId.split("_")[1];
-                strStratId = strStratId.split("_")[0];
-            }
+            // display changed strategies
+            String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
-            StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+            outputSuccessJSON(wdkUser, response, state);
+            return null;
 
-            wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
-
-            if (strBranchId != null)
-                wdkUser.addActiveStrategy(strStratId + "_" + strBranchId);
-
-            String output = request.getParameter("output");
-            if (output != null && output.equals("xml")) {
-                ActionForward forward = outputStrategyXML(strategy,
-                        strBranchId, request, mapping);
-                return forward;
-            } else { // by default, JSON output
-                outputSuccessJSON(strategy, response);
-                return null;
-            }
         } catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
-            outputErrorJSON(wdkUser, ex, response);
+            outputErrorJSON(wdkUser, response, ex);
             return null;
         }
     }
 
-    static void outputErrorJSON(UserBean user, Exception ex,
-            HttpServletResponse response) throws JSONException, IOException,
+    private static List<StrategyBean> getModifiedStrategies(UserBean user,
+            String state) throws JSONException, NoSuchAlgorithmException,
+            WdkModelException, WdkUserException, SQLException {
+        if (state == null) state = "";
+        JSONObject jsState = new JSONObject(state);
+        String[] keys = JSONObject.getNames(jsState);
+        Map<Integer, String> oldState = new LinkedHashMap<Integer, String>();
+        for (String key : keys) {
+            JSONObject jsStrategy = jsState.getJSONObject(key);
+            int strategyId = jsStrategy.getInt("id");
+            String checksum = jsStrategy.getString("checksum");
+            oldState.put(strategyId, checksum);
+        }
+        List<StrategyBean> strategies = new ArrayList<StrategyBean>();
+        for (StrategyBean strategy : user.getActiveStrategies()) {
+            if (!oldState.containsKey(strategy.getStrategyId())) {
+                strategies.add(strategy);
+            } else {
+                String oldChecksum = oldState.get(strategy.getStrategyId());
+                String newChecksum = strategy.getChecksum();
+                if (!newChecksum.equals(oldChecksum)) strategies.add(strategy);
+            }
+        }
+        return strategies;
+    }
+
+    static void outputErrorJSON(UserBean user, HttpServletResponse response,
+            Exception ex) throws JSONException, IOException,
             NoSuchAlgorithmException, WdkUserException, WdkModelException,
             SQLException {
         logger.debug("output JSON error message: " + ex);
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("exception", ex.getClass().getName());
         jsMessage.put("message", ex.getMessage());
-        jsMessage.put("strategies", outputStrategyChecksums(user));
+        jsMessage.put("state", outputState(user));
 
         if (ex instanceof WdkModelException) {
             WdkModelException wmex = (WdkModelException) ex;
@@ -134,120 +151,89 @@ public class ShowStrategyAction extends ShowQuestionAction {
         writer.print(jsMessage.toString());
     }
 
-    static void outputOutOfSyncJSON(StrategyBean strategy,
-            HttpServletResponse response) throws JSONException,
+    static void outputOutOfSyncJSON(UserBean user,
+            HttpServletResponse response, String state) throws JSONException,
             NoSuchAlgorithmException, WdkUserException, WdkModelException,
             SQLException, IOException {
-        logger.debug("output JSON out-of-sync message: " + strategy.getStrategyId());
+        logger.debug("output JSON out-of-sync message...");
+
+        List<StrategyBean> strategies = getModifiedStrategies(user, state);
+
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", MESSAGE_TYPE_OUT_OF_SYNC_ERROR);
 
         // get a list of strategy checksums
-        UserBean user = strategy.getUser();
-        jsMessage.put("strategies", outputStrategyChecksums(user));
-        jsMessage.put("strategy", outputStrategy(user, strategy));
+        jsMessage.put("state", outputState(user));
+        jsMessage.put("strategies", outputStrategies(user, strategies));
 
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
     }
 
-    static void outputDuplcicateNameJSON(StrategyBean strategy,
-            HttpServletResponse response) throws JSONException,
+    static void outputDuplcicateNameJSON(UserBean user,
+            HttpServletResponse response, String state) throws JSONException,
             NoSuchAlgorithmException, WdkUserException, WdkModelException,
             SQLException, IOException {
-        logger.debug("output JSON dup-name-error message: " + strategy.getStrategyId());
+        logger.debug("output JSON dup-name-error message...");
+
+        List<StrategyBean> strategies = getModifiedStrategies(user, state);
+
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", MESSAGE_TYPE_DUP_NAME_ERROR);
 
         // get a list of strategy checksums
-        UserBean user = strategy.getUser();
-        jsMessage.put("strategies", outputStrategyChecksums(user));
-        jsMessage.put("strategy", outputStrategy(user, strategy));
+        jsMessage.put("state", outputState(user));
+        jsMessage.put("strategies", outputStrategies(user, strategies));
 
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
     }
 
-    private static ActionForward outputStrategyXML(StrategyBean strategy,
-            String strBranchId, HttpServletRequest request,
-            ActionMapping mapping) throws UnsupportedEncodingException {
-        if (strBranchId == null) {
-            request.setAttribute(CConstants.WDK_STEP_KEY,
-                    strategy.getLatestStep());
-        } else {
-            request.setAttribute(CConstants.WDK_STEP_KEY,
-                    strategy.getStepById(Integer.parseInt(strBranchId)));
-        }
-        request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
-
-        // forward to strategyPage.jsp
-        ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
-        StringBuffer url = new StringBuffer(showSummary.getPath());
-        url.append("?strategy=" + strategy.getStrategyId());
-        if (strBranchId != null) {
-            url.append("_" + URLEncoder.encode(strBranchId, "utf-8"));
-        }
-        String viewStep = request.getParameter("step");
-        if (viewStep != null && viewStep.length() != 0) {
-            url.append("&step=" + URLEncoder.encode(viewStep, "utf-8"));
-        }
-        String subQuery = request.getParameter("subquery");
-        if (subQuery != null && subQuery.length() != 0) {
-            url.append("&subquery=" + URLEncoder.encode(subQuery, "utf-8"));
-        }
-
-        logger.debug("URL: " + url);
-
-        ActionForward forward = new ActionForward(url.toString());
-        forward.setRedirect(false);
-        return forward;
-    }
-
-    static void outputSuccessJSON(UserBean user, HttpServletResponse response)
-            throws JSONException, NoSuchAlgorithmException, WdkUserException,
-            WdkModelException, SQLException, IOException {
+    static void outputSuccessJSON(UserBean user, HttpServletResponse response,
+            String state) throws JSONException, NoSuchAlgorithmException,
+            WdkUserException, WdkModelException, SQLException, IOException {
         logger.debug("output JSON success message without strategy");
+
+        List<StrategyBean> strategies = getModifiedStrategies(user, state);
+
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", MESSAGE_TYPE_SUCCESS);
 
         // get a list of strategy checksums
-        jsMessage.put("strategies", outputStrategyChecksums(user));
+        jsMessage.put("state", outputState(user));
+        jsMessage.put("strategies", outputStrategies(user, strategies));
 
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
     }
 
-    static void outputSuccessJSON(StrategyBean strategy,
-            HttpServletResponse response) throws JSONException,
-            NoSuchAlgorithmException, WdkUserException, WdkModelException,
-            SQLException, IOException {
-        logger.debug("output JSON success message with strategy");
-        JSONObject jsMessage = new JSONObject();
-        jsMessage.put("type", MESSAGE_TYPE_SUCCESS);
-
-        // get a list of strategy checksums
-        UserBean user = strategy.getUser();
-        jsMessage.put("strategies", outputStrategyChecksums(user));
-        jsMessage.put("strategy", outputStrategy(user, strategy));
-
-        PrintWriter writer = response.getWriter();
-        writer.print(jsMessage.toString());
-    }
-
-    static JSONObject outputStrategyChecksums(UserBean user)
-            throws WdkUserException, WdkModelException, JSONException,
-            SQLException, NoSuchAlgorithmException {
+    static JSONObject outputState(UserBean user) throws WdkUserException,
+            WdkModelException, JSONException, SQLException,
+            NoSuchAlgorithmException {
         JSONObject jsStrategies = new JSONObject();
         StrategyBean[] openedStrategies = user.getActiveStrategies();
         for (int order = 0; order < openedStrategies.length; order++) {
             StrategyBean strat = openedStrategies[order];
             int stratId = strat.getStrategyId();
             JSONObject jsStrategy = new JSONObject();
-            jsStrategy.put("order", (order+ 1));
+            jsStrategy.put("id", stratId);
             jsStrategy.put("checksum", strat.getChecksum());
-            jsStrategies.put(Integer.toString(stratId), jsStrategy);
+            jsStrategies.put(Integer.toString(order + 1), jsStrategy);
         }
         jsStrategies.put("length", openedStrategies.length);
+        return jsStrategies;
+    }
+
+    static private JSONObject outputStrategies(UserBean user,
+            List<StrategyBean> strategies) throws JSONException,
+            NoSuchAlgorithmException, WdkModelException, WdkUserException,
+            SQLException {
+        JSONObject jsStrategies = new JSONObject();
+        for (StrategyBean strategy : strategies) {
+            int strategyId = strategy.getStrategyId();
+            JSONObject jsStrategy = outputStrategy(user, strategy);
+            jsStrategies.append(Integer.toString(strategyId), jsStrategy);
+        }
         return jsStrategies;
     }
 
