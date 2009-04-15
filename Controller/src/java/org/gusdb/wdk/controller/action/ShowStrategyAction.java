@@ -94,6 +94,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         Map<Integer, String> oldState = new LinkedHashMap<Integer, String>();
         if (keys != null) {
             for (String key : keys) {
+                if (key.equals("length")) continue;
                 JSONObject jsStrategy = jsState.getJSONObject(key);
                 int strategyId = jsStrategy.getInt("id");
                 String checksum = jsStrategy.getString("checksum");
