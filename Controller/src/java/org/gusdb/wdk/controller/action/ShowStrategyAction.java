@@ -237,7 +237,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStrategies.put("length", strategies.size());
         for (StrategyBean strategy : strategies) {
             JSONObject jsStrategy = outputStrategy(user, strategy);
-            jsStrategies.append(strategy.getChecksum(), jsStrategy);
+            jsStrategies.put(strategy.getChecksum(), jsStrategy);
         }
         return jsStrategies;
     }
