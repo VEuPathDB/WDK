@@ -56,7 +56,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         try {
             // Make sure a protocol is specified
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-            if (strStratId == null || strStratId.length() == 0) {
+            if (strStratId != null && strStratId.length() > 0) {
                 String strBranchId = null;
                 if (strStratId.indexOf("_") > 0) {
                     strBranchId = strStratId.split("_")[1];
@@ -86,15 +86,19 @@ public class ShowStrategyAction extends ShowQuestionAction {
     private static List<StrategyBean> getModifiedStrategies(UserBean user,
             String state) throws JSONException, NoSuchAlgorithmException,
             WdkModelException, WdkUserException, SQLException {
-        if (state == null) state = "";
-        JSONObject jsState = new JSONObject(state);
+        logger.debug("previous state: '" + state + "'");
+
+        if (state == null || state.length() == 0) state = null;
+        JSONObject jsState = (state == null) ? new JSONObject() : new JSONObject(state);
         String[] keys = JSONObject.getNames(jsState);
         Map<Integer, String> oldState = new LinkedHashMap<Integer, String>();
-        for (String key : keys) {
-            JSONObject jsStrategy = jsState.getJSONObject(key);
-            int strategyId = jsStrategy.getInt("id");
-            String checksum = jsStrategy.getString("checksum");
-            oldState.put(strategyId, checksum);
+        if (keys != null) {
+            for (String key : keys) {
+                JSONObject jsStrategy = jsState.getJSONObject(key);
+                int strategyId = jsStrategy.getInt("id");
+                String checksum = jsStrategy.getString("checksum");
+                oldState.put(strategyId, checksum);
+            }
         }
         List<StrategyBean> strategies = new ArrayList<StrategyBean>();
         for (StrategyBean strategy : user.getActiveStrategies()) {
@@ -229,6 +233,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             NoSuchAlgorithmException, WdkModelException, WdkUserException,
             SQLException {
         JSONObject jsStrategies = new JSONObject();
+        jsStrategies.put("length", strategies.size());
         for (StrategyBean strategy : strategies) {
             int strategyId = strategy.getStrategyId();
             JSONObject jsStrategy = outputStrategy(user, strategy);
