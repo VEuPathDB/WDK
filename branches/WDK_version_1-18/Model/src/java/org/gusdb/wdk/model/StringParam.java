@@ -1,5 +1,8 @@
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -142,5 +145,12 @@ public class StringParam extends Param {
     protected void appendJSONContent(JSONObject jsParam) throws JSONException {
     // TODO Auto-generated method stub
 
+    }
+
+    @Override
+    public Object dependentValueToIndependentValue(Object dependentValue)
+            throws WdkModelException, SQLException, JSONException,
+            WdkUserException, NoSuchAlgorithmException {
+        return dependentValue;
     }
 }

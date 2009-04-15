@@ -38,6 +38,7 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AnswerFilterInstance;
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -934,13 +935,9 @@ public class UserFactory {
     private void constructAnswer(History history, String answerChecksum)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        AnswerFactory answerFactory = wdkModel.getAnswerFactory();
-        AnswerInfo answerInfo = answerFactory.getAnswerInfo(answerChecksum);
-        if (answerInfo == null)
-            throw new WdkModelException("The answer with checksum '"
-                    + answerChecksum + "' does not exist");
+        Question question = (Question) wdkModel.resolveReference(history.getQuestionName());
 
-        Answer answer = answerFactory.getAnswer(answerInfo);
+        Answer answer = question.makeAnswer(history.getParams());
 
         // resolve the filter
         RecordClass recordClass = answer.getQuestion().getRecordClass();

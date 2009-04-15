@@ -3,15 +3,24 @@
  */
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+
 import org.gusdb.wdk.model.user.Dataset;
 import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
  * @author xingao
  * 
+ * the dependent value is userDatasetKey: user_checksum:user_dataset_id;
+ * 
+ * the independent value is dataset_id
+ * 
+ * the internal value is dataset_id;
  */
 public class DatasetParam extends Param {
 
@@ -143,5 +152,13 @@ public class DatasetParam extends Param {
      */
     public void setRecordClassRef(String recordClassRef) {
         this.recordClassRef = recordClassRef;
+    }
+
+    @Override
+    public Object dependentValueToIndependentValue(Object dependentValue)
+            throws WdkModelException, SQLException, JSONException,
+            WdkUserException, NoSuchAlgorithmException {
+        Dataset dataset = getDataset((String) dependentValue);
+        return Integer.toString(dataset.getDatasetId());
     }
 }

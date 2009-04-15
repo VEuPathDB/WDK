@@ -187,12 +187,10 @@ public abstract class QueryInstance {
         Map<String, Param> params = query.getParamMap();
         JSONObject jsParams = new JSONObject();
         for (String paramName : paramNames) {
-            Object paramValue = values.get(paramName);
+            Object dependentValue = values.get(paramName);
             Param param = params.get(paramName);
-            if (param instanceof AnswerParam) {
-                paramValue = ((AnswerParam) param).getInternalValue(paramValue);
-            }
-            jsParams.put(paramName, paramValue);
+            Object independentValue = param.dependentValueToIndependentValue(dependentValue);
+            jsParams.put(paramName, independentValue);
         }
         return jsParams;
     }

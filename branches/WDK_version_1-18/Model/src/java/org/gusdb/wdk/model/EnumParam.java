@@ -1,10 +1,13 @@
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class EnumParam extends AbstractEnumParam {
@@ -132,5 +135,12 @@ public class EnumParam extends AbstractEnumParam {
     // do nothing. do not add the enum list into the content, since they may be
     // changed between versions, but we don't want to invalidate a query because
     // of it.
+    }
+
+    @Override
+    public Object dependentValueToIndependentValue(Object dependentValue)
+            throws WdkModelException, SQLException, JSONException,
+            WdkUserException, NoSuchAlgorithmException {
+        return dependentValue;
     }
 }
