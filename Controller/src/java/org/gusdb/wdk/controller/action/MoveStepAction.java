@@ -32,6 +32,8 @@ public class MoveStepAction extends ProcessFilterAction {
 
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
         try {
+            String state = request.getParameter(CConstants.WDK_STATE_KEY);
+
             // Make sure strategy, step, and moveto are defined
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
             String strBranchId = null;
@@ -65,7 +67,7 @@ public class MoveStepAction extends ProcessFilterAction {
             // verify the checksum
             String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
             if (checksum != null && !strategy.getChecksum().equals(checksum)) {
-                ShowStrategyAction.outputOutOfSyncJSON(strategy, response);
+                ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response, state);
                 return null;
             }
 
@@ -85,29 +87,16 @@ public class MoveStepAction extends ProcessFilterAction {
                     strategy.getStrategyId(), stepIdsMap);
 
             // Forward to ShowStrategyAction
-            ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
-            StringBuffer url = new StringBuffer(showSummary.getPath());
-            url.append("?strategy="
-                    + URLEncoder.encode(
-                            Integer.toString(strategy.getStrategyId()), "UTF-8"));
-            if (strBranchId != null) {
-                url.append("_" + URLEncoder.encode(strBranchId, "UTF-8"));
-            }
-            String viewStep = request.getParameter("step");
-            if (viewStep != null && viewStep.length() != 0) {
-                url.append("&step=" + URLEncoder.encode(viewStep, "UTF-8"));
-            }
-            String subQuery = request.getParameter("subquery");
-            if (subQuery != null && subQuery.length() != 0) {
-                url.append("&subquery=" + URLEncoder.encode(subQuery, "UTF-8"));
-            }
+            ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
+            StringBuffer url = new StringBuffer(showStrategy.getPath());
+            url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
             ActionForward forward = new ActionForward(url.toString());
             forward.setRedirect(true);
             return forward;
         } catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
-            ShowStrategyAction.outputErrorJSON(wdkUser, ex, response);
+            ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
             return null;
         }
     }

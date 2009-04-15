@@ -3,6 +3,8 @@
  */
 package org.gusdb.wdk.controller.action;
 
+import java.net.URLEncoder;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -31,6 +33,8 @@ public class ProcessRenameStepAction extends Action {
 
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
         try {
+            String state = request.getParameter(CConstants.WDK_STATE_KEY);
+
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
             String customName = request.getParameter("customName");
 
@@ -48,7 +52,7 @@ public class ProcessRenameStepAction extends Action {
             // verify the checksum
             String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
             if (checksum != null && !strategy.getChecksum().equals(checksum)) {
-                ShowStrategyAction.outputOutOfSyncJSON(strategy, response);
+                ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response, state);
                 return null;
             }
 
@@ -58,13 +62,13 @@ public class ProcessRenameStepAction extends Action {
             logger.info("Set custom name: '" + customName + "'");
             if (stepIdstr != null) {
                 int stepId = Integer.parseInt(stepIdstr);
-                    StepBean step = strategy.getStepById(stepId);
-                    if (step.getIsCollapsible()) {
-                        step.setCollapsedName(customName);
-                    } else {
-                        step.setCustomName(customName);
-                    }
-                    step.update(false);
+                StepBean step = strategy.getStepById(stepId);
+                if (step.getIsCollapsible()) {
+                    step.setCollapsedName(customName);
+                } else {
+                    step.setCustomName(customName);
+                }
+                step.update(false);
             } else {
                 throw new Exception("no step id is given for update");
             }
@@ -74,11 +78,15 @@ public class ProcessRenameStepAction extends Action {
             request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
 
             ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
-            return showStrategy;
+            StringBuffer url = new StringBuffer(showStrategy.getPath());
+            url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+
+            ActionForward forward = new ActionForward(url.toString());
+            return forward;
         } catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
-            ShowStrategyAction.outputErrorJSON(wdkUser, ex, response);
+            ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
             return null;
         }
     }

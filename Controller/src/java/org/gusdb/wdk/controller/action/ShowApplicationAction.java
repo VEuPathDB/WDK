@@ -40,7 +40,7 @@ public class ShowApplicationAction extends ShowSummaryAction {
             if (showHist != null && Boolean.valueOf(showHist)) {
                 request.setAttribute("showHistory", Boolean.valueOf(showHist));
             }
-            JSONObject jsStrategies = ShowStrategyAction.outputStrategyChecksums(wdkUser);
+            JSONObject jsStrategies = ShowStrategyAction.outputState(wdkUser);
             String activeStrategies = jsStrategies.toString();
             request.setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY,
                     activeStrategies);

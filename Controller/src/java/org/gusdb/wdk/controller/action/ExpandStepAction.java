@@ -31,6 +31,8 @@ public class ExpandStepAction extends Action {
 
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
         try {
+            String state = request.getParameter(CConstants.WDK_STATE_KEY);
+
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
             String strStepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
             String strBranchId = null;
@@ -52,7 +54,7 @@ public class ExpandStepAction extends Action {
             // verify the checksum
             String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
             if (checksum != null && !strategy.getChecksum().equals(checksum)) {
-                ShowStrategyAction.outputOutOfSyncJSON(strategy, response);
+                ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response, state);
                 return null;
             }
 
@@ -88,17 +90,14 @@ public class ExpandStepAction extends Action {
             // forward to strategyPage.jsp
             ActionForward showSummary = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
             StringBuffer url = new StringBuffer(showSummary.getPath());
-            url.append("?strategy=" + URLEncoder.encode(strStratId, "UTF-8"));
-            url.append("_"
-                    + URLEncoder.encode(Integer.toString(step.getStepId()),
-                            "UTF-8"));
+            url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
             ActionForward forward = new ActionForward(url.toString());
             forward.setRedirect(false);
             return forward;
         } catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
-            ShowStrategyAction.outputErrorJSON(wdkUser, ex, response);
+            ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
             return null;
         }
     }

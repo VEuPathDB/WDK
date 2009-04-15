@@ -1,5 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
+import java.net.URLEncoder;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,18 +29,24 @@ public class CloseStrategyAction extends Action {
 
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
         try {
+            String state = request.getParameter(CConstants.WDK_STATE_KEY);
+
             String stratIdstr = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
             if (stratIdstr == null || stratIdstr.length() == 0) {
                 throw new Exception("No strategy specified to close!");
             }
             wdkUser.removeActiveStrategy(stratIdstr);
 
-            ShowStrategyAction.outputSuccessJSON(wdkUser, response);
-            return null;
+            ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
+            StringBuffer url = new StringBuffer(showStrategy.getPath());
+            url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+
+            ActionForward forward = new ActionForward(url.toString());
+            return forward;
         } catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
-            ShowStrategyAction.outputErrorJSON(wdkUser, ex, response);
+            ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
             return null;
         }
     }
