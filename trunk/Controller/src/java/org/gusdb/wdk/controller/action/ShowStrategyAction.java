@@ -194,7 +194,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         writer.print(jsMessage.toString());
     }
 
-    static void outputSuccessJSON(UserBean user, HttpServletResponse response,
+    static private void outputSuccessJSON(UserBean user, HttpServletResponse response,
             String state) throws JSONException, NoSuchAlgorithmException,
             WdkUserException, WdkModelException, SQLException, IOException {
         logger.debug("output JSON success message without strategy");
@@ -236,9 +236,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         JSONObject jsStrategies = new JSONObject();
         jsStrategies.put("length", strategies.size());
         for (StrategyBean strategy : strategies) {
-            int strategyId = strategy.getStrategyId();
             JSONObject jsStrategy = outputStrategy(user, strategy);
-            jsStrategies.append(Integer.toString(strategyId), jsStrategy);
+            jsStrategies.append(strategy.getChecksum(), jsStrategy);
         }
         return jsStrategies;
     }
