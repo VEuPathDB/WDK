@@ -686,10 +686,10 @@ public class UserBean /* implements Serializable */{
         return new HistoryBean(user.getHistory(historyId));
     }
 
-    public void validateExpression(String expression) throws WdkModelException,
+    public void validateExpression(String expression, boolean useBooleanFilter) throws WdkModelException,
             NoSuchAlgorithmException, WdkUserException, SQLException,
             JSONException {
-        user.validateExpression(expression);
+        user.validateExpression(expression, useBooleanFilter);
     }
 
     /*
