@@ -40,8 +40,9 @@ public class CloseStrategyAction extends Action {
             ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
             StringBuffer url = new StringBuffer(showStrategy.getPath());
             url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
-
+logger.debug(url);
             ActionForward forward = new ActionForward(url.toString());
+            forward.setRedirect(true);
             return forward;
         } catch (Exception ex) {
             logger.error(ex);
