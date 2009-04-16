@@ -56,11 +56,13 @@ class ActiveStrategyFactory {
             JSONException, SQLException {
         if (getStrategy(strategyKey) != null) return;
 
-        ActiveStrategy strategy = new ActiveStrategy(strategyKey);
         String parentKey = getParentKey(strategyKey);
         ActiveStrategy parent = getStrategy(parentKey);
-        strategy.parent = parent;
-        parent.children.put(strategyKey, strategy);
+        if (!parent.children.containsKey(strategyKey)) {
+            ActiveStrategy strategy = new ActiveStrategy(strategyKey);
+            strategy.parent = parent;
+            parent.children.put(strategyKey, strategy);
+        }
     }
 
     synchronized void closeActiveStrategy(String strategyKey) {
@@ -108,7 +110,7 @@ class ActiveStrategyFactory {
         if (stepMap == null) stepMap = new LinkedHashMap<Integer, Integer>();
         Strategy strategy = user.getStrategy(newId);
         replaceStrategy(strategy, oldStrategy, newStrategy, stepMap);
-        
+
         LinkedHashMap<String, ActiveStrategy> children = new LinkedHashMap<String, ActiveStrategy>();
         for (String strategyKey : root.children.keySet()) {
             // use new strategy to replace the old one at the same place

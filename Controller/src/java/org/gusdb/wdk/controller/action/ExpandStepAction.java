@@ -82,6 +82,8 @@ public class ExpandStepAction extends Action {
                 step.setCollapsedName(branch);
                 step.update(false);
             }
+            String strategyKey = strategy.getStrategyId() + "_" + step.getStepId();
+            wdkUser.addActiveStrategy(strategyKey);
 
             // Add branch (Step object) to request as strategy
             request.setAttribute(CConstants.WDK_STEP_KEY, step);
