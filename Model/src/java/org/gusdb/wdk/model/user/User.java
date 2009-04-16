@@ -1137,6 +1137,13 @@ public class User /* implements Serializable */{
     public void removeActiveStrategy(String strategyKey)
             throws WdkUserException {
         activeStrategyFactory.closeActiveStrategy(strategyKey);
+        int pos = strategyKey.indexOf("_");
+        if (pos >= 0) strategyKey = strategyKey.substring(0, pos);
+        int strategyId = Integer.parseInt(strategyKey);
+        if (strategyId == this.viewStrategyId) {
+            viewStrategyId = null;
+            viewStepId = null;
+        }
     }
 
     public void replaceActiveStrategy(int oldStrategyId, int newStrategyId,
