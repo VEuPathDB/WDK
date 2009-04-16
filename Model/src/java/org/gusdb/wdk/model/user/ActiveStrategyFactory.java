@@ -108,8 +108,17 @@ class ActiveStrategyFactory {
         if (stepMap == null) stepMap = new LinkedHashMap<Integer, Integer>();
         Strategy strategy = user.getStrategy(newId);
         replaceStrategy(strategy, oldStrategy, newStrategy, stepMap);
-        root.children.remove(oldStrategy.strategyKey);
-        root.children.put(newStrategy.strategyKey, newStrategy);
+        
+        LinkedHashMap<String, ActiveStrategy> children = new LinkedHashMap<String, ActiveStrategy>();
+        for (String strategyKey : root.children.keySet()) {
+            // use new strategy to replace the old one at the same place
+            if (oldStrategy.strategyKey.equals(strategyKey)) {
+                children.put(newStrategy.strategyKey, newStrategy);
+            } else {
+                children.put(strategyKey, root.children.get(strategyKey));
+            }
+        }
+        root.children = children;
     }
 
     int getOrder(String strategyKey) {
