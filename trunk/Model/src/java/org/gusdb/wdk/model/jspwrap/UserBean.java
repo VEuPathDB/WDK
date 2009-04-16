@@ -869,19 +869,20 @@ public class UserBean /* implements Serializable */{
         return this.user.toString();
     }
 
-    public void addActiveStrategy(String strategyId) throws NumberFormatException, WdkUserException, WdkModelException, JSONException, SQLException {
-	user.addActiveStrategy(strategyId);
+    public void addActiveStrategy(String strategyKey)
+            throws NumberFormatException, WdkUserException, WdkModelException,
+            JSONException, SQLException {
+        user.addActiveStrategy(strategyKey);
     }
 
-    public void removeActiveStrategy(String strategyId)
-	throws WdkUserException {
-	user.removeActiveStrategy(strategyId);
+    public void removeActiveStrategy(String strategyId) throws WdkUserException {
+        user.removeActiveStrategy(strategyId);
     }
 
-    public void replaceActiveStrategy(int oldStrategyId, int newStrategyId, Map<Integer,Integer> stepIdsMap)
-	throws WdkUserException,
+    public void replaceActiveStrategy(int oldStrategyId, int newStrategyId,
+            Map<Integer, Integer> stepIdsMap) throws WdkUserException,
             WdkModelException, JSONException, SQLException {
-	user.replaceActiveStrategy(oldStrategyId, newStrategyId, stepIdsMap);
+        user.replaceActiveStrategy(oldStrategyId, newStrategyId, stepIdsMap);
     }
 
     /**
@@ -1048,19 +1049,19 @@ public class UserBean /* implements Serializable */{
     }
 
     public void setViewResults(int strategyId, int stepId) {
-	user.setViewResults(strategyId, stepId);
+        user.setViewResults(strategyId, stepId);
     }
 
     public void resetViewResults() {
-	user.resetViewResults();
+        user.resetViewResults();
     }
 
     public Integer getViewStrategyId() {
-	return user.getViewStrategyId();
+        return user.getViewStrategyId();
     }
 
     public Integer getViewStepId() {
-	return user.getViewStepId();
+        return user.getViewStepId();
     }
 
     public StrategyBean[] getActiveStrategies() throws WdkUserException,
@@ -1091,5 +1092,4 @@ public class UserBean /* implements Serializable */{
         return user.getActiveStrategyIds();
     }
 
-    
 }
