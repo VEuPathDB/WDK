@@ -98,7 +98,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             String insertStep = request.getParameter("insert");
             boolean isInsert = (insertStep != null && insertStep.length() != 0);
 
-            System.out.println("isRevise: " + isRevise);
+            System.out.println("isRevise: " + isRevise + "; isInsert: " + isInsert);
             System.out.println("qFullName? "
                     + (qFullName == null || qFullName.trim().length() == 0));
             System.out.println("qFullName: " + qFullName);
