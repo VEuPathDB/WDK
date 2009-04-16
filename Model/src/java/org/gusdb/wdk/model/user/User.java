@@ -780,9 +780,11 @@ public class User /* implements Serializable */{
     public void validateExpression(String expression, boolean useBooleanFilter) throws WdkModelException,
             NoSuchAlgorithmException, WdkUserException, SQLException,
             JSONException {
+        // cannot validate an expression by parsing it, since it will create a 
+        // boolean history, which is not wanted at this point.
         // construct BooleanQuestionNode
-        BooleanExpression be = new BooleanExpression(this);
-        be.parseExpression(expression, useBooleanFilter);
+        //BooleanExpression be = new BooleanExpression(this);
+        //be.parseExpression(expression, useBooleanFilter);
     }
 
     public Map<String, Boolean> getSortingAttributes(String questionFullName)
