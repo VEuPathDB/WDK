@@ -48,7 +48,7 @@ display the parameter values for an non-boolean answer.
                                       </c:if>
                                    </c:when>
                                    <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.AnswerParamBean'}">
-                                      <jsp:setProperty name="qP" property="answerChecksum" value="${aP}" />
+                                      <jsp:setProperty name="qP" property="historyKey" value="${aP}" />
                                       <wdk:showParams wdkAnswer="${qP.answer}" />
                                    </c:when>
                                    <c:otherwise>

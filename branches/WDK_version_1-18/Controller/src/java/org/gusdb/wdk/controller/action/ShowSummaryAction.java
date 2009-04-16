@@ -374,6 +374,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 start = 1;
                 end = Utilities.MAXIMUM_RECORD_INSTANCES;
             }
+for(String pName : params.keySet()) {
+    System.out.println("param " + pName + "='" + params.get(pName) + "'");
+}
             wdkAnswer = question.makeAnswer(params, start, end,
                     sortingAttributes, filterName);
             wdkAnswer.setSumaryAttribute(summaryAttributes);
