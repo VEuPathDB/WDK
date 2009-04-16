@@ -57,6 +57,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             // Make sure a protocol is specified
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
             if (strStratId != null && strStratId.length() > 0) {
+                logger.debug("open strategy: '" + strStratId + "'");
                 String strBranchId = null;
                 if (strStratId.indexOf("_") > 0) {
                     strBranchId = strStratId.split("_")[1];
