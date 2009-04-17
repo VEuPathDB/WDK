@@ -100,6 +100,7 @@ public class BooleanQuery extends SqlQuery {
         prepareColumns(recordClass);
 
         this.sql = constructSql();
+        this.cached = true;     // always cache boolean query by default.
         
         this.setDoNotTest(true);
     }
