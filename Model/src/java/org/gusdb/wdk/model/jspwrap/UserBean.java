@@ -32,6 +32,11 @@ public class UserBean /* implements Serializable */{
 
     private User user;
 
+    /**
+     * a history cache that exists in showSummary.
+     */
+    private HistoryBean currentHistory;
+
     public UserBean() {}
 
     /**
@@ -337,7 +342,7 @@ public class UserBean /* implements Serializable */{
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#changePassword(java.lang.String,
-     *      java.lang.String, java.lang.String)
+     * java.lang.String, java.lang.String)
      */
     public void changePassword(String oldPassword, String newPassword,
             String confirmPassword) throws WdkUserException {
@@ -553,7 +558,7 @@ public class UserBean /* implements Serializable */{
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.user.User#createDataset(java.lang.String,
-     *      java.lang.String, java.lang.String[])
+     * java.lang.String, java.lang.String[])
      */
     public DatasetBean createDataset(String uploadFile, String[] values)
             throws WdkUserException, WdkModelException,
@@ -589,7 +594,8 @@ public class UserBean /* implements Serializable */{
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
+     * @see
+     * org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
      */
     public HistoryBean createHistory(AnswerBean answer)
             throws WdkUserException, WdkModelException,
@@ -683,12 +689,16 @@ public class UserBean /* implements Serializable */{
      */
     public HistoryBean getHistory(int historyId) throws WdkUserException,
             WdkModelException, SQLException, JSONException {
-        return new HistoryBean(user.getHistory(historyId));
+        if (currentHistory != null
+                && currentHistory.getHistoryId() == historyId)
+            return currentHistory;
+        currentHistory = new HistoryBean(user.getHistory(historyId));
+        return currentHistory;
     }
 
-    public void validateExpression(String expression, boolean useBooleanFilter) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
+    public void validateExpression(String expression, boolean useBooleanFilter)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
         user.validateExpression(expression, useBooleanFilter);
     }
 
@@ -896,6 +906,21 @@ public class UserBean /* implements Serializable */{
      */
     public String toString() {
         return this.user.toString();
+    }
+
+    /**
+     * @return the currentHistory
+     */
+    public HistoryBean getCurrentHistory() {
+        return currentHistory;
+    }
+
+    /**
+     * @param currentHistory
+     *            the currentHistory to set
+     */
+    public void setCurrentHistory(HistoryBean currentHistory) {
+        this.currentHistory = currentHistory;
     }
 
     // ********************************* END ***********************************
