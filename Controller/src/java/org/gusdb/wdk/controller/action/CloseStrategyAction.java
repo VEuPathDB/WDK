@@ -35,12 +35,12 @@ public class CloseStrategyAction extends Action {
             if (stratIdstr == null || stratIdstr.length() == 0) {
                 throw new Exception("No strategy specified to close!");
             }
+logger.debug("closing strategy: '" + stratIdstr + "'");
             wdkUser.removeActiveStrategy(stratIdstr);
 
             ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
             StringBuffer url = new StringBuffer(showStrategy.getPath());
             url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
-logger.debug(url);
             ActionForward forward = new ActionForward(url.toString());
             forward.setRedirect(true);
             return forward;

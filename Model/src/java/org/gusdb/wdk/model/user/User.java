@@ -1140,7 +1140,8 @@ public class User /* implements Serializable */{
         int pos = strategyKey.indexOf("_");
         if (pos >= 0) strategyKey = strategyKey.substring(0, pos);
         int strategyId = Integer.parseInt(strategyKey);
-        if (strategyId == this.viewStrategyId) {
+
+        if (viewStrategyId != null && strategyId == viewStrategyId) {
             viewStrategyId = null;
             viewStepId = null;
         }
