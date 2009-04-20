@@ -35,8 +35,7 @@ public class HistoryBean {
      * @see org.gusdb.wdk.model.user.History#getChecksum()
      */
     public String getChecksum() throws WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException,
-            WdkUserException {
+            NoSuchAlgorithmException, JSONException, SQLException, WdkUserException {
         return history.getChecksum();
     }
 
@@ -77,7 +76,7 @@ public class HistoryBean {
      * 
      * @see org.gusdb.wdk.model.user.History#getDataType()
      */
-    public String getDataType() throws WdkModelException {
+    public String getDataType() {
         return history.getDataType();
     }
 
@@ -178,22 +177,16 @@ public class HistoryBean {
      * @see org.gusdb.wdk.model.user.History#isDepended()
      */
     public boolean getDepended() throws WdkUserException, WdkModelException,
-            SQLException, JSONException, NoSuchAlgorithmException {
+            SQLException, JSONException {
         return history.isDepended();
     }
 
     /**
      * @return
      * @throws WdkUserException
-     * @throws JSONException
-     * @throws WdkModelException
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
      * @see org.gusdb.wdk.model.user.History#getAnswer()
      */
-    public AnswerBean getAnswer() throws WdkUserException,
-            NoSuchAlgorithmException, SQLException, WdkModelException,
-            JSONException {
+    public AnswerBean getAnswer() throws WdkUserException {
         Answer answer = history.getAnswer();
         AnswerBean answerBean = new AnswerBean(answer);
         if (answer.getIsBoolean())
@@ -237,7 +230,7 @@ public class HistoryBean {
      * 
      * @see org.gusdb.wdk.model.user.History#getDescription()
      */
-    public String getDescription() throws WdkModelException {
+    public String getDescription() {
         return history.getDescription();
     }
 
@@ -294,9 +287,7 @@ public class HistoryBean {
         return history.isValid();
     }
 
-    public String getFilterDisplayName() throws WdkUserException,
-            NoSuchAlgorithmException, SQLException, WdkModelException,
-            JSONException {
+    public String getFilterDisplayName() throws WdkUserException {
         AnswerFilterInstance filter = history.getAnswer().getFilter();
         if (filter == null) return null;
         return filter.getDisplayName();
