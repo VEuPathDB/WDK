@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
 import org.gusdb.wdk.model.Answer;
@@ -29,7 +30,7 @@ public class AnswerParamBean extends ParamBean {
     }
 
     public HistoryBean[] getHistories(UserBean user) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+            WdkModelException, SQLException, JSONException, NoSuchAlgorithmException {
         RecordClass recordClass = answerParam.getRecordClass();
         return user.getHistories(recordClass.getFullName());
     }
