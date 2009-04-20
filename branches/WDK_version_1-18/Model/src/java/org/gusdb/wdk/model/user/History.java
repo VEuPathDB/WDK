@@ -13,15 +13,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.gusdb.wdk.model.Answer;
-import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
+import org.gusdb.wdk.model.query.QueryInstance;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -138,32 +137,20 @@ public class History {
     /**
      * @return Returns the answer.
      * @throws WdkUserException
-     * @throws JSONException
-     * @throws WdkModelException
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
      */
-    public Answer getAnswer() throws WdkUserException,
-            NoSuchAlgorithmException, SQLException, WdkModelException,
-            JSONException {
-        if (answer != null) return answer;
+    public Answer getAnswer() throws WdkUserException {
         if (!isValid)
             throw new WdkUserException("The history #" + historyId
                     + " is invalid.");
-
-        // try load the answer
-        try {
-            this.answer = factory.loadAnswer(this);
-            if (answer == null) {
-                this.isValid = false;
-                this.update();
-            }
-        } catch (Exception ex) {
-            this.isValid = false;
-            this.update();
-            throw new WdkUserException(ex);
-        }
         return answer;
+    }
+
+    /**
+     * @param answer
+     *            The answer to set.
+     */
+    public void setAnswer(Answer answer) {
+        this.answer = answer;
     }
 
     /**
@@ -233,37 +220,33 @@ public class History {
 
     public String getSignature() throws WdkModelException,
             NoSuchAlgorithmException, JSONException {
-        WdkModel wdkModel = user.getWdkModel();
-        Question question = (Question) wdkModel.resolveReference(questionName);
-        return question.getQuery().getChecksum();
+        return answer.getIdsQueryInstance().getQuery().getChecksum();
     }
 
     public String getChecksum() throws WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException,
             WdkUserException {
-        return getAnswer().getChecksum();
+        return answer.getChecksum();
     }
 
-    public String getDataType() throws WdkModelException {
-        WdkModel wdkModel = user.getWdkModel();
-        Question question = (Question) wdkModel.resolveReference(questionName);
-        return question.getRecordClass().getFullName();
+    public String getDataType() {
+        return answer.getQuestion().getRecordClass().getFullName();
     }
 
     public void update() throws WdkUserException, NoSuchAlgorithmException,
             SQLException, WdkModelException, JSONException {
-        update(true);
+        factory.updateHistory(user, this, true);
     }
 
     public void update(boolean updateTime) throws WdkUserException,
             NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException {
-        if (answer != null) this.estimateSize = answer.getResultSize();
+        this.estimateSize = answer.getResultSize();
         factory.updateHistory(user, this, updateTime);
     }
 
     public boolean isDepended() throws WdkUserException, WdkModelException,
-            SQLException, JSONException, NoSuchAlgorithmException {
+            SQLException, JSONException {
         if (isDepended == null) computeDependencies(user.getHistories());
         return isDepended;
     }
@@ -286,9 +269,7 @@ public class History {
      */
     public Set<Integer> getComponentHistories() throws WdkModelException {
         Set<Integer> predicates = new LinkedHashSet<Integer>();
-        WdkModel wdkModel = user.getWdkModel();
-        Question question = (Question) wdkModel.resolveReference(questionName);
-        Map<String, Param> params = question.getParamMap();
+        Map<String, Param> params = answer.getQuestion().getParamMap();
         for (String paramName : this.params.keySet()) {
             Param param = params.get(paramName);
             if (param instanceof AnswerParam) {
@@ -302,13 +283,9 @@ public class History {
         return predicates;
     }
 
-    public String getDescription() throws WdkModelException {
-        if (isBoolean) return booleanExpression;
-        else {
-            WdkModel wdkModel = user.getWdkModel();
-            Question question = (Question) wdkModel.resolveReference(questionName);
-            return question.getDescription();
-        }
+    public String getDescription() {
+        return (isBoolean) ? booleanExpression
+                : answer.getQuestion().getDescription();
     }
 
     /**
@@ -371,26 +348,22 @@ public class History {
         return new LinkedHashMap<String, Object>(params);
     }
 
-    public Map<String, String> getParamPrompts() {
+    public Map<String, String> getParamPrompts() throws WdkModelException {
         Map<String, String> paramNames = new LinkedHashMap<String, String>();
-        WdkModel wdkModel = user.getWdkModel();
-        Question question = null;
-        try {
-            question = (Question) wdkModel.resolveReference(this.questionName);
-        } catch (WdkModelException ex) { // question is invalid
+        if (isValid) {
+            QueryInstance instance = answer.getIdsQueryInstance();
+            Param[] params = instance.getQuery().getParams();
+            for (Param param : params) {
+                paramNames.put(param.getName(), param.getPrompt());
+            }
+        } else {
+            WdkModel wdkModel = user.getWdkModel();
             for (String paramName : params.keySet()) {
                 String displayName = wdkModel.queryParamDisplayName(paramName);
                 paramNames.put(paramName, displayName);
             }
-            return paramNames;
         }
-        Map<String, Param> params = question.getParamMap();
-        for (String paramName : this.params.keySet()) {
-            String displayName = null;
-            if (params.containsKey(paramName)) params.get(paramName).getPrompt();
-            else wdkModel.queryParamDisplayName(paramName);
-            paramNames.put(paramName, displayName);
-        }
+
         return paramNames;
     }
 
@@ -400,8 +373,6 @@ public class History {
     public String getFilterName() {
         return filterName;
     }
-    
-    
 
     /**
      * @param filterName
@@ -409,19 +380,6 @@ public class History {
      */
     public void setFilterName(String filterName) {
         this.filterName = filterName;
-    }
-    
-    public String getFilterDisplayName() {
-        if (filterName == null) return null;
-        WdkModel wdkModel = user.getWdkModel();
-        try {
-            Question question = (Question) wdkModel.resolveReference(questionName);
-            RecordClass recordClass = question.getRecordClass();
-            AnswerFilterInstance filter = recordClass.getFilter(filterName);
-            return filter.getDisplayName();
-        } catch (WdkModelException ex) {
-            return filterName;
-        }
     }
 
     /**
@@ -446,7 +404,7 @@ public class History {
     public void setQuestionName(String questionName) {
         this.questionName = questionName;
     }
-
+    
     public boolean isUseBooleanFilter() {
         if (!isBoolean) return false;
         Object useBoolean = params.get(BooleanQuery.USE_BOOLEAN_FILTER_PARAM);

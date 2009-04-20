@@ -621,8 +621,7 @@ public class UserBean /* implements Serializable */{
      * @see org.gusdb.wdk.model.user.User#getHistories()
      */
     public HistoryBean[] getHistories() throws WdkUserException,
-            WdkModelException, SQLException, JSONException,
-            NoSuchAlgorithmException {
+            WdkModelException, SQLException, JSONException {
         History[] histories = user.getHistories();
         HistoryBean[] beans = new HistoryBean[histories.length];
         for (int i = 0; i < histories.length; i++) {
@@ -637,8 +636,7 @@ public class UserBean /* implements Serializable */{
      * @see org.gusdb.wdk.model.user.User#getHistories()
      */
     public HistoryBean[] getInvalidHistories() throws WdkUserException,
-            WdkModelException, SQLException, JSONException,
-            NoSuchAlgorithmException {
+            WdkModelException, SQLException, JSONException {
         History[] histories = user.getInvalidHistories();
         HistoryBean[] beans = new HistoryBean[histories.length];
         for (int i = 0; i < histories.length; i++) {
@@ -648,14 +646,13 @@ public class UserBean /* implements Serializable */{
     }
 
     public void deleteInvalidHistories() throws WdkUserException,
-            WdkModelException, SQLException, JSONException,
-            NoSuchAlgorithmException {
+            WdkModelException, SQLException, JSONException {
         user.deleteInvalidHistories();
     }
 
     public Map<String, List<HistoryBean>> getHistoriesByCategory()
             throws WdkUserException, WdkModelException, SQLException,
-            JSONException, NoSuchAlgorithmException {
+            JSONException {
         Map<String, List<History>> histories = user.getHistoriesByCategory();
         Map<String, List<HistoryBean>> category = new LinkedHashMap<String, List<HistoryBean>>();
         for (String type : histories.keySet()) {
@@ -676,7 +673,7 @@ public class UserBean /* implements Serializable */{
      */
     public HistoryBean[] getHistories(String recordClassName)
             throws WdkUserException, WdkModelException, SQLException,
-            JSONException, NoSuchAlgorithmException {
+            JSONException {
         History[] histories = user.getHistories(recordClassName);
         HistoryBean[] beans = new HistoryBean[histories.length];
         for (int i = 0; i < histories.length; i++) {
@@ -691,8 +688,7 @@ public class UserBean /* implements Serializable */{
      * @see org.gusdb.wdk.model.user.User#getHistory(int)
      */
     public HistoryBean getHistory(int historyId) throws WdkUserException,
-            WdkModelException, SQLException, JSONException,
-            NoSuchAlgorithmException {
+            WdkModelException, SQLException, JSONException {
         if (currentHistory != null
                 && currentHistory.getHistoryId() == historyId)
             return currentHistory;

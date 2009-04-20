@@ -45,7 +45,7 @@ public class UnitTestHelper {
     private static final Logger logger = Logger.getLogger(UnitTestHelper.class);
 
     // use a fixed random number generator in order to use cache.
-    private static Random random = new Random(1);
+    private static Random random = new Random();
     private static WdkModel wdkModel;
     private static Map<String, List<Answer>> answerPools = new LinkedHashMap<String, List<Answer>>();
 
