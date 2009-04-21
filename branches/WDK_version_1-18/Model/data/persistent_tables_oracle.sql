@@ -187,6 +187,7 @@ CREATE TABLE userlogins3.histories
   custom_name VARCHAR(4000),
   is_boolean NUMBER(1),
   is_deleted NUMBER(1),
+  is_valid NUMBER(1),
   display_params CLOB,
   CONSTRAINT "HISTORIES_PK" PRIMARY KEY (user_id, history_id),
   CONSTRAINT "HISTORY_USER_ID_FK" FOREIGN KEY (user_id)

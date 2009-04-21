@@ -1,6 +1,7 @@
 
 DROP SEQUENCE wdkstorage.dataset_indices_pkseq;
 DROP SEQUENCE wdkstorage.answer_pkseq;
+
 DROP SEQUENCE userlogins3.users_pkseq;
 
 DROP TABLE userlogins3.user_datasets;
@@ -182,8 +183,9 @@ CREATE TABLE userlogins3.histories
   estimate_size NUMERIC(12),
   answer_filter varchar(100),
   custom_name varchar(4000),
-  is_boolean NUMERIC(1),
-  is_deleted NUMERIC(1),
+  is_boolean BOOLEAN,
+  is_deleted BOOLEAN,
+  is_valid BOOLEAN,
   display_params TEXT,
   CONSTRAINT "HISTORIES_PK" PRIMARY KEY (user_id, history_id),
   CONSTRAINT "HISTORY_USER_ID_FK" FOREIGN KEY (user_id)

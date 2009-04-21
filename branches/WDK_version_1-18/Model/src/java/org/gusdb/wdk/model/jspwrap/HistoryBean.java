@@ -285,6 +285,10 @@ public class HistoryBean {
     public String getQuestionName() throws WdkUserException {
         return history.getQuestionName();
     }
+    
+    public QuestionBean getQuestion() throws WdkModelException {
+        return new QuestionBean(history.getQuestion());
+    }
 
     /**
      * @return
