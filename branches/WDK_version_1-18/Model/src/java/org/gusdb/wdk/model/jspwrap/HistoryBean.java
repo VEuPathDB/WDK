@@ -303,9 +303,7 @@ public class HistoryBean {
     public String getFilterDisplayName() throws WdkUserException,
             NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException {
-        AnswerFilterInstance filter = history.getAnswer().getFilter();
-        if (filter == null) return null;
-        return filter.getDisplayName();
+        return history.getFilterDisplayName();
     }
 
     public void setFilterSize(int filterSize) {
