@@ -11,6 +11,8 @@ import java.text.DateFormat;
 
 import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AnswerFilterInstance;
+import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.History;
@@ -271,10 +273,10 @@ public class HistoryBean {
     /**
      * @return
      * @throws WdkUserException
-     * @see org.gusdb.wdk.model.user.History#getParams()
+     * @see org.gusdb.wdk.model.user.History#getParamValues()
      */
     public Map<String, Object> getParams() throws WdkUserException {
-        return history.getParams();
+        return history.getParamValues();
     }
 
     /**
@@ -285,7 +287,7 @@ public class HistoryBean {
     public String getQuestionName() throws WdkUserException {
         return history.getQuestionName();
     }
-    
+
     public QuestionBean getQuestion() throws WdkModelException {
         return new QuestionBean(history.getQuestion());
     }
@@ -312,5 +314,21 @@ public class HistoryBean {
 
     public int getFilterSize() {
         return history.getFilterSize();
+    }
+
+    public String getFilterName() {
+        return history.getFilterName();
+    }
+
+    public String getQuestionUrlParams() throws WdkModelException {
+        Question question = history.getQuestion();
+        Map<String, Object> paramValues = history.getParamValues();
+        return Utilities.getQuestionUrlParams(question, paramValues);
+    }
+
+    public String getSummaryUrlParams() throws WdkModelException {
+        Question question = history.getQuestion();
+        Map<String, Object> paramValues = history.getParamValues();
+        return Utilities.getSummaryUrlParams(question, paramValues);
     }
 }

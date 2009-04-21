@@ -47,7 +47,7 @@ public class History {
 
     private boolean isValid = true;
 
-    private Map<String, Object> params;
+    private Map<String, Object> paramValues;
     private String filterName;
     private int filterSize;
 
@@ -58,7 +58,7 @@ public class History {
         this.user = user;
         this.historyId = historyId;
         isDeleted = false;
-        params = new LinkedHashMap<String, Object>();
+        paramValues = new LinkedHashMap<String, Object>();
     }
 
     public User getUser() {
@@ -234,13 +234,13 @@ public class History {
             Question question = getQuestion();
             BooleanQuery query = (BooleanQuery) question.getQuery();
             String leftName = query.getLeftOperandParam().getName();
-            String leftValue = (String) params.get(leftName);
+            String leftValue = (String) paramValues.get(leftName);
             String leftHistory = leftValue.substring(leftValue.indexOf(":") + 1);
             String rightName = query.getRightOperandParam().getName();
-            String rightValue = (String) params.get(rightName);
+            String rightValue = (String) paramValues.get(rightName);
             String rightHistory = rightValue.substring(rightValue.indexOf(":") + 1);
             String operatorName = query.getOperatorParam().getName();
-            String operator = (String) params.get(operatorName);
+            String operator = (String) paramValues.get(operatorName);
 
             return leftHistory + " " + operator + " " + rightHistory;
         } else return null;
@@ -306,11 +306,11 @@ public class History {
     public Set<Integer> getComponentHistories() throws WdkModelException {
         Set<Integer> predicates = new LinkedHashSet<Integer>();
         Map<String, Param> params = getQuestion().getParamMap();
-        for (String paramName : this.params.keySet()) {
+        for (String paramName : this.paramValues.keySet()) {
             Param param = params.get(paramName);
             if (param instanceof AnswerParam) {
                 // the value of an answer param is user_checksum:history_id
-                Object paramValue = this.params.get(paramName);
+                Object paramValue = this.paramValues.get(paramName);
                 String[] parts = paramValue.toString().split(":");
                 int historyId = Integer.parseInt(parts[1].trim());
                 predicates.add(historyId);
@@ -355,13 +355,13 @@ public class History {
 
     public void setParams(String strParams) throws JSONException,
             WdkModelException {
-        params = new LinkedHashMap<String, Object>();
+        paramValues = new LinkedHashMap<String, Object>();
         JSONObject jsParams = new JSONObject(strParams);
         Iterator<?> keys = jsParams.keys();
         while (keys.hasNext()) {
             String key = (String) keys.next();
             Object value = jsParams.get(key).toString();
-            params.put(key, value);
+            paramValues.put(key, value);
         }
         // recreate the boolean expression
         if (isBoolean) {
@@ -369,16 +369,16 @@ public class History {
             String leftParam = query.getLeftOperandParam().getName();
             String rightParam = query.getRightOperandParam().getName();
             String operatorParam = query.getOperatorParam().getName();
-            String leftOperand = params.get(leftParam).toString().split(":")[1];
-            String rightOperand = params.get(rightParam).toString().split(":")[1];
-            String operator = params.get(operatorParam).toString();
+            String leftOperand = paramValues.get(leftParam).toString().split(":")[1];
+            String rightOperand = paramValues.get(rightParam).toString().split(":")[1];
+            String operator = paramValues.get(operatorParam).toString();
             this.booleanExpression = leftOperand + " " + operator + " "
                     + rightOperand;
         }
     }
 
-    public Map<String, Object> getParams() {
-        return new LinkedHashMap<String, Object>(params);
+    public Map<String, Object> getParamValues() {
+        return new LinkedHashMap<String, Object>(paramValues);
     }
 
     public Map<String, String> getParamPrompts() {
@@ -388,14 +388,14 @@ public class History {
         try {
             question = (Question) wdkModel.resolveReference(this.questionName);
         } catch (WdkModelException ex) { // question is invalid
-            for (String paramName : params.keySet()) {
+            for (String paramName : paramValues.keySet()) {
                 String displayName = wdkModel.queryParamDisplayName(paramName);
                 paramNames.put(paramName, displayName);
             }
             return paramNames;
         }
         Map<String, Param> params = question.getParamMap();
-        for (String paramName : this.params.keySet()) {
+        for (String paramName : this.paramValues.keySet()) {
             String displayName = null;
             if (params.containsKey(paramName)) params.get(paramName).getPrompt();
             else wdkModel.queryParamDisplayName(paramName);
@@ -460,7 +460,7 @@ public class History {
 
     public boolean isUseBooleanFilter() {
         if (!isBoolean) return false;
-        Object useBoolean = params.get(BooleanQuery.USE_BOOLEAN_FILTER_PARAM);
+        Object useBoolean = paramValues.get(BooleanQuery.USE_BOOLEAN_FILTER_PARAM);
         if (useBoolean == null) return false;
         return Boolean.parseBoolean(useBoolean.toString());
     }

@@ -946,7 +946,7 @@ public class UserFactory {
             JSONException {
         Question question = (Question) wdkModel.resolveReference(history.getQuestionName());
 
-        Answer answer = question.makeAnswer(history.getParams());
+        Answer answer = question.makeAnswer(history.getParamValues());
 
         // resolve the filter
         RecordClass recordClass = answer.getQuestion().getRecordClass();
