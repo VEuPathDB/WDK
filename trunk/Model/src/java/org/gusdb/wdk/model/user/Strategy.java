@@ -329,12 +329,37 @@ public class Strategy {
         newStep.setCollapsedName(targetStep.getCollapsedName());
         newStep.update(false);
 
-        // Make sure target step is made uncollapsible so that
-        // we don't have incorrect references in the step tree
-        targetStep.setParentStep(null);
-        targetStep.setCollapsible(false);
-        targetStep.setCollapsedName(null);
-        targetStep.update(false);
+	if (targetStep.isCollapsible() && newStep.getPreviousStep() != null
+	    && newStep.getPreviousStep().getDisplayId() == targetStep.getDisplayId()) {
+	    if (getIsSaved()) {
+		// If the strategy is saved, clone the target step so we don't wipe out
+		// collapsed name for the saved strategy
+		targetStep = targetStep.deepClone();
+		Step parent = newStep.getParentStep();
+		if (newStep.isTransform()) {
+		    newStep = updateTransform(
+			newStep,
+                        targetStep.getAnswer().getAnswerValue().getQuestion().getRecordClass(),
+                        targetStep.getDisplayId());
+		} else {
+		    BooleanOperator operator = BooleanOperator.parse(newStep.getOperation());
+		    AnswerFilterInstance targetFilter = newStep.getAnswer().getAnswerValue().getFilter();
+		    Step rightStep = newStep.getChildStep();
+		    newStep = user.createBooleanStep(targetStep, rightStep, operator,
+						     false, targetFilter);
+		}
+		newStep.setParentStep(parent);
+		newStep.setCollapsible(targetStep.isCollapsible());
+		newStep.setCollapsedName(targetStep.getCollapsedName());
+		newStep.update(false);
+	    }
+	    // Make sure target step is made uncollapsible so that
+	    // we don't have incorrect references in the step tree
+	    targetStep.setParentStep(null);
+	    targetStep.setCollapsible(false);
+	    targetStep.setCollapsedName(null);
+	    targetStep.update(false);
+	}
 
         // if step has a parent step, need to continue
         // updating the rest of the strategy.
@@ -376,10 +401,10 @@ public class Strategy {
 
             // Make sure target step is made uncollapsible so that
             // we don't have incorrect references in the step tree
-            targetStep.setParentStep(null);
+            /* targetStep.setParentStep(null);
             targetStep.setCollapsible(false);
             targetStep.setCollapsedName(null);
-            targetStep.update(false);
+            targetStep.update(false); */
         }
 
         this.setLatestStep(newStep);
