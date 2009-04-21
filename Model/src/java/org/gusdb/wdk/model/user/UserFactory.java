@@ -823,7 +823,7 @@ public class UserFactory {
         }
     }
 
-    Map<Integer, History> loadHistories(User user,
+    public Map<Integer, History> loadHistories(User user,
             Map<Integer, History> invalidHistories) throws WdkUserException,
             WdkModelException, SQLException, JSONException,
             NoSuchAlgorithmException {

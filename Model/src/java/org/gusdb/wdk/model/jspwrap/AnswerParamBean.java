@@ -38,10 +38,18 @@ public class AnswerParamBean extends ParamBean {
     public void setHistoryKey(String historyKey) {
         this.historyKey = historyKey;
     }
+    
+    public HistoryBean getHistory() throws Exception {
+        try {
+            return new HistoryBean(answerParam.getHistory(historyKey));
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
+    }
 
     public AnswerBean getAnswer() throws Exception {
         try {
-            
             History history = answerParam.getHistory(historyKey);
             return new AnswerBean(history.getAnswer());
         } catch (Exception ex) {
