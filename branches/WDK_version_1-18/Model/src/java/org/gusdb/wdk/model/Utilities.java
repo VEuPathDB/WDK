@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
@@ -54,11 +56,11 @@ public class Utilities {
     public static final String INTERNAL_QUERY_SET = "InternalQueries";
 
     public static final String INTERNAL_QUESTION_SET = "InternalQuestions";
-    
+
     public static final String DATA_DIVIDER = "--WDK_DATA_DIVIDER--";
-    
+
     public static final int DEFAULT_PAGE_SIZE = 20;
-    
+
     public static final int DEFAULT_SUMMARY_ATTRIBUTE_SIZE = 6;
 
     public static String encrypt(String data) throws WdkModelException,
@@ -113,4 +115,61 @@ public class Utilities {
         }
         return sb.toString();
     }
+
+    public static String getQuestionUrlParams(Question question,
+            Map<String, Object> paramValues) throws WdkModelException {
+        Map<String, Param> params = question.getParamMap();
+        StringBuffer sb = new StringBuffer();
+        for (String paramName : paramValues.keySet()) {
+            String paramValue = paramValues.get(paramName).toString();
+
+            // check if the parameter is still valid
+            Param param = params.get(paramName);
+            if (param == null) continue;
+
+            // check if it's dataset param, if so; remove user signature
+            String[] values = null;
+            if (param instanceof AbstractEnumParam) {
+                AbstractEnumParam enumParam = (AbstractEnumParam) param;
+                if (enumParam.getMultiPick()) values = paramValue.split(",");
+            } else values = new String[] { paramValue };
+
+            // URL encode the values
+            for (String value : values) {
+                try {
+                    sb.append("&" + paramName + "="
+                            + URLEncoder.encode(value.trim(), "UTF-8"));
+                } catch (UnsupportedEncodingException ex) {
+                    throw new WdkModelException(ex);
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    public static String getSummaryUrlParams(Question question,
+            Map<String, Object> paramValues) throws WdkModelException {
+        Map<String, Param> params = question.getParamMap();
+        StringBuffer sb = new StringBuffer();
+        for (String paramName : paramValues.keySet()) {
+            Object value = paramValues.get(paramName);
+            String paramValue = (value == null) ? "" : value.toString();
+
+            // check if it's dataset param, if so remove user signature
+            // check if the parameter is still valid
+            Param param = params.get(paramName);
+            if (param == null) continue;
+
+            try {
+                paramName = URLEncoder.encode("myProp(" + paramName + ")",
+                        "UTF-8");
+                paramValue = URLEncoder.encode(paramValue, "UTF-8");
+                sb.append("&" + paramName + "=" + paramValue);
+            } catch (UnsupportedEncodingException ex) {
+                throw new WdkModelException(ex);
+            }
+        }
+        return sb.toString();
+    }
+
 }
