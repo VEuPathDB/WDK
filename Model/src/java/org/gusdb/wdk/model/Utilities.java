@@ -128,11 +128,11 @@ public class Utilities {
             if (param == null) continue;
 
             // check if it's dataset param, if so; remove user signature
-            String[] values = null;
+            String[] values = new String[] { paramValue };
             if (param instanceof AbstractEnumParam) {
                 AbstractEnumParam enumParam = (AbstractEnumParam) param;
                 if (enumParam.getMultiPick()) values = paramValue.split(",");
-            } else values = new String[] { paramValue };
+            }
 
             // URL encode the values
             for (String value : values) {
