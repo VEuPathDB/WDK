@@ -356,6 +356,8 @@ public class History {
     public void setParams(String strParams) throws JSONException,
             WdkModelException {
         paramValues = new LinkedHashMap<String, Object>();
+        if (strParams == null || strParams.trim().length() == 0) return;
+        
         JSONObject jsParams = new JSONObject(strParams);
         Iterator<?> keys = jsParams.keys();
         while (keys.hasNext()) {

@@ -101,6 +101,7 @@ public class DownloadHistoryAnswerAction extends Action {
                     CConstants.WDK_USER_KEY );
             
             HistoryBean history = wdkUser.getHistory( histId );
+            request.setAttribute(CConstants.WDK_HISTORY_KEY, history);
             return history.getAnswer();
         } else {
             throw new Exception(
