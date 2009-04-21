@@ -177,9 +177,11 @@ public class AnswerParam extends Param {
     }
 
     public History getHistory(Object objHistoryKey) throws WdkModelException,
-            SQLException, JSONException, WdkUserException {
+            SQLException, JSONException, WdkUserException,
+            NoSuchAlgorithmException {
         String errMessage = "the input of the answerParam [" + getName()
-                + "] should be of format user_checksum:history_id; but it is '" + objHistoryKey + "'";
+                + "] should be of format user_checksum:history_id; but it is '"
+                + objHistoryKey + "'";
         if (!(objHistoryKey instanceof String))
             throw new WdkUserException(errMessage);
         String historyKey = (String) objHistoryKey;
