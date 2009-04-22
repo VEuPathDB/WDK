@@ -42,8 +42,8 @@ public class ShowApplicationAction extends ShowSummaryAction {
             }
             JSONObject jsMessage = new JSONObject();
             ShowStrategyAction.outputState(wdkUser, jsMessage);
-            JSONObject jsStrategies = jsMessage.getJSONObject("strategies");
-            String activeStrategies = jsStrategies.toString();
+            JSONObject jsState = jsMessage.getJSONObject("state");
+            String activeStrategies = jsState.toString();
             request.setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY,
                     activeStrategies);
 
