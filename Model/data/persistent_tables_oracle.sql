@@ -213,6 +213,7 @@ CREATE TABLE wdkuser.steps
   answer_filter VARCHAR(100),
   custom_name VARCHAR(4000),
   is_deleted NUMBER(1),
+  is_valid NUMBER(1),
   collapsed_name varchar(200),
   is_collapsible NUMBER(1),
   display_params CLOB,
@@ -240,6 +241,7 @@ CREATE TABLE wdkuser.strategies
      name varchar(200) NOT NULL,
      saved_name varchar(200),
      is_deleted NUMBER(1),
+     is_valid NUMBER(1),
      CONSTRAINT "STRATEGIES_PK" PRIMARY KEY (strategy_id),
      CONSTRAINT "STRATEGIES_UNIQUE" UNIQUE (user_id, display_id, project_id),
      CONSTRAINT "STRATEGIES_STEP_FK" FOREIGN KEY (user_id, root_step_id)

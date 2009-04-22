@@ -24,6 +24,9 @@ class ActiveStrategyFactory {
     private ActiveStrategy root;
     private User user;
 
+    private String viewStrategyKey = null;
+    private Integer viewStepId = null;
+
     /**
      * 
      */
@@ -188,6 +191,47 @@ class ActiveStrategyFactory {
             newChild.parent = newStrategy;
             replaceStrategy(strategy, oldChild, newChild, stepMap);
             newStrategy.children.put(newKey, newChild);
+            
+            // may also need to update the view
+            if (viewStrategyKey != null && viewStrategyKey.equals(oldKey)) {
+                viewStrategyKey = newKey;
+                Integer newStepId = stepMap.get(viewStepId);
+                if (newStepId != null) this.viewStepId = newStepId;
+            }
         }
     }
+
+    /**
+     * @return the viewStrategyKey
+     */
+    public String getViewStrategyKey() {
+        if (viewStrategyKey == null) return null;
+        if (getStrategy(viewStrategyKey) == null) return null;
+        return viewStrategyKey;
+    }
+
+    /**
+     * @param viewStrategyKey
+     *            the viewStrategyKey to set
+     */
+    public void setViewStrategyKey(String viewStrategyKey) {
+        this.viewStrategyKey = viewStrategyKey;
+    }
+
+    /**
+     * @return the viewStepId
+     */
+    public Integer getViewStepId() {
+        if (getViewStrategyKey() == null) return null;
+        return viewStepId;
+    }
+
+    /**
+     * @param viewStepId
+     *            the viewStepId to set
+     */
+    public void setViewStepId(Integer viewStepId) {
+        this.viewStepId = viewStepId;
+    }
+
 }

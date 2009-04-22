@@ -90,8 +90,6 @@ public class User /* implements Serializable */{
     private transient ActiveStrategyFactory activeStrategyFactory;
 
     // currently viewed results, identified by strategy id & step id
-    private transient Integer viewStrategyId = null;
-    private transient Integer viewStepId = null;
 
     /**
      * cache the last step. This data may have impact on the memory usage.
@@ -454,8 +452,10 @@ public class User /* implements Serializable */{
         if (strategyCount != null) strategyCount++;
         
         // set the view to this one
-        this.viewStrategyId = strategy.getDisplayId();
-        this.viewStepId = step.getDisplayId();
+        String strategyKey = Integer.toString(strategy.getDisplayId());
+        this.activeStrategyFactory.openActiveStrategy(strategyKey);
+        this.activeStrategyFactory.setViewStrategyKey(strategyKey);
+        this.activeStrategyFactory.setViewStepId(step.getDisplayId());
         
         return strategy;
     }
@@ -1137,14 +1137,6 @@ public class User /* implements Serializable */{
     public void removeActiveStrategy(String strategyKey)
             throws WdkUserException {
         activeStrategyFactory.closeActiveStrategy(strategyKey);
-        int pos = strategyKey.indexOf("_");
-        if (pos >= 0) strategyKey = strategyKey.substring(0, pos);
-        int strategyId = Integer.parseInt(strategyKey);
-
-        if (viewStrategyId != null && strategyId == viewStrategyId) {
-            viewStrategyId = null;
-            viewStepId = null;
-        }
     }
 
     public void replaceActiveStrategy(int oldStrategyId, int newStrategyId,
@@ -1154,22 +1146,22 @@ public class User /* implements Serializable */{
                 newStrategyId, stepIdsMap);
     }
 
-    public void setViewResults(int strategyId, int stepId) {
-        this.viewStrategyId = new Integer(strategyId);
-        this.viewStepId = new Integer(stepId);
+    public void setViewResults(String strategyKey, int stepId) {
+        this.activeStrategyFactory.setViewStrategyKey(strategyKey);
+        this.activeStrategyFactory.setViewStepId(stepId);
     }
 
     public void resetViewResults() {
-        this.viewStrategyId = null;
-        this.viewStepId = null;
+        this.activeStrategyFactory.setViewStrategyKey(null);
+        this.activeStrategyFactory.setViewStepId(null);
     }
 
-    public Integer getViewStrategyId() {
-        return viewStrategyId;
+    public String getViewStrategyKey() {
+        return this.activeStrategyFactory.getViewStrategyKey();
     }
 
     public Integer getViewStepId() {
-        return viewStepId;
+        return this.activeStrategyFactory.getViewStepId();
     }
 
     public boolean checkNameExists(Strategy strategy, String name, boolean saved)

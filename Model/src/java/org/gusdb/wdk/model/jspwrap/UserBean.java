@@ -1048,16 +1048,16 @@ public class UserBean /* implements Serializable */{
         return new StepBean(step);
     }
 
-    public void setViewResults(int strategyId, int stepId) {
-        user.setViewResults(strategyId, stepId);
+    public void setViewResults(String strategyKey, int stepId) {
+        user.setViewResults(strategyKey, stepId);
     }
 
     public void resetViewResults() {
         user.resetViewResults();
     }
 
-    public Integer getViewStrategyId() {
-        return user.getViewStrategyId();
+    public String getViewStrategyId() {
+        return user.getViewStrategyKey();
     }
 
     public Integer getViewStepId() {
