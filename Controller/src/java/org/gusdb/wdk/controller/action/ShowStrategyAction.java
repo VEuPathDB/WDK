@@ -121,9 +121,10 @@ public class ShowStrategyAction extends ShowQuestionAction {
             SQLException {
         logger.debug("output JSON error message: " + ex);
         JSONObject jsMessage = new JSONObject();
+        outputCommon(user, jsMessage);
+
         jsMessage.put("exception", ex.getClass().getName());
         jsMessage.put("message", ex.getMessage());
-        jsMessage.put("state", outputState(user));
 
         if (ex instanceof WdkModelException) {
             WdkModelException wmex = (WdkModelException) ex;
@@ -169,8 +170,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsMessage.put("type", MESSAGE_TYPE_OUT_OF_SYNC_ERROR);
 
         // get a list of strategy checksums
-        jsMessage.put("state", outputState(user));
-        jsMessage.put("strategies", outputStrategies(user, strategies));
+        outputCommon(user, jsMessage);
+        outputStrategies(user, jsMessage, strategies);
 
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
@@ -188,8 +189,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsMessage.put("type", MESSAGE_TYPE_DUP_NAME_ERROR);
 
         // get a list of strategy checksums
-        jsMessage.put("state", outputState(user));
-        jsMessage.put("strategies", outputStrategies(user, strategies));
+        outputCommon(user, jsMessage);
+        outputStrategies(user, jsMessage, strategies);
 
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
@@ -206,17 +207,22 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsMessage.put("type", MESSAGE_TYPE_SUCCESS);
 
         // get a list of strategy checksums
-        jsMessage.put("state", outputState(user));
-        jsMessage.put("strategies", outputStrategies(user, strategies));
+        outputCommon(user, jsMessage);
+        outputStrategies(user, jsMessage, strategies);
 
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
     }
+    
+    static private void outputCommon(UserBean user, JSONObject jsMessage) throws JSONException, NoSuchAlgorithmException, WdkUserException, WdkModelException, SQLException {
+        outputState(user, jsMessage);
+        outputCurrentView(user, jsMessage);
+    }
 
-    static JSONObject outputState(UserBean user) throws WdkUserException,
+    static void outputState(UserBean user, JSONObject jsMessage) throws WdkUserException,
             WdkModelException, JSONException, SQLException,
             NoSuchAlgorithmException {
-        JSONObject jsStrategies = new JSONObject();
+        JSONObject jsState = new JSONObject();
         StrategyBean[] openedStrategies = user.getActiveStrategies();
         for (int order = 0; order < openedStrategies.length; order++) {
             StrategyBean strat = openedStrategies[order];
@@ -224,23 +230,33 @@ public class ShowStrategyAction extends ShowQuestionAction {
             JSONObject jsStrategy = new JSONObject();
             jsStrategy.put("id", stratId);
             jsStrategy.put("checksum", strat.getChecksum());
-            jsStrategies.put(Integer.toString(order + 1), jsStrategy);
+            jsState.put(Integer.toString(order + 1), jsStrategy);
         }
-        jsStrategies.put("length", openedStrategies.length);
-        return jsStrategies;
+        jsState.put("length", openedStrategies.length);
+        jsMessage.put("state", jsState);
+    }
+    
+    static private void outputCurrentView(UserBean user, JSONObject jsMessage) throws JSONException {
+        JSONObject jsView = new JSONObject();
+        String viewStrategyKey = user.getViewStrategyId();
+        if (viewStrategyKey != null) {
+            jsView.put("strategy", viewStrategyKey);
+            jsView.put("step", user.getViewStepId());
+        }
+        jsMessage.put("currentView", jsView);
     }
 
-    static private JSONObject outputStrategies(UserBean user,
+    static private void outputStrategies(UserBean user, JSONObject jsMessage,
             List<StrategyBean> strategies) throws JSONException,
             NoSuchAlgorithmException, WdkModelException, WdkUserException,
             SQLException {
         JSONObject jsStrategies = new JSONObject();
-        jsStrategies.put("length", strategies.size());
         for (StrategyBean strategy : strategies) {
             JSONObject jsStrategy = outputStrategy(user, strategy);
             jsStrategies.put(strategy.getChecksum(), jsStrategy);
         }
-        return jsStrategies;
+        jsStrategies.put("length", strategies.size());
+        jsMessage.put("strategies", jsStrategies);
     }
 
     static private JSONObject outputStrategy(UserBean user,

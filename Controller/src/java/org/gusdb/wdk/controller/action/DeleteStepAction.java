@@ -55,6 +55,7 @@ public class DeleteStepAction extends ProcessFilterAction {
                 throw new WdkModelException("No step was specified to delete!");
             }
 
+            String strategyKey = strStratId;
             if (strStratId.indexOf("_") > 0) {
                 strBranchId = strStratId.split("_")[1];
                 strStratId = strStratId.split("_")[0];
@@ -71,7 +72,7 @@ public class DeleteStepAction extends ProcessFilterAction {
             int oldStrategyId = strategy.getStrategyId();
 
             if (wdkUser.getViewStrategyId() != null
-                    && wdkUser.getViewStrategyId() == oldStrategyId
+                    && wdkUser.getViewStrategyId().equals(strategyKey)
                     && wdkUser.getViewStepId() == Integer.parseInt(deleteStep)) {
                 wdkUser.resetViewResults();
             }
