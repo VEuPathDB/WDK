@@ -184,6 +184,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             // wdkUser.deleteStep(userAnswer.getStepId());
 
             StrategyBean strategy = null;
+            String strategyKey = strStratId;
             if (strStratId != null && strStratId.length() != 0) {
                 if (strStratId.indexOf("_") > 0) {
                     // strBranchId = strStratId.split("_")[1];
@@ -206,7 +207,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             request.setAttribute("wdk_query_string", queryString);
             request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
 
-	    wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));	    
+            wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
 
             logger.debug("preparing forward");
 
@@ -215,7 +216,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
             // forward to the results page, if requested
             if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
-		wdkUser.setViewResults(strategy.getStrategyId(), step.getStepId());
+                wdkUser.setViewResults(strategyKey, step.getStepId());
                 forward = getForward(request, step.getAnswerValue(), mapping,
                         step.getStepId());
                 // forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
@@ -439,7 +440,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         int pageSize = getPageSize(request, user);
         int end = start + pageSize - 1;
         answerValue.setPageIndex(start, end);
-        
+
         int totalSize = answerValue.getResultSize();
 
         List<String> editedParamNames = new ArrayList<String>();
