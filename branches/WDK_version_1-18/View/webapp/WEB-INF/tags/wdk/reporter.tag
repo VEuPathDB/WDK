@@ -4,8 +4,9 @@
 <%@ taglib prefix="nested" uri="http://jakarta.apache.org/struts/tags-nested" %>
 
 
-<c:set value="${requestScope.wdkAnswer}" var="wdkAnswer"/>
-<c:set var="history_id" value="${requestScope.wdk_history_id}"/>
+<c:set var="history" value="${requestScope.wdkHistory}"/>
+<c:set var="history_id" value="${wdkHistory.historyId}"/>
+<c:set var="wdkAnswer" value="${wdkhistory.answer}"/>
 
 <c:set var="formats" value="${requestScope.wdkReportFormats}"/>
 <c:set var="format" value="${requestScope.wdkReportFormat}"/>
@@ -23,20 +24,21 @@ function changeFormat(e)
 
 
 <!-- display question and param values and result size for wdkAnswer -->
+<wdk:showParams history="${history}" />
+<%--
 <c:choose>
     <c:when test="${wdkAnswer.isBoolean}">
         <div>
-            <%-- boolean question --%>
             <nested:root name="wdkAnswer">
                 <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
             </nested:root>
 	    </div>
     </c:when>
     <c:otherwise>
-        <wdk:showParams wdkAnswer="${wdkAnswer}" />
+        <wdk:showParams history="${history}" />
     </c:otherwise>
 </c:choose>
-
+--%>
 
 <hr>
 
