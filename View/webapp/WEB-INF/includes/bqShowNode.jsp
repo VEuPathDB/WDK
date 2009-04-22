@@ -26,7 +26,8 @@
     </c:when>	
     <c:otherwise>
          <nested:define id="currentAnswer" property="this/"/>
-         <wdk:showParams wdkAnswer="${currentAnswer}" />
+         <%-- cannot displat the params, since we lost the history info --%>
+         <%-- wdk:showParams wdkAnswer="${currentAnswer}" / --%>
     </c:otherwise>
   </c:choose>
 

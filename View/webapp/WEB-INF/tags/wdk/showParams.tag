@@ -7,17 +7,25 @@ display the parameter values for an non-boolean answer.
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
-<%@ attribute name="wdkAnswer"
-              type="org.gusdb.wdk.model.jspwrap.AnswerBean"
+<%@ attribute name="history"
+              type="org.gusdb.wdk.model.jspwrap.HistoryBean"
               required="true"
-              description="Answer Object"
+              description="History Bean Object"
 %>
 
 <div ${paddingStyle}>
-    <!-- simple question -->
-    <c:set value="${wdkAnswer.internalParams}" var="params"/>
-    <c:set value="${wdkAnswer.question.paramsMap}" var="qParamsMap"/>
-    <c:set value="${wdkAnswer.question.displayName}" var="wdkQuestionName"/>
+
+<!-- simple question -->
+<c:set value="${history.params}" var="params"/>
+<c:set value="${history.question}" var="question"/>
+<c:set value="${question.paramsMap}" var="qParamsMap"/>
+<c:set value="${question.displayName}" var="wdkQuestionName"/>
+
+<c:choose>
+  <c:when test="${history.boolean}">
+    <b><i>Boolean expression</i></b>: ${history.booleanExpression}
+  </c:when>
+  <c:otherwise>
     <table border="0" cellspacing="0" cellpadding="0">
         <tr>
             <td align="right" valign="top" class="medium"><b>Query</b></td>
@@ -49,7 +57,9 @@ display the parameter values for an non-boolean answer.
                                    </c:when>
                                    <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.AnswerParamBean'}">
                                       <jsp:setProperty name="qP" property="historyKey" value="${aP}" />
-                                      <wdk:showParams wdkAnswer="${qP.answer}" />
+                                      <%-- wdk:showParams wdkAnswer="${qP.history}" /--%>
+                                      <c:set var="childHistory" value="${qP.history}" />
+                                      Query#${childHistory.historyId} - ${childHistory.customName} (${childHistory.estimateSize} records)
                                    </c:when>
                                    <c:otherwise>
                                       <jsp:setProperty name="qP" property="paramValue" value="${aP}" />
@@ -74,4 +84,6 @@ display the parameter values for an non-boolean answer.
             </tr>
         </c:if>
     </table>
+  </c:otherwise>
+</c:choose>
 </div>
