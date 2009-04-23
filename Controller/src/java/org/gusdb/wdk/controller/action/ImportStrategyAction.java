@@ -2,6 +2,7 @@ package org.gusdb.wdk.controller.action;
 
 import java.util.ArrayList;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -46,6 +47,18 @@ public class ImportStrategyAction extends Action {
 
 	wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
 
+	/* Charles Treatman 4/23/09
+         * Add code here to set the current_application_tab cookie
+	 * so that user will go to the Run Strategies tab after
+	 * importing a strategy
+	 */
+	Cookie tabCookie = new Cookie("current_application_tab","strategy_results");
+	// make sure it's only a session cookie, not persistent
+	tabCookie.setMaxAge(-1);
+	// make sure the cookie is good for whole site, not just webapp
+	tabCookie.setPath("/");
+	
+	response.addCookie(tabCookie);
         ActionForward forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
         forward = new ActionForward(forward.getPath(), true);
         return forward;
