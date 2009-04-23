@@ -7,7 +7,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
 import org.gusdb.wdk.model.AnswerFilterInstance;
-import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.BooleanOperator;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.UnitTestHelper;
@@ -134,8 +133,7 @@ public class StrategyTest {
     @Test
     public void testChangeBooleanStepFilter() throws Exception {
         Step step1 = UnitTestHelper.createNormalStep(user);
-        AnswerValue answerValue = step1.getAnswer().getAnswerValue();
-        RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+        RecordClass recordClass = step1.getQuestion().getRecordClass();
         AnswerFilterInstance[] filters = recordClass.getFilters();
         if (filters.length == 0) return; // no filter exists skip the test
 
@@ -163,13 +161,12 @@ public class StrategyTest {
     public void testChangeFirstStepFilter() throws Exception {
         Step oldStep = UnitTestHelper.createNormalStep(user);
 
-        AnswerValue answerValue = oldStep.getAnswer().getAnswerValue();
-        RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+        RecordClass recordClass = oldStep.getQuestion().getRecordClass();
         AnswerFilterInstance[] filters = recordClass.getFilters();
         if (filters.length == 0) return; // no filter exists skip the test
 
         Strategy strategy = user.createStrategy(oldStep, false);
-        AnswerFilterInstance oldFilter = answerValue.getFilter();
+        AnswerFilterInstance oldFilter = oldStep.getFilter();
         AnswerFilterInstance newFilter = null;
         do {
             int index = UnitTestHelper.getRandom().nextInt(filters.length);
@@ -189,12 +186,11 @@ public class StrategyTest {
         Strategy strategy = user.createStrategy(step1, false);
 
         Step step2 = UnitTestHelper.createNormalStep(user);
-        AnswerValue answerValue = step2.getAnswer().getAnswerValue();
-        RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+        RecordClass recordClass = step2.getQuestion().getRecordClass();
         AnswerFilterInstance[] filters = recordClass.getFilters();
         if (filters.length == 0) return; // no filter exists skip the test
 
-        AnswerFilterInstance filter = answerValue.getFilter();
+        AnswerFilterInstance filter = step2.getFilter();
         BooleanOperator operator = BooleanOperator.UNION;
         AnswerFilterInstance booleanFilter = recordClass.getDefaultFilter();
         Step oldBooleanStep = user.createBooleanStep(step1, step2, operator,
@@ -222,8 +218,7 @@ public class StrategyTest {
         Strategy strategy = user.createStrategy(step1, false);
 
         Step step2 = UnitTestHelper.createNormalStep(user);
-        AnswerValue answerValue = step2.getAnswer().getAnswerValue();
-        RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+        RecordClass recordClass = step2.getQuestion().getRecordClass();
         AnswerFilterInstance booleanFilter = recordClass.getDefaultFilter();
         AnswerFilterInstance[] filters = recordClass.getFilters();
         if (filters.length == 0) return; // no filter exists skip the test
@@ -240,7 +235,7 @@ public class StrategyTest {
                 false, booleanFilter);
         strategy.addStep(middleStep2);
 
-        AnswerFilterInstance filter = answerValue.getFilter();
+        AnswerFilterInstance filter = step2.getFilter();
         AnswerFilterInstance newFilter = null;
         do {
             int index = UnitTestHelper.getRandom().nextInt(filters.length);

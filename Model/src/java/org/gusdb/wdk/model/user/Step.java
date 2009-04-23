@@ -14,7 +14,6 @@ import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
-import org.gusdb.wdk.model.query.BooleanQueryInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
@@ -54,7 +53,10 @@ public class Step {
 
     private Integer estimateSize;
 
-    private Map<String, String> displayParams = new LinkedHashMap<String, String>();
+    private String filterName;
+    private AnswerValue answerValue;
+
+    private Map<String, String> paramValues = new LinkedHashMap<String, String>();
 
     Step(StepFactory stepFactory, User user, int displayId, int internalId) {
         this.stepFactory = stepFactory;
@@ -82,22 +84,19 @@ public class Step {
 
     public int getResultSize() throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        return answer.getAnswerValue().getResultSize();
+        this.estimateSize = getAnswerValue().getResultSize();
+        return estimateSize;
     }
 
     // Needs to be updated for transforms
-    public String getOperation() throws WdkUserException,
-            NoSuchAlgorithmException, WdkModelException, JSONException,
-            SQLException {
+    public String getOperation() throws WdkModelException, WdkUserException {
         if (isFirstStep()) {
             throw new WdkUserException(
                     "getOperation cannot be called on the first Step.");
         }
-        AnswerValue answerValue = answer.getAnswerValue();
-        BooleanQueryInstance idQueryInstance = (BooleanQueryInstance) answerValue.getIdsQueryInstance();
-        BooleanQuery idQuery = (BooleanQuery) idQueryInstance.getQuery();
-        StringParam operator = idQuery.getOperatorParam();
-        return idQueryInstance.getValues().get(operator.getName());
+        BooleanQuery query = (BooleanQuery) getQuestion().getQuery();
+        StringParam operator = query.getOperatorParam();
+        return this.paramValues.get(operator.getName());
     }
 
     public void setParentStep(Step parentStep) {
@@ -147,21 +146,18 @@ public class Step {
      * @return Returns the customName. If no custom name set before, it will
      *         return the default name provided by the underline AnswerValue - a
      *         combination of question's full name, parameter names and values.
+     * @throws WdkModelException
      * @throws SQLException
      * @throws JSONException
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
      */
-    public String getCustomName() throws WdkUserException,
-            NoSuchAlgorithmException, WdkModelException, JSONException,
-            SQLException {
+    public String getCustomName() throws WdkModelException {
         String name = customName;
         if (name == null || name.length() == 0) {
-            if (answer.getAnswerValue() != null) {
-                name = answer.getAnswerValue().getQuestion().getDisplayName();
-            }
+            name = getQuestion().getDisplayName();
         }
-        if (name == null) name = answer.getQuestionName();
+        if (name == null) name = getQuestionName();
         if (name != null) {
             // remove script injections
             name = name.replaceAll("<.+?>", " ");
@@ -175,18 +171,16 @@ public class Step {
     /**
      * @return Returns the custom name, if it is set. Otherwise, returns the
      *         short display name for the underlying question.
+     * @throws WdkModelException
      * @throws SQLException
      * @throws JSONException
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
      */
-    public String getShortDisplayName() throws WdkUserException,
-            NoSuchAlgorithmException, WdkModelException, JSONException,
-            SQLException {
+    public String getShortDisplayName() throws WdkModelException {
         String name = customName;
 
-        if (name == null)
-            name = answer.getAnswerValue().getQuestion().getShortDisplayName();
+        if (name == null) name = getQuestion().getShortDisplayName();
         if (name != null) {
             // remove script injections
             name = name.replaceAll("<.+?>", " ");
@@ -197,9 +191,8 @@ public class Step {
         return name;
     }
 
-    public String getDisplayName() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
-        return answer.getAnswerValue().getQuestion().getDisplayName();
+    public String getDisplayName() throws WdkModelException {
+        return getQuestion().getDisplayName();
     }
 
     /**
@@ -250,11 +243,16 @@ public class Step {
      * @throws SQLException
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws SQLException
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
      */
     public int getEstimateSize() throws NoSuchAlgorithmException,
             WdkModelException, SQLException, JSONException, WdkUserException {
         if (estimateSize == null)
-            estimateSize = answer.getAnswerValue().getResultSize();
+            estimateSize = getAnswerValue().getResultSize();
         return estimateSize;
     }
 
@@ -283,28 +281,28 @@ public class Step {
 
     /**
      * @return Returns the isBoolean.
+     * @throws WdkModelException
      * @throws SQLException
      * @throws WdkUserException
      * @throws JSONException
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
      */
-    public boolean isCombined() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
-        return answer.getAnswerValue().getIdsQueryInstance().getQuery().isCombined();
+    public boolean isCombined() throws WdkModelException {
+        return getQuestion().getQuery().isCombined();
     }
 
     /**
      * @return Returns whether this Step is a transform
+     * @throws WdkModelException
      * @throws SQLException
      * @throws WdkUserException
      * @throws JSONException
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
      */
-    public boolean isTransform() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
-        return answer.getAnswerValue().getIdsQueryInstance().getQuery().isTransform();
+    public boolean isTransform() throws WdkModelException {
+        return getQuestion().getQuery().isTransform();
     }
 
     /**
@@ -333,9 +331,8 @@ public class Step {
         stepFactory.updateStep(user, this, updateTime);
     }
 
-    public String getDescription() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
-        return answer.getAnswerValue().getQuestion().getDescription();
+    public String getDescription() throws WdkModelException {
+        return getQuestion().getDescription();
     }
 
     /**
@@ -399,9 +396,8 @@ public class Step {
         this.version = version;
     }
 
-    public Map<String, String> getParamNames() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
-        Map<String, Param> params = answer.getAnswerValue().getIdsQueryInstance().getQuery().getParamMap();
+    public Map<String, String> getParamNames() throws WdkModelException {
+        Map<String, Param> params = getQuestion().getQuery().getParamMap();
         Map<String, String> names = new LinkedHashMap<String, String>();
         for (Param param : params.values()) {
             names.put(param.getName(), param.getPrompt());
@@ -469,24 +465,22 @@ public class Step {
     }
 
     /**
-     * @return the displayParams
+     * @return the paramValues
      */
-    public Map<String, String> getDisplayParams() {
-        return new LinkedHashMap<String, String>(displayParams);
+    public Map<String, String> getParamValues() {
+        return new LinkedHashMap<String, String>(paramValues);
     }
 
     /**
-     * @param displayParams
-     *            the displayParams to set
+     * @param paramValues
+     *            the paramValues to set
      */
-    public void setDisplayParams(Map<String, String> displayParams) {
-        this.displayParams = new LinkedHashMap<String, String>(displayParams);
+    public void setParamValues(Map<String, String> paramValues) {
+        this.paramValues = new LinkedHashMap<String, String>(paramValues);
     }
 
-    public String getType() throws NoSuchAlgorithmException, WdkModelException,
-            JSONException, WdkUserException, SQLException {
-        Question question = getAnswer().getAnswerValue().getQuestion();
-        return question.getRecordClass().getFullName();
+    public String getType() throws WdkModelException {
+        return getQuestion().getRecordClass().getFullName();
     }
 
     public int getIndexFromId(int displayId) throws WdkUserException {
@@ -502,7 +496,7 @@ public class Step {
 
     public Step createStep(String filterName) throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
-        RecordClass recordClass = answer.getAnswerValue().getQuestion().getRecordClass();
+        RecordClass recordClass = getQuestion().getRecordClass();
         AnswerFilterInstance filter = recordClass.getFilter(filterName);
         return createStep(filter);
     }
@@ -510,18 +504,18 @@ public class Step {
     public Step createStep(AnswerFilterInstance filter)
             throws NoSuchAlgorithmException, WdkModelException, JSONException,
             WdkUserException, SQLException {
-        AnswerFilterInstance oldFilter = answer.getAnswerValue().getFilter();
+        AnswerFilterInstance oldFilter = getFilter();
         if (filter == null && oldFilter == null) return this;
         if (filter != null && oldFilter != null
                 && filter.getName().equals(oldFilter.getName())) return this;
 
         // create new steps
-        Question question = answer.getAnswerValue().getQuestion();
-        Map<String, String> params = getDisplayParams();
-        int startIndex = answer.getAnswerValue().getStartIndex();
-        int endIndex = answer.getAnswerValue().getEndIndex();
-        Step step = user.createStep(question, params, filter, startIndex, endIndex,
-                isDeleted);
+        Question question = getQuestion();
+        Map<String, String> params = getParamValues();
+        int startIndex = getAnswerValue().getStartIndex();
+        int endIndex = getAnswerValue().getEndIndex();
+        Step step = user.createStep(question, params, filter, startIndex,
+                endIndex, isDeleted);
         step.collapsedName = collapsedName;
         step.customName = customName;
         step.isCollapsible = isCollapsible;
@@ -543,16 +537,16 @@ public class Step {
     public Step deepClone() throws NoSuchAlgorithmException, WdkModelException,
             JSONException, WdkUserException, SQLException {
         Step step;
+        AnswerValue answerValue = getAnswerValue();
         if (!isCombined()) {
-            step = user.createStep(answer.getAnswerValue(), isDeleted);
+            step = user.createStep(answerValue, isDeleted);
         } else {
-            AnswerValue answerValue = answer.getAnswerValue();
-            Question question = answerValue.getQuestion();
+            Question question = getQuestion();
             Map<String, String> paramValues = new LinkedHashMap<String, String>();
             Map<String, Param> params = question.getParamMap();
-            for (String paramName : displayParams.keySet()) {
+            for (String paramName : this.paramValues.keySet()) {
                 Param param = params.get(paramName);
-                String paramValue = displayParams.get(paramName);
+                String paramValue = this.paramValues.get(paramName);
                 if (param instanceof AnswerParam) {
                     Step child = user.getStep(Integer.parseInt(paramValue));
                     child = child.deepClone();
@@ -560,7 +554,7 @@ public class Step {
                 }
                 paramValues.put(paramName, paramValue);
             }
-            AnswerFilterInstance filter = answerValue.getFilter();
+            AnswerFilterInstance filter = getFilter();
             int pageStart = answerValue.getStartIndex();
             int pageEnd = answerValue.getEndIndex();
             step = user.createStep(question, paramValues, filter, pageStart,
@@ -575,11 +569,10 @@ public class Step {
 
     public boolean isFiltered() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
-        AnswerValue answerValue = answer.getAnswerValue();
-        AnswerFilterInstance filter = answerValue.getFilter();
+        AnswerFilterInstance filter = getFilter();
         if (filter == null) return false;
 
-        RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+        RecordClass recordClass = getQuestion().getRecordClass();
         AnswerFilterInstance defaultFilter = recordClass.getDefaultFilter();
         if (defaultFilter == null) return true;
 
@@ -588,10 +581,8 @@ public class Step {
 
     public String getFilterDisplayName() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
-        AnswerValue answerValue = answer.getAnswerValue();
-        AnswerFilterInstance filter = answerValue.getFilter();
-        if (filter == null) return null;
-        return filter.getDisplayName();
+        AnswerFilterInstance filter = getFilter();
+        return (filter != null) ? filter.getDisplayName() : filterName;
     }
 
     public Step getFirstStep() {
@@ -603,7 +594,7 @@ public class Step {
 
     public boolean isBoolean() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
-        return this.answer.getAnswerValue().getIdsQueryInstance().getQuery().isBoolean();
+        return getQuestion().getQuery().isBoolean();
     }
 
     public JSONObject getJSONContent(int strategyId) throws JSONException {
@@ -627,5 +618,48 @@ public class Step {
             jsStep.put("order", order);
         }
         return jsStep;
+    }
+
+    public Question getQuestion() throws WdkModelException {
+        return answer.getQuestion();
+    }
+
+    public AnswerFilterInstance getFilter() throws WdkModelException {
+        return getQuestion().getRecordClass().getFilter(filterName);
+    }
+
+    public String getFilterName() {
+        return filterName;
+    }
+
+    public void setFilterName(String filterName) {
+        this.filterName = filterName;
+    }
+
+    public AnswerValue getAnswerValue() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
+        if (answerValue == null) {
+            Question question = getQuestion();
+            Map<String, Boolean> sortingMap = user.getSortingAttributes(question.getFullName());
+            int endIndex = user.getItemsPerPage();
+            answerValue = question.makeAnswerValue(user, paramValues, 1,
+                    endIndex, sortingMap, getFilter());
+        }
+        return answerValue;
+    }
+
+    public String getAnswerKey() {
+        String key = answer.getAnswerChecksum();
+        if (filterName != null) key += ":" + filterName;
+        return key;
+    }
+
+    public boolean isUseBooleanFilter() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
+        if (!isBoolean()) return false;
+        BooleanQuery query = (BooleanQuery) getQuestion().getQuery();
+        String paramName = query.getUseBooleanFilter().getName();
+        String strBooleanFlag = (String) paramValues.get(paramName);
+        return Boolean.parseBoolean(strBooleanFlag);
     }
 }

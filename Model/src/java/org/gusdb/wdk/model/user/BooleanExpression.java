@@ -123,7 +123,7 @@ public class BooleanExpression {
             BooleanOperator operator = BooleanOperator.parse(triplet[1]);
 
             // create boolean answer that wraps the children
-            Question question = left.getAnswer().getAnswerValue().getQuestion();
+            Question question = left.getQuestion();
             AnswerFilterInstance filter = question.getRecordClass().getDefaultFilter();
             return user.createBooleanStep(left, right, operator,
                     useBooleanFilter, filter);

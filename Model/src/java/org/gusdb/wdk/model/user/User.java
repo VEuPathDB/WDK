@@ -25,7 +25,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
-import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONException;
 
 /**
@@ -382,22 +381,12 @@ public class User /* implements Serializable */{
             throws NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException, JSONException {
         Question question = answerValue.getQuestion();
-        Map<String, Param> params = question.getParamMap();
-        Map<String, String> independentValues = answerValue.getIdsQueryInstance().getValues();
+        Map<String, String> paramValues = answerValue.getIdsQueryInstance().getValues();
         AnswerFilterInstance filter = answerValue.getFilter();
         int startIndex = answerValue.getStartIndex();
         int endIndex = answerValue.getEndIndex();
 
-        // transform independent values into dependent values
-        Map<String, String> dependentValues = new LinkedHashMap<String, String>();
-        for (String paramName : independentValues.keySet()) {
-            Param param = params.get(paramName);
-            String independentValue = independentValues.get(paramName);
-            String dependentValue = param.independentValueToDependentValue(
-                    this, independentValue);
-            dependentValues.put(paramName, dependentValue);
-        }
-        return createStep(question, dependentValues, filter, startIndex,
+        return createStep(question, paramValues, filter, startIndex,
                 endIndex, deleted);
     }
 
@@ -910,7 +899,8 @@ public class User /* implements Serializable */{
         logger.debug("Boolean expression: " + expression);
         BooleanExpression exp = new BooleanExpression(this);
         Step step = exp.parseExpression(expression, useBooleanFilter);
-        AnswerValue answerValue = step.getAnswer().getAnswerValue();
+        step.setBooleanExpression(expression);
+        AnswerValue answerValue = step.getAnswerValue();
 
         logger.debug("Boolean answer size: " + answerValue.getResultSize());
 
@@ -1201,7 +1191,7 @@ public class User /* implements Serializable */{
             throws NoSuchAlgorithmException, WdkModelException,
             WdkUserException, SQLException, JSONException {
         BooleanOperator operator = BooleanOperator.parse(booleanOperator);
-        Question question = leftStep.getAnswer().getAnswerValue().getQuestion();
+        Question question = leftStep.getQuestion();
         AnswerFilterInstance filter = null;
         if (filterName != null)
             filter = question.getRecordClass().getFilter(filterName);
@@ -1224,12 +1214,10 @@ public class User /* implements Serializable */{
                     + rightStep.getDisplayId()
                     + "] doesn't belong to the user #" + userId);
 
-        AnswerValue leftAnswerValue = leftStep.getAnswer().getAnswerValue();
-        AnswerValue rightAnswerValue = rightStep.getAnswer().getAnswerValue();
 
         // verify the record type of the operands
-        RecordClass leftRecordClass = leftAnswerValue.getQuestion().getRecordClass();
-        RecordClass rightRecordClass = rightAnswerValue.getQuestion().getRecordClass();
+        RecordClass leftRecordClass = leftStep.getQuestion().getRecordClass();
+        RecordClass rightRecordClass = rightStep.getQuestion().getRecordClass();
         if (!leftRecordClass.getFullName().equals(
                 rightRecordClass.getFullName()))
             throw new WdkUserException("Boolean operation cannot be applied "

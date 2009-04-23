@@ -7,6 +7,9 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
 import org.gusdb.wdk.model.AnswerValue;
+import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
@@ -26,7 +29,6 @@ public class Answer {
 
     private User user;
     private AnswerFactory answerFactory;
-    private AnswerValue answerValue;
 
     Answer(User user, AnswerFactory answerFactory, int answerId) {
         this.user = user;
@@ -94,6 +96,15 @@ public class Answer {
         this.questionName = questionName;
     }
 
+    public Question getQuestion() throws WdkModelException {
+        WdkModel wdkModel = user.getWdkModel();
+        return (Question) wdkModel.resolveReference(questionName);
+    }
+
+    public RecordClass getRecordClass() throws WdkModelException {
+        return getQuestion().getRecordClass();
+    }
+
     /**
      * @return the queryChecksum
      */
@@ -114,18 +125,5 @@ public class Answer {
      */
     public int getAnswerId() {
         return answerId;
-    }
-
-    public AnswerValue getAnswerValue() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
-        if (answerValue == null) {
-            answerValue = answerFactory.getAnswerValue(user, this);
-            answerValue.setAnswer(this);
-        }
-        return answerValue;
-    }
-
-    public void setAnswerValue(AnswerValue answerValue) {
-        this.answerValue = answerValue;
     }
 }

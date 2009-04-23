@@ -37,10 +37,8 @@ public class AnswerParamBean extends ParamBean {
     public AnswerValueBean getAnswerValue() throws Exception {
         try {
             User user = this.user.getUser();
-            String independentValue = answerParam.dependentValueToIndependentValue(
-                    user, dependentValue);
             AnswerValue answerValue = answerParam.getAnswerValue(user,
-                    independentValue);
+                    dependentValue);
             return new AnswerValueBean(answerValue);
         } catch (Exception ex) {
             ex.printStackTrace();

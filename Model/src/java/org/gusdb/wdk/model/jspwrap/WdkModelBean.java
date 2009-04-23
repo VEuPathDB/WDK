@@ -257,25 +257,4 @@ public class WdkModelBean {
         }
         return beans;
     }
-
-    /**
-     * @param user
-     * @param answerChecksum
-     * @return
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
-     * @throws WdkModelException
-     * @throws JSONException
-     * @throws WdkUserException
-     * @see org.gusdb.wdk.model.WdkModel#getAnswerValue(org.gusdb.wdk.model.user.User,
-     *      java.lang.String)
-     */
-    public AnswerValueBean getAnswerValue(UserBean user, String answerChecksum)
-            throws SQLException, NoSuchAlgorithmException, WdkModelException,
-            JSONException, WdkUserException {
-        AnswerValue answerValue = model.getAnswerValue(user.getUser(),
-                answerChecksum);
-        return new AnswerValueBean(answerValue);
-    }
-
 }

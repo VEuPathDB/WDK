@@ -27,7 +27,6 @@ import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.ModelConfigUserDB;
 import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -205,7 +204,7 @@ public class StepFactory {
         step.setCreatedTime(createTime);
         step.setLastRunTime(lastRunTime);
         step.setDeleted(deleted);
-        step.setDisplayParams(dependentValues);
+        step.setParamValues(dependentValues);
 
         // update step dependencies
         updateStepTree(user, step);
@@ -516,13 +515,13 @@ public class StepFactory {
         step.setCollapsible(rsStep.getBoolean(COLUMN_IS_COLLAPSIBLE));
         step.setCollapsedName(rsStep.getString(COLUMN_COLLAPSED_NAME));
         step.setEstimateSize(rsStep.getInt(COLUMN_ESTIMATE_SIZE));
+        step.setFilterName(rsStep.getString(COLUMN_ANSWER_FILTER));
 
         String dependentParamContent = userPlatform.getClobData(rsStep,
                 COLUMN_DISPLAY_PARAMS);
         Map<String, String> dependentValues = parseParamContent(dependentParamContent);
-        step.setDisplayParams(dependentValues);
+        step.setParamValues(dependentValues);
 
-        String filterName = rsStep.getString(COLUMN_ANSWER_FILTER);
         String answerChecksum = rsStep.getString(AnswerFactory.COLUMN_ANSWER_CHECKSUM);
 
         try {
@@ -530,21 +529,6 @@ public class StepFactory {
             AnswerFactory answerFactory = wdkModel.getAnswerFactory();
             Answer answer = answerFactory.getAnswer(user, answerChecksum);
             step.setAnswer(answer);
-
-            String questionName = answer.getQuestionName();
-            Question question = wdkModel.getQuestion(questionName);
-            RecordClass recordClass = question.getRecordClass();
-            AnswerFilterInstance filter = (filterName == null) ? null
-                    : recordClass.getFilter(filterName);
-            int startIndex = 1;
-            int endIndex = user.getItemsPerPage();
-            Map<String, Boolean> sortingMap = user.getSortingAttributes(questionName);
-            AnswerValue answerValue = question.makeAnswerValue(user,
-                    dependentValues, startIndex, endIndex, sortingMap, filter);
-            answerValue.setSumaryAttributes(user.getSummaryAttributes(questionName));
-            answer.setAnswerValue(answerValue);
-            answerValue.setAnswer(answer);
-
             step.setValid(true);
         } catch (Exception ex) {
             step.setValid(false);
@@ -555,11 +539,10 @@ public class StepFactory {
     private void updateStepTree(User user, Step step)
             throws NoSuchAlgorithmException, WdkUserException,
             WdkModelException, JSONException, SQLException {
-        AnswerValue answerValue = step.getAnswer().getAnswerValue();
-        Question question = answerValue.getQuestion();
-        Map<String, String> displayParams = step.getDisplayParams();
+        Question question = step.getQuestion();
+        Map<String, String> displayParams = step.getParamValues();
 
-        Query query = answerValue.getIdsQueryInstance().getQuery();
+        Query query = question.getQuery();
         boolean isBoolean = query.isBoolean();
         boolean isTransform = query.isTransform();
         int leftStepId = 0;
@@ -647,7 +630,7 @@ public class StepFactory {
         // TEST
         // update custom name
         Date lastRunTime = (updateTime) ? new Date() : step.getLastRunTime();
-        int estimateSize = step.getAnswer().getAnswerValue().getResultSize();
+        int estimateSize = step.getResultSize();
         PreparedStatement psStep = null;
         try {
             psStep = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
@@ -775,13 +758,12 @@ public class StepFactory {
         User oldUser = oldStep.getUser();
 
         // Is this answer a boolean? Import depended steps first.
-        AnswerValue answerValue = oldStep.getAnswer().getAnswerValue();
-        Question question = answerValue.getQuestion();
-        AnswerFilterInstance filter = answerValue.getFilter();
+        Question question = oldStep.getQuestion();
+        AnswerFilterInstance filter = oldStep.getFilter();
 
         Map<String, Param> params = question.getParamMap();
 
-        Map<String, String> paramValues = oldStep.getDisplayParams();
+        Map<String, String> paramValues = oldStep.getParamValues();
         for (String paramName : paramValues.keySet()) {
             Param param = params.get(paramName);
             String paramValue = paramValues.get(paramName);
@@ -800,8 +782,8 @@ public class StepFactory {
             paramValues.put(paramName, paramValue);
         }
 
-        int startIndex = answerValue.getStartIndex();
-        int endIndex = answerValue.getEndIndex();
+        int startIndex = 1;
+        int endIndex = oldStep.getUser().getItemsPerPage();
         boolean deleted = oldStep.isDeleted();
         Step newStep = newUser.createStep(question, paramValues, filter,
                 startIndex, endIndex, deleted);

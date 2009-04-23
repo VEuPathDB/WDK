@@ -142,25 +142,6 @@ public class ParamBean {
      * @param user
      * @param independentValue
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws WdkModelException
-     * @throws SQLException
-     * @throws JSONException
-     * @throws WdkUserException
-     * @see org.gusdb.wdk.model.query.param.Param#independentValueToDependentValue(org.gusdb.wdk.model.user.User,
-     *      java.lang.String)
-     */
-    public String independentValueToDependentValue(UserBean user,
-            String independentValue) throws NoSuchAlgorithmException,
-            WdkModelException, SQLException, JSONException, WdkUserException {
-        return param.independentValueToDependentValue(user.getUser(),
-                independentValue);
-    }
-
-    /**
-     * @param user
-     * @param independentValue
-     * @return
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
      * @throws WdkUserException

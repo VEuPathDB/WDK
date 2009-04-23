@@ -459,7 +459,6 @@ public class UserFactory {
     }
 
     public User getUser(int userId) throws WdkUserException, SQLException {
-        StepFactory stepFactory = wdkModel.getStepFactory();
         ResultSet rsUser = null;
         try {
             // get user information
