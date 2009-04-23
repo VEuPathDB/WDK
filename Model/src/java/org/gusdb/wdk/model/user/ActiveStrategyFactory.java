@@ -167,6 +167,7 @@ class ActiveStrategyFactory {
 
     private void replaceStrategy(Strategy strategy, ActiveStrategy oldStrategy,
             ActiveStrategy newStrategy, Map<Integer, Integer> stepMap) {
+        System.out.println("current view: " + viewStrategyKey + ", " + viewStepId);
         System.out.println("replace old: " + oldStrategy.strategyKey
                 + ", new: " + newStrategy.strategyKey);
         for (int old : stepMap.keySet()) {
@@ -176,6 +177,7 @@ class ActiveStrategyFactory {
             String oldKey = oldChild.strategyKey;
             int oldId = Integer.parseInt(oldKey.substring(oldKey.indexOf('_') + 1));
             Integer newId = stepMap.get(oldId);
+System.out.println("convert step " + oldId + "->" + newId);
             if (newId == null) {
                 Step step;
                 try {
@@ -183,6 +185,7 @@ class ActiveStrategyFactory {
                     if (step == null) throw new WdkModelException();
                     newId = oldId;
                 } catch (Exception ex) { // step no longer exist
+                    System.out.println("step #" + oldId + " has been deleted");
                     continue; // skip this branch
                 }
             }
@@ -191,13 +194,12 @@ class ActiveStrategyFactory {
             newChild.parent = newStrategy;
             replaceStrategy(strategy, oldChild, newChild, stepMap);
             newStrategy.children.put(newKey, newChild);
-            
-            // may also need to update the view
-            if (viewStrategyKey != null && viewStrategyKey.equals(oldKey)) {
-                viewStrategyKey = newKey;
-                Integer newStepId = stepMap.get(viewStepId);
-                if (newStepId != null) this.viewStepId = newStepId;
-            }
+        }
+        // may also need to update the view
+        if (viewStrategyKey != null && viewStrategyKey.equals(oldStrategy.strategyKey)) {
+            viewStrategyKey = newStrategy.strategyKey;
+            if (viewStepId != null && stepMap.containsKey(viewStepId)) 
+                viewStepId = stepMap.get(viewStepId);
         }
     }
 
