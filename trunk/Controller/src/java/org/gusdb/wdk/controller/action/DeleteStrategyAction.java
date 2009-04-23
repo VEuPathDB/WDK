@@ -31,7 +31,6 @@ public class DeleteStrategyAction extends Action {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
             String[] stratIdstr = request.getParameterValues(CConstants.WDK_STRATEGY_ID_KEY);
-            boolean getXml = Boolean.valueOf(request.getParameter("getXml")).booleanValue();
 
             if (stratIdstr != null && stratIdstr.length != 0) {
                 for (int i = 0; i < stratIdstr.length; ++i) {
@@ -43,16 +42,13 @@ public class DeleteStrategyAction extends Action {
             }
 
             ActionForward forward;
-            if (!getXml) forward = mapping.findForward(CConstants.DELETE_HISTORY_MAPKEY);
-            else {
-                ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
-                StringBuffer url = new StringBuffer(showStrategy.getPath());
-                url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+	    ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
+	    StringBuffer url = new StringBuffer(showStrategy.getPath());
+	    url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
 
-                forward = new ActionForward(url.toString());
-                forward.setRedirect(true);
-            }
-
+	    forward = new ActionForward(url.toString());
+	    forward.setRedirect(true);
+	
             return forward;
         } catch (Exception ex) {
             logger.error(ex);

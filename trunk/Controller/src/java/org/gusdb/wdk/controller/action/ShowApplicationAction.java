@@ -36,10 +36,6 @@ public class ShowApplicationAction extends ShowSummaryAction {
                         wdkUser);
             }
 
-            String showHist = request.getParameter("showHistory");
-            if (showHist != null && Boolean.valueOf(showHist)) {
-                request.setAttribute("showHistory", Boolean.valueOf(showHist));
-            }
             JSONObject jsMessage = new JSONObject();
             ShowStrategyAction.outputState(wdkUser, jsMessage);
             JSONObject jsState = jsMessage.getJSONObject("state");
