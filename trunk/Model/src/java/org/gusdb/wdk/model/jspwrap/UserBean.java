@@ -33,6 +33,7 @@ public class UserBean /* implements Serializable */{
     private static final long serialVersionUID = -4296379954371247236L;
 
     private User user;
+    private StepBean latestStep;
 
     public UserBean() {}
 
@@ -599,7 +600,8 @@ public class UserBean /* implements Serializable */{
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
         Step step = user.createStep(question.question, params, filterName);
-        return new StepBean(step);
+        latestStep = new StepBean(step);
+        return latestStep;
     }
 
     /*
@@ -743,8 +745,9 @@ public class UserBean /* implements Serializable */{
     public StepBean combineStep(String expression, boolean useBooleanFilter)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        return new StepBean(user.combineStep(expression, useBooleanFilter,
+        latestStep = new StepBean(user.combineStep(expression, useBooleanFilter,
                 false));
+        return latestStep;
     }
 
     /*
@@ -1020,7 +1023,10 @@ public class UserBean /* implements Serializable */{
     public StepBean getStep(int displayId) throws WdkUserException,
             WdkModelException, SQLException, JSONException,
             NoSuchAlgorithmException {
-        return new StepBean(user.getStep(displayId));
+        if (latestStep != null && latestStep.getStepId() == displayId)
+            return latestStep;;
+        latestStep = new StepBean(user.getStep(displayId));
+        return latestStep;
     }
 
     /**
@@ -1045,7 +1051,8 @@ public class UserBean /* implements Serializable */{
             WdkUserException, SQLException, JSONException {
         Step step = user.createBooleanStep(leftStep.step, rightStep.step,
                 operator, useBooleanFilter, filterName);
-        return new StepBean(step);
+        latestStep = new StepBean(step);
+        return latestStep;
     }
 
     public void setViewResults(String strategyKey, int stepId) {
