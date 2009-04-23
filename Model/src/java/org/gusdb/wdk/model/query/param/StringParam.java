@@ -132,18 +132,6 @@ public class StringParam extends Param {
         return dependentValue;
     }
 
-    /**
-     * the dependent value is the same as the independent value
-     * 
-     * @see org.gusdb.wdk.model.query.param.Param#independentValueToDependentValue(org.gusdb.wdk.model.user.User,
-     *      java.lang.String)
-     */
-    @Override
-    public String independentValueToDependentValue(User user,
-            String independentValue) {
-        return independentValue;
-    }
-
     /*
      * (non-Javadoc)
      * 

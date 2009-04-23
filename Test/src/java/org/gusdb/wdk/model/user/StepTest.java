@@ -154,7 +154,7 @@ public class StepTest {
         Step[] invalidStep = user.getInvalidSteps();
         for (Step step : invalidStep) {
             Assert.assertNotNull("question name", step.getQuestionName());
-            Assert.assertNotNull("params", step.getDisplayParams());
+            Assert.assertNotNull("params", step.getParamValues());
         }
     }
 

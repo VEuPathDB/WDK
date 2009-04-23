@@ -1056,11 +1056,4 @@ public class WdkModel {
         }
         return list;
     }
-
-    public AnswerValue getAnswerValue(User user, String answerChecksum)
-            throws SQLException, NoSuchAlgorithmException, WdkModelException,
-            JSONException, WdkUserException {
-        Answer answer = answerFactory.getAnswer(user, answerChecksum);
-        return answer.getAnswerValue();
-    }
 }

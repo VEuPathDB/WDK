@@ -293,20 +293,6 @@ public abstract class AbstractEnumParam extends Param {
      * (non-Javadoc)
      * 
      * @see
-     * org.gusdb.wdk.model.query.param.Param#independentValueToDependentValue
-     * (org.gusdb.wdk.model.user.User, java.lang.String)
-     */
-    @Override
-    public String independentValueToDependentValue(User user,
-            String independentValue) throws NoSuchAlgorithmException,
-            WdkModelException, SQLException, JSONException, WdkUserException {
-        return independentValue;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
      * org.gusdb.wdk.model.query.param.Param#independentValueToInternalValue
      * (org.gusdb.wdk.model.user.User, java.lang.String)
      */

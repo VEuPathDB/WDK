@@ -186,30 +186,30 @@ public class AnswerValueBean {
     public AnswerValueBean getFirstChildAnswer()
             throws NoSuchAlgorithmException, WdkModelException, JSONException,
             WdkUserException, SQLException {
-	if (!getIsCombined()) {
-	    throw new RuntimeException("getFirstChildAnswer can not be called"
-				       + " on simple AnswerBean");
-	}
-	AnswerParam param = null;
-	Map<String, String> params = answerValue.getIdsQueryInstance().getValues();
-	if (getIsBoolean()) {
-	    BooleanQuery query = (BooleanQuery) answerValue.getIdsQueryInstance().getQuery();
-	    param = query.getLeftOperandParam();
-	}
-	else {
-	    Map<String, Param> paramMap = answerValue.getIdsQueryInstance().getQuery().getParamMap();
-	    for (Param p : paramMap.values()) {
-		if (p instanceof AnswerParam) {
-		    param = (AnswerParam) p;
-		    break;
-		}
-	    }
-	    if (param == null)
-		throw new RuntimeException("combined question has no AnswerParam.");
-	}
-	String checkSum = params.get(param.getName());
-	User user = answerValue.getUser();
-	return new AnswerValueBean(param.getAnswerValue(user, param.dependentValueToIndependentValue(user,checkSum)));
+        if (!getIsCombined()) {
+            throw new RuntimeException("getFirstChildAnswer can not be called"
+                    + " on simple AnswerBean");
+        }
+        AnswerParam param = null;
+        Map<String, String> params = answerValue.getIdsQueryInstance().getValues();
+        if (getIsBoolean()) {
+            BooleanQuery query = (BooleanQuery) answerValue.getIdsQueryInstance().getQuery();
+            param = query.getLeftOperandParam();
+        } else {
+            Map<String, Param> paramMap = answerValue.getIdsQueryInstance().getQuery().getParamMap();
+            for (Param p : paramMap.values()) {
+                if (p instanceof AnswerParam) {
+                    param = (AnswerParam) p;
+                    break;
+                }
+            }
+            if (param == null)
+                throw new RuntimeException(
+                        "combined question has no AnswerParam.");
+        }
+        String dependentValue = params.get(param.getName());
+        User user = answerValue.getUser();
+        return new AnswerValueBean(param.getAnswerValue(user, dependentValue));
     }
 
     /**
@@ -224,16 +224,16 @@ public class AnswerValueBean {
     public AnswerValueBean getSecondChildAnswer()
             throws NoSuchAlgorithmException, WdkModelException, JSONException,
             WdkUserException, SQLException {
-	if (!getIsBoolean()) {
-	    throw new RuntimeException("getSecondChildAnswer can not be called"
-				       + " on simple AnswerBean");
-	}
-	BooleanQuery query = (BooleanQuery) answerValue.getIdsQueryInstance().getQuery();
-	Map<String, String> params = answerValue.getIdsQueryInstance().getValues();
-	AnswerParam param = query.getRightOperandParam();
-	String checkSum = params.get(param.getName());
-	User user = answerValue.getUser();
-	return new AnswerValueBean(param.getAnswerValue(user, param.dependentValueToIndependentValue(user,checkSum)));
+        if (!getIsBoolean()) {
+            throw new RuntimeException("getSecondChildAnswer can not be called"
+                    + " on simple AnswerBean");
+        }
+        BooleanQuery query = (BooleanQuery) answerValue.getIdsQueryInstance().getQuery();
+        Map<String, String> params = answerValue.getIdsQueryInstance().getValues();
+        AnswerParam param = query.getRightOperandParam();
+        String dependentValue = params.get(param.getName());
+        User user = answerValue.getUser();
+        return new AnswerValueBean(param.getAnswerValue(user, dependentValue));
     }
 
     public int getPageSize() throws NoSuchAlgorithmException,

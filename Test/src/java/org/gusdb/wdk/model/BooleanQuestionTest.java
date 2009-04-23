@@ -57,9 +57,9 @@ public class BooleanQuestionTest {
 
         leftStepId = Integer.toString(left.getDisplayId());
         rightStepId = Integer.toString(right.getDisplayId());
-        leftAnswerValue = left.getAnswer().getAnswerValue();
-        rightAnswerValue = right.getAnswer().getAnswerValue();
-        recordClass = leftAnswerValue.getQuestion().getRecordClass();
+        leftAnswerValue = left.getAnswerValue();
+        rightAnswerValue = right.getAnswerValue();
+        recordClass = left.getQuestion().getRecordClass();
     }
 
     @Test

@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.query.param;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
-import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
@@ -106,33 +105,14 @@ public class AnswerParam extends Param {
         jsParam.put("recordClass", recordClassRef);
     }
 
-    public AnswerValue getAnswerValue(User user, String independentValue)
+    public AnswerValue getAnswerValue(User user, String dependentValue)
             throws WdkModelException, SQLException, NoSuchAlgorithmException,
             JSONException, WdkUserException {
-        // this step might not be needed, since the input is never compressed
-        independentValue = decompressValue(independentValue);
 
         // check format
-        if (!independentValue.matches(INDEPENDENT_PATTERN))
-            throw new WdkModelException("The input to answerParam should "
-                    + "be in form such as 'answer_checksum[:<filter>]'; "
-                    + "instead, it is '" + independentValue + "'");
-        String[] parts = independentValue.split("\\:");
-        String answerChecksum = parts[0];
-        String filterName = (parts.length == 1) ? null : parts[1];
-
-        Answer answer = answerFactory.getAnswer(user, answerChecksum);
-        if (answer == null)
-            throw new WdkModelException("The answer of given id '"
-                    + answerChecksum + "' does not exist");
-        AnswerValue answerValue = answer.getAnswerValue();
-
-        // verify the existence of the filter
-        if (filterName != null) {
-            AnswerFilterInstance filter = recordClass.getFilter(filterName);
-            answerValue.setFilter(filter);
-        }
-        return answerValue;
+        int stepId = Integer.parseInt(dependentValue);
+        Step step = user.getStep(stepId);
+        return step.getAnswerValue();
     }
 
     /*
@@ -148,27 +128,7 @@ public class AnswerParam extends Param {
             WdkUserException, WdkModelException, SQLException, JSONException {
         int stepId = Integer.parseInt(dependentValue);
         Step step = user.getStep(stepId);
-        return step.getAnswer().getAnswerValue().getAnswerKey();
-    }
-
-    /**
-     * basically this will create a new step using the params of the answer
-     * 
-     * @throws WdkUserException
-     * @throws JSONException
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
-     * @see org.gusdb.wdk.model.query.param.Param#independentValueToDependentValue
-     *      (org.gusdb.wdk.model.user.User, java.lang.String)
-     */
-    @Override
-    public String independentValueToDependentValue(User user,
-            String independentValue) throws NoSuchAlgorithmException,
-            WdkModelException, SQLException, JSONException, WdkUserException {
-        AnswerValue answerValue = getAnswerValue(user, independentValue);
-        Step step = user.createStep(answerValue, false);
-        return Integer.toString(step.getDisplayId());
+        return step.getAnswerKey();
     }
 
     /*
@@ -185,7 +145,7 @@ public class AnswerParam extends Param {
             WdkUserException {
         int stepId = Integer.parseInt(dependentValue);
         Step step = user.getStep(stepId);
-        AnswerValue answerValue = step.getAnswer().getAnswerValue();
+        AnswerValue answerValue = step.getAnswerValue();
         return answerValue.getIdSql();
     }
 
@@ -227,7 +187,7 @@ public class AnswerParam extends Param {
         int stepId = Integer.parseInt(dependentValue);
         Step step = user.getStep(stepId);
         // try to get the answer value
-        step.getAnswer().getAnswerValue();
+        step.getAnswerValue();
     }
 
 }
