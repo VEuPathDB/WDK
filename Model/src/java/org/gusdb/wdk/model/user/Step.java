@@ -520,7 +520,7 @@ public class Step {
         Map<String, String> params = getDisplayParams();
         int startIndex = answer.getAnswerValue().getStartIndex();
         int endIndex = answer.getAnswerValue().getEndIndex();
-        Step = user.createStep(question, params, filter, startIndex, endIndex,
+        Step step = user.createStep(question, params, filter, startIndex, endIndex,
                 isDeleted);
         step.collapsedName = collapsedName;
         step.customName = customName;
