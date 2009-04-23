@@ -231,7 +231,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             StepBean parent = targetStep.getNextStep();
 
                             if (parent.getIsTransform()) {
-                                targetStep = updateTransform(wdkUser, parent,
+                                newStep = updateTransform(wdkUser, parent,
                                         newStepId);
                             } else {
                                 StepBean previous = newStep;
