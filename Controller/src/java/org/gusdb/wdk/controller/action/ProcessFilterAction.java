@@ -99,7 +99,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             String insertStep = request.getParameter("insert");
             boolean isInsert = (insertStep != null && insertStep.length() != 0);
 
-            System.out.println("isRevise: " + isRevise + "; isInsert: " + isInsert);
+            System.out.println("isRevise: " + isRevise + "; isInsert: "
+                    + isInsert);
             System.out.println("qFullName? "
                     + (qFullName == null || qFullName.trim().length() == 0));
             System.out.println("qFullName: " + qFullName);
@@ -207,7 +208,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 // w/ a history param
                 stepIdsMap = strategy.addStep(targetStepId, newStep);
                 // set the view step to the one just added
-                wdkUser.setViewResults(strategyKey, newStep.getStepId());
+                wdkUser.setViewResults(strategyKey, newStepId);
             } else { // insert or edit
                 int stratLen = rootStep.getLength();
 
@@ -315,6 +316,11 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                     targetStep = strategy.getStepById(targetStepId);
                 }
                 stepIdsMap = strategy.editOrInsertStep(targetStepId, newStep);
+            }
+            if (isRevise) {
+                int reviseId = Integer.parseInt(reviseStep);
+                if (!stepIdsMap.containsKey(reviseId))
+                    stepIdsMap.put(reviseId, baseNewStepId);
             }
 
             // If a branch id was specified, look up the new branch id in
