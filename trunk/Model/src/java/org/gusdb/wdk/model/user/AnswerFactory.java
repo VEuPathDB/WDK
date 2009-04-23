@@ -7,8 +7,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -19,8 +17,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
-import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -76,33 +72,6 @@ public class AnswerFactory {
         }
         answerValue.setAnswer(answer);
         return answer;
-    }
-
-    AnswerValue getAnswerValue(User user, Answer answer)
-            throws WdkModelException, NoSuchAlgorithmException, JSONException,
-            WdkUserException, SQLException {
-        // get question
-        Question question = (Question) wdkModel.resolveReference(answer.getQuestionName());
-
-        // check if the query checksum matches
-        Query query = question.getQuery();
-        String queryChecksum = query.getChecksum();
-        String savedChecksum = answer.getQueryChecksum();
-        if (!queryChecksum.equals(savedChecksum)) {
-            throw new WdkModelException("the query checksum in database for "
-                    + savedChecksum + " does not match the one in the "
-                    + "model (" + queryChecksum + "). The query may have been "
-                    + "changed, and the answer is no longer usable.");
-        }
-
-        // get and parse the params
-        String paramClob = getParamsClob(answer.getAnswerChecksum());
-        Map<String, String> pvalues = parseParams(user, query, paramClob);
-
-        // create the answer with default page size
-        AnswerValue answerValue = question.makeAnswerValue(user, pvalues);
-        answerValue.setAnswer(answer);
-        return answerValue;
     }
 
     /**
@@ -175,43 +144,5 @@ public class AnswerFactory {
         } finally {
             SqlUtils.closeStatement(ps);
         }
-    }
-
-    private String getParamsClob(String answerChecksum) throws SQLException {
-        // construct the sql
-        StringBuffer sql = new StringBuffer("SELECT ");
-        sql.append(COLUMN_PARAMS);
-        sql.append(" FROM ").append(wdkSchema).append(TABLE_ANSWER);
-        sql.append(" WHERE ").append(COLUMN_PROJECT_ID).append(" = ?");
-        sql.append(" AND ").append(COLUMN_ANSWER_CHECKSUM).append(" = ?");
-
-        ResultSet resultSet = null;
-        try {
-            PreparedStatement ps = SqlUtils.getPreparedStatement(
-                    userPlatform.getDataSource(), sql.toString());
-            ps.setString(1, wdkModel.getProjectId());
-            ps.setString(2, answerChecksum);
-            resultSet = ps.executeQuery();
-            if (resultSet.next()) return userPlatform.getClobData(resultSet,
-                    COLUMN_PARAMS);
-            else return null;
-        } finally {
-            SqlUtils.closeResultSet(resultSet);
-        }
-    }
-
-    private Map<String, String> parseParams(User user, Query query,
-            String paramClob) throws JSONException, NoSuchAlgorithmException,
-            WdkModelException, WdkUserException, SQLException {
-        Map<String, Param> params = query.getParamMap();
-        JSONObject jsParams = new JSONObject(paramClob);
-        Map<String, String> independentValues = new LinkedHashMap<String, String>();
-        for (String param : params.keySet()) {
-            String value = (jsParams.has(param)) ? jsParams.getString(param)
-                    : null;
-            independentValues.put(param, value);
-        }
-
-        return query.independentValuesToDependentValues(user, independentValues);
     }
 }

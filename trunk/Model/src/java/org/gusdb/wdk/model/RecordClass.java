@@ -873,6 +873,7 @@ public class RecordClass extends WdkModelBase implements
 
     public AnswerFilterInstance getFilter(String filterName)
             throws WdkModelException {
+        if (filterName == null) return null;
         AnswerFilterInstance instance = filterMap.get(filterName);
         if (instance == null)
             throw new WdkModelException("The name [" + filterName

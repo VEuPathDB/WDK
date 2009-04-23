@@ -28,7 +28,7 @@ public class AnswerValueTest {
     @Test
     public void testGetSummaryAttributes() throws Exception {
         Step step = UnitTestHelper.createNormalStep(user);
-        AnswerValue answer = step.getAnswer().getAnswerValue();
+        AnswerValue answer = step.getAnswerValue();
 
         Map<String, AttributeField> displayFields = answer.getDisplayableAttributeMap();
         Map<String, AttributeField> summaryFields = answer.getSummaryAttributeFieldMap();
@@ -47,7 +47,7 @@ public class AnswerValueTest {
     @Test
     public void testAddSummaryAttibute() throws Exception {
         Step step = UnitTestHelper.createNormalStep(user);
-        AnswerValue answerValue = step.getAnswer().getAnswerValue();
+        AnswerValue answerValue = step.getAnswerValue();
 
         Map<String, AttributeField> displayFields = answerValue.getDisplayableAttributeMap();
         Map<String, AttributeField> summaryFields = answerValue.getSummaryAttributeFieldMap();
@@ -77,7 +77,7 @@ public class AnswerValueTest {
     @Test
     public void testDeleteSummaryAttibute() throws Exception {
         Step step = UnitTestHelper.createNormalStep(user);
-        AnswerValue answerValue = step.getAnswer().getAnswerValue();
+        AnswerValue answerValue = step.getAnswerValue();
 
         Map<String, AttributeField> displayFields = answerValue.getDisplayableAttributeMap();
         Map<String, AttributeField> summaryFields = answerValue.getSummaryAttributeFieldMap();
@@ -111,7 +111,7 @@ public class AnswerValueTest {
     @Test
     public void testGetFilterSizes() throws Exception {
         Step step = UnitTestHelper.createNormalStep(user);
-        AnswerValue answerValue = step.getAnswer().getAnswerValue();
+        AnswerValue answerValue = step.getAnswerValue();
         AnswerFilterInstance currentFilter = answerValue.getFilter();
         int size = answerValue.getResultSize();
         

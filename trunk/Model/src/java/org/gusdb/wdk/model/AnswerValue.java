@@ -906,7 +906,6 @@ public class AnswerValue {
             AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
             answer = answerFactory.getAnswer(user, getChecksum());
             if (answer == null) answer = answerFactory.saveAnswerValue(this);
-            answer.setAnswerValue(this);
         }
         return answer;
     }

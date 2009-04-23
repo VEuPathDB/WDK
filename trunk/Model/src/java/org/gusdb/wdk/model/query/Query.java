@@ -544,19 +544,4 @@ public abstract class Query extends WdkModelBase {
         }
         return independentValues;
     }
-
-    public Map<String, String> independentValuesToDependentValues(User user,
-            Map<String, String> independentValues)
-            throws NoSuchAlgorithmException, WdkModelException,
-            WdkUserException, SQLException, JSONException {
-        Map<String, String> dependentValues = new LinkedHashMap<String, String>();
-        for (String paramName : independentValues.keySet()) {
-            Param param = paramMap.get(paramName);
-            String independentValue = independentValues.get(paramName);
-            String dependentValue = param.independentValueToDependentValue(
-                    user, independentValue);
-            dependentValues.put(paramName, dependentValue);
-        }
-        return dependentValues;
-    }
 }

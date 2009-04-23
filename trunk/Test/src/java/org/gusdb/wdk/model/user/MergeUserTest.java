@@ -68,24 +68,6 @@ public class MergeUserTest {
     }
 
     @Test
-    public void testMergeUserWithSimpleSavedStrategy() throws Exception {
-        User guest = UnitTestHelper.getGuest();
-        Step step = UnitTestHelper.createNormalStep(guest);
-        guest.createStrategy(step, true);
-
-        User registeredUser = UnitTestHelper.getRegisteredUser();
-        int count = guest.getStrategyCount() + registeredUser.getStrategyCount();
-        int savedCount = countStrategies(guest.getSavedStrategiesByCategory());
-        savedCount += countStrategies(registeredUser.getSavedStrategiesByCategory());
-
-        registeredUser.mergeUser(guest);
-
-        int newCount = countStrategies(registeredUser.getSavedStrategiesByCategory());
-        Assert.assertEquals(count, registeredUser.getStrategyCount());
-        Assert.assertEquals(savedCount, newCount);
-    }
-
-    @Test
     public void testMergeUserWithMultipleStrategies() throws Exception {
         User guest = UnitTestHelper.getGuest();
         guest.createStrategy(UnitTestHelper.createNormalStep(guest), false);

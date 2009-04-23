@@ -129,7 +129,7 @@ public class StepBean {
     public AnswerValueBean getAnswerValue() throws WdkUserException,
             NoSuchAlgorithmException, WdkModelException, JSONException,
             SQLException {
-        return new AnswerValueBean(step.getAnswer().getAnswerValue());
+        return new AnswerValueBean(step.getAnswerValue());
     }
 
     public int getAnswerId() {
@@ -277,12 +277,12 @@ public class StepBean {
     }
 
     public void setParams(Map<String, String> params) {
-        step.setDisplayParams(params);
+        step.setParamValues(params);
     }
 
     public Map<String, String> getParams() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
-        return step.getDisplayParams();
+        return step.getParamValues();
     }
 
     public Map<String, String> getParamNames() throws NoSuchAlgorithmException,
@@ -368,7 +368,7 @@ public class StepBean {
 
     public boolean isUseBooleanFilter() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
-        return step.getAnswer().getAnswerValue().isUseBooleanFilter();
+        return step.isUseBooleanFilter();
     }
 
     public boolean isFiltered() throws NoSuchAlgorithmException,

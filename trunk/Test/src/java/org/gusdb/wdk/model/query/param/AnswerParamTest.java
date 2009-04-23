@@ -46,7 +46,7 @@ public class AnswerParamTest {
     public void testGetAnswerValue() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
         Step step = UnitTestHelper.createNormalStep(user);
-        String paramValue = step.getAnswer().getAnswerChecksum();
+        String paramValue = Integer.toString(step.getDisplayId());
 
         for (Param param : question.getParams()) {
             if (param instanceof AnswerParam) {

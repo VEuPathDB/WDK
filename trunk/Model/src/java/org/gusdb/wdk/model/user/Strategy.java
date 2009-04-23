@@ -15,7 +15,6 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -261,7 +260,7 @@ public class Strategy {
                     // assuming boolean, will need to add case for
                     // non-boolean op
                     BooleanOperator operator = BooleanOperator.parse(moveFromStep.getOperation());
-                    AnswerFilterInstance targetFilter = moveFromStep.getAnswer().getAnswerValue().getFilter();
+                    AnswerFilterInstance targetFilter = moveFromStep.getFilter();
                     Step rightStep = moveFromStep.getChildStep();
                     moveFromStep = user.createBooleanStep(step, rightStep,
                             operator, false, targetFilter);
@@ -270,7 +269,7 @@ public class Strategy {
                 // again, assuming boolean, will need to add case for
                 // non-boolean
                 BooleanOperator operator = BooleanOperator.parse(moveToStep.getOperation());
-                AnswerFilterInstance targetFilter = moveToStep.getAnswer().getAnswerValue().getFilter();
+                AnswerFilterInstance targetFilter = moveToStep.getFilter();
                 Step rightStep = moveToStep.getChildStep();
                 moveToStep = user.createBooleanStep(step, rightStep, operator,
                         false, targetFilter);
@@ -285,7 +284,7 @@ public class Strategy {
                     // again, assuming boolean, will need to add case for
                     // non-boolean
                     BooleanOperator operator = BooleanOperator.parse(newStep.getOperation());
-                    AnswerFilterInstance targetFilter = newStep.getAnswer().getAnswerValue().getFilter();
+                    AnswerFilterInstance targetFilter = newStep.getFilter();
                     Step rightStep = newStep.getChildStep();
                     newStep = user.createBooleanStep(step, rightStep, operator,
                             false, targetFilter);
@@ -311,11 +310,11 @@ public class Strategy {
             if (targetStep.isTransform()) {
                 newStep = updateTransform(
                         targetStep,
-                        newStep.getAnswer().getAnswerValue().getQuestion().getRecordClass(),
+                        newStep.getQuestion().getRecordClass(),
                         newStep.getDisplayId());
             } else {
                 BooleanOperator operator = BooleanOperator.parse(targetStep.getOperation());
-                AnswerFilterInstance targetFilter = targetStep.getAnswer().getAnswerValue().getFilter();
+                AnswerFilterInstance targetFilter = targetStep.getFilter();
                 Step rightStep = targetStep.getChildStep();
                 newStep = user.createBooleanStep(newStep, rightStep, operator,
                         false, targetFilter);
@@ -339,11 +338,11 @@ public class Strategy {
 		if (newStep.isTransform()) {
 		    newStep = updateTransform(
 			newStep,
-                        targetStep.getAnswer().getAnswerValue().getQuestion().getRecordClass(),
+                        targetStep.getQuestion().getRecordClass(),
                         targetStep.getDisplayId());
 		} else {
 		    BooleanOperator operator = BooleanOperator.parse(newStep.getOperation());
-		    AnswerFilterInstance targetFilter = newStep.getAnswer().getAnswerValue().getFilter();
+		    AnswerFilterInstance targetFilter = newStep.getFilter();
 		    Step rightStep = newStep.getChildStep();
 		    newStep = user.createBooleanStep(targetStep, rightStep, operator,
 						     false, targetFilter);
@@ -368,7 +367,7 @@ public class Strategy {
             targetStep = newStep.getParentStep();
 
             BooleanOperator operator = BooleanOperator.parse(targetStep.getOperation());
-            AnswerFilterInstance targetFilter = targetStep.getAnswer().getAnswerValue().getFilter();
+            AnswerFilterInstance targetFilter = targetStep.getFilter();
             Step leftStep = targetStep.getPreviousStep();
             // update parent, then update subsequent
             newStep = user.createBooleanStep(leftStep, newStep, operator,
@@ -382,11 +381,11 @@ public class Strategy {
                 if (targetStep.isTransform()) {
                     newStep = updateTransform(
                             targetStep,
-                            newStep.getAnswer().getAnswerValue().getQuestion().getRecordClass(),
+                            newStep.getQuestion().getRecordClass(),
                             newStep.getDisplayId());
                 } else {
                     operator = BooleanOperator.parse(targetStep.getOperation());
-                    targetFilter = targetStep.getAnswer().getAnswerValue().getFilter();
+                    targetFilter = targetStep.getFilter();
                     Step rightStep = targetStep.getChildStep();
                     newStep = user.createBooleanStep(newStep, rightStep,
                             operator, false, targetFilter);
@@ -417,19 +416,18 @@ public class Strategy {
             int newStepId) throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
         // Get question
-        Question wdkQuestion = step.getAnswer().getAnswerValue().getQuestion();
-        Param[] params = wdkQuestion.getParams();
+        Question wdkQuestion = step.getQuestion();
         // Get internal params
-        Map<String, String> internalParams = step.getAnswer().getAnswerValue().getIdsQueryInstance().getValues();
+        Map<String, String> paramValues = step.getParamValues();
         // Change HistoryParam
         AnswerParam[] answerParams = wdkQuestion.getTransformParams(recordClass);
         for (AnswerParam p : answerParams) {
-            internalParams.put(p.getName(), Integer.toString(newStepId));
+            paramValues.put(p.getName(), Integer.toString(newStepId));
         }
-        AnswerFilterInstance filter = step.getAnswer().getAnswerValue().getFilter();
+        AnswerFilterInstance filter = step.getFilter();
         String filterName = (filter == null) ? null : filter.getName();
 
-        Step newStep = user.createStep(wdkQuestion, internalParams, filterName);
+        Step newStep = user.createStep(wdkQuestion, paramValues, filterName);
         newStep.setCustomName(step.getBaseCustomName());
         newStep.update(false);
         return newStep;

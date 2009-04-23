@@ -111,21 +111,6 @@ public class DatasetParam extends Param {
         return dataset.getChecksum();
     }
 
-    /**
-     * convert from dataset checksum to user dataset id;
-     * 
-     * @see org.gusdb.wdk.model.query.param.Param#independentValueToDependentValue(org.gusdb.wdk.model.user.User,
-     *      java.lang.String)
-     */
-    @Override
-    public String independentValueToDependentValue(User user,
-            String independentValue) throws NoSuchAlgorithmException,
-            WdkModelException, SQLException, JSONException, WdkUserException {
-        logger.debug("independent to dependent: " + independentValue);
-        Dataset dataset = user.getDataset(independentValue);
-        return Integer.toString(dataset.getUserDatasetId());
-    }
-
     /*
      * (non-Javadoc)
      * 
