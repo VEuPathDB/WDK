@@ -58,6 +58,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             boolean isTransform = false;
 
             // did we get strategyId_stepId?
+            String strategyKey = strStratId;
             if (strStratId.indexOf("_") > 0) {
                 strBranchId = strStratId.split("_")[1];
                 strStratId = strStratId.split("_")[0];
@@ -205,6 +206,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 // query
                 // w/ a history param
                 stepIdsMap = strategy.addStep(targetStepId, newStep);
+                // set the view step to the one just added
+                wdkUser.setViewResults(strategyKey, newStep.getStepId());
             } else { // insert or edit
                 int stratLen = rootStep.getLength();
 
