@@ -520,8 +520,13 @@ public class Step {
         Map<String, String> params = getDisplayParams();
         int startIndex = answer.getAnswerValue().getStartIndex();
         int endIndex = answer.getAnswerValue().getEndIndex();
-        return user.createStep(question, params, filter, startIndex, endIndex,
+        Step = user.createStep(question, params, filter, startIndex, endIndex,
                 isDeleted);
+        step.collapsedName = collapsedName;
+        step.customName = customName;
+        step.isCollapsible = isCollapsible;
+        step.update(false);
+        return step;
     }
 
     /**
