@@ -43,55 +43,67 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         // logger.debug("+++++query string" + request.getQueryString());
 
         try {
-        UserBean wdkUser = ActionUtility.getUser(servlet, request);
+            UserBean wdkUser = ActionUtility.getUser(servlet, request);
 
-        // get question
-        String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-        // QuestionForm qForm = prepareQuestionForm(wdkQuestion, request,
-        // (QuestionForm) form);
-        QuestionForm qForm = (QuestionForm) form;
+            // get question
+            String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+            // QuestionForm qForm = prepareQuestionForm(wdkQuestion, request,
+            // (QuestionForm) form);
+            QuestionForm qForm = (QuestionForm) form;
 
-        // the params has been validated, and now is parsed, and if the size of
-        // the value is too long, ti will be replaced is checksum
-        Map<String, String> params = prepareParams(wdkUser, request, qForm);
+            // the params has been validated, and now is parsed, and if the size
+            // of
+            // the value is too long, ti will be replaced is checksum
+            Map<String, String> params = prepareParams(wdkUser, request, qForm);
 
-        // construct the url to summary page
-        ActionForward showSummary = mapping.findForward(CConstants.PQ_SHOW_SUMMARY_MAPKEY);
-        StringBuffer url = new StringBuffer(showSummary.getPath());
-        url.append("?" + CConstants.QUESTION_FULLNAME_PARAM + "=" + qFullName);
-        for (String paramName : params.keySet()) {
-            String paramValue = params.get(paramName);
-            if (paramValue != null) {
-            url.append("&"
-                    + URLEncoder.encode("myProp(" + paramName + ")", "utf-8"));
-            url.append("=" + URLEncoder.encode(paramValue, "utf-8"));
+            // construct the url to summary page
+            ActionForward showSummary = mapping.findForward(CConstants.PQ_SHOW_SUMMARY_MAPKEY);
+            StringBuffer url = new StringBuffer(showSummary.getPath());
+            url.append("?" + CConstants.QUESTION_FULLNAME_PARAM + "="
+                    + qFullName);
+            for (String paramName : params.keySet()) {
+                String paramValue = params.get(paramName);
+                if (paramValue != null) {
+                    url.append("&"
+                            + URLEncoder.encode("myProp(" + paramName + ")",
+                                    "utf-8"));
+                    url.append("=" + URLEncoder.encode(paramValue, "utf-8"));
+                }
             }
-        }
 
-        // check if user want to define the output size for the answer
-        String altPageSizeKey = request.getParameter(CConstants.WDK_ALT_PAGE_SIZE_KEY);
-        if (altPageSizeKey != null && altPageSizeKey.length() > 0) {
-            url.append("&" + CConstants.WDK_ALT_PAGE_SIZE_KEY);
-            url.append("=" + altPageSizeKey);
-        }
+            // check if user want to define the output size for the answer
+            String altPageSizeKey = request.getParameter(CConstants.WDK_ALT_PAGE_SIZE_KEY);
+            if (altPageSizeKey != null && altPageSizeKey.length() > 0) {
+                url.append("&" + CConstants.WDK_ALT_PAGE_SIZE_KEY);
+                url.append("=" + altPageSizeKey);
+            }
 
-	/* Charles Treatman 4/23/09
-         * Add code here to set the current_application_tab cookie
-	 * so that user will go to the Run Strategies tab after
-	 * running a question from a question page.
-	 */
-	Cookie tabCookie = new Cookie("current_application_tab","strategy_results");
-	// make sure it's only a session cookie, not persistent
-	tabCookie.setMaxAge(-1);
-	// make sure the cookie is good for whole site, not just webapp
-	tabCookie.setPath("/");
-	
-	response.addCookie(tabCookie);
+            // pass along the skip param
+            String skipToDownloadKey = request.getParameter(CConstants.WDK_SKIPTO_DOWNLOAD_PARAM);
+            logger.debug("skipto download: " + skipToDownloadKey);
+            if (skipToDownloadKey != null && skipToDownloadKey.length() > 0) {
+                url.append("&" + CConstants.WDK_SKIPTO_DOWNLOAD_PARAM);
+                url.append("=" + skipToDownloadKey);
+            }
 
-        // construct the forward to show_summary action
-        ActionForward forward = new ActionForward(url.toString());
-        forward.setRedirect(true);
-        return forward;
+            /*
+             * Charles Treatman 4/23/09 Add code here to set the
+             * current_application_tab cookie so that user will go to the Run
+             * Strategies tab after running a question from a question page.
+             */
+            Cookie tabCookie = new Cookie("current_application_tab",
+                    "strategy_results");
+            // make sure it's only a session cookie, not persistent
+            tabCookie.setMaxAge(-1);
+            // make sure the cookie is good for whole site, not just webapp
+            tabCookie.setPath("/");
+
+            response.addCookie(tabCookie);
+
+            // construct the forward to show_summary action
+            ActionForward forward = new ActionForward(url.toString());
+            forward.setRedirect(true);
+            return forward;
         } catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
@@ -108,7 +120,8 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         for (String paramName : params.keySet()) {
             ParamBean param = params.get(paramName);
 
-            logger.debug("contains param: " + paramValues.containsKey(paramName));
+            logger.debug("contains param: "
+                    + paramValues.containsKey(paramName));
             // logger.debug("param: " + paramName + "='" +
             // paramValues.get(paramName) + "'");
             String rawValue = paramValues.get(paramName);
@@ -139,11 +152,12 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                     dependentValue = Integer.toString(dataset.getUserDatasetId());
                 }
             } else if (rawValue != null && rawValue.length() > 0) {
-                dependentValue = param.rawOrDependentValueToDependentValue(user,
-                    rawValue);
+                dependentValue = param.rawOrDependentValueToDependentValue(
+                        user, rawValue);
             }
             if (dependentValue != null && dependentValue.length() > 0) {
-                logger.debug("param " + paramName + " - " + param.getClass().getName() + " = " + dependentValue);
+                logger.debug("param " + paramName + " - "
+                        + param.getClass().getName() + " = " + dependentValue);
                 paramValues.put(paramName, dependentValue);
             }
         }
