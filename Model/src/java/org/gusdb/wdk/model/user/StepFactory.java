@@ -205,6 +205,7 @@ public class StepFactory {
         step.setLastRunTime(lastRunTime);
         step.setDeleted(deleted);
         step.setParamValues(dependentValues);
+        step.setAnswerValue(answerValue);
 
         // update step dependencies
         updateStepTree(user, step);

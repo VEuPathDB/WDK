@@ -84,7 +84,9 @@ public class Step {
 
     public int getResultSize() throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        this.estimateSize = getAnswerValue().getResultSize();
+        if (estimateSize == null || answerValue != null) {
+            this.estimateSize = getAnswerValue().getResultSize();
+        } 
         return estimateSize;
     }
 
@@ -661,5 +663,9 @@ public class Step {
         String paramName = query.getUseBooleanFilter().getName();
         String strBooleanFlag = (String) paramValues.get(paramName);
         return Boolean.parseBoolean(strBooleanFlag);
+    }
+
+    void setAnswerValue(AnswerValue answerValue) {
+        this.answerValue = answerValue;
     }
 }
