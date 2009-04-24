@@ -35,7 +35,7 @@ public class EnumParam extends AbstractEnumParam {
     // /////////// Protected properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
 
-    protected void initVocabMap() throws WdkModelException {
+    protected synchronized void initVocabMap() throws WdkModelException {
         if (termInternalMap != null) return;
 
         termInternalMap = new LinkedHashMap<String, String>();

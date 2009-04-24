@@ -668,4 +668,8 @@ public class Step {
     void setAnswerValue(AnswerValue answerValue) {
         this.answerValue = answerValue;
     }
+    
+    public void resetAnswerValue() {
+        this.answerValue = null;
+    }
 }

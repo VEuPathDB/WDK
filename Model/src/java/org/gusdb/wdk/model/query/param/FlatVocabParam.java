@@ -106,7 +106,7 @@ public class FlatVocabParam extends AbstractEnumParam {
      * 
      * @see org.gusdb.wdk.model.query.param.AbstractEnumParam#initVocabMap()
      */
-    protected void initVocabMap() throws WdkModelException,
+    protected synchronized void initVocabMap() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         if (termInternalMap != null) return;
