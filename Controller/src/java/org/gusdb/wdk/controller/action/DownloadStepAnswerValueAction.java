@@ -15,9 +15,8 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
-import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
@@ -32,10 +31,10 @@ public class DownloadStepAnswerValueAction extends Action {
     public ActionForward execute( ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response )
             throws Exception {
-        AnswerValueBean wdkAnswerValue = getAnswerValueBean( request );
+        StepBean step = getStep(request);
         
         // get a list of supported reporters
-        RecordClassBean recordClass = wdkAnswerValue.getQuestion().getRecordClass();
+        RecordClassBean recordClass = step.getQuestion().getRecordClass();
         String fullName = recordClass.getFullName();
         Map< String, String > reporters = recordClass.getReporters();
         
@@ -48,9 +47,9 @@ public class DownloadStepAnswerValueAction extends Action {
         if ( reporter != null ) {
             request.setAttribute( CConstants.WDK_REPORT_FORMAT_KEY, reporter );
         }
-        request.setAttribute( CConstants.WDK_ANSWER_KEY, wdkAnswerValue );
+        request.setAttribute( CConstants.WDK_ANSWER_KEY, step.getAnswerValue() );
         request.setAttribute( CConstants.WDK_QUESTION_PARAMS_KEY,
-                wdkAnswerValue.getInternalParams() );
+                step.getParams() );
         
         // get forward
         ActionForward forward;
@@ -87,7 +86,7 @@ public class DownloadStepAnswerValueAction extends Action {
         return forward;
     }
     
-    protected AnswerValueBean getAnswerValueBean( HttpServletRequest request )
+    protected StepBean getStep( HttpServletRequest request )
             throws Exception {
         String stepIdstr = request.getParameter( "step_id" );
         if ( stepIdstr == null ) {
@@ -102,7 +101,7 @@ public class DownloadStepAnswerValueAction extends Action {
                     CConstants.WDK_USER_KEY );
             
             StepBean step = wdkUser.getStep( stepId );
-            return step.getAnswerValue();
+            return step;
         } else {
             throw new Exception(
                     "no step id is given for which to download the result" );

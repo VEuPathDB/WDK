@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -8,6 +10,9 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.query.param.FlatVocabParam;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.Step;
 import org.json.JSONException;
 
@@ -94,8 +99,6 @@ public class StepBean {
             SQLException {
         return step.getShortDisplayName();
     }
-    
-    
 
     /**
      * @return
@@ -380,7 +383,7 @@ public class StepBean {
             WdkModelException, JSONException, WdkUserException, SQLException {
         return step.getFilterDisplayName();
     }
-    
+
     public StepBean getFirstStep() {
         return new StepBean(step.getFirstStep());
     }
@@ -394,9 +397,78 @@ public class StepBean {
      * @throws SQLException
      * @see org.gusdb.wdk.model.user.Step#deepClone()
      */
-    public StepBean deepClone() throws NoSuchAlgorithmException, WdkModelException,
-            JSONException, WdkUserException, SQLException {
+    public StepBean deepClone() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
         return new StepBean(step.deepClone());
     }
-    
+
+    public QuestionBean getQuestion() throws WdkModelException {
+        return new QuestionBean(step.getQuestion());
+    }
+
+    public String getFilterName() {
+        return step.getFilterName();
+    }
+
+    public String getSummaryUrlParams() throws WdkModelException {
+        StringBuffer sb = new StringBuffer();
+        Map<String, String> paramValues = step.getParamValues();
+        Map<String, Param> params = step.getQuestion().getParamMap();
+        for (String paramName : paramValues.keySet()) {
+            Object value = paramValues.get(paramName);
+            String paramValue = (value == null) ? "" : value.toString();
+
+            // check if it's dataset param, if so remove user signature
+            Param param = params.get(paramName);
+            if (param instanceof DatasetParam) {
+                int pos = paramValue.indexOf(":");
+                if (pos >= 0)
+                    paramValue = paramValue.substring(pos + 1).trim();
+            }
+
+            try {
+                paramName = URLEncoder.encode("myProp(" + paramName + ")",
+                        "UTF-8");
+                paramValue = URLEncoder.encode(paramValue, "UTF-8");
+                sb.append("&" + paramName + "=" + paramValue);
+            } catch (UnsupportedEncodingException ex) {
+                throw new WdkModelException(ex);
+            }
+        }
+        return sb.toString();
+    }
+
+    public String getQuestionUrlParams() throws WdkModelException {
+        StringBuffer sb = new StringBuffer();
+        Map<String, String> paramValues = step.getParamValues();
+        Map<String, Param> params = step.getQuestion().getParamMap();
+        for (String paramName : paramValues.keySet()) {
+            String paramValue = paramValues.get(paramName).toString();
+
+            // check if the parameter is multipick param
+            Param param = params.get(paramName);
+
+            // check if it's dataset param, if so remove user signature
+            if (param instanceof DatasetParam) {
+                int pos = paramValue.indexOf(":");
+                if (pos >= 0)
+                    paramValue = paramValue.substring(pos + 1).trim();
+            }
+            String[] values = { paramValue };
+            if (param instanceof FlatVocabParam) {
+                FlatVocabParam fvParam = (FlatVocabParam) param;
+                if (fvParam.getMultiPick()) values = paramValue.split(",");
+            }
+            // URL encode the values
+            for (String value : values) {
+                try {
+                    sb.append("&" + paramName + "="
+                            + URLEncoder.encode(value.trim(), "UTF-8"));
+                } catch (UnsupportedEncodingException ex) {
+                    throw new WdkModelException(ex);
+                }
+            }
+        }
+        return sb.toString();
+    }
 }
