@@ -498,7 +498,7 @@ public class WdkModel {
     }
 
     // Function Added by Cary P. Feb 7, 2008
-    public DBPlatform getAuthenticationPlatform() {
+    public DBPlatform getUserPlatform() {
         return userPlatform;
     }
 
@@ -597,6 +597,12 @@ public class WdkModel {
         }
         for (String recordClassRef : invalidCategories) {
             this.categoriesMap.remove(recordClassRef);
+        }
+        // create boolean questions
+        for(RecordClassSet recordClassSet :getAllRecordClassSets()) {
+            for(RecordClass recordClass : recordClassSet.getRecordClasses()) {
+                getBooleanQuestion(recordClass);
+            }
         }
     }
 

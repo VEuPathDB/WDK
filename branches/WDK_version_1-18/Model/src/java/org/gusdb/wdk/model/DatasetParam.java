@@ -16,7 +16,7 @@ import org.json.JSONObject;
 /**
  * @author xingao
  * 
- * the dependent value is userDatasetKey: user_checksum:user_dataset_id;
+ * the dependent value is userDatasetKey: user_checksum:dataset_checksum;
  * 
  * the independent value is dataset_id
  * 

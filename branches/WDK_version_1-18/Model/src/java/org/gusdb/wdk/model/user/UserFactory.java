@@ -641,7 +641,7 @@ public class UserFactory {
         }
     }
 
-    private void loadUserRoles(User user) throws WdkUserException {
+    public void loadUserRoles(User user) throws WdkUserException {
         ResultSet rsRole = null;
         try {
             // load the user's roles
@@ -834,7 +834,7 @@ public class UserFactory {
         ResultSet rsHistory = null;
         try {
             PreparedStatement psHistory = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT h.history_id, a."
+                    dataSource, "SELECT h.history_id, h.answer_id, a."
                             + AnswerFactory.COLUMN_ANSWER_CHECKSUM + ", a."
                             + AnswerFactory.COLUMN_QUESTION_NAME
                             + ", h.create_time, h.last_run_time, "
@@ -874,7 +874,7 @@ public class UserFactory {
         ResultSet rsHistory = null;
         try {
             PreparedStatement psHistory = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT a."
+                    dataSource, "SELECT h.answer_id, a."
                             + AnswerFactory.COLUMN_ANSWER_CHECKSUM + ", a."
                             + AnswerFactory.COLUMN_QUESTION_NAME
                             + ", h.create_time, h.last_run_time, "
@@ -899,7 +899,7 @@ public class UserFactory {
         }
     }
 
-    private History loadHistory(User user, int historyId, ResultSet rsHistory)
+    public History loadHistory(User user, int historyId, ResultSet rsHistory)
             throws JSONException, SQLException, WdkModelException,
             NoSuchAlgorithmException, WdkUserException {
         History history = new History(this, user, historyId);
@@ -908,14 +908,16 @@ public class UserFactory {
         Timestamp createTime = rsHistory.getTimestamp("create_time");
         Timestamp lastRunTime = rsHistory.getTimestamp("last_run_time");
 
+        history.setAnswerId(rsHistory.getInt("answer_id"));
+        history.setAnswerChecksum(rsHistory.getString("answer_checksum"));
         history.setCreatedTime(new Date(createTime.getTime()));
         history.setLastRunTime(new Date(lastRunTime.getTime()));
         history.setEstimateSize(rsHistory.getInt("estimate_size"));
         history.setCustomName(rsHistory.getString("custom_name"));
         history.setBoolean(rsHistory.getBoolean("is_boolean"));
         history.setDeleted(rsHistory.getBoolean("is_deleted"));
-        Boolean isValid = rsHistory.getBoolean("is_valid");
-        history.setValid((isValid != null) ? isValid : true);
+        if (rsHistory.getObject("is_valid") == null)history.setValid(true);
+        else history.setValid(rsHistory.getBoolean("is_valid"));
         history.setQuestionName(rsHistory.getString(AnswerFactory.COLUMN_QUESTION_NAME));
 
         // get answer filter
@@ -931,7 +933,7 @@ public class UserFactory {
                 throw new WdkUserException("The question '"
                         + history.getQuestionName() + "' in history #"
                         + historyId + " is no longer valid.");
-            history.setParams(params);
+            history.setParamValues(params);
         } catch (Exception ex) {
             ex.printStackTrace();
             history.setValid(false);
@@ -1047,7 +1049,7 @@ public class UserFactory {
             history.setEstimateSize(estimateSize);
             history.setCustomName(customName);
             history.setBoolean(isBoolean);
-            history.setParams(params);
+            history.setParamValues(params);
             history.setAnswer(answer);
             if (isBoolean) history.setBooleanExpression(booleanExpression);
 
@@ -1271,7 +1273,7 @@ public class UserFactory {
         }
     }
 
-    private void loadPreferences(User user) throws WdkUserException {
+    public void loadPreferences(User user) throws WdkUserException {
         int userId = user.getUserId();
         PreparedStatement psGlobal = null, psProject = null;
         ResultSet rsGlobal = null, rsProject = null;
