@@ -163,8 +163,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     CConstants.WDK_SKIPTO_DOWNLOAD_PARAM)) {
                 // go to download page directly
                 forward = mapping.findForward(CConstants.SKIPTO_DOWNLOAD_MAPKEY);
-                String path = forward.getPath() + "?"
-                        + CConstants.WDK_STEP_ID_PARAM + "=" + step.getStepId();
+                String path = forward.getPath() + "?step_id=" + step.getStepId();
                 return new ActionForward(path, true);
             } else if (!noSkip && wdkAnswerValue.getResultSize() == 1
                     && !wdkAnswerValue.getIsDynamic()
