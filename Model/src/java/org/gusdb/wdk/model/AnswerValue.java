@@ -154,7 +154,7 @@ public class AnswerValue {
         this.filter = filter;
 
         logger.debug("Answer created.");
-        new Exception().printStackTrace();
+        //new Exception().printStackTrace();
     }
 
     /**

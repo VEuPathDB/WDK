@@ -84,7 +84,7 @@ public class Step {
 
     public int getResultSize() throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        if (estimateSize == null || answerValue != null) {
+        if (answerValue != null  || estimateSize == null) {
             this.estimateSize = getAnswerValue().getResultSize();
         } 
         return estimateSize;
