@@ -55,15 +55,15 @@ public class GetFilterLinkAction extends Action {
 
         int size = answerValue.getFilterSize(filterName);
 
-        String description = answerValue.getQuestion().getRecordClass().getFilter(
+        String description = step.getQuestion().getRecordClass().getFilter(
                 filterName).getDescription();
 
         // need to build link to summary page for specified filter
         ActionForward showSummary = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
         StringBuffer url = new StringBuffer(showSummary.getPath());
         url.append("?questionFullName="
-                + answerValue.getQuestion().getFullName());
-        url.append(answerValue.getSummaryUrlParams());
+                + step.getQuestion().getFullName());
+        url.append(step.getSummaryUrlParams());
         url.append("&filter=" + filterName);
 
         String link = "<a href='" + url.toString()

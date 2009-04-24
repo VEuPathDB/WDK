@@ -60,7 +60,7 @@ public class ProcessSummaryAction extends Action {
             }
 
             AnswerValueBean answer = step.getAnswerValue();
-            questionName = answer.getQuestion().getFullName();
+            questionName = step.getQuestionName();
             String[] summaryAttributes = answer.getSummaryAttributeNames();
             wdkUser.setSummaryAttributes(questionName, summaryAttributes);
         }

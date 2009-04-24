@@ -35,7 +35,7 @@ public class ConfigDownloadAction extends DownloadStepAnswerValueAction {
             }
         }
 
-        AnswerValueBean wdkAnswerValue = getAnswerValueBean(request);
+        AnswerValueBean wdkAnswerValue = getStep(request).getAnswerValue();
         wdkAnswerValue.setDownloadConfigMap(downloadConfigMap);
 
         ActionForward forward = mapping.findForward(CConstants.CONFIG_DOWNLOAD_MAPKEY);
