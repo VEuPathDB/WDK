@@ -471,4 +471,12 @@ public class StepBean {
         }
         return sb.toString();
     }
+
+    /**
+     * 
+     * @see org.gusdb.wdk.model.user.Step#resetAnswerValue()
+     */
+    public void resetAnswerValue() {
+        step.resetAnswerValue();
+    }
 }

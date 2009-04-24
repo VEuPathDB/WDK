@@ -25,7 +25,6 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.AnswerFilterInstanceBean;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -85,6 +84,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String filterName = request.getParameter("filter");
             // String strBranchId = null;
 
+            boolean updated;
             if (strStepId == null || strStepId.length() == 0) {
                 logger.debug("create new steps");
 
@@ -102,7 +102,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 }
                 String questionName = wdkQuestion.getFullName();
 
-                updateSortingSummary(request, wdkUser, questionName);
+                updated = updateSortingSummary(request, wdkUser, questionName);
 
                 params = qForm.getMyProps();
 
@@ -127,16 +127,19 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     return showError(wdkModel, wdkUser, mapping, request,
                             response);
 
+                updated = updateSortingSummary(request, wdkUser,
+                        step.getQuestionName());
+                if (updated) step.resetAnswerValue();
+
                 int actualSize = step.getAnswerValue().getResultSize();
                 if (step.getEstimateSize() != actualSize) {
                     step.setEstimateSize(actualSize);
                     step.update();
                 }
 
-                updateSortingSummary(request, wdkUser, step.getQuestionName());
                 prepareAttributes(request, wdkUser, step);
             }
-            wdkUser.save();
+            if (updated) wdkUser.save();
 
             logger.debug("step created");
 
@@ -464,22 +467,25 @@ public class ShowSummaryAction extends ShowQuestionAction {
         request.setAttribute(CConstants.WDK_HISTORY_KEY, step);
     }
 
-    private void updateSortingSummary(HttpServletRequest request,
+    private boolean updateSortingSummary(HttpServletRequest request,
             UserBean wdkUser, String questionName)
             throws NoSuchAlgorithmException, WdkModelException,
             WdkUserException {
         // update sorting key, if have
         String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
+        boolean updated = false;
         if (sortingChecksum != null) {
             wdkUser.applySortingChecksum(questionName, sortingChecksum);
-
+            updated = true;
         }
 
         // get summary key, if have
         String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
-        if (summaryChecksum != null)
+        if (summaryChecksum != null) {
             wdkUser.applySummaryChecksum(questionName, summaryChecksum);
-        // logger.debug("summary: [" + summaryChecksum + "]");
+            updated = true;
+        }
+        return updated;
     }
 
     /**
