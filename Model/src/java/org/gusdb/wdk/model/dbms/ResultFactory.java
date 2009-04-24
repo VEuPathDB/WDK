@@ -69,12 +69,14 @@ public class ResultFactory {
             JSONException, WdkUserException {
         QueryInfo queryInfo = cacheFactory.getQueryInfo(instance.getQuery());
 
-        // get the query instance id; null if not exist
-        Integer instanceId = checkInstanceId(instance, queryInfo);
-        if (instanceId == null) // instance cache not exist, create it
-            instanceId = createCache(instance, queryInfo, indexColumns);
-        instance.setInstanceId(instanceId);
-        return instanceId;
+        synchronized (queryInfo) {
+            // get the query instance id; null if not exist
+            Integer instanceId = checkInstanceId(instance, queryInfo);
+            if (instanceId == null) // instance cache not exist, create it
+                instanceId = createCache(instance, queryInfo, indexColumns);
+            instance.setInstanceId(instanceId);
+            return instanceId;
+        }
     }
 
     public String getCacheTable(QueryInstance instance, String[] indexColumn)
