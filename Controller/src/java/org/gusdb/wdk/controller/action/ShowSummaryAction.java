@@ -300,11 +300,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
     public static StepBean summaryPaging(HttpServletRequest request,
             StepBean step) throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        QuestionBean question = step.getAnswerValue().getQuestion();
-        Map<String, String> params = step.getParams();
-        AnswerFilterInstanceBean filter = step.getAnswerValue().getFilter();
-        String filterName = (filter == null) ? null : filter.getName();
-        return summaryPaging(request, question, params, filterName);
+        QuestionBean question = step.getQuestion();
+        Map<String, String> paramValues = step.getParams();
+        String filterName = step.getFilterName();
+        return summaryPaging(request, question, paramValues, filterName);
     }
 
     public static StepBean summaryPaging(HttpServletRequest request,

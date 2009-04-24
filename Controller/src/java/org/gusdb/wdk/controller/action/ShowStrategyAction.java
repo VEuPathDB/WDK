@@ -90,7 +90,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         logger.debug("previous state: '" + state + "'");
 
         if (state == null || state.length() == 0) state = null;
-        JSONObject jsState = (state == null) ? new JSONObject() : new JSONObject(state);
+        JSONObject jsState = (state == null) ? new JSONObject()
+                : new JSONObject(state);
         String[] keys = JSONObject.getNames(jsState);
         Map<Integer, String> oldState = new LinkedHashMap<Integer, String>();
         if (keys != null) {
@@ -196,9 +197,10 @@ public class ShowStrategyAction extends ShowQuestionAction {
         writer.print(jsMessage.toString());
     }
 
-    static private void outputSuccessJSON(UserBean user, HttpServletResponse response,
-            String state) throws JSONException, NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException, IOException {
+    static private void outputSuccessJSON(UserBean user,
+            HttpServletResponse response, String state) throws JSONException,
+            NoSuchAlgorithmException, WdkUserException, WdkModelException,
+            SQLException, IOException {
         logger.debug("output JSON success message without strategy");
 
         List<StrategyBean> strategies = getModifiedStrategies(user, state);
@@ -213,15 +215,17 @@ public class ShowStrategyAction extends ShowQuestionAction {
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
     }
-    
-    static private void outputCommon(UserBean user, JSONObject jsMessage) throws JSONException, NoSuchAlgorithmException, WdkUserException, WdkModelException, SQLException {
+
+    static private void outputCommon(UserBean user, JSONObject jsMessage)
+            throws JSONException, NoSuchAlgorithmException, WdkUserException,
+            WdkModelException, SQLException {
         outputState(user, jsMessage);
         outputCurrentView(user, jsMessage);
     }
 
-    static void outputState(UserBean user, JSONObject jsMessage) throws WdkUserException,
-            WdkModelException, JSONException, SQLException,
-            NoSuchAlgorithmException {
+    static void outputState(UserBean user, JSONObject jsMessage)
+            throws WdkUserException, WdkModelException, JSONException,
+            SQLException, NoSuchAlgorithmException {
         JSONObject jsState = new JSONObject();
         StrategyBean[] openedStrategies = user.getActiveStrategies();
         for (int order = 0; order < openedStrategies.length; order++) {
@@ -235,8 +239,9 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsState.put("length", openedStrategies.length);
         jsMessage.put("state", jsState);
     }
-    
-    static private void outputCurrentView(UserBean user, JSONObject jsMessage) throws JSONException {
+
+    static private void outputCurrentView(UserBean user, JSONObject jsMessage)
+            throws JSONException {
         JSONObject jsView = new JSONObject();
         String viewStrategyKey = user.getViewStrategyId();
         if (viewStrategyKey != null) {
@@ -300,13 +305,12 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("shortName", step.getShortDisplayName());
         jsStep.put("results", step.getResultSize());
         jsStep.put("questionName", step.getQuestionName());
-        jsStep.put("displayName",
-                step.getAnswerValue().getQuestion().getDisplayName());
+        jsStep.put("displayName", step.getQuestion().getDisplayName());
         jsStep.put("isboolean", step.getIsBoolean());
         jsStep.put("istransform", step.getIsTransform());
         jsStep.put("filtered", step.isFiltered());
         jsStep.put("filterName", step.getFilterDisplayName());
-        jsStep.put("urlParams", step.getAnswerValue().getQuestionUrlParams());
+        jsStep.put("urlParams", step.getQuestionUrlParams());
 
         // determine the types of the step
         if (showSubStrategy && step.getIsCollapsible()) {
@@ -334,7 +338,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             WdkModelException, WdkUserException, SQLException {
 
         JSONArray jsParams = new JSONArray();
-        Map<String, ParamBean> params = step.getAnswerValue().getQuestion().getParamsMap();
+        Map<String, ParamBean> params = step.getQuestion().getParamsMap();
         Map<String, String> paramValues = step.getParams();
         for (String paramName : paramValues.keySet()) {
             ParamBean param = params.get(paramName);
