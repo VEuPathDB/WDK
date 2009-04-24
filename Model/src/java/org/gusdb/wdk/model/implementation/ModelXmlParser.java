@@ -39,8 +39,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerFilter;
 import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerFilterInstanceParam;
-import org.gusdb.wdk.model.AnswerFilterLayout;
-import org.gusdb.wdk.model.AnswerFilterLayoutInstance;
 import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.AttributeList;
 import org.gusdb.wdk.model.AttributeQueryReference;

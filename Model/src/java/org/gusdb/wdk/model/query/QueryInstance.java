@@ -167,7 +167,6 @@ public abstract class QueryInstance {
         values.keySet().toArray(paramNames);
         Arrays.sort(paramNames);
 
-        Map<String, Param> params = query.getParamMap();
         JSONObject jsParams = new JSONObject();
         for (String paramName : paramNames) {
             Object paramValue = values.get(paramName);

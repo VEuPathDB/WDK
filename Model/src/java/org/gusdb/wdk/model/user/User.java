@@ -89,7 +89,7 @@ public class User /* implements Serializable */{
         historyCount = 0;
     }
 
-    User(WdkModel model, int userId, String email, String signature)
+    public User(WdkModel model, int userId, String email, String signature)
             throws WdkUserException {
         this();
         this.userId = userId;
@@ -349,7 +349,7 @@ public class User /* implements Serializable */{
      * @param guest
      *            The guest to set.
      */
-    void setGuest(boolean guest) {
+    public void setGuest(boolean guest) {
         this.guest = guest;
     }
 

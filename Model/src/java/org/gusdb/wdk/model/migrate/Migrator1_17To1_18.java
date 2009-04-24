@@ -52,7 +52,7 @@ public class Migrator1_17To1_18 extends Migrator {
     }
 
     private void migrateHistories() throws SQLException, JSONException {
-        DBPlatform userPlatform = wdkModel.getAuthenticationPlatform();
+        DBPlatform userPlatform = wdkModel.getUserPlatform();
         DataSource dataSource = userPlatform.getDataSource();
 
         System.out.println("Loading existing histories...");

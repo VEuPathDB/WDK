@@ -47,11 +47,15 @@ public class History {
 
     private boolean isValid = true;
 
+    private String paramValuesString;
     private Map<String, Object> paramValues;
     private String filterName;
     private int filterSize;
 
     private String questionName;
+
+    private int answerId;
+    private String answerChecksum;
 
     History(UserFactory factory, User user, int historyId) {
         this.factory = factory;
@@ -353,11 +357,12 @@ public class History {
         this.isValid = isValid;
     }
 
-    public void setParams(String strParams) throws JSONException,
+    public void setParamValues(String strParams) throws JSONException,
             WdkModelException {
+        this.paramValuesString = strParams;
         paramValues = new LinkedHashMap<String, Object>();
         if (strParams == null || strParams.trim().length() == 0) return;
-        
+
         JSONObject jsParams = new JSONObject(strParams);
         Iterator<?> keys = jsParams.keys();
         while (keys.hasNext()) {
@@ -371,8 +376,10 @@ public class History {
             String leftParam = query.getLeftOperandParam().getName();
             String rightParam = query.getRightOperandParam().getName();
             String operatorParam = query.getOperatorParam().getName();
-            String leftOperand = paramValues.get(leftParam).toString().split(":")[1];
-            String rightOperand = paramValues.get(rightParam).toString().split(":")[1];
+            String leftOperand = paramValues.get(leftParam).toString().split(
+                    ":")[1];
+            String rightOperand = paramValues.get(rightParam).toString().split(
+                    ":")[1];
             String operator = paramValues.get(operatorParam).toString();
             this.booleanExpression = leftOperand + " " + operator + " "
                     + rightOperand;
@@ -381,6 +388,10 @@ public class History {
 
     public Map<String, Object> getParamValues() {
         return new LinkedHashMap<String, Object>(paramValues);
+    }
+
+    public String getParamValuesString() {
+        return this.paramValuesString;
     }
 
     public Map<String, String> getParamPrompts() {
@@ -450,7 +461,7 @@ public class History {
     public String getQuestionName() {
         return questionName;
     }
-    
+
     public Question getQuestion() throws WdkModelException {
         WdkModel wdkModel = user.getWdkModel();
         return (Question) wdkModel.resolveReference(questionName);
@@ -465,5 +476,35 @@ public class History {
         Object useBoolean = paramValues.get(BooleanQuery.USE_BOOLEAN_FILTER_PARAM);
         if (useBoolean == null) return false;
         return Boolean.parseBoolean(useBoolean.toString());
+    }
+
+    /**
+     * @return the answerId
+     */
+    public int getAnswerId() {
+        return answerId;
+    }
+
+    /**
+     * @param answerId
+     *            the answerId to set
+     */
+    public void setAnswerId(int answerId) {
+        this.answerId = answerId;
+    }
+
+    /**
+     * @return the answerChecksum
+     */
+    public String getAnswerChecksum() {
+        return answerChecksum;
+    }
+
+    /**
+     * @param answerChecksum
+     *            the answerChecksum to set
+     */
+    public void setAnswerChecksum(String answerChecksum) {
+        this.answerChecksum = answerChecksum;
     }
 }

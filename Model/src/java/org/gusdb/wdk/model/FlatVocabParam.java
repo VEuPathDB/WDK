@@ -92,7 +92,7 @@ public class FlatVocabParam extends AbstractEnumParam {
         super.setResources(model);
     }
 
-    protected void initVocabMap() throws WdkModelException,
+    protected synchronized void initVocabMap() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
 

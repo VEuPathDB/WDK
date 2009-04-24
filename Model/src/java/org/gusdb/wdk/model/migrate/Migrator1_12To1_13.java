@@ -135,7 +135,7 @@ public class Migrator1_12To1_13 extends Migrator {
      */
     private void updateHistories() throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException {
-        DBPlatform platform = wdkModel.getAuthenticationPlatform();
+        DBPlatform platform = wdkModel.getUserPlatform();
         DataSource dataSource = platform.getDataSource();
         String newSchema = getNewSchema();
 
