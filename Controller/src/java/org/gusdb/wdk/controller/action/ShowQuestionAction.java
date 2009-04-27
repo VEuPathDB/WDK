@@ -234,7 +234,8 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
 
                 if (p instanceof DatasetParamBean && cgiParamVal != null
                         && cgiParamVal.length() != 0) {
-                    String datasetChecksum = cgiParamVal;
+                    String[] parts = cgiParamVal.split(":");
+                    String datasetChecksum = parts[1];
                     DatasetBean dataset = user.getDataset(datasetChecksum);
                     request.setAttribute(p.getName(), dataset);
                 }

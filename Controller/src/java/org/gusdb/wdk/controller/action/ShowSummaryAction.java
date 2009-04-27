@@ -114,7 +114,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             params = handleMultiPickParams(new LinkedHashMap<String, Object>(
                     qForm.getMyProps()));
-            handleDatasetParams(wdkUser, wdkQuestion, params);
+            // handleDatasetParams(wdkUser, wdkQuestion, params);
 
             // get sorting key, if have
             String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
