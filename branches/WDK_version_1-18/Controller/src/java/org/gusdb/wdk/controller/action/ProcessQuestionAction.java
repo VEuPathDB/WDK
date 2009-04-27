@@ -76,7 +76,7 @@ public class ProcessQuestionAction extends ShowQuestionAction {
             url.append("&" + CConstants.WDK_ALT_PAGE_SIZE_KEY);
             url.append("=" + altPageSizeKey);
         }
-        
+
         // pass along the skip param
         String skipToDownloadKey = request.getParameter(CConstants.WDK_SKIPTO_DOWNLOAD_PARAM);
         logger.debug("skipto download: " + skipToDownloadKey);
@@ -131,7 +131,7 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                 }
                 String[] values = Utilities.toArray(data);
                 DatasetBean dataset = user.createDataset(uploadFile, values);
-                paramValue = dataset.getChecksum();
+                paramValue = user.getSignature() + ":" + dataset.getChecksum();
             } else {
                 paramValue = param.compressValue(params.get(paramName));
             }
