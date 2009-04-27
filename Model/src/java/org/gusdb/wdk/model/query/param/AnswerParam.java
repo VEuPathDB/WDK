@@ -189,5 +189,4 @@ public class AnswerParam extends Param {
         // try to get the answer value
         step.getAnswerValue();
     }
-
 }

@@ -47,9 +47,7 @@ public class DownloadStepAnswerValueAction extends Action {
         if ( reporter != null ) {
             request.setAttribute( CConstants.WDK_REPORT_FORMAT_KEY, reporter );
         }
-        request.setAttribute( CConstants.WDK_ANSWER_KEY, step.getAnswerValue() );
-        request.setAttribute( CConstants.WDK_QUESTION_PARAMS_KEY,
-                step.getParams() );
+        request.setAttribute( CConstants.WDK_STEP_KEY, step );
         
         // get forward
         ActionForward forward;

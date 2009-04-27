@@ -35,6 +35,8 @@ public class UserBean /* implements Serializable */{
     private User user;
     private StepBean latestStep;
 
+    private int stepId;
+
     public UserBean() {}
 
     /**
@@ -600,7 +602,7 @@ public class UserBean /* implements Serializable */{
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
         Step step = user.createStep(question.question, params, filterName);
-        latestStep = new StepBean(step);
+        latestStep = new StepBean(this, step);
         return latestStep;
     }
 
@@ -625,7 +627,7 @@ public class UserBean /* implements Serializable */{
         Step[] steps = user.getSteps();
         StepBean[] beans = new StepBean[steps.length];
         for (int i = 0; i < steps.length; i++) {
-            beans[i] = new StepBean(steps[i]);
+            beans[i] = new StepBean(this, steps[i]);
         }
         return beans;
     }
@@ -640,7 +642,7 @@ public class UserBean /* implements Serializable */{
         Step[] steps = user.getInvalidSteps();
         StepBean[] beans = new StepBean[steps.length];
         for (int i = 0; i < steps.length; i++) {
-            beans[i] = new StepBean(steps[i]);
+            beans[i] = new StepBean(this, steps[i]);
         }
         return beans;
     }
@@ -664,7 +666,7 @@ public class UserBean /* implements Serializable */{
             List<Step> list = steps.get(type);
             List<StepBean> beans = new ArrayList<StepBean>();
             for (Step step : list) {
-                beans.add(new StepBean(step));
+                beans.add(new StepBean(this, step));
             }
             category.put(type, beans);
         }
@@ -682,14 +684,14 @@ public class UserBean /* implements Serializable */{
         Step[] steps = user.getSteps(recordClassName);
         StepBean[] beans = new StepBean[steps.length];
         for (int i = 0; i < steps.length; i++) {
-            beans[i] = new StepBean(steps[i]);
+            beans[i] = new StepBean(this, steps[i]);
         }
         return beans;
     }
 
     public StrategyBean getStrategy(int displayId) throws WdkUserException,
             WdkModelException, JSONException, SQLException {
-        return new StrategyBean(user.getStrategy(displayId));
+        return new StrategyBean(this, user.getStrategy(displayId));
     }
 
     public Map<String, List<StrategyBean>> getStrategiesByCategory()
@@ -701,7 +703,7 @@ public class UserBean /* implements Serializable */{
                 List<Strategy> list = strategies.get(type);
                 List<StrategyBean> beans = new ArrayList<StrategyBean>();
                 for (Strategy strategy : list) {
-                    beans.add(new StrategyBean(strategy));
+                    beans.add(new StrategyBean(this, strategy));
                 }
                 category.put(type, beans);
             }
@@ -717,7 +719,7 @@ public class UserBean /* implements Serializable */{
         Strategy[] strategies = user.getInvalidStrategies();
         StrategyBean[] beans = new StrategyBean[strategies.length];
         for (int i = 0; i < strategies.length; i++) {
-            beans[i] = new StrategyBean(strategies[i]);
+            beans[i] = new StrategyBean(this, strategies[i]);
         }
         return beans;
     }
@@ -745,8 +747,8 @@ public class UserBean /* implements Serializable */{
     public StepBean combineStep(String expression, boolean useBooleanFilter)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        latestStep = new StepBean(user.combineStep(expression, useBooleanFilter,
-                false));
+        latestStep = new StepBean(this, user.combineStep(expression,
+                useBooleanFilter, false));
         return latestStep;
     }
 
@@ -922,7 +924,7 @@ public class UserBean /* implements Serializable */{
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
         Strategy strategy = user.importStrategy(strategyKey);
-        return new StrategyBean(strategy);
+        return new StrategyBean(this, strategy);
     }
 
     /**
@@ -939,7 +941,7 @@ public class UserBean /* implements Serializable */{
     public StrategyBean createStrategy(StepBean step, boolean saved)
             throws WdkUserException, WdkModelException, SQLException,
             JSONException {
-        return new StrategyBean(user.createStrategy(step.step, saved));
+        return new StrategyBean(this, user.createStrategy(step.step, saved));
     }
 
     /**
@@ -987,7 +989,7 @@ public class UserBean /* implements Serializable */{
             List<Strategy> list = strategies.get(type);
             List<StrategyBean> beans = new ArrayList<StrategyBean>();
             for (Strategy strategy : list) {
-                beans.add(new StrategyBean(strategy));
+                beans.add(new StrategyBean(this, strategy));
             }
             category.put(type, beans);
         }
@@ -1003,7 +1005,7 @@ public class UserBean /* implements Serializable */{
             List<Strategy> list = strategies.get(type);
             List<StrategyBean> beans = new ArrayList<StrategyBean>();
             for (Strategy strategy : list) {
-                beans.add(new StrategyBean(strategy));
+                beans.add(new StrategyBean(this, strategy));
             }
             category.put(type, beans);
         }
@@ -1024,8 +1026,9 @@ public class UserBean /* implements Serializable */{
             WdkModelException, SQLException, JSONException,
             NoSuchAlgorithmException {
         if (latestStep != null && latestStep.getStepId() == displayId)
-            return latestStep;;
-        latestStep = new StepBean(user.getStep(displayId));
+            return latestStep;
+        ;
+        latestStep = new StepBean(this, user.getStep(displayId));
         return latestStep;
     }
 
@@ -1051,7 +1054,7 @@ public class UserBean /* implements Serializable */{
             WdkUserException, SQLException, JSONException {
         Step step = user.createBooleanStep(leftStep.step, rightStep.step,
                 operator, useBooleanFilter, filterName);
-        latestStep = new StepBean(step);
+        latestStep = new StepBean(this, step);
         return latestStep;
     }
 
@@ -1075,7 +1078,7 @@ public class UserBean /* implements Serializable */{
             WdkModelException, JSONException, SQLException {
         List<StrategyBean> strategies = new ArrayList<StrategyBean>();
         for (Strategy strategy : user.getActiveStrategies()) {
-            strategies.add(new StrategyBean(strategy));
+            strategies.add(new StrategyBean(this, strategy));
         }
         StrategyBean[] array = new StrategyBean[strategies.size()];
         strategies.toArray(array);
@@ -1099,4 +1102,12 @@ public class UserBean /* implements Serializable */{
         return user.getActiveStrategyIds();
     }
 
+    public void setStepId(String stepId) {
+        this.stepId = Integer.parseInt(stepId);
+    }
+
+    public StepBean getStep() throws NoSuchAlgorithmException,
+            WdkUserException, WdkModelException, SQLException, JSONException {
+        return new StepBean(this, user.getStep(stepId));
+    }
 }
