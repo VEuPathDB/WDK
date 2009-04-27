@@ -175,4 +175,7 @@ public class ParamBean {
                 rawValue);
     }
 
+    public UserBean getUser() {
+        return this.user;
+    }
 }
