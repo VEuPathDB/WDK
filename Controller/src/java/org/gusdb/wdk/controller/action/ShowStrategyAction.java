@@ -311,6 +311,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("filtered", step.isFiltered());
         jsStep.put("filterName", step.getFilterDisplayName());
         jsStep.put("urlParams", step.getQuestionUrlParams());
+        jsStep.put("isValid", step.getIsValid());
 
         // determine the types of the step
         if (showSubStrategy && step.getIsCollapsible()) {
@@ -342,16 +343,23 @@ public class ShowStrategyAction extends ShowQuestionAction {
         Map<String, String> paramValues = step.getParams();
         for (String paramName : paramValues.keySet()) {
             ParamBean param = params.get(paramName);
+            String dependentValue = paramValues.get(paramName);
+
             JSONObject jsParam = new JSONObject();
             jsParam.put("name", paramName);
+            if (param != null) {
             jsParam.put("prompt", param.getPrompt());
             jsParam.put("visible", param.getIsVisible());
             jsParam.put("className", param.getClass().getName());
-            String dependentValue = paramValues.get(paramName);
             param.setDependentValue(dependentValue);
             param.setUser(user);
             param.setTruncateLength(TRUNCATE_LENGTH);
-            jsParam.put("value", param.getBriefRawValue());
+            try {
+                jsParam.put("value", param.getBriefRawValue());
+            } catch (Exception ex) { throw new WdkModelException(ex); }
+            } else {
+                jsParam.put("value", dependentValue);
+            }
             jsParams.put(jsParam);
         }
         jsStep.put("params", jsParams);

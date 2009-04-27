@@ -7,17 +7,19 @@ display the parameter values for an non-boolean answer.
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
-<%@ attribute name="wdkAnswer"
-              type="org.gusdb.wdk.model.jspwrap.AnswerValueBean"
+<%@ attribute name="step"
+              type="org.gusdb.wdk.model.jspwrap.StepBean"
               required="true"
-              description="Answer Object"
+              description="Step Bean Object"
 %>
 
 <div ${paddingStyle}>
+
     <!-- simple question -->
-    <c:set value="${wdkAnswer.internalParams}" var="params"/>
-    <c:set value="${wdkAnswer.question.paramsMap}" var="qParamsMap"/>
-    <c:set value="${wdkAnswer.question.displayName}" var="wdkQuestionName"/>
+    <c:set value="${step.params}" var="params"/>
+    <c:set value="${step.question.paramsMap}" var="qParamsMap"/>
+    <c:set value="${step.question.displayName}" var="wdkQuestionName"/>
+
     <table border="0" cellspacing="0" cellpadding="0">
         <tr>
             <td align="right" valign="top" class="medium"><b>Query</b></td>
@@ -49,7 +51,10 @@ display the parameter values for an non-boolean answer.
                                       </c:if>
                                    </c:when>
                                    <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.AnswerParamBean'}">
-                                      <wdk:showParams wdkAnswer="${qP.answer}" />
+                                      <c:set var="user" value="${step.user}" />
+                                      <jsp:setProperty name="user" property="stepId" value="${aP}" />
+                                      <c:set var="childStep" value="${user.stepByCachedId}" />
+                                      Query: ${childStep.customName} (${childStep.estimateSize} records)
                                    </c:when>
                                    <c:otherwise>
                                       <jsp:setProperty name="qP" property="truncateLength" value="1000" />
@@ -64,13 +69,14 @@ display the parameter values for an non-boolean answer.
             </td>
         </tr>
         <!-- display filter info -->
-        <c:set var="filter" value="${wdkAnswer.filter}" />
-        <c:if test="${filter != null}">
+        <c:set var="filterDisplayName" value="${step.filterDisplayName}" />
+        <c:if test="${filterDisplayName != null}">
             <tr>
                 <td align="right" valign="top" class="medium"><b>Filter</b></td>
                 <td valign="top" class="medium">&nbsp;:&nbsp;</td>
-                <td class="medium">${filter.displayName}</td>
+                <td class="medium">${filterDisplayName}</td>
             </tr>
         </c:if>
     </table>
+
 </div>

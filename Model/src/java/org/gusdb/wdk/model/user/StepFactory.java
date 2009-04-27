@@ -209,7 +209,6 @@ public class StepFactory {
 
         // update step dependencies
         updateStepTree(user, step);
-        step.setValid(true);
 
         return step;
     }
@@ -521,7 +520,6 @@ public class StepFactory {
         String dependentParamContent = userPlatform.getClobData(rsStep,
                 COLUMN_DISPLAY_PARAMS);
         Map<String, String> dependentValues = parseParamContent(dependentParamContent);
-        step.setParamValues(dependentValues);
 
         String answerChecksum = rsStep.getString(AnswerFactory.COLUMN_ANSWER_CHECKSUM);
 
@@ -530,7 +528,7 @@ public class StepFactory {
             AnswerFactory answerFactory = wdkModel.getAnswerFactory();
             Answer answer = answerFactory.getAnswer(user, answerChecksum);
             step.setAnswer(answer);
-            step.setValid(true);
+            step.setParamValues(dependentValues);
         } catch (Exception ex) {
             step.setValid(false);
         }

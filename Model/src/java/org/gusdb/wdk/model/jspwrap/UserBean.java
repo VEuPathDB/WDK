@@ -1106,8 +1106,9 @@ public class UserBean /* implements Serializable */{
         this.stepId = Integer.parseInt(stepId);
     }
 
-    public StepBean getStep() throws NoSuchAlgorithmException,
+    public StepBean getStepByCachedId() throws NoSuchAlgorithmException,
             WdkUserException, WdkModelException, SQLException, JSONException {
+        System.out.println("getting step from user: #" + stepId);
         return new StepBean(this, user.getStep(stepId));
     }
 }

@@ -49,7 +49,7 @@ public class Step {
     private Step childStep = null;
 
     private String booleanExpression;
-    private boolean valid;
+    private boolean valid = true;
 
     private Integer estimateSize;
 
@@ -477,8 +477,16 @@ public class Step {
      * @param paramValues
      *            the paramValues to set
      */
-    public void setParamValues(Map<String, String> paramValues) {
+    public void setParamValues(Map<String, String> paramValues) throws WdkModelException {
         this.paramValues = new LinkedHashMap<String, String>(paramValues);
+        // make sure the params do exist
+        Map<String, Param> params = getQuestion().getParamMap();
+        for (String paramName : paramValues.keySet()) {
+            if (!params.containsKey(paramName)) {
+               this.valid = false;
+               break;
+            }
+        }
     }
 
     public String getType() throws WdkModelException {

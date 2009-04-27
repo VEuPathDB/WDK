@@ -484,6 +484,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             wdkUser.applySummaryChecksum(questionName, summaryChecksum);
             updated = true;
         }
+logger.debug("summary checksum: " + summaryChecksum);
         return updated;
     }
 
