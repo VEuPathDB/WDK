@@ -282,7 +282,7 @@ public class StepBean {
         step.setVersion(version);
     }
 
-    public void setParams(Map<String, String> params) {
+    public void setParams(Map<String, String> params) throws WdkModelException {
         step.setParamValues(params);
     }
 
