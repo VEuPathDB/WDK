@@ -17,22 +17,25 @@ import org.gusdb.wdk.model.user.Step;
 import org.json.JSONException;
 
 public class StepBean {
-    Step step;
 
-    public StepBean(Step step) {
+    private UserBean user;
+    protected Step step;
+
+    public StepBean(UserBean user, Step step) {
+        this.user = user;
         this.step = step;
     }
 
     public StepBean getPreviousStep() {
         if (step.getPreviousStep() != null) {
-            return new StepBean(step.getPreviousStep());
+            return new StepBean(user, step.getPreviousStep());
         }
         return null;
     }
 
     public StepBean getNextStep() {
         if (step.getNextStep() != null) {
-            return new StepBean(step.getNextStep());
+            return new StepBean(user, step.getNextStep());
         }
         return null;
     }
@@ -47,14 +50,14 @@ public class StepBean {
 
     public StepBean getParentStep() {
         if (step.getParentStep() != null) {
-            return new StepBean(step.getParentStep());
+            return new StepBean(user, step.getParentStep());
         }
         return null;
     }
 
     public StepBean getChildStep() {
         if (step.getChildStep() != null) {
-            return new StepBean(step.getChildStep());
+            return new StepBean(user, step.getChildStep());
         }
         return null;
     }
@@ -299,14 +302,14 @@ public class StepBean {
 
     /* functions for navigating/manipulating step tree */
     public StepBean getStep(int index) {
-        return new StepBean(step.getStep(index));
+        return new StepBean(user, step.getStep(index));
     }
 
     public StepBean[] getAllSteps() {
         Step[] steps = step.getAllSteps();
         StepBean[] beans = new StepBean[steps.length];
         for (int i = 0; i < steps.length; ++i) {
-            beans[i] = new StepBean(steps[i]);
+            beans[i] = new StepBean(user, steps[i]);
         }
         return beans;
     }
@@ -314,7 +317,7 @@ public class StepBean {
     public StepBean getStepByDisplayId(int stepId) {
         Step target = step.getStepByDisplayId(stepId);
         if (target != null) {
-            return new StepBean(target);
+            return new StepBean(user, target);
         }
         return null;
     }
@@ -352,7 +355,7 @@ public class StepBean {
     public StepBean createStep(String filterName)
             throws NoSuchAlgorithmException, WdkModelException, JSONException,
             WdkUserException, SQLException {
-        return new StepBean(step.createStep(filterName));
+        return new StepBean(user, step.createStep(filterName));
     }
 
     /**
@@ -385,7 +388,7 @@ public class StepBean {
     }
 
     public StepBean getFirstStep() {
-        return new StepBean(step.getFirstStep());
+        return new StepBean(user, step.getFirstStep());
     }
 
     /**
@@ -399,7 +402,7 @@ public class StepBean {
      */
     public StepBean deepClone() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
-        return new StepBean(step.deepClone());
+        return new StepBean(user, step.deepClone());
     }
 
     public QuestionBean getQuestion() throws WdkModelException {
@@ -478,5 +481,9 @@ public class StepBean {
      */
     public void resetAnswerValue() {
         step.resetAnswerValue();
+    }
+
+    public UserBean getUser() {
+        return user;
     }
 }

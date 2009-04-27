@@ -13,14 +13,17 @@ import org.gusdb.wdk.model.user.Strategy;
 import org.json.JSONException;
 
 public class StrategyBean {
+    
+    private UserBean user;
     Strategy strategy;
 
-    public StrategyBean(Strategy strategy) {
+    public StrategyBean(UserBean user, Strategy strategy) {
+        this.user = user;
         this.strategy = strategy;
     }
 
     public UserBean getUser() {
-        return new UserBean(strategy.getUser());
+        return user;
     }
 
     public boolean getIsDeleted() {
@@ -70,7 +73,7 @@ public class StrategyBean {
     }
 
     public StepBean getLatestStep() {
-        return new StepBean(strategy.getLatestStep());
+        return new StepBean(user, strategy.getLatestStep());
     }
 
     public int getStrategyId() {
@@ -82,12 +85,12 @@ public class StrategyBean {
     }
 
     public StepBean getStep(int index) {
-        StepBean latestStep = new StepBean(strategy.getLatestStep());
+        StepBean latestStep = new StepBean(user, strategy.getLatestStep());
         return latestStep.getStep(index);
     }
 
     public StepBean[] getAllSteps() {
-        StepBean latestStep = new StepBean(strategy.getLatestStep());
+        StepBean latestStep = new StepBean(user, strategy.getLatestStep());
         return latestStep.getAllSteps();
     }
 
@@ -104,7 +107,7 @@ public class StrategyBean {
     public StepBean getStepById(int stepId) {
         Step target = strategy.getStepById(stepId);
         if (target != null) {
-            return new StepBean(target);
+            return new StepBean(user, target);
         }
         return null;
     }
@@ -148,7 +151,7 @@ public class StrategyBean {
     }
 
     public StepBean getFirstStep() {
-        return new StepBean(strategy.getFirstStep());
+        return new StepBean(user, strategy.getFirstStep());
     }
 
     public String getChecksum() throws NoSuchAlgorithmException, JSONException,
