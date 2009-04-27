@@ -1104,6 +1104,9 @@ public class User /* implements Serializable */{
             NoSuchAlgorithmException, SQLException, JSONException {
         Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy);
         newStrategy.update(true);
+        // highlight the imported strategy
+        int rootStepId = newStrategy.getLatestStep().getDisplayId();
+        setViewResults(Integer.toString(newStrategy.getDisplayId()), rootStepId);
         if (strategyCount != null) strategyCount++;
         return newStrategy;
     }
