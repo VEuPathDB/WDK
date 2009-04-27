@@ -4,7 +4,7 @@
 <%@ taglib prefix="nested" uri="http://jakarta.apache.org/struts/tags-nested" %>
 
 
-<c:set value="${requestScope.wdkAnswer}" var="wdkAnswer"/>
+<c:set value="${requestScope.wdkStep}" var="step"/>
 <c:set var="step_id" value="${requestScope.step_id}"/>
 
 <c:set var="formats" value="${requestScope.wdkReportFormats}"/>
@@ -22,26 +22,14 @@ function changeFormat(e)
 </script>
 
 
-<!-- display question and param values and result size for wdkAnswer -->
-<c:choose>
-    <c:when test="${wdkAnswer.isCombined}">
-        <div>
-            <%-- combined question --%>
-            <nested:root name="wdkAnswer">
-                <jsp:include page="/WEB-INF/includes/bqShowNode.jsp"/>
-            </nested:root>
-	    </div>
-    </c:when>
-    <c:otherwise>
-        <wdk:showParams wdkAnswer="${wdkAnswer}" />
-    </c:otherwise>
-</c:choose>
+<!-- display question and param values and result size for step -->
+<wdk:showParams step="${step}" />
 
 
 <hr>
 
 <!-- handle empty result set situation -->
-<c:if test='${wdkAnswer.resultSize != 0}'>
+<c:if test='${step.estimateSize != 0}'>
 
 <!-- the supported format -->
 <form name="formatForm" method="get" action="<c:url value='/downloadStep.do' />">

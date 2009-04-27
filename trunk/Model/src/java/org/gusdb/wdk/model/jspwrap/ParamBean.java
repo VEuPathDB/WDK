@@ -100,17 +100,25 @@ public class ParamBean {
         this.dependentValue = dependentValue;
     }
 
-    public String getRawValue() throws NoSuchAlgorithmException,
-            WdkModelException, WdkUserException, SQLException, JSONException {
+    public String getRawValue() throws Exception {
+        try {
         return param.dependentValueToRawValue(user.getUser(), dependentValue);
+        } catch(Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 
-    public String getBriefRawValue() throws NoSuchAlgorithmException,
-            WdkModelException, WdkUserException, SQLException, JSONException {
+    public String getBriefRawValue() throws Exception {
+        try {
         String rawValue = getRawValue();
-        if (rawValue.length() > truncateLength)
+        if (rawValue != null && rawValue.length() > truncateLength)
             rawValue = rawValue.substring(0, truncateLength) + "...";
         return rawValue;
+        } catch(Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 
     public void setTruncateLength(int truncateLength) {
