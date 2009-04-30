@@ -979,21 +979,25 @@ public class User /* implements Serializable */{
     }
 
     public String[] getSummaryAttributes(String questionFullName)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException, NoSuchAlgorithmException {
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
         String summaryChecksum = projectPreferences.get(summaryKey);
-        if (summaryChecksum == null) return null;
-
-        // get summary list
-        QueryFactory queryFactory = wdkModel.getQueryFactory();
-        String[] summary = queryFactory.getSummaryAttributes(summaryChecksum);
-        if (summary != null) return summary;
+        String[] summary = null;
+        if (summaryChecksum != null && summaryChecksum.length() > 0) {
+            // get summary list
+            QueryFactory queryFactory = wdkModel.getQueryFactory();
+            summary = queryFactory.getSummaryAttributes(summaryChecksum);
+            if (summary != null && summary.length > 0) return summary;
+        }
 
         // user does't have preference, use the default of the question
         Question question = wdkModel.getQuestion(questionFullName);
         Map<String, AttributeField> attributes = question.getSummaryAttributeFieldMap();
         summary = new String[attributes.size()];
         attributes.keySet().toArray(summary);
+
+        if (summaryChecksum == null || summaryChecksum.length() == 0)
+            setSummaryAttributes(questionFullName, summary);
         return summary;
     }
 
