@@ -832,10 +832,11 @@ public class UserBean /* implements Serializable */{
      * @return
      * @throws WdkUserException
      * @throws WdkModelException
+     * @throws NoSuchAlgorithmException 
      * @see org.gusdb.wdk.model.user.User#getSummaryAttributes(java.lang.String)
      */
     public String[] getSummaryAttributes(String questionFullName)
-            throws WdkUserException, WdkModelException {
+            throws WdkUserException, WdkModelException, NoSuchAlgorithmException {
         return user.getSummaryAttributes(questionFullName);
     }
 
