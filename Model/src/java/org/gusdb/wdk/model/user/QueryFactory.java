@@ -55,6 +55,7 @@ public class QueryFactory {
             usedAttributes.add(attribute);
         }
         String summaryContent = sb.toString();
+System.out.println("saving summary: " + summaryContent);
         String checksum = Utilities.encrypt(summaryContent);
 
         // check if the configuration exists
@@ -98,6 +99,8 @@ public class QueryFactory {
 
             // get the configuration
             String summaryContent = rsSelect.getString(COLUMN_CLOB_VALUE);
+System.out.println("getting summary: " + summaryContent);
+
             String[] attributes = summaryContent.split(",");
             for (int i = 0; i < attributes.length; i++) {
                 attributes[i] = attributes[i].trim();
