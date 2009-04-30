@@ -54,19 +54,17 @@ public class ProcessSummaryAction extends Action {
             StepBean step = null;
             if (stepId != null && stepId.length() != 0) {
                 step = wdkUser.getStep(Integer.parseInt(stepId));
+                step.resetAnswerValue();
             } else {
                 throw new WdkModelException(
                         "No step was specified for ProcessSummary!");
             }
 
-            AnswerValueBean answer = step.getAnswerValue();
             questionName = step.getQuestionName();
-            String[] summaryAttributes = answer.getSummaryAttributeNames();
-            wdkUser.setSummaryAttributes(questionName, summaryAttributes);
         }
 
         // get summary checksum, if have
-        String summaryChecksum = request.getParameter(CConstants.WDK_SUMMARY_KEY);
+        String summaryChecksum = null; //request.getParameter(CConstants.WDK_SUMMARY_KEY);
         if (summaryChecksum != null && summaryChecksum.length() > 0) {
             // apply the current summary to the question first, then do other
             // command
@@ -95,13 +93,9 @@ public class ProcessSummaryAction extends Action {
                 // add/replace sorting key
                 String sortingParam = CConstants.WDK_SORTING_KEY + "="
                         + checksum;
-                if (sortingChecksum == null) {
-                    queryString += "&" + sortingParam;
-                } else {
-                    queryString = queryString.replaceAll("\\b"
-                            + CConstants.WDK_SORTING_KEY + "=[^&]*",
-                            sortingParam);
-                }
+                queryString = queryString.replaceAll("\\b"
+                            + CConstants.WDK_SORTING_KEY + "=[^&]*", "");
+                queryString += "&" + sortingParam;
             } else { // summary modification
                 if (command.equalsIgnoreCase("reset")) {
                     wdkUser.resetSummaryAttribute(questionName);
@@ -111,11 +105,12 @@ public class ProcessSummaryAction extends Action {
                 } else {
                     String[] summary = wdkUser.getSummaryAttributes(questionName);
                     List<String> summaryList = new ArrayList<String>();
-                    for (String attribute : summary) {
-                        summaryList.add(attribute);
-                    }
+                        for (String attribute : summary) {
+                            summaryList.add(attribute);
+                        }
 
                     String attributeName = request.getParameter(CConstants.WDK_SUMMARY_ATTRIBUTE_KEY);
+System.out.println("command: " + command + ", attribute = " + attributeName);
                     if (command.equalsIgnoreCase("add")) {
                         if (!summaryList.contains(attributeName))
                             summaryList.add(attributeName);
@@ -144,13 +139,9 @@ public class ProcessSummaryAction extends Action {
                     // add/replace summary key
                     String summaryParam = CConstants.WDK_SUMMARY_KEY + "="
                             + checksum;
-                    if (summaryChecksum == null) {
-                        queryString += "&" + summaryParam;
-                    } else {
-                        queryString = queryString.replaceAll("\\b"
-                                + CConstants.WDK_SUMMARY_KEY + "=[^&]*",
-                                summaryParam);
-                    }
+                    queryString = queryString.replaceAll("\\b"
+                                + CConstants.WDK_SUMMARY_KEY + "=[^&]*", "");
+                    queryString += "&" + summaryParam;
                 }
             }
 
