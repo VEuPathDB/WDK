@@ -964,29 +964,31 @@ public class StepFactory {
                 // it. We need to get an unsaved copy to modify. Generate
                 // unsaved name
                 PreparedStatement psCheck = SqlUtils.getPreparedStatement(
-                        dataSource, "SELECT 1, " + COLUMN_NAME + " FROM "
+                        dataSource, "SELECT 1, " + COLUMN_NAME + ", 1 FROM "
                                 + userSchema + TABLE_STRATEGY + " WHERE "
                                 + userIdColumn + " = ? AND "
                                 + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME
                                 + " = ? AND " + COLUMN_IS_SAVED + "= ? AND "
                                 + COLUMN_IS_DELETED + "= ? UNION "
-                                + "SELECT 2, " + COLUMN_NAME + " FROM "
-                                + userSchema + TABLE_STRATEGY + " WHERE "
+                                + "SELECT 2, " + COLUMN_NAME + ", TO_NUMBER(SUBSTR("
+			        + COLUMN_NAME + ", ?, LENGTH(" + COLUMN_NAME + ")-?))"
+                                + " FROM " + userSchema + TABLE_STRATEGY + " WHERE "
                                 + userIdColumn + " = ? AND "
                                 + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME
                                 + " LIKE ? AND " + COLUMN_IS_SAVED + "= ? AND "
-                                + COLUMN_IS_DELETED + " = ? ORDER BY 1, "
-                                + COLUMN_NAME);
+                                + COLUMN_IS_DELETED + " = ? ORDER BY 1, 3");
                 psCheck.setInt(1, userId);
                 psCheck.setString(2, wdkModel.getProjectId());
                 psCheck.setString(3, strategy.getName());
                 psCheck.setBoolean(4, false);
                 psCheck.setBoolean(5, false);
-                psCheck.setInt(6, userId);
-                psCheck.setString(7, wdkModel.getProjectId());
-                psCheck.setString(8, strategy.getName() + "(%)");
-                psCheck.setBoolean(9, false);
-                psCheck.setBoolean(10, false);
+                psCheck.setInt(6, strategy.getName().length() + 2);
+                psCheck.setInt(7, strategy.getName().length() + 2);
+                psCheck.setInt(8, userId);
+                psCheck.setString(9, wdkModel.getProjectId());
+                psCheck.setString(10, strategy.getName() + "(%)");
+                psCheck.setBoolean(11, false);
+                psCheck.setBoolean(12, false);
                 rsStrategy = psCheck.executeQuery();
                 logger.info("savedName: " + strategy.getSavedName());
 
@@ -1068,18 +1070,18 @@ public class StepFactory {
                             rsCheckName.getInt(COLUMN_DISPLAY_ID), false);
             } else {// otherwise, generate default name
                 psCheckName = SqlUtils.getPreparedStatement(dataSource,
-                        "SELECT 1, " + COLUMN_NAME + " FROM " + userSchema
+                        "SELECT 1, " + COLUMN_NAME + ", 1 FROM " + userSchema
                                 + TABLE_STRATEGY + " WHERE " + userIdColumn
                                 + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND "
                                 + COLUMN_IS_DELETED + " = ? AND " + COLUMN_NAME
                                 + " = 'New Strategy'" + " UNION "
-                                + "SELECT 2, " + COLUMN_NAME + " FROM "
-                                + userSchema + TABLE_STRATEGY + " WHERE "
-                                + userIdColumn + " = ? AND "
+                                + "SELECT 2, " + COLUMN_NAME + ", TO_NUMBER(SUBSTR("
+                                + COLUMN_NAME + ", 14, LENGTH(" + COLUMN_NAME
+				+ ")-14)) FROM " + userSchema + TABLE_STRATEGY
+                                + " WHERE " + userIdColumn + " = ? AND "
                                 + COLUMN_PROJECT_ID + " = ? AND "
                                 + COLUMN_IS_DELETED + "= ? AND " + COLUMN_NAME
-                                + " LIKE 'New Strategy(%)'" + "ORDER BY 1, "
-                                + COLUMN_NAME);
+                                + " LIKE 'New Strategy(%)'" + "ORDER BY 1, 3");
                 psCheckName.setInt(1, userId);
                 psCheckName.setString(2, wdkModel.getProjectId());
                 psCheckName.setBoolean(3, false);
