@@ -352,8 +352,10 @@ public class Step {
         this.isDeleted = isDeleted;
     }
 
-    public boolean isCollapsible() {
-        return isCollapsible;
+    public boolean isCollapsible() throws WdkModelException {
+        if (isCollapsible) return true;
+        // it is true if the step is a branch
+        return (getParentStep() != null && isCombined());
     }
 
     public void setCollapsible(boolean isCollapsible) {
