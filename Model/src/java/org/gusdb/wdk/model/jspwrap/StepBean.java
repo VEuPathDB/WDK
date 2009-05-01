@@ -236,7 +236,7 @@ public class StepBean {
         step.setDeleted(isDeleted);
     }
 
-    public boolean getIsCollapsible() {
+    public boolean getIsCollapsible() throws WdkModelException {
         return step.isCollapsible();
     }
 
