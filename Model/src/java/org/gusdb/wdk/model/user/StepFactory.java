@@ -708,47 +708,16 @@ public class StepFactory {
                 + "(internal) to user #" + user.getUserId());
 
         Step oldRootStep = oldStrategy.getLatestStep();
-        ResultSet rsNames = null;
-        try {
-            // get the existing names
-            PreparedStatement psNames = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT " + COLUMN_NAME + " FROM " + userSchema
-                            + TABLE_STRATEGY + " WHERE "
-                            + UserFactory.COLUMN_USER_ID + " = ? AND "
-                            + COLUMN_PROJECT_ID + " = ?");
-            psNames.setInt(1, user.getUserId());
-            psNames.setString(2, wdkModel.getProjectId());
-            rsNames = psNames.executeQuery();
+        String name = getNextName(user, oldStrategy.getName());
 
-            Set<String> names = new LinkedHashSet<String>();
-            while (rsNames.next())
-                names.add(rsNames.getString(COLUMN_NAME));
-
-            String name = oldStrategy.getName();
-            Pattern pattern = Pattern.compile("(.+?)\\((\\d+)\\)");
-            while (names.contains(name)) {
-                Matcher matcher = pattern.matcher(name);
-                if (matcher.matches()) {
-                    int number = Integer.parseInt(matcher.group(2));
-                    name = matcher.group(1).trim();
-                    name += " (" + (++number) + ")";
-                } else { // the initial name, no tailing serial number
-                    name += " (2)";
-                }
-            }
-
-            // If user does not already have a copy of this strategy, need to
-            // look up the answers recursively, construct step objects.
-            Step latestStep = importStep(user, oldRootStep);
-            // Need to create strategy & then load it so that all AnswerValues
-            // are created properly
-            // Jerric - the imported strategy should always be unsaved.
-            Strategy strategy = createStrategy(user, latestStep, name, null,
-                    false);
-            return loadStrategy(user, strategy.getDisplayId(), false);
-        } finally {
-            SqlUtils.closeResultSet(rsNames);
-        }
+        // If user does not already have a copy of this strategy, need to
+        // look up the answers recursively, construct step objects.
+        Step latestStep = importStep(user, oldRootStep);
+        // Need to create strategy & then load it so that all AnswerValues
+        // are created properly
+        // Jerric - the imported strategy should always be unsaved.
+        Strategy strategy = createStrategy(user, latestStep, name, null, false);
+        return loadStrategy(user, strategy.getDisplayId(), false);
     }
 
     Step importStep(User newUser, Step oldStep) throws WdkUserException,
@@ -789,7 +758,7 @@ public class StepFactory {
         newStep.setCollapsedName(oldStep.getCollapsedName());
         newStep.setCollapsible(oldStep.isCollapsible());
         String customeName = oldStep.getBaseCustomName();
-        if (customeName!= null) newStep.setCustomName(customeName);
+        if (customeName != null) newStep.setCustomName(customeName);
         newStep.update(false);
         return newStep;
     }
@@ -970,10 +939,11 @@ public class StepFactory {
                                 + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME
                                 + " = ? AND " + COLUMN_IS_SAVED + "= ? AND "
                                 + COLUMN_IS_DELETED + "= ? UNION "
-                                + "SELECT 2, " + COLUMN_NAME + ", TO_NUMBER(SUBSTR("
-			        + COLUMN_NAME + ", ?, LENGTH(" + COLUMN_NAME + ")-?))"
-                                + " FROM " + userSchema + TABLE_STRATEGY + " WHERE "
-                                + userIdColumn + " = ? AND "
+                                + "SELECT 2, " + COLUMN_NAME
+                                + ", TO_NUMBER(SUBSTR(" + COLUMN_NAME
+                                + ", ?, LENGTH(" + COLUMN_NAME + ")-?))"
+                                + " FROM " + userSchema + TABLE_STRATEGY
+                                + " WHERE " + userIdColumn + " = ? AND "
                                 + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME
                                 + " LIKE ? AND " + COLUMN_IS_SAVED + "= ? AND "
                                 + COLUMN_IS_DELETED + " = ? ORDER BY 1, 3");
@@ -1075,9 +1045,10 @@ public class StepFactory {
                                 + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND "
                                 + COLUMN_IS_DELETED + " = ? AND " + COLUMN_NAME
                                 + " = 'New Strategy'" + " UNION "
-                                + "SELECT 2, " + COLUMN_NAME + ", TO_NUMBER(SUBSTR("
-                                + COLUMN_NAME + ", 14, LENGTH(" + COLUMN_NAME
-				+ ")-14)) FROM " + userSchema + TABLE_STRATEGY
+                                + "SELECT 2, " + COLUMN_NAME
+                                + ", TO_NUMBER(SUBSTR(" + COLUMN_NAME
+                                + ", 14, LENGTH(" + COLUMN_NAME
+                                + ")-14)) FROM " + userSchema + TABLE_STRATEGY
                                 + " WHERE " + userIdColumn + " = ? AND "
                                 + COLUMN_PROJECT_ID + " = ? AND "
                                 + COLUMN_IS_DELETED + "= ? AND " + COLUMN_NAME
@@ -1233,6 +1204,87 @@ public class StepFactory {
             return false;
         } finally {
             SqlUtils.closeResultSet(rsCheckName);
+        }
+    }
+
+    /**
+     * Copy is different from import strategy in that the copy will replicate
+     * every setting of the strategy, and the new name is different with a
+     * " copy" suffix.
+     * 
+     * @param strategy
+     * @return
+     * @throws JSONException
+     * @throws WdkModelException
+     * @throws WdkUserException
+     * @throws SQLException
+     * @throws NoSuchAlgorithmException
+     */
+    Strategy copyStrategy(Strategy strategy) throws SQLException,
+            WdkUserException, WdkModelException, JSONException,
+            NoSuchAlgorithmException {
+        User user = strategy.getUser();
+        Step root = strategy.getLatestStep().deepClone();
+        boolean saved = strategy.getIsSaved();
+        String name = getNextName(user, strategy.getName() + " copy");
+        String savedName = saved ? name : null;
+        return createStrategy(user, root, name, savedName, saved);
+    }
+
+    /**
+     * copy a branch of strategy from the given step to the beginning of the
+     * strategy, can make an unsaved strategy from it.
+     * 
+     * @param strategy
+     * @param stepId
+     * @return
+     * @throws SQLException
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @throws JSONException
+     * @throws WdkUserException
+     */
+    Strategy copyStrategy(Strategy strategy, int stepId) throws SQLException,
+            WdkModelException, NoSuchAlgorithmException, JSONException,
+            WdkUserException {
+        User user = strategy.getUser();
+        Step step = strategy.getStepById(stepId).deepClone();
+        String name = getNextName(user, step.getCustomName() + " copy");
+        return createStrategy(user, step, name, null, false);
+    }
+
+    private String getNextName(User user, String oldName) throws SQLException {
+        ResultSet rsNames = null;
+        try {
+            // get the existing names
+            PreparedStatement psNames = SqlUtils.getPreparedStatement(
+                    dataSource, "SELECT " + COLUMN_NAME + " FROM " + userSchema
+                            + TABLE_STRATEGY + " WHERE "
+                            + UserFactory.COLUMN_USER_ID + " = ? AND "
+                            + COLUMN_PROJECT_ID + " = ?");
+            psNames.setInt(1, user.getUserId());
+            psNames.setString(2, wdkModel.getProjectId());
+            rsNames = psNames.executeQuery();
+
+            Set<String> names = new LinkedHashSet<String>();
+            while (rsNames.next())
+                names.add(rsNames.getString(COLUMN_NAME));
+
+            String name = oldName;
+            Pattern pattern = Pattern.compile("(.+?)\\((\\d+)\\)");
+            while (names.contains(name)) {
+                Matcher matcher = pattern.matcher(name);
+                if (matcher.matches()) {
+                    int number = Integer.parseInt(matcher.group(2));
+                    name = matcher.group(1).trim();
+                    name += " (" + (++number) + ")";
+                } else { // the initial name, no tailing serial number
+                    name += " (2)";
+                }
+            }
+            return name;
+        } finally {
+            SqlUtils.closeResultSet(rsNames);
         }
     }
 }

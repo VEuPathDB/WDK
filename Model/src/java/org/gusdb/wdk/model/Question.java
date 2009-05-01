@@ -217,8 +217,14 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
         Map<String, Boolean> sortingMap = this.defaultSortingMap;
         AnswerFilterInstance filter = recordClass.getDefaultFilter();
-        return makeAnswerValue(user, dependentValues, pageStart, pageEnd,
+        AnswerValue answerValue = makeAnswerValue(user, dependentValues, pageStart, pageEnd,
                 sortingMap, filter);
+        if (this.fullAnswer) {
+            int resultSize = answerValue.getResultSize();
+            if (resultSize > pageEnd)
+                answerValue.setPageIndex(pageStart, resultSize);
+        }
+        return answerValue;
     }
 
     /**
@@ -501,14 +507,14 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         resolved = true;
     }
 
-    // /////////////////////////////////////////////////////////////////////
-    // Protected Methods
-    // /////////////////////////////////////////////////////////////////////
-
-    protected void setQuestionSet(QuestionSet questionSet)
+    public void setQuestionSet(QuestionSet questionSet)
             throws WdkModelException {
         this.questionSet = questionSet;
     }
+
+    // /////////////////////////////////////////////////////////////////////
+    // Protected Methods
+    // /////////////////////////////////////////////////////////////////////
 
     /**
      * This method is use to clone the question, excluding dynamic attributes
@@ -516,52 +522,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
      * @return
      * @throws WdkModelException
      */
-    // public Question getBaseQuestion() throws WdkModelException {
-    // Question question = new Question();
-    // question.description = this.description;
-    // question.summary = this.summary;
-    // question.displayName = this.displayName;
-    // question.help = this.help;
-    // question.name = this.name;
-    // question.queryTwoPartName = this.queryTwoPartName;
-    // question.questionSet = this.questionSet;
-    // question.recordClass = this.recordClass;
-    // question.recordClassTwoPartName = this.recordClassTwoPartName;
-    //
-    // // needs to clone this summary attribute as well
-    // Map<String, AttributeField> sumAttributes = new LinkedHashMap<String,
-    // AttributeField>();
-    // Map<String, AttributeField> attributes =
-    // recordClass.getAttributeFieldMap();
-    // for (String attrName : summaryAttributeMap.keySet()) {
-    // if (attributes.containsKey(attrName))
-    // sumAttributes.put(attrName, summaryAttributeMap.get(attrName));
-    // }
-    // question.summaryAttributeMap = sumAttributes;
-    //
-    // // clone the query too, but excludes the columns in dynamic attribute
-    // Set<String> excludedColumns = new LinkedHashSet<String>();
-    // // TEST
-    // StringBuffer sb = new StringBuffer();
-    //
-    // if (this.dynamicAttributeSet != null) {
-    // attributes = dynamicAttributeSet.getAttributeFieldMap();
-    // for (AttributeField field : attributes.values()) {
-    // if (field instanceof ColumnAttributeField) {
-    // ColumnAttributeField cfield = (ColumnAttributeField) field;
-    // excludedColumns.add(cfield.getColumn().getName());
-    // // TEST
-    // sb.append(cfield.getColumn().getName() + ", ");
-    // }
-    // }
-    // }
-    // logger.debug("Excluded fields: " + sb.toString());
-    //
-    // Query newQuery = this.query.getBaseQuery(excludedColumns);
-    // question.query = newQuery;
-    //
-    // return question;
-    // }
     public Map<String, Boolean> getSortingAttributeMap() {
         Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
         int count = 0;
