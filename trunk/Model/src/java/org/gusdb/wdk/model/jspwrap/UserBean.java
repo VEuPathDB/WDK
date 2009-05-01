@@ -832,11 +832,12 @@ public class UserBean /* implements Serializable */{
      * @return
      * @throws WdkUserException
      * @throws WdkModelException
-     * @throws NoSuchAlgorithmException 
+     * @throws NoSuchAlgorithmException
      * @see org.gusdb.wdk.model.user.User#getSummaryAttributes(java.lang.String)
      */
     public String[] getSummaryAttributes(String questionFullName)
-            throws WdkUserException, WdkModelException, NoSuchAlgorithmException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException {
         return user.getSummaryAttributes(questionFullName);
     }
 
@@ -1110,5 +1111,18 @@ public class UserBean /* implements Serializable */{
     public StepBean getStepByCachedId() throws NoSuchAlgorithmException,
             WdkUserException, WdkModelException, SQLException, JSONException {
         return new StepBean(this, user.getStep(stepId));
+    }
+
+    public StrategyBean copyStrategy(StrategyBean strategy)
+            throws NoSuchAlgorithmException, SQLException, WdkUserException,
+            WdkModelException, JSONException {
+        return new StrategyBean(this, user.copyStrategy(strategy.strategy));
+    }
+
+    public StrategyBean copyStrategy(StrategyBean strategy, int stepId)
+            throws NoSuchAlgorithmException, SQLException, WdkModelException,
+            JSONException, WdkUserException {
+        return new StrategyBean(this, user.copyStrategy(strategy.strategy,
+                stepId));
     }
 }
