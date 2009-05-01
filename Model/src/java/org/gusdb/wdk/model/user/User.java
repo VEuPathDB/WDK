@@ -386,8 +386,8 @@ public class User /* implements Serializable */{
         int startIndex = answerValue.getStartIndex();
         int endIndex = answerValue.getEndIndex();
 
-        return createStep(question, paramValues, filter, startIndex,
-                endIndex, deleted);
+        return createStep(question, paramValues, filter, startIndex, endIndex,
+                deleted);
     }
 
     public Step createStep(Question question, Map<String, String> paramValues,
@@ -439,13 +439,13 @@ public class User /* implements Serializable */{
         Strategy strategy = stepFactory.createStrategy(this, step, name,
                 savedName, saved);
         if (strategyCount != null) strategyCount++;
-        
+
         // set the view to this one
         String strategyKey = Integer.toString(strategy.getDisplayId());
         this.activeStrategyFactory.openActiveStrategy(strategyKey);
         this.activeStrategyFactory.setViewStrategyKey(strategyKey);
         this.activeStrategyFactory.setViewStepId(step.getDisplayId());
-        
+
         return strategy;
     }
 
@@ -979,7 +979,8 @@ public class User /* implements Serializable */{
     }
 
     public String[] getSummaryAttributes(String questionFullName)
-            throws WdkUserException, WdkModelException, NoSuchAlgorithmException {
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException {
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
         String summaryChecksum = projectPreferences.get(summaryKey);
         String[] summary = null;
@@ -1221,7 +1222,6 @@ public class User /* implements Serializable */{
                     + rightStep.getDisplayId()
                     + "] doesn't belong to the user #" + userId);
 
-
         // verify the record type of the operands
         RecordClass leftRecordClass = leftStep.getQuestion().getRecordClass();
         RecordClass rightRecordClass = rightStep.getQuestion().getRecordClass();
@@ -1261,11 +1261,27 @@ public class User /* implements Serializable */{
 
     public int getStrategyOrder(String strategyKey) {
         int order = activeStrategyFactory.getOrder(strategyKey);
-        System.out.println("order: " + order);
+        System.out.println("strat " + strategyKey + " order: " + order);
         return order;
     }
 
     public int[] getActiveStrategyIds() {
         return activeStrategyFactory.getRootStrategies();
+    }
+
+    public Strategy copyStrategy(Strategy strategy)
+            throws NoSuchAlgorithmException, SQLException, WdkUserException,
+            WdkModelException, JSONException {
+        Strategy copy = stepFactory.copyStrategy(strategy);
+        if (strategyCount != null) strategyCount++;
+        return copy;
+    }
+
+    public Strategy copyStrategy(Strategy strategy, int stepId)
+            throws NoSuchAlgorithmException, SQLException, WdkModelException,
+            JSONException, WdkUserException {
+        Strategy copy = stepFactory.copyStrategy(strategy, stepId);
+        if (strategyCount != null) strategyCount++;
+        return copy;
     }
 }
