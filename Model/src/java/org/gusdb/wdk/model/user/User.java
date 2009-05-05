@@ -637,6 +637,62 @@ public class User /* implements Serializable */{
         return category;
     }
 
+    public List<Strategy> getUnsavedStrategiesByType(String type)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
+//        Map<Integer, Strategy> strategies = getStrategiesMap();
+//        Map<String, List<Strategy>> category = new TreeMap<String, List<Strategy>>();
+//        for (Strategy strategy : strategies.values()) {
+//            if (!strategy.getIsSaved()) {
+//                String type = strategy.getType();
+//                List<Strategy> list;
+//                if (category.containsKey(type)) {
+//                    list = category.get(type);
+//                } else {
+//                    list = new ArrayList<Strategy>();
+//                    category.put(type, list);
+//                }
+//                list.add(strategy);
+//            }
+//        }
+//        return category;
+        return null;
+    }
+
+    /**
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @throws JSONException
+     * @throws SQLException
+     */
+    public List<Strategy> getSavedStrategiesByType(String type)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
+//        Map<Integer, Strategy> strategies = getStrategiesMap();
+//        Map<String, List<Strategy>> category = new TreeMap<String, List<Strategy>>();
+//        for (Strategy strategy : strategies.values()) {
+//            if (strategy.getIsSaved()) {
+//                String type = strategy.getType();
+//                List<Strategy> list;
+//                if (category.containsKey(type)) {
+//                    list = category.get(type);
+//                } else {
+//                    list = new ArrayList<Strategy>();
+//                    category.put(type, list);
+//                }
+//                list.add(strategy);
+//            }
+//        }
+//        return category;
+        return null;
+    }
+
+    public List<Strategy> getRecentStrategiesBy(String type) {
+        return null;
+    }
+
     public Map<Integer, Step> getStepsMap(String dataType)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
