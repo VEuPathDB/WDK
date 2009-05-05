@@ -6,6 +6,8 @@ package org.gusdb.wdk.model.jspwrap;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1008,6 +1010,28 @@ public class UserBean /* implements Serializable */{
             List<StrategyBean> beans = new ArrayList<StrategyBean>();
             for (Strategy strategy : list) {
                 beans.add(new StrategyBean(this, strategy));
+            }
+            category.put(type, beans);
+        }
+        return category;
+    }
+
+    public Map<String, List<StrategyBean>> getRecentStrategiesByCategory()
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
+        Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
+        Map<String, List<StrategyBean>> category = new LinkedHashMap<String, List<StrategyBean>>();
+
+        Calendar calender = Calendar.getInstance();
+        // recent strategies are the ones viewed within a day.
+        calender.add(Calendar.DATE, -1);
+        Date threshold = calender.getTime();
+        for (String type : strategies.keySet()) {
+            List<Strategy> list = strategies.get(type);
+            List<StrategyBean> beans = new ArrayList<StrategyBean>();
+            for (Strategy strategy : list) {
+                if (threshold.compareTo(strategy.getLastRunTime()) <= 0)
+                    beans.add(new StrategyBean(this, strategy));
             }
             category.put(type, beans);
         }

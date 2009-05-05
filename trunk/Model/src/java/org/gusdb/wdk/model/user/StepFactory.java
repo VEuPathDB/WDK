@@ -10,10 +10,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -699,6 +701,29 @@ public class StepFactory {
             SqlUtils.closeStatement(psStrategyIds);
             SqlUtils.closeResultSet(rsStrategyIds);
         }
+    }
+    
+    List<Strategy> loadStrategies(User user, boolean saved, boolean recent) {
+//        String query = "SELECT " + COLUMN_STRATEGY_INTERNAL_ID + ", "
+//        + COLUMN_NAME + ", " + COLUMN_IS_SAVED + ", "
+//        + COLUMN_ROOT_STEP_ID + ", " + COLUMN_CREATE_TIME + ", "
+//        + COLUMN_SAVED_NAME + " FROM " + userSchema
+//        + TABLE_STRATEGY + " WHERE " + userIdColumn + " = ? AND "
+//        + COLUMN_DISPLAY_ID + " = ? AND " + COLUMN_PROJECT_ID
+//        + " = ?";
+//if (!allowDeleted) {
+//    query += " AND " + COLUMN_IS_DELETED + " = ?";
+//}
+
+        StringBuffer sql = new StringBuffer("SELECT ");
+        sql.append(" s.").append(COLUMN_STRATEGY_INTERNAL_ID).append(", ");
+        sql.append(" s.").append(COLUMN_NAME).append(", ");
+        sql.append(" s.").append(COLUMN_DISPLAY_ID).append(", ");
+        sql.append(" s.").append(COLUMN_ROOT_STEP_ID).append(", ");
+        sql.append(" s.").append(COLUMN_CREATE_TIME).append(", ");
+        
+        List<Strategy> strategies = new ArrayList<Strategy>();
+        return strategies;
     }
 
     Strategy importStrategy(User user, Strategy oldStrategy)
