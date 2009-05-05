@@ -54,19 +54,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
             throws Exception {
         logger.debug("entering showSummary");
 
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
+        UserBean wdkUser = ActionUtility.getUser(servlet, request);
         try {
-
-            // get user, or create one, if not exist
-            WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
-                    CConstants.WDK_MODEL_KEY);
-            UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                    CConstants.WDK_USER_KEY);
-            if (wdkUser == null) {
-                wdkUser = wdkModel.getUserFactory().getGuestUser();
-                request.getSession().setAttribute(CConstants.WDK_USER_KEY,
-                        wdkUser);
-            }
-
             QuestionForm qForm = (QuestionForm) form;
             // TRICKY: this is for action forward from
             // ProcessQuestionSetsFlatAction
@@ -233,7 +223,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
             return forward;
         } catch (Exception ex) {
             ex.printStackTrace();
-            throw ex;
+            ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
+            return null;
         }
 
     }
