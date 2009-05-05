@@ -1225,10 +1225,10 @@ public class StepFactory {
             NoSuchAlgorithmException {
         User user = strategy.getUser();
         Step root = strategy.getLatestStep().deepClone();
-        boolean saved = strategy.getIsSaved();
-        String name = getNextName(user, strategy.getName() + " copy");
-        String savedName = saved ? name : null;
-        return createStrategy(user, root, name, savedName, saved);
+        String name = strategy.getName();
+        if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
+        name = getNextName(user, name);
+        return createStrategy(user, root, name, null, false);
     }
 
     /**
@@ -1249,7 +1249,9 @@ public class StepFactory {
             WdkUserException {
         User user = strategy.getUser();
         Step step = strategy.getStepById(stepId).deepClone();
-        String name = getNextName(user, step.getCustomName() + " copy");
+        String name = step.getCustomName();
+        if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
+        name = getNextName(user, name);
         return createStrategy(user, step, name, null, false);
     }
 
