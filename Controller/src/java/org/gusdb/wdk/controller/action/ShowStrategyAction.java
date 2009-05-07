@@ -96,7 +96,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         Map<Integer, String> oldState = new LinkedHashMap<Integer, String>();
         if (keys != null) {
             for (String key : keys) {
-                if (key.equals("length")) continue;
+                if (key.equals("length") || key.equals("count")) continue;
                 JSONObject jsStrategy = jsState.getJSONObject(key);
                 int strategyId = jsStrategy.getInt("id");
                 String checksum = jsStrategy.getString("checksum");
@@ -237,6 +237,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             jsState.put(Integer.toString(order + 1), jsStrategy);
         }
         jsState.put("length", openedStrategies.length);
+	jsState.put("count", user.getStrategyCount());
         jsMessage.put("state", jsState);
     }
 
