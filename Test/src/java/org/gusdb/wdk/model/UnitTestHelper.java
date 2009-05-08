@@ -96,8 +96,8 @@ public class UnitTestHelper {
                         REGISTERED_USER_PASSWORD);
             }
         }
-        registeredUser.deleteStrategies();
-        registeredUser.deleteSteps();
+        //registeredUser.deleteStrategies();
+        //registeredUser.deleteSteps();
         return registeredUser;
     }
 

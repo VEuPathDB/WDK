@@ -613,17 +613,15 @@ public class User /* implements Serializable */{
             WdkModelException, JSONException, WdkUserException, SQLException {
         Map<String, List<Strategy>> category = new TreeMap<String, List<Strategy>>();
         for (Strategy strategy : strategies) {
-            if (strategy.getIsSaved()) {
-                String type = strategy.getType();
-                List<Strategy> list;
-                if (category.containsKey(type)) {
-                    list = category.get(type);
-                } else {
-                    list = new ArrayList<Strategy>();
-                    category.put(type, list);
-                }
-                list.add(strategy);
+            String type = strategy.getType();
+            List<Strategy> list;
+            if (category.containsKey(type)) {
+                list = category.get(type);
+            } else {
+                list = new ArrayList<Strategy>();
+                category.put(type, list);
             }
+            list.add(strategy);
         }
         return category;
     }

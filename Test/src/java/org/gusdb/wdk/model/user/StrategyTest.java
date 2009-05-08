@@ -5,6 +5,10 @@ package org.gusdb.wdk.model.user;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.BooleanOperator;
@@ -253,6 +257,51 @@ public class StrategyTest {
         StepTest.compareStep(step3, root.getChildStep());
         StepTest.compareStep(step2, root.getPreviousStep().getChildStep());
         StepTest.compareStep(step1, root.getPreviousStep().getPreviousStep());
+    }
+
+    @Test
+    public void testLoadSavedStrategy() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
+        Map<String, List<Strategy>> strategies = user.getSavedStrategiesByCategory();
+        for (String category : strategies.keySet()) {
+            for (Strategy strategy : strategies.get(category)) {
+                Assert.assertEquals(category, strategy.getType());
+                Assert.assertTrue(strategy.getIsSaved());
+                Assert.assertFalse(strategy.isDeleted());
+            }
+        }
+    }
+
+    @Test
+    public void testLoadUnsavedStrategy() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
+        Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
+        for (String category : strategies.keySet()) {
+            for (Strategy strategy : strategies.get(category)) {
+                Assert.assertEquals(category, strategy.getType());
+                Assert.assertFalse(strategy.getIsSaved());
+                Assert.assertFalse(strategy.isDeleted());
+            }
+        }
+    }
+
+    @Test
+    public void testRecentSavedStrategy() throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
+        Calendar calender = Calendar.getInstance();
+        calender.add(Calendar.DATE, -1);
+        Date threshold = calender.getTime();
+        Map<String, List<Strategy>> strategies = user.getRecentStrategiesByCategory();
+        for (String category : strategies.keySet()) {
+            for (Strategy strategy : strategies.get(category)) {
+                Assert.assertEquals(category, strategy.getType());
+                Assert.assertFalse(strategy.getIsSaved());
+                Assert.assertFalse(strategy.isDeleted());
+                
+                Date date = strategy.getLastRunTime();
+                Assert.assertTrue(threshold.compareTo(date) <= 0);
+            }
+        }
     }
 
     @Test
