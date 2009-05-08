@@ -989,24 +989,37 @@ public class UserBean /* implements Serializable */{
     }
 
     public Map<String, List<StrategyBean>> getSavedStrategiesByCategory()
-            throws WdkUserException, WdkModelException,
+            throws Exception,
             NoSuchAlgorithmException, JSONException, SQLException {
+        try {
         Map<String, List<Strategy>> strategies = user.getSavedStrategiesByCategory();
         return convertMap(strategies);
+        } catch(Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 
     public Map<String, List<StrategyBean>> getUnsavedStrategiesByCategory()
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
+            throws Exception {
+        try {
         Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
         return convertMap(strategies);
+        } catch(Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 
     public Map<String, List<StrategyBean>> getRecentStrategiesByCategory()
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
+            throws Exception {
+        try {
         Map<String, List<Strategy>> strategies = user.getRecentStrategiesByCategory();
         return convertMap(strategies);
+        } catch(Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 
     /**
