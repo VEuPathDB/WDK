@@ -6,6 +6,7 @@ package org.gusdb.wdk.model.user;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -572,40 +573,15 @@ public class User /* implements Serializable */{
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
         Map<Integer, Strategy> strategies = getStrategiesMap();
-        Map<String, List<Strategy>> category = new TreeMap<String, List<Strategy>>();
-        for (Strategy strategy : strategies.values()) {
-            String type = strategy.getType();
-            List<Strategy> list;
-            if (category.containsKey(type)) {
-                list = category.get(type);
-            } else {
-                list = new ArrayList<Strategy>();
-                category.put(type, list);
-            }
-            list.add(strategy);
-        }
-        return category;
+        return formatStrategiesByCategory(strategies.values());
     }
 
     public Map<String, List<Strategy>> getUnsavedStrategiesByCategory()
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
-        Map<Integer, Strategy> strategies = getStrategiesMap();
-        Map<String, List<Strategy>> category = new TreeMap<String, List<Strategy>>();
-        for (Strategy strategy : strategies.values()) {
-            if (!strategy.getIsSaved()) {
-                String type = strategy.getType();
-                List<Strategy> list;
-                if (category.containsKey(type)) {
-                    list = category.get(type);
-                } else {
-                    list = new ArrayList<Strategy>();
-                    category.put(type, list);
-                }
-                list.add(strategy);
-            }
-        }
-        return category;
+        List<Strategy> strategies = stepFactory.loadStrategies(this, false,
+                false);
+        return formatStrategiesByCategory(strategies);
     }
 
     /**
@@ -619,9 +595,24 @@ public class User /* implements Serializable */{
     public Map<String, List<Strategy>> getSavedStrategiesByCategory()
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
-        Map<Integer, Strategy> strategies = getStrategiesMap();
+        List<Strategy> strategies = stepFactory.loadStrategies(this, true,
+                false);
+        return formatStrategiesByCategory(strategies);
+    }
+
+    public Map<String, List<Strategy>> getRecentStrategiesByCategory()
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
+        List<Strategy> strategies = stepFactory.loadStrategies(this, false,
+                true);
+        return formatStrategiesByCategory(strategies);
+    }
+
+    private Map<String, List<Strategy>> formatStrategiesByCategory(
+            Collection<Strategy> strategies) throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
         Map<String, List<Strategy>> category = new TreeMap<String, List<Strategy>>();
-        for (Strategy strategy : strategies.values()) {
+        for (Strategy strategy : strategies) {
             if (strategy.getIsSaved()) {
                 String type = strategy.getType();
                 List<Strategy> list;
@@ -635,62 +626,6 @@ public class User /* implements Serializable */{
             }
         }
         return category;
-    }
-
-    public List<Strategy> getUnsavedStrategiesByType(String type)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
-//        Map<Integer, Strategy> strategies = getStrategiesMap();
-//        Map<String, List<Strategy>> category = new TreeMap<String, List<Strategy>>();
-//        for (Strategy strategy : strategies.values()) {
-//            if (!strategy.getIsSaved()) {
-//                String type = strategy.getType();
-//                List<Strategy> list;
-//                if (category.containsKey(type)) {
-//                    list = category.get(type);
-//                } else {
-//                    list = new ArrayList<Strategy>();
-//                    category.put(type, list);
-//                }
-//                list.add(strategy);
-//            }
-//        }
-//        return category;
-        return null;
-    }
-
-    /**
-     * @return
-     * @throws WdkUserException
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
-     * @throws JSONException
-     * @throws SQLException
-     */
-    public List<Strategy> getSavedStrategiesByType(String type)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
-//        Map<Integer, Strategy> strategies = getStrategiesMap();
-//        Map<String, List<Strategy>> category = new TreeMap<String, List<Strategy>>();
-//        for (Strategy strategy : strategies.values()) {
-//            if (strategy.getIsSaved()) {
-//                String type = strategy.getType();
-//                List<Strategy> list;
-//                if (category.containsKey(type)) {
-//                    list = category.get(type);
-//                } else {
-//                    list = new ArrayList<Strategy>();
-//                    category.put(type, list);
-//                }
-//                list.add(strategy);
-//            }
-//        }
-//        return category;
-        return null;
-    }
-
-    public List<Strategy> getRecentStrategiesBy(String type) {
-        return null;
     }
 
     public Map<Integer, Step> getStepsMap(String dataType)
