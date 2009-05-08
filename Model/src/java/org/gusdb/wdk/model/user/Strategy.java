@@ -32,14 +32,13 @@ public class Strategy {
     private Date createdTime;
     private String name;
     private String savedName = null;
+    private boolean valid;
 
-    Strategy(StepFactory factory, User user, int displayId, int internalId,
-            String name) {
+    Strategy(StepFactory factory, User user, int displayId, int internalId) {
         this.stepFactory = factory;
         this.user = user;
         this.displayId = displayId;
         this.internalId = internalId;
-        this.name = name;
         isSaved = false;
     }
 
@@ -51,7 +50,7 @@ public class Strategy {
         return isDeleted;
     }
 
-    private void setDeleted(boolean isDeleted) {
+    void setDeleted(boolean isDeleted) {
         this.isDeleted = isDeleted;
     }
 
@@ -453,5 +452,19 @@ public class Strategy {
         jsStrategy.put("latestStep", latestStep.getJSONContent(this.displayId));
 
         return jsStrategy;
+    }
+
+    /**
+     * @return the valid
+     */
+    public boolean isValid() {
+        return valid;
+    }
+
+    /**
+     * @param valid the valid to set
+     */
+    public void setValid(boolean valid) {
+        this.valid = valid;
     }
 }
