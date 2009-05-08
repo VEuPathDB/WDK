@@ -700,20 +700,24 @@ public class UserBean /* implements Serializable */{
             throws Exception {
         try {
             Map<String, List<Strategy>> strategies = user.getStrategiesByCategory();
-            Map<String, List<StrategyBean>> category = new LinkedHashMap<String, List<StrategyBean>>();
-            for (String type : strategies.keySet()) {
-                List<Strategy> list = strategies.get(type);
-                List<StrategyBean> beans = new ArrayList<StrategyBean>();
-                for (Strategy strategy : list) {
-                    beans.add(new StrategyBean(this, strategy));
-                }
-                category.put(type, beans);
-            }
-            return category;
+            return convertMap(strategies);
         } catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
         }
+    }
+    
+    private Map<String, List<StrategyBean>> convertMap(Map<String, List<Strategy>> strategies) {
+        Map<String, List<StrategyBean>> category = new LinkedHashMap<String, List<StrategyBean>>();
+        for (String type : strategies.keySet()) {
+            List<Strategy> list = strategies.get(type);
+            List<StrategyBean> beans = new ArrayList<StrategyBean>();
+            for (Strategy strategy : list) {
+                beans.add(new StrategyBean(this, strategy));
+            }
+            category.put(type, beans);
+        }
+        return category;
     }
 
     public StrategyBean[] getInvalidStrategies() throws WdkUserException,
@@ -988,54 +992,21 @@ public class UserBean /* implements Serializable */{
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
         Map<String, List<Strategy>> strategies = user.getSavedStrategiesByCategory();
-        Map<String, List<StrategyBean>> category = new LinkedHashMap<String, List<StrategyBean>>();
-        for (String type : strategies.keySet()) {
-            List<Strategy> list = strategies.get(type);
-            List<StrategyBean> beans = new ArrayList<StrategyBean>();
-            for (Strategy strategy : list) {
-                beans.add(new StrategyBean(this, strategy));
-            }
-            category.put(type, beans);
-        }
-        return category;
+        return convertMap(strategies);
     }
 
     public Map<String, List<StrategyBean>> getUnsavedStrategiesByCategory()
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
         Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
-        Map<String, List<StrategyBean>> category = new LinkedHashMap<String, List<StrategyBean>>();
-        for (String type : strategies.keySet()) {
-            List<Strategy> list = strategies.get(type);
-            List<StrategyBean> beans = new ArrayList<StrategyBean>();
-            for (Strategy strategy : list) {
-                beans.add(new StrategyBean(this, strategy));
-            }
-            category.put(type, beans);
-        }
-        return category;
+        return convertMap(strategies);
     }
 
     public Map<String, List<StrategyBean>> getRecentStrategiesByCategory()
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
-        Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
-        Map<String, List<StrategyBean>> category = new LinkedHashMap<String, List<StrategyBean>>();
-
-        Calendar calender = Calendar.getInstance();
-        // recent strategies are the ones viewed within a day.
-        calender.add(Calendar.DATE, -1);
-        Date threshold = calender.getTime();
-        for (String type : strategies.keySet()) {
-            List<Strategy> list = strategies.get(type);
-            List<StrategyBean> beans = new ArrayList<StrategyBean>();
-            for (Strategy strategy : list) {
-                if (threshold.compareTo(strategy.getLastRunTime()) <= 0)
-                    beans.add(new StrategyBean(this, strategy));
-            }
-            category.put(type, beans);
-        }
-        return category;
+        Map<String, List<Strategy>> strategies = user.getRecentStrategiesByCategory();
+        return convertMap(strategies);
     }
 
     /**
