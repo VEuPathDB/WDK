@@ -60,6 +60,7 @@ public class CConstants {
     public static final String WDK_FILTER_KEY = "wdkFilter";
     public static final String WDK_STRATEGY_CHECKSUM_KEY = "strategy_checksum";
     public static final String WDK_STATE_KEY = "state";
+    public static final String WDK_OPEN_KEY = "open";
 
     // params used in the url
     public static final String WDK_STEP_ID_PARAM = "step";
