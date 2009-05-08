@@ -64,8 +64,13 @@ public class ShowStrategyAction extends ShowQuestionAction {
                     strStratId = strStratId.split("_")[0];
                 }
 
+                String strOpen = request.getParameter(CConstants.WDK_OPEN_KEY);
+                boolean open = (strOpen == null || strOpen.length() == 0)
+                        ? true : Boolean.parseBoolean(strOpen);
+
                 StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
-                wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
+                if (open)
+                    wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
                 if (strBranchId != null)
                     wdkUser.addActiveStrategy(strStratId + "_" + strBranchId);
             }
@@ -237,7 +242,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             jsState.put(Integer.toString(order + 1), jsStrategy);
         }
         jsState.put("length", openedStrategies.length);
-	jsState.put("count", user.getStrategyCount());
+        jsState.put("count", user.getStrategyCount());
         jsMessage.put("state", jsState);
     }
 
@@ -349,15 +354,17 @@ public class ShowStrategyAction extends ShowQuestionAction {
             JSONObject jsParam = new JSONObject();
             jsParam.put("name", paramName);
             if (param != null) {
-            jsParam.put("prompt", param.getPrompt());
-            jsParam.put("visible", param.getIsVisible());
-            jsParam.put("className", param.getClass().getName());
-            param.setDependentValue(dependentValue);
-            param.setUser(user);
-            param.setTruncateLength(TRUNCATE_LENGTH);
-            try {
-                jsParam.put("value", param.getBriefRawValue());
-            } catch (Exception ex) { throw new WdkModelException(ex); }
+                jsParam.put("prompt", param.getPrompt());
+                jsParam.put("visible", param.getIsVisible());
+                jsParam.put("className", param.getClass().getName());
+                param.setDependentValue(dependentValue);
+                param.setUser(user);
+                param.setTruncateLength(TRUNCATE_LENGTH);
+                try {
+                    jsParam.put("value", param.getBriefRawValue());
+                } catch (Exception ex) {
+                    throw new WdkModelException(ex);
+                }
             } else {
                 jsParam.put("value", dependentValue);
             }

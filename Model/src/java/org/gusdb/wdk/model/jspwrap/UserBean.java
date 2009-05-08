@@ -6,8 +6,6 @@ package org.gusdb.wdk.model.jspwrap;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -706,8 +704,9 @@ public class UserBean /* implements Serializable */{
             throw ex;
         }
     }
-    
-    private Map<String, List<StrategyBean>> convertMap(Map<String, List<Strategy>> strategies) {
+
+    private Map<String, List<StrategyBean>> convertMap(
+            Map<String, List<Strategy>> strategies) {
         Map<String, List<StrategyBean>> category = new LinkedHashMap<String, List<StrategyBean>>();
         for (String type : strategies.keySet()) {
             List<Strategy> list = strategies.get(type);
@@ -989,12 +988,12 @@ public class UserBean /* implements Serializable */{
     }
 
     public Map<String, List<StrategyBean>> getSavedStrategiesByCategory()
-            throws Exception,
-            NoSuchAlgorithmException, JSONException, SQLException {
+            throws Exception, NoSuchAlgorithmException, JSONException,
+            SQLException {
         try {
-        Map<String, List<Strategy>> strategies = user.getSavedStrategiesByCategory();
-        return convertMap(strategies);
-        } catch(Exception ex) {
+            Map<String, List<Strategy>> strategies = user.getSavedStrategiesByCategory();
+            return convertMap(strategies);
+        } catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
         }
@@ -1003,9 +1002,9 @@ public class UserBean /* implements Serializable */{
     public Map<String, List<StrategyBean>> getUnsavedStrategiesByCategory()
             throws Exception {
         try {
-        Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
-        return convertMap(strategies);
-        } catch(Exception ex) {
+            Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
+            return convertMap(strategies);
+        } catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
         }
@@ -1014,9 +1013,9 @@ public class UserBean /* implements Serializable */{
     public Map<String, List<StrategyBean>> getRecentStrategiesByCategory()
             throws Exception {
         try {
-        Map<String, List<Strategy>> strategies = user.getRecentStrategiesByCategory();
-        return convertMap(strategies);
-        } catch(Exception ex) {
+            Map<String, List<Strategy>> strategies = user.getRecentStrategiesByCategory();
+            return convertMap(strategies);
+        } catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
         }
