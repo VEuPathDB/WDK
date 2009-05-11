@@ -57,8 +57,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
             // display changed strategies
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
-            Map<Integer, StrategyBean> displayStrategies = getModifiedStrategies(
-                    wdkUser, state);
+            Map<Integer, StrategyBean> displayStrategies = new LinkedHashMap<Integer, StrategyBean>();
             if (strStratId != null && strStratId.length() > 0) {
                 logger.debug("open strategy: '" + strStratId + "'");
                 String strBranchId = null;
@@ -72,14 +71,18 @@ public class ShowStrategyAction extends ShowQuestionAction {
                         ? true : Boolean.parseBoolean(strOpen);
 
                 int strategyId = Integer.parseInt(strStratId);
-                StrategyBean strategy = wdkUser.getStrategy(strategyId);
-                if (open)
-                    wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
-                if (strBranchId != null)
-                    wdkUser.addActiveStrategy(strStratId + "_" + strBranchId);
-
-                if (!displayStrategies.containsKey(strategyId))
+                if (open) {
+                    displayStrategies = getModifiedStrategies(wdkUser, state);
+                    wdkUser.addActiveStrategy(Integer.toString(strategyId));
+                    if (strBranchId != null)
+                        wdkUser.addActiveStrategy(strStratId + "_"
+                                + strBranchId);
+                } else {
+                    // only display the specified strategy and don't open it
+                    // automatically.
+                    StrategyBean strategy = wdkUser.getStrategy(strategyId);
                     displayStrategies.put(strategyId, strategy);
+                }
             }
 
             outputSuccessJSON(wdkUser, response, state, displayStrategies);
