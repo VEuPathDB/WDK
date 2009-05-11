@@ -83,6 +83,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
                     StrategyBean strategy = wdkUser.getStrategy(strategyId);
                     displayStrategies.put(strategyId, strategy);
                 }
+            } else {    // display all opened strategies
+                displayStrategies = getModifiedStrategies(wdkUser, state);
             }
 
             outputSuccessJSON(wdkUser, response, state, displayStrategies);
