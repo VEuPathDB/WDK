@@ -5,9 +5,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -56,6 +54,11 @@ public class ShowStrategyAction extends ShowQuestionAction {
         try {
             // Make sure a protocol is specified
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+
+            // display changed strategies
+            String state = request.getParameter(CConstants.WDK_STATE_KEY);
+            Map<Integer, StrategyBean> displayStrategies = getModifiedStrategies(
+                    wdkUser, state);
             if (strStratId != null && strStratId.length() > 0) {
                 logger.debug("open strategy: '" + strStratId + "'");
                 String strBranchId = null;
@@ -68,17 +71,18 @@ public class ShowStrategyAction extends ShowQuestionAction {
                 boolean open = (strOpen == null || strOpen.length() == 0)
                         ? true : Boolean.parseBoolean(strOpen);
 
-                StrategyBean strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+                int strategyId = Integer.parseInt(strStratId);
+                StrategyBean strategy = wdkUser.getStrategy(strategyId);
                 if (open)
                     wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
                 if (strBranchId != null)
                     wdkUser.addActiveStrategy(strStratId + "_" + strBranchId);
+
+                if (!displayStrategies.containsKey(strategyId))
+                    displayStrategies.put(strategyId, strategy);
             }
 
-            // display changed strategies
-            String state = request.getParameter(CConstants.WDK_STATE_KEY);
-
-            outputSuccessJSON(wdkUser, response, state);
+            outputSuccessJSON(wdkUser, response, state, displayStrategies);
             return null;
 
         } catch (Exception ex) {
@@ -89,9 +93,10 @@ public class ShowStrategyAction extends ShowQuestionAction {
         }
     }
 
-    private static List<StrategyBean> getModifiedStrategies(UserBean user,
-            String state) throws JSONException, NoSuchAlgorithmException,
-            WdkModelException, WdkUserException, SQLException {
+    private static Map<Integer, StrategyBean> getModifiedStrategies(
+            UserBean user, String state) throws JSONException,
+            NoSuchAlgorithmException, WdkModelException, WdkUserException,
+            SQLException {
         logger.debug("previous state: '" + state + "'");
 
         if (state == null || state.length() == 0) state = null;
@@ -108,14 +113,17 @@ public class ShowStrategyAction extends ShowQuestionAction {
                 oldState.put(strategyId, checksum);
             }
         }
-        List<StrategyBean> strategies = new ArrayList<StrategyBean>();
+        Map<Integer, StrategyBean> strategies = new LinkedHashMap<Integer, StrategyBean>();
         for (StrategyBean strategy : user.getActiveStrategies()) {
-            if (!oldState.containsKey(strategy.getStrategyId())) {
-                strategies.add(strategy);
+            int strategyId = strategy.getStrategyId();
+            if (!oldState.containsKey(strategyId)) {
+                strategies.put(strategyId, strategy);
             } else {
                 String oldChecksum = oldState.get(strategy.getStrategyId());
                 String newChecksum = strategy.getChecksum();
-                if (!newChecksum.equals(oldChecksum)) strategies.add(strategy);
+                if (!newChecksum.equals(oldChecksum)) {
+                    strategies.put(strategyId, strategy);
+                }
             }
         }
         return strategies;
@@ -170,7 +178,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
             SQLException, IOException {
         logger.debug("output JSON out-of-sync message...");
 
-        List<StrategyBean> strategies = getModifiedStrategies(user, state);
+        Map<Integer, StrategyBean> strategies = getModifiedStrategies(user,
+                state);
 
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", MESSAGE_TYPE_OUT_OF_SYNC_ERROR);
@@ -189,7 +198,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
             SQLException, IOException {
         logger.debug("output JSON dup-name-error message...");
 
-        List<StrategyBean> strategies = getModifiedStrategies(user, state);
+        Map<Integer, StrategyBean> strategies = getModifiedStrategies(user,
+                state);
 
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", MESSAGE_TYPE_DUP_NAME_ERROR);
@@ -203,19 +213,18 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     static private void outputSuccessJSON(UserBean user,
-            HttpServletResponse response, String state) throws JSONException,
+            HttpServletResponse response, String state,
+            Map<Integer, StrategyBean> displayStrategies) throws JSONException,
             NoSuchAlgorithmException, WdkUserException, WdkModelException,
             SQLException, IOException {
         logger.debug("output JSON success message without strategy");
-
-        List<StrategyBean> strategies = getModifiedStrategies(user, state);
 
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("type", MESSAGE_TYPE_SUCCESS);
 
         // get a list of strategy checksums
         outputCommon(user, jsMessage);
-        outputStrategies(user, jsMessage, strategies);
+        outputStrategies(user, jsMessage, displayStrategies);
 
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
@@ -258,11 +267,11 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     static private void outputStrategies(UserBean user, JSONObject jsMessage,
-            List<StrategyBean> strategies) throws JSONException,
+            Map<Integer, StrategyBean> strategies) throws JSONException,
             NoSuchAlgorithmException, WdkModelException, WdkUserException,
             SQLException {
         JSONObject jsStrategies = new JSONObject();
-        for (StrategyBean strategy : strategies) {
+        for (StrategyBean strategy : strategies.values()) {
             JSONObject jsStrategy = outputStrategy(user, strategy);
             jsStrategies.put(strategy.getChecksum(), jsStrategy);
         }
