@@ -35,7 +35,7 @@ public class CloseStrategyAction extends Action {
             if (stratIdstr == null || stratIdstr.length() == 0) {
                 throw new Exception("No strategy specified to close!");
             }
-logger.debug("closing strategy: '" + stratIdstr + "'");
+            logger.debug("closing strategy: '" + stratIdstr + "'");
             wdkUser.removeActiveStrategy(stratIdstr);
 
             ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
