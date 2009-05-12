@@ -77,7 +77,7 @@ public class StrategyBean {
     }
 
     public int getStrategyId() {
-        return strategy.getDisplayId();
+        return strategy.getStrategyId();
     }
 
     public int getInternalId() {
@@ -147,7 +147,7 @@ public class StrategyBean {
 
     public String getImportId() {
         return strategy.getUser().getSignature() + ":"
-                + strategy.getDisplayId();
+                + strategy.getStrategyId();
     }
 
     public StepBean getFirstStep() {

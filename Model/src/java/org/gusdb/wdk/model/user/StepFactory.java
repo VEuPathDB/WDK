@@ -12,6 +12,9 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -755,6 +758,11 @@ public class StepFactory {
         } finally {
             SqlUtils.closeResultSet(resultSet);
         }
+        Collections.sort(strategies, new Comparator<Strategy>(){
+            public int compare(Strategy o1, Strategy o2) {
+                return o2.getLastRunTime().compareTo(o1.getLastRunTime());
+            }
+        });
         return strategies;
     }
 
@@ -861,7 +869,7 @@ public class StepFactory {
         // are created properly
         // Jerric - the imported strategy should always be unsaved.
         Strategy strategy = createStrategy(user, latestStep, name, null, false);
-        return loadStrategy(user, strategy.getDisplayId(), false);
+        return loadStrategy(user, strategy.getStrategyId(), false);
     }
 
     Step importStep(User newUser, Step oldStep) throws WdkUserException,
@@ -1005,7 +1013,7 @@ public class StepFactory {
                 psCheck.setString(3, strategy.getName());
                 psCheck.setBoolean(4, true);
                 psCheck.setBoolean(5, false);
-                psCheck.setInt(6, strategy.getDisplayId());
+                psCheck.setInt(6, strategy.getStrategyId());
                 rsStrategy = psCheck.executeQuery();
 
                 // If there's already a saved strategy with this strategy's
@@ -1069,7 +1077,7 @@ public class StepFactory {
                         strategy.getName(), false);
                 strategy.setName(newStrat.getName());
                 strategy.setSavedName(newStrat.getSavedName());
-                strategy.setDisplayId(newStrat.getDisplayId());
+                strategy.setDisplayId(newStrat.getStrategyId());
                 strategy.setInternalId(newStrat.getInternalId());
                 strategy.setIsSaved(false);
             }
@@ -1088,7 +1096,7 @@ public class StepFactory {
 
             if (result == 0)
                 throw new WdkUserException("The strategy #"
-                        + strategy.getDisplayId() + " of user "
+                        + strategy.getStrategyId() + " of user "
                         + user.getEmail() + " cannot be found.");
         } finally {
             SqlUtils.closeStatement(psStrategy);
@@ -1287,7 +1295,7 @@ public class StepFactory {
             psCheckName.setString(3, name);
             psCheckName.setBoolean(4, (saved || strategy.getIsSaved()));
             psCheckName.setBoolean(5, false);
-            psCheckName.setInt(6, strategy.getDisplayId());
+            psCheckName.setInt(6, strategy.getStrategyId());
             rsCheckName = psCheckName.executeQuery();
 
             if (rsCheckName.next()) return true;
