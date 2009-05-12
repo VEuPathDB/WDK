@@ -122,7 +122,7 @@ public class MergeUserTest {
         
         Assert.assertEquals(count, registeredUser.getStrategyCount());
         
-        Strategy actual = registeredUser.getStrategy(expected.getDisplayId());
+        Strategy actual = registeredUser.getStrategy(expected.getStrategyId());
         StrategyTest.compareStrategy(expected, actual);
     }
     
@@ -143,7 +143,7 @@ public class MergeUserTest {
         
         Assert.assertEquals(count, registeredUser.getStrategyCount());
         
-        Strategy actual = registeredUser.getStrategy(expected.getDisplayId());
+        Strategy actual = registeredUser.getStrategy(expected.getStrategyId());
         StrategyTest.compareStrategy(expected, actual);
     }
 
