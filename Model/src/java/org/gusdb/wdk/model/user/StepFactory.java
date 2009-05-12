@@ -728,7 +728,8 @@ public class StepFactory {
         sql.append(" AND sr.").append(COLUMN_IS_DELETED).append(" = ?");
         if (recent)
             sql.append(" AND sp.").append(COLUMN_LAST_RUN_TIME).append(" >= ?");
-        sql.append(" ORDER BY sp.").append(COLUMN_LAST_RUN_TIME).append(" DESC)");
+        sql.append(" ORDER BY sp.").append(COLUMN_LAST_RUN_TIME).append(
+                " DESC)");
 
         List<Strategy> strategies = new ArrayList<Strategy>();
         ResultSet resultSet = null;

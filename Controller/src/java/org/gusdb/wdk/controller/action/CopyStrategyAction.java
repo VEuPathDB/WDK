@@ -14,7 +14,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
@@ -37,9 +36,7 @@ public class CopyStrategyAction extends Action {
 
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
             String strStepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
-            boolean save = Boolean.valueOf(request.getParameter("save")).booleanValue();
-            boolean checkName = Boolean.valueOf(
-                    request.getParameter("checkName")).booleanValue();
+
             // TEST
             if (strStratId == null || strStratId.length() == 0) {
                 throw new Exception("No Strategy was given for saving");
@@ -54,6 +51,7 @@ public class CopyStrategyAction extends Action {
                 ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response, state);
                 return null;
             }
+            boolean opened = (wdkUser.getStrategyOrder(strStratId) > 0);
 
             StrategyBean copy;
             if (strStepId == null || strStepId.length() == 0) {
@@ -67,9 +65,12 @@ public class CopyStrategyAction extends Action {
             ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
             StringBuffer url = new StringBuffer(showStrategy.getPath());
             url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
-            
+
             url.append("&").append(CConstants.WDK_STRATEGY_ID_KEY);
             url.append("=").append(copy.getStrategyId());
+
+            if (!opened)
+                url.append("&").append(CConstants.WDK_OPEN_KEY).append("=false");
 
             ActionForward forward = new ActionForward(url.toString());
             return forward;
