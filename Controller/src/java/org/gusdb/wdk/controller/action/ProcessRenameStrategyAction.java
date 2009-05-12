@@ -50,6 +50,7 @@ public class ProcessRenameStrategyAction extends Action {
 
             int stratId = Integer.parseInt(strStratId);
             StrategyBean strategy = wdkUser.getStrategy(stratId);
+            boolean opened = (wdkUser.getStrategyOrder(strStratId) > 0);
 
             // verify the checksum
             String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
@@ -112,6 +113,8 @@ public class ProcessRenameStrategyAction extends Action {
             ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
             StringBuffer url = new StringBuffer(showStrategy.getPath());
             url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+            if (!opened)
+                url.append("&").append(CConstants.WDK_OPEN_KEY).append("=false");
 
             ActionForward forward = new ActionForward(url.toString());
             return forward;
