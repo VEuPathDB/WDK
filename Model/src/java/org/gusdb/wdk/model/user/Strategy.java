@@ -86,7 +86,7 @@ public class Strategy {
         this.displayId = displayId;
     }
 
-    public int getDisplayId() {
+    public int getStrategyId() {
         return displayId;
     }
 

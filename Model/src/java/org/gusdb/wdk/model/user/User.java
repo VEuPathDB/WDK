@@ -442,7 +442,7 @@ public class User /* implements Serializable */{
         if (strategyCount != null) strategyCount++;
 
         // set the view to this one
-        String strategyKey = Integer.toString(strategy.getDisplayId());
+        String strategyKey = Integer.toString(strategy.getStrategyId());
         this.activeStrategyFactory.openActiveStrategy(strategyKey);
         this.activeStrategyFactory.setViewStrategyKey(strategyKey);
         this.activeStrategyFactory.setViewStepId(step.getDisplayId());
@@ -479,8 +479,8 @@ public class User /* implements Serializable */{
             Strategy newStrategy = this.importStrategy(strategy);
 
             importedSteps.add(rootStep.getDisplayId());
-            strategiesMap.put(strategy.getDisplayId(),
-                    newStrategy.getDisplayId());
+            strategiesMap.put(strategy.getStrategyId(),
+                    newStrategy.getStrategyId());
         }
 
         // the current implementation can only keep the root level of the
@@ -611,7 +611,7 @@ public class User /* implements Serializable */{
     private Map<String, List<Strategy>> formatStrategiesByCategory(
             Collection<Strategy> strategies) throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
-        Map<String, List<Strategy>> category = new TreeMap<String, List<Strategy>>();
+        Map<String, List<Strategy>> category = new LinkedHashMap<String, List<Strategy>>();
         for (Strategy strategy : strategies) {
             String type = strategy.getType();
             List<Strategy> list;
@@ -1100,7 +1100,7 @@ public class User /* implements Serializable */{
         newStrategy.update(true);
         // highlight the imported strategy
         int rootStepId = newStrategy.getLatestStep().getDisplayId();
-        setViewResults(Integer.toString(newStrategy.getDisplayId()), rootStepId);
+        setViewResults(Integer.toString(newStrategy.getStrategyId()), rootStepId);
         if (strategyCount != null) strategyCount++;
         return newStrategy;
     }

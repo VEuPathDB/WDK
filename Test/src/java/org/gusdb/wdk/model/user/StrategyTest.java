@@ -61,7 +61,7 @@ public class StrategyTest {
         Step step = UnitTestHelper.createNormalStep(user);
         Strategy strategy = user.createStrategy(step, false);
 
-        Strategy loadedStrategy = user.getStrategy(strategy.getDisplayId());
+        Strategy loadedStrategy = user.getStrategy(strategy.getStrategyId());
         compareStrategy(strategy, loadedStrategy);
     }
 
@@ -89,14 +89,14 @@ public class StrategyTest {
         Strategy strategy = user.createStrategy(step, false);
 
         int count = user.getStrategyCount();
-        user.deleteStrategy(strategy.getDisplayId());
+        user.deleteStrategy(strategy.getStrategyId());
 
         Assert.assertEquals("strategy count", count - 1,
                 user.getStrategyCount());
 
         // get a delete strategy, should raise a WdkUserException
         try {
-            user.getStrategy(strategy.getDisplayId());
+            user.getStrategy(strategy.getStrategyId());
             Assert.assertTrue("strategy not deleted", false);
         } catch (WdkUserException ex) {
             // do nothing, expected.
@@ -281,6 +281,7 @@ public class StrategyTest {
                 Assert.assertEquals(category, strategy.getType());
                 Assert.assertFalse(strategy.getIsSaved());
                 Assert.assertFalse(strategy.isDeleted());
+                System.err.println("#" + strategy.getStrategyId() + ": " + strategy.getLastRunTime());
             }
         }
     }
@@ -314,8 +315,8 @@ public class StrategyTest {
             WdkUserException, SQLException {
         Assert.assertEquals("internal strategy id", expected.getInternalId(),
                 actual.getInternalId());
-        Assert.assertEquals("strategy id", expected.getDisplayId(),
-                actual.getDisplayId());
+        Assert.assertEquals("strategy id", expected.getStrategyId(),
+                actual.getStrategyId());
         Assert.assertEquals("strategy length", expected.getLength(),
                 actual.getLength());
         Assert.assertEquals("strategy name", expected.getName(),
