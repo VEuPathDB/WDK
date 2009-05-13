@@ -53,7 +53,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
         try {
             String strStratKeys = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-            String[] stratKeys = strStratKeys.split(",");
+            String[] stratKeys = (strStratKeys == null || strStratKeys.length() == 0) ?
+                new String[0] : strStratKeys.split(",");
 
             String strOpen = request.getParameter(CConstants.WDK_OPEN_KEY);
             boolean open = (strOpen == null || strOpen.length() == 0) ? true
