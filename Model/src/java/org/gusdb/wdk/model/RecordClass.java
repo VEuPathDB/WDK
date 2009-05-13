@@ -831,7 +831,7 @@ public class RecordClass extends WdkModelBase implements
             if (pvs.include(projectId)) {
                 if (paramValuesSet != null)
                     throw new WdkModelException(
-                            "Duplicate <paramValues> included in record class "
+                            "Duplicate <paramErrors> included in record class "
                                     + getName() + " for projectId " + projectId);
                 paramValuesSet = pvs;
 
