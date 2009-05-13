@@ -52,42 +52,34 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
         try {
-            // Make sure a protocol is specified
-            String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+            String strStratKeys = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+            String[] stratKeys = strStratKeys.split(",");
 
-            // display changed strategies
-            String state = request.getParameter(CConstants.WDK_STATE_KEY);
-            Map<Integer, StrategyBean> displayStrategies = new LinkedHashMap<Integer, StrategyBean>();
-            if (strStratId != null && strStratId.length() > 0) {
-                logger.debug("open strategy: '" + strStratId + "'");
-                String strBranchId = null;
-                if (strStratId.indexOf("_") > 0) {
-                    strBranchId = strStratId.split("_")[1];
-                    strStratId = strStratId.split("_")[0];
+            String strOpen = request.getParameter(CConstants.WDK_OPEN_KEY);
+            boolean open = (strOpen == null || strOpen.length() == 0) ? true
+                    : Boolean.parseBoolean(strOpen);
+
+            Map<Integer, StrategyBean> displayStrategies;
+            if (open) {
+                // open all the requested strategies
+                for (String strategyKey : stratKeys) {
+                    wdkUser.addActiveStrategy(strategyKey);
                 }
-
-                String strOpen = request.getParameter(CConstants.WDK_OPEN_KEY);
-                boolean open = (strOpen == null || strOpen.length() == 0)
-                        ? true : Boolean.parseBoolean(strOpen);
-
-                int strategyId = Integer.parseInt(strStratId);
-                if (open) {
-                    displayStrategies = getModifiedStrategies(wdkUser, state);
-                    wdkUser.addActiveStrategy(Integer.toString(strategyId));
-                    if (strBranchId != null)
-                        wdkUser.addActiveStrategy(strStratId + "_"
-                                + strBranchId);
-                } else {
-                    // only display the specified strategy and don't open it
-                    // automatically.
+                String state = request.getParameter(CConstants.WDK_STATE_KEY);
+                displayStrategies = getModifiedStrategies(wdkUser, state);
+            } else {
+                // return the details of all the requested strategies; skip the
+                // state validation
+                displayStrategies = new LinkedHashMap<Integer, StrategyBean>();
+                for (String strategyKey : stratKeys) {
+                    int pos = strategyKey.indexOf('_');
+                    if (pos >= 0) strategyKey = strategyKey.substring(0, pos);
+                    int strategyId = Integer.parseInt(strategyKey);
                     StrategyBean strategy = wdkUser.getStrategy(strategyId);
                     displayStrategies.put(strategyId, strategy);
                 }
-            } else {    // display all opened strategies
-                displayStrategies = getModifiedStrategies(wdkUser, state);
             }
-
-            outputSuccessJSON(wdkUser, response, state, displayStrategies);
+            outputSuccessJSON(wdkUser, response, displayStrategies);
             return null;
 
         } catch (Exception ex) {
@@ -218,7 +210,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     static private void outputSuccessJSON(UserBean user,
-            HttpServletResponse response, String state,
+            HttpServletResponse response,
             Map<Integer, StrategyBean> displayStrategies) throws JSONException,
             NoSuchAlgorithmException, WdkUserException, WdkModelException,
             SQLException, IOException {
