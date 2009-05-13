@@ -89,7 +89,7 @@ public class WsfClientCLI extends BaseCLI {
         String[] paramValues = (String[]) getOptionValue(ARG_PARAMS);
         String[] columns = (String[]) getOptionValue(ARG_COLUMNS);
 
-        // convert the paramValues into params
+        // convert the paramErrors into params
         List<String> paramLists = new ArrayList<String>();
         for (int i = 0; i < paramValues.length; i += 2) {
             String paramName = paramValues[i];

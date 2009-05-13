@@ -123,7 +123,7 @@ public class ProcessQuestionAction extends ShowQuestionAction {
             logger.debug("contains param: "
                     + paramValues.containsKey(paramName));
             // logger.debug("param: " + paramName + "='" +
-            // paramValues.get(paramName) + "'");
+            // paramErrors.get(paramName) + "'");
             String rawValue = paramValues.get(paramName);
             String dependentValue = null;
             if (param instanceof DatasetParamBean) {

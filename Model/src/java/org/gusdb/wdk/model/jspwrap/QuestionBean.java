@@ -226,7 +226,7 @@ public class QuestionBean {
     /**
      * Called by the controller
      * 
-     * @param paramValues
+     * @param paramErrors
      *            Map of paramName-->value
      * @param start
      *            Index of the first record to include in the answer
@@ -283,7 +283,7 @@ public class QuestionBean {
     /**
      * make an answer bean with default page size.
      * 
-     * @param paramValues
+     * @param paramErrors
      * @return
      * @throws WdkUserException
      * @throws WdkModelException

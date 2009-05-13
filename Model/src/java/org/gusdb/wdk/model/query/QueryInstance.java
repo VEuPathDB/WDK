@@ -229,8 +229,8 @@ public abstract class QueryInstance {
         return factory.getCachedResults(this);
     }
 
-    protected String getCachedSql() throws NoSuchAlgorithmException, SQLException,
-            WdkModelException, JSONException, WdkUserException {
+    protected String getCachedSql() throws NoSuchAlgorithmException,
+            SQLException, WdkModelException, JSONException, WdkUserException {
         CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
         QueryInfo queryInfo = cacheFactory.getQueryInfo(getQuery());
 
@@ -247,22 +247,21 @@ public abstract class QueryInstance {
     private void validateValues(User user, Map<String, String> values)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        Map<String, Param> paramMap = query.getParamMap();
-        Map<Param, String[]> errors = null;
-
-        // check if user provided extra params
-        for (String paramName : values.keySet()) {
-            if (!paramMap.containsKey(paramName))
-                throw new WdkModelException("Invalid param '" + paramName
-                        + "' for query " + query.getFullName());
-        }
+        Map<String, Param> params = query.getParamMap();
+        Map<String, String> errors = null;
 
         values = fillEmptyValues(values);
         // then check that all params have supplied values
-        for (Param param : paramMap.values()) {
-            String dependentValue = values.get(param.getName());
+        for (String paramName : values.keySet()) {
             String errMsg = null;
+            String dependentValue = values.get(paramName);
+            String prompt = paramName;
             try {
+                if (!params.containsKey(paramName))
+                    throw new WdkModelException("The parameter '" + paramName
+                            + "' doesn't exist");
+
+                Param param = params.get(paramName);
                 // validate param
                 param.validate(user, dependentValue);
             } catch (Exception ex) {
@@ -272,11 +271,8 @@ public abstract class QueryInstance {
             }
             if (errMsg != null) {
                 if (errors == null)
-                    errors = new LinkedHashMap<Param, String[]>();
-                String booBoo[] = {
-                        dependentValue == null ? "" : dependentValue.toString(),
-                        errMsg };
-                errors.put(param, booBoo);
+                    errors = new LinkedHashMap<String, String>();
+                errors.put(prompt, errMsg);
             }
         }
         if (errors != null) {

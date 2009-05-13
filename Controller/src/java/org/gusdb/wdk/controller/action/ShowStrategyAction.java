@@ -16,14 +16,12 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -140,21 +138,18 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
         if (ex instanceof WdkModelException) {
             WdkModelException wmex = (WdkModelException) ex;
-            Map<Param, String[]> paramexs = wmex.getBooBoos();
+            Map<String, String> paramexs = wmex.getParamErrors();
             if (paramexs != null) {
                 JSONObject jsParams = new JSONObject();
-                for (Param param : paramexs.keySet()) {
-                    JSONObject jsParam = new JSONObject();
-                    jsParam.put("name", param.getName());
-                    jsParam.put("prompt", param.getPrompt());
-                    String[] messages = paramexs.get(param);
-                    String message = Utilities.fromArray(messages, "; ");
-                    jsParam.put("message", message);
-                    jsParams.put(param.getName(), jsParam);
+                for (String prompt : paramexs.keySet()) {
+                    String message = paramexs.get(prompt);
+                    jsParams.put(prompt, message);
                 }
                 jsParams.put("length", paramexs.size());
                 jsMessage.put("params", jsParams);
                 jsMessage.put("type", MESSAGE_TYPE_PARAM_ERROR);
+            } else {
+                jsMessage.put("type", MESSAGE_TYPE_GENERAL_ERROR);
             }
         } else {
             jsMessage.put("type", MESSAGE_TYPE_GENERAL_ERROR);
