@@ -1,11 +1,14 @@
 package org.gusdb.wdk.controller.action;
 
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -55,11 +58,19 @@ public class QuestionForm extends QuestionSetForm {
             return errors;
         }
 
-        ParamBean[] params = wdkQuestion.getParams();
-        for (ParamBean param : params) {
-            param.setUser(user);
+        Map<String, ParamBean> params = wdkQuestion.getParamsMap();
+        Map<String, String> paramValues = getMyProps();
+        for (String paramName : paramValues.keySet()) {
+            String prompt = paramName;
             try {
-                String rawOrDependentValue = getMyProp(param.getName());
+                if (!params.containsKey(paramName))
+                    throw new WdkModelException("The parameter '" + paramName
+                            + "' doesn't exist.");
+
+                ParamBean param = params.get(paramName);
+                param.setUser(user);
+                prompt = param.getPrompt();
+                String rawOrDependentValue = paramValues.get(paramName);
                 String dependentValue = param.rawOrDependentValueToDependentValue(
                         user, rawOrDependentValue);
 
@@ -69,7 +80,7 @@ public class QuestionForm extends QuestionSetForm {
             } catch (Exception ex) {
                 ex.printStackTrace();
                 ActionError error = new ActionError("mapped.properties",
-                        param.getPrompt(), ex.getMessage());
+                        prompt, ex.getMessage());
                 errors.add(ActionErrors.GLOBAL_MESSAGE, error);
             }
         }
