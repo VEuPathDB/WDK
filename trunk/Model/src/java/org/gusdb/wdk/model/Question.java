@@ -201,7 +201,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     /**
      * make an answer with default page size
      * 
-     * @param paramValues
+     * @param paramErrors
      * @return
      * @throws WdkModelException
      * @throws WdkUserException
@@ -230,7 +230,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     /**
      * make an answer by given page range, sorted by the given attribute list.
      * 
-     * @param paramValues
+     * @param paramErrors
      * @param i
      * @param j
      * @param sortingAttributes

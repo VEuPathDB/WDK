@@ -2,8 +2,6 @@ package org.gusdb.wdk.model;
 
 import java.util.Map;
 
-import org.gusdb.wdk.model.query.param.Param;
-
 public class WdkModelException extends Exception {
 
     public static String modelName;
@@ -12,11 +10,11 @@ public class WdkModelException extends Exception {
      * 
      */
     private static final long serialVersionUID = 877548355767390313L;
-    Map<Param, String[]> booBoos = null;
+    Map<String, String> paramErrors = null;
 
-    public WdkModelException(Map<Param, String[]> booBoos) {
+    public WdkModelException(Map<String, String> paramErrors) {
         super();
-        this.booBoos = booBoos;
+        this.paramErrors = paramErrors;
     }
 
     public WdkModelException() {
@@ -33,30 +31,33 @@ public class WdkModelException extends Exception {
 
     public WdkModelException(Throwable cause) {
         super(cause);
+        if (cause instanceof WdkModelException) {
+            this.paramErrors = ((WdkModelException)cause).paramErrors;
+        }
     }
 
-    public WdkModelException(String message, Map<Param, String[]> booBoos) {
+    public WdkModelException(String message, Map<String, String> paramErrors) {
         super(message);
-        this.booBoos = booBoos;
+        this.paramErrors = paramErrors;
     }
 
-    public WdkModelException(Throwable cause, Map<Param, String[]> booBoos) {
+    public WdkModelException(Throwable cause, Map<String, String> paramErrors) {
         super(cause);
-        this.booBoos = booBoos;
+        this.paramErrors = paramErrors;
     }
 
     public WdkModelException(String message, Throwable cause,
-            Map<Param, String[]> booBoos) {
+            Map<String, String> paramErrors) {
         super(message, cause);
-        this.booBoos = booBoos;
+        this.paramErrors = paramErrors;
     }
 
     /**
      * @return Map where keys are Params and values are an tuple of (value,
      *         errMsg), one for each error param value
      */
-    public Map<Param, String[]> getBooBoos() {
-        return booBoos;
+    public Map<String, String> getParamErrors() {
+        return paramErrors;
     }
 
     /**
@@ -77,11 +78,10 @@ public class WdkModelException extends Exception {
 
             buf.append(message + newline);
         }
-        if (booBoos != null) {
-            for (Param param : booBoos.keySet()) {
-                String[] details = booBoos.get(param);
-                buf.append(param.getName() + " value '" + details[0]
-                        + "' has an error: " + details[1] + newline);
+        if (paramErrors != null) {
+            for (String paramPrompt : paramErrors.keySet()) {
+                String details = paramErrors.get(paramPrompt);
+                buf.append(paramPrompt + ": " + details + newline);
             }
         }
         return buf.toString();

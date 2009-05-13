@@ -469,15 +469,15 @@ public class Step {
     }
 
     /**
-     * @return the paramValues
+     * @return the paramErrors
      */
     public Map<String, String> getParamValues() {
         return new LinkedHashMap<String, String>(paramValues);
     }
 
     /**
-     * @param paramValues
-     *            the paramValues to set
+     * @param paramErrors
+     *            the paramErrors to set
      */
     public void setParamValues(Map<String, String> paramValues) throws WdkModelException {
         this.paramValues = new LinkedHashMap<String, String>(paramValues);
