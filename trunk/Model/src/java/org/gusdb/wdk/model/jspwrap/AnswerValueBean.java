@@ -96,66 +96,6 @@ public class AnswerValueBean {
         return answerValue.getIdsQueryInstance().getValues();
     }
 
-    public String getQuestionUrlParams() throws WdkModelException {
-        StringBuffer sb = new StringBuffer();
-        Map<String, String> params = getInternalParams();
-        for (String paramName : params.keySet()) {
-            String paramValue = params.get(paramName).toString();
-
-            // check if the parameter is multipick param
-            Param param = answerValue.getQuestion().getParamMap().get(paramName);
-
-            // check if it's dataset param, if so remove user signature
-            if (param instanceof DatasetParam) {
-                int pos = paramValue.indexOf(":");
-                if (pos >= 0)
-                    paramValue = paramValue.substring(pos + 1).trim();
-            }
-            String[] values = { paramValue };
-            if (param instanceof FlatVocabParam) {
-                FlatVocabParam fvParam = (FlatVocabParam) param;
-                if (fvParam.getMultiPick()) values = paramValue.split(",");
-            }
-            // URL encode the values
-            for (String value : values) {
-                try {
-                    sb.append("&" + paramName + "="
-                            + URLEncoder.encode(value.trim(), "UTF-8"));
-                } catch (UnsupportedEncodingException ex) {
-                    throw new WdkModelException(ex);
-                }
-            }
-        }
-        return sb.toString();
-    }
-
-    public String getSummaryUrlParams() throws WdkModelException {
-        StringBuffer sb = new StringBuffer();
-        Map<String, String> params = getInternalParams();
-        for (String paramName : params.keySet()) {
-            Object value = params.get(paramName);
-            String paramValue = (value == null) ? "" : value.toString();
-
-            // check if it's dataset param, if so remove user signature
-            Param param = answerValue.getQuestion().getParamMap().get(paramName);
-            if (param instanceof DatasetParam) {
-                int pos = paramValue.indexOf(":");
-                if (pos >= 0)
-                    paramValue = paramValue.substring(pos + 1).trim();
-            }
-
-            try {
-                paramName = URLEncoder.encode("myProp(" + paramName + ")",
-                        "UTF-8");
-                paramValue = URLEncoder.encode(paramValue, "UTF-8");
-                sb.append("&" + paramName + "=" + paramValue);
-            } catch (UnsupportedEncodingException ex) {
-                throw new WdkModelException(ex);
-            }
-        }
-        return sb.toString();
-    }
-
     public String getChecksum() throws WdkModelException,
             NoSuchAlgorithmException, JSONException, WdkUserException,
             SQLException {
