@@ -327,8 +327,6 @@ public abstract class AbstractEnumParam extends Param {
 
     protected void initTreeMap(Map<String, String> termParentMap)
             throws WdkModelException {
-        termTreeList = new ArrayList<EnumParamTermNode>();
-
         // construct index
         Map<String, EnumParamTermNode> indexMap = new LinkedHashMap<String, EnumParamTermNode>();
         for (String term : termParentMap.keySet()) {
