@@ -16,7 +16,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
-import org.gusdb.wdk.model.Answer;
 import org.gusdb.wdk.model.AnswerParam;
 import org.gusdb.wdk.model.Param;
 import org.gusdb.wdk.model.Question;
@@ -76,6 +75,7 @@ public class HistoryFix {
 
     private WdkModel wdkModel;
     private PreparedStatement psUpate;
+    private PreparedStatement psInvalid;
 
     private HistoryFix(String projectId) throws NoSuchAlgorithmException,
             WdkModelException, ParserConfigurationException,
@@ -88,18 +88,23 @@ public class HistoryFix {
         wdkModel = WdkModel.construct(projectId, gusHome);
 
         String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
-        String sql = "UPDATE " + userSchema + "histories SET answer_id = ?, "
-                + " display_params = ?, is_valid = 1 "
-                + "WHERE user_id = ? AND history_id = ?";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
-        psUpate = SqlUtils.getPreparedStatement(dataSource, sql);
+        psUpate = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
+                + userSchema + "histories SET answer_id = ?, "
+                + " display_params = ?, is_valid = 1 "
+                + "WHERE user_id = ? AND history_id = ?");
+        psInvalid = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
+                + userSchema + "histories SET is_valid = 0 "
+                + "WHERE user_id = ? AND history_id = ?");
     }
 
     private void invoke() throws NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException, JSONException {
         List<User> users = getUsers();
+        int userCount = 0;
         for (User user : users) {
-            System.out.println("fixing user #" + user.getUserId() + "....");
+            System.out.println("fixing user #" + user.getUserId() + " ("
+                    + userCount + "/" + users.size() + ")....");
             Map<String, Integer> answerHistories = new LinkedHashMap<String, Integer>();
             Map<Integer, String> answerParams = new LinkedHashMap<Integer, String>();
             Map<Integer, History> histories = getHistories(user, answerParams,
@@ -137,7 +142,6 @@ public class HistoryFix {
         List<User> users = new ArrayList<User>();
         String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
         String sql = "SELECT * FROM " + userSchema + "users WHERE is_guest = 0";
-        UserFactory userFactory = wdkModel.getUserFactory();
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         ResultSet resultSet = null;
         try {
@@ -187,9 +191,11 @@ public class HistoryFix {
         String sql = "SELECT h.*, a.question_name, a.answer_checksum, "
                 + " a.params AS answer_params " + " FROM " + userSchema
                 + "histories h, " + wdkSchema + "answer a "
-                + " WHERE h.answer_id = a.answer_id " + " AND a.project_id = '"
-                + wdkModel.getProjectId() + "' AND h.user_id = "
-                + user.getUserId() + " ORDER BY h.history_id ASC";
+                + " WHERE h.answer_id = a.answer_id   "
+                + " AND a.project_id = '" + wdkModel.getProjectId() + "' "
+                + " AND h.user_id = " + user.getUserId()
+                + " AND h.is_valid IS NULL      "
+                + " ORDER BY h.history_id ASC";
         UserFactory userFactory = wdkModel.getUserFactory();
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         ResultSet resultSet = null;
@@ -197,6 +203,7 @@ public class HistoryFix {
             resultSet = SqlUtils.executeQuery(dataSource, sql);
             while (resultSet.next()) {
                 int historyId = resultSet.getInt("history_id");
+
                 History history = userFactory.loadHistory(user, historyId,
                         resultSet);
                 String answerParam = wdkModel.getUserPlatform().getClobData(
@@ -216,7 +223,8 @@ public class HistoryFix {
     }
 
     private boolean recoverHistory(User user, History history,
-            String answerParam, Map<String, Integer> answerHistories) {
+            String answerParam, Map<String, Integer> answerHistories)
+            throws SQLException {
         try {
             // validate question name
             Map<String, String> paramValues = new LinkedHashMap<String, String>();
@@ -241,6 +249,9 @@ public class HistoryFix {
             return true;
         } catch (Exception ex) {
             ex.printStackTrace();
+            psInvalid.setInt(1, user.getUserId());
+            psInvalid.setInt(2, history.getHistoryId());
+            psInvalid.execute();
             return false;
         }
     }
@@ -304,7 +315,7 @@ public class HistoryFix {
             jsParams.put(paramName, paramValue);
         }
         String valueString = jsParams.toString();
-        
+
         String oldValueString = oldHistory.getParamValuesString();
         // nothing's changed, don't need to update anything
         if (oldValueString != null && valueString.equals(oldValueString))
