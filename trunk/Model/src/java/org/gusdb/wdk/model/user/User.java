@@ -13,13 +13,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanOperator;
+import org.gusdb.wdk.model.Categories;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
@@ -612,6 +612,10 @@ public class User /* implements Serializable */{
             Collection<Strategy> strategies) throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
         Map<String, List<Strategy>> category = new LinkedHashMap<String, List<Strategy>>();
+        for (Categories categories : wdkModel.getCategories()) {
+            String type = categories.getRecordClassRef();
+            category.put(type, new ArrayList<Strategy>());
+        }
         for (Strategy strategy : strategies) {
             String type = strategy.getType();
             List<Strategy> list;
@@ -621,7 +625,7 @@ public class User /* implements Serializable */{
                 list = new ArrayList<Strategy>();
                 category.put(type, list);
             }
-            list.add(strategy);
+            category.get(type).add(strategy);
         }
         return category;
     }
