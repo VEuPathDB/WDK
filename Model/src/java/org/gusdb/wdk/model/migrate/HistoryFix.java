@@ -104,7 +104,7 @@ public class HistoryFix {
         int userCount = 0;
         for (User user : users) {
             System.out.println("fixing user #" + user.getUserId() + " ("
-                    + userCount + "/" + users.size() + ")....");
+                    + (++userCount) + "/" + users.size() + ")....");
             Map<String, Integer> answerHistories = new LinkedHashMap<String, Integer>();
             Map<Integer, String> answerParams = new LinkedHashMap<Integer, String>();
             Map<Integer, History> histories = getHistories(user, answerParams,
