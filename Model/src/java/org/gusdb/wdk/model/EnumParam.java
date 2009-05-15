@@ -40,6 +40,7 @@ public class EnumParam extends AbstractEnumParam {
         if (termInternalMap == null) {
             termInternalMap = new LinkedHashMap<String, String>();
             termDisplayMap = new LinkedHashMap<String, String>();
+            termTreeList = new ArrayList<EnumParamTermNode>();
 
             Map<String, String> termParentMap = new LinkedHashMap<String, String>();
             

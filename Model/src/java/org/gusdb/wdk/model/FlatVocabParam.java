@@ -2,6 +2,7 @@ package org.gusdb.wdk.model;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -97,8 +98,6 @@ public class FlatVocabParam extends AbstractEnumParam {
             WdkUserException {
 
         if (termInternalMap == null) {
-            termInternalMap = new LinkedHashMap<String, String>();
-            termDisplayMap = new LinkedHashMap<String, String>();
 
             // check if the query has "display" column
             boolean hasDisplay = query.getColumnMap().containsKey(
@@ -114,6 +113,9 @@ public class FlatVocabParam extends AbstractEnumParam {
 
             QueryInstance instance = query.makeInstance(values);
             ResultList result = instance.getResults();
+            termInternalMap = new LinkedHashMap<String, String>();
+            termDisplayMap = new LinkedHashMap<String, String>();
+            termTreeList = new ArrayList<EnumParamTermNode>();
             while (result.next()) {
                 String term = result.get(COLUMN_TERM).toString();
                 String value = result.get(COLUMN_INTERNAL).toString();
