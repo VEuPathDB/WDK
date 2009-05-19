@@ -719,13 +719,13 @@ public class UserBean /* implements Serializable */{
         return category;
     }
 
-    public StrategyBean[] getInvalidStrategies() throws WdkUserException,
+    public List<StrategyBean> getInvalidStrategies() throws WdkUserException,
             WdkModelException, JSONException, SQLException {
-        Strategy[] strategies = user.getInvalidStrategies();
-        StrategyBean[] beans = new StrategyBean[strategies.length];
-        for (int i = 0; i < strategies.length; i++) {
-            beans[i] = new StrategyBean(this, strategies[i]);
-        }
+        //Strategy[] strategies = user.getInvalidStrategies();
+        List<StrategyBean> beans = new ArrayList<StrategyBean>();
+        //for (int i = 0; i < strategies.length; i++) {
+        //    beans[i] = new StrategyBean(this, strategies[i]);
+        //}
         return beans;
     }
 
