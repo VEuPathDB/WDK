@@ -627,7 +627,13 @@ public class User /* implements Serializable */{
             }
             category.get(type).add(strategy);
         }
-        return category;
+        // remove the empty ones
+        Map<String, List<Strategy>> newCategory = new LinkedHashMap<String, List<Strategy>>();
+        for (String type : category.keySet()) {
+            List<Strategy> list = category.get(type);
+            if (list.size() > 0) newCategory.put(type, list);
+        }
+        return newCategory;
     }
 
     public Map<Integer, Step> getStepsMap(String dataType)
