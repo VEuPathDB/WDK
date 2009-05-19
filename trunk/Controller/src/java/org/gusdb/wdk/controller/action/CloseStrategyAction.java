@@ -31,12 +31,18 @@ public class CloseStrategyAction extends Action {
         try {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
-            String stratIdstr = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-            if (stratIdstr == null || stratIdstr.length() == 0) {
+            String strStratKeys = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+            String[] stratIdstr = (strStratKeys == null || strStratKeys.length() == 0) ?
+                new String[0] : strStratKeys.split(",");
+
+            if (stratIdstr.length != 0) {
+                for (int i = 0; i < stratIdstr.length; ++i) {
+		    logger.debug("closing strategy: '" + stratIdstr[i] + "'");
+		    wdkUser.removeActiveStrategy(stratIdstr[i]);
+                }
+            } else {
                 throw new Exception("No strategy specified to close!");
             }
-            logger.debug("closing strategy: '" + stratIdstr + "'");
-            wdkUser.removeActiveStrategy(stratIdstr);
 
             ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
             StringBuffer url = new StringBuffer(showStrategy.getPath());
