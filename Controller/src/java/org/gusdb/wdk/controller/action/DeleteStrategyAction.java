@@ -30,9 +30,11 @@ public class DeleteStrategyAction extends Action {
         try {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
-            String[] stratIdstr = request.getParameterValues(CConstants.WDK_STRATEGY_ID_KEY);
+            String strStratKeys = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+            String[] stratIdstr = (strStratKeys == null || strStratKeys.length() == 0) ?
+                new String[0] : strStratKeys.split(",");
 
-            if (stratIdstr != null && stratIdstr.length != 0) {
+            if (stratIdstr.length != 0) {
                 for (int i = 0; i < stratIdstr.length; ++i) {
                     int stratId = Integer.parseInt(stratIdstr[i]);
                     wdkUser.deleteStrategy(stratId);
