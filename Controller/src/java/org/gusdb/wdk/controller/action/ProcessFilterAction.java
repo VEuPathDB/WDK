@@ -247,6 +247,15 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             }
                             targetStepId = parent.getStepId();
                         } else {
+			    if (stratLen == 1 && strBranchId != null) {
+				// if this is the only step in a substrat,
+				// make an uncollapsed copy before inserting
+				targetStep = targetStep.deepClone();
+				targetStep.setIsCollapsible(false);
+				targetStep.setCollapsedName(null);
+				targetStep.setParentStep(null);
+				targetStep.update(false);
+			    }
                             // if inserting before first step, there has to be a
                             // boolean expression
                             // b/c existing first step is a regular non-boolean,
