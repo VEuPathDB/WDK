@@ -407,6 +407,7 @@ public class WdkModel {
             booleanQuery.excludeResources(projectId);
             booleanQuery.resolveReferences(this);
             booleanQuery.setDoNotTest(true);
+            booleanQuery.setIsCacheable(true);  // cache the boolean query
 
             internalQuerySet.addQuery(booleanQuery);
         }

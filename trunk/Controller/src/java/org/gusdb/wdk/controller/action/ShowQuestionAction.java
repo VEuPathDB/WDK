@@ -90,6 +90,10 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 forward = mapping.findForward(CConstants.SHOW_QUESTION_MAPKEY);
             }
 
+            String partial = request.getParameter(CConstants.WDK_PARTIAL_PAGE_PARAM);
+            if (partial != null && partial.length() > 0)
+                request.setAttribute(CConstants.WDK_PARTIAL_PAGE_PARAM, partial);
+
             String gotoSum = request.getParameter(CConstants.GOTO_SUMMARY_PARAM);
             if (qForm.getParamsFilled() && "1".equals(gotoSum)) {
                 forward = mapping.findForward(CConstants.SKIPTO_SUMMARY_MAPKEY);
