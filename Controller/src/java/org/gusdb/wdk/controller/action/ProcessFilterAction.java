@@ -279,6 +279,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                 // build standard boolExp for non-first step
                                 StepBean parent = targetStep;
                                 StepBean previous = parent.getPreviousStep();
+                                // save the old child id into revise
+                                reviseStep = Integer.toString(parent.getChildStep().getStepId());
                                 StepBean child = newStep;
                                 String operator = (op == null)
                                         ? parent.getOperation() : op;
@@ -330,6 +332,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 if (!stepIdsMap.containsKey(reviseId))
                     stepIdsMap.put(reviseId, baseNewStepId);
             }
+logger.debug("revise " + isRevise + ", " + reviseStep + "===>" + baseNewStepId);
 
             // If a branch id was specified, look up the new branch id in
             // stepIdsMap
