@@ -27,12 +27,12 @@ public class ShowQueryStepAction extends Action {
         ServletContext svltCtx = getServlet().getServletContext();
         String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
         String customViewFile = customViewDir + File.separator
-                + CConstants.WDK_CUSTOM_HISTORY_PAGE;
+                + CConstants.WDK_CUSTOM_STEP_HISTORY_PAGE;
         ActionForward forward = null;
         if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
             forward = new ActionForward(customViewFile);
         } else {
-            forward = mapping.findForward(CConstants.SHOW_QUERY_HISTORY_MAPKEY);
+            forward = mapping.findForward(CConstants.WDK_CUSTOM_STEP_HISTORY_PAGE);
         }
         return forward;
     }

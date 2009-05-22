@@ -15,7 +15,8 @@ public class CConstants {
     public static final String WDK_CUSTOM_SUMMARY_PAGE = "customSummary.jsp";
     public static final String WDK_CUSTOM_SUMMARY_ERROR_PAGE = "customSummaryError.jsp";
     public static final String WDK_CUSTOM_RECORD_PAGE = "customRecord.jsp";
-    public static final String WDK_CUSTOM_HISTORY_PAGE = "customQueryHistory.jsp";
+    public static final String WDK_CUSTOM_STEP_HISTORY_PAGE = "customStepHistory.jsp";
+    public static final String WDK_CUSTOM_STRATEGY_HISTORY_PAGE = "customStrategyHistory.jsp";
     public static final String WDK_CUSTOM_REGISTER_PAGE = "customRegister.jsp";
     public static final String WDK_CUSTOM_PROFILE_PAGE = "customProfile.jsp";
     public static final String WDK_CUSTOM_PASSWORD_PAGE = "customPassword.jsp";
@@ -66,6 +67,7 @@ public class CConstants {
     public static final String WDK_STEP_ID_PARAM = "step";
     public static final String WDK_SKIPTO_DOWNLOAD_PARAM = "skip_to_download";
     public static final String WDK_PARTIAL_PAGE_PARAM = "partial";
+    public static final String WDK_HISTORY_TYPE_PARAM = "type";
 
     // constants for remote logins
     public static final String WDK_REMOTE_URL_KEY = "remoteUrl";
@@ -113,7 +115,7 @@ public class CConstants {
     public static final String CONFIG_DOWNLOAD_MAPKEY = "config_download";
     public static final String GET_DOWNLOAD_RESULT_MAPKEY = "get_download_result";
     public static final String GET_DOWNLOAD_CONFIG_MAPKEY = "get_download_config";
-    public static final String SHOW_QUERY_HISTORY_MAPKEY = "show_query_history";
+    public static final String SHOW_STEP_HISTORY_MAPKEY = "show_step_history";
     public static final String SHOW_STRAT_HISTORY_MAPKEY = "show_strat_history";
     public static final String DOWNLOAD_HISTORY_ANSWER_MAPKEY = "download_history_answer";
     public static final String DELETE_HISTORY_MAPKEY = "delete_history";
