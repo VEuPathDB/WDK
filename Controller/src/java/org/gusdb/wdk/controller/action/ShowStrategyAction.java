@@ -51,8 +51,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
         try {
             String strStratKeys = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-            String[] stratKeys = (strStratKeys == null || strStratKeys.length() == 0) ?
-                new String[0] : strStratKeys.split(",");
+            String[] stratKeys = (strStratKeys == null || strStratKeys.length() == 0)
+                    ? new String[0] : strStratKeys.split(",");
 
             String strOpen = request.getParameter(CConstants.WDK_OPEN_KEY);
             boolean open = (strOpen == null || strOpen.length() == 0) ? true
@@ -66,6 +66,19 @@ public class ShowStrategyAction extends ShowQuestionAction {
                 }
                 String state = request.getParameter(CConstants.WDK_STATE_KEY);
                 displayStrategies = getModifiedStrategies(wdkUser, state);
+
+                // set the highlight to the last opened strategy
+                if (stratKeys.length > 0) {
+                    String stratKey = stratKeys[stratKeys.length - 1];
+                    int pos = stratKey.indexOf('_');
+                    if (pos >= 0) stratKey = stratKey.substring(0, pos);
+                    int stratId = Integer.parseInt(stratKey);
+                    StrategyBean strategy = displayStrategies.get(stratId);
+                    if (strategy != null) {
+                        int stepId = strategy.getLatestStep().getStepId();
+                        wdkUser.setViewResults(stratKey, stepId);
+                    }
+                }
             } else {
                 // return the details of all the requested strategies; skip the
                 // state validation
