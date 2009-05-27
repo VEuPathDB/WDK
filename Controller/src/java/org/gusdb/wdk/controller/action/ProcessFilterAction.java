@@ -98,6 +98,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             boolean isRevise = (reviseStep != null && reviseStep.length() != 0);
             String insertStep = request.getParameter("insert");
             boolean isInsert = (insertStep != null && insertStep.length() != 0);
+            boolean isOrtholog = Boolean.valueOf(request.getParameter("ortholog"));
 
             System.out.println("isRevise: " + isRevise + "; isInsert: "
                     + isInsert);
@@ -220,6 +221,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 StepBean targetStep = null;
                 if (stratLen > 1 || !isRevise) {
                     targetStep = rootStep.getStepByDisplayId(targetStepId);
+		    if (isOrtholog && targetStep.getParentStep() != null && !targetStep.getIsCollapsible()) {
+			targetStep.setIsCollapsible(true);
+			targetStep.setCollapsedName("Expanded " + targetStep.getCustomName());
+		    }
                     if (targetStep.getIsFirstStep()) {
                         if (isRevise) {
                             // carry over custom name from original query, if
@@ -256,12 +261,14 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 				targetStep.setParentStep(null);
 				targetStep.update(false);
 			    }
+			    if (!isOrtholog) {
                             // if inserting before first step, there has to be a
                             // boolean expression
                             // b/c existing first step is a regular non-boolean,
                             // non-transform query
                             boolExp = newStepId + " " + op + " "
                                     + targetStep.getStepId();
+			    }
                         }
                     } else { // not the first step
                         if (isRevise) {
@@ -303,6 +310,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                 boolExp = targetStep.getPreviousStep().getStepId()
                                         + " " + op + " " + newStepId;
                             }
+			    if (!isOrtholog) {
                             // implied: if we're inserting a transform, the
                             // HistoryParam should already
                             // be pointing to the step at insertIx - 1, so we
@@ -314,6 +322,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             // to
                             // targetStep.getPreviousStep
                             targetStepId = targetStep.getPreviousStep().getStepId();
+			    }
                         }
                     }
 
