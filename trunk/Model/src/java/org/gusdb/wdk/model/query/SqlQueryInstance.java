@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.DBPlatform;
+import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
@@ -160,7 +161,7 @@ public class SqlQueryInstance extends QueryInstance {
      */
     @Override
     public void createCache(Connection connection, String tableName,
-            int instanceId) throws NoSuchAlgorithmException, WdkModelException,
+            int instanceId, String[] indexColumns) throws NoSuchAlgorithmException, WdkModelException,
             SQLException, JSONException, WdkUserException {
         // get the sql with param values applied.
         String sql = getUncachedSql();
@@ -175,6 +176,9 @@ public class SqlQueryInstance extends QueryInstance {
         try {
             stmt = connection.createStatement();
             stmt.execute(buffer.toString());
+            
+            ResultFactory resultFactory = wdkModel.getResultFactory();
+            resultFactory.createCacheTableIndex(connection, tableName, indexColumns);
         } catch (SQLException ex) {
             logger.error("Fail to run SQL:\n" + buffer);
             throw ex;
