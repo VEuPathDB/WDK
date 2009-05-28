@@ -34,7 +34,7 @@ import org.json.JSONObject;
 public abstract class QueryInstance {
 
     public abstract void createCache(Connection connection, String tableName,
-            int instanceId) throws NoSuchAlgorithmException, WdkModelException,
+            int instanceId, String[] indexColumns) throws NoSuchAlgorithmException, WdkModelException,
             SQLException, JSONException, WdkUserException;
 
     public abstract void insertToCache(Connection connection, String tableName,

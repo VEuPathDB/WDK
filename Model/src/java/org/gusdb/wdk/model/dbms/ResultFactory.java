@@ -46,10 +46,11 @@ public class ResultFactory {
             JSONException, WdkUserException {
 
         // get the cached sql
-        QueryInfo queryInfo = cacheFactory.getQueryInfo(instance.getQuery());
+        Query query = instance.getQuery();
+        QueryInfo queryInfo = cacheFactory.getQueryInfo(query);
         StringBuffer sql = new StringBuffer("SELECT ");
         boolean firstColumn = true;
-        for (Column column : instance.getQuery().getColumns()) {
+        for (Column column : query.getColumns()) {
             if (firstColumn) firstColumn = false;
             else sql.append(", ");
             sql.append(column.getName());
@@ -67,9 +68,9 @@ public class ResultFactory {
     public int getInstanceId(QueryInstance instance, String[] indexColumns)
             throws SQLException, NoSuchAlgorithmException, WdkModelException,
             JSONException, WdkUserException {
-        QueryInfo queryInfo = cacheFactory.getQueryInfo(instance.getQuery());
-
-        synchronized (queryInfo) {
+        Query query = instance.getQuery();
+        QueryInfo queryInfo = cacheFactory.getQueryInfo(query);
+        synchronized (query) {
             // get the query instance id; null if not exist
             Integer instanceId = checkInstanceId(instance, queryInfo);
             if (instanceId == null) // instance cache not exist, create it
@@ -140,8 +141,7 @@ public class ResultFactory {
             String cacheTable = queryInfo.getCacheTable();
             if (!platform.checkTableExists(null, cacheTable)) {
                 // create the cache using the result of the first query
-                instance.createCache(connection, cacheTable, instanceId);
-                createCacheTableIndex(connection, cacheTable, indexColumns);
+                instance.createCache(connection, cacheTable, instanceId, indexColumns);
             } else {// insert result into existing cache table
                 instance.insertToCache(connection, cacheTable, instanceId);
             }
@@ -174,7 +174,7 @@ public class ResultFactory {
         }
     }
 
-    private void createCacheTableIndex(Connection connection,
+    public void createCacheTableIndex(Connection connection,
             String cacheTable, String[] indexColumns) throws SQLException {
         // create index on query instance id
         StringBuffer sqlId = new StringBuffer("CREATE INDEX ");
