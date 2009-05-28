@@ -201,7 +201,7 @@ public class CacheFactory {
         StringBuffer sqlInstance = new StringBuffer("DELETE FROM ");
         sqlInstance.append(TABLE_INSTANCE);
         sqlInstance.append(" WHERE ").append(COLUMN_QUERY_ID).append(" IN ");
-        sqlInstance.append("(SELECT ").append(COLUMN_INSTANCE_ID);
+        sqlInstance.append("(SELECT ").append(COLUMN_QUERY_ID);
         sqlInstance.append(" FROM ").append(TABLE_QUERY);
         sqlInstance.append(" WHERE ").append(COLUMN_TABLE_NAME).append(" = ?)");
 
