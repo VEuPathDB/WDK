@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ArrayResultList;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.DBPlatform;
+import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.WsfService;
@@ -253,7 +254,7 @@ public class ProcessQueryInstance extends QueryInstance {
      */
     @Override
     public void createCache(Connection connection, String tableName,
-            int instanceId) throws WdkModelException, SQLException,
+            int instanceId, String[] indexColumns) throws WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException, WdkUserException {
         DBPlatform platform = query.getWdkModel().getQueryPlatform();
         Column[] columns = query.getColumns();
@@ -297,6 +298,9 @@ public class ProcessQueryInstance extends QueryInstance {
         try {
             stmt = connection.createStatement();
             stmt.execute(sqlTable.toString());
+            
+            ResultFactory resultFactory = wdkModel.getResultFactory();
+            resultFactory.createCacheTableIndex(connection, tableName, indexColumns);
 
             // also insert the result into the cache
             insertToCache(connection, tableName, instanceId);
