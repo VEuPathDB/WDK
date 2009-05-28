@@ -227,9 +227,13 @@ public class AnswerValueBean {
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
      */
-    public Iterator<RecordBean> getRecords() throws NoSuchAlgorithmException,
-            WdkModelException, SQLException, JSONException, WdkUserException {
-        return new RecordBeanList(answerValue.getRecordInstances());
+    public Iterator<RecordBean> getRecords() throws Exception {
+        try {
+            return new RecordBeanList(answerValue.getRecordInstances());
+        } catch(Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 
     public void setDownloadConfigMap(Map<?, ?> downloadConfigMap) {
