@@ -64,6 +64,11 @@ Otherwise a standard select menu is used.
     <%-- use a tree list --%>
     <c:when test="${displayType eq 'treeBox'}">
 		<div class="param-tree">
+
+            <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
+            &nbsp;|&nbsp; <a href="javascript:void(0)" onclick="expandCollapseAll(this, true);" />expand all</a>
+            &nbsp;|&nbsp; <a href="javascript:void(0)" onclick="expandCollapseAll(this, false);" />collapse all</a>
+
         <c:set var="recurse_enum_param" value="${qP}" scope="request"/>
         <c:forEach items="${qP.vocabTreeRoots}" var="root">
             <c:set var="recurse_term_node" value="${root}" scope="request"/>
@@ -72,8 +77,9 @@ Otherwise a standard select menu is used.
         <c:remove var="recurse_term_node" scope="request"/>
         <c:remove var="recurse_enum_param" scope="request"/>
 
-        <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
-
+            <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
+            &nbsp;|&nbsp; <a href="javascript:void(0)" onclick="expandCollapseAll(this, true);" />expand all</a>
+            &nbsp;|&nbsp; <a href="javascript:void(0)" onclick="expandCollapseAll(this, false);" />collapse all</a>
     </c:when>
 
     <c:otherwise>
