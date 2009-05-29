@@ -307,8 +307,7 @@ public abstract class AbstractEnumParam extends Param {
         StringBuffer buf = new StringBuffer();
         for (String term : terms) {
             String internal = useTermOnly ? term : termInternalMap.get(term);
-            // internal = internal.replaceAll("'", "''");
-            if (quote) internal = "'" + internal + "'";
+            if (quote) internal = "'" + internal.replaceAll("'", "''") + "'";
             if (buf.length() != 0) buf.append(", ");
             buf.append(internal);
         }
