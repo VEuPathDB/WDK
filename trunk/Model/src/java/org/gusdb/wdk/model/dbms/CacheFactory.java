@@ -7,7 +7,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -48,14 +47,11 @@ public class CacheFactory {
     private DBPlatform platform;
     private DataSource dataSource;
 
-    private Map<String, QueryInfo> queryInfoMap;
-
     public CacheFactory(WdkModel wdkModel, DBPlatform platform)
             throws SQLException {
         this.wdkModel = wdkModel;
         this.platform = platform;
         this.dataSource = platform.getDataSource();
-        queryInfoMap = new LinkedHashMap<String, QueryInfo>();
     }
 
     public void createCache() {
@@ -345,8 +341,6 @@ public class CacheFactory {
     }
 
     private void dropCacheTables() {
-        queryInfoMap.clear();
-
         // get a list of cache tables
         StringBuffer sql = new StringBuffer("SELECT DISTINCT ");
         sql.append(COLUMN_TABLE_NAME).append(" FROM ").append(TABLE_QUERY);
@@ -394,41 +388,41 @@ public class CacheFactory {
         }
     }
 
-    public synchronized QueryInfo getQueryInfo(Query query)
-            throws SQLException, NoSuchAlgorithmException, JSONException,
-            WdkModelException {
-        QueryInfo queryInfo = checkQueryInfo(query);
-        if (queryInfo != null) return queryInfo;
+    public QueryInfo getQueryInfo(Query query) throws SQLException,
+            NoSuchAlgorithmException, JSONException, WdkModelException {
+        synchronized (query) {
+            QueryInfo queryInfo = checkQueryInfo(query);
+            if (queryInfo != null) return queryInfo;
 
-        // cache table doesn't exist, create one
-        queryInfo = new QueryInfo();
-        queryInfo.setQueryId(platform.getNextId(null, TABLE_QUERY));
-        queryInfo.setCacheTable(CACHE_TABLE_PREFIX + queryInfo.getQueryId());
-        queryInfo.setQueryName(query.getFullName());
-        queryInfo.setQueryChecksum(query.getChecksum());
+            // cache table doesn't exist, create one
+            queryInfo = new QueryInfo();
+            queryInfo.setQueryId(platform.getNextId(null, TABLE_QUERY));
+            queryInfo.setCacheTable(CACHE_TABLE_PREFIX + queryInfo.getQueryId());
+            queryInfo.setQueryName(query.getFullName());
+            queryInfo.setQueryChecksum(query.getChecksum());
 
-        StringBuffer sql = new StringBuffer("INSERT INTO ");
-        sql.append(TABLE_QUERY).append(" (");
-        sql.append(COLUMN_QUERY_ID).append(", ");
-        sql.append(COLUMN_QUERY_NAME).append(", ");
-        sql.append(COLUMN_QUERY_CHECKSUM).append(", ");
-        sql.append(COLUMN_TABLE_NAME).append(") ");
-        sql.append("VALUES (?, ?, ?, ?)");
+            StringBuffer sql = new StringBuffer("INSERT INTO ");
+            sql.append(TABLE_QUERY).append(" (");
+            sql.append(COLUMN_QUERY_ID).append(", ");
+            sql.append(COLUMN_QUERY_NAME).append(", ");
+            sql.append(COLUMN_QUERY_CHECKSUM).append(", ");
+            sql.append(COLUMN_TABLE_NAME).append(") ");
+            sql.append("VALUES (?, ?, ?, ?)");
 
-        PreparedStatement psInsert = null;
-        try {
-            psInsert = SqlUtils.getPreparedStatement(dataSource, sql.toString());
-            psInsert.setInt(1, queryInfo.getQueryId());
-            psInsert.setString(2, queryInfo.getQueryName());
-            psInsert.setString(3, queryInfo.getQueryChecksum());
-            psInsert.setString(4, queryInfo.getCacheTable());
-            psInsert.executeUpdate();
-        } finally {
-            SqlUtils.closeStatement(psInsert);
+            PreparedStatement psInsert = null;
+            try {
+                psInsert = SqlUtils.getPreparedStatement(dataSource,
+                        sql.toString());
+                psInsert.setInt(1, queryInfo.getQueryId());
+                psInsert.setString(2, queryInfo.getQueryName());
+                psInsert.setString(3, queryInfo.getQueryChecksum());
+                psInsert.setString(4, queryInfo.getCacheTable());
+                psInsert.executeUpdate();
+            } finally {
+                SqlUtils.closeStatement(psInsert);
+            }
+            return queryInfo;
         }
-        String queryKey = getQueryKey(query.getFullName(), query.getChecksum());
-        //queryInfoMap.put(queryKey, queryInfo);
-        return queryInfo;
     }
 
     private QueryInfo checkQueryInfo(Query query)
@@ -438,9 +432,7 @@ public class CacheFactory {
         String queryChecksum = query.getChecksum();
 
         // check if the query table has been seen before
-        String queryKey = getQueryKey(queryName, queryChecksum);
-        QueryInfo queryInfo = queryInfoMap.get(queryKey);
-        if (queryInfo != null) return queryInfo;
+        QueryInfo queryInfo = null;
 
         StringBuffer sql = new StringBuffer("SELECT * FROM ");
         sql.append(TABLE_QUERY);
@@ -469,9 +461,5 @@ public class CacheFactory {
             if (resultSet == null) SqlUtils.closeStatement(ps);
         }
         return queryInfo;
-    }
-
-    private String getQueryKey(String queryName, String queryChecksum) {
-        return queryName + queryChecksum;
     }
 }

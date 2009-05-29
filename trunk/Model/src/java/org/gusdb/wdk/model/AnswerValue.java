@@ -763,7 +763,7 @@ public class AnswerValue {
         if (expected != pageRecordInstances.size()) {
             StringBuffer buffer = new StringBuffer();
             for (String name : summaryFieldMap.keySet()) {
-                if (buffer.length() == 0) buffer.append(", ");
+                if (buffer.length() > 0) buffer.append(", ");
                 buffer.append(name);
             }
 
