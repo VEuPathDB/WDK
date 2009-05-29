@@ -20,7 +20,7 @@ Provides form input element for a given term tree node of EnumParam.
             <img src="images/spacer.gif" width="13" height="13" />
         </c:when>
         <c:otherwise>
-            <img class="switch plus" src="images/plus.gif" width="13" height="13" onclick="toggleChildren(this)"/>
+            <img class="switch plus" title="Click to expand(+) or collapse(-)" src="images/plus.gif" width="13" height="13" onclick="toggleChildren(this)"/>
         </c:otherwise>
     </c:choose>
     
