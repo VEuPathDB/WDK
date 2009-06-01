@@ -191,7 +191,11 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
             // forward to the results page, if requested
             if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
-                wdkUser.setViewResults(strategyKey, step.getStepId());
+		int viewPagerOffset = 0;
+		if (request.getParameter("pager.offset") != null) {
+		    viewPagerOffset = Integer.parseInt(request.getParameter("pager.offset"));
+		}
+                wdkUser.setViewResults(strategyKey, step.getStepId(), viewPagerOffset);
                 forward = getForward(request, step.getAnswerValue(), mapping,
                         step.getStepId());
                 // forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);

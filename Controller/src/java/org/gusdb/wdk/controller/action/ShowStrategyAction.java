@@ -76,7 +76,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
                     StrategyBean strategy = displayStrategies.get(stratId);
                     if (strategy != null) {
                         int stepId = strategy.getLatestStep().getStepId();
-                        wdkUser.setViewResults(stratKey, stepId);
+                        wdkUser.setViewResults(stratKey, stepId, 0);
                     }
                 }
             } else {
@@ -268,6 +268,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         if (viewStrategyKey != null) {
             jsView.put("strategy", viewStrategyKey);
             jsView.put("step", user.getViewStepId());
+            jsView.put("pagerOffset", user.getViewPagerOffset());
         }
         jsMessage.put("currentView", jsView);
     }

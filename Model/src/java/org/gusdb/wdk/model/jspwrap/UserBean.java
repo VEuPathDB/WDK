@@ -1067,8 +1067,8 @@ public class UserBean /* implements Serializable */{
         return latestStep;
     }
 
-    public void setViewResults(String strategyKey, int stepId) {
-        user.setViewResults(strategyKey, stepId);
+    public void setViewResults(String strategyKey, int stepId, int viewPagerOffset) {
+        user.setViewResults(strategyKey, stepId, viewPagerOffset);
     }
 
     public void resetViewResults() {
@@ -1081,6 +1081,10 @@ public class UserBean /* implements Serializable */{
 
     public Integer getViewStepId() {
         return user.getViewStepId();
+    }
+
+    public Integer getViewPagerOffset() {
+	return user.getViewPagerOffset();
     }
 
     public StrategyBean[] getActiveStrategies() throws WdkUserException,
