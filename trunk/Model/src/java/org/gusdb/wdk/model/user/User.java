@@ -1104,7 +1104,7 @@ public class User /* implements Serializable */{
         newStrategy.update(true);
         // highlight the imported strategy
         int rootStepId = newStrategy.getLatestStep().getDisplayId();
-        setViewResults(Integer.toString(newStrategy.getStrategyId()), rootStepId);
+        setViewResults(Integer.toString(newStrategy.getStrategyId()), rootStepId, 0);
         if (strategyCount != null) strategyCount++;
         return newStrategy;
     }
@@ -1137,14 +1137,16 @@ public class User /* implements Serializable */{
                 newStrategyId, stepIdsMap);
     }
 
-    public void setViewResults(String strategyKey, int stepId) {
+    public void setViewResults(String strategyKey, int stepId, int pagerOffset) {
         this.activeStrategyFactory.setViewStrategyKey(strategyKey);
         this.activeStrategyFactory.setViewStepId(stepId);
+	this.activeStrategyFactory.setViewPagerOffset(pagerOffset);
     }
 
     public void resetViewResults() {
         this.activeStrategyFactory.setViewStrategyKey(null);
         this.activeStrategyFactory.setViewStepId(null);
+	this.activeStrategyFactory.setViewPagerOffset(null);
     }
 
     public String getViewStrategyKey() {
@@ -1153,6 +1155,10 @@ public class User /* implements Serializable */{
 
     public Integer getViewStepId() {
         return this.activeStrategyFactory.getViewStepId();
+    }
+
+    public Integer getViewPagerOffset() {
+	return this.activeStrategyFactory.getViewPagerOffset();
     }
 
     public boolean checkNameExists(Strategy strategy, String name, boolean saved)

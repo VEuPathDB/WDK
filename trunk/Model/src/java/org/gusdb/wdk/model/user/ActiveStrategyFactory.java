@@ -26,6 +26,7 @@ class ActiveStrategyFactory {
 
     private String viewStrategyKey = null;
     private Integer viewStepId = null;
+    private Integer viewPagerOffset = null;
 
     /**
      * 
@@ -241,4 +242,12 @@ class ActiveStrategyFactory {
         this.viewStepId = viewStepId;
     }
 
+    public Integer getViewPagerOffset() {
+	if (getViewStrategyKey() == null) return null;
+	return viewPagerOffset;
+    }
+
+    public void setViewPagerOffset(Integer viewPagerOffset) {
+	this.viewPagerOffset = viewPagerOffset;
+    }
 }
