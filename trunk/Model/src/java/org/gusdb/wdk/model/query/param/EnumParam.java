@@ -46,9 +46,23 @@ public class EnumParam extends AbstractEnumParam {
         EnumItem[] enumItems = enumItemList.getEnumItems();
         for (EnumItem item : enumItems) {
             String term = item.getTerm();
+            String display = item.getDisplay();
+            String parentTerm = item.getParentTerm();
+
+            // escape the term & parentTerm
+            // term = term.replaceAll("[,]", "_");
+            // if (parentTerm != null)
+            // parentTerm = parentTerm.replaceAll("[,]", "_");
+            if (term.indexOf(',') >= 0)
+                throw new WdkModelException("The term cannot contain comma: '"
+                        + term + "'");
+            if (parentTerm.indexOf(',') >= 0)
+                throw new WdkModelException("The parent term cannot contain "
+                        + "comma: '" + parentTerm + "'");
+
             termInternalMap.put(term, item.getInternal());
-            termDisplayMap.put(term, item.getDisplay());
-            termParentMap.put(term, item.getParentTerm());
+            termDisplayMap.put(term, display);
+            termParentMap.put(term, parentTerm);
         }
         // check if the result is empty
         if (termInternalMap.isEmpty())
