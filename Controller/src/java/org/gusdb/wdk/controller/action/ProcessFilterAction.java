@@ -208,7 +208,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 // w/ a history param
                 stepIdsMap = strategy.addStep(targetStepId, newStep);
                 // set the view step to the one just added
-                wdkUser.setViewResults(strategyKey, newStepId);
+                wdkUser.setViewResults(strategyKey, newStepId, 0);
             } else { // insert or edit
                 int stratLen = rootStep.getLength();
 
