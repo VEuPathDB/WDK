@@ -145,7 +145,7 @@ public class FlatVocabParam extends AbstractEnumParam {
             if (term.indexOf(',') >= 0)
                 throw new WdkModelException("The term cannot contain comma: '"
                         + term + "'");
-            if (parentTerm.indexOf(',') >= 0)
+            if (parentTerm!= null && parentTerm.indexOf(',') >= 0)
                 throw new WdkModelException("The parent term cannot contain "
                         + "comma: '" + parentTerm + "'");
 
