@@ -63,12 +63,10 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                     + qFullName);
             for (String paramName : params.keySet()) {
                 String paramValue = params.get(paramName);
-                if (paramValue != null) {
-                    url.append("&"
-                            + URLEncoder.encode("myProp(" + paramName + ")",
-                                    "utf-8"));
-                    url.append("=" + URLEncoder.encode(paramValue, "utf-8"));
-                }
+                url.append("&" + URLEncoder.encode("myProp(" + paramName + ")", "utf-8"));
+                url.append("=");
+                if (paramValue != null) 
+                    url.append(URLEncoder.encode(paramValue, "utf-8"));
             }
 
             // check if user want to define the output size for the answer
@@ -120,7 +118,7 @@ public class ProcessQuestionAction extends ShowQuestionAction {
         for (String paramName : params.keySet()) {
             ParamBean param = params.get(paramName);
 
-            logger.debug("contains param: "
+            logger.debug("contains param: " + paramName + " = "
                     + paramValues.containsKey(paramName));
             // logger.debug("param: " + paramName + "='" +
             // paramErrors.get(paramName) + "'");
@@ -155,11 +153,11 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                 dependentValue = param.rawOrDependentValueToDependentValue(
                         user, rawValue);
             }
-            if (dependentValue != null && dependentValue.length() > 0) {
+            //if (dependentValue != null && dependentValue.length() > 0) {
                 logger.debug("param " + paramName + " - "
-                        + param.getClass().getName() + " = " + dependentValue);
+                        + param.getClass().getSimpleName() + " = " + dependentValue);
                 paramValues.put(paramName, dependentValue);
-            }
+            //}
         }
         return paramValues;
     }
