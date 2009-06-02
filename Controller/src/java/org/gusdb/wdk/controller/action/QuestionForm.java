@@ -60,13 +60,9 @@ public class QuestionForm extends QuestionSetForm {
 
         Map<String, ParamBean> params = wdkQuestion.getParamsMap();
         Map<String, String> paramValues = getMyProps();
-        for (String paramName : paramValues.keySet()) {
+        for (String paramName : params.keySet()) {
             String prompt = paramName;
             try {
-                if (!params.containsKey(paramName))
-                    throw new WdkModelException("The parameter '" + paramName
-                            + "' doesn't exist.");
-
                 ParamBean param = params.get(paramName);
                 param.setUser(user);
                 prompt = param.getPrompt();
