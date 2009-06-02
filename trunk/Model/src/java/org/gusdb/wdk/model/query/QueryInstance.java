@@ -296,6 +296,7 @@ public abstract class QueryInstance {
                 value = param.getDefault();
             } else { // param provided, but it can be empty
                 value = values.get(paramName);
+                logger.debug("param " + paramName + " provided value: '" + value + "'");
                 if (value == null || value.length() == 0) {
                     value = param.isAllowEmpty() ? param.getEmptyValue() : null;
                 }
