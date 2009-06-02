@@ -537,6 +537,8 @@ public abstract class Query extends WdkModelBase {
         Map<String, String> independentValues = new LinkedHashMap<String, String>();
         for (String paramName : dependentValues.keySet()) {
             Param param = paramMap.get(paramName);
+            if (param == null)
+                throw new WdkModelException("The param '" + paramName + "' doesn't exist in query '" + getFullName() + "'"); 
             String dependentValue = dependentValues.get(paramName);
             String independentValue = param.dependentValueToIndependentValue(
                     user, dependentValue);
