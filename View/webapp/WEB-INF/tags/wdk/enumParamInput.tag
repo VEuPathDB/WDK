@@ -34,6 +34,9 @@ Otherwise a standard select menu is used.
 	 <div class="param-multiPick">
       <c:set var="i" value="0"/>
       <table border="1" cellspacing="0"><tr><td>
+
+<%--	<%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %><br> --%>
+
       <c:forEach items="${qP.displayMap}" var="entity">
         <c:if test="${i == 0}"><c:set var="checked" value="checked"/></c:if>
         <c:if test="${i > 0}"><br></c:if>
@@ -54,7 +57,7 @@ Otherwise a standard select menu is used.
         <c:set var="checked" value=""/>
       </c:forEach>
   
-      <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
+	<br>&nbsp;<%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
       
       </td>
       </tr>
@@ -65,9 +68,10 @@ Otherwise a standard select menu is used.
     <c:when test="${displayType eq 'treeBox'}">
 		<div class="param-tree">
 
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
-            &nbsp;|&nbsp; <a href="javascript:void(0)" onclick="expandCollapseAll(this, true);">expand all</a>
-            &nbsp;|&nbsp; <a href="javascript:void(0)" onclick="expandCollapseAll(this, false);">collapse all</a>
+            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, true);">expand all</a>
+            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, false);">collapse all</a>
 
         <c:set var="recurse_enum_param" value="${qP}" scope="request"/>
         <c:forEach items="${qP.vocabTreeRoots}" var="root">
@@ -77,9 +81,10 @@ Otherwise a standard select menu is used.
         <c:remove var="recurse_term_node" scope="request"/>
         <c:remove var="recurse_enum_param" scope="request"/>
 
+		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
-            &nbsp;|&nbsp; <a href="javascript:void(0)" onclick="expandCollapseAll(this, true);">expand all</a>
-            &nbsp;|&nbsp; <a href="javascript:void(0)" onclick="expandCollapseAll(this, false);">collapse all</a>
+            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, true);">expand all</a>
+            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, false);">collapse all</a><br><br>
     </c:when>
 
     <c:otherwise>
