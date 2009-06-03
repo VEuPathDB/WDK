@@ -221,9 +221,16 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 StepBean targetStep = null;
                 if (stratLen > 1 || !isRevise) {
                     targetStep = rootStep.getStepByDisplayId(targetStepId);
-		    if (isOrtholog && targetStep.getParentStep() != null && !targetStep.getIsCollapsible()) {
-			targetStep.setIsCollapsible(true);
-			targetStep.setCollapsedName("Expanded " + targetStep.getCustomName());
+		    if (isOrtholog && targetStep.getParentStep() != null) {
+			// if this action was called from an ortholog link, and we're operating
+			// on a substrat, add the substrat to the active strategies list.
+			wdkUser.addActiveStrategy(strategy.getStrategyId() + "_" + targetStep.getStepId());
+			if (!targetStep.getIsCollapsible()) {
+			    // if the target step has a parent but hasn't been converted
+			    // to a substrat, need to convert it before adding the ortholog step
+			    targetStep.setIsCollapsible(true);
+			    targetStep.setCollapsedName(targetStep.getCustomName());
+			}
 		    }
                     if (targetStep.getIsFirstStep()) {
                         if (isRevise) {
