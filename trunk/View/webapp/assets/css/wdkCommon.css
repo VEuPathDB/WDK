@@ -2,8 +2,12 @@
  * styles for WDK params
  * -------------------------------------------------------------------------- */
 
+
+
+
 .param-group .group-title {
-    padding: 5px;
+	text-align: center;
+    	padding: 5px;
 }
 
 .param-group[type='ShowHide'] {
