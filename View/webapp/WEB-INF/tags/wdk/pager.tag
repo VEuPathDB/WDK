@@ -114,7 +114,7 @@
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <input class="paging-button" style="width:150px" type="button" value="Advanced Paging" onclick="openAdvancedPaging(this)"/>
 		<div class="advanced-paging" style="">
-			<span id="CAP" onclick="openAdvancedPaging($('input.paging-button'))">[x]</span>
+			<span id="CAP" onclick="openAdvancedPaging($(this).parent().prev())">[x]</span>
         <pg:page>
           Jump To page:
           <input type="text" id="${pager_id}_pageNumber" size="5" value="${currentPageNumber}"/>
