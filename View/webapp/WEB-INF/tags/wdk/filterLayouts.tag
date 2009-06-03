@@ -59,4 +59,3 @@
 <c:remove var="strategy_id" scope="request"/>
 <c:remove var="step_id" scope="request"/>
 
-<script type="text/javascript" src='<c:url value="/assets/js/wdkFilter.js"/>'></script>
