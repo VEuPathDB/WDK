@@ -96,7 +96,7 @@ Otherwise a standard select menu is used.
         <html:options property="values(${pNam})" labelProperty="labels(${pNam})" />
       </html:select>
   
-      <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
+      <br><%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
   
     </c:otherwise>
 </c:choose>
