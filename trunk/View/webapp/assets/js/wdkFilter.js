@@ -1,7 +1,7 @@
 // WDK filter layout related scripts
 //$(document).ready(function() {
-    var wdkFilter = new WdkFilter();
-    wdkFilter.initialize();
+//    var wdkFilter = new WdkFilter();
+//    wdkFilter.initialize();
 //});
 
 function WdkFilter() {
