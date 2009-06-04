@@ -136,7 +136,7 @@ public abstract class DBPlatform {
 
     public abstract void createSequence(String sequence, int start,
             int increment) throws SQLException;
-    
+
     public abstract int setClobData(PreparedStatement ps, int columnIndex,
             String content, boolean commit) throws SQLException;
 
@@ -147,8 +147,11 @@ public abstract class DBPlatform {
 
     public abstract boolean checkTableExists(String schema, String tableName)
             throws SQLException, WdkModelException;
-    
+
     public abstract String convertBoolean(boolean value);
+
+    public abstract void testConnection() throws SQLException,
+            WdkModelException;
 
     // #########################################################################
     // Common methods are platform independent

@@ -119,8 +119,9 @@ public class Oracle extends DBPlatform {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextIdSqlExpression(java.lang.String,
-     * java.lang.String)
+     * @see
+     * org.gusdb.wdk.model.dbms.DBPlatform#getNextIdSqlExpression(java.lang.
+     * String, java.lang.String)
      */
     @Override
     public String getNextIdSqlExpression(String schema, String table) {
@@ -233,5 +234,18 @@ public class Oracle extends DBPlatform {
     @Override
     public String convertBoolean(boolean value) {
         return value ? "1" : "0";
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.dbms.DBPlatform#testConnection()
+     */
+    @Override
+    public void testConnection() throws SQLException, WdkModelException {
+        String result = (String) SqlUtils.executeScalar(this.getDataSource(),
+                "SELECT 'ok' FROM dual");
+        if (!result.equals("ok"))
+            throw new WdkModelException("The test query fails");
     }
 }

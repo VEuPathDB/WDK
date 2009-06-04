@@ -209,4 +209,17 @@ public class PostgreSQL extends DBPlatform {
     public String convertBoolean(boolean value) {
         return value ? "TRUE" : "FALSE";
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.dbms.DBPlatform#testConnection()
+     */
+    @Override
+    public void testConnection() throws SQLException, WdkModelException {
+        String result = (String) SqlUtils.executeScalar(this.getDataSource(),
+                "SELECT 'ok'");
+        if (!result.equals("ok"))
+            throw new WdkModelException("The test query fails");
+    }
 }
