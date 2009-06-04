@@ -154,7 +154,7 @@ public class AnswerValue {
         this.filter = filter;
 
         logger.debug("Answer created.");
-        //new Exception().printStackTrace();
+        // new Exception().printStackTrace();
     }
 
     /**
@@ -618,14 +618,18 @@ public class AnswerValue {
         }
 
         // add order clause
-        if (orderClauses.size() > 0) {
-            sql.append(" ORDER BY ");
-            firstClause = true;
-            for (String clause : orderClauses) {
-                if (firstClause) firstClause = false;
-                else sql.append(", ");
-                sql.append(clause);
-            }
+        // always append primary key columns as the last sorting columns,
+        // otherwise Oracle may generate unstable results through pagination
+        // when the sorted columns are not unique.
+        sql.append(" ORDER BY ");
+        for (String clause : orderClauses) {
+            sql.append(clause).append(", ");
+        }
+        firstClause = true;
+        for (String column : pkColumns) {
+            if (firstClause) firstClause = false;
+            else sql.append(", ");
+            sql.append("idq.").append(column);
         }
 
         DBPlatform platform = question.getWdkModel().getQueryPlatform();
@@ -998,7 +1002,7 @@ public class AnswerValue {
             return ((BooleanQueryInstance) idsQueryInstance).isUseBooleanFilter();
         } else return false;
     }
-    
+
     public void setPageIndex(int startIndex, int endIndex) {
         this.startIndex = startIndex;
         this.endIndex = endIndex;
