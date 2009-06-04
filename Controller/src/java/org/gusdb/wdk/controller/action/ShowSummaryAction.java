@@ -2,6 +2,8 @@ package org.gusdb.wdk.controller.action;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -31,6 +33,7 @@ import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
 
 /**
@@ -51,6 +54,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             throws Exception {
         logger.debug("entering showSummary");
 
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
         try {
             QuestionForm qForm = (QuestionForm) form;
@@ -191,11 +195,12 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
             // forward to the results page, if requested
             if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
-		int viewPagerOffset = 0;
-		if (request.getParameter("pager.offset") != null) {
-		    viewPagerOffset = Integer.parseInt(request.getParameter("pager.offset"));
-		}
-                wdkUser.setViewResults(strategyKey, step.getStepId(), viewPagerOffset);
+                int viewPagerOffset = 0;
+                if (request.getParameter("pager.offset") != null) {
+                    viewPagerOffset = Integer.parseInt(request.getParameter("pager.offset"));
+                }
+                wdkUser.setViewResults(strategyKey, step.getStepId(),
+                        viewPagerOffset);
                 forward = getForward(request, step.getAnswerValue(), mapping,
                         step.getStepId());
                 // forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
@@ -210,8 +215,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
             return forward;
         } catch (Exception ex) {
             ex.printStackTrace();
-            ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
-            return null;
+            // ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
+            // return null;
+            return showError(wdkModel, wdkUser, mapping, request, response);
         }
 
     }
@@ -323,6 +329,88 @@ public class ShowSummaryAction extends ShowQuestionAction {
         logger.debug("end summary paging");
 
         return step;
+    }
+
+    private ActionForward showError(WdkModelBean wdkModel, UserBean wdkUser,
+            ActionMapping mapping, HttpServletRequest request,
+            HttpServletResponse response) throws WdkModelException,
+            WdkUserException, SQLException, JSONException,
+            NoSuchAlgorithmException, UnsupportedEncodingException {
+        // TEST
+        logger.info("Show the details of an invalid userAnswer/question");
+
+        String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+        Map<String, String> params;
+        Map<String, String> paramNames;
+        String customName;
+        if (qFullName == null || qFullName.length() == 0) {
+            String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
+            int userAnswerId = Integer.parseInt(strHistId);
+            StepBean step = wdkUser.getStep(userAnswerId);
+            params = step.getParams();
+            paramNames = step.getParamNames();
+            qFullName = step.getQuestionName();
+            customName = step.getCustomName();
+        } else {
+            params = new LinkedHashMap<String, String>();
+            paramNames = new LinkedHashMap<String, String>();
+            customName = qFullName;
+
+            // get params from request
+            Map<?, ?> parameters = request.getParameterMap();
+            for (Object object : parameters.keySet()) {
+                String pName;
+                pName = URLDecoder.decode((String) object, "utf-8");
+                Object objValue = parameters.get(object);
+                String pValue = null;
+                if (objValue != null) {
+                    pValue = objValue.toString();
+                    if (objValue instanceof String[]) {
+                        StringBuffer sb = new StringBuffer();
+                        String[] array = (String[]) objValue;
+                        for (String v : array) {
+                            if (sb.length() > 0) sb.append(", ");
+                            sb.append(v);
+                        }
+                        pValue = sb.toString();
+                    }
+                    pValue = URLDecoder.decode(pValue, "utf-8");
+                }
+                if (pName.startsWith("myProp(")) {
+                    pName = pName.substring(7, pName.length() - 1).trim();
+                    params.put(pName, pValue);
+
+                    String displayName = wdkModel.queryParamDisplayName(pName);
+                    if (displayName == null) displayName = pName;
+                    paramNames.put(pName, displayName);
+                }
+            }
+        }
+        String qDisplayName = wdkModel.getQuestionDisplayName(qFullName);
+        if (qDisplayName == null) qDisplayName = qFullName;
+
+        request.setAttribute("questionDisplayName", qDisplayName);
+        request.setAttribute("customName", customName);
+        request.setAttribute("params", params);
+        request.setAttribute("paramNames", paramNames);
+
+        ServletContext svltCtx = getServlet().getServletContext();
+        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+        String customViewFile = customViewDir + File.separator
+                + CConstants.WDK_CUSTOM_SUMMARY_ERROR_PAGE;
+
+        String url;
+        if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
+            url = customViewFile;
+        } else {
+            ActionForward forward = mapping.findForward(CConstants.SHOW_ERROR_MAPKEY);
+            url = forward.getPath();
+        }
+
+        ActionForward forward = new ActionForward(url);
+        forward.setRedirect(false);
+
+        return forward;
     }
 
     private static void prepareAttributes(HttpServletRequest request,
