@@ -112,8 +112,11 @@ public class ParamBean {
     public String getBriefRawValue() throws Exception {
         try {
         String rawValue = getRawValue();
-        if (rawValue != null && rawValue.length() > truncateLength)
-            rawValue = rawValue.substring(0, truncateLength) + "...";
+        if (rawValue != null) {
+            rawValue = rawValue.replaceAll("\\,", ", ");
+            if (rawValue.length() > truncateLength)
+                rawValue = rawValue.substring(0, truncateLength) + "...";
+        }
         return rawValue;
         } catch(Exception ex) {
             ex.printStackTrace();
