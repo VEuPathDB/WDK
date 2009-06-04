@@ -41,14 +41,13 @@ public class ProcessRenameStrategyAction extends Action {
             boolean checkName = Boolean.valueOf(
                     request.getParameter("checkName")).booleanValue();
             // TEST
-            if (customName == null || customName.replaceAll("\\\\", "").length() == 0) {
+            if (customName == null || customName.length() == 0) {
                 throw new Exception("No name was given for saving Strategy.");
             }
             if (strStratId == null || strStratId.length() == 0) {
                 throw new Exception("No Strategy was given for saving");
             }
 
-	    customName = customName.replaceAll("\\\\", "");
             int stratId = Integer.parseInt(strStratId);
             StrategyBean strategy = wdkUser.getStrategy(stratId);
             boolean opened = (wdkUser.getStrategyOrder(strStratId) > 0);
@@ -92,7 +91,7 @@ public class ProcessRenameStrategyAction extends Action {
 
                 // whether its a save or rename, set new name specified by user.
                 strategy.setName(customName);
-                strategy.update(true);
+                strategy.update(save || strategy.getIsSaved());
 
                 try {
                     wdkUser.replaceActiveStrategy(

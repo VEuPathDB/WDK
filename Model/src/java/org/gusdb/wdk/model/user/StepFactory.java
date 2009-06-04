@@ -1044,7 +1044,7 @@ public class StepFactory {
                                 + " FROM " + userSchema + TABLE_STRATEGY
                                 + " WHERE " + userIdColumn + " = ? AND "
                                 + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME
-                                + " LIKE ? AND " + COLUMN_IS_SAVED + "= ? AND "
+			        + " LIKE ? ESCAPE '\' AND " + COLUMN_IS_SAVED + "= ? AND "
                                 + COLUMN_IS_DELETED + " = ? ORDER BY 1, 3");
                 psCheck.setInt(1, userId);
                 psCheck.setString(2, wdkModel.getProjectId());
@@ -1055,7 +1055,7 @@ public class StepFactory {
                 psCheck.setInt(7, strategy.getName().length() + 2);
                 psCheck.setInt(8, userId);
                 psCheck.setString(9, wdkModel.getProjectId());
-                psCheck.setString(10, strategy.getName() + "(%)");
+                psCheck.setString(10, SqlUtils.escapeWildcards(strategy.getName()) + "(%)");
                 psCheck.setBoolean(11, false);
                 psCheck.setBoolean(12, false);
                 rsStrategy = psCheck.executeQuery();
