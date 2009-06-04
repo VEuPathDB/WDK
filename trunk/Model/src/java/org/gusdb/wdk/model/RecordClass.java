@@ -30,6 +30,8 @@ public class RecordClass extends WdkModelBase implements
         Map<String, Column> columns = query.getColumnMap();
         Map<String, Param> originalParams = query.getParamMap();
         Query newQuery = query.clone();
+        // do not cache the single-line query
+        newQuery.setIsCacheable(false);
 
         // find the new params to be created
         List<String> newParams = new ArrayList<String>();
