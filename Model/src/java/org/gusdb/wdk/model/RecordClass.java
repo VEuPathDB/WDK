@@ -52,6 +52,7 @@ public class RecordClass extends WdkModelBase implements
                 boolean quote = type.isText();
                 param.setName(columnName);
                 param.setQuote(quote);
+                //param.setAllowEmpty(true);
 
                 param.resolveReferences(wdkModel);
                 param.setResources(wdkModel);

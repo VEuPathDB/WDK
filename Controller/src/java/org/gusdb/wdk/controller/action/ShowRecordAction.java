@@ -51,21 +51,24 @@ public class ShowRecordAction extends Action {
             String value = request.getParameter(column);
             // to be backward compatible with older urls
 
-            // make project id optional
-            if (value == null && column.equals("project_id")) {
-                value = request.getParameter("projectId");
-                if (value == null) value = wdkModel.getProjectId();
+            if (column.equalsIgnoreCase("project_id")) {
+                // make project id optional
+                if (value == null || value.trim().length() == 0) {
+                    value = request.getParameter("projectId");
+                    if (value == null || value.trim().length() == 0)
+                        value = wdkModel.getProjectId();
+                }
+            } else {
+                // recognize old primary keys
+                if (value == null) value = request.getParameter("primary_key");
+                if (value == null) value = request.getParameter("primaryKey");
+                if (value == null) value = request.getParameter("id");
+
+                if (value == null)
+                    throw new WdkModelException("The required primary key "
+                            + "value " + column + " for recordClass "
+                            + wdkRecordClass.getFullName() + " is missing.");
             }
-
-            // recognize old primary keys
-            if (value == null) value = request.getParameter("primary_key");
-            if (value == null) value = request.getParameter("primaryKey");
-            if (value == null) value = request.getParameter("id");
-
-            if (value == null)
-                throw new WdkModelException("The required primary key value "
-                        + column + " for recordClass "
-                        + wdkRecordClass.getFullName() + " is missing.");
             pkValues.put(column, value);
 
             urlParams.append((urlParams.length() == 0) ? "?" : "&");
