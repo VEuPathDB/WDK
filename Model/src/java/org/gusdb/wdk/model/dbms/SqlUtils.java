@@ -186,13 +186,12 @@ public final class SqlUtils {
     /**
      * Escapes the input string for use in LIKE
      * clauses to allow matching special chars
-     * (requires ESCAPE '\' after LIKE clause)
      * 
      * @param value
      * @return the input value with special characters escaped
      */
     public static String escapeWildcards(String value) {
-	return value.replaceAll("%", "\\%").replaceAll("_","\\_");
+	return value.replaceAll("%","{%}").replaceAll("_","{_}");
     }
 
     /**

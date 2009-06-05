@@ -1044,7 +1044,7 @@ public class StepFactory {
                                 + " FROM " + userSchema + TABLE_STRATEGY
                                 + " WHERE " + userIdColumn + " = ? AND "
                                 + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME
-			        + " LIKE ? ESCAPE '\\' AND " + COLUMN_IS_SAVED + "= ? AND "
+			        + " LIKE ? AND " + COLUMN_IS_SAVED + "= ? AND "
                                 + COLUMN_IS_DELETED + " = ? ORDER BY 1, 3");
                 psCheck.setInt(1, userId);
                 psCheck.setString(2, wdkModel.getProjectId());
