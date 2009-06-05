@@ -24,6 +24,7 @@ import org.gusdb.wdk.model.WdkModelException;
 public class Oracle extends DBPlatform {
 
     public Oracle() throws ClassNotFoundException, SQLException {
+        super("SELECT 'ok' FROM dual");
         // register the driver
         Class.forName("oracle.jdbc.driver.OracleDriver");
 
@@ -234,18 +235,5 @@ public class Oracle extends DBPlatform {
     @Override
     public String convertBoolean(boolean value) {
         return value ? "1" : "0";
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.dbms.DBPlatform#testConnection()
-     */
-    @Override
-    public void testConnection() throws SQLException, WdkModelException {
-        String result = (String) SqlUtils.executeScalar(this.getDataSource(),
-                "SELECT 'ok' FROM dual");
-        if (!result.equals("ok"))
-            throw new WdkModelException("The test query fails");
     }
 }
