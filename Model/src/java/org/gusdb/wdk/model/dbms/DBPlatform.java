@@ -110,6 +110,7 @@ public abstract class DBPlatform {
     private String name;
     private WdkModel wdkModel;
     private ModelConfigDB dbConfig;
+    private String validationQuery;
 
     // #########################################################################
     // the Abstract methods that are platform dependent
@@ -150,14 +151,12 @@ public abstract class DBPlatform {
 
     public abstract String convertBoolean(boolean value);
 
-    public abstract void testConnection() throws SQLException,
-            WdkModelException;
-
     // #########################################################################
     // Common methods are platform independent
     // #########################################################################
 
-    public DBPlatform() {
+    public DBPlatform(String validationQuery) {
+        this.validationQuery = validationQuery;
         platforms.add(this);
     }
 
@@ -218,7 +217,6 @@ public abstract class DBPlatform {
                 dbConfig.getPassword());
 
         // create abandoned configuration
-        String validationQuery = null;
         boolean defaultReadOnly = false;
         boolean defaultAutoCommit = true;
         new PoolableConnectionFactory(connectionFactory, connectionPool, null,

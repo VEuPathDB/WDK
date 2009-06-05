@@ -4,7 +4,6 @@
 package org.gusdb.wdk.model.xml;
 
 import org.gusdb.wdk.model.Utilities;
-import org.gusdb.wdk.model.WdkModel;
 
 /**
  * @author Jerric
