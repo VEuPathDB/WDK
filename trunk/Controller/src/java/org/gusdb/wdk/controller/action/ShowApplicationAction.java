@@ -1,5 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -8,6 +9,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONObject;
@@ -42,6 +44,22 @@ public class ShowApplicationAction extends ShowSummaryAction {
             String activeStrategies = jsState.toString();
             request.setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY,
                     activeStrategies);
+
+            /*
+             * Charles Treatman 6/5/09 Add code here to set the
+             * current_application_tab cookie so that user will go to the Browse 
+             * Strategies tab if no strats are opened.
+             */
+	    StrategyBean[] openedStrategies = wdkUser.getActiveStrategies();
+	    if (openedStrategies.length == 0) {
+		Cookie tabCookie = new Cookie("current_application_tab",
+					      "search_history");
+		// make sure it's only a session cookie, not persistent
+		tabCookie.setMaxAge(-1);
+		// make sure the cookie is good for whole site, not just webapp
+		tabCookie.setPath("/");
+		response.addCookie(tabCookie);
+	    }
 
             ActionForward forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
 

@@ -85,12 +85,12 @@ public class ProcessRenameStrategyAction extends Action {
                                 strategy.getLatestStep(), false);
 
                     // mark the strategy as saved, set saved name
-                    strategy.setSavedName(customName);
                     strategy.setIsSaved(true);
                 }
 
                 // whether its a save or rename, set new name specified by user.
                 strategy.setName(customName);
+		strategy.setSavedName(customName);
                 strategy.update(save || strategy.getIsSaved());
 
                 try {
