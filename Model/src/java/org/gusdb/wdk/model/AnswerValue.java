@@ -977,21 +977,26 @@ public class AnswerValue {
     public PrimaryKeyAttributeValue[] getAllPkValues()
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        ResultList resultList = idsQueryInstance.getResults();
+        String idSql = getIdSql();
         PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
         String[] pkColumns = pkField.getColumnRefs();
         List<PrimaryKeyAttributeValue> pkValues = new ArrayList<PrimaryKeyAttributeValue>();
-        while (resultList.next()) {
-            Map<String, Object> values = new LinkedHashMap<String, Object>();
-            for (String column : pkColumns) {
-                values.put(column, resultList.get(column));
+        DataSource dataSource = question.getWdkModel().getQueryPlatform().getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, idSql);
+        ResultList resultList = new SqlResultList(resultSet);
+        try {
+            while (resultList.next()) {
+                Map<String, Object> values = new LinkedHashMap<String, Object>();
+                for (String column : pkColumns) {
+                    values.put(column, resultList.get(column));
+                }
+                PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(
+                        pkField, values);
+                pkValues.add(pkValue);
             }
-            PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(
-                    pkField, values);
-            pkValues.add(pkValue);
+        } finally {
+            resultList.close();
         }
-        resultList.close();
-
         PrimaryKeyAttributeValue[] array = new PrimaryKeyAttributeValue[pkValues.size()];
         pkValues.toArray(array);
         return array;
