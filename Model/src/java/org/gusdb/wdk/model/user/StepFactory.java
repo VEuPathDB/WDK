@@ -12,7 +12,6 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -168,35 +167,31 @@ public class StepFactory {
         PreparedStatement psInsertStep = null;
         ResultSet rsMax = null;
         try {
-            synchronized (connection) {
-                connection.setAutoCommit(false);
+            connection.setAutoCommit(false);
 
-                // get the current display id
-                Statement statement = connection.createStatement();
-                rsMax = statement.executeQuery(sqlMaxId.toString());
-                if (rsMax.next()) // has old steps, get the max of it
-                    displayId = rsMax.getInt("max_id");
-                rsMax.close();
-                displayId++;
+            // get the current display id
+            Statement statement = connection.createStatement();
+            rsMax = statement.executeQuery(sqlMaxId.toString());
+            if (rsMax.next()) // has old steps, get the max of it
+                displayId = rsMax.getInt("max_id");
+            rsMax.close();
+            displayId++;
 
-                psInsertStep = connection.prepareStatement(sqlInsertStep.toString());
-                psInsertStep.setInt(1, stepId);
-                psInsertStep.setInt(2, displayId);
-                psInsertStep.setInt(3, userId);
-                psInsertStep.setInt(4, answerId);
-                psInsertStep.setTimestamp(5,
-                        new Timestamp(createTime.getTime()));
-                psInsertStep.setTimestamp(6, new Timestamp(
-                        lastRunTime.getTime()));
-                psInsertStep.setInt(7, estimateSize);
-                psInsertStep.setString(8, filterName);
-                psInsertStep.setBoolean(9, deleted);
-                userPlatform.setClobData(psInsertStep, 10, displayParamContent,
-                        false);
-                psInsertStep.executeUpdate();
+            psInsertStep = connection.prepareStatement(sqlInsertStep.toString());
+            psInsertStep.setInt(1, stepId);
+            psInsertStep.setInt(2, displayId);
+            psInsertStep.setInt(3, userId);
+            psInsertStep.setInt(4, answerId);
+            psInsertStep.setTimestamp(5, new Timestamp(createTime.getTime()));
+            psInsertStep.setTimestamp(6, new Timestamp(lastRunTime.getTime()));
+            psInsertStep.setInt(7, estimateSize);
+            psInsertStep.setString(8, filterName);
+            psInsertStep.setBoolean(9, deleted);
+            userPlatform.setClobData(psInsertStep, 10, displayParamContent,
+                    false);
+            psInsertStep.executeUpdate();
 
-                connection.commit();
-            }
+            connection.commit();
         } catch (SQLException ex) {
             connection.rollback();
             throw ex;
@@ -758,7 +753,7 @@ public class StepFactory {
         } finally {
             SqlUtils.closeResultSet(resultSet);
         }
-        Collections.sort(strategies, new Comparator<Strategy>(){
+        Collections.sort(strategies, new Comparator<Strategy>() {
             public int compare(Strategy o1, Strategy o2) {
                 return o2.getLastRunTime().compareTo(o1.getLastRunTime());
             }
@@ -1044,7 +1039,7 @@ public class StepFactory {
                                 + " FROM " + userSchema + TABLE_STRATEGY
                                 + " WHERE " + userIdColumn + " = ? AND "
                                 + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME
-			        + " LIKE ? AND " + COLUMN_IS_SAVED + "= ? AND "
+                                + " LIKE ? AND " + COLUMN_IS_SAVED + "= ? AND "
                                 + COLUMN_IS_DELETED + " = ? ORDER BY 1, 3");
                 psCheck.setInt(1, userId);
                 psCheck.setString(2, wdkModel.getProjectId());
@@ -1055,7 +1050,8 @@ public class StepFactory {
                 psCheck.setInt(7, strategy.getName().length() + 2);
                 psCheck.setInt(8, userId);
                 psCheck.setString(9, wdkModel.getProjectId());
-                psCheck.setString(10, SqlUtils.escapeWildcards(strategy.getName()) + "(%)");
+                psCheck.setString(10,
+                        SqlUtils.escapeWildcards(strategy.getName()) + "(%)");
                 psCheck.setBoolean(11, false);
                 psCheck.setBoolean(12, false);
                 rsStrategy = psCheck.executeQuery();
@@ -1183,44 +1179,42 @@ public class StepFactory {
 
         int strategyId = userPlatform.getNextId(userSchema, TABLE_STRATEGY);
         try {
-            synchronized (connection) {
-                connection.setAutoCommit(false);
+            connection.setAutoCommit(false);
 
-                // get the current max strategy id
-                psMax = connection.prepareStatement("SELECT max("
-                        + COLUMN_DISPLAY_ID + ") max_id FROM " + userSchema
-                        + TABLE_STRATEGY + " WHERE " + userIdColumn
-                        + " = ? AND " + COLUMN_PROJECT_ID + " = ?");
-                psMax.setInt(1, userId);
-                psMax.setString(2, wdkModel.getProjectId());
-                rsMax = psMax.executeQuery();
+            // get the current max strategy id
+            psMax = connection.prepareStatement("SELECT max("
+                    + COLUMN_DISPLAY_ID + ") max_id FROM " + userSchema
+                    + TABLE_STRATEGY + " WHERE " + userIdColumn + " = ? AND "
+                    + COLUMN_PROJECT_ID + " = ?");
+            psMax.setInt(1, userId);
+            psMax.setString(2, wdkModel.getProjectId());
+            rsMax = psMax.executeQuery();
 
-                if (rsMax.next()) displayId = rsMax.getInt("max_id") + 1;
-                else displayId = 1;
+            if (rsMax.next()) displayId = rsMax.getInt("max_id") + 1;
+            else displayId = 1;
 
-                // insert the row into strategies
-                psStrategy = SqlUtils.getPreparedStatement(dataSource,
-                        "INSERT INTO " + userSchema + TABLE_STRATEGY + " ("
-                                + COLUMN_DISPLAY_ID + ", "
-                                + COLUMN_STRATEGY_INTERNAL_ID + ", "
-                                + userIdColumn + ", " + COLUMN_ROOT_STEP_ID
-                                + ", " + COLUMN_IS_SAVED + ", " + COLUMN_NAME
-                                + ", " + COLUMN_SAVED_NAME + ", "
-                                + COLUMN_PROJECT_ID + ", " + COLUMN_IS_DELETED
-                                + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                psStrategy.setInt(1, displayId);
-                psStrategy.setInt(2, strategyId);
-                psStrategy.setInt(3, userId);
-                psStrategy.setInt(4, root.getDisplayId());
-                psStrategy.setBoolean(5, saved);
-                psStrategy.setString(6, name);
-                psStrategy.setString(7, savedName);
-                psStrategy.setString(8, wdkModel.getProjectId());
-                psStrategy.setBoolean(9, false);
-                psStrategy.executeUpdate();
+            // insert the row into strategies
+            psStrategy = SqlUtils.getPreparedStatement(dataSource,
+                    "INSERT INTO " + userSchema + TABLE_STRATEGY + " ("
+                            + COLUMN_DISPLAY_ID + ", "
+                            + COLUMN_STRATEGY_INTERNAL_ID + ", " + userIdColumn
+                            + ", " + COLUMN_ROOT_STEP_ID + ", "
+                            + COLUMN_IS_SAVED + ", " + COLUMN_NAME + ", "
+                            + COLUMN_SAVED_NAME + ", " + COLUMN_PROJECT_ID
+                            + ", " + COLUMN_IS_DELETED
+                            + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+            psStrategy.setInt(1, displayId);
+            psStrategy.setInt(2, strategyId);
+            psStrategy.setInt(3, userId);
+            psStrategy.setInt(4, root.getDisplayId());
+            psStrategy.setBoolean(5, saved);
+            psStrategy.setString(6, name);
+            psStrategy.setString(7, savedName);
+            psStrategy.setString(8, wdkModel.getProjectId());
+            psStrategy.setBoolean(9, false);
+            psStrategy.executeUpdate();
 
-                connection.commit();
-            }
+            connection.commit();
         } catch (SQLException ex) {
             connection.rollback();
             throw ex;
