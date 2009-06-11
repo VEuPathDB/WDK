@@ -617,10 +617,8 @@ public class UserFactory {
         PreparedStatement psRoleInsert = null;
         try {
             // before that, remove the records first
-            psRoleDelete = SqlUtils.getPreparedStatement(dataSource, "DELETE "
-                    + "FROM " + userSchema + "user_roles WHERE user_id = ?");
-            psRoleDelete.setInt(1, userId);
-            psRoleDelete.execute();
+            SqlUtils.executeUpdate(dataSource, "DELETE FROM " + userSchema
+                    + "user_roles WHERE user_id = " + userId);
 
             // Then get a prepared statement to do the insertion
             psRoleInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT "
@@ -691,7 +689,7 @@ public class UserFactory {
             psUser.execute();
 
             // save user's roles
-            saveUserRoles(user);
+            //saveUserRoles(user);
 
             // save preference
             savePreferences(user);
