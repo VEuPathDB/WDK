@@ -70,14 +70,12 @@ public class ResultFactory {
             JSONException, WdkUserException {
         Query query = instance.getQuery();
         QueryInfo queryInfo = cacheFactory.getQueryInfo(query);
-        synchronized (query) {
-            // get the query instance id; null if not exist
-            Integer instanceId = checkInstanceId(instance, queryInfo);
-            if (instanceId == null) // instance cache not exist, create it
-                instanceId = createCache(instance, queryInfo, indexColumns);
-            instance.setInstanceId(instanceId);
-            return instanceId;
-        }
+        // get the query instance id; null if not exist
+        Integer instanceId = checkInstanceId(instance, queryInfo);
+        if (instanceId == null) // instance cache not exist, create it
+            instanceId = createCache(instance, queryInfo, indexColumns);
+        instance.setInstanceId(instanceId);
+        return instanceId;
     }
 
     public String getCacheTable(QueryInstance instance, String[] indexColumn)
@@ -141,13 +139,26 @@ public class ResultFactory {
             String cacheTable = queryInfo.getCacheTable();
             if (!platform.checkTableExists(null, cacheTable)) {
                 // create the cache using the result of the first query
-                instance.createCache(connection, cacheTable, instanceId, indexColumns);
+                instance.createCache(connection, cacheTable, instanceId,
+                        indexColumns);
             } else {// insert result into existing cache table
                 instance.insertToCache(connection, cacheTable, instanceId);
             }
+            
             // instance record is added after the cache is created to make sure
             // if there is something wrong with the query, nothing was cached.
-            addCacheInstance(connection, queryInfo, instance, instanceId);
+            Query query = instance.getQuery();
+            synchronized (query) {
+                // check the id again, if it has been created, discard the newly
+                // inserted data and use the old one
+                Integer newId = checkInstanceId(instance, queryInfo);
+                if (newId == null) {
+                    addCacheInstance(connection, queryInfo, instance,
+                            instanceId);
+                } else {
+                    instanceId = newId;
+                }
+            }
 
             connection.commit();
             return instanceId;
@@ -174,8 +185,8 @@ public class ResultFactory {
         }
     }
 
-    public void createCacheTableIndex(Connection connection,
-            String cacheTable, String[] indexColumns) throws SQLException {
+    public void createCacheTableIndex(Connection connection, String cacheTable,
+            String[] indexColumns) throws SQLException {
         // create index on query instance id
         StringBuffer sqlId = new StringBuffer("CREATE INDEX ");
         sqlId.append(cacheTable).append("_idx01 ON ").append(cacheTable);
