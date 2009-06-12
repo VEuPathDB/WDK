@@ -36,6 +36,7 @@ public class ProcessRenameStepAction extends Action {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+	    String strBranchId = null;
             String customName = request.getParameter("customName");
 
             // check the input
@@ -44,6 +45,11 @@ public class ProcessRenameStepAction extends Action {
             }
             if (strStratId == null || strStratId.length() == 0) {
                 throw new Exception("No Strategy was given for saving");
+            }
+
+            if (strStratId.indexOf("_") > 0) {
+                strBranchId = strStratId.split("_")[1];
+                strStratId = strStratId.split("_")[0];
             }
 
             int stratId = Integer.parseInt(strStratId);
