@@ -1003,7 +1003,6 @@ public class UserFactory {
 
             int historyId = 1;
 
-            synchronized (connection) {
                 connection.setAutoCommit(false);
 
                 String maxIdSql = "(SELECT max(max_id)+1  FROM ("
@@ -1040,7 +1039,7 @@ public class UserFactory {
                 if (rsMax.next()) historyId = rsMax.getInt("max_id");
 
                 connection.commit();
-            }
+            
             // create the History
             History history = new History(this, user, historyId);
             history.setQuestionName(answer.getQuestion().getFullName());
