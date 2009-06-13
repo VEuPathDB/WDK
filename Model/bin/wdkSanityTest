@@ -12,4 +12,4 @@ my $cmd = "java $sysProps -classpath $CLASSPATH org.gusdb.wdk.model.test.SanityT
 
 system($cmd);
 
-
+exit $? >> 8;
