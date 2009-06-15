@@ -1245,7 +1245,7 @@ public class User /* implements Serializable */{
         String rightKey = Integer.toString(rightStep.getDisplayId());
         params.put(rightName, rightKey);
 
-        String operatorString = operator.getOperator(wdkModel.getQueryPlatform());
+        String operatorString = operator.getBaseOperator();
         params.put(booleanQuery.getOperatorParam().getName(), operatorString);
         params.put(booleanQuery.getUseBooleanFilter().getName(),
                 Boolean.toString(useBooleanFilter));
