@@ -378,7 +378,7 @@ public class User /* implements Serializable */{
      * @throws WdkUserException
      * @throws NoSuchAlgorithmException
      */
-    public Step createStep(AnswerValue answerValue, boolean deleted)
+    public synchronized Step createStep(AnswerValue answerValue, boolean deleted)
             throws NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException, JSONException {
         Question question = answerValue.getQuestion();
@@ -391,7 +391,7 @@ public class User /* implements Serializable */{
                 deleted);
     }
 
-    public Step createStep(Question question, Map<String, String> paramValues,
+    public synchronized Step createStep(Question question, Map<String, String> paramValues,
             String filterName) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         AnswerFilterInstance filter = null;
@@ -402,7 +402,7 @@ public class User /* implements Serializable */{
         return createStep(question, paramValues, filter);
     }
 
-    public Step createStep(Question question, Map<String, String> paramValues,
+    public synchronized Step createStep(Question question, Map<String, String> paramValues,
             AnswerFilterInstance filter) throws WdkUserException,
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException {
@@ -410,7 +410,7 @@ public class User /* implements Serializable */{
         return createStep(question, paramValues, filter, 1, endIndex, false);
     }
 
-    public Step createStep(Question question, Map<String, String> paramValues,
+    public synchronized Step createStep(Question question, Map<String, String> paramValues,
             AnswerFilterInstance filter, int pageStart, int pageEnd,
             boolean deleted) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
@@ -420,7 +420,7 @@ public class User /* implements Serializable */{
         return step;
     }
 
-    public Strategy createStrategy(Step step, boolean saved)
+    public synchronized Strategy createStrategy(Step step, boolean saved)
             throws WdkUserException, WdkModelException, SQLException,
             JSONException {
         return createStrategy(step, null, null, saved);
@@ -428,13 +428,13 @@ public class User /* implements Serializable */{
 
     // Transitional method...how to handle savedName properly?
     // Probably by expecting it if a name is given?
-    public Strategy createStrategy(Step step, String name, boolean saved)
+    public synchronized Strategy createStrategy(Step step, String name, boolean saved)
             throws WdkUserException, WdkModelException, SQLException,
             JSONException {
         return createStrategy(step, name, null, saved);
     }
 
-    public Strategy createStrategy(Step step, String name, String savedName,
+    public synchronized Strategy createStrategy(Step step, String name, String savedName,
             boolean saved) throws WdkUserException, WdkModelException,
             SQLException, JSONException {
         Strategy strategy = stepFactory.createStrategy(this, step, name,
@@ -1086,7 +1086,7 @@ public class User /* implements Serializable */{
                     "Remote login failed. The remote key is expired.");
     }
 
-    public Strategy importStrategy(String strategyKey)
+    public synchronized Strategy importStrategy(String strategyKey)
             throws NoSuchAlgorithmException, WdkModelException,
             WdkUserException, SQLException, JSONException {
         String[] parts = strategyKey.split(":");
@@ -1097,7 +1097,7 @@ public class User /* implements Serializable */{
         return importStrategy(oldStrategy);
     }
 
-    public Strategy importStrategy(Strategy oldStrategy)
+    public synchronized Strategy importStrategy(Strategy oldStrategy)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
         Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy);
