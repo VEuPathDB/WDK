@@ -15,7 +15,7 @@ import org.gusdb.wdk.model.dbms.DBPlatform;
 public enum BooleanOperator {
 
     UNION("UNION"), INTERSECT("INTERSECT"), LEFT_MINUS("MINUS"), RIGHT_MINUS(
-            "MINUS");
+            "RMINUS");
 
     private static Set<String> unions = new LinkedHashSet<String>();
     private static Set<String> intersets = new LinkedHashSet<String>();
@@ -55,6 +55,10 @@ public enum BooleanOperator {
      */
     private BooleanOperator(String operator) {
         this.operator = operator;
+    }
+
+    public String getBaseOperator() {
+	return operator;
     }
 
     public String getOperator(DBPlatform platform) {
