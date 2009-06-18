@@ -346,39 +346,41 @@ public class CacheFactory {
         }
     }
 
-    public synchronized QueryInfo getQueryInfo(Query query)
-            throws SQLException, NoSuchAlgorithmException, JSONException,
-            WdkModelException {
-        QueryInfo queryInfo = checkQueryInfo(query);
-        if (queryInfo != null) return queryInfo;
+    public QueryInfo getQueryInfo(Query query) throws SQLException,
+            NoSuchAlgorithmException, JSONException, WdkModelException {
+        synchronized (query) {
+            QueryInfo queryInfo = checkQueryInfo(query);
+            if (queryInfo != null) return queryInfo;
 
-        // cache table doesn't exist, create one
-        queryInfo = new QueryInfo();
-        queryInfo.setQueryId(platform.getNextId(null, TABLE_QUERY));
-        queryInfo.setCacheTable(CACHE_TABLE_PREFIX + queryInfo.getQueryId());
-        queryInfo.setQueryName(query.getFullName());
-        queryInfo.setQueryChecksum(query.getChecksum());
+            // cache table doesn't exist, create one
+            queryInfo = new QueryInfo();
+            queryInfo.setQueryId(platform.getNextId(null, TABLE_QUERY));
+            queryInfo.setCacheTable(CACHE_TABLE_PREFIX + queryInfo.getQueryId());
+            queryInfo.setQueryName(query.getFullName());
+            queryInfo.setQueryChecksum(query.getChecksum());
 
-        StringBuffer sql = new StringBuffer("INSERT INTO ");
-        sql.append(TABLE_QUERY).append(" (");
-        sql.append(COLUMN_QUERY_ID).append(", ");
-        sql.append(COLUMN_QUERY_NAME).append(", ");
-        sql.append(COLUMN_QUERY_CHECKSUM).append(", ");
-        sql.append(COLUMN_TABLE_NAME).append(") ");
-        sql.append("VALUES (?, ?, ?, ?)");
+            StringBuffer sql = new StringBuffer("INSERT INTO ");
+            sql.append(TABLE_QUERY).append(" (");
+            sql.append(COLUMN_QUERY_ID).append(", ");
+            sql.append(COLUMN_QUERY_NAME).append(", ");
+            sql.append(COLUMN_QUERY_CHECKSUM).append(", ");
+            sql.append(COLUMN_TABLE_NAME).append(") ");
+            sql.append("VALUES (?, ?, ?, ?)");
 
-        PreparedStatement psInsert = null;
-        try {
-            psInsert = SqlUtils.getPreparedStatement(dataSource, sql.toString());
-            psInsert.setInt(1, queryInfo.getQueryId());
-            psInsert.setString(2, queryInfo.getQueryName());
-            psInsert.setString(3, queryInfo.getQueryChecksum());
-            psInsert.setString(4, queryInfo.getCacheTable());
-            psInsert.executeUpdate();
-        } finally {
-            SqlUtils.closeStatement(psInsert);
+            PreparedStatement psInsert = null;
+            try {
+                psInsert = SqlUtils.getPreparedStatement(dataSource,
+                        sql.toString());
+                psInsert.setInt(1, queryInfo.getQueryId());
+                psInsert.setString(2, queryInfo.getQueryName());
+                psInsert.setString(3, queryInfo.getQueryChecksum());
+                psInsert.setString(4, queryInfo.getCacheTable());
+                psInsert.executeUpdate();
+            } finally {
+                SqlUtils.closeStatement(psInsert);
+            }
+            return queryInfo;
         }
-        return queryInfo;
     }
 
     private QueryInfo checkQueryInfo(Query query)
