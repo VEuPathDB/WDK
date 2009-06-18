@@ -32,6 +32,7 @@ import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.ModelConfigUserDB;
 import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -69,6 +70,10 @@ public class StepFactory {
     private static final String COLUMN_IS_COLLAPSIBLE = "is_collapsible";
     private static final String COLUMN_DISPLAY_PARAMS = "display_params";
     private static final String COLUMN_IS_VALID = "is_valid";
+    private static final String COLUMN_SIGNATURE = "signature";
+    private static final String COLUMN_DESCRIPTION = "description";
+    private static final String COLUMN_LAST_VIEWED_TIME = "last_view_time";
+    private static final String COLUMN_LAST_MODIFIED_TIME = "last_modify_time";
 
     private static final String COLUMN_STRATEGY_INTERNAL_ID = "strategy_id";
     private static final String COLUMN_ROOT_STEP_ID = "root_step_id";
@@ -706,16 +711,8 @@ public class StepFactory {
     List<Strategy> loadStrategies(User user, boolean saved, boolean recent)
             throws SQLException, WdkUserException, WdkModelException,
             JSONException {
-        StringBuffer sql = new StringBuffer("SELECT DISTINCT * FROM (SELECT ");
-        sql.append(" sr.").append(COLUMN_STRATEGY_INTERNAL_ID).append(", ");
-        sql.append(" sr.").append(COLUMN_NAME).append(", ");
-        sql.append(" sr.").append(COLUMN_DISPLAY_ID).append(", ");
-        sql.append(" sr.").append(COLUMN_ROOT_STEP_ID).append(", ");
-        sql.append(" sr.").append(COLUMN_CREATE_TIME).append(", ");
-        sql.append(" sr.").append(COLUMN_IS_SAVED).append(", ");
-        sql.append(" sr.").append(COLUMN_IS_DELETED).append(", ");
-        sql.append(" sr.").append(COLUMN_IS_VALID).append(", ");
-        sql.append(" sr.").append(COLUMN_SAVED_NAME).append(" FROM ");
+        StringBuffer sql = new StringBuffer("SELECT DISTINCT * FROM ");
+        sql.append(" (SELECT  sr.* FROM ");
         sql.append(userSchema).append(TABLE_STRATEGY).append(" sr, ");
         sql.append(userSchema).append(TABLE_STEP).append(" sp ");
         sql.append(" WHERE sr.").append(COLUMN_ROOT_STEP_ID);
@@ -769,11 +766,15 @@ public class StepFactory {
 
         Strategy strategy = new Strategy(this, user, strategyId, internalId);
         strategy.setName(resultSet.getString(COLUMN_NAME));
-        strategy.setCreatedTime(resultSet.getDate(COLUMN_CREATE_TIME));
+        strategy.setCreatedTime(resultSet.getTimestamp(COLUMN_CREATE_TIME));
         strategy.setIsSaved(resultSet.getBoolean(COLUMN_IS_SAVED));
         strategy.setDeleted(resultSet.getBoolean(COLUMN_IS_DELETED));
         strategy.setValid(resultSet.getBoolean(COLUMN_IS_VALID));
         strategy.setSavedName(resultSet.getString(COLUMN_SAVED_NAME));
+        strategy.setLastViewedTime(resultSet.getTimestamp(COLUMN_LAST_VIEWED_TIME));
+        strategy.setLastModifiedTime(resultSet.getTimestamp(COLUMN_LAST_MODIFIED_TIME));
+        strategy.setSignature(resultSet.getString(COLUMN_SIGNATURE));
+        strategy.setDescription(resultSet.getString(COLUMN_DESCRIPTION));
 
         int rootStepId = resultSet.getInt(COLUMN_ROOT_STEP_ID);
         Step rootStep = loadStepTree(user, rootStepId);
@@ -863,7 +864,8 @@ public class StepFactory {
         // Need to create strategy & then load it so that all AnswerValues
         // are created properly
         // Jerric - the imported strategy should always be unsaved.
-        Strategy strategy = createStrategy(user, latestStep, name, null, false);
+        Strategy strategy = createStrategy(user, latestStep, name, null, false,
+                oldStrategy.getDescription());
         return loadStrategy(user, strategy.getStrategyId(), false);
     }
 
@@ -918,11 +920,8 @@ public class StepFactory {
         PreparedStatement psStrategy = null;
         ResultSet rsStrategy = null;
         try {
-            String query = "SELECT " + COLUMN_STRATEGY_INTERNAL_ID + ", "
-                    + COLUMN_NAME + ", " + COLUMN_IS_SAVED + ", "
-                    + COLUMN_ROOT_STEP_ID + ", " + COLUMN_CREATE_TIME + ", "
-                    + COLUMN_SAVED_NAME + " FROM " + userSchema
-                    + TABLE_STRATEGY + " WHERE " + userIdColumn + " = ? AND "
+            String query = "SELECT * FROM " + userSchema + TABLE_STRATEGY
+                    + " WHERE " + userIdColumn + " = ? AND "
                     + COLUMN_DISPLAY_ID + " = ? AND " + COLUMN_PROJECT_ID
                     + " = ?";
             if (!allowDeleted) {
@@ -941,13 +940,7 @@ public class StepFactory {
                         + " does not exist " + "for user " + user.getEmail());
             }
 
-            int internalId = rsStrategy.getInt(COLUMN_STRATEGY_INTERNAL_ID);
-
-            Strategy strategy = new Strategy(this, user, displayId, internalId);
-            strategy.setName(rsStrategy.getString(COLUMN_NAME));
-            strategy.setIsSaved(rsStrategy.getBoolean(COLUMN_IS_SAVED));
-            strategy.setCreatedTime(rsStrategy.getTimestamp(COLUMN_CREATE_TIME));
-            strategy.setSavedName(rsStrategy.getString(COLUMN_SAVED_NAME));
+            Strategy strategy = loadStrategy(user, rsStrategy);
             // Set saved name, if any
             /*
              * if
@@ -958,17 +951,6 @@ public class StepFactory {
              * strategy.setSavedName(strategy.getName().replaceAll(
              * "(\\([\\d]+\\))?\\*$", "")); }
              */
-
-            // select parent_id, child_id, child step data FROM
-            // step_tree JOIN step WHERE parent_id = latest parent
-            // for each row returned, create Step, add Step to strategy, put
-            // child_id on parent stack
-            // Now add step_id to a stack, and go into while loop
-            int currentStepId = rsStrategy.getInt(COLUMN_ROOT_STEP_ID);
-            Step currentStep = loadStepTree(user, currentStepId);
-
-            strategy.addStep(currentStep);
-
             return strategy;
         } finally {
             SqlUtils.closeStatement(psStrategy);
@@ -976,10 +958,36 @@ public class StepFactory {
         }
     }
 
+    Strategy loadStrategy(String strategySignature) throws WdkUserException,
+            SQLException, WdkModelException, JSONException {
+        StringBuffer sql = new StringBuffer("SELECT * ");
+        sql.append(" FROM ").append(userSchema).append(TABLE_STRATEGY);
+        sql.append(" WHERE ").append(COLUMN_SIGNATURE).append(" = ? ");
+        sql.append(" AND ").append(COLUMN_PROJECT_ID).append(" = ?");
+        ResultSet resultSet = null;
+        PreparedStatement ps = null;
+        try {
+            ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
+            ps.setString(1, strategySignature);
+            ps.setString(2, wdkModel.getProjectId());
+            resultSet = ps.executeQuery();
+            if (!resultSet.next())
+                throw new WdkUserException("The strategy " + strategySignature
+                        + " does not exist");
+            int userId = resultSet.getInt(UserFactory.COLUMN_USER_ID);
+            User user = wdkModel.getUserFactory().getUser(userId);
+            Strategy strategy = loadStrategy(user, resultSet);
+            return strategy;
+        } finally {
+            SqlUtils.closeStatement(ps);
+            SqlUtils.closeResultSet(resultSet);
+        }
+    }
+
     // This function only updates the strategies table
     void updateStrategy(User user, Strategy strategy, boolean overwrite)
             throws WdkUserException, WdkModelException, SQLException,
-            JSONException {
+            JSONException, NoSuchAlgorithmException {
         // update strategy name, saved, step_id
         PreparedStatement psStrategy = null;
         ResultSet rsStrategy = null;
@@ -990,10 +998,8 @@ public class StepFactory {
         try {
             if (overwrite) {
                 // If we're overwriting, need to look up saved strategy id by
-                // name
-                // (only if the saved strategy is not the one we're updating,
-                // i.e.
-                // the saved strategy id != this strategy id)
+                // name (only if the saved strategy is not the one we're
+                // updating, i.e. the saved strategy id != this strategy id)
                 PreparedStatement psCheck = SqlUtils.getPreparedStatement(
                         dataSource, "SELECT " + COLUMN_STRATEGY_INTERNAL_ID
                                 + ", " + COLUMN_DISPLAY_ID + " FROM "
@@ -1070,7 +1076,7 @@ public class StepFactory {
 
                 Strategy newStrat = createStrategy(user,
                         strategy.getLatestStep(), strategy.getName() + append,
-                        strategy.getName(), false);
+                        strategy.getName(), false, strategy.getDescription());
                 strategy.setName(newStrat.getName());
                 strategy.setSavedName(newStrat.getSavedName());
                 strategy.setDisplayId(newStrat.getStrategyId());
@@ -1078,17 +1084,23 @@ public class StepFactory {
                 strategy.setIsSaved(false);
             }
 
+            Date modifiedTime = new Date();
             psStrategy = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
                     + userSchema + TABLE_STRATEGY + " SET " + COLUMN_NAME
                     + " = ?, " + COLUMN_ROOT_STEP_ID + " = ?, "
-                    + COLUMN_SAVED_NAME + " = ?, " + COLUMN_IS_SAVED
+                    + COLUMN_SAVED_NAME + " = ?, " + COLUMN_IS_SAVED + " = ?, "
+                    + COLUMN_DESCRIPTION + " = ?, " + COLUMN_LAST_MODIFIED_TIME
                     + " = ? WHERE " + COLUMN_STRATEGY_INTERNAL_ID + " = ?");
             psStrategy.setString(1, strategy.getName());
             psStrategy.setInt(2, strategy.getLatestStep().getDisplayId());
             psStrategy.setString(3, strategy.getSavedName());
             psStrategy.setBoolean(4, strategy.getIsSaved());
-            psStrategy.setInt(5, strategy.getInternalId());
+            psStrategy.setString(5, strategy.getDescription());
+            psStrategy.setTimestamp(6, new Timestamp(modifiedTime.getTime()));
+            psStrategy.setInt(7, strategy.getInternalId());
             int result = psStrategy.executeUpdate();
+
+            strategy.setLastModifiedTime(modifiedTime);
 
             if (result == 0)
                 throw new WdkUserException("The strategy #"
@@ -1106,8 +1118,9 @@ public class StepFactory {
     // and steps tables is handled in other functions. Once the Step
     // object exists, all of this data is already in the db.
     Strategy createStrategy(User user, Step root, String name,
-            String savedName, boolean saved) throws SQLException,
-            WdkUserException, WdkModelException, JSONException {
+            String savedName, boolean saved, String description)
+            throws SQLException, WdkUserException, WdkModelException,
+            JSONException, NoSuchAlgorithmException {
         int userId = user.getUserId();
 
         String userIdColumn = UserFactory.COLUMN_USER_ID;
@@ -1177,7 +1190,8 @@ public class StepFactory {
         ResultSet rsMax = null;
         Connection connection = dataSource.getConnection();
 
-        int strategyId = userPlatform.getNextId(userSchema, TABLE_STRATEGY);
+        int internalId = userPlatform.getNextId(userSchema, TABLE_STRATEGY);
+        String signature = getStrategySignature(user, internalId);
         try {
             connection.setAutoCommit(false);
 
@@ -1201,10 +1215,11 @@ public class StepFactory {
                             + ", " + COLUMN_ROOT_STEP_ID + ", "
                             + COLUMN_IS_SAVED + ", " + COLUMN_NAME + ", "
                             + COLUMN_SAVED_NAME + ", " + COLUMN_PROJECT_ID
-                            + ", " + COLUMN_IS_DELETED
-                            + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                            + ", " + COLUMN_IS_DELETED + ", "
+                            + COLUMN_SIGNATURE + ", " + COLUMN_DESCRIPTION
+                            + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
             psStrategy.setInt(1, displayId);
-            psStrategy.setInt(2, strategyId);
+            psStrategy.setInt(2, internalId);
             psStrategy.setInt(3, userId);
             psStrategy.setInt(4, root.getDisplayId());
             psStrategy.setBoolean(5, saved);
@@ -1212,6 +1227,8 @@ public class StepFactory {
             psStrategy.setString(7, savedName);
             psStrategy.setString(8, wdkModel.getProjectId());
             psStrategy.setBoolean(9, false);
+            psStrategy.setString(10, signature);
+            psStrategy.setString(11, description);
             psStrategy.executeUpdate();
 
             connection.commit();
@@ -1321,7 +1338,8 @@ public class StepFactory {
         String name = strategy.getName();
         if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
         name = getNextName(user, name);
-        return createStrategy(user, root, name, null, false);
+        return createStrategy(user, root, name, null, false,
+                strategy.getDescription());
     }
 
     /**
@@ -1345,7 +1363,8 @@ public class StepFactory {
         String name = step.getCustomName();
         if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
         name = getNextName(user, name);
-        return createStrategy(user, step, name, null, false);
+        return createStrategy(user, step, name, null, false,
+                strategy.getDescription());
     }
 
     private String getNextName(User user, String oldName) throws SQLException {
@@ -1381,5 +1400,33 @@ public class StepFactory {
         } finally {
             SqlUtils.closeResultSet(rsNames);
         }
+    }
+
+    void updateStrategyViewTime(User user, int strategyId) throws SQLException {
+        StringBuffer sql = new StringBuffer("UPDATE ");
+        sql.append(userSchema).append(TABLE_STRATEGY);
+        sql.append(" SET ").append(COLUMN_LAST_VIEWED_TIME + " = ? ");
+        sql.append(" WHERE ").append(COLUMN_PROJECT_ID).append(" = ? ");
+        sql.append(" AND ").append(UserFactory.COLUMN_USER_ID).append(" = ? ");
+        sql.append(" AND ").append(COLUMN_DISPLAY_ID).append(" = ?");
+        PreparedStatement psUpdate = null;
+        try {
+            psUpdate = SqlUtils.getPreparedStatement(dataSource, sql.toString());
+            psUpdate.setTimestamp(1, new Timestamp(new Date().getTime()));
+            psUpdate.setString(2, wdkModel.getProjectId());
+            psUpdate.setInt(3, user.getUserId());
+            psUpdate.setInt(4, strategyId);
+            psUpdate.executeUpdate();
+        } finally {
+            SqlUtils.closeStatement(psUpdate);
+        }
+    }
+
+    private String getStrategySignature(User user, int internalId)
+            throws NoSuchAlgorithmException, WdkModelException {
+        String project_id = wdkModel.getProjectId();
+        String content = project_id + "_" + user.getUserId() + "_" + internalId
+                + "_6276406938881110742";
+        return Utilities.encrypt(content, true);
     }
 }

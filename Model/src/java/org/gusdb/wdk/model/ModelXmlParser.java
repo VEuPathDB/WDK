@@ -52,6 +52,7 @@ import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamSuggestion;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.param.TimestampParam;
 import org.gusdb.wdk.model.xml.XmlAttributeField;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
@@ -516,84 +517,61 @@ public class ModelXmlParser extends XmlParser {
                 ParamConfiguration.class, "addUseTermOnly");
 
         // string param
-        configureNode(digester, "wdkModel/paramSet/stringParam",
-                StringParam.class, "addParam");
-
-        configureNode(digester, "wdkModel/paramSet/stringParam/help",
-                WdkModelText.class, "addHelp");
-        digester.addCallMethod("wdkModel/paramSet/stringParam/help", "setText",
-                0);
-
-        configureNode(digester, "wdkModel/paramSet/stringParam/suggest",
-                ParamSuggestion.class, "addSuggest");
+        String path = "wdkModel/paramSet/stringParam";
+        configureNode(digester, path, StringParam.class, "addParam");
+        configureParamContent(digester, path);
 
         // flatVocabParam
-        configureNode(digester, "wdkModel/paramSet/flatVocabParam",
-                FlatVocabParam.class, "addParam");
-
-        configureNode(digester, "wdkModel/paramSet/flatVocabParam/help",
-                WdkModelText.class, "addHelp");
-        digester.addCallMethod("wdkModel/paramSet/flatVocabParam/help",
-                "setText", 0);
-
-        configureNode(digester, "wdkModel/paramSet/flatVocabParam/suggest",
-                ParamSuggestion.class, "addSuggest");
-
-        configureNode(digester, "wdkModel/paramSet/flatVocabParam/useTermOnly",
+        path = "wdkModel/paramSet/flatVocabParam";
+        configureNode(digester, path, FlatVocabParam.class, "addParam");
+        configureParamContent(digester, path);
+        configureNode(digester, path + "/useTermOnly",
                 ParamConfiguration.class, "addUseTermOnly");
 
-        // history param
+        // answer param
         configureNode(digester, "wdkModel/paramSet/answerParam",
                 AnswerParam.class, "addParam");
-
-        configureNode(digester, "wdkModel/paramSet/answerParam/help",
-                WdkModelText.class, "addHelp");
-        digester.addCallMethod("wdkModel/paramSet/answerParam/help", "setText",
-                0);
-
-        configureNode(digester, "wdkModel/paramSet/answerParam/suggest",
-                ParamSuggestion.class, "addSuggest");
+        configureParamContent(digester, "wdkModel/paramSet/answerParam");
 
         // dataset param
-        configureNode(digester, "wdkModel/paramSet/datasetParam",
-                DatasetParam.class, "addParam");
-
-        configureNode(digester, "wdkModel/paramSet/datasetParam/help",
-                WdkModelText.class, "addHelp");
-        digester.addCallMethod("wdkModel/paramSet/datasetParam/help",
-                "setText", 0);
-
-        configureNode(digester, "wdkModel/paramSet/datasetParam/suggest",
-                ParamSuggestion.class, "addSuggest");
+        path = "wdkModel/paramSet/datasetParam";
+        configureNode(digester, path, DatasetParam.class, "addParam");
+        configureParamContent(digester, path);
 
         // enum param
-        configureNode(digester, "wdkModel/paramSet/enumParam", EnumParam.class,
-                "addParam");
+        path = "wdkModel/paramSet/enumParam";
+        configureNode(digester, path, EnumParam.class, "addParam");
+        configureParamContent(digester, path);
 
-        configureNode(digester, "wdkModel/paramSet/enumParam/help",
-                WdkModelText.class, "addHelp");
-        digester.addCallMethod("wdkModel/paramSet/enumParam/help", "setText", 0);
-
-        configureNode(digester, "wdkModel/paramSet/enumParam/suggest",
-                ParamSuggestion.class, "addSuggest");
-
-        configureNode(digester, "wdkModel/paramSet/enumParam/useTermOnly",
+        configureNode(digester, path + "/useTermOnly",
                 ParamConfiguration.class, "addUseTermOnly");
 
-        configureNode(digester, "wdkModel/paramSet/enumParam/enumList",
-                EnumItemList.class, "addEnumItemList");
+        path = path + "/enumList";
+        configureNode(digester, path, EnumItemList.class, "addEnumItemList");
 
-        configureNode(digester,
-                "wdkModel/paramSet/enumParam/enumList/useTermOnly",
+        configureNode(digester, path + "/useTermOnly",
                 ParamConfiguration.class, "addUseTermOnly");
 
-        configureNode(digester,
-                "wdkModel/paramSet/enumParam/enumList/enumValue",
-                EnumItem.class, "addEnumItem");
-        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/display");
-        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/term");
-        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/internal");
-        digester.addBeanPropertySetter("wdkModel/paramSet/enumParam/enumList/enumValue/parentTerm");
+        configureNode(digester, path + "/enumValue", EnumItem.class,
+                "addEnumItem");
+        digester.addBeanPropertySetter(path + "/enumValue/display");
+        digester.addBeanPropertySetter(path + "/enumValue/term");
+        digester.addBeanPropertySetter(path + "/enumValue/internal");
+        digester.addBeanPropertySetter(path + "/enumValue/parentTerm");
+
+        // timestamp param
+        path = "wdkModel/paramSet/timestampParam";
+        configureNode(digester, path, TimestampParam.class, "addParam");
+        configureParamContent(digester, path);
+    }
+
+    private void configureParamContent(Digester digester, String paramPath) {
+        configureNode(digester, paramPath + "/help", WdkModelText.class,
+                "addHelp");
+        digester.addCallMethod(paramPath + "/help", "setText", 0);
+
+        configureNode(digester, paramPath + "/suggest", ParamSuggestion.class,
+                "addSuggest");
     }
 
     private void configureQuestionSet(Digester digester) {

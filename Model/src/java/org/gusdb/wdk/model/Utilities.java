@@ -63,12 +63,26 @@ public class Utilities {
 
     public static String encrypt(String data) throws WdkModelException,
             NoSuchAlgorithmException {
+        return encrypt(data, false);
+    }
+
+    public static String encrypt(String data, boolean shortDigest)
+            throws WdkModelException, NoSuchAlgorithmException {
         // cannot encrypt null value
         if (data == null || data.length() == 0)
             throw new WdkModelException("Cannot encrypt an empty/null string");
 
         MessageDigest digest = MessageDigest.getInstance("MD5");
         byte[] byteBuffer = digest.digest(data.toString().getBytes());
+        if (shortDigest) {
+            // shorten the digest to 16 bytes
+            byte[] newBuffer = new byte[16];
+            for (int i = 0; i < byteBuffer.length; i++) {
+                int index = i % 16;
+                newBuffer[index] ^= byteBuffer[i];
+            }
+            byteBuffer = newBuffer;
+        }
         // convert each byte into hex format
         StringBuffer buffer = new StringBuffer();
         for (int i = 0; i < byteBuffer.length; i++) {
@@ -103,6 +117,7 @@ public class Utilities {
         data = data.replace('\r', ' ');
         return data.trim().split("\\s+");
     }
+
     public static String fromArray(String[] data) {
         return fromArray(data, ",");
     }
