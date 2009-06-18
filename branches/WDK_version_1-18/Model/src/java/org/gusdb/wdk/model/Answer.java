@@ -525,7 +525,7 @@ public class Answer {
                 }
             }
         }
-        logger.info("Attribute query [" + attributeQuery.getFullName()
+        logger.debug("Attribute query [" + attributeQuery.getFullName()
                 + "] integrated.");
     }
 
