@@ -7,6 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.DateFormat;
 import java.util.Date;
 
 import org.gusdb.wdk.model.WdkModel;
@@ -162,4 +163,8 @@ public class TimestampParam extends Param {
         return false;
     }
     
+    @Override
+    public String getDefault() {
+        return DateFormat.getDateTimeInstance().format(new Date());
+    }
 }

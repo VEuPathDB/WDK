@@ -21,4 +21,4 @@ Otherwise a standard select menu is used.
 
 <c:set var="qP" value="${qp}"/>
 
-<html:hidden property="myProp(${qP.name})" value="${qP.newDateTime}"/>
+<html:hidden property="myProp(${qP.name})" value="${qP.default}"/>
