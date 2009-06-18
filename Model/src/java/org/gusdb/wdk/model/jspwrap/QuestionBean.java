@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.TimestampParam;
 import org.json.JSONException;
 
 /**
@@ -118,6 +119,8 @@ public class QuestionBean {
             return new AnswerParamBean((AnswerParam) param);
         } else if (param instanceof DatasetParam) {
             return new DatasetParamBean((DatasetParam) param);
+        } else if (param instanceof TimestampParam) {
+            return new TimestampParamBean((TimestampParam) param);
         } else {
             return new ParamBean(param);
         }

@@ -13,7 +13,7 @@ import org.gusdb.wdk.model.user.Strategy;
 import org.json.JSONException;
 
 public class StrategyBean {
-    
+
     private UserBean user;
     Strategy strategy;
 
@@ -117,7 +117,8 @@ public class StrategyBean {
     }
 
     public void update(boolean overwrite) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+            WdkModelException, SQLException, JSONException,
+            NoSuchAlgorithmException {
         strategy.update(overwrite);
     }
 
@@ -145,9 +146,9 @@ public class StrategyBean {
         return strategy.deleteStep(stepId, isBranch);
     }
 
-    public String getImportId() {
-        return strategy.getUser().getSignature() + ":"
-                + strategy.getStrategyId();
+    public String getImportId() throws NoSuchAlgorithmException, JSONException,
+            WdkModelException {
+        return strategy.getChecksum();
     }
 
     public StepBean getFirstStep() {
@@ -158,4 +159,37 @@ public class StrategyBean {
             WdkModelException {
         return strategy.getChecksum();
     }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Strategy#getDescription()
+     */
+    public String getDescription() {
+        return strategy.getDescription();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Strategy#getLastModifiedTime()
+     */
+    public Date getLastModifiedTime() {
+        return strategy.getLastModifiedTime();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Strategy#getLastViewedTime()
+     */
+    public Date getLastViewedTime() {
+        return strategy.getLastViewedTime();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Strategy#getSignature()
+     */
+    public String getSignature() {
+        return strategy.getSignature();
+    }
+
 }

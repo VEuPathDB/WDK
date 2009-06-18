@@ -942,12 +942,13 @@ public class UserBean /* implements Serializable */{
      * @throws WdkModelException
      * @throws SQLException
      * @throws JSONException
+     * @throws NoSuchAlgorithmException 
      * @see org.gusdb.wdk.model.user.User#createStrategy(org.gusdb.wdk.model.user.Step,
      *      boolean)
      */
     public StrategyBean createStrategy(StepBean step, boolean saved)
             throws WdkUserException, WdkModelException, SQLException,
-            JSONException {
+            JSONException, NoSuchAlgorithmException {
         return new StrategyBean(this, user.createStrategy(step.step, saved));
     }
 

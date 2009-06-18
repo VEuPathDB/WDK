@@ -102,8 +102,8 @@ public abstract class Param extends WdkModelBase {
     protected String defaultValue;
     protected String sample;
 
-    private boolean visible;
-    private boolean readonly;
+    protected boolean visible;
+    protected boolean readonly;
 
     private Group group;
 

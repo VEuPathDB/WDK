@@ -138,6 +138,7 @@
           <ref name="flatVocabParam" />
           <ref name="answerParam" />
           <ref name="datasetParam" />
+          <ref name="timestampParam" />
         </choice>
       </oneOrMore>
     </element>
@@ -229,10 +230,15 @@
     </element>
   </define>
 
-  <define name="hintParam">
-    <element name="hintParam">
-      <ref name="stringParamContent" />
-      <attribute name="queryRef" />
+  <define name="timestampParam">
+    <element name="timestampParam">
+      <ref name="ParamBaseContents" />
+      <!-- defines the type of the values of this answerParam -->
+      <zeroOrMore>
+        <element name="suggest">
+          <ref name="SuggestContent" />
+        </element>
+      </zeroOrMore>
     </element>
   </define>
 

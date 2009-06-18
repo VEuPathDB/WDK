@@ -217,6 +217,8 @@ CREATE TABLE wdkuser.steps
   collapsed_name varchar(200),
   is_collapsible NUMBER(1),
   display_params CLOB,
+  prev_step_id NUMBER(12),
+  invalid_message, VARCHAR(2000),
   CONSTRAINT "STEPS_PK" PRIMARY KEY (step_id),
   CONSTRAINT "STEPS_UNIQUE" UNIQUE (user_id, display_id),
   CONSTRAINT "STEPS_USER_ID_FK" FOREIGN KEY (user_id)
@@ -238,17 +240,24 @@ CREATE TABLE wdkuser.strategies
      project_id varchar(50) NOT NULL,
      is_saved NUMBER(1) NOT NULL,
      create_time TIMESTAMP DEFAULT SYSDATE,
+     last_view_time TIMESTAMP DEFAULT SYSDATE,
+     last_modify_time TIMESTAMP DEFAULT SYSDATE,
+     description varchar(4000),
+     signature varchar(40),
      name varchar(200) NOT NULL,
      saved_name varchar(200),
      is_deleted NUMBER(1),
      is_valid NUMBER(1),
+     prev_strategy_id NUMBER(12),
      CONSTRAINT "STRATEGIES_PK" PRIMARY KEY (strategy_id),
-     CONSTRAINT "STRATEGIES_UNIQUE" UNIQUE (user_id, display_id, project_id),
+     CONSTRAINT "STRATEGIES_UNIQUE" UNIQUE (project_id, user_id, display_id),
      CONSTRAINT "STRATEGIES_STEP_FK" FOREIGN KEY (user_id, root_step_id)
          REFERENCES wdkuser.steps (user_id, display_id),
      CONSTRAINT "STRATEGIES_USER_ID_FK" FOREIGN KEY (user_id)
          REFERENCES wdkuser.users (user_id)
 );
+
+CREATE INDEX wdkuser.strategies_idx01 ON wdkuser.strategies (signature, project_id);
 
 GRANT insert, update, delete on wdkuser.strategies to GUS_W;
 GRANT select on wdkuser.strategies to GUS_R;
@@ -261,6 +270,7 @@ CREATE TABLE wdkuser.user_datasets
   user_id NUMBER(12) NOT NULL,
   create_time TIMESTAMP NOT NULL,
   upload_file VARCHAR(2000),
+  prev_user_dataset_id NUMBER(12),
   CONSTRAINT "USER_DATASET_PK" PRIMARY KEY (user_dataset_id),
   CONSTRAINT "USER_DATASET_UQ1" UNIQUE (dataset_id, user_id),
   CONSTRAINT "USER_DATASETS_DS_ID_FK" FOREIGN KEY (dataset_id)

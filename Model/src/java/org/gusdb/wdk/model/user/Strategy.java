@@ -30,6 +30,10 @@ public class Strategy {
     private boolean isSaved;
     private boolean isDeleted = false;
     private Date createdTime;
+    private Date lastViewedTime;
+    private Date lastModifiedTime;
+    private String signature;
+    private String description;
     private String name;
     private String savedName = null;
     private boolean valid;
@@ -150,7 +154,7 @@ public class Strategy {
     }
 
     public void update(boolean overwrite) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+            WdkModelException, SQLException, JSONException, NoSuchAlgorithmException {
         stepFactory.updateStrategy(user, this, overwrite);
     }
 
@@ -466,5 +470,61 @@ public class Strategy {
      */
     public void setValid(boolean valid) {
         this.valid = valid;
+    }
+
+    /**
+     * @return the lastViewedTime
+     */
+    public Date getLastViewedTime() {
+        return lastViewedTime;
+    }
+
+    /**
+     * @param lastViewedTime the lastViewedTime to set
+     */
+    public void setLastViewedTime(Date lastViewedTime) {
+        this.lastViewedTime = lastViewedTime;
+    }
+
+    /**
+     * @return the lastModifiedTime
+     */
+    public Date getLastModifiedTime() {
+        return lastModifiedTime;
+    }
+
+    /**
+     * @param lastModifiedTime the lastModifiedTime to set
+     */
+    public void setLastModifiedTime(Date lastModifiedTime) {
+        this.lastModifiedTime = lastModifiedTime;
+    }
+
+    /**
+     * @return the signature
+     */
+    public String getSignature() {
+        return signature;
+    }
+
+    /**
+     * @param signature the signature to set
+     */
+    public void setSignature(String signature) {
+        this.signature = signature;
+    }
+
+    /**
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @param description the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

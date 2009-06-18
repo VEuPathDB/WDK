@@ -95,21 +95,27 @@ public class ResultFactory {
      * @param instance
      * @return
      * @throws SQLException
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @throws SQLException
      * @throws JSONException
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
      * @throws WdkUserException
      */
     private Integer checkInstanceId(QueryInstance instance, QueryInfo queryInfo)
-            throws SQLException, NoSuchAlgorithmException, WdkModelException,
-            JSONException, WdkUserException {
+            throws NoSuchAlgorithmException, WdkModelException, JSONException,
+            WdkUserException, SQLException {
+        String checksum = instance.getChecksum();
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(CacheFactory.COLUMN_INSTANCE_ID);
         sql.append(" FROM ").append(CacheFactory.TABLE_INSTANCE);
         sql.append(" WHERE ").append(CacheFactory.COLUMN_QUERY_ID);
         sql.append(" = ").append(queryInfo.getQueryId());
         sql.append(" AND ").append(CacheFactory.COLUMN_INSTANCE_CHECKSUM);
-        sql.append(" = '").append(instance.getChecksum()).append("'");
+        sql.append(" = '").append(checksum).append("'");
 
         DataSource dataSource = platform.getDataSource();
         try {
@@ -144,20 +150,25 @@ public class ResultFactory {
             } else {// insert result into existing cache table
                 instance.insertToCache(connection, cacheTable, instanceId);
             }
-            
+
             // instance record is added after the cache is created to make sure
             // if there is something wrong with the query, nothing was cached.
-            Query query = instance.getQuery();
-            synchronized (query) {
-                // check the id again, if it has been created, discard the newly
-                // inserted data and use the old one
-                Integer newId = checkInstanceId(instance, queryInfo);
-                if (newId == null) {
+            // check the id again, if it has been created, discard the newly
+            // inserted data and use the old one.
+            Integer newId = checkInstanceId(instance, queryInfo);
+            if (newId == null) {
+                String checksum = instance.getChecksum();
+                try {
                     addCacheInstance(connection, queryInfo, instance,
-                            instanceId);
-                } else {
-                    instanceId = newId;
+                            instanceId, checksum);
+                } catch (SQLException ex) {
+                    // the row must be inserted by other process at the moment.
+                    // If so, retrieve it; otherwise, throw error.
+                    newId = checkInstanceId(instance, queryInfo);
+                    if (newId == null) throw ex;
                 }
+            } else {
+                instanceId = newId;
             }
 
             connection.commit();
@@ -219,9 +230,8 @@ public class ResultFactory {
     }
 
     private void addCacheInstance(Connection connection, QueryInfo queryInfo,
-            QueryInstance instance, int instanceId) throws SQLException,
-            NoSuchAlgorithmException, WdkModelException, JSONException,
-            WdkUserException {
+            QueryInstance instance, int instanceId, String checksum)
+            throws SQLException {
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(CacheFactory.TABLE_INSTANCE).append(" (");
         sql.append(CacheFactory.COLUMN_INSTANCE_ID).append(", ");
@@ -235,7 +245,7 @@ public class ResultFactory {
             ps = connection.prepareStatement(sql.toString());
             ps.setInt(1, instanceId);
             ps.setInt(2, queryInfo.getQueryId());
-            ps.setString(3, instance.getChecksum());
+            ps.setString(3, checksum);
             platform.setClobData(ps, 4, instance.getResultMessage(), false);
             ps.executeUpdate();
         } finally {
