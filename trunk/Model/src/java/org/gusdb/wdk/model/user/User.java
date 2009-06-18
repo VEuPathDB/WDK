@@ -422,23 +422,24 @@ public class User /* implements Serializable */{
 
     public synchronized Strategy createStrategy(Step step, boolean saved)
             throws WdkUserException, WdkModelException, SQLException,
-            JSONException {
-        return createStrategy(step, null, null, saved);
+            JSONException, NoSuchAlgorithmException {
+        return createStrategy(step, null, null, saved, null);
     }
 
     // Transitional method...how to handle savedName properly?
     // Probably by expecting it if a name is given?
     public synchronized Strategy createStrategy(Step step, String name, boolean saved)
             throws WdkUserException, WdkModelException, SQLException,
-            JSONException {
-        return createStrategy(step, name, null, saved);
+            JSONException, NoSuchAlgorithmException {
+        return createStrategy(step, name, null, saved, null);
     }
 
     public synchronized Strategy createStrategy(Step step, String name, String savedName,
-            boolean saved) throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+            boolean saved, String description) throws WdkUserException,
+            WdkModelException, SQLException, JSONException,
+            NoSuchAlgorithmException {
         Strategy strategy = stepFactory.createStrategy(this, step, name,
-                savedName, saved);
+                savedName, saved, description);
         if (strategyCount != null) strategyCount++;
 
         // set the view to this one
@@ -1089,11 +1090,18 @@ public class User /* implements Serializable */{
     public synchronized Strategy importStrategy(String strategyKey)
             throws NoSuchAlgorithmException, WdkModelException,
             WdkUserException, SQLException, JSONException {
+        Strategy oldStrategy;
         String[] parts = strategyKey.split(":");
-        String userSignature = parts[0];
-        int displayId = Integer.parseInt(parts[1]);
-        User user = userFactory.getUser(userSignature);
-        Strategy oldStrategy = user.getStrategy(displayId, true);
+        if (parts.length == 1) {
+            // new strategy export url
+            String strategySignature = parts[0];
+            oldStrategy = stepFactory.loadStrategy(strategySignature);
+        } else {
+            String userSignature = parts[0];
+            int displayId = Integer.parseInt(parts[1]);
+            User user = userFactory.getUser(userSignature);
+            oldStrategy = user.getStrategy(displayId, true);
+        }
         return importStrategy(oldStrategy);
     }
 
@@ -1104,7 +1112,8 @@ public class User /* implements Serializable */{
         newStrategy.update(true);
         // highlight the imported strategy
         int rootStepId = newStrategy.getLatestStep().getDisplayId();
-        setViewResults(Integer.toString(newStrategy.getStrategyId()), rootStepId, 0);
+        setViewResults(Integer.toString(newStrategy.getStrategyId()),
+                rootStepId, 0);
         if (strategyCount != null) strategyCount++;
         return newStrategy;
     }
@@ -1123,6 +1132,10 @@ public class User /* implements Serializable */{
             throws NumberFormatException, WdkUserException, WdkModelException,
             JSONException, SQLException {
         activeStrategyFactory.openActiveStrategy(strategyKey);
+        int pos = strategyKey.indexOf('_');
+        if (pos >= 0) strategyKey = strategyKey.substring(0, pos);
+        int strategyId = Integer.parseInt(strategyKey);
+        stepFactory.updateStrategyViewTime(this, strategyId);
     }
 
     public void removeActiveStrategy(String strategyKey)
@@ -1140,13 +1153,13 @@ public class User /* implements Serializable */{
     public void setViewResults(String strategyKey, int stepId, int pagerOffset) {
         this.activeStrategyFactory.setViewStrategyKey(strategyKey);
         this.activeStrategyFactory.setViewStepId(stepId);
-	this.activeStrategyFactory.setViewPagerOffset(pagerOffset);
+        this.activeStrategyFactory.setViewPagerOffset(pagerOffset);
     }
 
     public void resetViewResults() {
         this.activeStrategyFactory.setViewStrategyKey(null);
         this.activeStrategyFactory.setViewStepId(null);
-	this.activeStrategyFactory.setViewPagerOffset(null);
+        this.activeStrategyFactory.setViewPagerOffset(null);
     }
 
     public String getViewStrategyKey() {
@@ -1158,7 +1171,7 @@ public class User /* implements Serializable */{
     }
 
     public Integer getViewPagerOffset() {
-	return this.activeStrategyFactory.getViewPagerOffset();
+        return this.activeStrategyFactory.getViewPagerOffset();
     }
 
     public boolean checkNameExists(Strategy strategy, String name, boolean saved)
