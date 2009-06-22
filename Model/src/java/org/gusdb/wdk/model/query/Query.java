@@ -272,16 +272,16 @@ public abstract class Query extends WdkModelBase {
         jsQuery.put("params", jsParams);
 
         // construct columns; ordered by columnName
-        String[] columnNames = new String[columnMap.size()];
-        columnMap.keySet().toArray(columnNames);
-        Arrays.sort(columnNames);
+//        String[] columnNames = new String[columnMap.size()];
+//        columnMap.keySet().toArray(columnNames);
+//        Arrays.sort(columnNames);
 
-        JSONArray jsColumns = new JSONArray();
-        for (String columnName : columnNames) {
-            Column column = columnMap.get(columnName);
-            jsColumns.put(column.getJSONContent());
-        }
-        jsQuery.put("columns", jsColumns);
+        // JSONArray jsColumns = new JSONArray();
+        // for (String columnName : columnNames) {
+        // Column column = columnMap.get(columnName);
+        // jsColumns.put(column.getJSONContent());
+        // }
+        // jsQuery.put("columns", jsColumns);
 
         // append child-specific data
         appendJSONContent(jsQuery);
@@ -538,7 +538,8 @@ public abstract class Query extends WdkModelBase {
         for (String paramName : dependentValues.keySet()) {
             Param param = paramMap.get(paramName);
             if (param == null)
-                throw new WdkModelException("The param '" + paramName + "' doesn't exist in query '" + getFullName() + "'"); 
+                throw new WdkModelException("The param '" + paramName
+                        + "' doesn't exist in query '" + getFullName() + "'");
             String dependentValue = dependentValues.get(paramName);
             String independentValue = param.dependentValueToIndependentValue(
                     user, dependentValue);
