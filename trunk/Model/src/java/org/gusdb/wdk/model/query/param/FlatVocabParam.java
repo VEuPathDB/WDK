@@ -179,6 +179,6 @@ public class FlatVocabParam extends AbstractEnumParam {
     @Override
     protected void appendJSONContent(JSONObject jsParam) throws JSONException {
         // add underlying query name to it
-        jsParam.append("query", query.getFullName());
+        //jsParam.append("query", query.getFullName());
     }
 }
