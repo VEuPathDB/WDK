@@ -32,7 +32,7 @@ public class SqlQuery extends Query {
     private List<WdkModelText> sqlMacroList;
     private Map<String, String> sqlMacroMap;
     private boolean clobRow;
-    
+
     private List<WdkModelText> dependentTableList;
     private Map<String, String> dependentTableMap;
 
@@ -51,7 +51,8 @@ public class SqlQuery extends Query {
         this.clobRow = query.clobRow;
         this.sql = query.sql;
         this.sqlMacroMap = new LinkedHashMap<String, String>(query.sqlMacroMap);
-        this.dependentTableMap = new LinkedHashMap<String, String>(query.dependentTableMap);
+        this.dependentTableMap = new LinkedHashMap<String, String>(
+                query.dependentTableMap);
     }
 
     public void addSql(WdkModelText sql) {
@@ -96,19 +97,19 @@ public class SqlQuery extends Query {
      */
     @Override
     protected void appendJSONContent(JSONObject jsQuery) throws JSONException {
-//        // add macro into the content
-//        String[] macroNames = new String[sqlMacroMap.size()];
-//        sqlMacroMap.keySet().toArray(macroNames);
-//        Arrays.sort(macroNames);
-//        JSONObject jsMacros = new JSONObject();
-//        for (String macroName : macroNames) {
-//            jsMacros.put(macroName, sqlMacroMap.get(macroName));
-//        }
-//        jsQuery.put("macros", jsMacros);
-//
-//        // add sql
-//        String sql = this.sql.replaceAll("\\s+", " ");
-//        jsQuery.put("sql", sql);
+    // // add macro into the content
+    // String[] macroNames = new String[sqlMacroMap.size()];
+    // sqlMacroMap.keySet().toArray(macroNames);
+    // Arrays.sort(macroNames);
+    // JSONObject jsMacros = new JSONObject();
+    // for (String macroName : macroNames) {
+    // jsMacros.put(macroName, sqlMacroMap.get(macroName));
+    // }
+    // jsQuery.put("macros", jsMacros);
+    //
+    // // add sql
+    // String sql = this.sql.replaceAll("\\s+", " ");
+    // jsQuery.put("sql", sql);
     }
 
     /*
@@ -211,11 +212,11 @@ public class SqlQuery extends Query {
     public void setClobRow(boolean clobRow) {
         this.clobRow = clobRow;
     }
-    
+
     public void addDependentTable(WdkModelText dependentTable) {
         this.dependentTableList.add(dependentTable);
     }
-    
+
     public String[] getDependentTables() {
         String[] array = new String[dependentTableMap.size()];
         dependentTableMap.keySet().toArray(array);
