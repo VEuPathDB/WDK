@@ -77,7 +77,7 @@ public class DatasetParam extends Param {
      */
     @Override
     protected void appendJSONContent(JSONObject jsParam) throws JSONException {
-        jsParam.put("column", columnName);
+//        jsParam.put("column", columnName);
     }
 
     /**

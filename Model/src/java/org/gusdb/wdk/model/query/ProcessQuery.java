@@ -107,8 +107,8 @@ public class ProcessQuery extends Query {
      */
     @Override
     protected void appendJSONContent(JSONObject jsQuery) throws JSONException {
-        jsQuery.put("process", this.processName);
-        if (!local) jsQuery.put("url", this.webServiceUrl);
+    jsQuery.put("process", this.processName);
+    // if (!local) jsQuery.put("url", this.webServiceUrl);
     }
 
     /*
