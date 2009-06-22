@@ -588,7 +588,7 @@ public class StepFactory {
             String stepKey = combinedKey.substring(combinedKey.indexOf(":") + 1);
             leftStepId = Integer.parseInt(stepKey);
 
-            customName = question.getShortDisplayName();
+            customName = step.getBaseCustomName();
         } else customName = step.getBaseCustomName();
 
         // construct the update sql
