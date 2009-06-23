@@ -3,6 +3,7 @@ package org.gusdb.wdk.controller.action;
 import java.io.File;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Enumeration;
 import java.util.Vector;
 import java.util.Map;
 
@@ -90,9 +91,13 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 forward = mapping.findForward(CConstants.SHOW_QUESTION_MAPKEY);
             }
 
-            String partial = request.getParameter(CConstants.WDK_PARTIAL_PAGE_PARAM);
-            if (partial != null && partial.length() > 0)
-                request.setAttribute(CConstants.WDK_PARTIAL_PAGE_PARAM, partial);
+            Enumeration<?> paramNames = request.getParameterNames();
+            while(paramNames.hasMoreElements()) {
+                String paramName = (String)paramNames.nextElement();
+                String[] values = request.getParameterValues(paramName);
+                String value = Utilities.fromArray(values);
+                request.setAttribute(paramName, value);
+            }
 
             String gotoSum = request.getParameter(CConstants.GOTO_SUMMARY_PARAM);
             if (qForm.getParamsFilled() && "1".equals(gotoSum)) {

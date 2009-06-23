@@ -18,7 +18,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerFilterInstanceBean;
 import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
-import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
@@ -119,8 +118,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                     && (qFullName == null || qFullName.trim().length() == 0)) {
                 logger.debug("change filter: " + filterName);
                 // change the filter of an existing step, which can be a child
-                // step,
-                // or a boolean step
+                // step, or a boolean step
                 StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
                 if (hasFilter) newStep = oldStep.createStep(filterName);
                 else {
@@ -141,9 +139,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         params, filterName);
 
                 // We only set isTransform = true if we're running a new query &
-                // it's a transform
-                // If we're inserting a strategy, it has to be a boolean (given
-                // current operations, at least)
+                // it's a transform If we're inserting a strategy, it has to be
+                // a boolean (given current operations, at least)
                 isTransform = newStep.getIsTransform();
             }
 
@@ -202,10 +199,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                     newStepId = newStep.getStepId();
                 }
                 // implied: since step is a transform (and we aren't inserting a
-                // strategy), we've
-                // already run the filter query (b/c the transform is just a
-                // query
-                // w/ a history param
+                // strategy), we've already run the filter query (b/c the
+                // transform is just a query w/ a history param
                 stepIdsMap = strategy.addStep(targetStepId, newStep);
                 // set the view step to the one just added
                 wdkUser.setViewResults(strategyKey, newStepId, 0);
@@ -221,17 +216,20 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 StepBean targetStep = null;
                 if (stratLen > 1 || !isRevise) {
                     targetStep = rootStep.getStepByDisplayId(targetStepId);
-		    if (isOrtholog && targetStep.getParentStep() != null) {
-			// if this action was called from an ortholog link, and we're operating
-			// on a substrat, add the substrat to the active strategies list.
-			wdkUser.addActiveStrategy(strategy.getStrategyId() + "_" + targetStep.getStepId());
-			if (!targetStep.getIsCollapsible()) {
-			    // if the target step has a parent but hasn't been converted
-			    // to a substrat, need to convert it before adding the ortholog step
-			    targetStep.setIsCollapsible(true);
-			    targetStep.setCollapsedName(targetStep.getCustomName());
-			}
-		    }
+                    if (isOrtholog && targetStep.getParentStep() != null) {
+                        // if this action was called from an ortholog link, and
+                        // we're operating on a substrat, add the substrat to
+                        // the active strategies list.
+                        wdkUser.addActiveStrategy(strategy.getStrategyId()
+                                + "_" + targetStep.getStepId());
+                        if (!targetStep.getIsCollapsible()) {
+                            // if the target step has a parent but hasn't been
+                            // converted to a substrat, need to convert it
+                            // before adding the ortholog step
+                            targetStep.setIsCollapsible(true);
+                            targetStep.setCollapsedName(targetStep.getCustomName());
+                        }
+                    }
                     if (targetStep.getIsFirstStep()) {
                         if (isRevise) {
                             // carry over custom name from original query, if
@@ -259,23 +257,23 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             }
                             targetStepId = parent.getStepId();
                         } else {
-			    if (stratLen == 1 && strBranchId != null) {
-				// if this is the only step in a substrat,
-				// make an uncollapsed copy before inserting
-				targetStep = targetStep.deepClone();
-				targetStep.setIsCollapsible(false);
-				targetStep.setCollapsedName(null);
-				targetStep.setParentStep(null);
-				targetStep.update(false);
-			    }
-			    if (!isOrtholog) {
-                            // if inserting before first step, there has to be a
-                            // boolean expression
-                            // b/c existing first step is a regular non-boolean,
-                            // non-transform query
-                            boolExp = newStepId + " " + op + " "
-                                    + targetStep.getStepId();
-			    }
+                            if (stratLen == 1 && strBranchId != null) {
+                                // if this is the only step in a substrat,
+                                // make an uncollapsed copy before inserting
+                                targetStep = targetStep.deepClone();
+                                targetStep.setIsCollapsible(false);
+                                targetStep.setCollapsedName(null);
+                                targetStep.setParentStep(null);
+                                targetStep.update(false);
+                            }
+                            if (!isOrtholog) {
+                                // if inserting before first step, there has to
+                                // be a boolean expression b/c existing first
+                                // step is a regular non-boolean, non-transform
+                                // query
+                                boolExp = newStepId + " " + op + " "
+                                        + targetStep.getStepId();
+                            }
                         }
                     } else { // not the first step
                         if (isRevise) {
@@ -317,19 +315,18 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                 boolExp = targetStep.getPreviousStep().getStepId()
                                         + " " + op + " " + newStepId;
                             }
-			    if (!isOrtholog) {
-                            // implied: if we're inserting a transform, the
-                            // HistoryParam should already
-                            // be pointing to the step at insertIx - 1, so we
-                            // just need to update subsequent steps.
+                            if (!isOrtholog) {
+                                // implied: if we're inserting a transform, the
+                                // HistoryParam should already be pointing to
+                                // the step at insertIx - 1, so we just need to
+                                // update subsequent steps.
 
-                            // since we want to insert the new step BEFORE
-                            // targetStep,
-                            // we need to move targetStepId back, so it points
-                            // to
-                            // targetStep.getPreviousStep
-                            targetStepId = targetStep.getPreviousStep().getStepId();
-			    }
+                                // since we want to insert the new step BEFORE
+                                // targetStep, we need to move targetStepId
+                                // back, so it points to
+                                // targetStep.getPreviousStep
+                                targetStepId = targetStep.getPreviousStep().getStepId();
+                            }
                         }
                     }
 
@@ -348,7 +345,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 if (!stepIdsMap.containsKey(reviseId))
                     stepIdsMap.put(reviseId, baseNewStepId);
             }
-logger.debug("revise " + isRevise + ", " + reviseStep + "===>" + baseNewStepId);
+            logger.debug("revise " + isRevise + ", " + reviseStep + "===>"
+                    + baseNewStepId);
 
             // If a branch id was specified, look up the new branch id in
             // stepIdsMap
