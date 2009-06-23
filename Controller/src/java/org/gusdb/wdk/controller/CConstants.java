@@ -66,7 +66,6 @@ public class CConstants {
     // params used in the url
     public static final String WDK_STEP_ID_PARAM = "step";
     public static final String WDK_SKIPTO_DOWNLOAD_PARAM = "skip_to_download";
-    public static final String WDK_PARTIAL_PAGE_PARAM = "partial";
     public static final String WDK_HISTORY_TYPE_PARAM = "type";
 
     // constants for remote logins
