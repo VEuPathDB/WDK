@@ -97,7 +97,7 @@ public class HistoryRecycler implements Runnable {
             Question[] questions = qset.getQuestions();
             for (Question question : questions) {
                 signatures.put(question.getFullName(),
-                        question.getQuery().getChecksum());
+                        question.getQuery().getChecksum(false));
             }
         }
 

@@ -7,7 +7,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.DateFormat;
 import java.util.Date;
 
 import org.gusdb.wdk.model.WdkModel;
@@ -27,8 +26,7 @@ public class TimestampParam extends Param {
     /**
      * 
      */
-    public TimestampParam() {
-    }
+    public TimestampParam() {}
 
     /**
      * @param param
@@ -45,7 +43,8 @@ public class TimestampParam extends Param {
      * )
      */
     @Override
-    protected void appendJSONContent(JSONObject jsParam) throws JSONException {
+    protected void appendJSONContent(JSONObject jsParam, boolean extra)
+            throws JSONException {
     // nothing to add
     }
 
@@ -150,19 +149,19 @@ public class TimestampParam extends Param {
     public void resolveReferences(WdkModel wodkModel) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        // do nothing.
+    // do nothing.
     }
 
     /**
-     * it is always false
-     * (non-Javadoc)
+     * it is always false (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.query.param.Param#isVisible()
      */
     @Override
     public boolean isVisible() {
         return false;
     }
-    
+
     @Override
     public String getDefault() {
         return DateFormat.getDateTimeInstance().format(new Date());

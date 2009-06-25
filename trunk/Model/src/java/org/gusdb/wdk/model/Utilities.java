@@ -75,10 +75,11 @@ public class Utilities {
         MessageDigest digest = MessageDigest.getInstance("MD5");
         byte[] byteBuffer = digest.digest(data.toString().getBytes());
         if (shortDigest) {
+            int size = Math.round(byteBuffer.length / 2.0F);
             // shorten the digest to 16 bytes
-            byte[] newBuffer = new byte[16];
+            byte[] newBuffer = new byte[size];
             for (int i = 0; i < byteBuffer.length; i++) {
-                int index = i % 16;
+                int index = i % size;
                 newBuffer[index] ^= byteBuffer[i];
             }
             byteBuffer = newBuffer;

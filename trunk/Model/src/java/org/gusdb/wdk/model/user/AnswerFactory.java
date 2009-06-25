@@ -63,7 +63,7 @@ public class AnswerFactory {
             answer.setAnswerChecksum(answerValue.getChecksum());
             answer.setProjectId(wdkModel.getProjectId());
             answer.setProjectVersion(wdkModel.getVersion());
-            answer.setQueryChecksum(question.getQuery().getChecksum());
+            answer.setQueryChecksum(question.getQuery().getChecksum(false));
             answer.setQuestionName(question.getFullName());
 
             JSONObject independentValues = answerValue.getIdsQueryInstance().getIndependentParamValuesJSONObject();

@@ -1273,7 +1273,7 @@ public class StepFactory {
         return json.toString();
     }
 
-    private Map<String, String> parseParamContent(String paramContent)
+    public Map<String, String> parseParamContent(String paramContent)
             throws JSONException {
         Map<String, String> params = new LinkedHashMap<String, String>();
         if (paramContent != null && paramContent.length() > 0) {

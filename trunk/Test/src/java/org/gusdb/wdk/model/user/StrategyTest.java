@@ -306,8 +306,66 @@ public class StrategyTest {
     }
 
     @Test
-    public void testInsertStep() {
-        Assert.assertTrue(false);
+    public void testInsertStep() throws Exception {
+        Step step1 = UnitTestHelper.createNormalStep(user);
+        Strategy strategy = user.createStrategy(step1, false);
+
+        Step step2 = UnitTestHelper.createNormalStep(user);
+        RecordClass recordClass = step2.getQuestion().getRecordClass();
+        AnswerFilterInstance booleanFilter = recordClass.getDefaultFilter();
+        AnswerFilterInstance[] filters = recordClass.getFilters();
+        if (filters.length == 0) return; // no filter exists skip the test
+
+        // create the second node
+        BooleanOperator operator = BooleanOperator.UNION;
+        Step middleStep1 = user.createBooleanStep(step1, step2, operator,
+                false, booleanFilter);
+        strategy.addStep(middleStep1);
+
+        // create the third node
+        Step step3 = UnitTestHelper.createNormalStep(user);
+        Step middleStep2 = user.createBooleanStep(middleStep1, step3, operator,
+                false, booleanFilter);
+        strategy.addStep(middleStep2);
+        
+        Step step4 = UnitTestHelper.createNormalStep(user);
+        Step middleStep3 = user.createBooleanStep(middleStep1, step4, operator,
+                false, booleanFilter);
+        strategy.editOrInsertStep(middleStep1.getDisplayId(), middleStep3);
+ 
+        Step root = strategy.getLatestStep();
+        StepTest.compareStep(step3, root.getChildStep());
+        StepTest.compareStep(step4, root.getPreviousStep().getChildStep());
+        StepTest.compareStep(step2, root.getPreviousStep().getPreviousStep().getChildStep());
+        StepTest.compareStep(step1, root.getPreviousStep().getPreviousStep().getPreviousStep().getPreviousStep());
+    }
+    
+    @Test
+    public void testImportStrategy() throws Exception {
+        Step step1 = UnitTestHelper.createNormalStep(user);
+        Strategy strategy = user.createStrategy(step1, false);
+
+        Step step2 = UnitTestHelper.createNormalStep(user);
+        RecordClass recordClass = step2.getQuestion().getRecordClass();
+        AnswerFilterInstance booleanFilter = recordClass.getDefaultFilter();
+        AnswerFilterInstance[] filters = recordClass.getFilters();
+        if (filters.length == 0) return; // no filter exists skip the test
+
+        // create the second node
+        BooleanOperator operator = BooleanOperator.UNION;
+        Step middleStep1 = user.createBooleanStep(step1, step2, operator,
+                false, booleanFilter);
+        strategy.addStep(middleStep1);
+
+        // create the third node
+        Step step3 = UnitTestHelper.createNormalStep(user);
+        Step middleStep2 = user.createBooleanStep(middleStep1, step3, operator,
+                false, booleanFilter);
+        strategy.addStep(middleStep2);
+        
+        User guest = UnitTestHelper.getGuest();
+        Strategy newStrategy = guest.importStrategy(strategy.getChecksum());
+        Assert.assertEquals(strategy.getLength(), newStrategy.getLength());
     }
 
     static void compareStrategy(Strategy expected, Strategy actual)

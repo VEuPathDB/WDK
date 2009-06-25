@@ -33,7 +33,7 @@ import org.json.JSONObject;
 public class DatasetParam extends Param {
 
     private String columnName = DatasetFactory.COLUMN_DATASET_VALUE;
-    
+
     private String recordClassRef;
     private RecordClass recordClass;
 
@@ -55,7 +55,7 @@ public class DatasetParam extends Param {
     public void resolveReferences(WdkModel model) throws WdkModelException {
         this.wdkModel = model;
         if (recordClassRef != null) {
-            recordClass = (RecordClass)wdkModel.resolveReference(recordClassRef);
+            recordClass = (RecordClass) wdkModel.resolveReference(recordClassRef);
             recordClassRef = null;
         }
     }
@@ -76,8 +76,11 @@ public class DatasetParam extends Param {
      * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
      */
     @Override
-    protected void appendJSONContent(JSONObject jsParam) throws JSONException {
-//        jsParam.put("column", columnName);
+    protected void appendJSONContent(JSONObject jsParam, boolean extra)
+            throws JSONException {
+        if (extra) {
+            jsParam.put("column", columnName);
+        }
     }
 
     /**
@@ -119,10 +122,9 @@ public class DatasetParam extends Param {
      * (org.gusdb.wdk.model.user.User, java.lang.String)
      */
     @Override
-    public String dependentValueToInternalValue(User user,
-            String dependentValue) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public String dependentValueToInternalValue(User user, String dependentValue)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         int userDatasetId = Integer.parseInt(dependentValue);
         Dataset dataset = user.getDataset(userDatasetId);
         return Integer.toString(dataset.getDatasetId());
@@ -180,7 +182,7 @@ public class DatasetParam extends Param {
             try {
                 user.getDataset(userDatasetId);
                 return rawValue;
-            } catch(Exception ex){
+            } catch (Exception ex) {
                 // dataset doesn't exist, create one
                 logger.info("user dataset id doesn't exist: " + userDatasetId);
             }
@@ -231,10 +233,11 @@ public class DatasetParam extends Param {
     }
 
     /**
-     * @param recordClassRef the recordClassRef to set
+     * @param recordClassRef
+     *            the recordClassRef to set
      */
     public void setRecordClassRef(String recordClassRef) {
         this.recordClassRef = recordClassRef;
     }
-    
+
 }

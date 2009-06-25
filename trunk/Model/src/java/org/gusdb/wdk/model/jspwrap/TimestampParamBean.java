@@ -3,9 +3,6 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
-import java.text.DateFormat;
-import java.util.Date;
-
 import org.gusdb.wdk.model.query.param.TimestampParam;
 
 /**
@@ -19,9 +16,5 @@ public class TimestampParamBean extends ParamBean {
      */
     public TimestampParamBean(TimestampParam param) {
         super(param);
-    }
-
-    public String getNewDateTime() {
-        return DateFormat.getDateTimeInstance().format(new Date());
     }
 }
