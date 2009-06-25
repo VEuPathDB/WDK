@@ -8,6 +8,7 @@ DROP SEQUENCE wdkuser.strategies_pkseq;
 DROP SEQUENCE wdkuser.users_pkseq;
 
 DROP TABLE wdkuser.strategies;
+DROP TABLE wdkuser.step_params;
 DROP TABLE wdkuser.steps;
 DROP TABLE wdkuser.user_datasets;
 DROP TABLE wdkuser.preferences;
@@ -76,6 +77,7 @@ CREATE TABLE wdkengine.answers
   project_version VARCHAR(50) NOT NULL,
   question_name VARCHAR(200) NOT NULL,
   query_checksum  VARCHAR(40) NOT NULL,
+  old_query_checksum  VARCHAR(40),
   params CLOB,
   result_message CLOB,
   prev_answer_id NUMBER(12),
@@ -84,6 +86,7 @@ CREATE TABLE wdkengine.answers
 );
 
 CREATE INDEX wdkengine.answers_idx01 ON wdkengine.answers (prev_answer_id);
+CREATE INDEX wdkengine.answers_idx02 ON wdkengine.answers (old_query_checksum);
 
 
 GRANT insert, update, delete ON wdkengine.answers TO GUS_W;
@@ -218,7 +221,7 @@ CREATE TABLE wdkuser.steps
   is_collapsible NUMBER(1),
   display_params CLOB,
   prev_step_id NUMBER(12),
-  invalid_message, VARCHAR(2000),
+  invalid_message VARCHAR(2000),
   CONSTRAINT "STEPS_PK" PRIMARY KEY (step_id),
   CONSTRAINT "STEPS_UNIQUE" UNIQUE (user_id, display_id),
   CONSTRAINT "STEPS_USER_ID_FK" FOREIGN KEY (user_id)
@@ -229,6 +232,22 @@ CREATE TABLE wdkuser.steps
 
 GRANT insert, update, delete ON wdkuser.steps TO GUS_W;
 GRANT select ON wdkuser.steps TO GUS_R;
+
+
+CREATE TABLE wdkuser.step_params
+(
+  step_id NUMBER(12) NOT NULL,
+  param_name VARCHAR(200) NOT NULL,
+  param_value VARCHAR(4000),
+  CONSTRAINT "STEP_PARAMS_STEP_ID_FK" FOREIGN KEY (step_id)
+      REFERENCES wdkuser.steps (step_id)
+);
+
+CREATE INDEX wdkuser.step_params_idx02 ON wdkuser.step_params (step_id, param_name);
+
+
+GRANT insert, update, delete ON wdkuser.step_params TO GUS_W;
+GRANT select ON wdkuser.step_params TO GUS_R;
 
 
 CREATE TABLE wdkuser.strategies

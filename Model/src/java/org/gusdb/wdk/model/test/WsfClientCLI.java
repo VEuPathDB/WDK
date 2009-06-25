@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.ParseException;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
@@ -36,13 +35,10 @@ public class WsfClientCLI extends BaseCLI {
         WsfClientCLI client = new WsfClientCLI(cmdName,
                 "Invoke a WSF web service directly");
         try {
-            client.parseCommandLine(args);
-        } catch (ParseException ex) {
-            client.printUsage();
-            System.exit(-1);
+            client.invoke(args);
+        } finally {
+            System.exit(0);
         }
-        client.invoke();
-        System.exit(0);
     }
 
     /**
@@ -82,7 +78,7 @@ public class WsfClientCLI extends BaseCLI {
      * @see org.gusdb.wsf.util.BaseCLI#invoke()
      */
     @Override
-    public void invoke() throws Exception {
+    public void execute() throws Exception {
         String serviceUrl = (String) getOptionValue(ARG_WEB_SERVICE_URL);
         String processName = (String) getOptionValue(ARG_PROCESS_NAME);
         String invokeKey = (String) getOptionValue(ARG_INVOKE_KEY);

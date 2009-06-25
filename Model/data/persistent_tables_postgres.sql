@@ -8,6 +8,7 @@ DROP SEQUENCE IF EXISTS wdkuser.strategies_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.users_pkseq;
 
 DROP TABLE IF EXISTS wdkuser.strategies;
+DROP TABLE IF EXISTS wdkuser.step_params;
 DROP TABLE IF EXISTS wdkuser.steps;
 DROP TABLE IF EXISTS wdkuser.user_datasets;
 DROP TABLE IF EXISTS wdkuser.preferences;
@@ -56,6 +57,7 @@ CREATE TABLE wdkengine.answers
   project_version VARCHAR(50) NOT NULL,
   question_name VARCHAR(200) NOT NULL,
   query_checksum  VARCHAR(40) NOT NULL,
+  old_query_checksum  VARCHAR(40),
   params TEXT,
   result_message TEXT,
   prev_answer_id NUMERIC(12),
@@ -63,7 +65,8 @@ CREATE TABLE wdkengine.answers
   CONSTRAINT "answers_uq1" UNIQUE (project_id, answer_checksum)
 );
 
-CREATE INDEX answers_idx01 ON wdkengine.answers (prev_answer_id);
+CREATE INDEX wdkengine.answers_idx01 ON wdkengine.answers (prev_answer_id);
+CREATE INDEX wdkengine.answers_idx02 ON wdkengine.answers (old_query_checksum);
 
 
 CREATE TABLE wdkengine.dataset_indices
@@ -77,7 +80,7 @@ CREATE TABLE wdkengine.dataset_indices
   CONSTRAINT "DATASET_CHECKSUM_UNIQUE" UNIQUE (dataset_checksum)
 );
 
-CREATE INDEX dataset_indices_idx01 ON wdkengine.dataset_indices (prev_dataset_id);
+CREATE INDEX wdkengine.dataset_indices_idx01 ON wdkengine.dataset_indices (prev_dataset_id);
 
 
 CREATE TABLE wdkengine.dataset_values
@@ -88,7 +91,7 @@ CREATE TABLE wdkengine.dataset_values
       REFERENCES wdkengine.dataset_indices (dataset_id)
 );
 
-CREATE INDEX dataset_values_idx01 ON wdkengine.dataset_values (dataset_id);
+CREATE INDEX wdkengine.dataset_values_idx01 ON wdkengine.dataset_values (dataset_id);
 
 
 CREATE TABLE wdkengine.clob_values
@@ -129,7 +132,7 @@ CREATE TABLE wdkuser.users
   CONSTRAINT "USER_EMAIL_UNIQUE" UNIQUE (email)
 );
 
-CREATE INDEX users_idx01 ON wdkuser.users (prev_user_id);
+CREATE INDEX wdkuser.users_idx01 ON wdkuser.users (prev_user_id);
 
 
 CREATE TABLE wdkuser.user_roles
@@ -173,7 +176,7 @@ CREATE TABLE wdkuser.steps
   is_collapsible BOOLEAN,
   display_params TEXT,
   prev_step_id NUMERIC(12),
-  invalid_message, VARCHAR(2000),
+  invalid_message VARCHAR(2000),
   CONSTRAINT "STEPS_PK" PRIMARY KEY (step_id),
   CONSTRAINT "STEPS_UNIQUE" UNIQUE (user_id, display_id),
   CONSTRAINT "STEPS_USER_ID_FK" FOREIGN KEY (user_id)
@@ -181,6 +184,18 @@ CREATE TABLE wdkuser.steps
   CONSTRAINT "STEPS_ANSWER_ID_FK" FOREIGN KEY (answer_id)
       REFERENCES wdkengine.answers (answer_id)
 );
+
+
+CREATE TABLE wdkuser.step_params
+(
+  step_id NUMERIC(12) NOT NULL,
+  param_name VARCHAR(200) NOT NULL,
+  param_value VARCHAR(4000),
+  CONSTRAINT "STEP_PARAMS_STEP_ID_FK" FOREIGN KEY (step_id)
+      REFERENCES wdkuser.steps (step_id)
+);
+
+CREATE INDEX wdkuser.step_params_idx02 ON wdkuser.step_params (step_id, param_name);
 
 
 CREATE TABLE wdkuser.strategies

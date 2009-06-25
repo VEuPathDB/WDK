@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.test;
 
-import org.apache.commons.cli.ParseException;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.dbms.CacheFactory;
@@ -27,27 +26,25 @@ public class CacheCLI extends BaseCLI {
 
     /**
      * @param args
+     * @throws Exception
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         String cmdName = System.getProperty("cmdName");
-        CacheCLI cacher = new CacheCLI(cmdName,
-                "Manages the cache tables of WDK");
+        CacheCLI cacher = new CacheCLI(cmdName);
         try {
-            cacher.parseCommandLine(args);
-        } catch (ParseException ex) {
-            cacher.printUsage();
-            System.exit(-1);
+            cacher.invoke(args);
+        } finally {
+            System.exit(0);
         }
-        cacher.invoke();
-        System.exit(0);
     }
 
     /**
      * @param command
      * @param description
      */
-    protected CacheCLI(String command, String description) {
-        super((command == null) ? "wdkCache" : command, description);
+    protected CacheCLI(String command) {
+        super((command == null) ? "wdkCache" : command,
+                "Manages the cache tables of WDK");
     }
 
     /*
@@ -98,7 +95,7 @@ public class CacheCLI extends BaseCLI {
      * @see org.gusdb.wsf.util.BaseCLI#invoke()
      */
     @Override
-    public void invoke() {
+    protected void execute() {
         String projectId = (String) getOptionValue(ARG_PROJECT_ID);
 
         boolean newCache = (Boolean) getOptionValue(ARG_CREATE);

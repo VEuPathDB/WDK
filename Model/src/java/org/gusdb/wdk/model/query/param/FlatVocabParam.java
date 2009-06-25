@@ -143,11 +143,12 @@ public class FlatVocabParam extends AbstractEnumParam {
             // if (parentTerm != null)
             // parentTerm = parentTerm.replaceAll("[,]", "_");
             if (term.indexOf(',') >= 0)
-                throw new WdkModelException(this.getFullName() + ": The term cannot contain comma: '"
-                        + term + "'");
-            if (parentTerm!= null && parentTerm.indexOf(',') >= 0)
-                throw new WdkModelException(this.getFullName() + ": The parent term cannot contain "
-                        + "comma: '" + parentTerm + "'");
+                throw new WdkModelException(this.getFullName()
+                        + ": The term cannot contain comma: '" + term + "'");
+            if (parentTerm != null && parentTerm.indexOf(',') >= 0)
+                throw new WdkModelException(this.getFullName()
+                        + ": The parent term cannot contain " + "comma: '"
+                        + parentTerm + "'");
 
             termParentMap.put(term, parentTerm);
 
@@ -177,8 +178,11 @@ public class FlatVocabParam extends AbstractEnumParam {
      * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
      */
     @Override
-    protected void appendJSONContent(JSONObject jsParam) throws JSONException {
-        // add underlying query name to it
-        //jsParam.append("query", query.getFullName());
+    protected void appendJSONContent(JSONObject jsParam, boolean extra)
+            throws JSONException {
+        if (extra) {
+            // add underlying query name to it
+            jsParam.append("query", query.getFullName());
+        }
     }
 }

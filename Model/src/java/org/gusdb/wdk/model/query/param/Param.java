@@ -89,7 +89,7 @@ public abstract class Param extends WdkModelBase {
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException;
 
-    protected abstract void appendJSONContent(JSONObject jsParam)
+    protected abstract void appendJSONContent(JSONObject jsParam, boolean extra)
             throws JSONException;
 
     protected String id;
@@ -117,7 +117,8 @@ public abstract class Param extends WdkModelBase {
     protected WdkModel wdkModel;
 
     /**
-     * this property is only used by abstractEnumParams, but have to be initialized from suggest.
+     * this property is only used by abstractEnumParams, but have to be
+     * initialized from suggest.
      */
     protected String selectMode;
 
@@ -344,7 +345,7 @@ public abstract class Param extends WdkModelBase {
                     allowEmpty = suggest.isAllowEmpty();
                     emptyValue = suggest.getEmptyValue();
                     selectMode = suggest.getSelectMode();
-                    
+
                     hasSuggest = true;
                 }
             }
@@ -380,10 +381,10 @@ public abstract class Param extends WdkModelBase {
         return queryFactory.getClobValue(checksum);
     }
 
-    public JSONObject getJSONContent() throws JSONException {
+    public JSONObject getJSONContent(boolean extra) throws JSONException {
         JSONObject jsParam = new JSONObject();
         jsParam.put("name", getFullName());
-        appendJSONContent(jsParam);
+        appendJSONContent(jsParam, extra);
         return jsParam;
     }
 

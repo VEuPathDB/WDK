@@ -158,8 +158,8 @@ public abstract class QueryInstance {
             NoSuchAlgorithmException, WdkModelException, WdkUserException,
             SQLException {
         JSONObject jsInstance = new JSONObject();
+        jsInstance.put("project", wdkModel.getProjectId());
         jsInstance.put("query", query.getFullName());
-        jsInstance.put("querySignature", query.getChecksum());
 
         jsInstance.put("params", getIndependentParamValuesJSONObject());
 

@@ -96,20 +96,23 @@ public class SqlQuery extends Query {
      * org.gusdb.wdk.model.query.Query#appendJSONContent(org.json.JSONObject)
      */
     @Override
-    protected void appendJSONContent(JSONObject jsQuery) throws JSONException {
-    // // add macro into the content
-    // String[] macroNames = new String[sqlMacroMap.size()];
-    // sqlMacroMap.keySet().toArray(macroNames);
-    // Arrays.sort(macroNames);
-    // JSONObject jsMacros = new JSONObject();
-    // for (String macroName : macroNames) {
-    // jsMacros.put(macroName, sqlMacroMap.get(macroName));
-    // }
-    // jsQuery.put("macros", jsMacros);
-    //
-    // // add sql
-    // String sql = this.sql.replaceAll("\\s+", " ");
-    // jsQuery.put("sql", sql);
+    protected void appendJSONContent(JSONObject jsQuery, boolean extra)
+            throws JSONException {
+        if (extra) {
+            // add macro into the content
+            String[] macroNames = new String[sqlMacroMap.size()];
+            sqlMacroMap.keySet().toArray(macroNames);
+            Arrays.sort(macroNames);
+            JSONObject jsMacros = new JSONObject();
+            for (String macroName : macroNames) {
+                jsMacros.put(macroName, sqlMacroMap.get(macroName));
+            }
+            jsQuery.put("macros", jsMacros);
+
+            // add sql
+            String sql = this.sql.replaceAll("\\s+", " ");
+            jsQuery.put("sql", sql);
+        }
     }
 
     /*
