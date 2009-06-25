@@ -106,9 +106,12 @@ public class ProcessQuery extends Query {
      * org.gusdb.wdk.model.query.Query#appendJSONContent(org.json.JSONObject)
      */
     @Override
-    protected void appendJSONContent(JSONObject jsQuery) throws JSONException {
-    jsQuery.put("process", this.processName);
-    // if (!local) jsQuery.put("url", this.webServiceUrl);
+    protected void appendJSONContent(JSONObject jsQuery, boolean extra)
+            throws JSONException {
+        if (extra) {
+            jsQuery.put("process", this.processName);
+            if (!local) jsQuery.put("url", this.webServiceUrl);
+        }
     }
 
     /*

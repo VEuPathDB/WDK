@@ -70,13 +70,14 @@ public class Category extends WdkModelBase {
         String recordClassRef = categories.getRecordClassRef();
         for (WdkModelText ref : questionRefs) {
             Question question = null;
+            String questionName = ref.getText().trim();
             try {
-                question = (Question) model.resolveReference(ref.getText().trim());
+                question = (Question) model.resolveReference(questionName);
             } catch (WdkModelException ex) {
                 // relax a bit, just ignore the missing questions
-                logger.debug("The question [" + ref + "] is defined in "
-                        + "category [" + name + "], but doesn't exist in the "
-                        + "model.");
+                logger.debug("The question [" + questionName + "] is defined "
+                        + "in category [" + name + "], but doesn't exist in "
+                        + "the model.");
                 continue;
             }
 

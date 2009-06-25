@@ -8,8 +8,6 @@ import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.Answer;
-import org.gusdb.wdk.model.user.AnswerFactory;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -30,11 +28,8 @@ import org.json.JSONObject;
  */
 public class AnswerParam extends Param {
 
-    private static final String INDEPENDENT_PATTERN = "\\w+(\\:\\w+)?";;
-
     private String recordClassRef;
     private RecordClass recordClass;
-    private AnswerFactory answerFactory;
 
     public AnswerParam() {}
 
@@ -91,7 +86,6 @@ public class AnswerParam extends Param {
         // resolve recordClass ref
         this.recordClass = (RecordClass) model.resolveReference(recordClassRef);
         this.wdkModel = model;
-        this.answerFactory = wdkModel.getAnswerFactory();
     }
 
     /*
@@ -100,7 +94,8 @@ public class AnswerParam extends Param {
      * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
      */
     @Override
-    protected void appendJSONContent(JSONObject jsParam) throws JSONException {
+    protected void appendJSONContent(JSONObject jsParam, boolean extra)
+            throws JSONException {
         // add recordClass ref
         jsParam.put("recordClass", recordClassRef);
     }
@@ -139,10 +134,9 @@ public class AnswerParam extends Param {
      * (java.lang.String)
      */
     @Override
-    public String dependentValueToInternalValue(User user,
-            String dependentValue) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public String dependentValueToInternalValue(User user, String dependentValue)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         int stepId = Integer.parseInt(dependentValue);
         Step step = user.getStep(stepId);
         AnswerValue answerValue = step.getAnswerValue();
@@ -177,8 +171,12 @@ public class AnswerParam extends Param {
         return rawValue;
     }
 
-    /* (non-Javadoc)
-     * @see org.gusdb.wdk.model.query.param.Param#validateValue(org.gusdb.wdk.model.user.User, java.lang.String)
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.gusdb.wdk.model.query.param.Param#validateValue(org.gusdb.wdk.model
+     * .user.User, java.lang.String)
      */
     @Override
     protected void validateValue(User user, String dependentValue)

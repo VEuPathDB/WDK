@@ -116,7 +116,8 @@ public class StringParam extends Param {
      * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
      */
     @Override
-    protected void appendJSONContent(JSONObject jsParam) throws JSONException {
+    protected void appendJSONContent(JSONObject jsParam, boolean extra)
+            throws JSONException {
     // nothing to be added
     }
 
@@ -140,8 +141,8 @@ public class StringParam extends Param {
      * (java.lang.String)
      */
     @Override
-    public String dependentValueToInternalValue(User user,
-            String dependentValue) throws WdkModelException {
+    public String dependentValueToInternalValue(User user, String dependentValue)
+            throws WdkModelException {
         String rawValue = decompressValue(dependentValue);
         if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
         rawValue = rawValue.replaceAll("'", "''");

@@ -54,11 +54,12 @@ public class EnumParam extends AbstractEnumParam {
             // if (parentTerm != null)
             // parentTerm = parentTerm.replaceAll("[,]", "_");
             if (term.indexOf(',') >= 0)
-                throw new WdkModelException(this.getFullName() + ": The term cannot contain comma: '"
-                        + term + "'");
-            if (parentTerm!= null && parentTerm.indexOf(',') >= 0)
-                throw new WdkModelException(this.getFullName() + ": The parent term cannot contain "
-                        + "comma: '" + parentTerm + "'");
+                throw new WdkModelException(this.getFullName()
+                        + ": The term cannot contain comma: '" + term + "'");
+            if (parentTerm != null && parentTerm.indexOf(',') >= 0)
+                throw new WdkModelException(this.getFullName()
+                        + ": The parent term cannot contain " + "comma: '"
+                        + parentTerm + "'");
 
             termInternalMap.put(term, item.getInternal());
             termDisplayMap.put(term, display);
@@ -154,7 +155,7 @@ public class EnumParam extends AbstractEnumParam {
      * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
      */
     @Override
-    protected void appendJSONContent(JSONObject jsParam) {
+    protected void appendJSONContent(JSONObject jsParam, boolean extra) {
     // do nothing. do not add the enum list into the content, since they may be
     // changed between versions, but we don't want to invalidate a query because
     // of it.

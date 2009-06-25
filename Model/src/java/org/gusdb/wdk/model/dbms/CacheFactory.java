@@ -398,7 +398,7 @@ public class CacheFactory {
             queryInfo.setQueryId(platform.getNextId(null, TABLE_QUERY));
             queryInfo.setCacheTable(CACHE_TABLE_PREFIX + queryInfo.getQueryId());
             queryInfo.setQueryName(query.getFullName());
-            queryInfo.setQueryChecksum(query.getChecksum());
+            queryInfo.setQueryChecksum(query.getChecksum(true));
 
             StringBuffer sql = new StringBuffer("INSERT INTO ");
             sql.append(TABLE_QUERY).append(" (");
@@ -428,7 +428,7 @@ public class CacheFactory {
             throws NoSuchAlgorithmException, JSONException, WdkModelException,
             SQLException {
         String queryName = query.getFullName();
-        String queryChecksum = query.getChecksum();
+        String queryChecksum = query.getChecksum(true);
 
         // check if the query table has been seen before
         QueryInfo queryInfo = null;

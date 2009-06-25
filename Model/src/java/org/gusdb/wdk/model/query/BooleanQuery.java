@@ -200,8 +200,10 @@ public class BooleanQuery extends SqlQuery {
      * org.gusdb.wdk.model.query.Query#appendJSONContent(org.json.JSONObject)
      */
     @Override
-    protected void appendJSONContent(JSONObject jsQuery) throws JSONException {
-    // nothing to be added, since the info is in params and columns already
+    protected void appendJSONContent(JSONObject jsQuery, boolean extra)
+            throws JSONException {
+        super.appendJSONContent(jsQuery, extra);
+        jsQuery.append("recordClass", recordClass.getFullName());
     }
 
     /*
@@ -221,8 +223,8 @@ public class BooleanQuery extends SqlQuery {
      */
     @Override
     public QueryInstance makeInstance(User user, Map<String, String> values)
-    throws WdkModelException, NoSuchAlgorithmException, SQLException,
-    JSONException, WdkUserException {
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         return new BooleanQueryInstance(user, this, values);
     }
 

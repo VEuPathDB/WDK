@@ -95,7 +95,8 @@ public class Migrator {
     protected Options options;
 
     protected String oldVersion;
-    protected String oldSchema;
+    protected String oldUserSchema;
+    protected String oldWdkSchema;
     protected WdkModel wdkModel;
 
     public Migrator() {
@@ -120,7 +121,8 @@ public class Migrator {
             CommandLine commandLine = parser.parse(options, args);
             modelName = commandLine.getOptionValue("model");
             oldVersion = commandLine.getOptionValue("version");
-            oldSchema = commandLine.getOptionValue("schema");
+            oldUserSchema = commandLine.getOptionValue("userSchema");
+            oldWdkSchema = commandLine.getOptionValue("wdkSchema");
         } catch (ParseException exp) {
             // oops, something went wrong
             System.err.println("");
@@ -142,12 +144,20 @@ public class Migrator {
         return WdkModel.WDK_VERSION;
     }
 
-    public String getOldSchema() {
-        return oldSchema;
+    public String getOldUserSchema() {
+        return oldUserSchema;
     }
 
-    public String getNewSchema() throws WdkUserException {
+    public String getWdkSchema() {
+        return oldWdkSchema;
+    }
+
+    public String getNewUserSchema() throws WdkUserException {
         return wdkModel.getModelConfig().getUserDB().getUserSchema();
+    }
+
+    public String getNewWdkSchema() throws WdkUserException {
+        return wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
     }
 
     public WdkModel getWdkModel() {
@@ -173,11 +183,18 @@ public class Migrator {
         option.setArgName("version");
         options.addOption(option);
 
-        option = new Option("schema", true,
+        option = new Option("userSchema", true,
                 "the old user login schema, where the user data is migrated "
                         + "from");
         option.setRequired(true);
-        option.setArgName("schema");
+        option.setArgName("userSchema");
+        options.addOption(option);
+
+        option = new Option("wdkSchema", true,
+                "the old wdk storage schema, where the wdk data is migrated "
+                        + "from");
+        option.setRequired(true);
+        option.setArgName("wdkSchema");
         options.addOption(option);
     }
 

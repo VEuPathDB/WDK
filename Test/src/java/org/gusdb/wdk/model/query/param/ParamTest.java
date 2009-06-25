@@ -45,8 +45,8 @@ public class ParamTest {
                 Assert.assertEquals(param.getGroup(), clone.getGroup());
                 Assert.assertEquals(param.getHelp(), clone.getHelp());
                 Assert.assertEquals(param.getId(), clone.getId());
-                Assert.assertEquals(param.getJSONContent().toString(),
-                        clone.getJSONContent().toString());
+                Assert.assertEquals(param.getJSONContent(true).toString(),
+                        clone.getJSONContent(true).toString());
                 Assert.assertEquals(param.getName(), clone.getName());
                 Assert.assertEquals(param.getPrompt(), clone.getPrompt());
                 Assert.assertEquals(param.isAllowEmpty(), clone.isAllowEmpty());
@@ -63,10 +63,10 @@ public class ParamTest {
         for (ParamSet paramSet : wdkModel.getAllParamSets()) {
             for (Param param : paramSet.getParams()) {
                 String defaultValue = param.getDefault();
-                
+
                 // skip the param if it doesn't have a default value
                 if (defaultValue == null) continue;
-                
+
                 String key = "$$" + param.getName() + "$$";
                 String sql = "SELECT nothing FROM " + key + " WHERE 1 = 2";
 

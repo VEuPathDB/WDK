@@ -62,7 +62,7 @@ public abstract class Query extends WdkModelBase {
     // Abstract methods
     // =========================================================================
 
-    protected abstract void appendJSONContent(JSONObject jsQuery)
+    protected abstract void appendJSONContent(JSONObject jsQuery, boolean extra)
             throws JSONException;
 
     public abstract QueryInstance makeInstance(User user,
@@ -247,13 +247,13 @@ public abstract class Query extends WdkModelBase {
         return wdkModel;
     }
 
-    public String getChecksum() throws JSONException, NoSuchAlgorithmException,
-            WdkModelException {
-        JSONObject jsQuery = getJSONContent();
+    public String getChecksum(boolean extra) throws JSONException,
+            NoSuchAlgorithmException, WdkModelException {
+        JSONObject jsQuery = getJSONContent(extra);
         return Utilities.encrypt(jsQuery.toString());
     }
 
-    private JSONObject getJSONContent() throws JSONException {
+    private JSONObject getJSONContent(boolean extra) throws JSONException {
         // use JSON to construct the string content
         JSONObject jsQuery = new JSONObject();
         jsQuery.put("name", getFullName());
@@ -267,24 +267,26 @@ public abstract class Query extends WdkModelBase {
         JSONArray jsParams = new JSONArray();
         for (String paramName : paramNames) {
             Param param = paramMap.get(paramName);
-            jsParams.put(param.getJSONContent());
+            jsParams.put(param.getJSONContent(extra));
         }
         jsQuery.put("params", jsParams);
 
         // construct columns; ordered by columnName
-//        String[] columnNames = new String[columnMap.size()];
-//        columnMap.keySet().toArray(columnNames);
-//        Arrays.sort(columnNames);
+        if (extra) {
+            String[] columnNames = new String[columnMap.size()];
+            columnMap.keySet().toArray(columnNames);
+            Arrays.sort(columnNames);
 
-        // JSONArray jsColumns = new JSONArray();
-        // for (String columnName : columnNames) {
-        // Column column = columnMap.get(columnName);
-        // jsColumns.put(column.getJSONContent());
-        // }
-        // jsQuery.put("columns", jsColumns);
+            JSONArray jsColumns = new JSONArray();
+            for (String columnName : columnNames) {
+                Column column = columnMap.get(columnName);
+                jsColumns.put(column.getJSONContent());
+            }
+            jsQuery.put("columns", jsColumns);
+        }
 
         // append child-specific data
-        appendJSONContent(jsQuery);
+        appendJSONContent(jsQuery, extra);
 
         return jsQuery;
     }
