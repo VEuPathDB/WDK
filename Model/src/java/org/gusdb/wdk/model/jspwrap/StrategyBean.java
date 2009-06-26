@@ -148,7 +148,7 @@ public class StrategyBean {
 
     public String getImportId() throws NoSuchAlgorithmException, JSONException,
             WdkModelException {
-        return strategy.getChecksum();
+        return strategy.getSignature();
     }
 
     public StepBean getFirstStep() {
