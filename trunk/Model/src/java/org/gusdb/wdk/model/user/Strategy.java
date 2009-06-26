@@ -154,7 +154,8 @@ public class Strategy {
     }
 
     public void update(boolean overwrite) throws WdkUserException,
-            WdkModelException, SQLException, JSONException, NoSuchAlgorithmException {
+            WdkModelException, SQLException, JSONException,
+            NoSuchAlgorithmException {
         stepFactory.updateStrategy(user, this, overwrite);
     }
 
@@ -311,8 +312,7 @@ public class Strategy {
         while (targetStep.getNextStep() != null) {
             targetStep = targetStep.getNextStep();
             if (targetStep.isTransform()) {
-                newStep = updateTransform(
-                        targetStep,
+                newStep = updateTransform(targetStep,
                         newStep.getQuestion().getRecordClass(),
                         newStep.getDisplayId());
             } else {
@@ -331,37 +331,38 @@ public class Strategy {
         newStep.setCollapsedName(targetStep.getCollapsedName());
         newStep.update(false);
 
-	if (targetStep.isCollapsible() && newStep.getPreviousStep() != null
-	    && newStep.getPreviousStep().getDisplayId() == targetStep.getDisplayId()) {
-	    if (getIsSaved()) {
-		// If the strategy is saved, clone the target step so we don't wipe out
-		// collapsed name for the saved strategy
-		targetStep = targetStep.deepClone();
-		Step parent = newStep.getParentStep();
-		if (newStep.isTransform()) {
-		    newStep = updateTransform(
-			newStep,
-                        targetStep.getQuestion().getRecordClass(),
-                        targetStep.getDisplayId());
-		} else {
-		    BooleanOperator operator = BooleanOperator.parse(newStep.getOperation());
-		    AnswerFilterInstance targetFilter = newStep.getFilter();
-		    Step rightStep = newStep.getChildStep();
-		    newStep = user.createBooleanStep(targetStep, rightStep, operator,
-						     false, targetFilter);
-		}
-		newStep.setParentStep(parent);
-		newStep.setCollapsible(targetStep.isCollapsible());
-		newStep.setCollapsedName(targetStep.getCollapsedName());
-		newStep.update(false);
-	    }
-	    // Make sure target step is made uncollapsible so that
-	    // we don't have incorrect references in the step tree
-	    targetStep.setParentStep(null);
-	    targetStep.setCollapsible(false);
-	    targetStep.setCollapsedName(null);
-	    targetStep.update(false);
-	}
+        if (targetStep.isCollapsible()
+                && newStep.getPreviousStep() != null
+                && newStep.getPreviousStep().getDisplayId() == targetStep.getDisplayId()) {
+            if (getIsSaved()) {
+                // If the strategy is saved, clone the target step so we don't
+                // wipe out
+                // collapsed name for the saved strategy
+                targetStep = targetStep.deepClone();
+                Step parent = newStep.getParentStep();
+                if (newStep.isTransform()) {
+                    newStep = updateTransform(newStep,
+                            targetStep.getQuestion().getRecordClass(),
+                            targetStep.getDisplayId());
+                } else {
+                    BooleanOperator operator = BooleanOperator.parse(newStep.getOperation());
+                    AnswerFilterInstance targetFilter = newStep.getFilter();
+                    Step rightStep = newStep.getChildStep();
+                    newStep = user.createBooleanStep(targetStep, rightStep,
+                            operator, false, targetFilter);
+                }
+                newStep.setParentStep(parent);
+                newStep.setCollapsible(targetStep.isCollapsible());
+                newStep.setCollapsedName(targetStep.getCollapsedName());
+                newStep.update(false);
+            }
+            // Make sure target step is made uncollapsible so that
+            // we don't have incorrect references in the step tree
+            targetStep.setParentStep(null);
+            targetStep.setCollapsible(false);
+            targetStep.setCollapsedName(null);
+            targetStep.update(false);
+        }
 
         // if step has a parent step, need to continue
         // updating the rest of the strategy.
@@ -382,8 +383,7 @@ public class Strategy {
                 // need to check if step is a transform (in which case there's
                 // no boolean expression; we need to update history param
                 if (targetStep.isTransform()) {
-                    newStep = updateTransform(
-                            targetStep,
+                    newStep = updateTransform(targetStep,
                             newStep.getQuestion().getRecordClass(),
                             newStep.getDisplayId());
                 } else {
@@ -403,10 +403,10 @@ public class Strategy {
 
             // Make sure target step is made uncollapsible so that
             // we don't have incorrect references in the step tree
-            /* targetStep.setParentStep(null);
-            targetStep.setCollapsible(false);
-            targetStep.setCollapsedName(null);
-            targetStep.update(false); */
+            /*
+             * targetStep.setParentStep(null); targetStep.setCollapsible(false);
+             * targetStep.setCollapsedName(null); targetStep.update(false);
+             */
         }
 
         this.setLatestStep(newStep);
@@ -440,6 +440,17 @@ public class Strategy {
         return latestStep.getFirstStep();
     }
 
+    /**
+     * checksum of a strategy is different from signature in that signature is
+     * stable and it will never change after the strategy is created, while
+     * checksum depends on many properties of a strategy, and it will change
+     * when the strategies properties are changed.
+     * 
+     * @return
+     * @throws JSONException
+     * @throws NoSuchAlgorithmException
+     * @throws WdkModelException
+     */
     public String getChecksum() throws JSONException, NoSuchAlgorithmException,
             WdkModelException {
         JSONObject jsStrategy = getJSONContent();
@@ -466,7 +477,8 @@ public class Strategy {
     }
 
     /**
-     * @param valid the valid to set
+     * @param valid
+     *            the valid to set
      */
     public void setValid(boolean valid) {
         this.valid = valid;
@@ -480,7 +492,8 @@ public class Strategy {
     }
 
     /**
-     * @param lastViewedTime the lastViewedTime to set
+     * @param lastViewedTime
+     *            the lastViewedTime to set
      */
     public void setLastViewedTime(Date lastViewedTime) {
         this.lastViewedTime = lastViewedTime;
@@ -494,13 +507,19 @@ public class Strategy {
     }
 
     /**
-     * @param lastModifiedTime the lastModifiedTime to set
+     * @param lastModifiedTime
+     *            the lastModifiedTime to set
      */
     public void setLastModifiedTime(Date lastModifiedTime) {
         this.lastModifiedTime = lastModifiedTime;
     }
 
     /**
+     * checksum of a strategy is different from signature in that signature is
+     * stable and it will never change after the strategy is created, while
+     * checksum depends on many properties of a strategy, and it will change
+     * when the strategies properties are changed.
+     * 
      * @return the signature
      */
     public String getSignature() {
@@ -508,7 +527,8 @@ public class Strategy {
     }
 
     /**
-     * @param signature the signature to set
+     * @param signature
+     *            the signature to set
      */
     public void setSignature(String signature) {
         this.signature = signature;
@@ -522,7 +542,8 @@ public class Strategy {
     }
 
     /**
-     * @param description the description to set
+     * @param description
+     *            the description to set
      */
     public void setDescription(String description) {
         this.description = description;
