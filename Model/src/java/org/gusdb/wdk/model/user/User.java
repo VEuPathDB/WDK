@@ -391,8 +391,9 @@ public class User /* implements Serializable */{
                 deleted);
     }
 
-    public synchronized Step createStep(Question question, Map<String, String> paramValues,
-            String filterName) throws WdkUserException, WdkModelException,
+    public synchronized Step createStep(Question question,
+            Map<String, String> paramValues, String filterName)
+            throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         AnswerFilterInstance filter = null;
         RecordClass recordClass = question.getRecordClass();
@@ -402,17 +403,18 @@ public class User /* implements Serializable */{
         return createStep(question, paramValues, filter);
     }
 
-    public synchronized Step createStep(Question question, Map<String, String> paramValues,
-            AnswerFilterInstance filter) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+    public synchronized Step createStep(Question question,
+            Map<String, String> paramValues, AnswerFilterInstance filter)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         int endIndex = getItemsPerPage();
         return createStep(question, paramValues, filter, 1, endIndex, false);
     }
 
-    public synchronized Step createStep(Question question, Map<String, String> paramValues,
-            AnswerFilterInstance filter, int pageStart, int pageEnd,
-            boolean deleted) throws WdkUserException, WdkModelException,
+    public synchronized Step createStep(Question question,
+            Map<String, String> paramValues, AnswerFilterInstance filter,
+            int pageStart, int pageEnd, boolean deleted)
+            throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         Step step = stepFactory.createStep(this, question, paramValues, filter,
                 pageStart, pageEnd, deleted);
@@ -428,16 +430,16 @@ public class User /* implements Serializable */{
 
     // Transitional method...how to handle savedName properly?
     // Probably by expecting it if a name is given?
-    public synchronized Strategy createStrategy(Step step, String name, boolean saved)
-            throws WdkUserException, WdkModelException, SQLException,
-            JSONException, NoSuchAlgorithmException {
+    public synchronized Strategy createStrategy(Step step, String name,
+            boolean saved) throws WdkUserException, WdkModelException,
+            SQLException, JSONException, NoSuchAlgorithmException {
         return createStrategy(step, name, null, saved, null);
     }
 
-    public synchronized Strategy createStrategy(Step step, String name, String savedName,
-            boolean saved, String description) throws WdkUserException,
-            WdkModelException, SQLException, JSONException,
-            NoSuchAlgorithmException {
+    public synchronized Strategy createStrategy(Step step, String name,
+            String savedName, boolean saved, String description)
+            throws WdkUserException, WdkModelException, SQLException,
+            JSONException, NoSuchAlgorithmException {
         Strategy strategy = stepFactory.createStrategy(this, step, name,
                 savedName, saved, description);
         if (strategyCount != null) strategyCount++;
@@ -513,7 +515,8 @@ public class User /* implements Serializable */{
     }
 
     public Map<Integer, Strategy> getStrategiesMap() throws WdkUserException,
-            WdkModelException, JSONException, SQLException {
+            WdkModelException, JSONException, SQLException,
+            NoSuchAlgorithmException {
         Map<Integer, Strategy> invalidStrategies = new LinkedHashMap<Integer, Strategy>();
         Map<Integer, Strategy> strategies = stepFactory.loadStrategies(this,
                 invalidStrategies);
@@ -545,7 +548,8 @@ public class User /* implements Serializable */{
     }
 
     public Strategy[] getInvalidStrategies() throws WdkUserException,
-            WdkModelException, JSONException, SQLException {
+            WdkModelException, JSONException, SQLException,
+            NoSuchAlgorithmException {
         try {
             Map<Integer, Strategy> strategies = new LinkedHashMap<Integer, Strategy>();
             stepFactory.loadStrategies(this, strategies);
@@ -563,7 +567,8 @@ public class User /* implements Serializable */{
     }
 
     public Strategy[] getStrategies() throws WdkUserException,
-            WdkModelException, JSONException, SQLException {
+            WdkModelException, JSONException, SQLException,
+            NoSuchAlgorithmException {
         Map<Integer, Strategy> map = getStrategiesMap();
         Strategy[] array = new Strategy[map.size()];
         map.values().toArray(array);
@@ -708,13 +713,14 @@ public class User /* implements Serializable */{
     }
 
     public Strategy getStrategy(int userStrategyId) throws WdkUserException,
-            WdkModelException, JSONException, SQLException {
+            WdkModelException, JSONException, SQLException,
+            NoSuchAlgorithmException {
         return getStrategy(userStrategyId, false);
     }
 
     public Strategy getStrategy(int userStrategyId, boolean allowDeleted)
             throws WdkUserException, WdkModelException, JSONException,
-            SQLException {
+            SQLException, NoSuchAlgorithmException {
         return stepFactory.loadStrategy(this, userStrategyId, allowDeleted);
     }
 
@@ -735,7 +741,8 @@ public class User /* implements Serializable */{
     }
 
     public void deleteInvalidStrategies() throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+            WdkModelException, SQLException, JSONException,
+            NoSuchAlgorithmException {
         stepFactory.deleteInvalidStrategies(this);
     }
 
@@ -1119,7 +1126,8 @@ public class User /* implements Serializable */{
     }
 
     public Strategy[] getActiveStrategies() throws WdkUserException,
-            WdkModelException, JSONException, SQLException {
+            WdkModelException, JSONException, SQLException,
+            NoSuchAlgorithmException {
         int[] ids = activeStrategyFactory.getRootStrategies();
         Strategy[] strategies = new Strategy[ids.length];
         for (int i = 0; i < ids.length; i++) {
@@ -1130,7 +1138,7 @@ public class User /* implements Serializable */{
 
     public void addActiveStrategy(String strategyKey)
             throws NumberFormatException, WdkUserException, WdkModelException,
-            JSONException, SQLException {
+            JSONException, SQLException, NoSuchAlgorithmException {
         activeStrategyFactory.openActiveStrategy(strategyKey);
         int pos = strategyKey.indexOf('_');
         if (pos >= 0) strategyKey = strategyKey.substring(0, pos);
@@ -1145,7 +1153,8 @@ public class User /* implements Serializable */{
 
     public void replaceActiveStrategy(int oldStrategyId, int newStrategyId,
             Map<Integer, Integer> stepIdsMap) throws WdkUserException,
-            WdkModelException, JSONException, SQLException {
+            WdkModelException, JSONException, SQLException,
+            NoSuchAlgorithmException {
         activeStrategyFactory.replaceStrategy(this, oldStrategyId,
                 newStrategyId, stepIdsMap);
     }

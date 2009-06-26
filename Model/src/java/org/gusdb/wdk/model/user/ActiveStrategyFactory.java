@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.user;
 
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -57,7 +58,7 @@ class ActiveStrategyFactory {
 
     synchronized void openActiveStrategy(String strategyKey)
             throws NumberFormatException, WdkUserException, WdkModelException,
-            JSONException, SQLException {
+            JSONException, SQLException, NoSuchAlgorithmException {
         if (getStrategy(strategyKey) != null) return;
 
         String parentKey = getParentKey(strategyKey);
@@ -107,7 +108,8 @@ class ActiveStrategyFactory {
 
     synchronized void replaceStrategy(User user, int oldId, int newId,
             Map<Integer, Integer> stepMap) throws WdkUserException,
-            WdkModelException, JSONException, SQLException {
+            WdkModelException, JSONException, SQLException,
+            NoSuchAlgorithmException {
         ActiveStrategy oldStrategy = root.children.get(Integer.toString(oldId));
         // if the old strategy is not opened, do nothing.
         if (oldStrategy == null) return;
@@ -149,7 +151,8 @@ class ActiveStrategyFactory {
     }
 
     private String getParentKey(String strategyKey) throws WdkUserException,
-            WdkModelException, JSONException, SQLException {
+            WdkModelException, JSONException, SQLException,
+            NoSuchAlgorithmException {
         int pos = strategyKey.indexOf('_');
         if (pos < 0) return null;
         int strategyId = Integer.parseInt(strategyKey.substring(0, pos));
@@ -243,11 +246,11 @@ class ActiveStrategyFactory {
     }
 
     public Integer getViewPagerOffset() {
-	if (getViewStrategyKey() == null) return null;
-	return viewPagerOffset;
+        if (getViewStrategyKey() == null) return null;
+        return viewPagerOffset;
     }
 
     public void setViewPagerOffset(Integer viewPagerOffset) {
-	this.viewPagerOffset = viewPagerOffset;
+        this.viewPagerOffset = viewPagerOffset;
     }
 }
