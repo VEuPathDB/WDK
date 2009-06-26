@@ -379,7 +379,8 @@ public class StepFactory {
     }
 
     void deleteInvalidStrategies(User user) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+            WdkModelException, SQLException, JSONException,
+            NoSuchAlgorithmException {
         // get invalid histories
         Map<Integer, Strategy> invalidStrategies = new LinkedHashMap<Integer, Strategy>();
         loadStrategies(user, invalidStrategies);
@@ -671,7 +672,8 @@ public class StepFactory {
 
     Map<Integer, Strategy> loadStrategies(User user,
             Map<Integer, Strategy> invalidStrategies) throws WdkUserException,
-            WdkModelException, JSONException, SQLException {
+            WdkModelException, JSONException, SQLException,
+            NoSuchAlgorithmException {
         Map<Integer, Strategy> userStrategies = new LinkedHashMap<Integer, Strategy>();
 
         PreparedStatement psStrategyIds = null;
@@ -710,7 +712,7 @@ public class StepFactory {
 
     List<Strategy> loadStrategies(User user, boolean saved, boolean recent)
             throws SQLException, WdkUserException, WdkModelException,
-            JSONException {
+            JSONException, NoSuchAlgorithmException {
         StringBuffer sql = new StringBuffer("SELECT DISTINCT * FROM ");
         sql.append(" (SELECT  sr.* FROM ");
         sql.append(userSchema).append(TABLE_STRATEGY).append(" sr, ");
@@ -760,7 +762,7 @@ public class StepFactory {
 
     private Strategy loadStrategy(User user, ResultSet resultSet)
             throws SQLException, WdkUserException, WdkModelException,
-            JSONException {
+            JSONException, NoSuchAlgorithmException {
         int internalId = resultSet.getInt(COLUMN_STRATEGY_INTERNAL_ID);
         int strategyId = resultSet.getInt(COLUMN_DISPLAY_ID);
 
@@ -775,6 +777,15 @@ public class StepFactory {
         strategy.setLastModifiedTime(resultSet.getTimestamp(COLUMN_LAST_MODIFIED_TIME));
         strategy.setSignature(resultSet.getString(COLUMN_SIGNATURE));
         strategy.setDescription(resultSet.getString(COLUMN_DESCRIPTION));
+
+        String signature = strategy.getSignature();
+        if (signature == null || signature.trim().length() == 0) {
+            signature = getStrategySignature(user.getUserId(), internalId);
+            String sql = "UPDATE " + userSchema + "strategies SET signature = "
+                    + "'" + signature + "' WHERE strategy_id = " + internalId;
+            SqlUtils.executeUpdate(dataSource, sql);
+            strategy.setSignature(signature);
+        }
 
         int rootStepId = resultSet.getInt(COLUMN_ROOT_STEP_ID);
         Step rootStep = loadStepTree(user, rootStepId);
@@ -914,7 +925,7 @@ public class StepFactory {
 
     Strategy loadStrategy(User user, int displayId, boolean allowDeleted)
             throws WdkUserException, WdkModelException, JSONException,
-            SQLException {
+            SQLException, NoSuchAlgorithmException {
         String userIdColumn = UserFactory.COLUMN_USER_ID;
 
         PreparedStatement psStrategy = null;
@@ -959,7 +970,8 @@ public class StepFactory {
     }
 
     Strategy loadStrategy(String strategySignature) throws WdkUserException,
-            SQLException, WdkModelException, JSONException {
+            SQLException, WdkModelException, JSONException,
+            NoSuchAlgorithmException {
         StringBuffer sql = new StringBuffer("SELECT * ");
         sql.append(" FROM ").append(userSchema).append(TABLE_STRATEGY);
         sql.append(" WHERE ").append(COLUMN_SIGNATURE).append(" = ? ");
@@ -1191,7 +1203,7 @@ public class StepFactory {
         Connection connection = dataSource.getConnection();
 
         int internalId = userPlatform.getNextId(userSchema, TABLE_STRATEGY);
-        String signature = getStrategySignature(user, internalId);
+        String signature = getStrategySignature(user.getUserId(), internalId);
         try {
             connection.setAutoCommit(false);
 
@@ -1422,10 +1434,10 @@ public class StepFactory {
         }
     }
 
-    private String getStrategySignature(User user, int internalId)
+    public String getStrategySignature(int userId, int internalId)
             throws NoSuchAlgorithmException, WdkModelException {
         String project_id = wdkModel.getProjectId();
-        String content = project_id + "_" + user.getUserId() + "_" + internalId
+        String content = project_id + "_" + userId + "_" + internalId
                 + "_6276406938881110742";
         return Utilities.encrypt(content, true);
     }

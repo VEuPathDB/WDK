@@ -653,7 +653,8 @@ public class UserBean /* implements Serializable */{
     }
 
     public void deleteInvalidStrategies() throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+            WdkModelException, SQLException, JSONException,
+            NoSuchAlgorithmException {
         user.deleteInvalidStrategies();
     }
 
@@ -690,7 +691,8 @@ public class UserBean /* implements Serializable */{
     }
 
     public StrategyBean getStrategy(int displayId) throws WdkUserException,
-            WdkModelException, JSONException, SQLException {
+            WdkModelException, JSONException, SQLException,
+            NoSuchAlgorithmException {
         return new StrategyBean(this, user.getStrategy(displayId));
     }
 
@@ -721,11 +723,11 @@ public class UserBean /* implements Serializable */{
 
     public List<StrategyBean> getInvalidStrategies() throws WdkUserException,
             WdkModelException, JSONException, SQLException {
-        //Strategy[] strategies = user.getInvalidStrategies();
+        // Strategy[] strategies = user.getInvalidStrategies();
         List<StrategyBean> beans = new ArrayList<StrategyBean>();
-        //for (int i = 0; i < strategies.length; i++) {
-        //    beans[i] = new StrategyBean(this, strategies[i]);
-        //}
+        // for (int i = 0; i < strategies.length; i++) {
+        // beans[i] = new StrategyBean(this, strategies[i]);
+        // }
         return beans;
     }
 
@@ -883,7 +885,7 @@ public class UserBean /* implements Serializable */{
 
     public void addActiveStrategy(String strategyKey)
             throws NumberFormatException, WdkUserException, WdkModelException,
-            JSONException, SQLException {
+            JSONException, SQLException, NoSuchAlgorithmException {
         user.addActiveStrategy(strategyKey);
     }
 
@@ -893,7 +895,8 @@ public class UserBean /* implements Serializable */{
 
     public void replaceActiveStrategy(int oldStrategyId, int newStrategyId,
             Map<Integer, Integer> stepIdsMap) throws WdkUserException,
-            WdkModelException, JSONException, SQLException {
+            WdkModelException, JSONException, SQLException,
+            NoSuchAlgorithmException {
         user.replaceActiveStrategy(oldStrategyId, newStrategyId, stepIdsMap);
     }
 
@@ -942,7 +945,7 @@ public class UserBean /* implements Serializable */{
      * @throws WdkModelException
      * @throws SQLException
      * @throws JSONException
-     * @throws NoSuchAlgorithmException 
+     * @throws NoSuchAlgorithmException
      * @see org.gusdb.wdk.model.user.User#createStrategy(org.gusdb.wdk.model.user.Step,
      *      boolean)
      */
@@ -1068,7 +1071,8 @@ public class UserBean /* implements Serializable */{
         return latestStep;
     }
 
-    public void setViewResults(String strategyKey, int stepId, int viewPagerOffset) {
+    public void setViewResults(String strategyKey, int stepId,
+            int viewPagerOffset) {
         user.setViewResults(strategyKey, stepId, viewPagerOffset);
     }
 
@@ -1085,11 +1089,12 @@ public class UserBean /* implements Serializable */{
     }
 
     public Integer getViewPagerOffset() {
-	return user.getViewPagerOffset();
+        return user.getViewPagerOffset();
     }
 
     public StrategyBean[] getActiveStrategies() throws WdkUserException,
-            WdkModelException, JSONException, SQLException {
+            WdkModelException, JSONException, SQLException,
+            NoSuchAlgorithmException {
         List<StrategyBean> strategies = new ArrayList<StrategyBean>();
         for (Strategy strategy : user.getActiveStrategies()) {
             strategies.add(new StrategyBean(this, strategy));
