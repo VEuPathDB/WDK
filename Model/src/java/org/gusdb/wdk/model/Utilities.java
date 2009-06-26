@@ -75,13 +75,10 @@ public class Utilities {
         MessageDigest digest = MessageDigest.getInstance("MD5");
         byte[] byteBuffer = digest.digest(data.toString().getBytes());
         if (shortDigest) {
-            int size = Math.round(byteBuffer.length / 2.0F);
-            // shorten the digest to 16 bytes
+            // just take the first 8 bytes from MD5 hash
+            int size = Math.min(byteBuffer.length, 8);
             byte[] newBuffer = new byte[size];
-            for (int i = 0; i < byteBuffer.length; i++) {
-                int index = i % size;
-                newBuffer[index] ^= byteBuffer[i];
-            }
+            System.arraycopy(byteBuffer, 0, newBuffer, 0, newBuffer.length);
             byteBuffer = newBuffer;
         }
         // convert each byte into hex format
