@@ -1,7 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.util.ArrayList;
-
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,6 +26,9 @@ public class ImportStrategyAction extends Action {
         // Change to importing by answer checksum
         String strategyKey = request.getParameter("strategy");
 
+        if (strategyKey == null || strategyKey.length() == 0) {
+            strategyKey = request.getParameter("s");    // try a shorter version
+        }
         if (strategyKey == null || strategyKey.length() == 0) {
             throw new WdkModelException(
                     "No strategy key was specified for importing!");
