@@ -139,6 +139,6 @@ public class Category extends WdkModelBase {
     }
     
     public boolean isMultiCategory() {
-        return questions.size() > 1;
+        return children.size() > 1;
     }
 }
