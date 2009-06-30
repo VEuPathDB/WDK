@@ -227,5 +227,4 @@ public class Migrator1_18To1_19 extends Migrator {
         int count = SqlUtils.executeUpdate(dataSource, sql.toString());
         logger.debug(count + " step rows inserted");
     }
-
 }

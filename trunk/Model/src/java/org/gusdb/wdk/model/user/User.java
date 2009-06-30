@@ -19,9 +19,9 @@ import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.BooleanOperator;
-import org.gusdb.wdk.model.Categories;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -579,7 +579,7 @@ public class User /* implements Serializable */{
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
         Map<Integer, Strategy> strategies = getStrategiesMap();
-        return formatStrategiesByCategory(strategies.values());
+        return formatStrategiesByRecordClass(strategies.values());
     }
 
     public Map<String, List<Strategy>> getUnsavedStrategiesByCategory()
@@ -587,7 +587,7 @@ public class User /* implements Serializable */{
             NoSuchAlgorithmException, JSONException, SQLException {
         List<Strategy> strategies = stepFactory.loadStrategies(this, false,
                 false);
-        return formatStrategiesByCategory(strategies);
+        return formatStrategiesByRecordClass(strategies);
     }
 
     /**
@@ -603,7 +603,7 @@ public class User /* implements Serializable */{
             NoSuchAlgorithmException, JSONException, SQLException {
         List<Strategy> strategies = stepFactory.loadStrategies(this, true,
                 false);
-        return formatStrategiesByCategory(strategies);
+        return formatStrategiesByRecordClass(strategies);
     }
 
     public Map<String, List<Strategy>> getRecentStrategiesByCategory()
@@ -611,16 +611,18 @@ public class User /* implements Serializable */{
             NoSuchAlgorithmException, JSONException, SQLException {
         List<Strategy> strategies = stepFactory.loadStrategies(this, false,
                 true);
-        return formatStrategiesByCategory(strategies);
+        return formatStrategiesByRecordClass(strategies);
     }
 
-    private Map<String, List<Strategy>> formatStrategiesByCategory(
+    private Map<String, List<Strategy>> formatStrategiesByRecordClass(
             Collection<Strategy> strategies) throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
         Map<String, List<Strategy>> category = new LinkedHashMap<String, List<Strategy>>();
-        for (Categories categories : wdkModel.getCategories()) {
-            String type = categories.getRecordClassRef();
-            category.put(type, new ArrayList<Strategy>());
+        for (RecordClassSet rcSet : wdkModel.getAllRecordClassSets()) {
+            for (RecordClass recordClass : rcSet.getRecordClasses()) {
+                String type = recordClass.getFullName();
+                category.put(type, new ArrayList<Strategy>());
+            }
         }
         for (Strategy strategy : strategies) {
             String type = strategy.getType();

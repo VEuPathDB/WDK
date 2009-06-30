@@ -39,7 +39,7 @@
 
           <ref name="xmlRecordClassSet" />
 
-          <ref name="categories" />
+          <ref name="category" />
 
           <ref name="declaredMacro" />
 
@@ -90,23 +90,20 @@
   </define>
 
   <!-- define category list -->
-  <define name="categories">
-    <element name="categories">
-      <attribute name="recordClassRef"/>
+  <define name="category">
+    <element name="category">
+      <attribute name="name"/>
+      <attribute name="displayName"/>
+      <optional>
+        <attribute name="parentRef" />
+      </optional>
       <ref name="IncludeExclude"/>
-      <oneOrMore>
-        <element name="category">
-          <attribute name="name"/>
-          <attribute name="displayName"/>
+      <zeroOrMore>
+        <element name="questionRef">
           <ref name="IncludeExclude"/>
-          <zeroOrMore>
-            <element name="questionRef">
-              <ref name="IncludeExclude"/>
-              <text />
-            </element>
-          </zeroOrMore>
+          <text />
         </element>
-      </oneOrMore>
+      </zeroOrMore>
     </element>
   </define>
 
