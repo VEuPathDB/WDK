@@ -56,9 +56,8 @@ public class QuestionChecksumUpdater extends BaseCLI {
     @Override
     protected void declareOptions() {
         addSingleValueOption(ARG_PROJECT_ID, true, null, "A comma-separated"
-                + " list of ProjectIds, which"
-                + " should match the directory name under $GUS_HOME, where"
-                + " model-config.xml is stored.");
+                + " list of ProjectIds, which should match the directory name "
+                + "under $GUS_HOME, where model-config.xml is stored.");
     }
 
     /*

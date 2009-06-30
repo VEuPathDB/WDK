@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Vector;
 
 import org.gusdb.wdk.model.AnswerValue;
+import org.gusdb.wdk.model.Category;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.RecordClass;
@@ -71,36 +72,24 @@ public class WdkModelBean {
         return new RecordClassBean(model.getRecordClass(recClassRef));
     }
 
-    /**
-     * @return Map of recordClassFullName --> Map of question category -->
-     *         {array of
-     * @link QuestionBean}
-     */
-    public Map<String, Map<String, QuestionBean[]>> getQuestionsByCategory() {
-        Map<String, Map<String, Question[]>> qByCat = model.getQuestionsByCategories();
-
-        Map<String, Map<String, QuestionBean[]>> qBeanByCat = new LinkedHashMap<String, Map<String, QuestionBean[]>>();
-        for (String recType : qByCat.keySet()) {
-            Map<String, Question[]> recMap = qByCat.get(recType);
-            for (String cat : recMap.keySet()) {
-                Question[] questions = recMap.get(cat);
-                QuestionBean[] qBeans = new QuestionBean[questions.length];
-                for (int i = 0; i < questions.length; i++) {
-                    qBeans[i] = new QuestionBean(questions[i]);
-                }
-
-                if (null == qBeanByCat.get(recType)) {
-                    qBeanByCat.put(recType,
-                            new LinkedHashMap<String, QuestionBean[]>());
-                }
-
-                qBeanByCat.get(recType).put(cat, qBeans);
-            }
+    public Map<String, CategoryBean> getCategoryMap() {
+        Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
+        for(Category category : model.getCategoryMap().values()) {
+            CategoryBean bean = new CategoryBean(category);
+            beans.put(category.getName(), bean);
         }
-
-        return qBeanByCat;
+        return beans;
     }
 
+    public Map<String, CategoryBean> getRootCategoryMap() {
+        Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
+        for(Category category : model.getRootCategoryMap().values()) {
+            CategoryBean bean = new CategoryBean(category);
+            beans.put(category.getName(), bean);
+        }
+        return beans;
+    }
+    
     /**
      * @return Map of questionSetName --> {@link QuestionSetBean}
      */

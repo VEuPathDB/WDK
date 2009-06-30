@@ -1,7 +1,9 @@
 package org.gusdb.wdk.model;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 
@@ -14,15 +16,13 @@ public class Category extends WdkModelBase {
     private List<WdkModelText> questionRefs;
     private List<Question> questions;
 
-    private Categories categories;
+    private String parentRef;
+    private Category parent;
+    private Map<String, Category> children = new LinkedHashMap<String, Category>();
 
     public Category() {
         questionRefs = new ArrayList<WdkModelText>();
         questions = new ArrayList<Question>();
-    }
-
-    void setCategories(Categories categories) {
-        this.categories = categories;
     }
 
     public String getName() {
@@ -51,6 +51,27 @@ public class Category extends WdkModelBase {
         return array;
     }
 
+    public void setParentRef(String parentRef) {
+        this.parentRef = parentRef;
+    }
+
+    public Category getParent() {
+        return parent;
+    }
+
+    public Map<String, Category> getChildren() {
+        return new LinkedHashMap<String, Category>(children);
+    }
+
+    public boolean isAncesterOf(Category category) {
+        Category parent = category.parent;
+        while (parent != null) {
+            if (parent.equals(this)) return true;
+            parent = parent.parent;
+        }
+        return false;
+    }
+
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
         // exclude questionRefs
@@ -65,14 +86,13 @@ public class Category extends WdkModelBase {
         questionRefs = temp;
     }
 
-    public void resolveReferences(WdkModel model) throws WdkModelException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
         // get the base recordClass
-        String recordClassRef = categories.getRecordClassRef();
         for (WdkModelText ref : questionRefs) {
             Question question = null;
             String questionName = ref.getText().trim();
             try {
-                question = (Question) model.resolveReference(questionName);
+                question = (Question) wdkModel.resolveReference(questionName);
             } catch (WdkModelException ex) {
                 // relax a bit, just ignore the missing questions
                 logger.debug("The question [" + questionName + "] is defined "
@@ -80,15 +100,45 @@ public class Category extends WdkModelBase {
                         + "the model.");
                 continue;
             }
-
-            // make sure the recordClass matches
-            if (!question.getRecordClass().getFullName().equals(recordClassRef))
-                logger.debug("Question " + question.getFullName()
-                        + " should not be included in categories of "
-                        + recordClassRef);
-
             questions.add(question);
         }
         questionRefs = null;
+
+        // resolve the parent
+        Category parent = wdkModel.getCategoryMap().get(parentRef);
+        if (parent != null) {
+            // parent cannot be the same node as this one, or a child of it
+            if (parent.equals(this) || this.isAncesterOf(parent))
+                throw new WdkModelException("the category '" + name
+                        + "' cannot have a parent of '" + parentRef + "'");
+            this.parent = parent;
+            this.parent.children.put(name, this);
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof Category)) return false;
+        Category category = (Category) obj;
+        return this.name.equalsIgnoreCase(category.name);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return this.name.toLowerCase().hashCode();
+    }
+    
+    public boolean isMutliCategory() {
+        return questions.size() > 1;
     }
 }

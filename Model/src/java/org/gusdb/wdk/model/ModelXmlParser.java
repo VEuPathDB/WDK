@@ -267,15 +267,12 @@ public class ModelXmlParser extends XmlParser {
                 0);
 
         // categories
-        configureNode(digester, "wdkModel/categories", Categories.class,
-                "addCategories");
-
-        configureNode(digester, "wdkModel/categories/category", Category.class,
+        configureNode(digester, "wdkModel/category", Category.class,
                 "addCategory");
 
-        configureNode(digester, "wdkModel/categories/category/questionRef",
+        configureNode(digester, "wdkModel/category/questionRef",
                 WdkModelText.class, "addQuestionRef");
-        digester.addCallMethod("wdkModel/categories/category/questionRef",
+        digester.addCallMethod("wdkModel/category/questionRef",
                 "setText", 0);
 
         // configure property macros
