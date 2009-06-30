@@ -138,7 +138,7 @@ public class Category extends WdkModelBase {
         return this.name.toLowerCase().hashCode();
     }
     
-    public boolean isMutliCategory() {
+    public boolean isMultiCategory() {
         return questions.size() > 1;
     }
 }

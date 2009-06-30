@@ -27,6 +27,9 @@ public class CategoryBean {
      */
     public Map<String, CategoryBean> getChildren() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
+        for(Category child : category.getChildren().values()) {
+            beans.put(child.getName(), new CategoryBean(child));
+        }
         return beans;
     }
 
@@ -61,7 +64,7 @@ public class CategoryBean {
     public QuestionBean[] getQuestions() {
         Question[] questions = category.getQuestions();
         QuestionBean[] beans = new QuestionBean[questions.length];
-        for(int i = 0; i > questions.length; i++) {
+        for(int i = 0; i < questions.length; i++) {
             beans[i] = new QuestionBean(questions[i]);
         }
         return beans;
@@ -71,8 +74,8 @@ public class CategoryBean {
      * @return
      * @see org.gusdb.wdk.model.Category#isMutliCategory()
      */
-    public boolean isMutliCategory() {
-        return category.isMutliCategory();
+    public boolean isMultiCategory() {
+        return category.isMultiCategory();
     }
     
 }
