@@ -143,8 +143,9 @@ public class WdkModel {
     private List<PropertyList> defaultPropertyLists = new ArrayList<PropertyList>();
     private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<String, String[]>();
 
-    private List<Categories> categoriesList = new ArrayList<Categories>();
-    private Map<String, Categories> categoriesMap = new LinkedHashMap<String, Categories>();
+    private List<Category> categoryList = new ArrayList<Category>();
+    private Map<String, Category> categoryMap = new LinkedHashMap<String, Category>();
+    private Map<String, Category> rootCategoryMap = new LinkedHashMap<String, Category>();
 
     private String secretKey;
 
@@ -313,23 +314,6 @@ public class WdkModel {
         return sets;
     }
 
-    public Map<String, Map<String, Question[]>> getQuestionsByCategories() {
-        Map<String, Map<String, Question[]>> allQuestions = new LinkedHashMap<String, Map<String, Question[]>>();
-        for (String recordClassName : categoriesMap.keySet()) {
-            Categories categories = categoriesMap.get(recordClassName);
-            Map<String, Question[]> subQuestions = new LinkedHashMap<String, Question[]>();
-            for (Category category : categories.getCategories()) {
-                String categoryName = category.getDisplayName();
-                Question[] questions = category.getQuestions();
-                if (questions.length > 0)
-                    subQuestions.put(categoryName, questions);
-            }
-            if (subQuestions.size() > 0)
-                allQuestions.put(recordClassName, subQuestions);
-        }
-        return allQuestions;
-    }
-
     public ParamSet getParamSet(String setName) throws WdkModelException {
         if (!paramSets.containsKey(setName)) {
             String err = "WDK Model " + projectId
@@ -406,7 +390,7 @@ public class WdkModel {
             booleanQuery.excludeResources(projectId);
             booleanQuery.resolveReferences(this);
             booleanQuery.setDoNotTest(true);
-            booleanQuery.setIsCacheable(true);  // cache the boolean query
+            booleanQuery.setIsCacheable(true); // cache the boolean query
 
             internalQuerySet.addQuery(booleanQuery);
         }
@@ -586,8 +570,10 @@ public class WdkModel {
         for (ModelSetI qSet : xmlQuestionSets.values()) {
             qSet.resolveReferences(this);
         }
-        for (Categories categories : this.categoriesMap.values()) {
-            categories.resolveReferences(this);
+        for (Category category : this.categoryMap.values()) {
+            category.resolveReferences(this);
+            if (category.getParent() == null)
+                rootCategoryMap.put(category.getName(), category);
         }
     }
 
@@ -703,17 +689,17 @@ public class WdkModel {
         xmlRecordClassSetList = null;
 
         // exclude categories
-        for (Categories categories : this.categoriesList) {
-            if (categories.include(projectId)) {
-                String recordClassRef = categories.getRecordClassRef();
-                if (categoriesMap.containsKey(recordClassRef))
-                    throw new WdkModelException("More than one categories have"
-                            + " recordClassRef '" + recordClassRef + "'");
-                categories.excludeResources(projectId);
-                categoriesMap.put(recordClassRef, categories);
+        for (Category category : this.categoryList) {
+            if (category.include(projectId)) {
+                String name = category.getName();
+                if (categoryMap.containsKey(name))
+                    throw new WdkModelException("The category name '" + name
+                            + "' is duplicated");
+                category.excludeResources(projectId);
+                categoryMap.put(name, category);
             }
         }
-        categoriesList = null;
+        categoryList = null;
 
         // exclude categories
         for (MacroDeclaration macro : macroList) {
@@ -975,14 +961,22 @@ public class WdkModel {
         return propLists;
     }
 
-    public void addCategories(Categories categories) {
-        this.categoriesList.add(categories);
+    public void addCategory(Category category) {
+        this.categoryList.add(category);
     }
 
-    public Categories[] getCategories() {
-        Categories[] array = new Categories[categoriesMap.size()];
-        categoriesMap.values().toArray(array);
+    public Category[] getCategories() {
+        Category[] array = new Category[categoryMap.size()];
+        categoryMap.values().toArray(array);
         return array;
+    }
+
+    public LinkedHashMap<String, Category> getCategoryMap() {
+        return new LinkedHashMap<String, Category>(categoryMap);
+    }
+    
+    public LinkedHashMap<String, Category> getRootCategoryMap() {
+        return new LinkedHashMap<String, Category>(rootCategoryMap);
     }
 
     public void addMacroDeclaration(MacroDeclaration macro) {

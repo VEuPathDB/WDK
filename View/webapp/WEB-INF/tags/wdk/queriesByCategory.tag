@@ -4,26 +4,26 @@
 <!-- show all questions in model -->
 
 <%-- first pass to get all record types --%>
-<c:set value="${wdkModel.questionsByCategory}" var="qByRecType"/>
+<c:set value="${wdkModel.rootCategoryMap}" var="rootCatMap"/>
 <c:set value="${wdkModel.recordClassTypes}" var="recTypes"/>
 
 <table width="100%" cellpadding="4">
-<c:forEach items="${qByRecType}" var="recTypeEntry">
-  <c:set var="recType" value="${recTypeEntry.key}"/>
-  <c:set var="qByCat" value="${recTypeEntry.value}"/>
-  <c:set var="isMultiCat" value="${fn:length(qByCat) > 1}"/>
+<c:forEach items="${rootCatMap}" var="rootCatEntry">
+  <c:set var="recType" value="${rootCatEntry.key}"/>
+  <c:set var="rootCat" value="${rootCatEntry.value}"/>
+  <c:set var="isMultiCat" value="${rootCat.multiCategory}"/>
 
   <c:if test="${param.type == null 
-             or param.type eq recTypes[recTypeEntry.key] 
+             or param.type eq recTypes[recType] 
              or param.type == ''}" >
 
   <tr class="headerRow"><td colspan="4" align="center">
-    <b>${recTypes[recTypeEntry.key]} Queries</b>
+    <b>${recTypes[recType]} Queries</b>
     
     <br>
     <c:if test="${param.cat != null}">
-      <a href="${pageContext.request.requestURI}?type=${recTypes[recTypeEntry.key]}" id='allQueriesAndTools'>
-         More ${recTypes[recTypeEntry.key]} Queries
+      <a href="${pageContext.request.requestURI}?type=${recTypes[recType]}" id='allQueriesAndTools'>
+         More ${recTypes[recType]} Queries
       </a> | 
     </c:if>
     <c:if test="${param.type != null}">
@@ -34,20 +34,19 @@
    </td></tr>
 
   <c:set var="i" value="0"/>
-  <c:forEach items="${qByCat}" var="catEntry">
-    <c:set var="cat" value="${catEntry.key}"/>
-
-    <c:set var="questions" value="${catEntry.value}"/>
+  <c:forEach items="${rootCat.children}" var="cat">
+    <c:set var="catName" value="${cat.name}" />
+    <c:set var="questions" value="${cat.questions}"/>
 
     <c:if test="${isMultiCat}">
-      <c:if test="${cat == '' || cat == ' ' || cat == '_'}">
-        <c:set var="cat" value="miscellaneous"/>
+      <c:if test="${catName == '' || catName == ' ' || catName == '_'}">
+        <c:set var="catName" value="miscellaneous"/>
       </c:if>
     </c:if>
 
-    <c:if test="${param.cat == null or param.cat eq cat or param.cat == ''}">
+    <c:if test="${param.cat == null or param.cat eq cat.name or param.cat == ''}">
       <tr><td colspan="4">&nbsp;</td></tr>
-      <tr class="rowDark" width="100%"><td colspan="4" align="center"><b><a name='${cat}'>${cat}</a></b></td></tr>
+      <tr class="rowDark" width="100%"><td colspan="4" align="center"><b><a name='${catName}'>${cat.displayName}</a></b></td></tr>
 
      <%-- Cristina reset per category, first rowMedium, then rowLight --%>    
      <c:set var="i" value="0"/>
@@ -79,10 +78,10 @@
         </tr>
       </c:forEach> <%-- forEach items=questions --%>
     </c:if>        <%-- if test=param.cat --%>
-  </c:forEach>     <%-- forEach items=qByCat --%>
+  </c:forEach>     <%-- forEach items=rootCat --%>
   <tr><td colspan="4">&nbsp;</td></tr>
   
   </c:if>          <%-- if param.type --%>
-</c:forEach>       <%-- items=qByRecType --%>
+</c:forEach>       <%-- items=rootCatMap --%>
 
 </table>
