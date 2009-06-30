@@ -50,14 +50,6 @@
       </td>
      
    <%-- 'All' link to display all results, if the result set is not too big --%>
-   <c:if test="${resultSize < 1000}">
-      <td>
-        <pg:page>
-           &nbsp;<a href="javascript:GetResultsPage('${pageUrl}&altPageSize=${resultSize}', true)">All</a> 
-        </pg:page>
-      </td>
-   </c:if>
-   
       <td>
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 <input class="paging-button" style="width:150px" type="button" value="Advanced Paging" onclick="openAdvancedPaging(this)"/>
@@ -79,6 +71,8 @@
              <option value="20" ${(wdk_paging_pageSize == 20)? 'SELECTED' : ''}>20</option>
              <option value="50" ${(wdk_paging_pageSize == 50)? 'SELECTED' : ''}>50</option>
              <option value="100" ${(wdk_paging_pageSize== 100)? 'SELECTED' : ''}>100</option>
+             <option value="500" ${(wdk_paging_pageSize == 500)? 'SELECTED' : ''}>500 (slow)</option>
+             <option value="1000" ${(wdk_paging_pageSize== 1000)? 'SELECTED' : ''}>1000 (very slow)</option>
            </select>
            <input type="button" value="GO" onclick="gotoPage('${pager_id}');"/>
         
