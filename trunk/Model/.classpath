@@ -24,7 +24,6 @@
 	<classpathentry kind="lib" path="/WSF Service/lib/java/javamail-1.4.jar"/>
 	<classpathentry kind="lib" path="/WSF Service/lib/java/commons-logging-1.0.4.jar"/>
 	<classpathentry kind="lib" path="/WSF Plugin/lib/java/axis-1.4.jar"/>
-	<classpathentry kind="lib" path="lib/java/json-2.0.jar"/>
 	<classpathentry kind="lib" path="/WSF Plugin/lib/java/commons-cli-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/java/db_driver/postgresql-8.3-603.jdbc3.jar"/>
 	<classpathentry kind="lib" path="lib/java/commons-dbcp-1.2.2.jar"/>
