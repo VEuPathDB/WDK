@@ -78,6 +78,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
             if (strStepId == null || strStepId.length() == 0) {
                 logger.debug("create new steps");
 
+		// reset pager info in session
+		wdkUser.resetViewResults();
+
                 QuestionBean wdkQuestion = (QuestionBean) request.getAttribute(CConstants.WDK_QUESTION_KEY);
                 if (wdkQuestion == null) wdkQuestion = qForm.getQuestion();
 
