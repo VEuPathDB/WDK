@@ -15,6 +15,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -51,21 +52,22 @@ public class ShowQuestionSetsAction extends Action {
             HttpServlet servlet) {
         WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
-        Map sumAttrsByQuestion = getSummaryAttributesByQuestionMap(wdkModel);
+        Map<String, Map<String, Map<String, AttributeFieldBean>>> sumAttrsByQuestion = getSummaryAttributesByQuestionMap(wdkModel);
         request.getSession().setAttribute(CConstants.WDK_SUMMARY_ATTRS_KEY,
                 sumAttrsByQuestion);
     }
 
-    private static Map getSummaryAttributesByQuestionMap(WdkModelBean wdkModel) {
-        Map sumAttrsByQuestion = new LinkedHashMap();
+    private static Map<String, Map<String, Map<String, AttributeFieldBean>>> getSummaryAttributesByQuestionMap(
+            WdkModelBean wdkModel) {
+        Map<String, Map<String, Map<String, AttributeFieldBean>>> sumAttrsByQuestion = new LinkedHashMap<String, Map<String, Map<String, AttributeFieldBean>>>();
         QuestionSetBean[] qSets = wdkModel.getQuestionSets();
         for (QuestionSetBean qSet : qSets) {
             QuestionBean[] qs = qSet.getQuestions();
             for (QuestionBean q : qs) {
                 String key = qSet.getName() + "_" + q.getName();
-                Map toShow = q.getSummaryAttributesMap();
-                Map toAdd = q.getAdditionalSummaryAttributesMap();
-                Map theMap = new LinkedHashMap();
+                Map<String, AttributeFieldBean> toShow = q.getSummaryAttributesMap();
+                Map<String, AttributeFieldBean> toAdd = q.getAdditionalSummaryAttributesMap();
+                Map<String, Map<String, AttributeFieldBean>> theMap = new LinkedHashMap<String, Map<String, AttributeFieldBean>>();
                 theMap.put("show", toShow);
                 theMap.put("add", toAdd);
                 sumAttrsByQuestion.put(key, theMap);
