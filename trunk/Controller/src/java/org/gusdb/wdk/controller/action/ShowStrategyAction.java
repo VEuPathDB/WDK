@@ -18,6 +18,7 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.GroupBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
@@ -361,30 +362,34 @@ public class ShowStrategyAction extends ShowQuestionAction {
             WdkModelException, WdkUserException, SQLException {
 
         JSONArray jsParams = new JSONArray();
-        Map<String, ParamBean> params = step.getQuestion().getParamsMap();
+        Map<GroupBean, Map<String, ParamBean>> groups = step.getQuestion().getParamMapByGroups();
         Map<String, String> paramValues = step.getParams();
-        for (String paramName : paramValues.keySet()) {
-            ParamBean param = params.get(paramName);
-            String dependentValue = paramValues.get(paramName);
+        for (GroupBean group : groups.keySet()) {
+            Map<String, ParamBean> params = groups.get(group);
+            for (String paramName : params.keySet()) {
+                ParamBean param = params.get(paramName);
+                String dependentValue = paramValues.containsKey(paramName)
+                        ? paramValues.get(paramName) : param.getDefault();
 
-            JSONObject jsParam = new JSONObject();
-            jsParam.put("name", paramName);
-            if (param != null) {
-                jsParam.put("prompt", param.getPrompt());
-                jsParam.put("visible", param.getIsVisible());
-                jsParam.put("className", param.getClass().getName());
-                param.setDependentValue(dependentValue);
-                param.setUser(user);
-                param.setTruncateLength(TRUNCATE_LENGTH);
-                try {
-                    jsParam.put("value", param.getBriefRawValue());
-                } catch (Exception ex) {
-                    throw new WdkModelException(ex);
+                JSONObject jsParam = new JSONObject();
+                jsParam.put("name", paramName);
+                if (param != null) {
+                    jsParam.put("prompt", param.getPrompt());
+                    jsParam.put("visible", param.getIsVisible());
+                    jsParam.put("className", param.getClass().getName());
+                    param.setDependentValue(dependentValue);
+                    param.setUser(user);
+                    param.setTruncateLength(TRUNCATE_LENGTH);
+                    try {
+                        jsParam.put("value", param.getBriefRawValue());
+                    } catch (Exception ex) {
+                        throw new WdkModelException(ex);
+                    }
+                } else {
+                    jsParam.put("value", dependentValue);
                 }
-            } else {
-                jsParam.put("value", dependentValue);
+                jsParams.put(jsParam);
             }
-            jsParams.put(jsParam);
         }
         jsStep.put("params", jsParams);
     }
