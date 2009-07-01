@@ -207,7 +207,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                     String defaultValue = param.getDefault();
                     if (defaultValue != null) paramValues = defaultValue;
                 }
-            } else if (paramValues == null) {
+            } else {
                 paramValues = param.dependentValueToRawValue(user, paramValues);
                 if (paramValues == null) {
                     String defaultValue = param.getDefault();
