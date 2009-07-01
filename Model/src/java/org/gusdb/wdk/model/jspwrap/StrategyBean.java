@@ -55,8 +55,7 @@ public class StrategyBean {
     }
 
     public String getLastRunTimeFormatted() {
-        return DateFormat.getDateTimeInstance(DateFormat.SHORT,
-                DateFormat.SHORT).format(strategy.getLastRunTime());
+        return formatDate(strategy.getLastRunTime());
     }
 
     public Date getLastRunTime() {
@@ -64,12 +63,35 @@ public class StrategyBean {
     }
 
     public String getCreatedTimeFormatted() {
-        return DateFormat.getDateTimeInstance(DateFormat.SHORT,
-                DateFormat.SHORT).format(strategy.getCreatedTime());
+        return formatDate(strategy.getCreatedTime());
     }
 
     public Date getCreatedTime() {
         return strategy.getCreatedTime();
+    }
+
+    public String getLastModifiedTimeFormatted() {
+        return formatDate(strategy.getLastModifiedTime());
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Strategy#getLastModifiedTime()
+     */
+    public Date getLastModifiedTime() {
+        return strategy.getLastModifiedTime();
+    }
+
+    public String getLastViewedTimeFormatted() {
+        return formatDate(strategy.getLastViewedTime());
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Strategy#getLastViewedTime()
+     */
+    public Date getLastViewedTime() {
+        return strategy.getLastViewedTime();
     }
 
     public StepBean getLatestStep() {
@@ -170,26 +192,14 @@ public class StrategyBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.user.Strategy#getLastModifiedTime()
-     */
-    public Date getLastModifiedTime() {
-        return strategy.getLastModifiedTime();
-    }
-
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.user.Strategy#getLastViewedTime()
-     */
-    public Date getLastViewedTime() {
-        return strategy.getLastViewedTime();
-    }
-
-    /**
-     * @return
      * @see org.gusdb.wdk.model.user.Strategy#getSignature()
      */
     public String getSignature() {
         return strategy.getSignature();
     }
 
+    private String formatDate(Date date) {
+        int style = DateFormat.SHORT;
+        return DateFormat.getDateTimeInstance(style, style).format(date);
+    }
 }
