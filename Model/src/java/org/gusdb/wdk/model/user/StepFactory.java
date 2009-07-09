@@ -1046,47 +1046,6 @@ public class StepFactory {
                 // modifying
                 // it. We need to get an unsaved copy to modify. Generate
                 // unsaved name
-                /*PreparedStatement psCheck = SqlUtils.getPreparedStatement(
-                        dataSource, "SELECT 1, " + COLUMN_NAME + ", 1 FROM "
-                                + userSchema + TABLE_STRATEGY + " WHERE "
-                                + userIdColumn + " = ? AND "
-                                + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME
-                                + " = ? AND " + COLUMN_IS_SAVED + "= ? AND "
-                                + COLUMN_IS_DELETED + "= ? UNION "
-                                + "SELECT 2, " + COLUMN_NAME
-                                + ", TO_NUMBER(SUBSTR(" + COLUMN_NAME
-                                + ", ?, LENGTH(" + COLUMN_NAME + ")-?))"
-                                + " FROM " + userSchema + TABLE_STRATEGY
-                                + " WHERE " + userIdColumn + " = ? AND "
-                                + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME
-                                + " LIKE ? AND " + COLUMN_IS_SAVED + "= ? AND "
-                                + COLUMN_IS_DELETED + " = ? ORDER BY 1, 3");
-                psCheck.setInt(1, userId);
-                psCheck.setString(2, wdkModel.getProjectId());
-                psCheck.setString(3, strategy.getName());
-                psCheck.setBoolean(4, false);
-                psCheck.setBoolean(5, false);
-                psCheck.setInt(6, strategy.getName().length() + 2);
-                psCheck.setInt(7, strategy.getName().length() + 2);
-                psCheck.setInt(8, userId);
-                psCheck.setString(9, wdkModel.getProjectId());
-                psCheck.setString(10,
-                        SqlUtils.escapeWildcards(strategy.getName()) + "(%)");
-                psCheck.setBoolean(11, false);
-                psCheck.setBoolean(12, false);
-                rsStrategy = psCheck.executeQuery();
-                logger.info("savedName: " + strategy.getSavedName());
-
-                String append = "";
-                String name;
-                int current = 1;
-                while (rsStrategy.next()) {
-                    name = rsStrategy.getString(COLUMN_NAME);
-                    logger.info("Name " + current + ": " + name);
-                    if (name.equals(strategy.getSavedName() + append)) {
-                        append = "(" + ++current + ")";
-                    }
-		    }*/
 		String name = getNextName(user, strategy.getName(), false);
                 Strategy newStrat = createStrategy(user,
                         strategy.getLatestStep(), name,
@@ -1164,39 +1123,7 @@ public class StepFactory {
                     return loadStrategy(user,
                             rsCheckName.getInt(COLUMN_DISPLAY_ID), false);
             } else {// otherwise, generate default name
-                /*psCheckName = SqlUtils.getPreparedStatement(dataSource,
-                        "SELECT 1, " + COLUMN_NAME + ", 1 FROM " + userSchema
-                                + TABLE_STRATEGY + " WHERE " + userIdColumn
-                                + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND "
-                                + COLUMN_IS_DELETED + " = ? AND " + COLUMN_NAME
-                                + " = 'New Strategy'" + " UNION "
-                                + "SELECT 2, " + COLUMN_NAME
-                                + ", TO_NUMBER(SUBSTR(" + COLUMN_NAME
-                                + ", 14, LENGTH(" + COLUMN_NAME
-                                + ")-14)) FROM " + userSchema + TABLE_STRATEGY
-                                + " WHERE " + userIdColumn + " = ? AND "
-                                + COLUMN_PROJECT_ID + " = ? AND "
-                                + COLUMN_IS_DELETED + "= ? AND " + COLUMN_NAME
-                                + " LIKE 'New Strategy(%)'" + "ORDER BY 1, 3");
-                psCheckName.setInt(1, userId);
-                psCheckName.setString(2, wdkModel.getProjectId());
-                psCheckName.setBoolean(3, false);
-                psCheckName.setInt(4, userId);
-                psCheckName.setString(5, wdkModel.getProjectId());
-                psCheckName.setBoolean(6, false);
-                rsCheckName = psCheckName.executeQuery();
-
-                int current = 1;
-                String append = "";
-                while (rsCheckName.next()) {
-                    name = rsCheckName.getString(COLUMN_NAME);
-                    logger.info("Name: " + name);
-                    if (name.equals("New Strategy" + append)) {
-                        append = "(" + ++current + ")";
-                    }
-                }
-                name = "New Strategy" + append; */
-		name = getNextName(user, "New Strategy", false);
+		name = getNextName(user, root.getCustomName(), saved);
             }
         } finally {
             SqlUtils.closeResultSet(rsCheckName);
@@ -1393,25 +1320,15 @@ public class StepFactory {
 		    dataSource, "SELECT " + COLUMN_NAME + " FROM "
                                 + userSchema + TABLE_STRATEGY + " WHERE "
                                 + UserFactory.COLUMN_USER_ID + " = ? AND "
-                                + COLUMN_PROJECT_ID + " = ? AND (" + COLUMN_NAME
-                                + " = ?  OR " + COLUMN_NAME + " LIKE ?) AND "
-                                + COLUMN_IS_SAVED + "= ? AND "
+                                + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME
+                                + " LIKE ? AND " + COLUMN_IS_SAVED + "= ? AND "
                                 + COLUMN_IS_DELETED + "= ?");
 	    psNames.setInt(1, user.getUserId());
 	    psNames.setString(2, wdkModel.getProjectId());
-	    psNames.setString(3, oldName);
-	    psNames.setString(4, SqlUtils.escapeWildcards(oldName) + "(%)");
-	    psNames.setBoolean(5, saved);
-	    psNames.setBoolean(6, false);
+	    psNames.setString(3, SqlUtils.escapeWildcards(oldName) + "%");
+	    psNames.setBoolean(4, saved);
+	    psNames.setBoolean(5, false);
 	    rsNames = psNames.executeQuery();
-            /*PreparedStatement psNames = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT " + COLUMN_NAME + " FROM " + userSchema
-                            + TABLE_STRATEGY + " WHERE "
-                            + UserFactory.COLUMN_USER_ID + " = ? AND "
-                            + COLUMN_PROJECT_ID + " = ?");
-            psNames.setInt(1, user.getUserId());
-            psNames.setString(2, wdkModel.getProjectId());
-            rsNames = psNames.executeQuery();*/
 
             Set<String> names = new LinkedHashSet<String>();
             while (rsNames.next())
@@ -1421,7 +1338,7 @@ public class StepFactory {
             Pattern pattern = Pattern.compile("(.+?)\\((\\d+)\\)");
             while (names.contains(name)) {
                 Matcher matcher = pattern.matcher(name);
-                if (matcher.matches()) {
+                if (matcher.matches() && !name.equals(oldName)) {
                     int number = Integer.parseInt(matcher.group(2));
                     name = matcher.group(1).trim();
                     name += "(" + (++number) + ")";
