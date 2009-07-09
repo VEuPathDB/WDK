@@ -52,12 +52,21 @@ function WdkFilter() {
             // load the result count of the filter
             var link = $(this).find(".link-url");
             var countUrl = link.attr("countref");
+
+
             countUrl = countUrl.replace(/\s/, "");
             $.get(countUrl, 
                   '', 
                   function (data) {
-                      if (data.match(/^\d+$/g) != null) link.text(data);
-                      else link.text("error");
+                      if (data.match(/^\d+$/g) != null) {
+			if (data == '0') {
+				deadz = document.createElement('span');
+				$(deadz).addClass("link-url");
+				$(deadz).text(data);
+				link.replaceWith(deadz);	
+			}else{ link.text(data);}
+		      }else 
+			link.text("error");
                       wdkFilter.loadFilterCount();
                   },
                   "text");
