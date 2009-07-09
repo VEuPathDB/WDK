@@ -81,6 +81,8 @@ public class StepFactory {
     private static final String COLUMN_IS_SAVED = "is_saved";
     private static final String COLUMN_NAME = "name";
     private static final String COLUMN_SAVED_NAME = "saved_name";
+  
+    static final int COLUMN_NAME_LIMIT = 200;
 
     private static final Logger logger = Logger.getLogger(StepFactory.class);
 
@@ -867,7 +869,7 @@ public class StepFactory {
                 + "(internal) to user #" + user.getUserId());
 
         Step oldRootStep = oldStrategy.getLatestStep();
-        String name = getNextName(user, oldStrategy.getName());
+        String name = getNextName(user, oldStrategy.getName(), false);
 
         // If user does not already have a copy of this strategy, need to
         // look up the answers recursively, construct step objects.
@@ -1044,7 +1046,7 @@ public class StepFactory {
                 // modifying
                 // it. We need to get an unsaved copy to modify. Generate
                 // unsaved name
-                PreparedStatement psCheck = SqlUtils.getPreparedStatement(
+                /*PreparedStatement psCheck = SqlUtils.getPreparedStatement(
                         dataSource, "SELECT 1, " + COLUMN_NAME + ", 1 FROM "
                                 + userSchema + TABLE_STRATEGY + " WHERE "
                                 + userIdColumn + " = ? AND "
@@ -1084,10 +1086,10 @@ public class StepFactory {
                     if (name.equals(strategy.getSavedName() + append)) {
                         append = "(" + ++current + ")";
                     }
-                }
-
+		    }*/
+		String name = getNextName(user, strategy.getName(), false);
                 Strategy newStrat = createStrategy(user,
-                        strategy.getLatestStep(), strategy.getName() + append,
+                        strategy.getLatestStep(), name,
                         strategy.getName(), false, strategy.getDescription());
                 strategy.setName(newStrat.getName());
                 strategy.setSavedName(newStrat.getSavedName());
@@ -1142,6 +1144,9 @@ public class StepFactory {
         try {
             // If name is not null, check if strategy exists
             if (name != null) {
+		if (name.length() > COLUMN_NAME_LIMIT) {
+		    name = name.substring(0, COLUMN_NAME_LIMIT - 1);
+		}
                 psCheckName = SqlUtils.getPreparedStatement(dataSource,
                         "SELECT " + COLUMN_DISPLAY_ID + " FROM " + userSchema
                                 + TABLE_STRATEGY + " WHERE " + userIdColumn
@@ -1159,7 +1164,7 @@ public class StepFactory {
                     return loadStrategy(user,
                             rsCheckName.getInt(COLUMN_DISPLAY_ID), false);
             } else {// otherwise, generate default name
-                psCheckName = SqlUtils.getPreparedStatement(dataSource,
+                /*psCheckName = SqlUtils.getPreparedStatement(dataSource,
                         "SELECT 1, " + COLUMN_NAME + ", 1 FROM " + userSchema
                                 + TABLE_STRATEGY + " WHERE " + userIdColumn
                                 + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND "
@@ -1190,7 +1195,8 @@ public class StepFactory {
                         append = "(" + ++current + ")";
                     }
                 }
-                name = "New Strategy" + append;
+                name = "New Strategy" + append; */
+		name = getNextName(user, "New Strategy", false);
             }
         } finally {
             SqlUtils.closeResultSet(rsCheckName);
@@ -1349,7 +1355,7 @@ public class StepFactory {
         Step root = strategy.getLatestStep().deepClone();
         String name = strategy.getName();
         if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
-        name = getNextName(user, name);
+        name = getNextName(user, name, false);
         return createStrategy(user, root, name, null, false,
                 strategy.getDescription());
     }
@@ -1374,23 +1380,38 @@ public class StepFactory {
         Step step = strategy.getStepById(stepId).deepClone();
         String name = step.getCustomName();
         if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
-        name = getNextName(user, name);
+        name = getNextName(user, name, false);
         return createStrategy(user, step, name, null, false,
                 strategy.getDescription());
     }
 
-    private String getNextName(User user, String oldName) throws SQLException {
+    private String getNextName(User user, String oldName, boolean saved) throws SQLException {
         ResultSet rsNames = null;
         try {
             // get the existing names
-            PreparedStatement psNames = SqlUtils.getPreparedStatement(
+	    PreparedStatement psNames = SqlUtils.getPreparedStatement(
+		    dataSource, "SELECT " + COLUMN_NAME + " FROM "
+                                + userSchema + TABLE_STRATEGY + " WHERE "
+                                + UserFactory.COLUMN_USER_ID + " = ? AND "
+                                + COLUMN_PROJECT_ID + " = ? AND (" + COLUMN_NAME
+                                + " = ?  OR " + COLUMN_NAME + " LIKE ?) AND "
+                                + COLUMN_IS_SAVED + "= ? AND "
+                                + COLUMN_IS_DELETED + "= ?");
+	    psNames.setInt(1, user.getUserId());
+	    psNames.setString(2, wdkModel.getProjectId());
+	    psNames.setString(3, oldName);
+	    psNames.setString(4, SqlUtils.escapeWildcards(oldName) + "(%)");
+	    psNames.setBoolean(5, saved);
+	    psNames.setBoolean(6, false);
+	    rsNames = psNames.executeQuery();
+            /*PreparedStatement psNames = SqlUtils.getPreparedStatement(
                     dataSource, "SELECT " + COLUMN_NAME + " FROM " + userSchema
                             + TABLE_STRATEGY + " WHERE "
                             + UserFactory.COLUMN_USER_ID + " = ? AND "
                             + COLUMN_PROJECT_ID + " = ?");
             psNames.setInt(1, user.getUserId());
             psNames.setString(2, wdkModel.getProjectId());
-            rsNames = psNames.executeQuery();
+            rsNames = psNames.executeQuery();*/
 
             Set<String> names = new LinkedHashSet<String>();
             while (rsNames.next())
@@ -1403,9 +1424,9 @@ public class StepFactory {
                 if (matcher.matches()) {
                     int number = Integer.parseInt(matcher.group(2));
                     name = matcher.group(1).trim();
-                    name += " (" + (++number) + ")";
+                    name += "(" + (++number) + ")";
                 } else { // the initial name, no tailing serial number
-                    name += " (2)";
+                    name += "(2)";
                 }
             }
             return name;

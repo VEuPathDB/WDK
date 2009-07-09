@@ -59,6 +59,9 @@ public class Strategy {
     }
 
     public void setName(String name) {
+	if (name != null && name.length() > StepFactory.COLUMN_NAME_LIMIT) {
+	    name = name.substring(0,StepFactory.COLUMN_NAME_LIMIT-1);
+	}
         this.name = name;
     }
 
@@ -67,6 +70,9 @@ public class Strategy {
     }
 
     public void setSavedName(String savedName) {
+	if (savedName != null && savedName.length() > StepFactory.COLUMN_NAME_LIMIT) {
+	    savedName = savedName.substring(0,StepFactory.COLUMN_NAME_LIMIT-1);
+	}
         this.savedName = savedName;
     }
 
