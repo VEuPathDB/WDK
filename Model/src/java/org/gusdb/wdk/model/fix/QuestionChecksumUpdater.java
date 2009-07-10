@@ -5,6 +5,7 @@ package org.gusdb.wdk.model.fix;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
@@ -15,6 +16,7 @@ import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wsf.util.BaseCLI;
 import org.json.JSONException;
@@ -74,7 +76,9 @@ public class QuestionChecksumUpdater extends BaseCLI {
         for (String projectId : projects) {
             logger.info("Updating question checksum for project " + projectId);
             WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
+
             updateChecksum(wdkModel);
+            //copyParams(wdkModel);
         }
     }
 
@@ -109,5 +113,45 @@ public class QuestionChecksumUpdater extends BaseCLI {
         sql.append(" AND project_id = ? AND old_query_checksum IS NULL");
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         return SqlUtils.getPreparedStatement(dataSource, sql.toString());
+    }
+
+    private void copyParams(WdkModel wdkModel) throws SQLException {
+        PreparedStatement psUpdate = null;
+        ResultSet rsHistory = null;
+        DBPlatform platform = wdkModel.getUserPlatform();
+        DataSource dataSource = platform.getDataSource();
+
+        try {
+            rsHistory = SqlUtils.executeQuery(dataSource, "SELECT "
+                    + "     h.history_id, h.user_id, a.params "
+                    + "FROM userlogins3.histories h, userlogins3.users u, "
+                    + "     wdkstorage.answer a  "
+                    + "WHERE u.is_guest = 0 AND u.user_id = h.user_id "
+                    + "  AND h.answer_id = a.answer_id "
+                    + "  AND length(h.display_params) = 0 ");
+            psUpdate = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
+                    + "  userlogins3.histories SET display_params = ? "
+                    + "WHERE user_id = ? AND history_id = ? ");
+
+            int count = 0;
+            while (rsHistory.next()) {
+                int historyId = rsHistory.getInt("history_id");
+                int userId = rsHistory.getInt("user_id");
+                String params = platform.getClobData(rsHistory, "params");
+
+                platform.setClobData(psUpdate, 1, params, false);
+                psUpdate.setInt(2, userId);
+                psUpdate.setInt(3, historyId);
+                psUpdate.executeUpdate();
+
+                count++;
+                if (count % 100 == 0)
+                    logger.debug(count + " history params updated.");
+            }
+            logger.info("totally updated " + count + " history params.");
+        } finally {
+            SqlUtils.closeResultSet(rsHistory);
+            SqlUtils.closeStatement(psUpdate);
+        }
     }
 }

@@ -297,6 +297,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStrategy.put("saved", strategy.getIsSaved());
         jsStrategy.put("savedName", strategy.getSavedName());
         jsStrategy.put("importId", strategy.getImportId());
+        jsStrategy.put("isValid", strategy.isValid());
 
         JSONObject jsSteps = new JSONObject();
         StepBean step = strategy.getFirstStep();

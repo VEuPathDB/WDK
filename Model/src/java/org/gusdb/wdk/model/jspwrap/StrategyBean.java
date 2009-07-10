@@ -202,4 +202,12 @@ public class StrategyBean {
         int style = DateFormat.SHORT;
         return DateFormat.getDateTimeInstance(style, style).format(date);
     }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Strategy#isValid()
+     */
+    public boolean isValid() {
+        return strategy.isValid();
+    }
 }
