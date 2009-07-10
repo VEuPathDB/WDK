@@ -94,15 +94,15 @@ public class Migrator1_12To1_13 extends Migrator {
         }
 
         /**
-         * @return the userId
+         * @return the historyId
          */
         int getUserId() {
             return this.userId;
         }
 
         /**
-         * @param userId
-         *            the userId to set
+         * @param historyId
+         *            the historyId to set
          */
         void setUserId(int userId) {
             this.userId = userId;
