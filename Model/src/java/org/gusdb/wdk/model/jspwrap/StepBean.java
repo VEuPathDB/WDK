@@ -92,8 +92,7 @@ public class StepBean {
         step.setCustomName(customName);
     }
 
-    public String getDataType() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public String getDataType() {
         return step.getType();
     }
 

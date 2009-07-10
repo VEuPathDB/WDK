@@ -792,6 +792,7 @@ public class StepFactory {
         int rootStepId = resultSet.getInt(COLUMN_ROOT_STEP_ID);
         Step rootStep = loadStepTree(user, rootStepId);
         strategy.setLatestStep(rootStep);
+        if (!rootStep.isValid()) strategy.setValid(false);
 
         return strategy;
     }

@@ -491,8 +491,13 @@ public class Step {
         }
     }
 
-    public String getType() throws WdkModelException {
-        return getQuestion().getRecordClass().getFullName();
+    public String getType() {
+        try {
+            return getQuestion().getRecordClass().getFullName();
+        } catch (WdkModelException ex) {
+            ex.printStackTrace();
+            return "Unknown Type";
+        }
     }
 
     public int getIndexFromId(int displayId) throws WdkUserException {
