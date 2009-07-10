@@ -144,9 +144,9 @@ public class BooleanExpression {
 
         // get history
         Step step = user.getStep(stepDisplayId);
-        if (!step.isValid())
-            throw new WdkUserException("The Step #" + stepDisplayId
-                    + " is invalid.");
+        // if (!step.isValid())
+        // throw new WdkUserException("The Step #" + stepDisplayId
+        // + " is invalid.");
 
         return step;
     }

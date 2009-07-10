@@ -210,4 +210,8 @@ public class StrategyBean {
     public boolean isValid() {
         return strategy.isValid();
     }
+    
+    public String getDisplayType() {
+        return strategy.getLatestStep().getDisplayType();
+    }
 }
