@@ -17,8 +17,8 @@ public abstract class ModelConfigDB {
 
     // optional properties
     private short maxActive = 20;
-    private short maxIdle = 10;
-    private short minIdle = 1;
+    private short maxIdle = 1;
+    private short minIdle = 0;
     private short maxWait = 50;
     private boolean showConnections = false;
     private long showConnectionsInterval = 10;

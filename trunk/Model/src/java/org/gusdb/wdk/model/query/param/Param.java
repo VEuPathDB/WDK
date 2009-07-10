@@ -353,7 +353,7 @@ public abstract class Param extends WdkModelBase {
         suggestions = null;
     }
 
-    protected String compressValue(String value) throws WdkModelException,
+    public String compressValue(String value) throws WdkModelException,
             NoSuchAlgorithmException {
         // check if the value is already been compressed
         if (value == null || value.length() == 0) return null;

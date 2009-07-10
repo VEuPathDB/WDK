@@ -262,10 +262,11 @@ public class AnswerFilterInstance extends WdkModelBase {
                         + paramName + "] is not assigned to filter ["
                         + getName() + "]");
 
-            // validate the paramValue
+            // validate the paramValue for now; however EuPathDB won't be able
+            // to pass it
             Param param = params.get(paramName);
             String paramValue = paramValueMap.get(paramName);
-            param.validate(user, paramValue);
+            //param.validate(user, paramValue);
         }
 
         resolved = true;
