@@ -8,7 +8,6 @@ import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;

@@ -165,8 +165,7 @@ public class Strategy {
         stepFactory.updateStrategy(user, this, overwrite);
     }
 
-    public String getType() throws NoSuchAlgorithmException, WdkModelException,
-            JSONException, WdkUserException, SQLException {
+    public String getType() {
         return latestStep.getType();
     }
 
