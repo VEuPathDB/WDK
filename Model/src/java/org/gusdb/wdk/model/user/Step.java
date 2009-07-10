@@ -84,9 +84,9 @@ public class Step {
 
     public int getResultSize() throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        if (answerValue != null  || estimateSize == null) {
+        if (answerValue != null || estimateSize == null) {
             this.estimateSize = getAnswerValue().getResultSize();
-        } 
+        }
         return estimateSize;
     }
 
@@ -479,14 +479,15 @@ public class Step {
      * @param paramErrors
      *            the paramErrors to set
      */
-    public void setParamValues(Map<String, String> paramValues) throws WdkModelException {
+    public void setParamValues(Map<String, String> paramValues)
+            throws WdkModelException {
         this.paramValues = new LinkedHashMap<String, String>(paramValues);
         // make sure the params do exist
         Map<String, Param> params = getQuestion().getParamMap();
         for (String paramName : paramValues.keySet()) {
             if (!params.containsKey(paramName)) {
-               this.valid = false;
-               break;
+                this.valid = false;
+                break;
             }
         }
     }
@@ -683,8 +684,16 @@ public class Step {
     void setAnswerValue(AnswerValue answerValue) {
         this.answerValue = answerValue;
     }
-    
+
     public void resetAnswerValue() {
         this.answerValue = null;
+    }
+
+    public String getDisplayType() {
+        try {
+            return getQuestion().getRecordClass().getType();
+        } catch (WdkModelException ex) {
+            return getType();
+        }
     }
 }

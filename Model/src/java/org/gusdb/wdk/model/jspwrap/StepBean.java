@@ -485,4 +485,16 @@ public class StepBean {
     public UserBean getUser() {
         return user;
     }
+    
+    public String getType() {
+        return step.getType();
+    }
+    
+    public String getDisplayType() {
+        try {
+            return step.getQuestion().getRecordClass().getType();
+        } catch (WdkModelException ex) {
+            return getType();
+        }
+    }
 }
