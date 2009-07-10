@@ -1,4 +1,6 @@
 
+DROP SEQUENCE IF EXISTS wdkuser.migration_pkseq;
+
 DROP SEQUENCE IF EXISTS wdkengine.dataset_indices_pkseq;
 DROP SEQUENCE IF EXISTS wdkengine.answers_pkseq;
 
@@ -25,6 +27,9 @@ DROP TABLE IF EXISTS wdkengine.dataset_indices;
 /* =========================================================================
    create sequences
    ========================================================================= */
+
+CREATE SEQUENCE wdkuser.migration_pkseq INCREMENT BY 1 START WITH 1;
+
 
 CREATE SEQUENCE wdkengine.dataset_indices_pkseq INCREMENT BY 1 START WITH 1;
 
@@ -61,6 +66,7 @@ CREATE TABLE wdkengine.answers
   params TEXT,
   result_message TEXT,
   prev_answer_id NUMERIC(12),
+  migration NUMERIC(12),
   CONSTRAINT "answers_pk" PRIMARY KEY (answer_id),
   CONSTRAINT "answers_uq1" UNIQUE (project_id, answer_checksum)
 );
@@ -76,6 +82,7 @@ CREATE TABLE wdkengine.dataset_indices
   summary VARCHAR(200) NOT NULL,
   dataset_size NUMERIC(12) NOT NULL,
   PREV_DATASET_ID NUMERIC(12),
+  migration NUMERIC(12),
   CONSTRAINT "DATASET_INDICES_PK" PRIMARY KEY (dataset_id),
   CONSTRAINT "DATASET_CHECKSUM_UNIQUE" UNIQUE (dataset_checksum)
 );
@@ -87,6 +94,7 @@ CREATE TABLE wdkengine.dataset_values
 (
   dataset_id NUMERIC(12) NOT NULL,
   dataset_value VARCHAR(4000) NOT NULL,
+  migration NUMERIC(12),
   CONSTRAINT "DATASET_VALUES_DATASET_ID_FK" FOREIGN KEY (dataset_id)
       REFERENCES wdkengine.dataset_indices (dataset_id)
 );
@@ -98,6 +106,7 @@ CREATE TABLE wdkengine.clob_values
 (
   clob_checksum VARCHAR(40) NOT NULL,
   clob_value TEXT NOT NULL,
+  migration NUMERIC(12),
   CONSTRAINT "CLOB_VALUES_PK" PRIMARY KEY (clob_checksum)
 );
 
@@ -128,6 +137,7 @@ CREATE TABLE wdkuser.users
   phone_number VARCHAR(50),
   country VARCHAR(255),
   PREV_USER_ID NUMERIC(12),
+  migration NUMERIC(12),
   CONSTRAINT "USER_PK" PRIMARY KEY (user_id),
   CONSTRAINT "USER_EMAIL_UNIQUE" UNIQUE (email)
 );
@@ -139,6 +149,7 @@ CREATE TABLE wdkuser.user_roles
 (
   user_id NUMERIC(12) NOT NULL,
   user_role VARCHAR(50) NOT NULL,
+  migration NUMERIC(12),
   CONSTRAINT "USER_ROLE_PK" PRIMARY KEY (user_id, user_role),
   CONSTRAINT "USER_ROLE_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id) 
@@ -151,6 +162,7 @@ CREATE TABLE wdkuser.preferences
   project_id VARCHAR(50) NOT NULL,
   preference_name VARCHAR(200) NOT NULL,
   preference_value VARCHAR(4000),
+  migration NUMERIC(12),
   CONSTRAINT "PREFERENCES_PK" PRIMARY KEY (user_id, project_id, preference_name),
   CONSTRAINT "PREFERENCE_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id) 
@@ -177,6 +189,7 @@ CREATE TABLE wdkuser.steps
   display_params TEXT,
   prev_step_id NUMERIC(12),
   invalid_message VARCHAR(2000),
+  migration NUMERIC(12),
   CONSTRAINT "STEPS_PK" PRIMARY KEY (step_id),
   CONSTRAINT "STEPS_UNIQUE" UNIQUE (user_id, display_id),
   CONSTRAINT "STEPS_USER_ID_FK" FOREIGN KEY (user_id)
@@ -191,6 +204,7 @@ CREATE TABLE wdkuser.step_params
   step_id NUMERIC(12) NOT NULL,
   param_name VARCHAR(200) NOT NULL,
   param_value VARCHAR(4000),
+  migration NUMERIC(12),
   CONSTRAINT "STEP_PARAMS_STEP_ID_FK" FOREIGN KEY (step_id)
       REFERENCES wdkuser.steps (step_id)
 );
@@ -216,6 +230,7 @@ CREATE TABLE wdkuser.strategies
      is_deleted BOOLEAN,
      is_valid BOOLEAN,
      prev_strategy_id NUMERIC(12),
+     migration NUMERIC(12),
      CONSTRAINT "STRATEGIES_PK" PRIMARY KEY (strategy_id),
      CONSTRAINT "STRATEGIES_UNIQUE" UNIQUE (user_id, display_id, project_id),
      CONSTRAINT "STRATEGIES_STEP_FK" FOREIGN KEY (user_id, root_step_id)
@@ -235,6 +250,7 @@ CREATE TABLE wdkuser.user_datasets
   create_time TIMESTAMP NOT NULL,
   upload_file VARCHAR(2000),
   prev_user_dataset_id NUMERIC(12),
+  migration NUMERIC(12),
   CONSTRAINT "USER_DATASET_PK" PRIMARY KEY (user_dataset_id),
   CONSTRAINT "USER_DATASET_UQ1" UNIQUE (dataset_id, user_id),
   CONSTRAINT "USER_DATASETS_DS_ID_FK" FOREIGN KEY (dataset_id)
