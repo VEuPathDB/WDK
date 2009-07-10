@@ -491,10 +491,6 @@ public class StepBean {
     }
     
     public String getDisplayType() {
-        try {
-            return step.getQuestion().getRecordClass().getType();
-        } catch (WdkModelException ex) {
-            return getType();
-        }
+        return step.getDisplayType();
     }
 }
