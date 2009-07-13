@@ -110,12 +110,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
                         step.getQuestionName());
                 if (updated) step.resetAnswerValue();
 
-                int actualSize = step.getAnswerValue().getResultSize();
-                if (step.getEstimateSize() != actualSize) {
-                    step.setEstimateSize(actualSize);
-                    step.update();
-                }
-
                 prepareAttributes(request, wdkUser, step);
             }
             if (updated) wdkUser.save();
@@ -347,7 +341,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         Map<String, String> paramNames;
         String customName;
         if (qFullName == null || qFullName.length() == 0) {
-            String strHistId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
+            String strHistId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
             int userAnswerId = Integer.parseInt(strHistId);
             StepBean step = wdkUser.getStep(userAnswerId);
             params = step.getParams();
