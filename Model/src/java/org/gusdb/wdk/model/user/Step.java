@@ -374,7 +374,14 @@ public class Step {
      * @return the isValid
      */
     public boolean isValid() {
-        return valid;
+        if(!valid) return false;
+        if (previousStep != null) {
+            if (!previousStep.isValid()) return false;
+        }
+        if (childStep != null) {
+            if (!childStep.isValid()) return true;
+        }
+        return true;
     }
 
     /**
