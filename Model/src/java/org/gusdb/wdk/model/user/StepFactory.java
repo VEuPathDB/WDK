@@ -847,6 +847,8 @@ public class StepFactory {
 
                             parentStep.setPreviousStep(currentStep);
                             currentStep.setNextStep(parentStep);
+                            if (!currentStep.isValid())
+                                parentStep.setValid(false);
                         }
                         // right child
                         currentStepId = rsAnswerTree.getInt(COLUMN_RIGHT_CHILD_ID);
@@ -857,6 +859,8 @@ public class StepFactory {
 
                             parentStep.setChildStep(currentStep);
                             currentStep.setParentStep(parentStep);
+                            if (!currentStep.isValid())
+                                parentStep.setValid(false);
                         }
                     }
                 } finally {
