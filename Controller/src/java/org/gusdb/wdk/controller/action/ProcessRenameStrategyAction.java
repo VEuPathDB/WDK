@@ -116,7 +116,7 @@ public class ProcessRenameStrategyAction extends Action {
             if (!opened)
                 url.append("&").append(CConstants.WDK_OPEN_KEY).append("=false");
 
-            ActionForward forward = new ActionForward(url.toString());
+            ActionForward forward = new ActionForward(url.toString(), true);
             return forward;
         } catch (Exception ex) {
             logger.error(ex);
