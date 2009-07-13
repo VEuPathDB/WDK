@@ -36,7 +36,7 @@ public class Strategy {
     private String description;
     private String name;
     private String savedName = null;
-    private boolean valid;
+    private boolean valid = true;
 
     Strategy(StepFactory factory, User user, int displayId, int internalId) {
         this.stepFactory = factory;
