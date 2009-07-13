@@ -1277,8 +1277,6 @@ public class User /* implements Serializable */{
         Step booleanStep = createStep(question, params, filter, false);
         booleanStep.setPreviousStep(leftStep);
         booleanStep.setChildStep(rightStep);
-        leftStep.setNextStep(booleanStep);
-        rightStep.setParentStep(booleanStep);
         return booleanStep;
     }
 
