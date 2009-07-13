@@ -224,6 +224,8 @@ public class ProcessQueryInstance extends QueryInstance {
                 StringBuffer buffer = new StringBuffer(result.getResult()[0][0]);
                 String requestId = result.getRequestId();
                 for (int i = 1; i < packets; i++) {
+                    logger.debug("getting message " + requestId + " pieces: "
+                            + i + "/" + packets);
                     String more = service.requestResult(requestId, i);
                     buffer.append(more);
                 }
@@ -243,6 +245,8 @@ public class ProcessQueryInstance extends QueryInstance {
                 StringBuffer buffer = new StringBuffer(result.getResult()[0][0]);
                 String requestId = result.getRequestId();
                 for (int i = 1; i < packets; i++) {
+                    logger.debug("getting message " + requestId + " pieces: "
+                            + i + "/" + packets);
                     String more = client.requestResult(requestId, i);
                     buffer.append(more);
                 }
@@ -255,15 +259,15 @@ public class ProcessQueryInstance extends QueryInstance {
 
         return result;
     }
-    
+
     private String[][] convertContent(String content) throws JSONException {
         JSONArray jsResult = new JSONArray(content);
-        JSONArray jsRow = (JSONArray)jsResult.get(0);
+        JSONArray jsRow = (JSONArray) jsResult.get(0);
         String[][] result = new String[jsResult.length()][jsRow.length()];
-        for(int row = 0; row < result.length; row++) {
-            jsRow = (JSONArray)jsResult.get(row);
-            for(int col = 0; col < result[row].length; col++) {
-                result[row][col] = (String)jsRow.get(col);
+        for (int row = 0; row < result.length; row++) {
+            jsRow = (JSONArray) jsResult.get(row);
+            for (int col = 0; col < result[row].length; col++) {
+                result[row][col] = (String) jsRow.get(col);
             }
         }
         return result;
