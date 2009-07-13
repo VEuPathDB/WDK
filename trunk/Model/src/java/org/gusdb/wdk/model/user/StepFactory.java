@@ -429,7 +429,8 @@ public class StepFactory {
     }
 
     Map<Integer, Step> loadSteps(User user, Map<Integer, Step> invalidSteps)
-            throws SQLException, WdkModelException, JSONException, WdkUserException {
+            throws SQLException, WdkModelException, JSONException,
+            WdkUserException {
         Map<Integer, Step> steps = new LinkedHashMap<Integer, Step>();
 
         String answerIdColumn = AnswerFactory.COLUMN_ANSWER_ID;
@@ -463,11 +464,11 @@ public class StepFactory {
             while (rsStep.next()) {
                 Step step = loadStep(user, rsStep);
                 int stepId = step.getDisplayId();
-                if (step.isValid()) {
-                    steps.put(stepId, step);
-                } else {
-                    invalidSteps.put(stepId, step);
-                }
+                // if (step.isValid()) {
+                steps.put(stepId, step);
+                // } else {
+                // invalidSteps.put(stepId, step);
+                // }
             }
         } finally {
             SqlUtils.closeResultSet(rsStep);
@@ -518,7 +519,8 @@ public class StepFactory {
     }
 
     private Step loadStep(User user, ResultSet rsStep)
-            throws WdkModelException, SQLException, JSONException, WdkUserException {
+            throws WdkModelException, SQLException, JSONException,
+            WdkUserException {
         // load Step info
         int stepId = rsStep.getInt(COLUMN_STEP_INTERNAL_ID);
         int displayId = rsStep.getInt(COLUMN_DISPLAY_ID);
@@ -532,7 +534,7 @@ public class StepFactory {
         step.setCollapsedName(rsStep.getString(COLUMN_COLLAPSED_NAME));
         step.setEstimateSize(rsStep.getInt(COLUMN_ESTIMATE_SIZE));
         step.setFilterName(rsStep.getString(COLUMN_ANSWER_FILTER));
-        
+
         // load left and right child
         if (rsStep.getObject(COLUMN_LEFT_CHILD_ID) != null) {
             int leftStepId = rsStep.getInt(COLUMN_LEFT_CHILD_ID);
@@ -817,75 +819,75 @@ public class StepFactory {
         return strategy;
     }
 
-//    private Step loadStepTree(User user, int stepId) throws SQLException,
-//            WdkUserException, WdkModelException, JSONException {
-//        Step step = loadStep(user, stepId);
-//
-//        Stack<Integer> stepTree = new Stack<Integer>();
-//        stepTree.push(stepId);
-//
-//        HashMap<Integer, Step> steps = new HashMap<Integer, Step>();
-//        steps.put(stepId, step);
-//
-//        Integer parentAnswerId;
-//        Step parentStep;
-//
-//        PreparedStatement psStepTree = null;
-//        try {
-//            psStepTree = SqlUtils.getPreparedStatement(dataSource, "SELECT "
-//                    + COLUMN_LEFT_CHILD_ID + ", " + COLUMN_RIGHT_CHILD_ID
-//                    + " FROM " + userSchema + TABLE_STEP + " WHERE "
-//                    + UserFactory.COLUMN_USER_ID + " = ? AND "
-//                    + COLUMN_DISPLAY_ID + " = ?");
-//
-//            while (!stepTree.empty()) {
-//                parentAnswerId = stepTree.pop();
-//
-//                psStepTree.setInt(1, user.getUserId());
-//                psStepTree.setInt(2, parentAnswerId.intValue());
-//
-//                ResultSet rsAnswerTree = null;
-//                try {
-//                    rsAnswerTree = psStepTree.executeQuery();
-//
-//                    if (rsAnswerTree.next()) {
-//                        parentStep = steps.get(parentAnswerId);
-//
-//                        // left child
-//                        Step currentStep;
-//                        int currentStepId = rsAnswerTree.getInt(COLUMN_LEFT_CHILD_ID);
-//                        if (currentStepId >= 1) {
-//                            currentStep = loadStep(user, currentStepId);
-//                            stepTree.push(currentStepId);
-//                            steps.put(currentStepId, currentStep);
-//
-//                            parentStep.setPreviousStep(currentStep);
-//                            currentStep.setNextStep(parentStep);
-//                            if (!currentStep.isValid())
-//                                parentStep.setValid(false);
-//                        }
-//                        // right child
-//                        currentStepId = rsAnswerTree.getInt(COLUMN_RIGHT_CHILD_ID);
-//                        if (currentStepId >= 1) {
-//                            currentStep = loadStep(user, currentStepId);
-//                            stepTree.push(currentStepId);
-//                            steps.put(currentStepId, currentStep);
-//
-//                            parentStep.setChildStep(currentStep);
-//                            currentStep.setParentStep(parentStep);
-//                            if (!currentStep.isValid())
-//                                parentStep.setValid(false);
-//                        }
-//                    }
-//                } finally {
-//                    if (rsAnswerTree != null) rsAnswerTree.close();
-//                }
-//            }
-//        } finally {
-//            SqlUtils.closeStatement(psStepTree);
-//        }
-//        return step;
-//    }
+    // private Step loadStepTree(User user, int stepId) throws SQLException,
+    // WdkUserException, WdkModelException, JSONException {
+    // Step step = loadStep(user, stepId);
+    //
+    // Stack<Integer> stepTree = new Stack<Integer>();
+    // stepTree.push(stepId);
+    //
+    // HashMap<Integer, Step> steps = new HashMap<Integer, Step>();
+    // steps.put(stepId, step);
+    //
+    // Integer parentAnswerId;
+    // Step parentStep;
+    //
+    // PreparedStatement psStepTree = null;
+    // try {
+    // psStepTree = SqlUtils.getPreparedStatement(dataSource, "SELECT "
+    // + COLUMN_LEFT_CHILD_ID + ", " + COLUMN_RIGHT_CHILD_ID
+    // + " FROM " + userSchema + TABLE_STEP + " WHERE "
+    // + UserFactory.COLUMN_USER_ID + " = ? AND "
+    // + COLUMN_DISPLAY_ID + " = ?");
+    //
+    // while (!stepTree.empty()) {
+    // parentAnswerId = stepTree.pop();
+    //
+    // psStepTree.setInt(1, user.getUserId());
+    // psStepTree.setInt(2, parentAnswerId.intValue());
+    //
+    // ResultSet rsAnswerTree = null;
+    // try {
+    // rsAnswerTree = psStepTree.executeQuery();
+    //
+    // if (rsAnswerTree.next()) {
+    // parentStep = steps.get(parentAnswerId);
+    //
+    // // left child
+    // Step currentStep;
+    // int currentStepId = rsAnswerTree.getInt(COLUMN_LEFT_CHILD_ID);
+    // if (currentStepId >= 1) {
+    // currentStep = loadStep(user, currentStepId);
+    // stepTree.push(currentStepId);
+    // steps.put(currentStepId, currentStep);
+    //
+    // parentStep.setPreviousStep(currentStep);
+    // currentStep.setNextStep(parentStep);
+    // if (!currentStep.isValid())
+    // parentStep.setValid(false);
+    // }
+    // // right child
+    // currentStepId = rsAnswerTree.getInt(COLUMN_RIGHT_CHILD_ID);
+    // if (currentStepId >= 1) {
+    // currentStep = loadStep(user, currentStepId);
+    // stepTree.push(currentStepId);
+    // steps.put(currentStepId, currentStep);
+    //
+    // parentStep.setChildStep(currentStep);
+    // currentStep.setParentStep(parentStep);
+    // if (!currentStep.isValid())
+    // parentStep.setValid(false);
+    // }
+    // }
+    // } finally {
+    // if (rsAnswerTree != null) rsAnswerTree.close();
+    // }
+    // }
+    // } finally {
+    // SqlUtils.closeStatement(psStepTree);
+    // }
+    // return step;
+    // }
 
     Strategy importStrategy(User user, Strategy oldStrategy)
             throws WdkUserException, WdkModelException, SQLException,
