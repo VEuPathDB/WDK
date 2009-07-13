@@ -51,7 +51,7 @@ public class Step {
     private String booleanExpression;
     private boolean valid = true;
 
-    private Integer estimateSize;
+    private int estimateSize = 0;
 
     private String filterName;
     private AnswerValue answerValue;
@@ -82,10 +82,12 @@ public class Step {
         return childStep;
     }
 
-    public int getResultSize() throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
-        if (answerValue != null || estimateSize == null) {
+    public int getResultSize() {
+        try {
             this.estimateSize = getAnswerValue().getResultSize();
+        } catch (Exception ex) {
+            valid = false;
+            ex.printStackTrace();
         }
         return estimateSize;
     }
@@ -255,10 +257,7 @@ public class Step {
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
      */
-    public int getEstimateSize() throws NoSuchAlgorithmException,
-            WdkModelException, SQLException, JSONException, WdkUserException {
-        if (estimateSize == null)
-            estimateSize = getAnswerValue().getResultSize();
+    public int getEstimateSize() {
         return estimateSize;
     }
 
@@ -378,7 +377,7 @@ public class Step {
      * @return the isValid
      */
     public boolean isValid() {
-        if(!valid) return false;
+        if (!valid) return false;
         if (previousStep != null) {
             if (!previousStep.isValid()) return false;
         }
