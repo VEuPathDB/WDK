@@ -48,10 +48,12 @@ public class TableQueryTest {
                         int min = valueSet.getMinRows();
                         int max = valueSet.getMaxRows();
                         QueryInstance instance = query.makeInstance(user,
-                                values);
+                                values, true);
                         int result = instance.getResultSize();
-                        //Assert.assertTrue(result + " >= " + min, result >= min);
-                        //Assert.assertTrue(result + " <= " + max, result <= max);
+                        // Assert.assertTrue(result + " >= " + min, result >=
+                        // min);
+                        // Assert.assertTrue(result + " <= " + max, result <=
+                        // max);
                     }
                 }
 

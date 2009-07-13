@@ -40,7 +40,7 @@ public class ConcurrentTest {
         public void run() {
             System.out.println("start test thread: #" + id);
             try {
-            QueryInstance instance = query.makeInstance(user, values);
+            QueryInstance instance = query.makeInstance(user, values, true);
             ResultList resultList = instance.getResults();
             resultList.next();
             resultList.close();

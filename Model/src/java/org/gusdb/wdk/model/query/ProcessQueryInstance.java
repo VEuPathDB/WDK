@@ -28,6 +28,7 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
 import org.gusdb.wsf.plugin.WsfResult;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -52,10 +53,10 @@ public class ProcessQueryInstance extends QueryInstance {
      * @throws NoSuchAlgorithmException
      */
     public ProcessQueryInstance(User user, ProcessQuery query,
-            Map<String, String> values) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        super(user, query, values);
+            Map<String, String> values, boolean validate)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
+        super(user, query, values, validate);
         this.query = query;
     }
 
@@ -204,7 +205,7 @@ public class ProcessQueryInstance extends QueryInstance {
     private WsfResult getResult(String processName, String invokeKey,
             String[] params, String[] columnNames, boolean local)
             throws ServiceException, WdkModelException, RemoteException,
-            MalformedURLException {
+            MalformedURLException, JSONException {
         String serviceUrl = query.getWebServiceUrl();
 
         // DEBUG
@@ -218,6 +219,17 @@ public class ProcessQueryInstance extends QueryInstance {
             // get the response from the local service
             result = service.invokeEx(processName, invokeKey, params,
                     columnNames);
+            int packets = result.getTotalPackets();
+            if (packets > 1) {
+                StringBuffer buffer = new StringBuffer(result.getResult()[0][0]);
+                String requestId = result.getRequestId();
+                for (int i = 1; i < packets; i++) {
+                    String more = service.requestResult(requestId, i);
+                    buffer.append(more);
+                }
+                String[][] content = convertContent(buffer.toString());
+                result.setResult(content);
+            }
         } else { // invoke the process query via web service
             // get a WSF Service client stub
             WsfServiceServiceLocator locator = new WsfServiceServiceLocator();
@@ -226,10 +238,34 @@ public class ProcessQueryInstance extends QueryInstance {
             // get the response from the web service
             result = client.invokeEx(processName, invokeKey, params,
                     columnNames);
+            int packets = result.getTotalPackets();
+            if (packets > 1) {
+                StringBuffer buffer = new StringBuffer(result.getResult()[0][0]);
+                String requestId = result.getRequestId();
+                for (int i = 1; i < packets; i++) {
+                    String more = client.requestResult(requestId, i);
+                    buffer.append(more);
+                }
+                String[][] content = convertContent(buffer.toString());
+                result.setResult(content);
+            }
         }
         long end = System.currentTimeMillis();
         logger.debug("Client took " + ((end - start) / 1000.0) + " seconds.");
 
+        return result;
+    }
+    
+    private String[][] convertContent(String content) throws JSONException {
+        JSONArray jsResult = new JSONArray(content);
+        JSONArray jsRow = (JSONArray)jsResult.get(0);
+        String[][] result = new String[jsResult.length()][jsRow.length()];
+        for(int row = 0; row < result.length; row++) {
+            jsRow = (JSONArray)jsResult.get(row);
+            for(int col = 0; col < result[row].length; col++) {
+                result[row][col] = (String)jsRow.get(col);
+            }
+        }
         return result;
     }
 
@@ -254,8 +290,9 @@ public class ProcessQueryInstance extends QueryInstance {
      */
     @Override
     public void createCache(Connection connection, String tableName,
-            int instanceId, String[] indexColumns) throws WdkModelException, SQLException,
-            NoSuchAlgorithmException, JSONException, WdkUserException {
+            int instanceId, String[] indexColumns) throws WdkModelException,
+            SQLException, NoSuchAlgorithmException, JSONException,
+            WdkUserException {
         DBPlatform platform = query.getWdkModel().getQueryPlatform();
         Column[] columns = query.getColumns();
 
@@ -298,9 +335,10 @@ public class ProcessQueryInstance extends QueryInstance {
         try {
             stmt = connection.createStatement();
             stmt.execute(sqlTable.toString());
-            
+
             ResultFactory resultFactory = wdkModel.getResultFactory();
-            resultFactory.createCacheTableIndex(connection, tableName, indexColumns);
+            resultFactory.createCacheTableIndex(connection, tableName,
+                    indexColumns);
 
             // also insert the result into the cache
             insertToCache(connection, tableName, instanceId);

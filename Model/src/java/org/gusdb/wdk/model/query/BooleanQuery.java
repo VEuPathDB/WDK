@@ -222,10 +222,10 @@ public class BooleanQuery extends SqlQuery {
      * @see org.gusdb.wdk.model.query.Query#makeInstance()
      */
     @Override
-    public QueryInstance makeInstance(User user, Map<String, String> values)
+    public QueryInstance makeInstance(User user, Map<String, String> values, boolean validate)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        return new BooleanQueryInstance(user, this, values);
+        return new BooleanQueryInstance(user, this, values, validate);
     }
 
     private String constructSql() {

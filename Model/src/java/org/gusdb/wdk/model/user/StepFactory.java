@@ -81,7 +81,7 @@ public class StepFactory {
     private static final String COLUMN_IS_SAVED = "is_saved";
     private static final String COLUMN_NAME = "name";
     private static final String COLUMN_SAVED_NAME = "saved_name";
-  
+
     static final int COLUMN_NAME_LIMIT = 200;
 
     private static final Logger logger = Logger.getLogger(StepFactory.class);
@@ -105,9 +105,9 @@ public class StepFactory {
     // parse boolexp to pass left_child_id, right_child_id to loadAnswer
     Step createStep(User user, Question question,
             Map<String, String> dependentValues, AnswerFilterInstance filter,
-            int pageStart, int pageEnd, boolean deleted) throws SQLException,
-            WdkModelException, NoSuchAlgorithmException, WdkUserException,
-            JSONException {
+            int pageStart, int pageEnd, boolean deleted, boolean validate)
+            throws SQLException, WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, JSONException {
 
         // get summary list and sorting list
         String questionName = question.getFullName();
@@ -116,7 +116,8 @@ public class StepFactory {
 
         // create answer
         AnswerValue answerValue = question.makeAnswerValue(user,
-                dependentValues, pageStart, pageEnd, sortingAttributes, filter);
+                dependentValues, pageStart, pageEnd, sortingAttributes, filter,
+                validate);
         if (summaryAttributes != null) {
             answerValue.setSumaryAttributes(summaryAttributes);
         }
@@ -128,10 +129,15 @@ public class StepFactory {
 
         String filterName = null;
         int estimateSize;
-        if (filter != null) {
-            filterName = filter.getName();
-            estimateSize = answerValue.getFilterSize(filterName);
-        } else estimateSize = answerValue.getResultSize();
+        try {
+            if (filter != null) {
+                filterName = filter.getName();
+                estimateSize = answerValue.getFilterSize(filterName);
+            } else estimateSize = answerValue.getResultSize();
+        } catch (Exception ex) {
+            estimateSize = 0;
+            ex.printStackTrace();
+        }
 
         String displayParamContent = getParamContent(dependentValues);
 
@@ -917,7 +923,7 @@ public class StepFactory {
         int endIndex = oldStep.getUser().getItemsPerPage();
         boolean deleted = oldStep.isDeleted();
         Step newStep = newUser.createStep(question, paramValues, filter,
-                startIndex, endIndex, deleted);
+                startIndex, endIndex, deleted, false);
         newStep.setCollapsedName(oldStep.getCollapsedName());
         newStep.setCollapsible(oldStep.isCollapsible());
         String customeName = oldStep.getBaseCustomName();
@@ -1047,10 +1053,10 @@ public class StepFactory {
                 // modifying
                 // it. We need to get an unsaved copy to modify. Generate
                 // unsaved name
-		String name = getNextName(user, strategy.getName(), false);
+                String name = getNextName(user, strategy.getName(), false);
                 Strategy newStrat = createStrategy(user,
-                        strategy.getLatestStep(), name,
-                        strategy.getName(), false, strategy.getDescription());
+                        strategy.getLatestStep(), name, strategy.getName(),
+                        false, strategy.getDescription());
                 strategy.setName(newStrat.getName());
                 strategy.setSavedName(newStrat.getSavedName());
                 strategy.setDisplayId(newStrat.getStrategyId());
@@ -1104,9 +1110,9 @@ public class StepFactory {
         try {
             // If name is not null, check if strategy exists
             if (name != null) {
-		if (name.length() > COLUMN_NAME_LIMIT) {
-		    name = name.substring(0, COLUMN_NAME_LIMIT - 1);
-		}
+                if (name.length() > COLUMN_NAME_LIMIT) {
+                    name = name.substring(0, COLUMN_NAME_LIMIT - 1);
+                }
                 psCheckName = SqlUtils.getPreparedStatement(dataSource,
                         "SELECT " + COLUMN_DISPLAY_ID + " FROM " + userSchema
                                 + TABLE_STRATEGY + " WHERE " + userIdColumn
@@ -1124,7 +1130,7 @@ public class StepFactory {
                     return loadStrategy(user,
                             rsCheckName.getInt(COLUMN_DISPLAY_ID), false);
             } else {// otherwise, generate default name
-		name = getNextName(user, root.getCustomName(), saved);
+                name = getNextName(user, root.getCustomName(), saved);
             }
         } finally {
             SqlUtils.closeResultSet(rsCheckName);
@@ -1313,23 +1319,24 @@ public class StepFactory {
                 strategy.getDescription());
     }
 
-    private String getNextName(User user, String oldName, boolean saved) throws SQLException {
+    private String getNextName(User user, String oldName, boolean saved)
+            throws SQLException {
         ResultSet rsNames = null;
         try {
             // get the existing names
-	    PreparedStatement psNames = SqlUtils.getPreparedStatement(
-		    dataSource, "SELECT " + COLUMN_NAME + " FROM "
-                                + userSchema + TABLE_STRATEGY + " WHERE "
-                                + UserFactory.COLUMN_USER_ID + " = ? AND "
-                                + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME
-                                + " LIKE ? AND " + COLUMN_IS_SAVED + "= ? AND "
-                                + COLUMN_IS_DELETED + "= ?");
-	    psNames.setInt(1, user.getUserId());
-	    psNames.setString(2, wdkModel.getProjectId());
-	    psNames.setString(3, SqlUtils.escapeWildcards(oldName) + "%");
-	    psNames.setBoolean(4, saved);
-	    psNames.setBoolean(5, false);
-	    rsNames = psNames.executeQuery();
+            PreparedStatement psNames = SqlUtils.getPreparedStatement(
+                    dataSource, "SELECT " + COLUMN_NAME + " FROM " + userSchema
+                            + TABLE_STRATEGY + " WHERE "
+                            + UserFactory.COLUMN_USER_ID + " = ? AND "
+                            + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME
+                            + " LIKE ? AND " + COLUMN_IS_SAVED + "= ? AND "
+                            + COLUMN_IS_DELETED + "= ?");
+            psNames.setInt(1, user.getUserId());
+            psNames.setString(2, wdkModel.getProjectId());
+            psNames.setString(3, SqlUtils.escapeWildcards(oldName) + "%");
+            psNames.setBoolean(4, saved);
+            psNames.setBoolean(5, false);
+            rsNames = psNames.executeQuery();
 
             Set<String> names = new LinkedHashSet<String>();
             while (rsNames.next())

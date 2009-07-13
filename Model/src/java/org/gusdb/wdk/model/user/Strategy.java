@@ -435,7 +435,7 @@ public class Strategy {
         AnswerFilterInstance filter = step.getFilter();
         String filterName = (filter == null) ? null : filter.getName();
 
-        Step newStep = user.createStep(wdkQuestion, paramValues, filterName);
+        Step newStep = user.createStep(wdkQuestion, paramValues, filterName, false);
         newStep.setCustomName(step.getBaseCustomName());
         newStep.update(false);
         return newStep;

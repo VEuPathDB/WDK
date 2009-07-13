@@ -83,10 +83,10 @@ public class SqlQuery extends Query {
      * @see org.gusdb.wdk.model.query.Query#makeInstance()
      */
     @Override
-    public QueryInstance makeInstance(User user, Map<String, String> values)
+    public QueryInstance makeInstance(User user, Map<String, String> values, boolean validate)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        return new SqlQueryInstance(user, this, values);
+        return new SqlQueryInstance(user, this, values, validate);
     }
 
     /*

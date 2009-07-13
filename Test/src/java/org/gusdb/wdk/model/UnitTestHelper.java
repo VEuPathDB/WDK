@@ -123,7 +123,7 @@ public class UnitTestHelper {
         List<ParamValuesSet> paramValueSets = question.getQuery().getParamValuesSets();
         ParamValuesSet paramValueSet = paramValueSets.get(random.nextInt(paramValueSets.size()));
         Map<String, String> params = paramValueSet.getParamValues();
-        return user.createStep(question, params, (String) null);
+        return user.createStep(question, params, (String) null, false);
     }
 
     private static void loadQuestions() throws Exception {

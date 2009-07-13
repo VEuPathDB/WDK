@@ -121,7 +121,7 @@ public class RecordInstance extends AttributeValueContainer {
             query = recordClass.getAttributeQuery(queryName);
         }
         QueryInstance instance = query.makeInstance(user,
-                primaryKey.getValues());
+                primaryKey.getValues(), true);
 
         ResultList resultList = null;
         try {
@@ -535,7 +535,7 @@ public class RecordInstance extends AttributeValueContainer {
             oldValues.put(oldParam, value);
         }
 
-        QueryInstance instance = aliasQuery.makeInstance(user, oldValues);
+        QueryInstance instance = aliasQuery.makeInstance(user, oldValues, true);
         ResultList resultList = instance.getResults();
         if (resultList.next()) {
             for (String param : pkValues.keySet()) {

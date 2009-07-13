@@ -329,7 +329,7 @@ public class SanityTester {
         int count = 0;
 
         QueryInstance instance = query.makeInstance(user,
-                paramValuesSet.getParamValues());
+                paramValuesSet.getParamValues(), true);
         ResultList rs = instance.getResults();
 
         while (rs.next()) {
@@ -344,7 +344,7 @@ public class SanityTester {
             SQLException, WdkModelException, JSONException, WdkUserException {
 
         SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
-                new HashMap<String, String>());
+                new HashMap<String, String>(), true);
 
         if (paramValuesSet.getParamValues().size() != 2) {
             throw new WdkUserException(
@@ -369,7 +369,7 @@ public class SanityTester {
             JSONException, WdkUserException {
 
         SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
-                new HashMap<String, String>());
+                new HashMap<String, String>(), true);
 
         String sql = "select * from (" + instance.getUncachedSql() + ") "
                 + paramValuesSet.getWhereClause();
