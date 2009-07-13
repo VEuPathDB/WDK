@@ -103,18 +103,22 @@ public class Step {
 
     public void setParentStep(Step parentStep) {
         this.parentStep = parentStep;
+        if (parentStep != null) parentStep.childStep = this;
     }
 
     public void setChildStep(Step childStep) {
         this.childStep = childStep;
+        if (childStep != null) childStep.parentStep = this;
     }
 
     public void setNextStep(Step nextStep) {
         this.nextStep = nextStep;
+        if (nextStep != null) nextStep.previousStep = this;
     }
 
     public void setPreviousStep(Step previousStep) {
         this.previousStep = previousStep;
+        if (previousStep != null) previousStep.nextStep = this;
     }
 
     public boolean isFirstStep() {
