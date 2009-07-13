@@ -15,13 +15,11 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -661,7 +659,13 @@ public class StepFactory {
         // TEST
         // update custom name
         Date lastRunTime = (updateTime) ? new Date() : step.getLastRunTime();
-        int estimateSize = step.getResultSize();
+        int estimateSize = step.getEstimateSize();
+        try {
+            estimateSize = step.getResultSize();
+        } catch (Exception ex) {
+            step.setValid(false);
+            ex.printStackTrace();
+        }
         PreparedStatement psStep = null;
         try {
             psStep = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
