@@ -379,7 +379,7 @@ public class Step {
             if (!previousStep.isValid()) return false;
         }
         if (childStep != null) {
-            if (!childStep.isValid()) return true;
+            if (!childStep.isValid()) return false;
         }
         return true;
     }
