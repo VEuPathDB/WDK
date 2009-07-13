@@ -49,10 +49,10 @@ public class BooleanQueryInstance extends SqlQueryInstance {
      * @throws NoSuchAlgorithmException
      */
     protected BooleanQueryInstance(User user, BooleanQuery query,
-            Map<String, String> values) throws WdkModelException,
+            Map<String, String> values, boolean validate) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        super(user, query, values);
+        super(user, query, values, validate);
         this.booleanQuery = query;
     }
 

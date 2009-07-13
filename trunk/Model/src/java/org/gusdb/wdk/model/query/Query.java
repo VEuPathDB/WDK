@@ -66,7 +66,7 @@ public abstract class Query extends WdkModelBase {
             throws JSONException;
 
     public abstract QueryInstance makeInstance(User user,
-            Map<String, String> values) throws WdkModelException,
+            Map<String, String> values, boolean validate) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException;
 
