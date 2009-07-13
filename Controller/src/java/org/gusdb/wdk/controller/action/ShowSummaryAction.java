@@ -78,8 +78,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
             if (strStepId == null || strStepId.length() == 0) {
                 logger.debug("create new steps");
 
-		// reset pager info in session
-		wdkUser.resetViewResults();
+                // reset pager info in session
+                wdkUser.resetViewResults();
 
                 QuestionBean wdkQuestion = (QuestionBean) request.getAttribute(CConstants.WDK_QUESTION_KEY);
                 if (wdkQuestion == null) wdkQuestion = qForm.getQuestion();
@@ -316,7 +316,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             end = Utilities.MAXIMUM_RECORD_INSTANCES;
         }
 
-        StepBean step = wdkUser.createStep(question, params, filterName);
+        StepBean step = wdkUser.createStep(question, params, filterName, true);
         AnswerValueBean answerValue = step.getAnswerValue();
         int totalSize = answerValue.getResultSize();
         if (end > totalSize) end = totalSize;

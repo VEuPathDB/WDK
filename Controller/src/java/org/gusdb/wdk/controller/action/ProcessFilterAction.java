@@ -393,7 +393,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         }
         String filterName = step.getFilterName();
         StepBean newStep = wdkUser.createStep(wdkQuestion, paramValues,
-                filterName);
+                filterName, false);
         newStep.setCustomName(step.getBaseCustomName());
         newStep.update(false);
         return newStep;

@@ -49,10 +49,10 @@ public class SqlQueryInstance extends QueryInstance {
      * @throws WdkUserException
      * @throws NoSuchAlgorithmException
      */
-    protected SqlQueryInstance(User user, SqlQuery query, Map<String, String> values)
+    protected SqlQueryInstance(User user, SqlQuery query, Map<String, String> values, boolean validate)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        super(user, query, values);
+        super(user, query, values, validate);
         this.query = query;
     }
 

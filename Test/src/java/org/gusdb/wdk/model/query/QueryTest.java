@@ -103,7 +103,7 @@ public class QueryTest {
                     user, rawValues);
 
             // try to make a query instance
-            QueryInstance instance = query.makeInstance(user, dependentValues);
+            QueryInstance instance = query.makeInstance(user, dependentValues, true);
             int rows = instance.getResultSize();
 
             String qName = query.getFullName();

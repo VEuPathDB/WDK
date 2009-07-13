@@ -598,10 +598,11 @@ public class UserBean /* implements Serializable */{
      * org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
      */
     public StepBean createStep(QuestionBean question,
-            Map<String, String> params, String filterName)
+            Map<String, String> params, String filterName, boolean validate)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
-        Step step = user.createStep(question.question, params, filterName);
+        Step step = user.createStep(question.question, params, filterName,
+                validate);
         latestStep = new StepBean(this, step);
         return latestStep;
     }

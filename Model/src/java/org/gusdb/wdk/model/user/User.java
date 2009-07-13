@@ -388,11 +388,11 @@ public class User /* implements Serializable */{
         int endIndex = answerValue.getEndIndex();
 
         return createStep(question, paramValues, filter, startIndex, endIndex,
-                deleted);
+                deleted, true);
     }
 
     public synchronized Step createStep(Question question,
-            Map<String, String> paramValues, String filterName)
+            Map<String, String> paramValues, String filterName, boolean validate)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         AnswerFilterInstance filter = null;
@@ -400,24 +400,24 @@ public class User /* implements Serializable */{
         if (filterName != null) {
             filter = recordClass.getFilter(filterName);
         } else filter = recordClass.getDefaultFilter();
-        return createStep(question, paramValues, filter);
+        return createStep(question, paramValues, filter, validate);
     }
 
     public synchronized Step createStep(Question question,
-            Map<String, String> paramValues, AnswerFilterInstance filter)
+            Map<String, String> paramValues, AnswerFilterInstance filter, boolean validate)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         int endIndex = getItemsPerPage();
-        return createStep(question, paramValues, filter, 1, endIndex, false);
+        return createStep(question, paramValues, filter, 1, endIndex, false, validate);
     }
 
     public synchronized Step createStep(Question question,
             Map<String, String> paramValues, AnswerFilterInstance filter,
-            int pageStart, int pageEnd, boolean deleted)
+            int pageStart, int pageEnd, boolean deleted, boolean validate)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         Step step = stepFactory.createStep(this, question, paramValues, filter,
-                pageStart, pageEnd, deleted);
+                pageStart, pageEnd, deleted, validate);
         if (stepCount != null) stepCount++;
         return step;
     }
@@ -1274,7 +1274,7 @@ public class User /* implements Serializable */{
         params.put(booleanQuery.getUseBooleanFilter().getName(),
                 Boolean.toString(useBooleanFilter));
 
-        Step booleanStep = createStep(question, params, filter);
+        Step booleanStep = createStep(question, params, filter, false);
         booleanStep.setPreviousStep(leftStep);
         booleanStep.setChildStep(rightStep);
         leftStep.setNextStep(booleanStep);

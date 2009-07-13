@@ -226,6 +226,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         }
         return answerValue;
     }
+    
+    public AnswerValue makeAnswerValue(User user,
+            Map<String, String> dependentValues, int pageStart, int pageEnd,
+            Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter) throws NoSuchAlgorithmException, WdkUserException, WdkModelException, SQLException, JSONException {
+        return makeAnswerValue(user, dependentValues, pageStart, pageEnd, sortingAttributes, filter, true);
+    }
 
     /**
      * make an answer by given page range, sorted by the given attribute list.
@@ -243,10 +249,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
      */
     public AnswerValue makeAnswerValue(User user,
             Map<String, String> dependentValues, int pageStart, int pageEnd,
-            Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter)
+            Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter, boolean validate)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        QueryInstance qi = query.makeInstance(user, dependentValues);
+        QueryInstance qi = query.makeInstance(user, dependentValues, validate);
         AnswerValue answerValue = new AnswerValue(user, this, qi, pageStart,
                 pageEnd, sortingAttributes, filter);
         String[] summaryAttributes = user.getSummaryAttributes(getFullName());

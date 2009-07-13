@@ -533,7 +533,7 @@ public class Step {
         int startIndex = getAnswerValue().getStartIndex();
         int endIndex = getAnswerValue().getEndIndex();
         Step step = user.createStep(question, params, filter, startIndex,
-                endIndex, isDeleted);
+                endIndex, isDeleted, false);
         step.collapsedName = collapsedName;
         step.customName = customName;
         step.isCollapsible = isCollapsible;
@@ -576,7 +576,7 @@ public class Step {
             int pageStart = answerValue.getStartIndex();
             int pageEnd = answerValue.getEndIndex();
             step = user.createStep(question, paramValues, filter, pageStart,
-                    pageEnd, isDeleted);
+                    pageEnd, isDeleted, false);
         }
         step.collapsedName = collapsedName;
         step.customName = customName;

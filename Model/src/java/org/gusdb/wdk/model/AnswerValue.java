@@ -576,7 +576,7 @@ public class AnswerValue {
             // has no params
             Map<String, String> params = new LinkedHashMap<String, String>();
             QueryInstance queryInstance = attributeQuery.makeInstance(user,
-                    params);
+                    params, true);
             return queryInstance.getSql();
         }
     }

@@ -34,8 +34,9 @@ import org.json.JSONObject;
 public abstract class QueryInstance {
 
     public abstract void createCache(Connection connection, String tableName,
-            int instanceId, String[] indexColumns) throws NoSuchAlgorithmException, WdkModelException,
-            SQLException, JSONException, WdkUserException;
+            int instanceId, String[] indexColumns)
+            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+            JSONException, WdkUserException;
 
     public abstract void insertToCache(Connection connection, String tableName,
             int instanceId) throws WdkModelException, SQLException,
@@ -64,9 +65,10 @@ public abstract class QueryInstance {
     private String checksum;
     private Integer resultSize;
 
-    protected QueryInstance(User user, Query query, Map<String, String> values)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+    protected QueryInstance(User user, Query query, Map<String, String> values,
+            boolean validate) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         this.user = user;
         this.query = query;
         this.wdkModel = query.getWdkModel();
@@ -74,7 +76,7 @@ public abstract class QueryInstance {
 
         // logger.debug("validating param values of query [" +
         // query.getFullName() + "]");
-        setValues(values);
+        setValues(values, validate);
     }
 
     public Query getQuery() {
@@ -107,7 +109,7 @@ public abstract class QueryInstance {
         this.instanceId = instanceId;
     }
 
-    private void setValues(Map<String, String> values)
+    private void setValues(Map<String, String> values, boolean validate)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
         // logger.debug("----- input value for [" + query.getFullName() +
@@ -116,7 +118,7 @@ public abstract class QueryInstance {
         // logger.debug(paramName + "='" + values.get(paramName) + "'");
         // }
 
-        validateValues(user, values);
+        if (validate) validateValues(user, values);
         // passed, assign the value
         this.values = new LinkedHashMap<String, String>(values);
         checksum = null;
@@ -296,7 +298,8 @@ public abstract class QueryInstance {
                 value = param.getDefault();
             } else { // param provided, but it can be empty
                 value = values.get(paramName);
-                logger.debug("param " + paramName + " provided value: '" + value + "'");
+                logger.debug("param " + paramName + " provided value: '"
+                        + value + "'");
                 if (value == null || value.length() == 0) {
                     value = param.isAllowEmpty() ? param.getEmptyValue() : null;
                 }
