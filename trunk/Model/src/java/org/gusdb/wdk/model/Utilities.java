@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 
 public class Utilities {
@@ -139,4 +140,18 @@ public class Utilities {
         } else value = objValue.toString();
         return value;
     }
+    
+    public static String[][] convertContent(String content) throws JSONException {
+        JSONArray jsResult = new JSONArray(content);
+        JSONArray jsRow = (JSONArray) jsResult.get(0);
+        String[][] result = new String[jsResult.length()][jsRow.length()];
+        for (int row = 0; row < result.length; row++) {
+            jsRow = (JSONArray) jsResult.get(row);
+            for (int col = 0; col < result[row].length; col++) {
+                result[row][col] = (String) jsRow.get(col);
+            }
+        }
+        return result;
+    }
+
 }

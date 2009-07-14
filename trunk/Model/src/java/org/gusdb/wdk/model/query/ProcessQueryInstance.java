@@ -17,6 +17,7 @@ import java.util.Map;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ArrayResultList;
@@ -229,7 +230,7 @@ public class ProcessQueryInstance extends QueryInstance {
                     String more = service.requestResult(requestId, i);
                     buffer.append(more);
                 }
-                String[][] content = convertContent(buffer.toString());
+                String[][] content = Utilities.convertContent(buffer.toString());
                 result.setResult(content);
             }
         } else { // invoke the process query via web service
@@ -250,26 +251,13 @@ public class ProcessQueryInstance extends QueryInstance {
                     String more = client.requestResult(requestId, i);
                     buffer.append(more);
                 }
-                String[][] content = convertContent(buffer.toString());
+                String[][] content = Utilities.convertContent(buffer.toString());
                 result.setResult(content);
             }
         }
         long end = System.currentTimeMillis();
         logger.debug("Client took " + ((end - start) / 1000.0) + " seconds.");
 
-        return result;
-    }
-
-    private String[][] convertContent(String content) throws JSONException {
-        JSONArray jsResult = new JSONArray(content);
-        JSONArray jsRow = (JSONArray) jsResult.get(0);
-        String[][] result = new String[jsResult.length()][jsRow.length()];
-        for (int row = 0; row < result.length; row++) {
-            jsRow = (JSONArray) jsResult.get(row);
-            for (int col = 0; col < result[row].length; col++) {
-                result[row][col] = (String) jsRow.get(col);
-            }
-        }
         return result;
     }
 
