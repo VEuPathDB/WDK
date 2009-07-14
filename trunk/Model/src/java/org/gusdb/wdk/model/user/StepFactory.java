@@ -460,7 +460,7 @@ public class StepFactory {
             rsStep = psStep.executeQuery();
 
             while (rsStep.next()) {
-                Step step = loadStep(user, rsStep);
+                Step step = loadStep(user, rsStep, false);
                 int stepId = step.getDisplayId();
                 // if (step.isValid()) {
                 steps.put(stepId, step);
@@ -510,13 +510,13 @@ public class StepFactory {
                 throw new WdkUserException("The Step #" + displayId
                         + " of user " + user.getEmail() + " doesn't exist.");
 
-            return loadStep(user, rsStep);
+            return loadStep(user, rsStep, true);
         } finally {
             SqlUtils.closeResultSet(rsStep);
         }
     }
 
-    private Step loadStep(User user, ResultSet rsStep)
+    private Step loadStep(User user, ResultSet rsStep, boolean loadTree)
             throws WdkModelException, SQLException, JSONException,
             WdkUserException {
         // load Step info
@@ -534,17 +534,19 @@ public class StepFactory {
         step.setFilterName(rsStep.getString(COLUMN_ANSWER_FILTER));
 
         // load left and right child
-        if (rsStep.getObject(COLUMN_LEFT_CHILD_ID) != null) {
-            int leftStepId = rsStep.getInt(COLUMN_LEFT_CHILD_ID);
-            Step leftStep = loadStep(user, leftStepId);
-            step.setPreviousStep(leftStep);
-            if (!leftStep.isValid()) step.setValid(false);
-        }
-        if (rsStep.getObject(COLUMN_RIGHT_CHILD_ID) != null) {
-            int rightStepId = rsStep.getInt(COLUMN_RIGHT_CHILD_ID);
-            Step rightStep = loadStep(user, rightStepId);
-            step.setChildStep(rightStep);
-            if (!rightStep.isValid()) step.setValid(false);
+        if (loadTree) {
+            if (rsStep.getObject(COLUMN_LEFT_CHILD_ID) != null) {
+                int leftStepId = rsStep.getInt(COLUMN_LEFT_CHILD_ID);
+                Step leftStep = loadStep(user, leftStepId);
+                step.setPreviousStep(leftStep);
+                if (!leftStep.isValid()) step.setValid(false);
+            }
+            if (rsStep.getObject(COLUMN_RIGHT_CHILD_ID) != null) {
+                int rightStepId = rsStep.getInt(COLUMN_RIGHT_CHILD_ID);
+                Step rightStep = loadStep(user, rightStepId);
+                step.setChildStep(rightStep);
+                if (!rightStep.isValid()) step.setValid(false);
+            }
         }
 
         String dependentParamContent = userPlatform.getClobData(rsStep,
