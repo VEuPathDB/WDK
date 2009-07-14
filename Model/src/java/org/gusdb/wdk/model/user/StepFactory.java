@@ -20,6 +20,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -510,7 +511,7 @@ public class StepFactory {
                 throw new WdkUserException("The Step #" + displayId
                         + " of user " + user.getEmail() + " doesn't exist.");
 
-            return loadStep(user, rsStep, true);
+            return loadStep(user, rsStep, false);
         } finally {
             SqlUtils.closeResultSet(rsStep);
         }
@@ -818,82 +819,82 @@ public class StepFactory {
         }
 
         int rootStepId = resultSet.getInt(COLUMN_ROOT_STEP_ID);
-        Step rootStep = loadStep(user, rootStepId);
+        Step rootStep = loadStepTree(user, rootStepId);
         strategy.setLatestStep(rootStep);
         if (!rootStep.isValid()) strategy.setValid(false);
 
         return strategy;
     }
 
-    // private Step loadStepTree(User user, int stepId) throws SQLException,
-    // WdkUserException, WdkModelException, JSONException {
-    // Step step = loadStep(user, stepId);
-    //
-    // Stack<Integer> stepTree = new Stack<Integer>();
-    // stepTree.push(stepId);
-    //
-    // HashMap<Integer, Step> steps = new HashMap<Integer, Step>();
-    // steps.put(stepId, step);
-    //
-    // Integer parentAnswerId;
-    // Step parentStep;
-    //
-    // PreparedStatement psStepTree = null;
-    // try {
-    // psStepTree = SqlUtils.getPreparedStatement(dataSource, "SELECT "
-    // + COLUMN_LEFT_CHILD_ID + ", " + COLUMN_RIGHT_CHILD_ID
-    // + " FROM " + userSchema + TABLE_STEP + " WHERE "
-    // + UserFactory.COLUMN_USER_ID + " = ? AND "
-    // + COLUMN_DISPLAY_ID + " = ?");
-    //
-    // while (!stepTree.empty()) {
-    // parentAnswerId = stepTree.pop();
-    //
-    // psStepTree.setInt(1, user.getUserId());
-    // psStepTree.setInt(2, parentAnswerId.intValue());
-    //
-    // ResultSet rsAnswerTree = null;
-    // try {
-    // rsAnswerTree = psStepTree.executeQuery();
-    //
-    // if (rsAnswerTree.next()) {
-    // parentStep = steps.get(parentAnswerId);
-    //
-    // // left child
-    // Step currentStep;
-    // int currentStepId = rsAnswerTree.getInt(COLUMN_LEFT_CHILD_ID);
-    // if (currentStepId >= 1) {
-    // currentStep = loadStep(user, currentStepId);
-    // stepTree.push(currentStepId);
-    // steps.put(currentStepId, currentStep);
-    //
-    // parentStep.setPreviousStep(currentStep);
-    // currentStep.setNextStep(parentStep);
-    // if (!currentStep.isValid())
-    // parentStep.setValid(false);
-    // }
-    // // right child
-    // currentStepId = rsAnswerTree.getInt(COLUMN_RIGHT_CHILD_ID);
-    // if (currentStepId >= 1) {
-    // currentStep = loadStep(user, currentStepId);
-    // stepTree.push(currentStepId);
-    // steps.put(currentStepId, currentStep);
-    //
-    // parentStep.setChildStep(currentStep);
-    // currentStep.setParentStep(parentStep);
-    // if (!currentStep.isValid())
-    // parentStep.setValid(false);
-    // }
-    // }
-    // } finally {
-    // if (rsAnswerTree != null) rsAnswerTree.close();
-    // }
-    // }
-    // } finally {
-    // SqlUtils.closeStatement(psStepTree);
-    // }
-    // return step;
-    // }
+    private Step loadStepTree(User user, int stepId) throws SQLException,
+            WdkUserException, WdkModelException, JSONException {
+        Step step = loadStep(user, stepId);
+
+        Stack<Integer> stepTree = new Stack<Integer>();
+        stepTree.push(stepId);
+
+        Map<Integer, Step> steps = new LinkedHashMap<Integer, Step>();
+        steps.put(stepId, step);
+
+        Integer parentAnswerId;
+        Step parentStep;
+
+        PreparedStatement psStepTree = null;
+        try {
+            psStepTree = SqlUtils.getPreparedStatement(dataSource, "SELECT "
+                    + COLUMN_LEFT_CHILD_ID + ", " + COLUMN_RIGHT_CHILD_ID
+                    + " FROM " + userSchema + TABLE_STEP + " WHERE "
+                    + UserFactory.COLUMN_USER_ID + " = ? AND "
+                    + COLUMN_DISPLAY_ID + " = ?");
+
+            while (!stepTree.empty()) {
+                parentAnswerId = stepTree.pop();
+
+                psStepTree.setInt(1, user.getUserId());
+                psStepTree.setInt(2, parentAnswerId.intValue());
+
+                ResultSet rsAnswerTree = null;
+                try {
+                    rsAnswerTree = psStepTree.executeQuery();
+
+                    if (rsAnswerTree.next()) {
+                        parentStep = steps.get(parentAnswerId);
+
+                        // left child
+                        Step currentStep;
+                        int currentStepId = rsAnswerTree.getInt(COLUMN_LEFT_CHILD_ID);
+                        if (currentStepId >= 1) {
+                            currentStep = loadStep(user, currentStepId);
+                            stepTree.push(currentStepId);
+                            steps.put(currentStepId, currentStep);
+
+                            parentStep.setPreviousStep(currentStep);
+                            currentStep.setNextStep(parentStep);
+                            if (!currentStep.isValid())
+                                parentStep.setValid(false);
+                        }
+                        // right child
+                        currentStepId = rsAnswerTree.getInt(COLUMN_RIGHT_CHILD_ID);
+                        if (currentStepId >= 1) {
+                            currentStep = loadStep(user, currentStepId);
+                            stepTree.push(currentStepId);
+                            steps.put(currentStepId, currentStep);
+
+                            parentStep.setChildStep(currentStep);
+                            currentStep.setParentStep(parentStep);
+                            if (!currentStep.isValid())
+                                parentStep.setValid(false);
+                        }
+                    }
+                } finally {
+                    if (rsAnswerTree != null) rsAnswerTree.close();
+                }
+            }
+        } finally {
+            SqlUtils.closeStatement(psStepTree);
+        }
+        return step;
+    }
 
     Strategy importStrategy(User user, Strategy oldStrategy)
             throws WdkUserException, WdkModelException, SQLException,
