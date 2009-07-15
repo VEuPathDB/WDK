@@ -327,7 +327,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("isCollapsed", step.getIsCollapsible() && showSubStrategy);
         jsStep.put("dataType", step.getDataType());
         jsStep.put("shortName", step.getShortDisplayName());
-        jsStep.put("results", step.getResultSize());
+        jsStep.put("results", step.getEstimateSize());
         jsStep.put("questionName", step.getQuestionName());
         jsStep.put("displayName", step.getQuestion().getDisplayName());
         jsStep.put("isboolean", step.getIsBoolean());

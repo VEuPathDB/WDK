@@ -443,8 +443,8 @@ public class StepFactory {
                             + COLUMN_LAST_RUN_TIME + ", h."
                             + COLUMN_CUSTOM_NAME + ", h." + COLUMN_IS_DELETED
                             + ", h." + COLUMN_IS_COLLAPSIBLE + ", h."
-                            + COLUMN_COLLAPSED_NAME + ", h."
-                            + COLUMN_LEFT_CHILD_ID + ", h."
+                            + COLUMN_IS_VALID + ", h." + COLUMN_COLLAPSED_NAME
+                            + ", h." + COLUMN_LEFT_CHILD_ID + ", h."
                             + COLUMN_RIGHT_CHILD_ID + ", h."
                             + COLUMN_ESTIMATE_SIZE + ", h."
                             + COLUMN_ANSWER_FILTER + ", h."
@@ -491,8 +491,8 @@ public class StepFactory {
                             + COLUMN_LAST_RUN_TIME + ", h."
                             + COLUMN_CUSTOM_NAME + ", h." + COLUMN_IS_DELETED
                             + ", h." + COLUMN_IS_COLLAPSIBLE + ", h."
-                            + COLUMN_COLLAPSED_NAME + ", h."
-                            + COLUMN_LEFT_CHILD_ID + ", h."
+                            + COLUMN_IS_VALID + ", h." + COLUMN_COLLAPSED_NAME
+                            + ", h." + COLUMN_LEFT_CHILD_ID + ", h."
                             + COLUMN_RIGHT_CHILD_ID + ", h."
                             + COLUMN_ESTIMATE_SIZE + ", h."
                             + COLUMN_ANSWER_FILTER + ", h."
@@ -533,6 +533,8 @@ public class StepFactory {
         step.setCollapsedName(rsStep.getString(COLUMN_COLLAPSED_NAME));
         step.setEstimateSize(rsStep.getInt(COLUMN_ESTIMATE_SIZE));
         step.setFilterName(rsStep.getString(COLUMN_ANSWER_FILTER));
+        if (rsStep.getObject(COLUMN_IS_VALID) != null)
+            step.setValid(rsStep.getBoolean(COLUMN_IS_VALID));
 
         // load left and right child
         if (loadTree) {
@@ -663,12 +665,6 @@ public class StepFactory {
         // update custom name
         Date lastRunTime = (updateTime) ? new Date() : step.getLastRunTime();
         int estimateSize = step.getEstimateSize();
-        try {
-            estimateSize = step.getResultSize();
-        } catch (Exception ex) {
-            step.setValid(false);
-            ex.printStackTrace();
-        }
         PreparedStatement psStep = null;
         try {
             psStep = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
@@ -802,7 +798,8 @@ public class StepFactory {
         strategy.setCreatedTime(resultSet.getTimestamp(COLUMN_CREATE_TIME));
         strategy.setIsSaved(resultSet.getBoolean(COLUMN_IS_SAVED));
         strategy.setDeleted(resultSet.getBoolean(COLUMN_IS_DELETED));
-        strategy.setValid(resultSet.getBoolean(COLUMN_IS_VALID));
+        if (resultSet.getObject(COLUMN_IS_VALID) != null)
+            strategy.setValid(resultSet.getBoolean(COLUMN_IS_VALID));
         strategy.setSavedName(resultSet.getString(COLUMN_SAVED_NAME));
         strategy.setLastViewedTime(resultSet.getTimestamp(COLUMN_LAST_VIEWED_TIME));
         strategy.setLastModifiedTime(resultSet.getTimestamp(COLUMN_LAST_MODIFIED_TIME));
