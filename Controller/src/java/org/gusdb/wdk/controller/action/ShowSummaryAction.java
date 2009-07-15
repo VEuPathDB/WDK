@@ -2,7 +2,6 @@ package org.gusdb.wdk.controller.action;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
@@ -56,6 +55,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
+
+        String roFlag = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
+        boolean resultOnly = (roFlag != null && Boolean.valueOf(roFlag));
         try {
             QuestionForm qForm = (QuestionForm) form;
             // TRICKY: this is for action forward from
@@ -189,13 +191,12 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             // make ActionForward
 
-            String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
             // forward to the results page, if requested
-            if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
+            if (resultOnly) {
                 // update the step size
                 step.setEstimateSize(step.getResultSize());
                 step.update(true);
-                
+
                 int viewPagerOffset = 0;
                 if (request.getParameter("pager.offset") != null) {
                     viewPagerOffset = Integer.parseInt(request.getParameter("pager.offset"));
@@ -218,7 +219,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
             ex.printStackTrace();
             // ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
             // return null;
-            return showError(wdkModel, wdkUser, mapping, request, response);
+            return showError(wdkModel, wdkUser, mapping, request, response, ex,
+                    resultOnly);
         }
 
     }
@@ -334,9 +336,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
     private ActionForward showError(WdkModelBean wdkModel, UserBean wdkUser,
             ActionMapping mapping, HttpServletRequest request,
-            HttpServletResponse response) throws WdkModelException,
-            WdkUserException, SQLException, JSONException,
-            NoSuchAlgorithmException, UnsupportedEncodingException {
+            HttpServletResponse response, Exception ex, boolean resultOnly) {
         // TEST
         logger.info("Show the details of an invalid userAnswer/question");
 
@@ -344,56 +344,63 @@ public class ShowSummaryAction extends ShowQuestionAction {
         Map<String, String> params;
         Map<String, String> paramNames;
         String customName;
-        if (qFullName == null || qFullName.length() == 0) {
-            String strHistId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
-            int userAnswerId = Integer.parseInt(strHistId);
-            StepBean step = wdkUser.getStep(userAnswerId);
-            params = step.getParams();
-            paramNames = step.getParamNames();
-            qFullName = step.getQuestionName();
-            customName = step.getCustomName();
-        } else {
-            params = new LinkedHashMap<String, String>();
-            paramNames = new LinkedHashMap<String, String>();
-            customName = qFullName;
 
-            // get params from request
-            Map<?, ?> parameters = request.getParameterMap();
-            for (Object object : parameters.keySet()) {
-                String pName;
-                pName = URLDecoder.decode((String) object, "utf-8");
-                Object objValue = parameters.get(object);
-                String pValue = null;
-                if (objValue != null) {
-                    pValue = objValue.toString();
-                    if (objValue instanceof String[]) {
-                        StringBuffer sb = new StringBuffer();
-                        String[] array = (String[]) objValue;
-                        for (String v : array) {
-                            if (sb.length() > 0) sb.append(", ");
-                            sb.append(v);
+        try {
+            if (qFullName == null || qFullName.length() == 0) {
+                String strHistId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
+                int userAnswerId = Integer.parseInt(strHistId);
+                StepBean step = wdkUser.getStep(userAnswerId);
+                params = step.getParams();
+                paramNames = step.getParamNames();
+                qFullName = step.getQuestionName();
+                customName = step.getCustomName();
+            } else {
+                params = new LinkedHashMap<String, String>();
+                paramNames = new LinkedHashMap<String, String>();
+                customName = qFullName;
+
+                // get params from request
+                Map<?, ?> parameters = request.getParameterMap();
+                for (Object object : parameters.keySet()) {
+                    String pName;
+                    pName = URLDecoder.decode((String) object, "utf-8");
+                    Object objValue = parameters.get(object);
+                    String pValue = null;
+                    if (objValue != null) {
+                        pValue = objValue.toString();
+                        if (objValue instanceof String[]) {
+                            StringBuffer sb = new StringBuffer();
+                            String[] array = (String[]) objValue;
+                            for (String v : array) {
+                                if (sb.length() > 0) sb.append(", ");
+                                sb.append(v);
+                            }
+                            pValue = sb.toString();
                         }
-                        pValue = sb.toString();
+                        pValue = URLDecoder.decode(pValue, "utf-8");
                     }
-                    pValue = URLDecoder.decode(pValue, "utf-8");
-                }
-                if (pName.startsWith("myProp(")) {
-                    pName = pName.substring(7, pName.length() - 1).trim();
-                    params.put(pName, pValue);
+                    if (pName.startsWith("myProp(")) {
+                        pName = pName.substring(7, pName.length() - 1).trim();
+                        params.put(pName, pValue);
 
-                    String displayName = wdkModel.queryParamDisplayName(pName);
-                    if (displayName == null) displayName = pName;
-                    paramNames.put(pName, displayName);
+                        String displayName = wdkModel.queryParamDisplayName(pName);
+                        if (displayName == null) displayName = pName;
+                        paramNames.put(pName, displayName);
+                    }
                 }
             }
-        }
-        String qDisplayName = wdkModel.getQuestionDisplayName(qFullName);
-        if (qDisplayName == null) qDisplayName = qFullName;
+            String qDisplayName = wdkModel.getQuestionDisplayName(qFullName);
+            if (qDisplayName == null) qDisplayName = qFullName;
 
-        request.setAttribute("questionDisplayName", qDisplayName);
-        request.setAttribute("customName", customName);
-        request.setAttribute("params", params);
-        request.setAttribute("paramNames", paramNames);
+            request.setAttribute("questionDisplayName", qDisplayName);
+            request.setAttribute("customName", customName);
+            request.setAttribute("params", params);
+            request.setAttribute("paramNames", paramNames);
+            request.setAttribute("exception", ex);
+        } catch (Exception ex2) {
+            ex2.printStackTrace();
+        }
+        request.setAttribute(CConstants.WDK_RESULT_SET_ONLY_KEY, resultOnly);
 
         ServletContext svltCtx = getServlet().getServletContext();
         String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);

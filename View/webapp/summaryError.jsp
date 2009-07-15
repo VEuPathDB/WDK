@@ -19,10 +19,18 @@
 <c:set var="wdkModel" value="${applicationScope.wdkModel}"/>
      
 <!-- display page header with wdkAnswer's recordClass's type as banner -->
-<site:header refer="summaryError"/>
+<c:if test="${resultOnly}">
+    <site:header refer="summaryError"/>
+</c:if>
 
 <%-- <site:header banner="Query cannot be executed" /> --%>
 <h2><span style="font-color: red;">Query cannot be executed</span></h2>
+<div style="font-color: red;">
+    <pre>
+    ${exception.message}
+    </pre>
+</div>
+< hr />
 <!-- display question and param values and result size for wdkAnswer -->
 <table>
     <tr>
@@ -68,5 +76,6 @@
 <a href="<c:url value="/help.jsp"/>"  target="_blank" onClick="poptastic(this.href); return false;">drop us a line</a>.</p>
 
 <!-- pager at bottom -->
-
-<site:footer/>
+<c:if test="${resultOnly}">
+    <site:footer/>
+</c:if>
