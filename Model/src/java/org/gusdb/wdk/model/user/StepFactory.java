@@ -829,6 +829,7 @@ public class StepFactory {
     private Step loadStepTree(User user, int stepId) throws SQLException,
             WdkUserException, WdkModelException, JSONException {
         Step step = loadStep(user, stepId);
+        if (!step.isCombined()) return step;
 
         Stack<Integer> stepTree = new Stack<Integer>();
         stepTree.push(stepId);
