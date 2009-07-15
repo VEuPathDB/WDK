@@ -204,11 +204,6 @@ public class StepBean {
         return step.getAnswer().getAnswerChecksum();
     }
 
-    public void update() throws WdkUserException, NoSuchAlgorithmException,
-            SQLException, WdkModelException, JSONException {
-        step.update();
-    }
-
     public void update(boolean updateTime) throws WdkUserException,
             NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException {

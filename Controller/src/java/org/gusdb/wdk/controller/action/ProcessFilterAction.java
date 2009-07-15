@@ -247,9 +247,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                 StepBean child = parent.getChildStep();
                                 String operator = parent.getOperation();
                                 boolean useBooleanFilter = parent.isUseBooleanFilter();
-                                AnswerFilterInstanceBean filter = parent.getAnswerValue().getFilter();
-                                String bfName = (filter == null) ? null
-                                        : filter.getName();
+                                String bfName = parent.getFilterName();
                                 newStep = wdkUser.createBooleanStep(previous,
                                         child, operator, useBooleanFilter,
                                         bfName);

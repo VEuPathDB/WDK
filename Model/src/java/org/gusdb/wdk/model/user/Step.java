@@ -325,11 +325,6 @@ public class Step {
         this.booleanExpression = booleanExpression;
     }
 
-    public void update() throws WdkUserException, NoSuchAlgorithmException,
-            SQLException, WdkModelException, JSONException {
-        stepFactory.updateStep(user, this, true);
-    }
-
     public void update(boolean updateTime) throws WdkUserException,
             NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException {
@@ -547,6 +542,7 @@ public class Step {
         step.collapsedName = collapsedName;
         step.customName = customName;
         step.isCollapsible = isCollapsible;
+        step.estimateSize = estimateSize;
         step.update(false);
         return step;
     }

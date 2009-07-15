@@ -117,12 +117,12 @@ public class ShowSummaryAction extends ShowQuestionAction {
             logger.debug("step created");
 
             // get sorting and summary attributes
-            AnswerValueBean wdkAnswerValue = step.getAnswerValue();
+            AnswerValueBean answerValue = step.getAnswerValue();
 
             // return only the result size, if requested
             if (request.getParameterMap().containsKey(
                     CConstants.WDK_RESULT_SIZE_ONLY_KEY)) {
-                int size = getSize(wdkAnswerValue, filterName);
+                int size = getSize(answerValue, filterName);
 
                 PrintWriter writer = response.getWriter();
                 writer.print(size);
@@ -139,10 +139,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 String path = forward.getPath() + "?step_id="
                         + step.getStepId();
                 return new ActionForward(path, true);
-            } else if (!noSkip && wdkAnswerValue.getResultSize() == 1
-                    && !wdkAnswerValue.getIsDynamic()
-                    && wdkAnswerValue.getQuestion().isNoSummaryOnSingleRecord()) {
-                RecordBean rec = (RecordBean) wdkAnswerValue.getRecords().next();
+            } else if (!noSkip && answerValue.getResultSize() == 1
+                    && !answerValue.getIsDynamic()
+                    && answerValue.getQuestion().isNoSummaryOnSingleRecord()) {
+                RecordBean rec = (RecordBean) answerValue.getRecords().next();
                 forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
                 String path = forward.getPath() + "?name="
                         + rec.getRecordClass().getFullName();
@@ -192,6 +192,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String resultsOnly = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
             // forward to the results page, if requested
             if (resultsOnly != null && Boolean.valueOf(resultsOnly)) {
+                // update the step size
+                step.setEstimateSize(step.getResultSize());
+                step.update(true);
+                
                 int viewPagerOffset = 0;
                 if (request.getParameter("pager.offset") != null) {
                     viewPagerOffset = Integer.parseInt(request.getParameter("pager.offset"));
