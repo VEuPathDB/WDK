@@ -75,7 +75,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
                     if (pos >= 0) stratKey = stratKey.substring(0, pos);
                     int stratId = Integer.parseInt(stratKey);
                     StrategyBean strategy = displayStrategies.get(stratId);
-                    if (strategy != null) {
+                    if (strategy != null && strategy.isValid()) {
                         int stepId = strategy.getLatestStep().getStepId();
                         wdkUser.setViewResults(stratKey, stepId, 0);
                     }
