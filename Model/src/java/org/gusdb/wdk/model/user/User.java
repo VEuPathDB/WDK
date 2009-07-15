@@ -404,11 +404,12 @@ public class User /* implements Serializable */{
     }
 
     public synchronized Step createStep(Question question,
-            Map<String, String> paramValues, AnswerFilterInstance filter, boolean validate)
-            throws WdkUserException, WdkModelException,
+            Map<String, String> paramValues, AnswerFilterInstance filter,
+            boolean validate) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         int endIndex = getItemsPerPage();
-        return createStep(question, paramValues, filter, 1, endIndex, false, validate);
+        return createStep(question, paramValues, filter, 1, endIndex, false,
+                validate);
     }
 
     public synchronized Step createStep(Question question,
@@ -447,9 +448,10 @@ public class User /* implements Serializable */{
         // set the view to this one
         String strategyKey = Integer.toString(strategy.getStrategyId());
         this.activeStrategyFactory.openActiveStrategy(strategyKey);
-        this.activeStrategyFactory.setViewStrategyKey(strategyKey);
-        this.activeStrategyFactory.setViewStepId(step.getDisplayId());
-
+        if (strategy.isValid()) {
+            this.activeStrategyFactory.setViewStrategyKey(strategyKey);
+            this.activeStrategyFactory.setViewStepId(step.getDisplayId());
+        }
         return strategy;
     }
 
@@ -1121,8 +1123,8 @@ public class User /* implements Serializable */{
         newStrategy.update(true);
         // highlight the imported strategy
         int rootStepId = newStrategy.getLatestStep().getDisplayId();
-        setViewResults(Integer.toString(newStrategy.getStrategyId()),
-                rootStepId, 0);
+        String strategyKey = Integer.toString(newStrategy.getStrategyId());
+        if (newStrategy.isValid()) setViewResults(strategyKey, rootStepId, 0);
         if (strategyCount != null) strategyCount++;
         return newStrategy;
     }
