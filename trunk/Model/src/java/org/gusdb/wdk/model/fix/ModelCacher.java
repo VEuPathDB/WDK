@@ -27,9 +27,9 @@ import org.json.JSONException;
  * @author xingao
  * 
  */
-public class ModelExpander extends BaseCLI {
+public class ModelCacher extends BaseCLI {
 
-    private static final Logger logger = Logger.getLogger(ModelExpander.class);
+    private static final Logger logger = Logger.getLogger(ModelCacher.class);
 
     /**
      * @param args
@@ -37,14 +37,14 @@ public class ModelExpander extends BaseCLI {
      */
     public static void main(String[] args) throws Exception {
         String cmdName = System.getProperty("cmdName");
-        ModelExpander expander = new ModelExpander(cmdName);
+        ModelCacher cacher = new ModelCacher(cmdName);
         try {
-            expander.invoke(args);
+            cacher.invoke(args);
         } catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
         } finally {
-            logger.info("model expander done.");
+            logger.info("model cacher done.");
             System.exit(0);
         }
     }
@@ -53,8 +53,8 @@ public class ModelExpander extends BaseCLI {
      * @param command
      * @param description
      */
-    public ModelExpander(String command) {
-        super((command == null) ? command : "modelExpander",
+    public ModelCacher(String command) {
+        super((command == null) ? command : "wdkCacheModel",
                 "store model information into database");
     }
 
@@ -118,6 +118,9 @@ public class ModelExpander extends BaseCLI {
     public void expand(WdkModel wdkModel) throws SQLException,
             NoSuchAlgorithmException, JSONException, WdkModelException,
             WdkUserException {
+        // need to reset the cache first
+        wdkModel.getResultFactory().getCacheFactory().resetCache();
+        
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         String projectId = wdkModel.getProjectId();
         deleteCache(dataSource, projectId);
