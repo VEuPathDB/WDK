@@ -24,13 +24,23 @@
 </c:if>
 
 <%-- <site:header banner="Query cannot be executed" /> --%>
-<h2><span style="font-color: red;">Query cannot be executed</span></h2>
-<div style="font-color: red;">
+<h2><span style="color: red;">Query cannot be executed</span></h2>
+<div style="color: red;">
     <pre>
     ${exception.message}
     </pre>
 </div>
-< hr />
+<hr />
+<p>If the previous step(s) contains invalid ones (marked by a red cross), you have to revise to correct them. If you click on the step with a red cross mark on it, we will bring you directly to the "revise" page.</p>
+<br />
+<p>Sometimes you make have more than one invalid steps, a good practice is to revise them from left to right, starting from the left-most one with a red mark on it.</p>
+<br />
+
+<hr />
+<h2>Step Details</h2>
+<p>The following are the detail information about the current invalid step. If you have any questions about this step, please <a href="http://jerric.cryptodb.org/cryptodb.jerric/help.jsp">contact us</a>, and copy the information below in the message.</p>
+<br />
+
 <!-- display question and param values and result size for wdkAnswer -->
 <table>
     <tr>
