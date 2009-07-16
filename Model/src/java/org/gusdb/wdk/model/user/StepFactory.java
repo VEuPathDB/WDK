@@ -220,6 +220,7 @@ public class StepFactory {
         step.setDeleted(deleted);
         step.setParamValues(dependentValues);
         step.setAnswerValue(answerValue);
+        step.setEstimateSize(estimateSize);
 
         // update step dependencies
         updateStepTree(user, step);
