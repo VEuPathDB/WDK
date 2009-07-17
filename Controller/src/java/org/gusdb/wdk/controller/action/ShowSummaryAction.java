@@ -175,6 +175,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             if (strategy == null) {
                 strategy = wdkUser.createStrategy(step, false);
                 queryString = "strategy=" + strategy.getStrategyId();
+                request.setAttribute(CConstants.WDK_NEW_STRATEGY_KEY, true);
             } else {
                 queryString = request.getQueryString();
             }
