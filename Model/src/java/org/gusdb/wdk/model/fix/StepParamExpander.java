@@ -65,6 +65,8 @@ public class StepParamExpander extends BaseCLI {
     public void expand(WdkModel wdkModel) throws SQLException,
             NoSuchAlgorithmException, JSONException, WdkModelException,
             WdkUserException {
+        createParamTable(wdkModel);
+
         ResultSet resultSet = null;
         PreparedStatement psInsert = null;
         try {
@@ -109,6 +111,25 @@ public class StepParamExpander extends BaseCLI {
         }
     }
 
+    private void createParamTable(WdkModel wdkModel) throws SQLException,
+            WdkModelException {
+        String step = wdkModel.getModelConfig().getUserDB().getUserSchema()
+                + "steps";
+        DBPlatform platform = wdkModel.getUserPlatform();
+        DataSource dataSource = platform.getDataSource();
+
+        // check if table exists
+        if (platform.checkTableExists(null, "step_params")) return;
+
+        SqlUtils.executeUpdate(dataSource, "CREATE TABLE step_params ("
+                + " step_id NUMBER(12) NOT NULL, "
+                + " param_name VARCHAR(200) NOT NULL, "
+                + " param_value VARCHAR(4000), " + " migration NUMBER(12))");
+
+        SqlUtils.executeUpdate(dataSource, "CREATE INDEX step_params_idx02 "
+                + " ON step_params (step_id, param_name)");
+    }
+
     private Map<String, Map<String, Param>> getParams(WdkModel wdkModel) {
         Map<String, Map<String, Param>> allParams = new LinkedHashMap<String, Map<String, Param>>();
         for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
@@ -123,18 +144,17 @@ public class StepParamExpander extends BaseCLI {
 
     private ResultSet prepareSelect(WdkModel wdkModel) throws SQLException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
-        String userSchema = userDB.getUserSchema();
-        String wdkSchema = userDB.getWdkEngineSchema();
+        String user = userDB.getUserSchema() + "users";
+        String step = userDB.getUserSchema() + "steps";
+        String answer = userDB.getWdkEngineSchema() + "answers";
         StringBuffer sql = new StringBuffer("SELECT ");
-        sql.append("s.step_id, a.question_name, s.display_params ");
-        sql.append("FROM ").append(userSchema).append("steps s, ");
-        sql.append(wdkSchema).append("answers a, ");
-        sql.append("  (SELECT step_id FROM ");
-        sql.append(userSchema).append("steps ");
+        sql.append("s.step_id, a.question_name, s.display_params FROM ");
+        sql.append(step + " s, " + answer + " a, " + user + " u, ");
+        sql.append("  (SELECT step_id FROM ").append(step);
         sql.append("   MINUS ");
-        sql.append("   SELECT step_id FROM ");
-        sql.append(userSchema).append("step_params) sm ");
+        sql.append("   SELECT step_id FROM ").append("step_params) sm ");
         sql.append("WHERE s.step_id = sm.step_id ");
+        sql.append("  AND s.user_id = u.user_id AND u.is_guest = 0 ");
         sql.append("  AND s.answer_id = a.answer_id ");
         sql.append("  AND a.project_id = ? ");
 
@@ -147,9 +167,7 @@ public class StepParamExpander extends BaseCLI {
 
     private PreparedStatement prepareInsert(WdkModel wdkModel)
             throws SQLException {
-        String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
-        StringBuffer sql = new StringBuffer("INSERT INTO ");
-        sql.append(userSchema).append("step_params ");
+        StringBuffer sql = new StringBuffer("INSERT INTO step_params ");
         sql.append(" (step_id, param_name, param_value) VALUES (?, ?, ?)");
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
@@ -175,6 +193,8 @@ public class StepParamExpander extends BaseCLI {
                     newValues.add(new String[] { paramName, term });
                 }
             } else {
+                if (value != null && value.length() > 4000)
+                    value = value.substring(0, 4000);
                 newValues.add(new String[] { paramName, value });
             }
         }
