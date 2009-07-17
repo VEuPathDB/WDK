@@ -3,6 +3,7 @@ package org.gusdb.wdk.controller.action;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
@@ -38,6 +39,14 @@ public class ShowApplicationAction extends ShowSummaryAction {
                         wdkUser);
             }
 
+            String newStratKey = CConstants.WDK_NEW_STRATEGY_KEY;
+            HttpSession session = request.getSession();
+            if (session.getAttribute(newStratKey) != null) {
+                boolean newStrategy = (Boolean)session.getAttribute(newStratKey);
+                session.removeAttribute(newStratKey);
+                request.setAttribute(newStratKey, newStrategy);
+            }
+
             JSONObject jsMessage = new JSONObject();
             ShowStrategyAction.outputState(wdkUser, jsMessage);
             JSONObject jsState = jsMessage.getJSONObject("state");
@@ -47,19 +56,19 @@ public class ShowApplicationAction extends ShowSummaryAction {
 
             /*
              * Charles Treatman 6/5/09 Add code here to set the
-             * current_application_tab cookie so that user will go to the Browse 
+             * current_application_tab cookie so that user will go to the Browse
              * Strategies tab if no strats are opened.
              */
-	    StrategyBean[] openedStrategies = wdkUser.getActiveStrategies();
-	    if (openedStrategies.length == 0) {
-		Cookie tabCookie = new Cookie("current_application_tab",
-					      "search_history");
-		// make sure it's only a session cookie, not persistent
-		tabCookie.setMaxAge(-1);
-		// make sure the cookie is good for whole site, not just webapp
-		tabCookie.setPath("/");
-		response.addCookie(tabCookie);
-	    }
+            StrategyBean[] openedStrategies = wdkUser.getActiveStrategies();
+            if (openedStrategies.length == 0) {
+                Cookie tabCookie = new Cookie("current_application_tab",
+                        "search_history");
+                // make sure it's only a session cookie, not persistent
+                tabCookie.setMaxAge(-1);
+                // make sure the cookie is good for whole site, not just webapp
+                tabCookie.setPath("/");
+                response.addCookie(tabCookie);
+            }
 
             ActionForward forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
 
