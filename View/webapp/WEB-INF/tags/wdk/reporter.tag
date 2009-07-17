@@ -23,7 +23,7 @@ function changeFormat(e)
 
 
 <!-- display question and param values and result size for step -->
-<wdk:showParams step="${step}" />
+<%-- wdk:showParams step="${step}" / --%>
 
 
 <hr>
