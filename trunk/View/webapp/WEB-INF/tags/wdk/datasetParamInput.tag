@@ -46,6 +46,7 @@ function chooseType(paramName, type) {
 <c:set var="opt" value="0"/>
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="dataset" value="${requestScope[pNam]}" />  
+<c:set var="partial" value="${requestScope.partial}" />
 
 <input type="hidden" id="${pNam}_type" name="${pNam}_type" value="DATA" />
 
@@ -73,7 +74,7 @@ function chooseType(paramName, type) {
         </td>
     </tr>
     
-    <!-- display an input box and upload file button -->
+    <!-- display an existing info -->
     <c:if test="${dataset != null && fn:length(dataset.uploadFile) > 0}">
         <tr>
             <td colspan="2" align="right">
@@ -81,14 +82,18 @@ function chooseType(paramName, type) {
             </td>
         </tr>
     </c:if>
-    <tr class="dataset-file">
-        <td align="left" valign="top" nowrap>
-            <input type="radio" name="${pNam}_radio"  
-                   onclick="chooseType('${pNam}', 'FILE');" />
-            Upload from file:&nbsp;
-        </td>
-        <td align="left">
-            <html:file styleId="${pNam}_file" property="myPropObject(${pNam}_file)" disabled="true"/>
-        </td>
-    </tr>
+
+    <c:if test="${partial == null || partial == false}">
+        <!-- display an input box and upload file button -->
+        <tr class="dataset-file">
+            <td align="left" valign="top" nowrap>
+                <input type="radio" name="${pNam}_radio"  
+                       onclick="chooseType('${pNam}', 'FILE');" />
+                Upload from file:&nbsp;
+            </td>
+            <td align="left">
+                <html:file styleId="${pNam}_file" property="myPropObject(${pNam}_file)" disabled="true"/>
+            </td>
+        </tr>
+    </c:if>
 </table>
