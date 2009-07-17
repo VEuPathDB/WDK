@@ -60,9 +60,9 @@ public class StepValidator extends BaseCLI {
      */
     @Override
     protected void declareOptions() {
-        addSingleValueOption(ARG_PROJECT_ID, true, null, "A comma-separated"
-                + " list of ProjectIds, which should match the directory name"
-                + " under $GUS_HOME, where model-config.xml is stored.");
+        addSingleValueOption(ARG_PROJECT_ID, true, null,
+                "Project Id, which should match the directory name"
+                        + " under $GUS_HOME, where model-config.xml is stored.");
     }
 
     /*
@@ -74,19 +74,20 @@ public class StepValidator extends BaseCLI {
     protected void execute() throws Exception {
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
-        String strProject = (String) getOptionValue(ARG_PROJECT_ID);
-        String[] projects = strProject.split(",");
+        String projectId = (String) getOptionValue(ARG_PROJECT_ID);
 
-        for (String projectId : projects) {
-            logger.info("Expanding model for project " + projectId);
-            WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-            validate(wdkModel);
-        }
+        logger.info("Expanding model for project " + projectId);
+        WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
+        validate(wdkModel);
     }
 
     private void validate(WdkModel wdkModel) throws SQLException {
         resetFlags(wdkModel);
         detectQuestions(wdkModel);
+        detectParams(wdkModel);
+        detectEnumParams(wdkModel);
+
+        flagSteps(wdkModel);
     }
 
     private void resetFlags(WdkModel wdkModel) throws SQLException {
@@ -106,7 +107,6 @@ public class StepValidator extends BaseCLI {
     private void detectQuestions(WdkModel wdkModel) throws SQLException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
-        String step = userDB.getUserSchema() + "steps";
         DataSource source = wdkModel.getUserPlatform().getDataSource();
 
         // mark invalid answers
@@ -118,12 +118,84 @@ public class StepValidator extends BaseCLI {
                 + "     SELECT project_id, question_name FROM wdk_questions) d"
                 + "   WHERE a.project_id = d.project_id"
                 + "     AND a.question_name = d.question_name"
-                + "     AND (a.is_valid IS NULL OR a.is_valid = 1))");
+                + "     AND a.is_valid IS NULL)");
+    }
+
+    private void detectParams(WdkModel wdkModel) throws SQLException {
+        ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
+        String answer = userDB.getWdkEngineSchema() + "answers";
+        String step = userDB.getUserSchema() + "steps";
+        DataSource source = wdkModel.getUserPlatform().getDataSource();
+
+        SqlUtils.executeUpdate(source, "UPDATE " + answer
+                + " SET is_valid = 0 WHERE answer_id IN "
+                + "   (SELECT a.answer_id                 "
+                + "    FROM step_params sp, " + answer + " a, " + step + " s, "
+                + "     (SELECT a.project_id, a.question_name, sp.param_name "
+                + "      FROM step_params sp, " + step + " s, " + answer + " a"
+                + "      WHERE sp.step_id = s.step_id "
+                + "        AND s.answer_id = a.answer_id "
+                + "        AND a.is_valid IS NULL "
+                + "      MINUS                  "
+                + "      SELECT q.project_id, q.question_name, p.param_name "
+                + "      FROM wdk_questions q, wdk_params p"
+                + "      WHERE q.question_id = p.question_id) d "
+                + "   WHERE a.project_id = d.project_id "
+                + "     AND a.question_name = d.question_name "
+                + "     AND a.answer_id = s.answer_id "
+                + "     AND s.step_id = sp.step_id "
+                + "     AND sp.param_name = d.param_name "
+                + "     AND a.is_valid IS NULL)");
+    }
+
+    private void detectEnumParams(WdkModel wdkModel) throws SQLException {
+        ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
+        String answer = userDB.getWdkEngineSchema() + "answers";
+        String step = userDB.getUserSchema() + "steps";
+        DataSource source = wdkModel.getUserPlatform().getDataSource();
+
+        SqlUtils.executeUpdate(source, "UPDATE " + answer
+                + " SET is_valid = 0 WHERE answer_id IN "
+                + "   (SELECT a.answer_id                 "
+                + "    FROM step_params sp, " + answer + " a, " + step + " s, "
+                + "     (SELECT a.project_id, a.question_name, "
+                + "             sp.param_name, sp.param_value "
+                + "      FROM step_params sp, " + step + " s, " + answer
+                + "        a, wdk_questions q, wdk_params p "
+                + "      WHERE sp.step_id = s.step_id "
+                + "        AND s.answer_id = a.answer_id "
+                + "        AND a.is_valid IS NULL "
+                + "        AND a.project_id = q.project_id "
+                + "        AND a.question_name = q.question_name "
+                + "        AND q.question_id = p.question_id "
+                + "        AND sp.param_name = p.param_name "
+                + "        AND p.param_type IN ('EnumParam', 'FlatVocabParam')"
+                + "      MINUS                  "
+                + "      SELECT q.project_id, q.question_name, "
+                + "             p.param_name, ep.param_value "
+                + "      FROM wdk_questions q, wdk_params p, "
+                + "           wdk_enum_params ep "
+                + "      WHERE q.question_id = p.question_id "
+                + "        AND p.param_id = ep.param_id) d "
+                + "   WHERE a.project_id = d.project_id "
+                + "     AND a.question_name = d.question_name "
+                + "     AND a.answer_id = s.answer_id "
+                + "     AND s.step_id = sp.step_id "
+                + "     AND sp.param_name = d.param_name "
+                + "     AND sp.param_value = d.param_value "
+                + "     AND a.is_valid IS NULL)");
+    }
+
+    private void flagSteps(WdkModel wdkModel) throws SQLException {
+        ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
+        String answer = userDB.getWdkEngineSchema() + "answers";
+        String step = userDB.getUserSchema() + "steps";
+        DataSource source = wdkModel.getUserPlatform().getDataSource();
 
         // mark invalid steps
         SqlUtils.executeUpdate(source, "UPDATE " + step + " SET is_valid = 0 "
                 + " WHERE (is_valid IS NULL OR is_valid = 1) "
                 + "   AND answer_id IN (SELECT answer_id FROM " + answer
-                + "                    WHERE is_valid = 0");
+                + "                    WHERE is_valid = 0)");
     }
 }
