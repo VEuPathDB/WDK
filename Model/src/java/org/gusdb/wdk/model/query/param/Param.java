@@ -407,8 +407,8 @@ public abstract class Param extends WdkModelBase {
         // handle the empty case
         if (dependentValue == null || dependentValue.length() == 0) {
             if (!allowEmpty)
-                throw new WdkModelException("The param [" + getFullName()
-                        + "] does not allow empty value");
+                throw new WdkModelException("The parameter '" + getPrompt()
+                        + "' does not allow empty value");
         }
 
         // the sub classes will complete further validation
