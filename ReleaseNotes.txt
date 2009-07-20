@@ -1,4 +1,15 @@
 ------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.19  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+Summary: This is a major release, the WDK is updated to support the Lasted UI 
+advancement, including the strategy systems.
+
+
+
+
+
+------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.18  ooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 
