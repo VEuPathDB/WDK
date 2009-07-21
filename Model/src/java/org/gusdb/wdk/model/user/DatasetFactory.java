@@ -284,7 +284,7 @@ public class DatasetFactory {
      * @throws SQLException
      *             the database or query failure
      */
-    private int getUserDatasetId(Connection connection, User user, int datasetId)
+    public int getUserDatasetId(Connection connection, User user, int datasetId)
             throws SQLException, WdkModelException {
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(COLUMN_USER_DATASET_ID);
