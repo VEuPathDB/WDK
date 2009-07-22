@@ -44,10 +44,10 @@ function chooseType(paramName, type) {
 <c:set var="qP" value="${qp}"/>
 <c:set var="pNam" value="${qP.name}"/>
 <c:set var="opt" value="0"/>
+<c:set var="dsName" value="${pNam}_dataset"/>
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
-<c:set var="dataset" value="${requestScope[pNam]}" />  
+<c:set var="dataset" value="${requestScope[dsName]}" />  
 <c:set var="partial" value="${requestScope.partial}" />
-
 <input type="hidden" id="${pNam}_type" name="${pNam}_type" value="DATA" />
 
 <table border="0" bgcolor="#EEEEEE" cellspacing="0" cellpadding="0">
