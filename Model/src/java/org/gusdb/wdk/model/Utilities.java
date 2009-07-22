@@ -44,7 +44,7 @@ public class Utilities {
      */
     public static final String SYSTEM_PROPERTY_GUS_HOME = "GUS_HOME";
 
-    public static final int MAXIMUM_RECORD_INSTANCES = 1000;
+    public static final int MAXIMUM_RECORD_INSTANCES = 10000;
 
     public static final String COLUMN_PROJECT_ID = "project_id";
 
