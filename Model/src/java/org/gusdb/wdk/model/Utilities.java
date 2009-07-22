@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class Utilities {
 
@@ -148,7 +149,9 @@ public class Utilities {
         for (int row = 0; row < result.length; row++) {
             jsRow = (JSONArray) jsResult.get(row);
             for (int col = 0; col < result[row].length; col++) {
-                result[row][col] = (String) jsRow.get(col);
+                Object cell = jsRow.get(col);
+                result[row][col] = (cell == null || cell == JSONObject.NULL) ? 
+                    null : cell.toString();
             }
         }
         return result;
