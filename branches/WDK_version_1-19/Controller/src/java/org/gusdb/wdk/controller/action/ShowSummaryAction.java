@@ -306,17 +306,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
         int start = getPageStart(request);
-        int pageSize = getPageSize(request, wdkUser);
+        int pageSize = getPageSize(request, question, wdkUser);
         int end = start + pageSize - 1;
 
         logger.info("Make answer with start=" + start + ", end=" + end);
-
-        // check if the question is supposed to make answers containing all
-        // records in one page
-        if (question.isFullAnswer()) {
-            start = 1;
-            end = Utilities.MAXIMUM_RECORD_INSTANCES;
-        }
 
         StepBean step = wdkUser.createStep(question, params, filterName, true);
         AnswerValueBean answerValue = step.getAnswerValue();
@@ -428,7 +421,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             WdkUserException, WdkModelException, JSONException, SQLException {
         AnswerValueBean answerValue = step.getAnswerValue();
         int start = getPageStart(request);
-        int pageSize = getPageSize(request, user);
+        int pageSize = getPageSize(request, step.getQuestion(), user);
         int end = start + pageSize - 1;
         answerValue.setPageIndex(start, end);
 
@@ -531,21 +524,27 @@ public class ShowSummaryAction extends ShowQuestionAction {
         return start;
     }
 
-    private static int getPageSize(HttpServletRequest request, UserBean user)
-            throws WdkUserException {
+    private static int getPageSize(HttpServletRequest request,
+            QuestionBean question, UserBean user) throws WdkUserException {
         int pageSize = user.getItemsPerPage();
-        String pageSizeKey = request.getParameter(CConstants.WDK_PAGE_SIZE_KEY);
-        if (pageSizeKey != null) {
-            pageSize = Integer.parseInt(pageSizeKey);
-            user.setItemsPerPage(pageSize);
+        // check if the question is supposed to make answers containing all
+        // records in one page
+        if (question.isFullAnswer()) {
+            pageSize = Utilities.MAXIMUM_RECORD_INSTANCES;
         } else {
-            String altPageSizeKey = request.getParameter(CConstants.WDK_ALT_PAGE_SIZE_KEY);
-            if (altPageSizeKey != null)
-                pageSize = Integer.parseInt(altPageSizeKey);
+            String pageSizeKey = request.getParameter(CConstants.WDK_PAGE_SIZE_KEY);
+            if (pageSizeKey != null) {
+                pageSize = Integer.parseInt(pageSizeKey);
+                user.setItemsPerPage(pageSize);
+            } else {
+                String altPageSizeKey = request.getParameter(CConstants.WDK_ALT_PAGE_SIZE_KEY);
+                if (altPageSizeKey != null)
+                    pageSize = Integer.parseInt(altPageSizeKey);
+            }
+            // set the minimal page size
+            if (pageSize < CConstants.MIN_PAGE_SIZE)
+                pageSize = CConstants.MIN_PAGE_SIZE;
         }
-        // set the minimal page size
-        if (pageSize < CConstants.MIN_PAGE_SIZE)
-            pageSize = CConstants.MIN_PAGE_SIZE;
         return pageSize;
     }
 }
