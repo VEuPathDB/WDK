@@ -202,7 +202,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 if (paramValues != null) {
                     datasetParam.setDependentValue(paramValues);
                     DatasetBean dataset = datasetParam.getDataset();
-                    request.setAttribute(paramName, dataset);
+                    request.setAttribute(paramName + "_dataset", dataset);
                 } else {
                     String defaultValue = param.getDefault();
                     if (defaultValue != null) paramValues = defaultValue;
