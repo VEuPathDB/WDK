@@ -123,4 +123,12 @@ public class ProcessQuery extends Query {
     public Query clone() {
         return new ProcessQuery(this);
     }
+
+    /**
+     * Process Query is always cached.
+     */
+    @Override
+    public boolean isCached() {
+        return true;
+    }
 }
