@@ -252,10 +252,20 @@ public class AnswerValue {
                     String[] sizes = message.split(",");
                     for (String size : sizes) {
                         String[] parts = size.split(":");
-                        resultSizesByProject.put(parts[0],
-                                Integer.parseInt(parts[1]));
+                        if (parts.length > 1 && parts[1].matches("^\\d++$")) {
+                            resultSizesByProject.put(parts[0],
+                                    Integer.parseInt(parts[1]));
+                        } else {
+                            // make sure if the message is not expected, the
+                            // correct result size can still be retrieved from
+                            // cached result.
+                            hasMessage = false;
+                        }
                     }
-                } else {
+                }
+                // if the previous step fails, make sure the result size can
+                // still be calculated from cache.
+                if (!hasMessage) {
                     while (resultList.next()) {
                         if (!hasMessage) {
                             // also count by project
@@ -264,7 +274,10 @@ public class AnswerValue {
                             int subCounter = 0;
                             if (resultSizesByProject.containsKey(project))
                                 subCounter = resultSizesByProject.get(project);
-                            resultSizesByProject.put(project, ++subCounter);
+                            // if subContent < 0, it is an error code. don't
+                            // change it.
+                            if (subCounter >= 0)
+                                resultSizesByProject.put(project, ++subCounter);
                         }
                     }
                 }
