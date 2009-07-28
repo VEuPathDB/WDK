@@ -302,7 +302,9 @@ public class ShowStrategyAction extends ShowQuestionAction {
         JSONObject jsSteps = new JSONObject();
         StepBean step = strategy.getFirstStep();
         int frontId = 1;
+	int nonTransformLength = 0;
         while (step != null) {
+	    if (!step.getIsTransform()) nonTransformLength++;
             JSONObject jsStep = outputStep(user, step,
                     strategy.getStrategyId(), false);
             jsSteps.put(Integer.toString(frontId), jsStep);
@@ -310,6 +312,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             frontId++;
         }
         jsSteps.put("length", (frontId - 1));
+	jsSteps.put("nonTransformLength", nonTransformLength);
         jsStrategy.put("steps", jsSteps);
         return jsStrategy;
     }
@@ -414,13 +417,16 @@ public class ShowStrategyAction extends ShowQuestionAction {
         JSONObject jsSteps = new JSONObject();
         StepBean subStep = step.getFirstStep();
         int frontId = 1;
+	int nonTransformLength = 0;
         while (subStep != null) {
+	    if (!subStep.getIsTransform()) nonTransformLength++;
             JSONObject jsSubStep = outputStep(user, subStep, strategyId, false);
             jsSteps.put(Integer.toString(frontId), jsSubStep);
             subStep = subStep.getNextStep();
             frontId++;
         }
         jsSteps.put("length", (frontId - 1));
+	jsSteps.put("nonTransformLength", nonTransformLength);
         jsStrategy.put("steps", jsSteps);
 
         jsStep.put("strategy", jsStrategy);
