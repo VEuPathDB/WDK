@@ -110,7 +110,8 @@ public class ResultFactory {
             WdkUserException, SQLException {
         String checksum = instance.getChecksum();
         StringBuffer sql = new StringBuffer("SELECT ");
-        sql.append(CacheFactory.COLUMN_INSTANCE_ID);
+        sql.append(CacheFactory.COLUMN_INSTANCE_ID).append(", ");
+        sql.append(CacheFactory.COLUMN_RESULT_MESSAGE);
         sql.append(" FROM ").append(CacheFactory.TABLE_INSTANCE);
         sql.append(" WHERE ").append(CacheFactory.COLUMN_QUERY_ID);
         sql.append(" = ").append(queryInfo.getQueryId());
@@ -118,12 +119,18 @@ public class ResultFactory {
         sql.append(" = '").append(checksum).append("'");
 
         DataSource dataSource = platform.getDataSource();
+        ResultSet resultSet = null;
         try {
-            Object id = SqlUtils.executeScalar(dataSource, sql.toString());
-            return Integer.parseInt(id.toString());
-        } catch (WdkModelException ex) {
-            // the instance doesn't exist
-            return null;
+            resultSet = SqlUtils.executeQuery(dataSource, sql.toString());
+            if (!resultSet.next()) return null;
+
+            int instanceId = resultSet.getInt(CacheFactory.COLUMN_INSTANCE_ID);
+            String message = platform.getClobData(resultSet,
+                    CacheFactory.COLUMN_RESULT_MESSAGE);
+            instance.setResultMessage(message);
+            return instanceId;
+        } finally {
+            SqlUtils.closeResultSet(resultSet);
         }
     }
 
