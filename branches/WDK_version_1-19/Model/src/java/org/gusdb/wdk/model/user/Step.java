@@ -542,7 +542,6 @@ public class Step {
         step.collapsedName = collapsedName;
         step.customName = customName;
         step.isCollapsible = isCollapsible;
-        step.estimateSize = getResultSize();
         step.update(false);
         return step;
     }
