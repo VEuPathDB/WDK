@@ -124,7 +124,10 @@ public abstract class QueryInstance {
         checksum = null;
     }
 
-    public String getResultMessage() {
+    public String getResultMessage() throws NoSuchAlgorithmException,
+            SQLException, WdkModelException, JSONException, WdkUserException {
+        // make sure the result message is loaded by getting instance id
+        getInstanceId();
         return resultMessage;
     }
 
