@@ -230,7 +230,7 @@ public class AnswerValueBean {
     public Iterator<RecordBean> getRecords() throws Exception {
         try {
             return new RecordBeanList(answerValue.getRecordInstances());
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
         }
@@ -359,12 +359,11 @@ public class AnswerValueBean {
      * 
      * @see org.gusdb.wdk.model.Answer#getResultMessage()
      */
-    public String getResultMessage() {
-        // TEST
-        System.out.println("Result message from AnswerBean: "
-                + answerValue.getResultMessage());
-
-        return answerValue.getResultMessage();
+    public String getResultMessage() throws NoSuchAlgorithmException,
+            SQLException, WdkModelException, JSONException, WdkUserException {
+        String message = answerValue.getResultMessage();
+        System.out.println("Result message from AnswerBean: " + message);
+        return message;
     }
 
     /**

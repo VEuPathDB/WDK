@@ -238,7 +238,8 @@ public class ResultFactory {
 
     private void addCacheInstance(Connection connection, QueryInfo queryInfo,
             QueryInstance instance, int instanceId, String checksum)
-            throws SQLException {
+            throws SQLException, NoSuchAlgorithmException, WdkModelException,
+            JSONException, WdkUserException {
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(CacheFactory.TABLE_INSTANCE).append(" (");
         sql.append(CacheFactory.COLUMN_INSTANCE_ID).append(", ");
