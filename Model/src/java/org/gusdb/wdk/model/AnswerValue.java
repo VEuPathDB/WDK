@@ -808,7 +808,8 @@ public class AnswerValue {
         return startIndex;
     }
 
-    public String getResultMessage() {
+    public String getResultMessage() throws NoSuchAlgorithmException,
+            SQLException, WdkModelException, JSONException, WdkUserException {
         return idsQueryInstance.getResultMessage();
     }
 
