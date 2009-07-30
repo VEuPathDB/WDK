@@ -43,6 +43,10 @@ public class RecordBean {
                 pkValues);
     }
 
+    public boolean isValidRecord() {
+	return recordInstance.isValidRecord();
+    }
+
     /**
      * modified by Jerric
      * 
