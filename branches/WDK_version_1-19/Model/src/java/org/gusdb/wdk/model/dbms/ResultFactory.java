@@ -128,6 +128,7 @@ public class ResultFactory {
             String message = platform.getClobData(resultSet,
                     CacheFactory.COLUMN_RESULT_MESSAGE);
             instance.setResultMessage(message);
+            instance.setInstanceId(instanceId);
             return instanceId;
         } finally {
             SqlUtils.closeResultSet(resultSet);
@@ -147,6 +148,7 @@ public class ResultFactory {
             // get a new id for the instance
             int instanceId = platform.getNextId(null,
                     CacheFactory.TABLE_INSTANCE);
+            instance.setInstanceId(instanceId);
 
             // check whether need to create the cache;
             String cacheTable = queryInfo.getCacheTable();
