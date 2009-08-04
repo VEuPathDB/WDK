@@ -23,6 +23,8 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public final class SqlUtils {
 
+    public static final long PRINT_SQL_THRESHOLD = 10000;
+
     private static final Logger logger = Logger.getLogger(SqlUtils.class);
 
     /**
@@ -103,8 +105,7 @@ public final class SqlUtils {
             connection = dataSource.getConnection();
             stmt = connection.createStatement();
             int result = stmt.executeUpdate(sql);
-            logger.debug("SQL Update " + (System.currentTimeMillis() - start)
-                    + " ms;");
+            printInfo(sql, start, System.currentTimeMillis());
             return result;
         } catch (SQLException ex) {
             logger.error("Failed to run nonQuery:\n" + sql);
@@ -133,8 +134,7 @@ public final class SqlUtils {
             connection = dataSource.getConnection();
             Statement stmt = connection.createStatement();
             resultSet = stmt.executeQuery(sql);
-            logger.debug("SQL Query " + (System.currentTimeMillis() - start)
-                    + " ms;");
+            printInfo(sql, start, System.currentTimeMillis());
             return resultSet;
         } catch (SQLException ex) {
             logger.error("Failed to run query:\n" + sql);
@@ -162,7 +162,9 @@ public final class SqlUtils {
             throws SQLException, WdkModelException {
         ResultSet resultSet = null;
         try {
+            long start = System.currentTimeMillis();
             resultSet = executeQuery(dataSource, sql);
+            printInfo(sql, start, System.currentTimeMillis());
             if (!resultSet.next())
                 throw new WdkModelException("The SQL doesn't return any row:\n"
                         + sql);
@@ -184,14 +186,20 @@ public final class SqlUtils {
     }
 
     /**
-     * Escapes the input string for use in LIKE
-     * clauses to allow matching special chars
+     * Escapes the input string for use in LIKE clauses to allow matching
+     * special chars
      * 
      * @param value
      * @return the input value with special characters escaped
      */
     public static String escapeWildcards(String value) {
-	return value.replaceAll("%","{%}").replaceAll("_","{_}");
+        return value.replaceAll("%", "{%}").replaceAll("_", "{_}");
+    }
+
+    private static void printInfo(String sql, long start, long end) {
+        long spent = end - start;
+        logger.debug("SQL executed in " + spent + " ms.");
+        if (spent >= PRINT_SQL_THRESHOLD) logger.debug(sql);
     }
 
     /**
