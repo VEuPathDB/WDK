@@ -124,6 +124,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 else {
                     newStep = oldStep.getChildStep();
                 }
+                // reset pager info in session
+                wdkUser.setViewResults(wdkUser.getViewStrategyId(),
+                                       wdkUser.getViewStepId(), 0);
             } else {
                 // no: get question
                 wdkQuestion = getQuestionByFullName(qFullName);
