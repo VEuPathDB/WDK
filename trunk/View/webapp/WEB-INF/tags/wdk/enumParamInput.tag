@@ -101,18 +101,29 @@ Otherwise a standard select menu is used.
     </c:otherwise>
 </c:choose>
 </div>
-</c:when>
-<c:otherwise>
+</c:when> <%-- end of multipick --%>
+<c:otherwise> <%-- pick single item --%>
   <div class="param">
-  <%-- multiPick is false, use pull down menu --%>
-  <html:select  property="myMultiProp(${pNam})" styleId="${pNam}">
-    <c:set var="opt" value="${opt+1}"/>
-    <c:set var="sel" value=""/>
-    <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-    <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
-  </html:select>
+    <c:choose>
+      <c:when test="${displayType eq 'radioBox'}">
+         <c:forEach items="${qP.displayMap}" var="entity">
+           <div>
+             <html:radio property="myMultiProp(${pNam})" value="${entity.key}" /> ${entity.value}
+           </div>
+         </c:forEach>
+      </c:when>
+      <c:otherwise>
+        <%-- multiPick is false, use pull down menu --%>
+        <html:select  property="myMultiProp(${pNam})" styleId="${pNam}">
+          <c:set var="opt" value="${opt+1}"/>
+          <c:set var="sel" value=""/>
+          <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
+          <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
+        </html:select>
+      </c:otherwise>
+    </c:choose>
   </div>
-</c:otherwise>
+</c:otherwise> <%-- end of pick single item --%>
 </c:choose>
 
 <!--</div>-->
