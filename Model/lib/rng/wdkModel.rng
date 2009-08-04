@@ -369,6 +369,7 @@
           <value>listBox</value>
           <value>checkBox</value>
           <value>treeBox</value>
+          <value>radioBox</value>
         </choice>
       </attribute>
     </optional>
@@ -529,6 +530,7 @@
               <value>listBox</value>
               <value>checkBox</value>
               <value>treeBox</value>
+              <value>radioBox</value>
             </choice>
           </attribute>
         </optional>
