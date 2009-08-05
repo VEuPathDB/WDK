@@ -49,7 +49,8 @@ public class FullRecordCachedReporter extends Reporter {
 
     private boolean hasEmptyTable = false;
 
-    public FullRecordCachedReporter(AnswerValue answerValue, int startIndex, int endIndex) {
+    public FullRecordCachedReporter(AnswerValue answerValue, int startIndex,
+            int endIndex) {
         super(answerValue, startIndex, endIndex);
     }
 
@@ -88,8 +89,8 @@ public class FullRecordCachedReporter extends Reporter {
         // get basic configurations
         if (config.containsKey(FIELD_HAS_EMPTY_TABLE)) {
             String value = config.get(FIELD_HAS_EMPTY_TABLE);
-            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true
-                    : false;
+            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true"))
+                    ? true : false;
         }
     }
 
@@ -126,7 +127,8 @@ public class FullRecordCachedReporter extends Reporter {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
+     * @see
+     * org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
      */
     public void write(OutputStream out) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
@@ -257,11 +259,7 @@ public class FullRecordCachedReporter extends Reporter {
             }
             writer.flush();
         } finally {
-            try {
-                SqlUtils.closeStatement(ps);
-            } catch (SQLException ex) {
-                throw new WdkModelException(ex);
-            }
+            SqlUtils.closeStatement(ps);
         }
     }
 }

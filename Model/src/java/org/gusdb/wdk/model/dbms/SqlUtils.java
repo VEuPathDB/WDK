@@ -34,19 +34,23 @@ public final class SqlUtils {
      * @throws SQLException
      * @throws SQLException
      */
-    public static void closeResultSet(ResultSet resultSet) throws SQLException {
-        if (resultSet != null) {
-            // close the statement in any way
-            Statement stmt = null;
-            try {
+    public static void closeResultSet(ResultSet resultSet) {
+        try {
+            if (resultSet != null) {
+                // close the statement in any way
+                Statement stmt = null;
                 try {
-                    stmt = resultSet.getStatement();
+                    try {
+                        stmt = resultSet.getStatement();
+                    } finally {
+                        resultSet.close();
+                    }
                 } finally {
-                    resultSet.close();
+                    closeStatement(stmt);
                 }
-            } finally {
-                closeStatement(stmt);
             }
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
@@ -56,19 +60,23 @@ public final class SqlUtils {
      * @param stmt
      * @throws SQLException
      */
-    public static void closeStatement(Statement stmt) throws SQLException {
-        if (stmt != null) {
-            // close the connection in any way
-            Connection connection = null;
-            try {
+    public static void closeStatement(Statement stmt) {
+        try {
+            if (stmt != null) {
+                // close the connection in any way
+                Connection connection = null;
                 try {
-                    connection = stmt.getConnection();
+                    try {
+                        connection = stmt.getConnection();
+                    } finally {
+                        stmt.close();
+                    }
                 } finally {
-                    stmt.close();
+                    if (connection != null) connection.close();
                 }
-            } finally {
-                if (connection != null) connection.close();
             }
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
     }
 

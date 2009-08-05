@@ -196,11 +196,7 @@ public class Migrator1_12To1_13 extends Migrator {
         } catch (SQLException ex) {
             throw new WdkModelException(ex);
         } finally {
-            try {
-                SqlUtils.closeStatement(psHistory);
-            } catch (SQLException ex) {
-                throw new WdkModelException(ex);
-            }
+            SqlUtils.closeStatement(psHistory);
         }
     }
 }
