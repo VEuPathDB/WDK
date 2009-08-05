@@ -216,11 +216,7 @@ public class CacheFactory {
             logger.error("Cannot delete rows from [" + TABLE_INSTANCE + "]. "
                     + ex.getMessage());
         } finally {
-            try {
-                SqlUtils.closeStatement(stInstance);
-            } catch (SQLException ex) {
-                // do nothing
-            }
+            SqlUtils.closeStatement(stInstance);
         }
 
         // delete query index
@@ -355,11 +351,7 @@ public class CacheFactory {
             logger.error("Cannot query on table [" + TABLE_QUERY + "]. "
                     + ex.getMessage());
         } finally {
-            try {
-                SqlUtils.closeResultSet(resultSet);
-            } catch (SQLException ex) {
-                // do nothing
-            }
+            SqlUtils.closeResultSet(resultSet);
         }
 
         // drop the cache tables

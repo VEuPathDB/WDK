@@ -420,11 +420,7 @@ public class StepFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rsHistory);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeResultSet(rsHistory);
         }
     }
 

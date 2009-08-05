@@ -62,7 +62,8 @@ public class FullRecordReporter extends Reporter {
 
     private boolean hasEmptyTable = false;
 
-    public FullRecordReporter(AnswerValue answerValue, int startIndex, int endIndex) {
+    public FullRecordReporter(AnswerValue answerValue, int startIndex,
+            int endIndex) {
         super(answerValue, startIndex, endIndex);
     }
 
@@ -98,8 +99,8 @@ public class FullRecordReporter extends Reporter {
         // get basic configurations
         if (config.containsKey(FIELD_HAS_EMPTY_TABLE)) {
             String value = config.get(FIELD_HAS_EMPTY_TABLE);
-            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true
-                    : false;
+            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true"))
+                    ? true : false;
         }
     }
 
@@ -140,7 +141,8 @@ public class FullRecordReporter extends Reporter {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
+     * @see
+     * org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
      */
     public void write(OutputStream out) throws WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException, WdkUserException {
@@ -179,9 +181,10 @@ public class FullRecordReporter extends Reporter {
             sqlInsert.append(column).append(", ");
         }
         sqlInsert.append(" table_name, row_count, content) VALUES (");
-        sqlInsert.append(wdkModel.getUserPlatform().getNextIdSqlExpression("apidb", "wdkTable"));
+        sqlInsert.append(wdkModel.getUserPlatform().getNextIdSqlExpression(
+                "apidb", "wdkTable"));
         sqlInsert.append(", ");
-        for (String column : pkColumns) {
+        for (int i = 0; i < pkColumns.length; i++) {
             sqlInsert.append("?, ");
         }
         sqlInsert.append("?, ?, ?)");
@@ -233,12 +236,8 @@ public class FullRecordReporter extends Reporter {
             }
             logger.info("Totally " + recordCount + " records dumped");
         } finally {
-            try {
-                SqlUtils.closeStatement(psQuery);
-                SqlUtils.closeStatement(psInsert);
-            } catch (SQLException ex) {
-                throw new WdkModelException(ex);
-            }
+            SqlUtils.closeStatement(psQuery);
+            SqlUtils.closeStatement(psInsert);
         }
     }
 
@@ -281,9 +280,10 @@ public class FullRecordReporter extends Reporter {
     }
 
     private void formatTables(RecordInstance record, Set<TableField> tables,
-            PrintWriter writer, AnswerValue answerValue, PreparedStatement psInsert,
-            PreparedStatement psQuery) throws WdkModelException, SQLException,
-            NoSuchAlgorithmException, JSONException, WdkUserException {
+            PrintWriter writer, AnswerValue answerValue,
+            PreparedStatement psInsert, PreparedStatement psQuery)
+            throws WdkModelException, SQLException, NoSuchAlgorithmException,
+            JSONException, WdkUserException {
         DBPlatform platform = getQuestion().getWdkModel().getQueryPlatform();
         RecordClass recordClass = record.getRecordClass();
         String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
