@@ -294,11 +294,7 @@ public class UserFactory {
         } catch (NoSuchAlgorithmException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeStatement(psUser);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeStatement(psUser);
         }
     }
 
@@ -389,11 +385,7 @@ public class UserFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rs);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeResultSet(rs);
         }
     }
 
@@ -450,11 +442,7 @@ public class UserFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rsUser);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeResultSet(rsUser);
         }
     }
 
@@ -527,11 +515,7 @@ public class UserFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rs);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeResultSet(rs);
         }
         User[] array = new User[users.size()];
         users.toArray(array);
@@ -579,12 +563,8 @@ public class UserFactory {
         } catch (NoSuchAlgorithmException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rs);
-                SqlUtils.closeStatement(psUser);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeResultSet(rs);
+            SqlUtils.closeStatement(psUser);
         }
     }
 
@@ -603,11 +583,7 @@ public class UserFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rsRole);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeResultSet(rsRole);
         }
     }
 
@@ -633,12 +609,8 @@ public class UserFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeStatement(psRoleDelete);
-                SqlUtils.closeStatement(psRoleInsert);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeStatement(psRoleDelete);
+            SqlUtils.closeStatement(psRoleInsert);
         }
     }
 
@@ -689,20 +661,16 @@ public class UserFactory {
             psUser.execute();
 
             // save user's roles
-            //saveUserRoles(user);
+            // saveUserRoles(user);
 
             // save preference
             savePreferences(user);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeStatement(psUser);
-                SqlUtils.closeStatement(psRoleDelete);
-                SqlUtils.closeStatement(psRoleInsert);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeStatement(psUser);
+            SqlUtils.closeStatement(psRoleDelete);
+            SqlUtils.closeStatement(psRoleInsert);
         }
     }
 
@@ -728,11 +696,7 @@ public class UserFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeStatement(psUser);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeStatement(psUser);
         }
     }
 
@@ -760,11 +724,7 @@ public class UserFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rsUser);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeResultSet(rsUser);
         }
     }
 
@@ -810,12 +770,8 @@ public class UserFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeStatement(psDelete);
-                SqlUtils.closeStatement(psInsert);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeStatement(psDelete);
+            SqlUtils.closeStatement(psInsert);
         }
     }
 
@@ -853,12 +809,8 @@ public class UserFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rsGlobal);
-                SqlUtils.closeResultSet(rsProject);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeResultSet(rsGlobal);
+            SqlUtils.closeResultSet(rsProject);
         }
     }
 
@@ -946,12 +898,8 @@ public class UserFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rs);
-                // SqlUtils.closeStatement(ps);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeResultSet(rs);
+            // SqlUtils.closeStatement(ps);
         }
 
     }
@@ -973,11 +921,7 @@ public class UserFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeStatement(ps);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeStatement(ps);
         }
     }
 
@@ -985,11 +929,11 @@ public class UserFactory {
         email = email.trim();
         // check if user exists in the database. if not, fail and ask to create
         // the user first
-        PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            ps = SqlUtils.getPreparedStatement(dataSource, "SELECT count(*) "
-                    + "FROM " + userSchema + "users WHERE email = ?");
+            PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource,
+                    "SELECT count(*) " + "FROM " + userSchema
+                            + "users WHERE email = ?");
             ps.setString(1, email);
             rs = ps.executeQuery();
             rs.next();
@@ -998,12 +942,7 @@ public class UserFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rs);
-                // SqlUtils.closeStatement(ps);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeResultSet(rs);
         }
     }
 

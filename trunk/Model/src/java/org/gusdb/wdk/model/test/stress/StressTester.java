@@ -454,11 +454,7 @@ public class StressTester {
                 } catch (InterruptedException ex) {}
             }
         }
-        try {
-            SqlUtils.closeStatement(preparedStatement);
-        } catch (SQLException ex) {
-            throw new WdkModelException(ex);
-        }
+        SqlUtils.closeStatement(preparedStatement);
         logger.info("Stress Test is finished.");
         System.out.println("Stress Test is finished. The test tag is: "
                 + testTag);

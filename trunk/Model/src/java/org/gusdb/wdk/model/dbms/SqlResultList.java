@@ -17,8 +17,10 @@ import org.gusdb.wdk.model.WdkModelException;
 public class SqlResultList implements ResultList {
 
     private static final Logger logger = Logger.getLogger(SqlResultList.class);
-    
-    /* (non-Javadoc)
+
+    /*
+     * (non-Javadoc)
+     * 
      * @see java.lang.Object#finalize()
      */
     @Override
@@ -41,11 +43,7 @@ public class SqlResultList implements ResultList {
      * @see org.gusdb.wdk.model.dbms.ResultList#close()
      */
     public void close() throws WdkModelException {
-        try {
-            SqlUtils.closeResultSet(resultSet);
-        } catch (SQLException ex) {
-            throw new WdkModelException(ex);
-        }
+        SqlUtils.closeResultSet(resultSet);
     }
 
     /*

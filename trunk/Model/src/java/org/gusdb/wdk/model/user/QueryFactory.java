@@ -49,13 +49,13 @@ public class QueryFactory {
         for (String attribute : summaryAttributes) {
             // skip redundant attributes
             if (usedAttributes.contains(attribute)) continue;
-            
+
             if (sb.length() > 0) sb.append(", ");
             sb.append(attribute);
             usedAttributes.add(attribute);
         }
         String summaryContent = sb.toString();
-//System.err.println("saving summary: " + summaryContent);
+        // System.err.println("saving summary: " + summaryContent);
         String checksum = Utilities.encrypt(summaryContent);
 
         // check if the configuration exists
@@ -76,11 +76,7 @@ public class QueryFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeStatement(psInsert);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeStatement(psInsert);
         }
     }
 
@@ -99,7 +95,7 @@ public class QueryFactory {
 
             // get the configuration
             String summaryContent = rsSelect.getString(COLUMN_CLOB_VALUE);
-//System.err.println("getting summary: " + summaryContent);
+            // System.err.println("getting summary: " + summaryContent);
 
             String[] attributes = summaryContent.split(",");
             for (int i = 0; i < attributes.length; i++) {
@@ -109,11 +105,7 @@ public class QueryFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rsSelect);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeResultSet(rsSelect);
         }
     }
 
@@ -154,11 +146,7 @@ public class QueryFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeStatement(psInsert);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeStatement(psInsert);
         }
     }
 
@@ -196,11 +184,7 @@ public class QueryFactory {
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rsSelect);
-            } catch (SQLException ex) {
-                throw new WdkUserException(ex);
-            }
+            SqlUtils.closeResultSet(rsSelect);
         }
     }
 
@@ -227,11 +211,7 @@ public class QueryFactory {
         } catch (SQLException ex) {
             throw new WdkModelException(ex);
         } finally {
-            try {
-                SqlUtils.closeStatement(psInsert);
-            } catch (SQLException ex) {
-                throw new WdkModelException(ex);
-            }
+            SqlUtils.closeStatement(psInsert);
         }
     }
 
@@ -252,11 +232,7 @@ public class QueryFactory {
         } catch (SQLException ex) {
             throw new WdkModelException(ex);
         } finally {
-            try {
-                SqlUtils.closeResultSet(rs);
-            } catch (SQLException ex) {
-                throw new WdkModelException(ex);
-            }
+            SqlUtils.closeResultSet(rs);
         }
 
     }
