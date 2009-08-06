@@ -52,6 +52,7 @@ import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamSuggestion;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.param.TypeAheadParam;
 import org.gusdb.wdk.model.query.param.TimestampParam;
 import org.gusdb.wdk.model.xml.XmlAttributeField;
 import org.gusdb.wdk.model.xml.XmlQuestion;
@@ -516,6 +517,11 @@ public class ModelXmlParser extends XmlParser {
         // string param
         String path = "wdkModel/paramSet/stringParam";
         configureNode(digester, path, StringParam.class, "addParam");
+        configureParamContent(digester, path);
+
+        // typeAhead param
+        path = "wdkModel/paramSet/typeAheadParam";
+        configureNode(digester, path, TypeAheadParam.class, "addParam");
         configureParamContent(digester, path);
 
         // flatVocabParam
