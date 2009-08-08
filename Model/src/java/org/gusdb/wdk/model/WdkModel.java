@@ -1,8 +1,8 @@
 package org.gusdb.wdk.model;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.InputStream;
-import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
@@ -1014,14 +1014,17 @@ public class WdkModel {
             File file = new File(secretKeyFileLoc);
             if (!file.exists()) return null;
 
-            InputStream fis =  new FileInputStream(secretKeyFileLoc);
+            BufferedReader buffer = new BufferedReader(new FileReader(
+                    secretKeyFileLoc));
             StringBuffer contents = new StringBuffer();
-            int chr;
-            while ((chr = fis.read()) != -1) {
-                contents.append((char) chr);
+            String line;
+            while ((line = buffer.readLine()) != null) {
+                contents.append(line);
             }
-            fis.close();
-            this.secretKey = UserFactory.md5(contents.toString());
+            buffer.close();
+            // it is on purpose to call this method, to leave out the heading
+            // zeros.
+            this.secretKey = UserFactory.encrypt(contents.toString());
         }
         return secretKey;
     }
