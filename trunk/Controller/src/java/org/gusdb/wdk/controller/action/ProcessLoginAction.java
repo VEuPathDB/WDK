@@ -5,7 +5,6 @@ package org.gusdb.wdk.controller.action;
 
 import java.security.MessageDigest;
 
-import java.net.URLEncoder;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -78,9 +77,10 @@ public class ProcessLoginAction extends Action {
         // authenticate
         try {
             UserBean user = factory.login(guest, email, password);
+
             // Create & send cookie
             Cookie loginCookie = new Cookie(CConstants.WDK_LOGIN_COOKIE_KEY,
-                    URLEncoder.encode(user.getEmail()));
+                    user.getSignature());
 
             if (remember) {
                 loginCookie.setMaxAge(java.lang.Integer.MAX_VALUE / 256);
@@ -90,7 +90,8 @@ public class ProcessLoginAction extends Action {
             }
 
             String secretValue = wdkModel.getSecretKey();
-            secretValue = factory.md5(loginCookie.getValue() + secretValue);
+
+            secretValue = factory.encrypt(loginCookie.getValue() + secretValue);
 
             loginCookie.setValue(loginCookie.getValue() + "-"
                     + secretValue);
