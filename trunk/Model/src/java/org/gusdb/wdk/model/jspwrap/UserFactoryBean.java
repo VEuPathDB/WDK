@@ -37,6 +37,10 @@ public class UserFactoryBean {
 	return UserFactory.encrypt(str);
     }
 
+    public static String md5(String str) throws NoSuchAlgorithmException {
+	return UserFactory.md5(str);
+    }
+
     /*
      * (non-Javadoc)
      * 
