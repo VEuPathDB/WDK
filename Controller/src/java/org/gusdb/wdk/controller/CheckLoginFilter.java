@@ -3,6 +3,7 @@ package org.gusdb.wdk.controller;
 import java.io.IOException;
 import java.security.MessageDigest;
 
+import java.net.URLDecoder;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -55,20 +56,20 @@ public class CheckLoginFilter implements Filter {
         }
 	
         if (loginCookie != null) {
-            if (wdkUser == null || !loginCookie.getValue().contains(wdkUser.getSignature())) {
+            if (wdkUser == null || ! URLDecoder.decode(loginCookie.getValue()).contains(wdkUser.getEmail())) {
                 try {
                     UserFactoryBean factory = wdkModel.getUserFactory();
 		    
                     // Check if cookie has been modified since it was set.
                     String secretValue = wdkModel.getSecretKey();
-
+                            
                     secretValue = loginCookie.getValue().substring(0,
                             loginCookie.getValue().lastIndexOf("-"))
                             + secretValue;
                     String cookieHash = loginCookie.getValue().substring(
                             loginCookie.getValue().lastIndexOf("-") + 1);
 		    
-                    secretValue = factory.encrypt(secretValue);
+                    secretValue = factory.md5(secretValue);
 
                     if (!secretValue.equals(cookieHash)) {
                         logger.debug("Secret Value: " + secretValue);
@@ -76,12 +77,12 @@ public class CheckLoginFilter implements Filter {
                         throw new Exception("Login cookie is invalid and must be deleted.");
                     }
 		    
-                    String signature;
+                    String email;
                     String[] cookieParts = loginCookie.getValue().split("-");
 		    
-                    signature = cookieParts[0];
+                    email = URLDecoder.decode(cookieParts[0]);
 
-                    UserBean user = factory.getUser(signature);
+                    UserBean user = factory.getUserByEmail(email);
                     if (loginCookie.getValue().contains("remember")) {
                         loginCookie.setMaxAge(java.lang.Integer.MAX_VALUE / 256);
                         loginCookie.setPath("/");
