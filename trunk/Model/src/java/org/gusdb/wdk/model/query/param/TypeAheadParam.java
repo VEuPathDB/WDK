@@ -54,7 +54,6 @@ public class TypeAheadParam extends StringParam {
     }
 
     public void setIsDataTypeParam(boolean isDataTypeParam) {
-	System.err.println("Set isDataTypeParam in typeAhead param: " + isDataTypeParam);
 	this.isDataTypeParam = isDataTypeParam;
     }
 
@@ -63,7 +62,6 @@ public class TypeAheadParam extends StringParam {
     }
 
     public void setDataTypeRef(String dataTypeRef) {
-	System.err.println("Set dataTypeRef in typeAhead param: " + dataTypeRef);
 	this.dataTypeRef = dataTypeRef;
     }
 
@@ -72,7 +70,6 @@ public class TypeAheadParam extends StringParam {
     }
 
     public void setRecordClassRef(String recordClassRef) {
-	System.err.println("Set recordClassRef in typeAhead param: " + recordClassRef);
 	this.recordClassRef = recordClassRef;
     }
 
@@ -88,8 +85,6 @@ public class TypeAheadParam extends StringParam {
     // protected methods
     // ///////////////////////////////////////////////////////////////
 
-    public void resolveReferences(WdkModel model) throws WdkModelException {}
-
     /*
      * (non-Javadoc)
      * 
@@ -97,79 +92,5 @@ public class TypeAheadParam extends StringParam {
      */
     public Param clone() {
         return new TypeAheadParam(this);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.Param#appendJSONContent(org.json.JSONObject)
-     */
-    @Override
-    protected void appendJSONContent(JSONObject jsParam, boolean extra)
-            throws JSONException {
-    // nothing to be added
-    }
-
-    /**
-     * the dependent value is the same as the independent value
-     * 
-     * @see org.gusdb.wdk.model.query.param.Param#dependentValueToIndependentValue(org.gusdb.wdk.model.user.User,
-     *      java.lang.String)
-     */
-    @Override
-    public String dependentValueToIndependentValue(User user,
-            String dependentValue) {
-        return super.dependentValueToIndependentValue(user, dependentValue);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.gusdb.wdk.model.query.param.Param#independentValueToInternalValue
-     * (java.lang.String)
-     */
-    @Override
-    public String dependentValueToInternalValue(User user, String dependentValue)
-            throws WdkModelException {
-	return super.dependentValueToInternalValue(user, dependentValue);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.gusdb.wdk.model.query.param.Param#independentValueToRawValue(java
-     * .lang.String)
-     */
-    @Override
-    public String dependentValueToRawValue(User user, String dependentValue)
-            throws WdkModelException {
-        return super.dependentValueToRawValue(user, dependentValue);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.gusdb.wdk.model.query.param.Param#rawValueToIndependentValue(java
-     * .lang.String)
-     */
-    @Override
-    public String rawOrDependentValueToDependentValue(User user, String rawValue)
-            throws NoSuchAlgorithmException, WdkModelException {
-        return super.rawOrDependentValueToDependentValue(user, rawValue);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
-     */
-    @Override
-    protected void validateValue(User user, String dependentValue)
-            throws WdkUserException, WdkModelException {
-	super.validateValue(user, dependentValue);
     }
 }
