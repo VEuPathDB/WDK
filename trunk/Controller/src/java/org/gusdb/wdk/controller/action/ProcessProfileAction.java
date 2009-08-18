@@ -55,7 +55,9 @@ public class ProcessProfileAction extends Action {
             Set params = request.getParameterMap().keySet();
             for (Object param : params) {
                 String paramName = (String) param;
-                if (paramName.equalsIgnoreCase("firstName")) {
+                if (paramName.equalsIgnoreCase("email")) {
+                    user.setEmail(request.getParameter("email"));
+                } else if (paramName.equalsIgnoreCase("firstName")) {
                     user.setFirstName(request.getParameter("firstName"));
                 } else if (paramName.equalsIgnoreCase("lastName")) {
                     user.setLastName(request.getParameter("lastName"));

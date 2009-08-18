@@ -122,6 +122,10 @@ public class UserBean /* implements Serializable */{
         return user.getEmail();
     }
 
+    public void setEmail(String email) {
+        user.setEmail(email);
+    }
+
     /*
      * (non-Javadoc)
      * 

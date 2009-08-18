@@ -17,6 +17,8 @@ public class ProfileForm extends ActionForm {
      * 
      */
     private static final long serialVersionUID = 4049229928964044307L;
+    private String email;
+    private String confirmEmail;
     private String lastName;
     private String middleName;
     private String firstName;
@@ -32,6 +34,22 @@ public class ProfileForm extends ActionForm {
 
     private String refererUrl;
     
+    public String getEmail() {
+        return this.email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getConfirmEmail() {
+        return this.confirmEmail;
+    }
+
+    public void setConfirmEmail(String email) {
+        this.confirmEmail = confirmEmail;
+    }
+  
     /**
      * @return Returns the address.
      */
