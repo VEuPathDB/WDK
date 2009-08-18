@@ -633,7 +633,6 @@ public class UserFactory {
      * @throws WdkUserException
      */
     void saveUser(User user) throws WdkUserException {
-        String email = user.getEmail().trim();
         int userId = user.getUserId();
         // check if user exists in the database. if not, fail and ask to create
         // the user first
@@ -641,10 +640,6 @@ public class UserFactory {
         PreparedStatement psRoleDelete = null;
         PreparedStatement psRoleInsert = null;
         try {
-            if (!isExist(email))
-                throw new WdkUserException("The user with email " + email
-                        + " doesn't exist. Save operation cancelled.");
-
             Date lastActiveTime = new Date();
 
             // save the user's basic information
@@ -653,7 +648,8 @@ public class UserFactory {
                     + "last_active = ?, last_name = ?, first_name = ?, "
                     + "middle_name = ?, organization = ?, department = ?, "
                     + "title = ?,  address = ?, city = ?, state = ?, "
-                    + "zip_code = ?, phone_number = ?, country = ? "
+                    + "zip_code = ?, phone_number = ?, country = ?, "
+                    + "email = ? "
                     + "WHERE user_id = ?");
             psUser.setBoolean(1, user.isGuest());
             psUser.setDate(2, new java.sql.Date(lastActiveTime.getTime()));
@@ -669,7 +665,8 @@ public class UserFactory {
             psUser.setString(12, user.getZipCode());
             psUser.setString(13, user.getPhoneNumber());
             psUser.setString(14, user.getCountry());
-            psUser.setInt(15, userId);
+            psUser.setString(15, user.getEmail());
+            psUser.setInt(16, userId);
             psUser.execute();
 
             // save user's roles

@@ -13,7 +13,11 @@ function submit(e)
         return;
     }
 
-    if (document.profile.firstName.value == "") {
+    if (document.profile.email != document.profile.confirmEmail) {
+        alert("The email doesn't match!");
+        document.profile.email.focus();
+        return false;
+    } else if (document.profile.firstName.value == "") {
         alert('Please provide your first name.');
         document.profile.firstName.focus();
         return false;
@@ -73,7 +77,7 @@ function submit(e)
 
   <c:otherwise>
 
-    <!-- check if there's an error message to display -->
+    <!-- check if there is an error message to display -->
     <c:if test="${requestScope.profileError != null}">
        <tr>
           <td colspan="2">
@@ -83,13 +87,17 @@ function submit(e)
     </c:if>
 
     <tr>
-      <td align="right" width="100" nowrap>Email: </td>
-      <td align="left">${wdkUser.email}</td>
-    </tr>
-    <tr>
       <td align="right" colspan="2" align="center">
          <a href="<c:url value='/showPassword.do'/>">Change Password</a>
       </td>
+    </tr>
+    <tr>
+      <td align="right" width="100" nowrap>Email: </td>
+      <td align="left"><input type="text" name="email" value="${wdkUser.email}" length="20" /></td>
+    </tr>
+    <tr>
+      <td align="right" width="100" nowrap>Confirm Email: </td>
+      <td align="left"><input type="text" name="confirmEmail" value="${wdkUser.email}" length="20" /></td>
     </tr>
     <tr>
       <td align="right" width="100" nowrap>First Name: </td>
