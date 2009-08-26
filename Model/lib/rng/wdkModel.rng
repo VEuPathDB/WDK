@@ -131,7 +131,6 @@
         <choice>
           <ref name="useTermOnly" />
           <ref name="stringParam" />
-          <ref name="typeAheadParam" />
           <ref name="enumParam" />
           <ref name="flatVocabParam" />
           <ref name="answerParam" />
@@ -225,17 +224,6 @@
   <define name="stringParam">
     <element name="stringParam">
       <ref name="stringParamContent" />
-    </element>
-  </define>
-
-  <define name="typeAheadParam">
-    <element name="typeAheadParam">
-      <ref name="stringParamContent" />
-      <attribute name="recordClassRef" />
-      <attribute name="dataTypeRef" />
-      <attribute name="isDataTypeParam">
-        <data type="boolean" />
-      </attribute>
     </element>
   </define>
 
@@ -340,7 +328,6 @@
     </element>
   </define>
 
-
   <define name="flatVocabParam">
     <element name="flatVocabParam">
       <ref name="EnumParamBaseContents" />
@@ -362,9 +349,12 @@
     </element>
   </define>
 
-
   <define name="EnumParamBaseContents">
     <ref name="ParamBaseContents" />
+    <optional>
+      <attribute name="dependedParam">
+      </attribute>
+    </optional>
     <optional>
       <attribute name="multiPick">
         <data type="boolean" />
@@ -382,6 +372,7 @@
           <value>checkBox</value>
           <value>treeBox</value>
           <value>radioBox</value>
+          <value>typeAhead</value>
         </choice>
       </attribute>
     </optional>
