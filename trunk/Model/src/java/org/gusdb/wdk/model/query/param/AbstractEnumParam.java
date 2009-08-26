@@ -39,6 +39,7 @@ public abstract class AbstractEnumParam extends Param {
     protected boolean multiPick = false;
     protected Map<String, String> termInternalMap;
     protected Map<String, String> termDisplayMap;
+    protected Map<String, String> termParentMap;
     protected List<EnumParamTermNode> termTreeList;
 
     protected boolean quote = true;
@@ -47,6 +48,7 @@ public abstract class AbstractEnumParam extends Param {
     protected boolean useTermOnly = false;
 
     private String displayType;
+    private String dependedParam;
 
     public AbstractEnumParam() {
     }
@@ -60,6 +62,9 @@ public abstract class AbstractEnumParam extends Param {
         if (param.termInternalMap != null)
             this.termInternalMap = new LinkedHashMap<String, String>(
                     param.termInternalMap);
+        if (param.termParentMap != null)
+            this.termParentMap = new LinkedHashMap<String, String>(
+                    param.termParentMap);
         if (param.termTreeList != null) {
             this.termTreeList = new ArrayList<EnumParamTermNode>(
                     param.termTreeList);
@@ -67,6 +72,7 @@ public abstract class AbstractEnumParam extends Param {
         this.quote = param.quote;
         this.useTermOnly = param.useTermOnly;
         this.displayType = param.displayType;
+	this.dependedParam = param.dependedParam;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -153,6 +159,17 @@ public abstract class AbstractEnumParam extends Param {
         return newDisplayMap;
     }
 
+    public Map<String, String> getParentMap() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        initVocabMap();
+        Map<String, String> newParentMap = new LinkedHashMap<String, String>();
+        for (String term : termParentMap.keySet()) {
+            newParentMap.put(term, termParentMap.get(term));
+        }
+        return newParentMap;
+    }
+
     @Override
     public String getDefault() throws NoSuchAlgorithmException,
             WdkModelException, SQLException, JSONException, WdkUserException {
@@ -191,6 +208,14 @@ public abstract class AbstractEnumParam extends Param {
         this.displayType = displayType;
     }
 
+    public String getDependedParam() {
+	return dependedParam;
+    }
+
+    public void setDependedParam(String dependedParam) {
+	this.dependedParam = dependedParam;
+    }
+
     // ///////////////////////////////////////////////////////////////////
     // /////////// Protected properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
@@ -222,9 +247,14 @@ public abstract class AbstractEnumParam extends Param {
         useTermOnlies = null;
     }
 
-    protected void initTreeMap(Map<String, String> termParentMap)
+    protected void initTreeMap()
             throws WdkModelException {
+
         termTreeList = new ArrayList<EnumParamTermNode>();
+
+	// Shortcut, for now, to avoid errors caused by using
+	// value of depended param in parentTerm
+	if (this.dependedParam != null) return;
 
         // construct index
         Map<String, EnumParamTermNode> indexMap = new LinkedHashMap<String, EnumParamTermNode>();

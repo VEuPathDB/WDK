@@ -23,6 +23,20 @@ Otherwise a standard select menu is used.
 <c:set var="pNam" value="${qP.name}"/>
 <c:set var="opt" value="0"/>
 <c:set var="displayType" value="${qP.displayType}"/>
+<c:set var="dependedParam" value="${qP.dependedParam}"/>
+<c:if test="${dependedParam != null}">
+  <c:set var="dependentClass" value="dependentParam" />
+  <script type="text/javascript">
+    dependedParams['${pNam}'] = '${dependedParam}';
+  </script>
+  <c:if test="${!(displayType eq 'typeAhead')}">
+    <script type="text/javascript">
+      <c:forEach items="${qP.parentMap}" var="entity">
+        validTerms['${pNam}']['${entity.key}'] = '${entity.value}';
+      </c:forEach>
+    </script>
+  </c:if>
+</c:if>
 
 <!--<div class="param">-->
 
@@ -44,11 +58,11 @@ Otherwise a standard select menu is used.
         <c:choose>
         <%-- test for param labels to italicize --%>
         <c:when test="${pNam == 'organism' or pNam == 'ecorganism'}">
-          <html:multibox property="myMultiProp(${pNam})" value="${entity.key}" styleId="${pNam}" />
+          <html:multibox property="myMultiProp(${pNam})" value="${entity.key}" styleId="${pNam}" styleClass="${dependentClass}"/>
           <i>${entity.value}</i>&nbsp;
         </c:when>
         <c:otherwise> <%-- use multiselect menu --%>
-          <html:multibox property="myMultiProp(${pNam})" value="${entity.key}" styleId="${pNam}" />
+          <html:multibox property="myMultiProp(${pNam})" value="${entity.key}" styleId="${pNam}" styleClass="${dependentClass}"/>
           ${entity.value}&nbsp;
         </c:otherwise>
         </c:choose> 
@@ -89,7 +103,7 @@ Otherwise a standard select menu is used.
 
     <c:otherwise>
 	  <div class="param-multiPick">
-      <html:select  property="myMultiProp(${pNam})" multiple="1" styleId="${pNam}">
+      <html:select  property="myMultiProp(${pNam})" multiple="1" styleId="${pNam}" styleClass="${dependentClass}">
         <c:set var="opt" value="${opt+1}"/>
         <c:set var="sel" value=""/>
         <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
@@ -108,13 +122,19 @@ Otherwise a standard select menu is used.
       <c:when test="${displayType eq 'radioBox'}">
          <c:forEach items="${qP.displayMap}" var="entity">
            <div>
-             <html:radio property="myMultiProp(${pNam})" value="${entity.key}" /> ${entity.value}
+             <html:radio property="myMultiProp(${pNam})" value="${entity.key}"  styleClass="${dependentClass}"/> ${entity.value}
            </div>
          </c:forEach>
       </c:when>
+    
+      <%-- use a type ahead --%>
+      <c:when test="${displayType eq 'typeAhead'}">
+        <input type="text" class="typeAhead ${dependentClass}" name="myMultiProp(${pNam})" size="50"/>
+      </c:when>
+
       <c:otherwise>
         <%-- multiPick is false, use pull down menu --%>
-        <html:select  property="myMultiProp(${pNam})" styleId="${pNam}">
+        <html:select  property="myMultiProp(${pNam})" styleId="${pNam}" styleClass="${dependentClass}">
           <c:set var="opt" value="${opt+1}"/>
           <c:set var="sel" value=""/>
           <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      

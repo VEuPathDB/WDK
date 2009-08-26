@@ -41,7 +41,7 @@ public class EnumParam extends AbstractEnumParam {
         termInternalMap = new LinkedHashMap<String, String>();
         termDisplayMap = new LinkedHashMap<String, String>();
 
-        Map<String, String> termParentMap = new LinkedHashMap<String, String>();
+        termParentMap = new LinkedHashMap<String, String>();
 
         EnumItem[] enumItems = enumItemList.getEnumItems();
         for (EnumItem item : enumItems) {
@@ -70,7 +70,7 @@ public class EnumParam extends AbstractEnumParam {
             throw new WdkModelException("The EnumParam [" + getFullName()
                     + "] doesn't have any value");
 
-        initTreeMap(termParentMap);
+        initTreeMap();
         applySelectMode();
     }
 
