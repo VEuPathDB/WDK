@@ -56,8 +56,18 @@ public class EnumParamBean extends ParamBean {
         return ((AbstractEnumParam) param).getDisplayMap();
     }
 
+    public Map<String, String> getParentMap() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        return ((AbstractEnumParam) param).getParentMap();
+    }
+
     public String getDisplayType() {
         return ((AbstractEnumParam) param).getDisplayType();
+    }
+
+    public String getDependedParam() {
+	return ((AbstractEnumParam) param).getDependedParam();
     }
 
     public EnumParamTermNode[] getVocabTreeRoots() throws Exception {

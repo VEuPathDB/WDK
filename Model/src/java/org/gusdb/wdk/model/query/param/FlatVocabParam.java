@@ -118,7 +118,7 @@ public class FlatVocabParam extends AbstractEnumParam {
         boolean hasDisplay = query.getColumnMap().containsKey(COLUMN_DISPLAY);
         boolean hasParent = query.getColumnMap().containsKey(COLUMN_PARENT_TERM);
 
-        Map<String, String> termParentMap = new LinkedHashMap<String, String>();
+        termParentMap = new LinkedHashMap<String, String>();
 
         // prepare param values
         Map<String, String> values = new LinkedHashMap<String, String>();
@@ -158,7 +158,7 @@ public class FlatVocabParam extends AbstractEnumParam {
         if (termInternalMap.isEmpty())
             throw new WdkModelException("No item returned by the query of"
                     + " FlatVocabParam " + getFullName());
-        initTreeMap(termParentMap);
+        initTreeMap();
         applySelectMode();
     }
 
