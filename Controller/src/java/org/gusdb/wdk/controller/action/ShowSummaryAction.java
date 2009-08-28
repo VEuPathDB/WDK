@@ -134,27 +134,31 @@ public class ShowSummaryAction extends ShowQuestionAction {
             // check if we want to skip to other pages
             boolean noSkip = request.getParameterMap().containsKey("noskip");
             ActionForward forward;
-            if (request.getParameterMap().containsKey(
-                    CConstants.WDK_SKIPTO_DOWNLOAD_PARAM)) {
-                // go to download page directly
-                forward = mapping.findForward(CConstants.SKIPTO_DOWNLOAD_MAPKEY);
-                String path = forward.getPath() + "?step_id="
-                        + step.getStepId();
-                return new ActionForward(path, true);
-            } else if (!noSkip && answerValue.getResultSize() == 1
-                    && !answerValue.getIsDynamic()
-                    && answerValue.getQuestion().isNoSummaryOnSingleRecord()) {
-                RecordBean rec = (RecordBean) answerValue.getRecords().next();
-                forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
-                String path = forward.getPath() + "?name="
-                        + rec.getRecordClass().getFullName();
+            if (!resultOnly) {
+                // doesn't redirect to other pages if it is to show result.
+                if (request.getParameterMap().containsKey(
+                        CConstants.WDK_SKIPTO_DOWNLOAD_PARAM)) {
+                    // go to download page directly
+                    forward = mapping.findForward(CConstants.SKIPTO_DOWNLOAD_MAPKEY);
+                    String path = forward.getPath() + "?step_id="
+                            + step.getStepId();
+                    return new ActionForward(path, true);
+                } else if (!noSkip
+                        && answerValue.getResultSize() == 1
+                        && !answerValue.getIsDynamic()
+                        && answerValue.getQuestion().isNoSummaryOnSingleRecord()) {
+                    RecordBean rec = (RecordBean) answerValue.getRecords().next();
+                    forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
+                    String path = forward.getPath() + "?name="
+                            + rec.getRecordClass().getFullName();
 
-                Map<String, String> pkValues = rec.getPrimaryKey().getValues();
-                for (String pkColumn : pkValues.keySet()) {
-                    String value = pkValues.get(pkColumn);
-                    path += "&" + pkColumn + "=" + value;
+                    Map<String, String> pkValues = rec.getPrimaryKey().getValues();
+                    for (String pkColumn : pkValues.keySet()) {
+                        String value = pkValues.get(pkColumn);
+                        path += "&" + pkColumn + "=" + value;
+                    }
+                    return new ActionForward(path, true);
                 }
-                return new ActionForward(path, true);
             }
 
             // DO NOT delete empty userAnswer -- it will screw up strategies
