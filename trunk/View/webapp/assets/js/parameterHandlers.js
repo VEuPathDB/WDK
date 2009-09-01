@@ -1,15 +1,20 @@
 var dependedParams = new Array();
 
-$(document).ready(function() {
+function initParamHandlers() {
 	initTypeAhead();
 	initDependentParamHandlers();
-});
+}
 
 function initDependentParamHandlers() {
+	var blah = $("input.dependentParam, select.dependentParam");
 	$("input.dependentParam, select.dependentParam").each(function() {
 		$(this).attr('disabled',true);
 		var name = $(this).attr('name');
 		name = name.substring(name.indexOf("myMultiProp(") + 12, name.indexOf(")"));
+		if (!dependedParams[name]) {
+			dependedParams[name] = $(this).attr('class');
+			dependedParams[name] = dependedParams[name].substr(dependedParams[name].indexOf('dependsOn')+9)
+		}
 		var dependedParam = $("td#" + dependedParams[name] + "aaa input[name='myMultiProp(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='myMultiProp(" + dependedParams[name] + ")']");
 		dependedParam.unbind('change');
 		dependedParam.change(function() {
