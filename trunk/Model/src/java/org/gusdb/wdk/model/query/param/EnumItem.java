@@ -1,8 +1,12 @@
 package org.gusdb.wdk.model.query.param;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 
 public class EnumItem extends WdkModelBase {
 
@@ -10,12 +14,15 @@ public class EnumItem extends WdkModelBase {
     private String term;
     private String internal;
     private String parentTerm;
+    private List<String> dependedValues;
     private boolean isDefault = false;
 
     /**
      * default constructor called by digester
      */
-    public EnumItem() {}
+    public EnumItem() {
+	dependedValues = new ArrayList<String>();
+    }
 
     /**
      * Copy constructor
@@ -28,6 +35,7 @@ public class EnumItem extends WdkModelBase {
         this.internal = enumItem.internal;
         this.isDefault = enumItem.isDefault;
         this.parentTerm = enumItem.parentTerm;
+	this.dependedValues = enumItem.dependedValues;
     }
 
     /**
@@ -111,5 +119,15 @@ public class EnumItem extends WdkModelBase {
      */
     public void setParentTerm(String parentTerm) {
         this.parentTerm = parentTerm;
+    }
+
+    public void addDependedValue(WdkModelText dependedValue) {
+	if (!dependedValues.contains(dependedValue.getText())) {
+	    dependedValues.add(dependedValue.getText());
+	}
+    }
+
+    public List<String> getDependedValues() {
+	return dependedValues;
     }
 }

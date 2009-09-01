@@ -29,13 +29,6 @@ Otherwise a standard select menu is used.
   <script type="text/javascript">
     dependedParams['${pNam}'] = '${dependedParam}';
   </script>
-  <c:if test="${!(displayType eq 'typeAhead')}">
-    <script type="text/javascript">
-      <c:forEach items="${qP.parentMap}" var="entity">
-        validTerms['${pNam}']['${entity.key}'] = '${entity.value}';
-      </c:forEach>
-    </script>
-  </c:if>
 </c:if>
 
 <!--<div class="param">-->

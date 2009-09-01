@@ -19,6 +19,7 @@ import org.json.JSONObject;
 public class FlatVocabParam extends AbstractEnumParam {
 
     public static final String PARAM_SERVED_QUERY = "ServedQuery";
+    public static final String DEPENDED_VALUE = "depended_value";
 
     private static final String COLUMN_TERM = "term";
     private static final String COLUMN_INTERNAL = "internal";
@@ -109,10 +110,12 @@ public class FlatVocabParam extends AbstractEnumParam {
     protected synchronized void initVocabMap() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        if (termInternalMap != null) return;
+        if (termInternalMap != null && dependedParam == null) return;
 
         termInternalMap = new LinkedHashMap<String, String>();
         termDisplayMap = new LinkedHashMap<String, String>();
+
+	if (dependedParam != null && dependedValue == null) return;
 
         // check if the query has "display" column
         boolean hasDisplay = query.getColumnMap().containsKey(COLUMN_DISPLAY);
@@ -123,6 +126,8 @@ public class FlatVocabParam extends AbstractEnumParam {
         // prepare param values
         Map<String, String> values = new LinkedHashMap<String, String>();
         values.put(PARAM_SERVED_QUERY, servedQueryName);
+	if (dependedParam != null) 
+	    values.put(DEPENDED_VALUE, dependedValue);
 
         User user = wdkModel.getSystemUser();
         QueryInstance instance = query.makeInstance(user, values, true);
@@ -142,7 +147,7 @@ public class FlatVocabParam extends AbstractEnumParam {
             // term = term.replaceAll("[,]", "_");
             // if (parentTerm != null)
             // parentTerm = parentTerm.replaceAll("[,]", "_");
-            if (term.indexOf(',') >= 0)
+            if (term.indexOf(',') >= 0 && dependedParam != null)
                 throw new WdkModelException(this.getFullName()
                         + ": The term cannot contain comma: '" + term + "'");
             if (parentTerm != null && parentTerm.indexOf(',') >= 0)
