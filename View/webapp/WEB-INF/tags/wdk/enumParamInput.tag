@@ -25,10 +25,7 @@ Otherwise a standard select menu is used.
 <c:set var="displayType" value="${qP.displayType}"/>
 <c:set var="dependedParam" value="${qP.dependedParam}"/>
 <c:if test="${dependedParam != null}">
-  <c:set var="dependentClass" value="dependentParam" />
-  <script type="text/javascript">
-    dependedParams['${pNam}'] = '${dependedParam}';
-  </script>
+  <c:set var="dependentClass" value="dependentParam dependsOn${dependedParam}" />
 </c:if>
 
 <!--<div class="param">-->
@@ -138,5 +135,4 @@ Otherwise a standard select menu is used.
   </div>
 </c:otherwise> <%-- end of pick single item --%>
 </c:choose>
-
 <!--</div>-->
