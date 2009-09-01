@@ -19,7 +19,7 @@ import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
-public class GetTypeAheadDataAction extends Action {
+public class GetVocabAction extends ShowQuestionAction {
 
     /*
      * (non-Javadoc)
@@ -36,33 +36,33 @@ public class GetTypeAheadDataAction extends Action {
 	try {
             String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
 	    String paramName = request.getParameter("name");
-	    QuestionBean question = getQuestion(qFullName);
-	    EnumParamBean param = (EnumParamBean) question.getParamsMap().get(paramName);
+	    String dependedValue = request.getParameter("dependedValue");
+	    boolean getXml = Boolean.valueOf(request.getParameter("xml"));
+            QuestionBean wdkQuestion = getQuestionByFullName(qFullName);
+	    EnumParamBean param = (EnumParamBean) wdkQuestion.getParamsMap().get(paramName);
 
-	    request.setAttribute("displayMap", param.getDisplayMap());
-	    request.setAttribute("parentMap", param.getParentMap());
-            ActionForward forward = mapping.findForward("type_ahead");
+	    param.setDependedValue(dependedValue);
+	    
+	    wdkQuestion.getParamsMap().put(paramName, param);
+	    
+	    request.setAttribute("vocabParam", param);
+            ActionForward forward;
+
+	    if (getXml) {
+		System.out.println("Displays: " + param.getDisplayMap());
+		forward = mapping.findForward("vocab_xml");
+	    }
+	    else {
+		QuestionForm qForm = prepareQuestionForm(wdkQuestion, request,
+                    (QuestionForm) form);
+
+		forward = mapping.findForward("vocab_html");
+	    }
+
             return forward;
 	} catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
         }
-    }
-
-    public QuestionBean getQuestion(String qFullName) {
-	if (qFullName == null) return null;
-	int dotI = qFullName.indexOf('.');
-	String qSetName = qFullName.substring(0, dotI);
-	String qName = qFullName.substring(dotI + 1, qFullName.length());
-	
-	WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
-											     CConstants.WDK_MODEL_KEY);
-	
-	QuestionSetBean wdkQuestionSet = (QuestionSetBean) wdkModel.getQuestionSetsMap().get(
-											     qSetName);
-	if (wdkQuestionSet == null) return null;
-	QuestionBean question = (QuestionBean) wdkQuestionSet.getQuestionsMap().get(
-								       qName);
-        return question;
     }
 }

@@ -320,6 +320,13 @@
                     <text />
                   </element>
                 </optional>
+                <optional>
+                  <oneOrMore>
+                    <element name="dependedValue">
+                      <text />
+                    </element>
+                  </oneOrMore>
+                </optional>
               </interleave>
             </element>
           </oneOrMore>
@@ -376,7 +383,6 @@
         </choice>
       </attribute>
     </optional>
-
   </define>
 
   <define name="SelectModeContents">

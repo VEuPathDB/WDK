@@ -131,7 +131,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
         return wdkQuestion;
     }
 
-    private QuestionForm prepareQuestionForm(QuestionBean wdkQuestion,
+    protected QuestionForm prepareQuestionForm(QuestionBean wdkQuestion,
             HttpServletRequest request, QuestionForm qForm)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {

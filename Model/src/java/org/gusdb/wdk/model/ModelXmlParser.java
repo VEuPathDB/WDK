@@ -562,6 +562,11 @@ public class ModelXmlParser extends XmlParser {
         digester.addBeanPropertySetter(path + "/enumValue/internal");
         digester.addBeanPropertySetter(path + "/enumValue/parentTerm");
 
+
+        configureNode(digester, path + "/enumValue/dependedValue", WdkModelText.class,
+                "addDependedValue");
+        digester.addCallMethod(path + "/enumValue/dependedValue", "setText", 0);
+
         // timestamp param
         path = "wdkModel/paramSet/timestampParam";
         configureNode(digester, path, TimestampParam.class, "addParam");

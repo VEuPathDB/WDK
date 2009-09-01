@@ -70,6 +70,14 @@ public class EnumParamBean extends ParamBean {
 	return ((AbstractEnumParam) param).getDependedParam();
     }
 
+    public String getDependedValue() {
+	return ((AbstractEnumParam) param).getDependedValue();
+    }
+
+    public void setDependedValue(String dependedValue) {
+	((AbstractEnumParam) param).setDependedValue(dependedValue);
+    }
+
     public EnumParamTermNode[] getVocabTreeRoots() throws Exception {
         try {
             return ((AbstractEnumParam) param).getVocabTreeRoots();
