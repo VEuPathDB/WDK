@@ -36,7 +36,7 @@ public class EnumParam extends AbstractEnumParam {
     // ///////////////////////////////////////////////////////////////////
 
     protected synchronized void initVocabMap() throws WdkModelException {
-        if (termInternalMap != null) return;
+        if (termInternalMap != null && dependedParam == null) return;
 
         termInternalMap = new LinkedHashMap<String, String>();
         termDisplayMap = new LinkedHashMap<String, String>();
@@ -53,7 +53,7 @@ public class EnumParam extends AbstractEnumParam {
             // term = term.replaceAll("[,]", "_");
             // if (parentTerm != null)
             // parentTerm = parentTerm.replaceAll("[,]", "_");
-            if (term.indexOf(',') >= 0)
+            if (term.indexOf(',') >= 0 && dependedParam != null)
                 throw new WdkModelException(this.getFullName()
                         + ": The term cannot contain comma: '" + term + "'");
             if (parentTerm != null && parentTerm.indexOf(',') >= 0)
@@ -61,9 +61,16 @@ public class EnumParam extends AbstractEnumParam {
                         + ": The parent term cannot contain " + "comma: '"
                         + parentTerm + "'");
 
-            termInternalMap.put(term, item.getInternal());
-            termDisplayMap.put(term, display);
-            termParentMap.put(term, parentTerm);
+	    if (dependedParam != null && dependedValue != null && !item.getDependedValues().contains(dependedValue)) {
+		// if this is a dependent param, and the depended value
+		// is set, only include items that are valid for the
+		// current depended value
+		continue;
+	    }
+	    
+	    termInternalMap.put(term, item.getInternal());
+	    termDisplayMap.put(term, display);
+	    termParentMap.put(term, parentTerm);
         }
         // check if the result is empty
         if (termInternalMap.isEmpty())
@@ -99,7 +106,7 @@ public class EnumParam extends AbstractEnumParam {
 
                     itemList.setParam(this);
                     itemList.excludeResources(projectId);
-                    this.enumItemList = itemList;
+		    this.enumItemList = itemList;
 
                     // apply the use term only from enumList
                     Boolean useTermOnly = itemList.isUseTermOnly();

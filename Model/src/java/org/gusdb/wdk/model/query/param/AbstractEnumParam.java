@@ -48,7 +48,8 @@ public abstract class AbstractEnumParam extends Param {
     protected boolean useTermOnly = false;
 
     private String displayType;
-    private String dependedParam;
+    protected String dependedParam;
+    protected String dependedValue;
 
     public AbstractEnumParam() {
     }
@@ -73,6 +74,7 @@ public abstract class AbstractEnumParam extends Param {
         this.useTermOnly = param.useTermOnly;
         this.displayType = param.displayType;
 	this.dependedParam = param.dependedParam;
+	this.dependedValue = param.dependedValue;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -216,6 +218,14 @@ public abstract class AbstractEnumParam extends Param {
 	this.dependedParam = dependedParam;
     }
 
+    public String getDependedValue() {
+	return dependedParam;
+    }
+
+    public void setDependedValue(String dependedValue) {
+	this.dependedValue = dependedValue;
+    }
+
     // ///////////////////////////////////////////////////////////////////
     // /////////// Protected properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
@@ -251,10 +261,6 @@ public abstract class AbstractEnumParam extends Param {
             throws WdkModelException {
 
         termTreeList = new ArrayList<EnumParamTermNode>();
-
-	// Shortcut, for now, to avoid errors caused by using
-	// value of depended param in parentTerm
-	if (this.dependedParam != null) return;
 
         // construct index
         Map<String, EnumParamTermNode> indexMap = new LinkedHashMap<String, EnumParamTermNode>();

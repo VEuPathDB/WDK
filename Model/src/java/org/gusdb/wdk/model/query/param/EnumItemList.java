@@ -24,6 +24,8 @@ public class EnumItemList extends WdkModelBase {
     private List<ParamConfiguration> useTermOnlies;
     private Boolean useTermOnly;
 
+    private String dependedValue;
+
     public EnumItemList() {
         items = new ArrayList<EnumItem>();
         useTermOnlies = new ArrayList<ParamConfiguration>();
@@ -33,6 +35,14 @@ public class EnumItemList extends WdkModelBase {
         this.param = itemList.param;
         this.items = new ArrayList<EnumItem>(itemList.items);
         this.useTermOnly = itemList.useTermOnly;
+    }
+
+    public void setDependedValue(String dependedValue) {
+	this.dependedValue = dependedValue;
+    }
+
+    public String getDependedValue() {
+	return dependedValue;
     }
 
     public void addEnumItem(EnumItem enumItem) {
