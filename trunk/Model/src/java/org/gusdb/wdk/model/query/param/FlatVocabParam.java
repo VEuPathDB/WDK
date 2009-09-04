@@ -133,14 +133,14 @@ public class FlatVocabParam extends AbstractEnumParam {
         QueryInstance instance = query.makeInstance(user, values, true);
         ResultList result = instance.getResults();
         while (result.next()) {
-            String term = result.get(COLUMN_TERM).toString();
-            String value = result.get(COLUMN_INTERNAL).toString();
-            String display = hasDisplay ? result.get(COLUMN_DISPLAY).toString()
+            String term = result.get(COLUMN_TERM).toString().trim();
+            String value = result.get(COLUMN_INTERNAL).toString().trim();
+            String display = hasDisplay ? result.get(COLUMN_DISPLAY).toString().trim()
                     : term;
             String parentTerm = null;
             if (hasParent) {
                 Object parent = result.get(COLUMN_PARENT_TERM);
-                if (parent != null) parentTerm = parent.toString();
+                if (parent != null) parentTerm = parent.toString().trim();
             }
 
             // escape the term & parentTerm
