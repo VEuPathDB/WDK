@@ -58,14 +58,22 @@ public class EnumParam extends AbstractEnumParam {
                         + ": The term cannot contain comma: '" + term + "'");
             if (parentTerm != null && parentTerm.indexOf(',') >= 0)
                 throw new WdkModelException(this.getFullName()
-                        + ": The parent term cannot contain " + "comma: '"
+                        + ": The parent term cannot contain" + "comma: '"
                         + parentTerm + "'");
 
-	    if (dependedParam != null && dependedValue != null && !item.getDependedValues().contains(dependedValue)) {
+	    if (dependedParam != null && dependedValue != null) {
 		// if this is a dependent param, and the depended value
 		// is set, only include items that are valid for the
 		// current depended value
-		continue;
+		boolean skip = true;
+		String[] dependedValues = dependedValue.split(",");
+		for (String value : dependedValues) {
+		    if (item.getDependedValues().contains(dependedValue)) {
+			skip = false;
+			break;
+		    }
+		}
+		if (skip) continue;
 	    }
 	    
 	    termInternalMap.put(term, item.getInternal());
