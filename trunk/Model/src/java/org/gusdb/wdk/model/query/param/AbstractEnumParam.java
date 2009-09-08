@@ -43,7 +43,6 @@ public abstract class AbstractEnumParam extends Param {
     protected List<EnumParamTermNode> termTreeList;
 
     protected boolean quote = true;
-    private boolean skipValidation = false; // Only used for type ahead, so wildcards are allowed
 
     private List<ParamConfiguration> useTermOnlies = new ArrayList<ParamConfiguration>();
     protected boolean useTermOnly = false;
@@ -76,7 +75,6 @@ public abstract class AbstractEnumParam extends Param {
         this.displayType = param.displayType;
 	this.dependedParam = param.dependedParam;
 	this.dependedValue = param.dependedValue;
-	this.skipValidation = param.skipValidation;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -89,14 +87,6 @@ public abstract class AbstractEnumParam extends Param {
 
     public Boolean getMultiPick() {
         return new Boolean(multiPick);
-    }
-
-    public void setSkipValidation(boolean skipValidation) {
-        this.skipValidation = skipValidation;
-    }
-
-    public boolean getSkipValidation() {
-        return skipValidation;
     }
 
     public void setQuote(boolean quote) {
@@ -399,13 +389,11 @@ public abstract class AbstractEnumParam extends Param {
     protected void validateValue(User user, String dependentValue)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-	if (!displayType.equals("typeAhead") || !skipValidation) {
-	    String rawValue = decompressValue(dependentValue);
-	    String[] terms = getTerms(rawValue);
-	    if (terms.length == 0 && !allowEmpty)
-		throw new WdkUserException("The value to enumParam/flatVocabParam "
-					   + getFullName() + " cannot be empty");
-	}
+        String rawValue = decompressValue(dependentValue);
+        String[] terms = getTerms(rawValue);
+        if (terms.length == 0 && !allowEmpty)
+            throw new WdkUserException("The value to enumParam/flatVocabParam "
+                    + getFullName() + " cannot be empty");
     }
 
     /**
