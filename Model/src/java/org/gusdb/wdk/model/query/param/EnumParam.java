@@ -48,6 +48,7 @@ public class EnumParam extends AbstractEnumParam {
             String term = item.getTerm();
             String display = item.getDisplay();
             String parentTerm = item.getParentTerm();
+	    boolean skip = false;
 
             // escape the term & parentTerm
             // term = term.replaceAll("[,]", "_");
@@ -65,20 +66,15 @@ public class EnumParam extends AbstractEnumParam {
 		// if this is a dependent param, and the depended value
 		// is set, only include items that are valid for the
 		// current depended value
-		boolean skip = true;
 		String[] dependedValues = dependedValue.split(",");
-		for (String value : dependedValues) {
-		    if (item.getDependedValues().contains(dependedValue)) {
-			skip = false;
-			break;
-		    }
-		}
-		if (skip) continue;
+		skip = !item.isValidFor(dependedValues);
 	    }
-	    
-	    termInternalMap.put(term, item.getInternal());
-	    termDisplayMap.put(term, display);
-	    termParentMap.put(term, parentTerm);
+
+	    if (!skip) {
+		termInternalMap.put(term, item.getInternal());
+		termDisplayMap.put(term, display);
+		termParentMap.put(term, parentTerm);
+	    }
         }
         // check if the result is empty
         if (termInternalMap.isEmpty())
