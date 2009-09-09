@@ -36,7 +36,9 @@ function initTypeAhead() {
 		paramName = paramName.substring(paramName.indexOf("myMultiProp(") + 12, paramName.indexOf(")"));
 		$("#" + paramName + "_display").attr('disabled',true);
 		$("#" + paramName + "_display").change(function() {
-			$("td#" + paramName + "aaa input[name='myMultiProp(" + paramName + ")']").val(displayTermMap[paramName][$(this).val()]);
+			var newValue = displayTermMap[paramName][$(this).val()];
+			if (!newValue) newValue = $(this).val();
+			$("td#" + paramName + "aaa input[name='myMultiProp(" + paramName + ")']").val(newValue);
 		});
 		if(!$(this).hasClass('dependentParam')) {
 			var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&xml=true';
