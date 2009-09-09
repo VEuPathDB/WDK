@@ -119,7 +119,8 @@ Otherwise a standard select menu is used.
     
       <%-- use a type ahead --%>
       <c:when test="${displayType eq 'typeAhead'}">
-        <input type="text" class="typeAhead ${dependentClass}" name="myMultiProp(${pNam})" size="50"/>
+        <input type="text" id="${pNam}_display" size="50"/>
+        <input type="hidden" class="typeAhead ${dependentClass}" name="myMultiProp(${pNam})" size="50"/>
       </c:when>
 
       <c:otherwise>

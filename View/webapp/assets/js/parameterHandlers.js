@@ -1,4 +1,5 @@
 var dependedParams = new Array();
+var displayTermMap = new Array();
 
 function initParamHandlers() {
 	initTypeAhead();
@@ -6,7 +7,6 @@ function initParamHandlers() {
 }
 
 function initDependentParamHandlers() {
-	var blah = $("input.dependentParam, select.dependentParam");
 	$("input.dependentParam, select.dependentParam").each(function() {
 		$(this).attr('disabled',true);
 		var name = $(this).attr('name');
@@ -30,12 +30,15 @@ function initDependentParamHandlers() {
 }
 
 function initTypeAhead() {
-	var test = $("input:text.typeAhead");
-	$("input:text.typeAhead").each(function() {
+	$("input:hidden.typeAhead").each(function() {
+		var questionName = $(this).closest("form").children("input:hidden[name=questionFullName]").val();
+		var paramName = $(this).attr('name');
+		paramName = paramName.substring(paramName.indexOf("myMultiProp(") + 12, paramName.indexOf(")"));
+		$("#" + paramName + "_display").attr('disabled',true);
+		$("#" + paramName + "_display").change(function() {
+			$("td#" + paramName + "aaa input[name='myMultiProp(" + paramName + ")']").val(displayTermMap[paramName][$(this).val()]);
+		});
 		if(!$(this).hasClass('dependentParam')) {
-			var questionName = $(this).closest("form").children("input:hidden[name=questionFullName]").val();
-			var paramName = $(this).attr('name');
-			paramName = paramName.substring(paramName.indexOf("myMultiProp(") + 12, paramName.indexOf(")"));
 			var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&xml=true';
 			$.ajax({
 				url: sendReqUrl,
@@ -50,17 +53,22 @@ function initTypeAhead() {
 
 function createAutoComplete(obj, name) {
 	$("div.ac_results").remove(); // Remove any pre-existing type-ahead results.
-	var def = new Array();
+	var def = new Array()
+	displayTermMap[name] = new Array();
 	var term;
+	var display;
 	if( $("term",obj).length != 0 ){
 		$("term",obj).each(function(){
-			term = this.firstChild.data;
-			def.push(term);
+			term = this.getAttribute('id');
+			display = this.firstChild.data;
+			def.push(display);
+			displayTermMap[name][display] = term;
 		});		
 	}
-	$("td#" + name + "aaa input[name='myMultiProp(" + name + ")']").autocomplete(def,{
+	$("#" + name + "_display").autocomplete(def,{
 		matchContains: true
 	});
+	$("#" + name + "_display").removeAttr('disabled');
 }
 
 function updateDependentParam(paramName, dependedValue) {
