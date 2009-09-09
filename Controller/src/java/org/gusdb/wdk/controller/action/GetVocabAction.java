@@ -49,7 +49,6 @@ public class GetVocabAction extends ShowQuestionAction {
             ActionForward forward;
 
 	    if (getXml) {
-		System.out.println("Displays: " + param.getDisplayMap());
 		forward = mapping.findForward("vocab_xml");
 	    }
 	    else {
