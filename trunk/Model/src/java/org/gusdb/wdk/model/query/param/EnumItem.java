@@ -130,4 +130,13 @@ public class EnumItem extends WdkModelBase {
     public List<String> getDependedValues() {
 	return dependedValues;
     }
+
+    public boolean isValidFor(String[] dependedValues) {
+	for (String dependedValue : dependedValues) {
+	    if (this.dependedValues.contains(dependedValue)) {
+		return true;
+	    }
+	}
+	return false;
+    }
 }

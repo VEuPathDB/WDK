@@ -43,6 +43,7 @@ public abstract class AbstractEnumParam extends Param {
     protected List<EnumParamTermNode> termTreeList;
 
     protected boolean quote = true;
+    private boolean skipValidation = false;
 
     private List<ParamConfiguration> useTermOnlies = new ArrayList<ParamConfiguration>();
     protected boolean useTermOnly = false;
@@ -75,6 +76,7 @@ public abstract class AbstractEnumParam extends Param {
         this.displayType = param.displayType;
 	this.dependedParam = param.dependedParam;
 	this.dependedValue = param.dependedValue;
+	this.skipValidation = param.skipValidation;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -87,6 +89,14 @@ public abstract class AbstractEnumParam extends Param {
 
     public Boolean getMultiPick() {
         return new Boolean(multiPick);
+    }
+
+    public void setSkipValidation(boolean skipValidation) {
+        this.skipValidation = skipValidation;
+    }
+
+    public boolean getSkipValidation() {
+        return skipValidation;
     }
 
     public void setQuote(boolean quote) {
@@ -305,9 +315,9 @@ public abstract class AbstractEnumParam extends Param {
         initVocabMap();
         for (String term : terms) {
             if (!termInternalMap.containsKey(term))
-                throw new WdkModelException(" - Invalid term '" + term
-                        + "' for parameter '" + name + "'");
-        }
+		throw new WdkModelException(" - Invalid term '" + term
+					    + "' for parameter '" + name + "'");
+	}
         return terms;
     }
 
@@ -338,6 +348,12 @@ public abstract class AbstractEnumParam extends Param {
             JSONException, WdkUserException {
         String rawValue = decompressValue(dependentValue);
         if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
+
+	if (skipValidation) {
+	    rawValue = rawValue.replaceAll("'", "''");
+	    if (quote) rawValue = "'" + rawValue + "'";
+	    return rawValue;
+	}
 
         String[] terms = getTerms(rawValue);
         StringBuffer buf = new StringBuffer();
@@ -389,11 +405,13 @@ public abstract class AbstractEnumParam extends Param {
     protected void validateValue(User user, String dependentValue)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        String rawValue = decompressValue(dependentValue);
-        String[] terms = getTerms(rawValue);
-        if (terms.length == 0 && !allowEmpty)
-            throw new WdkUserException("The value to enumParam/flatVocabParam "
-                    + getFullName() + " cannot be empty");
+	if (!skipValidation) {
+	    String rawValue = decompressValue(dependentValue);
+	    String[] terms = getTerms(rawValue);
+	    if (terms.length == 0 && !allowEmpty)
+		throw new WdkUserException("The value to enumParam/flatVocabParam "
+					   + getFullName() + " cannot be empty");
+	}
     }
 
     /**
