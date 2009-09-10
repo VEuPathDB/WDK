@@ -4,6 +4,10 @@ var displayTermMap = new Array();
 function initParamHandlers() {
 	initTypeAhead();
 	initDependentParamHandlers();
+	$("#form_question").submit(function() {
+		mapTypeAheads();
+		return true;
+	});
 }
 
 function initDependentParamHandlers() {
@@ -35,11 +39,6 @@ function initTypeAhead() {
 		var paramName = $(this).attr('name');
 		paramName = paramName.substring(paramName.indexOf("myMultiProp(") + 12, paramName.indexOf(")"));
 		$("#" + paramName + "_display").attr('disabled',true);
-		$("#" + paramName + "_display").change(function() {
-			var newValue = displayTermMap[paramName][$(this).val()];
-			if (!newValue) newValue = $(this).val();
-			$("td#" + paramName + "aaa input[name='myMultiProp(" + paramName + ")']").val(newValue);
-		});
 		if(!$(this).hasClass('dependentParam')) {
 			var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&xml=true';
 			$.ajax({
@@ -100,4 +99,14 @@ function updateDependentParam(paramName, dependedValue) {
 			}
 		});
 	}
+}
+
+function mapTypeAheads() {
+	$("input:hidden.typeAhead").each(function() {
+		var paramName = $(this).attr('name');
+		paramName = paramName.substring(paramName.indexOf("myMultiProp(") + 12, paramName.indexOf(")"));
+		var newValue = displayTermMap[paramName][$("#" + paramName + "_display").val()];
+		if (!newValue) newValue = $("#" + paramName + "_display").val();
+		$(this).val(newValue);
+	});
 }
