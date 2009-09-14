@@ -73,31 +73,33 @@ function createAutoComplete(obj, name) {
 }
 
 function updateDependentParam(paramName, dependedValue) {
-	var dependentParam = $("td#" + paramName + "aaa input[name='myMultiProp(" + paramName + ")']");
-	if (dependentParam.length == 0) dependentParam = $("td#" + paramName + "aaa select[name='myMultiProp(" + paramName + ")']");
-	var questionName = dependentParam.closest("form").children("input:hidden[name=questionFullName]").val();
-	var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&dependedValue=' + dependedValue;
-	if (dependentParam.hasClass('typeAhead')) {
-		var sendReqUrl = sendReqUrl + '&xml=true';
-		$.ajax({
-			url: sendReqUrl,
-			dataType: "xml",
-			success: function(data){
-				dependentParam.removeAttr('disabled');
-				createAutoComplete(data, paramName);
-			}
-		});
-	} else {
-		$.ajax({
-			url: sendReqUrl,
-			type: "POST",
-			dataType: "html",
-			success: function(data){
-				var parentElt = $("td#" + paramName + "aaa > div");
-				var newContent = $("div.param, div.param-multiPick",data);
-				parentElt.html(newContent.html());
-			}
-		});
+	if (dependedValue && dependedValue != 'Choose one:') {
+		var dependentParam = $("td#" + paramName + "aaa input[name='myMultiProp(" + paramName + ")']");
+		if (dependentParam.length == 0) dependentParam = $("td#" + paramName + "aaa select[name='myMultiProp(" + paramName + ")']");
+		var questionName = dependentParam.closest("form").children("input:hidden[name=questionFullName]").val();
+		var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&dependedValue=' + dependedValue;
+		if (dependentParam.hasClass('typeAhead')) {
+			var sendReqUrl = sendReqUrl + '&xml=true';
+			$.ajax({
+				url: sendReqUrl,
+				dataType: "xml",
+				success: function(data){
+					dependentParam.removeAttr('disabled');
+					createAutoComplete(data, paramName);
+				}
+			});
+		} else {
+			$.ajax({
+				url: sendReqUrl,
+				type: "POST",
+				dataType: "html",
+				success: function(data){
+					var parentElt = $("td#" + paramName + "aaa > div");
+					var newContent = $("div.param, div.param-multiPick",data);
+					parentElt.html(newContent.html());
+				}
+			});
+		}
 	}
 }
 
