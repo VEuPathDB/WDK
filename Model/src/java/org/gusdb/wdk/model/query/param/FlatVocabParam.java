@@ -90,6 +90,7 @@ public class FlatVocabParam extends AbstractEnumParam {
         query.addParam(param);
         this.query = query;
 
+	loadDependedParam();
     }
 
     /*
@@ -126,8 +127,8 @@ public class FlatVocabParam extends AbstractEnumParam {
         // prepare param values
         Map<String, String> values = new LinkedHashMap<String, String>();
         values.put(PARAM_SERVED_QUERY, servedQueryName);
-	if (dependedParam != null) 
-	    values.put(DEPENDED_VALUE, dependedValue);
+	if (dependedParam != null)
+	    values.put(DEPENDED_VALUE, dependedParam.dependentValueToInternalValue(null,dependedValue));
 
         User user = wdkModel.getSystemUser();
         QueryInstance instance = query.makeInstance(user, values, true);

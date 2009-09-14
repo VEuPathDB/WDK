@@ -359,7 +359,7 @@
   <define name="EnumParamBaseContents">
     <ref name="ParamBaseContents" />
     <optional>
-      <attribute name="dependedParam">
+      <attribute name="dependedParamRef">
       </attribute>
     </optional>
     <optional>

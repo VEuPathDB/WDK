@@ -9,6 +9,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
@@ -66,8 +67,12 @@ public class EnumParamBean extends ParamBean {
         return ((AbstractEnumParam) param).getDisplayType();
     }
 
-    public String getDependedParam() {
-	return ((AbstractEnumParam) param).getDependedParam();
+    public ParamBean getDependedParam() {
+	Param dependedParam = ((AbstractEnumParam) param).getDependedParam();
+	if (dependedParam != null) {
+	    return new ParamBean(dependedParam);
+	}
+	return null;
     }
 
     public String getDependedValue() {
