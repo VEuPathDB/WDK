@@ -148,6 +148,8 @@ public class EnumParam extends AbstractEnumParam {
         if (sb.length() > 0) {
             this.defaultValue = sb.toString();
         }
+
+	loadDependedParam();
     }
 
     /*

@@ -49,7 +49,8 @@ public abstract class AbstractEnumParam extends Param {
     protected boolean useTermOnly = false;
 
     private String displayType;
-    protected String dependedParam;
+    protected Param dependedParam;
+    protected String dependedParamRef;
     protected String dependedValue;
 
     public AbstractEnumParam() {
@@ -75,6 +76,7 @@ public abstract class AbstractEnumParam extends Param {
         this.useTermOnly = param.useTermOnly;
         this.displayType = param.displayType;
 	this.dependedParam = param.dependedParam;
+	this.dependedParamRef = param.dependedParamRef;
 	this.dependedValue = param.dependedValue;
 	this.skipValidation = param.skipValidation;
     }
@@ -220,16 +222,16 @@ public abstract class AbstractEnumParam extends Param {
         this.displayType = displayType;
     }
 
-    public String getDependedParam() {
+    public Param getDependedParam() {
 	return dependedParam;
     }
 
-    public void setDependedParam(String dependedParam) {
-	this.dependedParam = dependedParam;
+    public void setDependedParamRef(String dependedParamRef) {
+	this.dependedParamRef = dependedParamRef;
     }
 
     public String getDependedValue() {
-	return dependedParam;
+	return dependedValue;
     }
 
     public void setDependedValue(String dependedValue) {
@@ -448,5 +450,11 @@ public abstract class AbstractEnumParam extends Param {
             }
             this.defaultValue = builder.toString();
         }
+    }
+
+    protected void loadDependedParam() throws WdkModelException {
+	if (dependedParamRef != null && dependedParamRef.length() != 0) {
+	    dependedParam = (Param) wdkModel.resolveReference(dependedParamRef);
+	}
     }
 }
