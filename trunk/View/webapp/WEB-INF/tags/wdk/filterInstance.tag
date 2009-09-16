@@ -37,15 +37,18 @@
 </c:set>
 
 <div class="filter-instance">
-    <c:if test="${current}"><div class="current"></c:if>
+    <c:choose>
+      <c:when test="${current}"><div class="current"></c:when>
+      <c:otherwise><div></c:otherwise>
+    </c:choose>
         <c:url var="linkUrl" value="/processFilter.do?strategy=${strategyId}&revise=${stepId}&filter=${instance.name}" />
         <c:url var="countUrl" value="/showResultSize.do?step=${stepId}&answer=${answerValue.checksum}&filter=${instance.name}" />
-        <a class="link-url" href="javascript:void(0)" countref="${countUrl}" 
-           onclick="ChangeFilter(${strategyId}, ${stepId}, '${linkUrl}');"><c:choose><c:when test="${current}">${answerValue.resultSize}</c:when><c:otherwise><img class="loading" src="<c:url value="/images/loading.gif" />" /></c:otherwise></c:choose></a>
+        <a id="link-${instance.name}" class="link-url" href="javascript:void(0)" countref="${countUrl}" 
+           strId="${strategyId}" stpId="${stpId}" linkUrl="${linkUrl}"><c:choose><c:when test="${current}">${answerValue.resultSize}</c:when><c:otherwise><img class="loading" src="<c:url value="/images/loading.gif" />" /></c:otherwise></c:choose></a>
         <div class="instance-detail" style="display: none;">
             <div class="display">${instance.displayName}</div>
             <div class="description">${instance.description}</div>
         </div>
-    <c:if test="${current}"></div></c:if>
+    </div>
 </div>
 
