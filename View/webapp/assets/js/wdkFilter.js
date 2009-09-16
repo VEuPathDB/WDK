@@ -30,6 +30,11 @@ function WdkFilter() {
     
     this.displayFilters = function() {
         $(".filter-instance").each(function() {
+            // attach onclick event using jquery instead of onclick attr
+            var link = $(this).find(".link-url");
+            link.click(function() {
+                 ChangeFilter(link.attr('strId'),link.attr('stpId'),link.attr('linkUrl'),this);
+            });
             // add mouse over to the link
             var detail = $(this).find(".instance-detail");
             $(this).hover(function() {
