@@ -1,13 +1,15 @@
 var dependedParams = new Array();
 var displayTermMap = new Array();
 
-function initParamHandlers() {
+function initParamHandlers(isPopup) {
 	initTypeAhead();
 	initDependentParamHandlers();
-	$("#form_question").submit(function() {
-		mapTypeAheads();
-		return true;
-	});
+	if (!isPopup){
+		$("#form_question").submit(function() {
+			mapTypeAheads();
+			return true;
+		});
+	}
 }
 
 function initDependentParamHandlers() {
