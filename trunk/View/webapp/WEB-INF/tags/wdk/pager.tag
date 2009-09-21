@@ -17,11 +17,11 @@
       <td nowrap>
       
   <pg:first>
-    <a href="javascript:GetResultsPage('${pageUrl}',true)">First</a>
+    <a href="javascript:GetResultsPage('${pageUrl}',true,true)">First</a>
   </pg:first>
 
   <pg:prev>
-    <a href="javascript:GetResultsPage('${pageUrl}',true)">Previous</a>
+    <a href="javascript:GetResultsPage('${pageUrl}',true,true)">Previous</a>
   </pg:prev>
 
   <pg:pages>
@@ -32,18 +32,18 @@
           <b>${pageNumber}</b>
         </c:when>
         <c:otherwise>
-          <a href="javascript:GetResultsPage('${pageUrl}',true)">${pageNumber}</a>
+          <a href="javascript:GetResultsPage('${pageUrl}',true,true)">${pageNumber}</a>
         </c:otherwise>
       </c:choose>
     </c:if>
   </pg:pages>
 
   <pg:next>
-    <a href="javascript:GetResultsPage('${pageUrl}',true)">Next</a>
+    <a href="javascript:GetResultsPage('${pageUrl}',true,true)">Next</a>
   </pg:next>
 
   <pg:last>
-    <a href="javascript:GetResultsPage('${pageUrl}',true)">Last</a>
+    <a href="javascript:GetResultsPage('${pageUrl}',true,true)">Last</a>
     
   </pg:last>
   
