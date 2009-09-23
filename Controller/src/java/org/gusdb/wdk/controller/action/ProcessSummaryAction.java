@@ -109,13 +109,18 @@ public class ProcessSummaryAction extends Action {
                             summaryList.add(attribute);
                         }
 
-                    String attributeName = request.getParameter(CConstants.WDK_SUMMARY_ATTRIBUTE_KEY);
-System.out.println("command: " + command + ", attribute = " + attributeName);
+                    String[] attributeNames = request.getParameterValues(CConstants.WDK_SUMMARY_ATTRIBUTE_KEY);
+		    if (attributeNames == null) attributeNames = new String[0];
+
                     if (command.equalsIgnoreCase("add")) {
-                        if (!summaryList.contains(attributeName))
-                            summaryList.add(attributeName);
+			for (String attributeName : attributeNames) {
+			    if (!summaryList.contains(attributeName))
+				summaryList.add(attributeName);
+			}
                     } else if (command.equalsIgnoreCase("remove")) {
-                        summaryList.remove(attributeName);
+			for (String attributeName : attributeNames) {
+			    summaryList.remove(attributeName);
+			}
                     } else if (command.equalsIgnoreCase("arrange")) {
                         // Get the attribute that will be to the left of
                         // attributeName after attributeName is moved
@@ -124,9 +129,11 @@ System.out.println("command: " + command + ", attribute = " + attributeName);
                         // attributeName the first element.
                         // Otherwise, make it the first element AFTER
                         // attributeToLeft
-                        summaryList.remove(attributeName);
-                        int toIndex = summaryList.indexOf(attributeToLeft) + 1;
-                        summaryList.add(toIndex, attributeName);
+			for (String attributeName : attributeNames) {
+			    summaryList.remove(attributeName);
+			    int toIndex = summaryList.indexOf(attributeToLeft) + 1;
+			    summaryList.add(toIndex, attributeName);
+			}
                     } else {
                         throw new WdkModelException("Unknown command: "
                                 + command);
