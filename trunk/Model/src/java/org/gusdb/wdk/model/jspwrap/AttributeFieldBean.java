@@ -33,4 +33,12 @@ public class AttributeFieldBean extends FieldBean {
         return attributeField.getAlign();
     }
 
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.Field#getHelp()
+     */
+    public String getHelp() {
+        return attributeField.getHelp();
+    }
+
 }
