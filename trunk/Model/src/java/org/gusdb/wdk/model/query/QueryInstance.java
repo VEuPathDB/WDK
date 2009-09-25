@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.dbms.QueryInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -267,6 +268,15 @@ public abstract class QueryInstance {
                             + "' doesn't exist");
 
                 Param param = params.get(paramName);
+
+		// check for dependent param
+		if (param instanceof AbstractEnumParam &&
+		    ((AbstractEnumParam) param).getDependedParam() != null) {
+		    String dependedParam = ((AbstractEnumParam) param).getDependedParam().getName();
+		    String dependedValue = values.get(dependedParam);
+		    ((AbstractEnumParam) param).setDependedValue(dependedValue);
+		}
+
                 // validate param
                 param.validate(user, dependentValue);
             } catch (Exception ex) {
