@@ -31,6 +31,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -218,7 +219,9 @@ public class SummaryTester {
             JSONException, WdkUserException {
         // QueryInstance instance = answer.getAttributesQueryInstance();
         QueryInstance instance = answerValue.getIdsQueryInstance();
-        String query = instance.getSql();
+        String query = (instance instanceof SqlQueryInstance)
+                ? ((SqlQueryInstance) instance).getUncachedSql()
+                : instance.getSql();
         String newline = System.getProperty("line.separator");
         String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);
         newlineQuery = newlineQuery.replaceAll("(\\S)\\s\\s\\s", "$1" + newline);
