@@ -10,129 +10,167 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.cli.BasicParser;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.ColumnType;
+import org.gusdb.wsf.util.BaseCLI;
 
-public class TestDBManager {
+public class TestDBManager extends BaseCLI {
+
+    private static final String ARG_PROJECT_ID = "model";
+    private static final String ARG_CREATE = "new";
+    private static final String ARG_DROP = "drop";
+    private static final String ARG_TABLE_DIR = "tableDir";
 
     public static void main(String[] args) throws Exception {
-        // process args
-        Options options = declareOptions();
         String cmdName = System.getProperty("cmdName");
-        CommandLine cmdLine = parseOptions(cmdName, options, args);
+        TestDBManager testDb = new TestDBManager(cmdName);
+        try {
+            testDb.invoke(args);
+        } finally {
+            System.exit(0);
+        }
+    }
+
+    protected TestDBManager(String command) {
+        super((command == null) ? "wdkTestDb" : command,
+                "Create or delete test toy db");
+    }
+
+    @Override
+    protected void declareOptions() {
+        addSingleValueOption(ARG_PROJECT_ID, true, null, "The ProjectId, which"
+                + " should match the directory name under $GUS_HOME, where "
+                + "model-config.xml is stored.");
+
+        addNonValueOption(ARG_CREATE, false, "create new WDK ToyDB and load "
+                + "test data.");
+        addNonValueOption(ARG_DROP, false, "drop existing WDK ToyDB test "
+                + "tables.");
+        addGroup(true, ARG_CREATE, ARG_DROP);
+
+        addSingleValueOption(ARG_TABLE_DIR, false, null, "give the absolute"
+                + " path to the directory where test data are stored.");
+    }
+
+    @Override
+    protected void execute() {
+        String projectId = (String) getOptionValue(ARG_PROJECT_ID);
+
+        boolean newCache = (Boolean) getOptionValue(ARG_CREATE);
+        boolean dropCache = (Boolean) getOptionValue(ARG_DROP);
 
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-        String modelName = cmdLine.getOptionValue("model");
+        String tableDir = (String) getOptionValue(ARG_TABLE_DIR);
+        if (tableDir == null)
+            tableDir = gusHome + "/data/WDKToySite/Model/testTables";
+        String[] tables = getTableNames(tableDir);
 
-        WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
-        DBPlatform platform = wdkModel.getQueryPlatform();
+        try {
+            // read config info
+            WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
+            DBPlatform platform = wdkModel.getQueryPlatform();
 
-        boolean drop = cmdLine.hasOption("drop");
-        boolean create = cmdLine.hasOption("create");
-
-        String tableDir;
-        if (cmdLine.hasOption("tableDir")) {
-            tableDir = cmdLine.getOptionValue("tableDir");
-        } else {
-            tableDir = "data/testTables";
+            long start = System.currentTimeMillis();
+            if (newCache) createTables(platform, tables);
+            else if (dropCache) dropTables(platform, tables);
+            long end = System.currentTimeMillis();
+            System.out.println("Command succeeded in "
+                    + ((end - start) / 1000.0) + " seconds");
+        } catch (Exception e) {
+            System.err.println("FAILED");
+            System.err.println("");
+            e.printStackTrace();
+            System.exit(1);
         }
-        String[] tables = getTableNames(gusHome + "/" + tableDir);
+    }
 
-        if (drop == false && create == false) {// invalid option
-            System.err.println("TestDBManager: user has not specified any "
-                    + "database management operations");
-            usage(cmdName, options);
-        }
-
+    private void dropTables(DBPlatform platform, String[] tables)
+            throws Exception {
         for (int t = 0; t < tables.length; t++) {
             File nextTable = new File(tables[t]);
-            if ("CVS".equals(nextTable.getName())) {
-                continue;
+            if ("CVS".equals(nextTable.getName())) continue;
+
+            String tableName = nextTable.getName();
+            try {
+                System.err.println("Dropping table " + tableName);
+                String dropTable = "drop table " + tableName;
+                SqlUtils.executeUpdate(platform.getDataSource(), dropTable);
+            } catch (SQLException ex) {
+                System.err.println("Dropping table '" + tableName + "' failed.");
+                ex.printStackTrace();
             }
+        }
+    }
+
+    private void createTables(DBPlatform platform, String[] tables)
+            throws Exception {
+        for (int t = 0; t < tables.length; t++) {
+            File nextTable = new File(tables[t]);
+            if ("CVS".equals(nextTable.getName())) continue;
 
             BufferedReader reader = new BufferedReader(
                     new FileReader(nextTable));
             String firstLine = reader.readLine();
             String tableName = nextTable.getName();
 
-            if (drop) {
-                try {
-                    System.err.println("Dropping table " + tableName);
-                    dropTable(tableName, platform.getDataSource());
-                } catch (SQLException ex) {
-                    System.err.println("Dropping table '" + tableName
-                            + "' failed.");
-                    ex.printStackTrace();
-                }
-            }
-            if (create) {
-                try {
-                    Map<String, String> columnTypes = createTable(tableName,
-                            firstLine, platform);
-                    Map<Integer, String> columnIds = new LinkedHashMap<Integer, String>();
+            try {
+                Map<String, String> columnTypes = createTable(tableName,
+                        firstLine, platform);
+                Map<Integer, String> columnIds = new LinkedHashMap<Integer, String>();
 
-                    // prepare the statement
-                    StringBuffer sql = new StringBuffer("INSERT INTO ");
-                    sql.append(tableName).append(" (");
-                    StringBuffer sqlPiece = new StringBuffer();
-                    int columnId = 0;
-                    for (String column : columnTypes.keySet()) {
-                        if (sqlPiece.length() > 0) {
-                            sql.append(", ");
-                            sqlPiece.append(", ");
-                        }
-                        sql.append(column);
-                        sqlPiece.append("?");
-
-                        columnIds.put(columnId++, column);
+                // prepare the statement
+                StringBuffer sql = new StringBuffer("INSERT INTO ");
+                sql.append(tableName).append(" (");
+                StringBuffer sqlPiece = new StringBuffer();
+                int columnId = 0;
+                for (String column : columnTypes.keySet()) {
+                    if (sqlPiece.length() > 0) {
+                        sql.append(", ");
+                        sqlPiece.append(", ");
                     }
-                    sql.append(") VALUES (").append(sqlPiece).append(")");
-                    PreparedStatement ps = SqlUtils.getPreparedStatement(
-                            platform.getDataSource(), sql.toString());
+                    sql.append(column);
+                    sqlPiece.append("?");
 
-                    System.err.println("Loading table " + tableName
-                            + " to database from file\n");
-                    String nextLine;
-                    while ((nextLine = reader.readLine()) != null) {
-                        String[] parts = nextLine.split("\t", columnIds.size());
-                        for (int i = 0; i < parts.length; i++) {
-                            String nextValue = parts[i];
-                            String columnName = columnIds.get(i);
-                            String typeString = columnTypes.get(columnName);
-                            ColumnType type = ColumnType.parse(typeString);
-
-                            if (nextValue.trim().equals("")
-                                    && !type.isText())
-                                nextValue = "0";
-
-                            if (!type.isText()) {
-                                ps.setObject(i + 1, Integer.parseInt(nextValue));
-                            } else {
-                                ps.setObject(i + 1, nextValue);
-                            }
-                        }
-                        ps.executeUpdate();
-                    }
-                    SqlUtils.closeStatement(ps);
-                } catch (SQLException ex) {
-                    System.err.println("Create table " + tableName + " failed");
-                    ex.printStackTrace();
+                    columnIds.put(columnId++, column);
                 }
+                sql.append(") VALUES (").append(sqlPiece).append(")");
+                PreparedStatement ps = SqlUtils.getPreparedStatement(
+                        platform.getDataSource(), sql.toString());
+
+                System.err.println("Loading table " + tableName
+                        + " to database from file\n");
+                String nextLine;
+                while ((nextLine = reader.readLine()) != null) {
+                    String[] parts = nextLine.split("\t", columnIds.size());
+                    for (int i = 0; i < parts.length; i++) {
+                        String nextValue = parts[i];
+                        String columnName = columnIds.get(i);
+                        String typeString = columnTypes.get(columnName);
+                        ColumnType type = ColumnType.parse(typeString);
+
+                        if (nextValue.trim().equals("") && !type.isText())
+                            nextValue = "0";
+
+                        if (!type.isText()) {
+                            ps.setObject(i + 1, Integer.parseInt(nextValue));
+                        } else {
+                            ps.setObject(i + 1, nextValue);
+                        }
+                    }
+                    ps.executeUpdate();
+                }
+                SqlUtils.closeStatement(ps);
+            } catch (SQLException ex) {
+                System.err.println("Create table " + tableName + " failed");
+                ex.printStackTrace();
             }
         }
     }
 
-    private static String[] getTableNames(String tableDir) {
+    private String[] getTableNames(String tableDir) {
         File dir = new File(tableDir);
         File[] files = dir.listFiles();
         String[] tables = new String[files.length];
@@ -142,8 +180,8 @@ public class TestDBManager {
         return tables;
     }
 
-    private static Map<String, String> createTable(String tableName,
-            String firstLine, DBPlatform platform) throws Exception {
+    private Map<String, String> createTable(String tableName, String firstLine,
+            DBPlatform platform) throws Exception {
         DataSource dataSource = platform.getDataSource();
 
         StringBuffer sql = new StringBuffer("CREATE TABLE ");
@@ -196,87 +234,4 @@ public class TestDBManager {
 
         return columnTypes;
     }
-
-    private static void dropTable(String tableName, DataSource dataSource)
-            throws Exception {
-
-        String dropTable = "drop table " + tableName;
-        SqlUtils.executeUpdate(dataSource, dropTable);
-    }
-
-    private static void addOption(Options options, String argName,
-            boolean hasValue, boolean required, String desc) {
-
-        Option option = new Option(argName, hasValue, desc);
-        option.setRequired(required);
-        option.setArgName(argName);
-
-        options.addOption(option);
-    }
-
-    static Options declareOptions() {
-        Options options = new Options();
-
-        // model name
-        addOption(options, "model", true, true, "the name of the model.  This "
-                + "is used to find the config file "
-                + "($GUS_HOME/config/model_name-config.xml)");
-
-        // tableDir
-        addOption(options, "tableDir", true, false, "the path to a directory "
-                + "that contains the data files to be created at tables in the"
-                + " database. The path can be absolute path (starts with '/'),"
-                + " or relative path from $GUS_HOME (not starting with '/').");
-
-        addOption(options, "drop", false, false, "Drop existing test database");
-
-        addOption(options, "create", false, false, "Create new test database");
-
-        return options;
-    }
-
-    static CommandLine parseOptions(String cmdName, Options options,
-            String[] args) {
-
-        CommandLineParser parser = new BasicParser();
-        CommandLine cmdLine = null;
-        try {
-            // parse the command line arguments
-            cmdLine = parser.parse(options, args);
-        } catch (ParseException exp) {
-            // oops, something went wrong
-            System.err.println("");
-            System.err.println("Parsing failed.  Reason: " + exp.getMessage());
-            System.err.println("");
-
-            usage(cmdName, options);
-        }
-
-        return cmdLine;
-    }
-
-    /**
-     * As it currently stands, TestDBManager is called from the command line
-     * with wdkTestDb. That file has its own command line arguments (different
-     * from these) so this usage() method will not be called.
-     */
-
-    static void usage(String cmdName, Options options) {
-
-        String newline = System.getProperty("line.separator");
-        String cmdlineSyntax = cmdName + " -model model_name"
-                + " tableDir <table_dir> [-create | -drop] ";
-
-        String header = newline + "Parse flat files representing database "
-                + "tables and insert into database." + newline + newline
-                + "Options:";
-
-        String footer = "";
-
-        // PrintWriter stderr = new PrintWriter(System.err);
-        HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp(70, cmdlineSyntax, header, options, footer);
-        System.exit(1);
-    }
-
 }

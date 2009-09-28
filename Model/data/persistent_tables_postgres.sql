@@ -71,8 +71,8 @@ CREATE TABLE wdkengine.answers
   CONSTRAINT "answers_uq1" UNIQUE (project_id, answer_checksum)
 );
 
-CREATE INDEX wdkengine.answers_idx01 ON wdkengine.answers (prev_answer_id);
-CREATE INDEX wdkengine.answers_idx02 ON wdkengine.answers (old_query_checksum);
+CREATE INDEX answers_idx01 ON wdkengine.answers (prev_answer_id);
+CREATE INDEX answers_idx02 ON wdkengine.answers (old_query_checksum);
 
 
 CREATE TABLE wdkengine.dataset_indices
@@ -87,7 +87,7 @@ CREATE TABLE wdkengine.dataset_indices
   CONSTRAINT "DATASET_CHECKSUM_UNIQUE" UNIQUE (dataset_checksum)
 );
 
-CREATE INDEX wdkengine.dataset_indices_idx01 ON wdkengine.dataset_indices (prev_dataset_id);
+CREATE INDEX dataset_indices_idx01 ON wdkengine.dataset_indices (prev_dataset_id);
 
 
 CREATE TABLE wdkengine.dataset_values
@@ -99,7 +99,7 @@ CREATE TABLE wdkengine.dataset_values
       REFERENCES wdkengine.dataset_indices (dataset_id)
 );
 
-CREATE INDEX wdkengine.dataset_values_idx01 ON wdkengine.dataset_values (dataset_id);
+CREATE INDEX dataset_values_idx01 ON wdkengine.dataset_values (dataset_id);
 
 
 CREATE TABLE wdkengine.clob_values
@@ -142,7 +142,7 @@ CREATE TABLE wdkuser.users
   CONSTRAINT "USER_EMAIL_UNIQUE" UNIQUE (email)
 );
 
-CREATE INDEX wdkuser.users_idx01 ON wdkuser.users (prev_user_id);
+CREATE INDEX users_idx01 ON wdkuser.users (prev_user_id);
 
 
 CREATE TABLE wdkuser.user_roles
@@ -209,7 +209,7 @@ CREATE TABLE wdkuser.step_params
       REFERENCES wdkuser.steps (step_id)
 );
 
-CREATE INDEX wdkuser.step_params_idx02 ON wdkuser.step_params (step_id, param_name);
+CREATE INDEX step_params_idx02 ON wdkuser.step_params (step_id, param_name);
 
 
 CREATE TABLE wdkuser.strategies
@@ -239,7 +239,7 @@ CREATE TABLE wdkuser.strategies
          REFERENCES wdkuser.users (user_id)
 );
 
-CREATE INDEX wdkuser.strategies_idx01 ON wdkuser.strategies (signature, project_id);
+CREATE INDEX strategies_idx01 ON wdkuser.strategies (signature, project_id);
 
 
 CREATE TABLE wdkuser.user_datasets

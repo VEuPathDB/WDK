@@ -42,7 +42,7 @@ public class RecordInstance extends AttributeValueContainer {
             WdkUserException {
         this.user = user;
         this.recordClass = recordClass;
-	this.isValidRecord = true;
+        this.isValidRecord = true;
 
         pkValues = lookupPrimaryKeys(pkValues);
         PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
@@ -63,7 +63,7 @@ public class RecordInstance extends AttributeValueContainer {
             JSONException, WdkUserException {
         this.answerValue = answerValue;
         this.recordClass = answerValue.getQuestion().getRecordClass();
-	this.isValidRecord = true;
+        this.isValidRecord = true;
 
         // the record instance from answer doesn't need the pk value translation
         PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
@@ -72,7 +72,7 @@ public class RecordInstance extends AttributeValueContainer {
     }
 
     public boolean isValidRecord() {
-	return isValidRecord;
+        return isValidRecord;
     }
 
     /**
@@ -134,13 +134,14 @@ public class RecordInstance extends AttributeValueContainer {
         ResultList resultList = null;
         try {
             resultList = instance.getResults();
-  
-	    if (!resultList.next()) {
-		// throwing exception prevents proper handling in front end...just return?
-                //throw new WdkModelException("Attribute query " + queryName
-                //        + " doesn't return any row: " + instance.getSql());
-		isValidRecord = false;
-		return;
+
+            if (!resultList.next()) {
+                // throwing exception prevents proper handling in front
+                // end...just return?
+                // throw new WdkModelException("Attribute query " + queryName
+                // + " doesn't return any row: " + instance.getSql());
+                isValidRecord = false;
+                return;
             }
 
             Map<String, AttributeField> fields = recordClass.getAttributeFieldMap();

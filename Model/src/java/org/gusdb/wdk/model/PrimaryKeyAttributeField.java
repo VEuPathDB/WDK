@@ -33,6 +33,10 @@ public class PrimaryKeyAttributeField extends AttributeField {
         columnRefSet.toArray(array);
         return array;
     }
+    
+    public boolean hasColumn(String columnName) {
+        return columnRefSet.contains(columnName);
+    }
 
     public void addText(WdkModelText text) {
         this.textList.add(text);
