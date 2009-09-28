@@ -2,6 +2,24 @@
 ooooooooooooooooooooooooooo  WDK Version 1.19  ooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 
+Summary: A minor release, fixed several bugs, and some new features.
+
+
+=========================== Model Features ===========================
+
+* new type-ahead param
+* new dependent param
+
+
+=========================== View Features ===========================
+
+* allow adding multiple columns at once into the summary view.
+
+
+------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.19  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
 Summary: This is a major release, the WDK is updated to support the Lasted UI 
 advancement, including the strategy systems.
 
