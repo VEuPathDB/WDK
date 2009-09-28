@@ -239,50 +239,61 @@ public class AnswerValue {
             JSONException, WdkUserException {
         if (resultSizesByProject == null) {
             resultSizesByProject = new LinkedHashMap<String, Integer>();
-            // need to run the query first
-            ResultList resultList;
-            // for portal
-            String message = idsQueryInstance.getResultMessage();
-            if (filter == null) resultList = idsQueryInstance.getResults();
-            else resultList = filter.getResults(this);
 
-            try {
-                boolean hasMessage = (message != null && message.length() > 0);
-                if (hasMessage) {
-                    String[] sizes = message.split(",");
-                    for (String size : sizes) {
-                        String[] parts = size.split(":");
-                        if (parts.length > 1 && parts[1].matches("^\\d++$")) {
-                            resultSizesByProject.put(parts[0],
-                                    Integer.parseInt(parts[1]));
-                        } else {
-                            // make sure if the message is not expected, the
-                            // correct result size can still be retrieved from
-                            // cached result.
-                            hasMessage = false;
+            // make sure the project_id is defined in the record
+            PrimaryKeyAttributeField primaryKey = question.getRecordClass().getPrimaryKeyAttributeField();
+            if (!primaryKey.hasColumn(Utilities.COLUMN_PROJECT_ID)) {
+                String projectId = question.getWdkModel().getProjectId();
+                // no project_id defined in the record, use the full size
+                resultSizesByProject.put(projectId, getResultSize());
+            } else {
+                // need to run the query first
+                ResultList resultList;
+                // for portal
+                String message = idsQueryInstance.getResultMessage();
+                if (filter == null) resultList = idsQueryInstance.getResults();
+                else resultList = filter.getResults(this);
+
+                try {
+                    boolean hasMessage = (message != null && message.length() > 0);
+                    if (hasMessage) {
+                        String[] sizes = message.split(",");
+                        for (String size : sizes) {
+                            String[] parts = size.split(":");
+                            if (parts.length > 1 && parts[1].matches("^\\d++$")) {
+                                resultSizesByProject.put(parts[0],
+                                        Integer.parseInt(parts[1]));
+                            } else {
+                                // make sure if the message is not expected, the
+                                // correct result size can still be retrieved
+                                // from
+                                // cached result.
+                                hasMessage = false;
+                            }
                         }
                     }
-                }
-                // if the previous step fails, make sure the result size can
-                // still be calculated from cache.
-                if (!hasMessage) {
-                    while (resultList.next()) {
-                        if (!hasMessage) {
-                            // also count by project
-                            String project = resultList.get(
-                                    Utilities.COLUMN_PROJECT_ID).toString();
-                            int subCounter = 0;
-                            if (resultSizesByProject.containsKey(project))
-                                subCounter = resultSizesByProject.get(project);
-                            // if subContent < 0, it is an error code. don't
-                            // change it.
-                            if (subCounter >= 0)
-                                resultSizesByProject.put(project, ++subCounter);
+                    // if the previous step fails, make sure the result size can
+                    // still be calculated from cache.
+                    if (!hasMessage) {
+                        while (resultList.next()) {
+                            if (!hasMessage) {
+                                // also count by project
+                                String project = resultList.get(
+                                        Utilities.COLUMN_PROJECT_ID).toString();
+                                int subCounter = 0;
+                                if (resultSizesByProject.containsKey(project))
+                                    subCounter = resultSizesByProject.get(project);
+                                // if subContent < 0, it is an error code. don't
+                                // change it.
+                                if (subCounter >= 0)
+                                    resultSizesByProject.put(project,
+                                            ++subCounter);
+                            }
                         }
                     }
+                } finally {
+                    resultList.close();
                 }
-            } finally {
-                resultList.close();
             }
         }
         return resultSizesByProject;
