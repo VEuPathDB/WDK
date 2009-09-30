@@ -67,6 +67,7 @@ function WdkFilter() {
 			if (data == '0') {
 				deadz = document.createElement('span');
 				$(deadz).addClass("link-url");
+				$(deadz).attr('id',link.attr('id'));
 				$(deadz).text(data);
 				link.replaceWith(deadz);	
 			}else{ link.text(data);}
