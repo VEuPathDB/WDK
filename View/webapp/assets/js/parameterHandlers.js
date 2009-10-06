@@ -94,6 +94,7 @@ function updateDependentParam(paramName, dependedValue) {
 			$.ajax({
 				url: sendReqUrl,
 				type: "POST",
+				data: {},
 				dataType: "html",
 				success: function(data){
 					var parentElt = $("td#" + paramName + "aaa > div");
