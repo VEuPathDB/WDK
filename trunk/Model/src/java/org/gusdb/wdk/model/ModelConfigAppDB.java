@@ -7,7 +7,7 @@ package org.gusdb.wdk.model;
  * @author xingao
  * 
  */
-public class ModelConfigApplicationDB extends ModelConfigDB {
+public class ModelConfigAppDB extends ModelConfigDB {
 
     private String userDbLink;
 

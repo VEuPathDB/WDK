@@ -52,7 +52,7 @@ public class RecordClass extends WdkModelBase implements
                 boolean quote = type.isText();
                 param.setName(columnName);
                 param.setQuote(quote);
-                //param.setAllowEmpty(true);
+                // param.setAllowEmpty(true);
 
                 param.resolveReferences(wdkModel);
                 param.setResources(wdkModel);
@@ -150,6 +150,9 @@ public class RecordClass extends WdkModelBase implements
     private Map<String, AttributeField> defaultSummaryAttributeFields = new LinkedHashMap<String, AttributeField>();
     private Map<String, Boolean> defaultSortingMap = new LinkedHashMap<String, Boolean>();
 
+    private String allRecordsQueryRef;
+    private Query allRecordsQuery;
+
     // ////////////////////////////////////////////////////////////////////
     // Called at model creation time
     // ////////////////////////////////////////////////////////////////////
@@ -163,7 +166,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public String getDisplayName() {
-        return (displayName == null) ? getFullName() : displayName;
+        return (displayName == null) ? getType() : displayName;
     }
 
     public void setDisplayName(String displayName) {
@@ -431,6 +434,10 @@ public class RecordClass extends WdkModelBase implements
         if (resolved) return;
 
         this.wdkModel = model;
+
+        if (name.length() == 0 || name.indexOf('\'') >= 0)
+            throw new WdkModelException("recordClass name cannot be empty or "
+                    + "having single quotes: " + name);
 
         // resolve the references for attribute queries
         String[] paramNames = primaryKeyField.getColumnRefs();
@@ -921,7 +928,7 @@ public class RecordClass extends WdkModelBase implements
      * @return the type
      */
     public String getType() {
-        return type;
+        return (type == null) ? getFullName() : type;
     }
 
     /**
@@ -1007,5 +1014,13 @@ public class RecordClass extends WdkModelBase implements
 
     public String getChecksum() {
         return null;
+    }
+    
+    public void setAllRecordsQueryRef(String queryRef) {
+        this.allRecordsQueryRef = queryRef;
+    }
+    
+    public Query getAllRecordsQuery() {
+        return allRecordsQuery;
     }
 }

@@ -20,7 +20,7 @@ public class ModelConfig {
     private String emailContent;
 
     private ModelConfigUserDB userDB;
-    private ModelConfigApplicationDB appDB;
+    private ModelConfigAppDB appDB;
 
     /**
      * The projectId is not part of the config file content, it is input by the
@@ -156,7 +156,7 @@ public class ModelConfig {
     /**
      * @return the appDB
      */
-    public ModelConfigApplicationDB getApplicationDB() {
+    public ModelConfigAppDB getAppDB() {
         return appDB;
     }
 
@@ -164,7 +164,7 @@ public class ModelConfig {
      * @param appDB
      *            the appDB to set
      */
-    public void setApplicationDB(ModelConfigApplicationDB appDB) {
+    public void setAppDB(ModelConfigAppDB appDB) {
         this.appDB = appDB;
     }
 
