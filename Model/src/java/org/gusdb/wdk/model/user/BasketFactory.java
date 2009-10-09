@@ -237,12 +237,10 @@ public class BasketFactory {
                     + UserFactory.TABLE_USER + dbLink + " u, (" + allRecordsSql
                     + ") i WHERE b." + COLUMN_USER_ID + " = u."
                     + UserFactory.COLUMN_USER_ID + " AND u."
-                    + UserFactory.COLUMN_SIGNATURE + " = ? AND b."
-                    + COLUMN_PROJECT_ID + " = '" + projectId + "' AND b."
-                    + COLUMN_RECORD_CLASS + " = '" + recordClass + "'";
-            for(int i = 1; i <= pkColumns.length; i++) {
-                
-            }
+                    + UserFactory.COLUMN_SIGNATURE + " = $$"
+                    + PARAM_USER_SIGNATURE + "$$ AND b." + COLUMN_PROJECT_ID
+                    + " = '" + projectId + "' AND b." + COLUMN_RECORD_CLASS
+                    + " = '" + recordClass + "'";
         }
         return query;
     }
