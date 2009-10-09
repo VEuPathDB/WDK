@@ -119,7 +119,7 @@ public class ModelXmlParser extends XmlParser {
             properties.put("PROJECT_ID", projectId);
         }
         if (!properties.containsKey("USER_DBLINK")) {
-            String userDbLink = config.getApplicationDB().getUserDbLink();
+            String userDbLink = config.getAppDB().getUserDbLink();
             properties.put("USER_DBLINK", userDbLink);
         }
         if (!properties.containsKey("USER_SCHEMA")) {

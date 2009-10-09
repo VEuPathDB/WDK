@@ -69,7 +69,12 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
 
     @Override
     public void resolveReferences(WdkModel model) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        if (name.length() == 0 || name.indexOf('\'') >= 0)
+            throw new WdkModelException("recordClassSet name cannot be empty "
+                    + "or having single quotes: " + name);
+
         Iterator<RecordClass> recordClassIterator = recordClassMap.values().iterator();
         while (recordClassIterator.hasNext()) {
             RecordClass recordClass = recordClassIterator.next();

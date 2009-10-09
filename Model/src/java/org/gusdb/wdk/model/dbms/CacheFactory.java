@@ -76,24 +76,24 @@ public class CacheFactory {
         }
     }
 
-    public void resetCache() {
+    public void resetCache(boolean purge) {
         // drop cache tables and we are done
-        dropCacheTables();
+        dropCacheTables(purge);
     }
 
-    public void recreateCache() {
+    public void recreateCache(boolean purge) {
         // drop cache;
-        dropCache();
+        dropCache(purge);
         // create them back
         createCache();
     }
 
-    public void dropCache() {
+    public void dropCache(boolean purge) {
         // drop cache tables
-        dropCacheTables();
+        dropCacheTables(purge);
 
         try {
-            SqlUtils.executeUpdate(dataSource, "DROP TABLE " + TABLE_INSTANCE);
+            platform.dropTable(null, TABLE_INSTANCE, purge);
         } catch (SQLException ex) {
             logger.error("Cannot drop table [" + TABLE_INSTANCE + "]. "
                     + ex.getMessage());
@@ -108,7 +108,7 @@ public class CacheFactory {
 
         // drop index tables and sequences
         try {
-            SqlUtils.executeUpdate(dataSource, "DROP TABLE " + TABLE_QUERY);
+            platform.dropTable(null, TABLE_QUERY, purge);
         } catch (SQLException ex) {
             logger.error("Cannot drop table [" + TABLE_QUERY + "]. "
                     + ex.getMessage());
@@ -123,7 +123,7 @@ public class CacheFactory {
         }
     }
 
-    public void dropCache(int instanceId) {
+    public void dropCache(int instanceId, boolean purge) {
         String whereClause = " WHERE " + COLUMN_INSTANCE_ID + " = "
                 + instanceId;
 
@@ -156,6 +156,8 @@ public class CacheFactory {
             return;
         }
 
+        // no need to drop cache table, since it may be used by other queries
+        // from the same question; just delete rows from instance table.
         sql = new StringBuffer("DELETE FROM ");
         sql.append(cacheTable);
         sql.append(whereClause);
@@ -178,7 +180,7 @@ public class CacheFactory {
         }
     }
 
-    public void dropCache(String queryName) {
+    public void dropCache(String queryName, boolean purge) {
         String cacheTable;
         try {
             Query query = (Query) wdkModel.resolveReference(queryName);
@@ -192,7 +194,7 @@ public class CacheFactory {
 
         // drop the cacheTable
         try {
-            SqlUtils.executeUpdate(dataSource, "DROP TABLE " + cacheTable);
+            platform.dropTable(null, cacheTable, purge);
         } catch (SQLException ex) {
             logger.error("Cannot drop table [" + cacheTable + "]. "
                     + ex.getMessage());
@@ -335,7 +337,7 @@ public class CacheFactory {
         }
     }
 
-    private void dropCacheTables() {
+    private void dropCacheTables(boolean purge) {
         // get a list of cache tables
         StringBuffer sql = new StringBuffer("SELECT DISTINCT ");
         sql.append(COLUMN_TABLE_NAME).append(" FROM ").append(TABLE_QUERY);
@@ -357,7 +359,7 @@ public class CacheFactory {
         // drop the cache tables
         for (String cacheTable : cacheTables) {
             try {
-                SqlUtils.executeUpdate(dataSource, "DROP TABLE " + cacheTable);
+                platform.dropTable(null, cacheTable, purge);
             } catch (SQLException ex) {
                 logger.error("Cannot drop table [" + cacheTable + "]. "
                         + ex.getMessage());
@@ -379,18 +381,19 @@ public class CacheFactory {
         }
     }
 
-    public QueryInfo getQueryInfo(Query query) throws SQLException,
+    public synchronized QueryInfo getQueryInfo(Query query) throws SQLException,
             NoSuchAlgorithmException, JSONException, WdkModelException {
-        synchronized (query) {
-            QueryInfo queryInfo = checkQueryInfo(query);
+        String checksum = query.getChecksum(true);
+        String queryName = query.getFullName();
+            QueryInfo queryInfo = checkQueryInfo(queryName, checksum);
             if (queryInfo != null) return queryInfo;
 
             // cache table doesn't exist, create one
             queryInfo = new QueryInfo();
             queryInfo.setQueryId(platform.getNextId(null, TABLE_QUERY));
             queryInfo.setCacheTable(CACHE_TABLE_PREFIX + queryInfo.getQueryId());
-            queryInfo.setQueryName(query.getFullName());
-            queryInfo.setQueryChecksum(query.getChecksum(true));
+            queryInfo.setQueryName(queryName);
+            queryInfo.setQueryChecksum(checksum);
 
             StringBuffer sql = new StringBuffer("INSERT INTO ");
             sql.append(TABLE_QUERY).append(" (");
@@ -413,15 +416,11 @@ public class CacheFactory {
                 SqlUtils.closeStatement(psInsert);
             }
             return queryInfo;
-        }
     }
 
-    private QueryInfo checkQueryInfo(Query query)
+    private QueryInfo checkQueryInfo(String queryName, String checksum)
             throws NoSuchAlgorithmException, JSONException, WdkModelException,
             SQLException {
-        String queryName = query.getFullName();
-        String queryChecksum = query.getChecksum(true);
-
         // check if the query table has been seen before
         QueryInfo queryInfo = null;
 
@@ -435,13 +434,13 @@ public class CacheFactory {
         try {
             ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             ps.setString(1, queryName);
-            ps.setString(2, queryChecksum);
+            ps.setString(2, checksum);
             resultSet = ps.executeQuery();
 
             if (resultSet.next()) {
                 queryInfo = new QueryInfo();
                 queryInfo.setQueryName(queryName);
-                queryInfo.setQueryChecksum(queryChecksum);
+                queryInfo.setQueryChecksum(checksum);
                 queryInfo.setQueryId(resultSet.getInt(COLUMN_QUERY_ID));
                 queryInfo.setCacheTable(resultSet.getString(COLUMN_TABLE_NAME));
 

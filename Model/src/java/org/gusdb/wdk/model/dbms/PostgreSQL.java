@@ -18,7 +18,7 @@ public class PostgreSQL extends DBPlatform {
 
     public PostgreSQL() throws SQLException, ClassNotFoundException {
         super("SELECT 'ok'");
-        
+
         // register the driver
         Class.forName("org.postgresql.Driver");
 
@@ -210,5 +210,21 @@ public class PostgreSQL extends DBPlatform {
     @Override
     public String convertBoolean(boolean value) {
         return value ? "TRUE" : "FALSE";
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.dbms.DBPlatform#dropTable(java.lang.String,
+     * java.lang.String)
+     */
+    @Override
+    public void dropTable(String schema, String table, boolean purge)
+            throws SQLException {
+        String sql = "DROP TABLE ";
+        if (schema != null) sql = schema;
+        sql += table;
+        // ignore purge option
+        SqlUtils.executeUpdate(dataSource, sql);
     }
 }

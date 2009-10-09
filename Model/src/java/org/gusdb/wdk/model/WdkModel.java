@@ -440,9 +440,13 @@ public class WdkModel {
             ClassNotFoundException {
 
         // assign projectId
-        this.projectId = modelConfig.getProjectId();
+        String projectId = modelConfig.getProjectId().trim();
+        if (projectId.length() == 0 || projectId.indexOf('\'') >= 0)
+            throw new WdkModelException("The projectId/modelName cannot be "
+                    + "empty, and cannot have single quote in it: " + projectId);
+        this.projectId = projectId;
         this.modelConfig = modelConfig;
-        ModelConfigApplicationDB appDB = modelConfig.getApplicationDB();
+        ModelConfigAppDB appDB = modelConfig.getAppDB();
         ModelConfigUserDB userDB = modelConfig.getUserDB();
 
         // initialize authentication factory
@@ -974,7 +978,7 @@ public class WdkModel {
     public LinkedHashMap<String, Category> getCategoryMap() {
         return new LinkedHashMap<String, Category>(categoryMap);
     }
-    
+
     public LinkedHashMap<String, Category> getRootCategoryMap() {
         return new LinkedHashMap<String, Category>(rootCategoryMap);
     }
@@ -1014,7 +1018,7 @@ public class WdkModel {
             File file = new File(secretKeyFileLoc);
             if (!file.exists()) return null;
 
-            InputStream fis =  new FileInputStream(secretKeyFileLoc);
+            InputStream fis = new FileInputStream(secretKeyFileLoc);
             StringBuffer contents = new StringBuffer();
             int chr;
             while ((chr = fis.read()) != -1) {

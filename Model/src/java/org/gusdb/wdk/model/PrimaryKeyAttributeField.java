@@ -19,9 +19,9 @@ public class PrimaryKeyAttributeField extends AttributeField {
     private String aliasQueryRef = null;
 
     public PrimaryKeyAttributeField() {
-        // this step should be deprecated
-        // add project id into the column list
-        // columnRefSet.add(Utilities.COLUMN_PROJECT_ID);
+    // this step should be deprecated
+    // add project id into the column list
+    // columnRefSet.add(Utilities.COLUMN_PROJECT_ID);
     }
 
     public void addColumnRef(WdkModelText columnRef) {
@@ -33,7 +33,7 @@ public class PrimaryKeyAttributeField extends AttributeField {
         columnRefSet.toArray(array);
         return array;
     }
-    
+
     public boolean hasColumn(String columnName) {
         return columnRefSet.contains(columnName);
     }
@@ -49,7 +49,8 @@ public class PrimaryKeyAttributeField extends AttributeField {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.Field#setRecordClass(org.gusdb.wdk.model.RecordClass)
+     * @see
+     * org.gusdb.wdk.model.Field#setRecordClass(org.gusdb.wdk.model.RecordClass)
      */
     @Override
     public void setRecordClass(RecordClass recordClass) {
@@ -63,7 +64,6 @@ public class PrimaryKeyAttributeField extends AttributeField {
     public String getAliasQueryRef() {
         return aliasQueryRef;
     }
-    
 
     /**
      * @param aliasQueryRef
@@ -72,7 +72,6 @@ public class PrimaryKeyAttributeField extends AttributeField {
     public void setAliasQueryRef(String aliasQueryRef) {
         this.aliasQueryRef = aliasQueryRef;
     }
-    
 
     /*
      * (non-Javadoc)
@@ -98,6 +97,9 @@ public class PrimaryKeyAttributeField extends AttributeField {
         if (columnRefSet.size() == 0)
             throw new WdkModelException("No primary key column defined in "
                     + "recordClass " + recordClass.getFullName());
+        if (columnRefSet.size() > 3)
+            throw new WdkModelException("You can specify up to 3 primary key "
+                    + "columns in recordClass " + recordClass.getFullName());
 
         // exclude format
         for (WdkModelText text : textList) {
@@ -116,7 +118,8 @@ public class PrimaryKeyAttributeField extends AttributeField {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     * @see
+     * org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
