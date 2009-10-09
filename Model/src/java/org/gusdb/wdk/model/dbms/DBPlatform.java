@@ -151,6 +151,9 @@ public abstract class DBPlatform {
 
     public abstract String convertBoolean(boolean value);
 
+    public abstract void dropTable(String schema, String table, boolean purge)
+            throws SQLException;
+
     // #########################################################################
     // Common methods are platform independent
     // #########################################################################

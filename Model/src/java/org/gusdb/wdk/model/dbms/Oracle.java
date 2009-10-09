@@ -236,4 +236,20 @@ public class Oracle extends DBPlatform {
     public String convertBoolean(boolean value) {
         return value ? "1" : "0";
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.dbms.DBPlatform#dropTable(java.lang.String,
+     * java.lang.String)
+     */
+    @Override
+    public void dropTable(String schema, String table, boolean purge)
+            throws SQLException {
+        String sql = "DROP TABLE ";
+        if (schema != null) sql = schema;
+        sql += table;
+        if (purge) sql += " PURGE";
+        SqlUtils.executeUpdate(dataSource, sql);
+    }
 }
