@@ -41,8 +41,8 @@ public class ModelConfigParser extends XmlParser {
         digester.addBeanPropertySetter("modelConfig/emailContent");
 
         // load application db
-        configureNode(digester, "modelConfig/appDb",
-                ModelConfigApplicationDB.class, "setApplicationDB");
+        configureNode(digester, "modelConfig/appDb", ModelConfigAppDB.class,
+                "setAppDB");
 
         // load user db
         configureNode(digester, "modelConfig/userDb", ModelConfigUserDB.class,

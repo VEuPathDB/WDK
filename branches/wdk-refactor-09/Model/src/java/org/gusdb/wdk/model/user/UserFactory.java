@@ -58,10 +58,11 @@ public class UserFactory {
     // -------------------------------------------------------------------------
     // data base table and column definitions
     // -------------------------------------------------------------------------
-    private static final String TABLE_USER = "users";
+    static final String TABLE_USER = "users";
 
     static final String COLUMN_USER_ID = "user_id";
-
+    static final String COLUMN_SIGNATURE = "signature";
+    
     private final String COLUMN_EMAIL = "email";
 
     // -------------------------------------------------------------------------

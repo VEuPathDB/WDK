@@ -18,6 +18,7 @@ public class CacheCLI extends BaseCLI {
     private static final String ARG_CREATE = "new";
     private static final String ARG_DROP = "drop";
     private static final String ARG_DROP_SINGLE = "dropSingle";
+    private static final String ARG_DROP_PURGE = "purge";
     private static final String ARG_RESET = "reset";
     private static final String ARG_RECREATE = "recreate";
     private static final String ARG_FORCE_DROP = "forceDrop";
@@ -68,6 +69,11 @@ public class CacheCLI extends BaseCLI {
                 + "name. The input can be a cache id (query_instance_id, to "
                 + "drop a single cache table), or a full queryName (to drop "
                 + "all cache table created by the same query).");
+        addNonValueOption(ARG_DROP_PURGE, false, "Optional argument, it will "
+                + "affect the WDK behavior when dropping cache tables. This "
+                + "option works on Oracle component database only, which "
+                + "purges the cache tables on drop table. PostgreSQL will "
+                + "ignore this option.");
         addNonValueOption(ARG_RESET, false, "drop existing WDK cache tables, "
                 + "delete rows from cache index and sorting table, but it "
                 + "won't reset sequences.");
@@ -102,6 +108,7 @@ public class CacheCLI extends BaseCLI {
         boolean resetCache = (Boolean) getOptionValue(ARG_RESET);
         boolean dropCache = (Boolean) getOptionValue(ARG_DROP);
         boolean dropSingleCache = (getOptionValue(ARG_DROP_SINGLE) != null);
+        boolean purgeCache = (Boolean) getOptionValue(ARG_DROP_PURGE);
         boolean recreateCache = (Boolean) getOptionValue(ARG_RECREATE);
         boolean showCache = (Boolean) getOptionValue(ARG_SHOW);
         // boolean noSchemaOutput = (Boolean) getOptionValue(ARG_NO_SCHEMA);
@@ -115,15 +122,15 @@ public class CacheCLI extends BaseCLI {
 
             long start = System.currentTimeMillis();
             if (newCache) factory.createCache();
-            else if (resetCache) factory.resetCache();
-            else if (dropCache) factory.dropCache();
-            else if (recreateCache) factory.recreateCache();
+            else if (resetCache) factory.resetCache(purgeCache);
+            else if (dropCache) factory.dropCache(purgeCache);
+            else if (recreateCache) factory.recreateCache(purgeCache);
             else if (showCache) factory.showCache();
             else if (dropSingleCache) {
                 String value = (String) getOptionValue(ARG_DROP_SINGLE);
                 if (value.matches("\\d+")) {
-                    factory.dropCache(Integer.parseInt(value));
-                } else factory.dropCache(value);
+                    factory.dropCache(Integer.parseInt(value), purgeCache);
+                } else factory.dropCache(value, purgeCache);
             }
             long end = System.currentTimeMillis();
             System.out.println("Command succeeded in "
