@@ -1,5 +1,4 @@
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
-<%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
@@ -81,7 +80,7 @@
 
   </tr>
   <c:if test="${step.childStep.isCollapsible}">
-    <site:stepRows latestStep="${step.childStep}" rowNum="${i}" indent="${indent + 40}"/>
+    <wdk:stepRows latestStep="${step.childStep}" rowNum="${i}" indent="${indent + 40}"/>
   </c:if>
   <c:set var="j" value="${j + 1}"/>
 </c:forEach>

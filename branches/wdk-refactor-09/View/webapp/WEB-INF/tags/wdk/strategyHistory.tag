@@ -1,5 +1,4 @@
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
-<%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
@@ -94,7 +93,7 @@
 
   <c:if test="${fn:length(strategies) > 0}">
     <div class="panel_${recTabName} history_panel unsaved-strategies">
-      <site:strategyTable strategies="${strategies}" wdkUser="${wdkUser}" prefix="Unsaved" />
+      <wdk:strategyTable strategies="${strategies}" wdkUser="${wdkUser}" prefix="Unsaved" />
     </div>
   </c:if>
 </c:forEach>
@@ -109,7 +108,7 @@
 
   <c:if test="${fn:length(strategies) > 0}">
     <div class="panel_${recTabName} history_panel saved-strategies">
-      <site:strategyTable strategies="${strategies}" wdkUser="${wdkUser}" prefix="Saved" />
+      <wdk:strategyTable strategies="${strategies}" wdkUser="${wdkUser}" prefix="Saved" />
     </div>
   </c:if>
 </c:forEach>
@@ -144,7 +143,7 @@
 <%-- invalid strategies, if any --%>
 <c:if test="${fn:length(invalidStrategies) > 0}">
     <div class="panel_invalid history_panel unsaved-strategies">
-      <site:strategyTable strategies="${user.invalidStrategies}" wdkUser="${wdkUser}" prefix="Invalid" />
+      <wdk:strategyTable strategies="${user.invalidStrategies}" wdkUser="${wdkUser}" prefix="Invalid" />
     </div>
 </c:if>
 

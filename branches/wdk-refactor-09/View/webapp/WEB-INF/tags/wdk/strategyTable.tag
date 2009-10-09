@@ -1,5 +1,4 @@
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
-<%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
@@ -94,7 +93,7 @@
 <%-- here, the description cannot expand beyond the td, it wraps using more vertical space.
 	<table id="strat_description">
           <tbody id="steps_${strategyId}">
-          <site:stepRows latestStep="${strategy.latestStep}" rowNum="${i}" indent="0"/>
+          <wdk:stepRows latestStep="${strategy.latestStep}" rowNum="${i}" indent="0"/>
           </tbody>    
         </table>
 --%>
@@ -153,7 +152,7 @@
 
 	<table id="strat_description">
           <tbody id="steps_${strategyId}">
-          <site:stepRows latestStep="${strategy.latestStep}" rowNum="${i}" indent="50"/>
+          <wdk:stepRows latestStep="${strategy.latestStep}" rowNum="${i}" indent="50"/>
           </tbody>    
         </table>
 
