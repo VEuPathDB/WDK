@@ -26,6 +26,7 @@ import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.user.AnswerFactory;
+import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.StepFactory;
@@ -139,6 +140,7 @@ public class WdkModel {
     private StepFactory stepFactory;
     private DatasetFactory datasetFactory;
     private QueryFactory queryFactory;
+    private BasketFactory basketFactory;
 
     private List<PropertyList> defaultPropertyLists = new ArrayList<PropertyList>();
     private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<String, String[]>();
@@ -463,6 +465,7 @@ public class WdkModel {
         datasetFactory = new DatasetFactory(this);
         queryFactory = new QueryFactory(this);
         answerFactory = new AnswerFactory(this);
+        basketFactory = new BasketFactory(this);
 
         // set the exception header
         WdkModelException.modelName = getProjectId();
@@ -470,6 +473,10 @@ public class WdkModel {
 
         // internal sets will be created if author hasn't define them
         createInternalSets();
+
+        // it has to be called after internal sets are created, but before
+        // recordClass references are resolved.
+        addBasketReferences();
 
         // exclude resources that are not used by this project
         excludeResources();
@@ -479,6 +486,32 @@ public class WdkModel {
 
         // create boolean questions
         createBooleanQuestions();
+        createBasketQuestions();
+    }
+
+    private void addBasketReferences() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        for (RecordClassSet rcSet : recordClassSetList) {
+            for (RecordClass recordClass : rcSet.getRecordClasses()) {
+                if (recordClass.getAllRecordsQueryRef() != null) {
+                    basketFactory.createAttributeQueryRef(recordClass);
+                }
+            }
+        }
+    }
+
+    private void createBasketQuestions() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        for (RecordClassSet rcSet : getAllRecordClassSets()) {
+            for (RecordClass recordClass : rcSet.getRecordClasses()) {
+                if (recordClass.getAllRecordsQuery() != null) {
+                    basketFactory.createBasketQuestion(recordClass);
+                    basketFactory.createBasketAttributeQuery(recordClass);
+                }
+            }
+        }
     }
 
     public ModelConfig getModelConfig() {

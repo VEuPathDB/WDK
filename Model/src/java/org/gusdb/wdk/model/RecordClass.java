@@ -565,6 +565,18 @@ public class RecordClass extends WdkModelBase implements
         // create column attribute fields for primary keys if needed.
         createPriamryKeySubFields();
 
+        // resolve the reference to the all records query
+        if (allRecordsQueryRef != null) {
+            Query query = (Query) model.resolveReference(allRecordsQueryRef);
+            // the query should return all pk columns
+            validateQuery(query);
+            // and it shouldn't have any params
+            if (query.getParams().length > 0)
+                throw new WdkModelException("All records query "
+                        + query.getFullName() + " should not have any params.");
+            this.allRecordsQuery = query;
+        }
+
         resolved = true;
     }
 
@@ -1015,11 +1027,15 @@ public class RecordClass extends WdkModelBase implements
     public String getChecksum() {
         return null;
     }
-    
+
     public void setAllRecordsQueryRef(String queryRef) {
         this.allRecordsQueryRef = queryRef;
     }
-    
+
+    public String getAllRecordsQueryRef() {
+        return allRecordsQueryRef;
+    }
+
     public Query getAllRecordsQuery() {
         return allRecordsQuery;
     }
