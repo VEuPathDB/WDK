@@ -716,6 +716,9 @@
           <data type="boolean" />
         </attribute>
       </optional>
+      <optional>
+        <attribute name="allRecordsQueryRef" />
+      </optional>
       <ref name="IncludeExclude" />
       <zeroOrMore>
         <element name="testParamValues">
