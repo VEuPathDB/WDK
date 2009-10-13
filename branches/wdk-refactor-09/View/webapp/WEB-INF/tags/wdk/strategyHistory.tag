@@ -67,9 +67,6 @@
   </li>
   </ul>
 
-</c:if>  <%-- end display link to old site --%>
-
-
 <table class="history_controls clear_all">
    <tr>
       <td>Select:&nbsp;<a class="check_toggle" onclick="selectAllHist()" href="javascript:void(0)">All</a>&nbsp|&nbsp;
