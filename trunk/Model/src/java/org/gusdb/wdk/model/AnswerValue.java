@@ -794,7 +794,7 @@ public class AnswerValue {
                 if (buffer.length() > 0) buffer.append(", ");
                 buffer.append(name);
             }
-
+            logger.debug("Paged ID SQL:\n" + sql);
             throw new WdkModelException("The expacted result size is different"
                     + " from the actual size. Please check the id query "
                     + idsQueryInstance.getQuery().getFullName() + " and the "

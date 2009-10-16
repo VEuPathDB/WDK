@@ -138,10 +138,9 @@ public class RecordInstance extends AttributeValueContainer {
             if (!resultList.next()) {
                 // throwing exception prevents proper handling in front
                 // end...just return?
-                // throw new WdkModelException("Attribute query " + queryName
-                // + " doesn't return any row: " + instance.getSql());
                 isValidRecord = false;
-                return;
+                throw new WdkModelException("Attribute query " + queryName
+                        + " doesn't return any row: \n" + instance.getSql());
             }
 
             Map<String, AttributeField> fields = recordClass.getAttributeFieldMap();
