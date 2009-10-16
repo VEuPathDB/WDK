@@ -6,8 +6,70 @@ var recordType= new Array();   //stratid, recordType which is the type of the la
 var state = null;
 var p_state = null;
 $(document).ready(function(){
+	// tell jQuery not to cache ajax requests.
+	$.ajaxSetup ({ cache: false});
+	initStrategyPanels();
+	var current = getCurrentTabCookie();
+	if (!current || current == null)
+		showPanel('strategy_results');
+	else
+		showPanel(current);
 	initDisplay();
 });
+
+function initStrategyPanels() {
+	// Fetch sample, new strat, and help tab contents
+	// If no page is found for a given tab, remove
+	// that tab from the page
+	$.ajax({
+		url: "sampleStrategies.jsp",
+		type: "GET",
+		dataType: "html",
+		success: function(data) {
+			$("#sample_strat").html(data);
+		},
+		error: function() {
+			$("#tab_sample_start").remove();
+			
+		}
+	});
+	$.ajax({
+		url: "sampleStrategies.jsp",
+		type: "GET",
+		dataType: "html",
+		success: function(data) {
+			$("#sample_strat").html(data);
+		},
+		error: function() {
+			$("#tab_sample_strat").remove();
+			
+		}
+	});
+	$.ajax({
+		url: "strategyNew.jsp",
+		type: "GET",
+		dataType: "html",
+		success: function(data) {
+			$("#strategy_new").html(data);
+		},
+		error: function() {
+			$("#tab_strategy_new").remove();
+			
+		}
+	});
+	$.ajax({
+		url: "strategyHelp.jsp",
+		type: "GET",
+		dataType: "html",
+		success: function(data) {
+			$("#help").html(data);
+		},
+		error: function() {
+			$("#tab_help").remove();
+			
+		}
+	});
+}
 
 function initDisplay(){
 	var url = "showStrategy.do";
