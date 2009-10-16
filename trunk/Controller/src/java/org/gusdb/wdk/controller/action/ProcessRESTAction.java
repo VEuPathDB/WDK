@@ -2,6 +2,7 @@ package org.gusdb.wdk.controller.action;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.lang.IllegalStateException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URLEncoder;
@@ -34,7 +35,6 @@ import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-
 import org.json.JSONException;
 
 /**
@@ -147,32 +147,43 @@ public class ProcessRESTAction extends ShowQuestionAction {
                 response.setHeader( "Content-disposition",
                         "attachment; filename="
                                 + reporter.getDownloadFileName() );
-            }            
+            }
+            logger.info("ABOUT TO WRITE RESULTS");
             reporter.write( out );
             out.flush();
             out.close();
-			return null;
         } catch (Exception ex) {
 			if(ex instanceof WdkModelException && outputType != null){
+				logger.info("WdkModelException");
 				WdkModelException wdkEx = (WdkModelException)ex;
-				reportError(response, wdkEx.getParamErrors(), "Parameter Error", "001", outputType);
+				if(wdkEx.getParamErrors() != null){
+					reportError(response, wdkEx.getParamErrors(), "Input Parameter Error", "010", outputType);
+				}else{
+					Map<String,String> exMap = new LinkedHashMap();
+					exMap.put("1",wdkEx.getMessage());
+					reportError(response, exMap, "Output Parameter Error", "011", outputType);
+				}
 			}else if(ex instanceof WdkUserException && outputType != null){
+				logger.info("WdkUserException");
 				WdkUserException wdkEx = (WdkUserException)ex;
 				Map<String,String> errMap = new LinkedHashMap();
 				errMap.put("1",wdkEx.getMessage());
-				reportError(response, errMap, "User Error", "002", outputType);
+				reportError(response, errMap, "User Error", "020", outputType);
 			}else{
-            	ex.printStackTrace();
-            	throw ex;
+				logger.info("OtherException");
+            	Map<String,String> exMap = new LinkedHashMap();
+				exMap.put("0",ex.getMessage());
+				reportError(response,exMap, "Unknown Error", "000", outputType);
 			}
-			return  null;
-        }
+        } finally {
+			return null;
+		}
     }
 
 	private void reportError(HttpServletResponse resp, 
 			Map<String,String> msg, String errType, 
 			String errCode, String type) throws IOException {
-		logger.info("ERROR VALUE = " + type);
+		logger.info("ERROR VALUE = " + errType);
 		ServletOutputStream errout = resp.getOutputStream();
 		PrintWriter writer = new PrintWriter(new OutputStreamWriter(errout));
 		resp.setHeader( "Pragma", "Public" );
