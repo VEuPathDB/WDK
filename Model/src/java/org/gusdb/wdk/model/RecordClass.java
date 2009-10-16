@@ -1039,4 +1039,8 @@ public class RecordClass extends WdkModelBase implements
     public Query getAllRecordsQuery() {
         return allRecordsQuery;
     }
+
+    public boolean hasBasket() {
+        return (allRecordsQuery != null || allRecordsQueryRef != null);
+    }
 }
