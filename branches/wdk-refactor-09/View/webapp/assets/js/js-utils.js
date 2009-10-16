@@ -120,8 +120,3 @@ function getDisplayType(type, number){
 		return type + 's';
 	}
 }
-
-function goToMySearches(){
-	setCurrentTabCookie('search_history', false);
-	return true;
-}
