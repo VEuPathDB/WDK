@@ -38,7 +38,7 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
 
     public RecordClass[] getRecordClasses() {
         RecordClass[] array = new RecordClass[recordClassMap.size()];
-        recordClassMap.values().toArray(array);
+            recordClassMap.values().toArray(array);
         return array;
     }
 

@@ -325,7 +325,7 @@ CREATE TABLE wdkuser.user_baskets
 (
   user_id NUMBER(12) NOT NULL,
   project_id VARCHAR(50) NOT NULL,
-  record_type VARCHAR(100) NOT NULL,
+  record_class VARCHAR(100) NOT NULL,
   pk_column_1 VARCHAR(1999) NOT NULL,
   pk_column_2 VARCHAR(1999),
   pk_column_3 VARCHAR(1999),
@@ -335,7 +335,7 @@ CREATE TABLE wdkuser.user_baskets
 
 CREATE INDEX wdkuser.user_baskets_idx01 
   ON wdkuser.user_baskets 
-  (user_id, project_id, record_type, pk_column_1, pk_column_2, pk_column_3);
+  (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
 
 GRANT insert, update, delete ON wdkuser.user_baskets TO GUS_W;
 GRANT select ON wdkuser.user_baskets TO GUS_R;
