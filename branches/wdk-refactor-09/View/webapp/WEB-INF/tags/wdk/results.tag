@@ -10,8 +10,6 @@
 
 <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
 
-<%-- When implement visualizing multiple strategies, the name of the strategy (for the title) could cme from the step object probably --%>
-
 <%@ attribute name="strategy"
 			  type="org.gusdb.wdk.model.jspwrap.StrategyBean"
               required="true"
@@ -22,7 +20,7 @@
 <c:set var="step_dataType" value="${strategy.latestStep.displayType}" />
 <c:choose>
 	<c:when test="${fn:endsWith(step_dataType,'y')}">
-		<c:set var="type" value="${fn:substring(step_dataType,0,fn:length(step_dataType)-1)}ies'" />
+		<c:set var="type" value="${fn:substring(step_dataType,0,fn:length(step_dataType)-1)}ies" />
 	</c:when>
 	<c:otherwise>
 		<c:set var="type" value="${step_dataType}s" />
