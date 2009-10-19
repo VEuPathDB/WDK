@@ -59,9 +59,9 @@ public class Strategy {
     }
 
     public void setName(String name) {
-	if (name != null && name.length() > StepFactory.COLUMN_NAME_LIMIT) {
-	    name = name.substring(0,StepFactory.COLUMN_NAME_LIMIT-1);
-	}
+        if (name != null && name.length() > StepFactory.COLUMN_NAME_LIMIT) {
+            name = name.substring(0, StepFactory.COLUMN_NAME_LIMIT - 1);
+        }
         this.name = name;
     }
 
@@ -70,9 +70,11 @@ public class Strategy {
     }
 
     public void setSavedName(String savedName) {
-	if (savedName != null && savedName.length() > StepFactory.COLUMN_NAME_LIMIT) {
-	    savedName = savedName.substring(0,StepFactory.COLUMN_NAME_LIMIT-1);
-	}
+        if (savedName != null
+                && savedName.length() > StepFactory.COLUMN_NAME_LIMIT) {
+            savedName = savedName.substring(0,
+                    StepFactory.COLUMN_NAME_LIMIT - 1);
+        }
         this.savedName = savedName;
     }
 
@@ -435,7 +437,8 @@ public class Strategy {
         AnswerFilterInstance filter = step.getFilter();
         String filterName = (filter == null) ? null : filter.getName();
 
-        Step newStep = user.createStep(wdkQuestion, paramValues, filterName, false);
+        Step newStep = user.createStep(wdkQuestion, paramValues, filterName,
+                step.isDeleted(), false);
         newStep.setCustomName(step.getBaseCustomName());
         newStep.update(false);
         return newStep;

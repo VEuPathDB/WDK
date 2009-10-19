@@ -396,7 +396,7 @@ public class User /* implements Serializable */{
     }
 
     public synchronized Step createStep(Question question,
-            Map<String, String> paramValues, String filterName, boolean validate)
+            Map<String, String> paramValues, String filterName, boolean deleted, boolean validate)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         AnswerFilterInstance filter = null;
@@ -404,15 +404,15 @@ public class User /* implements Serializable */{
         if (filterName != null) {
             filter = recordClass.getFilter(filterName);
         } else filter = recordClass.getDefaultFilter();
-        return createStep(question, paramValues, filter, validate);
+        return createStep(question, paramValues, filter, deleted, validate);
     }
 
     public synchronized Step createStep(Question question,
-            Map<String, String> paramValues, AnswerFilterInstance filter,
+            Map<String, String> paramValues, AnswerFilterInstance filter, boolean deleted,
             boolean validate) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         int endIndex = getItemsPerPage();
-        return createStep(question, paramValues, filter, 1, endIndex, false,
+        return createStep(question, paramValues, filter, 1, endIndex, deleted,
                 validate);
     }
 
@@ -1280,7 +1280,7 @@ public class User /* implements Serializable */{
         params.put(booleanQuery.getUseBooleanFilter().getName(),
                 Boolean.toString(useBooleanFilter));
 
-        Step booleanStep = createStep(question, params, filter, false);
+        Step booleanStep = createStep(question, params, filter, false, false);
         booleanStep.setPreviousStep(leftStep);
         booleanStep.setChildStep(rightStep);
         return booleanStep;
