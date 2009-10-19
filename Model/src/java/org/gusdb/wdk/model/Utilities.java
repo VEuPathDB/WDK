@@ -51,6 +51,8 @@ public class Utilities {
 
     public static final String PARAM_PROJECT_ID = COLUMN_PROJECT_ID;
 
+    public static final String PARAM_USER_ID = "user_id";
+
     public static final String ALIAS_OLD_KEY_COLUMN_PREFIX = "old_";
 
     public static final String INTERNAL_PARAM_SET = "InternalParams";
@@ -141,8 +143,9 @@ public class Utilities {
         } else value = objValue.toString();
         return value;
     }
-    
-    public static String[][] convertContent(String content) throws JSONException {
+
+    public static String[][] convertContent(String content)
+            throws JSONException {
         JSONArray jsResult = new JSONArray(content);
         JSONArray jsRow = (JSONArray) jsResult.get(0);
         String[][] result = new String[jsResult.length()][jsRow.length()];
@@ -150,8 +153,8 @@ public class Utilities {
             jsRow = (JSONArray) jsResult.get(row);
             for (int col = 0; col < result[row].length; col++) {
                 Object cell = jsRow.get(col);
-                result[row][col] = (cell == null || cell == JSONObject.NULL) ? 
-                    null : cell.toString();
+                result[row][col] = (cell == null || cell == JSONObject.NULL)
+                        ? null : cell.toString();
             }
         }
         return result;

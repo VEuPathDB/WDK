@@ -30,6 +30,7 @@ import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.param.TimestampParam;
 import org.json.JSONException;
 
 /**
@@ -44,6 +45,7 @@ public class BasketFactory {
     static final String BASKET_ATTRIBUTE = "in_basket";
 
     static final String PARAM_USER_SIGNATURE = "user_signature";
+    static final String PARAM_TIMESTAMP = "timestamp";
 
     static final String TABLE_BASKET = "user_baskets";
     static final String COLUMN_USER_ID = "user_id";
@@ -236,7 +238,8 @@ public class BasketFactory {
             query.addColumn(column);
         }
         // create params
-        query.addParam(getParam(PARAM_USER_SIGNATURE));
+        query.addParam(getSignatureParam(PARAM_USER_SIGNATURE));
+        query.addParam(getTimestampParam(PARAM_USER_SIGNATURE));
 
         // make sure we create index on primary keys
         query.setIndexColumns(pkColumns);
@@ -270,7 +273,7 @@ public class BasketFactory {
         return query;
     }
 
-    private Param getParam(String paramName) throws WdkModelException {
+    private Param getSignatureParam(String paramName) throws WdkModelException {
         ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
         if (paramSet.contains(paramName)) return paramSet.getParam(paramName);
 
@@ -279,6 +282,20 @@ public class BasketFactory {
         param.setAllowEmpty(false);
         param.setId(paramName);
         param.setQuote(true);
+        param.setVisible(false);
+        paramSet.addParam(param);
+        param.excludeResources(wdkModel.getProjectId());
+        return param;
+    }
+
+    private Param getTimestampParam(String paramName) throws WdkModelException {
+        ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
+        if (paramSet.contains(paramName)) return paramSet.getParam(paramName);
+
+        TimestampParam param = new TimestampParam();
+        param.setName(paramName);
+        param.setAllowEmpty(false);
+        param.setId(paramName);
         param.setVisible(false);
         paramSet.addParam(param);
         param.excludeResources(wdkModel.getProjectId());
@@ -313,8 +330,6 @@ public class BasketFactory {
 
         SqlQuery query = new SqlQuery();
         query.setName(queryName);
-        
-        // create the only allowed param
 
         // create columns
         for (String columnName : pkColumns) {
@@ -339,18 +354,19 @@ public class BasketFactory {
         for (int i = 1; i <= pkColumns.length; i++) {
             sql += "i." + pkColumns[i - 1] + ", ";
         }
+        // case clause works for both Oracle & PostreSQL
         sql += "(CASE WHEN b." + COLUMN_PK_PREFIX
                 + "1 IS NULL THEN 0 ELSE 1 END) " + " AS " + BASKET_ATTRIBUTE;
-        sql += " FROM " + schema + TABLE_BASKET + dbLink + " b, " + schema
-                + UserFactory.TABLE_USER + dbLink + " u, (" + allRecordsSql
-                + ") i WHERE b." + COLUMN_USER_ID + " = u."
-                + UserFactory.COLUMN_USER_ID + "(+) AND b." + COLUMN_PROJECT_ID
-                + "(+) = '" + projectId + "' AND b." + COLUMN_RECORD_CLASS
-                + "(+) = '" + rcName + "'";
+        sql += " FROM (" + allRecordsSql + ") i LEFT OUTER JOIN " + schema
+                + TABLE_BASKET + dbLink + " b ON ";
         for (int i = 1; i <= pkColumns.length; i++) {
-            sql += " AND i." + pkColumns[i - 1] + " = b." + COLUMN_PK_PREFIX
-                    + i + "(+)";
+            sql += " i." + pkColumns[i - 1] + " = b." + COLUMN_PK_PREFIX + i
+                    + " AND ";
         }
+        sql += " b." + COLUMN_USER_ID + " = $$" + Utilities.PARAM_USER_ID
+                + "$$ AND b." + COLUMN_PROJECT_ID + " = '" + projectId
+                + "' AND b." + COLUMN_RECORD_CLASS + " = '" + rcName + "'";
+
         query.setSql(sql);
         querySet.addQuery(query);
         query.excludeResources(projectId);
