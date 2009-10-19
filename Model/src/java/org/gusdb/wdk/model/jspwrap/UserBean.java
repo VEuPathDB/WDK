@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.Dataset;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
@@ -1146,5 +1147,35 @@ public class UserBean /* implements Serializable */{
             JSONException, WdkUserException {
         return new StrategyBean(this, user.copyStrategy(strategy.strategy,
                 stepId));
+    }
+
+    public void addToBasket(RecordClassBean recordClass,
+            List<Map<String, String>> ids) throws SQLException {
+        BasketFactory factory = user.getWdkModel().getBasketFactory();
+        factory.addToBasket(user, recordClass.recordClass, ids);
+    }
+
+    public void addToBasket(StepBean step) throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, WdkUserException, SQLException {
+        BasketFactory factory = user.getWdkModel().getBasketFactory();
+        factory.addToBasket(user, step.step);
+    }
+
+    public void removeFromBasket(RecordClassBean recordClass,
+            List<Map<String, String>> ids) throws SQLException {
+        BasketFactory factory = user.getWdkModel().getBasketFactory();
+        factory.removeFromBasket(user, recordClass.recordClass, ids);
+    }
+
+    public void removeFromBasket(StepBean step)
+            throws NoSuchAlgorithmException, WdkModelException, JSONException,
+            WdkUserException, SQLException {
+        BasketFactory factory = user.getWdkModel().getBasketFactory();
+        factory.removeFromBasket(user, step.step);
+    }
+
+    public void clearBasket(RecordClassBean recordClass) throws SQLException {
+        BasketFactory factory = user.getWdkModel().getBasketFactory();
+        factory.clearBasket(user, recordClass.recordClass);
     }
 }
