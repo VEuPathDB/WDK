@@ -128,8 +128,11 @@ public class RecordInstance extends AttributeValueContainer {
         } else {
             query = recordClass.getAttributeQuery(queryName);
         }
-        QueryInstance instance = query.makeInstance(user,
-                primaryKey.getValues(), true);
+        Map<String, String> paramValues = primaryKey.getValues();
+        // put user id in the attribute query
+        String userId = Integer.toString(user.getUserId());
+        paramValues.put(Utilities.PARAM_USER_ID, userId);
+        QueryInstance instance = query.makeInstance(user, paramValues, true);
 
         ResultList resultList = null;
         try {

@@ -596,9 +596,13 @@ public class AnswerValue {
             // constructed from the id query cache table.
             return idsQueryInstance.getSql();
         } else {
-            // make an instance from the attribute query, and attribute query
-            // has no params
+            // make an instance from the original attribute query, and attribute
+            // query has only one param, user_id. Note that the original 
+            // attribute query is different from the attribute query held by the
+            // recordClass.
             Map<String, String> params = new LinkedHashMap<String, String>();
+            String userId = Integer.toString(user.getUserId());
+            params.put(Utilities.PARAM_USER_ID, userId);
             QueryInstance queryInstance = attributeQuery.makeInstance(user,
                     params, true);
             return queryInstance.getSql();
