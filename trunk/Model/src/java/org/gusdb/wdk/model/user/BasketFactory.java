@@ -7,14 +7,17 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeQueryReference;
 import org.gusdb.wdk.model.ColumnAttributeField;
+import org.gusdb.wdk.model.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.RecordClass;
@@ -39,7 +42,7 @@ import org.json.JSONException;
  */
 public class BasketFactory {
 
-    static final String BASKET_QUESTION_SUFFIX = "ByBasket";
+    private static final String BASKET_QUESTION_SUFFIX = "ByBasket";
     static final String BASKET_ID_QUERY_SUFFIX = "ByBasket";
     static final String BASKET_ATTRIBUTE_QUERY_SUFFIX = "_basket_attrs";
     static final String BASKET_ATTRIBUTE = "in_basket";
@@ -51,6 +54,7 @@ public class BasketFactory {
     static final String COLUMN_USER_ID = "user_id";
     static final String COLUMN_PROJECT_ID = "project_id";
     static final String COLUMN_RECORD_CLASS = "record_class";
+
     private static final String COLUMN_PK_PREFIX = "pk_column_";
 
     private static final Logger logger = Logger.getLogger(BasketFactory.class);
@@ -68,6 +72,26 @@ public class BasketFactory {
 
     public String getSchema() {
         return schema;
+    }
+
+    public String getQuestionName(RecordClass recordClass) {
+        return recordClass.getFullName().replace('.', '_')
+                + BASKET_QUESTION_SUFFIX;
+    }
+
+    public void addToBasket(User user, Step step)
+            throws NoSuchAlgorithmException, WdkModelException, JSONException,
+            WdkUserException, SQLException {
+        logger.debug("adding to basket from step...");
+
+        AnswerValue answerValue = step.getAnswerValue();
+        RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+        List<Map<String, String>> ids = new ArrayList<Map<String, String>>();
+        PrimaryKeyAttributeValue[] pkValues = answerValue.getAllPkValues();
+        for (PrimaryKeyAttributeValue pkValue : pkValues) {
+            ids.add(pkValue.getValues());
+        }
+        addToBasket(user, recordClass, ids);
     }
 
     /**
@@ -128,6 +152,19 @@ public class BasketFactory {
             SqlUtils.closeStatement(psInsert);
             SqlUtils.closeStatement(psCount);
         }
+    }
+
+    public void removeFromBasket(User user, Step step)
+            throws NoSuchAlgorithmException, WdkModelException, JSONException,
+            WdkUserException, SQLException {
+        AnswerValue answerValue = step.getAnswerValue();
+        RecordClass recordClass = answerValue.getQuestion().getRecordClass();
+        List<Map<String, String>> ids = new ArrayList<Map<String, String>>();
+        PrimaryKeyAttributeValue[] pkValues = answerValue.getAllPkValues();
+        for (PrimaryKeyAttributeValue pkValue : pkValues) {
+            ids.add(pkValue.getValues());
+        }
+        removeFromBasket(user, recordClass, ids);
     }
 
     public void removeFromBasket(User user, RecordClass recordClass,
@@ -197,8 +234,7 @@ public class BasketFactory {
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
         // check if the basket question already exists
-        String qname = recordClass.getFullName().replace('.', '_')
-                + BASKET_QUESTION_SUFFIX;
+        String qname = getQuestionName(recordClass);
         QuestionSet questionSet = wdkModel.getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
         if (questionSet.contains(qname)) return;
 
