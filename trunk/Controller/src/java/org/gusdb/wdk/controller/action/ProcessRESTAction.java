@@ -131,7 +131,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
 			outputConfig.put("hasEmptyTable", "true");
 			// FROM SHOWSUMMARY
 			
-			StepBean step = wdkUser.createStep(wdkQuestion, params, "all_results", true);
+			StepBean step = wdkUser.createStep(wdkQuestion, params, "all_results", false, true);
 	        AnswerValueBean answerValue = step.getAnswerValue();
             // construct the forward to show_summary action
 			request.setAttribute("wdkAnswer",answerValue);

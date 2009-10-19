@@ -45,6 +45,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
     private static final String KEY_SIZE_CACHE_MAP = "size_cache";
     private static final int MAX_SIZE_CACHE_MAP = 100;
+    
+    private static final String PARAM_HIDDEN_STEP = "hidden";
 
     private static Logger logger = Logger.getLogger(ShowSummaryAction.class);
 
@@ -100,9 +102,13 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 updated = updateSortingSummary(request, wdkUser, questionName);
 
                 params = qForm.getMyProps();
+                
+                // get the hidden flag
+                String strHidden = request.getParameter(PARAM_HIDDEN_STEP);
+                boolean hidden = "true".equalsIgnoreCase(strHidden);
 
                 // make the answer
-                step = summaryPaging(request, wdkQuestion, params, filterName);
+                step = summaryPaging(request, wdkQuestion, params, filterName, hidden);
             } else {
                 logger.debug("load existing step");
 
@@ -294,11 +300,11 @@ public class ShowSummaryAction extends ShowQuestionAction {
         QuestionBean question = step.getQuestion();
         Map<String, String> paramValues = step.getParams();
         String filterName = step.getFilterName();
-        return summaryPaging(request, question, paramValues, filterName);
+        return summaryPaging(request, question, paramValues, filterName, false);
     }
 
     public static StepBean summaryPaging(HttpServletRequest request,
-            QuestionBean question, Map<String, String> params, String filterName)
+            QuestionBean question, Map<String, String> params, String filterName, boolean deleted)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
         logger.debug("start summary paging...");
@@ -311,7 +317,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         logger.info("Make answer with start=" + start + ", end=" + end);
 
-        StepBean step = wdkUser.createStep(question, params, filterName, true);
+        StepBean step = wdkUser.createStep(question, params, filterName, deleted, true);
         AnswerValueBean answerValue = step.getAnswerValue();
         int totalSize = answerValue.getResultSize();
         if (end > totalSize) end = totalSize;
