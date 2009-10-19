@@ -23,6 +23,14 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 /**
  * @author xingao
  * 
+ * the actions for shopping basket include following:
+ * <ul>
+ *  <li>add: add a list of records of a given type into basket;</li>
+ *  <li>remove: remove a list of records of a given type into basket;</li>
+ *  <li>add-all: add all records from a step into basket;</li>
+ *  <li>remove-all:: remove all records from a step into basket;</li>
+ *  <li>clear: remove all records from basket of a given type;</li>
+ * </ul>
  */
 public class ProcessBasketAction extends Action {
 
