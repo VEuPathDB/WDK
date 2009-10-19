@@ -39,7 +39,7 @@ public class RecordClass extends WdkModelBase implements
             if (!originalParams.containsKey(column)) newParams.add(column);
         }
 
-        // create the missing params for the query
+        // create the missing primary key params for the query
         ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
         for (String columnName : newParams) {
             StringParam param;
@@ -54,6 +54,7 @@ public class RecordClass extends WdkModelBase implements
                 param.setQuote(quote);
                 // param.setAllowEmpty(true);
 
+                param.excludeResources(wdkModel.getProjectId());
                 param.resolveReferences(wdkModel);
                 param.setResources(wdkModel);
                 paramSet.addParam(param);
@@ -470,6 +471,10 @@ public class RecordClass extends WdkModelBase implements
                 }
                 attributeFieldsMap.put(fieldName, field);
             }
+            // add user param into the original attribute query, if needed
+            if (!query.getParamMap().containsKey(Utilities.PARAM_USER_ID)) {
+                query.addParam(getUserParam());
+            }
 
             Query attributeQuery = RecordClass.prepareQuery(wdkModel, query,
                     paramNames);
@@ -580,12 +585,35 @@ public class RecordClass extends WdkModelBase implements
         resolved = true;
     }
 
+    private Param getUserParam() throws WdkModelException {
+        // create the missing user_id param for the attribute query
+        ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
+        if (paramSet.contains(Utilities.PARAM_USER_ID))
+            return paramSet.getParam(Utilities.PARAM_USER_ID);
+
+        StringParam userParam = new StringParam();
+        userParam.setName(Utilities.PARAM_USER_ID);
+        userParam.setQuote(false);
+
+        userParam.excludeResources(wdkModel.getProjectId());
+        userParam.resolveReferences(wdkModel);
+        userParam.setResources(wdkModel);
+        paramSet.addParam(userParam);
+        return userParam;
+    }
+
     void validateAttributeQuery(Query query) throws WdkModelException {
         validateQuery(query);
-        // plus, attribute query should not have any params
-        if (query.getParams().length > 0)
-            throw new WdkModelException("Attribute query "
-                    + query.getFullName() + " should not have any params.");
+
+        // plus, attribute query can have only user_id param (optional)
+        String message = "Attribute query '" + query.getFullName()
+                + "' can have only a '" + Utilities.PARAM_USER_ID
+                + "' param, and it is optional.";
+        Param[] params = query.getParams();
+        if (params.length > 1) throw new WdkModelException(message);
+        else if (params.length == 1
+                && !params[0].getName().equals(Utilities.PARAM_USER_ID))
+            throw new WdkModelException(message);
     }
 
     void validateQuery(Query query) throws WdkModelException {
@@ -594,11 +622,12 @@ public class RecordClass extends WdkModelBase implements
         for (String column : pkColumns)
             pkColumnMap.put(column, column);
 
-        // make sure the params contain only primary key params, and nothing
-        // more; but they can have less params than primary key columns. WDK
-        // will append the missing ones automatically.
+        // make sure the params contain only primary key params, and (optional)
+        // user_id param; but they can have less params than primary key
+        // columns. WDK will append the missing ones automatically.
         for (Param param : query.getParams()) {
             String paramName = param.getName();
+            if (paramName.equals(Utilities.PARAM_USER_ID)) continue;
             if (!pkColumnMap.containsKey(paramName))
                 throw new WdkModelException("The attribute or table query "
                         + query.getFullName() + " has param " + paramName
