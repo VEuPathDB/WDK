@@ -70,6 +70,8 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             qSetForm.setQuestionFullName(qFullName);
             prepareQuestionSetForm(getServlet(), qSetForm);
 
+	    String standardViewFile = CConstants.WDK_STANDARDVIEWDIR + File.separator + CConstants.WDK_QUESTION_PAGE;
+
             ServletContext svltCtx = getServlet().getServletContext();
             String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
             String customViewFile1 = customViewDir + File.separator
@@ -89,7 +91,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                     svltCtx)) {
                 forward = new ActionForward(customViewFile3);
             } else {
-                forward = mapping.findForward(CConstants.SHOW_QUESTION_MAPKEY);
+                forward = new ActionForward(standardViewFile);
             }
 
             Enumeration<?> paramNames = request.getParameterNames();
