@@ -19,9 +19,8 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-
-import com.sun.org.apache.regexp.internal.recompile;
 
 /**
  * This Action is called by the ActionServlet when a WDK record is requested. It
@@ -39,7 +38,8 @@ public class ShowRecordAction extends Action {
         long start = System.currentTimeMillis();
 
         ServletContext svltCtx = getServlet().getServletContext();
-        WdkModelBean wdkModel = (WdkModelBean) svltCtx.getAttribute(CConstants.WDK_MODEL_KEY);
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
+        UserBean user = ActionUtility.getUser(servlet, request);
         String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
 
         RecordClassBean wdkRecordClass = wdkModel.findRecordClass(request.getParameter("name"));
@@ -76,7 +76,7 @@ public class ShowRecordAction extends Action {
             urlParams.append(URLEncoder.encode(value, "UTF-8"));
         }
 
-        RecordBean wdkRecord = new RecordBean(wdkRecordClass, pkValues);
+        RecordBean wdkRecord = new RecordBean(user, wdkRecordClass, pkValues);
 
         request.setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 

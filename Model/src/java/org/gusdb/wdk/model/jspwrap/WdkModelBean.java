@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -70,7 +71,7 @@ public class WdkModelBean {
 
     public Map<String, CategoryBean> getCategoryMap() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        for(Category category : model.getCategoryMap().values()) {
+        for (Category category : model.getCategoryMap().values()) {
             CategoryBean bean = new CategoryBean(category);
             beans.put(category.getName(), bean);
         }
@@ -79,13 +80,13 @@ public class WdkModelBean {
 
     public Map<String, CategoryBean> getRootCategoryMap() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        for(Category category : model.getRootCategoryMap().values()) {
+        for (Category category : model.getRootCategoryMap().values()) {
             CategoryBean bean = new CategoryBean(category);
             beans.put(category.getName(), bean);
         }
         return beans;
     }
-    
+
     /**
      * @return Map of questionSetName --> {@link QuestionSetBean}
      */
@@ -241,5 +242,10 @@ public class WdkModelBean {
             beans.add(new QuestionBean(question));
         }
         return beans;
+    }
+
+    public UserBean getSystemUser() throws NoSuchAlgorithmException,
+            WdkUserException, WdkModelException, SQLException {
+        return new UserBean(model.getSystemUser());
     }
 }
