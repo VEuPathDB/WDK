@@ -9,6 +9,8 @@ public class CConstants {
     public static final String WDK_MODEL_KEY = "wdkModel";
     public static final String WDK_CUSTOMVIEWDIR_KEY = "wdkCustomeViewDir";
     public static final String WDK_ALWAYSGOTOSUMMARY_KEY = "wdkAlwaysGoToSummary";
+    public static final String WDK_STANDARDVIEWDIR = "/wdk/";
+    public static final String WDK_QUESTION_PAGE = "question.jsp";
     public static final String WDK_CUSTOM_QUESTIONSETS_FLAT_PAGE = "customQuestionSetsFlat.jsp";
     public static final String WDK_CUSTOM_QUESTIONSETS_PAGE = "customQuestionSets.jsp";
     public static final String WDK_CUSTOM_QUESTION_PAGE = "customQuestion.jsp";
@@ -185,7 +187,6 @@ public class CConstants {
     protected static final String WDK_XMLDATA_DIR_PARAM = "wdkXmlDataDir_param";
     protected static final String WDK_LOGIN_URL_PARAM = "wdkLoginUrl_param";
     
-
     //default value of webapp init params, from web.xml, used in ApplicationInitListener.java
     protected static final String DEFAULT_WDKMODELCONFIGXML = "/WEB-INF/wdk-model/config/toyModel-config.xml";
     protected static final String DEFAULT_WDKMODELXML = "/WEB-INF/wdk-model/config/toyModel.xml";

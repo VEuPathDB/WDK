@@ -10,7 +10,7 @@
 		<wdk:question/>
   	</c:when>
   	<c:otherwise>
-    		<site:header />
+    		<site:header refer="question" />
 		<wdk:question/>
     		<site:footer />
   	</c:otherwise>
