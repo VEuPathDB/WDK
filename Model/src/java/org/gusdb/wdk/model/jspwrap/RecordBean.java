@@ -36,15 +36,16 @@ public class RecordBean {
         this.recordInstance = recordInstance;
     }
 
-    public RecordBean(RecordClassBean recordClass, Map<String, Object> pkValues)
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
-            JSONException, WdkUserException {
-        recordInstance = new RecordInstance(user, recordClass.recordClass,
-                pkValues);
+    public RecordBean(UserBean user, RecordClassBean recordClass,
+            Map<String, Object> pkValues) throws NoSuchAlgorithmException,
+            WdkModelException, SQLException, JSONException, WdkUserException {
+        this.user = user.getUser();
+        recordInstance = new RecordInstance(user.getUser(),
+                recordClass.recordClass, pkValues);
     }
 
     public boolean isValidRecord() {
-	return recordInstance.isValidRecord();
+        return recordInstance.isValidRecord();
     }
 
     /**
