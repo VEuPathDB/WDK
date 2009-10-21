@@ -16,6 +16,7 @@ public class WdkModelName extends WdkModelBase {
 
     private String displayName;
     private String version;
+    private String releaseDate;
 
     /**
      * @return the displayName
@@ -26,7 +27,7 @@ public class WdkModelName extends WdkModelBase {
 
     /**
      * @param displayName
-     *                the displayName to set
+     *            the displayName to set
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
@@ -41,10 +42,25 @@ public class WdkModelName extends WdkModelBase {
 
     /**
      * @param version
-     *                the version to set
+     *            the version to set
      */
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    /**
+     * @return the releaseDate
+     */
+    public String getReleaseDate() {
+        return releaseDate;
+    }
+
+    /**
+     * @param releaseDate
+     *            the releaseDate to set
+     */
+    public void setReleaseDate(String releaseDate) {
+        this.releaseDate = releaseDate;
     }
 
     /*
@@ -60,7 +76,9 @@ public class WdkModelName extends WdkModelBase {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     * @see
+     * org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
+     * .WdkModel)
      */
     @Override
     public void resolveReferences(WdkModel wodkModel) throws WdkModelException,

@@ -248,4 +248,13 @@ public class WdkModelBean {
             WdkUserException, WdkModelException, SQLException {
         return new UserBean(model.getSystemUser());
     }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.WdkModel#getReleaseDate()
+     */
+    public String getReleaseDate() {
+        return model.getReleaseDate();
+    }
+
 }
