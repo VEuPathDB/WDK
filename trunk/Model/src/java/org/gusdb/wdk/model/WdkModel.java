@@ -113,6 +113,7 @@ public class WdkModel {
     private List<WdkModelName> wdkModelNames = new ArrayList<WdkModelName>();
     private String displayName;
     private String version; // use default version
+    private String releaseDate;
 
     private List<WdkModelText> introductions = new ArrayList<WdkModelText>();
     private String introduction;
@@ -613,6 +614,7 @@ public class WdkModel {
                 } else {
                     this.displayName = wdkModelName.getDisplayName();
                     this.version = wdkModelName.getVersion();
+                    this.releaseDate = wdkModelName.getReleaseDate();
                     hasModelName = true;
                 }
             }
@@ -1094,5 +1096,9 @@ public class WdkModel {
 
     public BasketFactory getBasketFactory() {
         return basketFactory;
+    }
+    
+    public String getReleaseDate() {
+        return releaseDate;
     }
 }
