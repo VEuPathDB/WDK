@@ -9,6 +9,9 @@
           <element name="modelName">
             <attribute name="displayName" />
             <attribute name="version"/>
+            <optional>
+                <attribute name="releaseDate"/>
+            </optional>
             <ref name="IncludeExclude"/>
           </element>
 
