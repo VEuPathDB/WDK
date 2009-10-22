@@ -70,7 +70,6 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             qSetForm.setQuestionFullName(qFullName);
             prepareQuestionSetForm(getServlet(), qSetForm);
 
-	    /*  THIS IS THE SECTION TO UPDATE */
 	    ServletContext svltCtx = getServlet().getServletContext();
 
 	    String defaultViewFile = CConstants.WDK_DEFAULT_VIEW_DIR
@@ -85,7 +84,9 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             String customViewFile2 = baseFilePath
 		+ File.separator + wdkQuestion.getRecordClass().getFullName()
 		+ ".question.jsp";
-            String customViewFile3 = baseFilePath
+            //String customViewFile3 = baseFilePath
+            String customViewFile3 = CConstants.WDK_CUSTOM_VIEW_DIR
+		+ File.separator + CConstants.WDK_PAGES_DIR
 		+ File.separator + CConstants.WDK_QUESTION_PAGE;
             ActionForward forward = null;
 
@@ -104,7 +105,6 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             } else {
                 forward = new ActionForward(defaultViewFile);
 	    }
-	    /* END FORWARD CODE */
 
             Enumeration<?> paramNames = request.getParameterNames();
             while(paramNames.hasMoreElements()) {
