@@ -7,10 +7,19 @@ public class CConstants {
     //key for objects in cache, used in Action/ActionForm classes and maybe jsp pages
     public static final String WDK_RESULTFACTORY_KEY = "wdkResultFactory";
     public static final String WDK_MODEL_KEY = "wdkModel";
-    public static final String WDK_CUSTOMVIEWDIR_KEY = "wdkCustomeViewDir";
+    public static final String WDK_CUSTOMVIEWDIR_KEY = "wdkCustomViewDir";
     public static final String WDK_ALWAYSGOTOSUMMARY_KEY = "wdkAlwaysGoToSummary";
-    public static final String WDK_STANDARDVIEWDIR = "/wdk/";
-    public static final String WDK_QUESTION_PAGE = "question.jsp";
+    public static final String WDK_DEFAULT_VIEW_DIR = "/wdk";
+    public static final String WDK_CUSTOM_VIEW_DIR = "/wdkExtension";
+    public static final String WDK_PAGES_DIR = "jsp";
+    public static final String WDK_RESULTS_DIR = "results";
+    public static final String WDK_QUESTIONS_DIR = "questions";
+    public static final String WDK_RECORDS_DIR = "records";
+    public static final String WDK_STRATEGY_DIR = "strategies";
+
+    public static final String WDK_QUESTION_PAGE = "Question.jsp";
+    public static final String WDK_RESULTS_PAGE = "results.jsp";
+    public static final String WDK_STRATEGY_PAGE = "Workspace.jsp";
     public static final String WDK_CUSTOM_QUESTIONSETS_FLAT_PAGE = "customQuestionSetsFlat.jsp";
     public static final String WDK_CUSTOM_QUESTIONSETS_PAGE = "customQuestionSets.jsp";
     public static final String WDK_CUSTOM_QUESTION_PAGE = "customQuestion.jsp";
