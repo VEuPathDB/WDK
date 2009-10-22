@@ -74,7 +74,7 @@ public class ShowApplicationAction extends ShowSummaryAction {
 
 	    String strategyViewFile = CConstants.WDK_CUSTOM_VIEW_DIR
 		+ File.separator + CConstants.WDK_PAGES_DIR
-		+ File.separator + CConstants.WDK_STRATEGY_DIR
+		//+ File.separator + CConstants.WDK_STRATEGY_DIR
 		+ File.separator + CConstants.WDK_STRATEGY_PAGE;
 
             ActionForward forward = new ActionForward(strategyViewFile);

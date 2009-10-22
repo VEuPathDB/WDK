@@ -238,11 +238,13 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	    + File.separator + CConstants.WDK_PAGES_DIR
 	    + File.separator + CConstants.WDK_RESULTS_DIR;
         String customViewFile1 = baseFilePath + File.separator
-                + wdkAnswer.getQuestion().getFullName() + ".results.jsp";
+	    + wdkAnswer.getQuestion().getFullName() + ".results.jsp";
         String customViewFile2 = baseFilePath + File.separator
-                + wdkAnswer.getRecordClass().getFullName() + ".results.jsp";
-	String customViewFile3 = baseFilePath + File.separator
-	        + CConstants.WDK_RESULTS_PAGE;
+	    + wdkAnswer.getRecordClass().getFullName() + ".results.jsp";
+	//String customViewFile3 = baseFilePath
+	String customViewFile3 =  CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR
+	    + File.separator + CConstants.WDK_RESULTS_PAGE;
 	String defaultViewFile = CConstants.WDK_DEFAULT_VIEW_DIR
 	    + File.separator + CConstants.WDK_PAGES_DIR
 	    + File.separator + CConstants.WDK_RESULTS_PAGE;
