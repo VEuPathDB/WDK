@@ -1,5 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
+import java.io.File;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -70,7 +72,12 @@ public class ShowApplicationAction extends ShowSummaryAction {
                 response.addCookie(tabCookie);
             }
 
-            ActionForward forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
+	    String strategyViewFile = CConstants.WDK_CUSTOM_VIEW_DIR
+		+ File.separator + CConstants.WDK_PAGES_DIR
+		+ File.separator + CConstants.WDK_STRATEGY_DIR
+		+ File.separator + CConstants.WDK_STRATEGY_PAGE;
+
+            ActionForward forward = new ActionForward(strategyViewFile);
 
             return forward;
         } catch (Exception ex) {
