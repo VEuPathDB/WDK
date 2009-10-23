@@ -208,7 +208,7 @@ public final class SqlUtils {
         long spent = end - start;
         logger.debug("SQL executed in " + spent + " ms.");
         if (spent >= PRINT_SQL_THRESHOLD)
-            logger.info("A slow SQL, please optimize: \n" + sql);
+            logger.warn("A slow SQL, please optimize: \n" + sql);
     }
 
     /**
