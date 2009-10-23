@@ -23,7 +23,7 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public final class SqlUtils {
 
-    public static final long PRINT_SQL_THRESHOLD = 10000;
+    public static final long PRINT_SQL_THRESHOLD = 5000;
 
     private static final Logger logger = Logger.getLogger(SqlUtils.class);
 
@@ -208,7 +208,7 @@ public final class SqlUtils {
         long spent = end - start;
         logger.debug("SQL executed in " + spent + " ms.");
         if (spent >= PRINT_SQL_THRESHOLD)
-            logger.warn("A slow SQL, please optimize: \n" + sql);
+            logger.warn("Slow SQL, need optimize: " +  spent + " ms.\n" + sql);
     }
 
     /**
