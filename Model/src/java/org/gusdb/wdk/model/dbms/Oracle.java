@@ -10,6 +10,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import oracle.jdbc.driver.OracleDriver;
 import oracle.sql.CLOB;
@@ -252,4 +253,27 @@ public class Oracle extends DBPlatform {
         if (purge) sql += " PURGE";
         SqlUtils.executeUpdate(dataSource, sql);
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.gusdb.wdk.model.dbms.DBPlatform#disableStatistics(java.lang.String,
+     * java.lang.String)
+     */
+    @Override
+    public void disableStatistics(Connection connection, String schema,
+            String tableName) throws SQLException {
+        Statement statment = null;
+        try {
+            statment = connection.createStatement();
+            String piece = "('" + schema + "', '" + tableName + "')";
+            statment.executeUpdate("exec DBMS_STATS.unlock_table_stats" + piece);
+            statment.executeUpdate("exec DBMS_STATS.DELETE_TABLE_STATS" + piece);
+            statment.executeUpdate("exec DBMS_STATS.LOCK_TABLE_STATS" + piece);
+        } finally {
+            if (statment != null) statment.close();
+        }
+    }
+
 }
