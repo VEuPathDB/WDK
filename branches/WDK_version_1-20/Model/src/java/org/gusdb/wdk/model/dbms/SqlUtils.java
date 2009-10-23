@@ -207,7 +207,7 @@ public final class SqlUtils {
     private static void printInfo(String sql, long start, long end) {
         long spent = end - start;
         logger.debug("SQL executed in " + spent + " ms.");
-        if (spent >= PRINT_SQL_THRESHOLD) logger.debug(sql);
+        if (spent >= PRINT_SQL_THRESHOLD) logger.debug("A slow SQL: \n" + sql);
     }
 
     /**
