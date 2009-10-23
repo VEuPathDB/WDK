@@ -156,6 +156,9 @@ public class ResultFactory {
                 // create the cache using the result of the first query
                 instance.createCache(connection, cacheTable, instanceId,
                         indexColumns);
+                // disable the stats on the new cache table
+                String schema = platform.getWdkModel().getModelConfig().getAppDB().getLogin();
+                platform.disableStatistics(connection, schema, cacheTable);
             } else {// insert result into existing cache table
                 instance.insertToCache(connection, cacheTable, instanceId);
             }

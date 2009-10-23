@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.dbms;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -227,4 +228,18 @@ public class PostgreSQL extends DBPlatform {
         // ignore purge option
         SqlUtils.executeUpdate(dataSource, sql);
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.gusdb.wdk.model.dbms.DBPlatform#disableStatistics(java.lang.String,
+     * java.lang.String)
+     */
+    @Override
+    public void disableStatistics(Connection connection, String schema,
+            String tableName) {
+    // do nothing in PSQL.
+    }
+
 }
