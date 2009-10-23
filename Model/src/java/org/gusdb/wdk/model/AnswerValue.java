@@ -509,6 +509,7 @@ public class AnswerValue {
 
         // get and run the paged attribute query sql
         String sql = getPagedAttributeSql(attributeQuery);
+        logger.debug("Executing paged attribute query...");
         DBPlatform platform = wdkModel.getQueryPlatform();
         DataSource dataSource = platform.getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
