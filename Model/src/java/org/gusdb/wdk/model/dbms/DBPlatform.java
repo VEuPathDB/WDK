@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.dbms;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -153,6 +154,9 @@ public abstract class DBPlatform {
 
     public abstract void dropTable(String schema, String table, boolean purge)
             throws SQLException;
+
+    public abstract void disableStatistics(Connection connection,
+            String schema, String tableName) throws SQLException;
 
     // #########################################################################
     // Common methods are platform independent
