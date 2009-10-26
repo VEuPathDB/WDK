@@ -76,21 +76,21 @@ public class CacheFactory {
         }
     }
 
-    public void resetCache(boolean purge) {
+    public void resetCache(boolean purge, boolean forceDrop) {
         // drop cache tables and we are done
-        dropCacheTables(purge);
+        dropCacheTables(purge, forceDrop);
     }
 
-    public void recreateCache(boolean purge) {
+    public void recreateCache(boolean purge, boolean forceDrop) {
         // drop cache;
-        dropCache(purge);
+        dropCache(purge, forceDrop);
         // create them back
         createCache();
     }
 
-    public void dropCache(boolean purge) {
+    public void dropCache(boolean purge, boolean forceDrop) {
         // drop cache tables
-        dropCacheTables(purge);
+        dropCacheTables(purge, forceDrop);
 
         try {
             platform.dropTable(null, TABLE_INSTANCE, purge);
@@ -337,7 +337,7 @@ public class CacheFactory {
         }
     }
 
-    private void dropCacheTables(boolean purge) {
+    private void dropCacheTables(boolean purge, boolean forceDrop) {
         // get a list of cache tables
         StringBuffer sql = new StringBuffer("SELECT DISTINCT ");
         sql.append(COLUMN_TABLE_NAME).append(" FROM ").append(TABLE_QUERY);
@@ -379,43 +379,64 @@ public class CacheFactory {
             logger.error("Cannot delete rows from [" + TABLE_QUERY + "]. "
                     + ex.getMessage());
         }
+
+        if (forceDrop) dropDanglingTables();
     }
 
-    public synchronized QueryInfo getQueryInfo(Query query) throws SQLException,
-            NoSuchAlgorithmException, JSONException, WdkModelException {
+    private void dropDanglingTables() {
+        String schema = wdkModel.getModelConfig().getAppDB().getLogin();
+        try {
+            String[] tables = platform.queryTableNames(schema,
+                    CACHE_TABLE_PREFIX + "%");
+            logger.info("Dropping " + tables.length + " dangling tables...");
+            for (String table : tables) {
+                try {
+                    SqlUtils.executeUpdate(dataSource, "DROP TABLE " + table);
+                } catch (SQLException ex) {
+                    logger.error("Cannot drop table [" + table + "]. "
+                            + ex.getMessage());
+                }
+            }
+        } catch (SQLException ex) {
+            logger.error(ex.getMessage());
+        }
+    }
+
+    public synchronized QueryInfo getQueryInfo(Query query)
+            throws SQLException, NoSuchAlgorithmException, JSONException,
+            WdkModelException {
         String checksum = query.getChecksum(true);
         String queryName = query.getFullName();
-            QueryInfo queryInfo = checkQueryInfo(queryName, checksum);
-            if (queryInfo != null) return queryInfo;
+        QueryInfo queryInfo = checkQueryInfo(queryName, checksum);
+        if (queryInfo != null) return queryInfo;
 
-            // cache table doesn't exist, create one
-            queryInfo = new QueryInfo();
-            queryInfo.setQueryId(platform.getNextId(null, TABLE_QUERY));
-            queryInfo.setCacheTable(CACHE_TABLE_PREFIX + queryInfo.getQueryId());
-            queryInfo.setQueryName(queryName);
-            queryInfo.setQueryChecksum(checksum);
+        // cache table doesn't exist, create one
+        queryInfo = new QueryInfo();
+        queryInfo.setQueryId(platform.getNextId(null, TABLE_QUERY));
+        queryInfo.setCacheTable(CACHE_TABLE_PREFIX + queryInfo.getQueryId());
+        queryInfo.setQueryName(queryName);
+        queryInfo.setQueryChecksum(checksum);
 
-            StringBuffer sql = new StringBuffer("INSERT INTO ");
-            sql.append(TABLE_QUERY).append(" (");
-            sql.append(COLUMN_QUERY_ID).append(", ");
-            sql.append(COLUMN_QUERY_NAME).append(", ");
-            sql.append(COLUMN_QUERY_CHECKSUM).append(", ");
-            sql.append(COLUMN_TABLE_NAME).append(") ");
-            sql.append("VALUES (?, ?, ?, ?)");
+        StringBuffer sql = new StringBuffer("INSERT INTO ");
+        sql.append(TABLE_QUERY).append(" (");
+        sql.append(COLUMN_QUERY_ID).append(", ");
+        sql.append(COLUMN_QUERY_NAME).append(", ");
+        sql.append(COLUMN_QUERY_CHECKSUM).append(", ");
+        sql.append(COLUMN_TABLE_NAME).append(") ");
+        sql.append("VALUES (?, ?, ?, ?)");
 
-            PreparedStatement psInsert = null;
-            try {
-                psInsert = SqlUtils.getPreparedStatement(dataSource,
-                        sql.toString());
-                psInsert.setInt(1, queryInfo.getQueryId());
-                psInsert.setString(2, queryInfo.getQueryName());
-                psInsert.setString(3, queryInfo.getQueryChecksum());
-                psInsert.setString(4, queryInfo.getCacheTable());
-                psInsert.executeUpdate();
-            } finally {
-                SqlUtils.closeStatement(psInsert);
-            }
-            return queryInfo;
+        PreparedStatement psInsert = null;
+        try {
+            psInsert = SqlUtils.getPreparedStatement(dataSource, sql.toString());
+            psInsert.setInt(1, queryInfo.getQueryId());
+            psInsert.setString(2, queryInfo.getQueryName());
+            psInsert.setString(3, queryInfo.getQueryChecksum());
+            psInsert.setString(4, queryInfo.getCacheTable());
+            psInsert.executeUpdate();
+        } finally {
+            SqlUtils.closeStatement(psInsert);
+        }
+        return queryInfo;
     }
 
     private QueryInfo checkQueryInfo(String queryName, String checksum)

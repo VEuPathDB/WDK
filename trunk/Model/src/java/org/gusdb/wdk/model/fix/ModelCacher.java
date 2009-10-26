@@ -119,7 +119,7 @@ public class ModelCacher extends BaseCLI {
             NoSuchAlgorithmException, JSONException, WdkModelException,
             WdkUserException {
         // need to reset the cache first
-        wdkModel.getResultFactory().getCacheFactory().resetCache(false);
+        wdkModel.getResultFactory().getCacheFactory().resetCache(false, true);
         
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         String projectId = wdkModel.getProjectId();
