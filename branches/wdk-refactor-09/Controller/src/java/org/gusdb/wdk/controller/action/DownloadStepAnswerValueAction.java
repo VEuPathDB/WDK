@@ -57,7 +57,11 @@ public class DownloadStepAnswerValueAction extends Action {
             forward = mapping.findForward( CConstants.GET_DOWNLOAD_CONFIG_MAPKEY );
         } else {
             ServletContext svltCtx = getServlet().getServletContext();
-            String customViewDir = ( String ) svltCtx.getAttribute( CConstants.WDK_CUSTOMVIEWDIR_KEY );
+
+	    String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+		+ File.separator + CConstants.WDK_PAGES_DIR
+		+ File.separator + CConstants.WDK_REPORTERS_DIR;
+
             String customViewFile1 = customViewDir + File.separator + fullName
                     + "." + reporter + "ReporterConfig.jsp";
             String customViewFile2 = customViewDir + File.separator + reporter

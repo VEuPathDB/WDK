@@ -15,6 +15,7 @@ public class CConstants {
     public static final String WDK_RESULTS_DIR = "results";
     public static final String WDK_QUESTIONS_DIR = "questions";
     public static final String WDK_RECORDS_DIR = "records";
+    public static final String WDK_REPORTERS_DIR = "reporters";
     public static final String WDK_STRATEGY_DIR = "strategies";
 
     public static final String WDK_QUESTION_PAGE = "Question.jsp";
