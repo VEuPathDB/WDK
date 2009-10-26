@@ -8,6 +8,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.gusdb.wdk.model.WdkModelException;
 
@@ -240,6 +242,32 @@ public class PostgreSQL extends DBPlatform {
     public void disableStatistics(Connection connection, String schema,
             String tableName) {
     // do nothing in PSQL.
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.dbms.DBPlatform#getTables(java.lang.String,
+     * java.lang.String)
+     */
+    @Override
+    public String[] queryTableNames(String schema, String pattern)
+            throws SQLException {
+        String sql = "SELECT tablename FROM pg_tables WHERE schemaname = '"
+                + schema + "' AND tablename LIKE '" + pattern + "'";
+        ResultSet resultSet = null;
+        try {
+            resultSet = SqlUtils.executeQuery(dataSource, sql);
+            List<String> tables = new ArrayList<String>();
+            while (resultSet.next()) {
+                tables.add(resultSet.getString("tablename"));
+            }
+            String[] array = new String[tables.size()];
+            tables.toArray(array);
+            return array;
+        } finally {
+            SqlUtils.closeResultSet(resultSet);
+        }
     }
 
 }
