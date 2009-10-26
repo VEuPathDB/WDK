@@ -64,6 +64,12 @@ function GetResultsPage(url, update, ignoreFilters){
 				$("span#text_strategy_number").html(strat.JSON.name);
 				$("span#text_step_number").html(step.frontId);
 				$("span#text_strategy_number").parent().show();
+				try {
+					customResultsPage();
+				}
+				catch {
+					//Do nothing;
+				}
 				$("#Workspace").unblock();
 			}
 			removeLoading(strat.frontId);

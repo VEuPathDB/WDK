@@ -80,18 +80,20 @@ public class ShowRecordAction extends Action {
 
         request.setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 
-        String customViewFile1 = customViewDir + File.separator
-                + wdkRecordClass.getFullName() + ".jsp";
-        String customViewFile2 = customViewDir + File.separator
-                + CConstants.WDK_CUSTOM_RECORD_PAGE;
+	String defaultViewFile = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR
+	    + File.separator + "record.jsp";
+
+        String customViewFile = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR
+	    + File.separator + CConstants.WDK_RECORDS_DIR
+	    + File.separator + wdkRecordClass.getFullName() + ".jsp";
+
         ActionForward forward = null;
-        if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
-            forward = new ActionForward(customViewFile1 + urlParams, false);
-        } else if (ApplicationInitListener.resourceExists(customViewFile2,
-                svltCtx)) {
-            forward = new ActionForward(customViewFile2 + urlParams, false);
+        if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
+            forward = new ActionForward(customViewFile + urlParams, false);
         } else {
-            forward = mapping.findForward(CConstants.SHOW_RECORD_MAPKEY);
+            forward = new ActionForward(defaultViewFile);
         }
 
         long end = System.currentTimeMillis();
