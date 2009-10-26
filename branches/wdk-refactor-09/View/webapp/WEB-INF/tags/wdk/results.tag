@@ -238,9 +238,7 @@
                <span style="color:gray;">N/A</span>
             </c:when>
             <c:when test="${recAttr.class.name eq 'org.gusdb.wdk.model.LinkAttributeValue'}">
-               <c:choose>
 		 <a href="${recAttr.url}">${recAttr.displayText}</a>
-	       </c:choose>
             </c:when>
             <c:otherwise>
               ${fieldVal}
@@ -265,9 +263,6 @@
 </div>
 </div>
 <%--------- END OF RESULTS  ----------%>
-
-</c:if>
-
 
 <%--------- PAGING BOTTOM BAR ----------%>
 <table width="100%" border="0" cellpadding="3" cellspacing="0">

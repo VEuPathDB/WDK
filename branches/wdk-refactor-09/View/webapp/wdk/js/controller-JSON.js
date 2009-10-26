@@ -22,7 +22,7 @@ function initStrategyPanels() {
 	// If no page is found for a given tab, remove
 	// that tab from the page
 	$.ajax({
-		url: "/wdkExtension/jsp/strategies/sampleTab.jsp",
+		url: "wdkExtension/jsp/strategies/samplesTab.jsp",
 		type: "GET",
 		dataType: "html",
 		success: function(data) {
@@ -34,7 +34,7 @@ function initStrategyPanels() {
 		}
 	});
 	$.ajax({
-		url: "/wdkExtension/jsp/strategies/newTab.jsp",
+		url: "wdkExtension/jsp/strategies/newTab.jsp",
 		type: "GET",
 		dataType: "html",
 		success: function(data) {
@@ -46,7 +46,7 @@ function initStrategyPanels() {
 		}
 	});
 	$.ajax({
-		url: "/wdkExtension/jsp/strategies/helpTab.jsp",
+		url: "wdkExtension/jsp/strategies/helpTab.jsp",
 		type: "GET",
 		dataType: "html",
 		success: function(data) {

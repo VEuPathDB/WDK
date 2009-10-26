@@ -241,10 +241,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	    + wdkAnswer.getQuestion().getFullName() + ".results.jsp";
         String customViewFile2 = baseFilePath + File.separator
 	    + wdkAnswer.getRecordClass().getFullName() + ".results.jsp";
-	//String customViewFile3 = baseFilePath
-	String customViewFile3 =  CConstants.WDK_CUSTOM_VIEW_DIR
-	    + File.separator + CConstants.WDK_PAGES_DIR
-	    + File.separator + CConstants.WDK_RESULTS_PAGE;
 	String defaultViewFile = CConstants.WDK_DEFAULT_VIEW_DIR
 	    + File.separator + CConstants.WDK_PAGES_DIR
 	    + File.separator + CConstants.WDK_RESULTS_PAGE;
@@ -252,7 +248,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
 	System.out.println("file 1: " + customViewFile1);
 	System.out.println("file 2: " + customViewFile2);
-	System.out.println("file 3: " + customViewFile3);
 	System.out.println("file 4: " + defaultViewFile);
 
         if (request.getParameterMap().containsKey(
@@ -269,9 +264,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
         } else if (ApplicationInitListener.resourceExists(customViewFile2,
                 svltCtx)) {
             forward = new ActionForward(customViewFile2);
-        } else if (ApplicationInitListener.resourceExists(customViewFile3,
-                svltCtx)) {
-            forward = new ActionForward(customViewFile3);
         } else {
             forward = new ActionForward(defaultViewFile);
 	}
