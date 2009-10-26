@@ -158,6 +158,17 @@ public abstract class DBPlatform {
     public abstract void disableStatistics(Connection connection,
             String schema, String tableName) throws SQLException;
 
+    /**
+     * @param schema
+     *            the schema cannot be empty. if you are searching in a local
+     *            schema, it has to be the login user name.
+     * @param pattern
+     * @return
+     * @throws SQLException
+     */
+    public abstract String[] queryTableNames(String schema, String pattern)
+            throws SQLException;
+
     // #########################################################################
     // Common methods are platform independent
     // #########################################################################

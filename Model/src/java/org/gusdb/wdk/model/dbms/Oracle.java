@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model.dbms;
 
 import java.math.BigDecimal;
+import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -11,6 +12,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import oracle.jdbc.driver.OracleDriver;
 import oracle.sql.CLOB;
@@ -264,15 +267,55 @@ public class Oracle extends DBPlatform {
     @Override
     public void disableStatistics(Connection connection, String schema,
             String tableName) throws SQLException {
-        Statement statment = null;
+        schema = schema.toUpperCase();
+        tableName = tableName.toUpperCase();
+        CallableStatement stUnlock = null, stDelete = null, stLock = null;
         try {
-            statment = connection.createStatement();
-            String piece = "('" + schema + "', '" + tableName + "')";
-            statment.executeUpdate("exec DBMS_STATS.unlock_table_stats" + piece);
-            statment.executeUpdate("exec DBMS_STATS.DELETE_TABLE_STATS" + piece);
-            statment.executeUpdate("exec DBMS_STATS.LOCK_TABLE_STATS" + piece);
+            stUnlock = connection.prepareCall(tableName);
+            stUnlock.executeUpdate("{call DBMS_STATS.unlock_table_stats('"
+                    + schema + "', '" + tableName + "') }");
+            stUnlock.executeUpdate();
+
+            stDelete = connection.prepareCall(tableName);
+            stDelete.executeUpdate("{call DBMS_STATS.DELETE_TABLE_STATS('"
+                    + schema + "', '" + tableName + "') }");
+            stDelete.executeUpdate();
+
+            stLock = connection.prepareCall(tableName);
+            stLock.executeUpdate("{call DBMS_STATS.LOCK_TABLE_STATS('" + schema
+                    + "', '" + tableName + "') }");
+            stLock.executeUpdate();
         } finally {
-            if (statment != null) statment.close();
+            if (stUnlock != null) stUnlock.close();
+            if (stDelete != null) stDelete.close();
+            if (stLock != null) stLock.close();
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.dbms.DBPlatform#getTables(java.lang.String,
+     * java.lang.String)
+     */
+    @Override
+    public String[] queryTableNames(String schema, String pattern)
+            throws SQLException {
+        String sql = "SELECT table_name FROM all_tables WHERE owner = '"
+                + schema.toUpperCase() + "' AND table_name LIKE '"
+                + pattern.toUpperCase() + "'";
+        ResultSet resultSet = null;
+        try {
+            resultSet = SqlUtils.executeQuery(dataSource, sql);
+            List<String> tables = new ArrayList<String>();
+            while (resultSet.next()) {
+                tables.add(resultSet.getString("table_name"));
+            }
+            String[] array = new String[tables.size()];
+            tables.toArray(array);
+            return array;
+        } finally {
+            SqlUtils.closeResultSet(resultSet);
         }
     }
 
