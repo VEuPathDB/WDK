@@ -58,8 +58,14 @@ public class ShowStrategyAction extends ShowQuestionAction {
             String strOpen = request.getParameter(CConstants.WDK_OPEN_KEY);
             boolean open = (strOpen == null || strOpen.length() == 0) ? true
                     : Boolean.parseBoolean(strOpen);
+            StrategyBean currentStrategy = (StrategyBean) request.getAttribute(CConstants.WDK_STRATEGY_KEY);
 
             Map<Integer, StrategyBean> displayStrategies;
+            if (currentStrategy != null) {
+                displayStrategies = new LinkedHashMap<Integer, StrategyBean>();
+                displayStrategies.put(currentStrategy.getStrategyId(),
+                        currentStrategy);
+            }
             if (open) {
                 // open all the requested strategies
                 for (String strategyKey : stratKeys) {
@@ -302,9 +308,9 @@ public class ShowStrategyAction extends ShowQuestionAction {
         JSONObject jsSteps = new JSONObject();
         StepBean step = strategy.getFirstStep();
         int frontId = 1;
-	int nonTransformLength = 0;
+        int nonTransformLength = 0;
         while (step != null) {
-	    if (!step.getIsTransform()) nonTransformLength++;
+            if (!step.getIsTransform()) nonTransformLength++;
             JSONObject jsStep = outputStep(user, step,
                     strategy.getStrategyId(), false);
             jsSteps.put(Integer.toString(frontId), jsStep);
@@ -312,7 +318,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             frontId++;
         }
         jsSteps.put("length", (frontId - 1));
-	jsSteps.put("nonTransformLength", nonTransformLength);
+        jsSteps.put("nonTransformLength", nonTransformLength);
         jsStrategy.put("steps", jsSteps);
         return jsStrategy;
     }
@@ -339,6 +345,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("filterName", step.getFilterDisplayName());
         jsStep.put("urlParams", step.getQuestionUrlParams());
         jsStep.put("isValid", step.getIsValid());
+        jsStep.put("validationMessage", step.getValidationMessage());
 
         // determine the types of the step
         if (showSubStrategy && step.getIsCollapsible()) {
@@ -417,16 +424,16 @@ public class ShowStrategyAction extends ShowQuestionAction {
         JSONObject jsSteps = new JSONObject();
         StepBean subStep = step.getFirstStep();
         int frontId = 1;
-	int nonTransformLength = 0;
+        int nonTransformLength = 0;
         while (subStep != null) {
-	    if (!subStep.getIsTransform()) nonTransformLength++;
+            if (!subStep.getIsTransform()) nonTransformLength++;
             JSONObject jsSubStep = outputStep(user, subStep, strategyId, false);
             jsSteps.put(Integer.toString(frontId), jsSubStep);
             subStep = subStep.getNextStep();
             frontId++;
         }
         jsSteps.put("length", (frontId - 1));
-	jsSteps.put("nonTransformLength", nonTransformLength);
+        jsSteps.put("nonTransformLength", nonTransformLength);
         jsStrategy.put("steps", jsSteps);
 
         jsStep.put("strategy", jsStrategy);

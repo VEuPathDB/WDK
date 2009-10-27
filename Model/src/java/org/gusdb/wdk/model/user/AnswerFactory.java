@@ -59,7 +59,7 @@ public class AnswerFactory {
             Question question = answerValue.getQuestion();
             // the answer hasn't been stored, create an answerInfo, and save it
             int answerId = userPlatform.getNextId(wdkSchema, TABLE_ANSWER);
-            answer = new Answer(user, this, answerId);
+            answer = new Answer(user, answerId);
             answer.setAnswerChecksum(answerValue.getChecksum());
             answer.setProjectId(wdkModel.getProjectId());
             answer.setProjectVersion(wdkModel.getVersion());
@@ -101,8 +101,7 @@ public class AnswerFactory {
             resultSet = ps.executeQuery();
 
             if (resultSet.next()) {
-                answer = new Answer(user, this,
-                        resultSet.getInt(COLUMN_ANSWER_ID));
+                answer = new Answer(user, resultSet.getInt(COLUMN_ANSWER_ID));
                 answer.setAnswerChecksum(answerChecksum);
                 answer.setProjectId(projectId);
                 answer.setProjectVersion(resultSet.getString(COLUMN_PROJECT_VERSION));

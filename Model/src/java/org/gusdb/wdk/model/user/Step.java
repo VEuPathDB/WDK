@@ -50,6 +50,7 @@ public class Step {
 
     private String booleanExpression;
     private boolean valid = true;
+    private String validationMessage;
 
     private int estimateSize = 0;
 
@@ -488,11 +489,13 @@ public class Step {
             throws WdkModelException {
         this.paramValues = new LinkedHashMap<String, String>(paramValues);
         // make sure the params do exist
-        Map<String, Param> params = getQuestion().getParamMap();
-        for (String paramName : paramValues.keySet()) {
-            if (!params.containsKey(paramName)) {
-                this.valid = false;
-                break;
+        if (this.valid) {
+            Map<String, Param> params = getQuestion().getParamMap();
+            for (String paramName : paramValues.keySet()) {
+                if (!params.containsKey(paramName)) {
+                    this.valid = false;
+                    break;
+                }
             }
         }
     }
@@ -661,6 +664,9 @@ public class Step {
 
     public AnswerValue getAnswerValue() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
+        if (!valid)
+            throw new WdkUserException("Step #" + internalId
+                    + "(i) is invalid, cannot create answerValue.");
         if (answerValue == null) {
             Question question = getQuestion();
             Map<String, Boolean> sortingMap = user.getSortingAttributes(question.getFullName());
@@ -700,5 +706,49 @@ public class Step {
         } catch (WdkModelException ex) {
             return getType();
         }
+    }
+
+    /**
+     * Validate a step and all the children steps it depends on. the result of
+     * validation will also be stored in "valid" variable. If a step was already
+     * invalid it will stay invalid.
+     * 
+     * @return
+     */
+    public boolean validate() {
+        if (!valid) return valid;
+
+        // only validate leaf steps. the validation of a combined step is
+        // determinedby the children.
+        if (childStep == null && previousStep == null) {
+            try {
+                getAnswerValue();
+            } catch (Exception ex) {
+                this.validationMessage = ex.getMessage();
+                this.valid = false;
+            }
+        } else {
+            if (childStep != null) {
+                if (!childStep.validate()) this.valid = false;
+            } else if (previousStep != null) {
+                if (!previousStep.validate()) this.valid = false;
+            }
+        }
+        return valid;
+    }
+
+    /**
+     * @return the validationMessage
+     */
+    public String getValidationMessage() {
+        return validationMessage;
+    }
+
+    /**
+     * @param validationMessage
+     *            the validationMessage to set
+     */
+    public void setValidationMessage(String validationMessage) {
+        this.validationMessage = validationMessage;
     }
 }
