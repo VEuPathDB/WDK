@@ -488,4 +488,20 @@ public class StepBean {
     public String getDisplayType() {
         return step.getDisplayType();
     }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Step#getValidationMessage()
+     */
+    public String getValidationMessage() {
+        return step.getValidationMessage();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Step#validate()
+     */
+    public boolean validate() {
+        return step.validate();
+    }
 }

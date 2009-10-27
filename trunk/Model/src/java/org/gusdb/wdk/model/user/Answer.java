@@ -3,16 +3,10 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-
-import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
 
 /**
  * @author xingao
@@ -28,11 +22,9 @@ public class Answer {
     private String queryChecksum;
 
     private User user;
-    private AnswerFactory answerFactory;
 
-    Answer(User user, AnswerFactory answerFactory, int answerId) {
+    Answer(User user, int answerId) {
         this.user = user;
-        this.answerFactory = answerFactory;
         this.answerId = answerId;
     }
 

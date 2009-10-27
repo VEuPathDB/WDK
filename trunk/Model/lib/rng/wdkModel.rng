@@ -45,6 +45,8 @@
           <ref name="category" />
 
           <ref name="declaredMacro" />
+          
+          <ref name="queryMonitor" />
 
         </choice>
       </oneOrMore>
@@ -59,6 +61,36 @@
     <optional>
       <attribute name="excludeProjects" />
     </optional>
+  </define>
+
+  <!-- define query monitor -->
+  <define name="queryMonitor">
+    <element name="queryMonitor">
+      <optional>
+        <attribute name="slowQueryThreshold">
+          <data type="unsignedLong" />
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="brokenQueryThreshold">
+          <data type="unsignedLong" />
+        </attribute>
+      </optional>
+      <ref name="IncludeExclude"/>
+      
+      <zeroOrMore>
+        <choice>
+          <element name="ignoreSlowQueryRegex">
+            <ref name="IncludeExclude"/>
+            <text />
+          </element>
+          <element name="ignoreBrokenQueryRegex">
+            <ref name="IncludeExclude"/>
+            <text />
+          </element>
+        </choice>
+      </zeroOrMore>
+    </element>
   </define>
 
   <!-- define base property list content -->

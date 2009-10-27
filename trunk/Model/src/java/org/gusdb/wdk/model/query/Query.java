@@ -253,6 +253,11 @@ public abstract class Query extends WdkModelBase {
         return Utilities.encrypt(jsQuery.toString());
     }
 
+    /**
+     * @param extra, if extra is true, then column names are also includes, plus the extra info from param.
+     * @return
+     * @throws JSONException
+     */
     private JSONObject getJSONContent(boolean extra) throws JSONException {
         // use JSON to construct the string content
         JSONObject jsQuery = new JSONObject();

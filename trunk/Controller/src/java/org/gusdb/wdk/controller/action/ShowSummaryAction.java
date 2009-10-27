@@ -175,6 +175,14 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     strStratId = strStratId.split("_")[0];
                 }
                 strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+                // always validate the existing strategy in showSummary.
+                if (!strategy.getLatestStep().validate()) {
+                    // if the strategy is invalid, go to showStrategy instead mof showing the result.
+                    forward = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
+                    String path = forward.getPath() + "?strategy=" + strategy.getStrategyId();
+                    request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
+                    return new ActionForward(path, false);
+                }
             }
 
             String queryString;
@@ -196,8 +204,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
             wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
 
             logger.debug("preparing forward");
-
-            // make ActionForward
 
             // forward to the results page, if requested
             if (resultOnly) {
