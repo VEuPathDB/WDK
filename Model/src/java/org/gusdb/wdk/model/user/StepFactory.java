@@ -563,6 +563,7 @@ public class StepFactory {
             step.setParamValues(dependentValues);
         } catch (Exception ex) {
             step.setValid(false);
+            step.setValidationMessage(ex.getMessage());
         }
         return step;
     }
