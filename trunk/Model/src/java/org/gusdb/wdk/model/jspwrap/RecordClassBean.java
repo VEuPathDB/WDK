@@ -156,4 +156,8 @@ public class RecordClassBean {
         Question question = wdkModel.getQuestion(questionName);
         return new QuestionBean(question);
     }
+    
+    public boolean getHasBasket() {
+        return recordClass.hasBasket();
+    }
 }
