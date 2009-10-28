@@ -36,7 +36,6 @@ public class Strategy {
     private String description;
     private String name;
     private String savedName = null;
-    private boolean valid = true;
 
     Strategy(StepFactory factory, User user, int displayId, int internalId) {
         this.stepFactory = factory;
@@ -472,7 +471,7 @@ public class Strategy {
         jsStrategy.put("savedName", this.savedName);
         jsStrategy.put("saved", this.isSaved);
         jsStrategy.put("deleted", this.isDeleted);
-        jsStrategy.put("valid", this.valid);
+        jsStrategy.put("valid", this.isValid());
         jsStrategy.put("latestStep", latestStep.getJSONContent(this.displayId));
 
         return jsStrategy;
@@ -482,15 +481,7 @@ public class Strategy {
      * @return the valid
      */
     public boolean isValid() {
-        return valid;
-    }
-
-    /**
-     * @param valid
-     *            the valid to set
-     */
-    public void setValid(boolean valid) {
-        this.valid = valid;
+        return latestStep.isValid();
     }
 
     /**

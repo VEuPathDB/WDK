@@ -796,8 +796,6 @@ public class StepFactory {
         strategy.setCreatedTime(resultSet.getTimestamp(COLUMN_CREATE_TIME));
         strategy.setIsSaved(resultSet.getBoolean(COLUMN_IS_SAVED));
         strategy.setDeleted(resultSet.getBoolean(COLUMN_IS_DELETED));
-        if (resultSet.getObject(COLUMN_IS_VALID) != null)
-            strategy.setValid(resultSet.getBoolean(COLUMN_IS_VALID));
         strategy.setSavedName(resultSet.getString(COLUMN_SAVED_NAME));
         strategy.setLastViewedTime(resultSet.getTimestamp(COLUMN_LAST_VIEWED_TIME));
         strategy.setLastModifiedTime(resultSet.getTimestamp(COLUMN_LAST_MODIFIED_TIME));
@@ -816,7 +814,6 @@ public class StepFactory {
         int rootStepId = resultSet.getInt(COLUMN_ROOT_STEP_ID);
         Step rootStep = loadStepTree(user, rootStepId);
         strategy.setLatestStep(rootStep);
-        if (!rootStep.isValid()) strategy.setValid(false);
 
         return strategy;
     }
