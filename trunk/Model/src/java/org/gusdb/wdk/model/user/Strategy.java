@@ -472,6 +472,7 @@ public class Strategy {
         jsStrategy.put("savedName", this.savedName);
         jsStrategy.put("saved", this.isSaved);
         jsStrategy.put("deleted", this.isDeleted);
+        jsStrategy.put("valid", this.valid);
         jsStrategy.put("latestStep", latestStep.getJSONContent(this.displayId));
 
         return jsStrategy;
