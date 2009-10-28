@@ -228,6 +228,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             // validate the existing strategy in showSummary.
             if (strategy != null) {
+                logger.info("validating all steps");
                 if (!strategy.getLatestStep().validate()) {
                     // if the strategy is invalid, go to showStrategy instead of
                     // showing the result. the invalidation message will be
