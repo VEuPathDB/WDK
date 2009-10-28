@@ -62,11 +62,11 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
             Map<Integer, StrategyBean> displayStrategies;
             if (currentStrategy != null) {
+                // this case is directly from showSummaryAction, where one step is invalid
                 displayStrategies = new LinkedHashMap<Integer, StrategyBean>();
                 displayStrategies.put(currentStrategy.getStrategyId(),
                         currentStrategy);
-            }
-            if (open) {
+            } else if (open) {
                 // open all the requested strategies
                 for (String strategyKey : stratKeys) {
                     wdkUser.addActiveStrategy(strategyKey);
