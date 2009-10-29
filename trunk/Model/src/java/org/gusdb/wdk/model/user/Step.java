@@ -717,11 +717,10 @@ public class Step {
      * @throws SQLException
      */
     public boolean validate() throws SQLException {
-        if (!valid) return valid;
-
         // only validate leaf steps. the validation of a combined step is
-        // determinedby the children.
+        // determined by the children.
         if (childStep == null && previousStep == null) {
+            if (!valid) return valid;
             try {
                 getAnswerValue();
             } catch (Exception ex) {
