@@ -13,6 +13,7 @@ import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.fix.StepValidator;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -714,8 +715,9 @@ public class Step {
      * invalid it will stay invalid.
      * 
      * @return
+     * @throws SQLException
      */
-    public boolean validate() {
+    public boolean validate() throws SQLException {
         if (!valid) return valid;
 
         // only validate leaf steps. the validation of a combined step is
@@ -734,6 +736,8 @@ public class Step {
                 if (!previousStep.validate()) this.valid = false;
             }
         }
+        // set the invalid flag
+        if (!valid) stepFactory.setStepValidFlag(this);
         return valid;
     }
 
