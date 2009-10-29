@@ -565,6 +565,7 @@ public class StepFactory {
             step.setValid(false);
             step.setValidationMessage(ex.getMessage());
         }
+        if (!step.isValid()) setStepValidFlag(step);
         return step;
     }
 
@@ -1406,5 +1407,19 @@ public class StepFactory {
         String content = project_id + "_" + userId + "_" + internalId
                 + "_6276406938881110742";
         return Utilities.encrypt(content, true);
+    }
+
+    void setStepValidFlag(Step step) throws SQLException {
+        String sql = "UPDATE " + userSchema + TABLE_STEP + " SET "
+                + COLUMN_IS_VALID + " = ? WHERE step_id = ?";
+        PreparedStatement psUpdate = null;
+        try {
+            psUpdate = SqlUtils.getPreparedStatement(dataSource, sql);
+            psUpdate.setBoolean(1, step.isValid());
+            psUpdate.setInt(2, step.getInternalId());
+            psUpdate.executeUpdate();
+        } finally {
+            SqlUtils.closeStatement(psUpdate);
+        }
     }
 }
