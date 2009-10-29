@@ -499,9 +499,10 @@ public class StepBean {
 
     /**
      * @return
+     * @throws SQLException 
      * @see org.gusdb.wdk.model.user.Step#validate()
      */
-    public boolean validate() {
+    public boolean validate() throws SQLException {
         return step.validate();
     }
 }
