@@ -396,9 +396,10 @@ public class User /* implements Serializable */{
     }
 
     public synchronized Step createStep(Question question,
-            Map<String, String> paramValues, String filterName, boolean deleted, boolean validate)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            Map<String, String> paramValues, String filterName,
+            boolean deleted, boolean validate) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         AnswerFilterInstance filter = null;
         RecordClass recordClass = question.getRecordClass();
         if (filterName != null) {
@@ -408,9 +409,10 @@ public class User /* implements Serializable */{
     }
 
     public synchronized Step createStep(Question question,
-            Map<String, String> paramValues, AnswerFilterInstance filter, boolean deleted,
-            boolean validate) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            Map<String, String> paramValues, AnswerFilterInstance filter,
+            boolean deleted, boolean validate) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         int endIndex = getItemsPerPage();
         return createStep(question, paramValues, filter, 1, endIndex, deleted,
                 validate);
@@ -1224,11 +1226,15 @@ public class User /* implements Serializable */{
     }
 
     public Step createBooleanStep(Step leftStep, Step rightStep,
-            String booleanOperator, boolean useBooleanFilter, String filterName)
-            throws NoSuchAlgorithmException, WdkModelException,
-            WdkUserException, SQLException, JSONException {
+            String booleanOperator, boolean useBooleanFilter, String filterName) throws WdkModelException, NoSuchAlgorithmException, WdkUserException, SQLException, JSONException {
         BooleanOperator operator = BooleanOperator.parse(booleanOperator);
-        Question question = leftStep.getQuestion();
+        Question question = null;
+        try {
+            question = leftStep.getQuestion();
+        } catch (WdkModelException ex) {
+            // in case the left step has an invalid question, try the right
+            question = rightStep.getQuestion();
+        }
         AnswerFilterInstance filter = null;
         if (filterName != null)
             filter = question.getRecordClass().getFilter(filterName);
