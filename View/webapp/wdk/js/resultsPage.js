@@ -67,7 +67,7 @@ function GetResultsPage(url, update, ignoreFilters){
 				try {
 					customResultsPage();
 				}
-				catch {
+				catch(err) {
 					//Do nothing;
 				}
 				$("#Workspace").unblock();
