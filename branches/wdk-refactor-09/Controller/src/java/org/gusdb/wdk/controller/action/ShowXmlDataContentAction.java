@@ -50,7 +50,9 @@ public class ShowXmlDataContentAction extends Action {
 
     private ActionForward getForward (XmlAnswerBean xmlAnswer, ActionMapping mapping) {
 	ServletContext svltCtx = getServlet().getServletContext();
-	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+	String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR
+	    + File.separator + CConstants.WDK_QUESTIONS_DIR;
 	String customViewFile1 = customViewDir + File.separator
 	    + xmlAnswer.getQuestion().getFullName() + ".jsp";
 	String customViewFile2 = customViewDir + File.separator
