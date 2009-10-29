@@ -52,8 +52,10 @@ public class QuestionSetForm extends ActionForm {
     public void setMyMultiProp(String key, String[] values) {
         StringBuffer buffer = new StringBuffer();
         for (String value : values) {
+            value = value.trim();
+            if (value.length() == 0) continue;
             if (buffer.length() > 0) buffer.append(",");
-            buffer.append(value.trim());
+            buffer.append(value.intern());
         }
         // logger.debug(key + "='" + buffer + "'");
         String value = Utilities.fromArray(values);
@@ -67,7 +69,7 @@ public class QuestionSetForm extends ActionForm {
     public String[] getMyMultiProp(String key) {
         String value = myProps.get(key);
         if (value == null) return new String[0];
-        return value.split(",");
+        return value.split("[,]+");
     }
 
     /* returns a list of labels for a select box */
