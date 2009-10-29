@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerFilterInstance;
-import org.gusdb.wdk.model.BooleanOperator;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
@@ -269,20 +268,16 @@ public class Strategy {
                 } else {
                     // assuming boolean, will need to add case for
                     // non-boolean op
-                    BooleanOperator operator = BooleanOperator.parse(moveFromStep.getOperation());
-                    AnswerFilterInstance targetFilter = moveFromStep.getFilter();
                     Step rightStep = moveFromStep.getChildStep();
                     moveFromStep = user.createBooleanStep(step, rightStep,
-                            operator, false, targetFilter);
+                            moveFromStep.getOperation(), false, moveFromStep.getFilterName());
                     step = moveFromStep;
                 }
                 // again, assuming boolean, will need to add case for
                 // non-boolean
-                BooleanOperator operator = BooleanOperator.parse(moveToStep.getOperation());
-                AnswerFilterInstance targetFilter = moveToStep.getFilter();
                 Step rightStep = moveToStep.getChildStep();
-                moveToStep = user.createBooleanStep(step, rightStep, operator,
-                        false, targetFilter);
+                moveToStep = user.createBooleanStep(step, rightStep, moveToStep.getOperation(),
+                        false, moveToStep.getFilterName());
                 step = moveToStep;
             } else if (i == moveFromIx) {
                 // do nothing; this step was moved, so we just ignore it.
@@ -293,11 +288,9 @@ public class Strategy {
                 } else {
                     // again, assuming boolean, will need to add case for
                     // non-boolean
-                    BooleanOperator operator = BooleanOperator.parse(newStep.getOperation());
-                    AnswerFilterInstance targetFilter = newStep.getFilter();
                     Step rightStep = newStep.getChildStep();
-                    newStep = user.createBooleanStep(step, rightStep, operator,
-                            false, targetFilter);
+                    newStep = user.createBooleanStep(step, rightStep, newStep.getOperation(),
+                            false, newStep.getFilterName());
                     step = moveToStep;
                 }
             }
@@ -322,11 +315,9 @@ public class Strategy {
                         newStep.getQuestion().getRecordClass(),
                         newStep.getDisplayId());
             } else {
-                BooleanOperator operator = BooleanOperator.parse(targetStep.getOperation());
-                AnswerFilterInstance targetFilter = targetStep.getFilter();
                 Step rightStep = targetStep.getChildStep();
-                newStep = user.createBooleanStep(newStep, rightStep, operator,
-                        false, targetFilter);
+                newStep = user.createBooleanStep(newStep, rightStep, targetStep.getOperation(),
+                        false, targetStep.getFilterName());
             }
             stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(
                     newStep.getDisplayId()));
@@ -351,11 +342,9 @@ public class Strategy {
                             targetStep.getQuestion().getRecordClass(),
                             targetStep.getDisplayId());
                 } else {
-                    BooleanOperator operator = BooleanOperator.parse(newStep.getOperation());
-                    AnswerFilterInstance targetFilter = newStep.getFilter();
                     Step rightStep = newStep.getChildStep();
                     newStep = user.createBooleanStep(targetStep, rightStep,
-                            operator, false, targetFilter);
+                            newStep.getOperation(), false, newStep.getFilterName());
                 }
                 newStep.setParentStep(parent);
                 newStep.setCollapsible(targetStep.isCollapsible());
@@ -376,12 +365,10 @@ public class Strategy {
             // go to parent, update subsequent steps
             targetStep = newStep.getParentStep();
 
-            BooleanOperator operator = BooleanOperator.parse(targetStep.getOperation());
-            AnswerFilterInstance targetFilter = targetStep.getFilter();
             Step leftStep = targetStep.getPreviousStep();
             // update parent, then update subsequent
-            newStep = user.createBooleanStep(leftStep, newStep, operator,
-                    false, targetFilter);
+            newStep = user.createBooleanStep(leftStep, newStep, targetStep.getOperation(),
+                    false, targetStep.getFilterName());
             stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(
                     newStep.getDisplayId()));
             while (targetStep.getNextStep() != null) {
@@ -393,11 +380,9 @@ public class Strategy {
                             newStep.getQuestion().getRecordClass(),
                             newStep.getDisplayId());
                 } else {
-                    operator = BooleanOperator.parse(targetStep.getOperation());
-                    targetFilter = targetStep.getFilter();
                     Step rightStep = targetStep.getChildStep();
                     newStep = user.createBooleanStep(newStep, rightStep,
-                            operator, false, targetFilter);
+                            targetStep.getOperation(), false, targetStep.getFilterName());
                 }
                 stepIdsMap.put(new Integer(targetStep.getDisplayId()),
                         new Integer(newStep.getDisplayId()));
