@@ -126,7 +126,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 }
                 // reset pager info in session
                 wdkUser.setViewResults(wdkUser.getViewStrategyId(),
-                                       wdkUser.getViewStepId(), 0);
+                        wdkUser.getViewStepId(), 0);
             } else {
                 // no: get question
                 wdkQuestion = getQuestionByFullName(qFullName);
@@ -163,7 +163,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         + rootStep.getParentStep().getBooleanExpression());
             }
 
-            String boolExp = null;
             if (isRevise && hasFilter) {
                 // get the original step
                 int originalStepId = Integer.parseInt(reviseStep);
@@ -197,8 +196,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 targetStepId = rootStep.getStepId();
                 if (!isTransform) {
                     // now create step for operation query, if it's a boolean
-                    boolExp = rootStep.getStepId() + " " + op + " " + newStepId;
-                    newStep = wdkUser.combineStep(boolExp, false);
+                    newStep = wdkUser.createBooleanStep(rootStep, newStep, op,
+                            false, null);
                     newStepId = newStep.getStepId();
                 }
                 // implied: since step is a transform (and we aren't inserting a
@@ -272,8 +271,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                 // be a boolean expression b/c existing first
                                 // step is a regular non-boolean, non-transform
                                 // query
-                                boolExp = newStepId + " " + op + " "
-                                        + targetStep.getStepId();
+                                newStep = wdkUser.createBooleanStep(newStep,
+                                        targetStep, op, false, null);
                             }
                         }
                     } else { // not the first step
@@ -298,12 +297,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                 String operator = (op == null)
                                         ? parent.getOperation() : op;
                                 boolean useBooleanFilter = parent.isUseBooleanFilter();
-                                AnswerFilterInstanceBean filter = parent.getAnswerValue().getFilter();
-                                String bfName = (filter == null) ? null
-                                        : filter.getName();
                                 newStep = wdkUser.createBooleanStep(previous,
                                         child, operator, useBooleanFilter,
-                                        bfName);
+                                        parent.getFilterName());
                                 newStepId = newStep.getStepId();
                             }
                             // implied: if we're revising a transform step,
@@ -313,8 +309,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             if (!isTransform) {
                                 // the inserted step has to point to the step at
                                 // insertIx - 1
-                                boolExp = targetStep.getPreviousStep().getStepId()
-                                        + " " + op + " " + newStepId;
+                                newStep = wdkUser.createBooleanStep(
+                                        targetStep.getPreviousStep(), newStep,
+                                        op, false, targetStep.getOperation());
                             }
                             if (!isOrtholog) {
                                 // implied: if we're inserting a transform, the
@@ -330,12 +327,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             }
                         }
                     }
-
-                    if (boolExp != null) {
-                        // now create step for operation query
-                        newStep = wdkUser.combineStep(boolExp, false);
-                        newStepId = newStep.getStepId();
-                    }
+                    newStepId = newStep.getStepId();
                 } else { // branch length = 1 && revise: revise the first step
                     targetStep = strategy.getStepById(targetStepId);
                 }
