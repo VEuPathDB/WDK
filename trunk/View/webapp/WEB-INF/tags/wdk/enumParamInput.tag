@@ -26,7 +26,7 @@ Otherwise a standard select menu is used.
 <c:set var="dependedParam" value="${qP.dependedParam}"/>
 <c:if test="${dependedParam != null}">
   <c:set var="dependedParam" value="${dependedParam.name}" />
-  <c:set var="dependentClass" value="dependentParam dependsOn${dependedParam}" />
+  <c:set var="dependentClass" value="dependentParam" />
 </c:if>
 
 <!--<div class="param">-->
@@ -36,7 +36,7 @@ Otherwise a standard select menu is used.
   <%-- multiPick is true, use checkboxes or scroll pane --%>
   <c:choose>
     <c:when test="${displayType eq 'checkBox' || (displayType == null && fn:length(qP.vocab) < 15)}"><%-- use checkboxes --%>
-	 <div class="param-multiPick">
+	 <div class="param-multiPick ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
       <c:set var="i" value="0"/>
       <table border="1" cellspacing="0"><tr><td>
 
@@ -49,11 +49,11 @@ Otherwise a standard select menu is used.
         <c:choose>
         <%-- test for param labels to italicize --%>
         <c:when test="${pNam == 'organism' or pNam == 'ecorganism'}">
-          <html:multibox property="myMultiProp(${pNam})" value="${entity.key}" styleId="${pNam}" styleClass="${dependentClass}"/>
+          <html:multibox property="myMultiProp(${pNam})" value="${entity.key}" styleId="${pNam}" />
           <i>${entity.value}</i>&nbsp;
         </c:when>
         <c:otherwise> <%-- use multiselect menu --%>
-          <html:multibox property="myMultiProp(${pNam})" value="${entity.key}" styleId="${pNam}" styleClass="${dependentClass}"/>
+          <html:multibox property="myMultiProp(${pNam})" value="${entity.key}" styleId="${pNam}" />
           ${entity.value}&nbsp;
         </c:otherwise>
         </c:choose> 
@@ -71,7 +71,7 @@ Otherwise a standard select menu is used.
     
     <%-- use a tree list --%>
     <c:when test="${displayType eq 'treeBox'}">
-		<div class="param-tree">
+		<div class="param-tree ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
 
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
@@ -93,8 +93,8 @@ Otherwise a standard select menu is used.
     </c:when>
 
     <c:otherwise>
-	  <div class="param-multiPick">
-      <html:select  property="myMultiProp(${pNam})" multiple="1" styleId="${pNam}" styleClass="${dependentClass}">
+	  <div class="param-multiPick ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+      <html:select  property="myMultiProp(${pNam})" multiple="1" styleId="${pNam}">
         <c:set var="opt" value="${opt+1}"/>
         <c:set var="sel" value=""/>
         <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
@@ -108,12 +108,12 @@ Otherwise a standard select menu is used.
 </div>
 </c:when> <%-- end of multipick --%>
 <c:otherwise> <%-- pick single item --%>
-  <div class="param">
+  <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
     <c:choose>
       <c:when test="${displayType eq 'radioBox'}">
          <c:forEach items="${qP.displayMap}" var="entity">
            <div>
-             <html:radio property="myMultiProp(${pNam})" value="${entity.key}"  styleClass="${dependentClass}"/> ${entity.value}
+             <html:radio property="myMultiProp(${pNam})" value="${entity.key}" /> ${entity.value}
            </div>
          </c:forEach>
       </c:when>
@@ -121,12 +121,12 @@ Otherwise a standard select menu is used.
       <%-- use a type ahead --%>
       <c:when test="${displayType eq 'typeAhead'}">
         <input type="text" id="${pNam}_display" size="50"/>
-        <input type="hidden" class="typeAhead ${dependentClass}" name="myMultiProp(${pNam})" size="50"/>
+        <input type="hidden" class="typeAhead" name="myMultiProp(${pNam})" size="50"/>
       </c:when>
 
       <c:otherwise>
         <%-- multiPick is false, use pull down menu --%>
-        <html:select  property="myMultiProp(${pNam})" styleId="${pNam}" styleClass="${dependentClass}">
+        <html:select  property="myMultiProp(${pNam})" styleId="${pNam}">
           <c:set var="opt" value="${opt+1}"/>
           <c:set var="sel" value=""/>
           <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
