@@ -1,6 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
-import java.io.PrintWriter;
+import java.io.File;
+
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -46,16 +47,25 @@ public class GetVocabAction extends ShowQuestionAction {
 	    wdkQuestion.getParamsMap().put(paramName, param);
 	    
 	    request.setAttribute("vocabParam", param);
+
+	    String xmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR
+	    + File.separator + "vocabXml.jsp";
+
+	    String htmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR
+	    + File.separator + "vocabHtml.jsp";
+
             ActionForward forward;
 
 	    if (getXml) {
-		forward = mapping.findForward("vocab_xml");
+		forward = new ActionForward(xmlVocabFile);
 	    }
 	    else {
 		QuestionForm qForm = prepareQuestionForm(wdkQuestion, request,
                     (QuestionForm) form);
 
-		forward = mapping.findForward("vocab_html");
+		forward = new ActionForward(htmlVocabFile);
 	    }
 
             return forward;
