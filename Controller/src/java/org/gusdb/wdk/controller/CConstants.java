@@ -10,7 +10,7 @@ public class CConstants {
     public static final String WDK_CUSTOMVIEWDIR_KEY = "wdkCustomViewDir";
     public static final String WDK_ALWAYSGOTOSUMMARY_KEY = "wdkAlwaysGoToSummary";
     public static final String WDK_DEFAULT_VIEW_DIR = "/wdk";
-    public static final String WDK_CUSTOM_VIEW_DIR = "/wdkExtension";
+    public static final String WDK_CUSTOM_VIEW_DIR = "/wdkCustomization";
     public static final String WDK_PAGES_DIR = "jsp";
     public static final String WDK_RESULTS_DIR = "results";
     public static final String WDK_QUESTIONS_DIR = "questions";
