@@ -27,25 +27,20 @@ public class ShowQueryHistoryAction extends Action {
         ServletContext svltCtx = getServlet().getServletContext();
         String historyType = request.getParameter(CConstants.WDK_HISTORY_TYPE_PARAM);
         String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
-        String customStepFile = customViewDir + File.separator
-                + CConstants.WDK_CUSTOM_STEP_HISTORY_PAGE;
-        String customStrategyFile = customViewDir + File.separator
-                + CConstants.WDK_CUSTOM_STRATEGY_HISTORY_PAGE;
         ActionForward forward = null;
 
+	String stratHistoryFile = CConstants.WDK_DEFAULT_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR
+	    + File.separator + "strategyHistory.jsp";
+	
+	String stepHistoryFile = CConstants.WDK_DEFAULT_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR
+	    + File.separator + "stepHistory.jsp";
+
         if (historyType != null && historyType.equalsIgnoreCase("step")) {
-            if (ApplicationInitListener.resourceExists(customStepFile, svltCtx)) {
-                forward = new ActionForward(customStepFile);
-            } else {
-                forward = mapping.findForward(CConstants.SHOW_STEP_HISTORY_MAPKEY);
-            }
+	    forward = new ActionForward(stepHistoryFile);
         } else {
-            if (ApplicationInitListener.resourceExists(customStrategyFile,
-                    svltCtx)) {
-                forward = new ActionForward(customStrategyFile);
-            } else {
-                forward = mapping.findForward(CConstants.SHOW_STRAT_HISTORY_MAPKEY);
-            }
+	    forward = new ActionForward(stratHistoryFile);
         }
 
         return forward;

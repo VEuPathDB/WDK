@@ -248,7 +248,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
 	System.out.println("file 1: " + customViewFile1);
 	System.out.println("file 2: " + customViewFile2);
-	System.out.println("file 4: " + defaultViewFile);
+	System.out.println("file 3: " + defaultViewFile);
 
         if (request.getParameterMap().containsKey(
                 CConstants.WDK_SKIPTO_DOWNLOAD_PARAM)) {

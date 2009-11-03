@@ -7,7 +7,6 @@
 
 <c:choose>
   <c:when test="${customForm != null}">
-    <p>Fetching JSP from ${customForm}</p>
     <jsp:include page="${customForm}" />
   </c:when>
   <c:otherwise>
