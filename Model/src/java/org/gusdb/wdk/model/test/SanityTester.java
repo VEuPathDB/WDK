@@ -342,9 +342,12 @@ public class SanityTester {
     private int testAttributeQuery_Count(Query query,
             ParamValuesSet paramValuesSet) throws NoSuchAlgorithmException,
             SQLException, WdkModelException, JSONException, WdkUserException {
+        // put user id into the param
+        Map<String, String> params = new LinkedHashMap<String, String>();
+        params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
 
         SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
-                new HashMap<String, String>(), true);
+                params, true);
 
         if (paramValuesSet.getParamValues().size() != 2) {
             throw new WdkUserException(
@@ -367,9 +370,12 @@ public class SanityTester {
             ParamValuesSet paramValuesSet, int count)
             throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
+        // put user id into the param
+        Map<String, String> params = new LinkedHashMap<String, String>();
+        params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
 
         SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
-                new HashMap<String, String>(), true);
+                params, true);
 
         String sql = "select * from (" + instance.getUncachedSql() + ") "
                 + paramValuesSet.getWhereClause();
