@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.query.param;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -48,7 +47,7 @@ public class EnumParam extends AbstractEnumParam {
             String term = item.getTerm();
             String display = item.getDisplay();
             String parentTerm = item.getParentTerm();
-	    boolean skip = false;
+            boolean skip = false;
 
             // escape the term & parentTerm
             // term = term.replaceAll("[,]", "_");
@@ -62,24 +61,24 @@ public class EnumParam extends AbstractEnumParam {
                         + ": The parent term cannot contain" + "comma: '"
                         + parentTerm + "'");
 
-	    if (dependedParam != null && dependedValue != null) {
-		// if this is a dependent param, and the depended value
-		// is set, only include items that are valid for the
-		// current depended value
-		String[] dependedValues = dependedValue.split(",");
-		skip = !item.isValidFor(dependedValues);
-	    }
+            if (dependedParam != null && dependedValue != null) {
+                // if this is a dependent param, and the depended value
+                // is set, only include items that are valid for the
+                // current depended value
+                String[] dependedValues = dependedValue.split(",");
+                skip = !item.isValidFor(dependedValues);
+            }
 
-	    if (!skip) {
-		termInternalMap.put(term, item.getInternal());
-		termDisplayMap.put(term, display);
-		termParentMap.put(term, parentTerm);
-	    }
+            if (!skip) {
+                termInternalMap.put(term, item.getInternal());
+                termDisplayMap.put(term, display);
+                termParentMap.put(term, parentTerm);
+            }
         }
         // check if the result is empty
         if (termInternalMap.isEmpty())
-            throw new WdkModelException("The EnumParam [" + getFullName()
-                    + "] doesn't have any value");
+            throw new WdkEmptyEnumListException("The EnumParam ["
+                    + getFullName() + "] doesn't have any value");
 
         initTreeMap();
         applySelectMode();
@@ -110,7 +109,7 @@ public class EnumParam extends AbstractEnumParam {
 
                     itemList.setParam(this);
                     itemList.excludeResources(projectId);
-		    this.enumItemList = itemList;
+                    this.enumItemList = itemList;
 
                     // apply the use term only from enumList
                     Boolean useTermOnly = itemList.isUseTermOnly();
@@ -149,7 +148,7 @@ public class EnumParam extends AbstractEnumParam {
             this.defaultValue = sb.toString();
         }
 
-	loadDependedParam();
+        loadDependedParam();
     }
 
     /*
