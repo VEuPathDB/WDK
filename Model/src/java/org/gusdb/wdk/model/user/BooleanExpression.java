@@ -123,9 +123,13 @@ public class BooleanExpression {
 
             // create boolean answer that wraps the children
             Question question = left.getQuestion();
+	    String filterName = null;
             AnswerFilterInstance filter = question.getRecordClass().getDefaultFilter();
+	    if (filter != null) {
+		filterName = filter.getName();
+	    }
             return user.createBooleanStep(left, right, operator,
-                    useBooleanFilter, filter.getName());
+                    useBooleanFilter, filterName);
         }
     }
 
