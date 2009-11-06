@@ -7,7 +7,6 @@ public class CConstants {
     //key for objects in cache, used in Action/ActionForm classes and maybe jsp pages
     public static final String WDK_RESULTFACTORY_KEY = "wdkResultFactory";
     public static final String WDK_MODEL_KEY = "wdkModel";
-    public static final String WDK_CUSTOMVIEWDIR_KEY = "wdkCustomViewDir";
     public static final String WDK_ALWAYSGOTOSUMMARY_KEY = "wdkAlwaysGoToSummary";
     public static final String WDK_DEFAULT_VIEW_DIR = "/wdk";
     public static final String WDK_CUSTOM_VIEW_DIR = "/wdkCustomization";
@@ -191,7 +190,6 @@ public class CConstants {
     protected static final String WDK_MODELPROPS_PARAM = "wdkModelProps_param";
     protected static final String WDK_LOGFILE_PARAM = "wdkLogFile_param";
     protected static final String WDK_MODELPARSER_PARAM = "wdkModelParser_param";
-    protected static final String WDK_CUSTOMVIEWDIR_PARAM = "wdkCustomViewDir_param";
     protected static final String WDK_ALWAYSGOTOSUMMARY_PARAM = "wdkAlwaysGoToSummary_param";
     protected static final String WDK_XMLSCHEMA_PARAM = "wdkXmlSchema_param";   // the schema for xml data source
     protected static final String WDK_XMLDATA_DIR_PARAM = "wdkXmlDataDir_param";
@@ -203,7 +201,6 @@ public class CConstants {
     protected static final String DEFAULT_WDKMODELSCHEMA = "/WEB-INF/wdk-model/lib/rng/wdkModel.rng";
     protected static final String DEFAULT_WDKMODELPROPS = "/WEB-INF/wdk-model/config/toyModel.props";
     protected static final String DEFAULT_WDKMODELPARSER = "org.gusdb.wdk.model.implementation.ModelXmlParser";
-    protected static final String DEFAULT_WDKCUSTOMVIEWDIR = "/customPages/";
     protected static final String DEFAULT_XMLSCHEMA = "/WEB-INF/wdk-model/lib/rng/xmlAnswer.rng";
     protected static final String DEFAULT_XMLDATA_DIR = "/WEB-INF/wdk-model/lib/xml";
     

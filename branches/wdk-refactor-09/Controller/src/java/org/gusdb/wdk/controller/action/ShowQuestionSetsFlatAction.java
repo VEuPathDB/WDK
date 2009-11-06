@@ -35,7 +35,8 @@ public class ShowQuestionSetsFlatAction extends ShowQuestionSetsAction {
         prepareQuestionSetForm(getServlet(), qSetForm);
 
         ServletContext svltCtx = getServlet().getServletContext();
-        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR;
         String customViewFile = customViewDir + File.separator
                 + CConstants.WDK_CUSTOM_QUESTIONSETS_FLAT_PAGE;
 

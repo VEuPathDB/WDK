@@ -246,10 +246,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
 	    + File.separator + CConstants.WDK_RESULTS_PAGE;
         ActionForward forward = null;
 
-	System.out.println("file 1: " + customViewFile1);
-	System.out.println("file 2: " + customViewFile2);
-	System.out.println("file 3: " + defaultViewFile);
-
         if (request.getParameterMap().containsKey(
                 CConstants.WDK_SKIPTO_DOWNLOAD_PARAM)) {
             // go to download page directly
@@ -395,7 +391,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
         request.setAttribute(CConstants.WDK_RESULT_SET_ONLY_KEY, resultOnly);
 
         ServletContext svltCtx = getServlet().getServletContext();
-        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR;
         String customViewFile = customViewDir + File.separator
                 + CConstants.WDK_CUSTOM_SUMMARY_ERROR_PAGE;
 

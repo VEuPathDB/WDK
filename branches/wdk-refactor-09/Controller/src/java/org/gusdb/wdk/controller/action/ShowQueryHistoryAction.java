@@ -26,15 +26,14 @@ public class ShowQueryHistoryAction extends Action {
 
         ServletContext svltCtx = getServlet().getServletContext();
         String historyType = request.getParameter(CConstants.WDK_HISTORY_TYPE_PARAM);
-        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+	String historyViewDir = CConstants.WDK_DEFAULT_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR;
         ActionForward forward = null;
 
-	String stratHistoryFile = CConstants.WDK_DEFAULT_VIEW_DIR
-	    + File.separator + CConstants.WDK_PAGES_DIR
+	String stratHistoryFile = historyViewDir
 	    + File.separator + "strategyHistory.jsp";
 	
-	String stepHistoryFile = CConstants.WDK_DEFAULT_VIEW_DIR
-	    + File.separator + CConstants.WDK_PAGES_DIR
+	String stepHistoryFile = historyViewDir
 	    + File.separator + "stepHistory.jsp";
 
         if (historyType != null && historyType.equalsIgnoreCase("step")) {

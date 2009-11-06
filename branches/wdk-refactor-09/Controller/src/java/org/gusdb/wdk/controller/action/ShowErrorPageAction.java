@@ -38,7 +38,8 @@ public class ShowErrorPageAction extends Action {
 
     private ActionForward getForward (ActionMapping mapping, String errorType) {
 	ServletContext svltCtx = getServlet().getServletContext();
-	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+	String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR;
 	String customViewFile = customViewDir + File.separator;
 	if (errorType.equals(CConstants.ERROR_TYPE_USER)) {
 	    customViewFile += "customError.user.jsp";
