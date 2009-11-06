@@ -32,7 +32,8 @@ public class ShowQuestionSetsAction extends Action {
             throws Exception {
 
         ServletContext svltCtx = getServlet().getServletContext();
-        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR;
         String customViewFile = customViewDir + File.separator
                 + CConstants.WDK_CUSTOM_QUESTIONSETS_PAGE;
 

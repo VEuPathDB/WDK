@@ -40,7 +40,8 @@ public class ShowRecordAction extends Action {
 
         ServletContext svltCtx = getServlet().getServletContext();
         WdkModelBean wdkModel = (WdkModelBean) svltCtx.getAttribute(CConstants.WDK_MODEL_KEY);
-        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR;
 
         RecordClassBean wdkRecordClass = wdkModel.findRecordClass(request.getParameter("name"));
         String[] pkColumns = wdkRecordClass.getPrimaryKeyColumns();
@@ -80,12 +81,10 @@ public class ShowRecordAction extends Action {
 
         request.setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 
-	String defaultViewFile = CConstants.WDK_CUSTOM_VIEW_DIR
-	    + File.separator + CConstants.WDK_PAGES_DIR
+	String defaultViewFile = customViewDir
 	    + File.separator + "record.jsp";
 
-        String customViewFile = CConstants.WDK_CUSTOM_VIEW_DIR
-	    + File.separator + CConstants.WDK_PAGES_DIR
+        String customViewFile = customViewDir
 	    + File.separator + CConstants.WDK_RECORDS_DIR
 	    + File.separator + wdkRecordClass.getFullName() + ".jsp";
 
