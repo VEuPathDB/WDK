@@ -40,6 +40,7 @@ function initTypeAhead() {
 		paramName = paramName.substring(paramName.indexOf("myMultiProp(") + 12, paramName.indexOf(")"));
 		$("#" + paramName + "_display").attr('disabled',true);
 		if(!$(this).parent('div').hasClass('dependentParam')) {
+			$("#" + paramName + "_display").val('Loading options...');
 			var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&xml=true';
 			$.ajax({
 				url: sendReqUrl,
@@ -69,7 +70,7 @@ function createAutoComplete(obj, name) {
 	$("#" + name + "_display").autocomplete(def,{
 		matchContains: true
 	});
-	$("#" + name + "_display").removeAttr('disabled');
+	$("#" + name + "_display").val('').removeAttr('disabled');
 }
 
 function updateDependentParam(paramName, dependedValue) {
@@ -79,6 +80,7 @@ function updateDependentParam(paramName, dependedValue) {
 		var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&dependedValue=' + dependedValue;
 		if ($('input.typeAhead',dependentParam).length > 0) {
 			var sendReqUrl = sendReqUrl + '&xml=true';
+			$("#" + paramName + "_display").attr('disabled',true).val('Loading options...');
 			$.ajax({
 				url: sendReqUrl,
 				dataType: "xml",
