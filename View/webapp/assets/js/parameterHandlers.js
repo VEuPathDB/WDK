@@ -67,7 +67,7 @@ function createAutoComplete(obj, name) {
 			displayTermMap[name][display] = term;
 		});		
 	}
-	$("#" + name + "_display").autocomplete(def,{
+	$("#" + name + "_display").unautocomplete().autocomplete(def,{
 		matchContains: true
 	});
 	$("#" + name + "_display").val('').removeAttr('disabled');
