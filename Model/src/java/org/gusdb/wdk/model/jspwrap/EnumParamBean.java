@@ -98,7 +98,7 @@ public class EnumParamBean extends ParamBean {
     
     public String getRawDisplayValue() throws Exception {
         String rawValue = getRawValue();
-        String[] terms = rawValue.split(rawValue);
+        String[] terms = rawValue.split(",");
         Map<String, String> displays = getDisplayMap();
         StringBuffer buffer = new StringBuffer();
         for(String term : terms) {
