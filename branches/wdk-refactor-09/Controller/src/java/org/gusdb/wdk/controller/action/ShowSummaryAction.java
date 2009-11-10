@@ -390,21 +390,12 @@ public class ShowSummaryAction extends ShowQuestionAction {
         }
         request.setAttribute(CConstants.WDK_RESULT_SET_ONLY_KEY, resultOnly);
 
-        ServletContext svltCtx = getServlet().getServletContext();
         String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
 	    + File.separator + CConstants.WDK_PAGES_DIR;
         String customViewFile = customViewDir + File.separator
-                + CConstants.WDK_CUSTOM_SUMMARY_ERROR_PAGE;
+                + CConstants.WDK_SUMMARY_ERROR_PAGE;
 
-        String url;
-        if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
-            url = customViewFile;
-        } else {
-            ActionForward forward = mapping.findForward(CConstants.SHOW_ERROR_MAPKEY);
-            url = forward.getPath();
-        }
-
-        ActionForward forward = new ActionForward(url);
+        ActionForward forward = new ActionForward(customViewFile);
         forward.setRedirect(false);
 
         return forward;
