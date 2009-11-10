@@ -27,7 +27,9 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.DatasetBean;
+import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
@@ -58,8 +60,13 @@ public class ProcessRESTAction extends ShowQuestionAction {
 			String strutsParam = mapping.getParameter();
 			String qFullName = strutsParam.split("::")[0];
 			outputType = strutsParam.split("::")[1];
-			if(outputType == null) outputType = "xml";
 			logger.info(outputType);
+
+			if(outputType.equals("wadl")){
+				createWADL(request, response, qFullName);
+				return null;
+			}
+			if(outputType == null) outputType = "xml";
 			
 			logger.debug(qFullName);
 
@@ -194,7 +201,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
 			writer.println("<response>");
 			writer.println("<error type='"+errType+"' code='"+errCode+"'>");
 			for(String m : msg.keySet())
-				writer.println("<msg>"+msg.get(m)+"</msg>");
+				writer.println("<msg><![CDATA["+msg.get(m)+"]]></msg>");
 			writer.println("</error>");
 			writer.println("</response>");
 		}else{
@@ -210,6 +217,69 @@ public class ProcessRESTAction extends ShowQuestionAction {
 		writer.flush();
 		errout.flush();
 		errout.close();
+		return;
+	}
+
+	private void createWADL(HttpServletRequest request, HttpServletResponse response, String qFullName) throws Exception{
+		ServletOutputStream out = response.getOutputStream();
+		PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+		String sQName = qFullName.replace('.', ':');
+        UserBean wdkUser = ActionUtility.getUser(servlet, request);
+        // get question
+		WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
+        QuestionBean wdkQuestion = null;
+		QuestionSetBean wdkQuestionSet = null;
+		writer.println("<?xml version='1.0' encoding='UTF-8'?>");
+		response.setHeader( "Pragma", "Public" );
+		response.setContentType( "text/xml" );
+		if(sQName.split(":")[1].equals("all")){
+			if (qFullName != null)
+         		wdkQuestionSet = wdkModel.getQuestionSetsMap().get(sQName.split(":")[0]);
+        	if (wdkQuestionSet == null)
+            	throw new WdkUserException("The question set '" + sQName.split(":")[0]
+                    	+ "' doesn't exist.");
+			writer.println("<questionSet name='"+wdkQuestionSet.getName()+"'>");
+			for(String ques : wdkQuestionSet.getQuestionsMap().keySet()){
+				writeWADL(wdkQuestionSet.getQuestionsMap().get(ques), writer);
+			}
+			writer.println("</questionSet>");
+		}else{
+			if (qFullName != null)
+         		wdkQuestion = getQuestionByFullName(qFullName);
+        	if (wdkQuestion == null)
+            	throw new WdkUserException("The question '" + qFullName
+                    	+ "' doesn't exist.");
+			writeWADL(wdkQuestion, writer);
+		}
+		writer.flush();
+		out.flush();
+		out.close();
+	}
+	
+	private void writeWADL(QuestionBean wdkQuestion, PrintWriter writer) throws Exception{
+	    logger.info(wdkQuestion.getDisplayName());
+		writer.println("<question name='"+wdkQuestion.getDisplayName()+"'>");
+		for(String key : wdkQuestion.getParamsMap().keySet() ){
+			writer.println("<param name='"+key+"'>");
+			ParamBean p = wdkQuestion.getParamsMap().get(key);
+			if(p instanceof EnumParamBean){
+				EnumParamBean ep = (EnumParamBean)p;
+				for(String term : ep.getVocabMap().keySet()){
+					writer.println("<term>"+term+"</term>");
+				}
+			}
+			writer.println("</param>");
+		}
+		writer.println("<param name='o-fields'>");
+		for(String attr : wdkQuestion.getReportMakerAttributesMap().keySet())
+			writer.println("<term>"+attr+"</term>");
+		writer.println("</param>");
+		writer.println("<param name='o-tables'>");
+		for(String tab : wdkQuestion.getReportMakerTablesMap().keySet())
+			writer.println("<term>"+tab+"</term>");
+		writer.println("</param>");
+		writer.println("</question>");
+		// construct the forward to show_summary action
 		return;
 	}
 }
