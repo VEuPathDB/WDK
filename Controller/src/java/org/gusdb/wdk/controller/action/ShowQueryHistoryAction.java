@@ -31,10 +31,10 @@ public class ShowQueryHistoryAction extends Action {
         ActionForward forward = null;
 
 	String stratHistoryFile = historyViewDir
-	    + File.separator + "strategyHistory.jsp";
+	    + File.separator + CConstants.WDK_STRATEGY_HISTORY_PAGE;
 	
 	String stepHistoryFile = historyViewDir
-	    + File.separator + "stepHistory.jsp";
+	    + File.separator + CConstants.WDK_STEP_HISTORY_PAGE;
 
         if (historyType != null && historyType.equalsIgnoreCase("step")) {
 	    forward = new ActionForward(stepHistoryFile);

@@ -17,17 +17,17 @@ public class CConstants {
     public static final String WDK_REPORTERS_DIR = "reporters";
     public static final String WDK_STRATEGY_DIR = "strategies";
 
+    public static final String WDK_DOWNLOAD_CONFIG_PAGE = "reporterConfig.jsp";
+    public static final String WDK_MODEL_ERROR_PAGE = "error.jsp";
     public static final String WDK_QUESTION_PAGE = "Question.jsp";
     public static final String WDK_RESULTS_PAGE = "results.jsp";
+    public static final String WDK_STEP_HISTORY_PAGE = "stepHistory.jsp";
     public static final String WDK_STRATEGY_PAGE = "Workspace.jsp";
+    public static final String WDK_STRATEGY_HISTORY_PAGE = "strategyHistory.jsp";
+    public static final String WDK_SUMMARY_ERROR_PAGE = "summaryError.jsp";
+    public static final String WDK_USER_ERROR_PAGE = "error.user.jsp";
     public static final String WDK_CUSTOM_QUESTIONSETS_FLAT_PAGE = "customQuestionSetsFlat.jsp";
     public static final String WDK_CUSTOM_QUESTIONSETS_PAGE = "customQuestionSets.jsp";
-    public static final String WDK_CUSTOM_QUESTION_PAGE = "customQuestion.jsp";
-    public static final String WDK_CUSTOM_SUMMARY_PAGE = "customSummary.jsp";
-    public static final String WDK_CUSTOM_SUMMARY_ERROR_PAGE = "customSummaryError.jsp";
-    public static final String WDK_CUSTOM_RECORD_PAGE = "customRecord.jsp";
-    public static final String WDK_CUSTOM_STEP_HISTORY_PAGE = "customStepHistory.jsp";
-    public static final String WDK_CUSTOM_STRATEGY_HISTORY_PAGE = "customStrategyHistory.jsp";
     public static final String WDK_CUSTOM_REGISTER_PAGE = "customRegister.jsp";
     public static final String WDK_CUSTOM_PROFILE_PAGE = "customProfile.jsp";
     public static final String WDK_CUSTOM_PASSWORD_PAGE = "customPassword.jsp";
