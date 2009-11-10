@@ -18,6 +18,7 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.GroupBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
@@ -62,7 +63,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
             Map<Integer, StrategyBean> displayStrategies;
             if (currentStrategy != null) {
-                // this case is directly from showSummaryAction, where one step is invalid
+                // this case is directly from showSummaryAction, where one step
+                // is invalid
                 displayStrategies = new LinkedHashMap<Integer, StrategyBean>();
                 displayStrategies.put(currentStrategy.getStrategyId(),
                         currentStrategy);
@@ -392,7 +394,11 @@ public class ShowStrategyAction extends ShowQuestionAction {
                     param.setUser(user);
                     param.setTruncateLength(TRUNCATE_LENGTH);
                     try {
-                        jsParam.put("value", param.getBriefRawValue());
+                        String rawValue;
+                        if (param instanceof EnumParamBean) {
+                            rawValue = ((EnumParamBean) param).getRawDisplayValue();
+                        } else rawValue = param.getBriefRawValue();
+                        jsParam.put("value", rawValue);
                     } catch (Exception ex) {
                         throw new WdkModelException(ex);
                     }

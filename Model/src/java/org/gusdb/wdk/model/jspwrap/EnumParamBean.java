@@ -95,4 +95,16 @@ public class EnumParamBean extends ParamBean {
             WdkModelException, SQLException, JSONException, WdkUserException {
         return ((AbstractEnumParam) param).getTerms(termList);
     }
+    
+    public String getRawDisplayValue() throws Exception {
+        String rawValue = getRawValue();
+        String[] terms = rawValue.split(rawValue);
+        Map<String, String> displays = getDisplayMap();
+        StringBuffer buffer = new StringBuffer();
+        for(String term : terms) {
+            if (buffer.length() > 0) buffer.append(", ");
+            buffer.append(displays.get(term.trim()));
+        }
+        return buffer.toString();
+    }
 }
