@@ -1,9 +1,10 @@
 var dependedParams = new Array();
 var displayTermMap = new Array();
 
-function initParamHandlers(isPopup) {
-	initTypeAhead();
-	initDependentParamHandlers();
+function initParamHandlers(isPopup, isEdit) {
+	if(isEdit == undefined) isEdit = false;
+	initTypeAhead(isEdit);
+	initDependentParamHandlers(isEdit);
 	if (!isPopup){
 		$("#form_question").submit(function() {
 			mapTypeAheads();
@@ -12,7 +13,7 @@ function initParamHandlers(isPopup) {
 	}
 }
 
-function initDependentParamHandlers() {
+function initDependentParamHandlers(isEdit) {
 	$('div.dependentParam').each(function() {
 		$('input, select', this).attr('disabled',true);
 		var name = $(this).attr('name');
@@ -26,20 +27,27 @@ function initDependentParamHandlers() {
 	});
 
 	//Trigger the change function so dependent params are initialized correctly
-	for (var name in dependedParams) {
-		dependedParam =  $("td#" + dependedParams[name] + "aaa input[name='myMultiProp(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='myMultiProp(" + dependedParams[name] + ")']");
-		dependedParam.change();
+	if(!isEdit){
+		for (var name in dependedParams) {
+			dependedParam =  $("td#" + dependedParams[name] + "aaa input[name='myMultiProp(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='myMultiProp(" + dependedParams[name] + ")']");
+			dependedParam.change();
+		}
+	}else{
+		$('div.dependentParam').each(function() {
+			$('input, select', this).attr('disabled',false);
+		});
 	}
 }
 
-function initTypeAhead() {
+function initTypeAhead(isEdit) {
 	$("input:hidden.typeAhead").each(function() {
 		var questionName = $(this).closest("form").children("input:hidden[name=questionFullName]").val();
 		var paramName = $(this).attr('name');
 		paramName = paramName.substring(paramName.indexOf("myMultiProp(") + 12, paramName.indexOf(")"));
 		$("#" + paramName + "_display").attr('disabled',true);
 		if(!$(this).parent('div').hasClass('dependentParam')) {
-			$("#" + paramName + "_display").val('Loading options...');
+			if(!isEdit)
+				$("#" + paramName + "_display").val('Loading options...');
 			var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&xml=true';
 			$.ajax({
 				url: sendReqUrl,
