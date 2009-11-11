@@ -772,8 +772,15 @@ public class StepFactory {
             }
             resultSet = ps.executeQuery();
             while (resultSet.next()) {
-                Strategy strategy = loadStrategy(user, resultSet);
-                strategies.add(strategy);
+                // ignore the invalid strategies caused by missing steps.
+                // it was caused by replication failure. need to investigate
+                // it further.
+                try {
+                    Strategy strategy = loadStrategy(user, resultSet);
+                    strategies.add(strategy);
+                } catch(WdkUserException ex) {
+                    logger.error("ignore strategy #" + resultSet.getInt("strategy_id") + ", cause: " + ex);
+                }
             }
         } finally {
             SqlUtils.closeResultSet(resultSet);
