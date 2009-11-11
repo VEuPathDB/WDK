@@ -26,6 +26,8 @@ public class CConstants {
     public static final String WDK_STRATEGY_HISTORY_PAGE = "strategyHistory.jsp";
     public static final String WDK_SUMMARY_ERROR_PAGE = "summaryError.jsp";
     public static final String WDK_USER_ERROR_PAGE = "error.user.jsp";
+    public static final String WDK_XMLDATACONTENT_PAGE = "xmlDataContent.jsp";
+    public static final String WDK_XMLDATALIST_PAGE = "xmlDataList.jsp";
     public static final String WDK_CUSTOM_QUESTIONSETS_FLAT_PAGE = "customQuestionSetsFlat.jsp";
     public static final String WDK_CUSTOM_QUESTIONSETS_PAGE = "customQuestionSets.jsp";
     public static final String WDK_CUSTOM_REGISTER_PAGE = "customRegister.jsp";
