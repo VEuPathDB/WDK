@@ -229,20 +229,28 @@ public class ProcessRESTAction extends ShowQuestionAction {
 		WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         QuestionBean wdkQuestion = null;
 		QuestionSetBean wdkQuestionSet = null;
-		writer.println("<?xml version='1.0' encoding='UTF-8'?>");
 		response.setHeader( "Pragma", "Public" );
 		response.setContentType( "text/xml" );
+		
+		writer.println("<?xml version='1.0'?>"); 
+		writer.println("<application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' " +
+		  "xsi:schemaLocation='http://wadl.dev.java.net/2009/02 wadl.xsd' " +  
+		  "xmlns:xsd='http://www.w3.org/2001/XMLSchema' " +  
+		  "xmlns='http://wadl.dev.java.net/2009/02'>");
+		String base = request.getRequestURI();
+		base = base.substring(0, base.indexOf("webservices")) + "webservices/";
+		writer.println("<resources base='http://" + base + "'>");
 		if(sQName.split(":")[1].equals("all")){
 			if (qFullName != null)
          		wdkQuestionSet = wdkModel.getQuestionSetsMap().get(sQName.split(":")[0]);
         	if (wdkQuestionSet == null)
             	throw new WdkUserException("The question set '" + sQName.split(":")[0]
                     	+ "' doesn't exist.");
-			writer.println("<questionSet name='"+wdkQuestionSet.getName()+"'>");
+			writer.println("<resource path='"+wdkQuestionSet.getName()+"'>");
 			for(String ques : wdkQuestionSet.getQuestionsMap().keySet()){
 				writeWADL(wdkQuestionSet.getQuestionsMap().get(ques), writer);
 			}
-			writer.println("</questionSet>");
+			writer.println("</resource>");
 		}else{
 			if (qFullName != null)
          		wdkQuestion = getQuestionByFullName(qFullName);
@@ -251,6 +259,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
                     	+ "' doesn't exist.");
 			writeWADL(wdkQuestion, writer);
 		}
+		writer.println("</resources></application>");
 		writer.flush();
 		out.flush();
 		out.close();
@@ -258,28 +267,86 @@ public class ProcessRESTAction extends ShowQuestionAction {
 	
 	private void writeWADL(QuestionBean wdkQuestion, PrintWriter writer) throws Exception{
 	    logger.info(wdkQuestion.getDisplayName());
-		writer.println("<question name='"+wdkQuestion.getDisplayName()+"'>");
+		writer.println("<resource path='"+wdkQuestion.getName()+"'>");
+		writer.println("<method name='POST' id='" + wdkQuestion.getName().toLowerCase() + "'>");
+		writer.println("<request>");
 		for(String key : wdkQuestion.getParamsMap().keySet() ){
-			writer.println("<param name='"+key+"'>");
+			writer.println("<param name='"+key+"' type='xsd:string'>");
 			ParamBean p = wdkQuestion.getParamsMap().get(key);
 			if(p instanceof EnumParamBean){
 				EnumParamBean ep = (EnumParamBean)p;
 				for(String term : ep.getVocabMap().keySet()){
-					writer.println("<term>"+term+"</term>");
+					writer.println("<option>"+term+"</option>");
 				}
 			}
 			writer.println("</param>");
 		}
-		writer.println("<param name='o-fields'>");
+		writer.println("<param name='o-fields' type='xsd:string'>");
 		for(String attr : wdkQuestion.getReportMakerAttributesMap().keySet())
-			writer.println("<term>"+attr+"</term>");
+			writer.println("<option>"+attr+"</option>");
 		writer.println("</param>");
-		writer.println("<param name='o-tables'>");
+		writer.println("<param name='o-tables' type='xsd:string'>");
 		for(String tab : wdkQuestion.getReportMakerTablesMap().keySet())
-			writer.println("<term>"+tab+"</term>");
+			writer.println("<option>"+tab+"</option>");
 		writer.println("</param>");
-		writer.println("</question>");
+		writer.println("</request>");
+		writer.println("</method>");
+		writer.println("</resource>");
 		// construct the forward to show_summary action
 		return;
 	}
+	
+	/*
+	 <?xml version="1.0"?> 
+	 <application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	  xsi:schemaLocation="http://wadl.dev.java.net/2009/02 wadl.xsd" 
+	  xmlns:tns="urn:yahoo:yn" 
+	  xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+	  xmlns:yn="urn:yahoo:yn" 
+	  xmlns:ya="urn:yahoo:api" 
+	  xmlns="http://wadl.dev.java.net/2009/02"> 
+	   <grammars> 
+	     <include 
+	       href="NewsSearchResponse.xsd"/> 
+	     <include 
+	       href="Error.xsd"/> 
+	   </grammars> 
+	 
+	   <resources base="http://api.search.yahoo.com/NewsSearchService/V1/"> 
+	     <resource path="newsSearch"> 
+	       <method name="GET" id="search"> 
+	         <request> 
+	           <param name="appid" type="xsd:string" 
+	             style="query" required="true"/> 
+	           <param name="query" type="xsd:string" 
+	             style="query" required="true"/> 
+	           <param name="type" style="query" default="all"> 
+	             <option value="all"/> 
+	             <option value="any"/> 
+	             <option value="phrase"/> 
+	           </param> 
+	           <param name="results" style="query" type="xsd:int" default="10"/> 
+	           <param name="start" style="query" type="xsd:int" default="1"/> 
+	           <param name="sort" style="query" default="rank"> 
+	             <option value="rank"/> 
+	             <option value="date"/> 
+	           </param> 
+	           <param name="language" style="query" type="xsd:string"/> 
+	         </request> 
+	         <response status="200"> 
+	           <representation mediaType="application/xml" 
+	             element="yn:ResultSet"/> 
+	         </response> 
+	         <response status="400"> 
+	           <representation mediaType="application/xml" 
+	             element="ya:Error"/> 
+	         </response> 
+	       </method> 
+	     </resource> 
+	   </resources> 
+	 
+	 </application>
+	
+	*/
+	
 }
