@@ -20,7 +20,6 @@ function initDependentParamHandlers() {
 			dependedParams[name] = $(this).attr('dependson');
 		}
 		var dependedParam = $("td#" + dependedParams[name] + "aaa input[name='myMultiProp(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='myMultiProp(" + dependedParams[name] + ")']");
-		dependedParam.unbind('change');
 		dependedParam.change(function() {
 			updateDependentParam(name, $(this).val());
 		});
