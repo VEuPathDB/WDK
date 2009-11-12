@@ -5,7 +5,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -225,7 +224,7 @@ public class SanityTester {
                 // discover number of entities expected in each attribute query
                 String testRowCountSql = querySet.getTestRowCountSql();
                 if (testRowCountSql != null) {
-                    ResultSet rs = SqlUtils.executeQuery(
+                    ResultSet rs = SqlUtils.executeQuery(wdkModel,
                             wdkModel.getQueryPlatform().getDataSource(),
                             testRowCountSql);
                     rs.next();
@@ -359,7 +358,7 @@ public class SanityTester {
                 + instance.getUncachedSql() + "))";
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
         resultSet.next();
         int count = resultSet.getInt(1);
         SqlUtils.closeResultSet(resultSet);
@@ -381,7 +380,7 @@ public class SanityTester {
                 + paramValuesSet.getWhereClause();
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
         if (count > 0 && !resultSet.next()) {
             String msg = "no row returned for " + query.getFullName()
                     + " using where clause (" + paramValuesSet.getWhereClause()

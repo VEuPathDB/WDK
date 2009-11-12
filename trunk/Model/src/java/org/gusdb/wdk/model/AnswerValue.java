@@ -511,7 +511,7 @@ public class AnswerValue {
         String sql = getPagedAttributeSql(attributeQuery);
         DBPlatform platform = wdkModel.getQueryPlatform();
         DataSource dataSource = platform.getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
         ResultList resultList = new SqlResultList(resultSet);
 
         // fill in the column attributes
@@ -597,7 +597,7 @@ public class AnswerValue {
             return idsQueryInstance.getSql();
         } else {
             // make an instance from the original attribute query, and attribute
-            // query has only one param, user_id. Note that the original 
+            // query has only one param, user_id. Note that the original
             // attribute query is different from the attribute query held by the
             // recordClass.
             Map<String, String> params = new LinkedHashMap<String, String>();
@@ -768,9 +768,10 @@ public class AnswerValue {
         this.pageRecordInstances = new LinkedHashMap<PrimaryKeyAttributeValue, RecordInstance>();
 
         String sql = getPagedIdSql();
-        DBPlatform platform = question.getWdkModel().getQueryPlatform();
+        WdkModel wdkModel = question.getWdkModel();
+        DBPlatform platform = wdkModel.getQueryPlatform();
         DataSource dataSource = platform.getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
         ResultList resultList = new SqlResultList(resultSet);
         RecordClass recordClass = question.getRecordClass();
         PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
@@ -960,7 +961,8 @@ public class AnswerValue {
 
             WdkModel wdkModel = question.getWdkModel();
             DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-            Object result = SqlUtils.executeScalar(dataSource, sql.toString());
+            Object result = SqlUtils.executeScalar(wdkModel, dataSource,
+                    sql.toString());
             size = Integer.parseInt(result.toString());
 
             resultSizesByFilter.put(filterName, size);
@@ -1010,8 +1012,9 @@ public class AnswerValue {
         PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
         String[] pkColumns = pkField.getColumnRefs();
         List<PrimaryKeyAttributeValue> pkValues = new ArrayList<PrimaryKeyAttributeValue>();
-        DataSource dataSource = question.getWdkModel().getQueryPlatform().getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(dataSource, idSql);
+        WdkModel wdkModel = question.getWdkModel();
+        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, idSql);
         ResultList resultList = new SqlResultList(resultSet);
         try {
             while (resultList.next()) {

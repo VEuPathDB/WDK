@@ -3,10 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
@@ -19,24 +15,15 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Random;
 import java.util.regex.Matcher;
 
-import javax.activation.DataHandler;
-import javax.mail.Address;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.ModelConfig;
 import org.gusdb.wdk.model.ModelConfigUserDB;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -62,7 +49,7 @@ public class UserFactory {
 
     static final String COLUMN_USER_ID = "user_id";
     static final String COLUMN_SIGNATURE = "signature";
-    
+
     private final String COLUMN_EMAIL = "email";
 
     // -------------------------------------------------------------------------
@@ -83,47 +70,19 @@ public class UserFactory {
         return buffer.toString();
     }
 
-    /** md5 checksum algorithm. encrypt(String) drops leading zeros of hex codes
-        so is not compatible with md5 **/
+    /**
+     * md5 checksum algorithm. encrypt(String) drops leading zeros of hex codes
+     * so is not compatible with md5
+     **/
     public static String md5(String str) throws NoSuchAlgorithmException {
         MessageDigest digest = MessageDigest.getInstance("MD5");
         byte[] encrypted = digest.digest(str.getBytes());
         StringBuffer buffer = new StringBuffer();
         for (byte code : encrypted) {
-            buffer.append(Integer.toString( ( code & 0xff ) + 0x100, 16).substring( 1 ));
+            buffer.append(Integer.toString((code & 0xff) + 0x100, 16).substring(
+                    1));
         }
         return buffer.toString();
-    }
-
-    /*
-     * Inner class to act as a JAF datasource to send HTML e-mail content
-     */
-    static class HTMLDataSource implements javax.activation.DataSource {
-
-        private String html;
-
-        public HTMLDataSource(String htmlString) {
-            html = htmlString;
-        }
-
-        // Return html string in an InputStream.
-        // A new stream must be returned each time.
-        public InputStream getInputStream() throws IOException {
-            if (html == null) throw new IOException("Null HTML");
-            return new ByteArrayInputStream(html.getBytes());
-        }
-
-        public OutputStream getOutputStream() throws IOException {
-            throw new IOException("This DataHandler cannot write HTML");
-        }
-
-        public String getContentType() {
-            return "text/html";
-        }
-
-        public String getName() {
-            return "JAF text/html dataSource to send e-mail only";
-        }
     }
 
     // -------------------------------------------------------------------------
@@ -150,40 +109,6 @@ public class UserFactory {
         ModelConfigUserDB userDB = modelConfig.getUserDB();
         this.userSchema = userDB.getUserSchema();
         this.defaultRole = modelConfig.getDefaultRole();
-    }
-
-    public void sendEmail(String email, String reply, String subject,
-            String content) throws WdkUserException {
-        String smtpServer = wdkModel.getModelConfig().getSmtpServer();
-
-        logger.debug("Sending message to: " + email + ", reply: " + reply
-                + ", using SMPT: " + smtpServer);
-
-        // create properties and get the session
-        Properties props = new Properties();
-        props.put("mail.smtp.host", smtpServer);
-        props.put("mail.debug", "true");
-        Session session = Session.getInstance(props);
-
-        // instantiate a message
-        try {
-            Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(reply));
-            message.setReplyTo(new Address[] { new InternetAddress(reply) });
-            message.setRecipient(Message.RecipientType.TO, new InternetAddress(
-                    email));
-            message.setSubject(subject);
-            message.setSentDate(new Date());
-            // set html content
-            message.setDataHandler(new DataHandler(new HTMLDataSource(content)));
-
-            // send email
-            Transport.send(message);
-        } catch (AddressException ex) {
-            throw new WdkUserException(ex);
-        } catch (MessagingException ex) {
-            throw new WdkUserException(ex);
-        }
     }
 
     /**
@@ -519,7 +444,7 @@ public class UserFactory {
         List<User> users = new ArrayList<User>();
         ResultSet rs = null;
         try {
-            rs = SqlUtils.executeQuery(dataSource, sql);
+            rs = SqlUtils.executeQuery(wdkModel, dataSource, sql);
             while (rs.next()) {
                 int userId = rs.getInt("user_id");
                 User user = getUser(userId);
@@ -535,7 +460,7 @@ public class UserFactory {
         return array;
     }
 
-    public void checkConsistancy() throws WdkUserException {
+    public void checkConsistancy() throws WdkUserException, WdkModelException {
         String sql = "SELECT user_id, email FROM " + userSchema + "users "
                 + "where signature is null";
 
@@ -543,14 +468,15 @@ public class UserFactory {
         PreparedStatement psUser = null;
         try {
             // update user's register time
-            int count = SqlUtils.executeUpdate(dataSource, "UPDATE "
+            int count = SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE "
                     + userSchema + "users SET register_time = last_active "
                     + "WHERE register_time is null");
             System.out.println(count + " users with empty register_time have "
                     + "been updated");
 
             // update history's is_delete field
-            count = SqlUtils.executeUpdate(dataSource, "UPDATE " + userSchema
+            count = SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE "
+                    + userSchema
                     + "histories SET is_deleted = 0 WHERE is_deleted is null");
             System.out.println(count + " histories with empty is_deleted have "
                     + "been updated");
@@ -559,7 +485,7 @@ public class UserFactory {
             psUser = SqlUtils.getPreparedStatement(dataSource, "Update "
                     + userSchema + "users SET signature = ? WHERE user_id = ?");
 
-            rs = SqlUtils.executeQuery(dataSource, sql);
+            rs = SqlUtils.executeQuery(wdkModel, dataSource, sql);
             while (rs.next()) {
                 int userId = rs.getInt("user_id");
 
@@ -600,14 +526,15 @@ public class UserFactory {
         }
     }
 
-    private void saveUserRoles(User user) throws WdkUserException {
+    private void saveUserRoles(User user) throws WdkUserException,
+            WdkModelException {
         int userId = user.getUserId();
         PreparedStatement psRoleDelete = null;
         PreparedStatement psRoleInsert = null;
         try {
             // before that, remove the records first
-            SqlUtils.executeUpdate(dataSource, "DELETE FROM " + userSchema
-                    + "user_roles WHERE user_id = " + userId);
+            SqlUtils.executeUpdate(wdkModel, dataSource, "DELETE FROM "
+                    + userSchema + "user_roles WHERE user_id = " + userId);
 
             // Then get a prepared statement to do the insertion
             psRoleInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT "
@@ -650,8 +577,7 @@ public class UserFactory {
                     + "middle_name = ?, organization = ?, department = ?, "
                     + "title = ?,  address = ?, city = ?, state = ?, "
                     + "zip_code = ?, phone_number = ?, country = ?, "
-                    + "email = ? "
-                    + "WHERE user_id = ?");
+                    + "email = ? " + "WHERE user_id = ?");
             psUser.setBoolean(1, user.isGuest());
             psUser.setDate(2, new java.sql.Date(lastActiveTime.getTime()));
             psUser.setString(3, user.getLastName());
@@ -868,7 +794,8 @@ public class UserFactory {
         message = message.replaceAll(pattern,
                 Matcher.quoteReplacement(password));
 
-        sendEmail(user.getEmail(), supportEmail, emailSubject, message);
+        Utilities.sendEmail(wdkModel, user.getEmail(), supportEmail,
+                emailSubject, message);
     }
 
     void changePassword(String email, String oldPassword, String newPassword,
@@ -969,17 +896,21 @@ public class UserFactory {
         try {
             // delete preference
             String sql = "DELETE FROM " + userSchema + "preferences" + where;
-            SqlUtils.executeUpdate(dataSource, sql);
+            SqlUtils.executeUpdate(wdkModel, dataSource, sql);
 
             // delete user roles
             sql = "DELETE FROM " + userSchema + "user_roles" + where;
-            SqlUtils.executeUpdate(dataSource, sql);
+            SqlUtils.executeUpdate(wdkModel, dataSource, sql);
 
             // delete user
             sql = "DELETE FROM " + userSchema + "users" + where;
-            SqlUtils.executeUpdate(dataSource, sql);
+            SqlUtils.executeUpdate(wdkModel, dataSource, sql);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         }
+    }
+
+    public WdkModel getWdkModel() {
+        return wdkModel;
     }
 }

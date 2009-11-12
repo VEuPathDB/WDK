@@ -858,7 +858,7 @@ public class User /* implements Serializable */{
     }
 
     public Dataset getDataset(int userDatasetId) throws SQLException,
-            WdkModelException {
+            WdkModelException, WdkUserException {
         return datasetFactory.getDataset(this, userDatasetId);
     }
 
