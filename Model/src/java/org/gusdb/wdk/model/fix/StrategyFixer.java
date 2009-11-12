@@ -21,7 +21,12 @@ import org.gusdb.wsf.util.BaseCLI;
 /**
  * @author xingao
  * 
+ *         this code generates the signature for the strategy (the old system
+ *         doesn't create the signature automatically, but the new one does.
+ *         Therefore, this code is considered deprecated.
+ * 
  */
+@Deprecated
 public class StrategyFixer extends BaseCLI {
 
     private static final Logger logger = Logger.getLogger(StrategyFixer.class);

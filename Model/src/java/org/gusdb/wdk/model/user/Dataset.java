@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.Date;
 
 import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 
 /**
@@ -133,12 +134,15 @@ public class Dataset {
      * @return
      * @throws WdkUserException
      * @throws SQLException
+     * @throws WdkModelException
      */
-    public String[] getValues() throws WdkUserException, SQLException {
+    public String[] getValues() throws WdkUserException, SQLException,
+            WdkModelException {
         return factory.getDatasetValues(this);
     }
 
-    public String getValue() throws WdkUserException, SQLException {
+    public String getValue() throws WdkUserException, SQLException,
+            WdkModelException {
         String[] values = getValues();
         StringBuffer sb = new StringBuffer();
         for (String value : values) {

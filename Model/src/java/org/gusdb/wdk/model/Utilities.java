@@ -1,17 +1,36 @@
 package org.gusdb.wdk.model;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Clob;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.Map;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
+import javax.activation.DataHandler;
+import javax.mail.Address;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.AddressException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
+import org.apache.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Utilities {
+
+    private static final Logger logger = Logger.getLogger(Utilities.class);
 
     public static final int TRUNCATE_DEFAULT = 100;
 
@@ -158,6 +177,71 @@ public class Utilities {
             }
         }
         return result;
+    }
+
+    public static void sendEmail(WdkModel wdkModel, String email, String reply,
+            String subject, String content) throws WdkUserException, WdkModelException  {
+        String smtpServer = wdkModel.getModelConfig().getSmtpServer();
+
+        logger.debug("Sending message to: " + email + ", reply: " + reply
+                + ", using SMPT: " + smtpServer);
+
+        // create properties and get the session
+        Properties props = new Properties();
+        props.put("mail.smtp.host", smtpServer);
+        props.put("mail.debug", "true");
+        Session session = Session.getInstance(props);
+
+        // instantiate a message
+        Message message = new MimeMessage(session);
+        try {
+        message.setFrom(new InternetAddress(reply));
+        message.setReplyTo(new Address[] { new InternetAddress(reply) });
+        message.setRecipient(Message.RecipientType.TO, new InternetAddress(
+                email));
+        message.setSubject(subject);
+        message.setSentDate(new Date());
+        // set html content
+        message.setDataHandler(new DataHandler(new HTMLDataSource(content)));
+
+        // send email
+        Transport.send(message);
+        } catch(AddressException ex) {
+            throw new WdkUserException(ex);
+        } catch (MessagingException ex) {
+            throw new WdkModelException(ex);
+        }
+    }
+
+    /*
+     * Inner class to act as a JAF datasource to send HTML e-mail content
+     */
+    private static class HTMLDataSource implements javax.activation.DataSource {
+
+        private String html;
+
+        public HTMLDataSource(String htmlString) {
+            html = htmlString;
+        }
+
+        // Return html string in an InputStream.
+        // A new stream must be returned each time.
+        public InputStream getInputStream() throws IOException {
+            if (html == null) throw new IOException("Null HTML");
+            return new ByteArrayInputStream(html.getBytes());
+        }
+
+        public OutputStream getOutputStream() throws IOException {
+            throw new IOException("This DataHandler cannot write HTML");
+        }
+
+        public String getContentType() {
+            return "text/html";
+        }
+
+        public String getName() {
+            return "JAF text/html dataSource to send e-mail only";
+        }
     }
 
 }

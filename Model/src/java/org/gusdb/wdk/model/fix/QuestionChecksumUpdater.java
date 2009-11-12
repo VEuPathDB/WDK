@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wsf.util.BaseCLI;
@@ -24,7 +25,11 @@ import org.json.JSONException;
 /**
  * @author xingao
  * 
+ *         due to the change of the way the question checksum is generated, the
+ *         older steps became invalid, this code is to fix that, one time work.
+ *         Noe the code is considered deprecated.
  */
+@Deprecated
 public class QuestionChecksumUpdater extends BaseCLI {
 
     private static final Logger logger = Logger.getLogger(QuestionChecksumUpdater.class);
@@ -78,7 +83,7 @@ public class QuestionChecksumUpdater extends BaseCLI {
             WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
 
             updateChecksum(wdkModel);
-            //copyParams(wdkModel);
+            // copyParams(wdkModel);
         }
     }
 
@@ -115,14 +120,15 @@ public class QuestionChecksumUpdater extends BaseCLI {
         return SqlUtils.getPreparedStatement(dataSource, sql.toString());
     }
 
-    private void copyParams(WdkModel wdkModel) throws SQLException {
+    public void copyParams(WdkModel wdkModel) throws SQLException,
+            WdkUserException, WdkModelException {
         PreparedStatement psUpdate = null;
         ResultSet rsHistory = null;
         DBPlatform platform = wdkModel.getUserPlatform();
         DataSource dataSource = platform.getDataSource();
 
         try {
-            rsHistory = SqlUtils.executeQuery(dataSource, "SELECT "
+            rsHistory = SqlUtils.executeQuery(wdkModel, dataSource, "SELECT "
                     + "     h.history_id, h.user_id, a.params "
                     + "FROM userlogins3.histories h, userlogins3.users u, "
                     + "     wdkstorage.answer a  "

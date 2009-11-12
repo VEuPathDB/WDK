@@ -256,7 +256,7 @@ public class StepFactory {
     }
 
     boolean isStepDepended(User user, int displayId) throws SQLException,
-            WdkModelException {
+            WdkModelException, WdkUserException {
         String answerIdColumn = AnswerFactory.COLUMN_ANSWER_ID;
         StringBuffer sql = new StringBuffer("SELECT count(*) FROM ");
         sql.append(userSchema).append(TABLE_STEP).append(" s, ");
@@ -270,7 +270,8 @@ public class StepFactory {
         sql.append(" OR ").append(COLUMN_RIGHT_CHILD_ID);
         sql.append(" = ").append(displayId).append(")");
 
-        Object result = SqlUtils.executeScalar(dataSource, sql.toString());
+        Object result = SqlUtils.executeScalar(wdkModel, dataSource,
+                sql.toString());
         int count = Integer.parseInt(result.toString());
         return (count > 0);
     }
@@ -815,7 +816,7 @@ public class StepFactory {
             signature = getStrategySignature(user.getUserId(), internalId);
             String sql = "UPDATE " + userSchema + "strategies SET signature = "
                     + "'" + signature + "' WHERE strategy_id = " + internalId;
-            SqlUtils.executeUpdate(dataSource, sql);
+            SqlUtils.executeUpdate(wdkModel, dataSource, sql);
             strategy.setSignature(signature);
         }
 

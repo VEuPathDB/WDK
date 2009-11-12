@@ -10,7 +10,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -34,13 +33,6 @@ import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.json.JSONException;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
-
 /**
  * @author Cary P.
  * 
@@ -55,7 +47,7 @@ public class XMLReporter extends Reporter {
     public static final String PROPERTY_RECORD_ID_COLUMN = "record_id_column";
 
     public static final String FIELD_SELECTED_COLUMNS = "o-fields";
-	public static final String TABLE_SELECTED_COLUMNS = "o-tables";
+    public static final String TABLE_SELECTED_COLUMNS = "o-tables";
     public static final String FIELD_HAS_EMPTY_TABLE = "hasEmptyTable";
 
     private String tableCache;
@@ -63,8 +55,7 @@ public class XMLReporter extends Reporter {
 
     private boolean hasEmptyTable = false;
 
-    public XMLReporter(AnswerValue answerValue, int startIndex,
-            int endIndex) {
+    public XMLReporter(AnswerValue answerValue, int startIndex, int endIndex) {
         super(answerValue, startIndex, endIndex);
     }
 
@@ -117,7 +108,7 @@ public class XMLReporter extends Reporter {
         } else if (format.equalsIgnoreCase("pdf")) {
             return "application/pdf";
         } else { // use the default content type defined in the parent class
-            return "text/xml";//return super.getHttpContentType();
+            return "text/xml";// return super.getHttpContentType();
         }
     }
 
@@ -203,15 +194,18 @@ public class XMLReporter extends Reporter {
                         sqlQuery.toString());
             }
             int recordCount = 0;
-			AnswerValue av = this.getAnswerValue();
+            AnswerValue av = this.getAnswerValue();
             // get page based answers with a maximum size (defined in
             // PageAnswerIterator)
-			writer.println("<?xml version='1.0' encoding='UTF-8'?>");
-			writer.println("<response>");
-			writer.println("<recordset id='" + av.getChecksum() + "' count='" + this.getResultSize() + "' type='" + av.getQuestion().getRecordClass().getType() + "'>");
+            writer.println("<?xml version='1.0' encoding='UTF-8'?>");
+            writer.println("<response>");
+            writer.println("<recordset id='" + av.getChecksum() + "' count='"
+                    + this.getResultSize() + "' type='"
+                    + av.getQuestion().getRecordClass().getType() + "'>");
             for (AnswerValue pageAnswer : this) {
                 for (RecordInstance record : pageAnswer.getRecordInstances()) {
-					writer.println("<record id='" + record.getPrimaryKey() + "'>");
+                    writer.println("<record id='" + record.getPrimaryKey()
+                            + "'>");
                     // print out attributes of the record first
                     formatAttributes(record, attributes, writer);
 
@@ -222,12 +216,12 @@ public class XMLReporter extends Reporter {
 
                     // count the records processed so far
                     recordCount++;
-					writer.println("</record>");
+                    writer.println("</record>");
                 }
             }
-			writer.println("</recordset>");
-			writer.println("</response>");
-			writer.flush();
+            writer.println("</recordset>");
+            writer.println("</response>");
+            writer.flush();
             logger.info("Totally " + recordCount + " records dumped");
         } finally {
             SqlUtils.closeStatement(psQuery);
@@ -244,47 +238,48 @@ public class XMLReporter extends Reporter {
         Set<Field> columns = new LinkedHashSet<Field>();
 
         String fieldsList = config.get(FIELD_SELECTED_COLUMNS);
-		String tablesList = config.get(TABLE_SELECTED_COLUMNS);
-		if(fieldsList == null) fieldsList = "none";
-		if(tablesList == null) tablesList = "none";		
-		logger.info("fieldsList = " + fieldsList + "    tablesList = " + tablesList);
-		if (fieldsList.equals("all") && tablesList.equals("all")) {
-           	columns.addAll(fieldMap.values());
-       	} else {
-           		if(fieldsList.equals("all")){
-					logger.info("FIELDSLIST ALL");
-					for(String k : fieldMap.keySet()){
-						Field f = fieldMap.get(k);
-						if(f.getClass().getName().contains("AttributeField"))
-							columns.add(f);
-					}
-				}else if(!fieldsList.equals("none")){
-					String[] fields = fieldsList.split(",");
-           			for (String column : fields) {
-               			column = column.trim();
-               			if (!fieldMap.containsKey(column))
-                   			throw new WdkModelException("The column '" + column
-                           			+ "' cannot be included in the report");
-               					columns.add(fieldMap.get(column));
-           			}
-				}
-				if(tablesList.equals("all")){
-					for(String k : fieldMap.keySet()){
-						Field f = fieldMap.get(k);
-						if(f.getClass().getName().contains("TableField"))
-							columns.add(f);
-					}
-				}else if(!tablesList.equals("none")){
-           			String[] tables = tablesList.split(",");
-           			for (String column : tables) {
-               			column = column.trim();
-               			if (!fieldMap.containsKey(column))
-                   			throw new WdkModelException("The column '" + column
-                           			+ "' cannot be included in the report");
-               					columns.add(fieldMap.get(column));
-           			}
-				}
-		}
+        String tablesList = config.get(TABLE_SELECTED_COLUMNS);
+        if (fieldsList == null) fieldsList = "none";
+        if (tablesList == null) tablesList = "none";
+        logger.info("fieldsList = " + fieldsList + "    tablesList = "
+                + tablesList);
+        if (fieldsList.equals("all") && tablesList.equals("all")) {
+            columns.addAll(fieldMap.values());
+        } else {
+            if (fieldsList.equals("all")) {
+                logger.info("FIELDSLIST ALL");
+                for (String k : fieldMap.keySet()) {
+                    Field f = fieldMap.get(k);
+                    if (f.getClass().getName().contains("AttributeField"))
+                        columns.add(f);
+                }
+            } else if (!fieldsList.equals("none")) {
+                String[] fields = fieldsList.split(",");
+                for (String column : fields) {
+                    column = column.trim();
+                    if (!fieldMap.containsKey(column))
+                        throw new WdkModelException("The column '" + column
+                                + "' cannot be included in the report");
+                    columns.add(fieldMap.get(column));
+                }
+            }
+            if (tablesList.equals("all")) {
+                for (String k : fieldMap.keySet()) {
+                    Field f = fieldMap.get(k);
+                    if (f.getClass().getName().contains("TableField"))
+                        columns.add(f);
+                }
+            } else if (!tablesList.equals("none")) {
+                String[] tables = tablesList.split(",");
+                for (String column : tables) {
+                    column = column.trim();
+                    if (!fieldMap.containsKey(column))
+                        throw new WdkModelException("The column '" + column
+                                + "' cannot be included in the report");
+                    columns.add(fieldMap.get(column));
+                }
+            }
+        }
         return columns;
     }
 
@@ -295,7 +290,8 @@ public class XMLReporter extends Reporter {
         // print out attributes of the record first
         for (AttributeField field : attributes) {
             AttributeValue value = record.getAttributeValue(field.getName());
-            writer.println("<field name='" + field.getDisplayName() + "'><![CDATA[" + value + "]]></field>");
+            writer.println("<field name='" + field.getDisplayName()
+                    + "'><![CDATA[" + value + "]]></field>");
         }
         // print out attributes of the record first
         writer.println();
@@ -316,22 +312,25 @@ public class XMLReporter extends Reporter {
         for (TableField table : tables) {
             TableValue tableValue = record.getTableValue(table.getName());
 
-            AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
+            // AttributeField[] fields =
+            // table.getAttributeFields(FieldScope.REPORT_MAKER);
 
             // output table header
             StringBuffer sb = new StringBuffer();
-            sb.append("<table name='" + table.getDisplayName() + "'>" + NEW_LINE);
+            sb.append("<table name='" + table.getDisplayName() + "'>"
+                    + NEW_LINE);
             int tableSize = 0;
             for (Map<String, AttributeValue> row : tableValue) {
                 tableSize++;
-				sb.append("<row>" + NEW_LINE);
+                sb.append("<row>" + NEW_LINE);
                 for (String fieldName : row.keySet()) {
                     AttributeValue value = row.get(fieldName);
-                    sb.append("<field name='" + fieldName + "'><![CDATA[" + value.getValue() + "]]></field>" + NEW_LINE);
+                    sb.append("<field name='" + fieldName + "'><![CDATA["
+                            + value.getValue() + "]]></field>" + NEW_LINE);
                 }
-				sb.append("</row>" + NEW_LINE);
+                sb.append("</row>" + NEW_LINE);
             }
-			sb.append("</table>" + NEW_LINE);
+            sb.append("</table>" + NEW_LINE);
             String content = sb.toString();
             // check if the record has been cached
             if (tableCache != null) {

@@ -29,7 +29,6 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
 import org.gusdb.wsf.plugin.WsfResult;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
