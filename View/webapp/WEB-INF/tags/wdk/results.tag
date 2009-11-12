@@ -218,8 +218,10 @@
 
     <c:set value="${record.primaryKey}" var="primaryKey"/>
     <c:set var="pkValues" value="${primaryKey.values}" />
-    <c:set var="projectId" value="${pkValues['project_id']}" />
-    <c:set var="id" value="${pkValues['source_id']}" />
+    <c:set var="recordLinkKeys" value="" />
+    <c:forEach items="${pkValues}" var="pkValue">
+      <c:set var="recordLinkKeys" value="${recordLinkKeys}&${pkValue.key}=${pkValue.value}" />
+    </c:forEach>
 
     <td ${align} ${nowrap} style="padding:3px 2px"><div>
       <c:set var="recNam" value="${record.recordClass.fullName}"/>
@@ -227,7 +229,7 @@
       <c:choose>
         <c:when test="${j == 0}">
 		<%-- display a link to record page --%>
-              <a href="showRecord.do?name=${recNam}&project_id=${projectId}&primary_key=${id}">${fieldVal}</a>
+              <a href="showRecord.do?name=${recNam}${recordLinkKeys}">${fieldVal}</a>
         </c:when>   <%-- when j=0 --%>
 
         <c:otherwise>
