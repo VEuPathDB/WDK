@@ -120,7 +120,7 @@ public final class SqlUtils {
             connection = dataSource.getConnection();
             stmt = connection.createStatement();
             int result = stmt.executeUpdate(sql);
-            verifyTime(wdkModel, sql, System.currentTimeMillis() - start);
+            verifyTime(wdkModel, sql, start);
             return result;
         } catch (SQLException ex) {
             logger.error("Failed to run nonQuery:\n" + sql);
@@ -152,7 +152,7 @@ public final class SqlUtils {
             connection = dataSource.getConnection();
             Statement stmt = connection.createStatement();
             resultSet = stmt.executeQuery(sql);
-            verifyTime(wdkModel, sql, System.currentTimeMillis() - start);
+            verifyTime(wdkModel, sql, start);
             return resultSet;
         } catch (SQLException ex) {
             logger.error("Failed to run query:\n" + sql);
@@ -215,9 +215,9 @@ public final class SqlUtils {
         return value.replaceAll("%", "{%}").replaceAll("_", "{_}");
     }
 
-    public static void verifyTime(WdkModel wdkModel, String sql,
-            long milliSeconds) throws WdkUserException, WdkModelException {
-        double seconds = milliSeconds / 1000D;
+    public static void verifyTime(WdkModel wdkModel, String sql, long fromTime)
+            throws WdkUserException, WdkModelException {
+        double seconds = (System.currentTimeMillis() - fromTime) / 1000D;
         logger.debug("SQL executed in " + seconds + " seconds.");
 
         QueryMonitor monitor = wdkModel.getQueryMonitor();

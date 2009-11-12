@@ -79,9 +79,11 @@ public class AnswerFactory {
      * @return an AnswerInfo object if the answer has been saved; otherwise,
      *         return null.
      * @throws SQLException
+     * @throws WdkModelException
+     * @throws WdkUserException
      */
     public Answer getAnswer(User user, String answerChecksum)
-            throws SQLException {
+            throws SQLException, WdkUserException, WdkModelException {
         String projectId = wdkModel.getProjectId();
 
         // construct the query
@@ -95,10 +97,12 @@ public class AnswerFactory {
         Answer answer = null;
         try {
             DataSource dataSource = userPlatform.getDataSource();
+            long start = System.currentTimeMillis();
             ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             ps.setString(1, projectId);
             ps.setString(2, answerChecksum);
             resultSet = ps.executeQuery();
+            SqlUtils.verifyTime(wdkModel, sql.toString(), start);
 
             if (resultSet.next()) {
                 answer = new Answer(user, resultSet.getInt(COLUMN_ANSWER_ID));
@@ -115,7 +119,7 @@ public class AnswerFactory {
     }
 
     private void saveAnswer(Answer answer, String paramClob)
-            throws SQLException {
+            throws SQLException, WdkUserException, WdkModelException {
         // prepare the sql
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(wdkSchema).append(TABLE_ANSWER).append(" (");
@@ -130,6 +134,7 @@ public class AnswerFactory {
         PreparedStatement ps = null;
         try {
             DataSource dataSource = userPlatform.getDataSource();
+            long start = System.currentTimeMillis();
             ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             ps.setInt(1, answer.getAnswerId());
             ps.setString(2, answer.getAnswerChecksum());
@@ -140,6 +145,7 @@ public class AnswerFactory {
             userPlatform.setClobData(ps, 7, paramClob, false);
 
             ps.executeUpdate();
+            SqlUtils.verifyTime(wdkModel, sql.toString(), start);
         } finally {
             SqlUtils.closeStatement(ps);
         }

@@ -354,7 +354,7 @@ public abstract class Param extends WdkModelBase {
     }
 
     public String compressValue(String value) throws WdkModelException,
-            NoSuchAlgorithmException {
+            NoSuchAlgorithmException, WdkUserException {
         // check if the value is already been compressed
         if (value == null || value.length() == 0) return null;
 
@@ -368,7 +368,8 @@ public abstract class Param extends WdkModelBase {
         return value;
     }
 
-    public String decompressValue(String value) throws WdkModelException {
+    public String decompressValue(String value) throws WdkModelException,
+            WdkUserException {
         if (value == null || value.length() == 0) return null;
 
         // check if the value is compressed; that is, if it has a compression

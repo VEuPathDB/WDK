@@ -196,11 +196,13 @@ public class DatasetFactory {
         int datasetId;
         ResultSet resultSet = null;
         try {
+            long start = System.currentTimeMillis();
+            String sql = sqlDatasetId.toString();
             PreparedStatement psQuery = SqlUtils.getPreparedStatement(
-                    dataSource, sqlDatasetId.toString());
+                    dataSource, sql);
             psQuery.setString(1, datasetChecksum);
             resultSet = psQuery.executeQuery();
-
+            SqlUtils.verifyTime(wdkModel, sql, start);
             if (!resultSet.next())
                 throw new WdkModelException("The dataset with checksum '"
                         + datasetChecksum + "' doesn't exist.");
