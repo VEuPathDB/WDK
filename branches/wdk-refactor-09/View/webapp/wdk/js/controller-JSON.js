@@ -29,7 +29,7 @@ function initStrategyPanels() {
 			$("#sample_strat").html(data);
 		},
 		error: function() {
-			$("#tab_sample_strat").remove();
+			$("#tab_sample_strat").parent("li").remove();
 			
 		}
 	});
@@ -41,7 +41,7 @@ function initStrategyPanels() {
 			$("#strategy_new").html(data);
 		},
 		error: function() {
-			$("#tab_strategy_new").remove();
+			$("#tab_strategy_new").parent("li").remove();
 			
 		}
 	});
@@ -53,7 +53,7 @@ function initStrategyPanels() {
 			$("#help").html(data);
 		},
 		error: function() {
-			$("#tab_help").remove();
+			$("#tab_help").parent("li").remove();
 			
 		}
 	});
