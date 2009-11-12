@@ -51,7 +51,7 @@ public class Migrator1_17To1_18 extends Migrator {
     }
 
     private void migrateHistories() throws SQLException, JSONException,
-            WdkModelException {
+            WdkModelException, WdkUserException {
         DBPlatform userPlatform = wdkModel.getUserPlatform();
         DataSource dataSource = userPlatform.getDataSource();
 
@@ -139,7 +139,8 @@ public class Migrator1_17To1_18 extends Migrator {
                 sqlInsertHistory.toString());
     }
 
-    private ResultSet getHistories(DataSource dataSource) throws SQLException {
+    private ResultSet getHistories(DataSource dataSource) throws SQLException,
+            WdkUserException, WdkModelException {
         StringBuffer sql = new StringBuffer("SELECT u3.user_id, ");
         sql.append("h2.history_id, h2.project_id, h2.query_instance_checksum,");
         sql.append(" h2.question_name, h2.query_signature, h2.create_time, ");
@@ -150,14 +151,16 @@ public class Migrator1_17To1_18 extends Migrator {
         sql.append("WHERE u3.prev_user_id = h2.user_id ");
         sql.append("ORDER BY h2.create_time DESC");
 
-        return SqlUtils.executeQuery(dataSource, sql.toString());
+        return SqlUtils.executeQuery(wdkModel, dataSource, sql.toString());
     }
 
-    private void loadHistories(DataSource dataSource) throws SQLException {
+    private void loadHistories(DataSource dataSource) throws SQLException,
+            WdkUserException, WdkModelException {
         StringBuffer sql = new StringBuffer("SELECT user_id, history_id FROM ");
         sql.append(NEW_USER_SCHEMA).append("histories ");
         historyKeys = new LinkedHashSet<String>();
-        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql.toString());
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
+                sql.toString());
         while (resultSet.next()) {
             int userId = resultSet.getInt("user_id");
             int historyId = resultSet.getInt("history_id");
@@ -167,12 +170,14 @@ public class Migrator1_17To1_18 extends Migrator {
         SqlUtils.closeResultSet(resultSet);
     }
 
-    private void loadAnswers(DataSource dataSource) throws SQLException {
+    private void loadAnswers(DataSource dataSource) throws SQLException,
+            WdkUserException, WdkModelException {
         StringBuffer sql = new StringBuffer(
                 "SELECT answer_id, answer_checksum,");
         sql.append(" project_id FROM ").append(NEW_WDK_SCHEMA).append("answer ");
         answerKeys = new LinkedHashMap<String, Integer>();
-        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql.toString());
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
+                sql.toString());
         while (resultSet.next()) {
             int answerId = resultSet.getInt("answer_id");
             String projectId = resultSet.getString("project_id");
@@ -201,7 +206,8 @@ public class Migrator1_17To1_18 extends Migrator {
 
     private int insertAnswer(DBPlatform platform, String answerChecksum,
             String projectId, String questionName, String queryChecksum,
-            String params) throws SQLException, WdkModelException {
+            String params) throws SQLException, WdkModelException,
+            WdkUserException {
         int answerId = platform.getNextId(NEW_WDK_SCHEMA, "answer");
 
         psInsertAnswer.setInt(1, answerId);

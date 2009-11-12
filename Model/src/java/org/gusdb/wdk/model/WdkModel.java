@@ -80,7 +80,7 @@ public class WdkModel {
         logger.debug("Model ready to use.");
         return wdkModel;
     }
-
+    
     private ModelConfig modelConfig;
     private String projectId;
 
@@ -153,6 +153,9 @@ public class WdkModel {
     private String secretKey;
 
     private User systemUser;
+
+    private List<QueryMonitor> queryMonitorList = new ArrayList<QueryMonitor>();
+    private QueryMonitor queryMonitor;
 
     /**
      * @param initRecordClassList
@@ -601,6 +604,9 @@ public class WdkModel {
             if (category.getParent() == null)
                 rootCategoryMap.put(category.getName(), category);
         }
+
+        // resolve reference for query monitor
+        queryMonitor.resolveReferences(this);
     }
 
     private void excludeResources() throws WdkModelException {
@@ -754,6 +760,24 @@ public class WdkModel {
             }
         }
         macroList = null;
+
+        // exclude query monitors
+        for (QueryMonitor monitor : queryMonitorList) {
+            if (!monitor.include(projectId)) continue;
+            if (this.queryMonitor != null)
+                throw new WdkModelException("the query monitor is included "
+                        + "more than once for project " + projectId);
+            monitor.excludeResources(projectId);
+            this.queryMonitor = monitor;
+        }
+        queryMonitorList = null;
+        // create the query monitor in case it is not specified, and provide a
+        // default monitor to the system.
+        if (queryMonitor == null) {
+            queryMonitor = new QueryMonitor();
+            queryMonitor.excludeResources(projectId);
+        }
+
     }
 
     /**
@@ -1097,8 +1121,27 @@ public class WdkModel {
     public BasketFactory getBasketFactory() {
         return basketFactory;
     }
-    
+
     public String getReleaseDate() {
         return releaseDate;
+    }
+
+    public void addQueryMonitor(QueryMonitor queryMonitor) {
+        this.queryMonitorList.add(queryMonitor);
+    }
+
+    /**
+     * @return the queryMonitor
+     */
+    public QueryMonitor getQueryMonitor() {
+        return queryMonitor;
+    }
+
+    /**
+     * @param queryMonitor
+     *            the queryMonitor to set
+     */
+    public void setQueryMonitor(QueryMonitor queryMonitor) {
+        this.queryMonitor = queryMonitor;
     }
 }

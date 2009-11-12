@@ -253,7 +253,7 @@ public class AnswerFilterInstance extends WdkModelBase {
                         + " does not exist in the" + " filter query ["
                         + filterQuery.getFullName() + "]");
         }
-        User user = wdkModel.getSystemUser();
+        // User user = wdkModel.getSystemUser();
         // make sure the required param is defined
         for (String paramName : params.keySet()) {
             if (answerParam.getName().equals(paramName)) continue;
@@ -264,9 +264,9 @@ public class AnswerFilterInstance extends WdkModelBase {
 
             // validate the paramValue for now; however EuPathDB won't be able
             // to pass it
-            Param param = params.get(paramName);
-            String paramValue = paramValueMap.get(paramName);
-            //param.validate(user, paramValue);
+            // Param param = params.get(paramName);
+            // String paramValue = paramValueMap.get(paramName);
+            // param.validate(user, paramValue);
         }
 
         resolved = true;
@@ -279,7 +279,7 @@ public class AnswerFilterInstance extends WdkModelBase {
         String sql = answerValue.getIdsQueryInstance().getSql();
         sql = applyFilter(answerValue.getUser(), sql);
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
         try {
             return new SqlResultList(resultSet);
         } catch (SQLException ex) {

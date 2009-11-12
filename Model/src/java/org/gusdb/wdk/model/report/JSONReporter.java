@@ -10,7 +10,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -34,13 +33,6 @@ import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.json.JSONException;
 
-import com.lowagie.text.Document;
-import com.lowagie.text.DocumentException;
-import com.lowagie.text.PageSize;
-import com.lowagie.text.Paragraph;
-import com.lowagie.text.pdf.PdfPTable;
-import com.lowagie.text.pdf.PdfWriter;
-
 /**
  * @author Cary P.
  * 
@@ -49,13 +41,11 @@ public class JSONReporter extends Reporter {
 
     private static Logger logger = Logger.getLogger(JSONReporter.class);
 
-    private static final String NEW_LINE = System.getProperty("line.separator");
-
     public static final String PROPERTY_TABLE_CACHE = "table_cache";
     public static final String PROPERTY_RECORD_ID_COLUMN = "record_id_column";
 
     public static final String FIELD_SELECTED_COLUMNS = "o-fields";
-	public static final String TABLE_SELECTED_COLUMNS = "o-tables";
+    public static final String TABLE_SELECTED_COLUMNS = "o-tables";
     public static final String FIELD_HAS_EMPTY_TABLE = "hasEmptyTable";
 
     private String tableCache;
@@ -63,8 +53,7 @@ public class JSONReporter extends Reporter {
 
     private boolean hasEmptyTable = false;
 
-    public JSONReporter(AnswerValue answerValue, int startIndex,
-            int endIndex) {
+    public JSONReporter(AnswerValue answerValue, int startIndex, int endIndex) {
         super(answerValue, startIndex, endIndex);
     }
 
@@ -117,7 +106,7 @@ public class JSONReporter extends Reporter {
         } else if (format.equalsIgnoreCase("pdf")) {
             return "application/pdf";
         } else { // use the default content type defined in the parent class
-            return "text/plain";//return super.getHttpContentType();
+            return "text/plain";// return super.getHttpContentType();
         }
     }
 
@@ -205,28 +194,33 @@ public class JSONReporter extends Reporter {
                         sqlQuery.toString());
             }
             int recordCount = 0;
-			AnswerValue av = this.getAnswerValue();
+            AnswerValue av = this.getAnswerValue();
             // get page based answers with a maximum size (defined in
             // PageAnswerIterator)
-			writer.print("{\"response\" :{");
-			writer.print("\"recordset\": {\"id\":\"" + av.getChecksum() + "\",\"count\":\"" + this.getResultSize() + "\", \"type\":\"" + av.getQuestion().getRecordClass().getType() + "\", \"records\":[");
+            writer.print("{\"response\" :{");
+            writer.print("\"recordset\": {\"id\":\"" + av.getChecksum()
+                    + "\",\"count\":\"" + this.getResultSize()
+                    + "\", \"type\":\""
+                    + av.getQuestion().getRecordClass().getType()
+                    + "\", \"records\":[");
             for (AnswerValue pageAnswer : this) {
                 for (RecordInstance record : pageAnswer.getRecordInstances()) {
-					if(recordCount > 0) writer.print(",");
-					writer.print("{\"id\":\"" + record.getPrimaryKey() + "\"");
+                    if (recordCount > 0) writer.print(",");
+                    writer.print("{\"id\":\"" + record.getPrimaryKey() + "\"");
                     // print out attributes of the record first
                     formatAttributes(record, attributes, writer);
                     // print out tables
-                    formatTables(record, tables, writer, pageAnswer, psInsert,psQuery);
-                    //writer.flush();
+                    formatTables(record, tables, writer, pageAnswer, psInsert,
+                            psQuery);
+                    // writer.flush();
                     // count the records processed so far
                     recordCount++;
-					writer.print("}");
+                    writer.print("}");
                 }
             }
-			writer.print("]}");
-			writer.print("}}");
-			writer.flush();
+            writer.print("]}");
+            writer.print("}}");
+            writer.flush();
             logger.info("Totally " + recordCount + " records dumped");
         } finally {
             SqlUtils.closeStatement(psQuery);
@@ -243,49 +237,50 @@ public class JSONReporter extends Reporter {
         Set<Field> columns = new LinkedHashSet<Field>();
 
         String fieldsList = config.get(FIELD_SELECTED_COLUMNS);
-		String tablesList = config.get(TABLE_SELECTED_COLUMNS);
-		if(fieldsList == null) fieldsList = "none";
-		if(tablesList == null) tablesList = "none";
-		logger.info("fieldsList = " + fieldsList + "    tablesList = " + tablesList);
-		if (fieldsList.equals("all") && tablesList.equals("all")) {
-           	logger.info("all all");
-			columns.addAll(fieldMap.values());
-       	} else {
-           		if(fieldsList.equals("all")){
-					logger.info("FIELDSLIST ALL");
-					for(String k : fieldMap.keySet()){
-						Field f = fieldMap.get(k);
-						if(f.getClass().getName().contains("AttributeField"))
-							columns.add(f);
-					}
-				}else if(!fieldsList.equals("none")){
-					String[] fields = fieldsList.split(",");
-           			for (String column : fields) {
-               			column = column.trim();
-               			if (!fieldMap.containsKey(column))
-                   			throw new WdkModelException("The column '" + column
-                           			+ "' cannot be included in the report");
-               					columns.add(fieldMap.get(column));
-           			}
-				}
-				if(tablesList.equals("all")){
-					for(String k : fieldMap.keySet()){
-						Field f = fieldMap.get(k);
-						if(f.getClass().getName().contains("TableField"))
-							columns.add(f);
-					}
-				}else if(!tablesList.equals("none")){
-           			String[] tables = tablesList.split(",");
-           			for (String column : tables) {
-               			column = column.trim();
-               			if (!fieldMap.containsKey(column))
-                   			throw new WdkModelException("The column '" + column
-                           			+ "' cannot be included in the report");
-               					columns.add(fieldMap.get(column));
-           			}
-				}
-		}
-		logger.info(columns.size());
+        String tablesList = config.get(TABLE_SELECTED_COLUMNS);
+        if (fieldsList == null) fieldsList = "none";
+        if (tablesList == null) tablesList = "none";
+        logger.info("fieldsList = " + fieldsList + "    tablesList = "
+                + tablesList);
+        if (fieldsList.equals("all") && tablesList.equals("all")) {
+            logger.info("all all");
+            columns.addAll(fieldMap.values());
+        } else {
+            if (fieldsList.equals("all")) {
+                logger.info("FIELDSLIST ALL");
+                for (String k : fieldMap.keySet()) {
+                    Field f = fieldMap.get(k);
+                    if (f.getClass().getName().contains("AttributeField"))
+                        columns.add(f);
+                }
+            } else if (!fieldsList.equals("none")) {
+                String[] fields = fieldsList.split(",");
+                for (String column : fields) {
+                    column = column.trim();
+                    if (!fieldMap.containsKey(column))
+                        throw new WdkModelException("The column '" + column
+                                + "' cannot be included in the report");
+                    columns.add(fieldMap.get(column));
+                }
+            }
+            if (tablesList.equals("all")) {
+                for (String k : fieldMap.keySet()) {
+                    Field f = fieldMap.get(k);
+                    if (f.getClass().getName().contains("TableField"))
+                        columns.add(f);
+                }
+            } else if (!tablesList.equals("none")) {
+                String[] tables = tablesList.split(",");
+                for (String column : tables) {
+                    column = column.trim();
+                    if (!fieldMap.containsKey(column))
+                        throw new WdkModelException("The column '" + column
+                                + "' cannot be included in the report");
+                    columns.add(fieldMap.get(column));
+                }
+            }
+        }
+        logger.info(columns.size());
         return columns;
     }
 
@@ -294,19 +289,18 @@ public class JSONReporter extends Reporter {
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
         // print out attributes of the record first
-		if(attributes.size() > 0)
-			writer.print(", \"fields\":[");
-		int c = 0;
+        if (attributes.size() > 0) writer.print(", \"fields\":[");
+        int c = 0;
         for (AttributeField field : attributes) {
-			if(c > 0) writer.print(",");
+            if (c > 0) writer.print(",");
             AttributeValue value = record.getAttributeValue(field.getName());
-            writer.print("{\"name\":\"" + field.getDisplayName() + "\", \"value\":\"" + value + "\"}");
-			c++;
+            writer.print("{\"name\":\"" + field.getDisplayName()
+                    + "\", \"value\":\"" + value + "\"}");
+            c++;
         }
-		if(attributes.size() > 0)
-			writer.print("]");
+        if (attributes.size() > 0) writer.print("]");
         // print out attributes of the record first
-  //      writer.print();
+        // writer.print();
         writer.flush();
     }
 
@@ -321,33 +315,34 @@ public class JSONReporter extends Reporter {
 
         // print out tables of the record
         boolean needUpdate = false;
-		if(tables.size() > 0)
-			writer.print(", \"tables\":[");
-		int c = 0;
+        if (tables.size() > 0) writer.print(", \"tables\":[");
+        int c = 0;
         for (TableField table : tables) {
-			if(c > 0) writer.print(",");
+            if (c > 0) writer.print(",");
             TableValue tableValue = record.getTableValue(table.getName());
 
-            AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
+            // AttributeField[] fields =
+            // table.getAttributeFields(FieldScope.REPORT_MAKER);
 
             // output table header
             StringBuffer sb = new StringBuffer();
             sb.append("{\"name\":\"" + table.getDisplayName() + "\",\"rows\":[");
             int tableSize = 0;
             for (Map<String, AttributeValue> row : tableValue) {
-				sb.append("{\"fields\":[");
-				if(tableSize > 0) sb.append(",");
+                sb.append("{\"fields\":[");
+                if (tableSize > 0) sb.append(",");
                 int f = 0;
-				for (String fieldName : row.keySet()) {
-					if(f > 0) sb.append(",");
+                for (String fieldName : row.keySet()) {
+                    if (f > 0) sb.append(",");
                     AttributeValue value = row.get(fieldName);
-                    sb.append("{\"name\":\"" + fieldName + "\", \"value\":\"" + value.getValue() + "\"}");
-					f++;
+                    sb.append("{\"name\":\"" + fieldName + "\", \"value\":\""
+                            + value.getValue() + "\"}");
+                    f++;
                 }
-				tableSize++;
-				sb.append("]}");
+                tableSize++;
+                sb.append("]}");
             }
-			sb.append("]}");
+            sb.append("]}");
             String content = sb.toString();
             // check if the record has been cached
             if (tableCache != null) {
@@ -382,8 +377,7 @@ public class JSONReporter extends Reporter {
                 writer.flush();
             }
         }
-		if(tables.size() > 0)
-			writer.print("]");
+        if (tables.size() > 0) writer.print("]");
         if (tableCache != null && needUpdate) psInsert.executeBatch();
     }
 }

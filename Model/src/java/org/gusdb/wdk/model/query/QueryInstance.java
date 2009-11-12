@@ -218,7 +218,8 @@ public abstract class QueryInstance {
             StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
             sql.append(getSql()).append(") f");
             DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-            Object objSize = SqlUtils.executeScalar(dataSource, sql.toString());
+            Object objSize = SqlUtils.executeScalar(wdkModel, dataSource,
+                    sql.toString());
             resultSize = Integer.parseInt(objSize.toString());
         }
         logger.debug("end getting query size");
@@ -269,13 +270,13 @@ public abstract class QueryInstance {
 
                 Param param = params.get(paramName);
 
-		// check for dependent param
-		if (param instanceof AbstractEnumParam &&
-		    ((AbstractEnumParam) param).getDependedParam() != null) {
-		    String dependedParam = ((AbstractEnumParam) param).getDependedParam().getName();
-		    String dependedValue = values.get(dependedParam);
-		    ((AbstractEnumParam) param).setDependedValue(dependedValue);
-		}
+                // check for dependent param
+                if (param instanceof AbstractEnumParam
+                        && ((AbstractEnumParam) param).getDependedParam() != null) {
+                    String dependedParam = ((AbstractEnumParam) param).getDependedParam().getName();
+                    String dependedValue = values.get(dependedParam);
+                    ((AbstractEnumParam) param).setDependedValue(dependedValue);
+                }
 
                 // validate param
                 param.validate(user, dependentValue);

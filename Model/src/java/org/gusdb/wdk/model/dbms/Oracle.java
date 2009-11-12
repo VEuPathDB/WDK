@@ -11,7 +11,6 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +19,7 @@ import oracle.sql.CLOB;
 
 import org.apache.commons.dbcp.DelegatingConnection;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * @author Jerric Gao
@@ -44,12 +44,12 @@ public class Oracle extends DBPlatform {
      */
     @Override
     public void createSequence(String sequence, int start, int increment)
-            throws SQLException {
+            throws SQLException, WdkUserException, WdkModelException {
         StringBuffer sql = new StringBuffer("CREATE SEQUENCE ");
         sql.append(sequence);
         sql.append(" START WITH ").append(start);
         sql.append(" INCREMENT BY ").append(increment);
-        SqlUtils.executeUpdate(dataSource, sql.toString());
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString());
     }
 
     /*
@@ -110,14 +110,14 @@ public class Oracle extends DBPlatform {
      */
     @Override
     public int getNextId(String schema, String table) throws SQLException,
-            WdkModelException {
+            WdkModelException, WdkUserException {
         schema = normalizeSchema(schema);
 
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
         sql.append(".nextval FROM dual");
-        BigDecimal id = (BigDecimal) SqlUtils.executeScalar(dataSource,
-                sql.toString());
+        BigDecimal id = (BigDecimal) SqlUtils.executeScalar(wdkModel,
+                dataSource, sql.toString());
         return id.intValue();
     }
 
@@ -196,7 +196,7 @@ public class Oracle extends DBPlatform {
      */
     @Override
     public boolean checkTableExists(String schema, String tableName)
-            throws SQLException, WdkModelException {
+            throws SQLException, WdkModelException, WdkUserException {
         StringBuffer sql = new StringBuffer("SELECT count(*) FROM ALL_TABLES ");
         sql.append("WHERE table_name = '");
         sql.append(tableName.toUpperCase()).append("'");
@@ -206,8 +206,8 @@ public class Oracle extends DBPlatform {
             schema = schema.substring(0, schema.length() - 1);
         sql.append(" AND owner = '").append(schema.toUpperCase()).append("'");
 
-        BigDecimal count = (BigDecimal) SqlUtils.executeScalar(dataSource,
-                sql.toString());
+        BigDecimal count = (BigDecimal) SqlUtils.executeScalar(wdkModel,
+                dataSource, sql.toString());
         return (count.longValue() > 0);
     }
 
@@ -249,12 +249,12 @@ public class Oracle extends DBPlatform {
      */
     @Override
     public void dropTable(String schema, String table, boolean purge)
-            throws SQLException {
+            throws SQLException, WdkUserException, WdkModelException {
         String sql = "DROP TABLE ";
         if (schema != null) sql = schema;
         sql += table;
         if (purge) sql += " PURGE";
-        SqlUtils.executeUpdate(dataSource, sql);
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
     }
 
     /*
@@ -300,13 +300,13 @@ public class Oracle extends DBPlatform {
      */
     @Override
     public String[] queryTableNames(String schema, String pattern)
-            throws SQLException {
+            throws SQLException, WdkUserException, WdkModelException {
         String sql = "SELECT table_name FROM all_tables WHERE owner = '"
                 + schema.toUpperCase() + "' AND table_name LIKE '"
                 + pattern.toUpperCase() + "'";
         ResultSet resultSet = null;
         try {
-            resultSet = SqlUtils.executeQuery(dataSource, sql);
+            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
             List<String> tables = new ArrayList<String>();
             while (resultSet.next()) {
                 tables.add(resultSet.getString("table_name"));

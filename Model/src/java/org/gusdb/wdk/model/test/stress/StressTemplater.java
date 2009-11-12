@@ -42,7 +42,7 @@ import org.xml.sax.SAXException;
 
 public class StressTemplater {
 
-    private class QuestionItem {
+    public class QuestionItem {
 
         private String questionName;
         private Map<String, Set<String>> params;
@@ -71,7 +71,7 @@ public class StressTemplater {
         }
     }
 
-    private class RecordItem {
+    public class RecordItem {
 
         private String recordName;
         private Set<String> recordIds;
