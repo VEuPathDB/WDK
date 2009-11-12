@@ -515,6 +515,7 @@ public class User /* implements Serializable */{
 
     public Map<Integer, Step> getStepsMap() throws WdkUserException,
             WdkModelException, SQLException, JSONException {
+        logger.debug("loading steps...");
         Map<Integer, Step> invalidSteps = new LinkedHashMap<Integer, Step>();
         Map<Integer, Step> userAnswers = stepFactory.loadSteps(this,
                 invalidSteps);
@@ -525,6 +526,7 @@ public class User /* implements Serializable */{
     public Map<Integer, Strategy> getStrategiesMap() throws WdkUserException,
             WdkModelException, JSONException, SQLException,
             NoSuchAlgorithmException {
+        logger.debug("loading strategies...");
         Map<Integer, Strategy> invalidStrategies = new LinkedHashMap<Integer, Strategy>();
         Map<Integer, Strategy> strategies = stepFactory.loadStrategies(this,
                 invalidStrategies);
@@ -956,7 +958,7 @@ public class User /* implements Serializable */{
     }
 
     public Map<String, Boolean> getSortingAttributesByChecksum(
-            String sortingChecksum) throws WdkUserException {
+            String sortingChecksum) throws WdkUserException, WdkModelException {
         if (sortingChecksum == null) return null;
         QueryFactory queryFactory = wdkModel.getQueryFactory();
         return queryFactory.getSortingAttributes(sortingChecksum);
@@ -1226,7 +1228,9 @@ public class User /* implements Serializable */{
     }
 
     public Step createBooleanStep(Step leftStep, Step rightStep,
-            String booleanOperator, boolean useBooleanFilter, String filterName) throws WdkModelException, NoSuchAlgorithmException, WdkUserException, SQLException, JSONException {
+            String booleanOperator, boolean useBooleanFilter, String filterName)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
         BooleanOperator operator = BooleanOperator.parse(booleanOperator);
         Question question = null;
         try {

@@ -101,9 +101,12 @@ public class BasketFactory {
      *            a list of primary key values. the inner map is a primary-key
      *            column-value map.
      * @throws SQLException
+     * @throws WdkModelException
+     * @throws WdkUserException
      */
     public void addToBasket(User user, RecordClass recordClass,
-            List<Map<String, String>> pkValuesList) throws SQLException {
+            List<Map<String, String>> pkValuesList) throws SQLException,
+            WdkUserException, WdkModelException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -133,7 +136,9 @@ public class BasketFactory {
                 boolean hasRecord = false;
                 ResultSet resultSet = null;
                 try {
+                    long start = System.currentTimeMillis();
                     resultSet = psCount.executeQuery();
+                    SqlUtils.verifyTime(wdkModel, sqlCount, start);
                     if (resultSet.next()) {
                         int rsCount = resultSet.getInt(1);
                         hasRecord = (rsCount > 0);
@@ -146,7 +151,9 @@ public class BasketFactory {
                 // insert new record
                 setParams(psInsert, userId, projectId, rcName, pkColumns,
                         pkValues);
+                long start = System.currentTimeMillis();
                 psInsert.executeUpdate();
+                SqlUtils.verifyTime(wdkModel, sqlInsert, start);
             }
         } finally {
             SqlUtils.closeStatement(psInsert);
@@ -168,7 +175,8 @@ public class BasketFactory {
     }
 
     public void removeFromBasket(User user, RecordClass recordClass,
-            List<Map<String, String>> pkValuesList) throws SQLException {
+            List<Map<String, String>> pkValuesList) throws SQLException,
+            WdkUserException, WdkModelException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -190,16 +198,24 @@ public class BasketFactory {
                         pkValues);
                 psDelete.addBatch();
                 count++;
-                if (count % 100 == 0) psDelete.executeBatch();
+                if (count % 100 == 0) {
+                    long start = System.currentTimeMillis();
+                    psDelete.executeBatch();
+                    SqlUtils.verifyTime(wdkModel, sqlDelete, start);
+                }
             }
-            if (count % 100 != 0) psDelete.executeBatch();
+            if (count % 100 != 0) {
+                long start = System.currentTimeMillis();
+                psDelete.executeBatch();
+                SqlUtils.verifyTime(wdkModel, sqlDelete, -start);
+            }
         } finally {
             SqlUtils.closeStatement(psDelete);
         }
     }
 
     public void clearBasket(User user, RecordClass recordClass)
-            throws SQLException {
+            throws SQLException, WdkUserException, WdkModelException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -210,11 +226,13 @@ public class BasketFactory {
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         PreparedStatement psDelete = null;
         try {
+            long start = System.currentTimeMillis();
             psDelete = SqlUtils.getPreparedStatement(dataSource, sqlDelete);
             psDelete.setInt(1, userId);
             psDelete.setString(2, projectId);
             psDelete.setString(3, rcName);
             psDelete.executeUpdate();
+            SqlUtils.verifyTime(wdkModel, sqlDelete, start);
         } finally {
             SqlUtils.closeStatement(psDelete);
         }
