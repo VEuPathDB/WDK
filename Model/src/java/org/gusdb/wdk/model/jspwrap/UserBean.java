@@ -603,11 +603,11 @@ public class UserBean /* implements Serializable */{
      * org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
      */
     public StepBean createStep(QuestionBean question,
-            Map<String, String> params, String filterName, boolean deleted, boolean validate)
-            throws WdkUserException, WdkModelException,
+            Map<String, String> params, String filterName, boolean deleted,
+            boolean validate) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
-        Step step = user.createStep(question.question, params, filterName, deleted,
-                validate);
+        Step step = user.createStep(question.question, params, filterName,
+                deleted, validate);
         latestStep = new StepBean(this, step);
         return latestStep;
     }
@@ -833,10 +833,11 @@ public class UserBean /* implements Serializable */{
      * @param sortingChecksum
      * @return
      * @throws WdkUserException
+     * @throws WdkModelException
      * @see org.gusdb.wdk.model.user.User#getSortingAttributesByChecksum(java.lang.String)
      */
     public Map<String, Boolean> getSortingAttributesByChecksum(
-            String sortingChecksum) throws WdkUserException {
+            String sortingChecksum) throws WdkUserException, WdkModelException {
         return user.getSortingAttributesByChecksum(sortingChecksum);
     }
 
@@ -1150,7 +1151,8 @@ public class UserBean /* implements Serializable */{
     }
 
     public void addToBasket(RecordClassBean recordClass,
-            List<Map<String, String>> ids) throws SQLException {
+            List<Map<String, String>> ids) throws SQLException,
+            WdkUserException, WdkModelException {
         BasketFactory factory = user.getWdkModel().getBasketFactory();
         factory.addToBasket(user, recordClass.recordClass, ids);
     }
@@ -1162,7 +1164,8 @@ public class UserBean /* implements Serializable */{
     }
 
     public void removeFromBasket(RecordClassBean recordClass,
-            List<Map<String, String>> ids) throws SQLException {
+            List<Map<String, String>> ids) throws SQLException,
+            WdkUserException, WdkModelException {
         BasketFactory factory = user.getWdkModel().getBasketFactory();
         factory.removeFromBasket(user, recordClass.recordClass, ids);
     }
@@ -1174,7 +1177,8 @@ public class UserBean /* implements Serializable */{
         factory.removeFromBasket(user, step.step);
     }
 
-    public void clearBasket(RecordClassBean recordClass) throws SQLException {
+    public void clearBasket(RecordClassBean recordClass) throws SQLException,
+            WdkUserException, WdkModelException {
         BasketFactory factory = user.getWdkModel().getBasketFactory();
         factory.clearBasket(user, recordClass.recordClass);
     }
