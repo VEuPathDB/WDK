@@ -131,9 +131,7 @@ public class XMLReporter extends Reporter {
         logger.info("Internal format: " + format);
         String name = getQuestion().getName();
         if (format.equalsIgnoreCase("text")) {
-            return name + "_detail.txt";
-        } else if (format.equalsIgnoreCase("pdf")) {
-            return name + "_detail.pdf";
+            return name + ".xml";
         } else { // use the default file name defined in the parent
             return super.getDownloadFileName();
         }
