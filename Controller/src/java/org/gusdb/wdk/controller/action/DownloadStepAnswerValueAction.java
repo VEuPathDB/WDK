@@ -56,7 +56,7 @@ public class DownloadStepAnswerValueAction extends Action {
             // get the default configuration page
 	    String defaultViewFile = CConstants.WDK_CUSTOM_VIEW_DIR
 		+ File.separator + CConstants.WDK_PAGES_DIR
-		+ CConstants.WDK_DOWNLOAD_CONFIG_PAGE;
+		+ File.separator + CConstants.WDK_DOWNLOAD_CONFIG_PAGE;
             forward = new ActionForward(defaultViewFile);
         } else {
             ServletContext svltCtx = getServlet().getServletContext();
