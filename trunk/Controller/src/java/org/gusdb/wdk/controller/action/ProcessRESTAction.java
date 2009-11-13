@@ -292,6 +292,10 @@ public class ProcessRESTAction extends ShowQuestionAction {
 			writer.println("<option>"+tab+"</option>");
 		writer.println("</param>");
 		writer.println("</request>");
+		writer.println("<response>");
+		writer.println("<representation mediaType='text/xml'/>");
+		writer.println("<representation mediaType='text/plain'/>");
+		writer.println("</response>");
 		writer.println("</method>");
 		writer.println("</resource>");
 		// construct the forward to show_summary action
