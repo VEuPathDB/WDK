@@ -736,12 +736,13 @@ public class User /* implements Serializable */{
         return stepFactory.loadStrategy(this, userStrategyId, allowDeleted);
     }
 
-    public void deleteSteps() throws WdkUserException, SQLException {
+    public void deleteSteps() throws WdkUserException, SQLException,
+            WdkModelException {
         deleteSteps(false);
     }
 
     public void deleteSteps(boolean allProjects) throws WdkUserException,
-            SQLException {
+            SQLException, WdkModelException {
         stepFactory.deleteSteps(this, allProjects);
         cachedStep = null;
         stepCount = null;
@@ -777,25 +778,28 @@ public class User /* implements Serializable */{
         if (strategyCount != null) strategyCount--;
     }
 
-    public void deleteStrategies() throws SQLException {
+    public void deleteStrategies() throws SQLException, WdkUserException,
+            WdkModelException {
         activeStrategyFactory.clear();
         deleteStrategies(false);
     }
 
-    public void deleteStrategies(boolean allProjects) throws SQLException {
+    public void deleteStrategies(boolean allProjects) throws SQLException,
+            WdkUserException, WdkModelException {
         activeStrategyFactory.clear();
         stepFactory.deleteStrategies(this, allProjects);
         strategyCount = 0;
     }
 
-    public int getStepCount() throws WdkUserException {
+    public int getStepCount() throws WdkUserException, WdkModelException {
         if (stepCount == null) {
             stepCount = stepFactory.getStepCount(this);
         }
         return stepCount;
     }
 
-    public int getStrategyCount() throws WdkUserException, SQLException {
+    public int getStrategyCount() throws WdkUserException, SQLException,
+            WdkModelException {
         if (strategyCount == null)
             strategyCount = stepFactory.getStrategyCount(this);
         return strategyCount;
@@ -845,7 +849,7 @@ public class User /* implements Serializable */{
     }
 
     public void changePassword(String oldPassword, String newPassword,
-            String confirmPassword) throws WdkUserException {
+            String confirmPassword) throws WdkUserException, WdkModelException {
         userFactory.changePassword(email, oldPassword, newPassword,
                 confirmPassword);
     }
@@ -870,7 +874,7 @@ public class User /* implements Serializable */{
         return datasetFactory.getDataset(this, uploadFile, values);
     }
 
-    public void save() throws WdkUserException {
+    public void save() throws WdkUserException, WdkModelException {
         userFactory.saveUser(this);
     }
 
@@ -881,7 +885,8 @@ public class User /* implements Serializable */{
         return itemsPerPage;
     }
 
-    public void setItemsPerPage(int itemsPerPage) throws WdkUserException {
+    public void setItemsPerPage(int itemsPerPage) throws WdkUserException,
+            WdkModelException {
         if (itemsPerPage <= 0) itemsPerPage = 20;
         else if (itemsPerPage > 100) itemsPerPage = 100;
         setGlobalPreference(User.PREF_ITEMS_PER_PAGE,
@@ -1057,7 +1062,7 @@ public class User /* implements Serializable */{
         projectPreferences.put(summaryKey, summaryChecksum);
     }
 
-    public String createRemoteKey() throws WdkUserException {
+    public String createRemoteKey() throws WdkUserException, WdkModelException {
         // user can remote key only if he/she is logged in
         if (isGuest())
             throw new WdkUserException("Guest user cannot create remote key.");
@@ -1196,7 +1201,7 @@ public class User /* implements Serializable */{
     }
 
     public boolean checkNameExists(Strategy strategy, String name, boolean saved)
-            throws SQLException {
+            throws SQLException, WdkUserException, WdkModelException {
         return stepFactory.checkNameExists(strategy, name, saved);
     }
 

@@ -183,7 +183,7 @@ public class CacheFactory {
         }
     }
 
-    public void dropCache(String queryName, boolean purge) {
+    public void dropCache(String queryName, boolean purge) throws WdkUserException, WdkModelException {
         String cacheTable;
         try {
             Query query = (Query) wdkModel.resolveReference(queryName);
@@ -213,10 +213,12 @@ public class CacheFactory {
 
         PreparedStatement stInstance = null;
         try {
+            long start = System.currentTimeMillis();
             stInstance = SqlUtils.getPreparedStatement(dataSource,
                     sqlInstance.toString());
             stInstance.setString(1, cacheTable);
             stInstance.executeUpdate();
+            SqlUtils.verifyTime(wdkModel, sqlInstance.toString(), start);
         } catch (SQLException ex) {
             logger.error("Cannot delete rows from [" + TABLE_INSTANCE + "]. "
                     + ex.getMessage());
@@ -436,12 +438,14 @@ public class CacheFactory {
 
         PreparedStatement psInsert = null;
         try {
+            long start = System.currentTimeMillis();
             psInsert = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             psInsert.setInt(1, queryInfo.getQueryId());
             psInsert.setString(2, queryInfo.getQueryName());
             psInsert.setString(3, queryInfo.getQueryChecksum());
             psInsert.setString(4, queryInfo.getCacheTable());
             psInsert.executeUpdate();
+            SqlUtils.verifyTime(wdkModel, sql.toString(), start);
         } finally {
             SqlUtils.closeStatement(psInsert);
         }
@@ -462,10 +466,12 @@ public class CacheFactory {
         PreparedStatement ps = null;
         ResultSet resultSet = null;
         try {
+            long start = System.currentTimeMillis();
             ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             ps.setString(1, queryName);
             ps.setString(2, checksum);
             resultSet = ps.executeQuery();
+            SqlUtils.verifyTime(wdkModel, sql.toString(), start);
 
             if (resultSet.next()) {
                 queryInfo = new QueryInfo();
@@ -476,6 +482,9 @@ public class CacheFactory {
 
                 // queryInfoMap.put(queryKey, queryInfo);
             }
+        } catch (WdkUserException ex) {
+            // TODO Auto-generated catch block
+            ex.printStackTrace();
         } finally {
             SqlUtils.closeResultSet(resultSet);
             if (resultSet == null) SqlUtils.closeStatement(ps);

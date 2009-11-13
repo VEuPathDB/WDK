@@ -547,7 +547,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
     }
 
     private static int getPageSize(HttpServletRequest request,
-            QuestionBean question, UserBean user) throws WdkUserException {
+            QuestionBean question, UserBean user) throws WdkUserException,
+            WdkModelException {
         int pageSize = user.getItemsPerPage();
         // check if the question is supposed to make answers containing all
         // records in one page
