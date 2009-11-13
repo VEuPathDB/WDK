@@ -559,7 +559,7 @@ public class StepFactory {
         try {
             // load Answer
             AnswerFactory answerFactory = wdkModel.getAnswerFactory();
-            Answer answer = answerFactory.getAnswer(user, answerChecksum);
+            Answer answer = answerFactory.getAnswer(answerChecksum);
             step.setAnswer(answer);
             step.setParamValues(dependentValues);
         } catch (Exception ex) {

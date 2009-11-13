@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
@@ -647,7 +648,9 @@ public class Step {
     }
 
     public Question getQuestion() throws WdkModelException {
-        return answer.getQuestion();
+        String questionName = answer.getQuestionName();
+        WdkModel wdkModel = user.getWdkModel();
+        return (Question) wdkModel.resolveReference(questionName);
     }
 
     public AnswerFilterInstance getFilter() throws WdkModelException {
