@@ -159,7 +159,7 @@
   <br>
   <table>
   <tr>
-    <tr><td valign="top"><b>${tbl.displayName}</b></td></tr>
+    <tr><td valign="top"><b>${tbl.tableField.displayName}</b></td></tr>
     <td>
       <c:set var="tbl" value="${tblEntry.value}"/>
 
@@ -167,7 +167,7 @@
       <table border="1" cellspacing="0" cellpadding="2">
         <!-- table header -->
         <tr class="headerRow">
-          <c:forEach var="hCol" items="${tbl.attributeFields}">
+          <c:forEach var="hCol" items="${tbl.tableField.attributeFields}">
           <c:if test="${!hCol.internal}">
             <th align="left">${hCol.displayName}</th>
           </c:if>

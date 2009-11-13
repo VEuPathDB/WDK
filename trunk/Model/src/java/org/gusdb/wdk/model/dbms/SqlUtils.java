@@ -219,6 +219,7 @@ public final class SqlUtils {
             throws WdkUserException, WdkModelException {
         double seconds = (System.currentTimeMillis() - fromTime) / 1000D;
         logger.debug("SQL executed in " + seconds + " seconds.");
+        // logger.debug(sql);
 
         if (seconds < 0) {
             logger.error("code error, negative exec time:");
