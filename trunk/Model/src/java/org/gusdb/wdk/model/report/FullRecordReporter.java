@@ -61,6 +61,9 @@ public class FullRecordReporter extends Reporter {
     private String recordIdColumn;
 
     private boolean hasEmptyTable = false;
+    
+    private String sqlInsert;
+    private String sqlQuery;
 
     public FullRecordReporter(AnswerValue answerValue, int startIndex,
             int endIndex) {
@@ -198,6 +201,8 @@ public class FullRecordReporter extends Reporter {
         }
         sqlQuery.append(" table_name = ?");
 
+        this.sqlInsert = sqlInsert.toString();
+        this.sqlQuery = sqlQuery.toString();
         PreparedStatement psInsert = null;
         PreparedStatement psQuery = null;
         try {
@@ -317,12 +322,14 @@ public class FullRecordReporter extends Reporter {
             // check if the record has been cached
             if (tableCache != null) {
                 Map<String, String> pkValues = record.getPrimaryKey().getValues();
+                long start = System.currentTimeMillis();
                 for (int index = 1; index <= pkColumns.length; index++) {
                     Object value = pkValues.get(pkColumns[index - 1]);
                     psQuery.setObject(index, value);
                 }
                 psQuery.setString(pkColumns.length + 1, table.getName());
                 ResultSet rs = psQuery.executeQuery();
+                SqlUtils.verifyTime(wdkModel, sqlQuery, start);
                 rs.next();
                 int count = rs.getInt("cache_count");
                 if (count == 0) {
@@ -347,7 +354,11 @@ public class FullRecordReporter extends Reporter {
                 writer.flush();
             }
         }
-        if (tableCache != null && needUpdate) psInsert.executeBatch();
+        if (tableCache != null && needUpdate) {
+            long start = System.currentTimeMillis();
+            psInsert.executeBatch();
+            SqlUtils.verifyTime(wdkModel, sqlInsert, start);
+        }
     }
 
     private void formatRecord2PDF(Set<AttributeField> attributes,

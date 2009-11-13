@@ -350,7 +350,7 @@ public class UserBean /* implements Serializable */{
      * java.lang.String, java.lang.String)
      */
     public void changePassword(String oldPassword, String newPassword,
-            String confirmPassword) throws WdkUserException {
+            String confirmPassword) throws WdkUserException, WdkModelException {
         user.changePassword(oldPassword, newPassword, confirmPassword);
     }
 
@@ -551,7 +551,7 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#save()
      */
-    public void save() throws WdkUserException {
+    public void save() throws WdkUserException, WdkModelException {
         user.save();
     }
 
@@ -592,7 +592,8 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#clearHistories()
      */
-    public void deleteSteps() throws WdkUserException, SQLException {
+    public void deleteSteps() throws WdkUserException, SQLException,
+            WdkModelException {
         user.deleteSteps();
     }
 
@@ -742,7 +743,8 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#getStrategyCount()
      */
-    public int getStrategyCount() throws WdkUserException, SQLException {
+    public int getStrategyCount() throws WdkUserException, SQLException,
+            WdkModelException {
         return user.getStrategyCount();
     }
 
@@ -770,7 +772,7 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#getHistoryCount()
      */
-    public int getStepCount() throws WdkUserException {
+    public int getStepCount() throws WdkUserException, WdkModelException {
         return user.getStepCount();
     }
 
@@ -788,7 +790,8 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#setItemsPerPage(int)
      */
-    public void setItemsPerPage(int itemsPerPage) throws WdkUserException {
+    public void setItemsPerPage(int itemsPerPage) throws WdkUserException,
+            WdkModelException {
         user.setItemsPerPage(itemsPerPage);
     }
 
@@ -866,9 +869,10 @@ public class UserBean /* implements Serializable */{
     /**
      * @return
      * @throws WdkUserException
+     * @throws WdkModelException
      * @see org.gusdb.wdk.model.user.User#createRemoteKey()
      */
-    public String createRemoteKey() throws WdkUserException {
+    public String createRemoteKey() throws WdkUserException, WdkModelException {
         return user.createRemoteKey();
     }
 
@@ -909,9 +913,12 @@ public class UserBean /* implements Serializable */{
 
     /**
      * @throws SQLException
+     * @throws WdkModelException
+     * @throws WdkUserException
      * @see org.gusdb.wdk.model.user.User#deleteStrategies()
      */
-    public void deleteStrategies() throws SQLException {
+    public void deleteStrategies() throws SQLException, WdkUserException,
+            WdkModelException {
         user.deleteStrategies();
     }
 
@@ -994,7 +1001,8 @@ public class UserBean /* implements Serializable */{
     }
 
     public boolean checkNameExists(StrategyBean strategy, String name,
-            boolean saved) throws SQLException {
+            boolean saved) throws SQLException, WdkUserException,
+            WdkModelException {
         return user.checkNameExists(strategy.strategy, name, saved);
     }
 
