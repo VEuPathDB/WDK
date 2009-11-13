@@ -259,7 +259,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
                     	+ "' doesn't exist.");
 		    writer.println("<resource path='" + sQName.split(":")[0] + "'>");
 			writeWADL(wdkQuestion, writer);
-			writer.println("</resource>")
+			writer.println("</resource>");
 		}
 		writer.println("</resources></application>");
 		writer.flush();
