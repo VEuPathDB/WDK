@@ -3,10 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author xingao
@@ -21,10 +17,7 @@ public class Answer {
     private String questionName;
     private String queryChecksum;
 
-    private User user;
-
-    Answer(User user, int answerId) {
-        this.user = user;
+    Answer(int answerId) {
         this.answerId = answerId;
     }
 
@@ -86,15 +79,6 @@ public class Answer {
      */
     public void setQuestionName(String questionName) {
         this.questionName = questionName;
-    }
-
-    public Question getQuestion() throws WdkModelException {
-        WdkModel wdkModel = user.getWdkModel();
-        return (Question) wdkModel.resolveReference(questionName);
-    }
-
-    public RecordClass getRecordClass() throws WdkModelException {
-        return getQuestion().getRecordClass();
     }
 
     /**
