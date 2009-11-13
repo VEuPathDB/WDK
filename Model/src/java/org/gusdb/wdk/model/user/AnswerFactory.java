@@ -7,6 +7,8 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -40,10 +42,18 @@ public class AnswerFactory {
     private DBPlatform userPlatform;
     private String wdkSchema;
 
+    /**
+     * the answer cache. currently it will store all the answers that have been
+     * loaded, assuming the number is relatively small. Might revise the design
+     * later.
+     */
+    private Map<Answer, Answer> answers;
+
     public AnswerFactory(WdkModel wdkModel) throws SQLException {
         this.wdkModel = wdkModel;
         this.userPlatform = wdkModel.getUserPlatform();
         this.wdkSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
+        this.answers = new HashMap<Answer, Answer>();
     }
 
     public Answer saveAnswerValue(AnswerValue answerValue) throws SQLException,
@@ -85,6 +95,10 @@ public class AnswerFactory {
             WdkUserException, WdkModelException {
         String projectId = wdkModel.getProjectId();
 
+        // use the cache if exists.
+        Answer answer = answers.get(new Answer(projectId, answerChecksum));
+        if (answer != null) return answer;
+
         // construct the query
         String sql = "SELECT " + COLUMN_ANSWER_ID + ", "
                 + COLUMN_PROJECT_VERSION + ", " + COLUMN_QUERY_CHECKSUM + ", "
@@ -95,7 +109,6 @@ public class AnswerFactory {
                 + answerChecksum.replaceAll("'", "''") + "'";
 
         ResultSet resultSet = null;
-        Answer answer = null;
         try {
             DataSource dataSource = userPlatform.getDataSource();
             resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
@@ -111,6 +124,7 @@ public class AnswerFactory {
         } finally {
             SqlUtils.closeResultSet(resultSet);
         }
+        answers.put(answer, answer);
         return answer;
     }
 
