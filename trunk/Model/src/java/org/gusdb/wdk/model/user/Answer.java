@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-
 /**
  * @author xingao
  * 
@@ -20,6 +19,11 @@ public class Answer {
     Answer(int answerId) {
         this.answerId = answerId;
     }
+    
+    Answer(String projectId, String answerChecksum) {
+        this.projectId = projectId.intern();
+        this.answerChecksum = answerChecksum.intern();
+    }
 
     /**
      * @return the answerChecksum
@@ -33,7 +37,7 @@ public class Answer {
      *            the answerChecksum to set
      */
     public void setAnswerChecksum(String answerChecksum) {
-        this.answerChecksum = answerChecksum;
+        this.answerChecksum = answerChecksum.intern();
     }
 
     /**
@@ -48,7 +52,7 @@ public class Answer {
      *            the projectId to set
      */
     public void setProjectId(String projectId) {
-        this.projectId = projectId;
+        this.projectId = projectId.intern();
     }
 
     /**
@@ -63,7 +67,7 @@ public class Answer {
      *            the projectVersion to set
      */
     public void setProjectVersion(String projectVersion) {
-        this.projectVersion = projectVersion;
+        this.projectVersion = projectVersion.intern();
     }
 
     /**
@@ -78,7 +82,7 @@ public class Answer {
      *            the questionName to set
      */
     public void setQuestionName(String questionName) {
-        this.questionName = questionName;
+        this.questionName = questionName.intern();
     }
 
     /**
@@ -93,7 +97,7 @@ public class Answer {
      *            the queryChecksum to set
      */
     public void setQueryChecksum(String queryChecksum) {
-        this.queryChecksum = queryChecksum;
+        this.queryChecksum = queryChecksum.intern();
     }
 
     /**
@@ -101,5 +105,29 @@ public class Answer {
      */
     public int getAnswerId() {
         return answerId;
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return projectId.hashCode() ^ answerChecksum.hashCode();
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (obj != null && obj instanceof Answer) {
+            Answer answer = (Answer) obj;
+            return answer.projectId.equals(projectId)
+                    && answer.answerChecksum.equals(answerChecksum);
+        } else return false;
     }
 }
