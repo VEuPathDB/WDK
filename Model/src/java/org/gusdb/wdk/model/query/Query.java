@@ -97,7 +97,7 @@ public abstract class Query extends WdkModelBase {
      * @param query
      */
     protected Query(Query query) {
-        logger.debug("clone query: " + query.getFullName());
+        // logger.debug("clone query: " + query.getFullName());
         this.name = query.name;
         this.cached = query.cached;
         this.paramMap = new LinkedHashMap<String, Param>();
