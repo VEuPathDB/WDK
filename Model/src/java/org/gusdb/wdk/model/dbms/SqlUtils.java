@@ -220,6 +220,10 @@ public final class SqlUtils {
         double seconds = (System.currentTimeMillis() - fromTime) / 1000D;
         logger.debug("SQL executed in " + seconds + " seconds.");
 
+        if (seconds < 0) {
+            logger.error("code error, negative exec time:");
+            new Exception().printStackTrace();
+        }
         QueryMonitor monitor = wdkModel.getQueryMonitor();
         // convert the time to seconds
         // check if it is a slow query

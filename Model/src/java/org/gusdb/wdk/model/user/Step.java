@@ -718,8 +718,11 @@ public class Step {
      * 
      * @return
      * @throws SQLException
+     * @throws WdkModelException
+     * @throws WdkUserException
      */
-    public boolean validate() throws SQLException {
+    public boolean validate() throws SQLException, WdkUserException,
+            WdkModelException {
         // only validate leaf steps. the validation of a combined step is
         // determined by the children.
         if (childStep == null && previousStep == null) {

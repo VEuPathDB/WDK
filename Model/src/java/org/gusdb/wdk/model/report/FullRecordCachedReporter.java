@@ -226,11 +226,13 @@ public class FullRecordCachedReporter extends Reporter {
 
                     // get the cached data of the record
                     Map<String, String> pkValues = record.getPrimaryKey().getValues();
+                    long start = System.currentTimeMillis();
                     for (int index = 0; index < pkColumns.length; index++) {
                         Object value = pkValues.get(pkColumns[index]);
                         ps.setObject(index + 1, value);
                     }
                     ResultSet resultSet = ps.executeQuery();
+                    SqlUtils.verifyTime(wdkModel, sql.toString(), start);
                     Map<String, String> tableValues = new LinkedHashMap<String, String>();
                     while (resultSet.next()) {
                         // check if display empty tables
