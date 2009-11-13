@@ -261,7 +261,8 @@ public class ProcessRESTAction extends ShowQuestionAction {
 			writeWADL(wdkQuestion, writer);
 			writer.println("</resource>");
 		}
-		writer.println("</resources></application>");
+		writer.println("</resources>");
+		writer.println("</application>");
 		writer.flush();
 		out.flush();
 		out.close();
