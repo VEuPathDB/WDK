@@ -939,7 +939,7 @@ public class AnswerValue {
             WdkModelException, JSONException, WdkUserException {
         if (answer == null) {
             AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
-            answer = answerFactory.getAnswer(user, getChecksum());
+            answer = answerFactory.getAnswer(getChecksum());
             if (answer == null) answer = answerFactory.saveAnswerValue(this);
         }
         return answer;

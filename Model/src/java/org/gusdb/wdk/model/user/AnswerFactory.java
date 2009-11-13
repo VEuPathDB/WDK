@@ -34,7 +34,7 @@ public class AnswerFactory {
     private static final String COLUMN_PROJECT_VERSION = "project_version";
     private static final String COLUMN_QUESTION_NAME = "question_name";
     private static final String COLUMN_QUERY_CHECKSUM = "query_checksum";
-    private static final String COLUMN_PARAMS = "params";
+    // private static final String COLUMN_PARAMS = "params";
 
     private WdkModel wdkModel;
     private DBPlatform userPlatform;
@@ -51,15 +51,14 @@ public class AnswerFactory {
             WdkUserException {
         // use transaction
         String answerChecksum = answerValue.getChecksum();
-        User user = answerValue.getUser();
 
         // check if answer has been saved.
-        Answer answer = getAnswer(user, answerChecksum);
+        Answer answer = getAnswer(answerChecksum);
         if (answer == null) {
             Question question = answerValue.getQuestion();
             // the answer hasn't been stored, create an answerInfo, and save it
             int answerId = userPlatform.getNextId(wdkSchema, TABLE_ANSWER);
-            answer = new Answer(user, answerId);
+            answer = new Answer(answerId);
             answer.setAnswerChecksum(answerValue.getChecksum());
             answer.setProjectId(wdkModel.getProjectId());
             answer.setProjectVersion(wdkModel.getVersion());
@@ -82,14 +81,17 @@ public class AnswerFactory {
      * @throws WdkModelException
      * @throws WdkUserException
      */
-    public Answer getAnswer(User user, String answerChecksum)
-            throws SQLException, WdkUserException, WdkModelException {
+    public Answer getAnswer(String answerChecksum) throws SQLException,
+            WdkUserException, WdkModelException {
         String projectId = wdkModel.getProjectId();
 
         // construct the query
-        String sql = "SELECT * FROM " + wdkSchema + TABLE_ANSWER + " WHERE "
-                + COLUMN_PROJECT_ID + " = '" + projectId.replaceAll("'", "''")
-                + "' AND " + COLUMN_ANSWER_CHECKSUM + " = '"
+        String sql = "SELECT " + COLUMN_ANSWER_ID + ", "
+                + COLUMN_PROJECT_VERSION + ", " + COLUMN_QUERY_CHECKSUM + ", "
+                + COLUMN_QUESTION_NAME + " FROM " + wdkSchema + TABLE_ANSWER
+                + " WHERE " + COLUMN_PROJECT_ID + " = '"
+                + projectId.replaceAll("'", "''") + "' AND "
+                + COLUMN_ANSWER_CHECKSUM + " = '"
                 + answerChecksum.replaceAll("'", "''") + "'";
 
         ResultSet resultSet = null;
@@ -99,7 +101,7 @@ public class AnswerFactory {
             resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
 
             if (resultSet.next()) {
-                answer = new Answer(user, resultSet.getInt(COLUMN_ANSWER_ID));
+                answer = new Answer(resultSet.getInt(COLUMN_ANSWER_ID));
                 answer.setAnswerChecksum(answerChecksum);
                 answer.setProjectId(projectId);
                 answer.setProjectVersion(resultSet.getString(COLUMN_PROJECT_VERSION));
@@ -122,8 +124,7 @@ public class AnswerFactory {
         sql.append(COLUMN_PROJECT_ID).append(", ");
         sql.append(COLUMN_PROJECT_VERSION).append(", ");
         sql.append(COLUMN_QUESTION_NAME).append(", ");
-        sql.append(COLUMN_QUERY_CHECKSUM).append(", ");
-        sql.append(COLUMN_PARAMS).append(") VALUES (?, ?, ?, ?, ?, ?, ?)");
+        sql.append(COLUMN_QUERY_CHECKSUM).append(") VALUES (?, ?, ?, ?, ?, ?)");
 
         PreparedStatement ps = null;
         try {
@@ -136,7 +137,6 @@ public class AnswerFactory {
             ps.setString(4, answer.getProjectVersion());
             ps.setString(5, answer.getQuestionName());
             ps.setString(6, answer.getQueryChecksum());
-            userPlatform.setClobData(ps, 7, paramClob, false);
 
             ps.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql.toString(), start);
