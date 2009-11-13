@@ -87,22 +87,16 @@ public class AnswerFactory {
         String projectId = wdkModel.getProjectId();
 
         // construct the query
-        StringBuffer sql = new StringBuffer("SELECT * FROM ");
-        sql.append(wdkSchema).append(TABLE_ANSWER);
-        sql.append(" WHERE ").append(COLUMN_PROJECT_ID).append(" = ? ");
-        sql.append(" AND ").append(COLUMN_ANSWER_CHECKSUM).append(" = ?");
+        String sql = "SELECT * FROM " + wdkSchema + TABLE_ANSWER + " WHERE "
+                + COLUMN_PROJECT_ID + " = '" + projectId.replaceAll("'", "''")
+                + "' AND " + COLUMN_ANSWER_CHECKSUM + " = '"
+                + answerChecksum.replaceAll("'", "''") + "'";
 
         ResultSet resultSet = null;
-        PreparedStatement ps = null;
         Answer answer = null;
         try {
             DataSource dataSource = userPlatform.getDataSource();
-            long start = System.currentTimeMillis();
-            ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
-            ps.setString(1, projectId);
-            ps.setString(2, answerChecksum);
-            resultSet = ps.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql.toString(), start);
+            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
 
             if (resultSet.next()) {
                 answer = new Answer(user, resultSet.getInt(COLUMN_ANSWER_ID));
