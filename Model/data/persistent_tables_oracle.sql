@@ -294,7 +294,7 @@ CREATE TABLE wdkuser.strategies
          REFERENCES wdkuser.users (user_id)
 );
 
-CREATE INDEX wdkuser.strategies_idx01 ON wdkuser.strategies (signature, project_id);
+CREATE INDEX wdkuser.strategies_idx01 ON wdkuser.strategies (project_id, signature);
 
 GRANT insert, update, delete on wdkuser.strategies to GUS_W;
 GRANT select on wdkuser.strategies to GUS_R;
