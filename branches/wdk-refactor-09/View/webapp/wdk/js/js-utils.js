@@ -59,7 +59,7 @@ function showLoading(divId){
 	var l = document.createElement('span');
 	$(l).attr("id","loadingGIF");
 	var i = document.createElement('img');
-	$(i).attr("src","/assets/images/" + l_gif);
+	$(i).attr("src","wdk/images/" + l_gif);
 	$(i).attr("height",sz);
 	$(i).attr("width",sz);
 	$(l).prepend(i);

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.AttributeValue;
 import org.gusdb.wdk.model.FieldScope;
@@ -30,6 +31,8 @@ public class RecordBean {
 
     private User user;
     private RecordInstance recordInstance;
+
+    private static Logger logger = Logger.getLogger(RecordBean.class);
 
     public RecordBean(User user, RecordInstance recordInstance) {
         this.user = user;
@@ -79,15 +82,24 @@ public class RecordBean {
     public Map<String, RecordBean[]> getNestedRecordLists()
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
+	logger.error("line 1");
         Map<String, RecordInstance[]> nrl = recordInstance.getNestedRecordInstanceLists();
+	logger.error("line 2");
         Map<String, RecordBean[]> nrlBeans = new LinkedHashMap<String, RecordBean[]>();
+	logger.error("line 3");
         for (String recordName : nrl.keySet()) {
+	logger.error("line 4");
             RecordInstance nextNrl[] = nrl.get(recordName);
+	logger.error("line 5");
             RecordBean[] nextNrBeanList = new RecordBean[nextNrl.length];
+	logger.error("line 6");
             for (int i = 0; i < nextNrl.length; i++) {
+	logger.error("line 7");
                 nextNrBeanList[i] = new RecordBean(user, nextNrl[i]);
+	logger.error("line 8");
             }
             nrlBeans.put(recordName, nextNrBeanList);
+	logger.error("line 9");
         }
         return nrlBeans;
     }

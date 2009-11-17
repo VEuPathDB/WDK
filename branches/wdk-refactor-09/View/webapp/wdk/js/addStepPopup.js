@@ -125,10 +125,10 @@ function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isO
 	var historyId = $("#history_id").val();
 	
 	if(edit == 0){
-		var close_link = "<a class='close_window' href='javascript:closeAll(false)'><img src='/assets/images/Close-X-box.png'/></a>";
-		var back_link = "<a id='back_to_selection' href='javascript:close()'><img src='/assets/images/backbox.png'/></a>";
+		var close_link = "<a class='close_window' href='javascript:closeAll(false)'><img src='wdk/images/Close-X-box.png'/></a>";
+		var back_link = "<a id='back_to_selection' href='javascript:close()'><img src='wdk/images/backbox.png'/></a>";
 	}else
-		var close_link = "<a class='close_window' href='javascript:closeAll(false)'><img src='/assets/images/Close-X-box.png'/></a>";
+		var close_link = "<a class='close_window' href='javascript:closeAll(false)'><img src='wdk/images/Close-X-box.png'/></a>";
 
 	var quesTitle = data.substring(data.indexOf("<h1>") + 4,data.indexOf("</h1>")).replace(/Identify \w+ based on/,"");
 	

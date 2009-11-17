@@ -19,7 +19,7 @@ function showDetails(det){
 	$("div#Strategies").find("div.crumb_details").each(function(){
 		$(this).attr("disp","0");
 	});
-	$("a.crumb_name img").attr("src","/assets/images/plus.gif");
+	$("a.crumb_name img").attr("src","wdk/images/plus.gif");
 	if(disp == "0"){
 		openDetail.attr("disp","1");
 		var det2 = openDetail.clone();
@@ -45,11 +45,11 @@ function showDetails(det){
 		op.addClass("operation");
 		$("input[value='" + opstring + "']", det2).attr('checked','checked');
 	}
-	if ($(det).hasClass('crumb_name')) $(det).children("img").attr("src","/assets/images/minus.gif");
+	if ($(det).hasClass('crumb_name')) $(det).children("img").attr("src","wdk/images/minus.gif");
 	}
 	else{
 		openDetail.attr("disp","0");
-	if ($(det).hasClass('crumb_name')) $(det).children("img").attr("src","/assets/images/plus.gif");
+	if ($(det).hasClass('crumb_name')) $(det).children("img").attr("src","wdk/images/plus.gif");
 	}
 }
 
@@ -61,7 +61,7 @@ function hideDetails(det){
 	$("body").children("div.crumb_details").each(function(){
 		$(this).remove();	
 	});
-	$("a.crumb_name img").attr("src","/assets/images/plus.gif");
+	$("a.crumb_name img").attr("src","wdk/images/plus.gif");
 }
 
 function Edit_Step(ele, questionName, url, hideQuery, hideOp){

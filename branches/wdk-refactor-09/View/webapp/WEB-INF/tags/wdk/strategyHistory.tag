@@ -126,7 +126,7 @@
           <span id='popup-title' class='h3left'></span>
         </div>
         <a class='close_window' href='javascript:closeModal()'>
-        <img alt='Close' src='/assets/images/Close-X.png'  height='16'/>
+        <img alt='Close' src="<c:url val='/wdk/images/Close-X.png'/>"  height='16'/>
         </a>
       </div>
       <form id='save_strat_form' onsubmit='return validateSaveForm(this);'>
