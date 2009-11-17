@@ -1,8 +1,17 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+
+<%@ attribute name="includeDYK"
+              required="true"
+%>
 
   <div id="contentwrapper">
     <div id="contentcolumn2">
       <div class="innertube">
+
+<c:if test="${includeDYK}">
+  <wdk:dyk />
+</c:if>
 
 <div id="strategy_workspace" class="h2center">
 My Search Strategies Workspace
