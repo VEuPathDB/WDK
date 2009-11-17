@@ -35,7 +35,7 @@
 
 
 <div id="query_form" style="min-height:140px;">
-<span class="dragHandle"><div class="modal_name"><h1 id="query_form_title"></h1></div><a class='close_window' href='javascript:closeAll()'><img src="<c:url val='/wdk/images/Close-X-box.png'/>" alt='Close'/></a></span>
+<span class="dragHandle"><div class="modal_name"><h1 id="query_form_title"></h1></div><a class='close_window' href='javascript:closeAll()'><img src="<c:url value='/wdk/images/Close-X-box.png'/>" alt='Close'/></a></span>
 
 <div id="query_selection">
 
