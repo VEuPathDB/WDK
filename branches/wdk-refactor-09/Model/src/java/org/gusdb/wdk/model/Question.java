@@ -255,7 +255,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         QueryInstance qi = query.makeInstance(user, dependentValues, validate);
         AnswerValue answerValue = new AnswerValue(user, this, qi, pageStart,
                 pageEnd, sortingAttributes, filter);
-	System.out.println("USER: " + user);
         String[] summaryAttributes = user.getSummaryAttributes(getFullName());
         answerValue.setSumaryAttributes(summaryAttributes);
 
