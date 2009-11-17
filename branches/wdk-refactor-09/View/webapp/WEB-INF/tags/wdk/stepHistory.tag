@@ -62,7 +62,7 @@
                </div>
             </td>
             <td onmouseover="displayName('${step.stepId}')" onmouseout="hideAnyName()">${step.customName}
-              <c:if test="${step.isValid == false}"><img width="12" src="<c:url val='/wdk/images/invalidIcon.png'/>"/></c:if>
+              <c:if test="${step.isValid == false}"><img width="12" src="<c:url value='/wdk/images/invalidIcon.png'/>"/></c:if>
             </td>
             <td onmouseover="hideAnyName()">${recDispName}</td>
 	    <td onmouseover="hideAnyName()" nowrap>${step.createdTimeFormatted}</td>

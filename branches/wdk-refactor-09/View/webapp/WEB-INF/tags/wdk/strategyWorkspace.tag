@@ -1,5 +1,9 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
+  <div id="contentwrapper">
+    <div id="contentcolumn2">
+      <div class="innertube">
+
 <div id="strategy_workspace" class="h2center">
 My Search Strategies Workspace
 </div>
@@ -50,3 +54,7 @@ My Search Strategies Workspace
 
 <div id="strategy_new" style="display:none">
 </div>
+
+      </div>
+    </div>
+  </div>
