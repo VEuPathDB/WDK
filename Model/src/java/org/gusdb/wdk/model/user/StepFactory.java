@@ -752,13 +752,15 @@ public class StepFactory {
     List<Strategy> loadStrategies(User user, boolean saved, boolean recent)
             throws SQLException, WdkUserException, WdkModelException,
             JSONException, NoSuchAlgorithmException {
+    	String userColumn = UserFactory.COLUMN_USER_ID;
         StringBuffer sql = new StringBuffer("SELECT DISTINCT * FROM ");
         sql.append(" (SELECT  sr.* FROM ");
         sql.append(userSchema).append(TABLE_STRATEGY).append(" sr, ");
         sql.append(userSchema).append(TABLE_STEP).append(" sp ");
         sql.append(" WHERE sr.").append(COLUMN_ROOT_STEP_ID);
         sql.append(" = sp.").append(COLUMN_DISPLAY_ID);
-        sql.append(" AND sr.").append(UserFactory.COLUMN_USER_ID).append(" = ?");
+        sql.append(" AND sr.").append(userColumn).append(" = ?");
+        sql.append(" AND sr.").append(userColumn).append(" = sp.").append(userColumn);
         sql.append(" AND sr.").append(COLUMN_PROJECT_ID).append(" = ?");
         sql.append(" AND sr.").append(COLUMN_IS_SAVED).append(" = ?");
         sql.append(" AND sr.").append(COLUMN_IS_DELETED).append(" = ?");
