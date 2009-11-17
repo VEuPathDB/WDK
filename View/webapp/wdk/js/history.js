@@ -60,7 +60,7 @@ function toggleSteps(strat) {
 		$("tbody#steps_" + strat + " tr").each(function() {
 							this.style.display = "";
 							});
-	        img[0].src = "/assets/images/sqr_bullet_minus.png";
+	        img[0].src = "wdk/images/sqr_bullet_minus.png";
 		img.removeClass("plus");
 		img.addClass("minus");
 	}
@@ -68,7 +68,7 @@ function toggleSteps(strat) {
 		$("tbody#steps_" + strat + " tr").each(function() {
 							this.style.display = "none"
 							});
-	        img[0].src = "/assets/images/sqr_bullet_plus.png";
+	        img[0].src = "wdk/images/sqr_bullet_plus.png";
 		img.removeClass("minus");
 		img.addClass("plus");
 	}
@@ -79,14 +79,14 @@ function toggleSteps2(strat) {
 	if (img.hasClass("plus")) {
 		$("tr#desc_" + strat + " tr").each(function() {	this.style.display = ""; });
 		$("tr#desc_" + strat).each(function() {	this.style.display = ""; });
-	        img[0].src = "/assets/images/sqr_bullet_minus.png";
+	        img[0].src = "wdk/images/sqr_bullet_minus.png";
 		img.removeClass("plus");
 		img.addClass("minus");
 	}
 	else {
 		$("tr#desc_" + strat + " tr").each(function() {	this.style.display = "none" });
 		$("tr#desc_" + strat).each(function() {	this.style.display = "none" });
-	        img[0].src = "/assets/images/sqr_bullet_plus.png";
+	        img[0].src = "wdk/images/sqr_bullet_plus.png";
 		img.removeClass("minus");
 		img.addClass("plus");
 	}

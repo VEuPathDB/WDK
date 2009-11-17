@@ -61,7 +61,7 @@ function displayModel(strat){
 		var close_span = document.createElement('span');
 		$(close_span).addClass("closeStrategy").html(""+
 		"	<a onclick='closeStrategy(" + strat.frontId + ")' href='javascript:void(0)'>"+
-		"		<img alt='Click here to close the strategy (it will only be removed from the display)' src='/assets/images/Close-X.png' title='Click here to close the strategy (it will only be removed from the display)' height='15' width='15' src='/assets/images/Close-X.png'/>"+
+		"		<img alt='Click here to close the strategy (it will only be removed from the display)' src='wdk/images/Close-X.png' title='Click here to close the strategy (it will only be removed from the display)' height='15' width='15' src='wdk/images/Close-X.png'/>"+
 		"	</a>");
 		$(div_strat).append(close_span);
 		$(div_strat).append(createStrategyName(strat));
@@ -118,10 +118,10 @@ function booleanStep(modelstep, jsonstep, sid, zIndex){
 	// Create the boolean venn diagram box
 	var filterImg = "";
 	if(jsonstep.filtered)
-		filterImg = "<span class='filterImg'><img src='/assets/images/filter.gif' height='10px' width='10px'/></span>";
+		filterImg = "<span class='filterImg'><img src='wdk/images/filter.gif' height='10px' width='10px'/></span>";
 	boolinner = ""+
 		"			<a id='" + sid + "|" + modelstep.back_boolean_Id + "|" + jsonstep.operation + "' title='CLICK to modify this boolean operation.' class='operation' href='javascript:void(0)' onclick='showDetails(this)'>"+
-		"				<img src='/assets/images/transparent1.gif'>"+
+		"				<img src='wdk/images/transparent1.gif'>"+
 		"			</a>"+
 		"			<div class='crumb_details'></div>"+
 		"			<h6 class='resultCount'>"+
@@ -131,12 +131,12 @@ function booleanStep(modelstep, jsonstep, sid, zIndex){
 			if(modelstep.nextStepType == "transform"){
 				boolinner = boolinner + 
 				"			<ul>"+
-				"				<li><img class='rightarrow3' src='/assets/images/arrow_chain_right3.png' alt='input into'></li>"+
+				"				<li><img class='rightarrow3' src='wdk/images/arrow_chain_right3.png' alt='input into'></li>"+
 				"			</ul>";
 			}else{
 				boolinner = boolinner + 
 				"			<ul>"+
-				"				<li><img class='rightarrow2' src='/assets/images/arrow_chain_right4.png' alt='input into'></li>"+
+				"				<li><img class='rightarrow2' src='wdk/images/arrow_chain_right4.png' alt='input into'></li>"+
 				"			</ul>";
 			}
 		}
@@ -159,12 +159,12 @@ function booleanStep(modelstep, jsonstep, sid, zIndex){
 	}
 	var childfilterImg = "";
 	if(childStp.filtered)
-		childfilterImg = "<span class='filterImg'><img src='/assets/images/filter.gif' height='10px' width='10px'/></span>";
+		childfilterImg = "<span class='filterImg'><img src='wdk/images/filter.gif' height='10px' width='10px'/></span>";
 	childinner = ""+
 		"		<h3>"+
 		"			<a style='text-decoration:underline' title='CLICK to make changes to this step and/or how it is combined with the previous step' id='stepId_" + modelstep.frontId + "' class='crumb_name' onclick='showDetails(this)' href='javascript:void(0)'>"+
 		"				<span id='name'>"+uname+"</span>"+
-		"				<img src='/assets/images/plus.gif' width='13' height='13'/>"+
+		"				<img src='wdk/images/plus.gif' width='13' height='13'/>"+
 		"				<span class='collapsible' style='display: none;'>false</span>"+
 		"			</a>"+
 		"			<span id='fullStepName' style='display: none;'>" + fullName + "</span>"+
@@ -173,7 +173,7 @@ function booleanStep(modelstep, jsonstep, sid, zIndex){
 		"		<h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + childStp.results + "&nbsp;" + getDisplayType(childStp.displayType,childStp.results) + "</a></h6>"+
 		childfilterImg +
 		"		<ul>"+
-		"			<li><img class='downarrow' src='/assets/images/arrow_chain_down2.png' alt='equals'></li>"+
+		"			<li><img class='downarrow' src='wdk/images/arrow_chain_down2.png' alt='equals'></li>"+
 		"		</ul>";	
 	childDiv = document.createElement('div');
 	$(childDiv).attr("id","step_" + modelstep.frontId + "_sub").addClass(operandClasses).html(childinner).css({left: leftOffset + "px", 'z-index' : zIndex});
@@ -221,12 +221,12 @@ function singleStep(modelstep, jsonstep, sid, zIndex){
 	}
 	var filterImg = "";
 	if(jsonstep.filtered)
-		filterImg = "<span class='filterImg'><img src='/assets/images/filter.gif' height='10px' width='10px'/></span>";
+		filterImg = "<span class='filterImg'><img src='wdk/images/filter.gif' height='10px' width='10px'/></span>";
 	inner = ""+
 		"		<h3>"+
 		"			<a style='text-decoration:underline' title='CLICK to make changes to this step.' id='stepId_" + modelstep.frontId + "' class='crumb_name' onclick='showDetails(this)' href='javascript:void(0)'>"+
 		"				<span id='name'>"+uname+"</span>"+
-		"				<img src='/assets/images/plus.gif' width='13' height='13'/>"+
+		"				<img src='wdk/images/plus.gif' width='13' height='13'/>"+
 		"				<span class='collapsible' style='display: none;'>false</span>"+
 		"			</a>"+ 
 		"			<span id='fullStepName' style='display: none;'>" + fullName + "</span>"+
@@ -237,7 +237,7 @@ function singleStep(modelstep, jsonstep, sid, zIndex){
 	if(!modelstep.isLast){
 		inner = inner + 
 			"		<ul>"+
-			"			<li><img class='rightarrow1' src='/assets/images/arrow_chain_right3.png' alt='input into'></li>"+
+			"			<li><img class='rightarrow1' src='wdk/images/arrow_chain_right3.png' alt='input into'></li>"+
 			"		</ul>";
 	}
 	
@@ -474,7 +474,7 @@ function createStrategyName(strat){
 		"<span class='h3left'>Copy and paste URL below to email</span>" + 
 		"</div>"+ 
 		"<a class='close_window' href='javascript:closeModal()'>"+
-		"<img alt='Close' src='/assets/images/Close-X.png' height='16' />" +
+		"<img alt='Close' src='wdk/images/Close-X.png' height='16' />" +
 		"</a>"+
 		"</div>"+
 		"<input type='text' size=" + (exportURL.length-6) + " value=" + exportURL + " readonly='true' />" +
@@ -501,7 +501,7 @@ function createStrategyName(strat){
 		"<span class='h3left'>" + sTitle + "</span>" + 
 		"</div>"+ 
 		"<a class='close_window' href='javascript:closeModal()'>"+
-		"<img alt='Close' src='/assets/images/Close-X.png' height='16' />" +
+		"<img alt='Close' src='wdk/images/Close-X.png' height='16' />" +
 		"</a>"+
 		"</div>"+
 		"<form onsubmit='return validateSaveForm(this);' action=\"javascript:saveStrategy('" + id + "', true)\">"+
@@ -582,7 +582,7 @@ offset = function(modelstep){
 function createInvalidDiv(){
 	var inval = document.createElement('div');
 	var i = document.createElement('img');
-	$(i).attr("src","/assets/images/InvalidStep.png").
+	$(i).attr("src","wdk/images/InvalidStep.png").
 	     attr("height","36").
 		 attr("width","98").
 		 attr("onclick","reviseInvalidSteps(this)").
