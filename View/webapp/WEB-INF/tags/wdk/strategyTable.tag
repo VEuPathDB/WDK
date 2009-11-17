@@ -73,7 +73,7 @@
       </c:forEach>
 
       <td>
-        <img id="img_${strategyId}" class="plus-minus plus" src="<c:url val='/wdk/images/sqr_bullet_plus.png'/>" alt="" onclick="toggleSteps2(${strategyId})"/>
+        <img id="img_${strategyId}" class="plus-minus plus" src="<c:url value='/wdk/images/sqr_bullet_plus.png'/>" alt="" onclick="toggleSteps2(${strategyId})"/>
       </td>
 
       <c:set var="dispNam" value="${strategy.name}"/>
@@ -84,7 +84,7 @@
 		<c:when test="${active}">style="font-weight:bold;cursor:pointer" title="Click to go to the graphical display (Run tab)"</c:when>
 		<c:otherwise> style="cursor:pointer" title="Click to open this strategy in the strategy graphical display (Run tab)" </c:otherwise>
 		</c:choose>
-		 onclick="openStrategy('${strategyId}')">${dispNam}</span><c:if test="${!strategy.isSaved}">*</c:if><c:if test="${!strategy.valid}">&nbsp;&nbsp;&nbsp;<img src="<c:url val='/wdk/images/invalidIcon.png'/>" width="12"/></c:if>
+		 onclick="openStrategy('${strategyId}')">${dispNam}</span><c:if test="${!strategy.isSaved}">*</c:if><c:if test="${!strategy.valid}">&nbsp;&nbsp;&nbsp;<img src="<c:url value='/wdk/images/invalidIcon.png'/>" width="12"/></c:if>
         </div> 
 
       </td>

@@ -140,16 +140,16 @@
                     <td style="padding:0;">
           <c:choose>
             <c:when test="${!sumAttrib.sortable}">
-              <img src="<c:url val='/wdk/images/results_arrw_up_blk.png'/>" border="0" alt="Sort up"/>
+              <img src="<c:url value='/wdk/images/results_arrw_up_blk.png'/>" border="0" alt="Sort up"/>
             </c:when>
             <c:when test="${attrName == sortingAttrNames[0] && sortingAttrOrders[0]}">
-              <img src="<c:url val='/wdk/images/results_arrw_up_gr.png'/>"  alt="Sort up" 
+              <img src="<c:url value='/wdk/images/results_arrw_up_gr.png'/>"  alt="Sort up" 
                   title="Result is sorted by ${sumAttrib}" />
             </c:when>
             <c:otherwise>
               <%-- display sorting buttons --%>
               <a href="javascript:GetResultsPage('${commandUrl}&command=sort&attribute=${attrName}&sortOrder=asc', true, true)" title="Sort by ${sumAttrib}">
-                  <img src="<c:url val='/wdk/images/results_arrw_up.png'/>" alt="Sort up" border="0" /></a>
+                  <img src="<c:url value='/wdk/images/results_arrw_up.png'/>" alt="Sort up" border="0" /></a>
             </c:otherwise>
           </c:choose>
                  </td>
@@ -158,16 +158,16 @@
                  <td style="padding:0;">
 	  <c:choose>
             <c:when test="${!sumAttrib.sortable}">
-	      <img src="<c:url val='/wdk/images/results_arrw_dwn_blk.png'/>" border="0" />
+	      <img src="<c:url value='/wdk/images/results_arrw_dwn_blk.png'/>" border="0" />
 	    </c:when>
             <c:when test="${attrName == sortingAttrNames[0] && !sortingAttrOrders[0]}">
-              <img src="<c:url val='/wdk/images/results_arrw_dwn_gr.png'/>" alt="Sort down" 
+              <img src="<c:url value='/wdk/images/results_arrw_dwn_gr.png'/>" alt="Sort down" 
 	                    title="Result is sorted by ${sumAttrib}" />
             </c:when>
             <c:otherwise>
               <%-- display sorting buttons --%>
               <a href="javascript:GetResultsPage('${commandUrl}&command=sort&attribute=${attrName}&sortOrder=desc', true, true)" title="Sort by ${sumAttrib}">
-              <img src="<c:url val='/wdk/images/results_arrw_dwn.png'/>" alt="Sort down" border="0" /></a>
+              <img src="<c:url value='/wdk/images/results_arrw_dwn.png'/>" alt="Sort down" border="0" /></a>
             </c:otherwise>
           </c:choose>
                    </td>
@@ -178,7 +178,7 @@
         <%-- <c:if test="${j != 0}">
           <div style="float:left;">
             <a href="javascript:void(0)">
-              <img src="<c:url val='/wdk/images/results_grip.png'/>" alt="" border="0" /></a>
+              <img src="<c:url value='/wdk/images/results_grip.png'/>" alt="" border="0" /></a>
           </div>
         </c:if> --%>
         <c:if test="${j != 0}">
@@ -186,7 +186,7 @@
             <%-- display remove attribute button --%>
             <a href="javascript:GetResultsPage('${commandUrl}&command=remove&attribute=${attrName}', true, true)"
                         title="Remove ${sumAttrib} column">
-              <img src="<c:url val='/wdk/images/results_x.png'/>" alt="Remove" border="0" /></a>
+              <img src="<c:url value='/wdk/images/results_x.png'/>" alt="Remove" border="0" /></a>
           </td>
         </c:if>
          </tr>
