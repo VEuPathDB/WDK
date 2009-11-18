@@ -55,6 +55,9 @@ function initStrategyPanels() {
 		error: function() {
 			$("#tab_help").parent("li").remove();
 			
+		},
+		complete: function() {
+			initHelp();
 		}
 	});
 }

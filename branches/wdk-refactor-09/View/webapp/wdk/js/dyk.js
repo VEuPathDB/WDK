@@ -1,11 +1,6 @@
 var currentTip = 0;
 var tipMax;
 var tips = null;
-$(document).ready(function(){
-	
-	initHelp();
-
-});
 
 function initHelp() {
 	var url = "showXmlDataContent.do?name=XmlQuestions.StrategiesHelp";
@@ -15,8 +10,8 @@ function initHelp() {
 		data: "",
 		dataType: "html",
 		success: function(data){
-			$("div#help div.h2center").after($("div#contentcolumn2 div.innertube",data).html() + "<hr />");
-			$("div#help span[id^='tip_']").each(function() {
+			$("div#help div.h2center").after($("table#strategyTips",data).html() + "<hr />");
+			$("table#strategyTips span[id^='tip_']",data).each(function() {
 				$("#dyk-box div#content").append(this);
 			});
 			if($("div#strategy_results").css("display") == 'none')
