@@ -10,7 +10,7 @@ function initHelp() {
 		data: "",
 		dataType: "html",
 		success: function(data){
-			$("div#help div.h2center").after($("table#strategyTips",data).html() + "<hr />");
+			$("div#help div.h2center").after($("div#strategyTips",data).html() + "<hr />");
 			$("table#strategyTips span[id^='tip_']",data).each(function() {
 				$("#dyk-box div#content").append(this);
 			});
