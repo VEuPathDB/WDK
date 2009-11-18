@@ -8,6 +8,7 @@
 <c:set var="wdkQuestion" value="${requestScope.wdkQuestion}"/>
 <jsp:useBean scope="request" id="helps" class="java.util.LinkedHashMap"/>
 <c:set var="qForm" value="${requestScope.questionForm}"/>
+
 <%-- display page header with wdkQuestion displayName as banner --%>
 <c:set var="wdkModel" value="${applicationScope.wdkModel}"/>
 <c:set var="recordType" value="${wdkQuestion.recordClass.type}"/>
@@ -31,8 +32,11 @@
     </c:when>
     <c:otherwise>
         <%-- display question section --%>
-<h1>Identify ${recordType}s based on ${wdkQuestion.displayName}</h1>
-<table border=0 width=100% cellpadding=3 cellspacing=0 bgcolor=white class=thinTopBorders> 
+<%--
+<h2>Identify ${recordType}s based on ${wdkQuestion.displayName}</h2>
+--%>
+<h2 style="text-align:center">${wdkQuestion.displayName}</h2>
+<table width=100%> 
  <tr>
   <td bgcolor=white valign=top>
 <%-- put an anchor here for linking back from help sections --%>
