@@ -100,19 +100,23 @@ public class Category extends WdkModelBase {
                         + "the model.");
                 continue;
             }
+	    System.out.println("Adding question " + question.getFullName());
             questions.add(question);
         }
+	System.out.println("Category " + name + " has " + questions.size() + " questions.");
         questionRefs = null;
 
         // resolve the parent
         Category parent = wdkModel.getCategoryMap().get(parentRef);
         if (parent != null) {
+	    System.out.println("Parent was: " + parentRef);
             // parent cannot be the same node as this one, or a child of it
             if (parent.equals(this) || this.isAncesterOf(parent))
                 throw new WdkModelException("the category '" + name
                         + "' cannot have a parent of '" + parentRef + "'");
             this.parent = parent;
             this.parent.children.put(name, this);
+	    System.out.println("Parent has " + parent.children.size() + " children.");
         }
     }
 

@@ -44,7 +44,7 @@
         <c:url var="linkUrl" value="/processFilter.do?strategy=${strategyId}&revise=${stepId}&filter=${instance.name}" />
         <c:url var="countUrl" value="/showResultSize.do?step=${stepId}&answer=${answerValue.checksum}&filter=${instance.name}" />
         <a id="link-${instance.name}" class="link-url" href="javascript:void(0)" countref="${countUrl}" 
-           strId="${strategyId}" stpId="${stpId}" linkUrl="${linkUrl}"><c:choose><c:when test="${current}">${answerValue.resultSize}</c:when><c:otherwise><img class="loading" src="<c:url value="/images/loading.gif" />" /></c:otherwise></c:choose></a>
+           strId="${strategyId}" stpId="${stpId}" linkUrl="${linkUrl}"><c:choose><c:when test="${current}">${answerValue.resultSize}</c:when><c:otherwise><img class="loading" src="<c:url value="/wdk/images/filterLoading.gif" />" /></c:otherwise></c:choose></a>
         <div class="instance-detail" style="display: none;">
             <div class="display">${instance.displayName}</div>
             <div class="description">${instance.description}</div>
