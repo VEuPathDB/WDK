@@ -35,7 +35,7 @@
 <%--
 <h2>Identify ${recordType}s based on ${wdkQuestion.displayName}</h2>
 --%>
-<h2 style="text-align:center">${wdkQuestion.displayName}</h2>
+<h2 style="text-align:center">Identify ${recordType}s based on ${wdkQuestion.displayName}</h2>
 <table width=100%> 
  <tr>
   <td bgcolor=white valign=top>
