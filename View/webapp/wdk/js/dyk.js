@@ -11,7 +11,7 @@ function initHelp() {
 		dataType: "html",
 		success: function(data){
 			$("div#help div.h2center").after($("div#strategyTips",data).html() + "<hr />");
-			$("table#strategyTips span[id^='tip_']",data).each(function() {
+			$("div#strategyTips span[id^='tip_']",data).each(function() {
 				$("#dyk-box div#content").append(this);
 			});
 			if($("div#strategy_results").css("display") == 'none')
