@@ -208,20 +208,21 @@ function showInstructions(){
 	$("#Strategies").removeAttr("style"); // DO NOT DELETE.  This is for IE.
 	var instr = document.createElement('div');
 	id = "strat-instructions";
-	instr_text = "<br>Click '<a href='queries_tools.jsp'>New Search</a>' <br/> to start a strategy";
-	instr_text2 = "Or Click on '<a href='javascript:showPanel('search_history')'>Browse Strategies</a>' to view your available strategies.";
-	arrow_image = "<img id='ns-arrow' alt='Arrow pointing to New Search Button' src='wdk/images/lookUp.png' width='45px'/>"; 
-	arrow_image2 = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='wdk/images/lookUp2.png' width='45px'/>"; 
-	as = $("#mysearch").text();
-	as = as.substring(as.indexOf(":") + 2);
-	if(as != "0"){
-		instr_text = instr_text + "<br>" + instr_text2;
-		id = id + "-2";
-		arrow_image = arrow_image + arrow_image2;
-	}
-	$(instr).attr("id",id).html(arrow_image + instr_text);
+	$(instr).attr("id",id).html(getInstructionsHtml());
 	$("#Strategies").css({'overflow' : 'visible'}); // DO NOT DELETE.  This is for IE to display instructions correctly.
 	$("#Strategies").append(instr);
+}
+
+function getInstructionsHtml() {
+	arrow_image = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='wdk/images/lookUp2.png' width='45px'/>"; 
+	arrow_image += getInstructionsText();
+	return arrow_image;
+}
+
+function getInstructionsText() {
+	instr_text = "<br>Run a new search to start a strategy";
+	instr_text2 = "Or Click on '<a href=\"javascript:showPanel('search_history')\">Browse Strategies</a>' to view your available strategies.";
+	return instr_text + "<br>" + instr_text2
 }
 
 function loadModel(json, ord){
