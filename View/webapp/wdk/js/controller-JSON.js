@@ -210,8 +210,8 @@ function showInstructions(){
 	id = "strat-instructions";
 	instr_text = "<br>Click '<a href='queries_tools.jsp'>New Search</a>' <br/> to start a strategy";
 	instr_text2 = "Or Click on '<a href='javascript:showPanel('search_history')'>Browse Strategies</a>' to view your available strategies.";
-	arrow_image = "<img id='ns-arrow' alt='Arrow pointing to New Search Button' src='/assets/images/lookUp.png' width='45px'/>"; 
-	arrow_image2 = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='/assets/images/lookUp2.png' width='45px'/>"; 
+	arrow_image = "<img id='ns-arrow' alt='Arrow pointing to New Search Button' src='wdk/images/lookUp.png' width='45px'/>"; 
+	arrow_image2 = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='wdk/images/lookUp2.png' width='45px'/>"; 
 	as = $("#mysearch").text();
 	as = as.substring(as.indexOf(":") + 2);
 	if(as != "0"){
