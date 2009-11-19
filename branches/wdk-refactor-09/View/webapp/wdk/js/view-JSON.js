@@ -598,3 +598,6 @@ function createInvalidDiv(){
 	return inval;
 }
 
+function popLogin() {
+	$.blockUI({message: '<h1>You have to be logged in to do that!</h1><input type="button" value="OK" onclick="$.unblockUI();" />'});
+}
