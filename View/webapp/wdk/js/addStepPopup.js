@@ -130,7 +130,7 @@ function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isO
 	}else
 		var close_link = "<a class='close_window' href='javascript:closeAll(false)'><img src='wdk/images/Close-X-box.png'/></a>";
 
-	var quesTitle = data.substring(data.indexOf("<h1>") + 4,data.indexOf("</h1>")).replace(/Identify \w+ based on/,"");
+	var quesTitle = data.substring(data.indexOf("<h1>") + 4,data.indexOf("</h1>")).replace(/Identify \w+( \w+)* based on/,"");
 	
 	var quesForm = $("form#form_question",qf);
 	var quesDescription = $("#query-description-section",qf);
