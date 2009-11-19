@@ -17,17 +17,18 @@ public class CConstants {
     public static final String WDK_REPORTERS_DIR = "reporters";
     public static final String WDK_STRATEGY_DIR = "strategies";
 
-    public static final String WDK_DOWNLOAD_CONFIG_PAGE = "reporterConfig.jsp";
-    public static final String WDK_MODEL_ERROR_PAGE = "error.jsp";
+    public static final String WDK_DOWNLOAD_CONFIG_PAGE = "ReporterConfig.jsp";
+    public static final String WDK_MODEL_ERROR_PAGE = "Error.jsp";
     public static final String WDK_QUESTION_PAGE = "Question.jsp";
+    public static final String WDK_RECORD_PAGE = "Record.jsp";
     public static final String WDK_RESULTS_PAGE = "results.jsp";
     public static final String WDK_STEP_HISTORY_PAGE = "stepHistory.jsp";
     public static final String WDK_STRATEGY_PAGE = "Workspace.jsp";
     public static final String WDK_STRATEGY_HISTORY_PAGE = "strategyHistory.jsp";
-    public static final String WDK_SUMMARY_ERROR_PAGE = "summaryError.jsp";
-    public static final String WDK_USER_ERROR_PAGE = "error.user.jsp";
-    public static final String WDK_XMLDATACONTENT_PAGE = "xmlDataContent.jsp";
-    public static final String WDK_XMLDATALIST_PAGE = "xmlDataList.jsp";
+    public static final String WDK_SUMMARY_ERROR_PAGE = "SummaryError.jsp";
+    public static final String WDK_USER_ERROR_PAGE = "Error.user.jsp";
+    public static final String WDK_XMLDATACONTENT_PAGE = "XmlDataContent.jsp";
+    public static final String WDK_XMLDATALIST_PAGE = "XmlDataList.jsp";
     public static final String WDK_CUSTOM_QUESTIONSETS_FLAT_PAGE = "customQuestionSetsFlat.jsp";
     public static final String WDK_CUSTOM_QUESTIONSETS_PAGE = "customQuestionSets.jsp";
     public static final String WDK_CUSTOM_REGISTER_PAGE = "customRegister.jsp";

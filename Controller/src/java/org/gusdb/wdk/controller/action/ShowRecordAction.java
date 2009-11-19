@@ -82,7 +82,7 @@ public class ShowRecordAction extends Action {
         request.setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 
 	String defaultViewFile = customViewDir
-	    + File.separator + "record.jsp";
+	    + File.separator + CConstants.WDK_RECORD_PAGE;
 
         String customViewFile = customViewDir
 	    + File.separator + CConstants.WDK_RECORDS_DIR

@@ -58,6 +58,8 @@ public class ShowXmlDataContentAction extends Action {
 
 	customViewDir += File.separator + CConstants.WDK_QUESTIONS_DIR;
 
+	System.out.println(defaultViewFile);
+
 	String customViewFile1 = customViewDir + File.separator
 	    + xmlAnswer.getQuestion().getFullName() + ".jsp";
 	String customViewFile2 = customViewDir + File.separator

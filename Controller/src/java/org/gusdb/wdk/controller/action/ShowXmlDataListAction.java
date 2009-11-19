@@ -35,6 +35,8 @@ public class ShowXmlDataListAction extends Action {
 	String defaultViewFile = customViewDir
 	    + File.separator + CConstants.WDK_XMLDATALIST_PAGE;
 
+	System.out.println(defaultViewFile);
+
 	ActionForward forward = new ActionForward(defaultViewFile);
 
 	return forward;
