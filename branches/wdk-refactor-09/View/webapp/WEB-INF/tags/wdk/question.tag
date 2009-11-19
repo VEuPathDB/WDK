@@ -32,10 +32,7 @@
     </c:when>
     <c:otherwise>
         <%-- display question section --%>
-<%--
-<h2>Identify ${recordType}s based on ${wdkQuestion.displayName}</h2>
---%>
-<h2 style="text-align:center">Identify ${recordType}s based on ${wdkQuestion.displayName}</h2>
+<h1>Identify ${recordType}s based on ${wdkQuestion.displayName}</h1>
 <table width=100%> 
  <tr>
   <td bgcolor=white valign=top>
