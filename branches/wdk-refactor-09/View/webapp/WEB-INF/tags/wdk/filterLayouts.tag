@@ -37,12 +37,12 @@
             <c:set var="show" value="block" />
         </c:if>
         
-        <div class="layout-info">
+        <div class="layout-info" >
             <img class="handle" src="<c:url value="/wdk/images/${image}" />" />
-            <span class="display"><b>${layout.displayName}</b>&nbsp;&nbsp;</span><span style="font-size:90%">(the filter is applied only to the current step result, but it will affect the results of subsequent steps.)</span>
+            <span class="display" title="${layout.description}"><b>${layout.displayName}</b>&nbsp;&nbsp;</span><span style="font-size:90%">(the filter is applied only to the current step result, but it will affect the results of subsequent steps.)</span>
         </div>
         <div class="layout-detail" style="display: ${show}">
-            <div class="description">${layout.description}</div>
+    <%--        <div class="description">${layout.description}</div>  --%>
  
             <c:set var="filter_layout" value="${layout}" scope="request"/>
             <c:set var="fileName" value="${layout.fileName}" />
