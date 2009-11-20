@@ -10,11 +10,6 @@ import java.util.Map;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.Utilities;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -46,7 +41,7 @@ public class UnitTestHelper {
     private static List<Question> normalQuestions;
     private static List<Question> answerQuestions;
     private static List<Question> datasetQuestions;
-    
+
     public static Random getRandom() {
         return random;
     }
@@ -54,15 +49,18 @@ public class UnitTestHelper {
     public static WdkModel getModel() throws Exception {
         if (wdkModel == null) {
             logger.info("Loading model...");
-            String projectId = System.getProperty(Utilities.ARGUMENT_PROJECT_ID);
-            String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+            String projectId = System
+                    .getProperty(Utilities.ARGUMENT_PROJECT_ID);
+            String gusHome = System
+                    .getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
             try {
                 wdkModel = WdkModel.construct(projectId, gusHome);
-                
+
                 // reset the cache
                 logger.info("resetting cache...");
-                CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
-                cacheFactory.resetCache();
+                CacheFactory cacheFactory = wdkModel.getResultFactory()
+                        .getCacheFactory();
+                cacheFactory.resetCache(true);
             } catch (Exception ex) {
                 throw ex;
             }
@@ -86,7 +84,8 @@ public class UnitTestHelper {
             UserFactory userFactory = wdkModel.getUserFactory();
             // check if user exist
             try {
-                registeredUser = userFactory.getUserByEmail(REGISTERED_USER_EMAIL);
+                registeredUser = userFactory
+                        .getUserByEmail(REGISTERED_USER_EMAIL);
             } catch (WdkUserException ex) {
                 // user doesn't exist, create one
                 registeredUser = userFactory.createUser(REGISTERED_USER_EMAIL,
@@ -96,8 +95,8 @@ public class UnitTestHelper {
                         REGISTERED_USER_PASSWORD);
             }
         }
-        //registeredUser.deleteStrategies();
-        //registeredUser.deleteSteps();
+        // registeredUser.deleteStrategies();
+        // registeredUser.deleteSteps();
         return registeredUser;
     }
 
@@ -120,8 +119,10 @@ public class UnitTestHelper {
 
     public static Step createNormalStep(User user) throws Exception {
         Question question = getNormalQuestion();
-        List<ParamValuesSet> paramValueSets = question.getQuery().getParamValuesSets();
-        ParamValuesSet paramValueSet = paramValueSets.get(random.nextInt(paramValueSets.size()));
+        List<ParamValuesSet> paramValueSets = question.getQuery()
+                .getParamValuesSets();
+        ParamValuesSet paramValueSet = paramValueSets.get(random
+                .nextInt(paramValueSets.size()));
         Map<String, String> params = paramValueSet.getParamValues();
         return user.createStep(question, params, (String) null, false);
     }
