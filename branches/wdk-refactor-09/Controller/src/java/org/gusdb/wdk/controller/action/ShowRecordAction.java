@@ -19,9 +19,8 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-
-import com.sun.org.apache.regexp.internal.recompile;
 
 /**
  * This Action is called by the ActionServlet when a WDK record is requested. It
@@ -39,11 +38,13 @@ public class ShowRecordAction extends Action {
         long start = System.currentTimeMillis();
 
         ServletContext svltCtx = getServlet().getServletContext();
-        WdkModelBean wdkModel = (WdkModelBean) svltCtx.getAttribute(CConstants.WDK_MODEL_KEY);
-        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
-	    + File.separator + CConstants.WDK_PAGES_DIR;
+        WdkModelBean wdkModel = (WdkModelBean) svltCtx
+                .getAttribute(CConstants.WDK_MODEL_KEY);
+        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator
+                + CConstants.WDK_PAGES_DIR;
 
-        RecordClassBean wdkRecordClass = wdkModel.findRecordClass(request.getParameter("name"));
+        RecordClassBean wdkRecordClass = wdkModel.findRecordClass(request
+                .getParameter("name"));
         String[] pkColumns = wdkRecordClass.getPrimaryKeyColumns();
 
         Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
@@ -77,16 +78,17 @@ public class ShowRecordAction extends Action {
             urlParams.append(URLEncoder.encode(value, "UTF-8"));
         }
 
-        RecordBean wdkRecord = new RecordBean(wdkRecordClass, pkValues);
+        UserBean user = ActionUtility.getUser(servlet, request);
+        RecordBean wdkRecord = new RecordBean(user, wdkRecordClass, pkValues);
 
         request.setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 
-	String defaultViewFile = customViewDir
-	    + File.separator + CConstants.WDK_RECORD_PAGE;
+        String defaultViewFile = customViewDir + File.separator
+                + CConstants.WDK_RECORD_PAGE;
 
-        String customViewFile = customViewDir
-	    + File.separator + CConstants.WDK_RECORDS_DIR
-	    + File.separator + wdkRecordClass.getFullName() + ".jsp";
+        String customViewFile = customViewDir + File.separator
+                + CConstants.WDK_RECORDS_DIR + File.separator
+                + wdkRecordClass.getFullName() + ".jsp";
 
         ActionForward forward = null;
         if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
