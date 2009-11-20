@@ -23,7 +23,7 @@
 <!-- decide whether strategy history is empty -->
 <c:choose>
   <c:when test="${user == null || user.strategyCount == 0}">
-  <div style="font-size:120%;line-height:1.2em;text-indent:10em;padding:0.5em">You have no search strategies in your history. <p style="text-indent:5em;">Please run a search to start a strategy: from the <a href="/">home</a> page, or by using the "New Search" menu above, or by clicking on the "New Strategy" tab above.</p></div>
+  <div style="font-size:120%;line-height:1.2em;text-indent:10em;padding:0.5em">You have no search strategies in your history. <p style="text-indent:5em;">Please run a search to start a strategy.</p></div>
   </c:when>
   <c:otherwise>
   <c:set var="typeC" value="0"/>
