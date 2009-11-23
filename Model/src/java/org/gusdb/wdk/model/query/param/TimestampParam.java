@@ -126,16 +126,17 @@ public class TimestampParam extends Param {
     protected void validateValue(User user, String rawOrDependentValue)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
+        // the value of timestamp can be any string
         // make sure the value is in valid time format
-        try {
-            Date date = DateFormat.getDateTimeInstance().parse(
-                    rawOrDependentValue);
-            if (date == null)
-                throw new WdkModelException("Invalid timestampParam value; '"
-                        + rawOrDependentValue + "'");
-        } catch (ParseException ex) {
-            throw new WdkModelException(ex);
-        }
+        // try {
+        //    Date date = DateFormat.getDateTimeInstance().parse(
+        //            rawOrDependentValue);
+        //    if (date == null)
+        //        throw new WdkModelException("Invalid timestampParam value; '"
+        //                + rawOrDependentValue + "'");
+        //} catch (ParseException ex) {
+        //    throw new WdkModelException(ex);
+        //}
     }
 
     /*
