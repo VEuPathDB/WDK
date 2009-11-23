@@ -293,12 +293,12 @@ public class BasketFactory {
         }
         // create params
         query.addParam(getSignatureParam(PARAM_USER_SIGNATURE));
-        query.addParam(getTimestampParam(PARAM_USER_SIGNATURE));
+        query.addParam(getTimestampParam(PARAM_TIMESTAMP));
 
         // make sure we create index on primary keys
         query.setIndexColumns(pkColumns);
         query.setDoNotTest(true);
-        query.setIsCacheable(true); // cache the boolean query
+        query.setIsCacheable(false);
 
         // construct the sql
         String queryRef = recordClass.getAllRecordsQueryRef();
