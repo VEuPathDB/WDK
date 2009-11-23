@@ -33,12 +33,14 @@
     <c:otherwise>
         <%-- display question section --%>
 <h1>Identify ${recordType}s based on ${wdkQuestion.displayName}</h1>
+
 <table width=100%> 
- <tr>
-  <td bgcolor=white valign=top>
+<tr>
+<td bgcolor=white valign=top>
+
 <%-- put an anchor here for linking back from help sections --%>
 <A name="${fromAnchorQ}"></A>
-<!--html:form method="get" action="/processQuestion.do" -->
+
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processQuestion.do">
 <input type="hidden" name="questionFullName" value="${wdkQuestion.fullName}"/>
 
@@ -64,6 +66,9 @@
 <div class="filter-button"><html:submit property="questionSubmit" value="Get Answer"/></div>
 </html:form>
 
+</td>
+</tr>
+</table>
 
 <hr>
 
@@ -71,10 +76,9 @@
 
 <%-- display description for wdkQuestion --%>
 <div id="${descripId}"><b>Query description: </b><jsp:getProperty name="wdkQuestion" property="description"/></div>
-
-  <td valign=top class=dottedLeftBorder></td> 
-
+<%--
 </tr>
-</table> 
+</table>
+--%> 
     </c:otherwise> <%-- otherwise of showParams == true --%>
 </c:choose>
