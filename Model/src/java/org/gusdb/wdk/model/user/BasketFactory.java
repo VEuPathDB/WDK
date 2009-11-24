@@ -298,7 +298,7 @@ public class BasketFactory {
         // make sure we create index on primary keys
         query.setIndexColumns(pkColumns);
         query.setDoNotTest(true);
-        query.setIsCacheable(false);
+        query.setIsCacheable(true);
 
         // construct the sql
         String queryRef = recordClass.getAllRecordsQueryRef();
