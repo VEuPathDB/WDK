@@ -632,6 +632,7 @@ public class Step {
         jsStep.put("collapsed", this.isCollapsible);
         jsStep.put("collapsedName", this.collapsedName);
         jsStep.put("deleted", isDeleted);
+        jsStep.put("deleted", this.estimateSize);
         if (this.previousStep != null) {
             jsStep.put("previous", previousStep.getJSONContent(strategyId));
         }
