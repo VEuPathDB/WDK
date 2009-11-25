@@ -223,7 +223,7 @@ public class Step {
     /**
      * @return Returns the stepId.
      */
-    int getInternalId() {
+    public int getInternalId() {
         return internalId;
     }
 
