@@ -56,7 +56,7 @@ public class ModelCacher extends BaseCLI {
      * @param description
      */
     public ModelCacher(String command) {
-        super((command == null) ? command : "wdkCacheModel",
+        super((command != null) ? command : "wdkCacheModel",
                 "store model information into database");
     }
 
