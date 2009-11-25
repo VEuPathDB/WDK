@@ -132,7 +132,8 @@ public class StepFactory {
             if (filter != null) {
                 filterName = filter.getName();
                 estimateSize = answerValue.getFilterSize(filterName);
-            } else estimateSize = answerValue.getResultSize();
+            } else
+                estimateSize = answerValue.getResultSize();
         } catch (Exception ex) {
             estimateSize = 0;
             ex.printStackTrace();
@@ -480,8 +481,8 @@ public class StepFactory {
         } finally {
             SqlUtils.closeResultSet(rsStep);
         }
-        System.out.println("Steps: " + steps.size());
-        System.out.println("Invalid: " + invalidSteps.size());
+        logger.debug("Steps: " + steps.size());
+        logger.debug("Invalid: " + invalidSteps.size());
         return steps;
     }
 
@@ -626,7 +627,8 @@ public class StepFactory {
             leftStepId = Integer.parseInt(stepKey);
 
             customName = step.getBaseCustomName();
-        } else customName = step.getBaseCustomName();
+        } else
+            customName = step.getBaseCustomName();
 
         // construct the update sql
         StringBuffer sql = new StringBuffer("UPDATE ");
@@ -681,8 +683,9 @@ public class StepFactory {
                 + COLUMN_CUSTOM_NAME + " = ?, " + COLUMN_LAST_RUN_TIME
                 + " = ?, " + COLUMN_IS_DELETED + " = ?, "
                 + COLUMN_IS_COLLAPSIBLE + " = ?, " + COLUMN_COLLAPSED_NAME
-                + " = ?, " + COLUMN_ESTIMATE_SIZE + " = ? WHERE "
-                + COLUMN_STEP_INTERNAL_ID + " = ?";
+                + " = ?, " + COLUMN_ESTIMATE_SIZE + " = ?, "
+                + COLUMN_IS_VALID + " = ? WHERE " + COLUMN_STEP_INTERNAL_ID
+                + " = ?";
         try {
             long start = System.currentTimeMillis();
             psStep = SqlUtils.getPreparedStatement(dataSource, sql);
@@ -692,7 +695,8 @@ public class StepFactory {
             psStep.setBoolean(4, step.isCollapsible());
             psStep.setString(5, step.getCollapsedName());
             psStep.setInt(6, estimateSize);
-            psStep.setInt(7, step.getInternalId());
+            psStep.setBoolean(7, step.isValid());
+            psStep.setInt(8, step.getInternalId());
             int result = psStep.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql, start);
             if (result == 0)
@@ -1212,8 +1216,10 @@ public class StepFactory {
             rsMax = psMax.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql, start);
 
-            if (rsMax.next()) displayId = rsMax.getInt("max_id") + 1;
-            else displayId = 1;
+            if (rsMax.next())
+                displayId = rsMax.getInt("max_id") + 1;
+            else
+                displayId = 1;
 
             // insert the row into strategies
             sql = "INSERT INTO " + userSchema + TABLE_STRATEGY + " ("
