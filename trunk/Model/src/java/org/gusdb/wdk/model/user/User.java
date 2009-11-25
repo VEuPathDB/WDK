@@ -517,10 +517,10 @@ public class User /* implements Serializable */{
             WdkModelException, SQLException, JSONException {
         logger.debug("loading steps...");
         Map<Integer, Step> invalidSteps = new LinkedHashMap<Integer, Step>();
-        Map<Integer, Step> userAnswers = stepFactory.loadSteps(this,
+        Map<Integer, Step> allSteps = stepFactory.loadSteps(this,
                 invalidSteps);
 
-        return userAnswers;
+        return allSteps;
     }
 
     public Map<Integer, Strategy> getStrategiesMap() throws WdkUserException,
