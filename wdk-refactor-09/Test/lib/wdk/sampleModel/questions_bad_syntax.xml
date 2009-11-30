@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- 
+    this sub-model is invalid. The question doesn't have a reference to a
+    record class
+-->
+
+<wdkModel>
+
+
+    <!-- ************ -->
+    <!-- questionSets -->
+    <!-- ************ -->
+    
+    <!--
+    A question is "a query that returns a list of records."  (Regular queries
+    return columns and rows.)  They are formed by pairing a query with a
+    record class.  The query must be one that returns one column containing
+    a list of primary keys.  The record class must be one that expects as
+    a primary key the type of key returned by the query.
+    
+    A question set is a grouping of questions.  It may be used in the
+    user interface to present the enclosed questions in one choice box.
+    -->
+    
+    <questionSet name="SampleQuestions"
+                 displayName="Sample Question Set">
+    
+        <question name="SampleQuestion"
+                  category="sample"
+                  displayName="Sample Question"
+                  queryRef="SampleQueries.SampleIdQuery">
+        </question>
+    
+    </questionSet>
+        
+</wdkModel>
