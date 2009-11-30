@@ -64,14 +64,15 @@ public class QueryFactory {
             if (null != getSummaryAttributes(checksum)) return checksum;
 
             // configuration not exists, add one
-            psInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO"
-                    + " " + wdkSchema + TABLE_CLOB_VALUES + " ("
-                    + COLUMN_CLOB_CHECKSUM + ", " + COLUMN_CLOB_VALUE
-                    + ") VALUES (?, ?)");
+            String sql = "INSERT INTO" + " " + wdkSchema + TABLE_CLOB_VALUES
+                    + " (" + COLUMN_CLOB_CHECKSUM + ", " + COLUMN_CLOB_VALUE
+                    + ") VALUES (?, ?)";
+            long start = System.currentTimeMillis();
+            psInsert = SqlUtils.getPreparedStatement(dataSource, sql);
             psInsert.setString(1, checksum);
             psInsert.setString(2, summaryContent);
             psInsert.execute();
-
+            SqlUtils.verifyTime(wdkModel, sql, start);
             return checksum;
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -81,16 +82,18 @@ public class QueryFactory {
     }
 
     public String[] getSummaryAttributes(String summaryChecksum)
-            throws WdkUserException {
+            throws WdkUserException, WdkModelException {
         ResultSet rsSelect = null;
         try {
+            String sql = "SELECT " + COLUMN_CLOB_VALUE + " FROM " + wdkSchema
+                    + TABLE_CLOB_VALUES + " WHERE " + COLUMN_CLOB_CHECKSUM
+                    + " = ?";
+            long start = System.currentTimeMillis();
             PreparedStatement psSelect = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT " + COLUMN_CLOB_VALUE + " FROM "
-                            + wdkSchema + TABLE_CLOB_VALUES + " WHERE "
-                            + COLUMN_CLOB_CHECKSUM + " = ?");
+                    dataSource, sql);
             psSelect.setString(1, summaryChecksum);
             rsSelect = psSelect.executeQuery();
-
+            SqlUtils.verifyTime(wdkModel, sql, start);
             if (!rsSelect.next()) return null;
 
             // get the configuration
@@ -134,14 +137,15 @@ public class QueryFactory {
             if (null != getSortingAttributes(checksum)) return checksum;
 
             // sorting not exists, add one
-            psInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO"
-                    + " " + wdkSchema + TABLE_CLOB_VALUES + " ("
-                    + COLUMN_CLOB_CHECKSUM + ", " + COLUMN_CLOB_VALUE
-                    + ") VALUES (?, ?)");
+            String sql = "INSERT INTO" + " " + wdkSchema + TABLE_CLOB_VALUES
+                    + " (" + COLUMN_CLOB_CHECKSUM + ", " + COLUMN_CLOB_VALUE
+                    + ") VALUES (?, ?)";
+            long start = System.currentTimeMillis();
+            psInsert = SqlUtils.getPreparedStatement(dataSource, sql);
             psInsert.setString(1, checksum);
             psInsert.setString(2, columnsContent);
             psInsert.execute();
-
+            SqlUtils.verifyTime(wdkModel, sql, start);
             return checksum;
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -151,15 +155,18 @@ public class QueryFactory {
     }
 
     public Map<String, Boolean> getSortingAttributes(String sortingChecksum)
-            throws WdkUserException {
+            throws WdkUserException, WdkModelException {
         ResultSet rsSelect = null;
         try {
+            String sql = "SELECT " + COLUMN_CLOB_VALUE + " FROM " + wdkSchema
+                    + TABLE_CLOB_VALUES + " WHERE " + COLUMN_CLOB_CHECKSUM
+                    + " = ?";
+            long start = System.currentTimeMillis();
             PreparedStatement psSelect = SqlUtils.getPreparedStatement(
-                    dataSource, "SELECT " + COLUMN_CLOB_VALUE + " FROM "
-                            + wdkSchema + TABLE_CLOB_VALUES + " WHERE "
-                            + COLUMN_CLOB_CHECKSUM + " = ?");
+                    dataSource, sql);
             psSelect.setString(1, sortingChecksum);
             rsSelect = psSelect.executeQuery();
+            SqlUtils.verifyTime(wdkModel, sql, start);
 
             if (!rsSelect.next()) return null;
 
@@ -189,7 +196,7 @@ public class QueryFactory {
     }
 
     public String makeClobChecksum(String paramValue) throws WdkModelException,
-            NoSuchAlgorithmException {
+            NoSuchAlgorithmException, WdkUserException {
         // make the checksum
         String checksum = Utilities.encrypt(paramValue);
 
@@ -199,13 +206,15 @@ public class QueryFactory {
             if (null != getClobValue(checksum)) return checksum;
 
             // clob value does not exist, add one
-            psInsert = SqlUtils.getPreparedStatement(dataSource, "INSERT INTO"
-                    + " " + wdkSchema + TABLE_CLOB_VALUES + " ("
-                    + COLUMN_CLOB_CHECKSUM + ", " + COLUMN_CLOB_VALUE
-                    + ") VALUES (?, ?)");
+            String sql = "INSERT INTO" + " " + wdkSchema + TABLE_CLOB_VALUES
+                    + " (" + COLUMN_CLOB_CHECKSUM + ", " + COLUMN_CLOB_VALUE
+                    + ") VALUES (?, ?)";
+            long start = System.currentTimeMillis();
+            psInsert = SqlUtils.getPreparedStatement(dataSource, sql);
             psInsert.setString(1, checksum);
             psInsert.setString(2, paramValue);
             psInsert.execute();
+            SqlUtils.verifyTime(wdkModel, sql, start);
 
             return checksum;
         } catch (SQLException ex) {
@@ -215,16 +224,19 @@ public class QueryFactory {
         }
     }
 
-    public String getClobValue(String paramChecksum) throws WdkModelException {
+    public String getClobValue(String paramChecksum) throws WdkModelException,
+            WdkUserException {
         ResultSet rs = null;
         try {
+            long start = System.currentTimeMillis();
+            String sql = "SELECT " + COLUMN_CLOB_VALUE + " FROM " + wdkSchema
+                    + TABLE_CLOB_VALUES + " WHERE " + COLUMN_CLOB_CHECKSUM
+                    + " = ?";
             PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource,
-                    "SELECT " + COLUMN_CLOB_VALUE + " FROM " + wdkSchema
-                            + TABLE_CLOB_VALUES + " WHERE "
-                            + COLUMN_CLOB_CHECKSUM + " = ?");
+                    sql);
             ps.setString(1, paramChecksum);
             rs = ps.executeQuery();
-
+            SqlUtils.verifyTime(wdkModel, sql, start);
             if (!rs.next()) return null;
 
             String clobValue = userPlatform.getClobData(rs, COLUMN_CLOB_VALUE);

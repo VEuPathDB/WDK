@@ -58,9 +58,8 @@ public class UnitTestHelper {
 
                 // reset the cache
                 logger.info("resetting cache...");
-                CacheFactory cacheFactory = wdkModel.getResultFactory()
-                        .getCacheFactory();
-                cacheFactory.resetCache(true);
+                CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
+                cacheFactory.resetCache(true, true);
             } catch (Exception ex) {
                 throw ex;
             }
@@ -124,7 +123,7 @@ public class UnitTestHelper {
         ParamValuesSet paramValueSet = paramValueSets.get(random
                 .nextInt(paramValueSets.size()));
         Map<String, String> params = paramValueSet.getParamValues();
-        return user.createStep(question, params, (String) null, false);
+        return user.createStep(question, params, (String) null, false, false);
     }
 
     private static void loadQuestions() throws Exception {

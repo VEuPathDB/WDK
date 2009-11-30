@@ -112,7 +112,7 @@ public class CacheCLI extends BaseCLI {
         boolean recreateCache = (Boolean) getOptionValue(ARG_RECREATE);
         boolean showCache = (Boolean) getOptionValue(ARG_SHOW);
         // boolean noSchemaOutput = (Boolean) getOptionValue(ARG_NO_SCHEMA);
-        // boolean forceDrop = (Boolean) getOptionValue(ARG_FORCE_DROP);
+        boolean forceDrop = (Boolean) getOptionValue(ARG_FORCE_DROP);
 
         try {
             // read config info
@@ -122,9 +122,9 @@ public class CacheCLI extends BaseCLI {
 
             long start = System.currentTimeMillis();
             if (newCache) factory.createCache();
-            else if (resetCache) factory.resetCache(purgeCache);
-            else if (dropCache) factory.dropCache(purgeCache);
-            else if (recreateCache) factory.recreateCache(purgeCache);
+            else if (resetCache) factory.resetCache(purgeCache, forceDrop);
+            else if (dropCache) factory.dropCache(purgeCache, forceDrop);
+            else if (recreateCache) factory.recreateCache(purgeCache, recreateCache);
             else if (showCache) factory.showCache();
             else if (dropSingleCache) {
                 String value = (String) getOptionValue(ARG_DROP_SINGLE);

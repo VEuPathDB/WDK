@@ -79,7 +79,7 @@ public class ParamTest {
 
     @Test
     public void testCompress() throws NoSuchAlgorithmException,
-            WdkModelException {
+            WdkModelException, WdkUserException {
         // generate random input
         StringBuffer buffer = new StringBuffer();
         Random rand = UnitTestHelper.getRandom();

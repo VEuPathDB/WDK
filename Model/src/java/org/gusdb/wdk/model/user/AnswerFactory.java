@@ -7,6 +7,8 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
@@ -34,16 +36,24 @@ public class AnswerFactory {
     private static final String COLUMN_PROJECT_VERSION = "project_version";
     private static final String COLUMN_QUESTION_NAME = "question_name";
     private static final String COLUMN_QUERY_CHECKSUM = "query_checksum";
-    private static final String COLUMN_PARAMS = "params";
+    // private static final String COLUMN_PARAMS = "params";
 
     private WdkModel wdkModel;
     private DBPlatform userPlatform;
     private String wdkSchema;
 
+    /**
+     * the answer cache. currently it will store all the answers that have been
+     * loaded, assuming the number is relatively small. Might revise the design
+     * later.
+     */
+    private Map<Answer, Answer> answers;
+
     public AnswerFactory(WdkModel wdkModel) throws SQLException {
         this.wdkModel = wdkModel;
         this.userPlatform = wdkModel.getUserPlatform();
         this.wdkSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
+        this.answers = new HashMap<Answer, Answer>();
     }
 
     public Answer saveAnswerValue(AnswerValue answerValue) throws SQLException,
@@ -51,15 +61,14 @@ public class AnswerFactory {
             WdkUserException {
         // use transaction
         String answerChecksum = answerValue.getChecksum();
-        User user = answerValue.getUser();
 
         // check if answer has been saved.
-        Answer answer = getAnswer(user, answerChecksum);
+        Answer answer = getAnswer(answerChecksum);
         if (answer == null) {
             Question question = answerValue.getQuestion();
             // the answer hasn't been stored, create an answerInfo, and save it
             int answerId = userPlatform.getNextId(wdkSchema, TABLE_ANSWER);
-            answer = new Answer(user, this, answerId);
+            answer = new Answer(answerId);
             answer.setAnswerChecksum(answerValue.getChecksum());
             answer.setProjectId(wdkModel.getProjectId());
             answer.setProjectVersion(wdkModel.getVersion());
@@ -79,30 +88,33 @@ public class AnswerFactory {
      * @return an AnswerInfo object if the answer has been saved; otherwise,
      *         return null.
      * @throws SQLException
+     * @throws WdkModelException
+     * @throws WdkUserException
      */
-    public Answer getAnswer(User user, String answerChecksum)
-            throws SQLException {
+    public Answer getAnswer(String answerChecksum) throws SQLException,
+            WdkUserException, WdkModelException {
         String projectId = wdkModel.getProjectId();
 
+        // use the cache if exists.
+        Answer answer = answers.get(new Answer(projectId, answerChecksum));
+        if (answer != null) return answer;
+
         // construct the query
-        StringBuffer sql = new StringBuffer("SELECT * FROM ");
-        sql.append(wdkSchema).append(TABLE_ANSWER);
-        sql.append(" WHERE ").append(COLUMN_PROJECT_ID).append(" = ? ");
-        sql.append(" AND ").append(COLUMN_ANSWER_CHECKSUM).append(" = ?");
+        String sql = "SELECT " + COLUMN_ANSWER_ID + ", "
+                + COLUMN_PROJECT_VERSION + ", " + COLUMN_QUERY_CHECKSUM + ", "
+                + COLUMN_QUESTION_NAME + " FROM " + wdkSchema + TABLE_ANSWER
+                + " WHERE " + COLUMN_PROJECT_ID + " = '"
+                + projectId.replaceAll("'", "''") + "' AND "
+                + COLUMN_ANSWER_CHECKSUM + " = '"
+                + answerChecksum.replaceAll("'", "''") + "'";
 
         ResultSet resultSet = null;
-        PreparedStatement ps = null;
-        Answer answer = null;
         try {
             DataSource dataSource = userPlatform.getDataSource();
-            ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
-            ps.setString(1, projectId);
-            ps.setString(2, answerChecksum);
-            resultSet = ps.executeQuery();
+            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
 
             if (resultSet.next()) {
-                answer = new Answer(user, this,
-                        resultSet.getInt(COLUMN_ANSWER_ID));
+                answer = new Answer(resultSet.getInt(COLUMN_ANSWER_ID));
                 answer.setAnswerChecksum(answerChecksum);
                 answer.setProjectId(projectId);
                 answer.setProjectVersion(resultSet.getString(COLUMN_PROJECT_VERSION));
@@ -112,11 +124,12 @@ public class AnswerFactory {
         } finally {
             SqlUtils.closeResultSet(resultSet);
         }
+        answers.put(answer, answer);
         return answer;
     }
 
     private void saveAnswer(Answer answer, String paramClob)
-            throws SQLException {
+            throws SQLException, WdkUserException, WdkModelException {
         // prepare the sql
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(wdkSchema).append(TABLE_ANSWER).append(" (");
@@ -125,12 +138,12 @@ public class AnswerFactory {
         sql.append(COLUMN_PROJECT_ID).append(", ");
         sql.append(COLUMN_PROJECT_VERSION).append(", ");
         sql.append(COLUMN_QUESTION_NAME).append(", ");
-        sql.append(COLUMN_QUERY_CHECKSUM).append(", ");
-        sql.append(COLUMN_PARAMS).append(") VALUES (?, ?, ?, ?, ?, ?, ?)");
+        sql.append(COLUMN_QUERY_CHECKSUM).append(") VALUES (?, ?, ?, ?, ?, ?)");
 
         PreparedStatement ps = null;
         try {
             DataSource dataSource = userPlatform.getDataSource();
+            long start = System.currentTimeMillis();
             ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             ps.setInt(1, answer.getAnswerId());
             ps.setString(2, answer.getAnswerChecksum());
@@ -138,9 +151,9 @@ public class AnswerFactory {
             ps.setString(4, answer.getProjectVersion());
             ps.setString(5, answer.getQuestionName());
             ps.setString(6, answer.getQueryChecksum());
-            userPlatform.setClobData(ps, 7, paramClob, false);
 
             ps.executeUpdate();
+            SqlUtils.verifyTime(wdkModel, sql.toString(), start);
         } finally {
             SqlUtils.closeStatement(ps);
         }

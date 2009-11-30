@@ -4,18 +4,22 @@
 package org.gusdb.wdk.model.dbms;
 
 import java.math.BigDecimal;
+import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import oracle.jdbc.driver.OracleDriver;
 import oracle.sql.CLOB;
 
 import org.apache.commons.dbcp.DelegatingConnection;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * @author Jerric Gao
@@ -40,12 +44,12 @@ public class Oracle extends DBPlatform {
      */
     @Override
     public void createSequence(String sequence, int start, int increment)
-            throws SQLException {
+            throws SQLException, WdkUserException, WdkModelException {
         StringBuffer sql = new StringBuffer("CREATE SEQUENCE ");
         sql.append(sequence);
         sql.append(" START WITH ").append(start);
         sql.append(" INCREMENT BY ").append(increment);
-        SqlUtils.executeUpdate(dataSource, sql.toString());
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString());
     }
 
     /*
@@ -106,14 +110,14 @@ public class Oracle extends DBPlatform {
      */
     @Override
     public int getNextId(String schema, String table) throws SQLException,
-            WdkModelException {
+            WdkModelException, WdkUserException {
         schema = normalizeSchema(schema);
 
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
         sql.append(".nextval FROM dual");
-        BigDecimal id = (BigDecimal) SqlUtils.executeScalar(dataSource,
-                sql.toString());
+        BigDecimal id = (BigDecimal) SqlUtils.executeScalar(wdkModel,
+                dataSource, sql.toString());
         return id.intValue();
     }
 
@@ -192,7 +196,7 @@ public class Oracle extends DBPlatform {
      */
     @Override
     public boolean checkTableExists(String schema, String tableName)
-            throws SQLException, WdkModelException {
+            throws SQLException, WdkModelException, WdkUserException {
         StringBuffer sql = new StringBuffer("SELECT count(*) FROM ALL_TABLES ");
         sql.append("WHERE table_name = '");
         sql.append(tableName.toUpperCase()).append("'");
@@ -202,8 +206,8 @@ public class Oracle extends DBPlatform {
             schema = schema.substring(0, schema.length() - 1);
         sql.append(" AND owner = '").append(schema.toUpperCase()).append("'");
 
-        BigDecimal count = (BigDecimal) SqlUtils.executeScalar(dataSource,
-                sql.toString());
+        BigDecimal count = (BigDecimal) SqlUtils.executeScalar(wdkModel,
+                dataSource, sql.toString());
         return (count.longValue() > 0);
     }
 
@@ -245,11 +249,74 @@ public class Oracle extends DBPlatform {
      */
     @Override
     public void dropTable(String schema, String table, boolean purge)
-            throws SQLException {
+            throws SQLException, WdkUserException, WdkModelException {
         String sql = "DROP TABLE ";
         if (schema != null) sql = schema;
         sql += table;
         if (purge) sql += " PURGE";
-        SqlUtils.executeUpdate(dataSource, sql);
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.gusdb.wdk.model.dbms.DBPlatform#disableStatistics(java.lang.String,
+     * java.lang.String)
+     */
+    @Override
+    public void disableStatistics(Connection connection, String schema,
+            String tableName) throws SQLException {
+        schema = schema.toUpperCase();
+        tableName = tableName.toUpperCase();
+        CallableStatement stUnlock = null, stDelete = null, stLock = null;
+        try {
+            stUnlock = connection.prepareCall(tableName);
+            stUnlock.executeUpdate("{call DBMS_STATS.unlock_table_stats('"
+                    + schema + "', '" + tableName + "') }");
+            stUnlock.executeUpdate();
+
+            stDelete = connection.prepareCall(tableName);
+            stDelete.executeUpdate("{call DBMS_STATS.DELETE_TABLE_STATS('"
+                    + schema + "', '" + tableName + "') }");
+            stDelete.executeUpdate();
+
+            stLock = connection.prepareCall(tableName);
+            stLock.executeUpdate("{call DBMS_STATS.LOCK_TABLE_STATS('" + schema
+                    + "', '" + tableName + "') }");
+            stLock.executeUpdate();
+        } finally {
+            if (stUnlock != null) stUnlock.close();
+            if (stDelete != null) stDelete.close();
+            if (stLock != null) stLock.close();
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.dbms.DBPlatform#getTables(java.lang.String,
+     * java.lang.String)
+     */
+    @Override
+    public String[] queryTableNames(String schema, String pattern)
+            throws SQLException, WdkUserException, WdkModelException {
+        String sql = "SELECT table_name FROM all_tables WHERE owner = '"
+                + schema.toUpperCase() + "' AND table_name LIKE '"
+                + pattern.toUpperCase() + "'";
+        ResultSet resultSet = null;
+        try {
+            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+            List<String> tables = new ArrayList<String>();
+            while (resultSet.next()) {
+                tables.add(resultSet.getString("table_name"));
+            }
+            String[] array = new String[tables.size()];
+            tables.toArray(array);
+            return array;
+        } finally {
+            SqlUtils.closeResultSet(resultSet);
+        }
+    }
+
 }

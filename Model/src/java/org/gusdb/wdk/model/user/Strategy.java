@@ -8,7 +8,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerFilterInstance;
-import org.gusdb.wdk.model.BooleanOperator;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
@@ -36,7 +35,6 @@ public class Strategy {
     private String description;
     private String name;
     private String savedName = null;
-    private boolean valid = true;
 
     Strategy(StepFactory factory, User user, int displayId, int internalId) {
         this.stepFactory = factory;
@@ -59,9 +57,9 @@ public class Strategy {
     }
 
     public void setName(String name) {
-	if (name != null && name.length() > StepFactory.COLUMN_NAME_LIMIT) {
-	    name = name.substring(0,StepFactory.COLUMN_NAME_LIMIT-1);
-	}
+        if (name != null && name.length() > StepFactory.COLUMN_NAME_LIMIT) {
+            name = name.substring(0, StepFactory.COLUMN_NAME_LIMIT - 1);
+        }
         this.name = name;
     }
 
@@ -70,9 +68,11 @@ public class Strategy {
     }
 
     public void setSavedName(String savedName) {
-	if (savedName != null && savedName.length() > StepFactory.COLUMN_NAME_LIMIT) {
-	    savedName = savedName.substring(0,StepFactory.COLUMN_NAME_LIMIT-1);
-	}
+        if (savedName != null
+                && savedName.length() > StepFactory.COLUMN_NAME_LIMIT) {
+            savedName = savedName.substring(0,
+                    StepFactory.COLUMN_NAME_LIMIT - 1);
+        }
         this.savedName = savedName;
     }
 
@@ -268,20 +268,16 @@ public class Strategy {
                 } else {
                     // assuming boolean, will need to add case for
                     // non-boolean op
-                    BooleanOperator operator = BooleanOperator.parse(moveFromStep.getOperation());
-                    AnswerFilterInstance targetFilter = moveFromStep.getFilter();
                     Step rightStep = moveFromStep.getChildStep();
                     moveFromStep = user.createBooleanStep(step, rightStep,
-                            operator, false, targetFilter);
+                            moveFromStep.getOperation(), false, moveFromStep.getFilterName());
                     step = moveFromStep;
                 }
                 // again, assuming boolean, will need to add case for
                 // non-boolean
-                BooleanOperator operator = BooleanOperator.parse(moveToStep.getOperation());
-                AnswerFilterInstance targetFilter = moveToStep.getFilter();
                 Step rightStep = moveToStep.getChildStep();
-                moveToStep = user.createBooleanStep(step, rightStep, operator,
-                        false, targetFilter);
+                moveToStep = user.createBooleanStep(step, rightStep, moveToStep.getOperation(),
+                        false, moveToStep.getFilterName());
                 step = moveToStep;
             } else if (i == moveFromIx) {
                 // do nothing; this step was moved, so we just ignore it.
@@ -292,11 +288,9 @@ public class Strategy {
                 } else {
                     // again, assuming boolean, will need to add case for
                     // non-boolean
-                    BooleanOperator operator = BooleanOperator.parse(newStep.getOperation());
-                    AnswerFilterInstance targetFilter = newStep.getFilter();
                     Step rightStep = newStep.getChildStep();
-                    newStep = user.createBooleanStep(step, rightStep, operator,
-                            false, targetFilter);
+                    newStep = user.createBooleanStep(step, rightStep, newStep.getOperation(),
+                            false, newStep.getFilterName());
                     step = moveToStep;
                 }
             }
@@ -321,11 +315,9 @@ public class Strategy {
                         newStep.getQuestion().getRecordClass(),
                         newStep.getDisplayId());
             } else {
-                BooleanOperator operator = BooleanOperator.parse(targetStep.getOperation());
-                AnswerFilterInstance targetFilter = targetStep.getFilter();
                 Step rightStep = targetStep.getChildStep();
-                newStep = user.createBooleanStep(newStep, rightStep, operator,
-                        false, targetFilter);
+                newStep = user.createBooleanStep(newStep, rightStep, targetStep.getOperation(),
+                        false, targetStep.getFilterName());
             }
             stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(
                     newStep.getDisplayId()));
@@ -350,11 +342,9 @@ public class Strategy {
                             targetStep.getQuestion().getRecordClass(),
                             targetStep.getDisplayId());
                 } else {
-                    BooleanOperator operator = BooleanOperator.parse(newStep.getOperation());
-                    AnswerFilterInstance targetFilter = newStep.getFilter();
                     Step rightStep = newStep.getChildStep();
                     newStep = user.createBooleanStep(targetStep, rightStep,
-                            operator, false, targetFilter);
+                            newStep.getOperation(), false, newStep.getFilterName());
                 }
                 newStep.setParentStep(parent);
                 newStep.setCollapsible(targetStep.isCollapsible());
@@ -375,12 +365,10 @@ public class Strategy {
             // go to parent, update subsequent steps
             targetStep = newStep.getParentStep();
 
-            BooleanOperator operator = BooleanOperator.parse(targetStep.getOperation());
-            AnswerFilterInstance targetFilter = targetStep.getFilter();
             Step leftStep = targetStep.getPreviousStep();
             // update parent, then update subsequent
-            newStep = user.createBooleanStep(leftStep, newStep, operator,
-                    false, targetFilter);
+            newStep = user.createBooleanStep(leftStep, newStep, targetStep.getOperation(),
+                    false, targetStep.getFilterName());
             stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(
                     newStep.getDisplayId()));
             while (targetStep.getNextStep() != null) {
@@ -392,11 +380,9 @@ public class Strategy {
                             newStep.getQuestion().getRecordClass(),
                             newStep.getDisplayId());
                 } else {
-                    operator = BooleanOperator.parse(targetStep.getOperation());
-                    targetFilter = targetStep.getFilter();
                     Step rightStep = targetStep.getChildStep();
                     newStep = user.createBooleanStep(newStep, rightStep,
-                            operator, false, targetFilter);
+                            targetStep.getOperation(), false, targetStep.getFilterName());
                 }
                 stepIdsMap.put(new Integer(targetStep.getDisplayId()),
                         new Integer(newStep.getDisplayId()));
@@ -435,7 +421,8 @@ public class Strategy {
         AnswerFilterInstance filter = step.getFilter();
         String filterName = (filter == null) ? null : filter.getName();
 
-        Step newStep = user.createStep(wdkQuestion, paramValues, filterName, false);
+        Step newStep = user.createStep(wdkQuestion, paramValues, filterName,
+                step.isDeleted(), false);
         newStep.setCustomName(step.getBaseCustomName());
         newStep.update(false);
         return newStep;
@@ -469,6 +456,7 @@ public class Strategy {
         jsStrategy.put("savedName", this.savedName);
         jsStrategy.put("saved", this.isSaved);
         jsStrategy.put("deleted", this.isDeleted);
+        jsStrategy.put("valid", this.isValid());
         jsStrategy.put("latestStep", latestStep.getJSONContent(this.displayId));
 
         return jsStrategy;
@@ -478,15 +466,7 @@ public class Strategy {
      * @return the valid
      */
     public boolean isValid() {
-        return valid;
-    }
-
-    /**
-     * @param valid
-     *            the valid to set
-     */
-    public void setValid(boolean valid) {
-        this.valid = valid;
+        return latestStep.isValid();
     }
 
     /**

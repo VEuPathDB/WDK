@@ -3,12 +3,16 @@
  */
 package org.gusdb.wdk.model.dbms;
 
+import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * @author Jerric Gao
@@ -34,14 +38,14 @@ public class PostgreSQL extends DBPlatform {
      */
     @Override
     public void createSequence(String sequence, int start, int increment)
-            throws SQLException {
+            throws SQLException, WdkUserException, WdkModelException {
         StringBuffer sql = new StringBuffer("CREATE SEQUENCE ");
         sql.append(sequence);
         sql.append(" START ");
         sql.append(start);
         sql.append(" INCREMENT ");
         sql.append(increment);
-        SqlUtils.executeUpdate(dataSource, sql.toString());
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString());
     }
 
     /*
@@ -92,13 +96,14 @@ public class PostgreSQL extends DBPlatform {
      * java.lang.String)
      */
     public int getNextId(String schema, String table) throws SQLException,
-            WdkModelException {
+            WdkModelException, WdkUserException {
         schema = normalizeSchema(schema);
 
         StringBuffer sql = new StringBuffer("SELECT nextval('");
         sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
         sql.append("')");
-        long id = (Long) SqlUtils.executeScalar(dataSource, sql.toString());
+        long id = (Long) SqlUtils.executeScalar(wdkModel, dataSource,
+                sql.toString());
         return (int) id;
     }
 
@@ -169,7 +174,7 @@ public class PostgreSQL extends DBPlatform {
      */
     @Override
     public boolean checkTableExists(String schema, String tableName)
-            throws SQLException, WdkModelException {
+            throws SQLException, WdkModelException, WdkUserException {
         if (schema == null || schema.length() == 0) schema = defaultSchema;
         if (schema.endsWith("."))
             schema = schema.substring(0, schema.length() - 1);
@@ -178,7 +183,8 @@ public class PostgreSQL extends DBPlatform {
         StringBuffer sql = new StringBuffer("SELECT count(*) FROM pg_tables ");
         sql.append("WHERE tablename = '").append(tableName).append("'");
         sql.append(" AND schemaname = '").append(schema).append("'");
-        long count = (Long) SqlUtils.executeScalar(dataSource, sql.toString());
+        long count = (Long) SqlUtils.executeScalar(wdkModel, dataSource,
+                sql.toString());
         return (count > 0);
     }
 
@@ -220,11 +226,51 @@ public class PostgreSQL extends DBPlatform {
      */
     @Override
     public void dropTable(String schema, String table, boolean purge)
-            throws SQLException {
+            throws SQLException, WdkUserException, WdkModelException {
         String sql = "DROP TABLE ";
         if (schema != null) sql = schema;
         sql += table;
         // ignore purge option
-        SqlUtils.executeUpdate(dataSource, sql);
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.gusdb.wdk.model.dbms.DBPlatform#disableStatistics(java.lang.String,
+     * java.lang.String)
+     */
+    @Override
+    public void disableStatistics(Connection connection, String schema,
+            String tableName) {
+    // do nothing in PSQL.
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.dbms.DBPlatform#getTables(java.lang.String,
+     * java.lang.String)
+     */
+    @Override
+    public String[] queryTableNames(String schema, String pattern)
+            throws SQLException, WdkUserException, WdkModelException {
+        String sql = "SELECT tablename FROM pg_tables WHERE schemaname = '"
+                + schema + "' AND tablename LIKE '" + pattern + "'";
+        ResultSet resultSet = null;
+        try {
+            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+            List<String> tables = new ArrayList<String>();
+            while (resultSet.next()) {
+                tables.add(resultSet.getString("tablename"));
+            }
+            String[] array = new String[tables.size()];
+            tables.toArray(array);
+            return array;
+        } finally {
+            SqlUtils.closeResultSet(resultSet);
+        }
+    }
+
 }

@@ -480,12 +480,32 @@ public class StepBean {
     public UserBean getUser() {
         return user;
     }
-    
+
     public String getType() {
         return step.getType();
     }
-    
+
     public String getDisplayType() {
         return step.getDisplayType();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Step#getValidationMessage()
+     */
+    public String getValidationMessage() {
+        return step.getValidationMessage();
+    }
+
+    /**
+     * @return
+     * @throws SQLException
+     * @throws WdkModelException
+     * @throws WdkUserException
+     * @see org.gusdb.wdk.model.user.Step#validate()
+     */
+    public boolean validate() throws SQLException, WdkUserException,
+            WdkModelException {
+        return step.validate();
     }
 }
