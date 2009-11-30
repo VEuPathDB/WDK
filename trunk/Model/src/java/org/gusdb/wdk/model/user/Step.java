@@ -632,7 +632,7 @@ public class Step {
         jsStep.put("collapsed", this.isCollapsible);
         jsStep.put("collapsedName", this.collapsedName);
         jsStep.put("deleted", isDeleted);
-        jsStep.put("deleted", this.estimateSize);
+        jsStep.put("size", this.estimateSize);
         if (this.previousStep != null) {
             jsStep.put("previous", previousStep.getJSONContent(strategyId));
         }
@@ -677,6 +677,8 @@ public class Step {
             int endIndex = user.getItemsPerPage();
             answerValue = question.makeAnswerValue(user, paramValues, 1,
                     endIndex, sortingMap, getFilter());
+	    this.estimateSize = answerValue.getResultSize();
+	    update(false);
         }
         return answerValue;
     }
