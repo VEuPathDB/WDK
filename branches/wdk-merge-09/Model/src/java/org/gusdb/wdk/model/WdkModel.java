@@ -26,6 +26,7 @@ import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.user.AnswerFactory;
+import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.StepFactory;
@@ -79,7 +80,7 @@ public class WdkModel {
         logger.debug("Model ready to use.");
         return wdkModel;
     }
-
+    
     private ModelConfig modelConfig;
     private String projectId;
 
@@ -87,31 +88,32 @@ public class WdkModel {
     private DBPlatform userPlatform;
 
     private List<QuerySet> querySetList = new ArrayList<QuerySet>();
-    private Map<String, ModelSetI> querySets = new LinkedHashMap<String, ModelSetI>();
+    private Map<String, QuerySet> querySets = new LinkedHashMap<String, QuerySet>();
 
     private List<ParamSet> paramSetList = new ArrayList<ParamSet>();
-    private Map<String, ModelSetI> paramSets = new LinkedHashMap<String, ModelSetI>();
+    private Map<String, ParamSet> paramSets = new LinkedHashMap<String, ParamSet>();
 
     private List<RecordClassSet> recordClassSetList = new ArrayList<RecordClassSet>();
-    private Map<String, ModelSetI> recordClassSets = new LinkedHashMap<String, ModelSetI>();
+    private Map<String, RecordClassSet> recordClassSets = new LinkedHashMap<String, RecordClassSet>();
 
     private List<QuestionSet> questionSetList = new ArrayList<QuestionSet>();
-    private Map<String, ModelSetI> questionSets = new LinkedHashMap<String, ModelSetI>();
+    private Map<String, QuestionSet> questionSets = new LinkedHashMap<String, QuestionSet>();
 
     private Map<String, ModelSetI> allModelSets = new LinkedHashMap<String, ModelSetI>();
 
     private List<GroupSet> groupSetList = new ArrayList<GroupSet>();
-    private Map<String, ModelSetI> groupSets = new LinkedHashMap<String, ModelSetI>();
+    private Map<String, GroupSet> groupSets = new LinkedHashMap<String, GroupSet>();
 
     private List<XmlQuestionSet> xmlQuestionSetList = new ArrayList<XmlQuestionSet>();
-    private Map<String, ModelSetI> xmlQuestionSets = new LinkedHashMap<String, ModelSetI>();
+    private Map<String, XmlQuestionSet> xmlQuestionSets = new LinkedHashMap<String, XmlQuestionSet>();
 
     private List<XmlRecordClassSet> xmlRecordClassSetList = new ArrayList<XmlRecordClassSet>();
-    private Map<String, ModelSetI> xmlRecordClassSets = new LinkedHashMap<String, ModelSetI>();
+    private Map<String, XmlRecordClassSet> xmlRecordClassSets = new LinkedHashMap<String, XmlRecordClassSet>();
 
     private List<WdkModelName> wdkModelNames = new ArrayList<WdkModelName>();
     private String displayName;
     private String version; // use default version
+    private String releaseDate;
 
     private List<WdkModelText> introductions = new ArrayList<WdkModelText>();
     private String introduction;
@@ -139,6 +141,7 @@ public class WdkModel {
     private StepFactory stepFactory;
     private DatasetFactory datasetFactory;
     private QueryFactory queryFactory;
+    private BasketFactory basketFactory;
 
     private List<PropertyList> defaultPropertyLists = new ArrayList<PropertyList>();
     private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<String, String[]>();
@@ -150,6 +153,9 @@ public class WdkModel {
     private String secretKey;
 
     private User systemUser;
+
+    private List<QueryMonitor> queryMonitorList = new ArrayList<QueryMonitor>();
+    private QueryMonitor queryMonitor;
 
     /**
      * @param initRecordClassList
@@ -167,8 +173,8 @@ public class WdkModel {
     public Question[] getQuestions(RecordClass recordClass) {
         String rcName = recordClass.getFullName();
         List<Question> questions = new ArrayList<Question>();
-        for (ModelSetI questionSet : questionSets.values()) {
-            for (Question question : ((QuestionSet) questionSet).getQuestions()) {
+        for (QuestionSet questionSet : questionSets.values()) {
+            for (Question question : questionSet.getQuestions()) {
                 if (question.getRecordClass().getFullName().equals(rcName))
                     questions.add(question);
             }
@@ -398,7 +404,7 @@ public class WdkModel {
     }
 
     // ModelSetI's
-    private void addSet(ModelSetI set, Map<String, ? super ModelSetI> setMap)
+    private <T extends ModelSetI> void addSet(T set, Map<String, T> setMap)
             throws WdkModelException {
         String setName = set.getName();
         if (allModelSets.containsKey(setName)) {
@@ -463,22 +469,41 @@ public class WdkModel {
         datasetFactory = new DatasetFactory(this);
         queryFactory = new QueryFactory(this);
         answerFactory = new AnswerFactory(this);
+        basketFactory = new BasketFactory(this);
 
         // set the exception header
         WdkModelException.modelName = getProjectId();
         WdkUserException.modelName = getProjectId();
 
+        // exclude resources that are not used by this project
+        excludeResources();
+
         // internal sets will be created if author hasn't define them
         createInternalSets();
 
-        // exclude resources that are not used by this project
-        excludeResources();
+        // it has to be called after internal sets are created, but before
+        // recordClass references are resolved.
+        addBasketReferences();
 
         // resolve references in the model objects
         resolveReferences();
 
         // create boolean questions
         createBooleanQuestions();
+    }
+
+    private void addBasketReferences() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        for (RecordClassSet rcSet : recordClassSets.values()) {
+            for (RecordClass recordClass : rcSet.getRecordClasses()) {
+                if (recordClass.hasBasket()) {
+                    basketFactory.createAttributeQueryRef(recordClass);
+                    basketFactory.createBasketQuestion(recordClass);
+                    basketFactory.createBasketAttributeQuery(recordClass);
+                }
+            }
+        }
     }
 
     public ModelConfig getModelConfig() {
@@ -552,26 +577,26 @@ public class WdkModel {
 
         // instead, we first resolve querySets, then recordSets, and then
         // paramSets, and last on questionSets
-        for (ModelSetI groupSet : groupSets.values()) {
+        for (GroupSet groupSet : groupSets.values()) {
             groupSet.resolveReferences(this);
         }
-        for (ModelSetI querySet : querySets.values()) {
+        for (QuerySet querySet : querySets.values()) {
             querySet.resolveReferences(this);
         }
-        for (ModelSetI paramSet : paramSets.values()) {
+        for (ParamSet paramSet : paramSets.values()) {
             paramSet.resolveReferences(this);
         }
-        for (ModelSetI recordClassSet : recordClassSets.values()) {
+        for (RecordClassSet recordClassSet : recordClassSets.values()) {
             recordClassSet.resolveReferences(this);
         }
-        for (ModelSetI questionSet : questionSets.values()) {
+        for (QuestionSet questionSet : questionSets.values()) {
             questionSet.resolveReferences(this);
         }
         // resolve references for xml record classes and questions
-        for (ModelSetI rcSet : xmlRecordClassSets.values()) {
+        for (XmlRecordClassSet rcSet : xmlRecordClassSets.values()) {
             rcSet.resolveReferences(this);
         }
-        for (ModelSetI qSet : xmlQuestionSets.values()) {
+        for (XmlQuestionSet qSet : xmlQuestionSets.values()) {
             qSet.resolveReferences(this);
         }
         for (Category category : this.categoryMap.values()) {
@@ -579,6 +604,9 @@ public class WdkModel {
             if (category.getParent() == null)
                 rootCategoryMap.put(category.getName(), category);
         }
+
+        // resolve reference for query monitor
+        queryMonitor.resolveReferences(this);
     }
 
     private void excludeResources() throws WdkModelException {
@@ -592,6 +620,7 @@ public class WdkModel {
                 } else {
                     this.displayName = wdkModelName.getDisplayName();
                     this.version = wdkModelName.getVersion();
+                    this.releaseDate = wdkModelName.getReleaseDate();
                     hasModelName = true;
                 }
             }
@@ -731,13 +760,36 @@ public class WdkModel {
             }
         }
         macroList = null;
+
+        // exclude query monitors
+        for (QueryMonitor monitor : queryMonitorList) {
+            if (!monitor.include(projectId)) continue;
+            if (this.queryMonitor != null)
+                throw new WdkModelException("the query monitor is included "
+                        + "more than once for project " + projectId);
+            monitor.excludeResources(projectId);
+            this.queryMonitor = monitor;
+        }
+        queryMonitorList = null;
+        // create the query monitor in case it is not specified, and provide a
+        // default monitor to the system.
+        if (queryMonitor == null) {
+            queryMonitor = new QueryMonitor();
+            queryMonitor.excludeResources(projectId);
+        }
+
     }
 
+    /**
+     * this method has be to called after the excluding, but before resolving.
+     * 
+     * @throws WdkModelException
+     */
     private void createInternalSets() throws WdkModelException {
         // create a param set to hold all internal params, that is, the params
         // created at run-time.
         boolean hasSet = false;
-        for (ParamSet paramSet : paramSetList) {
+        for (ParamSet paramSet : paramSets.values()) {
             if (paramSet.getName().equals(Utilities.INTERNAL_PARAM_SET)) {
                 hasSet = true;
                 break;
@@ -747,12 +799,13 @@ public class WdkModel {
             ParamSet internalParamSet = new ParamSet();
             internalParamSet.setName(Utilities.INTERNAL_PARAM_SET);
             addSet(internalParamSet, paramSets);
+            internalParamSet.excludeResources(projectId);
         }
 
         // create a query set to hold all internal queries, that is, the queries
         // created at run-time.
         hasSet = false;
-        for (QuerySet querySet : querySetList) {
+        for (QuerySet querySet : querySets.values()) {
             if (querySet.getName().equals(Utilities.INTERNAL_QUERY_SET)) {
                 hasSet = true;
                 break;
@@ -763,11 +816,13 @@ public class WdkModel {
             internalQuerySet.setName(Utilities.INTERNAL_QUERY_SET);
             internalQuerySet.setDoNotTest(true);
             addQuerySet(internalQuerySet);
+            internalQuerySet.excludeResources(projectId);
         }
 
         // create a query set to hold all internal questions, that is, the
         // questions created at run-time.
-        for (QuestionSet questionSet : questionSetList) {
+        hasSet = false;
+        for (QuestionSet questionSet : questionSets.values()) {
             if (questionSet.getName().equals(Utilities.INTERNAL_QUESTION_SET)) {
                 hasSet = true;
                 break;
@@ -826,32 +881,43 @@ public class WdkModel {
         return buf.toString();
     }
 
-    public void addQuestionSet(QuestionSet questionSet) {
-        questionSetList.add(questionSet);
+    public void addQuestionSet(QuestionSet questionSet)
+            throws WdkModelException {
+        if (questionSetList != null) questionSetList.add(questionSet);
+        else addSet(questionSet, questionSets);
     }
 
-    public void addRecordClassSet(RecordClassSet recordClassSet) {
-        recordClassSetList.add(recordClassSet);
+    public void addRecordClassSet(RecordClassSet recordClassSet)
+            throws WdkModelException {
+        if (recordClassSetList != null) recordClassSetList.add(recordClassSet);
+        else addSet(recordClassSet, recordClassSets);
     }
 
-    public void addQuerySet(QuerySet querySet) {
-        querySetList.add(querySet);
+    public void addQuerySet(QuerySet querySet) throws WdkModelException {
+        if (querySetList != null) querySetList.add(querySet);
+        else addSet(querySet, querySets);
     }
 
-    public void addParamSet(ParamSet paramSet) {
-        paramSetList.add(paramSet);
+    public void addParamSet(ParamSet paramSet) throws WdkModelException {
+        if (paramSetList != null) paramSetList.add(paramSet);
+        else addSet(paramSet, paramSets);
     }
 
-    public void addGroupSet(GroupSet groupSet) {
-        groupSetList.add(groupSet);
+    public void addGroupSet(GroupSet groupSet) throws WdkModelException {
+        if (groupSetList != null) groupSetList.add(groupSet);
+        else addSet(groupSet, groupSets);
     }
 
-    public void addXmlQuestionSet(XmlQuestionSet questionSet) {
-        xmlQuestionSetList.add(questionSet);
+    public void addXmlQuestionSet(XmlQuestionSet questionSet)
+            throws WdkModelException {
+        if (xmlQuestionSetList != null) xmlQuestionSetList.add(questionSet);
+        else addSet(questionSet, xmlQuestionSets);
     }
 
-    public void addXmlRecordClassSet(XmlRecordClassSet recordClassSet) {
-        xmlRecordClassSetList.add(recordClassSet);
+    public void addXmlRecordClassSet(XmlRecordClassSet recordClassSet)
+            throws WdkModelException {
+        if (xmlRecordClassSetList != null) xmlRecordClassSetList.add(recordClassSet);
+        else addSet(recordClassSet, xmlRecordClassSets);
     }
 
     // =========================================================================
@@ -1050,5 +1116,32 @@ public class WdkModel {
             }
         }
         return list;
+    }
+
+    public BasketFactory getBasketFactory() {
+        return basketFactory;
+    }
+
+    public String getReleaseDate() {
+        return releaseDate;
+    }
+
+    public void addQueryMonitor(QueryMonitor queryMonitor) {
+        this.queryMonitorList.add(queryMonitor);
+    }
+
+    /**
+     * @return the queryMonitor
+     */
+    public QueryMonitor getQueryMonitor() {
+        return queryMonitor;
+    }
+
+    /**
+     * @param queryMonitor
+     *            the queryMonitor to set
+     */
+    public void setQueryMonitor(QueryMonitor queryMonitor) {
+        this.queryMonitor = queryMonitor;
     }
 }

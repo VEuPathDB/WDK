@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.Category;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
@@ -18,10 +17,8 @@ import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
-import org.json.JSONException;
 
 /**
  * A wrapper on a {@link WdkModel} that provides simplified access for
@@ -74,7 +71,7 @@ public class WdkModelBean {
 
     public Map<String, CategoryBean> getCategoryMap() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        for(Category category : model.getCategoryMap().values()) {
+        for (Category category : model.getCategoryMap().values()) {
             CategoryBean bean = new CategoryBean(category);
             beans.put(category.getName(), bean);
         }
@@ -83,13 +80,13 @@ public class WdkModelBean {
 
     public Map<String, CategoryBean> getRootCategoryMap() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        for(Category category : model.getRootCategoryMap().values()) {
+        for (Category category : model.getRootCategoryMap().values()) {
             CategoryBean bean = new CategoryBean(category);
             beans.put(category.getName(), bean);
         }
         return beans;
     }
-    
+
     /**
      * @return Map of questionSetName --> {@link QuestionSetBean}
      */
@@ -246,4 +243,18 @@ public class WdkModelBean {
         }
         return beans;
     }
+
+    public UserBean getSystemUser() throws NoSuchAlgorithmException,
+            WdkUserException, WdkModelException, SQLException {
+        return new UserBean(model.getSystemUser());
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.WdkModel#getReleaseDate()
+     */
+    public String getReleaseDate() {
+        return model.getReleaseDate();
+    }
+
 }

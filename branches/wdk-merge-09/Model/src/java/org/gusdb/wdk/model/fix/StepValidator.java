@@ -11,6 +11,8 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.ModelConfigUserDB;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wsf.util.BaseCLI;
 
@@ -43,7 +45,7 @@ public class StepValidator extends BaseCLI {
             ex.printStackTrace();
             throw ex;
         } finally {
-            logger.info("model cacher done.");
+            logger.info("step validator done.");
             System.exit(0);
         }
     }
@@ -60,9 +62,9 @@ public class StepValidator extends BaseCLI {
      */
     @Override
     protected void declareOptions() {
-        addSingleValueOption(ARG_PROJECT_ID, true, null,
-                "Project Id, which should match the directory name"
-                        + " under $GUS_HOME, where model-config.xml is stored.");
+        addSingleValueOption(ARG_PROJECT_ID, true, null, "A comma-separated"
+                + " list of ProjectIds, which should match the directory name"
+                + " under $GUS_HOME, where model-config.xml is stored.");
     }
 
     /*
@@ -74,14 +76,17 @@ public class StepValidator extends BaseCLI {
     protected void execute() throws Exception {
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
-        String projectId = (String) getOptionValue(ARG_PROJECT_ID);
-
-        logger.info("Expanding model for project " + projectId);
-        WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-        validate(wdkModel);
+        String projectIds = (String) getOptionValue(ARG_PROJECT_ID);
+        String[] projects = projectIds.split(",");
+        for (String projectId : projects) {
+            logger.info("Expanding model for project " + projectId);
+            WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
+            validate(wdkModel);
+        }
     }
 
-    private void validate(WdkModel wdkModel) throws SQLException {
+    private void validate(WdkModel wdkModel) throws SQLException,
+            WdkUserException, WdkModelException {
         resetFlags(wdkModel);
         detectQuestions(wdkModel);
         detectParams(wdkModel);
@@ -90,27 +95,29 @@ public class StepValidator extends BaseCLI {
         flagSteps(wdkModel);
     }
 
-    private void resetFlags(WdkModel wdkModel) throws SQLException {
+    private void resetFlags(WdkModel wdkModel) throws SQLException,
+            WdkUserException, WdkModelException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String userSchema = userDB.getUserSchema();
         String wdkSchema = userDB.getWdkEngineSchema();
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
-        SqlUtils.executeUpdate(dataSource, "UPDATE " + wdkSchema
+        SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE " + wdkSchema
                 + "answers SET is_valid = NULL");
-        SqlUtils.executeUpdate(dataSource, "UPDATE " + userSchema
+        SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE " + userSchema
                 + "steps SET is_valid = NULL");
-        SqlUtils.executeUpdate(dataSource, "UPDATE " + userSchema
+        SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE " + userSchema
                 + "strategies SET is_valid = NULL");
     }
 
-    private void detectQuestions(WdkModel wdkModel) throws SQLException {
+    private void detectQuestions(WdkModel wdkModel) throws SQLException,
+            WdkUserException, WdkModelException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         DataSource source = wdkModel.getUserPlatform().getDataSource();
 
         // mark invalid answers
-        SqlUtils.executeUpdate(source, "UPDATE " + answer
+        SqlUtils.executeUpdate(wdkModel, source, "UPDATE " + answer
                 + " SET is_valid = 0 WHERE answer_id IN "
                 + "  (SELECT a.answer_id FROM " + answer + " a, "
                 + "    (SELECT project_id, question_name FROM " + answer
@@ -121,13 +128,14 @@ public class StepValidator extends BaseCLI {
                 + "     AND a.is_valid IS NULL)");
     }
 
-    private void detectParams(WdkModel wdkModel) throws SQLException {
+    private void detectParams(WdkModel wdkModel) throws SQLException,
+            WdkUserException, WdkModelException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
         DataSource source = wdkModel.getUserPlatform().getDataSource();
 
-        SqlUtils.executeUpdate(source, "UPDATE " + answer
+        SqlUtils.executeUpdate(wdkModel, source, "UPDATE " + answer
                 + " SET is_valid = 0 WHERE answer_id IN "
                 + "   (SELECT a.answer_id                 "
                 + "    FROM step_params sp, " + answer + " a, " + step + " s, "
@@ -148,13 +156,14 @@ public class StepValidator extends BaseCLI {
                 + "     AND a.is_valid IS NULL)");
     }
 
-    private void detectEnumParams(WdkModel wdkModel) throws SQLException {
+    private void detectEnumParams(WdkModel wdkModel) throws SQLException,
+            WdkUserException, WdkModelException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
         DataSource source = wdkModel.getUserPlatform().getDataSource();
 
-        SqlUtils.executeUpdate(source, "UPDATE " + answer
+        SqlUtils.executeUpdate(wdkModel, source, "UPDATE " + answer
                 + " SET is_valid = 0 WHERE answer_id IN "
                 + "   (SELECT a.answer_id                 "
                 + "    FROM step_params sp, " + answer + " a, " + step + " s, "
@@ -186,14 +195,16 @@ public class StepValidator extends BaseCLI {
                 + "     AND a.is_valid IS NULL)");
     }
 
-    private void flagSteps(WdkModel wdkModel) throws SQLException {
+    private void flagSteps(WdkModel wdkModel) throws SQLException,
+            WdkUserException, WdkModelException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
         DataSource source = wdkModel.getUserPlatform().getDataSource();
 
         // mark invalid steps
-        SqlUtils.executeUpdate(source, "UPDATE " + step + " SET is_valid = 0 "
+        SqlUtils.executeUpdate(wdkModel, source, "UPDATE " + step
+                + " SET is_valid = 0 "
                 + " WHERE (is_valid IS NULL OR is_valid = 1) "
                 + "   AND answer_id IN (SELECT answer_id FROM " + answer
                 + "                    WHERE is_valid = 0)");

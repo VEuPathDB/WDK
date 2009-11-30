@@ -46,6 +46,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
     private static final String KEY_SIZE_CACHE_MAP = "size_cache";
     private static final int MAX_SIZE_CACHE_MAP = 100;
 
+    private static final String PARAM_HIDDEN_STEP = "hidden";
+
     private static Logger logger = Logger.getLogger(ShowSummaryAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
@@ -58,7 +60,21 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         String roFlag = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
         boolean resultOnly = (roFlag != null && Boolean.valueOf(roFlag));
+        StrategyBean strategy = null;
         try {
+            String state = request.getParameter(CConstants.WDK_STATE_KEY);
+
+            // load existing strategy, if needed.
+            String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+            String strategyKey = strStratId;
+            if (strStratId != null && strStratId.length() != 0) {
+                if (strStratId.indexOf("_") > 0) {
+                    // strBranchId = strStratId.split("_")[1];
+                    strStratId = strStratId.split("_")[0];
+                }
+                strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+            }
+
             QuestionForm qForm = (QuestionForm) form;
             // TRICKY: this is for action forward from
             // ProcessQuestionSetsFlatAction
@@ -72,7 +88,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             // Get userAnswer id & strategy id from request (if they exist)
             String strStepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
-            String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
             String filterName = request.getParameter("filter");
             // String strBranchId = null;
 
@@ -101,8 +116,13 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
                 params = qForm.getMyProps();
 
+                // get the hidden flag
+                String strHidden = request.getParameter(PARAM_HIDDEN_STEP);
+                boolean hidden = "true".equalsIgnoreCase(strHidden);
+
                 // make the answer
-                step = summaryPaging(request, wdkQuestion, params, filterName);
+                step = summaryPaging(request, wdkQuestion, params, filterName,
+                        hidden);
             } else {
                 logger.debug("load existing step");
 
@@ -161,16 +181,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
             // if (userAnswer != null && userAnswer.getEstimateSize() == 0)
             // wdkUser.deleteStep(userAnswer.getStepId());
 
-            StrategyBean strategy = null;
-            String strategyKey = strStratId;
-            if (strStratId != null && strStratId.length() != 0) {
-                if (strStratId.indexOf("_") > 0) {
-                    // strBranchId = strStratId.split("_")[1];
-                    strStratId = strStratId.split("_")[0];
-                }
-                strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
-            }
-
             String queryString;
             if (strategy == null) {
                 strategy = wdkUser.createStrategy(step, false);
@@ -191,13 +201,24 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             logger.debug("preparing forward");
 
-            // make ActionForward
-
             // forward to the results page, if requested
             if (resultOnly) {
                 // update the step size
+                logger.info("updating result size: " + step.getResultSize());
                 step.setEstimateSize(step.getResultSize());
                 step.update(true);
+		
+		// reload the strategy to get the changes
+		strategy = wdkUser.getStrategy(strategy.getStrategyId());
+
+		// verify the checksum
+		String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
+		if (!strategy.getChecksum().equals(checksum)) {
+		    logger.info("strategy checksum: " + strategy.getChecksum()
+				 + ", but the input checksum: " + checksum);
+		    ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response, state);
+		    return null;
+		}
 
                 int viewPagerOffset = 0;
                 if (request.getParameter("pager.offset") != null) {
@@ -219,8 +240,22 @@ public class ShowSummaryAction extends ShowQuestionAction {
             return forward;
         } catch (Exception ex) {
             ex.printStackTrace();
-            // ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
-            // return null;
+
+            // validate the existing strategy in showSummary.
+            if (strategy != null) {
+                logger.info("validating all steps");
+                if (!strategy.getLatestStep().validate()) {
+                    // if the strategy is invalid, go to showStrategy instead of
+                    // showing the result. the invalidation message will be
+                    // embedded in each step.
+                    ActionForward forward = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
+                    String path = forward.getPath() + "?strategy="
+                            + strategy.getStrategyId();
+                    request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
+                    return new ActionForward(path, false);
+                }
+            }
+
             return showError(wdkModel, wdkUser, mapping, request, response, ex,
                     resultOnly);
         }
@@ -287,13 +322,14 @@ public class ShowSummaryAction extends ShowQuestionAction {
         QuestionBean question = step.getQuestion();
         Map<String, String> paramValues = step.getParams();
         String filterName = step.getFilterName();
-        return summaryPaging(request, question, paramValues, filterName);
+        return summaryPaging(request, question, paramValues, filterName, false);
     }
 
     public static StepBean summaryPaging(HttpServletRequest request,
-            QuestionBean question, Map<String, String> params, String filterName)
-            throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            QuestionBean question, Map<String, String> params,
+            String filterName, boolean deleted) throws WdkModelException,
+            WdkUserException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         logger.debug("start summary paging...");
 
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
@@ -304,7 +340,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         logger.info("Make answer with start=" + start + ", end=" + end);
 
-        StepBean step = wdkUser.createStep(question, params, filterName, true);
+        StepBean step = wdkUser.createStep(question, params, filterName,
+                deleted, true);
         AnswerValueBean answerValue = step.getAnswerValue();
         int totalSize = answerValue.getResultSize();
         if (end > totalSize) end = totalSize;
@@ -510,7 +547,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
     }
 
     private static int getPageSize(HttpServletRequest request,
-            QuestionBean question, UserBean user) throws WdkUserException {
+            QuestionBean question, UserBean user) throws WdkUserException,
+            WdkModelException {
         int pageSize = user.getItemsPerPage();
         // check if the question is supposed to make answers containing all
         // records in one page

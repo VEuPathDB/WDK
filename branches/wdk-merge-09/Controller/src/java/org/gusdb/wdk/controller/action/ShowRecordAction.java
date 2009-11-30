@@ -38,8 +38,8 @@ public class ShowRecordAction extends Action {
         long start = System.currentTimeMillis();
 
         ServletContext svltCtx = getServlet().getServletContext();
-        WdkModelBean wdkModel = (WdkModelBean) svltCtx
-                .getAttribute(CConstants.WDK_MODEL_KEY);
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
+        UserBean user = ActionUtility.getUser(servlet, request);
         String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator
                 + CConstants.WDK_PAGES_DIR;
 
@@ -78,7 +78,6 @@ public class ShowRecordAction extends Action {
             urlParams.append(URLEncoder.encode(value, "UTF-8"));
         }
 
-        UserBean user = ActionUtility.getUser(servlet, request);
         RecordBean wdkRecord = new RecordBean(user, wdkRecordClass, pkValues);
 
         request.setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);

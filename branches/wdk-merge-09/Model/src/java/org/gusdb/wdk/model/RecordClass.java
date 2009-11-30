@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
@@ -39,7 +40,7 @@ public class RecordClass extends WdkModelBase implements
             if (!originalParams.containsKey(column)) newParams.add(column);
         }
 
-        // create the missing params for the query
+        // create the missing primary key params for the query
         ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
         for (String columnName : newParams) {
             StringParam param;
@@ -54,6 +55,7 @@ public class RecordClass extends WdkModelBase implements
                 param.setQuote(quote);
                 // param.setAllowEmpty(true);
 
+                param.excludeResources(wdkModel.getProjectId());
                 param.resolveReferences(wdkModel);
                 param.setResources(wdkModel);
                 paramSet.addParam(param);
@@ -68,8 +70,10 @@ public class RecordClass extends WdkModelBase implements
             sql.append(") f WHERE ");
             boolean firstColumn = true;
             for (String columnName : newParams) {
-                if (firstColumn) firstColumn = false;
-                else sql.append(" AND ");
+                if (firstColumn)
+                    firstColumn = false;
+                else
+                    sql.append(" AND ");
                 sql.append("f.").append(columnName);
                 sql.append(" = $$").append(columnName).append("$$");
             }
@@ -274,7 +278,8 @@ public class RecordClass extends WdkModelBase implements
         for (TableField field : tableFieldsMap.values()) {
             if (scope == FieldScope.ALL
                     || (scope == FieldScope.NON_INTERNAL && !field.isInternal())
-                    || (scope == FieldScope.REPORT_MAKER && field.isInReportMaker()))
+                    || (scope == FieldScope.REPORT_MAKER && field
+                            .isInReportMaker()))
                 fields.put(field.getName(), field);
         }
         return fields;
@@ -299,14 +304,16 @@ public class RecordClass extends WdkModelBase implements
         for (AttributeField field : attributeFieldsMap.values()) {
             if (scope == FieldScope.ALL
                     || (scope == FieldScope.NON_INTERNAL && !field.isInternal())
-                    || (scope == FieldScope.REPORT_MAKER && field.isInReportMaker()))
+                    || (scope == FieldScope.REPORT_MAKER && field
+                            .isInReportMaker()))
                 fields.put(field.getName(), field);
         }
         return fields;
     }
 
     public AttributeField[] getAttributeFields() {
-        AttributeField[] attributeFields = new AttributeField[attributeFieldsMap.size()];
+        AttributeField[] attributeFields = new AttributeField[attributeFieldsMap
+                .size()];
         attributeFieldsMap.values().toArray(attributeFields);
         return attributeFields;
     }
@@ -351,7 +358,8 @@ public class RecordClass extends WdkModelBase implements
 
     public String toString() {
         String newline = System.getProperty("line.separator");
-        StringBuffer buf = new StringBuffer("Record: name='" + name + "'").append(newline);
+        StringBuffer buf = new StringBuffer("Record: name='" + name + "'")
+                .append(newline);
 
         buf.append("--- Attributes ---").append(newline);
         for (AttributeField attribute : attributeFieldsMap.values()) {
@@ -443,11 +451,13 @@ public class RecordClass extends WdkModelBase implements
         String[] paramNames = primaryKeyField.getColumnRefs();
         for (AttributeQueryReference reference : attributesQueryRefList) {
             // validate attribute query
-            Query query = (Query) model.resolveReference(reference.getTwoPartName());
+            Query query = (Query) model.resolveReference(reference
+                    .getTwoPartName());
             validateAttributeQuery(query);
 
             // add fields into record level, and associate columns
-            Map<String, AttributeField> fields = reference.getAttributeFieldMap();
+            Map<String, AttributeField> fields = reference
+                    .getAttributeFieldMap();
             Map<String, Column> columns = query.getColumnMap();
             for (AttributeField field : fields.values()) {
                 field.setRecordClass(this);
@@ -469,6 +479,10 @@ public class RecordClass extends WdkModelBase implements
                     ((ColumnAttributeField) field).setColumn(column);
                 }
                 attributeFieldsMap.put(fieldName, field);
+            }
+            // add user param into the original attribute query, if needed
+            if (!query.getParamMap().containsKey(Utilities.PARAM_USER_ID)) {
+                query.addParam(getUserParam());
             }
 
             Query attributeQuery = RecordClass.prepareQuery(wdkModel, query,
@@ -496,7 +510,8 @@ public class RecordClass extends WdkModelBase implements
             nestedRecord.resolveReferences(model);
         }
 
-        for (NestedRecordList nestedRecordList : nestedRecordListQuestionRefs.values()) {
+        for (NestedRecordList nestedRecordList : nestedRecordListQuestionRefs
+                .values()) {
             nestedRecordList.setParentRecordClass(this);
             nestedRecordList.resolveReferences(model);
         }
@@ -563,17 +578,53 @@ public class RecordClass extends WdkModelBase implements
         defaultSummaryAttributeNames = null;
 
         // create column attribute fields for primary keys if needed.
-        createPriamryKeySubFields();
+        createPrimaryKeySubFields();
+
+        // resolve the reference to the all records query
+        if (allRecordsQueryRef != null) {
+            Query query = (Query) model.resolveReference(allRecordsQueryRef);
+            // the query should return all pk columns
+            validateQuery(query);
+            // and it shouldn't have any params
+            if (query.getParams().length > 0)
+                throw new WdkModelException("All records query "
+                        + query.getFullName() + " should not have any params.");
+            this.allRecordsQuery = query;
+        }
 
         resolved = true;
     }
 
+    private Param getUserParam() throws WdkModelException {
+        // create the missing user_id param for the attribute query
+        ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
+        if (paramSet.contains(Utilities.PARAM_USER_ID))
+            return paramSet.getParam(Utilities.PARAM_USER_ID);
+
+        StringParam userParam = new StringParam();
+        userParam.setName(Utilities.PARAM_USER_ID);
+        userParam.setQuote(false);
+
+        userParam.excludeResources(wdkModel.getProjectId());
+        userParam.resolveReferences(wdkModel);
+        userParam.setResources(wdkModel);
+        paramSet.addParam(userParam);
+        return userParam;
+    }
+
     void validateAttributeQuery(Query query) throws WdkModelException {
         validateQuery(query);
-        // plus, attribute query should not have any params
-        if (query.getParams().length > 0)
-            throw new WdkModelException("Attribute query "
-                    + query.getFullName() + " should not have any params.");
+
+        // plus, attribute query can have only user_id param (optional)
+        String message = "Attribute query '" + query.getFullName()
+                + "' can have only a '" + Utilities.PARAM_USER_ID
+                + "' param, and it is optional.";
+        Param[] params = query.getParams();
+        if (params.length > 1)
+            throw new WdkModelException(message);
+        else if (params.length == 1
+                && !params[0].getName().equals(Utilities.PARAM_USER_ID))
+            throw new WdkModelException(message);
     }
 
     void validateQuery(Query query) throws WdkModelException {
@@ -582,11 +633,12 @@ public class RecordClass extends WdkModelBase implements
         for (String column : pkColumns)
             pkColumnMap.put(column, column);
 
-        // make sure the params contain only primary key params, and nothing
-        // more; but they can have less params than primary key columns. WDK
-        // will append the missing ones automatically.
+        // make sure the params contain only primary key params, and (optional)
+        // user_id param; but they can have less params than primary key
+        // columns. WDK will append the missing ones automatically.
         for (Param param : query.getParams()) {
             String paramName = param.getName();
+            if (paramName.equals(Utilities.PARAM_USER_ID)) continue;
             if (!pkColumnMap.containsKey(paramName))
                 throw new WdkModelException("The attribute or table query "
                         + query.getFullName() + " has param " + paramName
@@ -857,8 +909,10 @@ public class RecordClass extends WdkModelBase implements
                             + " has more than one <attributesList> for "
                             + "project " + projectId);
                 } else {
-                    this.defaultSummaryAttributeNames = attributeList.getSummaryAttributeNames();
-                    this.defaultSortingMap = attributeList.getSortingAttributeMap();
+                    this.defaultSummaryAttributeNames = attributeList
+                            .getSummaryAttributeNames();
+                    this.defaultSortingMap = attributeList
+                            .getSortingAttributeMap();
                     hasAttributeList = true;
                 }
             }
@@ -876,7 +930,8 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public AnswerFilterInstance[] getFilters() {
-        AnswerFilterInstance[] instances = new AnswerFilterInstance[filterMap.size()];
+        AnswerFilterInstance[] instances = new AnswerFilterInstance[filterMap
+                .size()];
         filterMap.values().toArray(instances);
         return instances;
     }
@@ -902,7 +957,8 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public AnswerFilterLayout[] getFilterLayouts() {
-        AnswerFilterLayout[] layouts = new AnswerFilterLayout[filterLayoutMap.size()];
+        AnswerFilterLayout[] layouts = new AnswerFilterLayout[filterLayoutMap
+                .size()];
         filterLayoutMap.values().toArray(layouts);
         return layouts;
     }
@@ -942,7 +998,7 @@ public class RecordClass extends WdkModelBase implements
     /**
      * Make sure all pk columns has a corresponding ColumnAttributeField
      */
-    private void createPriamryKeySubFields() {
+    private void createPrimaryKeySubFields() {
         // make sure the record has at least one attribute query, otherwise skip
         // this process
         if (attributeQueries.size() == 0) return;
@@ -982,7 +1038,8 @@ public class RecordClass extends WdkModelBase implements
         } else {
             Map<String, AttributeField> nonInternalFields = getAttributeFieldMap(FieldScope.NON_INTERNAL);
             for (String fieldName : nonInternalFields.keySet()) {
-                attributeFields.put(fieldName, nonInternalFields.get(fieldName));
+                attributeFields
+                        .put(fieldName, nonInternalFields.get(fieldName));
                 if (attributeFields.size() >= Utilities.DEFAULT_SUMMARY_ATTRIBUTE_SIZE)
                     break;
             }
@@ -1015,12 +1072,27 @@ public class RecordClass extends WdkModelBase implements
     public String getChecksum() {
         return null;
     }
-    
+
     public void setAllRecordsQueryRef(String queryRef) {
         this.allRecordsQueryRef = queryRef;
     }
-    
+
+    public String getAllRecordsQueryRef() {
+        return allRecordsQueryRef;
+    }
+
     public Query getAllRecordsQuery() {
         return allRecordsQuery;
+    }
+
+    public boolean hasBasket() {
+        return (allRecordsQuery != null || allRecordsQueryRef != null);
+    }
+
+    public Question getBasketQuestion() throws WdkModelException {
+        BasketFactory factory = wdkModel.getBasketFactory();
+        String questionName = factory.getQuestionName(this);
+        questionName = Utilities.INTERNAL_QUESTION_SET + "." + questionName;
+        return (Question) wdkModel.resolveReference(questionName);
     }
 }
