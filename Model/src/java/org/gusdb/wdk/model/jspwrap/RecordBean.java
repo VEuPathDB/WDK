@@ -40,8 +40,8 @@ public class RecordBean {
             Map<String, Object> pkValues) throws NoSuchAlgorithmException,
             WdkModelException, SQLException, JSONException, WdkUserException {
         this.user = user.getUser();
-        recordInstance = new RecordInstance(user.getUser(),
-                recordClass.recordClass, pkValues);
+        recordInstance = new RecordInstance(this.user, recordClass.recordClass,
+                pkValues);
     }
 
     public boolean isValidRecord() {
@@ -68,7 +68,8 @@ public class RecordBean {
     public Map<String, RecordBean> getNestedRecords() throws WdkModelException,
             WdkUserException, NoSuchAlgorithmException, SQLException,
             JSONException {
-        Map<String, RecordInstance> nri = recordInstance.getNestedRecordInstances();
+        Map<String, RecordInstance> nri = recordInstance
+                .getNestedRecordInstances();
         Map<String, RecordBean> nriBeans = new LinkedHashMap<String, RecordBean>();
         for (String recordName : nri.keySet()) {
             RecordBean nextNrBean = new RecordBean(user, nri.get(recordName));
@@ -80,7 +81,8 @@ public class RecordBean {
     public Map<String, RecordBean[]> getNestedRecordLists()
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        Map<String, RecordInstance[]> nrl = recordInstance.getNestedRecordInstanceLists();
+        Map<String, RecordInstance[]> nrl = recordInstance
+                .getNestedRecordInstanceLists();
         Map<String, RecordBean[]> nrlBeans = new LinkedHashMap<String, RecordBean[]>();
         for (String recordName : nrl.keySet()) {
             RecordInstance nextNrl[] = nrl.get(recordName);

@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
 /**
@@ -67,19 +68,19 @@ public class EnumParamBean extends ParamBean {
     }
 
     public ParamBean getDependedParam() {
-        Param dependedParam = ((AbstractEnumParam) param).getDependedParam();
-        if (dependedParam != null) {
-            return new ParamBean(dependedParam);
-        }
-        return null;
+	Param dependedParam = ((AbstractEnumParam) param).getDependedParam();
+	if (dependedParam != null) {
+	    return new ParamBean(dependedParam);
+	}
+	return null;
     }
 
     public String getDependedValue() {
-        return ((AbstractEnumParam) param).getDependedValue();
+	return ((AbstractEnumParam) param).getDependedValue();
     }
 
     public void setDependedValue(String dependedValue) {
-        ((AbstractEnumParam) param).setDependedValue(dependedValue);
+	((AbstractEnumParam) param).setDependedValue(dependedValue);
     }
 
     public EnumParamTermNode[] getVocabTreeRoots() throws Exception {
@@ -94,17 +95,5 @@ public class EnumParamBean extends ParamBean {
     public String[] getTerms(String termList) throws NoSuchAlgorithmException,
             WdkModelException, SQLException, JSONException, WdkUserException {
         return ((AbstractEnumParam) param).getTerms(termList);
-    }
-    
-    public String getRawDisplayValue() throws Exception {
-        String rawValue = getRawValue();
-        String[] terms = rawValue.split(",");
-        Map<String, String> displays = getDisplayMap();
-        StringBuffer buffer = new StringBuffer();
-        for(String term : terms) {
-            if (buffer.length() > 0) buffer.append(", ");
-            buffer.append(displays.get(term.trim()));
-        }
-        return buffer.toString();
     }
 }

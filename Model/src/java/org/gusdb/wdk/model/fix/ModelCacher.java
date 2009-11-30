@@ -26,8 +26,6 @@ import org.json.JSONException;
 /**
  * @author xingao
  * 
- *         The code load model info into local tables, and will be used to
- *         validate steps.
  */
 public class ModelCacher extends BaseCLI {
 
@@ -110,7 +108,6 @@ public class ModelCacher extends BaseCLI {
                 logger.info("Expanding model for project " + projectId);
                 WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
                 expand(wdkModel);
-                logger.info("=========================== done ============================");
             }
         } else {
             logger.error("No valid operation specified");
@@ -122,8 +119,8 @@ public class ModelCacher extends BaseCLI {
             NoSuchAlgorithmException, JSONException, WdkModelException,
             WdkUserException {
         // need to reset the cache first
-        wdkModel.getResultFactory().getCacheFactory().resetCache(false, true);
-
+        wdkModel.getResultFactory().getCacheFactory().resetCache(false);
+        
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         String projectId = wdkModel.getProjectId();
         deleteCache(dataSource, projectId);
@@ -162,9 +159,8 @@ public class ModelCacher extends BaseCLI {
                 "wdk_params_pkseq" };
         for (String sequence : sequences) {
             try {
-                SqlUtils.executeUpdate(wdkModel, dataSource, "DROP SEQUENCE "
-                        + sequence);
-            } catch (Exception ex) {
+                SqlUtils.executeUpdate(dataSource, "DROP SEQUENCE " + sequence);
+            } catch (SQLException ex) {
                 ex.printStackTrace();
             }
         }
@@ -172,33 +168,31 @@ public class ModelCacher extends BaseCLI {
                 "wdk_questions" };
         for (String table : tables) {
             try {
-                SqlUtils.executeUpdate(wdkModel, dataSource, "DROP TABLE "
-                        + table);
-            } catch (Exception ex) {
+                SqlUtils.executeUpdate(dataSource, "DROP TABLE " + table);
+            } catch (SQLException ex) {
                 ex.printStackTrace();
             }
         }
     }
 
     public void createTables(WdkModel wdkModel) throws SQLException,
-            WdkModelException, WdkUserException {
+            WdkModelException {
         DBPlatform platform = wdkModel.getUserPlatform();
         DataSource dataSource = platform.getDataSource();
 
         if (!platform.checkTableExists(null, "wdk_questions"))
-            createQuestionTable(wdkModel, dataSource);
+            createQuestionTable(dataSource);
         if (!platform.checkTableExists(null, "wdk_params"))
-            createParamTable(wdkModel, dataSource);
+            createParamTable(dataSource);
         if (!platform.checkTableExists(null, "wdk_enum_params"))
-            createEnumParamTable(wdkModel, dataSource);
+            createEnumParamTable(dataSource);
     }
 
-    private void createQuestionTable(WdkModel wdkModel, DataSource dataSource)
-            throws SQLException, WdkUserException, WdkModelException {
+    private void createQuestionTable(DataSource dataSource) throws SQLException {
         // create sequence
         String sql = "CREATE SEQUENCE wdk_questions_pkseq "
                 + "INCREMENT BY 1 START WITH 1";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+        SqlUtils.executeUpdate(dataSource, sql);
 
         // create table
         sql = "CREATE TABLE wdk_questions (question_id NUMBER(12) NOT NULL, "
@@ -210,20 +204,19 @@ public class ModelCacher extends BaseCLI {
                 + "CONSTRAINT wdk_questions_pk PRIMARY KEY (question_id), "
                 + "CONSTRAINT wdk_questions_uq1 "
                 + "  UNIQUE (project_id, question_name) )";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+        SqlUtils.executeUpdate(dataSource, sql);
 
         // create index
         sql = "CREATE INDEX wdk_questions_idx01 "
                 + "ON wdk_questions (question_checksum)";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+        SqlUtils.executeUpdate(dataSource, sql);
     }
 
-    private void createParamTable(WdkModel wdkModel, DataSource dataSource)
-            throws SQLException, WdkUserException, WdkModelException {
+    private void createParamTable(DataSource dataSource) throws SQLException {
         // create sequence
         String sql = "CREATE SEQUENCE wdk_params_pkseq "
                 + "INCREMENT BY 1 START WITH 1";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+        SqlUtils.executeUpdate(dataSource, sql);
 
         // create table
         sql = "CREATE TABLE wdk_params ( "
@@ -235,27 +228,27 @@ public class ModelCacher extends BaseCLI {
                 + "CONSTRAINT wdk_params_question_id_fk FOREIGN KEY (question_id) "
                 + "  REFERENCES wdk_questions (question_id), "
                 + "CONSTRAINT wdk_params_uq1 UNIQUE (question_id, param_name) )";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+        SqlUtils.executeUpdate(dataSource, sql);
 
         // create index
         sql = "CREATE INDEX wdk_params_idx01 ON wdk_params (param_type)";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+        SqlUtils.executeUpdate(dataSource, sql);
     }
 
-    private void createEnumParamTable(WdkModel wdkModel, DataSource dataSource)
-            throws SQLException, WdkUserException, WdkModelException {
+    private void createEnumParamTable(DataSource dataSource)
+            throws SQLException {
         // create table
         String sql = "CREATE TABLE wdk_enum_params ( "
                 + "param_id NUMBER(12) NOT NULL, "
                 + "param_value  VARCHAR(1000) NOT NULL, "
                 + "CONSTRAINT wdk_enum_params_fk01 FOREIGN KEY (param_id) "
                 + "   REFERENCES wdk_params (param_id) )";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+        SqlUtils.executeUpdate(dataSource, sql);
 
         // create index
         sql = "CREATE INDEX wdk_enum_params_idx01 "
                 + "ON wdk_enum_params (param_id, param_value)";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+        SqlUtils.executeUpdate(dataSource, sql);
     }
 
     private void deleteCache(DataSource dataSource, String projectId)

@@ -34,9 +34,6 @@ import org.json.JSONException;
 /**
  * @author xingao
  * 
- *         this code extract the param values from steps, and put them into
- *         separate row. The result will be used to expedite the step
- *         validation.
  */
 public class StepParamExpander extends BaseCLI {
 
@@ -115,20 +112,22 @@ public class StepParamExpander extends BaseCLI {
     }
 
     private void createParamTable(WdkModel wdkModel) throws SQLException,
-            WdkModelException, WdkUserException {
+            WdkModelException {
+        String step = wdkModel.getModelConfig().getUserDB().getUserSchema()
+                + "steps";
         DBPlatform platform = wdkModel.getUserPlatform();
         DataSource dataSource = platform.getDataSource();
 
         // check if table exists
         if (platform.checkTableExists(null, "step_params")) return;
 
-        SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE TABLE step_params"
-                + " ( step_id NUMBER(12) NOT NULL, "
+        SqlUtils.executeUpdate(dataSource, "CREATE TABLE step_params ("
+                + " step_id NUMBER(12) NOT NULL, "
                 + " param_name VARCHAR(200) NOT NULL, "
-                + " param_value VARCHAR(4000), migration NUMBER(12))");
+                + " param_value VARCHAR(4000), " + " migration NUMBER(12))");
 
-        SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX "
-                + "step_params_idx02 ON step_params (step_id, param_name)");
+        SqlUtils.executeUpdate(dataSource, "CREATE INDEX step_params_idx02 "
+                + " ON step_params (step_id, param_name)");
     }
 
     private Map<String, Map<String, Param>> getParams(WdkModel wdkModel) {
@@ -149,17 +148,15 @@ public class StepParamExpander extends BaseCLI {
         String step = userDB.getUserSchema() + "steps";
         String answer = userDB.getWdkEngineSchema() + "answers";
         StringBuffer sql = new StringBuffer("SELECT ");
-        sql.append(" s.step_id, sp.question_name, s.display_params FROM ");
-        sql.append(step + " s, (SELECT DISTINCT s.step_id, a.question_name ");
-        sql.append(" FROM " + step + " s, " + answer + " a, " + user + " u, ");
+        sql.append("s.step_id, a.question_name, s.display_params FROM ");
+        sql.append(step + " s, " + answer + " a, " + user + " u, ");
         sql.append("  (SELECT step_id FROM ").append(step);
         sql.append("   MINUS ");
         sql.append("   SELECT step_id FROM ").append("step_params) sm ");
         sql.append("WHERE s.step_id = sm.step_id ");
         sql.append("  AND s.user_id = u.user_id AND u.is_guest = 0 ");
         sql.append("  AND s.answer_id = a.answer_id ");
-        sql.append("  AND a.project_id = ? ) sp ");
-        sql.append(" WHERE s.step_id = sp.step_id ");
+        sql.append("  AND a.project_id = ? ");
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         PreparedStatement psSelect = SqlUtils.getPreparedStatement(dataSource,
@@ -191,7 +188,6 @@ public class StepParamExpander extends BaseCLI {
             if (param != null && param instanceof AbstractEnumParam) {
                 AbstractEnumParam enumParam = (AbstractEnumParam) param;
                 value = enumParam.dependentValueToRawValue(user, value);
-                if (value == null) continue;
                 String[] terms = value.split(",");
                 for (String term : terms) {
                     newValues.add(new String[] { paramName, term });

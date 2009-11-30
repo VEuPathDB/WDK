@@ -309,7 +309,7 @@ public abstract class AbstractEnumParam extends Param {
 
         String[] terms;
         if (multiPick) {
-            terms = termList.split("[,]+");
+            terms = termList.split(",");
             for (int i = 0; i < terms.length; i++)
                 terms[i] = terms[i].trim();
         } else terms = new String[] { termList.trim() };

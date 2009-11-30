@@ -15,7 +15,6 @@ public class ModelConfig {
     // the information for registration email
     private String smtpServer;
     private String supportEmail;
-    private String adminEmail;
 
     private String emailSubject;
     private String emailContent;
@@ -198,21 +197,4 @@ public class ModelConfig {
     public void setSecretKeyFile(String secretKeyFile) {
         this.secretKeyFile = secretKeyFile;
     }
-
-    /**
-     * @return the adminEmail
-     */
-    public String getAdminEmail() {
-        return adminEmail;
-    }
-
-    /**
-     * @param adminEmail
-     *            the adminEmail to set
-     */
-    public void setAdminEmail(String adminEmail) {
-        if (adminEmail != null && adminEmail.length() == 0) adminEmail = null;
-        this.adminEmail = adminEmail;
-    }
-
 }

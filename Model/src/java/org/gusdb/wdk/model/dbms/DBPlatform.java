@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.dbms;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,7 +20,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.ModelConfigDB;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * @author Jerric Gao
@@ -107,10 +105,10 @@ public abstract class DBPlatform {
 
     protected DataSource dataSource;
     protected String defaultSchema;
-    protected WdkModel wdkModel;
 
     private GenericObjectPool connectionPool;
     private String name;
+    private WdkModel wdkModel;
     private ModelConfigDB dbConfig;
     private String validationQuery;
 
@@ -119,7 +117,7 @@ public abstract class DBPlatform {
     // #########################################################################
 
     public abstract int getNextId(String schema, String table)
-            throws SQLException, WdkModelException, WdkUserException;
+            throws SQLException, WdkModelException;
 
     public abstract String getNextIdSqlExpression(String schema, String table);
 
@@ -138,8 +136,7 @@ public abstract class DBPlatform {
     public abstract String getMinusOperator();
 
     public abstract void createSequence(String sequence, int start,
-            int increment) throws SQLException, WdkUserException,
-            WdkModelException;
+            int increment) throws SQLException;
 
     public abstract int setClobData(PreparedStatement ps, int columnIndex,
             String content, boolean commit) throws SQLException;
@@ -150,28 +147,12 @@ public abstract class DBPlatform {
     public abstract String getPagedSql(String sql, int startIndex, int endIndex);
 
     public abstract boolean checkTableExists(String schema, String tableName)
-            throws SQLException, WdkModelException, WdkUserException;
+            throws SQLException, WdkModelException;
 
     public abstract String convertBoolean(boolean value);
 
     public abstract void dropTable(String schema, String table, boolean purge)
-            throws SQLException, WdkUserException, WdkModelException;
-
-    public abstract void disableStatistics(Connection connection,
-            String schema, String tableName) throws SQLException;
-
-    /**
-     * @param schema
-     *            the schema cannot be empty. if you are searching in a local
-     *            schema, it has to be the login user name.
-     * @param pattern
-     * @return
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
-     */
-    public abstract String[] queryTableNames(String schema, String pattern)
-            throws SQLException, WdkUserException, WdkModelException;
+            throws SQLException;
 
     // #########################################################################
     // Common methods are platform independent

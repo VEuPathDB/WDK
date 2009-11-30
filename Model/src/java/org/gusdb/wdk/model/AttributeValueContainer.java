@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.query.Query;
 import org.json.JSONException;
 
@@ -17,8 +16,6 @@ import org.json.JSONException;
  * 
  */
 public abstract class AttributeValueContainer {
-
-    private static final Logger logger = Logger.getLogger(AttributeValueContainer.class);
 
     protected abstract Map<String, AttributeField> getAttributeFieldMap();
 
@@ -65,11 +62,6 @@ public abstract class AttributeValueContainer {
             Query query = ((ColumnAttributeField) field).getColumn().getQuery();
             fillColumnAttributeValues(query);
             value = attributeValueCache.get(fieldName);
-            if (value == null)
-            // something is wrong here, need further investigation, but for now,
-            // just ignore the problem.
-                logger.error("Field exists, but the value doesn't, need investigation: "
-                        + field.getName());
         } else {
             throw new WdkModelException(
                     "unsupported attribute field type for : " + fieldName);

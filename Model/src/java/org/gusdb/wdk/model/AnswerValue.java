@@ -511,7 +511,7 @@ public class AnswerValue {
         String sql = getPagedAttributeSql(attributeQuery);
         DBPlatform platform = wdkModel.getQueryPlatform();
         DataSource dataSource = platform.getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
         ResultList resultList = new SqlResultList(resultSet);
 
         // fill in the column attributes
@@ -596,13 +596,9 @@ public class AnswerValue {
             // constructed from the id query cache table.
             return idsQueryInstance.getSql();
         } else {
-            // make an instance from the original attribute query, and attribute
-            // query has only one param, user_id. Note that the original
-            // attribute query is different from the attribute query held by the
-            // recordClass.
+            // make an instance from the attribute query, and attribute query
+            // has no params
             Map<String, String> params = new LinkedHashMap<String, String>();
-            String userId = Integer.toString(user.getUserId());
-            params.put(Utilities.PARAM_USER_ID, userId);
             QueryInstance queryInstance = attributeQuery.makeInstance(user,
                     params, true);
             return queryInstance.getSql();
@@ -768,10 +764,9 @@ public class AnswerValue {
         this.pageRecordInstances = new LinkedHashMap<PrimaryKeyAttributeValue, RecordInstance>();
 
         String sql = getPagedIdSql();
-        WdkModel wdkModel = question.getWdkModel();
-        DBPlatform platform = wdkModel.getQueryPlatform();
+        DBPlatform platform = question.getWdkModel().getQueryPlatform();
         DataSource dataSource = platform.getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
         ResultList resultList = new SqlResultList(resultSet);
         RecordClass recordClass = question.getRecordClass();
         PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
@@ -799,7 +794,7 @@ public class AnswerValue {
                 if (buffer.length() > 0) buffer.append(", ");
                 buffer.append(name);
             }
-            logger.debug("Paged ID SQL:\n" + sql);
+
             throw new WdkModelException("The expacted result size is different"
                     + " from the actual size. Please check the id query "
                     + idsQueryInstance.getQuery().getFullName() + " and the "
@@ -939,7 +934,7 @@ public class AnswerValue {
             WdkModelException, JSONException, WdkUserException {
         if (answer == null) {
             AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
-            answer = answerFactory.getAnswer(getChecksum());
+            answer = answerFactory.getAnswer(user, getChecksum());
             if (answer == null) answer = answerFactory.saveAnswerValue(this);
         }
         return answer;
@@ -961,8 +956,7 @@ public class AnswerValue {
 
             WdkModel wdkModel = question.getWdkModel();
             DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-            Object result = SqlUtils.executeScalar(wdkModel, dataSource,
-                    sql.toString());
+            Object result = SqlUtils.executeScalar(dataSource, sql.toString());
             size = Integer.parseInt(result.toString());
 
             resultSizesByFilter.put(filterName, size);
@@ -1012,9 +1006,8 @@ public class AnswerValue {
         PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
         String[] pkColumns = pkField.getColumnRefs();
         List<PrimaryKeyAttributeValue> pkValues = new ArrayList<PrimaryKeyAttributeValue>();
-        WdkModel wdkModel = question.getWdkModel();
-        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, idSql);
+        DataSource dataSource = question.getWdkModel().getQueryPlatform().getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, idSql);
         ResultList resultList = new SqlResultList(resultSet);
         try {
             while (resultList.next()) {

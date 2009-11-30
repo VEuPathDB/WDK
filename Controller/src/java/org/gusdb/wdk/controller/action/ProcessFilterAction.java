@@ -139,7 +139,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         fForm);
 
                 newStep = ShowSummaryAction.summaryPaging(request, wdkQuestion,
-                        params, filterName, false);
+                        params, filterName);
 
                 // We only set isTransform = true if we're running a new query &
                 // it's a transform If we're inserting a strategy, it has to be
@@ -298,7 +298,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                 String operator = (op == null)
                                         ? parent.getOperation() : op;
                                 boolean useBooleanFilter = parent.isUseBooleanFilter();
-                                String bfName = parent.getFilterName();
+                                AnswerFilterInstanceBean filter = parent.getAnswerValue().getFilter();
+                                String bfName = (filter == null) ? null
+                                        : filter.getName();
                                 newStep = wdkUser.createBooleanStep(previous,
                                         child, operator, useBooleanFilter,
                                         bfName);
@@ -392,7 +394,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         }
         String filterName = step.getFilterName();
         StepBean newStep = wdkUser.createStep(wdkQuestion, paramValues,
-                filterName, step.getIsDeleted(), false);
+                filterName, false);
         newStep.setCustomName(step.getBaseCustomName());
         newStep.update(false);
         return newStep;

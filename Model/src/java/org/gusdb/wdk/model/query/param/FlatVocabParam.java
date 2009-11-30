@@ -128,7 +128,7 @@ public class FlatVocabParam extends AbstractEnumParam {
         Map<String, String> values = new LinkedHashMap<String, String>();
         values.put(PARAM_SERVED_QUERY, servedQueryName);
 	if (dependedParam != null)
-	    values.put(dependedParam.getName(), dependedValue);
+	    values.put(DEPENDED_VALUE, dependedParam.dependentValueToInternalValue(null,dependedValue));
 
         User user = wdkModel.getSystemUser();
         QueryInstance instance = query.makeInstance(user, values, true);

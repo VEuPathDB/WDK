@@ -58,8 +58,8 @@ public class TabularReporter extends Reporter {
         // get basic configurations
         if (config.containsKey(FIELD_HAS_HEADER)) {
             String value = config.get(FIELD_HAS_HEADER);
-            hasHeader = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true"))
-                    ? true : false;
+            hasHeader = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true
+                    : false;
         }
 
         if (config.containsKey(FIELD_DIVIDER)) {
@@ -108,8 +108,7 @@ public class TabularReporter extends Reporter {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
+     * @see org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
      */
     public void write(OutputStream out) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
@@ -176,7 +175,7 @@ public class TabularReporter extends Reporter {
             for (RecordInstance record : answerValue.getRecordInstances()) {
                 for (AttributeField field : fields) {
                     AttributeValue value = record.getAttributeValue(field.getName());
-                    writer.print((value == null) ? "N/A" : value.getValue());
+                    writer.print(value.getValue());
                     writer.print(divider);
                 }
                 writer.println();

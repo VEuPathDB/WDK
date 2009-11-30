@@ -11,7 +11,6 @@ import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
@@ -51,7 +50,6 @@ public class Step {
 
     private String booleanExpression;
     private boolean valid = true;
-    private String validationMessage;
 
     private int estimateSize = 0;
 
@@ -490,13 +488,11 @@ public class Step {
             throws WdkModelException {
         this.paramValues = new LinkedHashMap<String, String>(paramValues);
         // make sure the params do exist
-        if (this.valid) {
-            Map<String, Param> params = getQuestion().getParamMap();
-            for (String paramName : paramValues.keySet()) {
-                if (!params.containsKey(paramName)) {
-                    this.valid = false;
-                    break;
-                }
+        Map<String, Param> params = getQuestion().getParamMap();
+        for (String paramName : paramValues.keySet()) {
+            if (!params.containsKey(paramName)) {
+                this.valid = false;
+                break;
             }
         }
     }
@@ -632,7 +628,6 @@ public class Step {
         jsStep.put("collapsed", this.isCollapsible);
         jsStep.put("collapsedName", this.collapsedName);
         jsStep.put("deleted", isDeleted);
-        jsStep.put("deleted", this.estimateSize);
         if (this.previousStep != null) {
             jsStep.put("previous", previousStep.getJSONContent(strategyId));
         }
@@ -649,9 +644,7 @@ public class Step {
     }
 
     public Question getQuestion() throws WdkModelException {
-        String questionName = answer.getQuestionName();
-        WdkModel wdkModel = user.getWdkModel();
-        return (Question) wdkModel.resolveReference(questionName);
+        return answer.getQuestion();
     }
 
     public AnswerFilterInstance getFilter() throws WdkModelException {
@@ -668,9 +661,6 @@ public class Step {
 
     public AnswerValue getAnswerValue() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
-        if (!valid)
-            throw new WdkUserException("Step #" + internalId
-                    + "(i) is invalid, cannot create answerValue.");
         if (answerValue == null) {
             Question question = getQuestion();
             Map<String, Boolean> sortingMap = user.getSortingAttributes(question.getFullName());
@@ -710,54 +700,5 @@ public class Step {
         } catch (WdkModelException ex) {
             return getType();
         }
-    }
-
-    /**
-     * Validate a step and all the children steps it depends on. the result of
-     * validation will also be stored in "valid" variable. If a step was already
-     * invalid it will stay invalid.
-     * 
-     * @return
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
-     */
-    public boolean validate() throws SQLException, WdkUserException,
-            WdkModelException {
-        // only validate leaf steps. the validation of a combined step is
-        // determined by the children.
-        if (childStep == null && previousStep == null) {
-            if (!valid) return valid;
-            try {
-                getAnswerValue();
-            } catch (Exception ex) {
-                this.validationMessage = ex.getMessage();
-                this.valid = false;
-            }
-        } else {
-            if (childStep != null) {
-                if (!childStep.validate()) this.valid = false;
-            } else if (previousStep != null) {
-                if (!previousStep.validate()) this.valid = false;
-            }
-        }
-        // set the invalid flag
-        if (!valid) stepFactory.setStepValidFlag(this);
-        return valid;
-    }
-
-    /**
-     * @return the validationMessage
-     */
-    public String getValidationMessage() {
-        return validationMessage;
-    }
-
-    /**
-     * @param validationMessage
-     *            the validationMessage to set
-     */
-    public void setValidationMessage(String validationMessage) {
-        this.validationMessage = validationMessage;
     }
 }

@@ -2,7 +2,7 @@ package org.gusdb.wdk.model;
 
 import java.util.Map;
 
-public class WdkModelException extends WdkException {
+public class WdkModelException extends Exception {
 
     public static String modelName;
 
@@ -32,7 +32,7 @@ public class WdkModelException extends WdkException {
     public WdkModelException(Throwable cause) {
         super(cause);
         if (cause instanceof WdkModelException) {
-            this.paramErrors = ((WdkModelException) cause).paramErrors;
+            this.paramErrors = ((WdkModelException)cause).paramErrors;
         }
     }
 
@@ -63,12 +63,21 @@ public class WdkModelException extends WdkException {
     /**
      * @return A default formatting of contained errors
      */
-    @Override
     public String formatErrors() {
 
         String newline = System.getProperty("line.separator");
-        StringBuffer buf = new StringBuffer(super.formatErrors());
-        buf.append(newline);
+        StringBuffer buf = new StringBuffer(newline);
+        String message = super.getMessage();
+
+        if (message != null) {
+            // add project header
+            if (modelName != null) {
+                String prefix = "[" + modelName + "] ";
+                if (!message.trim().startsWith(prefix)) buf.append(prefix);
+            }
+
+            buf.append(message + newline);
+        }
         if (paramErrors != null) {
             for (String paramPrompt : paramErrors.keySet()) {
                 String details = paramErrors.get(paramPrompt);

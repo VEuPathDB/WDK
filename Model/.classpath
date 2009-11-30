@@ -3,6 +3,7 @@
 	<classpathentry excluding="**/.svn/" kind="src" path="src/java"/>
 	<classpathentry kind="lib" path="lib/java/commons-beanutils.jar"/>
 	<classpathentry kind="lib" path="lib/java/commons-pool-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/java/jing-20030619.jar"/>
 	<classpathentry kind="lib" path="lib/java/serializer.jar"/>
 	<classpathentry kind="lib" path="lib/java/xsltc.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
@@ -29,6 +30,5 @@
 	<classpathentry kind="lib" path="/WSF Service/lib/java/commons-discovery-0.2.jar"/>
 	<classpathentry kind="lib" path="/WSF Test/lib/java/junit-4.4.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/WSF Test"/>
-	<classpathentry kind="lib" path="lib/java/jing-20081028.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>

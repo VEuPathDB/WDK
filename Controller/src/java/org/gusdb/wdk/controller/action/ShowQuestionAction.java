@@ -70,27 +70,49 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             qSetForm.setQuestionFullName(qFullName);
             prepareQuestionSetForm(getServlet(), qSetForm);
 
-            ServletContext svltCtx = getServlet().getServletContext();
-            String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
-            String customViewFile1 = customViewDir + File.separator
-                    + wdkQuestion.getFullName() + ".jsp";
-            String customViewFile2 = customViewDir + File.separator
-                    + wdkQuestion.getRecordClass().getFullName()
-                    + ".question.jsp";
-            String customViewFile3 = customViewDir + File.separator
-                    + CConstants.WDK_CUSTOM_QUESTION_PAGE;
-            ActionForward forward = null;
+	    ServletContext svltCtx = getServlet().getServletContext();
+
+            boolean partial = Boolean.valueOf(request.getParameter("partial"));
+
+	    String defaultViewFile;
+	    if (partial) {
+		defaultViewFile = CConstants.WDK_DEFAULT_VIEW_DIR
+		+ File.separator + CConstants.WDK_PAGES_DIR
+		+ File.separator + "question.form.jsp";
+	    }
+	    else {
+		defaultViewFile = CConstants.WDK_CUSTOM_VIEW_DIR
+		+ File.separator + CConstants.WDK_PAGES_DIR
+		+ File.separator + CConstants.WDK_QUESTION_PAGE;
+	    }
+
+            ActionForward forward = new ActionForward(defaultViewFile);
+
+	    String fileToInclude = null;
+
+	    String baseFilePath = CConstants.WDK_CUSTOM_VIEW_DIR
+		+ File.separator + CConstants.WDK_PAGES_DIR
+		+ File.separator + CConstants.WDK_QUESTIONS_DIR;
+            String customViewFile1 = baseFilePath
+		+ File.separator + wdkQuestion.getFullName() + ".form.jsp";
+            String customViewFile2 = baseFilePath
+		+ File.separator + wdkQuestion.getRecordClass().getFullName()
+		+ ".form.jsp";
+            String customViewFile3 = baseFilePath
+		+ File.separator + "question.form.jsp";
+
             if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
-                forward = new ActionForward(customViewFile1);
+                fileToInclude = customViewFile1;
             } else if (ApplicationInitListener.resourceExists(customViewFile2,
                     svltCtx)) {
-                forward = new ActionForward(customViewFile2);
+                fileToInclude = customViewFile2;
             } else if (ApplicationInitListener.resourceExists(customViewFile3,
                     svltCtx)) {
-                forward = new ActionForward(customViewFile3);
-            } else {
-                forward = mapping.findForward(CConstants.SHOW_QUESTION_MAPKEY);
+                fileToInclude = customViewFile3;
             }
+
+	    System.out.println("Path to file: " + fileToInclude);
+	    request.setAttribute("customForm",fileToInclude);
 
             Enumeration<?> paramNames = request.getParameterNames();
             while(paramNames.hasMoreElements()) {

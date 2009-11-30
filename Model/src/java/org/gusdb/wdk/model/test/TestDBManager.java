@@ -34,8 +34,6 @@ public class TestDBManager extends BaseCLI {
         }
     }
 
-    private WdkModel wdkModel;
-
     protected TestDBManager(String command) {
         super((command == null) ? "wdkTestDb" : command,
                 "Create or delete test toy db");
@@ -67,12 +65,12 @@ public class TestDBManager extends BaseCLI {
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
         String tableDir = (String) getOptionValue(ARG_TABLE_DIR);
         if (tableDir == null)
-            tableDir = gusHome + "/data/WDKToySite/Model/testTables";
+            tableDir = gusHome + "/data/WDKTemplateSite/Model/testTables";
         String[] tables = getTableNames(tableDir);
 
         try {
             // read config info
-            wdkModel = WdkModel.construct(projectId, gusHome);
+            WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
             DBPlatform platform = wdkModel.getQueryPlatform();
 
             long start = System.currentTimeMillis();
@@ -99,8 +97,7 @@ public class TestDBManager extends BaseCLI {
             try {
                 System.err.println("Dropping table " + tableName);
                 String dropTable = "drop table " + tableName;
-                SqlUtils.executeUpdate(wdkModel, platform.getDataSource(),
-                        dropTable);
+                SqlUtils.executeUpdate(platform.getDataSource(), dropTable);
             } catch (SQLException ex) {
                 System.err.println("Dropping table '" + tableName + "' failed.");
                 ex.printStackTrace();
@@ -233,7 +230,7 @@ public class TestDBManager extends BaseCLI {
 
         // System.err.println("creating test table with sql " + createTable);
 
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString());
+        SqlUtils.executeUpdate(dataSource, sql.toString());
 
         return columnTypes;
     }

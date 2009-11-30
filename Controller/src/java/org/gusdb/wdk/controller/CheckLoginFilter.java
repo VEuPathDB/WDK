@@ -54,13 +54,12 @@ public class CheckLoginFilter implements Filter {
                 }
             }
         }
-	
-        if (loginCookie != null) {
-            if (wdkUser == null || ! URLDecoder.decode(loginCookie.getValue()).contains(wdkUser.getEmail())) {
-                try {
-                    UserFactoryBean factory = wdkModel.getUserFactory();
-		    
-                    // Check if cookie has been modified since it was set.
+
+	try {
+	    UserFactoryBean factory = wdkModel.getUserFactory();
+	    if (loginCookie != null) {
+		if (wdkUser == null || ! URLDecoder.decode(loginCookie.getValue()).contains(wdkUser.getEmail())) {
+		    // Check if cookie has been modified since it was set.
                     String secretValue = wdkModel.getSecretKey();
                             
                     secretValue = loginCookie.getValue().substring(0,
@@ -91,17 +90,27 @@ public class CheckLoginFilter implements Filter {
 
                     req.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
                     req.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
-                } catch (Exception ex) {
-                    logger.error("Caught exception while checking login "
-                            + "cookie: " + ex);
-                    // tell browser to delete cookie if we had a problem
-                    loginCookie.setMaxAge(0);
-                    loginCookie.setPath("/");
-                    res.addCookie(loginCookie);
-                }
-            }
-        }
-        
+		}
+	    }
+	    else if (wdkUser != null && !wdkUser.isGuest()) {
+		// If there's no login cookie, but a non-guest user is
+		// logged in, we should log the user out.
+		UserBean guest = factory.getGuestUser();
+		logger.error("Logging out non-guest user b/c no login cookie found.");
+		req.getSession().setAttribute(CConstants.WDK_USER_KEY, guest);
+	    }
+	}
+	catch (Exception ex) {
+	    logger.error("Caught exception while checking login "
+			 + "cookie: " + ex);
+	    // tell browser to delete cookie if we had a problem
+	    loginCookie.setMaxAge(0);
+	    loginCookie.setPath("/");
+	    res.addCookie(loginCookie);
+	    // clear any user out of the session
+	    req.getSession().setAttribute(CConstants.WDK_USER_KEY, null);
+	}
+
         // set session id
         HttpSession session = req.getSession();
         session.setAttribute("sessionId", session.getId());

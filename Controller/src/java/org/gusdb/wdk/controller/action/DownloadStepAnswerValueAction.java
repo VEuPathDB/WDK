@@ -54,15 +54,20 @@ public class DownloadStepAnswerValueAction extends Action {
         
         if ( reporter == null ) {
             // get the default configuration page
-            forward = mapping.findForward( CConstants.GET_DOWNLOAD_CONFIG_MAPKEY );
+	    String defaultViewFile = CConstants.WDK_CUSTOM_VIEW_DIR
+		+ File.separator + CConstants.WDK_PAGES_DIR
+		+ File.separator + CConstants.WDK_DOWNLOAD_CONFIG_PAGE;
+            forward = new ActionForward(defaultViewFile);
         } else {
             ServletContext svltCtx = getServlet().getServletContext();
-            String customViewDir = ( String ) svltCtx.getAttribute( CConstants.WDK_CUSTOMVIEWDIR_KEY );
+
+	    String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+		+ File.separator + CConstants.WDK_PAGES_DIR
+		+ File.separator + CConstants.WDK_REPORTERS_DIR;
+
             String customViewFile1 = customViewDir + File.separator + fullName
                     + "." + reporter + "ReporterConfig.jsp";
             String customViewFile2 = customViewDir + File.separator + reporter
-                    + "ReporterConfig.jsp";
-            String customViewFile3 = "/" + reporter
                     + "ReporterConfig.jsp";
             
             if ( ApplicationInitListener.resourceExists( customViewFile1,
@@ -71,9 +76,6 @@ public class DownloadStepAnswerValueAction extends Action {
             } else if ( ApplicationInitListener.resourceExists(
                     customViewFile2, svltCtx ) ) {
                 forward = new ActionForward( customViewFile2 );
-            } else if ( ApplicationInitListener.resourceExists(
-                    customViewFile3, svltCtx ) ) {
-                forward = new ActionForward( customViewFile3 );
             } else {
                 throw new WdkModelException( "No configuration form can be "
                         + "found for the selected format: " + reporter );

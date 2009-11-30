@@ -9,25 +9,21 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.QueryMonitor;
-import org.gusdb.wdk.model.Utilities;
-import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * @author Jerric Gao
  * 
  */
 public final class SqlUtils {
+
+    public static final long PRINT_SQL_THRESHOLD = 10000;
 
     private static final Logger logger = Logger.getLogger(SqlUtils.class);
 
@@ -107,12 +103,9 @@ public final class SqlUtils {
      * @param sql
      * @return
      * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
      */
-    public static int executeUpdate(WdkModel wdkModel, DataSource dataSource,
-            String sql) throws SQLException, WdkUserException,
-            WdkModelException {
+    public static int executeUpdate(DataSource dataSource, String sql)
+            throws SQLException {
         Connection connection = null;
         Statement stmt = null;
         try {
@@ -120,7 +113,7 @@ public final class SqlUtils {
             connection = dataSource.getConnection();
             stmt = connection.createStatement();
             int result = stmt.executeUpdate(sql);
-            verifyTime(wdkModel, sql, start);
+            printInfo(sql, start, System.currentTimeMillis());
             return result;
         } catch (SQLException ex) {
             logger.error("Failed to run nonQuery:\n" + sql);
@@ -139,12 +132,9 @@ public final class SqlUtils {
      * @param sql
      * @return
      * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
      */
-    public static ResultSet executeQuery(WdkModel wdkModel,
-            DataSource dataSource, String sql) throws SQLException,
-            WdkUserException, WdkModelException {
+    public static ResultSet executeQuery(DataSource dataSource, String sql)
+            throws SQLException {
         ResultSet resultSet = null;
         Connection connection = null;
         try {
@@ -152,7 +142,7 @@ public final class SqlUtils {
             connection = dataSource.getConnection();
             Statement stmt = connection.createStatement();
             resultSet = stmt.executeQuery(sql);
-            verifyTime(wdkModel, sql, start);
+            printInfo(sql, start, System.currentTimeMillis());
             return resultSet;
         } catch (SQLException ex) {
             logger.error("Failed to run query:\n" + sql);
@@ -174,16 +164,15 @@ public final class SqlUtils {
      * @throws SQLException
      *             database or query failure
      * @throws WdkModelException
-     * @throws WdkModelException
      *             query returns no row
-     * @throws WdkUserException
      */
-    public static Object executeScalar(WdkModel wdkModel,
-            DataSource dataSource, String sql) throws SQLException,
-            WdkModelException, WdkUserException {
+    public static Object executeScalar(DataSource dataSource, String sql)
+            throws SQLException, WdkModelException {
         ResultSet resultSet = null;
         try {
-            resultSet = executeQuery(wdkModel, dataSource, sql);
+            long start = System.currentTimeMillis();
+            resultSet = executeQuery(dataSource, sql);
+            printInfo(sql, start, System.currentTimeMillis());
             if (!resultSet.next())
                 throw new WdkModelException("The SQL doesn't return any row:\n"
                         + sql);
@@ -215,44 +204,10 @@ public final class SqlUtils {
         return value.replaceAll("%", "{%}").replaceAll("_", "{_}");
     }
 
-    public static void verifyTime(WdkModel wdkModel, String sql, long fromTime)
-            throws WdkUserException, WdkModelException {
-        double seconds = (System.currentTimeMillis() - fromTime) / 1000D;
-        logger.debug("SQL executed in " + seconds + " seconds.");
-        logger.debug(sql);
-
-        if (seconds < 0) {
-            logger.error("code error, negative exec time:");
-            new Exception().printStackTrace();
-        }
-        QueryMonitor monitor = wdkModel.getQueryMonitor();
-        // convert the time to seconds
-        // check if it is a slow query
-        if (seconds >= monitor.getSlowQueryThreshold()) {
-            if (!monitor.isIgnoredSlowQuery(sql))
-                logger.warn("SLOW SQL: " + seconds + " seconds.\n" + sql);
-        }
-        // check if it is a broken query
-        if (seconds >= monitor.getBrokenQueryThreshold()) {
-            if (!monitor.isIgnoredBrokenQuery(sql)) {
-                logger.warn("BROKEN SQL: " + seconds + " seconds.\n" + sql);
-                // also send email to admin
-                String email = wdkModel.getModelConfig().getAdminEmail();
-                if (email != null) {
-                    String subject = "[" + wdkModel.getProjectId()
-                            + "] Broken Query " + seconds + " seconds";
-
-                    Calendar cal = Calendar.getInstance();
-                    SimpleDateFormat sdf = new SimpleDateFormat(
-                            "yyyy-MM-dd HH:mm:ss");
-                    String content = "<p>Recorded: "
-                            + sdf.format(cal.getTime()) + "</p>\n<p>" + sql
-                            + "</p>";
-                    Utilities.sendEmail(wdkModel, email, email, subject,
-                            content);
-                }
-            }
-        }
+    private static void printInfo(String sql, long start, long end) {
+        long spent = end - start;
+        logger.debug("SQL executed in " + spent + " ms.");
+        if (spent >= PRINT_SQL_THRESHOLD) logger.debug(sql);
     }
 
     /**

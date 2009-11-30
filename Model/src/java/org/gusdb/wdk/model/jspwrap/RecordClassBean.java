@@ -10,11 +10,8 @@ import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.ReporterRef;
 import org.gusdb.wdk.model.TableField;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.BasketFactory;
 
 /**
  * A wrapper on a {@link RecordClass} that provides simplified access for
@@ -142,22 +139,8 @@ public class RecordClassBean {
     }
 
     public AnswerFilterInstanceBean getFilter(String filterName)
-            throws WdkModelException {
-        AnswerFilterInstance instance = recordClass.getFilter(filterName);
-        return new AnswerFilterInstanceBean(instance);
-    }
-
-    public QuestionBean getBasketQuestion() throws WdkUserException,
-            WdkModelException {
-        WdkModel wdkModel = recordClass.getWdkModel();
-        BasketFactory factory = wdkModel.getBasketFactory();
-        String questionName = Utilities.INTERNAL_QUESTION_SET + "."
-                + factory.getQuestionName(recordClass);
-        Question question = wdkModel.getQuestion(questionName);
-        return new QuestionBean(question);
-    }
-    
-    public boolean getHasBasket() {
-        return recordClass.hasBasket();
+	throws WdkModelException {
+	AnswerFilterInstance instance = recordClass.getFilter(filterName);
+	return new AnswerFilterInstanceBean(instance);
     }
 }

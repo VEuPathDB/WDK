@@ -66,9 +66,9 @@ public abstract class Query extends WdkModelBase {
             throws JSONException;
 
     public abstract QueryInstance makeInstance(User user,
-            Map<String, String> values, boolean validate)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException;
+            Map<String, String> values, boolean validate) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException;
 
     public abstract Query clone();
 
@@ -97,7 +97,6 @@ public abstract class Query extends WdkModelBase {
      * @param query
      */
     protected Query(Query query) {
-        // logger.debug("clone query: " + query.getFullName());
         this.name = query.name;
         this.cached = query.cached;
         this.paramMap = new LinkedHashMap<String, Param>();
@@ -254,13 +253,6 @@ public abstract class Query extends WdkModelBase {
         return Utilities.encrypt(jsQuery.toString());
     }
 
-    /**
-     * @param extra
-     *            , if extra is true, then column names are also includes, plus
-     *            the extra info from param.
-     * @return
-     * @throws JSONException
-     */
     private JSONObject getJSONContent(boolean extra) throws JSONException {
         // use JSON to construct the string content
         JSONObject jsQuery = new JSONObject();

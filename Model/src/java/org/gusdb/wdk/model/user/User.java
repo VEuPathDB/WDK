@@ -396,25 +396,23 @@ public class User /* implements Serializable */{
     }
 
     public synchronized Step createStep(Question question,
-            Map<String, String> paramValues, String filterName,
-            boolean deleted, boolean validate) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+            Map<String, String> paramValues, String filterName, boolean validate)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         AnswerFilterInstance filter = null;
         RecordClass recordClass = question.getRecordClass();
         if (filterName != null) {
             filter = recordClass.getFilter(filterName);
         } else filter = recordClass.getDefaultFilter();
-        return createStep(question, paramValues, filter, deleted, validate);
+        return createStep(question, paramValues, filter, validate);
     }
 
     public synchronized Step createStep(Question question,
             Map<String, String> paramValues, AnswerFilterInstance filter,
-            boolean deleted, boolean validate) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+            boolean validate) throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         int endIndex = getItemsPerPage();
-        return createStep(question, paramValues, filter, 1, endIndex, deleted,
+        return createStep(question, paramValues, filter, 1, endIndex, false,
                 validate);
     }
 
@@ -515,7 +513,6 @@ public class User /* implements Serializable */{
 
     public Map<Integer, Step> getStepsMap() throws WdkUserException,
             WdkModelException, SQLException, JSONException {
-        logger.debug("loading steps...");
         Map<Integer, Step> invalidSteps = new LinkedHashMap<Integer, Step>();
         Map<Integer, Step> userAnswers = stepFactory.loadSteps(this,
                 invalidSteps);
@@ -526,7 +523,6 @@ public class User /* implements Serializable */{
     public Map<Integer, Strategy> getStrategiesMap() throws WdkUserException,
             WdkModelException, JSONException, SQLException,
             NoSuchAlgorithmException {
-        logger.debug("loading strategies...");
         Map<Integer, Strategy> invalidStrategies = new LinkedHashMap<Integer, Strategy>();
         Map<Integer, Strategy> strategies = stepFactory.loadStrategies(this,
                 invalidStrategies);
@@ -736,13 +732,12 @@ public class User /* implements Serializable */{
         return stepFactory.loadStrategy(this, userStrategyId, allowDeleted);
     }
 
-    public void deleteSteps() throws WdkUserException, SQLException,
-            WdkModelException {
+    public void deleteSteps() throws WdkUserException, SQLException {
         deleteSteps(false);
     }
 
     public void deleteSteps(boolean allProjects) throws WdkUserException,
-            SQLException, WdkModelException {
+            SQLException {
         stepFactory.deleteSteps(this, allProjects);
         cachedStep = null;
         stepCount = null;
@@ -778,28 +773,25 @@ public class User /* implements Serializable */{
         if (strategyCount != null) strategyCount--;
     }
 
-    public void deleteStrategies() throws SQLException, WdkUserException,
-            WdkModelException {
+    public void deleteStrategies() throws SQLException {
         activeStrategyFactory.clear();
         deleteStrategies(false);
     }
 
-    public void deleteStrategies(boolean allProjects) throws SQLException,
-            WdkUserException, WdkModelException {
+    public void deleteStrategies(boolean allProjects) throws SQLException {
         activeStrategyFactory.clear();
         stepFactory.deleteStrategies(this, allProjects);
         strategyCount = 0;
     }
 
-    public int getStepCount() throws WdkUserException, WdkModelException {
+    public int getStepCount() throws WdkUserException {
         if (stepCount == null) {
             stepCount = stepFactory.getStepCount(this);
         }
         return stepCount;
     }
 
-    public int getStrategyCount() throws WdkUserException, SQLException,
-            WdkModelException {
+    public int getStrategyCount() throws WdkUserException, SQLException {
         if (strategyCount == null)
             strategyCount = stepFactory.getStrategyCount(this);
         return strategyCount;
@@ -849,7 +841,7 @@ public class User /* implements Serializable */{
     }
 
     public void changePassword(String oldPassword, String newPassword,
-            String confirmPassword) throws WdkUserException, WdkModelException {
+            String confirmPassword) throws WdkUserException {
         userFactory.changePassword(email, oldPassword, newPassword,
                 confirmPassword);
     }
@@ -864,7 +856,7 @@ public class User /* implements Serializable */{
     }
 
     public Dataset getDataset(int userDatasetId) throws SQLException,
-            WdkModelException, WdkUserException {
+            WdkModelException {
         return datasetFactory.getDataset(this, userDatasetId);
     }
 
@@ -874,7 +866,7 @@ public class User /* implements Serializable */{
         return datasetFactory.getDataset(this, uploadFile, values);
     }
 
-    public void save() throws WdkUserException, WdkModelException {
+    public void save() throws WdkUserException {
         userFactory.saveUser(this);
     }
 
@@ -885,8 +877,7 @@ public class User /* implements Serializable */{
         return itemsPerPage;
     }
 
-    public void setItemsPerPage(int itemsPerPage) throws WdkUserException,
-            WdkModelException {
+    public void setItemsPerPage(int itemsPerPage) throws WdkUserException {
         if (itemsPerPage <= 0) itemsPerPage = 20;
         else if (itemsPerPage > 100) itemsPerPage = 100;
         setGlobalPreference(User.PREF_ITEMS_PER_PAGE,
@@ -963,7 +954,7 @@ public class User /* implements Serializable */{
     }
 
     public Map<String, Boolean> getSortingAttributesByChecksum(
-            String sortingChecksum) throws WdkUserException, WdkModelException {
+            String sortingChecksum) throws WdkUserException {
         if (sortingChecksum == null) return null;
         QueryFactory queryFactory = wdkModel.getQueryFactory();
         return queryFactory.getSortingAttributes(sortingChecksum);
@@ -1062,7 +1053,7 @@ public class User /* implements Serializable */{
         projectPreferences.put(summaryKey, summaryChecksum);
     }
 
-    public String createRemoteKey() throws WdkUserException, WdkModelException {
+    public String createRemoteKey() throws WdkUserException {
         // user can remote key only if he/she is logged in
         if (isGuest())
             throw new WdkUserException("Guest user cannot create remote key.");
@@ -1201,7 +1192,7 @@ public class User /* implements Serializable */{
     }
 
     public boolean checkNameExists(Strategy strategy, String name, boolean saved)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
         return stepFactory.checkNameExists(strategy, name, saved);
     }
 
@@ -1234,16 +1225,10 @@ public class User /* implements Serializable */{
 
     public Step createBooleanStep(Step leftStep, Step rightStep,
             String booleanOperator, boolean useBooleanFilter, String filterName)
-            throws WdkModelException, NoSuchAlgorithmException,
+            throws NoSuchAlgorithmException, WdkModelException,
             WdkUserException, SQLException, JSONException {
         BooleanOperator operator = BooleanOperator.parse(booleanOperator);
-        Question question = null;
-        try {
-            question = leftStep.getQuestion();
-        } catch (WdkModelException ex) {
-            // in case the left step has an invalid question, try the right
-            question = rightStep.getQuestion();
-        }
+        Question question = leftStep.getQuestion();
         AnswerFilterInstance filter = null;
         if (filterName != null)
             filter = question.getRecordClass().getFilter(filterName);
@@ -1295,7 +1280,7 @@ public class User /* implements Serializable */{
         params.put(booleanQuery.getUseBooleanFilter().getName(),
                 Boolean.toString(useBooleanFilter));
 
-        Step booleanStep = createStep(question, params, filter, false, false);
+        Step booleanStep = createStep(question, params, filter, false);
         booleanStep.setPreviousStep(leftStep);
         booleanStep.setChildStep(rightStep);
         return booleanStep;

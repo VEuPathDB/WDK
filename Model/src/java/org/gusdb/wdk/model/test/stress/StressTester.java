@@ -151,7 +151,7 @@ public class StressTester {
         try {
             initializeResultTable(wdkModel);
             // get a new test_tag
-            testTag = getNewTestTag(wdkModel);
+            testTag = getNewTestTag();
             System.out.println("The curent test tag is: " + testTag);
         } catch (SQLException ex) {
             throw new WdkModelException(ex);
@@ -163,12 +163,11 @@ public class StressTester {
         composeUrls(wdkModel);
     }
 
-    private void initializeResultTable(WdkModel wdkModel) throws SQLException,
-            WdkUserException, WdkModelException {
+    private void initializeResultTable(WdkModel wdkModel) throws SQLException {
         // check if result table exists
         try {
-            ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
-                    "SELECT * FROM " + TABLE_STRESS_RESULT);
+            ResultSet rs = SqlUtils.executeQuery(dataSource, "SELECT * FROM "
+                    + TABLE_STRESS_RESULT);
             SqlUtils.closeResultSet(rs);
         } catch (SQLException e) {
             // table doesn't exist, create it
@@ -189,7 +188,7 @@ public class StressTester {
             sb.append(" PRIMARY KEY(test_tag, task_id))");
 
             // create the result table
-            SqlUtils.executeUpdate(wdkModel, dataSource, sb.toString());
+            SqlUtils.executeUpdate(dataSource, sb.toString());
         }
         // initialize update prepared statement
         StringBuffer sb = new StringBuffer();
@@ -200,9 +199,8 @@ public class StressTester {
                 sb.toString());
     }
 
-    private long getNewTestTag(WdkModel wdkModel) throws SQLException,
-            WdkUserException, WdkModelException {
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
+    private long getNewTestTag() throws SQLException {
+        ResultSet rs = SqlUtils.executeQuery(dataSource,
                 "SELECT count(0), max(test_tag) FROM " + TABLE_STRESS_RESULT);
         long testTag = 0;
         rs.next();

@@ -38,11 +38,13 @@ public class ShowRecordAction extends Action {
         long start = System.currentTimeMillis();
 
         ServletContext svltCtx = getServlet().getServletContext();
-        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
-        UserBean user = ActionUtility.getUser(servlet, request);
-        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+        WdkModelBean wdkModel = (WdkModelBean) svltCtx
+                .getAttribute(CConstants.WDK_MODEL_KEY);
+        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator
+                + CConstants.WDK_PAGES_DIR;
 
-        RecordClassBean wdkRecordClass = wdkModel.findRecordClass(request.getParameter("name"));
+        RecordClassBean wdkRecordClass = wdkModel.findRecordClass(request
+                .getParameter("name"));
         String[] pkColumns = wdkRecordClass.getPrimaryKeyColumns();
 
         Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
@@ -76,22 +78,23 @@ public class ShowRecordAction extends Action {
             urlParams.append(URLEncoder.encode(value, "UTF-8"));
         }
 
+        UserBean user = ActionUtility.getUser(servlet, request);
         RecordBean wdkRecord = new RecordBean(user, wdkRecordClass, pkValues);
 
         request.setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 
-        String customViewFile1 = customViewDir + File.separator
+        String defaultViewFile = customViewDir + File.separator
+                + CConstants.WDK_RECORD_PAGE;
+
+        String customViewFile = customViewDir + File.separator
+                + CConstants.WDK_RECORDS_DIR + File.separator
                 + wdkRecordClass.getFullName() + ".jsp";
-        String customViewFile2 = customViewDir + File.separator
-                + CConstants.WDK_CUSTOM_RECORD_PAGE;
+
         ActionForward forward = null;
-        if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
-            forward = new ActionForward(customViewFile1 + urlParams, false);
-        } else if (ApplicationInitListener.resourceExists(customViewFile2,
-                svltCtx)) {
-            forward = new ActionForward(customViewFile2 + urlParams, false);
+        if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
+            forward = new ActionForward(customViewFile + urlParams, false);
         } else {
-            forward = mapping.findForward(CConstants.SHOW_RECORD_MAPKEY);
+            forward = new ActionForward(defaultViewFile);
         }
 
         long end = System.currentTimeMillis();

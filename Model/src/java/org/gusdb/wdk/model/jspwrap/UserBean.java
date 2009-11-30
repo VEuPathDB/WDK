@@ -12,7 +12,6 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.Dataset;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
@@ -350,7 +349,7 @@ public class UserBean /* implements Serializable */{
      * java.lang.String, java.lang.String)
      */
     public void changePassword(String oldPassword, String newPassword,
-            String confirmPassword) throws WdkUserException, WdkModelException {
+            String confirmPassword) throws WdkUserException {
         user.changePassword(oldPassword, newPassword, confirmPassword);
     }
 
@@ -551,7 +550,7 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#save()
      */
-    public void save() throws WdkUserException, WdkModelException {
+    public void save() throws WdkUserException {
         user.save();
     }
 
@@ -592,8 +591,7 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#clearHistories()
      */
-    public void deleteSteps() throws WdkUserException, SQLException,
-            WdkModelException {
+    public void deleteSteps() throws WdkUserException, SQLException {
         user.deleteSteps();
     }
 
@@ -604,11 +602,11 @@ public class UserBean /* implements Serializable */{
      * org.gusdb.wdk.model.user.User#createHistory(org.gusdb.wdk.model.Answer)
      */
     public StepBean createStep(QuestionBean question,
-            Map<String, String> params, String filterName, boolean deleted,
-            boolean validate) throws WdkUserException, WdkModelException,
+            Map<String, String> params, String filterName, boolean validate)
+            throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, JSONException, SQLException {
         Step step = user.createStep(question.question, params, filterName,
-                deleted, validate);
+                validate);
         latestStep = new StepBean(this, step);
         return latestStep;
     }
@@ -743,8 +741,7 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#getStrategyCount()
      */
-    public int getStrategyCount() throws WdkUserException, SQLException,
-            WdkModelException {
+    public int getStrategyCount() throws WdkUserException, SQLException {
         return user.getStrategyCount();
     }
 
@@ -772,7 +769,7 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#getHistoryCount()
      */
-    public int getStepCount() throws WdkUserException, WdkModelException {
+    public int getStepCount() throws WdkUserException {
         return user.getStepCount();
     }
 
@@ -790,8 +787,7 @@ public class UserBean /* implements Serializable */{
      * 
      * @see org.gusdb.wdk.model.user.User#setItemsPerPage(int)
      */
-    public void setItemsPerPage(int itemsPerPage) throws WdkUserException,
-            WdkModelException {
+    public void setItemsPerPage(int itemsPerPage) throws WdkUserException {
         user.setItemsPerPage(itemsPerPage);
     }
 
@@ -836,11 +832,10 @@ public class UserBean /* implements Serializable */{
      * @param sortingChecksum
      * @return
      * @throws WdkUserException
-     * @throws WdkModelException
      * @see org.gusdb.wdk.model.user.User#getSortingAttributesByChecksum(java.lang.String)
      */
     public Map<String, Boolean> getSortingAttributesByChecksum(
-            String sortingChecksum) throws WdkUserException, WdkModelException {
+            String sortingChecksum) throws WdkUserException {
         return user.getSortingAttributesByChecksum(sortingChecksum);
     }
 
@@ -869,10 +864,9 @@ public class UserBean /* implements Serializable */{
     /**
      * @return
      * @throws WdkUserException
-     * @throws WdkModelException
      * @see org.gusdb.wdk.model.user.User#createRemoteKey()
      */
-    public String createRemoteKey() throws WdkUserException, WdkModelException {
+    public String createRemoteKey() throws WdkUserException {
         return user.createRemoteKey();
     }
 
@@ -913,12 +907,9 @@ public class UserBean /* implements Serializable */{
 
     /**
      * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
      * @see org.gusdb.wdk.model.user.User#deleteStrategies()
      */
-    public void deleteStrategies() throws SQLException, WdkUserException,
-            WdkModelException {
+    public void deleteStrategies() throws SQLException {
         user.deleteStrategies();
     }
 
@@ -1001,8 +992,7 @@ public class UserBean /* implements Serializable */{
     }
 
     public boolean checkNameExists(StrategyBean strategy, String name,
-            boolean saved) throws SQLException, WdkUserException,
-            WdkModelException {
+            boolean saved) throws SQLException {
         return user.checkNameExists(strategy.strategy, name, saved);
     }
 
@@ -1156,38 +1146,5 @@ public class UserBean /* implements Serializable */{
             JSONException, WdkUserException {
         return new StrategyBean(this, user.copyStrategy(strategy.strategy,
                 stepId));
-    }
-
-    public void addToBasket(RecordClassBean recordClass,
-            List<Map<String, String>> ids) throws SQLException,
-            WdkUserException, WdkModelException {
-        BasketFactory factory = user.getWdkModel().getBasketFactory();
-        factory.addToBasket(user, recordClass.recordClass, ids);
-    }
-
-    public void addToBasket(StepBean step) throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
-        BasketFactory factory = user.getWdkModel().getBasketFactory();
-        factory.addToBasket(user, step.step);
-    }
-
-    public void removeFromBasket(RecordClassBean recordClass,
-            List<Map<String, String>> ids) throws SQLException,
-            WdkUserException, WdkModelException {
-        BasketFactory factory = user.getWdkModel().getBasketFactory();
-        factory.removeFromBasket(user, recordClass.recordClass, ids);
-    }
-
-    public void removeFromBasket(StepBean step)
-            throws NoSuchAlgorithmException, WdkModelException, JSONException,
-            WdkUserException, SQLException {
-        BasketFactory factory = user.getWdkModel().getBasketFactory();
-        factory.removeFromBasket(user, step.step);
-    }
-
-    public void clearBasket(RecordClassBean recordClass) throws SQLException,
-            WdkUserException, WdkModelException {
-        BasketFactory factory = user.getWdkModel().getBasketFactory();
-        factory.clearBasket(user, recordClass.recordClass);
     }
 }

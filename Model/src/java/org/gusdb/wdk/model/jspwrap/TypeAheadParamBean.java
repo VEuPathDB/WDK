@@ -3,7 +3,14 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.TypeAheadParam;
+import org.gusdb.wdk.model.user.User;
+import org.json.JSONException;
 
 /**
  * @author xingao

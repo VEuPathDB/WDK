@@ -46,8 +46,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
     private static final String KEY_SIZE_CACHE_MAP = "size_cache";
     private static final int MAX_SIZE_CACHE_MAP = 100;
 
-    private static final String PARAM_HIDDEN_STEP = "hidden";
-
     private static Logger logger = Logger.getLogger(ShowSummaryAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
@@ -60,21 +58,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         String roFlag = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
         boolean resultOnly = (roFlag != null && Boolean.valueOf(roFlag));
-        StrategyBean strategy = null;
         try {
-            String state = request.getParameter(CConstants.WDK_STATE_KEY);
-
-            // load existing strategy, if needed.
-            String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-            String strategyKey = strStratId;
-            if (strStratId != null && strStratId.length() != 0) {
-                if (strStratId.indexOf("_") > 0) {
-                    // strBranchId = strStratId.split("_")[1];
-                    strStratId = strStratId.split("_")[0];
-                }
-                strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
-            }
-
             QuestionForm qForm = (QuestionForm) form;
             // TRICKY: this is for action forward from
             // ProcessQuestionSetsFlatAction
@@ -88,6 +72,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             // Get userAnswer id & strategy id from request (if they exist)
             String strStepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
+            String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
             String filterName = request.getParameter("filter");
             // String strBranchId = null;
 
@@ -116,13 +101,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
                 params = qForm.getMyProps();
 
-                // get the hidden flag
-                String strHidden = request.getParameter(PARAM_HIDDEN_STEP);
-                boolean hidden = "true".equalsIgnoreCase(strHidden);
-
                 // make the answer
-                step = summaryPaging(request, wdkQuestion, params, filterName,
-                        hidden);
+                step = summaryPaging(request, wdkQuestion, params, filterName);
             } else {
                 logger.debug("load existing step");
 
@@ -181,6 +161,16 @@ public class ShowSummaryAction extends ShowQuestionAction {
             // if (userAnswer != null && userAnswer.getEstimateSize() == 0)
             // wdkUser.deleteStep(userAnswer.getStepId());
 
+            StrategyBean strategy = null;
+            String strategyKey = strStratId;
+            if (strStratId != null && strStratId.length() != 0) {
+                if (strStratId.indexOf("_") > 0) {
+                    // strBranchId = strStratId.split("_")[1];
+                    strStratId = strStratId.split("_")[0];
+                }
+                strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
+            }
+
             String queryString;
             if (strategy == null) {
                 strategy = wdkUser.createStrategy(step, false);
@@ -201,17 +191,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             logger.debug("preparing forward");
 
+            // make ActionForward
+
             // forward to the results page, if requested
             if (resultOnly) {
-		// verify the checksum
-		String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
-		if (checksum != null && !strategy.getChecksum().equals(checksum)) {
-		    logger.error("strategy checksum: " + strategy.getChecksum()
-				 + ", but the input checksum: " + checksum);
-		    ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response, state);
-		    return null;
-		}
-
                 // update the step size
                 step.setEstimateSize(step.getResultSize());
                 step.update(true);
@@ -236,22 +219,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
             return forward;
         } catch (Exception ex) {
             ex.printStackTrace();
-
-            // validate the existing strategy in showSummary.
-            if (strategy != null) {
-                logger.info("validating all steps");
-                if (!strategy.getLatestStep().validate()) {
-                    // if the strategy is invalid, go to showStrategy instead of
-                    // showing the result. the invalidation message will be
-                    // embedded in each step.
-                    ActionForward forward = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
-                    String path = forward.getPath() + "?strategy="
-                            + strategy.getStrategyId();
-                    request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
-                    return new ActionForward(path, false);
-                }
-            }
-
+            // ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
+            // return null;
             return showError(wdkModel, wdkUser, mapping, request, response, ex,
                     resultOnly);
         }
@@ -265,11 +234,16 @@ public class ShowSummaryAction extends ShowQuestionAction {
         logger.debug("start getting forward");
 
         ServletContext svltCtx = getServlet().getServletContext();
-        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
-        String customViewFile1 = customViewDir + File.separator
-                + wdkAnswer.getQuestion().getFullName() + ".summary.jsp";
-        String customViewFile2 = customViewDir + File.separator
-                + wdkAnswer.getRecordClass().getFullName() + ".summary.jsp";
+	String baseFilePath = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR
+	    + File.separator + CConstants.WDK_RESULTS_DIR;
+        String customViewFile1 = baseFilePath + File.separator
+	    + wdkAnswer.getQuestion().getFullName() + ".results.jsp";
+        String customViewFile2 = baseFilePath + File.separator
+	    + wdkAnswer.getRecordClass().getFullName() + ".results.jsp";
+	String defaultViewFile = CConstants.WDK_DEFAULT_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR
+	    + File.separator + CConstants.WDK_RESULTS_PAGE;
         ActionForward forward = null;
 
         if (request.getParameterMap().containsKey(
@@ -279,19 +253,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String path = forward.getPath() + "?"
                     + CConstants.WDK_STEP_ID_PARAM + "=" + stepId;
             return new ActionForward(path, true);
-        } /*
-           * else if (wdkAnswer.getResultSize() == 1 &&
-           * !wdkAnswer.getIsDynamic() &&
-           * wdkAnswer.getQuestion().isNoSummaryOnSingleRecord()) { RecordBean
-           * rec = (RecordBean) wdkAnswer.getRecords().next(); forward =
-           * mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY); String path =
-           * forward.getPath() + "?name=" + rec.getRecordClass().getFullName();
-           * 
-           * Map<String, Object> pkValues = rec.getPrimaryKey().getValues(); for
-           * (String pkColumn : pkValues.keySet()) { Object value =
-           * pkValues.get(pkColumn); path += "&" + pkColumn + "=" + value; }
-           * return new ActionForward(path, true); }
-           */
+        }
 
         if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
             forward = new ActionForward(customViewFile1);
@@ -299,8 +261,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 svltCtx)) {
             forward = new ActionForward(customViewFile2);
         } else {
-            forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
-        }
+            forward = new ActionForward(defaultViewFile);
+	}
 
         logger.debug("end getting forward");
         return forward;
@@ -325,14 +287,13 @@ public class ShowSummaryAction extends ShowQuestionAction {
         QuestionBean question = step.getQuestion();
         Map<String, String> paramValues = step.getParams();
         String filterName = step.getFilterName();
-        return summaryPaging(request, question, paramValues, filterName, false);
+        return summaryPaging(request, question, paramValues, filterName);
     }
 
     public static StepBean summaryPaging(HttpServletRequest request,
-            QuestionBean question, Map<String, String> params,
-            String filterName, boolean deleted) throws WdkModelException,
-            WdkUserException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+            QuestionBean question, Map<String, String> params, String filterName)
+            throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         logger.debug("start summary paging...");
 
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
@@ -343,8 +304,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         logger.info("Make answer with start=" + start + ", end=" + end);
 
-        StepBean step = wdkUser.createStep(question, params, filterName,
-                deleted, true);
+        StepBean step = wdkUser.createStep(question, params, filterName, true);
         AnswerValueBean answerValue = step.getAnswerValue();
         int totalSize = answerValue.getResultSize();
         if (end > totalSize) end = totalSize;
@@ -430,20 +390,12 @@ public class ShowSummaryAction extends ShowQuestionAction {
         }
         request.setAttribute(CConstants.WDK_RESULT_SET_ONLY_KEY, resultOnly);
 
-        ServletContext svltCtx = getServlet().getServletContext();
-        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR;
         String customViewFile = customViewDir + File.separator
-                + CConstants.WDK_CUSTOM_SUMMARY_ERROR_PAGE;
+                + CConstants.WDK_SUMMARY_ERROR_PAGE;
 
-        String url;
-        if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
-            url = customViewFile;
-        } else {
-            ActionForward forward = mapping.findForward(CConstants.SHOW_ERROR_MAPKEY);
-            url = forward.getPath();
-        }
-
-        ActionForward forward = new ActionForward(url);
+        ActionForward forward = new ActionForward(customViewFile);
         forward.setRedirect(false);
 
         return forward;
@@ -558,8 +510,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     }
 
     private static int getPageSize(HttpServletRequest request,
-            QuestionBean question, UserBean user) throws WdkUserException,
-            WdkModelException {
+            QuestionBean question, UserBean user) throws WdkUserException {
         int pageSize = user.getItemsPerPage();
         // check if the question is supposed to make answers containing all
         // records in one page

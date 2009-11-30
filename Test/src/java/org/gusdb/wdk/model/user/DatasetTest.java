@@ -105,7 +105,7 @@ public class DatasetTest {
     }
     
     private void compareDatasets(Dataset expected, Dataset actual)
-            throws WdkUserException, SQLException, WdkModelException {
+            throws WdkUserException, SQLException {
         Assert.assertEquals(expected.getChecksum(), actual.getChecksum());
         Assert.assertEquals(expected.getSummary(), actual.getSummary());
         Assert.assertEquals(expected.getUploadFile(), actual.getUploadFile());

@@ -3,11 +3,9 @@
  */
 package org.gusdb.wdk.model;
 
-import java.util.List;
 import java.util.Map;
 
 import org.junit.Assert;
-import org.junit.Test;
 
 /**
  * @author Jerric
@@ -53,23 +51,6 @@ public class WdkModelTest {
             String[] values = propLists.get(plName);
             Assert.assertTrue("property list should have some values",
                     values.length > 0);
-        }
-    }
-
-    @Test
-    public void testGetTransformQuestions() {
-        for (RecordClassSet rcSetIn : wdkModel.getAllRecordClassSets()) {
-            for (RecordClass rcIn : rcSetIn.getRecordClasses()) {
-                for (RecordClassSet rcSetOut : wdkModel.getAllRecordClassSets()) {
-                    for (RecordClass rcOut : rcSetOut.getRecordClasses()) {
-                        List<Question> questions = wdkModel.getTransformQuestions(
-                                rcIn, rcOut);
-                        for (Question question : questions) {
-                            Assert.assertTrue(question.getQuery().isTransform());
-                        }
-                    }
-                }
-            }
         }
     }
 }

@@ -18,17 +18,14 @@ Provides form input element for a given term tree node of EnumParam.
     <c:choose>
         <c:when test="${fn:length(children) == 0}">
             <img src="images/spacer.gif" width="13" height="13" />
-            <c:set var="nodeValue" value="${node.term}" />
         </c:when>
         <c:otherwise>
             <img class="switch plus" title="Click to expand(+) or collapse(-)" src="images/plus.gif" width="13" height="13" onclick="toggleChildren(this)"/>
-            <c:set var="nodeValue" />
         </c:otherwise>
     </c:choose>
-
-    <%-- hide parent nodes if it has children. --%>
-    <html:multibox property="myMultiProp(${pNam})" value="${nodeValue}" styleId="${pNam}" onclick="toggleChildrenCheck(this)" />   
- 
+    
+    <html:multibox property="myMultiProp(${pNam})" value="${node.term}" styleId="${pNam}" onclick="toggleChildrenCheck(this)" />
+    
     <c:choose>
     <%-- test for param labels to italicize --%>
         <c:when test="${pNam == 'organism' or pNam == 'ecorganism'}">

@@ -142,7 +142,7 @@ public class StringParam extends Param {
      */
     @Override
     public String dependentValueToInternalValue(User user, String dependentValue)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         String rawValue = decompressValue(dependentValue);
         if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
         rawValue = rawValue.replaceAll("'", "''");
@@ -159,7 +159,7 @@ public class StringParam extends Param {
      */
     @Override
     public String dependentValueToRawValue(User user, String dependentValue)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         return decompressValue(dependentValue);
     }
 
@@ -172,7 +172,7 @@ public class StringParam extends Param {
      */
     @Override
     public String rawOrDependentValueToDependentValue(User user, String rawValue)
-            throws NoSuchAlgorithmException, WdkModelException, WdkUserException {
+            throws NoSuchAlgorithmException, WdkModelException {
         return compressValue(rawValue);
     }
 

@@ -7,7 +7,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Map;
 
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
@@ -35,11 +34,11 @@ public class UserFactoryBean {
     }
 
     public static String encrypt(String str) throws NoSuchAlgorithmException {
-        return UserFactory.encrypt(str);
+	return UserFactory.encrypt(str);
     }
 
     public static String md5(String str) throws NoSuchAlgorithmException {
-        return UserFactory.md5(str);
+	return UserFactory.md5(str);
     }
 
     /*
@@ -112,9 +111,8 @@ public class UserFactoryBean {
      * java.lang.String, java.lang.String, java.lang.String)
      */
     public void sendEmail(String email, String reply, String subject,
-            String content) throws WdkUserException, WdkModelException  {
-        Utilities.sendEmail(userFactory.getWdkModel(), email, reply, subject,
-                content);
+            String content) throws WdkUserException {
+        userFactory.sendEmail(email, reply, subject, content);
     }
 
     /*

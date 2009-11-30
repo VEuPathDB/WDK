@@ -49,8 +49,7 @@ public class SqlQueryInstance extends QueryInstance {
      * @throws WdkUserException
      * @throws NoSuchAlgorithmException
      */
-    protected SqlQueryInstance(User user, SqlQuery query,
-            Map<String, String> values, boolean validate)
+    protected SqlQueryInstance(User user, SqlQuery query, Map<String, String> values, boolean validate)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
         super(user, query, values, validate);
@@ -84,7 +83,7 @@ public class SqlQueryInstance extends QueryInstance {
 
         DBPlatform platform = query.getWdkModel().getQueryPlatform();
         DataSource dataSource = platform.getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
         return new SqlResultList(resultSet);
     }
 
@@ -162,9 +161,8 @@ public class SqlQueryInstance extends QueryInstance {
      */
     @Override
     public void createCache(Connection connection, String tableName,
-            int instanceId, String[] indexColumns)
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
-            JSONException, WdkUserException {
+            int instanceId, String[] indexColumns) throws NoSuchAlgorithmException, WdkModelException,
+            SQLException, JSONException, WdkUserException {
         // get the sql with param values applied.
         String sql = getUncachedSql();
 
@@ -178,10 +176,9 @@ public class SqlQueryInstance extends QueryInstance {
         try {
             stmt = connection.createStatement();
             stmt.execute(buffer.toString());
-
+            
             ResultFactory resultFactory = wdkModel.getResultFactory();
-            resultFactory.createCacheTableIndex(connection, tableName,
-                    indexColumns);
+            resultFactory.createCacheTableIndex(connection, tableName, indexColumns);
         } catch (SQLException ex) {
             logger.error("Fail to run SQL:\n" + buffer);
             throw ex;

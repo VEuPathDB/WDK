@@ -40,7 +40,6 @@ public class StressTestAnalyzer {
     private static final Logger logger = Logger.getLogger(StressTestAnalyzer.class);
 
     private long testTag;
-    private WdkModel wdkModel;
     private DataSource dataSource;
 
     /**
@@ -71,173 +70,151 @@ public class StressTestAnalyzer {
 
         // load WdkModel
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-        wdkModel = WdkModel.construct(modelName, gusHome);
+        WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
         dataSource = wdkModel.getQueryPlatform().getDataSource();
     }
 
-    public long getTaskCount() throws SQLException, WdkModelException,
-            WdkUserException {
+    public long getTaskCount() throws SQLException, WdkModelException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
-        return (Long) SqlUtils.executeScalar(wdkModel, dataSource,
-                sb.toString());
+        return (Long) SqlUtils.executeScalar(dataSource, sb.toString());
     }
 
     public long getTaskCount(String taskType) throws SQLException,
-            WdkModelException, WdkUserException {
+            WdkModelException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND task_type = '" + taskType + "'");
-        return (Long) SqlUtils.executeScalar(wdkModel, dataSource,
-                sb.toString());
+        return (Long) SqlUtils.executeScalar(dataSource, sb.toString());
     }
 
-    public long getSucceededTaskCount() throws SQLException, WdkModelException,
-            WdkUserException {
+    public long getSucceededTaskCount() throws SQLException, WdkModelException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
-        return (Long) SqlUtils.executeScalar(wdkModel, dataSource,
-                sb.toString());
+        return (Long) SqlUtils.executeScalar(dataSource, sb.toString());
     }
 
     public long getSucceededTaskCount(String taskType) throws SQLException,
-            WdkModelException, WdkUserException {
+            WdkModelException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
         sb.append(" AND task_type = '" + taskType + "'");
-        return (Long) SqlUtils.executeScalar(wdkModel, dataSource,
-                sb.toString());
+        return (Long) SqlUtils.executeScalar(dataSource, sb.toString());
     }
 
-    public long getFailedTaskCount() throws SQLException, WdkModelException,
-            WdkUserException {
+    public long getFailedTaskCount() throws SQLException, WdkModelException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type != '" + ResultType.Succeeded.name() + "'");
-        return (Long) SqlUtils.executeScalar(wdkModel, dataSource,
-                sb.toString());
+        return (Long) SqlUtils.executeScalar(dataSource, sb.toString());
     }
 
     public long getFailedTaskCount(String taskType) throws SQLException,
-            WdkModelException, WdkUserException {
+            WdkModelException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type != '" + ResultType.Succeeded.name() + "'");
         sb.append(" AND task_type = '" + taskType + "'");
-        return (Long) SqlUtils.executeScalar(wdkModel, dataSource,
-                sb.toString());
+        return (Long) SqlUtils.executeScalar(dataSource, sb.toString());
     }
 
     public long getTaskCount(ResultType resultType) throws SQLException,
-            WdkModelException, WdkUserException {
+            WdkModelException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + resultType.name() + "'");
-        return (Long) SqlUtils.executeScalar(wdkModel, dataSource,
-                sb.toString());
+        return (Long) SqlUtils.executeScalar(dataSource, sb.toString());
     }
 
     public long getTaskCount(ResultType resultType, String taskType)
-            throws SQLException, WdkModelException, WdkUserException {
+            throws SQLException, WdkModelException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + resultType.name() + "'");
         sb.append(" AND task_type = '" + taskType + "'");
-        return (Long) SqlUtils.executeScalar(wdkModel, dataSource,
-                sb.toString());
+        return (Long) SqlUtils.executeScalar(dataSource, sb.toString());
     }
 
-    public float getTaskSuccessRatio() throws SQLException, WdkModelException,
-            WdkUserException {
+    public float getTaskSuccessRatio() throws SQLException, WdkModelException {
         long total = getTaskCount();
         long succeeded = getSucceededTaskCount();
         return ((float) succeeded / total);
     }
 
     public float getTaskSuccessRatio(String taskType) throws SQLException,
-            WdkModelException, WdkUserException {
+            WdkModelException {
         long total = getTaskCount(taskType);
         long succeeded = getSucceededTaskCount(taskType);
         return (total == 0) ? 0 : ((float) succeeded / total);
     }
 
-    public float getTotalResponseTime() throws SQLException, WdkUserException,
-            WdkModelException {
+    public float getTotalResponseTime() throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT sum(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
-                sb.toString());
+        ResultSet rs = SqlUtils.executeQuery(dataSource, sb.toString());
         rs.next();
         long sum = rs.getLong(1);
         SqlUtils.closeResultSet(rs);
         return (sum / 1000F);
     }
 
-    public float getTotalResponseTime(String taskType) throws SQLException,
-            WdkUserException, WdkModelException {
+    public float getTotalResponseTime(String taskType) throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT sum(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND task_type = '" + taskType + "'");
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
-                sb.toString());
+        ResultSet rs = SqlUtils.executeQuery(dataSource, sb.toString());
         rs.next();
         long sum = rs.getLong(1);
         SqlUtils.closeResultSet(rs);
         return (sum / 1000F);
     }
 
-    public float getAverageResponseTime() throws SQLException,
-            WdkUserException, WdkModelException {
+    public float getAverageResponseTime() throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT avg(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
-                sb.toString());
+        ResultSet rs = SqlUtils.executeQuery(dataSource, sb.toString());
         rs.next();
         float average = rs.getFloat(1);
         SqlUtils.closeResultSet(rs);
         return (average / 1000F);
     }
 
-    public float getAverageResponseTime(String taskType) throws SQLException,
-            WdkUserException, WdkModelException {
+    public float getAverageResponseTime(String taskType) throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT avg(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND task_type = '" + taskType + "'");
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
-                sb.toString());
+        ResultSet rs = SqlUtils.executeQuery(dataSource, sb.toString());
         rs.next();
         float average = rs.getFloat(1);
         SqlUtils.closeResultSet(rs);
         return (average / 1000F);
     }
 
-    public float getTotalSucceededResponseTime() throws SQLException,
-            WdkUserException, WdkModelException {
+    public float getTotalSucceededResponseTime() throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT sum(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
-                sb.toString());
+        ResultSet rs = SqlUtils.executeQuery(dataSource, sb.toString());
         rs.next();
         long sum = rs.getLong(1);
         SqlUtils.closeResultSet(rs);
@@ -245,30 +222,27 @@ public class StressTestAnalyzer {
     }
 
     public float getTotalSucceededResponseTime(String taskType)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT sum(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
         sb.append(" AND task_type = '" + taskType + "'");
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
-                sb.toString());
+        ResultSet rs = SqlUtils.executeQuery(dataSource, sb.toString());
         rs.next();
         long sum = rs.getLong(1);
         SqlUtils.closeResultSet(rs);
         return (sum / 1000F);
     }
 
-    public float getAverageSucceededResponseTime() throws SQLException,
-            WdkUserException, WdkModelException {
+    public float getAverageSucceededResponseTime() throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT avg(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
-                sb.toString());
+        ResultSet rs = SqlUtils.executeQuery(dataSource, sb.toString());
         rs.next();
         float average = rs.getFloat(1);
         SqlUtils.closeResultSet(rs);
@@ -276,23 +250,21 @@ public class StressTestAnalyzer {
     }
 
     public float getAverageSucceededResponseTime(String taskType)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT avg(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
         sb.append(" AND task_type = '" + taskType + "'");
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
-                sb.toString());
+        ResultSet rs = SqlUtils.executeQuery(dataSource, sb.toString());
         rs.next();
         float average = rs.getFloat(1);
         SqlUtils.closeResultSet(rs);
         return (average / 1000F);
     }
 
-    public void print() throws SQLException, WdkModelException,
-            WdkUserException {
+    public void print() throws SQLException, WdkModelException {
         // print out results
 
         // print out all types results

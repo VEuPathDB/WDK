@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Iterator;
@@ -21,6 +23,8 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.user.User;
@@ -337,7 +341,6 @@ public class AnswerValueBean {
      * for controller: reset counter for download purpose
      */
     public void resetAnswerRowCursor() {
-        logger.debug("reset answer cursor");
         int startIndex = answerValue.getStartIndex();
         int endIndex = answerValue.getEndIndex();
         answerValue = new AnswerValue(answerValue, startIndex, endIndex);

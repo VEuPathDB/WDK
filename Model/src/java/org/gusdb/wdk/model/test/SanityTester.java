@@ -5,6 +5,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -224,7 +225,7 @@ public class SanityTester {
                 // discover number of entities expected in each attribute query
                 String testRowCountSql = querySet.getTestRowCountSql();
                 if (testRowCountSql != null) {
-                    ResultSet rs = SqlUtils.executeQuery(wdkModel,
+                    ResultSet rs = SqlUtils.executeQuery(
                             wdkModel.getQueryPlatform().getDataSource(),
                             testRowCountSql);
                     rs.next();
@@ -341,16 +342,13 @@ public class SanityTester {
     private int testAttributeQuery_Count(Query query,
             ParamValuesSet paramValuesSet) throws NoSuchAlgorithmException,
             SQLException, WdkModelException, JSONException, WdkUserException {
-        // put user id into the param
-        Map<String, String> params = new LinkedHashMap<String, String>();
-        params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
 
         SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
-                params, true);
+                new HashMap<String, String>(), true);
 
         if (paramValuesSet.getParamValues().size() != 2) {
             throw new WdkUserException(
-                    "mising <defaultTestParamValues> for querySet "
+                    "missing <defaultTestParamValues> for querySet "
                             + query.getQuerySet().getName());
         }
         String sql = "select count (*) from (select distinct "
@@ -358,7 +356,7 @@ public class SanityTester {
                 + instance.getUncachedSql() + "))";
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
         resultSet.next();
         int count = resultSet.getInt(1);
         SqlUtils.closeResultSet(resultSet);
@@ -369,18 +367,15 @@ public class SanityTester {
             ParamValuesSet paramValuesSet, int count)
             throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
-        // put user id into the param
-        Map<String, String> params = new LinkedHashMap<String, String>();
-        params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
 
         SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
-                params, true);
+                new HashMap<String, String>(), true);
 
         String sql = "select * from (" + instance.getUncachedSql() + ") "
                 + paramValuesSet.getWhereClause();
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
         if (count > 0 && !resultSet.next()) {
             String msg = "no row returned for " + query.getFullName()
                     + " using where clause (" + paramValuesSet.getWhereClause()

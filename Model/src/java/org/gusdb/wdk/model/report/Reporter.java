@@ -105,18 +105,6 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         this.properties = properties;
     }
 
-	public int getResultSize() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException{
-		return this.baseAnswer.getResultSize();
-	}
-
-	public AnswerValue getAnswerValue() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException{
-		return this.baseAnswer;
-	}
-
     public void configure(Map<String, String> config) {
         if (config != null) {
             this.config = config;

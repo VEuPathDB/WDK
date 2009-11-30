@@ -40,7 +40,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     private String recordClassRef;
 
-    private String idQueryRef;
+    private String queryTwoPartName;
 
     private String name;
 
@@ -113,7 +113,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
         // need to deep-copy query as well
         this.query = question.query;
-        this.idQueryRef = question.idQueryRef;
+        this.queryTwoPartName = question.queryTwoPartName;
         this.questionSet = question.questionSet;
         this.recordClass = question.recordClass;
         this.recordClassRef = question.recordClassRef;
@@ -159,11 +159,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     public void setRecordClass(RecordClass recordClass) {
         this.recordClass = recordClass;
-        this.recordClassRef = recordClass.getFullName();
     }
 
     public void setQueryRef(String queryTwoPartName) {
-        this.idQueryRef = queryTwoPartName;
+        this.queryTwoPartName = queryTwoPartName;
     }
 
     public void setDisplayName(String displayName) {
@@ -340,7 +339,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     public void setQuery(Query q) {
         this.query = q;
-        this.idQueryRef = q.getFullName();
     }
 
     public String getName() {
@@ -366,7 +364,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         }
         StringBuffer buf = new StringBuffer("Question: name='" + name + "'"
                 + newline + "  recordClass='" + recordClassRef + "'" + newline
-                + "  query='" + idQueryRef + "'" + newline
+                + "  query='" + queryTwoPartName + "'" + newline
                 + "  displayName='" + getDisplayName() + "'" + newline
                 + "  summary='" + getSummary() + "'" + newline
                 + "  description='" + getDescription() + "'" + newline
@@ -485,7 +483,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         this.recordClass = (RecordClass) model.resolveReference(recordClassRef);
 
         // the id query is forced to be cache-able.
-        query = (Query) model.resolveReference(idQueryRef);
+        query = (Query) model.resolveReference(queryTwoPartName);
         // query.setIsCacheable(true);
 
         // dynamic attribute set need to be initialized after the id query.

@@ -13,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.gusdb.wdk.model.AnswerFilterInstance;
+import org.gusdb.wdk.model.BooleanOperator;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -119,17 +120,13 @@ public class BooleanExpression {
             Step left = parseBlock(triplet[0], replace, useBooleanFilter);
             Step right = parseBlock(triplet[2], replace, useBooleanFilter);
 
-            String operator = triplet[1].trim();
+            BooleanOperator operator = BooleanOperator.parse(triplet[1]);
 
             // create boolean answer that wraps the children
             Question question = left.getQuestion();
-	    String filterName = null;
             AnswerFilterInstance filter = question.getRecordClass().getDefaultFilter();
-	    if (filter != null) {
-		filterName = filter.getName();
-	    }
             return user.createBooleanStep(left, right, operator,
-                    useBooleanFilter, filterName);
+                    useBooleanFilter, filter);
         }
     }
 

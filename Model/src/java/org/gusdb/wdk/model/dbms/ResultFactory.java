@@ -31,12 +31,10 @@ public class ResultFactory {
 
     private DBPlatform platform;
     private CacheFactory cacheFactory;
-    private WdkModel wdkModel;
 
     public ResultFactory(WdkModel wdkModel) throws SQLException {
         this.platform = wdkModel.getQueryPlatform();
         this.cacheFactory = new CacheFactory(wdkModel, platform);
-        this.wdkModel = platform.getWdkModel();
     }
 
     public CacheFactory getCacheFactory() {
@@ -63,8 +61,7 @@ public class ResultFactory {
 
         // get the resultList
         DataSource dataSource = platform.getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
-                sql.toString());
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql.toString());
         return new SqlResultList(resultSet);
     }
 
@@ -124,8 +121,7 @@ public class ResultFactory {
         DataSource dataSource = platform.getDataSource();
         ResultSet resultSet = null;
         try {
-            resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
-                    sql.toString());
+            resultSet = SqlUtils.executeQuery(dataSource, sql.toString());
             if (!resultSet.next()) return null;
 
             int instanceId = resultSet.getInt(CacheFactory.COLUMN_INSTANCE_ID);
@@ -160,9 +156,6 @@ public class ResultFactory {
                 // create the cache using the result of the first query
                 instance.createCache(connection, cacheTable, instanceId,
                         indexColumns);
-                // disable the stats on the new cache table
-                String schema = platform.getWdkModel().getModelConfig().getAppDB().getLogin();
-                platform.disableStatistics(connection, schema, cacheTable);
             } else {// insert result into existing cache table
                 instance.insertToCache(connection, cacheTable, instanceId);
             }

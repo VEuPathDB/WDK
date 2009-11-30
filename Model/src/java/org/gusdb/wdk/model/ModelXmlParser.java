@@ -300,9 +300,6 @@ public class ModelXmlParser extends XmlParser {
 
         // configure all sub nodes of xmlRecordSet
         configureGroupSet(digester);
-        
-        // configure query monitor
-        configureQueryMonitor(digester);
 
         return digester;
     }
@@ -737,22 +734,6 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester, prefix + "textAttribute/text",
                 WdkModelText.class, "addText");
         digester.addCallMethod(prefix + "textAttribute/text", "setText", 0);
-    }
-    
-    private void configureQueryMonitor(Digester digester) {
-        // load GroupSet
-        configureNode(digester, "wdkModel/queryMonitor", QueryMonitor.class,
-                "addQueryMonitor");
-
-        configureNode(digester, "wdkModel/queryMonitor/ignoreSlowQueryRegex",
-                WdkModelText.class, "addIgnoreSlowQueryRegex");
-        digester.addCallMethod("wdkModel/queryMonitor/ignoreSlowQueryRegex",
-                "setText", 0);
-
-        configureNode(digester, "wdkModel/queryMonitor/ignoreBrokenQueryRegex",
-                WdkModelText.class, "addIgnoreBrokenQueryRegex");
-        digester.addCallMethod("wdkModel/queryMonitor/ignoreBrokenQueryRegex",
-                "setText", 0);
     }
 
     public static void main(String[] args) throws SAXException, IOException,

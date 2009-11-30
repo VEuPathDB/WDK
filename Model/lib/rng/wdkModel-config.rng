@@ -13,9 +13,6 @@
             <optional>
                 <attribute name="defaultRole" />
             </optional>
-            <optional>
-                <attribute name="adminEmail" />
-            </optional>
             
             <interleave>
 
