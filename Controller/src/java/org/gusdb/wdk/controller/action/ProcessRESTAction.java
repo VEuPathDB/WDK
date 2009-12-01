@@ -237,10 +237,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
 		  "xsi:schemaLocation='http://wadl.dev.java.net/2009/02 wadl.xsd' " +  
 		  "xmlns:xsd='http://www.w3.org/2001/XMLSchema' " +  
 		  "xmlns='http://wadl.dev.java.net/2009/02'>");
-		//String base = request.getRequestURI();
-		String base = request.getHeader("Host");
-		base = base + "/webservices/";
-		//base = base.substring(0, base.indexOf("webservices")) + "webservices/";
+		String base = request.getHeader("Host") + "/webservices/";
 		writer.println("<resources base='http://" + base + "'>");
 		if(sQName.split(":")[1].equals("all")){
 			if (qFullName != null)
