@@ -269,7 +269,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
 	
 	private void writeWADL(QuestionBean wdkQuestion, PrintWriter writer) throws Exception{
 	    logger.info(wdkQuestion.getDisplayName());
-		writer.println("<resource path='"+wdkQuestion.getName()+"'>");
+		writer.println("<resource path='"+wdkQuestion.getName()+".xml'>");
 		writer.println("<method name='POST' id='" + wdkQuestion.getName().toLowerCase() + "'>");
 		writer.println("<request>");
 		for(String key : wdkQuestion.getParamsMap().keySet() ){
@@ -294,10 +294,39 @@ public class ProcessRESTAction extends ShowQuestionAction {
 		writer.println("</request>");
 		writer.println("<response>");
 		writer.println("<representation mediaType='text/xml'/>");
-		writer.println("<representation mediaType='text/plain'/>");
 		writer.println("</response>");
 		writer.println("</method>");
 		writer.println("</resource>");
+		
+			writer.println("<resource path='"+wdkQuestion.getName()+".json'>");
+			writer.println("<method name='POST' id='" + wdkQuestion.getName().toLowerCase() + "'>");
+			writer.println("<request>");
+			for(String key : wdkQuestion.getParamsMap().keySet() ){
+				writer.println("<param name='"+key+"' type='xsd:string'>");
+				ParamBean p = wdkQuestion.getParamsMap().get(key);
+				if(p instanceof EnumParamBean){
+					EnumParamBean ep = (EnumParamBean)p;
+					for(String term : ep.getVocabMap().keySet()){
+						writer.println("<option>"+term+"</option>");
+					}
+				}
+				writer.println("</param>");
+			}
+			writer.println("<param name='o-fields' type='xsd:string'>");
+			for(String attr : wdkQuestion.getReportMakerAttributesMap().keySet())
+				writer.println("<option>"+attr+"</option>");
+			writer.println("</param>");
+			writer.println("<param name='o-tables' type='xsd:string'>");
+			for(String tab : wdkQuestion.getReportMakerTablesMap().keySet())
+				writer.println("<option>"+tab+"</option>");
+			writer.println("</param>");
+			writer.println("</request>");
+			writer.println("<response>");
+			writer.println("<representation mediaType='text/plain'/>");
+			writer.println("</response>");
+			writer.println("</method>");
+			writer.println("</resource>");
+		
 		// construct the forward to show_summary action
 		return;
 	}
