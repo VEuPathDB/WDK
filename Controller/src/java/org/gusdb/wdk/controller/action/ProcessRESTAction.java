@@ -276,9 +276,11 @@ public class ProcessRESTAction extends ShowQuestionAction {
 		writer.println("<method href='#" + wdkQuestion.getName().toLowerCase() + "'/>");
 		writer.println("</resource>");
 		writer.println("<method name='POST' id='" + wdkQuestion.getName().toLowerCase() + "'>");
+		writer.println("<doc title='" + wdkQuestion.getDisplayName() + "'>" + wdkQuestion.getDescription() + "</doc>");
 		writer.println("<request>");
 		for(String key : wdkQuestion.getParamsMap().keySet() ){
 			writer.println("<param name='"+key+"' type='xsd:string'>");
+			writer.println("<doc title='" + wdkQuestion.getParamsMap().get(key).getName() + "'>" + wdkQuestion.getParamsMap().get(key).getHelp() + "</doc>");
 			ParamBean p = wdkQuestion.getParamsMap().get(key);
 			if(p instanceof EnumParamBean){
 				EnumParamBean ep = (EnumParamBean)p;
@@ -289,10 +291,16 @@ public class ProcessRESTAction extends ShowQuestionAction {
 			writer.println("</param>");
 		}
 		writer.println("<param name='o-fields' type='xsd:string'>");
+		writer.println("<doc title='Output Fields'>Single valued attributes of the feature.  Default = none.</doc>");
+		writer.println("<option>all</option>");
+		writer.println("<option>none</option>");
 		for(String attr : wdkQuestion.getReportMakerAttributesMap().keySet())
 			writer.println("<option>"+attr+"</option>");
 		writer.println("</param>");
 		writer.println("<param name='o-tables' type='xsd:string'>");
+		writer.println("<doc title='Output Talbes'>Multi-valued attributes of the feature. Default = none.</doc>");
+		writer.println("<option>all</option>");
+		writer.println("<option>none</option>");
 		for(String tab : wdkQuestion.getReportMakerTablesMap().keySet())
 			writer.println("<option>"+tab+"</option>");
 		writer.println("</param>");
