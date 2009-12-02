@@ -237,8 +237,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
 		  "xsi:schemaLocation='http://wadl.dev.java.net/2009/02 wadl.xsd' " +  
 		  "xmlns:xsd='http://www.w3.org/2001/XMLSchema' " +  
 		  "xmlns='http://wadl.dev.java.net/2009/02'>");
-		String base = request.getRequestURI();
-		base = base.substring(0, base.indexOf("webservices")) + "webservices/";
+		String base = request.getHeader("Host") + "/webservices/";
 		writer.println("<resources base='http://" + base + "'>");
 		if(sQName.split(":")[1].equals("all")){
 			if (qFullName != null)
@@ -270,11 +269,18 @@ public class ProcessRESTAction extends ShowQuestionAction {
 	
 	private void writeWADL(QuestionBean wdkQuestion, PrintWriter writer) throws Exception{
 	    logger.info(wdkQuestion.getDisplayName());
-		writer.println("<resource path='"+wdkQuestion.getName()+"'>");
+		writer.println("<resource path='"+wdkQuestion.getName()+".xml'>");
+		writer.println("<method href='#" + wdkQuestion.getName().toLowerCase() + "'/>");
+		writer.println("</resource>");
+		writer.println("<resource path='"+wdkQuestion.getName()+".json'>");
+		writer.println("<method href='#" + wdkQuestion.getName().toLowerCase() + "'/>");
+		writer.println("</resource>");
 		writer.println("<method name='POST' id='" + wdkQuestion.getName().toLowerCase() + "'>");
+		writer.println("<doc title='" + wdkQuestion.getDisplayName() + "'>" + wdkQuestion.getDescription() + "</doc>");
 		writer.println("<request>");
 		for(String key : wdkQuestion.getParamsMap().keySet() ){
 			writer.println("<param name='"+key+"' type='xsd:string'>");
+			writer.println("<doc title='" + wdkQuestion.getParamsMap().get(key).getName() + "'>" + wdkQuestion.getParamsMap().get(key).getHelp() + "</doc>");
 			ParamBean p = wdkQuestion.getParamsMap().get(key);
 			if(p instanceof EnumParamBean){
 				EnumParamBean ep = (EnumParamBean)p;
@@ -285,10 +291,16 @@ public class ProcessRESTAction extends ShowQuestionAction {
 			writer.println("</param>");
 		}
 		writer.println("<param name='o-fields' type='xsd:string'>");
+		writer.println("<doc title='Output Fields'>Single valued attributes of the feature.  Default = none.</doc>");
+		writer.println("<option>all</option>");
+		writer.println("<option>none</option>");
 		for(String attr : wdkQuestion.getReportMakerAttributesMap().keySet())
 			writer.println("<option>"+attr+"</option>");
 		writer.println("</param>");
 		writer.println("<param name='o-tables' type='xsd:string'>");
+		writer.println("<doc title='Output Talbes'>Multi-valued attributes of the feature. Default = none.</doc>");
+		writer.println("<option>all</option>");
+		writer.println("<option>none</option>");
 		for(String tab : wdkQuestion.getReportMakerTablesMap().keySet())
 			writer.println("<option>"+tab+"</option>");
 		writer.println("</param>");
@@ -298,7 +310,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
 		writer.println("<representation mediaType='text/plain'/>");
 		writer.println("</response>");
 		writer.println("</method>");
-		writer.println("</resource>");
+  
 		// construct the forward to show_summary action
 		return;
 	}
