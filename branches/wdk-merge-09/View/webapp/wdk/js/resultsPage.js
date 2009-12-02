@@ -43,7 +43,54 @@ function resetAttr(url) {
         GetResultsPage(url, true, true);
     }
 }
-		
+
+//Shopping basket on clickFunction
+function updateBasket(ele, type, pk, pid,recordType) {
+	var i = $("img",ele);
+	var a = new Array();
+	var o = new Object();
+	o.source_id = pk;
+	o.project_id = pid;
+	a[0] = o;
+	var action = null;
+	var da = null;
+	if(type == "single"){
+		da = $.json.serialize(a);
+		action = (i.attr("value") == '0') ? "add" : "remove";
+	}else{
+		da = type;
+		action = (i.attr("value") == '0') ? "add-all" : "remove-all";
+	}
+	var d = "action="+action+"&type="+recordType+"&data="+da;
+		$.ajax({
+			url: "processBasket.do",
+			type: "post",
+			data: d,
+			dataType: "html",
+			success: function(data){
+				if(type == "single"){
+					if(action == "add") {
+						i.attr("src","/assets/images/basket_color.png");
+						i.attr("value", "1");
+					}else{
+						i.attr("src","/assets/images/basket_gray.png");
+						i.attr("value", "0");
+					}
+				}else{
+					if(action == "add-all") {
+						$("img.basket").attr("src","/assets/images/basket_color.png");
+						$("img.basket").attr("value", "1");
+					}else{
+						$("img.basket").attr("src","/assets/images/basket_gray.png");
+						$("img.basket").attr("value", "0");
+					}
+				}
+			},
+			error: function(){
+				alert("Error adding Gene to basket!");
+			}
+		});
+}		
 
 function GetResultsPage(url, update, ignoreFilters){
 	var s = parseUrlUtil("strategy", url);
@@ -114,7 +161,9 @@ function ResultsToGrid(data, ignoreFilters) {
 	// create multi select control for adding columns
 	var attrSelect = $("#addAttributes");
 	if (attrSelect.length > 0) { 
-		attrSelect.multiSelect({selectAll: false, noneSelected: '--- Add Column ---'},
+		attrSelect.multiSelect({selectAll: false,
+				noneSelected: '--- Add Column ---',
+				oneOrMoreSelected: '% selected: leave menu to submit'},
 				function() {
 					addAttr($("#addAttributes").attr('commandUrl'));
 				});
