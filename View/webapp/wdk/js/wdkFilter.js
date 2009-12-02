@@ -37,6 +37,7 @@ function WdkFilter() {
             });
             // add mouse over to the link
             var detail = $(this).find(".instance-detail");
+//cris: z-index added to show filter popup over column titles in result
             $(this).hover(function() {
                               var position = $(this).position();
                               var top = position.top + $(this).height() + 3;
@@ -44,6 +45,7 @@ function WdkFilter() {
                               detail.css("left", left + "px");
                               detail.css("top", top + "px");
                               detail.css("display", "block");
+			      detail.css("z-index", "10");
                           },
                           function() {
                               detail.css("display", "none");

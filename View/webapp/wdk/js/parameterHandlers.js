@@ -1,9 +1,10 @@
 var dependedParams = new Array();
 var displayTermMap = new Array();
 
-function initParamHandlers(isPopup) {
-	initTypeAhead();
-	initDependentParamHandlers();
+function initParamHandlers(isPopup, isEdit) {
+	if(isEdit == undefined) isEdit = false;
+	initTypeAhead(isEdit);
+	initDependentParamHandlers(isEdit);
 	if (!isPopup){
 		$("#form_question").submit(function() {
 			mapTypeAheads();
@@ -12,36 +13,41 @@ function initParamHandlers(isPopup) {
 	}
 }
 
-function initDependentParamHandlers() {
-	$("input.dependentParam, select.dependentParam").each(function() {
-		$(this).attr('disabled',true);
+function initDependentParamHandlers(isEdit) {
+	$('div.dependentParam').each(function() {
+		$('input, select', this).attr('disabled',true);
 		var name = $(this).attr('name');
-		name = name.substring(name.indexOf("myMultiProp(") + 12, name.indexOf(")"));
 		if (!dependedParams[name]) {
-			dependedParams[name] = $(this).attr('class');
-			dependedParams[name] = dependedParams[name].substr(dependedParams[name].indexOf('dependsOn')+9)
+			dependedParams[name] = $(this).attr('dependson');
 		}
 		var dependedParam = $("td#" + dependedParams[name] + "aaa input[name='myMultiProp(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='myMultiProp(" + dependedParams[name] + ")']");
-		dependedParam.unbind('change');
 		dependedParam.change(function() {
 			updateDependentParam(name, $(this).val());
 		});
 	});
 
 	//Trigger the change function so dependent params are initialized correctly
-	for (var name in dependedParams) {
-		dependedParam =  $("td#" + dependedParams[name] + "aaa input[name='myMultiProp(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='myMultiProp(" + dependedParams[name] + ")']");
-		dependedParam.change();
+	if(!isEdit){
+		for (var name in dependedParams) {
+			dependedParam =  $("td#" + dependedParams[name] + "aaa input[name='myMultiProp(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='myMultiProp(" + dependedParams[name] + ")']");
+			dependedParam.change();
+		}
+	}else{
+		$('div.dependentParam').each(function() {
+			$('input, select', this).attr('disabled',false);
+		});
 	}
 }
 
-function initTypeAhead() {
+function initTypeAhead(isEdit) {
 	$("input:hidden.typeAhead").each(function() {
 		var questionName = $(this).closest("form").children("input:hidden[name=questionFullName]").val();
 		var paramName = $(this).attr('name');
 		paramName = paramName.substring(paramName.indexOf("myMultiProp(") + 12, paramName.indexOf(")"));
 		$("#" + paramName + "_display").attr('disabled',true);
-		if(!$(this).hasClass('dependentParam')) {
+		if(!$(this).parent('div').hasClass('dependentParam')) {
+			if(!isEdit)
+				$("#" + paramName + "_display").val('Loading options...');
 			var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&xml=true';
 			$.ajax({
 				url: sendReqUrl,
@@ -68,25 +74,25 @@ function createAutoComplete(obj, name) {
 			displayTermMap[name][display] = term;
 		});		
 	}
-	$("#" + name + "_display").autocomplete(def,{
+	$("#" + name + "_display").unautocomplete().autocomplete(def,{
 		matchContains: true
 	});
-	$("#" + name + "_display").removeAttr('disabled');
+	$("#" + name + "_display").val('').removeAttr('disabled');
 }
 
 function updateDependentParam(paramName, dependedValue) {
 	if (dependedValue && dependedValue != 'Choose one:') {
-		var dependentParam = $("td#" + paramName + "aaa input[name='myMultiProp(" + paramName + ")']");
-		if (dependentParam.length == 0) dependentParam = $("td#" + paramName + "aaa select[name='myMultiProp(" + paramName + ")']");
+		var dependentParam = $("td#" + paramName + "aaa > div.dependentParam[name='" + paramName + "']");
 		var questionName = dependentParam.closest("form").children("input:hidden[name=questionFullName]").val();
 		var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&dependedValue=' + dependedValue;
-		if (dependentParam.hasClass('typeAhead')) {
+		if ($('input.typeAhead',dependentParam).length > 0) {
 			var sendReqUrl = sendReqUrl + '&xml=true';
+			$("#" + paramName + "_display").attr('disabled',true).val('Loading options...');
 			$.ajax({
 				url: sendReqUrl,
 				dataType: "xml",
 				success: function(data){
-					dependentParam.removeAttr('disabled');
+					$('input',dependentParam).removeAttr('disabled');
 					createAutoComplete(data, paramName);
 				}
 			});
@@ -97,9 +103,8 @@ function updateDependentParam(paramName, dependedValue) {
 				data: {},
 				dataType: "html",
 				success: function(data){
-					var parentElt = $("td#" + paramName + "aaa > div");
 					var newContent = $("div.param, div.param-multiPick",data);
-					parentElt.html(newContent.html());
+					dependentParam.html(newContent.html());
 				}
 			});
 		}
