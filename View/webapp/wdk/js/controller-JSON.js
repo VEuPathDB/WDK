@@ -278,16 +278,24 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters){
 	}
 	var strategy = getStrategy(f_strategyId);
 	var step = strategy.getStep(f_stepId,true);
+	url = "showSummary.do";
+	var d = new Object();
+	d.strategy = strategy.backId;
+	d.step = step.back_step_Id;
+	d.resultsOnly = true;
+	d.strategy_checksum = strategy.checksum;
 	if(bool){
-		url = "showSummary.do?strategy=" + strategy.backId + "&step=" + step.back_boolean_Id + "&resultsOnly=true";
-	}else{
-		url = "showSummary.do?strategy=" + strategy.backId + "&step=" + step.back_step_Id + "&resultsOnly=true";
+		d.step = step.back_boolean_Id;
 	}
-        if (!pagerOffset) url += "&noskip=1";
-	else url += "&pager.offset=" + pagerOffset;
+	if (!pagerOffset) 
+		d.noskip = 1;
+	else 
+		d.pager.offset = pagerOffset;    
 	$.ajax({
 		url: url,
 		dataType: "html",
+		type: "post",
+		data: d,
 		beforeSend: function(){
 			showLoading(f_strategyId);
 		},
@@ -697,8 +705,5 @@ function ChangeFilter(strategyId, stepId, url, filter) {
         });
 }
 
-function reviseInvalidSteps(ele){
-	var iv_id = $(ele).parent().attr("id").split("_");
-	$("div#diagram_" + iv_id[0] + " div#step_" + iv_id[1] + "_sub div.crumb_menu a.edit_step_link").click();
-}
+
 

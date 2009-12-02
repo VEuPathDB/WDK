@@ -117,15 +117,16 @@ function createSteps(strat,div_strat){
 function booleanStep(modelstep, jsonstep, sid, zIndex){
 	// Create the boolean venn diagram box
 	var filterImg = "";
-	if(jsonstep.filtered)
-		filterImg = "<span class='filterImg'><img src='wdk/images/filter.gif' height='10px' width='10px'/></span>";
+	var bool_link = "";
+	if(jsonstep.isValid) bool_link = "NewResults(" + sid + "," + modelstep.frontId + ", true)";
+	if(jsonstep.filtered) filterImg = "<span class='filterImg'><img src='wdk/images/filter.gif' height='10px' width='10px'/></span>";
 	boolinner = ""+
 		"			<a id='" + sid + "|" + modelstep.back_boolean_Id + "|" + jsonstep.operation + "' title='CLICK to modify this boolean operation.' class='operation' href='javascript:void(0)' onclick='showDetails(this)'>"+
 		"				<img src='wdk/images/transparent1.gif'>"+
 		"			</a>"+
 		"			<div class='crumb_details'></div>"+
 		"			<h6 class='resultCount'>"+
-		"				<a title='CLICK to show these results in the area below.' class='operation' onclick='NewResults(" + sid + "," + modelstep.frontId + ", true)' href='javascript:void(0)'>" + jsonstep.results + "&nbsp;" + jsonstep.displayType + "</a>"+
+		"				<a title='CLICK to show these results in the area below.' class='operation' onclick='" + bool_link + "' href='javascript:void(0)'>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.displayType, jsonstep.results) + "</a>"+
 		"			</h6>" + filterImg;
 		if(!modelstep.isLast){
 			if(modelstep.nextStepType == "transform"){
@@ -170,7 +171,7 @@ function booleanStep(modelstep, jsonstep, sid, zIndex){
 		"			<span id='fullStepName' style='display: none;'>" + fullName + "</span>"+
 		"			<div class='crumb_details'></div>"+
 		"		</h3>"+
-		"		<h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + childStp.results + "&nbsp;" + getDisplayType(childStp.displayType,childStp.results) + "</a></h6>"+
+		"		<h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + childStp.results + "&nbsp;" + getDisplayType(childStp.displayType, childStp.results) + "</a></h6>"+
 		childfilterImg +
 		"		<ul>"+
 		"			<li><img class='downarrow' src='wdk/images/arrow_chain_down2.png' alt='equals'></li>"+
@@ -258,12 +259,12 @@ function singleStep(modelstep, jsonstep, sid, zIndex){
 	$(singleDiv).css({'z-index' : zIndex}); // DO NOT DELETE, needed for correct display in IE7.
 	$(".crumb_details", singleDiv).replaceWith(createDetails(modelstep,jsonstep, sid));
 	var step_invalid = null;
-	if(!jsonstep.isValid){
+	if(!modelstep.isTransform && !jsonstep.isValid){
 		step_invalid = createInvalidDiv();
-		if(modelstep.isTransform)
-			$(step_invalid).attr("id",sid+"_"+modelstep.frontId).addClass(transformClasses).css({left: leftOffset + "px"});
-		else
-			$(step_invalid).attr("id",sid+"_"+modelstep.frontId).addClass(firstClasses).css({left: leftOffset + "px"});
+		//if(modelstep.isTransform)
+		//	$(step_invalid).attr("id",sid+"_"+modelstep.frontId).addClass(transformClasses).css({left: leftOffset + "px"});
+		//else
+		$(step_invalid).attr("id",sid+"_"+modelstep.frontId).addClass(firstClasses).css({left: leftOffset + "px"});
 	}
 	stepdivs.push(singleDiv);
 	if(step_invalid != null)
@@ -329,7 +330,7 @@ function createDetails(modelstep, jsonstep, sid){
 
 	    disab = "";
 		ocExp = "onclick='ExpandStep(this," + sid + "," + modelstep.frontId + ",\"" + collapsedName + "\");hideDetails(this)'";
-		oM = "Open Nested Strategy";
+		oM = "Show Nested Strategy";
 		moExp = sub_expand_popup;
 		moEdit = sub_edit_popup;
 		if(jsonstep.strategy.order > 0){
@@ -395,7 +396,7 @@ function createDetails(modelstep, jsonstep, sid){
 	    "		<div class='crumb_menu'>"+ rename_step + view_step + edit_step + expand_step + insert_step + customMenu + delete_step + close_button +
 		"		</div>"+ name +
 		"		<table></table><hr class='clear_all' />" + filteredName +
-		"		<p><b>Results:&nbsp;</b>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.displayType,jsonstep.results) + "</p>";
+		"		<p><b>Results:&nbsp;</b>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.displayType,jsonstep.results);// + "&nbsp;&nbsp;|&nbsp;&nbsp;<a href='downloadStep.do?step_id=" + modelstep.back_step_Id + "'>Download</a>";
 
 	$(detail_div).html(inner);
 	$("table", detail_div).replaceWith(params_table);
@@ -585,8 +586,7 @@ function createInvalidDiv(){
 	$(i).attr("src","wdk/images/InvalidStep.png").
 	     attr("height","36").
 		 attr("width","98").
-		 attr("onclick","reviseInvalidSteps(this)").
-		 addClass("invalid-image");
+		 attr("onclick","reviseInvalidSteps(this)");
 	$(inval).css({
 				background: "none",
 				position: "absolute",
@@ -596,6 +596,11 @@ function createInvalidDiv(){
 				"padding-top":"2px"
 	 	 	 }).append(i);
 	return inval;
+}
+
+function reviseInvalidSteps(ele){
+	var iv_id = $(ele).parent().attr("id").split("_");
+	$("div#diagram_" + iv_id[0] + " div#step_" + iv_id[1] + "_sub h3 a#stepId_" + iv_id[1]).click();
 }
 
 function popLogin() {
