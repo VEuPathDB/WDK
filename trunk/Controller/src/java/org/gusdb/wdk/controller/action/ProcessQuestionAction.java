@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.json.JSONException;
 
@@ -145,8 +146,8 @@ public class ProcessQuestionAction extends ShowQuestionAction {
 
                 logger.debug("dataset data: '" + data + "'");
                 if (data != null && data.trim().length() > 0) {
-                    String[] values = Utilities.toArray(data);
-                    DatasetBean dataset = user.createDataset(uploadFile, values);
+                    RecordClassBean recordClass = ((DatasetParamBean)param).getRecordClass();
+                    DatasetBean dataset = user.createDataset(recordClass, uploadFile, data);
                     dependentValue = Integer.toString(dataset.getUserDatasetId());
                 }
             } else if (rawValue != null && rawValue.length() > 0) {

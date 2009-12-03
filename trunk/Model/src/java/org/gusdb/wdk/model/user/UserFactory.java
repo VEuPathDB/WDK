@@ -47,7 +47,6 @@ public class UserFactory {
     // -------------------------------------------------------------------------
     static final String TABLE_USER = "users";
 
-    static final String COLUMN_USER_ID = "user_id";
     static final String COLUMN_SIGNATURE = "signature";
 
     private final String COLUMN_EMAIL = "email";
@@ -79,8 +78,8 @@ public class UserFactory {
         byte[] encrypted = digest.digest(str.getBytes());
         StringBuffer buffer = new StringBuffer();
         for (byte code : encrypted) {
-            buffer.append(Integer.toString((code & 0xff) + 0x100, 16).substring(
-                    1));
+            buffer.append(Integer.toString((code & 0xff) + 0x100, 16)
+                    .substring(1));
         }
         return buffer.toString();
     }
@@ -164,7 +163,7 @@ public class UserFactory {
             Date registerTime = new Date();
 
             String sql = "INSERT INTO " + userSchema + TABLE_USER + " ("
-                    + COLUMN_USER_ID + ", " + COLUMN_EMAIL
+                    + Utilities.COLUMN_USER_ID + ", " + COLUMN_EMAIL
                     + ", passwd, is_guest, "
                     + "register_time, last_name, first_name, "
                     + "middle_name, title, organization, department, address, "
@@ -351,8 +350,8 @@ public class UserFactory {
         email = email.trim();
 
         ResultSet rsUser = null;
-        String sql = "SELECT " + COLUMN_USER_ID + " FROM " + userSchema
-                + TABLE_USER + " WHERE email = ?";
+        String sql = "SELECT " + Utilities.COLUMN_USER_ID + " FROM "
+                + userSchema + TABLE_USER + " WHERE email = ?";
         try {
             // get user information
             long start = System.currentTimeMillis();
@@ -829,15 +828,15 @@ public class UserFactory {
         // send an email to the user
         String pattern = "\\$\\$" + EMAIL_MACRO_USER_NAME + "\\$\\$";
         String name = user.getFirstName() + " " + user.getLastName();
-        String message = emailContent.replaceAll(pattern,
-                Matcher.quoteReplacement(name));
+        String message = emailContent.replaceAll(pattern, Matcher
+                .quoteReplacement(name));
 
         pattern = "\\$\\$" + EMAIL_MACRO_EMAIL + "\\$\\$";
         message = message.replaceAll(pattern, Matcher.quoteReplacement(email));
 
         pattern = "\\$\\$" + EMAIL_MACRO_PASSWORD + "\\$\\$";
-        message = message.replaceAll(pattern,
-                Matcher.quoteReplacement(password));
+        message = message.replaceAll(pattern, Matcher
+                .quoteReplacement(password));
 
         Utilities.sendEmail(wdkModel, user.getEmail(), supportEmail,
                 emailSubject, message);

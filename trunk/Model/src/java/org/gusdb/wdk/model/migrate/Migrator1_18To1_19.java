@@ -23,6 +23,7 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.ModelConfigUserDB;
 import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -598,7 +599,7 @@ public class Migrator1_18To1_19 extends Migrator {
                     paramValue = Integer.toString(newId);
                 } else if (param instanceof DatasetParam) {
                     int userDatasetId = getUserDatasetId(wdkModel,
-                            history.userId, paramClob);
+                            history.userId, (DatasetParam) param, paramClob);
                     paramValue = Integer.toString(userDatasetId);
                 } else if (!paramValue.startsWith(Utilities.PARAM_COMPRESSE_PREFIX)) {
                     paramValue = param.compressValue(paramValue);
@@ -621,29 +622,28 @@ public class Migrator1_18To1_19 extends Migrator {
     }
 
     private int getUserDatasetId(WdkModel wdkModel, int userId,
-            String datasetValue) throws SQLException, WdkModelException,
-            WdkUserException, NoSuchAlgorithmException {
+            DatasetParam param, String value) throws SQLException,
+            WdkModelException, WdkUserException, NoSuchAlgorithmException {
         User user = wdkModel.getUserFactory().getUser(userId);
-        if (datasetValue.length() == 65 || datasetValue.length() == 32) {
+        if (value.length() == 65 || value.length() == 32) {
             // the value is a dataset_checksum, or a combined checksum
-            String checksum = datasetValue;
-            if (datasetValue.length() == 65)
-                checksum = datasetValue.substring(datasetValue.indexOf(':') + 1);
+            String checksum = value;
+            if (value.length() == 65)
+                checksum = value.substring(value.indexOf(':') + 1);
             DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
             ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
             String userSchema = userDB.getUserSchema();
             String wdkSchema = userDB.getWdkEngineSchema();
             Object result = SqlUtils.executeScalar(wdkModel, dataSource,
-                    "SELECT "
-                            + "  user_dataset_id                              "
+                    "SELECT user_dataset_id                              "
                             + "FROM " + userSchema + "  user_datasets2 ud, "
                             + wdkSchema + "  dataset_indices di "
                             + "WHERE ud.dataset_id = di.dataset_id "
                             + "  AND di.dataset_checksum = '" + checksum + "'");
             return (Integer) result;
         } else { // the value is raw value, create a dataset from it.
-            String[] values = datasetValue.split("[,\\s]+");
-            Dataset dataset = user.createDataset(null, values);
+            RecordClass recordClass = param.getRecordClass();
+            Dataset dataset = user.createDataset(recordClass, null, value);
             return dataset.getUserDatasetId();
         }
     }

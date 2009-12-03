@@ -499,7 +499,8 @@ public class WdkModel {
             for (RecordClass recordClass : rcSet.getRecordClasses()) {
                 if (recordClass.hasBasket()) {
                     basketFactory.createAttributeQueryRef(recordClass);
-                    basketFactory.createBasketQuestion(recordClass);
+                    basketFactory.createRealtimeBasketQuestion(recordClass);
+                    basketFactory.createSnapshotBasketQuestion(recordClass);
                     basketFactory.createBasketAttributeQuery(recordClass);
                 }
             }
