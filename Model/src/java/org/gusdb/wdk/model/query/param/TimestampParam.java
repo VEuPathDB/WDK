@@ -6,7 +6,6 @@ package org.gusdb.wdk.model.query.param;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.Date;
 
 import org.gusdb.wdk.model.WdkModel;

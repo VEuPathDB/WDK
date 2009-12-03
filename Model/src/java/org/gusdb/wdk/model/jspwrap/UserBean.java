@@ -565,10 +565,11 @@ public class UserBean /* implements Serializable */{
      * @see org.gusdb.wdk.model.user.User#createDataset(java.lang.String,
      * java.lang.String, java.lang.String[])
      */
-    public DatasetBean createDataset(String uploadFile, String[] values)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException {
-        Dataset dataset = user.createDataset(uploadFile, values);
+    public DatasetBean createDataset(RecordClassBean recordClass,
+            String uploadFile, String strValues) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException {
+        Dataset dataset = user.createDataset(recordClass.recordClass,
+                uploadFile, strValues);
         DatasetBean bean = new DatasetBean(dataset);
         return bean;
     }

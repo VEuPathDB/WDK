@@ -5,7 +5,9 @@ package org.gusdb.wdk.model.user;
 
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.List;
 
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -28,6 +30,7 @@ public class Dataset {
     private String summary;
     private int size;
     private String checksum;
+    private RecordClass recordClass;
 
     public Dataset(DatasetFactory factory, int datasetId) {
         this.factory = factory;
@@ -101,14 +104,21 @@ public class Dataset {
      * @param values
      *            the summary to set
      */
-    void setValues(String[] values) {
-        this.size = values.length;
-        // get summary
+    void setSummary(List<String[]> values) {
+        this.size = values.size();
+        // compute summary
         StringBuffer sbSummary = new StringBuffer();
         int maxLength = Utilities.MAX_PARAM_VALUE_SIZE;
-        for (String value : values) {
-            if (sbSummary.length() != 0) sbSummary.append(", ");
-            sbSummary.append(value);
+        for (String[] value : values) {
+            if (sbSummary.length() != 0) sbSummary.append("; ");
+            boolean first = true;
+            for (String column : value) {
+                if (column != null && column.length() > 0) {
+                    if (first) first = false;
+                    else sbSummary.append(", ");
+                    sbSummary.append(value);
+                }
+            }
             if (sbSummary.length() > maxLength) break;
         }
         summary = sbSummary.toString();
@@ -136,18 +146,24 @@ public class Dataset {
      * @throws SQLException
      * @throws WdkModelException
      */
-    public String[] getValues() throws WdkUserException, SQLException,
+    public List<String[]> getValues() throws WdkUserException, SQLException,
             WdkModelException {
         return factory.getDatasetValues(this);
     }
 
     public String getValue() throws WdkUserException, SQLException,
             WdkModelException {
-        String[] values = getValues();
+        List<String[]> values = getValues();
         StringBuffer sb = new StringBuffer();
-        for (String value : values) {
-            if (sb.length() > 0) sb.append(", ");
-            sb.append(value);
+        for (String[] columns : values) {
+            if (sb.length() > 0) sb.append("; ");
+            boolean first = true;
+            for (String column : columns) {
+                if (column == null || column.length() == 0) continue;
+                if (first) first = false;
+                else sb.append(", ");
+                sb.append(column);
+            }
         }
         return sb.toString();
     }
@@ -173,5 +189,13 @@ public class Dataset {
      */
     void setChecksum(String checksum) {
         this.checksum = checksum;
+    }
+
+    public RecordClass getRecordClass() {
+        return recordClass;
+    }
+
+    void setRecordClass(RecordClass recordClass) {
+        this.recordClass = recordClass;
     }
 }

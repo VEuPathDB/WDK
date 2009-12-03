@@ -6,6 +6,7 @@ package org.gusdb.wdk.model.query.param;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
+import org.gusdb.wdk.model.ModelConfig;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -55,7 +56,8 @@ public class DatasetParam extends Param {
     public void resolveReferences(WdkModel model) throws WdkModelException {
         this.wdkModel = model;
         if (recordClassRef != null) {
-            recordClass = (RecordClass) wdkModel.resolveReference(recordClassRef);
+            recordClass = (RecordClass) wdkModel
+                    .resolveReference(recordClassRef);
             recordClassRef = null;
         }
     }
@@ -114,36 +116,40 @@ public class DatasetParam extends Param {
         return dataset.getChecksum();
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * the internal value is an sql that represents the query from the dataset
+     * tables, and returns the primary key columns.
      * 
-     * @see
-     * org.gusdb.wdk.model.query.param.Param#independentValueToInternalValue
-     * (org.gusdb.wdk.model.user.User, java.lang.String)
+     * @see org.gusdb.wdk.model.query.param.Param#independentValueToInternalValue
+     *      (org.gusdb.wdk.model.user.User, java.lang.String)
      */
     @Override
     public String dependentValueToInternalValue(User user, String dependentValue)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
+        // the input has to be a user-dataset-id
         int userDatasetId = Integer.parseInt(dependentValue);
-        Dataset dataset = user.getDataset(userDatasetId);
-        return Integer.toString(dataset.getDatasetId());
 
-        // to be compatible with previous model, it returns dataset_id;
-        // in the future, should return a nested SQL that represents the result
-
-        // ModelConfig config = wdkModel.getModelConfig();
-        // String dbLink = config.getApplicationDB().getUserDbLink();
-        // String wdkSchema = config.getUserDB().getWdkEngineSchema();
-        //
-        // StringBuffer sql = new StringBuffer("SELECT ");
-        // sql.append(DatasetFactory.COLUMN_DATASET_VALUE).append(" AS ");
-        // sql.append(columnName);
-        // sql.append(" FROM ").append(wdkSchema);
-        // sql.append(DatasetFactory.TABLE_DATASET_VALUE).append(dbLink);
-        // sql.append(" WHERE ").append(DatasetFactory.COLUMN_DATASET_ID);
-        // sql.append(" = ").append(datasetId);
-        // return sql.toString();
+        ModelConfig config = wdkModel.getModelConfig();
+        String dbLink = config.getAppDB().getUserDbLink();
+        String schema = config.getUserDB().getWdkEngineSchema();
+        String dvTable = schema + DatasetFactory.TABLE_DATASET_VALUE + dbLink;
+        String udTable = schema + DatasetFactory.TABLE_USER_DATASET + dbLink;
+        String colDatasetId = DatasetFactory.COLUMN_DATASET_ID;
+        String colUserDatasetId = DatasetFactory.COLUMN_USER_DATASET_ID;
+        StringBuffer sql = new StringBuffer("SELECT ");
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
+                .getColumnRefs();
+        for (int i = 1; i <= pkColumns.length; i++) {
+            if (i > 1) sql.append(", ");
+            sql.append("dv." + Utilities.COLUMN_PK_PREFIX + i);
+            sql.append(" AS " + pkColumns[i - 1]);
+        }
+        sql.append(" FROM ");
+        sql.append(dvTable + " dv, " + udTable + " ud ");
+        sql.append(" WHERE dv." + colDatasetId + " = ud." + colDatasetId);
+        sql.append(" AND ud." + colUserDatasetId + " = " + userDatasetId);
+        return sql.toString();
     }
 
     /*
@@ -160,8 +166,7 @@ public class DatasetParam extends Param {
         logger.debug("dependent to raw: " + dependentValue);
         int userDatasetId = Integer.parseInt(dependentValue);
         Dataset dataset = user.getDataset(userDatasetId);
-        String[] values = dataset.getValues();
-        return Utilities.fromArray(values);
+        return dataset.getValue();
     }
 
     /*
@@ -204,8 +209,7 @@ public class DatasetParam extends Param {
             String rawValue) throws NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException {
         logger.debug("raw to dependent: " + rawValue);
-        String[] values = Utilities.toArray(rawValue);
-        Dataset dataset = user.createDataset(uploadFile, values);
+        Dataset dataset = user.createDataset(recordClass, uploadFile, rawValue);
         return Integer.toString(dataset.getUserDatasetId());
     }
 
@@ -239,5 +243,4 @@ public class DatasetParam extends Param {
     public void setRecordClassRef(String recordClassRef) {
         this.recordClassRef = recordClassRef;
     }
-
 }
