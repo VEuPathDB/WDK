@@ -72,12 +72,10 @@ public class BasketTest {
     }
 
     @Test
-    public void testGetBasketQuestion() throws Exception {
+    public void testGetRealtimeBasketQuestion() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
         addSomeRecords(user);
-        String questionName = Utilities.INTERNAL_QUESTION_SET + "."
-                + basketFactory.getQuestionName(recordClass);
-        Question question = wdkModel.getQuestion(questionName);
+        Question question = recordClass.getRealtimeBasketQuestion();
         Map<String, String> params = new HashMap<String, String>();
         params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
         AnswerValue answerValue = question.makeAnswerValue(user, params);

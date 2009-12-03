@@ -1089,10 +1089,17 @@ public class RecordClass extends WdkModelBase implements
         return (allRecordsQuery != null || allRecordsQueryRef != null);
     }
 
-    public Question getBasketQuestion() throws WdkModelException {
-        BasketFactory factory = wdkModel.getBasketFactory();
-        String questionName = factory.getQuestionName(this);
-        questionName = Utilities.INTERNAL_QUESTION_SET + "." + questionName;
+    public Question getRealtimeBasketQuestion() throws WdkModelException {
+        String questionName = Utilities.INTERNAL_QUESTION_SET + ".";
+        questionName += getFullName().replace('.', '_');
+        questionName += BasketFactory.REALTIME_BASKET_QUESTION_SUFFIX;
+        return (Question) wdkModel.resolveReference(questionName);
+    }
+
+    public Question getSnapshotBasketQuestion() throws WdkModelException {
+        String questionName = Utilities.INTERNAL_QUESTION_SET + ".";
+        questionName += getFullName().replace('.', '_');
+        questionName += BasketFactory.SNAPSHOT_BASKET_QUESTION_SUFFIX;
         return (Question) wdkModel.resolveReference(questionName);
     }
 }

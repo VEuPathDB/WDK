@@ -110,7 +110,8 @@ public class StepFactory {
 
         // get summary list and sorting list
         String questionName = question.getFullName();
-        Map<String, Boolean> sortingAttributes = user.getSortingAttributes(questionName);
+        Map<String, Boolean> sortingAttributes = user
+                .getSortingAttributes(questionName);
         String[] summaryAttributes = user.getSummaryAttributes(questionName);
 
         // create answer
@@ -142,7 +143,7 @@ public class StepFactory {
         String displayParamContent = getParamContent(dependentValues);
 
         // prepare SQLs
-        String userIdColumn = UserFactory.COLUMN_USER_ID;
+        String userIdColumn = Utilities.COLUMN_USER_ID;
         String answerIdColumn = AnswerFactory.COLUMN_ANSWER_ID;
 
         StringBuffer sqlMaxId = new StringBuffer("SELECT max(");
@@ -190,7 +191,8 @@ public class StepFactory {
             rsMax.close();
             displayId++;
 
-            psInsertStep = connection.prepareStatement(sqlInsertStep.toString());
+            psInsertStep = connection
+                    .prepareStatement(sqlInsertStep.toString());
             psInsertStep.setInt(1, stepId);
             psInsertStep.setInt(2, displayId);
             psInsertStep.setInt(3, userId);
@@ -238,13 +240,13 @@ public class StepFactory {
             if (!isStepDepended(user, displayId)) {
                 // remove step
                 sql = "DELETE " + "FROM " + userSchema + TABLE_STEP + " WHERE "
-                        + UserFactory.COLUMN_USER_ID + " = ? AND "
+                        + Utilities.COLUMN_USER_ID + " = ? AND "
                         + COLUMN_DISPLAY_ID + " = ?";
                 psHistory = SqlUtils.getPreparedStatement(dataSource, sql);
             } else { // hide the step
                 sql = "UPDATE " + userSchema + TABLE_STEP + " SET "
                         + COLUMN_IS_DELETED + " = 1 WHERE "
-                        + UserFactory.COLUMN_USER_ID + " = ? " + " AND "
+                        + Utilities.COLUMN_USER_ID + " = ? " + " AND "
                         + COLUMN_DISPLAY_ID + " = ?";
                 psHistory = SqlUtils.getPreparedStatement(dataSource, sql);
             }
@@ -266,7 +268,7 @@ public class StepFactory {
         StringBuffer sql = new StringBuffer("SELECT count(*) FROM ");
         sql.append(userSchema).append(TABLE_STEP).append(" s, ");
         sql.append(wdkSchema).append(AnswerFactory.TABLE_ANSWER).append(" a ");
-        sql.append(" WHERE s.").append(UserFactory.COLUMN_USER_ID);
+        sql.append(" WHERE s.").append(Utilities.COLUMN_USER_ID);
         sql.append(" = ").append(user.getUserId());
         sql.append(" AND s.").append(answerIdColumn);
         sql.append(" = a.").append(answerIdColumn);
@@ -275,8 +277,8 @@ public class StepFactory {
         sql.append(" OR ").append(COLUMN_RIGHT_CHILD_ID);
         sql.append(" = ").append(displayId).append(")");
 
-        Object result = SqlUtils.executeScalar(wdkModel, dataSource,
-                sql.toString());
+        Object result = SqlUtils.executeScalar(wdkModel, dataSource, sql
+                .toString());
         int count = Integer.parseInt(result.toString());
         return (count > 0);
     }
@@ -287,7 +289,7 @@ public class StepFactory {
         String stepTable = userSchema + TABLE_STEP;
         String answerTable = wdkSchema + AnswerFactory.TABLE_ANSWER;
         String strategyTable = userSchema + TABLE_STRATEGY;
-        String userIdColumn = UserFactory.COLUMN_USER_ID;
+        String userIdColumn = Utilities.COLUMN_USER_ID;
         String answerIdColumn = AnswerFactory.COLUMN_ANSWER_ID;
         String projectIdColumn = AnswerFactory.COLUMN_PROJECT_ID;
         try {
@@ -313,8 +315,8 @@ public class StepFactory {
             sql.append(") ");
 
             long start = System.currentTimeMillis();
-            psDeleteSteps = SqlUtils.getPreparedStatement(dataSource,
-                    sql.toString());
+            psDeleteSteps = SqlUtils.getPreparedStatement(dataSource, sql
+                    .toString());
             psDeleteSteps.setInt(1, user.getUserId());
             if (!allProjects) {
                 String projectId = wdkModel.getProjectId();
@@ -333,16 +335,16 @@ public class StepFactory {
             throws WdkUserException, SQLException, WdkModelException {
         PreparedStatement psStrategy = null;
         String sql = "UPDATE " + userSchema + TABLE_STRATEGY + " SET "
-                + COLUMN_IS_DELETED + " = ? WHERE "
-                + UserFactory.COLUMN_USER_ID + " = ? " + "AND "
-                + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_DISPLAY_ID + " = ?";
+                + COLUMN_IS_DELETED + " = ? WHERE " + Utilities.COLUMN_USER_ID
+                + " = ? " + "AND " + COLUMN_PROJECT_ID + " = ? AND "
+                + COLUMN_DISPLAY_ID + " = ?";
         try {
             // remove history
             /*
              * psStrategy = SqlUtils.getPreparedStatement(dataSource, "DELETE "
              * + "FROM " + userSchema + TABLE_STRATEGY + " WHERE " +
-             * UserFactory.COLUMN_USER_ID + " = ? " + "AND " + COLUMN_PROJECT_ID
-             * + " = ? AND " + COLUMN_DISPLAY_ID + " = ?"); psStrategy.setInt(1,
+             * Utilities.COLUMN_USER_ID + " = ? " + "AND " + COLUMN_PROJECT_ID +
+             * " = ? AND " + COLUMN_DISPLAY_ID + " = ?"); psStrategy.setInt(1,
              * user.getUserId()); psStrategy.setString(2,
              * wdkModel.getProjectId()); psStrategy.setInt(3, displayId); int
              * result = psStrategy.executeUpdate(); if (result == 0) throw new
@@ -371,13 +373,13 @@ public class StepFactory {
         try {
             StringBuffer sql = new StringBuffer("DELETE FROM ");
             sql.append(userSchema).append(TABLE_STRATEGY).append(" WHERE ");
-            sql.append(UserFactory.COLUMN_USER_ID).append(" = ?");
+            sql.append(Utilities.COLUMN_USER_ID).append(" = ?");
             if (!allProjects) {
                 sql.append(" AND ").append(COLUMN_PROJECT_ID).append(" = ?");
             }
             long start = System.currentTimeMillis();
-            psDeleteStrategies = SqlUtils.getPreparedStatement(dataSource,
-                    sql.toString());
+            psDeleteStrategies = SqlUtils.getPreparedStatement(dataSource, sql
+                    .toString());
 
             psDeleteStrategies.setInt(1, user.getUserId());
             if (!allProjects)
@@ -418,7 +420,7 @@ public class StepFactory {
         String sql = "SELECT count(h." + COLUMN_STEP_INTERNAL_ID + ") AS num"
                 + " FROM " + stepTable + " h, " + answerTable + " a WHERE h."
                 + answerIdColumn + " = a." + answerIdColumn + " AND h."
-                + UserFactory.COLUMN_USER_ID + " = ? AND a."
+                + Utilities.COLUMN_USER_ID + " = ? AND a."
                 + AnswerFactory.COLUMN_PROJECT_ID + " = ? "
                 + " AND is_deleted = " + userPlatform.convertBoolean(false);
         try {
@@ -456,7 +458,7 @@ public class StepFactory {
                 + COLUMN_ESTIMATE_SIZE + ", h." + COLUMN_ANSWER_FILTER + ", h."
                 + COLUMN_DISPLAY_PARAMS + " FROM " + userSchema + TABLE_STEP
                 + " h, " + wdkSchema + AnswerFactory.TABLE_ANSWER
-                + " a WHERE h." + UserFactory.COLUMN_USER_ID + " = ? AND h."
+                + " a WHERE h." + Utilities.COLUMN_USER_ID + " = ? AND h."
                 + answerIdColumn + " = a." + answerIdColumn + " AND a."
                 + AnswerFactory.COLUMN_PROJECT_ID + " = ? ORDER BY h."
                 + COLUMN_LAST_RUN_TIME + " DESC";
@@ -502,7 +504,7 @@ public class StepFactory {
                 + COLUMN_ESTIMATE_SIZE + ", h." + COLUMN_ANSWER_FILTER + ", h."
                 + COLUMN_DISPLAY_PARAMS + " FROM " + userSchema + TABLE_STEP
                 + " h, " + wdkSchema + AnswerFactory.TABLE_ANSWER
-                + " a WHERE h." + UserFactory.COLUMN_USER_ID + " = ? AND h."
+                + " a WHERE h." + Utilities.COLUMN_USER_ID + " = ? AND h."
                 + answerIdColumn + " = a." + answerIdColumn + " AND a."
                 + AnswerFactory.COLUMN_PROJECT_ID + " = ? AND h."
                 + COLUMN_DISPLAY_ID + " = ?";
@@ -564,7 +566,8 @@ public class StepFactory {
                 COLUMN_DISPLAY_PARAMS);
         Map<String, String> dependentValues = parseParamContent(dependentParamContent);
 
-        String answerChecksum = rsStep.getString(AnswerFactory.COLUMN_ANSWER_CHECKSUM);
+        String answerChecksum = rsStep
+                .getString(AnswerFactory.COLUMN_ANSWER_CHECKSUM);
 
         try {
             // load Answer
@@ -623,7 +626,8 @@ public class StepFactory {
                 }
             }
             String combinedKey = displayParams.get(answerParam.getName());
-            String stepKey = combinedKey.substring(combinedKey.indexOf(":") + 1);
+            String stepKey = combinedKey
+                    .substring(combinedKey.indexOf(":") + 1);
             leftStepId = Integer.parseInt(stepKey);
 
             customName = step.getBaseCustomName();
@@ -649,8 +653,8 @@ public class StepFactory {
         PreparedStatement psUpdateStepTree = null;
         try {
             long start = System.currentTimeMillis();
-            psUpdateStepTree = SqlUtils.getPreparedStatement(dataSource,
-                    sql.toString());
+            psUpdateStepTree = SqlUtils.getPreparedStatement(dataSource, sql
+                    .toString());
             psUpdateStepTree.setString(1, customName);
             psUpdateStepTree.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql.toString(), start);
@@ -683,9 +687,8 @@ public class StepFactory {
                 + COLUMN_CUSTOM_NAME + " = ?, " + COLUMN_LAST_RUN_TIME
                 + " = ?, " + COLUMN_IS_DELETED + " = ?, "
                 + COLUMN_IS_COLLAPSIBLE + " = ?, " + COLUMN_COLLAPSED_NAME
-                + " = ?, " + COLUMN_ESTIMATE_SIZE + " = ?, "
-                + COLUMN_IS_VALID + " = ? WHERE " + COLUMN_STEP_INTERNAL_ID
-                + " = ?";
+                + " = ?, " + COLUMN_ESTIMATE_SIZE + " = ?, " + COLUMN_IS_VALID
+                + " = ? WHERE " + COLUMN_STEP_INTERNAL_ID + " = ?";
         try {
             long start = System.currentTimeMillis();
             psStep = SqlUtils.getPreparedStatement(dataSource, sql);
@@ -724,10 +727,10 @@ public class StepFactory {
         ResultSet rsStrategyIds = null;
         String sql = "SELECT s." + COLUMN_DISPLAY_ID + " FROM " + userSchema
                 + TABLE_STRATEGY + " s, " + userSchema + TABLE_STEP
-                + " h WHERE s." + UserFactory.COLUMN_USER_ID + " = ? AND s."
+                + " h WHERE s." + Utilities.COLUMN_USER_ID + " = ? AND s."
                 + COLUMN_PROJECT_ID + " = ? AND s." + COLUMN_IS_DELETED
-                + " = ? AND h." + UserFactory.COLUMN_USER_ID + " = s."
-                + UserFactory.COLUMN_USER_ID + " AND h." + COLUMN_DISPLAY_ID
+                + " = ? AND h." + Utilities.COLUMN_USER_ID + " = s."
+                + Utilities.COLUMN_USER_ID + " AND h." + COLUMN_DISPLAY_ID
                 + " = s." + COLUMN_ROOT_STEP_ID + " ORDER BY h."
                 + COLUMN_LAST_RUN_TIME + " DESC";
         try {
@@ -756,7 +759,7 @@ public class StepFactory {
     List<Strategy> loadStrategies(User user, boolean saved, boolean recent)
             throws SQLException, WdkUserException, WdkModelException,
             JSONException, NoSuchAlgorithmException {
-    	String userColumn = UserFactory.COLUMN_USER_ID;
+        String userColumn = Utilities.COLUMN_USER_ID;
         StringBuffer sql = new StringBuffer("SELECT DISTINCT * FROM ");
         sql.append(" (SELECT  sr.* FROM ");
         sql.append(userSchema).append(TABLE_STRATEGY).append(" sr, ");
@@ -764,7 +767,8 @@ public class StepFactory {
         sql.append(" WHERE sr.").append(COLUMN_ROOT_STEP_ID);
         sql.append(" = sp.").append(COLUMN_DISPLAY_ID);
         sql.append(" AND sr.").append(userColumn).append(" = ?");
-        sql.append(" AND sr.").append(userColumn).append(" = sp.").append(userColumn);
+        sql.append(" AND sr.").append(userColumn).append(" = sp.").append(
+                userColumn);
         sql.append(" AND sr.").append(COLUMN_PROJECT_ID).append(" = ?");
         sql.append(" AND sr.").append(COLUMN_IS_SAVED).append(" = ?");
         sql.append(" AND sr.").append(COLUMN_IS_DELETED).append(" = ?");
@@ -786,8 +790,8 @@ public class StepFactory {
             if (recent) {
                 Calendar calendar = Calendar.getInstance();
                 calendar.add(Calendar.DATE, -1);
-                java.sql.Date date = new java.sql.Date(
-                        calendar.getTimeInMillis());
+                java.sql.Date date = new java.sql.Date(calendar
+                        .getTimeInMillis());
                 ps.setDate(5, date);
             }
             resultSet = ps.executeQuery();
@@ -828,8 +832,10 @@ public class StepFactory {
         strategy.setIsSaved(resultSet.getBoolean(COLUMN_IS_SAVED));
         strategy.setDeleted(resultSet.getBoolean(COLUMN_IS_DELETED));
         strategy.setSavedName(resultSet.getString(COLUMN_SAVED_NAME));
-        strategy.setLastViewedTime(resultSet.getTimestamp(COLUMN_LAST_VIEWED_TIME));
-        strategy.setLastModifiedTime(resultSet.getTimestamp(COLUMN_LAST_MODIFIED_TIME));
+        strategy.setLastViewedTime(resultSet
+                .getTimestamp(COLUMN_LAST_VIEWED_TIME));
+        strategy.setLastModifiedTime(resultSet
+                .getTimestamp(COLUMN_LAST_MODIFIED_TIME));
         strategy.setSignature(resultSet.getString(COLUMN_SIGNATURE));
         strategy.setDescription(resultSet.getString(COLUMN_DESCRIPTION));
 
@@ -866,7 +872,7 @@ public class StepFactory {
         PreparedStatement psStepTree = null;
         String sql = "SELECT " + COLUMN_LEFT_CHILD_ID + ", "
                 + COLUMN_RIGHT_CHILD_ID + " FROM " + userSchema + TABLE_STEP
-                + " WHERE " + UserFactory.COLUMN_USER_ID + " = ? AND "
+                + " WHERE " + Utilities.COLUMN_USER_ID + " = ? AND "
                 + COLUMN_DISPLAY_ID + " = ?";
         try {
             psStepTree = SqlUtils.getPreparedStatement(dataSource, sql);
@@ -886,7 +892,8 @@ public class StepFactory {
 
                         // left child
                         Step currentStep;
-                        int currentStepId = rsAnswerTree.getInt(COLUMN_LEFT_CHILD_ID);
+                        int currentStepId = rsAnswerTree
+                                .getInt(COLUMN_LEFT_CHILD_ID);
                         if (currentStepId >= 1) {
                             currentStep = loadStep(user, currentStepId);
                             stepTree.push(currentStepId);
@@ -898,7 +905,8 @@ public class StepFactory {
                                 parentStep.setValid(false);
                         }
                         // right child
-                        currentStepId = rsAnswerTree.getInt(COLUMN_RIGHT_CHILD_ID);
+                        currentStepId = rsAnswerTree
+                                .getInt(COLUMN_RIGHT_CHILD_ID);
                         if (currentStepId >= 1) {
                             currentStep = loadStep(user, currentStepId);
                             stepTree.push(currentStepId);
@@ -964,7 +972,8 @@ public class StepFactory {
             } else if (param instanceof DatasetParam) {
                 int oldUserDatasetId = Integer.parseInt(paramValue);
                 Dataset oldDataset = oldUser.getDataset(oldUserDatasetId);
-                Dataset newDataset = newUser.getDataset(oldDataset.getChecksum());
+                Dataset newDataset = newUser.getDataset(oldDataset
+                        .getChecksum());
                 paramValue = Integer.toString(newDataset.getUserDatasetId());
             }
             paramValues.put(paramName, paramValue);
@@ -986,7 +995,7 @@ public class StepFactory {
     Strategy loadStrategy(User user, int displayId, boolean allowDeleted)
             throws WdkUserException, WdkModelException, JSONException,
             SQLException, NoSuchAlgorithmException {
-        String userIdColumn = UserFactory.COLUMN_USER_ID;
+        String userIdColumn = Utilities.COLUMN_USER_ID;
 
         PreparedStatement psStrategy = null;
         ResultSet rsStrategy = null;
@@ -1050,7 +1059,7 @@ public class StepFactory {
             if (!resultSet.next())
                 throw new WdkUserException("The strategy " + strategySignature
                         + " does not exist");
-            int userId = resultSet.getInt(UserFactory.COLUMN_USER_ID);
+            int userId = resultSet.getInt(Utilities.COLUMN_USER_ID);
             User user = wdkModel.getUserFactory().getUser(userId);
             Strategy strategy = loadStrategy(user, resultSet);
             return strategy;
@@ -1070,7 +1079,7 @@ public class StepFactory {
 
         int userId = user.getUserId();
 
-        String userIdColumn = UserFactory.COLUMN_USER_ID;
+        String userIdColumn = Utilities.COLUMN_USER_ID;
         try {
             if (overwrite) {
                 String sql = "SELECT " + COLUMN_STRATEGY_INTERNAL_ID + ", "
@@ -1111,9 +1120,9 @@ public class StepFactory {
                 // it. We need to get an unsaved copy to modify. Generate
                 // unsaved name
                 String name = getNextName(user, strategy.getName(), false);
-                Strategy newStrat = createStrategy(user,
-                        strategy.getLatestStep(), name, strategy.getName(),
-                        false, strategy.getDescription());
+                Strategy newStrat = createStrategy(user, strategy
+                        .getLatestStep(), name, strategy.getName(), false,
+                        strategy.getDescription());
                 strategy.setName(newStrat.getName());
                 strategy.setSavedName(newStrat.getSavedName());
                 strategy.setDisplayId(newStrat.getStrategyId());
@@ -1162,7 +1171,7 @@ public class StepFactory {
             JSONException, NoSuchAlgorithmException {
         int userId = user.getUserId();
 
-        String userIdColumn = UserFactory.COLUMN_USER_ID;
+        String userIdColumn = Utilities.COLUMN_USER_ID;
         ResultSet rsCheckName = null;
         PreparedStatement psCheckName;
 
@@ -1187,8 +1196,8 @@ public class StepFactory {
                 SqlUtils.verifyTime(wdkModel, sql, start);
 
                 if (rsCheckName.next())
-                    return loadStrategy(user,
-                            rsCheckName.getInt(COLUMN_DISPLAY_ID), false);
+                    return loadStrategy(user, rsCheckName
+                            .getInt(COLUMN_DISPLAY_ID), false);
             } else {// otherwise, generate default name
                 name = getNextName(user, root.getCustomName(), saved);
             }
@@ -1265,7 +1274,7 @@ public class StepFactory {
             WdkModelException {
         ResultSet rsStrategy = null;
         String sql = "SELECT count(*) AS num FROM " + userSchema
-                + TABLE_STRATEGY + " WHERE " + UserFactory.COLUMN_USER_ID
+                + TABLE_STRATEGY + " WHERE " + Utilities.COLUMN_USER_ID
                 + " = ? AND " + COLUMN_IS_DELETED + " = ? AND "
                 + COLUMN_PROJECT_ID + " = ? ";
         try {
@@ -1313,7 +1322,7 @@ public class StepFactory {
             throws SQLException, WdkUserException, WdkModelException {
         ResultSet rsCheckName = null;
         String sql = "SELECT display_id FROM " + userSchema + TABLE_STRATEGY
-                + " WHERE " + UserFactory.COLUMN_USER_ID + " = ? AND "
+                + " WHERE " + Utilities.COLUMN_USER_ID + " = ? AND "
                 + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME + " = ? AND "
                 + COLUMN_IS_SAVED + " = ? AND " + COLUMN_IS_DELETED
                 + " = ? AND " + COLUMN_DISPLAY_ID + " <> ?";
@@ -1359,8 +1368,8 @@ public class StepFactory {
         String name = strategy.getName();
         if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
         name = getNextName(user, name, false);
-        return createStrategy(user, root, name, null, false,
-                strategy.getDescription());
+        return createStrategy(user, root, name, null, false, strategy
+                .getDescription());
     }
 
     /**
@@ -1384,15 +1393,15 @@ public class StepFactory {
         String name = step.getCustomName();
         if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
         name = getNextName(user, name, false);
-        return createStrategy(user, step, name, null, false,
-                strategy.getDescription());
+        return createStrategy(user, step, name, null, false, strategy
+                .getDescription());
     }
 
     private String getNextName(User user, String oldName, boolean saved)
             throws SQLException, WdkUserException, WdkModelException {
         ResultSet rsNames = null;
         String sql = "SELECT " + COLUMN_NAME + " FROM " + userSchema
-                + TABLE_STRATEGY + " WHERE " + UserFactory.COLUMN_USER_ID
+                + TABLE_STRATEGY + " WHERE " + Utilities.COLUMN_USER_ID
                 + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME
                 + " LIKE ? AND " + COLUMN_IS_SAVED + "= ? AND "
                 + COLUMN_IS_DELETED + "= ?";
@@ -1437,12 +1446,13 @@ public class StepFactory {
         sql.append(userSchema).append(TABLE_STRATEGY);
         sql.append(" SET ").append(COLUMN_LAST_VIEWED_TIME + " = ? ");
         sql.append(" WHERE ").append(COLUMN_PROJECT_ID).append(" = ? ");
-        sql.append(" AND ").append(UserFactory.COLUMN_USER_ID).append(" = ? ");
+        sql.append(" AND ").append(Utilities.COLUMN_USER_ID).append(" = ? ");
         sql.append(" AND ").append(COLUMN_DISPLAY_ID).append(" = ?");
         PreparedStatement psUpdate = null;
         try {
             long start = System.currentTimeMillis();
-            psUpdate = SqlUtils.getPreparedStatement(dataSource, sql.toString());
+            psUpdate = SqlUtils
+                    .getPreparedStatement(dataSource, sql.toString());
             psUpdate.setTimestamp(1, new Timestamp(new Date().getTime()));
             psUpdate.setString(2, wdkModel.getProjectId());
             psUpdate.setInt(3, user.getUserId());
