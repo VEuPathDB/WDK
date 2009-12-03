@@ -10,11 +10,8 @@ import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.ReporterRef;
 import org.gusdb.wdk.model.TableField;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.user.BasketFactory;
 
 /**
  * A wrapper on a {@link RecordClass} that provides simplified access for
@@ -92,7 +89,8 @@ public class RecordClassBean {
      * @see org.gusdb.wdk.model.RecordClass#getFilterLayoutMap()
      */
     public Map<String, AnswerFilterLayoutBean> getFilterLayoutMap() {
-        Map<String, AnswerFilterLayout> layouts = recordClass.getFilterLayoutMap();
+        Map<String, AnswerFilterLayout> layouts = recordClass
+                .getFilterLayoutMap();
         Map<String, AnswerFilterLayoutBean> beans = new LinkedHashMap<String, AnswerFilterLayoutBean>();
         for (String name : layouts.keySet()) {
             AnswerFilterLayout layout = layouts.get(name);
@@ -119,7 +117,8 @@ public class RecordClassBean {
      * @see org.gusdb.wdk.model.RecordClass#getFilterMap()
      */
     public Map<String, AnswerFilterInstanceBean> getFilterMap() {
-        Map<String, AnswerFilterInstance> instances = recordClass.getFilterMap();
+        Map<String, AnswerFilterInstance> instances = recordClass
+                .getFilterMap();
         Map<String, AnswerFilterInstanceBean> beans = new LinkedHashMap<String, AnswerFilterInstanceBean>();
         for (String name : instances.keySet()) {
             AnswerFilterInstance instance = instances.get(name);
@@ -147,16 +146,14 @@ public class RecordClassBean {
         return new AnswerFilterInstanceBean(instance);
     }
 
-    public QuestionBean getBasketQuestion() throws WdkUserException,
-            WdkModelException {
-        WdkModel wdkModel = recordClass.getWdkModel();
-        BasketFactory factory = wdkModel.getBasketFactory();
-        String questionName = Utilities.INTERNAL_QUESTION_SET + "."
-                + factory.getQuestionName(recordClass);
-        Question question = wdkModel.getQuestion(questionName);
-        return new QuestionBean(question);
+    public QuestionBean getRealtimeBasketQuestion() throws WdkModelException {
+        return new QuestionBean(recordClass.getRealtimeBasketQuestion());
     }
-    
+
+    public QuestionBean getSnapshotBasketQuestion() throws WdkModelException {
+        return new QuestionBean(recordClass.getSnapshotBasketQuestion());
+    }
+
     public boolean getHasBasket() {
         return recordClass.hasBasket();
     }

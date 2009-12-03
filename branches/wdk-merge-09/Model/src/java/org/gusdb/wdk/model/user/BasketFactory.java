@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +22,7 @@ import org.gusdb.wdk.model.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -30,10 +32,10 @@ import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.StringParam;
-import org.gusdb.wdk.model.query.param.TimestampParam;
 import org.json.JSONException;
 
 /**
@@ -42,20 +44,20 @@ import org.json.JSONException;
  */
 public class BasketFactory {
 
-    private static final String BASKET_QUESTION_SUFFIX = "ByBasket";
-    static final String BASKET_ID_QUERY_SUFFIX = "ByBasket";
+    public static final String REALTIME_BASKET_QUESTION_SUFFIX = "ByRealtimeBasket";
+    public static final String SNAPSHOT_BASKET_QUESTION_SUFFIX = "BySnapshotBasket";
+    private static final String REALTIME_BASKET_ID_QUERY_SUFFIX = "ByRealtimeBasket";
+    private static final String SNAPSHOT_BASKET_ID_QUERY_SUFFIX = "BySnapshotBasket";
     static final String BASKET_ATTRIBUTE_QUERY_SUFFIX = "_basket_attrs";
     static final String BASKET_ATTRIBUTE = "in_basket";
 
     static final String PARAM_USER_SIGNATURE = "user_signature";
-    static final String PARAM_TIMESTAMP = "timestamp";
+    static final String PARAM_DATASET_SUFFIX = "Dataset";
 
     static final String TABLE_BASKET = "user_baskets";
     static final String COLUMN_USER_ID = "user_id";
     static final String COLUMN_PROJECT_ID = "project_id";
     static final String COLUMN_RECORD_CLASS = "record_class";
-
-    private static final String COLUMN_PK_PREFIX = "pk_column_";
 
     private static final Logger logger = Logger.getLogger(BasketFactory.class);
 
@@ -72,11 +74,6 @@ public class BasketFactory {
 
     public String getSchema() {
         return schema;
-    }
-
-    public String getQuestionName(RecordClass recordClass) {
-        return recordClass.getFullName().replace('.', '_')
-                + BASKET_QUESTION_SUFFIX;
     }
 
     public void addToBasket(User user, Step step)
@@ -110,7 +107,8 @@ public class BasketFactory {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
+                .getColumnRefs();
         String sqlInsert = "INSERT INTO " + schema + TABLE_BASKET + " ("
                 + COLUMN_USER_ID + ", " + COLUMN_PROJECT_ID + ", "
                 + COLUMN_RECORD_CLASS;
@@ -119,9 +117,9 @@ public class BasketFactory {
                 + " WHERE " + COLUMN_USER_ID + "= ? AND " + COLUMN_PROJECT_ID
                 + " = ? AND " + COLUMN_RECORD_CLASS + " = ?";
         for (int i = 1; i <= pkColumns.length; i++) {
-            sqlInsert += ", " + COLUMN_PK_PREFIX + i;
+            sqlInsert += ", " + Utilities.COLUMN_PK_PREFIX + i;
             sqlValues += ", ?";
-            sqlCount += " AND " + COLUMN_PK_PREFIX + i + " = ?";
+            sqlCount += " AND " + Utilities.COLUMN_PK_PREFIX + i + " = ?";
         }
         sqlInsert += ") VALUES (?, ?, ?" + sqlValues + ")";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
@@ -180,12 +178,13 @@ public class BasketFactory {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
+                .getColumnRefs();
         String sqlDelete = "DELETE FROM " + schema + TABLE_BASKET + " WHERE "
                 + COLUMN_USER_ID + "= ? AND " + COLUMN_PROJECT_ID + " = ? AND "
                 + COLUMN_RECORD_CLASS + " = ?";
         for (int i = 1; i <= pkColumns.length; i++) {
-            sqlDelete += " AND " + COLUMN_PK_PREFIX + i + " = ?";
+            sqlDelete += " AND " + Utilities.COLUMN_PK_PREFIX + i + " = ?";
         }
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
@@ -238,6 +237,35 @@ public class BasketFactory {
         }
     }
 
+    Map<String, Integer> getBasketCounts(User user) throws SQLException {
+        Map<String, Integer> counts = new LinkedHashMap<String, Integer>();
+        for (RecordClassSet rcSet : wdkModel.getAllRecordClassSets()) {
+            for (RecordClass recordClass : rcSet.getRecordClasses()) {
+                if (recordClass.hasBasket())
+                    counts.put(recordClass.getFullName(), 0);
+            }
+        }
+        // load the unique counts
+        String sql = "SELECT " + COLUMN_RECORD_CLASS + ", count(*) AS SIZE "
+                + " FROM (SELECT DISTINCT * FROM " + TABLE_BASKET + " WHERE "
+                + COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID + " = ?) "
+                + " GROUP BY " + COLUMN_RECORD_CLASS;
+        DataSource ds = wdkModel.getUserPlatform().getDataSource();
+        ResultSet rs = null;
+        try {
+            PreparedStatement ps = SqlUtils.getPreparedStatement(ds, sql);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                String recordClass = rs.getString(COLUMN_RECORD_CLASS);
+                int size = rs.getInt("SIZE");
+                counts.put(recordClass, size);
+            }
+        } finally {
+            SqlUtils.closeResultSet(rs);
+        }
+        return counts;
+    }
+
     /**
      * the method has to be called before the recordClasses are resolved.
      * 
@@ -248,38 +276,41 @@ public class BasketFactory {
      * @throws JSONException
      * @throws WdkUserException
      */
-    public void createBasketQuestion(RecordClass recordClass)
+    public void createSnapshotBasketQuestion(RecordClass recordClass)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
         // check if the basket question already exists
-        String qname = getQuestionName(recordClass);
-        QuestionSet questionSet = wdkModel.getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
+        String qname = recordClass.getFullName().replace('.', '_')
+                + SNAPSHOT_BASKET_QUESTION_SUFFIX;
+        QuestionSet questionSet = wdkModel
+                .getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
         if (questionSet.contains(qname)) return;
 
         String rcName = recordClass.getDisplayName();
         Question question = new Question();
         question.setName(qname);
-        question.setDisplayName("Get a Snapshot of " + rcName
+        question.setDisplayName("Get a snapshot of records of " + rcName
                 + "(s) From Basket");
         question.setShortDisplayName(rcName + " Basket");
         question.setRecordClass(recordClass);
-        Query query = getBasketIdQuery(recordClass);
+        Query query = getBasketSnapshotIdQuery(recordClass);
         question.setQuery(query);
         questionSet.addQuestion(question);
         question.excludeResources(wdkModel.getProjectId());
     }
 
-    private Query getBasketIdQuery(RecordClass recordClass)
+    private Query getBasketSnapshotIdQuery(RecordClass recordClass)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        String dbLink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
 
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
+                .getColumnRefs();
 
         // check if the boolean query already exists
-        String queryName = rcName.replace('.', '_') + BASKET_ID_QUERY_SUFFIX;
+        String queryName = rcName.replace('.', '_')
+                + SNAPSHOT_BASKET_ID_QUERY_SUFFIX;
         QuerySet querySet = wdkModel.getQuerySet(Utilities.INTERNAL_QUERY_SET);
         if (querySet.contains(queryName)) return querySet.getQuery(queryName);
 
@@ -292,8 +323,8 @@ public class BasketFactory {
             query.addColumn(column);
         }
         // create params
-        query.addParam(getSignatureParam(PARAM_USER_SIGNATURE));
-        query.addParam(getTimestampParam(PARAM_TIMESTAMP));
+        DatasetParam datasetParam = getDatasetParam(rcName);
+        query.addParam(datasetParam);
 
         // make sure we create index on primary keys
         query.setIndexColumns(pkColumns);
@@ -304,21 +335,17 @@ public class BasketFactory {
         String queryRef = recordClass.getAllRecordsQueryRef();
         SqlQuery idQuery = (SqlQuery) wdkModel.resolveReference(queryRef);
         String allRecordsSql = idQuery.getSql();
-        String sql = "";
+        String sql = "SELECT DISTINCT ";
         for (int i = 1; i <= pkColumns.length; i++) {
-            if (sql.length() == 0) sql = "SELECT ";
-            else sql += ", ";
-            sql += "b." + COLUMN_PK_PREFIX + i + " AS " + pkColumns[i - 1];
+            if (i > 1) sql += ", ";
+            sql += "d." + Utilities.COLUMN_PK_PREFIX + i + " AS "
+                    + pkColumns[i - 1];
         }
-        sql += " FROM " + schema + TABLE_BASKET + dbLink + " b, " + schema
-                + UserFactory.TABLE_USER + dbLink + " u, (" + allRecordsSql
-                + ") i WHERE b." + COLUMN_USER_ID + " = u."
-                + UserFactory.COLUMN_USER_ID + " AND u."
-                + UserFactory.COLUMN_SIGNATURE + " = $$" + PARAM_USER_SIGNATURE
-                + "$$ AND b." + COLUMN_PROJECT_ID + " = '" + projectId
-                + "' AND b." + COLUMN_RECORD_CLASS + " = '" + rcName + "'";
+        sql += " FROM ($$" + datasetParam.getName() + "$$) d, ("
+                + allRecordsSql + ") i ";
         for (int i = 1; i <= pkColumns.length; i++) {
-            sql += " AND b." + COLUMN_PK_PREFIX + i + " = i."
+            sql += (i == 1) ? " WHERE " : " AND ";
+            sql += "b." + Utilities.COLUMN_PK_PREFIX + i + " = i."
                     + pkColumns[i - 1];
         }
         query.setSql(sql);
@@ -327,29 +354,125 @@ public class BasketFactory {
         return query;
     }
 
-    private Param getSignatureParam(String paramName) throws WdkModelException {
+    private DatasetParam getDatasetParam(String rcName)
+            throws WdkModelException {
+        String paramName = rcName.replace('.', '_') + PARAM_DATASET_SUFFIX;
         ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
-        if (paramSet.contains(paramName)) return paramSet.getParam(paramName);
+        if (paramSet.contains(paramName))
+            return (DatasetParam) paramSet.getParam(paramName);
 
-        StringParam param = new StringParam();
+        DatasetParam param = new DatasetParam();
         param.setName(paramName);
-        param.setAllowEmpty(false);
         param.setId(paramName);
-        param.setQuote(true);
-        param.setVisible(false);
-        paramSet.addParam(param);
-        param.excludeResources(wdkModel.getProjectId());
+        param.setAllowEmpty(false);
+        param.setRecordClassRef(rcName);
+        param.setPrompt("A snap shot of the current " + rcName + " basket.");
         return param;
     }
 
-    private Param getTimestampParam(String paramName) throws WdkModelException {
-        ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
-        if (paramSet.contains(paramName)) return paramSet.getParam(paramName);
+    /**
+     * the method has to be called before the recordClasses are resolved.
+     * 
+     * @param recordClass
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @throws SQLException
+     * @throws JSONException
+     * @throws WdkUserException
+     */
+    public void createRealtimeBasketQuestion(RecordClass recordClass)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
+        // check if the basket question already exists
+        String qname = recordClass.getFullName().replace('.', '_')
+                + REALTIME_BASKET_QUESTION_SUFFIX;
+        QuestionSet questionSet = wdkModel
+                .getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
+        if (questionSet.contains(qname)) return;
 
-        TimestampParam param = new TimestampParam();
-        param.setName(paramName);
+        String rcName = recordClass.getDisplayName();
+        Question question = new Question();
+        question.setName(qname);
+        question.setDisplayName("Get the current records of " + rcName
+                + "(s) From Basket");
+        question.setShortDisplayName(rcName + " Basket");
+        question.setRecordClass(recordClass);
+        Query query = getBasketRealtimeIdQuery(recordClass);
+        question.setQuery(query);
+        questionSet.addQuestion(question);
+        question.excludeResources(wdkModel.getProjectId());
+    }
+
+    private Query getBasketRealtimeIdQuery(RecordClass recordClass)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
+        String dbLink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
+        String projectId = wdkModel.getProjectId();
+        String rcName = recordClass.getFullName();
+
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
+                .getColumnRefs();
+
+        // check if the boolean query already exists
+        String queryName = rcName.replace('.', '_')
+                + REALTIME_BASKET_ID_QUERY_SUFFIX;
+        QuerySet querySet = wdkModel.getQuerySet(Utilities.INTERNAL_QUERY_SET);
+        if (querySet.contains(queryName)) return querySet.getQuery(queryName);
+
+        SqlQuery query = new SqlQuery();
+        query.setName(queryName);
+        // create columns
+        for (String columnName : pkColumns) {
+            Column column = new Column();
+            column.setName(columnName);
+            query.addColumn(column);
+        }
+        // create params
+        query.addParam(getSignatureParam());
+
+        // make sure we create index on primary keys
+        query.setIndexColumns(pkColumns);
+        query.setDoNotTest(true);
+        query.setIsCacheable(false);
+
+        // construct the sql
+        String queryRef = recordClass.getAllRecordsQueryRef();
+        SqlQuery idQuery = (SqlQuery) wdkModel.resolveReference(queryRef);
+        String allRecordsSql = idQuery.getSql();
+        String sql = "";
+        for (int i = 1; i <= pkColumns.length; i++) {
+            if (sql.length() == 0) sql = "SELECT DISTINCT ";
+            else sql += ", ";
+            sql += "b." + Utilities.COLUMN_PK_PREFIX + i + " AS "
+                    + pkColumns[i - 1];
+        }
+        sql += " FROM " + schema + TABLE_BASKET + dbLink + " b, " + schema
+                + UserFactory.TABLE_USER + dbLink + " u, (" + allRecordsSql
+                + ") i WHERE b." + COLUMN_USER_ID + " = u."
+                + Utilities.COLUMN_USER_ID + " AND u."
+                + UserFactory.COLUMN_SIGNATURE + " = $$" + PARAM_USER_SIGNATURE
+                + "$$ AND b." + COLUMN_PROJECT_ID + " = '" + projectId
+                + "' AND b." + COLUMN_RECORD_CLASS + " = '" + rcName + "'";
+        for (int i = 1; i <= pkColumns.length; i++) {
+            sql += " AND b." + Utilities.COLUMN_PK_PREFIX + i + " = i."
+                    + pkColumns[i - 1];
+        }
+        query.setSql(sql);
+        querySet.addQuery(query);
+        query.excludeResources(projectId);
+        return query;
+    }
+
+    private Param getSignatureParam() throws WdkModelException {
+        ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
+        if (paramSet.contains(PARAM_USER_SIGNATURE))
+            return paramSet.getParam(PARAM_USER_SIGNATURE);
+
+        StringParam param = new StringParam();
+        param.setName(PARAM_USER_SIGNATURE);
         param.setAllowEmpty(false);
-        param.setId(paramName);
+        param.setId(PARAM_USER_SIGNATURE);
+        param.setQuote(true);
         param.setVisible(false);
         paramSet.addParam(param);
         param.excludeResources(wdkModel.getProjectId());
@@ -374,7 +497,8 @@ public class BasketFactory {
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
 
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
+                .getColumnRefs();
 
         // check if the boolean query already exists
         String queryName = rcName.replace('.', '_')
@@ -409,13 +533,13 @@ public class BasketFactory {
             sql += "i." + pkColumns[i - 1] + ", ";
         }
         // case clause works for both Oracle & PostreSQL
-        sql += "(CASE WHEN b." + COLUMN_PK_PREFIX
+        sql += "(CASE WHEN b." + Utilities.COLUMN_PK_PREFIX
                 + "1 IS NULL THEN 0 ELSE 1 END) " + " AS " + BASKET_ATTRIBUTE;
         sql += " FROM (" + allRecordsSql + ") i LEFT OUTER JOIN " + schema
                 + TABLE_BASKET + dbLink + " b ON ";
         for (int i = 1; i <= pkColumns.length; i++) {
-            sql += " i." + pkColumns[i - 1] + " = b." + COLUMN_PK_PREFIX + i
-                    + " AND ";
+            sql += " i." + pkColumns[i - 1] + " = b."
+                    + Utilities.COLUMN_PK_PREFIX + i + " AND ";
         }
         sql += " b." + COLUMN_USER_ID + " = $$" + Utilities.PARAM_USER_ID
                 + "$$ AND b." + COLUMN_PROJECT_ID + " = '" + projectId

@@ -517,8 +517,7 @@ public class User /* implements Serializable */{
             WdkModelException, SQLException, JSONException {
         logger.debug("loading steps...");
         Map<Integer, Step> invalidSteps = new LinkedHashMap<Integer, Step>();
-        Map<Integer, Step> allSteps = stepFactory.loadSteps(this,
-                invalidSteps);
+        Map<Integer, Step> allSteps = stepFactory.loadSteps(this, invalidSteps);
 
         return allSteps;
     }
@@ -868,10 +867,11 @@ public class User /* implements Serializable */{
         return datasetFactory.getDataset(this, userDatasetId);
     }
 
-    public Dataset createDataset(String uploadFile, String[] values)
-            throws WdkUserException, WdkModelException,
+    public Dataset createDataset(RecordClass recordClass, String uploadFile,
+            String strValues) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException {
-        return datasetFactory.getDataset(this, uploadFile, values);
+        return datasetFactory.getDataset(this, recordClass, uploadFile,
+                strValues);
     }
 
     public void save() throws WdkUserException, WdkModelException {

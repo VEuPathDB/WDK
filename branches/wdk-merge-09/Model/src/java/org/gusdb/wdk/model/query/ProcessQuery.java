@@ -57,6 +57,10 @@ public class ProcessQuery extends Query {
         return this.webServiceUrl;
     }
 
+    public void setWebServiceUrl(String webServiceUrl) {
+        this.webServiceUrl = webServiceUrl;
+    }
+
     /**
      * @return the local
      */
@@ -84,7 +88,8 @@ public class ProcessQuery extends Query {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         super.resolveReferences(wdkModel);
-        webServiceUrl = wdkModel.getModelConfig().getWebServiceUrl();
+        if (webServiceUrl != null)
+            webServiceUrl = wdkModel.getModelConfig().getWebServiceUrl();
     }
 
     /*
@@ -93,9 +98,10 @@ public class ProcessQuery extends Query {
      * @see org.gusdb.wdk.model.query.Query#makeInstance()
      */
     @Override
-    public QueryInstance makeInstance(User user, Map<String, String> values, boolean validate)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+    public QueryInstance makeInstance(User user, Map<String, String> values,
+            boolean validate) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         return new ProcessQueryInstance(user, this, values, validate);
     }
 

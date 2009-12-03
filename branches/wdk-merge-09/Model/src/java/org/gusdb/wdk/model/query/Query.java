@@ -36,7 +36,7 @@ import org.json.JSONObject;
  */
 public abstract class Query extends WdkModelBase {
 
-    private static final Logger logger = Logger.getLogger(Query.class);
+    protected static final Logger logger = Logger.getLogger(Query.class);
 
     private String name;
     protected boolean cached = false;
@@ -536,6 +536,11 @@ public abstract class Query extends WdkModelBase {
             String dependentValue = param.rawOrDependentValueToDependentValue(
                     user, rawValue);
             dependentValues.put(paramName, dependentValue);
+        }
+        if (paramMap.containsKey(Utilities.PARAM_USER_ID)) {
+            if (!dependentValues.containsKey(Utilities.PARAM_USER_ID))
+                dependentValues.put(Utilities.PARAM_USER_ID,
+                        Integer.toString(user.getUserId()));
         }
         return dependentValues;
     }

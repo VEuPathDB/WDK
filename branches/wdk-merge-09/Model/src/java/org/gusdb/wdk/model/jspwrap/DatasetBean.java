@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
 import java.util.Date;
+import java.util.List;
 
 import org.gusdb.wdk.model.user.Dataset;
 
@@ -72,7 +73,7 @@ public class DatasetBean {
      * @throws Exception
      * @see org.gusdb.wdk.model.user.Dataset#getValues()
      */
-    public String[] getValues() throws Exception {
+    public List<String[]> getValues() throws Exception {
         try {
             return dataset.getValues();
         } catch (Exception ex) {
