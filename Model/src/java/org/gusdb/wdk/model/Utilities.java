@@ -66,23 +66,27 @@ public class Utilities {
 
     public static final int MAXIMUM_RECORD_INSTANCES = 10000;
 
-    public static final String COLUMN_PROJECT_ID = "project_id";
-
-    public static final String PARAM_PROJECT_ID = COLUMN_PROJECT_ID;
-
-    public static final String PARAM_USER_ID = "user_id";
-
     public static final String ALIAS_OLD_KEY_COLUMN_PREFIX = "old_";
-
-    public static final String INTERNAL_PARAM_SET = "InternalParams";
-
-    public static final String INTERNAL_QUERY_SET = "InternalQueries";
-
-    public static final String INTERNAL_QUESTION_SET = "InternalQuestions";
 
     public static final int DEFAULT_PAGE_SIZE = 20;
 
     public static final int DEFAULT_SUMMARY_ATTRIBUTE_SIZE = 6;
+    
+    public static final int MAX_PK_COLUMN_COUNT = 3;
+    
+    public static final int MAX_PK_COLUMN_VALUE_SIZE = 1999;
+
+    public static final String INTERNAL_PARAM_SET = "InternalParams";
+    public static final String INTERNAL_QUERY_SET = "InternalQueries";
+    public static final String INTERNAL_QUESTION_SET = "InternalQuestions";
+
+    public static final String COLUMN_PROJECT_ID = "project_id";
+    public static final String COLUMN_USER_ID = "user_id";
+    public static final String COLUMN_PK_PREFIX = "pk_column_";
+
+    public static final String PARAM_PROJECT_ID = COLUMN_PROJECT_ID;
+    public static final String PARAM_USER_ID = COLUMN_USER_ID;
+    
 
     public static String encrypt(String data) throws WdkModelException,
             NoSuchAlgorithmException {

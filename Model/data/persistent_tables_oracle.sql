@@ -1,9 +1,9 @@
 
-DROP SEQUENCE wdkengine.dataset_indices_pkseq;
+DROP SEQUENCE wdkengine.dataset_indices2_pkseq;
 DROP SEQUENCE wdkengine.answers_pkseq;
 
 DROP SEQUENCE wdkuser.migration_pkseq;
-DROP SEQUENCE wdkuser.user_datasets_pkseq;
+DROP SEQUENCE wdkuser.user_datasets2_pkseq;
 DROP SEQUENCE wdkuser.steps_pkseq;
 DROP SEQUENCE wdkuser.strategies_pkseq;
 DROP SEQUENCE wdkuser.users_pkseq;
@@ -12,15 +12,15 @@ DROP TABLE wdkuser.user_baskets;
 DROP TABLE wdkuser.strategies;
 DROP TABLE wdkuser.step_params;
 DROP TABLE wdkuser.steps;
-DROP TABLE wdkuser.user_datasets;
+DROP TABLE wdkuser.user_datasets2;
 DROP TABLE wdkuser.preferences;
 DROP TABLE wdkuser.user_roles;
 DROP TABLE wdkuser.users;
 
 DROP TABLE wdkengine.answers;
 DROP TABLE wdkengine.clob_values;
-DROP TABLE wdkengine.dataset_values;
-DROP TABLE wdkengine.dataset_indices;
+DROP TABLE wdkengine.dataset_values2;
+DROP TABLE wdkengine.dataset_indices2;
 
 
 
@@ -29,46 +29,25 @@ DROP TABLE wdkengine.dataset_indices;
    ========================================================================= */
 
 
-CREATE SEQUENCE wdkengine.dataset_indices_pkseq INCREMENT BY 1 START WITH 1;
-
-GRANT select ON wdkengine.dataset_indices_pkseq TO GUS_W;
-GRANT select ON wdkengine.dataset_indices_pkseq TO GUS_R;
+CREATE SEQUENCE wdkengine.dataset_indices2_pkseq INCREMENT BY 1 START WITH 1;
 
 
 CREATE SEQUENCE wdkengine.answers_pkseq INCREMENT BY 1 START WITH 1;
 
-GRANT select ON wdkengine.answers_pkseq TO GUS_W;
-GRANT select ON wdkengine.answers_pkseq TO GUS_R;
-
 
 CREATE SEQUENCE wdkuser.users_pkseq INCREMENT BY 1 START WITH 1;
-
-GRANT select ON wdkuser.users_pkseq TO GUS_W;
-GRANT select ON wdkuser.users_pkseq TO GUS_R;
 
 
 CREATE SEQUENCE wdkuser.migration_pkseq INCREMENT BY 1 START WITH 1;
 
-GRANT select ON wdkuser.migration_pkseq TO GUS_W;
-GRANT select ON wdkuser.migration_pkseq TO GUS_R;
-
 
 CREATE SEQUENCE wdkuser.strategies_pkseq INCREMENT BY 1 START WITH 1;
-
-GRANT select ON wdkuser.strategies_pkseq TO GUS_W;
-GRANT select ON wdkuser.strategies_pkseq TO GUS_R;
 
 
 CREATE SEQUENCE wdkuser.steps_pkseq INCREMENT BY 1 START WITH 1;
 
-GRANT select ON wdkuser.steps_pkseq TO GUS_W;
-GRANT select ON wdkuser.steps_pkseq TO GUS_R;
 
-
-CREATE SEQUENCE wdkuser.user_datasets_pkseq INCREMENT BY 1 START WITH 1;
-
-GRANT select ON wdkuser.user_datasets_pkseq TO GUS_W;
-GRANT select ON wdkuser.user_datasets_pkseq TO GUS_R;
+CREATE SEQUENCE wdkuser.user_datasets2_pkseq INCREMENT BY 1 START WITH 1;
 
 
 
@@ -97,16 +76,14 @@ CREATE TABLE wdkengine.answers
 CREATE INDEX wdkengine.answers_idx01 ON wdkengine.answers (prev_answer_id);
 CREATE INDEX wdkengine.answers_idx02 ON wdkengine.answers (old_query_checksum);
 
-
-GRANT insert, update, delete ON wdkengine.answers TO GUS_W;
-GRANT select ON wdkengine.answers TO GUS_R;
 GRANT references ON wdkengine.answers TO wdkuser;
 
 
-CREATE TABLE wdkengine.dataset_indices
+CREATE TABLE wdkengine.dataset_indices2
 (
   dataset_id NUMBER(12) NOT NULL,
   dataset_checksum VARCHAR(40) NOT NULL,
+  record_class VARCHAR(200) NOT NULL,
   summary VARCHAR(200) NOT NULL,
   dataset_size NUMBER(12) NOT NULL,
   PREV_DATASET_ID NUMBER(12),
@@ -115,27 +92,23 @@ CREATE TABLE wdkengine.dataset_indices
   CONSTRAINT "DATASET_CHECKSUM_UNIQUE" UNIQUE (dataset_checksum)
 );
 
-CREATE INDEX wdkengine.dataset_indices_idx01 ON wdkengine.dataset_indices (prev_dataset_id);
+CREATE INDEX wdkengine.dataset_indices2_idx01 ON wdkengine.dataset_indices2 (prev_dataset_id);
+
+GRANT references ON wdkengine.dataset_indices2 TO wdkuser;
 
 
-GRANT insert, update, delete ON wdkengine.dataset_indices TO GUS_W;
-GRANT select ON wdkengine.dataset_indices TO GUS_R;
-GRANT references ON wdkengine.dataset_indices TO wdkuser;
-
-
-CREATE TABLE wdkengine.dataset_values
+CREATE TABLE wdkengine.dataset_values2
 (
   dataset_id NUMBER(12) NOT NULL,
-  dataset_value VARCHAR(4000) NOT NULL,
+  pk_column_1 VARCHAR(1999) NOT NULL,
+  pk_column_2 VARCHAR(1999),
+  pk_column_3 VARCHAR(1999),
   migration NUMBER(12),
   CONSTRAINT "DATASET_VALUES_DATASET_ID_FK" FOREIGN KEY (dataset_id)
-      REFERENCES wdkengine.dataset_indices (dataset_id)
+      REFERENCES wdkengine.dataset_indices2 (dataset_id)
 );
 
-CREATE INDEX wdkengine.dataset_values_idx01 ON wdkengine.dataset_values (dataset_id);
-
-GRANT insert, update, delete ON wdkengine.dataset_values TO GUS_W;
-GRANT select ON wdkengine.dataset_values TO GUS_R;
+CREATE INDEX wdkengine.dataset_values2_idx01 ON wdkengine.dataset_values2 (dataset_id);
 
 
 CREATE TABLE wdkengine.clob_values
@@ -145,9 +118,6 @@ CREATE TABLE wdkengine.clob_values
   migration NUMBER(12),
   CONSTRAINT "CLOB_VALUES_PK" PRIMARY KEY (clob_checksum)
 );
-
-GRANT insert, update, delete ON wdkengine.clob_values TO GUS_W;
-GRANT select ON wdkengine.clob_values TO GUS_R;
 
 
 /* =========================================================================
@@ -183,9 +153,6 @@ CREATE TABLE wdkuser.users
 
 CREATE INDEX wdkuser.users_idx01 ON wdkuser.users (prev_user_id);
 
-GRANT insert, update, delete ON wdkuser.users TO GUS_W;
-GRANT select ON wdkuser.users TO GUS_R;
-
 
 CREATE TABLE wdkuser.user_roles
 (
@@ -196,9 +163,6 @@ CREATE TABLE wdkuser.user_roles
   CONSTRAINT "USER_ROLE_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id) 
 );
-
-GRANT insert, update, delete ON wdkuser.user_roles TO GUS_W;
-GRANT select ON wdkuser.user_roles TO GUS_R;
 
 
 CREATE TABLE wdkuser.preferences
@@ -212,9 +176,6 @@ CREATE TABLE wdkuser.preferences
   CONSTRAINT "PREFERENCE_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id) 
 );
-
-GRANT insert, update, delete ON wdkuser.preferences TO GUS_W;
-GRANT select ON wdkuser.preferences TO GUS_R;
 
 
 CREATE TABLE wdkuser.steps
@@ -246,8 +207,11 @@ CREATE TABLE wdkuser.steps
       REFERENCES wdkengine.answers (answer_id)
 );
 
-GRANT insert, update, delete ON wdkuser.steps TO GUS_W;
-GRANT select ON wdkuser.steps TO GUS_R;
+CREATE INDEX wdkuser.steps_idx01 ON wdkuser.steps (answer_id, user_id, left_child_id);
+CREATE INDEX wdkuser.steps_idx02 ON wdkuser.steps (user_id, answer_id, right_child_id);
+CREATE INDEX wdkuser.steps_idx03 ON wdkuser.steps (user_id, display_id, last_run_time);
+CREATE INDEX wdkuser.steps_idx04 ON wdkuser.steps (user_id, answer_id, is_deleted);
+CREATE INDEX wdkuser.steps_idx05 ON wdkuser.steps (user_id, answer_id, display_id);
 
 
 CREATE TABLE wdkuser.step_params
@@ -261,10 +225,6 @@ CREATE TABLE wdkuser.step_params
 );
 
 CREATE INDEX wdkuser.step_params_idx02 ON wdkuser.step_params (step_id, param_name);
-
-
-GRANT insert, update, delete ON wdkuser.step_params TO GUS_W;
-GRANT select ON wdkuser.step_params TO GUS_R;
 
 
 CREATE TABLE wdkuser.strategies
@@ -294,13 +254,13 @@ CREATE TABLE wdkuser.strategies
          REFERENCES wdkuser.users (user_id)
 );
 
-CREATE INDEX wdkuser.strategies_idx01 ON wdkuser.strategies (project_id, signature);
+CREATE INDEX wdkuser.strategies_idx01 ON wdkuser.strategies (signature, project_id);
+CREATE INDEX wdkuser.strategies_idx02 ON wdkuser.strategies (project_id, user_id, display_id, is_deleted);
+CREATE INDEX wdkuser.strategies_idx03 ON wdkuser.strategies (user_id, project_id, root_step_id, is_deleted, is_saved);
+CREATE INDEX wdkuser.strategies_idx04 ON wdkuser.strategies (project_id, user_id, is_deleted, is_saved, name);
 
-GRANT insert, update, delete on wdkuser.strategies to GUS_W;
-GRANT select on wdkuser.strategies to GUS_R;
 
-
-CREATE TABLE wdkuser.user_datasets
+CREATE TABLE wdkuser.user_datasets2
 (
   user_dataset_id NUMBER(12) NOT NULL,
   dataset_id NUMBER(12) NOT NULL,
@@ -312,13 +272,10 @@ CREATE TABLE wdkuser.user_datasets
   CONSTRAINT "USER_DATASET_PK" PRIMARY KEY (user_dataset_id),
   CONSTRAINT "USER_DATASET_UQ1" UNIQUE (dataset_id, user_id),
   CONSTRAINT "USER_DATASETS_DS_ID_FK" FOREIGN KEY (dataset_id)
-      REFERENCES wdkengine.dataset_indices (dataset_id),
+      REFERENCES wdkengine.dataset_indices2 (dataset_id),
   CONSTRAINT "USER_DATASETS_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id)
 );
-
-GRANT insert, update, delete ON wdkuser.user_datasets TO GUS_W;
-GRANT select ON wdkuser.user_datasets TO GUS_R;
 
 
 CREATE TABLE wdkuser.user_baskets
@@ -336,6 +293,3 @@ CREATE TABLE wdkuser.user_baskets
 CREATE INDEX wdkuser.user_baskets_idx01 
   ON wdkuser.user_baskets 
   (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
-
-GRANT insert, update, delete ON wdkuser.user_baskets TO GUS_W;
-GRANT select ON wdkuser.user_baskets TO GUS_R;

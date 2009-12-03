@@ -50,4 +50,7 @@ public class DatasetParamBean extends ParamBean {
                 uploadFile, rawValue);
     }
 
+    public RecordClassBean getRecordClass() {
+        return new RecordClassBean(datasetParam.getRecordClass());
+    }
 }

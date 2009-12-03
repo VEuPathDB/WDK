@@ -90,15 +90,17 @@ public class PrimaryKeyAttributeField extends AttributeField {
                     throw new WdkModelException("The columnRef " + columnRef
                             + " is duplicated in primaryKetAttribute in "
                             + "recordClass " + recordClass.getFullName());
-                } else columnRefSet.add(columnName);
+                } else
+                    columnRefSet.add(columnName);
             }
         }
         columnRefList = null;
         if (columnRefSet.size() == 0)
             throw new WdkModelException("No primary key column defined in "
                     + "recordClass " + recordClass.getFullName());
-        if (columnRefSet.size() > 3)
-            throw new WdkModelException("You can specify up to 3 primary key "
+        if (columnRefSet.size() > Utilities.MAX_PK_COLUMN_COUNT)
+            throw new WdkModelException("You can specify up to "
+                    + Utilities.MAX_PK_COLUMN_COUNT + " primary key "
                     + "columns in recordClass " + recordClass.getFullName());
 
         // exclude format

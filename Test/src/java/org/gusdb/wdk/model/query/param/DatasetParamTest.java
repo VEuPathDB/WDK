@@ -7,8 +7,8 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Random;
 
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.UnitTestHelper;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -24,8 +24,8 @@ import org.junit.Test;
 public class DatasetParamTest {
 
     private User user;
-    private Dataset dataset;
     private DatasetParam datasetParam;
+    private RecordClass recordClass;
 
     public DatasetParamTest() throws Exception {
         this.user = UnitTestHelper.getRegisteredUser();
@@ -39,19 +39,16 @@ public class DatasetParamTest {
                 }
             }
         }
+        this.recordClass = datasetParam.getRecordClass();
     }
 
     @Test
     public void testRawToDependentValue() throws NoSuchAlgorithmException,
             WdkUserException, WdkModelException, SQLException {
-        Random random = UnitTestHelper.getRandom();
-        String[] values = new String[] { Integer.toString(random.nextInt()),
-                Integer.toString(random.nextInt()),
-                Integer.toString(random.nextInt()),
-                Integer.toString(random.nextInt()) };
-        Dataset dataset = user.createDataset(null, values);
+        String values = generateRandomValues();
+        Dataset dataset = user.createDataset(recordClass, null, values);
 
-        String rawValue = Utilities.fromArray(values);
+        String rawValue = dataset.getValue();
         String dependentValue = datasetParam.rawValueToDependentValue(user,
                 null, rawValue);
         Assert.assertEquals(Integer.toString(dataset.getUserDatasetId()),
@@ -59,38 +56,28 @@ public class DatasetParamTest {
     }
 
     @Test
-    public void testSpacedRawToDependentValue() throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException {
-        Random random = UnitTestHelper.getRandom();
-        String[] values = new String[] { Integer.toString(random.nextInt()),
-                Integer.toString(random.nextInt()),
-                Integer.toString(random.nextInt()),
-                Integer.toString(random.nextInt()) };
-        Dataset dataset = user.createDataset(null, values);
+    public void testSpacedRawToDependentValue()
+            throws NoSuchAlgorithmException, WdkUserException,
+            WdkModelException, SQLException {
+        String values = generateRandomValues();
+        Dataset dataset = user.createDataset(recordClass, null, values);
 
-        String rawValue = Utilities.fromArray(values);
-        rawValue = rawValue.replaceAll(",", ", ");
         String dependentValue = datasetParam.rawValueToDependentValue(user,
-                null, rawValue);
+                null, values);
         Assert.assertEquals(Integer.toString(dataset.getUserDatasetId()),
                 dependentValue);
     }
-
 
     @Test
     public void testRawOrDependentToDependentValue()
             throws NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException {
-        Random random = UnitTestHelper.getRandom();
-        String[] values = new String[] { Integer.toString(random.nextInt()),
-                Integer.toString(random.nextInt()),
-                Integer.toString(random.nextInt()),
-                Integer.toString(random.nextInt()) };
-        Dataset dataset = user.createDataset(null, values);
+        String values = generateRandomValues();
+        Dataset dataset = user.createDataset(recordClass, null, values);
         String expected = Integer.toString(dataset.getUserDatasetId());
 
         // first, try raw value
-        String rawValue = Utilities.fromArray(values);
+        String rawValue = dataset.getValue();
         String dependentValue = datasetParam.rawOrDependentValueToDependentValue(
                 user, rawValue);
         Assert.assertEquals(expected, dependentValue);
@@ -99,5 +86,20 @@ public class DatasetParamTest {
         dependentValue = datasetParam.rawOrDependentValueToDependentValue(user,
                 expected);
         Assert.assertEquals(expected, dependentValue);
+    }
+
+    private String generateRandomValues() {
+        StringBuffer buffer = new StringBuffer();
+        Random random = UnitTestHelper.getRandom();
+        int rowCount = random.nextInt(10) + 1;
+        int columnCount = recordClass.getPrimaryKeyAttributeField().getColumnRefs().length;
+        for (int i = 0; i < rowCount; i++) {
+            for (int j = 0; j < columnCount; j++) {
+                if (j > 0) buffer.append(", ");
+                buffer.append(random.nextInt());
+            }
+            buffer.append("\n");
+        }
+        return buffer.toString();
     }
 }
