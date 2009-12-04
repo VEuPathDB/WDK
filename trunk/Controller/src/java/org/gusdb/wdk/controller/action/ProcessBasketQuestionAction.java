@@ -27,7 +27,7 @@ import org.gusdb.wdk.model.user.BasketFactory;
 public class ProcessBasketQuestionAction extends Action {
 
     private static final String PARAM_RECORD_CLASS = "recordClass";
-    private static final String MAPKEY_PROCESS_QUESTION = "recordClass";
+    private static final String MAPKEY_PROCESS_QUESTION = "processQuestion";
 
     private static Logger logger = Logger.getLogger(ShowBasketAction.class);
 
