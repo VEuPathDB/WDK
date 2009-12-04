@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wsf.util.BaseCLI;
 import org.json.JSONException;
@@ -156,10 +157,16 @@ public class StepParamExpander extends BaseCLI {
             throws JSONException, NoSuchAlgorithmException, WdkModelException,
             WdkUserException, SQLException {
         StepFactory stepFactory = wdkModel.getStepFactory();
+        QueryFactory queryFactory = wdkModel.getQueryFactory();
         Map<String, String> values = stepFactory.parseParamContent(clob);
         List<String[]> newValues = new ArrayList<String[]>();
         for (String paramName : values.keySet()) {
             String value = values.get(paramName);
+            String prefix = Utilities.PARAM_COMPRESSE_PREFIX;
+            if (value.startsWith(prefix)) {
+                String checksum = value.substring(prefix.length()).trim();
+                value = queryFactory.getClobValue(checksum);
+            }
             String[] terms = value.split(",");
             for (String term : terms) {
                 if (term.length() > 4000) term = term.substring(0, 4000);

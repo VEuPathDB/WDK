@@ -19,14 +19,11 @@ import org.gusdb.wsf.util.BaseCLI;
 /**
  * @author xingao
  * 
- */
-/**
- * @author xingao
- *
- */
-/**
- * @author xingao
+ *         this script needs to be run after the model expender & step expender.
  * 
+ *         just accept one model. the model is only used to provide the access
+ *         to user db, the result of this program will affect all projects in
+ *         that user db.
  */
 public class StepValidator extends BaseCLI {
 
@@ -62,8 +59,8 @@ public class StepValidator extends BaseCLI {
      */
     @Override
     protected void declareOptions() {
-        addSingleValueOption(ARG_PROJECT_ID, true, null, "A comma-separated"
-                + " list of ProjectIds, which should match the directory name"
+        addSingleValueOption(ARG_PROJECT_ID, true, null, "ProjectId, which "
+                + "should match the directory name"
                 + " under $GUS_HOME, where model-config.xml is stored.");
     }
 
@@ -76,13 +73,10 @@ public class StepValidator extends BaseCLI {
     protected void execute() throws Exception {
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
-        String projectIds = (String) getOptionValue(ARG_PROJECT_ID);
-        String[] projects = projectIds.split(",");
-        for (String projectId : projects) {
-            logger.info("Expanding model for project " + projectId);
-            WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-            validate(wdkModel);
-        }
+        String projectId = (String) getOptionValue(ARG_PROJECT_ID);
+        logger.info("Validate steps & answers... ");
+        WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
+        validate(wdkModel);
     }
 
     private void validate(WdkModel wdkModel) throws SQLException,

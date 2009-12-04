@@ -573,6 +573,14 @@ public class UserBean /* implements Serializable */{
         DatasetBean bean = new DatasetBean(dataset);
         return bean;
     }
+    public DatasetBean createDataset(RecordClassBean recordClass,
+            String uploadFile, List<String[]> values) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException {
+        Dataset dataset = user.createDataset(recordClass.recordClass,
+                uploadFile, values);
+        DatasetBean bean = new DatasetBean(dataset);
+        return bean;
+    }
 
     /*
      * (non-Javadoc)
@@ -1190,5 +1198,16 @@ public class UserBean /* implements Serializable */{
             WdkUserException, WdkModelException {
         BasketFactory factory = user.getWdkModel().getBasketFactory();
         factory.clearBasket(user, recordClass.recordClass);
+    }
+
+    public List<String[]> getBasket(RecordClassBean recordClass)
+            throws WdkUserException, WdkModelException, SQLException {
+        BasketFactory basketFactory = user.getWdkModel().getBasketFactory();
+        return basketFactory.getBasket(user, recordClass.recordClass);
+    }
+
+    public Map<String, Integer> getBasketCount() throws SQLException {
+        BasketFactory basketFactory = user.getWdkModel().getBasketFactory();
+        return basketFactory.getBasketCounts(user);
     }
 }
