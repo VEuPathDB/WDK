@@ -32,6 +32,7 @@ import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.ModelConfigUserDB;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -110,8 +111,7 @@ public class StepFactory {
 
         // get summary list and sorting list
         String questionName = question.getFullName();
-        Map<String, Boolean> sortingAttributes = user
-                .getSortingAttributes(questionName);
+        Map<String, Boolean> sortingAttributes = user.getSortingAttributes(questionName);
         String[] summaryAttributes = user.getSummaryAttributes(questionName);
 
         // create answer
@@ -133,8 +133,7 @@ public class StepFactory {
             if (filter != null) {
                 filterName = filter.getName();
                 estimateSize = answerValue.getFilterSize(filterName);
-            } else
-                estimateSize = answerValue.getResultSize();
+            } else estimateSize = answerValue.getResultSize();
         } catch (Exception ex) {
             estimateSize = 0;
             ex.printStackTrace();
@@ -191,8 +190,7 @@ public class StepFactory {
             rsMax.close();
             displayId++;
 
-            psInsertStep = connection
-                    .prepareStatement(sqlInsertStep.toString());
+            psInsertStep = connection.prepareStatement(sqlInsertStep.toString());
             psInsertStep.setInt(1, stepId);
             psInsertStep.setInt(2, displayId);
             psInsertStep.setInt(3, userId);
@@ -277,8 +275,8 @@ public class StepFactory {
         sql.append(" OR ").append(COLUMN_RIGHT_CHILD_ID);
         sql.append(" = ").append(displayId).append(")");
 
-        Object result = SqlUtils.executeScalar(wdkModel, dataSource, sql
-                .toString());
+        Object result = SqlUtils.executeScalar(wdkModel, dataSource,
+                sql.toString());
         int count = Integer.parseInt(result.toString());
         return (count > 0);
     }
@@ -315,8 +313,8 @@ public class StepFactory {
             sql.append(") ");
 
             long start = System.currentTimeMillis();
-            psDeleteSteps = SqlUtils.getPreparedStatement(dataSource, sql
-                    .toString());
+            psDeleteSteps = SqlUtils.getPreparedStatement(dataSource,
+                    sql.toString());
             psDeleteSteps.setInt(1, user.getUserId());
             if (!allProjects) {
                 String projectId = wdkModel.getProjectId();
@@ -378,8 +376,8 @@ public class StepFactory {
                 sql.append(" AND ").append(COLUMN_PROJECT_ID).append(" = ?");
             }
             long start = System.currentTimeMillis();
-            psDeleteStrategies = SqlUtils.getPreparedStatement(dataSource, sql
-                    .toString());
+            psDeleteStrategies = SqlUtils.getPreparedStatement(dataSource,
+                    sql.toString());
 
             psDeleteStrategies.setInt(1, user.getUserId());
             if (!allProjects)
@@ -566,8 +564,7 @@ public class StepFactory {
                 COLUMN_DISPLAY_PARAMS);
         Map<String, String> dependentValues = parseParamContent(dependentParamContent);
 
-        String answerChecksum = rsStep
-                .getString(AnswerFactory.COLUMN_ANSWER_CHECKSUM);
+        String answerChecksum = rsStep.getString(AnswerFactory.COLUMN_ANSWER_CHECKSUM);
 
         try {
             // load Answer
@@ -626,13 +623,11 @@ public class StepFactory {
                 }
             }
             String combinedKey = displayParams.get(answerParam.getName());
-            String stepKey = combinedKey
-                    .substring(combinedKey.indexOf(":") + 1);
+            String stepKey = combinedKey.substring(combinedKey.indexOf(":") + 1);
             leftStepId = Integer.parseInt(stepKey);
 
             customName = step.getBaseCustomName();
-        } else
-            customName = step.getBaseCustomName();
+        } else customName = step.getBaseCustomName();
 
         // construct the update sql
         StringBuffer sql = new StringBuffer("UPDATE ");
@@ -653,8 +648,8 @@ public class StepFactory {
         PreparedStatement psUpdateStepTree = null;
         try {
             long start = System.currentTimeMillis();
-            psUpdateStepTree = SqlUtils.getPreparedStatement(dataSource, sql
-                    .toString());
+            psUpdateStepTree = SqlUtils.getPreparedStatement(dataSource,
+                    sql.toString());
             psUpdateStepTree.setString(1, customName);
             psUpdateStepTree.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql.toString(), start);
@@ -790,8 +785,8 @@ public class StepFactory {
             if (recent) {
                 Calendar calendar = Calendar.getInstance();
                 calendar.add(Calendar.DATE, -1);
-                java.sql.Date date = new java.sql.Date(calendar
-                        .getTimeInMillis());
+                java.sql.Date date = new java.sql.Date(
+                        calendar.getTimeInMillis());
                 ps.setDate(5, date);
             }
             resultSet = ps.executeQuery();
@@ -803,7 +798,7 @@ public class StepFactory {
                 try {
                     Strategy strategy = loadStrategy(user, resultSet);
                     strategies.add(strategy);
-                } catch (WdkUserException ex) {
+                } catch (WdkException ex) {
                     logger.error("ignore strategy #"
                             + resultSet.getInt("strategy_id") + ", cause: "
                             + ex);
@@ -832,10 +827,8 @@ public class StepFactory {
         strategy.setIsSaved(resultSet.getBoolean(COLUMN_IS_SAVED));
         strategy.setDeleted(resultSet.getBoolean(COLUMN_IS_DELETED));
         strategy.setSavedName(resultSet.getString(COLUMN_SAVED_NAME));
-        strategy.setLastViewedTime(resultSet
-                .getTimestamp(COLUMN_LAST_VIEWED_TIME));
-        strategy.setLastModifiedTime(resultSet
-                .getTimestamp(COLUMN_LAST_MODIFIED_TIME));
+        strategy.setLastViewedTime(resultSet.getTimestamp(COLUMN_LAST_VIEWED_TIME));
+        strategy.setLastModifiedTime(resultSet.getTimestamp(COLUMN_LAST_MODIFIED_TIME));
         strategy.setSignature(resultSet.getString(COLUMN_SIGNATURE));
         strategy.setDescription(resultSet.getString(COLUMN_DESCRIPTION));
 
@@ -892,8 +885,7 @@ public class StepFactory {
 
                         // left child
                         Step currentStep;
-                        int currentStepId = rsAnswerTree
-                                .getInt(COLUMN_LEFT_CHILD_ID);
+                        int currentStepId = rsAnswerTree.getInt(COLUMN_LEFT_CHILD_ID);
                         if (currentStepId >= 1) {
                             currentStep = loadStep(user, currentStepId);
                             stepTree.push(currentStepId);
@@ -905,8 +897,7 @@ public class StepFactory {
                                 parentStep.setValid(false);
                         }
                         // right child
-                        currentStepId = rsAnswerTree
-                                .getInt(COLUMN_RIGHT_CHILD_ID);
+                        currentStepId = rsAnswerTree.getInt(COLUMN_RIGHT_CHILD_ID);
                         if (currentStepId >= 1) {
                             currentStep = loadStep(user, currentStepId);
                             stepTree.push(currentStepId);
@@ -972,8 +963,7 @@ public class StepFactory {
             } else if (param instanceof DatasetParam) {
                 int oldUserDatasetId = Integer.parseInt(paramValue);
                 Dataset oldDataset = oldUser.getDataset(oldUserDatasetId);
-                Dataset newDataset = newUser.getDataset(oldDataset
-                        .getChecksum());
+                Dataset newDataset = newUser.getDataset(oldDataset.getChecksum());
                 paramValue = Integer.toString(newDataset.getUserDatasetId());
             }
             paramValues.put(paramName, paramValue);
@@ -1120,9 +1110,9 @@ public class StepFactory {
                 // it. We need to get an unsaved copy to modify. Generate
                 // unsaved name
                 String name = getNextName(user, strategy.getName(), false);
-                Strategy newStrat = createStrategy(user, strategy
-                        .getLatestStep(), name, strategy.getName(), false,
-                        strategy.getDescription());
+                Strategy newStrat = createStrategy(user,
+                        strategy.getLatestStep(), name, strategy.getName(),
+                        false, strategy.getDescription());
                 strategy.setName(newStrat.getName());
                 strategy.setSavedName(newStrat.getSavedName());
                 strategy.setDisplayId(newStrat.getStrategyId());
@@ -1196,8 +1186,8 @@ public class StepFactory {
                 SqlUtils.verifyTime(wdkModel, sql, start);
 
                 if (rsCheckName.next())
-                    return loadStrategy(user, rsCheckName
-                            .getInt(COLUMN_DISPLAY_ID), false);
+                    return loadStrategy(user,
+                            rsCheckName.getInt(COLUMN_DISPLAY_ID), false);
             } else {// otherwise, generate default name
                 name = getNextName(user, root.getCustomName(), saved);
             }
@@ -1227,10 +1217,8 @@ public class StepFactory {
             rsMax = psMax.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql, start);
 
-            if (rsMax.next())
-                displayId = rsMax.getInt("max_id") + 1;
-            else
-                displayId = 1;
+            if (rsMax.next()) displayId = rsMax.getInt("max_id") + 1;
+            else displayId = 1;
 
             // insert the row into strategies
             sql = "INSERT INTO " + userSchema + TABLE_STRATEGY + " ("
@@ -1368,8 +1356,8 @@ public class StepFactory {
         String name = strategy.getName();
         if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
         name = getNextName(user, name, false);
-        return createStrategy(user, root, name, null, false, strategy
-                .getDescription());
+        return createStrategy(user, root, name, null, false,
+                strategy.getDescription());
     }
 
     /**
@@ -1393,8 +1381,8 @@ public class StepFactory {
         String name = step.getCustomName();
         if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
         name = getNextName(user, name, false);
-        return createStrategy(user, step, name, null, false, strategy
-                .getDescription());
+        return createStrategy(user, step, name, null, false,
+                strategy.getDescription());
     }
 
     private String getNextName(User user, String oldName, boolean saved)
@@ -1451,8 +1439,7 @@ public class StepFactory {
         PreparedStatement psUpdate = null;
         try {
             long start = System.currentTimeMillis();
-            psUpdate = SqlUtils
-                    .getPreparedStatement(dataSource, sql.toString());
+            psUpdate = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             psUpdate.setTimestamp(1, new Timestamp(new Date().getTime()));
             psUpdate.setString(2, wdkModel.getProjectId());
             psUpdate.setInt(3, user.getUserId());
