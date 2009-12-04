@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.BasketFactory;
@@ -33,6 +34,8 @@ public class UserBean /* implements Serializable */{
      */
     private static final long serialVersionUID = -4296379954371247236L;
 
+    private static Logger logger = Logger.getLogger(UserBean.class);
+    
     private User user;
     private StepBean latestStep;
 
@@ -1033,6 +1036,7 @@ public class UserBean /* implements Serializable */{
             Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
             return convertMap(strategies);
         } catch (Exception ex) {
+            logger.error(ex);
             ex.printStackTrace();
             throw ex;
         }
