@@ -1,6 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
-import java.net.URLEncoder;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -10,8 +11,12 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.user.BasketFactory;
 
 /**
  * This action is called by the UI in order to "close" a strategy. It removes
@@ -19,44 +24,39 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
  */
 
 public class ShowBasketAction extends Action {
-    
+
     private static final String PARAM_RECORD_CLASS = "recordClass";
+    private static final String ATTR_ANSWER_VALUE = "answerValue";
+    private static final String MAPKEY_SHOW_BASKET = "showBasket";
 
     private static Logger logger = Logger.getLogger(ShowBasketAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        logger.debug("Entering CloseStrategyAction");
+        logger.debug("Entering ShowBasketAction...");
 
-        UserBean wdkUser = ActionUtility.getUser(servlet, request);
+        UserBean user = ActionUtility.getUser(servlet, request);
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         try {
-            String state = request.getParameter(CConstants.WDK_STATE_KEY);
+            String rcName = request.getParameter(PARAM_RECORD_CLASS);
+            RecordClassBean recordClass = wdkModel.findRecordClass(rcName);
+            QuestionBean question = recordClass.getRealtimeBasketQuestion();
+            Map<String, String> params = new LinkedHashMap<String, String>();
+            params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
+            AnswerValueBean answerValue = question.makeAnswerValue(user, params);
 
-            String strStratKeys = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-            String[] stratIdstr = (strStratKeys == null || strStratKeys.length() == 0) ?
-                new String[0] : strStratKeys.split(",");
+            request.setAttribute(ATTR_ANSWER_VALUE, answerValue);
 
-            if (stratIdstr.length != 0) {
-                for (int i = 0; i < stratIdstr.length; ++i) {
-		    logger.debug("closing strategy: '" + stratIdstr[i] + "'");
-		    wdkUser.removeActiveStrategy(stratIdstr[i]);
-                }
-            } else {
-                throw new Exception("No strategy specified to close!");
-            }
-
-            ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
-            StringBuffer url = new StringBuffer(showStrategy.getPath());
-            url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
-            ActionForward forward = new ActionForward(url.toString());
-            forward.setRedirect(true);
+            ActionForward forward = mapping.findForward(MAPKEY_SHOW_BASKET);
+            forward.setRedirect(false);
             return forward;
         } catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
-            ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
-            return null;
+            throw ex;
+        } finally {
+            logger.debug("Leaving ShowBasketAction...");
         }
     }
 }

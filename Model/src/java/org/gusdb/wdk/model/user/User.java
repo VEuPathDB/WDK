@@ -874,6 +874,13 @@ public class User /* implements Serializable */{
                 strValues);
     }
 
+    public Dataset createDataset(RecordClass recordClass, String uploadFile,
+            List<String[]> values) throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException {
+        return datasetFactory.getDataset(this, recordClass, uploadFile,
+                values);
+    }
+
     public void save() throws WdkUserException, WdkModelException {
         userFactory.saveUser(this);
     }

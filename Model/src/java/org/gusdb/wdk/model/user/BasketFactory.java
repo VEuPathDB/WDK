@@ -51,8 +51,8 @@ public class BasketFactory {
     static final String BASKET_ATTRIBUTE_QUERY_SUFFIX = "_basket_attrs";
     static final String BASKET_ATTRIBUTE = "in_basket";
 
-    static final String PARAM_USER_SIGNATURE = "user_signature";
-    static final String PARAM_DATASET_SUFFIX = "Dataset";
+    public static final String PARAM_USER_SIGNATURE = "user_signature";
+    public static final String PARAM_DATASET_SUFFIX = "Dataset";
 
     static final String TABLE_BASKET = "user_baskets";
     static final String COLUMN_USER_ID = "user_id";
@@ -107,8 +107,7 @@ public class BasketFactory {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
-                .getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
         String sqlInsert = "INSERT INTO " + schema + TABLE_BASKET + " ("
                 + COLUMN_USER_ID + ", " + COLUMN_PROJECT_ID + ", "
                 + COLUMN_RECORD_CLASS;
@@ -178,8 +177,7 @@ public class BasketFactory {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
-                .getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
         String sqlDelete = "DELETE FROM " + schema + TABLE_BASKET + " WHERE "
                 + COLUMN_USER_ID + "= ? AND " + COLUMN_PROJECT_ID + " = ? AND "
                 + COLUMN_RECORD_CLASS + " = ?";
@@ -237,7 +235,7 @@ public class BasketFactory {
         }
     }
 
-    Map<String, Integer> getBasketCounts(User user) throws SQLException {
+    public Map<String, Integer> getBasketCounts(User user) throws SQLException {
         Map<String, Integer> counts = new LinkedHashMap<String, Integer>();
         for (RecordClassSet rcSet : wdkModel.getAllRecordClassSets()) {
             for (RecordClass recordClass : rcSet.getRecordClasses()) {
@@ -266,6 +264,37 @@ public class BasketFactory {
         return counts;
     }
 
+    public List<String[]> getBasket(User user, RecordClass recordClass)
+            throws WdkUserException, WdkModelException, SQLException {
+        String sql = "SELECT * FROM " + schema + TABLE_BASKET + " WHERE "
+                + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_USER_ID
+                + " = ? AND " + COLUMN_RECORD_CLASS + " =?";
+        DataSource ds = wdkModel.getUserPlatform().getDataSource();
+        ResultSet rs = null;
+        try {
+            long start = System.currentTimeMillis();
+            PreparedStatement ps = SqlUtils.getPreparedStatement(ds, sql);
+            ps.setString(1, wdkModel.getProjectId());
+            ps.setInt(2, user.getUserId());
+            ps.setString(3, recordClass.getFullName());
+            rs = ps.executeQuery();
+            SqlUtils.verifyTime(wdkModel, sql, start);
+
+            List<String[]> records = new ArrayList<String[]>();
+            int columnCount = recordClass.getPrimaryKeyAttributeField().getColumnRefs().length;
+            while (rs.next()) {
+                String[] record = new String[columnCount];
+                for (int i = 1; i <= columnCount; i++) {
+                    record[i - 1] = rs.getString(Utilities.COLUMN_PK_PREFIX + i);
+                }
+                records.add(record);
+            }
+            return records;
+        } finally {
+            SqlUtils.closeResultSet(rs);
+        }
+    }
+
     /**
      * the method has to be called before the recordClasses are resolved.
      * 
@@ -282,8 +311,7 @@ public class BasketFactory {
         // check if the basket question already exists
         String qname = recordClass.getFullName().replace('.', '_')
                 + SNAPSHOT_BASKET_QUESTION_SUFFIX;
-        QuestionSet questionSet = wdkModel
-                .getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
+        QuestionSet questionSet = wdkModel.getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
         if (questionSet.contains(qname)) return;
 
         String rcName = recordClass.getDisplayName();
@@ -305,8 +333,7 @@ public class BasketFactory {
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
 
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
-                .getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
 
         // check if the boolean query already exists
         String queryName = rcName.replace('.', '_')
@@ -386,8 +413,7 @@ public class BasketFactory {
         // check if the basket question already exists
         String qname = recordClass.getFullName().replace('.', '_')
                 + REALTIME_BASKET_QUESTION_SUFFIX;
-        QuestionSet questionSet = wdkModel
-                .getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
+        QuestionSet questionSet = wdkModel.getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
         if (questionSet.contains(qname)) return;
 
         String rcName = recordClass.getDisplayName();
@@ -410,8 +436,7 @@ public class BasketFactory {
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
 
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
-                .getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
 
         // check if the boolean query already exists
         String queryName = rcName.replace('.', '_')
@@ -497,8 +522,7 @@ public class BasketFactory {
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
 
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
-                .getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
 
         // check if the boolean query already exists
         String queryName = rcName.replace('.', '_')
