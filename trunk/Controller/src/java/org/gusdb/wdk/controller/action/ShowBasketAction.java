@@ -45,10 +45,17 @@ public class ShowBasketAction extends Action {
             Map<String, String> params = new LinkedHashMap<String, String>();
             params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
             AnswerValueBean answerValue = question.makeAnswerValue(user, params);
+
             request.setAttribute(CConstants.WDK_ANSWER_KEY, answerValue);
 
+	    int resultSize = answerValue.getResultSize();
+            int pageSize = ShowSummaryAction.getPageSize(request, question, user);
+            request.setAttribute("wdk_paging_total", answerValue.getResultSize());
+            request.setAttribute("wdk_paging_pageSize", pageSize);
+            request.setAttribute("wdk_paging_start", 0);
+            request.setAttribute("wdk_paging_end", 19);
+
             ActionForward forward = mapping.findForward(MAPKEY_SHOW_BASKET);
-            forward.setRedirect(false);
             return forward;
         } catch (Exception ex) {
             logger.error(ex);

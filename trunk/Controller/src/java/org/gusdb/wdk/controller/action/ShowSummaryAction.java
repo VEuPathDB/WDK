@@ -548,7 +548,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         return start;
     }
 
-    private static int getPageSize(HttpServletRequest request,
+    public static int getPageSize(HttpServletRequest request,
             QuestionBean question, UserBean user) throws WdkUserException,
             WdkModelException {
         int pageSize = user.getItemsPerPage();
