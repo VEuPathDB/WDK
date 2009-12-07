@@ -538,7 +538,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         return size;
     }
 
-    private static int getPageStart(HttpServletRequest request) {
+    public static int getPageStart(HttpServletRequest request) {
         int start = 1;
         if (request.getParameter("pager.offset") != null) {
             start = Integer.parseInt(request.getParameter("pager.offset"));

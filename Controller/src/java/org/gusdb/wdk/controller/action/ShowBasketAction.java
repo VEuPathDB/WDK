@@ -1,6 +1,9 @@
 package org.gusdb.wdk.controller.action;
 
+import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -48,12 +51,28 @@ public class ShowBasketAction extends Action {
 
             request.setAttribute(CConstants.WDK_ANSWER_KEY, answerValue);
 
-	    int resultSize = answerValue.getResultSize();
-            int pageSize = ShowSummaryAction.getPageSize(request, question, user);
-            request.setAttribute("wdk_paging_total", answerValue.getResultSize());
+            int resultSize = answerValue.getResultSize();
+            int pageSize = ShowSummaryAction.getPageSize(request, question,
+                    user);
+            int start = ShowSummaryAction.getPageStart(request);
+            int end = start + pageSize - 1;
+
+            List<String> editedParamNames = new ArrayList<String>();
+            Enumeration<?> en = request.getParameterNames();
+            while (en.hasMoreElements()) {
+                String key = (String) en.nextElement();
+                if (!key.equals(CConstants.WDK_PAGE_SIZE_KEY)
+                        && !key.equals(CConstants.WDK_ALT_PAGE_SIZE_KEY)
+                        && !"start".equals(key) && !"pager.offset".equals(key)) {
+                    editedParamNames.add(key);
+                }
+            }
+            request.setAttribute("wdk_paging_total", resultSize);
             request.setAttribute("wdk_paging_pageSize", pageSize);
-            request.setAttribute("wdk_paging_start", 0);
-            request.setAttribute("wdk_paging_end", 19);
+            request.setAttribute("wdk_paging_start", start);
+            request.setAttribute("wdk_paging_end", end);
+            request.setAttribute("wdk_paging_url", request.getRequestURI());
+            request.setAttribute("wdk_paging_params", editedParamNames);
 
             ActionForward forward = mapping.findForward(MAPKEY_SHOW_BASKET);
             return forward;
