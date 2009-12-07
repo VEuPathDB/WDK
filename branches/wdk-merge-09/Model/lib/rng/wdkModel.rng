@@ -305,6 +305,15 @@
           <optional>
             <attribute name="columnName" />
           </optional>
+		  <optional>
+			<attribute name="defaultType">
+				<choice>
+					<value>data</value>
+					<value>file</value>
+					<value>basket</value>
+				</choice>
+			</attribute>
+		  </optional>
         </element>
       </zeroOrMore>
     </element>

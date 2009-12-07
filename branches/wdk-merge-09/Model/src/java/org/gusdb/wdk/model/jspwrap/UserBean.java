@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.BasketFactory;
@@ -32,6 +33,8 @@ public class UserBean /* implements Serializable */{
      * 
      */
     private static final long serialVersionUID = -4296379954371247236L;
+
+    private static Logger logger = Logger.getLogger(UserBean.class);
 
     private User user;
     private StepBean latestStep;
@@ -574,6 +577,15 @@ public class UserBean /* implements Serializable */{
         return bean;
     }
 
+    public DatasetBean createDataset(RecordClassBean recordClass,
+            String uploadFile, List<String[]> values) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException {
+        Dataset dataset = user.createDataset(recordClass.recordClass,
+                uploadFile, values);
+        DatasetBean bean = new DatasetBean(dataset);
+        return bean;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -1025,6 +1037,7 @@ public class UserBean /* implements Serializable */{
             Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
             return convertMap(strategies);
         } catch (Exception ex) {
+            logger.error(ex);
             ex.printStackTrace();
             throw ex;
         }
@@ -1159,9 +1172,8 @@ public class UserBean /* implements Serializable */{
                 stepId));
     }
 
-    public void addToBasket(RecordClassBean recordClass,
-            List<Map<String, String>> ids) throws SQLException,
-            WdkUserException, WdkModelException {
+    public void addToBasket(RecordClassBean recordClass, List<String[]> ids)
+            throws SQLException, WdkUserException, WdkModelException {
         BasketFactory factory = user.getWdkModel().getBasketFactory();
         factory.addToBasket(user, recordClass.recordClass, ids);
     }
@@ -1172,9 +1184,8 @@ public class UserBean /* implements Serializable */{
         factory.addToBasket(user, step.step);
     }
 
-    public void removeFromBasket(RecordClassBean recordClass,
-            List<Map<String, String>> ids) throws SQLException,
-            WdkUserException, WdkModelException {
+    public void removeFromBasket(RecordClassBean recordClass, List<String[]> ids)
+            throws SQLException, WdkUserException, WdkModelException {
         BasketFactory factory = user.getWdkModel().getBasketFactory();
         factory.removeFromBasket(user, recordClass.recordClass, ids);
     }
@@ -1190,5 +1201,16 @@ public class UserBean /* implements Serializable */{
             WdkUserException, WdkModelException {
         BasketFactory factory = user.getWdkModel().getBasketFactory();
         factory.clearBasket(user, recordClass.recordClass);
+    }
+
+    public String getBasket(RecordClassBean recordClass)
+            throws WdkUserException, WdkModelException, SQLException {
+        BasketFactory basketFactory = user.getWdkModel().getBasketFactory();
+        return basketFactory.getBasket(user, recordClass.recordClass);
+    }
+
+    public Map<String, Integer> getBasketCount() throws SQLException {
+        BasketFactory basketFactory = user.getWdkModel().getBasketFactory();
+        return basketFactory.getBasketCounts(user);
     }
 }

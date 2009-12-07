@@ -121,6 +121,11 @@ public abstract class Param extends WdkModelBase {
      * initialized from suggest.
      */
     protected String selectMode;
+    /**
+     * Only used by datasetParam, determines what input type to be selected as
+     * default.
+     */
+    protected String defaultType;
 
     public Param() {
         visible = true;
@@ -148,6 +153,7 @@ public abstract class Param extends WdkModelBase {
         this.paramSet = param.paramSet;
         this.wdkModel = param.wdkModel;
         this.selectMode = param.selectMode;
+        this.defaultType = param.defaultType;
     }
 
     /**
@@ -345,6 +351,7 @@ public abstract class Param extends WdkModelBase {
                     allowEmpty = suggest.isAllowEmpty();
                     emptyValue = suggest.getEmptyValue();
                     selectMode = suggest.getSelectMode();
+                    defaultType = suggest.getDefaultType();
 
                     hasSuggest = true;
                 }

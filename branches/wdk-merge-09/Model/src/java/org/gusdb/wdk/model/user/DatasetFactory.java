@@ -75,6 +75,13 @@ public class DatasetFactory {
             throws NoSuchAlgorithmException, WdkModelException,
             WdkUserException, SQLException {
         List<String[]> values = parseValues(recordClass, strValues);
+        return getDataset(user, recordClass, uploadFile, values);
+    }
+
+    public Dataset getDataset(User user, RecordClass recordClass,
+            String uploadFile, List<String[]> values)
+            throws NoSuchAlgorithmException, WdkModelException,
+            WdkUserException, SQLException {
         if (values.size() == 0)
             throw new WdkDatasetException("The dataset is empty. User #"
                     + user.getUserId());

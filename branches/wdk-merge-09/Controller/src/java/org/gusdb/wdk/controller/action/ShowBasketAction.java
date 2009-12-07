@@ -1,6 +1,10 @@
 package org.gusdb.wdk.controller.action;
 
-import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -11,7 +15,13 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.RecordClassBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.user.BasketFactory;
 
 /**
  * This action is called by the UI in order to "close" a strategy. It removes
@@ -19,44 +29,63 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
  */
 
 public class ShowBasketAction extends Action {
-    
+
     private static final String PARAM_RECORD_CLASS = "recordClass";
+    private static final String MAPKEY_SHOW_BASKET = "showBasket";
 
     private static Logger logger = Logger.getLogger(ShowBasketAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        logger.debug("Entering CloseStrategyAction");
+        logger.debug("Entering ShowBasketAction...");
 
-        UserBean wdkUser = ActionUtility.getUser(servlet, request);
+        UserBean user = ActionUtility.getUser(servlet, request);
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         try {
-            String state = request.getParameter(CConstants.WDK_STATE_KEY);
+            String rcName = request.getParameter(PARAM_RECORD_CLASS);
+            RecordClassBean recordClass = wdkModel.findRecordClass(rcName);
+            QuestionBean question = recordClass.getRealtimeBasketQuestion();
+            Map<String, String> params = new LinkedHashMap<String, String>();
+            params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
+            
+            StepBean step = user.createStep(question, params, null, true, false);
+            AnswerValueBean answerValue = step.getAnswerValue();
 
-            String strStratKeys = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-            String[] stratIdstr = (strStratKeys == null || strStratKeys.length() == 0) ?
-                new String[0] : strStratKeys.split(",");
+            request.setAttribute(CConstants.WDK_STEP_KEY, step);
+            request.setAttribute(CConstants.WDK_ANSWER_KEY, answerValue);
 
-            if (stratIdstr.length != 0) {
-                for (int i = 0; i < stratIdstr.length; ++i) {
-		    logger.debug("closing strategy: '" + stratIdstr[i] + "'");
-		    wdkUser.removeActiveStrategy(stratIdstr[i]);
+            int resultSize = answerValue.getResultSize();
+            int pageSize = ShowSummaryAction.getPageSize(request, question,
+                    user);
+            int start = ShowSummaryAction.getPageStart(request);
+            int end = start + pageSize - 1;
+
+            List<String> editedParamNames = new ArrayList<String>();
+            Enumeration<?> en = request.getParameterNames();
+            while (en.hasMoreElements()) {
+                String key = (String) en.nextElement();
+                if (!key.equals(CConstants.WDK_PAGE_SIZE_KEY)
+                        && !key.equals(CConstants.WDK_ALT_PAGE_SIZE_KEY)
+                        && !"start".equals(key) && !"pager.offset".equals(key)) {
+                    editedParamNames.add(key);
                 }
-            } else {
-                throw new Exception("No strategy specified to close!");
             }
+            request.setAttribute("wdk_paging_total", resultSize);
+            request.setAttribute("wdk_paging_pageSize", pageSize);
+            request.setAttribute("wdk_paging_start", start);
+            request.setAttribute("wdk_paging_end", end);
+            request.setAttribute("wdk_paging_url", request.getRequestURI());
+            request.setAttribute("wdk_paging_params", editedParamNames);
 
-            ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
-            StringBuffer url = new StringBuffer(showStrategy.getPath());
-            url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
-            ActionForward forward = new ActionForward(url.toString());
-            forward.setRedirect(true);
+            ActionForward forward = mapping.findForward(MAPKEY_SHOW_BASKET);
             return forward;
         } catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
-            ShowStrategyAction.outputErrorJSON(wdkUser, response, ex);
-            return null;
+            throw ex;
+        } finally {
+            logger.debug("Leaving ShowBasketAction...");
         }
     }
 }
