@@ -59,9 +59,9 @@ function chooseType(paramName, type) {
 <c:set var="partial" value="${requestScope.partial}" />
 <c:set var="recordType" value="{$qp.recordClass.type}" />
 <c:set var="defaultType" value="{$qp.defaultType}" />
-<c:set var="dataChecked><c:if test="${defaultType == 'data'}">checked</c:if></c:set>
-<c:set var="fileChecked><c:if test="${defaultType == 'file'}">checked</c:if></c:set>
-<c:set var="basketChecked><c:if test="${defaultType == 'basket'}">checked</c:if></c:set>
+<c:set var="dataChecked"><c:if test="${defaultType == 'data'}">checked</c:if></c:set>
+<c:set var="fileChecked"><c:if test="${defaultType == 'file'}">checked</c:if></c:set>
+<c:set var="basketChecked"><c:if test="${defaultType == 'basket'}">checked</c:if></c:set>
 
 <input type="hidden" id="${pNam}_type" name="${pNam}_type" value="data" />
 
@@ -117,7 +117,7 @@ function chooseType(paramName, type) {
                 Upload from file:&nbsp;
             </td>
             <td align="left">
-                <html:file styleId="${pNam}_file" class="input" property="myPropObject(${pNam}_file)" disabled="true"/>
+                <html:file styleId="${pNam}_file" styleClass="input" property="myPropObject(${pNam}_file)" disabled="true"/>
             </td>
         </tr>
     </c:if>
