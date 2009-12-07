@@ -12,7 +12,6 @@ import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.FieldScope;
-import org.gusdb.wdk.model.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
@@ -453,11 +452,14 @@ public class AnswerValueBean {
     public String getAllIdList() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        PrimaryKeyAttributeValue[] pkValues = answerValue.getAllPkValues();
+        List<String[]> pkValues = answerValue.getAllIds();
         StringBuffer buffer = new StringBuffer();
-        for (PrimaryKeyAttributeValue pkValue : pkValues) {
-            if (buffer.length() > 0) buffer.append(",");
-            buffer.append(pkValue.getValue());
+        for (String[] pkValue : pkValues) {
+            if (buffer.length() > 0) buffer.append("\n");
+            for (int i = 0; i < pkValue.length; i++) {
+                if (i > 0) buffer.append(", ");
+                buffer.append(pkValue[i]);
+            }
         }
         return buffer.toString();
     }

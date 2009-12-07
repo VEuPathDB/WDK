@@ -15,6 +15,15 @@ Provides form input element for a given DatasetParam.
 <script type="text/javascript" lang="JavaScript 1.2">
 <!-- //
 
+$(document).ready(function() {
+	var param = $("#${qp.name}");
+	var paramName = param.attr("id");
+	param.find("#" + paramName + "_type").each(function() {
+		var disable = ($(this).attr("checked") == "checked") ? "false" : "true";
+		$(this).parents("tr").find(".input").attr("disabled", disable);
+	});
+});
+
 var IE = document.all?true:false
 
 if (!IE) {
@@ -25,12 +34,12 @@ function chooseType(paramName, type) {
     var inputType = document.getElementById(paramName + '_type');
     inputType.value = type;
     // disable inputs accordingly
-    if (type == "DATA") {
+    if (type == "data") {
         var inputData = document.getElementById(paramName + '_data');
         inputData.disabled = false;
         var inputFile = document.getElementById(paramName + '_file');
         inputFile.disabled = true;
-    } else if (type == "FILE") {
+    } else if (type == "file") {
         var inputData = document.getElementById(paramName + '_data');
         inputData.disabled = true;
         var inputFile = document.getElementById(paramName + '_file');
@@ -48,15 +57,22 @@ function chooseType(paramName, type) {
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="dataset" value="${requestScope[dsName]}" />  
 <c:set var="partial" value="${requestScope.partial}" />
-<input type="hidden" id="${pNam}_type" name="${pNam}_type" value="DATA" />
+<c:set var="recordType" value="{$qp.recordClass.type}" />
+<c:set var="defaultType" value="{$qp.defaultType}" />
+<c:set var="dataChecked><c:if test="${defaultType == 'data'}">checked</c:if></c:set>
+<c:set var="fileChecked><c:if test="${defaultType == 'file'}">checked</c:if></c:set>
+<c:set var="basketChecked><c:if test="${defaultType == 'basket'}">checked</c:if></c:set>
 
-<table border="0" bgcolor="#EEEEEE" cellspacing="0" cellpadding="0">
+<input type="hidden" id="${pNam}_type" name="${pNam}_type" value="data" />
+
+
+<table id="${qp.name}" border="0" bgcolor="#EEEEEE" cellspacing="0" cellpadding="0">
     
     <!-- display an input box for user to enter data -->
     <tr>
         <td align="left" valign="top" nowrap>
-            <input type="radio" name="${pNam}_radio" checked
-                   onclick="chooseType('${pNam}', 'DATA');" />
+            <input type="radio" name="${pNam}_radio" ${dataChecked}
+                   onclick="chooseType('${pNam}', 'data');" />
             Enter list:&nbsp;
         </td>
         <c:set var="datasetValues">
@@ -70,7 +86,16 @@ function chooseType(paramName, type) {
             </c:choose>
         </c:set>
         <td align="left">
-            <textarea id="${pNam}_data" name="${pNam}_data" rows="5" cols="30">${datasetValues}</textarea>
+            <textarea id="${pNam}_data" class="input" name="${pNam}_data" rows="5" cols="30">${datasetValues}</textarea>
+        </td>
+    </tr>
+	
+	<!-- display option to use basket snapshot -->
+    <tr>
+        <td colspan="2" align="left" valign="top" nowrap>
+            <input type="radio" name="${pNam}_radio" ${basketChecked}
+                   onclick="chooseType('${pNam}', 'basket');" />
+            Snapshot of ${recordType}s in the basket:&nbsp;
         </td>
     </tr>
     
@@ -87,12 +112,12 @@ function chooseType(paramName, type) {
         <!-- display an input box and upload file button -->
         <tr class="dataset-file">
             <td align="left" valign="top" nowrap>
-                <input type="radio" name="${pNam}_radio"  
-                       onclick="chooseType('${pNam}', 'FILE');" />
+                <input type="radio" name="${pNam}_radio" ${fileChecked}
+                       onclick="chooseType('${pNam}', 'file');" />
                 Upload from file:&nbsp;
             </td>
             <td align="left">
-                <html:file styleId="${pNam}_file" property="myPropObject(${pNam}_file)" disabled="true"/>
+                <html:file styleId="${pNam}_file" class="input" property="myPropObject(${pNam}_file)" disabled="true"/>
             </td>
         </tr>
     </c:if>
