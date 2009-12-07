@@ -6,9 +6,7 @@ package org.gusdb.wdk.controller.action;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -95,12 +93,12 @@ public class ProcessBasketAction extends Action {
         if (action.equalsIgnoreCase(ACTION_ADD)) {
             // need type & data params, where data is a JSON list of record ids
             RecordClassBean recordClass = getRecordClass(request, wdkModel);
-            List<Map<String, String>> records = getRecords(request, recordClass);
+            List<String[]> records = getRecords(request, recordClass);
             user.addToBasket(recordClass, records);
         } else if (action.equalsIgnoreCase(ACTION_REMOVE)) {
             // need type & data params, where data is a JSON list of record ids
             RecordClassBean recordClass = getRecordClass(request, wdkModel);
-            List<Map<String, String>> records = getRecords(request, recordClass);
+            List<String[]> records = getRecords(request, recordClass);
             user.removeFromBasket(recordClass, records);
         } else if (action.equalsIgnoreCase(ACTION_ADD_ALL)) {
             // only need the data param, and it is a step display id
@@ -143,7 +141,7 @@ public class ProcessBasketAction extends Action {
         return user.getStep(stepId);
     }
 
-    private List<Map<String, String>> getRecords(HttpServletRequest request,
+    private List<String[]> getRecords(HttpServletRequest request,
             RecordClassBean recordClass) throws JSONException, WdkUserException {
         String data = request.getParameter(PARAM_DATA);
         if (data == null)
@@ -152,12 +150,12 @@ public class ProcessBasketAction extends Action {
 
         String[] pkColumns = recordClass.getPrimaryKeyColumns();
         JSONArray array = new JSONArray(data);
-        List<Map<String, String>> ids = new ArrayList<Map<String, String>>();
+        List<String[]> ids = new ArrayList<String[]>();
         for (int i = 0; i < array.length(); i++) {
             JSONObject object = array.getJSONObject(i);
-            Map<String, String> values = new LinkedHashMap<String, String>();
-            for (String column : pkColumns) {
-                values.put(column, object.getString(column));
+            String[] values = new String[pkColumns.length];
+            for (int j = 0; j < values.length; j++) {
+                values[j] = object.getString(pkColumns[j]);
             }
             ids.add(values);
         }

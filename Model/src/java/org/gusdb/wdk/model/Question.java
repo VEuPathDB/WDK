@@ -36,7 +36,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     private static final long serialVersionUID = -446811404645317117L;
 
-    private static final Logger logger = Logger.getLogger(Question.class);
+    protected static final Logger logger = Logger.getLogger(Question.class);
 
     private String recordClassRef;
 

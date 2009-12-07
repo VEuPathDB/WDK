@@ -33,6 +33,10 @@ import org.json.JSONObject;
  */
 public class DatasetParam extends Param {
 
+    public static final String TYPE_DATA = "data";
+    public static final String TYPE_FILE = "file";
+    public static final String TYPE_BASKET = "basket";
+
     private String columnName = DatasetFactory.COLUMN_DATASET_VALUE;
 
     private String recordClassRef;
@@ -56,8 +60,7 @@ public class DatasetParam extends Param {
     public void resolveReferences(WdkModel model) throws WdkModelException {
         this.wdkModel = model;
         if (recordClassRef != null) {
-            recordClass = (RecordClass) wdkModel
-                    .resolveReference(recordClassRef);
+            recordClass = (RecordClass) wdkModel.resolveReference(recordClassRef);
             recordClassRef = null;
         }
     }
@@ -138,8 +141,7 @@ public class DatasetParam extends Param {
         String colDatasetId = DatasetFactory.COLUMN_DATASET_ID;
         String colUserDatasetId = DatasetFactory.COLUMN_USER_DATASET_ID;
         StringBuffer sql = new StringBuffer("SELECT ");
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
-                .getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
         for (int i = 1; i <= pkColumns.length; i++) {
             if (i > 1) sql.append(", ");
             sql.append("dv." + Utilities.COLUMN_PK_PREFIX + i);
@@ -242,5 +244,13 @@ public class DatasetParam extends Param {
      */
     public void setRecordClassRef(String recordClassRef) {
         this.recordClassRef = recordClassRef;
+    }
+
+    public String getDefaultType() {
+        return (defaultType != null) ? defaultType : TYPE_DATA;
+    }
+    
+    public void setDefaultType(String defaultType) {
+        this.defaultType = defaultType;
     }
 }

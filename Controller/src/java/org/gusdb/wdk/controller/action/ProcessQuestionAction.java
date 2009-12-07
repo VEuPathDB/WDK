@@ -17,13 +17,15 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.upload.FormFile;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.json.JSONException;
 
@@ -114,7 +116,9 @@ public class ProcessQuestionAction extends ShowQuestionAction {
             throws WdkModelException, WdkUserException, FileNotFoundException,
             IOException, NoSuchAlgorithmException, SQLException, JSONException {
         Map<String, String> paramValues = qform.getMyProps();
-        Map<String, ParamBean> params = qform.getQuestion().getParamsMap();
+        QuestionBean question = qform.getQuestion();
+        
+        Map<String, ParamBean> params = question.getParamsMap();
         // convert from raw data to user dependent data
         for (String paramName : params.keySet()) {
             ParamBean param = params.get(paramName);
@@ -142,6 +146,15 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                     uploadFile = file.getFileName();
                     logger.debug("upload file: " + uploadFile);
                     data = new String(file.getFileData());
+                } else if (type.equalsIgnoreCase("basket")) {
+                    RecordClassBean recordClass = question.getRecordClass();
+                    data = user.getBasket(recordClass);
+                } else if (type.equals("strategy")) {
+                    String strId = request.getParameter(paramName + "_strategy");
+                    int displayId = Integer.parseInt(strId);
+                    StrategyBean strategy = user.getStrategy(displayId);
+                    StepBean step = strategy.getLatestStep();
+                    data = step.getAnswerValue().getAllIdList();
                 }
 
                 logger.debug("dataset data: '" + data + "'");

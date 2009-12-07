@@ -303,19 +303,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
         return forward;
     }
 
-    protected void handleDatasetParams(UserBean user, QuestionBean question,
-            Map<String, Object> params) {
-        Map<String, ParamBean> paramDefinitions = question.getParamsMap();
-        for (String paramName : paramDefinitions.keySet()) {
-            ParamBean param = paramDefinitions.get(paramName);
-            if (param != null && param instanceof DatasetParamBean) {
-                String paramValue = user.getSignature() + ":"
-                        + (String) params.get(paramName);
-                params.put(paramName, paramValue);
-            }
-        }
-    }
-
     public static StepBean summaryPaging(HttpServletRequest request,
             StepBean step) throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
@@ -536,7 +523,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         return size;
     }
 
-    private static int getPageStart(HttpServletRequest request) {
+    public static int getPageStart(HttpServletRequest request) {
         int start = 1;
         if (request.getParameter("pager.offset") != null) {
             start = Integer.parseInt(request.getParameter("pager.offset"));
@@ -546,7 +533,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         return start;
     }
 
-    private static int getPageSize(HttpServletRequest request,
+    public static int getPageSize(HttpServletRequest request,
             QuestionBean question, UserBean user) throws WdkUserException,
             WdkModelException {
         int pageSize = user.getItemsPerPage();
