@@ -682,7 +682,7 @@ public class AnswerValue {
         sql.append(" FROM (");
 
         String innerSql = idsQueryInstance.getSql();
-        // get a filter
+        // apply filter
         if (filter != null) innerSql = filter.applyFilter(user, innerSql);
         sql.append(innerSql).append(") bidq)");
 
@@ -1005,33 +1005,30 @@ public class AnswerValue {
         resultSizesByProject = null;
     }
 
-    public PrimaryKeyAttributeValue[] getAllPkValues()
+    public List<String[]> getAllIds()
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
         String idSql = getIdSql();
         PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
         String[] pkColumns = pkField.getColumnRefs();
-        List<PrimaryKeyAttributeValue> pkValues = new ArrayList<PrimaryKeyAttributeValue>();
+        List<String[]> pkValues = new ArrayList<String[]>();
         WdkModel wdkModel = question.getWdkModel();
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, idSql);
-        ResultList resultList = new SqlResultList(resultSet);
+        ResultSet resultSet = null;
         try {
-            while (resultList.next()) {
-                Map<String, Object> values = new LinkedHashMap<String, Object>();
-                for (String column : pkColumns) {
-                    values.put(column, resultList.get(column));
+            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, idSql);
+            while (resultSet.next()) {
+                String[] values = new String[pkColumns.length];
+                for (int i = 0 ; i < pkColumns.length; i++) {
+                    Object value = resultSet.getObject(pkColumns[i]);
+                    values[i] = (value == null) ? null : value.toString();
                 }
-                PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(
-                        pkField, values);
-                pkValues.add(pkValue);
+                pkValues.add(values);
             }
         } finally {
-            resultList.close();
+            SqlUtils.closeResultSet(resultSet);
         }
-        PrimaryKeyAttributeValue[] array = new PrimaryKeyAttributeValue[pkValues.size()];
-        pkValues.toArray(array);
-        return array;
+        return pkValues;
     }
 
     public boolean isUseBooleanFilter() {

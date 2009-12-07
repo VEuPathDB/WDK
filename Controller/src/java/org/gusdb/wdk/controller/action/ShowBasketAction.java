@@ -11,6 +11,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
@@ -26,7 +27,6 @@ import org.gusdb.wdk.model.user.BasketFactory;
 public class ShowBasketAction extends Action {
 
     private static final String PARAM_RECORD_CLASS = "recordClass";
-    private static final String ATTR_ANSWER_VALUE = "answerValue";
     private static final String MAPKEY_SHOW_BASKET = "showBasket";
 
     private static Logger logger = Logger.getLogger(ShowBasketAction.class);
@@ -45,8 +45,7 @@ public class ShowBasketAction extends Action {
             Map<String, String> params = new LinkedHashMap<String, String>();
             params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
             AnswerValueBean answerValue = question.makeAnswerValue(user, params);
-
-            request.setAttribute(ATTR_ANSWER_VALUE, answerValue);
+            request.setAttribute(CConstants.WDK_ANSWER_KEY, answerValue);
 
             ActionForward forward = mapping.findForward(MAPKEY_SHOW_BASKET);
             forward.setRedirect(false);
