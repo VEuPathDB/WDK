@@ -7,7 +7,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +17,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeQueryReference;
 import org.gusdb.wdk.model.ColumnAttributeField;
-import org.gusdb.wdk.model.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.RecordClass;
@@ -83,18 +81,14 @@ public class BasketFactory {
 
         AnswerValue answerValue = step.getAnswerValue();
         RecordClass recordClass = answerValue.getQuestion().getRecordClass();
-        List<Map<String, String>> ids = new ArrayList<Map<String, String>>();
-        PrimaryKeyAttributeValue[] pkValues = answerValue.getAllPkValues();
-        for (PrimaryKeyAttributeValue pkValue : pkValues) {
-            ids.add(pkValue.getValues());
-        }
-        addToBasket(user, recordClass, ids);
+        List<String[]> pkValues = answerValue.getAllIds();
+        addToBasket(user, recordClass, pkValues);
     }
 
     /**
      * @param user
      * @param recordClass
-     * @param pkValuesList
+     * @param pkValues
      *            a list of primary key values. the inner map is a primary-key
      *            column-value map.
      * @throws SQLException
@@ -102,8 +96,8 @@ public class BasketFactory {
      * @throws WdkUserException
      */
     public void addToBasket(User user, RecordClass recordClass,
-            List<Map<String, String>> pkValuesList) throws SQLException,
-            WdkUserException, WdkModelException {
+            List<String[]> pkValues) throws SQLException, WdkUserException,
+            WdkModelException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -126,10 +120,14 @@ public class BasketFactory {
         try {
             psInsert = SqlUtils.getPreparedStatement(dataSource, sqlInsert);
             psCount = SqlUtils.getPreparedStatement(dataSource, sqlCount);
-            for (Map<String, String> pkValues : pkValuesList) {
+            for (String[] row : pkValues) {
+                // fill or truncate the pk columns
+                String[] pkValue = new String[pkColumns.length];
+                int length = Math.min(row.length, pkValue.length);
+                System.arraycopy(row, 0, pkValue, 0, length);
+
                 // check if the record already exists.
-                setParams(psCount, userId, projectId, rcName, pkColumns,
-                        pkValues);
+                setParams(psCount, userId, projectId, rcName, pkValue);
                 boolean hasRecord = false;
                 ResultSet resultSet = null;
                 try {
@@ -146,8 +144,7 @@ public class BasketFactory {
                 if (hasRecord) continue;
 
                 // insert new record
-                setParams(psInsert, userId, projectId, rcName, pkColumns,
-                        pkValues);
+                setParams(psInsert, userId, projectId, rcName, pkValue);
                 long start = System.currentTimeMillis();
                 psInsert.executeUpdate();
                 SqlUtils.verifyTime(wdkModel, sqlInsert, start);
@@ -163,17 +160,13 @@ public class BasketFactory {
             WdkUserException, SQLException {
         AnswerValue answerValue = step.getAnswerValue();
         RecordClass recordClass = answerValue.getQuestion().getRecordClass();
-        List<Map<String, String>> ids = new ArrayList<Map<String, String>>();
-        PrimaryKeyAttributeValue[] pkValues = answerValue.getAllPkValues();
-        for (PrimaryKeyAttributeValue pkValue : pkValues) {
-            ids.add(pkValue.getValues());
-        }
-        removeFromBasket(user, recordClass, ids);
+        List<String[]> pkValues = answerValue.getAllIds();
+        removeFromBasket(user, recordClass, pkValues);
     }
 
     public void removeFromBasket(User user, RecordClass recordClass,
-            List<Map<String, String>> pkValuesList) throws SQLException,
-            WdkUserException, WdkModelException {
+            List<String[]> pkValues) throws SQLException, WdkUserException,
+            WdkModelException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -190,9 +183,13 @@ public class BasketFactory {
         try {
             psDelete = SqlUtils.getPreparedStatement(dataSource, sqlDelete);
             int count = 0;
-            for (Map<String, String> pkValues : pkValuesList) {
-                setParams(psDelete, userId, projectId, rcName, pkColumns,
-                        pkValues);
+            for (String[] row : pkValues) {
+                // fill or truncate the pk columns
+                String[] pkValue = new String[pkColumns.length];
+                int length = Math.min(row.length, pkValue.length);
+                System.arraycopy(row, 0, pkValue, 0, length);
+
+                setParams(psDelete, userId, projectId, rcName, pkValue);
                 psDelete.addBatch();
                 count++;
                 if (count % 100 == 0) {
@@ -264,7 +261,7 @@ public class BasketFactory {
         return counts;
     }
 
-    public List<String[]> getBasket(User user, RecordClass recordClass)
+    public String getBasket(User user, RecordClass recordClass)
             throws WdkUserException, WdkModelException, SQLException {
         String sql = "SELECT * FROM " + schema + TABLE_BASKET + " WHERE "
                 + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_USER_ID
@@ -280,16 +277,18 @@ public class BasketFactory {
             rs = ps.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql, start);
 
-            List<String[]> records = new ArrayList<String[]>();
-            int columnCount = recordClass.getPrimaryKeyAttributeField().getColumnRefs().length;
+            StringBuffer buffer = new StringBuffer();
+            String[] columns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+            int columnCount = columns.length;
             while (rs.next()) {
-                String[] record = new String[columnCount];
+                if (buffer.length() > 0) buffer.append("\n");
                 for (int i = 1; i <= columnCount; i++) {
-                    record[i - 1] = rs.getString(Utilities.COLUMN_PK_PREFIX + i);
+                    if (i > 1) buffer.append(", ");
+                    String value = rs.getString(Utilities.COLUMN_PK_PREFIX + i);
+                    buffer.append(value);
                 }
-                records.add(record);
             }
-            return records;
+            return buffer.toString();
         } finally {
             SqlUtils.closeResultSet(rs);
         }
@@ -601,13 +600,12 @@ public class BasketFactory {
     }
 
     private void setParams(PreparedStatement ps, int userId, String projectId,
-            String rcName, String[] pkColumns, Map<String, String> pkValues)
-            throws SQLException {
+            String rcName, String[] pkValue) throws SQLException {
         ps.setInt(1, userId);
         ps.setString(2, projectId);
         ps.setString(3, rcName);
-        for (int i = 0; i < pkColumns.length; i++) {
-            ps.setString(i + 4, pkValues.get(pkColumns[i]));
+        for (int i = 0; i < pkValue.length; i++) {
+            ps.setString(i + 4, pkValue[i]);
         }
     }
 }

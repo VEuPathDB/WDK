@@ -53,4 +53,8 @@ public class DatasetParamBean extends ParamBean {
     public RecordClassBean getRecordClass() {
         return new RecordClassBean(datasetParam.getRecordClass());
     }
+
+    public String getDefaultType() {
+        return datasetParam.getDefaultType();
+    }
 }

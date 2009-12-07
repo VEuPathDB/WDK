@@ -16,7 +16,6 @@ import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.UnitTestHelper;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
@@ -61,7 +60,7 @@ public class BasketTest {
     @Test
     public void testRemoveFromBasket() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
-        List<Map<String, String>> added = addSomeRecords(user);
+        List<String[]> added = addSomeRecords(user);
         basketFactory.removeFromBasket(user, recordClass, added);
     }
 
@@ -89,12 +88,11 @@ public class BasketTest {
         }
     }
 
-    private List<Map<String, String>> addSomeRecords(User user)
-            throws Exception {
+    private List<String[]> addSomeRecords(User user) throws Exception {
         // get a list of record ids
-        List<Map<String, String>> ids = getIds(recordClass, POOL_SIZE);
+        List<String[]> ids = getIds(recordClass, POOL_SIZE);
         // randomly pick up 5 ids from the list, and add them into basket
-        List<Map<String, String>> selected = new ArrayList<Map<String, String>>();
+        List<String[]> selected = new ArrayList<String[]>();
         Random random = UnitTestHelper.getRandom();
         int i = Math.max(0, random.nextInt(ids.size() - OPEARTION_SIZE + 1));
         for (; i < OPEARTION_SIZE; i++) {
@@ -104,10 +102,10 @@ public class BasketTest {
         return selected;
     }
 
-    private List<Map<String, String>> getIds(RecordClass recordClass, int limit)
+    private List<String[]> getIds(RecordClass recordClass, int limit)
             throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
-        List<Map<String, String>> ids = new ArrayList<Map<String, String>>();
+        List<String[]> ids = new ArrayList<String[]>();
         Query query = recordClass.getAllRecordsQuery();
         Map<String, String> params = new HashMap<String, String>();
         QueryInstance instance = query.makeInstance(user, params, true);
@@ -115,10 +113,10 @@ public class BasketTest {
         ResultList results = instance.getResults();
         int count = 0;
         while (results.next()) {
-            Map<String, String> values = new HashMap<String, String>();
-            for (String column : pkColumns) {
-                String value = results.get(column).toString();
-                values.put(column, value);
+            String[] values = new String[pkColumns.length];
+            for (int i = 0; i < pkColumns.length; i++) {
+                String value = results.get(pkColumns[i]).toString();
+                values[i] = value;
             }
             ids.add(values);
             count++;
