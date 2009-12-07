@@ -18,6 +18,7 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.BasketFactory;
@@ -47,8 +48,11 @@ public class ShowBasketAction extends Action {
             QuestionBean question = recordClass.getRealtimeBasketQuestion();
             Map<String, String> params = new LinkedHashMap<String, String>();
             params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
-            AnswerValueBean answerValue = question.makeAnswerValue(user, params);
+            
+            StepBean step = user.createStep(question, params, null, true, false);
+            AnswerValueBean answerValue = step.getAnswerValue();
 
+            request.setAttribute(CConstants.WDK_STEP_KEY, step);
             request.setAttribute(CConstants.WDK_ANSWER_KEY, answerValue);
 
             int resultSize = answerValue.getResultSize();
