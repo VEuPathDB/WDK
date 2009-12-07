@@ -33,9 +33,9 @@ import org.json.JSONObject;
  */
 public class DatasetParam extends Param {
 
-    static final String TYPE_DATA = "data";
-    static final String TYPE_FILE = "file";
-    static final String TYPE_BASKET = "basket";
+    public static final String TYPE_DATA = "data";
+    public static final String TYPE_FILE = "file";
+    public static final String TYPE_BASKET = "basket";
 
     private String columnName = DatasetFactory.COLUMN_DATASET_VALUE;
 
