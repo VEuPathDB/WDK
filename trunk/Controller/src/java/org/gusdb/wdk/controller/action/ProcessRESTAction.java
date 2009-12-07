@@ -279,14 +279,23 @@ public class ProcessRESTAction extends ShowQuestionAction {
         writer.println("</resource>");
         writer.println("<method name='POST' id='"
                 + wdkQuestion.getName().toLowerCase() + "'>");
-        writer.println("<doc title='" + wdkQuestion.getDisplayName() + "'>"
-                + wdkQuestion.getDescription() + "</doc>");
+		writer.println("<doc title='display_name'><![CDATA["
+                + wdkQuestion.getDisplayName() + "]]></doc>");
+        writer.println("<doc title='summary'><![CDATA["
+                + wdkQuestion.getSummary() + "]]></doc>");
+        writer.println("<doc title='description'><![CDATA["
+                + wdkQuestion.getDescription() + "]]></doc>");
         writer.println("<request>");
         for (String key : wdkQuestion.getParamsMap().keySet()) {
             writer.println("<param name='" + key + "' type='xsd:string'>");
-            writer.println("<doc title='"
-                    + wdkQuestion.getParamsMap().get(key).getName() + "'>"
-                    + wdkQuestion.getParamsMap().get(key).getHelp() + "</doc>");
+            writer.println("<doc title='prompt'><![CDATA["
+                    + wdkQuestion.getParamsMap().get(key).getPrompt() + "]]></doc>");
+			writer.println("<doc title='help'><![CDATA["
+                    + wdkQuestion.getParamsMap().get(key).getHelp() + "]]></doc>");
+			if(wdkQuestion.getParamsMap().get(key).getDefault().length() > 0){
+				writer.println("<doc title='default'><![CDATA["
+	                    + wdkQuestion.getParamsMap().get(key).getDefault() + "]]></doc>");
+			}
             ParamBean p = wdkQuestion.getParamsMap().get(key);
             if (p instanceof EnumParamBean) {
                 EnumParamBean ep = (EnumParamBean) p;
@@ -297,15 +306,19 @@ public class ProcessRESTAction extends ShowQuestionAction {
             writer.println("</param>");
         }
         writer.println("<param name='o-fields' type='xsd:string'>");
-        writer.println("<doc title='Output Fields'>Single valued attributes of the feature.  Default = none.</doc>");
+        writer.println("<doc title='Prompt'><![CDATA[Output Fields]]></doc>");
+        writer.println("<doc title='help'><![CDATA[Single valued attributes of the feature.]]></doc>");
+        writer.println("<doc title='default'><![CDATA[none]]></doc>");
         writer.println("<option>all</option>");
         writer.println("<option>none</option>");
         for (String attr : wdkQuestion.getReportMakerAttributesMap().keySet())
             writer.println("<option>" + attr + "</option>");
         writer.println("</param>");
         writer.println("<param name='o-tables' type='xsd:string'>");
-        writer.println("<doc title='Output Talbes'>Multi-valued attributes of the feature. Default = none.</doc>");
-        writer.println("<option>all</option>");
+		writer.println("<doc title='Prompt'><![CDATA[Output Tables]]></doc>");
+        writer.println("<doc title='help'><![CDATA[Multi-valued attributes of the feature.]]></doc>");
+        writer.println("<doc title='default'><![CDATA[none]]></doc>");
+		writer.println("<option>all</option>");
         writer.println("<option>none</option>");
         for (String tab : wdkQuestion.getReportMakerTablesMap().keySet())
             writer.println("<option>" + tab + "</option>");
