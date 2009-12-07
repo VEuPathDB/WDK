@@ -62,6 +62,10 @@ public abstract class AttributeValueContainer {
             Query query = ((ColumnAttributeField) field).getColumn().getQuery();
             fillColumnAttributeValues(query);
             value = attributeValueCache.get(fieldName);
+            if (value == null)
+            // something is wrong here, need further investigation.
+                throw new WdkModelException("Field exists, but the value "
+                        + "doesn't, need investigation: " + field.getName());
         } else {
             throw new WdkModelException(
                     "unsupported attribute field type for : " + fieldName);
