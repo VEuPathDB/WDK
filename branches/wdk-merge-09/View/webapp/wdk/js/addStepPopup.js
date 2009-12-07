@@ -132,7 +132,13 @@ function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isO
 
 	var quesTitle = data.substring(data.indexOf("<h1>") + 4,data.indexOf("</h1>")).replace(/Identify \w+( \w+)* based on/,"");
 	
-	var quesForm = $("form#form_question",qf);
+	var quesForm = $("#form_question",qf);
+	if(quesForm[0].tagName != "FORM"){
+		var f = document.createElement('form');
+		$(f).attr("id",$(quesForm).attr("id"));
+		$(f).html($(quesForm).html());
+		quesForm = $(f);
+	}
 	var quesDescription = $("#query-description-section",qf);
 	var tooltips = $("div.htmltooltip",qf);
 	$("input[value=Get Answer]",quesForm).val("Run Step");
@@ -227,7 +233,10 @@ function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isO
 	}
 	var root = $(".param-tree", $("#query_form")[0]);
 	initTreeState(root);
-	initParamHandlers(true);
+	if(edit == 1)
+		initParamHandlers(true, true);
+	else
+		initParamHandlers(true);
 }
 
 function validateAndCall(type, url, proto, rs){
