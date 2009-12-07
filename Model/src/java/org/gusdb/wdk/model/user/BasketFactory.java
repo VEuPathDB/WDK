@@ -393,6 +393,7 @@ public class BasketFactory {
         param.setAllowEmpty(false);
         param.setRecordClassRef(rcName);
         param.setPrompt("A snap shot of the current " + rcName + " basket.");
+        param.setDefaultType(DatasetParam.TYPE_BASKET);
         return param;
     }
 
