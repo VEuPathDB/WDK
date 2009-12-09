@@ -48,6 +48,7 @@ public class DatasetParam extends Param {
         super(param);
         this.columnName = param.columnName;
         this.recordClass = param.recordClass;
+        this.recordClassRef = param.recordClassRef;
     }
 
     /*
@@ -59,10 +60,7 @@ public class DatasetParam extends Param {
     @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
         this.wdkModel = model;
-        if (recordClassRef != null) {
-            recordClass = (RecordClass) wdkModel.resolveReference(recordClassRef);
-            recordClassRef = null;
-        }
+        recordClass = (RecordClass) wdkModel.resolveReference(recordClassRef);
     }
 
     /*
@@ -249,7 +247,7 @@ public class DatasetParam extends Param {
     public String getDefaultType() {
         return (defaultType != null) ? defaultType : TYPE_DATA;
     }
-    
+
     public void setDefaultType(String defaultType) {
         this.defaultType = defaultType;
     }
