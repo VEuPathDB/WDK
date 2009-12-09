@@ -122,6 +122,20 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 }
                 strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
             }
+            if (strategy == null) {
+                strategy = wdkUser.createStrategy(step, false);
+                request.getSession().setAttribute(
+                        CConstants.WDK_NEW_STRATEGY_KEY, true);
+            }
+            wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
+            request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
+
+            int viewPagerOffset = 0;
+            if (request.getParameter("pager.offset") != null) {
+                viewPagerOffset = Integer.parseInt(request.getParameter("pager.offset"));
+            }
+            wdkUser.setViewResults(strategyKey, step.getStepId(),
+                    viewPagerOffset);
 
             logger.debug("preparing forward");
 
@@ -132,37 +146,19 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 step.setEstimateSize(step.getResultSize());
                 step.update(true);
 
-                // if the strategy is loaded, verify the checksum
-                if (strategy != null) {
-                    // reload the strategy to get the changes
-                    strategy = wdkUser.getStrategy(strategy.getStrategyId());
-                    String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
-                    if (!strategy.getChecksum().equals(checksum)) {
-                        logger.info("strategy checksum: "
-                                + strategy.getChecksum()
-                                + ", but the input checksum: " + checksum);
-                        ShowStrategyAction.outputOutOfSyncJSON(wdkUser,
-                                response, state);
-                        return null;
-                    }
+                // reload the strategy to get the changes
+                strategy = wdkUser.getStrategy(strategy.getStrategyId());
+                String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
+                if (!strategy.getChecksum().equals(checksum)) {
+                    logger.info("strategy checksum: " + strategy.getChecksum()
+                            + ", but the input checksum: " + checksum);
+                    ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response,
+                            state);
+                    return null;
                 }
                 forward = getForward(request, step, mapping);
                 // forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
             } else { // otherwise, forward to the show application page
-                if (strategy == null) {
-                    strategy = wdkUser.createStrategy(step, false);
-                    request.getSession().setAttribute(
-                            CConstants.WDK_NEW_STRATEGY_KEY, true);
-                }
-                int viewPagerOffset = 0;
-                if (request.getParameter("pager.offset") != null) {
-                    viewPagerOffset = Integer.parseInt(request.getParameter("pager.offset"));
-                }
-                wdkUser.setViewResults(strategyKey, step.getStepId(),
-                        viewPagerOffset);
-                wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
-                request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
-
                 forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
                 forward = new ActionForward(forward.getPath(), true);
             }
