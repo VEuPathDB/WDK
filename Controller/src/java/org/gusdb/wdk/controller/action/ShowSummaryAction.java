@@ -207,18 +207,19 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 logger.info("updating result size: " + step.getResultSize());
                 step.setEstimateSize(step.getResultSize());
                 step.update(true);
-		
-		// reload the strategy to get the changes
-		strategy = wdkUser.getStrategy(strategy.getStrategyId());
 
-		// verify the checksum
-		String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
-		if (!strategy.getChecksum().equals(checksum)) {
-		    logger.info("strategy checksum: " + strategy.getChecksum()
-				 + ", but the input checksum: " + checksum);
-		    ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response, state);
-		    return null;
-		}
+                // reload the strategy to get the changes
+                strategy = wdkUser.getStrategy(strategy.getStrategyId());
+
+                // verify the checksum
+                String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
+                if (!strategy.getChecksum().equals(checksum)) {
+                    logger.info("strategy checksum: " + strategy.getChecksum()
+                            + ", but the input checksum: " + checksum);
+                    ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response,
+                            state);
+                    return null;
+                }
 
                 int viewPagerOffset = 0;
                 if (request.getParameter("pager.offset") != null) {
