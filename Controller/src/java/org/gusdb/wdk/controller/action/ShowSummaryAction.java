@@ -25,8 +25,6 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
-import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
-import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
@@ -75,7 +73,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
             }
 
-            QuestionForm qForm = (QuestionForm) form;
             // TRICKY: this is for action forward from
             // ProcessQuestionSetsFlatAction
             // need to double check this, it clean up the input....
@@ -83,59 +80,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             logger.debug("check existing strategy & step");
 
-            StepBean step;
-            Map<String, String> params;
-
-            // Get userAnswer id & strategy id from request (if they exist)
-            String strStepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
             String filterName = request.getParameter("filter");
             // String strBranchId = null;
 
-            boolean updated;
-            if (strStepId == null || strStepId.length() == 0) {
-                logger.debug("create new steps");
-
-                // reset pager info in session
-                wdkUser.resetViewResults();
-
-                QuestionBean wdkQuestion = (QuestionBean) request.getAttribute(CConstants.WDK_QUESTION_KEY);
-                if (wdkQuestion == null) wdkQuestion = qForm.getQuestion();
-
-                String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-                if (wdkQuestion == null) {
-                    if (qFullName != null)
-                        wdkQuestion = getQuestionByFullName(qFullName);
-                }
-                if (wdkQuestion == null)
-                    throw new WdkUserException("The question '" + qFullName
-                            + "' doesn't exist.");
-
-                String questionName = wdkQuestion.getFullName();
-
-                updated = updateSortingSummary(request, wdkUser, questionName);
-
-                params = qForm.getMyProps();
-
-                // get the hidden flag
-                String strHidden = request.getParameter(PARAM_HIDDEN_STEP);
-                boolean hidden = "true".equalsIgnoreCase(strHidden);
-
-                // make the answer
-                step = summaryPaging(request, wdkQuestion, params, filterName,
-                        hidden);
-            } else {
-                logger.debug("load existing step");
-
-                step = wdkUser.getStep(Integer.parseInt(strStepId));
-
-                updated = updateSortingSummary(request, wdkUser,
-                        step.getQuestionName());
-                if (updated) step.resetAnswerValue();
-
-                prepareAttributes(request, wdkUser, step);
-            }
-            if (updated) wdkUser.save();
-
+            StepBean step = getStep(request, wdkUser, form);
             logger.debug("step created");
 
             // get sorting and summary attributes
@@ -177,28 +125,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 return new ActionForward(path, true);
             }
 
-            // DO NOT delete empty userAnswer -- it will screw up strategies
-            // if (userAnswer != null && userAnswer.getEstimateSize() == 0)
-            // wdkUser.deleteStep(userAnswer.getStepId());
-
-            String queryString;
-            if (strategy == null) {
-                strategy = wdkUser.createStrategy(step, false);
-                queryString = "strategy=" + strategy.getStrategyId();
-                request.getSession().setAttribute(
-                        CConstants.WDK_NEW_STRATEGY_KEY, true);
-            } else {
-                queryString = request.getQueryString();
-            }
-            // logger.debug("query string: " + request.getQueryString());
-
-            String requestUrl = request.getRequestURI() + "?" + queryString;
-            request.setAttribute("wdk_summary_url", requestUrl);
-            request.setAttribute("wdk_query_string", queryString);
-            request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
-
-            wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
-
             logger.debug("preparing forward");
 
             // forward to the results page, if requested
@@ -208,31 +134,37 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 step.setEstimateSize(step.getResultSize());
                 step.update(true);
 
-                // reload the strategy to get the changes
-                strategy = wdkUser.getStrategy(strategy.getStrategyId());
-
-                // verify the checksum
-                String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
-                if (!strategy.getChecksum().equals(checksum)) {
-                    logger.info("strategy checksum: " + strategy.getChecksum()
-                            + ", but the input checksum: " + checksum);
-                    ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response,
-                            state);
-                    return null;
+                // if the strategy is loaded, verify the checksum
+                if (strategy != null) {
+                    // reload the strategy to get the changes
+                    strategy = wdkUser.getStrategy(strategy.getStrategyId());
+                    String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
+                    if (!strategy.getChecksum().equals(checksum)) {
+                        logger.info("strategy checksum: "
+                                + strategy.getChecksum()
+                                + ", but the input checksum: " + checksum);
+                        ShowStrategyAction.outputOutOfSyncJSON(wdkUser,
+                                response, state);
+                        return null;
+                    }
                 }
-
+                forward = getForward(request, step, mapping);
+                // forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
+            } else { // otherwise, forward to the show application page
+                if (strategy == null) {
+                    strategy = wdkUser.createStrategy(step, false);
+                    request.getSession().setAttribute(
+                            CConstants.WDK_NEW_STRATEGY_KEY, true);
+                }
                 int viewPagerOffset = 0;
                 if (request.getParameter("pager.offset") != null) {
                     viewPagerOffset = Integer.parseInt(request.getParameter("pager.offset"));
                 }
                 wdkUser.setViewResults(strategyKey, step.getStepId(),
                         viewPagerOffset);
-                forward = getForward(request, step.getAnswerValue(), mapping,
-                        step.getStepId());
-                // forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
-            }
-            // otherwise, forward to the full summary page
-            else {
+                wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
+                request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
+
                 forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
                 forward = new ActionForward(forward.getPath(), true);
             }
@@ -256,26 +188,80 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     return new ActionForward(path, false);
                 }
             }
-
-            if (true) throw ex;
             return showError(wdkModel, wdkUser, mapping, request, response, ex,
                     resultOnly);
         }
 
     }
 
+    private StepBean getStep(HttpServletRequest request, UserBean wdkUser,
+            ActionForm form) throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException, JSONException {
+        QuestionForm qForm = (QuestionForm) form;
+        StepBean step;
+        boolean updated;
+        Map<String, String> params;
+        String strStepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
+        if (strStepId == null || strStepId.length() == 0) {
+            logger.debug("create new steps");
+
+            // reset pager info in session
+            wdkUser.resetViewResults();
+
+            QuestionBean wdkQuestion = (QuestionBean) request.getAttribute(CConstants.WDK_QUESTION_KEY);
+            if (wdkQuestion == null) wdkQuestion = qForm.getQuestion();
+
+            String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+            if (wdkQuestion == null) {
+                if (qFullName != null)
+                    wdkQuestion = getQuestionByFullName(qFullName);
+            }
+            if (wdkQuestion == null)
+                throw new WdkUserException("The question '" + qFullName
+                        + "' doesn't exist.");
+
+            String questionName = wdkQuestion.getFullName();
+
+            updated = updateSortingSummary(request, wdkUser, questionName);
+
+            params = qForm.getMyProps();
+
+            // get the hidden flag
+            String strHidden = request.getParameter(PARAM_HIDDEN_STEP);
+            boolean hidden = "true".equalsIgnoreCase(strHidden);
+
+            // make the answer
+            String filterName = request.getParameter("filter");
+            step = summaryPaging(request, wdkQuestion, params, filterName,
+                    hidden);
+        } else {
+            logger.debug("load existing step");
+
+            step = wdkUser.getStep(Integer.parseInt(strStepId));
+
+            updated = updateSortingSummary(request, wdkUser,
+                    step.getQuestionName());
+            if (updated) step.resetAnswerValue();
+
+            prepareAttributes(request, wdkUser, step);
+        }
+        if (updated) wdkUser.save();
+        return step;
+    }
+
     private ActionForward getForward(HttpServletRequest request,
-            AnswerValueBean wdkAnswer, ActionMapping mapping, int stepId)
+            StepBean step, ActionMapping mapping)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
         logger.debug("start getting forward");
 
+        AnswerValueBean answerValue = step.getAnswerValue();
         ServletContext svltCtx = getServlet().getServletContext();
         String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
         String customViewFile1 = customViewDir + File.separator
-                + wdkAnswer.getQuestion().getFullName() + ".summary.jsp";
+                + answerValue.getQuestion().getFullName() + ".summary.jsp";
         String customViewFile2 = customViewDir + File.separator
-                + wdkAnswer.getRecordClass().getFullName() + ".summary.jsp";
+                + answerValue.getRecordClass().getFullName() + ".summary.jsp";
         ActionForward forward = null;
 
         if (request.getParameterMap().containsKey(
@@ -283,7 +269,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             // go to download page directly
             forward = mapping.findForward(CConstants.SKIPTO_DOWNLOAD_MAPKEY);
             String path = forward.getPath() + "?"
-                    + CConstants.WDK_STEP_ID_PARAM + "=" + stepId;
+                    + CConstants.WDK_STEP_ID_PARAM + "=" + step.getStepId();
             return new ActionForward(path, true);
         } /*
            * else if (wdkAnswer.getResultSize() == 1 &&

@@ -120,6 +120,7 @@ public class BasketFactory {
         try {
             psInsert = SqlUtils.getPreparedStatement(dataSource, sqlInsert);
             psCount = SqlUtils.getPreparedStatement(dataSource, sqlCount);
+            int count = 0;
             for (String[] row : pkValues) {
                 // fill or truncate the pk columns
                 String[] pkValue = new String[pkColumns.length];
@@ -145,8 +146,18 @@ public class BasketFactory {
 
                 // insert new record
                 setParams(psInsert, userId, projectId, rcName, pkValue);
+                psInsert.addBatch();
+
+                count++;
+                if (count % 100 == 0) {
+                    long start = System.currentTimeMillis();
+                    psInsert.executeBatch();
+                    SqlUtils.verifyTime(wdkModel, sqlInsert, start);
+                }
+            }
+            if (count % 100 != 0) {
                 long start = System.currentTimeMillis();
-                psInsert.executeUpdate();
+                psInsert.executeBatch();
                 SqlUtils.verifyTime(wdkModel, sqlInsert, start);
             }
         } finally {
