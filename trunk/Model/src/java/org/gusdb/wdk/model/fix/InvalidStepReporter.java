@@ -27,6 +27,7 @@ import org.gusdb.wsf.util.BaseCLI;
 public class InvalidStepReporter extends BaseCLI {
 
     private static final Logger logger = Logger.getLogger(StepValidator.class);
+    private static final String ARG_ALREADY_INVALID = "alreadyInvalid";
 
     /**
      * @param args
@@ -60,7 +61,10 @@ public class InvalidStepReporter extends BaseCLI {
     protected void declareOptions() {
         addSingleValueOption(ARG_PROJECT_ID, true, null, "ProjectId, which "
                 + "should match the directory name"
-                + " under $GUS_HOME, where model-config.xml is stored.");
+                + " under $GUS_HOME, where model-config.xml is stored.  This model-conig.xml file is only used to find the login info for the User database.");
+
+	addNonValueOption(ARG_ALREADY_INVALID, false, "Provide this flag to get a report of Steps that are already marked as invalid.  Otherwise the report only considers steps that are currently not marked as invalid");
+
     }
 
     /*
@@ -73,41 +77,29 @@ public class InvalidStepReporter extends BaseCLI {
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         String projectId = (String) getOptionValue(ARG_PROJECT_ID);
-        logger.info("Validate steps & answers... ");
+        Boolean alreadyInvalid = (Boolean) getOptionValue(ARG_ALREADY_INVALID);
         WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-        report(wdkModel);
+        report(wdkModel, alreadyInvalid);
     }
 
-    private void report(WdkModel wdkModel) throws SQLException,
+    private void report(WdkModel wdkModel, Boolean alreadyInvalid) throws SQLException,
             WdkUserException, WdkModelException {
 	// not previously marked invalid
-	System.out.println("=================================================");
-	System.out.println("============= Will become invalid ===============");
-	System.out.println("=================================================");
-	System.out.println("");       
-
-	questionNames(wdkModel, "!=");
-        paramNames(wdkModel, "!=");
-        paramValues(wdkModel, "FlatVocabParam", "!=");
-        paramValues(wdkModel, "EnumParam", "!=");
-
-	// previously marked invalid
-	System.out.println("=================================================");
-	System.out.println("============ Already marked invalid =============");
-	System.out.println("=================================================");
-	System.out.println("");       
-
-        questionNames(wdkModel, "=");
-        paramNames(wdkModel, "=");
-        paramValues(wdkModel, "FlatVocabParam", "=");
-        paramValues(wdkModel, "EnumParam", "=");
+	String s = alreadyInvalid? "" : "NOT ";
+	System.out.println("=== Reporting on invalid steps that are "+ s + "already marked invalid"); 
+	questionNames(wdkModel, alreadyInvalid);
+        paramNames(wdkModel, alreadyInvalid);
+        paramValues(wdkModel, "FlatVocabParam", alreadyInvalid);
+        paramValues(wdkModel, "EnumParam", alreadyInvalid);
     }
 
-    private void questionNames(WdkModel wdkModel, String operator) throws SQLException,
+    private void questionNames(WdkModel wdkModel, Boolean alreadyInvalid) throws SQLException,
             WdkUserException, WdkModelException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+
+	String operator = alreadyInvalid? "=" : "!=";
 
 	String sql = 
 	    "SELECT count(*) count, a.project_id, a.question_name" 
@@ -139,12 +131,14 @@ public class InvalidStepReporter extends BaseCLI {
 	System.out.println("");
     }
 
-    private void paramNames(WdkModel wdkModel, String operator) throws SQLException,
+    private void paramNames(WdkModel wdkModel, Boolean alreadyInvalid) throws SQLException,
             WdkUserException, WdkModelException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+
+	String operator = alreadyInvalid? "=" : "!=";
 
 	String sql = 
 	    "SELECT count(*) count, a.project_id, a.question_name, sp.param_name"                
@@ -160,12 +154,12 @@ public class InvalidStepReporter extends BaseCLI {
 	    + "       WHERE q.question_id = p.question_id) d     "
 	    + "    WHERE a.project_id = d.project_id  "
 	    + "      AND a.question_name = d.question_name  "
-	    + "      AND a.answer_id = s.answer_id  "
+	    + "      AND a.is_valid " + operator + "0"
+	    + "      AND s.answer_id = a.answer_id  "
+	    + "      AND sp.step_id = s.step_id  "
+	    + "      AND sp.param_name = d.param_name " 
 	    + "      and a.project_id = wq.project_id "
 	    + "      and a.question_name = wq.question_name "
-	    + "      AND s.step_id = sp.step_id  "
-	    + "      AND sp.param_name = d.param_name " 
-	    + "      AND a.is_valid " + operator + "0"
 	    + "      group by a.project_id, a.question_name, sp.param_name "
 	    + "      order by a.project_id, a.question_name, sp.param_name ";
 
@@ -189,12 +183,14 @@ public class InvalidStepReporter extends BaseCLI {
 	System.out.println("");
     }
 
-    private void paramValues(WdkModel wdkModel, String type, String operator) throws SQLException,
+    private void paramValues(WdkModel wdkModel, String type, Boolean alreadyInvalid) throws SQLException,
             WdkUserException, WdkModelException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+
+	String operator = alreadyInvalid? "=" : "!=";
 
 	String sql = 
 "SELECT count(*) count, a.project_id, a.question_name, sp.param_name, d.param_value"                   
@@ -205,7 +201,7 @@ public class InvalidStepReporter extends BaseCLI {
 	    + "        wdk_questions q, wdk_params p  "
 	    + "  WHERE sp.step_id = s.step_id  "
 	    + "    AND s.answer_id = a.answer_id  "
-	    + "    AND a.is_valid IS not NULL  "
+	    + "    AND a.is_valid " + operator + "0"
 	    + "    AND a.project_id = q.project_id  "
 	    + "    AND a.question_name = q.question_name  "
 	    + "    AND q.question_id = p.question_id  "
@@ -220,15 +216,15 @@ public class InvalidStepReporter extends BaseCLI {
 	    + "    AND p.param_id = ep.param_id) d  "
 	    + " WHERE a.project_id = d.project_id  "
 	    + " AND a.question_name = d.question_name  "
-	    + " AND a.answer_id = s.answer_id  "
-	    + " AND s.step_id = sp.step_id  "
+	    + " AND s.answer_id = a.answer_id  "
+	    + " AND sp.step_id = s.step_id  "
 	    + " AND sp.param_name = d.param_name  "
 	    + " AND sp.param_value = d.param_value  "
 	    + " and a.project_id = wq.project_id "
 	    + " and a.question_name = wq.question_name "
 	    + " and wp.question_id = wq.question_id "
 	    + " and sp.param_name = wp.param_name "
- 	    + " AND a.is_valid IS not NULL "
+	    + " AND a.is_valid " + operator + "0"
  	    + " group by a.project_id, a.question_name, sp.param_name, d.param_value "
 	    + " order by a.project_id, a.question_name, sp.param_name, d.param_value ";     
      
