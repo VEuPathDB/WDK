@@ -48,6 +48,7 @@ public class ShowBasketAction extends Action {
             StepBean step = user.createStep(question, params, null, true, false);
             ActionForward forward = mapping.findForward(MAPKEY_SHOW_BASKET);
             String path = forward.getPath() + "?"
+                    + CConstants.WDK_RESULT_SET_ONLY_KEY + "=true&"
                     + CConstants.WDK_STEP_ID_PARAM + "=" + step.getStepId();
             return new ActionForward(path, true);
         } catch (Exception ex) {
