@@ -85,6 +85,7 @@ public class InvalidStepReporter extends BaseCLI {
 	System.out.println("============= Will become invalid ===============");
 	System.out.println("=================================================");
 	System.out.println("");       
+
 	questionNames(wdkModel, "!=");
         paramNames(wdkModel, "!=");
         paramValues(wdkModel, "FlatVocabParam", "!=");
@@ -94,6 +95,8 @@ public class InvalidStepReporter extends BaseCLI {
 	System.out.println("=================================================");
 	System.out.println("============ Already marked invalid =============");
 	System.out.println("=================================================");
+	System.out.println("");       
+
         questionNames(wdkModel, "=");
         paramNames(wdkModel, "=");
         paramValues(wdkModel, "FlatVocabParam", "=");
@@ -118,7 +121,7 @@ public class InvalidStepReporter extends BaseCLI {
 	    + " group by a.project_id, a.question_name"
 	    + " order by a.project_id, a.question_name";
 
-	ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+	ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
 	System.out.println("----------- Invalid Question Name ------------");
 	System.out.println("");
 	System.out.println("count\tproject_id\tquestion_name");
@@ -166,13 +169,11 @@ public class InvalidStepReporter extends BaseCLI {
 	    + "      group by a.project_id, a.question_name, sp.param_name "
 	    + "      order by a.project_id, a.question_name, sp.param_name ";
 
-	ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
+	ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
 	System.out.println("----------- Invalid Param Name ------------");
 	System.out.println("");
 	System.out.println("count\tproject_id\tquestion_name\tparam_name");
 	try {
-	    resultSet = SqlUtils.executeQuery(dataSource, sql);
-
 	    while (resultSet.next()) {
 		String count = resultSet.getString("count");
 		String project_id = resultSet.getString("project_id");
@@ -231,10 +232,11 @@ public class InvalidStepReporter extends BaseCLI {
  	    + " group by a.project_id, a.question_name, sp.param_name, d.param_value "
 	    + " order by a.project_id, a.question_name, sp.param_name, d.param_value ";     
      
-	ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql);
 	System.out.println("----------- Invalid Param Value (" + type + ") ------------");
 	System.out.println("");
 	System.out.println("count\tproject_id\tquestion_name\tparam_name\tparam_value");
+
+	ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
 	try {
 	    while (resultSet.next()) {
 		String count = resultSet.getString("count");
