@@ -732,7 +732,7 @@ public class User /* implements Serializable */{
     public Strategy getStrategy(int userStrategyId) throws WdkUserException,
             WdkModelException, JSONException, SQLException,
             NoSuchAlgorithmException {
-        return getStrategy(userStrategyId, false);
+        return getStrategy(userStrategyId, true);
     }
 
     public Strategy getStrategy(int userStrategyId, boolean allowDeleted)
