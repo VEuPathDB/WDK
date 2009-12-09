@@ -62,25 +62,11 @@ public class ShowSummaryAction extends ShowQuestionAction {
         try {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
-            // load existing strategy, if needed.
-            String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-            String strategyKey = strStratId;
-            if (strStratId != null && strStratId.length() != 0) {
-                if (strStratId.indexOf("_") > 0) {
-                    // strBranchId = strStratId.split("_")[1];
-                    strStratId = strStratId.split("_")[0];
-                }
-                strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
-            }
-
             // TRICKY: this is for action forward from
             // ProcessQuestionSetsFlatAction
             // need to double check this, it clean up the input....
             // qForm.reset();
 
-            logger.debug("check existing strategy & step");
-
-            String filterName = request.getParameter("filter");
             // String strBranchId = null;
 
             StepBean step = getStep(request, wdkUser, form);
@@ -92,6 +78,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             // return only the result size, if requested
             if (request.getParameterMap().containsKey(
                     CConstants.WDK_RESULT_SIZE_ONLY_KEY)) {
+                String filterName = request.getParameter("filter");
                 int size = getSize(answerValue, filterName);
 
                 PrintWriter writer = response.getWriter();
@@ -123,6 +110,17 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     path += "&" + pkColumn + "=" + value;
                 }
                 return new ActionForward(path, true);
+            }
+
+            // load existing strategy, if needed.
+            String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
+            String strategyKey = strStratId;
+            if (strStratId != null && strStratId.length() != 0) {
+                if (strStratId.indexOf("_") > 0) {
+                    // strBranchId = strStratId.split("_")[1];
+                    strStratId = strStratId.split("_")[0];
+                }
+                strategy = wdkUser.getStrategy(Integer.parseInt(strStratId));
             }
 
             logger.debug("preparing forward");
@@ -249,10 +247,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
         return step;
     }
 
-    private ActionForward getForward(HttpServletRequest request,
-            StepBean step, ActionMapping mapping)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+    private ActionForward getForward(HttpServletRequest request, StepBean step,
+            ActionMapping mapping) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         logger.debug("start getting forward");
 
         AnswerValueBean answerValue = step.getAnswerValue();
