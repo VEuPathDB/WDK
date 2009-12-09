@@ -489,7 +489,8 @@ public class DatasetFactory {
             public int compare(String[] o1, String[] o2) {
                 int limit = Math.min(o1.length, o2.length);
                 for (int i = 0; i < limit; i++) {
-                    int result = o1[i].compareTo(o2[i]);
+                    if (o1[i] == null || o2[i] == null) break;
+                    int result =  o1[i].compareTo(o2[i]);
                     if (result != 0) return result;
                 }
                 return 0;

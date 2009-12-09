@@ -57,14 +57,13 @@ function chooseType(paramName, type) {
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="dataset" value="${requestScope[dsName]}" />  
 <c:set var="partial" value="${requestScope.partial}" />
-<c:set var="recordType" value="{$qp.recordClass.type}" />
-<c:set var="defaultType" value="{$qp.defaultType}" />
+<c:set var="recordType" value="${qp.recordClass.type}" />
+<c:set var="defaultType" value="${qp.defaultType}" />
 <c:set var="dataChecked"><c:if test="${defaultType == 'data'}">checked</c:if></c:set>
 <c:set var="fileChecked"><c:if test="${defaultType == 'file'}">checked</c:if></c:set>
 <c:set var="basketChecked"><c:if test="${defaultType == 'basket'}">checked</c:if></c:set>
 
 <input type="hidden" id="${pNam}_type" name="${pNam}_type" value="data" />
-
 
 <table id="${qp.name}" border="0" bgcolor="#EEEEEE" cellspacing="0" cellpadding="0">
     
@@ -89,8 +88,9 @@ function chooseType(paramName, type) {
             <textarea id="${pNam}_data" class="input" name="${pNam}_data" rows="5" cols="30">${datasetValues}</textarea>
         </td>
     </tr>
-	
-	<!-- display option to use basket snapshot -->
+
+    <c:if test="${qp.recordClass.hasBasket}">	
+    <!-- display option to use basket snapshot -->
     <tr>
         <td colspan="2" align="left" valign="top" nowrap>
             <input type="radio" name="${pNam}_radio" ${basketChecked}
@@ -98,6 +98,7 @@ function chooseType(paramName, type) {
             Snapshot of ${recordType}s in the basket:&nbsp;
         </td>
     </tr>
+    </c:if>
     
     <!-- display an existing info -->
     <c:if test="${dataset != null && fn:length(dataset.uploadFile) > 0}">

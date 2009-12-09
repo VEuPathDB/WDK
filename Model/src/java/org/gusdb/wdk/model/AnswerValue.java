@@ -791,7 +791,8 @@ public class AnswerValue {
         }
 
         // check if the number of records is expected
-        int expected = Math.min(endIndex, getResultSize()) - startIndex + 1;
+        int resultSize = getResultSize();
+        int expected = Math.min(endIndex, resultSize) - startIndex + 1;
 
         if (expected != pageRecordInstances.size()) {
             StringBuffer buffer = new StringBuffer();
@@ -799,6 +800,8 @@ public class AnswerValue {
                 if (buffer.length() > 0) buffer.append(", ");
                 buffer.append(name);
             }
+            logger.debug("resultSize: " + resultSize + ", start: " + startIndex + ", end: " + endIndex);
+            logger.debug("expected: " + expected + ", actual: " + pageRecordInstances.size());
             logger.debug("Paged ID SQL:\n" + sql);
             throw new WdkModelException("The expacted result size is different"
                     + " from the actual size. Please check the id query "
@@ -949,7 +952,7 @@ public class AnswerValue {
             throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
         Integer size = resultSizesByFilter.get(filterName);
-        if (size == null) {
+        if (size == null || !idsQueryInstance.isCached()) {
             RecordClass recordClass = question.getRecordClass();
             AnswerFilterInstance filter = recordClass.getFilter(filterName);
 
