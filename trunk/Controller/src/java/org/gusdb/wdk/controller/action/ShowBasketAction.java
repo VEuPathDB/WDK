@@ -1,9 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,7 +12,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
@@ -48,38 +44,12 @@ public class ShowBasketAction extends Action {
             QuestionBean question = recordClass.getRealtimeBasketQuestion();
             Map<String, String> params = new LinkedHashMap<String, String>();
             params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
-            
+
             StepBean step = user.createStep(question, params, null, true, false);
-            AnswerValueBean answerValue = step.getAnswerValue();
-
-            request.setAttribute(CConstants.WDK_STEP_KEY, step);
-            request.setAttribute(CConstants.WDK_ANSWER_KEY, answerValue);
-
-            int resultSize = answerValue.getResultSize();
-            int pageSize = ShowSummaryAction.getPageSize(request, question,
-                    user);
-            int start = ShowSummaryAction.getPageStart(request);
-            int end = start + pageSize - 1;
-
-            List<String> editedParamNames = new ArrayList<String>();
-            Enumeration<?> en = request.getParameterNames();
-            while (en.hasMoreElements()) {
-                String key = (String) en.nextElement();
-                if (!key.equals(CConstants.WDK_PAGE_SIZE_KEY)
-                        && !key.equals(CConstants.WDK_ALT_PAGE_SIZE_KEY)
-                        && !"start".equals(key) && !"pager.offset".equals(key)) {
-                    editedParamNames.add(key);
-                }
-            }
-            request.setAttribute("wdk_paging_total", resultSize);
-            request.setAttribute("wdk_paging_pageSize", pageSize);
-            request.setAttribute("wdk_paging_start", start);
-            request.setAttribute("wdk_paging_end", end);
-            request.setAttribute("wdk_paging_url", request.getRequestURI());
-            request.setAttribute("wdk_paging_params", editedParamNames);
-
             ActionForward forward = mapping.findForward(MAPKEY_SHOW_BASKET);
-            return forward;
+            String path = forward.getPath() + "?"
+                    + CConstants.WDK_STEP_ID_PARAM + "=" + step.getStepId();
+            return new ActionForward(path, true);
         } catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
