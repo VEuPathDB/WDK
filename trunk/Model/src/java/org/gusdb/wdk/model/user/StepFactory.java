@@ -935,7 +935,7 @@ public class StepFactory {
         // are created properly
         // Jerric - the imported strategy should always be unsaved.
         Strategy strategy = createStrategy(user, latestStep, name, null, false,
-                oldStrategy.getDescription());
+                oldStrategy.getDescription(), false);
         return loadStrategy(user, strategy.getStrategyId(), false);
     }
 
@@ -1112,7 +1112,7 @@ public class StepFactory {
                 String name = getNextName(user, strategy.getName(), false);
                 Strategy newStrat = createStrategy(user,
                         strategy.getLatestStep(), name, strategy.getName(),
-                        false, strategy.getDescription());
+                        false, strategy.getDescription(), false);
                 strategy.setName(newStrat.getName());
                 strategy.setSavedName(newStrat.getSavedName());
                 strategy.setDisplayId(newStrat.getStrategyId());
@@ -1156,7 +1156,7 @@ public class StepFactory {
     // and steps tables is handled in other functions. Once the Step
     // object exists, all of this data is already in the db.
     Strategy createStrategy(User user, Step root, String name,
-            String savedName, boolean saved, String description)
+            String savedName, boolean saved, String description, boolean hidden)
             throws SQLException, WdkUserException, WdkModelException,
             JSONException, NoSuchAlgorithmException {
         int userId = user.getUserId();
@@ -1181,7 +1181,7 @@ public class StepFactory {
                 psCheckName.setString(2, wdkModel.getProjectId());
                 psCheckName.setString(3, name);
                 psCheckName.setBoolean(4, saved);
-                psCheckName.setBoolean(5, false);
+                psCheckName.setBoolean(5, hidden);
                 rsCheckName = psCheckName.executeQuery();
                 SqlUtils.verifyTime(wdkModel, sql, start);
 
@@ -1357,7 +1357,7 @@ public class StepFactory {
         if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
         name = getNextName(user, name, false);
         return createStrategy(user, root, name, null, false,
-                strategy.getDescription());
+                strategy.getDescription(), false);
     }
 
     /**
@@ -1382,7 +1382,7 @@ public class StepFactory {
         if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
         name = getNextName(user, name, false);
         return createStrategy(user, step, name, null, false,
-                strategy.getDescription());
+                strategy.getDescription(), false);
     }
 
     private String getNextName(User user, String oldName, boolean saved)
