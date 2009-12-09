@@ -257,6 +257,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 }
             }
 
+            if (true) throw ex;
             return showError(wdkModel, wdkUser, mapping, request, response, ex,
                     resultOnly);
         }
