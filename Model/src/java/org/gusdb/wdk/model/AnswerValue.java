@@ -223,7 +223,7 @@ public class AnswerValue {
     public int getResultSize() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        if (resultSize == null) {
+        if (resultSize == null || !idsQueryInstance.isCached()) {
             if (filter == null) {
                 resultSize = idsQueryInstance.getResultSize();
             } else {
