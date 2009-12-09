@@ -432,7 +432,13 @@ public class User /* implements Serializable */{
     public synchronized Strategy createStrategy(Step step, boolean saved)
             throws WdkUserException, WdkModelException, SQLException,
             JSONException, NoSuchAlgorithmException {
-        return createStrategy(step, null, null, saved, null);
+        return createStrategy(step, null, null, saved, null, false);
+    }
+
+    public synchronized Strategy createStrategy(Step step, boolean saved, boolean hidden)
+            throws WdkUserException, WdkModelException, SQLException,
+            JSONException, NoSuchAlgorithmException {
+        return createStrategy(step, null, null, saved, null, hidden);
     }
 
     // Transitional method...how to handle savedName properly?
@@ -440,15 +446,15 @@ public class User /* implements Serializable */{
     public synchronized Strategy createStrategy(Step step, String name,
             boolean saved) throws WdkUserException, WdkModelException,
             SQLException, JSONException, NoSuchAlgorithmException {
-        return createStrategy(step, name, null, saved, null);
+        return createStrategy(step, name, null, saved, null, false);
     }
 
     public synchronized Strategy createStrategy(Step step, String name,
-            String savedName, boolean saved, String description)
+            String savedName, boolean saved, String description, boolean hidden)
             throws WdkUserException, WdkModelException, SQLException,
             JSONException, NoSuchAlgorithmException {
         Strategy strategy = stepFactory.createStrategy(this, step, name,
-                savedName, saved, description);
+                savedName, saved, description, hidden);
         if (strategyCount != null) strategyCount++;
 
         // set the view to this one
