@@ -142,7 +142,7 @@ public class RecordBean {
             JSONException {
         if (!recordInstance.getRecordClass().hasBasket()) return false;
         AttributeValue value = recordInstance.getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
-        return (Boolean) value.getValue();
+        return "1".equals(value.getValue());
     }
 
     private class AttributeValueMap implements Map<String, AttributeValue> {
