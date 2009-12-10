@@ -47,7 +47,7 @@ public class BasketFactory {
     private static final String REALTIME_BASKET_ID_QUERY_SUFFIX = "ByRealtimeBasket";
     private static final String SNAPSHOT_BASKET_ID_QUERY_SUFFIX = "BySnapshotBasket";
     static final String BASKET_ATTRIBUTE_QUERY_SUFFIX = "_basket_attrs";
-    static final String BASKET_ATTRIBUTE = "in_basket";
+    public static final String BASKET_ATTRIBUTE = "in_basket";
 
     public static final String PARAM_USER_SIGNATURE = "user_signature";
     public static final String PARAM_DATASET_SUFFIX = "Dataset";

@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.TableValue;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
@@ -134,6 +135,14 @@ public class RecordBean {
     public Map<String, TableValue> getTables() throws NoSuchAlgorithmException,
             WdkModelException, SQLException, JSONException, WdkUserException {
         return new TableValueMap(recordInstance, FieldScope.ALL);
+    }
+
+    public boolean isInBasket() throws WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, SQLException,
+            JSONException {
+        if (!recordInstance.getRecordClass().hasBasket()) return false;
+        AttributeValue value = recordInstance.getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
+        return (Boolean) value.getValue();
     }
 
     private class AttributeValueMap implements Map<String, AttributeValue> {
