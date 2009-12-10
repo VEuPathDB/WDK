@@ -374,15 +374,13 @@ public class BasketFactory {
         String sql = "SELECT DISTINCT ";
         for (int i = 1; i <= pkColumns.length; i++) {
             if (i > 1) sql += ", ";
-            sql += "d." + Utilities.COLUMN_PK_PREFIX + i + " AS "
-                    + pkColumns[i - 1];
+            sql += "d." + pkColumns[i - 1];
         }
         sql += " FROM ($$" + datasetParam.getName() + "$$) d, ("
                 + allRecordsSql + ") i ";
-        for (int i = 1; i <= pkColumns.length; i++) {
-            sql += (i == 1) ? " WHERE " : " AND ";
-            sql += "b." + Utilities.COLUMN_PK_PREFIX + i + " = i."
-                    + pkColumns[i - 1];
+        for (int i = 0; i < pkColumns.length; i++) {
+            sql += (i == 0) ? " WHERE " : " AND ";
+            sql += "d." + pkColumns[i] + " = i." + pkColumns[i];
         }
         query.setSql(sql);
         querySet.addQuery(query);
@@ -404,8 +402,10 @@ public class BasketFactory {
         param.setAllowEmpty(false);
         param.setRecordClassRef(rcName);
         param.setRecordClass(recordClass);
-        param.setPrompt("A snap shot of the current " + rcName + " basket.");
+        param.setPrompt(recordClass.getType() + " basket");
         param.setDefaultType(DatasetParam.TYPE_BASKET);
+        paramSet.addParam(param);
+        param.excludeResources(wdkModel.getProjectId());
         return param;
     }
 
