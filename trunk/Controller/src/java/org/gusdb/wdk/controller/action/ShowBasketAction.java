@@ -15,7 +15,6 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
-import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.user.BasketFactory;
@@ -47,13 +46,10 @@ public class ShowBasketAction extends Action {
             params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
 
             StepBean step = user.createStep(question, params, null, true, false);
-            StrategyBean strategy = user.createStrategy(step, false, true);
 
             ActionForward forward = mapping.findForward(MAPKEY_SHOW_BASKET);
             String path = forward.getPath() + "?"
                     + CConstants.WDK_RESULT_SET_ONLY_KEY + "=true&"
-                    + CConstants.WDK_STRATEGY_ID_KEY + "="
-                    + strategy.getStrategyId() + "&"
                     + CConstants.WDK_STEP_ID_PARAM + "=" + step.getStepId();
             return new ActionForward(path, true);
         } catch (Exception ex) {
