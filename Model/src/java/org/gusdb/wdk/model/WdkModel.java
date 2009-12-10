@@ -1103,22 +1103,6 @@ public class WdkModel {
         return systemUser;
     }
 
-    public List<Question> getTransformQuestions(RecordClass inputType,
-            RecordClass outputType) {
-        List<Question> list = new ArrayList<Question>();
-        for (ModelSetI questionSet : this.questionSets.values()) {
-            for (Question question : ((QuestionSet) questionSet).getQuestions()) {
-                String type = question.getRecordClass().getFullName();
-                if (outputType != null
-                        && !outputType.getFullName().equals(type)) continue;
-                if (!question.getQuery().isTransform()) continue;
-                if (question.getTransformParams(inputType).length > 0)
-                    list.add(question);
-            }
-        }
-        return list;
-    }
-
     public BasketFactory getBasketFactory() {
         return basketFactory;
     }
