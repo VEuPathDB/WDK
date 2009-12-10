@@ -34,16 +34,17 @@ function chooseType(paramName, type) {
     var inputType = document.getElementById(paramName + '_type');
     inputType.value = type;
     // disable inputs accordingly
+    var inputData = document.getElementById(paramName + '_data');
+    var inputFile = document.getElementById(paramName + '_file');
     if (type == "data") {
-        var inputData = document.getElementById(paramName + '_data');
-        inputData.disabled = false;
-        var inputFile = document.getElementById(paramName + '_file');
-        inputFile.disabled = true;
+        if (inputFile) inputData.disabled = false;
+        if (inputFile) inputFile.disabled = true;
     } else if (type == "file") {
-        var inputData = document.getElementById(paramName + '_data');
-        inputData.disabled = true;
-        var inputFile = document.getElementById(paramName + '_file');
-        inputFile.disabled = false;
+        if (inputFile) inputData.disabled = true;
+        if (inputFile) inputFile.disabled = false;
+    } else if (type == "basket") {
+        if (inputFile) inputData.disabled = true;
+        if (inputFile) inputFile.disabled = true;
     }
 }
 
@@ -66,7 +67,8 @@ function chooseType(paramName, type) {
 <input type="hidden" id="${pNam}_type" name="${pNam}_type" value="${defaultType}" />
 
 <table id="${qp.name}" border="0" bgcolor="#EEEEEE" cellspacing="0" cellpadding="0">
-    
+   
+  <c:if test="${defaultType != 'basket'}"> 
     <!-- display an input box for user to enter data -->
     <tr>
         <td align="left" valign="top" nowrap>
@@ -88,11 +90,12 @@ function chooseType(paramName, type) {
             <textarea id="${pNam}_data" class="input" name="${pNam}_data" rows="5" cols="30">${datasetValues}</textarea>
         </td>
     </tr>
+  </c:if>
 
     <c:if test="${qp.recordClass.hasBasket}">	
     <!-- display option to use basket snapshot -->
     <tr>
-        <c:set var="basketCount" value="${wdkUser.basketCount[rcName]}" />
+        <c:set var="basketCount" value="${wdkUser.basketCount[qp.recordClass.fullName]}" />
         <td colspan="2" align="left" valign="top" nowrap>
             <input type="radio" name="${pNam}_radio" ${basketChecked}
                    onclick="chooseType('${pNam}', 'basket');" />
