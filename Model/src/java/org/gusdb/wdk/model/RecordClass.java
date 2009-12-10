@@ -70,10 +70,8 @@ public class RecordClass extends WdkModelBase implements
             sql.append(") f WHERE ");
             boolean firstColumn = true;
             for (String columnName : newParams) {
-                if (firstColumn)
-                    firstColumn = false;
-                else
-                    sql.append(" AND ");
+                if (firstColumn) firstColumn = false;
+                else sql.append(" AND ");
                 sql.append("f.").append(columnName);
                 sql.append(" = $$").append(columnName).append("$$");
             }
@@ -278,8 +276,7 @@ public class RecordClass extends WdkModelBase implements
         for (TableField field : tableFieldsMap.values()) {
             if (scope == FieldScope.ALL
                     || (scope == FieldScope.NON_INTERNAL && !field.isInternal())
-                    || (scope == FieldScope.REPORT_MAKER && field
-                            .isInReportMaker()))
+                    || (scope == FieldScope.REPORT_MAKER && field.isInReportMaker()))
                 fields.put(field.getName(), field);
         }
         return fields;
@@ -304,16 +301,14 @@ public class RecordClass extends WdkModelBase implements
         for (AttributeField field : attributeFieldsMap.values()) {
             if (scope == FieldScope.ALL
                     || (scope == FieldScope.NON_INTERNAL && !field.isInternal())
-                    || (scope == FieldScope.REPORT_MAKER && field
-                            .isInReportMaker()))
+                    || (scope == FieldScope.REPORT_MAKER && field.isInReportMaker()))
                 fields.put(field.getName(), field);
         }
         return fields;
     }
 
     public AttributeField[] getAttributeFields() {
-        AttributeField[] attributeFields = new AttributeField[attributeFieldsMap
-                .size()];
+        AttributeField[] attributeFields = new AttributeField[attributeFieldsMap.size()];
         attributeFieldsMap.values().toArray(attributeFields);
         return attributeFields;
     }
@@ -358,8 +353,7 @@ public class RecordClass extends WdkModelBase implements
 
     public String toString() {
         String newline = System.getProperty("line.separator");
-        StringBuffer buf = new StringBuffer("Record: name='" + name + "'")
-                .append(newline);
+        StringBuffer buf = new StringBuffer("Record: name='" + name + "'").append(newline);
 
         buf.append("--- Attributes ---").append(newline);
         for (AttributeField attribute : attributeFieldsMap.values()) {
@@ -451,13 +445,11 @@ public class RecordClass extends WdkModelBase implements
         String[] paramNames = primaryKeyField.getColumnRefs();
         for (AttributeQueryReference reference : attributesQueryRefList) {
             // validate attribute query
-            Query query = (Query) model.resolveReference(reference
-                    .getTwoPartName());
+            Query query = (Query) model.resolveReference(reference.getTwoPartName());
             validateAttributeQuery(query);
 
             // add fields into record level, and associate columns
-            Map<String, AttributeField> fields = reference
-                    .getAttributeFieldMap();
+            Map<String, AttributeField> fields = reference.getAttributeFieldMap();
             Map<String, Column> columns = query.getColumnMap();
             for (AttributeField field : fields.values()) {
                 field.setRecordClass(this);
@@ -510,8 +502,7 @@ public class RecordClass extends WdkModelBase implements
             nestedRecord.resolveReferences(model);
         }
 
-        for (NestedRecordList nestedRecordList : nestedRecordListQuestionRefs
-                .values()) {
+        for (NestedRecordList nestedRecordList : nestedRecordListQuestionRefs.values()) {
             nestedRecordList.setParentRecordClass(this);
             nestedRecordList.resolveReferences(model);
         }
@@ -620,8 +611,7 @@ public class RecordClass extends WdkModelBase implements
                 + "' can have only a '" + Utilities.PARAM_USER_ID
                 + "' param, and it is optional.";
         Param[] params = query.getParams();
-        if (params.length > 1)
-            throw new WdkModelException(message);
+        if (params.length > 1) throw new WdkModelException(message);
         else if (params.length == 1
                 && !params[0].getName().equals(Utilities.PARAM_USER_ID))
             throw new WdkModelException(message);
@@ -909,10 +899,8 @@ public class RecordClass extends WdkModelBase implements
                             + " has more than one <attributesList> for "
                             + "project " + projectId);
                 } else {
-                    this.defaultSummaryAttributeNames = attributeList
-                            .getSummaryAttributeNames();
-                    this.defaultSortingMap = attributeList
-                            .getSortingAttributeMap();
+                    this.defaultSummaryAttributeNames = attributeList.getSummaryAttributeNames();
+                    this.defaultSortingMap = attributeList.getSortingAttributeMap();
                     hasAttributeList = true;
                 }
             }
@@ -930,8 +918,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public AnswerFilterInstance[] getFilters() {
-        AnswerFilterInstance[] instances = new AnswerFilterInstance[filterMap
-                .size()];
+        AnswerFilterInstance[] instances = new AnswerFilterInstance[filterMap.size()];
         filterMap.values().toArray(instances);
         return instances;
     }
@@ -957,8 +944,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public AnswerFilterLayout[] getFilterLayouts() {
-        AnswerFilterLayout[] layouts = new AnswerFilterLayout[filterLayoutMap
-                .size()];
+        AnswerFilterLayout[] layouts = new AnswerFilterLayout[filterLayoutMap.size()];
         filterLayoutMap.values().toArray(layouts);
         return layouts;
     }
@@ -1038,8 +1024,7 @@ public class RecordClass extends WdkModelBase implements
         } else {
             Map<String, AttributeField> nonInternalFields = getAttributeFieldMap(FieldScope.NON_INTERNAL);
             for (String fieldName : nonInternalFields.keySet()) {
-                attributeFields
-                        .put(fieldName, nonInternalFields.get(fieldName));
+                attributeFields.put(fieldName, nonInternalFields.get(fieldName));
                 if (attributeFields.size() >= Utilities.DEFAULT_SUMMARY_ATTRIBUTE_SIZE)
                     break;
             }
@@ -1101,5 +1086,19 @@ public class RecordClass extends WdkModelBase implements
         questionName += getFullName().replace('.', '_');
         questionName += BasketFactory.SNAPSHOT_BASKET_QUESTION_SUFFIX;
         return (Question) wdkModel.resolveReference(questionName);
+    }
+
+    public Question[] getTransformQuestions() {
+        List<Question> list = new ArrayList<Question>();
+        for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
+            for (Question question : questionSet.getQuestions()) {
+                if (!question.getQuery().isTransform()) continue;
+                if (question.getTransformParams(this).length > 0)
+                    list.add(question);
+            }
+        }
+        Question[] array = new Question[list.size()];
+        list.toArray(array);
+        return array;
     }
 }
