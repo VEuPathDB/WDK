@@ -1121,6 +1121,7 @@ public class UserBean /* implements Serializable */{
 
     public void setViewResults(String strategyKey, int stepId,
             int viewPagerOffset) {
+        logger.debug("setting view steps: " + strategyKey + ", " + stepId + ", " + viewPagerOffset);
         user.setViewResults(strategyKey, stepId, viewPagerOffset);
     }
 
