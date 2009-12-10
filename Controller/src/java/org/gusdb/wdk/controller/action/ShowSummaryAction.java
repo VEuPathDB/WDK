@@ -70,6 +70,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             // String strBranchId = null;
 
             StepBean step = getStep(request, wdkUser, form);
+            request.setAttribute(CConstants.WDK_STEP_KEY, step);
             logger.debug("step created");
 
             // get sorting and summary attributes
@@ -133,6 +134,15 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 step.update(true);
 
                 if (strategy != null) {
+                    wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
+                    request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
+                    int viewPagerOffset = 0;
+                    if (request.getParameter("pager.offset") != null) {
+                        viewPagerOffset = Integer.parseInt(request.getParameter("pager.offset"));
+                    }
+                    wdkUser.setViewResults(strategyKey, step.getStepId(),
+                            viewPagerOffset);
+
                     // reload the strategy to get the changes
                     strategy = wdkUser.getStrategy(strategy.getStrategyId());
                     String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
@@ -146,7 +156,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     }
                 }
                 forward = getForward(request, step, mapping);
-                // forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
             } else { // otherwise, forward to the show application page
                 // create new strategy before going to application page
                 if (strategy == null) {
