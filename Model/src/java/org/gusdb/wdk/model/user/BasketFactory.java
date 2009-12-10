@@ -327,8 +327,7 @@ public class BasketFactory {
         String rcName = recordClass.getDisplayName();
         Question question = new Question();
         question.setName(qname);
-        question.setDisplayName("Get a snapshot of records of " + rcName
-                + "(s) From Basket");
+        question.setDisplayName(rcName + " Basket snapshot");
         question.setShortDisplayName(rcName + " Basket");
         question.setRecordClass(recordClass);
         Query query = getBasketSnapshotIdQuery(recordClass);
@@ -430,8 +429,7 @@ public class BasketFactory {
         String rcName = recordClass.getDisplayName();
         Question question = new Question();
         question.setName(qname);
-        question.setDisplayName("Get the current records of " + rcName
-                + "(s) From Basket");
+        question.setDisplayName("Current " + rcName + " Basket");
         question.setShortDisplayName(rcName + " Basket");
         question.setRecordClass(recordClass);
         Query query = getBasketRealtimeIdQuery(recordClass);
