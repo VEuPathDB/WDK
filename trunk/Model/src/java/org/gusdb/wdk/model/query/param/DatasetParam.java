@@ -37,7 +37,6 @@ public class DatasetParam extends Param {
     public static final String TYPE_FILE = "file";
     public static final String TYPE_BASKET = "basket";
 
-    private String columnName = DatasetFactory.COLUMN_DATASET_VALUE;
 
     private String recordClassRef;
     private RecordClass recordClass;
@@ -46,7 +45,6 @@ public class DatasetParam extends Param {
 
     public DatasetParam(DatasetParam param) {
         super(param);
-        this.columnName = param.columnName;
         this.recordClass = param.recordClass;
         this.recordClassRef = param.recordClassRef;
     }
@@ -82,23 +80,8 @@ public class DatasetParam extends Param {
     protected void appendJSONContent(JSONObject jsParam, boolean extra)
             throws JSONException {
         if (extra) {
-            jsParam.put("column", columnName);
+            jsParam.put("recordClass", recordClass.getFullName());
         }
-    }
-
-    /**
-     * @return the columnName
-     */
-    public String getColumnName() {
-        return columnName;
-    }
-
-    /**
-     * @param columnName
-     *            the columnName to set
-     */
-    public void setColumnName(String columnName) {
-        this.columnName = columnName;
     }
 
     /**
@@ -242,6 +225,10 @@ public class DatasetParam extends Param {
      */
     public void setRecordClassRef(String recordClassRef) {
         this.recordClassRef = recordClassRef;
+    }
+    
+    public void setRecordClass(RecordClass recordClass) {
+        this.recordClass = recordClass;
     }
 
     public String getDefaultType() {
