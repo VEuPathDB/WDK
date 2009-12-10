@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.user;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +19,7 @@ import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.junit.Assert;
@@ -85,6 +87,20 @@ public class BasketTest {
             AttributeValue attribute = instance.getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
             int value = Integer.parseInt(attribute.getValue().toString());
             Assert.assertEquals("record basket: " + pkValue, 1, value);
+        }
+    }
+
+    @Test
+    public void testGetCounts() throws Exception {
+        UserBean user = new UserBean(UnitTestHelper.getRegisteredUser());
+        Map<String, Integer> counts = user.getBasketCount();
+        for (RecordClassSet rcSet : wdkModel.getAllRecordClassSets()) {
+            for (RecordClass rc : rcSet.getRecordClasses()) {
+                if (!rc.hasBasket()) continue;
+                String rcName = rc.getFullName();
+                Assert.assertTrue(counts.containsKey(rcName));
+                Assert.assertTrue(counts.get(rcName) >= 0);
+            }
         }
     }
 
