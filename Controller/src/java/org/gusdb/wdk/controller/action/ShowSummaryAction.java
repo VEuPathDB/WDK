@@ -162,6 +162,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     strategy = wdkUser.createStrategy(step, false);
                     request.getSession().setAttribute(
                             CConstants.WDK_NEW_STRATEGY_KEY, true);
+                    strategyKey = Integer.toString(strategy.getStrategyId());
                 }
                 wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
                 request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);

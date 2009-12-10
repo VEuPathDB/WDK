@@ -252,7 +252,7 @@ public class BasketFactory {
             }
         }
         // load the unique counts
-        String sql = "SELECT " + COLUMN_RECORD_CLASS + ", count(*) AS SIZE "
+        String sql = "SELECT " + COLUMN_RECORD_CLASS + ", count(*) AS record_size "
                 + " FROM (SELECT DISTINCT * FROM " + TABLE_BASKET + " WHERE "
                 + COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID + " = ?) "
                 + " GROUP BY " + COLUMN_RECORD_CLASS;
@@ -260,10 +260,12 @@ public class BasketFactory {
         ResultSet rs = null;
         try {
             PreparedStatement ps = SqlUtils.getPreparedStatement(ds, sql);
+            ps.setInt(1, user.getUserId());
+            ps.setString(2, wdkModel.getProjectId());
             rs = ps.executeQuery();
             while (rs.next()) {
                 String recordClass = rs.getString(COLUMN_RECORD_CLASS);
-                int size = rs.getInt("SIZE");
+                int size = rs.getInt("record_size");
                 counts.put(recordClass, size);
             }
         } finally {
