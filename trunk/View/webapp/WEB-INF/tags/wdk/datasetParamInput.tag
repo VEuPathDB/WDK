@@ -63,7 +63,7 @@ function chooseType(paramName, type) {
 <c:set var="fileChecked"><c:if test="${defaultType == 'file'}">checked</c:if></c:set>
 <c:set var="basketChecked"><c:if test="${defaultType == 'basket'}">checked</c:if></c:set>
 
-<input type="hidden" id="${pNam}_type" name="${pNam}_type" value="data" />
+<input type="hidden" id="${pNam}_type" name="${pNam}_type" value="${defaultType}" />
 
 <table id="${qp.name}" border="0" bgcolor="#EEEEEE" cellspacing="0" cellpadding="0">
     

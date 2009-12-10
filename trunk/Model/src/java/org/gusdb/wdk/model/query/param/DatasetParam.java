@@ -116,9 +116,10 @@ public class DatasetParam extends Param {
 
         ModelConfig config = wdkModel.getModelConfig();
         String dbLink = config.getAppDB().getUserDbLink();
-        String schema = config.getUserDB().getWdkEngineSchema();
-        String dvTable = schema + DatasetFactory.TABLE_DATASET_VALUE + dbLink;
-        String udTable = schema + DatasetFactory.TABLE_USER_DATASET + dbLink;
+        String wdkSchema = config.getUserDB().getWdkEngineSchema();
+        String userSchema = config.getUserDB().getUserSchema();
+        String dvTable = wdkSchema + DatasetFactory.TABLE_DATASET_VALUE + dbLink;
+        String udTable = userSchema + DatasetFactory.TABLE_USER_DATASET + dbLink;
         String colDatasetId = DatasetFactory.COLUMN_DATASET_ID;
         String colUserDatasetId = DatasetFactory.COLUMN_USER_DATASET_ID;
         StringBuffer sql = new StringBuffer("SELECT ");
