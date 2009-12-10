@@ -359,7 +359,7 @@ public class BasketFactory {
             query.addColumn(column);
         }
         // create params
-        DatasetParam datasetParam = getDatasetParam(rcName);
+        DatasetParam datasetParam = getDatasetParam(recordClass);
         query.addParam(datasetParam);
 
         // make sure we create index on primary keys
@@ -390,8 +390,9 @@ public class BasketFactory {
         return query;
     }
 
-    private DatasetParam getDatasetParam(String rcName)
+    private DatasetParam getDatasetParam(RecordClass recordClass)
             throws WdkModelException {
+        String rcName = recordClass.getFullName();
         String paramName = rcName.replace('.', '_') + PARAM_DATASET_SUFFIX;
         ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
         if (paramSet.contains(paramName))
@@ -402,6 +403,7 @@ public class BasketFactory {
         param.setId(paramName);
         param.setAllowEmpty(false);
         param.setRecordClassRef(rcName);
+        param.setRecordClass(recordClass);
         param.setPrompt("A snap shot of the current " + rcName + " basket.");
         param.setDefaultType(DatasetParam.TYPE_BASKET);
         return param;
