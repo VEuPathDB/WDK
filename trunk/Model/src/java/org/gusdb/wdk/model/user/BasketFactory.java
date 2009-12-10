@@ -253,7 +253,7 @@ public class BasketFactory {
         }
         // load the unique counts
         String sql = "SELECT " + COLUMN_RECORD_CLASS + ", count(*) AS record_size "
-                + " FROM (SELECT DISTINCT * FROM " + TABLE_BASKET + " WHERE "
+                + " FROM (SELECT DISTINCT * FROM " + schema + TABLE_BASKET + " WHERE "
                 + COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID + " = ?) "
                 + " GROUP BY " + COLUMN_RECORD_CLASS;
         DataSource ds = wdkModel.getUserPlatform().getDataSource();
