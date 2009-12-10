@@ -65,6 +65,14 @@ public class ParamBean {
         return this.param.isReadonly();
     }
 
+	public boolean getIsAllowEmpty(){
+		return this.param.isAllowEmpty();
+	}
+
+	public String getEmptyValue(){
+		return this.param.getEmptyValue();
+	}
+
     /*
      * (non-Javadoc)
      * 
