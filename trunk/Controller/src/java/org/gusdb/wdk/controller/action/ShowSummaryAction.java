@@ -178,6 +178,17 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 forward = new ActionForward(forward.getPath(), true);
             }
 
+            String queryString = request.getQueryString();
+            if (strategy != null) {
+                queryString += "&strategy=" + strategy.getStrategyId();
+            }
+            logger.debug("query string: " + request.getQueryString());
+
+            String requestUrl = request.getRequestURI() + "?" + queryString;
+            request.setAttribute("wdk_summary_url", requestUrl);
+            request.setAttribute("wdk_query_string", queryString);
+
+
             logger.debug("Leaving showSummary");
             return forward;
         } catch (Exception ex) {
