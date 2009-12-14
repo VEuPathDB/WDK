@@ -272,7 +272,7 @@ public class ModelXmlParser extends XmlParser {
                 "addCategory");
 
         configureNode(digester, "wdkModel/category/questionRef",
-                WdkModelText.class, "addQuestionRef");
+                CategoryQuestionRef.class, "addQuestionRef");
         digester.addCallMethod("wdkModel/category/questionRef",
                 "setText", 0);
 
