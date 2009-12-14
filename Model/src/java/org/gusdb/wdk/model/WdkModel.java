@@ -80,7 +80,7 @@ public class WdkModel {
         logger.debug("Model ready to use.");
         return wdkModel;
     }
-    
+
     private ModelConfig modelConfig;
     private String projectId;
 
@@ -1036,18 +1036,19 @@ public class WdkModel {
         this.categoryList.add(category);
     }
 
-    public Category[] getCategories() {
-        Category[] array = new Category[categoryMap.size()];
-        categoryMap.values().toArray(array);
-        return array;
-    }
-
-    public LinkedHashMap<String, Category> getCategoryMap() {
+    public Map<String, Category> getCategories() {
         return new LinkedHashMap<String, Category>(categoryMap);
     }
 
-    public LinkedHashMap<String, Category> getRootCategoryMap() {
-        return new LinkedHashMap<String, Category>(rootCategoryMap);
+    public Map<String, Category> getRooCategories(String usedBy) {
+        Map<String, Category> roots = new LinkedHashMap<String, Category>();
+        for (Category root : rootCategoryMap.values()) {
+            String cusedBy = root.getUsedBy();
+            if (cusedBy == null || usedBy == null
+                    || cusedBy.equalsIgnoreCase(usedBy))
+                roots.put(root.getName(), root);
+        }
+        return roots;
     }
 
     public void addMacroDeclaration(MacroDeclaration macro) {
