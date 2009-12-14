@@ -329,7 +329,7 @@ public class BasketFactory {
         String rcName = recordClass.getDisplayName();
         Question question = new Question();
         question.setName(qname);
-        question.setDisplayName(rcName + " Basket snapshot");
+        question.setDisplayName(rcName + "s in current Basket");
         question.setShortDisplayName(rcName + " Basket");
         question.setRecordClass(recordClass);
         Query query = getBasketSnapshotIdQuery(recordClass);
