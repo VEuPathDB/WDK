@@ -66,18 +66,10 @@ public class WdkModelBean {
         return new RecordClassBean(model.getRecordClass(recClassRef));
     }
 
-    public Map<String, CategoryBean> getCategoryMap() {
+    public Map<String, CategoryBean> getWebsiteRootCategories() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        for (Category category : model.getCategoryMap().values()) {
-            CategoryBean bean = new CategoryBean(category);
-            beans.put(category.getName(), bean);
-        }
-        return beans;
-    }
-
-    public Map<String, CategoryBean> getRootCategoryMap() {
-        Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        for (Category category : model.getRootCategoryMap().values()) {
+        Map<String, Category> roots = model.getRooCategories(Category.USED_BY_WEBSITE);
+        for (Category category : roots.values()) {
             CategoryBean bean = new CategoryBean(category);
             beans.put(category.getName(), bean);
         }

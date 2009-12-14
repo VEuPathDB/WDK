@@ -132,11 +132,27 @@
       <optional>
         <attribute name="parentRef" />
       </optional>
+      <optional>
+        <attribute name="usedBy">
+          <choice>
+            <value>website</value>
+			<value>webservice</value>
+		  </choice>
+	    </attribute>
+      </optional>
       <ref name="IncludeExclude"/>
       <zeroOrMore>
         <element name="questionRef">
           <ref name="IncludeExclude"/>
-          <text />
+		  <optional>
+			<attribute name="usedBy">
+			  <choice>
+				<value>website</value>
+				<value>webservice</value>
+			  </choice>
+			</attribute>
+		  </optional>
+		  <text />
         </element>
       </zeroOrMore>
     </element>
