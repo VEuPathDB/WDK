@@ -182,6 +182,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
             if (strategy != null) {
                 queryString += "&strategy=" + strategy.getStrategyId();
             }
+            if (step != null) {
+                queryString += "&step=" + step.getStepId();
+            }
             logger.debug("query string: " + request.getQueryString());
 
             String requestUrl = request.getRequestURI() + "?" + queryString;
