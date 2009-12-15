@@ -115,7 +115,7 @@ public class Dataset {
             for (String column : value) {
                 if (column != null && column.length() > 0) {
                     if (first) first = false;
-                    else sbSummary.append(", ");
+                    else sbSummary.append(":");
                     sbSummary.append(value);
                 }
             }
@@ -161,7 +161,7 @@ public class Dataset {
             for (String column : columns) {
                 if (column == null || column.length() == 0) continue;
                 if (first) first = false;
-                else sb.append(", ");
+                else sb.append(":");
                 sb.append(column);
             }
         }
