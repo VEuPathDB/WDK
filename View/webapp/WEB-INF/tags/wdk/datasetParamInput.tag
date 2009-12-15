@@ -68,7 +68,7 @@ function chooseType(paramName, type) {
 
 <table id="${qp.name}" border="0" bgcolor="#EEEEEE" cellspacing="0" cellpadding="0">
    
-  <c:if test="${defaultType != 'basket'}"> 
+  <c:if test="${dataset != null || defaultType != 'basket'}"> 
     <!-- display an input box for user to enter data -->
     <tr>
         <td align="left" valign="top" nowrap>
@@ -99,7 +99,7 @@ function chooseType(paramName, type) {
         <td colspan="2" align="left" valign="top" nowrap>
             <input type="radio" name="${pNam}_radio" ${basketChecked}
                    onclick="chooseType('${pNam}', 'basket');" />
-            Snapshot of ${recordType}s in the basket (${basketCount} ${recordType}s):&nbsp;
+            A copy of ${recordType}s in the basket (${basketCount} ${recordType}s)&nbsp;
         </td>
     </tr>
     </c:if>
