@@ -49,8 +49,8 @@ public class DatasetFactory {
     private static final String COLUMN_UPLOAD_FILE = "upload_file";
     private static final String COLUMN_RECORD_CLASS = "record_class";
 
-    private static final String REGEX_COLUMN_DIVIDER = "[ ,\t]+";
-    private static final String REGEX_ROW_DIVIDER = "[\n;]";
+    private static final String REGEX_COLUMN_DIVIDER = "[: ]+";
+    private static final String REGEX_ROW_DIVIDER = "[,\n;]";
 
     private static Logger logger = Logger.getLogger(DatasetFactory.class);
 

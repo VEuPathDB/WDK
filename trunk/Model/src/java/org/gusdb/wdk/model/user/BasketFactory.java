@@ -329,8 +329,8 @@ public class BasketFactory {
         String rcName = recordClass.getDisplayName();
         Question question = new Question();
         question.setName(qname);
-        question.setDisplayName(rcName + "s in current Basket");
-        question.setShortDisplayName(rcName + " Basket");
+        question.setDisplayName("Copy of "  + rcName + " Basket");
+        question.setShortDisplayName("Copy of Basket");
         question.setRecordClass(recordClass);
         Query query = getBasketSnapshotIdQuery(recordClass);
         question.setQuery(query);
@@ -404,7 +404,7 @@ public class BasketFactory {
         param.setAllowEmpty(false);
         param.setRecordClassRef(rcName);
         param.setRecordClass(recordClass);
-        param.setPrompt(recordClass.getType() + " basket");
+        param.setPrompt(recordClass.getType() + "s from");
         param.setDefaultType(DatasetParam.TYPE_BASKET);
         paramSet.addParam(param);
         param.excludeResources(wdkModel.getProjectId());
