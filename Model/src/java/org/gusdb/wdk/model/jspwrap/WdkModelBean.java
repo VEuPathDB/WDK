@@ -76,6 +76,16 @@ public class WdkModelBean {
         return beans;
     }
 
+    public Map<String, CategoryBean> getWebserviceRootCategories() {
+        Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
+        Map<String, Category> roots = model.getRooCategories(Category.USED_BY_WEBSITE);
+        for (Category category : roots.values()) {
+            CategoryBean bean = new CategoryBean(category);
+            beans.put(category.getName(), bean);
+        }
+        return beans;
+    }
+
     /**
      * @return Map of questionSetName --> {@link QuestionSetBean}
      */
