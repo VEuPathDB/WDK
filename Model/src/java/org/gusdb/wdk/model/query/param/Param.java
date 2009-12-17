@@ -127,6 +127,13 @@ public abstract class Param extends WdkModelBase {
      */
     protected String defaultType;
 
+    /**
+     * if this flag is set to true, the internal value will be the same as
+     * dependent value. This flag is useful when the dependent value is sent to
+     * other sites to process using ProcessQuery.
+     */
+    protected boolean noTranslation;
+
     public Param() {
         visible = true;
         readonly = false;
@@ -135,6 +142,7 @@ public abstract class Param extends WdkModelBase {
         suggestions = new ArrayList<ParamSuggestion>();
         allowEmpty = false;
         emptyValue = "";
+        noTranslation = false;
     }
 
     public Param(Param param) {
@@ -154,6 +162,7 @@ public abstract class Param extends WdkModelBase {
         this.wdkModel = param.wdkModel;
         this.selectMode = param.selectMode;
         this.defaultType = param.defaultType;
+        this.noTranslation = param.noTranslation;
     }
 
     /**
@@ -421,5 +430,13 @@ public abstract class Param extends WdkModelBase {
 
         // the sub classes will complete further validation
         validateValue(user, dependentValue);
+    }
+
+    public boolean isNoTranslation() {
+        return noTranslation;
+    }
+
+    public void setNoTranslation(boolean noTranslation) {
+        this.noTranslation = noTranslation;
     }
 }

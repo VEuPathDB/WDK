@@ -113,6 +113,8 @@ public class DatasetParam extends Param {
             JSONException, WdkUserException {
         // the input has to be a user-dataset-id
         int userDatasetId = Integer.parseInt(dependentValue);
+        
+        if (noTranslation) return Integer.toString(userDatasetId);
 
         ModelConfig config = wdkModel.getModelConfig();
         String dbLink = config.getAppDB().getUserDbLink();

@@ -50,7 +50,7 @@ public class DatasetFactory {
     private static final String COLUMN_RECORD_CLASS = "record_class";
 
     private static final String REGEX_COLUMN_DIVIDER = "[:]+";
-    private static final String REGEX_ROW_DIVIDER = "[,\\s;]";
+    private static final String REGEX_ROW_DIVIDER = "[,\\s;]+";
 
     private static Logger logger = Logger.getLogger(DatasetFactory.class);
 
