@@ -143,6 +143,8 @@ public class StringParam extends Param {
     @Override
     public String dependentValueToInternalValue(User user, String dependentValue)
             throws WdkModelException, WdkUserException {
+        if (noTranslation) return dependentValue;
+        
         String rawValue = decompressValue(dependentValue);
         if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
         rawValue = rawValue.replaceAll("'", "''");
