@@ -78,7 +78,7 @@ public class WdkModelBean {
 
     public Map<String, CategoryBean> getWebserviceRootCategories() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        Map<String, Category> roots = model.getRooCategories(Category.USED_BY_WEBSITE);
+        Map<String, Category> roots = model.getRooCategories(Category.USED_BY_WEBSERVICE);
         for (Category category : roots.values()) {
             CategoryBean bean = new CategoryBean(category);
             beans.put(category.getName(), bean);
