@@ -214,6 +214,11 @@
     <optional>
       <attribute name="default" />
     </optional>
+    <optional>
+      <attribute name="noTranslation">
+        <data type="boolean" />
+      </attribute>
+    </optional>
     <zeroOrMore>
       <element name="help">
         <ref name="IncludeExclude" />
@@ -596,6 +601,11 @@
         <optional>
           <attribute name="queryRef" />
         </optional>
+		<optional>
+		  <attribute name="noTranslation">
+			<data type="boolean" />
+		  </attribute>
+		</optional>
         <optional>
           <attribute name="displayType">
             <choice>
