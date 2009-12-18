@@ -295,7 +295,7 @@ public class XMLReporter extends Reporter {
         // print out attributes of the record first
         for (AttributeField field : attributes) {
             AttributeValue value = record.getAttributeValue(field.getName());
-            writer.println("<field name='" + field.getDisplayName()
+            writer.println("<field name='" + field.getName() + "' title='" + field.getDisplayName()
                     + "'><![CDATA[" + value + "]]></field>");
         }
         // print out attributes of the record first

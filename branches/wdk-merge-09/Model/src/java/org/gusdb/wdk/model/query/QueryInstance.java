@@ -64,7 +64,6 @@ public abstract class QueryInstance {
     protected boolean cached;
 
     private String checksum;
-    private Integer resultSize;
 
     protected QueryInstance(User user, Query query, Map<String, String> values,
             boolean validate) throws WdkModelException,
@@ -214,14 +213,12 @@ public abstract class QueryInstance {
     public int getResultSize() throws NoSuchAlgorithmException, SQLException,
             WdkModelException, JSONException, WdkUserException {
         logger.debug("start getting query size");
-        if (resultSize == null) {
-            StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
-            sql.append(getSql()).append(") f");
-            DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-            Object objSize = SqlUtils.executeScalar(wdkModel, dataSource,
-                    sql.toString());
-            resultSize = Integer.parseInt(objSize.toString());
-        }
+        StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
+        sql.append(getSql()).append(") f");
+        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+        Object objSize = SqlUtils.executeScalar(wdkModel, dataSource,
+                sql.toString());
+        int resultSize = Integer.parseInt(objSize.toString());
         logger.debug("end getting query size");
         return resultSize;
     }
@@ -313,7 +310,7 @@ public abstract class QueryInstance {
             } else { // param provided, but it can be empty
                 value = values.get(paramName);
                 // logger.debug("param " + paramName + " provided value: '"
-                //        + value + "'");
+                // + value + "'");
                 if (value == null || value.length() == 0) {
                     value = param.isAllowEmpty() ? param.getEmptyValue() : null;
                 }

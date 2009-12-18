@@ -299,7 +299,7 @@ public class JSONReporter extends Reporter {
         for (AttributeField field : attributes) {
             if (c > 0) writer.print(",");
             AttributeValue value = record.getAttributeValue(field.getName());
-            writer.print("{\"name\":\"" + field.getDisplayName()
+            writer.print("{\"name\":\"" + field.getName()
                     + "\", \"value\":\"" + value + "\"}");
             c++;
         }

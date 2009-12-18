@@ -348,6 +348,8 @@ public abstract class AbstractEnumParam extends Param {
     public String dependentValueToInternalValue(User user, String dependentValue)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
+        if (noTranslation) return dependentValue;
+        
         String rawValue = decompressValue(dependentValue);
         if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
 

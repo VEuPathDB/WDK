@@ -4,13 +4,26 @@
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
+
+<c:set var="project" value="${applicationScope.wdkModel.displayName}"/>
+
 <c:set var="answerValue" value="${requestScope.answer_value}"/>
 <c:set var="strategyId" value="${requestScope.strategy_id}"/>
 <c:set var="stepId" value="${requestScope.step_id}"/>
 
 <c:set var="layout" value="${requestScope.filter_layout}"/>
 
-<table border="0" cellspacing="0" cellspacing="0">
+<c:choose>
+<c:when test = "${project == 'EuPathDB'}">
+	<c:set var="th" value="<th style='white-space:normal'>"/>
+</c:when>
+<c:otherwise>
+	<c:set var="th" value="<th>"/>
+</c:otherwise>
+</c:choose>
+
+
+<table border="0" cellspacing="0">
   <c:choose>
     <c:when test="layout.vertical"> <%-- vertically aligned table --%>
       <c:forEach items="${layout.instances}" var="instance">
@@ -25,7 +38,7 @@
     <c:otherwise> <%-- horizontally aligned table --%>
       <tr>
         <c:forEach items="${layout.instances}" var="instance">
-          <th>${instance.displayName}</th>
+		${th}${instance.displayName}</th>
         </c:forEach>
       </tr>
       <tr>

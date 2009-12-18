@@ -34,16 +34,17 @@ function chooseType(paramName, type) {
     var inputType = document.getElementById(paramName + '_type');
     inputType.value = type;
     // disable inputs accordingly
+    var inputData = document.getElementById(paramName + '_data');
+    var inputFile = document.getElementById(paramName + '_file');
     if (type == "data") {
-        var inputData = document.getElementById(paramName + '_data');
-        inputData.disabled = false;
-        var inputFile = document.getElementById(paramName + '_file');
-        inputFile.disabled = true;
+        if (inputFile) inputData.disabled = false;
+        if (inputFile) inputFile.disabled = true;
     } else if (type == "file") {
-        var inputData = document.getElementById(paramName + '_data');
-        inputData.disabled = true;
-        var inputFile = document.getElementById(paramName + '_file');
-        inputFile.disabled = false;
+        if (inputFile) inputData.disabled = true;
+        if (inputFile) inputFile.disabled = false;
+    } else if (type == "basket") {
+        if (inputFile) inputData.disabled = true;
+        if (inputFile) inputFile.disabled = true;
     }
 }
 
@@ -57,17 +58,17 @@ function chooseType(paramName, type) {
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="dataset" value="${requestScope[dsName]}" />  
 <c:set var="partial" value="${requestScope.partial}" />
-<c:set var="recordType" value="{$qp.recordClass.type}" />
-<c:set var="defaultType" value="{$qp.defaultType}" />
+<c:set var="recordType" value="${qp.recordClass.type}" />
+<c:set var="defaultType" value="${qp.defaultType}" />
 <c:set var="dataChecked"><c:if test="${defaultType == 'data'}">checked</c:if></c:set>
 <c:set var="fileChecked"><c:if test="${defaultType == 'file'}">checked</c:if></c:set>
 <c:set var="basketChecked"><c:if test="${defaultType == 'basket'}">checked</c:if></c:set>
 
-<input type="hidden" id="${pNam}_type" name="${pNam}_type" value="data" />
-
+<input type="hidden" id="${pNam}_type" name="${pNam}_type" value="${defaultType}" />
 
 <table id="${qp.name}" border="0" bgcolor="#EEEEEE" cellspacing="0" cellpadding="0">
-    
+   
+  <c:if test="${dataset != null || defaultType != 'basket'}"> 
     <!-- display an input box for user to enter data -->
     <tr>
         <td align="left" valign="top" nowrap>
@@ -89,15 +90,19 @@ function chooseType(paramName, type) {
             <textarea id="${pNam}_data" class="input" name="${pNam}_data" rows="5" cols="30">${datasetValues}</textarea>
         </td>
     </tr>
-	
-	<!-- display option to use basket snapshot -->
+  </c:if>
+
+    <c:if test="${qp.recordClass.hasBasket}">	
+    <!-- display option to use basket snapshot -->
     <tr>
+        <c:set var="basketCount" value="${wdkUser.basketCount[qp.recordClass.fullName]}" />
         <td colspan="2" align="left" valign="top" nowrap>
             <input type="radio" name="${pNam}_radio" ${basketChecked}
                    onclick="chooseType('${pNam}', 'basket');" />
-            Snapshot of ${recordType}s in the basket:&nbsp;
+            A copy of ${recordType}s in the basket (${basketCount} ${recordType}s)&nbsp;
         </td>
     </tr>
+    </c:if>
     
     <!-- display an existing info -->
     <c:if test="${dataset != null && fn:length(dataset.uploadFile) > 0}">

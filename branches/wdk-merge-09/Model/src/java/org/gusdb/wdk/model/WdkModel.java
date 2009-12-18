@@ -80,7 +80,7 @@ public class WdkModel {
         logger.debug("Model ready to use.");
         return wdkModel;
     }
-    
+
     private ModelConfig modelConfig;
     private String projectId;
 
@@ -1036,18 +1036,19 @@ public class WdkModel {
         this.categoryList.add(category);
     }
 
-    public Category[] getCategories() {
-        Category[] array = new Category[categoryMap.size()];
-        categoryMap.values().toArray(array);
-        return array;
-    }
-
-    public LinkedHashMap<String, Category> getCategoryMap() {
+    public Map<String, Category> getCategories() {
         return new LinkedHashMap<String, Category>(categoryMap);
     }
 
-    public LinkedHashMap<String, Category> getRootCategoryMap() {
-        return new LinkedHashMap<String, Category>(rootCategoryMap);
+    public Map<String, Category> getRooCategories(String usedBy) {
+        Map<String, Category> roots = new LinkedHashMap<String, Category>();
+        for (Category root : rootCategoryMap.values()) {
+            String cusedBy = root.getUsedBy();
+            if (cusedBy == null || usedBy == null
+                    || cusedBy.equalsIgnoreCase(usedBy))
+                roots.put(root.getName(), root);
+        }
+        return roots;
     }
 
     public void addMacroDeclaration(MacroDeclaration macro) {
@@ -1101,22 +1102,6 @@ public class WdkModel {
             WdkUserException, WdkModelException, SQLException {
         if (systemUser == null) systemUser = userFactory.createGuestUser();
         return systemUser;
-    }
-
-    public List<Question> getTransformQuestions(RecordClass inputType,
-            RecordClass outputType) {
-        List<Question> list = new ArrayList<Question>();
-        for (ModelSetI questionSet : this.questionSets.values()) {
-            for (Question question : ((QuestionSet) questionSet).getQuestions()) {
-                String type = question.getRecordClass().getFullName();
-                if (outputType != null
-                        && !outputType.getFullName().equals(type)) continue;
-                if (!question.getQuery().isTransform()) continue;
-                if (question.getTransformParams(inputType).length > 0)
-                    list.add(question);
-            }
-        }
-        return list;
     }
 
     public BasketFactory getBasketFactory() {

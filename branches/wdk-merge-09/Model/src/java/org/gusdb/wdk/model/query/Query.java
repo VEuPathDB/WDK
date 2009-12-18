@@ -393,6 +393,10 @@ public abstract class Query extends WdkModelBase {
             String emptyValue = paramRef.getEmptyValue();
             if (emptyValue != null) param.setEmptyValue(emptyValue);
         }
+        Boolean noTranslation = paramRef.getNoTranslation();
+        if (noTranslation != null) {
+            param.setNoTranslation(noTranslation);
+        }
 
         Boolean quote = paramRef.getQuote();
         Boolean multiPick = paramRef.isMultiPick();

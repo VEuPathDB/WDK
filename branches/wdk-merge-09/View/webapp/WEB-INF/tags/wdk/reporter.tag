@@ -31,6 +31,8 @@ function changeFormat(e)
 <!-- handle empty result set situation -->
 <c:if test='${step.estimateSize != 0}'>
 
+<h3>Download ${step.displayType}s from the ${step.displayName} search: </h3>
+<br />
 <!-- the supported format -->
 <form name="formatForm" method="get" action="<c:url value='/downloadStep.do' />">
   <table>

@@ -80,10 +80,10 @@ public class TimestampParam extends Param {
      */
     @Override
     public String dependentValueToInternalValue(User user,
-            String independentValue) throws WdkModelException,
+            String dependentValue) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        return independentValue;
+        return dependentValue;
     }
 
     /*

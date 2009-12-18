@@ -37,7 +37,6 @@ public class DatasetParam extends Param {
     public static final String TYPE_FILE = "file";
     public static final String TYPE_BASKET = "basket";
 
-    private String columnName = DatasetFactory.COLUMN_DATASET_VALUE;
 
     private String recordClassRef;
     private RecordClass recordClass;
@@ -46,8 +45,8 @@ public class DatasetParam extends Param {
 
     public DatasetParam(DatasetParam param) {
         super(param);
-        this.columnName = param.columnName;
         this.recordClass = param.recordClass;
+        this.recordClassRef = param.recordClassRef;
     }
 
     /*
@@ -59,10 +58,7 @@ public class DatasetParam extends Param {
     @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
         this.wdkModel = model;
-        if (recordClassRef != null) {
-            recordClass = (RecordClass) wdkModel.resolveReference(recordClassRef);
-            recordClassRef = null;
-        }
+        recordClass = (RecordClass) wdkModel.resolveReference(recordClassRef);
     }
 
     /*
@@ -84,23 +80,8 @@ public class DatasetParam extends Param {
     protected void appendJSONContent(JSONObject jsParam, boolean extra)
             throws JSONException {
         if (extra) {
-            jsParam.put("column", columnName);
+            jsParam.put("recordClass", recordClass.getFullName());
         }
-    }
-
-    /**
-     * @return the columnName
-     */
-    public String getColumnName() {
-        return columnName;
-    }
-
-    /**
-     * @param columnName
-     *            the columnName to set
-     */
-    public void setColumnName(String columnName) {
-        this.columnName = columnName;
     }
 
     /**
@@ -132,12 +113,15 @@ public class DatasetParam extends Param {
             JSONException, WdkUserException {
         // the input has to be a user-dataset-id
         int userDatasetId = Integer.parseInt(dependentValue);
+        
+        if (noTranslation) return Integer.toString(userDatasetId);
 
         ModelConfig config = wdkModel.getModelConfig();
         String dbLink = config.getAppDB().getUserDbLink();
-        String schema = config.getUserDB().getWdkEngineSchema();
-        String dvTable = schema + DatasetFactory.TABLE_DATASET_VALUE + dbLink;
-        String udTable = schema + DatasetFactory.TABLE_USER_DATASET + dbLink;
+        String wdkSchema = config.getUserDB().getWdkEngineSchema();
+        String userSchema = config.getUserDB().getUserSchema();
+        String dvTable = wdkSchema + DatasetFactory.TABLE_DATASET_VALUE + dbLink;
+        String udTable = userSchema + DatasetFactory.TABLE_USER_DATASET + dbLink;
         String colDatasetId = DatasetFactory.COLUMN_DATASET_ID;
         String colUserDatasetId = DatasetFactory.COLUMN_USER_DATASET_ID;
         StringBuffer sql = new StringBuffer("SELECT ");
@@ -245,11 +229,15 @@ public class DatasetParam extends Param {
     public void setRecordClassRef(String recordClassRef) {
         this.recordClassRef = recordClassRef;
     }
+    
+    public void setRecordClass(RecordClass recordClass) {
+        this.recordClass = recordClass;
+    }
 
     public String getDefaultType() {
         return (defaultType != null) ? defaultType : TYPE_DATA;
     }
-    
+
     public void setDefaultType(String defaultType) {
         this.defaultType = defaultType;
     }
