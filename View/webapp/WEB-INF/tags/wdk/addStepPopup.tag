@@ -5,62 +5,65 @@
 
 <%@ attribute name="model"
 	      type="org.gusdb.wdk.model.jspwrap.WdkModelBean"
-              required="false"
+              required="true"
               description="Wdk Model Object for this site"
 %>
 
-<%@ attribute name="recordClass"
-	          required="false"
+<%@ attribute name="rcName"
+	      required="true"
               description="RecordClass Object for the Answer"
 %>
 
 <%@ attribute name="prevStepNum"
-				required="false"
-				description="Step number for transform param urls"
+	      required="false"
+	      description="Step number for transform param urls"
 %>
 
 <c:set var="siteName" value="${applicationScope.wdkModel.name}" />
-<c:set var="recClass" value="${recordClass}" />
 <c:set var="qSetName" value="none" />
 <c:set var="qSets" value="${model.questionSetsMap}" />
 <c:set var="qSet" value="${qSets[qSetName]}" />
 <c:set var="user" value="${sessionScope.wdkUser}"/>
+<c:set var="recordClass" value="${model.recordClassMap[rcName]}" />
 
-<jsp:setProperty name="model" property="inputType" value="${recClass}" />
-<jsp:setProperty name="model" property="outputType" value="" />
+<c:set var="transformQuestions" value="${recordClass.transformQuestions}" />
 
-<c:set var="transformQuestions" value="${model.transformQuestions}" />
 
 
 
 
 <div id="query_form" style="min-height:140px;">
-<span class="dragHandle"><div class="modal_name"><h1 id="query_form_title"></h1></div><a class='close_window' href='javascript:closeAll()'><img src="<c:url value='/wdk/images/Close-X-box.png'/>" alt='Close'/></a></span>
+<span class="dragHandle"><div class="modal_name"><h1 style="font-size:130%;margin-top:4px;" id="query_form_title"></h1></div><a class='close_window' href='javascript:closeAll()'><img src="<c:url value='/wdk/images/Close-X-box.png'/>" alt='Close'/></a></span>
 
 <div id="query_selection">
 
 	<table width="90%">
 		<tr><th title="This search will be combined (AND,OR,NOT) with the previous step.">Select a Search</th>
-                    <th>--or--</th>
+                    <th>-or-</th>
+
+<c:if test="${recordClass.hasBasket}">
+                    <th title="Use a copy of your ${recordClass.type} Basket. The effect is as if you run the search -${recordClass.type}s by ID- and provide the IDs in your basket">From Basket</th>
+                    <th>-or-</th>
+</c:if>
 
 <c:if test="${fn:length(transformQuestions) > 0}">
                     <th title="The transform converts the input set of IDs (from the previous step) into a new set of IDs">Select a Transform</th>
-                    <th>--or--</th>
+                    <th>-or-</th>
 </c:if>
 
 
-                    <th title="Adding a strategy as a step allows you to generate non-linear strategies (trees).">Select a Opened Strategy</th></tr>
+                    <th title="Adding a strategy as a step allows you to generate non-linear strategies (trees).">Select a Strategy</th></tr>
 		<tr>
 				<td>
 <ul class="top_nav">
-<c:set var="rootCat" value="${model.rootCategoryMap[recordClass]}" />
-<c:forEach items="${rootCat.children}" var="catEntry">
+<c:set var="rootCat" value="${model.websiteRootCategories[rcName]}" />
+<c:forEach items="${rootCat.websiteChildren}" var="catEntry">
     <c:set var="cat" value="${catEntry.value}" />
 	<c:if test="${rootCat.multiCategory}">
     	<li><a class="category" href="javascript:void(0)">${cat.displayName}</a>
     	<ul>
 	</c:if>
-	<c:forEach items="${cat.questions}" var="q">
+	<c:forEach items="${cat.websiteQuestions}" var="q">
           <li><a href="javascript:getQueryForm('showQuestion.do?questionFullName=${q.fullName}&partial=true')">${q.displayName}</a></li>
 	</c:forEach>
 	<c:if test="${rootCat.multiCategory}">
@@ -73,11 +76,24 @@
 </td>
 <td></td>
 
+<c:if test="${recordClass.hasBasket}">
+<td>
+    <c:set var="q" value="${recordClass.snapshotBasketQuestion}" />
+    <ul class="top_nav">
+      <li style="width:auto;z-index:40;">
+        <a title="Make sure your basket is not empty!" href="javascript:getQueryForm('showQuestion.do?questionFullName=${q.fullName}&target=${target}&partial=true')">${q.displayName}</a>
+      </li>
+    </ul>
+</td>
+
+<td></td>
+</c:if>
+
 <c:if test="${fn:length(transformQuestions) > 0}">
 <td>
   <ul id="transforms" class="top_nav">
     <c:forEach items="${transformQuestions}" var="t">
-      <jsp:setProperty name="t" property="inputType" value="${recClass}" />
+      <jsp:setProperty name="t" property="inputType" value="${rcName}" />
       <c:set var="tparams" value="" />
       <c:forEach items="${t.transformParams}" var="tp">
 	<c:set var="tparams" value="${tparams}&${tp.name}=${prevStepNum}" />
@@ -97,7 +113,7 @@
 		<option value="--">----Opened strategies----</option>
 		<c:forEach items="${user.activeStrategies}" var="storedStrategy">
 			<c:set var="l" value="${storedStrategy.length-1}"/>
-		 	<c:if test="${storedStrategy.allSteps[l].dataType == recordClass}">
+		 	<c:if test="${storedStrategy.allSteps[l].dataType == rcName}">
 				<c:set var="displayName" value="${storedStrategy.name}" />
 				<c:if test="${fn:length(displayName) > 30}">
                                     <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
@@ -107,7 +123,7 @@
 		</c:forEach>
 		<!-- Display the Saved Strategies -->
 		<option value="--">----Saved strategies----</option>
-		<c:forEach items="${user.savedStrategiesByCategory[recordClass]}" var="storedStrategy">
+		<c:forEach items="${user.savedStrategiesByCategory[rcName]}" var="storedStrategy">
 				<c:set var="displayName" value="${storedStrategy.name}" />
 				<c:if test="${fn:length(displayName) > 30}">
                                     <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
@@ -116,7 +132,7 @@
 		</c:forEach>
 		<!-- Display the recent Strategies (Opened  viewed in the last 24 hours) -->
 		<option value="--">----Recent strategies----${currentTime}</option>
-		<c:forEach items="${user.recentStrategiesByCategory[recordClass]}" var="storedStrategy">
+		<c:forEach items="${user.recentStrategiesByCategory[rcName]}" var="storedStrategy">
 				<c:set var="displayName" value="${storedStrategy.name}" />
 				<c:if test="${fn:length(displayName) > 30}">
                                     <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />

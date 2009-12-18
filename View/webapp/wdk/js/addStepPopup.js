@@ -26,11 +26,17 @@ function showPanel(panel) {
 	$("#tab_" + panel).parent().attr("id", "selected");
 	$("#" + panel).css({'position':'relative','left':'auto','display':'block'});
 	if (panel == 'strategy_results') {
+		if(getCurrentTabCookie(false) == 'basket'){
+			var stgy = getStrategyFromBackId(init_view_strat);
+			var stp = stgy.getStep(init_view_step, false);
+			NewResults(stgy.frontId, stp.frontId, stp.isboolean);
+		}
 		$("body > #query_form").show();
 		$("body > .crumb_details").show();
 	}
 	else {
 		if (panel == 'search_history') updateHistory();
+		if (panel == 'basket') showBasket();
 		$("body > #query_form").hide();
 		$("body > .crumb_details").hide();
 	}
@@ -139,8 +145,9 @@ function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isO
 		$(f).html($(quesForm).html());
 		quesForm = $(f);
 	}
-	var quesDescription = $("#query-description-section",qf);
-	var tooltips = $("div.htmltooltip",qf);
+	var quesDescription = $("#query-description-section",qf);//data);
+	var dataSources = $("#attributions-section",qf);
+	var tooltips = $("div.htmltooltip",qf);//data);
 	$("input[value=Get Answer]",quesForm).val("Run Step");
 	$("input[value=Run Step]",quesForm).attr("id","executeStepButton");
 	$(".params", quesForm).wrap("<div class='filter params'></div>");
@@ -191,11 +198,11 @@ function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isO
 	var formtitle = "";
 	if(edit == 0){
 		if(insert == "")
-			formtitle = "<h1>Add&nbsp;Step</h1>";
+			formtitle = "<h1 style='font-size:130%;position:relative;top:-7px;'>Add&nbsp;Step</h1>";
 		else
-			formtitle = "<h1>Insert&nbsp;Step</h1>";
+			formtitle = "<h1  style='font-size:130%;position:relative;top:-7px;'>Insert&nbsp;Step</h1>";
 	}else{
-		formtitle = "<h1>Revise&nbsp;Step</h1>";
+		formtitle = "<h1  style='font-size:130%;position:relative;top:-7px;'>Revise&nbsp;Step</h1>";
 	}
 	quesForm.attr("action",action);
 	if(edit == 0)
@@ -223,6 +230,10 @@ function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isO
 	
 	if(quesDescription.length > 0)
 		$("#query_form").append("<div style='padding:5px;margin:5px 15px 5px 15px;border-top:1px solid grey;border-bottom:1px solid grey'>" + quesDescription.html() + "</div>");
+
+	if(dataSources.length > 0)
+		$("#query_form").append("<div style='padding:5px;margin:5px 15px 5px 15px;border-top:1px solid grey;border-bottom:1px solid grey'>" + dataSources.html() + "</div>");
+
 	$("#query_form").append("<div class='bottom-close'><a href='javascript:closeAll(false)' class='close_window'>Close</a></div>");
 	htmltooltip.render();
 	setDraggable($("#query_form"), ".dragHandle");
