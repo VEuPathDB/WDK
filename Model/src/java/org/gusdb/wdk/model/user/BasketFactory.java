@@ -47,7 +47,7 @@ public class BasketFactory {
     private static final String REALTIME_BASKET_ID_QUERY_SUFFIX = "ByRealtimeBasket";
     private static final String SNAPSHOT_BASKET_ID_QUERY_SUFFIX = "BySnapshotBasket";
     static final String BASKET_ATTRIBUTE_QUERY_SUFFIX = "_basket_attrs";
-    static final String BASKET_ATTRIBUTE = "in_basket";
+    public static final String BASKET_ATTRIBUTE = "in_basket";
 
     public static final String PARAM_USER_SIGNATURE = "user_signature";
     public static final String PARAM_DATASET_SUFFIX = "Dataset";
@@ -120,6 +120,7 @@ public class BasketFactory {
         try {
             psInsert = SqlUtils.getPreparedStatement(dataSource, sqlInsert);
             psCount = SqlUtils.getPreparedStatement(dataSource, sqlCount);
+            int count = 0;
             for (String[] row : pkValues) {
                 // fill or truncate the pk columns
                 String[] pkValue = new String[pkColumns.length];
@@ -145,8 +146,18 @@ public class BasketFactory {
 
                 // insert new record
                 setParams(psInsert, userId, projectId, rcName, pkValue);
+                psInsert.addBatch();
+
+                count++;
+                if (count % 100 == 0) {
+                    long start = System.currentTimeMillis();
+                    psInsert.executeBatch();
+                    SqlUtils.verifyTime(wdkModel, sqlInsert, start);
+                }
+            }
+            if (count % 100 != 0) {
                 long start = System.currentTimeMillis();
-                psInsert.executeUpdate();
+                psInsert.executeBatch();
                 SqlUtils.verifyTime(wdkModel, sqlInsert, start);
             }
         } finally {
@@ -241,18 +252,20 @@ public class BasketFactory {
             }
         }
         // load the unique counts
-        String sql = "SELECT " + COLUMN_RECORD_CLASS + ", count(*) AS SIZE "
-                + " FROM (SELECT DISTINCT * FROM " + TABLE_BASKET + " WHERE "
+        String sql = "SELECT " + COLUMN_RECORD_CLASS + ", count(*) AS record_size "
+                + " FROM (SELECT DISTINCT * FROM " + schema + TABLE_BASKET + " WHERE "
                 + COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID + " = ?) "
                 + " GROUP BY " + COLUMN_RECORD_CLASS;
         DataSource ds = wdkModel.getUserPlatform().getDataSource();
         ResultSet rs = null;
         try {
             PreparedStatement ps = SqlUtils.getPreparedStatement(ds, sql);
+            ps.setInt(1, user.getUserId());
+            ps.setString(2, wdkModel.getProjectId());
             rs = ps.executeQuery();
             while (rs.next()) {
                 String recordClass = rs.getString(COLUMN_RECORD_CLASS);
-                int size = rs.getInt("SIZE");
+                int size = rs.getInt("record_size");
                 counts.put(recordClass, size);
             }
         } finally {
@@ -281,9 +294,9 @@ public class BasketFactory {
             String[] columns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
             int columnCount = columns.length;
             while (rs.next()) {
-                if (buffer.length() > 0) buffer.append("\n");
+                if (buffer.length() > 0) buffer.append(";");
                 for (int i = 1; i <= columnCount; i++) {
-                    if (i > 1) buffer.append(", ");
+                    if (i > 1) buffer.append(":");
                     String value = rs.getString(Utilities.COLUMN_PK_PREFIX + i);
                     buffer.append(value);
                 }
@@ -316,9 +329,8 @@ public class BasketFactory {
         String rcName = recordClass.getDisplayName();
         Question question = new Question();
         question.setName(qname);
-        question.setDisplayName("Get a snapshot of records of " + rcName
-                + "(s) From Basket");
-        question.setShortDisplayName(rcName + " Basket");
+        question.setDisplayName("Copy of "  + rcName + " Basket");
+        question.setShortDisplayName("Copy of Basket");
         question.setRecordClass(recordClass);
         Query query = getBasketSnapshotIdQuery(recordClass);
         question.setQuery(query);
@@ -349,7 +361,7 @@ public class BasketFactory {
             query.addColumn(column);
         }
         // create params
-        DatasetParam datasetParam = getDatasetParam(rcName);
+        DatasetParam datasetParam = getDatasetParam(recordClass);
         query.addParam(datasetParam);
 
         // make sure we create index on primary keys
@@ -364,15 +376,13 @@ public class BasketFactory {
         String sql = "SELECT DISTINCT ";
         for (int i = 1; i <= pkColumns.length; i++) {
             if (i > 1) sql += ", ";
-            sql += "d." + Utilities.COLUMN_PK_PREFIX + i + " AS "
-                    + pkColumns[i - 1];
+            sql += "d." + pkColumns[i - 1];
         }
         sql += " FROM ($$" + datasetParam.getName() + "$$) d, ("
                 + allRecordsSql + ") i ";
-        for (int i = 1; i <= pkColumns.length; i++) {
-            sql += (i == 1) ? " WHERE " : " AND ";
-            sql += "b." + Utilities.COLUMN_PK_PREFIX + i + " = i."
-                    + pkColumns[i - 1];
+        for (int i = 0; i < pkColumns.length; i++) {
+            sql += (i == 0) ? " WHERE " : " AND ";
+            sql += "d." + pkColumns[i] + " = i." + pkColumns[i];
         }
         query.setSql(sql);
         querySet.addQuery(query);
@@ -380,8 +390,9 @@ public class BasketFactory {
         return query;
     }
 
-    private DatasetParam getDatasetParam(String rcName)
+    private DatasetParam getDatasetParam(RecordClass recordClass)
             throws WdkModelException {
+        String rcName = recordClass.getFullName();
         String paramName = rcName.replace('.', '_') + PARAM_DATASET_SUFFIX;
         ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
         if (paramSet.contains(paramName))
@@ -392,8 +403,11 @@ public class BasketFactory {
         param.setId(paramName);
         param.setAllowEmpty(false);
         param.setRecordClassRef(rcName);
-        param.setPrompt("A snap shot of the current " + rcName + " basket.");
+        param.setRecordClass(recordClass);
+        param.setPrompt(recordClass.getType() + "s from");
         param.setDefaultType(DatasetParam.TYPE_BASKET);
+        paramSet.addParam(param);
+        param.excludeResources(wdkModel.getProjectId());
         return param;
     }
 
@@ -419,8 +433,7 @@ public class BasketFactory {
         String rcName = recordClass.getDisplayName();
         Question question = new Question();
         question.setName(qname);
-        question.setDisplayName("Get the current records of " + rcName
-                + "(s) From Basket");
+        question.setDisplayName("Current " + rcName + " Basket");
         question.setShortDisplayName(rcName + " Basket");
         question.setRecordClass(recordClass);
         Query query = getBasketRealtimeIdQuery(recordClass);

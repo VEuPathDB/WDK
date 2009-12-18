@@ -88,7 +88,7 @@ public class ProcessQuery extends Query {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         super.resolveReferences(wdkModel);
-        if (webServiceUrl != null)
+        if (webServiceUrl == null)
             webServiceUrl = wdkModel.getModelConfig().getWebServiceUrl();
     }
 

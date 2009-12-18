@@ -138,6 +138,9 @@ public class AnswerParam extends Param {
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
         int stepId = Integer.parseInt(dependentValue);
+        
+        if (noTranslation) return Integer.toString(stepId);
+        
         Step step = user.getStep(stepId);
         AnswerValue answerValue = step.getAnswerValue();
         return answerValue.getIdSql();

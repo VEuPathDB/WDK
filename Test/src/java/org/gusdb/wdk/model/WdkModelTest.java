@@ -55,21 +55,4 @@ public class WdkModelTest {
                     values.length > 0);
         }
     }
-
-    @Test
-    public void testGetTransformQuestions() {
-        for (RecordClassSet rcSetIn : wdkModel.getAllRecordClassSets()) {
-            for (RecordClass rcIn : rcSetIn.getRecordClasses()) {
-                for (RecordClassSet rcSetOut : wdkModel.getAllRecordClassSets()) {
-                    for (RecordClass rcOut : rcSetOut.getRecordClasses()) {
-                        List<Question> questions = wdkModel.getTransformQuestions(
-                                rcIn, rcOut);
-                        for (Question question : questions) {
-                            Assert.assertTrue(question.getQuery().isTransform());
-                        }
-                    }
-                }
-            }
-        }
-    }
 }

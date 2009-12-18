@@ -220,9 +220,11 @@ public class ProcessRESTAction extends ShowQuestionAction {
 
     private void createWADL(HttpServletRequest request,
             HttpServletResponse response, String qFullName) throws Exception {
-        ServletOutputStream out = response.getOutputStream();
+		logger.info("createWADL()");
+		ServletOutputStream out = response.getOutputStream();
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
-        String sQName = qFullName.replace('.', ':');
+        try{
+		String sQName = qFullName.replace('.', ':');
         // get question
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         QuestionBean wdkQuestion = null;
@@ -261,13 +263,18 @@ public class ProcessRESTAction extends ShowQuestionAction {
         }
         writer.println("</resources>");
         writer.println("</application>");
-        writer.flush();
+    	}catch(Exception e){
+			throw e;
+		}finally{
+		writer.flush();
         out.flush();
         out.close();
+		}
     }
 
     private void writeWADL(QuestionBean wdkQuestion, PrintWriter writer)
             throws Exception {
+		logger.info("writeWADL()");
         logger.info(wdkQuestion.getDisplayName());
         writer.println("<resource path='" + wdkQuestion.getName() + ".xml'>");
         writer.println("<method href='#" + wdkQuestion.getName().toLowerCase()
@@ -292,7 +299,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
                     + wdkQuestion.getParamsMap().get(key).getPrompt() + "]]></doc>");
 			writer.println("<doc title='help'><![CDATA["
                     + wdkQuestion.getParamsMap().get(key).getHelp() + "]]></doc>");
-			if(wdkQuestion.getParamsMap().get(key).getDefault().length() > 0){
+			if(wdkQuestion.getParamsMap().get(key).getDefault() != null && wdkQuestion.getParamsMap().get(key).getDefault().length() > 0 && wdkQuestion.getParamsMap().get(key).getIsAllowEmpty() && wdkQuestion.getParamsMap().get(key).getEmptyValue() == null){
 				writer.println("<doc title='default'><![CDATA["
 	                    + wdkQuestion.getParamsMap().get(key).getDefault() + "]]></doc>");
 			}

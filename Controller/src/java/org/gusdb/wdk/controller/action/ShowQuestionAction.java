@@ -266,6 +266,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
         Vector<String> v = new Vector<String>();
         int halfLen = maxLength / 2;
         for (String l : labels) {
+            if (l == null) continue;
             int len = l.length();
             if (len > maxLength) {
                 l = l.substring(0, halfLen) + "..."

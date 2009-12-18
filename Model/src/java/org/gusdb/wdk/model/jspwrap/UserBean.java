@@ -983,6 +983,25 @@ public class UserBean /* implements Serializable */{
     }
 
     /**
+     * @param answer
+     * @param saved
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @throws SQLException
+     * @throws JSONException
+     * @throws NoSuchAlgorithmException
+     * @see org.gusdb.wdk.model.user.User#createStrategy(org.gusdb.wdk.model.user.Step,
+     *      boolean)
+     */
+    public StrategyBean createStrategy(StepBean step, boolean saved,
+            boolean hidden) throws WdkUserException, WdkModelException,
+            SQLException, JSONException, NoSuchAlgorithmException {
+        return new StrategyBean(this, user.createStrategy(step.step, saved,
+                hidden));
+    }
+
+    /**
      * @param questionFullName
      * @param summaryChecksum
      * @throws WdkModelException
@@ -1102,6 +1121,7 @@ public class UserBean /* implements Serializable */{
 
     public void setViewResults(String strategyKey, int stepId,
             int viewPagerOffset) {
+        logger.debug("setting view steps: " + strategyKey + ", " + stepId + ", " + viewPagerOffset);
         user.setViewResults(strategyKey, stepId, viewPagerOffset);
     }
 

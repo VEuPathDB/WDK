@@ -9,20 +9,23 @@ import org.apache.log4j.Logger;
 
 public class Category extends WdkModelBase {
 
+    public static final String USED_BY_WEBSITE = "website";
+    public static final String USED_BY_WEBSERVICE = "webservice";
+
     private static final Logger logger = Logger.getLogger(Category.class);
 
+    private WdkModel wdkModel;
     private String name;
     private String displayName;
-    private List<WdkModelText> questionRefs;
-    private List<Question> questions;
-
     private String parentRef;
     private Category parent;
-    private Map<String, Category> children = new LinkedHashMap<String, Category>();
+    private String usedBy;
+    private Map<String, Category> children;
+    private List<CategoryQuestionRef> questionRefs;
 
     public Category() {
-        questionRefs = new ArrayList<WdkModelText>();
-        questions = new ArrayList<Question>();
+        questionRefs = new ArrayList<CategoryQuestionRef>();
+        children = new LinkedHashMap<String, Category>();
     }
 
     public String getName() {
@@ -41,11 +44,29 @@ public class Category extends WdkModelBase {
         this.displayName = displayName;
     }
 
-    public void addQuestionRef(WdkModelText questionRef) {
+    public void addQuestionRef(CategoryQuestionRef questionRef) {
         this.questionRefs.add(questionRef);
     }
 
-    public Question[] getQuestions() {
+    public Question[] getWebsiteQuestions() throws WdkModelException {
+        return getQuestions(USED_BY_WEBSITE);
+    }
+
+    public Question[] getWebserviceQuestions() throws WdkModelException {
+        return getQuestions(USED_BY_WEBSERVICE);
+    }
+
+    private Question[] getQuestions(String usedBy) throws WdkModelException {
+        List<Question> questions = new ArrayList<Question>();
+        for (CategoryQuestionRef questionRef : questionRefs) {
+            String qusedBy = questionRef.getUsedBy();
+            if (usedBy == null || qusedBy == null
+                    || qusedBy.equalsIgnoreCase(usedBy)) {
+                String ref = questionRef.getText();
+                Question question = (Question) wdkModel.resolveReference(ref);
+                questions.add(question);
+            }
+        }
         Question[] array = new Question[questions.size()];
         questions.toArray(array);
         return array;
@@ -59,8 +80,23 @@ public class Category extends WdkModelBase {
         return parent;
     }
 
-    public Map<String, Category> getChildren() {
-        return new LinkedHashMap<String, Category>(children);
+    public Map<String, Category> getWebsiteChildren() {
+        return getChildren(USED_BY_WEBSITE);
+    }
+    
+    public Map<String, Category> getWebserviceChildren() {
+        return getChildren(USED_BY_WEBSERVICE);
+    }
+    
+    private Map<String, Category> getChildren(String usedBy) {
+        Map<String, Category> categories = new LinkedHashMap<String, Category>();
+        for(Category child : children.values()) {
+            String cusedBy = child.getUsedBy();
+            if (usedBy == null || cusedBy == null || cusedBy.equalsIgnoreCase(usedBy)){
+                categories.put(child.getName(), child);
+            }
+        }
+        return categories;
     }
 
     public boolean isAncesterOf(Category category) {
@@ -75,48 +111,42 @@ public class Category extends WdkModelBase {
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
         // exclude questionRefs
-        List<WdkModelText> temp = new ArrayList<WdkModelText>();
-        for (WdkModelText ref : questionRefs) {
+        for (int i = questionRefs.size() -1; i >=0; i--) {
+            CategoryQuestionRef ref = questionRefs.get(i);
             if (ref.include(projectId)) {
                 ref.excludeResources(projectId);
-                temp.add(ref);
+            } else {
+                questionRefs.remove(i);
             }
         }
-        questionRefs.clear();
-        questionRefs = temp;
     }
 
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+        this.wdkModel = wdkModel;
         // get the base recordClass
-        for (WdkModelText ref : questionRefs) {
-            Question question = null;
+        for (int i = questionRefs.size() -1; i >=0; i--) {
+            CategoryQuestionRef ref = questionRefs.get(i);
             String questionName = ref.getText().trim();
             try {
-                question = (Question) wdkModel.resolveReference(questionName);
+                wdkModel.resolveReference(questionName);
             } catch (WdkModelException ex) {
                 // relax a bit, just ignore the missing questions
                 logger.debug("The question [" + questionName + "] is defined "
                         + "in category [" + name + "], but doesn't exist in "
                         + "the model.");
-                continue;
+                questionRefs.remove(i);
             }
-	    System.out.println("Adding question " + question.getFullName());
-            questions.add(question);
         }
-	System.out.println("Category " + name + " has " + questions.size() + " questions.");
-        questionRefs = null;
 
         // resolve the parent
-        Category parent = wdkModel.getCategoryMap().get(parentRef);
+        Category parent = wdkModel.getCategories().get(parentRef);
         if (parent != null) {
-	    System.out.println("Parent was: " + parentRef);
             // parent cannot be the same node as this one, or a child of it
             if (parent.equals(this) || this.isAncesterOf(parent))
                 throw new WdkModelException("the category '" + name
                         + "' cannot have a parent of '" + parentRef + "'");
             this.parent = parent;
             this.parent.children.put(name, this);
-	    System.out.println("Parent has " + parent.children.size() + " children.");
         }
     }
 
@@ -141,8 +171,16 @@ public class Category extends WdkModelBase {
     public int hashCode() {
         return this.name.toLowerCase().hashCode();
     }
-    
+
     public boolean isMultiCategory() {
         return children.size() > 1;
+    }
+
+    public String getUsedBy() {
+        return usedBy;
+    }
+
+    public void setUsedBy(String usedBy) {
+        this.usedBy = usedBy;
     }
 }

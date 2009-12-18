@@ -115,7 +115,7 @@ public class Dataset {
             for (String column : value) {
                 if (column != null && column.length() > 0) {
                     if (first) first = false;
-                    else sbSummary.append(", ");
+                    else sbSummary.append(":");
                     sbSummary.append(value);
                 }
             }
@@ -123,7 +123,7 @@ public class Dataset {
         }
         summary = sbSummary.toString();
         if (summary.length() > maxLength) {
-            int pos = summary.lastIndexOf(",", maxLength - 3);
+            int pos = summary.lastIndexOf(";", maxLength - 3);
             summary = summary.substring(0, (pos > 0) ? pos + 1 : maxLength - 3);
             summary += "...";
         }
@@ -161,7 +161,7 @@ public class Dataset {
             for (String column : columns) {
                 if (column == null || column.length() == 0) continue;
                 if (first) first = false;
-                else sb.append(", ");
+                else sb.append(":");
                 sb.append(column);
             }
         }

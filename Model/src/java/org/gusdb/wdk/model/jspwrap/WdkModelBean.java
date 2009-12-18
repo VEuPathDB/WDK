@@ -28,9 +28,6 @@ public class WdkModelBean {
 
     WdkModel model;
 
-    private String inputType;
-    private String outputType;
-
     public WdkModelBean(WdkModel model) {
         this.model = model;
     }
@@ -69,18 +66,20 @@ public class WdkModelBean {
         return new RecordClassBean(model.getRecordClass(recClassRef));
     }
 
-    public Map<String, CategoryBean> getCategoryMap() {
+    public Map<String, CategoryBean> getWebsiteRootCategories() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        for (Category category : model.getCategoryMap().values()) {
+        Map<String, Category> roots = model.getRooCategories(Category.USED_BY_WEBSITE);
+        for (Category category : roots.values()) {
             CategoryBean bean = new CategoryBean(category);
             beans.put(category.getName(), bean);
         }
         return beans;
     }
 
-    public Map<String, CategoryBean> getRootCategoryMap() {
+    public Map<String, CategoryBean> getWebserviceRootCategories() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        for (Category category : model.getRootCategoryMap().values()) {
+        Map<String, Category> roots = model.getRooCategories(Category.USED_BY_WEBSERVICE);
+        for (Category category : roots.values()) {
             CategoryBean bean = new CategoryBean(category);
             beans.put(category.getName(), bean);
         }
@@ -220,28 +219,6 @@ public class WdkModelBean {
     public String getSecretKey() throws NoSuchAlgorithmException,
             WdkModelException, IOException {
         return model.getSecretKey();
-    }
-
-    public void setInputType(String inputType) {
-        this.inputType = inputType;
-    }
-
-    public void setOutputType(String outputType) {
-        this.outputType = outputType;
-    }
-
-    public List<QuestionBean> getTransformQuestions() throws WdkModelException {
-        RecordClass input = model.getRecordClass(inputType);
-        RecordClass output = null;
-        if (outputType != null && outputType.length() > 0)
-            output = model.getRecordClass(outputType);
-
-        List<Question> questions = model.getTransformQuestions(input, output);
-        List<QuestionBean> beans = new ArrayList<QuestionBean>();
-        for (Question question : questions) {
-            beans.add(new QuestionBean(question));
-        }
-        return beans;
     }
 
     public UserBean getSystemUser() throws NoSuchAlgorithmException,

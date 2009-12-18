@@ -89,8 +89,7 @@ public class RecordClassBean {
      * @see org.gusdb.wdk.model.RecordClass#getFilterLayoutMap()
      */
     public Map<String, AnswerFilterLayoutBean> getFilterLayoutMap() {
-        Map<String, AnswerFilterLayout> layouts = recordClass
-                .getFilterLayoutMap();
+        Map<String, AnswerFilterLayout> layouts = recordClass.getFilterLayoutMap();
         Map<String, AnswerFilterLayoutBean> beans = new LinkedHashMap<String, AnswerFilterLayoutBean>();
         for (String name : layouts.keySet()) {
             AnswerFilterLayout layout = layouts.get(name);
@@ -117,8 +116,7 @@ public class RecordClassBean {
      * @see org.gusdb.wdk.model.RecordClass#getFilterMap()
      */
     public Map<String, AnswerFilterInstanceBean> getFilterMap() {
-        Map<String, AnswerFilterInstance> instances = recordClass
-                .getFilterMap();
+        Map<String, AnswerFilterInstance> instances = recordClass.getFilterMap();
         Map<String, AnswerFilterInstanceBean> beans = new LinkedHashMap<String, AnswerFilterInstanceBean>();
         for (String name : instances.keySet()) {
             AnswerFilterInstance instance = instances.get(name);
@@ -156,5 +154,14 @@ public class RecordClassBean {
 
     public boolean getHasBasket() {
         return recordClass.hasBasket();
+    }
+
+    public QuestionBean[] getTransformQuestions() {
+        Question[] questions = recordClass.getTransformQuestions();
+        QuestionBean[] beans = new QuestionBean[questions.length];
+        for (int i = 0; i < questions.length; i++) {
+            beans[i] = new QuestionBean(questions[i]);
+        }
+        return beans;
     }
 }

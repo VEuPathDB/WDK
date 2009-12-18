@@ -226,6 +226,7 @@ public class AnswerValueBean {
         try {
             return new RecordBeanList(answerValue.getRecordInstances());
         } catch (Exception ex) {
+            logger.error(ex);
             ex.printStackTrace();
             throw ex;
         }
