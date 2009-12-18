@@ -123,7 +123,7 @@ public class Dataset {
         }
         summary = sbSummary.toString();
         if (summary.length() > maxLength) {
-            int pos = summary.lastIndexOf(",", maxLength - 3);
+            int pos = summary.lastIndexOf(";", maxLength - 3);
             summary = summary.substring(0, (pos > 0) ? pos + 1 : maxLength - 3);
             summary += "...";
         }

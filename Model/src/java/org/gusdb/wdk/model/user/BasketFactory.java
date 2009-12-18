@@ -294,9 +294,9 @@ public class BasketFactory {
             String[] columns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
             int columnCount = columns.length;
             while (rs.next()) {
-                if (buffer.length() > 0) buffer.append("\n");
+                if (buffer.length() > 0) buffer.append(";");
                 for (int i = 1; i <= columnCount; i++) {
-                    if (i > 1) buffer.append(", ");
+                    if (i > 1) buffer.append(":");
                     String value = rs.getString(Utilities.COLUMN_PK_PREFIX + i);
                     buffer.append(value);
                 }
