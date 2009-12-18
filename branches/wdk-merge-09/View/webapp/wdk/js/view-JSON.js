@@ -452,7 +452,7 @@ function createParentStep(strat){
 		return;
 	}else{
 		$(pstp).attr("id","record_name").css("width","85px");
-		$(pstp).append("Expanded View of Step " + parentStep.stp.frontId);
+		$(pstp).append("Expanded View of Step <i>" + strat.JSON.name + "</i>");//parentStep.stp.frontId);
 		return pstp;
 	}
 }
@@ -483,18 +483,19 @@ function createStrategyName(strat){
 	}else if(guestUser == 'true'){
 		share = "<a title='Please LOGIN so you can SAVE and then SHARE (email) your strategy.' href='javascript:void(0)' onclick='popLogin()'><b>SHARE</b></a>";
 	}else{
-		share = "<a title='SAVE this strategy so you can SHARE it (email its URL).' href='javascript:void(0)' onclick=\"showSaveForm('" + id + "', true,true)\"><b>SHARE</b></a>";
+		share = "<a title='SAVE this strategy so you can SHARE it (email its URL).' href='javascript:void(0)' onclick=\"showSaveForm('" + id + "', true,true)\"><b style='font-size:120%'>Share</b></a>";
 	}
 
 
 
 	var save = "";
-	var sTitle = "SAVE AS";
+	var sTitle = "Save As";
+	// if(json.saved) sTitle = "COPY AS";
 	if (guestUser == 'true') {
-		save = "<a title='Please LOGIN so you can SAVE (make a snapshot) your strategy.' class='save_strat_link' href='javascript:void(0)' onclick='popLogin()'><b>" + sTitle + "</b></a>";
+		save = "<a title='Please LOGIN so you can SAVE (make a snapshot) your strategy.' class='save_strat_link' href='javascript:void(0)' onclick='popLogin()'><b style='font-size:120%'>" + sTitle + "</b></a>";
 	}
 	else {
-		save = "<a title='A saved strategy is like a snapshot, it cannot be changed.' class='save_strat_link' href='javascript:void(0)' onclick=\"showSaveForm('" + id + "', true)\"><b>" + sTitle + "</b></a>";
+		save = "<a title='A saved strategy is like a snapshot, it cannot be changed.' class='save_strat_link' href='javascript:void(0)' onclick=\"showSaveForm('" + id + "', true)\"><b style='font-size:120%'>" + sTitle + "</b></a>";
 	}
 	save += "<div id='save_strat_div_" + id + "' class='modal_div save_strat'>" +
 		"<div class='dragHandle'>" +
@@ -513,11 +514,11 @@ function createStrategyName(strat){
 		"</div>";
         var copy = "<a title='Create a copy of the strategy.' class='copy_strat_link'" +
                    " href='javascript:void(0)' onclick=\"copyStrategy('" + id + "')\">" +
-                   "<b>COPY</b></a>";
+                   "<b style='font-size:120%'>Copy</b></a>";
 
-var rename = "<a id='rename_" + strat.frontId + "' href='javascript:void(0)' title='Click to rename.'  onclick=\"showSaveForm('" + id + "', false)\"><b>RENAME</b></a>";
+var rename = "<a id='rename_" + strat.frontId + "' href='javascript:void(0)' title='Click to rename.'  onclick=\"showSaveForm('" + id + "', false)\"><b style='font-size:120%'>Rename</b></a>";
 
-var deleteStrat = "<a id='delete_" + strat.frontId + "' href='javascript:void(0)' title='Click to delete.'  onclick=\"deleteStrategy('" + id + "', false)\"><b>DELETE</b></a>";
+var deleteStrat = "<a id='delete_" + strat.frontId + "' href='javascript:void(0)' title='Click to delete.'  onclick=\"deleteStrategy('" + id + "', false)\"><b style='font-size:120%'>Delete</b></a>";
 
 	var div_sn = document.createElement("div");
 	$(div_sn).attr("id","strategy_name");
@@ -535,9 +536,9 @@ var deleteStrat = "<a id='delete_" + strat.frontId + "' href='javascript:void(0)
 	"<br/>"+
 	deleteStrat +
 	"</span>");
-	}else{
-		$(div_sn).html("<span style='font-size:14px;font-weight:bold' title='Name of this substrategy. To rename, click on the corresponding step name in the parent strategy'>" + name + "</span>" + "<span id='strategy_id_span' style='display: none;'>" + id + "</span>"); 
-	}
+	}//else{
+		//$(div_sn).html("<span style='font-size:14px;font-weight:bold' title='Name of this substrategy. To rename, click on the corresponding step name in the parent strategy'>" + name + "</span>" + "<span id='strategy_id_span' style='display: none;'>" + id + "</span>"); 
+	//}
 	$(div_sn).css({'z-index' : 90}); // DO NOT DELETE, needed for IE7
 	$(div_sn).css("top","0px");     // to have the strategy name closer to the top
 	return div_sn;
@@ -590,7 +591,7 @@ function createInvalidDiv(){
 	$(inval).css({
 				background: "none",
 				position: "absolute",
-				"z-index": 999,
+				"z-index": 499,
 				opacity: 0.6,
 				border: "none",
 				"padding-top":"2px"
