@@ -307,7 +307,8 @@ public class ProcessRESTAction extends ShowQuestionAction {
             if (p instanceof EnumParamBean) {
                 EnumParamBean ep = (EnumParamBean) p;
                 for (String term : ep.getVocabMap().keySet()) {
-                    writer.println("<option>" + term + "</option>");
+                    //writer.println("<option>" + term + "</option>");
+					writer.println("<option value='" + term + "'><doc title='description'><![CDATA[" + ep.getDisplayMap().get(term) + "]]></doc></option>");
                 }
             }
             writer.println("</param>");
@@ -316,19 +317,25 @@ public class ProcessRESTAction extends ShowQuestionAction {
         writer.println("<doc title='Prompt'><![CDATA[Output Fields]]></doc>");
         writer.println("<doc title='help'><![CDATA[Single valued attributes of the feature.]]></doc>");
         writer.println("<doc title='default'><![CDATA[none]]></doc>");
-        writer.println("<option>all</option>");
-        writer.println("<option>none</option>");
-        for (String attr : wdkQuestion.getReportMakerAttributesMap().keySet())
-            writer.println("<option>" + attr + "</option>");
+        //writer.println("<option>all</option>");
+        //writer.println("<option>none</option>");
+        writer.println("<option value='all'><doc title='description'>Show all attributes</doc></option>");
+        writer.println("<option value='none'><doc title='description'>Show no attributes</doc></option>");
+		for (String attr : wdkQuestion.getReportMakerAttributesMap().keySet())
+			writer.println("<option value='" + attr + "'><doc title='description'><![CDATA[" + wdkQuestion.getReportMakerAttributesMap().get(attr).getDisplayName() + "]]></doc></option>");
+            //writer.println("<option>" + attr + "</option>");
         writer.println("</param>");
         writer.println("<param name='o-tables' type='xsd:string'>");
 		writer.println("<doc title='Prompt'><![CDATA[Output Tables]]></doc>");
         writer.println("<doc title='help'><![CDATA[Multi-valued attributes of the feature.]]></doc>");
         writer.println("<doc title='default'><![CDATA[none]]></doc>");
-		writer.println("<option>all</option>");
-        writer.println("<option>none</option>");
+		//writer.println("<option >all</option>");
+        //writer.println("<option>none</option>");
+        writer.println("<option value='all'><doc title='description'>Show all tables</doc></option>");
+        writer.println("<option value='none'><doc title='description'>Show no tables</doc></option>");
         for (String tab : wdkQuestion.getReportMakerTablesMap().keySet())
-            writer.println("<option>" + tab + "</option>");
+			writer.println("<option value='" + tab + "'><doc title='description'><![CDATA[" + wdkQuestion.getReportMakerTablesMap().get(tab).getDisplayName() + "]]></doc></option>");
+            //writer.println("<option>" + tab + "</option>");
         writer.println("</param>");
         writer.println("</request>");
         writer.println("<response>");
