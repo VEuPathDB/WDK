@@ -322,12 +322,14 @@ public class ProcessRESTAction extends ShowQuestionAction {
 						ep.setDependedValue(depterm);
 						try{ 
 							pSet.addAll(ep.getDisplayMap().entrySet());
-						}catch(WdkModelException e){
-							logger.info("expected Empty result set for dependent parameter.");
-							continue;
-						}catch(Exception ex){
-							logger.info(ex.toString());
-							ex.printStackTrace();
+						}catch(Exception e){
+							if(e instanceof WdkModelException){
+								logger.info("expected Empty result set for dependent parameter.");
+								continue;
+							}else{
+								logger.info(e.toString());
+								e.printStackTrace();
+							}
 						}
 					}
 					Iterator iter = pSet.iterator();
