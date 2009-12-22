@@ -323,11 +323,11 @@ public class ProcessRESTAction extends ShowQuestionAction {
 					logger.info(ep.getDependedParam().getClass().getName());
 					EnumParamBean depep = new EnumParamBean(ep.getDependedParam());
 					for(String depterm : depep.getVocabMap().keySet()){
-						logger.info("depValue = " + depterm);
 						ep.setDependedValue(depterm);
 						try{ 
 							pSet.addAll(ep.getVocabMap().entrySet());
 						}catch(WdkModelException e){
+							logger.info("expected Empty result set for dependent parameter.");
 							continue;
 						}
 					}
