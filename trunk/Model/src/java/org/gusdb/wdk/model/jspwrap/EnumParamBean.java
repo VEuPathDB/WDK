@@ -22,6 +22,10 @@ public class EnumParamBean extends ParamBean {
         super(param);
     }
 
+	public EnumParamBean(ParamBean parambean) {
+		super(parambean.param);
+	}
+
     public Boolean getMultiPick() {
         return ((AbstractEnumParam) param).getMultiPick();
     }
