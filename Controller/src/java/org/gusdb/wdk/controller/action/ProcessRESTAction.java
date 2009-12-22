@@ -326,8 +326,8 @@ public class ProcessRESTAction extends ShowQuestionAction {
 							logger.info("expected Empty result set for dependent parameter.");
 							continue;
 						}catch(Exception ex){
-							logger.info(e.toString());
-							e.printStackTrace();
+							logger.info(ex.toString());
+							ex.printStackTrace();
 						}
 					}
 					Iterator iter = pSet.iterator();
