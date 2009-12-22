@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.HashSet;
 import java.util.Iterator;
-
+import java.util.AbstractMap;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -321,7 +321,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
 					for(String depterm : depep.getVocabMap().keySet()){
 						ep.setDependedValue(depterm);
 						try{ 
-							pSet.addAll(ep.getVocabMap().entrySet());
+							pSet.addAll(ep.getDisplayMap().entrySet());
 						}catch(WdkModelException e){
 							logger.info("expected Empty result set for dependent parameter.");
 							continue;
@@ -331,7 +331,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
 					while(iter.hasNext()){
 						Map.Entry mp = (Map.Entry) iter.next();
                     	//writer.println("<option>" + term + "</option>");
-						writer.println("<option value='" + mp.getValue() + "'><doc title='description'><![CDATA[" + mp.getKey() + "]]></doc></option>");
+						writer.println("<option value='" + mp.getKey() + "'><doc title='description'><![CDATA[" + mp.getValue() + "]]></doc></option>");
                 	}
 				}
             }
