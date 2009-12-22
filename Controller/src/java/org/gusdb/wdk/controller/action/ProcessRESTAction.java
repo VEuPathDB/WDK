@@ -44,7 +44,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        logger.debug("Entering ProcessQuestionAction..");
+        logger.debug("Entering ProcessRESTAction..");
         String outputType = null;
         try {
             UserBean wdkUser = ActionUtility.getUser(servlet, request);
@@ -52,7 +52,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
             String strutsParam = mapping.getParameter();
             String qFullName = strutsParam.split("::")[0];
             outputType = strutsParam.split("::")[1];
-            logger.info(outputType);
+            logger.debug(outputType);
 
             if (outputType.equals("wadl")) {
                 createWADL(request, response, qFullName);
@@ -222,7 +222,6 @@ public class ProcessRESTAction extends ShowQuestionAction {
 
     private void createWADL(HttpServletRequest request,
             HttpServletResponse response, String qFullName) throws Exception {
-		logger.info("createWADL()");
 		ServletOutputStream out = response.getOutputStream();
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
         try{
@@ -276,8 +275,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
 
     private void writeWADL(QuestionBean wdkQuestion, PrintWriter writer)
             throws Exception {
-		logger.info("writeWADL()");
-        logger.info(wdkQuestion.getDisplayName());
+        logger.debug(wdkQuestion.getDisplayName());
         writer.println("<resource path='" + wdkQuestion.getName() + ".xml'>");
         writer.println("<method href='#" + wdkQuestion.getName().toLowerCase()
                 + "'/>");
