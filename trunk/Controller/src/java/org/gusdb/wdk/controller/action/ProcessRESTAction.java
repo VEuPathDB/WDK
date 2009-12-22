@@ -327,7 +327,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
 							continue;
 						}catch(Exception ex){
 							logger.info(e.toString());
-							e.printStackTtrace();
+							e.printStackTrace();
 						}
 					}
 					Iterator iter = pSet.iterator();
