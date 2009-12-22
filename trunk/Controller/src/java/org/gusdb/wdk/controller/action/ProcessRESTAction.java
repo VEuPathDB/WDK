@@ -5,6 +5,8 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Iterator;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -306,10 +308,36 @@ public class ProcessRESTAction extends ShowQuestionAction {
             ParamBean p = wdkQuestion.getParamsMap().get(key);
             if (p instanceof EnumParamBean) {
                 EnumParamBean ep = (EnumParamBean) p;
-                for (String term : ep.getVocabMap().keySet()) {
-                    //writer.println("<option>" + term + "</option>");
-					writer.println("<option value='" + term + "'><doc title='description'><![CDATA[" + ep.getDisplayMap().get(term) + "]]></doc></option>");
-                }
+				if(ep.getMultiPick())
+					writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
+				else
+					writer.println("<doc title='SingleValued'>Choose at most one value from the options</doc>");
+				logger.info((ep.getDependedParam() == null ? "null" : ep.getDependedParam().getName()));
+                if(ep.getDependedParam() == null){
+					for (String term : ep.getVocabMap().keySet()) {
+                    	//writer.println("<option>" + term + "</option>");
+						writer.println("<option value='" + term + "'><doc title='description'><![CDATA[" + ep.getDisplayMap().get(term) + "]]></doc></option>");
+                	}
+				}else{
+					HashSet pSet = new HashSet();
+					logger.info(ep.getDependedParam().getClass().getName());
+					EnumParamBean depep = new EnumParamBean(ep.getDependedParam());
+					for(String depterm : depep.getVocabMap().keySet()){
+						logger.info("depValue = " + depterm);
+						ep.setDependedValue(depterm);
+						try{ 
+							pSet.addAll(ep.getVocabMap().entrySet());
+						}catch(WdkModelException e){
+							continue;
+						}
+					}
+					Iterator iter = pSet.iterator();
+					while(iter.hasNext()){
+						Map.Entry mp = (Map.Entry) iter.next();
+                    	//writer.println("<option>" + term + "</option>");
+						writer.println("<option value='" + mp.getValue() + "'><doc title='description'><![CDATA[" + mp.getKey() + "]]></doc></option>");
+                	}
+				}
             }
             writer.println("</param>");
         }
