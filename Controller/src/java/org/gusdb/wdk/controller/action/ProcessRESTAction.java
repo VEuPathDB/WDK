@@ -312,7 +312,6 @@ public class ProcessRESTAction extends ShowQuestionAction {
 					writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
 				else
 					writer.println("<doc title='SingleValued'>Choose at most one value from the options</doc>");
-				logger.info((ep.getDependedParam() == null ? "null" : ep.getDependedParam().getName()));
                 if(ep.getDependedParam() == null){
 					for (String term : ep.getVocabMap().keySet()) {
                     	//writer.println("<option>" + term + "</option>");
@@ -320,7 +319,6 @@ public class ProcessRESTAction extends ShowQuestionAction {
                 	}
 				}else{
 					HashSet pSet = new HashSet();
-					logger.info(ep.getDependedParam().getClass().getName());
 					EnumParamBean depep = new EnumParamBean(ep.getDependedParam());
 					for(String depterm : depep.getVocabMap().keySet()){
 						ep.setDependedValue(depterm);
