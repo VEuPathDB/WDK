@@ -175,7 +175,8 @@ public class ProcessRESTAction extends ShowQuestionAction {
                 errMap.put("1", wdkEx.getMessage());
                 reportError(response, errMap, "User Error", "020", outputType);
             } else {
-                logger.info("OtherException");
+                logger.info("OtherException\n" + ex.toString());
+				ex.printStackTrace();
                 Map<String, String> exMap = new LinkedHashMap<String, String>();
                 exMap.put("0", ex.getMessage());
                 reportError(response, exMap, "Unknown Error", "000", outputType);
@@ -346,6 +347,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
         writer.println("<doc title='Prompt'><![CDATA[Output Fields]]></doc>");
         writer.println("<doc title='help'><![CDATA[Single valued attributes of the feature.]]></doc>");
         writer.println("<doc title='default'><![CDATA[none]]></doc>");
+		writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
         //writer.println("<option>all</option>");
         //writer.println("<option>none</option>");
         writer.println("<option value='all'><doc title='description'>Show all attributes</doc></option>");
@@ -358,6 +360,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
 		writer.println("<doc title='Prompt'><![CDATA[Output Tables]]></doc>");
         writer.println("<doc title='help'><![CDATA[Multi-valued attributes of the feature.]]></doc>");
         writer.println("<doc title='default'><![CDATA[none]]></doc>");
+		writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
 		//writer.println("<option >all</option>");
         //writer.println("<option>none</option>");
         writer.println("<option value='all'><doc title='description'>Show all tables</doc></option>");
