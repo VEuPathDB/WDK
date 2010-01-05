@@ -1,5 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
+import java.io.File;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -27,7 +29,15 @@ public class ShowXmlDataListAction extends Action {
 	XmlQuestionSetBean[] wdkXmlQuestionSets = wdkModel.getXmlQuestionSets();
 	request.setAttribute(CConstants.WDK_XMLQUESTIONSETS_KEY, wdkXmlQuestionSets);
 
-	ActionForward forward = mapping.findForward(CConstants.SHOW_XMLDATA_LIST_MAPKEY);
+	String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR;
+
+	String defaultViewFile = customViewDir
+	    + File.separator + CConstants.WDK_XMLDATALIST_PAGE;
+
+	System.out.println(defaultViewFile);
+
+	ActionForward forward = new ActionForward(defaultViewFile);
 
 	return forward;
 

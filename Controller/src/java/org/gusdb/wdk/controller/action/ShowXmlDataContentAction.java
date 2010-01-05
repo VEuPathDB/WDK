@@ -50,7 +50,16 @@ public class ShowXmlDataContentAction extends Action {
 
     private ActionForward getForward (XmlAnswerBean xmlAnswer, ActionMapping mapping) {
 	ServletContext svltCtx = getServlet().getServletContext();
-	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+	String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR;
+
+	String defaultViewFile = customViewDir
+	    + File.separator + CConstants.WDK_XMLDATACONTENT_PAGE;
+
+	customViewDir += File.separator + CConstants.WDK_QUESTIONS_DIR;
+
+	System.out.println(defaultViewFile);
+
 	String customViewFile1 = customViewDir + File.separator
 	    + xmlAnswer.getQuestion().getFullName() + ".jsp";
 	String customViewFile2 = customViewDir + File.separator
@@ -61,7 +70,7 @@ public class ShowXmlDataContentAction extends Action {
 	} else if (ApplicationInitListener.resourceExists(customViewFile2, svltCtx)) {
 	    forward = new ActionForward(customViewFile2);
 	} else {
-	    forward = mapping.findForward(CConstants.SHOW_XMLDATA_CONTENT_MAPKEY);
+	    forward = new ActionForward(defaultViewFile);
 	}
 	return forward;
     }

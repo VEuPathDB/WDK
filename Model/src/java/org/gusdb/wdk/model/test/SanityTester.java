@@ -350,7 +350,7 @@ public class SanityTester {
 
         if (paramValuesSet.getParamValues().size() != 2) {
             throw new WdkUserException(
-                    "mising <defaultTestParamValues> for querySet "
+                    "missing <defaultTestParamValues> for querySet "
                             + query.getQuerySet().getName());
         }
         String sql = "select count (*) from (select distinct "

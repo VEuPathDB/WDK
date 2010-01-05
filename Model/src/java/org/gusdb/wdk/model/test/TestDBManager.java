@@ -67,7 +67,7 @@ public class TestDBManager extends BaseCLI {
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
         String tableDir = (String) getOptionValue(ARG_TABLE_DIR);
         if (tableDir == null)
-            tableDir = gusHome + "/data/WDKToySite/Model/testTables";
+            tableDir = gusHome + "/data/WDKTemplateSite/Model/testTables";
         String[] tables = getTableNames(tableDir);
 
         try {
