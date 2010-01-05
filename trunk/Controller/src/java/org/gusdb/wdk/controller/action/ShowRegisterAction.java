@@ -28,7 +28,8 @@ public class ShowRegisterAction extends Action {
             throws Exception {
         // if a custom register page exists, use it; otherwise, use default one
         ServletContext svltCtx = getServlet().getServletContext();
-        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR;
         String customViewFile = customViewDir + File.separator
                 + CConstants.WDK_CUSTOM_REGISTER_PAGE;
         

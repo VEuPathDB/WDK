@@ -37,28 +37,17 @@ public class ShowErrorPageAction extends Action {
     }
 
     private ActionForward getForward (ActionMapping mapping, String errorType) {
-	ServletContext svltCtx = getServlet().getServletContext();
-	String customViewDir = (String)svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+	String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR;
 	String customViewFile = customViewDir + File.separator;
 	if (errorType.equals(CConstants.ERROR_TYPE_USER)) {
-	    customViewFile += "customError.user.jsp";
+	    customViewFile += CConstants.WDK_USER_ERROR_PAGE;
 	} else if (errorType.equals(CConstants.ERROR_TYPE_MODEL)) {
-	    customViewFile += "customError.jsp";
+	    customViewFile += CConstants.WDK_MODEL_ERROR_PAGE;
 	} else {}
 
-	ActionForward forward = null;
-	if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
-	    //System.out.println("DEBUG: SEPA: using custom page " + customViewFile);
-	    forward = new ActionForward(customViewFile);
-	} else {
-	    if (errorType.equals(CConstants.ERROR_TYPE_USER)) {
-		//System.out.println("DEBUG: SEPA: using user error page");
-		forward = mapping.findForward(CConstants.SHOW_ERRORPAGE_USER_MAPKEY);
-	    } else {
-		//System.out.println("DEBUG: SEPA: using model error page");
-		forward = mapping.findForward(CConstants.SHOW_ERRORPAGE_MODEL_MAPKEY);
-	    }
-	}
+	ActionForward forward = new ActionForward(customViewFile);
+
 	return forward;
     }
 }

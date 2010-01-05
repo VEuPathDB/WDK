@@ -7,16 +7,30 @@ public class CConstants {
     //key for objects in cache, used in Action/ActionForm classes and maybe jsp pages
     public static final String WDK_RESULTFACTORY_KEY = "wdkResultFactory";
     public static final String WDK_MODEL_KEY = "wdkModel";
-    public static final String WDK_CUSTOMVIEWDIR_KEY = "wdkCustomeViewDir";
     public static final String WDK_ALWAYSGOTOSUMMARY_KEY = "wdkAlwaysGoToSummary";
+    public static final String WDK_DEFAULT_VIEW_DIR = "/wdk";
+    public static final String WDK_CUSTOM_VIEW_DIR = "/wdkCustomization";
+    public static final String WDK_PAGES_DIR = "jsp";
+    public static final String WDK_RESULTS_DIR = "results";
+    public static final String WDK_QUESTIONS_DIR = "questions";
+    public static final String WDK_RECORDS_DIR = "records";
+    public static final String WDK_REPORTERS_DIR = "reporters";
+    public static final String WDK_STRATEGY_DIR = "strategies";
+
+    public static final String WDK_DOWNLOAD_CONFIG_PAGE = "ReporterConfig.jsp";
+    public static final String WDK_MODEL_ERROR_PAGE = "Error.jsp";
+    public static final String WDK_QUESTION_PAGE = "Question.jsp";
+    public static final String WDK_RECORD_PAGE = "Record.jsp";
+    public static final String WDK_RESULTS_PAGE = "results.jsp";
+    public static final String WDK_STEP_HISTORY_PAGE = "stepHistory.jsp";
+    public static final String WDK_STRATEGY_PAGE = "Workspace.jsp";
+    public static final String WDK_STRATEGY_HISTORY_PAGE = "strategyHistory.jsp";
+    public static final String WDK_SUMMARY_ERROR_PAGE = "SummaryError.jsp";
+    public static final String WDK_USER_ERROR_PAGE = "Error.user.jsp";
+    public static final String WDK_XMLDATACONTENT_PAGE = "XmlDataContent.jsp";
+    public static final String WDK_XMLDATALIST_PAGE = "XmlDataList.jsp";
     public static final String WDK_CUSTOM_QUESTIONSETS_FLAT_PAGE = "customQuestionSetsFlat.jsp";
     public static final String WDK_CUSTOM_QUESTIONSETS_PAGE = "customQuestionSets.jsp";
-    public static final String WDK_CUSTOM_QUESTION_PAGE = "customQuestion.jsp";
-    public static final String WDK_CUSTOM_SUMMARY_PAGE = "customSummary.jsp";
-    public static final String WDK_CUSTOM_SUMMARY_ERROR_PAGE = "customSummaryError.jsp";
-    public static final String WDK_CUSTOM_RECORD_PAGE = "customRecord.jsp";
-    public static final String WDK_CUSTOM_STEP_HISTORY_PAGE = "customStepHistory.jsp";
-    public static final String WDK_CUSTOM_STRATEGY_HISTORY_PAGE = "customStrategyHistory.jsp";
     public static final String WDK_CUSTOM_REGISTER_PAGE = "customRegister.jsp";
     public static final String WDK_CUSTOM_PROFILE_PAGE = "customProfile.jsp";
     public static final String WDK_CUSTOM_PASSWORD_PAGE = "customPassword.jsp";
@@ -179,20 +193,17 @@ public class CConstants {
     protected static final String WDK_MODELPROPS_PARAM = "wdkModelProps_param";
     protected static final String WDK_LOGFILE_PARAM = "wdkLogFile_param";
     protected static final String WDK_MODELPARSER_PARAM = "wdkModelParser_param";
-    protected static final String WDK_CUSTOMVIEWDIR_PARAM = "wdkCustomViewDir_param";
     protected static final String WDK_ALWAYSGOTOSUMMARY_PARAM = "wdkAlwaysGoToSummary_param";
     protected static final String WDK_XMLSCHEMA_PARAM = "wdkXmlSchema_param";   // the schema for xml data source
     protected static final String WDK_XMLDATA_DIR_PARAM = "wdkXmlDataDir_param";
     protected static final String WDK_LOGIN_URL_PARAM = "wdkLoginUrl_param";
     
-
     //default value of webapp init params, from web.xml, used in ApplicationInitListener.java
     protected static final String DEFAULT_WDKMODELCONFIGXML = "/WEB-INF/wdk-model/config/toyModel-config.xml";
     protected static final String DEFAULT_WDKMODELXML = "/WEB-INF/wdk-model/config/toyModel.xml";
     protected static final String DEFAULT_WDKMODELSCHEMA = "/WEB-INF/wdk-model/lib/rng/wdkModel.rng";
     protected static final String DEFAULT_WDKMODELPROPS = "/WEB-INF/wdk-model/config/toyModel.props";
     protected static final String DEFAULT_WDKMODELPARSER = "org.gusdb.wdk.model.implementation.ModelXmlParser";
-    protected static final String DEFAULT_WDKCUSTOMVIEWDIR = "/customPages/";
     protected static final String DEFAULT_XMLSCHEMA = "/WEB-INF/wdk-model/lib/rng/xmlAnswer.rng";
     protected static final String DEFAULT_XMLDATA_DIR = "/WEB-INF/wdk-model/lib/xml";
     
