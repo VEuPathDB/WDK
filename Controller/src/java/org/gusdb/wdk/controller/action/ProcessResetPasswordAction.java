@@ -53,7 +53,8 @@ public class ProcessResetPasswordAction extends Action {
         
         // if a custom profile page exists, use it; otherwise, use default one
         ServletContext svltCtx = getServlet().getServletContext();
-        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR;
         String customViewFile = customViewDir + File.separator
                 + CConstants.WDK_CUSTOM_RESET_PASSWORD_PAGE;
         if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {

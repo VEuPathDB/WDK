@@ -280,11 +280,17 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         AnswerValueBean answerValue = step.getAnswerValue();
         ServletContext svltCtx = getServlet().getServletContext();
-        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
-        String customViewFile1 = customViewDir + File.separator
-                + answerValue.getQuestion().getFullName() + ".summary.jsp";
-        String customViewFile2 = customViewDir + File.separator
-                + answerValue.getRecordClass().getFullName() + ".summary.jsp";
+	String baseFilePath = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR
+	    + File.separator + CConstants.WDK_RESULTS_DIR;
+        String customViewFile1 = baseFilePath + File.separator
+	    + answerValue.getQuestion().getFullName() + ".results.jsp";
+        String customViewFile2 = baseFilePath + File.separator
+	    + answerValue.getRecordClass().getFullName() + ".results.jsp";
+	String defaultViewFile = CConstants.WDK_DEFAULT_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR
+	    + File.separator + CConstants.WDK_RESULTS_PAGE;
+
         ActionForward forward = null;
 
         if (request.getParameterMap().containsKey(
@@ -294,19 +300,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String path = forward.getPath() + "?"
                     + CConstants.WDK_STEP_ID_PARAM + "=" + step.getStepId();
             return new ActionForward(path, true);
-        } /*
-           * else if (wdkAnswer.getResultSize() == 1 &&
-           * !wdkAnswer.getIsDynamic() &&
-           * wdkAnswer.getQuestion().isNoSummaryOnSingleRecord()) { RecordBean
-           * rec = (RecordBean) wdkAnswer.getRecords().next(); forward =
-           * mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY); String path =
-           * forward.getPath() + "?name=" + rec.getRecordClass().getFullName();
-           * 
-           * Map<String, Object> pkValues = rec.getPrimaryKey().getValues(); for
-           * (String pkColumn : pkValues.keySet()) { Object value =
-           * pkValues.get(pkColumn); path += "&" + pkColumn + "=" + value; }
-           * return new ActionForward(path, true); }
-           */
+        }
 
         if (ApplicationInitListener.resourceExists(customViewFile1, svltCtx)) {
             forward = new ActionForward(customViewFile1);
@@ -314,8 +308,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 svltCtx)) {
             forward = new ActionForward(customViewFile2);
         } else {
-            forward = mapping.findForward(CConstants.RESULTSONLY_MAPKEY);
-        }
+            forward = new ActionForward(defaultViewFile);
+	}
 
         logger.debug("end getting forward");
         return forward;
@@ -432,20 +426,12 @@ public class ShowSummaryAction extends ShowQuestionAction {
         }
         request.setAttribute(CConstants.WDK_RESULT_SET_ONLY_KEY, resultOnly);
 
-        ServletContext svltCtx = getServlet().getServletContext();
-        String customViewDir = (String) svltCtx.getAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY);
+        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR;
         String customViewFile = customViewDir + File.separator
-                + CConstants.WDK_CUSTOM_SUMMARY_ERROR_PAGE;
+                + CConstants.WDK_SUMMARY_ERROR_PAGE;
 
-        String url;
-        if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
-            url = customViewFile;
-        } else {
-            ActionForward forward = mapping.findForward(CConstants.SHOW_ERROR_MAPKEY);
-            url = forward.getPath();
-        }
-
-        ActionForward forward = new ActionForward(url);
+        ActionForward forward = new ActionForward(customViewFile);
         forward.setRedirect(false);
 
         return forward;

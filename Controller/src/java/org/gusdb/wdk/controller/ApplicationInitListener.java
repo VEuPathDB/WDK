@@ -44,12 +44,11 @@ public class ApplicationInitListener implements ServletContextListener {
         String modelName = application.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
         String gusHome = application.getRealPath(application.getInitParameter(Utilities.SYSTEM_PROPERTY_GUS_HOME));
 
-        String customViewDir = application.getInitParameter(CConstants.WDK_CUSTOMVIEWDIR_PARAM);
         String alwaysGoToSummary = application.getInitParameter(CConstants.WDK_ALWAYSGOTOSUMMARY_PARAM);
         String loginUrl = application.getInitParameter(CConstants.WDK_LOGIN_URL_PARAM);
 
         try {
-            initMemberVars(application, modelName, gusHome, customViewDir,
+            initMemberVars(application, modelName, gusHome,
                     alwaysGoToSummary, loginUrl);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
@@ -68,7 +67,7 @@ public class ApplicationInitListener implements ServletContextListener {
     }
 
     private void initMemberVars(ServletContext application, String modelName,
-            String gusHome, String customViewDir, String alwaysGoToSummary,
+            String gusHome, String alwaysGoToSummary,
             String loginUrl) throws WdkModelException,
             NoSuchAlgorithmException, ParserConfigurationException,
             TransformerFactoryConfigurationError, TransformerException,
@@ -80,8 +79,6 @@ public class ApplicationInitListener implements ServletContextListener {
         WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
 
         application.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
-        application.setAttribute(CConstants.WDK_CUSTOMVIEWDIR_KEY,
-                customViewDir);
         application.setAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY,
                 alwaysGoToSummary);
         application.setAttribute(CConstants.WDK_LOGIN_URL_KEY, loginUrl);
