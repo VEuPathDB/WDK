@@ -7,7 +7,7 @@ my ($logfile, $sort, $thresholdSecs, $only, $ignore);
 
 GetOptions("f=s" => \$logfile,
            "s!" => \$sort,
-           "t=i" => \$thresholdSecs,
+           "t=f" => \$thresholdSecs,
            "o=s" => \$only,
            "i=s" => \$ignore
           );
@@ -17,14 +17,14 @@ usage() unless $logfile;
 open(F, $logfile) || die "Can't open log file '$logfile'\n";
 
 my $warn;
-my $warns;
+my $warns = [];
 while(<F>) {
     if (/^\d+ \[/ && $warn) {
 	push(@$warns, $warn);
 	$warn = undef;
     }
-    if (/\[WARN \].*Slow SQL, need optimize: (\d+) ms/) {
-	$warn->{ms} = $1;
+    if (/\[WARN \].*SLOW SQL: (\S+)/) {
+	$warn->{sec} = $1;
 	$warn->{warnLine} = $_;
     }
     elsif ($warn) {
@@ -37,12 +37,12 @@ processWarns($warns);
 sub processWarns{
     my ($warns) = @_;
     my @sortedWarns = $sort? 
-	(sort {$b->{ms} <=> $a->{ms}} @$warns)
+	(sort {$b->{sec} <=> $a->{sec}} @$warns)
 	: @$warns;
 
     foreach my $warn (@sortedWarns) {
 	next if ($ignore && $warn->{sql} =~ /$ignore/);
-	next if ($thresholdSecs && $warn->{ms}/1000 < $thresholdSecs);
+	next if ($thresholdSecs && $warn->{sec} < $thresholdSecs);
 	next if ($only && $warn->{sql} !~ /$only/);
 
 	print STDOUT $warn->{warnLine};
