@@ -19,6 +19,11 @@
 	      description="Step number for transform param urls"
 %>
 
+<%@ attribute name="isAdd"
+	      required="false"
+	      description="true = adding a step.  false = inserting a step"
+%>
+
 <c:set var="siteName" value="${applicationScope.wdkModel.name}" />
 <c:set var="qSetName" value="none" />
 <c:set var="qSets" value="${model.questionSetsMap}" />
