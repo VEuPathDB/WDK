@@ -3,4 +3,4 @@
 <c:set var="dType"><%= request.getParameter("dataType") %></c:set>
 <c:set var="stepNum"><%= request.getParameter("prevStepNum") %></c:set>
 
-<wdk:addStepPopup model="${applicationScope.wdkModel}" recordClass="${dType}" prevStepNum="${stepNum}"/>
+<wdk:addStepPopup model="${applicationScope.wdkModel}" rcName="${dType}" prevStepNum="${stepNum}"/>
