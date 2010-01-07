@@ -101,10 +101,11 @@ function createSteps(strat,div_strat){
 	for(var ind=0; ind < strat.Steps.length; ind++){  //cStp in strat.Steps){
 		cStp = strat.getStep(ind+1,true);
 		jsonStep = strat.JSON.steps[cStp.frontId];
+		prevJsonStep = (ind == 0) ? null : strat.JSON.steps[strat.getStep(ind,true).frontId];
 		if(cStp.isboolean){
-			booleanStep(cStp, jsonStep, strat.frontId, zIndex);
+			booleanStep(cStp, prevJsonStep, jsonStep, strat.frontId, zIndex);
 		}else{
-			singleStep(cStp, jsonStep,strat.frontId, zIndex);
+			singleStep(cStp, prevJsonStep, jsonStep,strat.frontId, zIndex);
 		}
 		zIndex--; // DO NOT DELETE, needed for correct display in IE7.
 	}
@@ -114,7 +115,7 @@ function createSteps(strat,div_strat){
 }
 
 //Creates the boolean Step and the operand step displayed above it
-function booleanStep(modelstep, jsonstep, sid, zIndex){
+function booleanStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 	// Create the boolean venn diagram box
 	var filterImg = "";
 	var bool_link = "";
@@ -143,7 +144,7 @@ function booleanStep(modelstep, jsonstep, sid, zIndex){
 		}
 	boolDiv = document.createElement('div');
 	$(boolDiv).attr("id","step_" + modelstep.frontId).addClass(booleanClasses + jsonstep.operation).html(boolinner).css({left: offset(modelstep) + "px", 'z-index' : zIndex});
-	$(".crumb_details", boolDiv).replaceWith(createDetails(modelstep, jsonstep, sid));
+	$(".crumb_details", boolDiv).replaceWith(createDetails(modelstep, prevjsonstep, jsonstep, sid));
 	zIndex++; // DO NOT DELETE this or previous line, needed for correct display in IE7.
 	stepNumber = document.createElement('span');
 	$(stepNumber).addClass('stepNumber').css({ left: (leftOffset + 30) + "px"}).text("Step " + modelstep.frontId);
@@ -179,7 +180,7 @@ function booleanStep(modelstep, jsonstep, sid, zIndex){
 	childDiv = document.createElement('div');
 	$(childDiv).attr("id","step_" + modelstep.frontId + "_sub").addClass(operandClasses).html(childinner).css({left: leftOffset + "px", 'z-index' : zIndex});
 	zIndex--; // DO NOT DELETE this or previous line, needed for correct display in IE7.
-	$(".crumb_details", childDiv).replaceWith(createDetails(modelstep, childStp, sid));
+	$(".crumb_details", childDiv).replaceWith(createDetails(modelstep, prevjsonstep, childStp, sid));
 	var child_invalid = null;
 	if(!childStp.isValid){
 		child_invalid = createInvalidDiv();
@@ -210,7 +211,7 @@ function booleanStep(modelstep, jsonstep, sid, zIndex){
 }
 
 //Creates all steps that are on the bottom line only ie. this first step and transform steps
-function singleStep(modelstep, jsonstep, sid, zIndex){
+function singleStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 	uname = "";
 	fullName = "";
 	if(jsonstep.name == jsonstep.customName){
@@ -257,7 +258,7 @@ function singleStep(modelstep, jsonstep, sid, zIndex){
 			$("ul li img",singleDiv).css({width: "54px"});
 	}
 	$(singleDiv).css({'z-index' : zIndex}); // DO NOT DELETE, needed for correct display in IE7.
-	$(".crumb_details", singleDiv).replaceWith(createDetails(modelstep,jsonstep, sid));
+	$(".crumb_details", singleDiv).replaceWith(createDetails(modelstep, prevjsonstep, jsonstep, sid));
 	var step_invalid = null;
 	if(!modelstep.isTransform && !jsonstep.isValid){
 		step_invalid = createInvalidDiv();
@@ -274,7 +275,7 @@ function singleStep(modelstep, jsonstep, sid, zIndex){
 }
 
 //HANDLE THE CREATION OF TEH STEP DETAILS BOX
-function createDetails(modelstep, jsonstep, sid){
+function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 	strat = getStrategy(sid);
 	var detail_div = document.createElement('div');
 	$(detail_div).addClass("crumb_details").attr("disp","0");
@@ -374,7 +375,7 @@ function createDetails(modelstep, jsonstep, sid){
 		}
 	}
 						
-	insert_step = 	"<a title='" + insert_popup + "'  class='insert_step_link' id='" + sid + "|" + parentid + "' href='javascript:void(0)' onclick='Insert_Step(this,\"" + jsonstep.dataType + "\");hideDetails(this)'>Insert Step Before</a>&nbsp;|&nbsp;";
+	insert_step = 	"<a title='" + insert_popup + "'  class='insert_step_link' id='" + sid + "|" + parentid + "' href='javascript:void(0)' onclick='Insert_Step(this,\"" + (prevjsonstep == null) ? jsonstep.dataType : prevjsonstep.dataType + "\");hideDetails(this)'>Insert Step Before</a>&nbsp;|&nbsp;";
 
 	var customMenu = "";
 	try {
