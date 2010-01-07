@@ -30,6 +30,10 @@ public class StrategyBean {
         return strategy.isDeleted();
     }
 
+    public String getVersion() {
+        return strategy.getVersion();
+    }
+
     public String getName() {
         return strategy.getName();
     }

@@ -35,6 +35,7 @@ public class Strategy {
     private String description;
     private String name;
     private String savedName = null;
+    private String version;
 
     Strategy(StepFactory factory, User user, int displayId, int internalId) {
         this.stepFactory = factory;
@@ -54,6 +55,9 @@ public class Strategy {
 
     void setDeleted(boolean isDeleted) {
         this.isDeleted = isDeleted;
+    }
+    public String getVersion() {
+        return latestStep.getAnswer().getProjectVersion();
     }
 
     public void setName(String name) {
