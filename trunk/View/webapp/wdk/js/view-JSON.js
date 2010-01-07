@@ -374,8 +374,8 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 			expand_step = 	"<a title='" + ss_expand_popup + "' class='expand_step_link' href='javascript:void(0)' onclick='ExpandStep(this," + sid + "," + modelstep.frontId + ",\"" + collapsedName + "\");hideDetails(this)'>Make Nested Strategy</a>&nbsp;|&nbsp;";
 		}
 	}
-						
-	insert_step = 	"<a title='" + insert_popup + "'  class='insert_step_link' id='" + sid + "|" + parentid + "' href='javascript:void(0)' onclick='Insert_Step(this,\"" + (prevjsonstep == null) ? jsonstep.dataType : prevjsonstep.dataType + "\");hideDetails(this)'>Insert Step Before</a>&nbsp;|&nbsp;";
+	insertRecName = (prevjsonstep == null) ? jsonstep.dataType : prevjsonstep.dataType;			
+	insert_step = 	"<a title='" + insert_popup + "'  class='insert_step_link' id='" + sid + "|" + parentid + "' href='javascript:void(0)' onclick='Insert_Step(this,\"" + insertRecName + "\");hideDetails(this)'>Insert Step Before</a>&nbsp;|&nbsp;";
 
 	var customMenu = "";
 	try {
