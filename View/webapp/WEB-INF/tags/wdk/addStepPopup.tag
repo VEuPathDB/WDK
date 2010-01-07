@@ -29,8 +29,13 @@
 <c:set var="qSets" value="${model.questionSetsMap}" />
 <c:set var="qSet" value="${qSets[qSetName]}" />
 <c:set var="user" value="${sessionScope.wdkUser}"/>
+<%-- the type is of the previous step, that is the input type of the new step  --%>
 <c:set var="recordClass" value="${model.recordClassMap[rcName]}" />
 
+<c:if test="${isAdd == 'false'}">
+    <%-- insert a step in between, the transform cannot change type in this case --%>
+    <jsp:setProperty name="recordClass" property="changeType" value="false" />
+</c:if>
 <c:set var="transformQuestions" value="${recordClass.transformQuestions}" />
 
 
