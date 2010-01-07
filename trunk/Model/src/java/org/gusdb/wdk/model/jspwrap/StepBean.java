@@ -261,21 +261,6 @@ public class StepBean {
         step.setValid(isValid);
     }
 
-    /**
-     * @return the version
-     */
-    public String getVersion() {
-        return step.getVersion();
-    }
-
-    /**
-     * @param version
-     *            the version to set
-     */
-    public void setVersion(String version) {
-        step.setVersion(version);
-    }
-
     public void setParams(Map<String, String> params) throws WdkModelException {
         step.setParamValues(params);
     }
