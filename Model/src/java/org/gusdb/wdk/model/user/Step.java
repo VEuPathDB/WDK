@@ -42,7 +42,6 @@ public class Step {
     private boolean isDeleted;
     private boolean isCollapsible = false;
     private String collapsedName = null;
-    private String version;
 
     private Step nextStep = null;
     private Step previousStep = null;
@@ -390,21 +389,6 @@ public class Step {
      */
     public void setValid(boolean valid) {
         this.valid = valid;
-    }
-
-    /**
-     * @return the version
-     */
-    public String getVersion() {
-        return version;
-    }
-
-    /**
-     * @param version
-     *            the version to set
-     */
-    public void setVersion(String version) {
-        this.version = version;
     }
 
     public Map<String, String> getParamNames() throws WdkModelException {
