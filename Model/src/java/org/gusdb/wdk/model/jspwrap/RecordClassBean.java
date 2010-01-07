@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.WdkModelException;
 public class RecordClassBean {
 
     RecordClass recordClass;
+    private boolean changeType = true;
 
     public RecordClassBean(RecordClass recordClass) {
         this.recordClass = recordClass;
@@ -157,11 +158,15 @@ public class RecordClassBean {
     }
 
     public QuestionBean[] getTransformQuestions() {
-        Question[] questions = recordClass.getTransformQuestions();
+        Question[] questions = recordClass.getTransformQuestions(changeType);
         QuestionBean[] beans = new QuestionBean[questions.length];
         for (int i = 0; i < questions.length; i++) {
             beans[i] = new QuestionBean(questions[i]);
         }
         return beans;
+    }
+
+    public void setChangeType(boolean changeType) {
+        this.changeType = changeType;
     }
 }
