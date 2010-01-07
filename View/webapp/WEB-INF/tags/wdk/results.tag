@@ -4,10 +4,11 @@
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
 <c:set var="wdkAnswer" value="${requestScope.wdkAnswer}"/>
+<c:set var="wdkStep" value="${requestScope.wdkStep}"/>
 <c:set var="qName" value="${wdkAnswer.question.fullName}" />
 <c:set var="modelName" value="${applicationScope.wdkModel.name}" />
 <c:set var="recordName" value="${wdkAnswer.question.recordClass.fullName}" />
-
+<c:set var="recHasBasket" value="${wdkAnswer.question.recordClass.hasBasket}" />
 <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
 
 <%@ attribute name="strategy"
@@ -17,7 +18,7 @@
 %>
 
 <c:set var="type" value="Results" />
-<c:set var="step_dataType" value="${strategy.latestStep.displayType}" />
+<c:set var="step_dataType" value="${wdkStep.displayType}" />
 <c:choose>
 	<c:when test="${fn:endsWith(step_dataType,'y')}">
 		<c:set var="type" value="${fn:substring(step_dataType,0,fn:length(step_dataType)-1)}ies" />
@@ -43,32 +44,56 @@
     <c:set var="commandUrl" value="${commandUrl}${prm}&" />
   </c:if>
 </c:forEach>
+<c:if test="${strategy != null}">
+  <c:set var="commandUrl" value="${commandUrl}strategy_checksum=${strategy.checksum}" />
+</c:if>
 <c:set var="commandUrl"><c:url value="/processSummary.do?${commandUrl}" /></c:set>
 
-<wdk:filterLayouts strategyId="${strategy.strategyId}" 
-                   stepId="${wdkHistory.stepId}"
-                   answerValue="${wdkAnswer}" />
+<c:if test="${strategy != null}">
+    <wdk:filterLayouts strategyId="${strategy.strategyId}" 
+                       stepId="${wdkHistory.stepId}"
+                       answerValue="${wdkAnswer}" />
+</c:if>
 
 <!-- handle empty result set situation -->
 <c:choose>
-  <c:when test='${wdkAnswer.resultSize == 0}'>
-    No results for your query
+  <c:when test='${strategy != null && wdkAnswer.resultSize == 0}'>
+	No results are retrieved
+  </c:when>
+  <c:when test='${strategy == null && wdkUser.guest && wdkAnswer.resultSize == 0}'>
+    Please login to use the basket
+  </c:when>
+  <c:when test='${strategy == null && wdkAnswer.resultSize == 0}'>
+    Basket Empty
   </c:when>
   <c:otherwise>
 
-
 <table width="100%"><tr>
-<td  style="vertical-align:middle;padding-bottom:7px;">
-	<span class="h4left" style="display:none">
-		<span id="text_strategy_number">${strategy.name}</span> 
-    		(step <span id="text_step_number">${strategy.length}</span>) 
-    		- ${wdkAnswer.resultSize} <span id="text_data_type">${type}</span>
-	</span>
+<td class="h4left" style="vertical-align:middle;padding-bottom:7px;">
+    <c:if test="${strategy != null}">
+        <span id="text_strategy_number">${strategy.name}</span> 
+        (step <span id="text_step_number">${strategy.length}</span>) - 
+    </c:if>
+    ${wdkAnswer.resultSize} <span id="text_data_type">${type}</span>
 </td>
 
 <td  style="vertical-align:middle;text-align:right" nowrap>
   <div style="float:right">
-    <a href="downloadStep.do?step_id=${wdkHistory.stepId}"><b>DOWNLOAD RESULT</b></a>
+   <c:if test="${strategy != null}">
+    <c:choose>
+      <c:when test="${wdkUser.guest}">
+        <c:set var="basketClick" value="popLogin()" />
+      </c:when>
+      <c:otherwise>
+        <c:set var="basketClick" value="updateBasket(this, '${wdkStep.stepId}', '0', '${modelName}', '${recordName}')" />
+      </c:otherwise>
+    </c:choose>
+    <c:if test="${recHasBasket}"><a style="font-size:120%" href="javascript:void(0)" onClick="${basketClick}"><b>Add Results to Basket</b></a>&nbsp;|&nbsp;</c:if>
+   </c:if>
+    <a style="font-size:120%" href="downloadStep.do?step_id=${wdkHistory.stepId}"><b>Download Results</b></a>
+  <c:if test="${!empty sessionScope.GALAXY_URL}">
+    &nbsp;|&nbsp;<a href="downloadStep.do?step_id=${wdkHistory.stepId}&wdkReportFormat=tabular"><b>SEND TO GALAXY</b></a>
+  </c:if>
   </div>
 </td>
 </tr></table>
@@ -96,10 +121,10 @@
 <%--------- PAGING TOP BAR ----------%>
 <table width="100%" border="0" cellpadding="3" cellspacing="0">
 	<tr class="subheaderrow">
-	<th align="left" nowrap> 
+	<th style="text-align: left" nowrap> 
 	       <wdk:pager pager_id="top"/> 
 	</th>
-	<th nowrap align="right">
+	<th nowrap style="text-align: right">
 		           <%-- display a list of sortable attributes --%>
 		           <c:set var="addAttributes" value="${wdkAnswer.displayableAttributes}" />
 		           <select id="addAttributes" style="display:none;" commandUrl="${commandUrl}" multiple="multiple">
@@ -109,9 +134,9 @@
 		               </c:forEach>
 		           </select>
 	</th>
-	<th nowrap align="right" width="5%">
+	<th nowrap style="text-align: right" width="5%">
 	    &nbsp;
-	   <input type="button" value="Reset Columns" onClick="resetAttr('${commandUrl}')" />
+	   <input type="button" value="Reset Columns" onClick="resetAttr('${commandUrl}', this)" />
 	</th>
 	</tr>
 </table>
@@ -125,7 +150,7 @@
 <div id="Results_Div" class="flexigrid">
 <div class="bDiv">
 <div class="bDivBox">
-<table id="Results_Table" width="100%" border="0" cellpadding="3" cellspacing="0">
+<table id="Results_Table" width="100%" border="0" cellpadding="3" cellspacing="0" step="wdkStep.stepId">
 <thead>
 <tr class="headerrow">
   <c:set var="j" value="0"/>
@@ -134,6 +159,22 @@
     <th id="${attrName}" align="left" valign="middle">
 	<table>
           <tr>
+            <c:if test="${recHasBasket && j == 0}">
+              <c:choose>
+                <c:when test="${wdkUser.guest}">
+                  <c:set var="basketClick" value="popLogin()" />
+                  <c:set var="basketTitle" value="Please log in to use the basket." />
+                </c:when>
+                <c:otherwise>
+                  <c:set var="basketClick" value="updateBasket(this,'page', '0', '${modelName}', '${wdkAnswer.recordClass.fullName}')" />
+                </c:otherwise>
+              </c:choose>
+	      <td style="padding:0;">
+                <a href="javascript:void(0)" onclick="${basketClick}">
+		  <img title="${basketTitle}" class="head basket" src="<c:url value='/wdk/images/basket_gray.png'/>" height="16" width="16" value="0"/>
+		</a>
+              </td>
+            </c:if>
             <td>
 		<table>
                   <tr>
@@ -148,7 +189,15 @@
             </c:when>
             <c:otherwise>
               <%-- display sorting buttons --%>
-              <a href="javascript:GetResultsPage('${commandUrl}&command=sort&attribute=${attrName}&sortOrder=asc', true, true)" title="Sort by ${sumAttrib}">
+              <c:choose>
+                <c:when test="${strategy != null}">
+                  <c:set var="resultsAction" value="javascript:GetResultsPage('${commandUrl}&command=sort&attribute=${attrName}&sortOrder=asc', true, true)" />
+                </c:when>
+                <c:otherwise>
+                  <c:set var="resultsAction" value="javascript:ChangeBasket('${commandUrl}&command=sort&attribute=${attrName}&sortOrder=asc')" />
+                </c:otherwise>
+              </c:choose>
+              <a href="${resultsAction}" title="Sort by ${sumAttrib}">
                   <img src="<c:url value='/wdk/images/results_arrw_up.png'/>" alt="Sort up" border="0" /></a>
             </c:otherwise>
           </c:choose>
@@ -166,7 +215,15 @@
             </c:when>
             <c:otherwise>
               <%-- display sorting buttons --%>
-              <a href="javascript:GetResultsPage('${commandUrl}&command=sort&attribute=${attrName}&sortOrder=desc', true, true)" title="Sort by ${sumAttrib}">
+              <c:choose>
+                <c:when test="${strategy != null}">
+                  <c:set var="resultsAction" value="javascript:GetResultsPage('${commandUrl}&command=sort&attribute=${attrName}&sortOrder=desc', true, true)" />
+                </c:when>
+                <c:otherwise>
+                  <c:set var="resultsAction" value="javascript:ChangeBasket('${commandUrl}&command=sort&attribute=${attrName}&sortOrder=desc')" />
+                </c:otherwise>
+              </c:choose>
+              <a href="${resultsAction}" title="Sort by ${sumAttrib}">
               <img src="<c:url value='/wdk/images/results_arrw_dwn.png'/>" alt="Sort down" border="0" /></a>
             </c:otherwise>
           </c:choose>
@@ -174,7 +231,7 @@
                  </tr>
                </table>
              </td>
-        <td nowrap>${sumAttrib.displayName}</td>
+        <td nowrap><span title="${sumAttrib.help}">${sumAttrib.displayName}</span></td>
         <%-- <c:if test="${j != 0}">
           <div style="float:left;">
             <a href="javascript:void(0)">
@@ -184,7 +241,15 @@
         <c:if test="${j != 0}">
           <td style="width:20px;">
             <%-- display remove attribute button --%>
-            <a href="javascript:GetResultsPage('${commandUrl}&command=remove&attribute=${attrName}', true, true)"
+              <c:choose>
+                <c:when test="${strategy != null}">
+                  <c:set var="resultsAction" value="javascript:GetResultsPage('${commandUrl}&command=remove&attribute=${attrName}', true, true)" />
+                </c:when>
+                <c:otherwise>
+                  <c:set var="resultsAction" value="javascript:ChangeBasket('${commandUrl}&command=remove&attribute=${attrName}')" />
+                </c:otherwise>
+              </c:choose>
+            <a href="${resultsAction}"
                         title="Remove ${sumAttrib} column">
               <img src="<c:url value='/wdk/images/results_x.png'/>" alt="Remove" border="0" /></a>
           </td>
@@ -217,19 +282,33 @@
     </c:set>
 
     <c:set value="${record.primaryKey}" var="primaryKey"/>
+
+	<c:if test="${recHasBasket}">
+		<c:set value="${record.attributes['in_basket']}" var="is_basket"/>
+		<c:set var="basket_img" value="basket_gray.png"/>
+		<c:if test="${is_basket == '1'}">
+			<c:set var="basket_img" value="basket_color.png"/>
+		</c:if>
+	</c:if>
+
     <c:set var="pkValues" value="${primaryKey.values}" />
     <c:set var="recordLinkKeys" value="" />
     <c:forEach items="${pkValues}" var="pkValue">
       <c:set var="recordLinkKeys" value="${recordLinkKeys}&${pkValue.key}=${pkValue.value}" />
     </c:forEach>
 
-    <td ${align} ${nowrap} style="padding:3px 2px"><div>
+    <td ${align} ${nowrap} style="white-space:nowrap; padding:3px 2px"><div>
       <c:set var="recNam" value="${record.recordClass.fullName}"/>
       <c:set var="fieldVal" value="${recAttr.briefValue}"/>
       <c:choose>
         <c:when test="${j == 0}">
-		<%-- display a link to record page --%>
-              <a href="showRecord.do?name=${recNam}${recordLinkKeys}">${fieldVal}</a>
+          <c:if test="${recHasBasket}">
+	    <a href="javascript:void(0)" onclick="${basketClick}">
+	      <img title="${basketTitle}" class="basket" value="${is_basket}" src="<c:url value='wdk/images/${basket_img}'/>" width="16" height="16"/>
+	    </a>
+          </c:if>
+	  <%-- display a link to record page --%>
+          <a href="showRecord.do?name=${recNam}${recordLinkKeys}">${fieldVal}</a>
         </c:when>   <%-- when j=0 --%>
 
         <c:otherwise>

@@ -64,20 +64,6 @@
     </c:otherwise>
   </c:choose>
 
-
-
-  <%-- <td></td>
-    <td align="right" nowrap>
-      <c:choose>
-        <c:when test="${step.version == null || step.version eq ''}">${wdkModel.version}</c:when>
-        <c:otherwise>${step.version}</c:otherwise>
-      </c:choose>
-    </td>
-    <td align='right' nowrap>${step.estimateSize}</td>
-    <c:set var="stepId" value="${step.stepId}"/>
-    <td nowrap><a href="downloadStep.do?step_id=${stepId}">download</a></td> --%>
-
-
   </tr>
   <c:if test="${step.childStep.isCollapsible}">
     <wdk:stepRows latestStep="${step.childStep}" rowNum="${i}" indent="${indent + 40}"/>

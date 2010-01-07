@@ -123,11 +123,11 @@ function updateBasket(ele, type, pk, pid,recordType) {
 				$("body").unblock();
 				if(type == "single"){
 					if(action == "add") {
-						i.attr("src","/assets/images/basket_color.png");
+						i.attr("src","wdk/images/basket_color.png");
 						i.attr("value", "1");
 						i.attr("title","Click to remove this item from the basket.");
 					}else{
-						i.attr("src","/assets/images/basket_gray.png");
+						i.attr("src","wdk/images/basket_gray.png");
 						i.attr("value", "0");
 						i.attr("title","Click to add this item to the basket.");
 					}
@@ -135,10 +135,10 @@ function updateBasket(ele, type, pk, pid,recordType) {
 					showBasket();
 				}else{
 					if(action == "add-all" || action == "add") {
-						$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.basket").attr("src","/assets/images/basket_color.png");
+						$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.basket").attr("src","wdk/images/basket_color.png");
 						$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.basket").attr("value", "1");
 					}else{
-						$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.basket").attr("src","/assets/images/basket_gray.png");
+						$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.basket").attr("src","wdk/images/basket_gray.png");
 						$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.basket").attr("value", "0");
 					}
 				}
@@ -161,10 +161,10 @@ function checkPageBasket(){
 		}
 	});
 	if(allIn){
-		$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.head.basket").attr("src","/assets/images/basket_color.png");
+		$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_color.png");
 		$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.head.basket").attr("value", "1");
 	}else{
-		$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.head.basket").attr("src","/assets/images/basket_gray.png");
+		$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_gray.png");
 		$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.head.basket").attr("value", "0");
 	}
 }
