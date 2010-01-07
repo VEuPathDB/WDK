@@ -336,7 +336,7 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 		if(stp != null && stp.frontId == 1 && !isAdd) isFirst = true;
 	}
 	current_Front_Strategy_Id = strat_id;
-	var url = "wdk/jsp/addStepPopup.jsp?dataType=" + dtype + "&prevStepNum=" + step_id;
+	var url = "wdk/jsp/addStepPopup.jsp?dataType=" + dtype + "&prevStepNum=" + step_id + "&isAdd=" + isAdd;
 	$.ajax({
 		url: url,
 		dataType: "html",
