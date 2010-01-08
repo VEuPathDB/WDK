@@ -4,7 +4,7 @@ results.js
 
 Provides functions to support results table
 */
-function moveAttr(col_ix) {
+function moveAttr(col_ix, table) {
 	// Get name of target attribute & attribute to left (if any)
 	// NOTE:  Have to convert these from frontId to backId!!!
 	var headers = $("tr.headerrow th", table);
@@ -183,7 +183,7 @@ function GetResultsPage(url, update, ignoreFilters){
 	}else
 		step = strat.getStep(st[0], false);
 	url = url + "&resultsOnly=true";
-	if (update){$("#Workspace").block();}
+	if (update){$("#strategy_results > div.Workspace").block();}
 	$.ajax({
 		url: url,
 		dataType: "html",
@@ -202,7 +202,7 @@ function GetResultsPage(url, update, ignoreFilters){
 				catch(err) {
 					//Do nothing;
 				}
-				$("#Workspace").unblock();
+				$("#strategy_results > div.Workspace").unblock();
 			}
 			if(strat != false) removeLoading(strat.frontId);
 		},
@@ -214,15 +214,12 @@ function GetResultsPage(url, update, ignoreFilters){
 }
 
 function ResultsToGrid(data, ignoreFilters) {
-        // the html() doesn't work in IE 7/8 sometimes (but not always.
-        // $("div#Workspace").html(data);
 	var oldFilters;
 	if (ignoreFilters) {
-		oldFilters = $("#Workspace div.layout-detail div.filter-instance .link-url");
+		oldFilters = $("#strategy_results > div.Workspace div.layout-detail div.filter-instance .link-url");
 	}
 
-   //     document.getElementById('Workspace').innerHTML = data;
-	$("div#" + getCurrentTabCookie(false) + " div#Workspace").html(data);
+	$("#strategy_results > div.Workspace").html(data);
 	
 	// invoke filters
         var wdkFilter = new WdkFilter();
