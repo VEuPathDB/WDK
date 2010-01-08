@@ -44,11 +44,6 @@ td {
 }
 
 
-/* used by Expression graphs (fix for text alignment bug) */
-.centered {
-       vertical-align: middle;
-}
-
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      = jquery validation plugin messages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -396,7 +391,6 @@ a.heading:hover + a.detail_link, a.detail_link:hover {
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =TABLES    
-	 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 td.headerrow {
@@ -611,7 +605,7 @@ a.redbutton:active span {
 	border: 2px solid gray;
 }
 
-#Workspace {
+div.Workspace {
 	z-index: 50;
 }
 
@@ -669,8 +663,8 @@ td.strat_inactive {
     font-weight:bold;
 }
 
-.clear_all {
-    clear: both;
+img.basket {
+	margin:-1px 0px -2px -1px;
 }
 
 /* used still in some tables in record pages */
@@ -753,4 +747,14 @@ tr.headerRow > td,th {
 
 #browser-info input {
 	margin-bottom: 15px;
+}
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      = Basket Tab Styles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+table.basket {
+	margin-top: 3px;
+	margin-left:2px;
 }

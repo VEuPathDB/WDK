@@ -273,7 +273,7 @@ function unloadStrategy(id){
 
 function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters){
 	if(f_strategyId == -1){
-		$("div#Workspace").html("");
+		$("#strategy_results > div.Workspace").html("");
 		return;
 	}
 	var strategy = getStrategy(f_strategyId);
