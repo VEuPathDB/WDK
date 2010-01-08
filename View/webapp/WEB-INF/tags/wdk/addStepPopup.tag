@@ -91,7 +91,7 @@
     <c:set var="q" value="${recordClass.snapshotBasketQuestion}" />
     <ul class="top_nav">
       <li style="width:auto;z-index:40;">
-        <a title="Make sure your basket is not empty!" href="javascript:getQueryForm('showQuestion.do?questionFullName=${q.fullName}&target=${target}&partial=true')">${q.displayName}</a>
+        <a title="Make sure your basket is not empty!" href="javascript:getQueryForm('showQuestion.do?questionFullName=${q.fullName}&partial=true')">${q.displayName}</a>
       </li>
     </ul>
 </td>

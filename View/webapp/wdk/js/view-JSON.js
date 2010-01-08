@@ -314,7 +314,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 	var params_table = "";
 	if(jsonstep.isboolean && !jsonstep.isCollapsed){
 		var url = "processFilter.do?strategy=" + strat.backId + "&revise=" + modelstep.back_boolean_Id + "&checksum=" + strat.checksum;
-		var oform = "<form id='form_question' class='clear_all' enctype='multipart/form-data' action='javascript:validateAndCall(\"edit\",\""+ url + "\", \"" + strat.backId + "\");' method='post' name='questionForm'>";
+		var oform = "<form id='form_question' class='clear' enctype='multipart/form-data' action='javascript:validateAndCall(\"edit\",\""+ url + "\", \"" + strat.backId + "\");' method='post' name='questionForm'>";
 		var cform = "</form>";
 		var params_table = "<div class='filter operators'><span class='form_subtitle' style='padding-right:20px'>Revise Operation</span><div id='operations'><table style='margin-left:auto; margin-right:auto;'><tr><td class='opcheck' valign='middle'><input type='radio' name='booleanExpression' value='INTERSECT' /></td><td class='operation INTERSECT'></td><td valign='middle'>&nbsp;" + (parseInt(modelstep.frontId)-1) + "&nbsp;<b>INTERSECT</b>&nbsp;" + (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='UNION'></td><td class='operation UNION'></td><td>&nbsp;" + (parseInt(modelstep.frontId)-1) + "&nbsp;<b>UNION</b>&nbsp;" + (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='MINUS'></td><td class='operation MINUS'></td><td>&nbsp;" + (parseInt(modelstep.frontId)-1) + "&nbsp;<b>MINUS</b>&nbsp;" + (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='RMINUS'></td><td class='operation RMINUS'></td><td>&nbsp;" + (modelstep.frontId) + "&nbsp;<b>MINUS</b>&nbsp;" + (parseInt(modelstep.frontId)-1) + "</td></tr></table></div></div>"
 		var button = "<div style='text-align:center'><input type='submit' value='Revise' /></div>";
@@ -364,7 +364,6 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 			disab = "disabled";
 		}
 		parms = jsonstep.urlParams;
-		parms = parms + "&target=" + jsonstep.displayType;
 
 		edit_step =	"<a title='" + ss_edit_popup + "'  class='edit_step_link " + disab + "' href='javascript:void(0)' onclick='Edit_Step(this,\"" + questionName + "\",\"" + parms + "\"," + hideQu + "," + hideOp + ");hideDetails(this)' id='" + sid + "|" + parentid + "|" + modelstep.operation + "'>Revise</a>&nbsp;|&nbsp;";
 
@@ -396,7 +395,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 	inner = ""+	
 	    "		<div class='crumb_menu'>"+ rename_step + view_step + edit_step + expand_step + insert_step + customMenu + delete_step + close_button +
 		"		</div>"+ name +
-		"		<table></table><hr class='clear_all' />" + filteredName +
+		"		<table></table><hr class='clear' />" + filteredName +
 		"		<p><b>Results:&nbsp;</b>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.displayType,jsonstep.results);// + "&nbsp;&nbsp;|&nbsp;&nbsp;<a href='downloadStep.do?step_id=" + modelstep.back_step_Id + "'>Download</a>";
 
 	$(detail_div).html(inner);
