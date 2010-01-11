@@ -60,16 +60,16 @@ public class StepParamExpander extends BaseCLI {
                 "expand the param clob into its own rows in step_params table");
     }
 
-    public void expand(WdkModel wdkModel) throws SQLException,
+    public void expand(WdkModel wdkModel, String schema) throws SQLException,
             NoSuchAlgorithmException, JSONException, WdkModelException,
             WdkUserException {
-        createParamTable(wdkModel);
+        createParamTable(wdkModel, schema);
 
         ResultSet resultSet = null;
         PreparedStatement psInsert = null;
         try {
-            resultSet = prepareSelect(wdkModel);
-            psInsert = prepareInsert(wdkModel);
+            resultSet = prepareSelect(wdkModel, schema);
+            psInsert = prepareInsert(wdkModel, schema);
             DBPlatform platform = wdkModel.getUserPlatform();
 
             int count = 0;
@@ -105,25 +105,27 @@ public class StepParamExpander extends BaseCLI {
         }
     }
 
-    private void createParamTable(WdkModel wdkModel) throws SQLException,
-            WdkModelException, WdkUserException {
+    private void createParamTable(WdkModel wdkModel, String schema)
+            throws SQLException, WdkModelException, WdkUserException {
         DBPlatform platform = wdkModel.getUserPlatform();
         DataSource dataSource = platform.getDataSource();
 
         // check if table exists
-        if (platform.checkTableExists(null, "step_params")) return;
+        int length = schema.length();
+        String s = (length == 0) ? null : schema.substring(0, length - 1);
+        if (platform.checkTableExists(s, "step_params")) return;
 
-        SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE TABLE step_params"
-                + " ( step_id NUMBER(12) NOT NULL, "
+        SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE TABLE " + schema
+                + " step_params ( step_id NUMBER(12) NOT NULL, "
                 + " param_name VARCHAR(200) NOT NULL, "
                 + " param_value VARCHAR(4000), migration NUMBER(12))");
 
-        SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX "
+        SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX " + schema
                 + "step_params_idx02 ON step_params (step_id, param_name)");
     }
 
-    private ResultSet prepareSelect(WdkModel wdkModel) throws SQLException,
-            WdkUserException, WdkModelException {
+    private ResultSet prepareSelect(WdkModel wdkModel, String schema)
+            throws SQLException, WdkUserException, WdkModelException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String user = userDB.getUserSchema() + "users";
         String step = userDB.getUserSchema() + "steps";
@@ -132,9 +134,9 @@ public class StepParamExpander extends BaseCLI {
         sql.append(" s.step_id, s.display_params FROM ");
         sql.append(step + " s, (SELECT DISTINCT s.step_id, a.question_name ");
         sql.append(" FROM " + step + " s, " + answer + " a, " + user + " u, ");
-        sql.append("  (SELECT step_id FROM ").append(step);
+        sql.append("  (SELECT step_id FROM " + step);
         sql.append("   MINUS ");
-        sql.append("   SELECT step_id FROM ").append("step_params) sm ");
+        sql.append("   SELECT step_id FROM " + schema + "step_params) sm ");
         sql.append(" WHERE s.step_id = sm.step_id ");
         sql.append("   AND s.user_id = u.user_id AND u.is_guest = 0 ");
         sql.append("   AND s.answer_id = a.answer_id) sp ");
@@ -144,9 +146,10 @@ public class StepParamExpander extends BaseCLI {
         return SqlUtils.executeQuery(wdkModel, dataSource, sql.toString());
     }
 
-    private PreparedStatement prepareInsert(WdkModel wdkModel)
+    private PreparedStatement prepareInsert(WdkModel wdkModel, String schema)
             throws SQLException {
-        StringBuffer sql = new StringBuffer("INSERT INTO step_params ");
+        StringBuffer sql = new StringBuffer("INSERT INTO ");
+        sql.append(schema + "step_params ");
         sql.append(" (step_id, param_name, param_value) VALUES (?, ?, ?)");
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
@@ -186,6 +189,8 @@ public class StepParamExpander extends BaseCLI {
         addSingleValueOption(ARG_PROJECT_ID, true, null, "ProjectId, which"
                 + " should match the directory name under $GUS_HOME, where"
                 + " model-config.xml is stored.");
+        addSingleValueOption("schema", false, null, "optional. the name of the"
+                + " schema where the tables will be created/used.");
     }
 
     /*
@@ -198,8 +203,13 @@ public class StepParamExpander extends BaseCLI {
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         String projectId = (String) getOptionValue(ARG_PROJECT_ID);
+        String schema = (String) getOptionValue("schema");
+        if (schema == null) schema = "";
+        schema = schema.trim();
+        if (schema.length() > 0 && !schema.endsWith(".")) schema += ".";
+
         logger.info("Expanding params...");
         WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-        expand(wdkModel);
+        expand(wdkModel, schema);
     }
 }

@@ -10,7 +10,7 @@ public class RecordClassTest {
         WdkModel wdkModel = UnitTestHelper.getModel();
         for (RecordClassSet recordClassSet : wdkModel.getAllRecordClassSets()) {
             for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
-                Question[] questions = recordClass.getTransformQuestions();
+                Question[] questions = recordClass.getTransformQuestions(false);
                 for (Question question : questions) {
                     Assert.assertTrue(question.getQuery().isTransform());
                 }

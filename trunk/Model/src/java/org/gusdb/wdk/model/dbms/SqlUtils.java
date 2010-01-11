@@ -228,19 +228,16 @@ public final class SqlUtils {
         QueryMonitor monitor = wdkModel.getQueryMonitor();
         // convert the time to seconds
         // check if it is a slow query
-        if (seconds >= monitor.getSlowQueryThreshold()) {
-            if (!monitor.isIgnoredSlowQuery(sql))
-                logger.warn("SLOW SQL: " + seconds + " seconds.\n" + sql);
-        }
         // check if it is a broken query
+        boolean logged = false;
         if (seconds >= monitor.getBrokenQueryThreshold()) {
             if (!monitor.isIgnoredBrokenQuery(sql)) {
-                logger.warn("BROKEN SQL: " + seconds + " seconds.\n" + sql);
+                logger.warn("SUPER SLOW SQL: " + seconds + " seconds.\n" + sql);
                 // also send email to admin
                 String email = wdkModel.getModelConfig().getAdminEmail();
                 if (email != null) {
                     String subject = "[" + wdkModel.getProjectId()
-                            + "] Broken Query " + seconds + " seconds";
+                            + "] Super Slow Query " + seconds + " seconds";
 
                     Calendar cal = Calendar.getInstance();
                     SimpleDateFormat sdf = new SimpleDateFormat(
@@ -251,7 +248,12 @@ public final class SqlUtils {
                     Utilities.sendEmail(wdkModel, email, email, subject,
                             content);
                 }
+                logged = true;
             }
+        }
+        if (!logged && seconds >= monitor.getSlowQueryThreshold()) {
+            if (!monitor.isIgnoredSlowQuery(sql))
+                logger.warn("SLOW SQL: " + seconds + " seconds.\n" + sql);
         }
     }
 
