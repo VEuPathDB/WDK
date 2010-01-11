@@ -95,6 +95,7 @@ ul#history_tabs {
     height: 250px;
 }
 
-
-
+table.history_controls {
+	display:inline-block;
+}
 
