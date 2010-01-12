@@ -218,8 +218,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
         Map<String, Boolean> sortingMap = this.defaultSortingMap;
         AnswerFilterInstance filter = recordClass.getDefaultFilter();
-        AnswerValue answerValue = makeAnswerValue(user, dependentValues, pageStart, pageEnd,
-                sortingMap, filter);
+        AnswerValue answerValue = makeAnswerValue(user, dependentValues,
+                pageStart, pageEnd, sortingMap, filter);
         if (this.fullAnswer) {
             int resultSize = answerValue.getResultSize();
             if (resultSize > pageEnd)
@@ -227,11 +227,14 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         }
         return answerValue;
     }
-    
+
     public AnswerValue makeAnswerValue(User user,
             Map<String, String> dependentValues, int pageStart, int pageEnd,
-            Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter) throws NoSuchAlgorithmException, WdkUserException, WdkModelException, SQLException, JSONException {
-        return makeAnswerValue(user, dependentValues, pageStart, pageEnd, sortingAttributes, filter, true);
+            Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter)
+            throws NoSuchAlgorithmException, WdkUserException,
+            WdkModelException, SQLException, JSONException {
+        return makeAnswerValue(user, dependentValues, pageStart, pageEnd,
+                sortingAttributes, filter, true);
     }
 
     /**
@@ -250,7 +253,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
      */
     public AnswerValue makeAnswerValue(User user,
             Map<String, String> dependentValues, int pageStart, int pageEnd,
-            Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter, boolean validate)
+            Map<String, Boolean> sortingAttributes,
+            AnswerFilterInstance filter, boolean validate)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         QueryInstance qi = query.makeInstance(user, dependentValues, validate);
@@ -366,12 +370,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         }
         StringBuffer buf = new StringBuffer("Question: name='" + name + "'"
                 + newline + "  recordClass='" + recordClassRef + "'" + newline
-                + "  query='" + idQueryRef + "'" + newline
-                + "  displayName='" + getDisplayName() + "'" + newline
-                + "  summary='" + getSummary() + "'" + newline
-                + "  description='" + getDescription() + "'" + newline
-                + "  summaryAttributes='" + saNames + "'" + newline
-                + "  help='" + getHelp() + "'" + newline);
+                + "  query='" + idQueryRef + "'" + newline + "  displayName='"
+                + getDisplayName() + "'" + newline + "  summary='"
+                + getSummary() + "'" + newline + "  description='"
+                + getDescription() + "'" + newline + "  summaryAttributes='"
+                + saNames + "'" + newline + "  help='" + getHelp() + "'"
+                + newline);
         if (dynamicAttributeSet != null) {
             buf.append(dynamicAttributeSet.toString());
         }
@@ -423,8 +427,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     // /////////////////////////////////////////////////////////////////////
 
     Map<String, AttributeField> getDynamicAttributeFields() {
-        return dynamicAttributeSet == null
-                ? new LinkedHashMap<String, AttributeField>()
+        return dynamicAttributeSet == null ? new LinkedHashMap<String, AttributeField>()
                 : dynamicAttributeSet.getAttributeFieldMap();
     }
 
@@ -480,37 +483,44 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
         this.wdkModel = model;
 
-        // it must happen before dynamicAttributeSet, because it is referenced
-        // in the dynamicAttributeSet.
-        this.recordClass = (RecordClass) model.resolveReference(recordClassRef);
+        try {
+            // it must happen before dynamicAttributeSet, because it is
+            // referenced
+            // in the dynamicAttributeSet.
+            this.recordClass = (RecordClass) model.resolveReference(recordClassRef);
 
-        // the id query is forced to be cache-able.
-        query = (Query) model.resolveReference(idQueryRef);
-        // query.setIsCacheable(true);
+            // the id query is forced to be cache-able.
+            query = (Query) model.resolveReference(idQueryRef);
+            // query.setIsCacheable(true);
 
-        // dynamic attribute set need to be initialized after the id query.
-        if (dynamicAttributeSet != null) {
-            this.dynamicAttributeQuery = createDynamicAttributeQuery();
-            dynamicAttributeSet.resolveReferences(model);
-        }
-
-        // resolve default summary attributes
-        if (defaultSummaryAttributeNames != null) {
-            Map<String, AttributeField> attributeFields = getAttributeFieldMap();
-            for (String fieldName : defaultSummaryAttributeNames) {
-                AttributeField field = attributeFields.get(fieldName);
-                if (field == null)
-                    throw new WdkModelException("Summary attribute field ["
-                            + fieldName + "] defined in question ["
-                            + getFullName() + "] is invalid.");
-                defaultSummaryAttributeFields.put(fieldName, field);
+            // dynamic attribute set need to be initialized after the id query.
+            if (dynamicAttributeSet != null) {
+                this.dynamicAttributeQuery = createDynamicAttributeQuery();
+                dynamicAttributeSet.resolveReferences(model);
             }
-        }
-        defaultSummaryAttributeNames = null;
 
-        // make sure we create index on primary keys
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
-        query.setIndexColumns(pkColumns);
+            // resolve default summary attributes
+            if (defaultSummaryAttributeNames != null) {
+                Map<String, AttributeField> attributeFields = getAttributeFieldMap();
+                for (String fieldName : defaultSummaryAttributeNames) {
+                    AttributeField field = attributeFields.get(fieldName);
+                    if (field == null)
+                        throw new WdkModelException("Summary attribute field ["
+                                + fieldName + "] defined in question ["
+                                + getFullName() + "] is invalid.");
+                    defaultSummaryAttributeFields.put(fieldName, field);
+                }
+            }
+            defaultSummaryAttributeNames = null;
+
+            // make sure we create index on primary keys
+            String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+            query.setIndexColumns(pkColumns);
+        } catch (WdkModelException ex) {
+            logger.error("resolving question '" + getFullName() + " failed. "
+                    + ex);
+            throw ex;
+        }
 
         resolved = true;
     }
