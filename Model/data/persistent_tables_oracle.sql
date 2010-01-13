@@ -1,5 +1,5 @@
 
-DROP SEQUENCE wdkengine.dataset_indices2_pkseq;
+DROP SEQUENCE wdkengine.dataset_indices_pkseq;
 DROP SEQUENCE wdkengine.answers_pkseq;
 
 DROP SEQUENCE wdkuser.migration_pkseq;
@@ -19,8 +19,8 @@ DROP TABLE wdkuser.users;
 
 DROP TABLE wdkengine.answers;
 DROP TABLE wdkengine.clob_values;
-DROP TABLE wdkengine.dataset_values2;
-DROP TABLE wdkengine.dataset_indices2;
+DROP TABLE wdkengine.dataset_values;
+DROP TABLE wdkengine.dataset_indices;
 
 
 
@@ -29,7 +29,7 @@ DROP TABLE wdkengine.dataset_indices2;
    ========================================================================= */
 
 
-CREATE SEQUENCE wdkengine.dataset_indices2_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE wdkengine.dataset_indices_pkseq INCREMENT BY 1 START WITH 1;
 
 
 CREATE SEQUENCE wdkengine.answers_pkseq INCREMENT BY 1 START WITH 1;
@@ -79,7 +79,7 @@ CREATE INDEX wdkengine.answers_idx02 ON wdkengine.answers (old_query_checksum);
 GRANT references ON wdkengine.answers TO wdkuser;
 
 
-CREATE TABLE wdkengine.dataset_indices2
+CREATE TABLE wdkengine.dataset_indices
 (
   dataset_id NUMBER(12) NOT NULL,
   dataset_checksum VARCHAR(40) NOT NULL,
@@ -92,12 +92,12 @@ CREATE TABLE wdkengine.dataset_indices2
   CONSTRAINT "DATASET_CHECKSUM_UNIQUE" UNIQUE (dataset_checksum)
 );
 
-CREATE INDEX wdkengine.dataset_indices2_idx01 ON wdkengine.dataset_indices2 (prev_dataset_id);
+CREATE INDEX wdkengine.dataset_indices_idx01 ON wdkengine.dataset_indices (prev_dataset_id);
 
-GRANT references ON wdkengine.dataset_indices2 TO wdkuser;
+GRANT references ON wdkengine.dataset_indices TO wdkuser;
 
 
-CREATE TABLE wdkengine.dataset_values2
+CREATE TABLE wdkengine.dataset_values
 (
   dataset_id NUMBER(12) NOT NULL,
   pk_column_1 VARCHAR(1999) NOT NULL,
@@ -105,10 +105,10 @@ CREATE TABLE wdkengine.dataset_values2
   pk_column_3 VARCHAR(1999),
   migration NUMBER(12),
   CONSTRAINT "DATASET_VALUES_DATASET_ID_FK" FOREIGN KEY (dataset_id)
-      REFERENCES wdkengine.dataset_indices2 (dataset_id)
+      REFERENCES wdkengine.dataset_indices (dataset_id)
 );
 
-CREATE INDEX wdkengine.dataset_values2_idx01 ON wdkengine.dataset_values2 (dataset_id);
+CREATE INDEX wdkengine.dataset_values_idx01 ON wdkengine.dataset_values (dataset_id);
 
 
 CREATE TABLE wdkengine.clob_values
@@ -198,6 +198,7 @@ CREATE TABLE wdkuser.steps
   display_params CLOB,
   prev_step_id NUMBER(12),
   invalid_message VARCHAR(2000),
+  assigned_weight NUMBER(12),
   migration NUMBER(12),
   CONSTRAINT "STEPS_PK" PRIMARY KEY (step_id),
   CONSTRAINT "STEPS_UNIQUE" UNIQUE (user_id, display_id),
@@ -272,7 +273,7 @@ CREATE TABLE wdkuser.user_datasets2
   CONSTRAINT "USER_DATASET_PK" PRIMARY KEY (user_dataset_id),
   CONSTRAINT "USER_DATASET_UQ1" UNIQUE (dataset_id, user_id),
   CONSTRAINT "USER_DATASETS_DS_ID_FK" FOREIGN KEY (dataset_id)
-      REFERENCES wdkengine.dataset_indices2 (dataset_id),
+      REFERENCES wdkengine.dataset_indices (dataset_id),
   CONSTRAINT "USER_DATASETS_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id)
 );

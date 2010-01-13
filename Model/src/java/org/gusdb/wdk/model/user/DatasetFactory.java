@@ -40,7 +40,6 @@ public class DatasetFactory {
     public static final String TABLE_USER_DATASET = "user_datasets2";
 
     public static final String COLUMN_DATASET_ID = "dataset_id";
-    public static final String COLUMN_DATASET_VALUE = "dataset_value";
     public static final String COLUMN_DATASET_CHECKSUM = "dataset_checksum";
     public static final String COLUMN_USER_DATASET_ID = "user_dataset_id";
     private static final String COLUMN_DATASET_SIZE = "dataset_size";
@@ -366,11 +365,10 @@ public class DatasetFactory {
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(wdkSchema).append(TABLE_DATASET_VALUE);
         sql.append(" (").append(COLUMN_DATASET_ID);
-        sql.append(", ").append(COLUMN_DATASET_VALUE);
         for (int i = 1; i <= columnCount; i++) {
             sql.append(", ").append(Utilities.COLUMN_PK_PREFIX + i);
         }
-        sql.append(") VALUES (?, ?");
+        sql.append(") VALUES (?");
         for (int i = 1; i <= columnCount; i++) {
             sql.append(", ?");
         }
@@ -381,10 +379,9 @@ public class DatasetFactory {
             for (int i = 0; i < values.size(); i++) {
                 String[] value = values.get(i);
                 psInsert.setInt(1, dataset.getDatasetId());
-                psInsert.setString(2, " ");
                 for (int j = 0; j < columnCount; j++) {
                     String val = (j < value.length) ? value[j] : null;
-                    psInsert.setString(j + 3, val);
+                    psInsert.setString(j + 2, val);
                 }
                 psInsert.addBatch();
 
