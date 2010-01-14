@@ -110,7 +110,8 @@ public class XmlQuestionBean {
             return makeAnswer(null, 1, c);
         } catch (WdkModelException ex) {
             logger.error("Error on getting answer from xmlQuestion '"
-                    + getFullName() + "'");
+                    + getFullName() + "': " + ex);
+            ex.printStackTrace();
             throw ex;
         }
     }
