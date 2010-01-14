@@ -2,9 +2,9 @@
 <grammar xmlns="http://relaxng.org/ns/structure/1.0">
    <start>
       <element name="xmlAnswer">
-         <oneOrMore>
+         <zeroOrMore>
             <ref name="record" />
-         </oneOrMore>
+         </zeroOrMore>
       </element>
    </start>
 
