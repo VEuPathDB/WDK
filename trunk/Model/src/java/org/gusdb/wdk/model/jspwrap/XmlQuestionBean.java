@@ -5,6 +5,7 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.xml.XmlAnswerValue;
 import org.gusdb.wdk.model.xml.XmlQuestion;
@@ -14,6 +15,8 @@ import org.gusdb.wdk.model.xml.XmlQuestion;
  * @created Oct 19, 2005
  */
 public class XmlQuestionBean {
+
+    private static final Logger logger = Logger.getLogger(XmlQuestionBean.class);
 
     private XmlQuestion question;
 
@@ -91,18 +94,24 @@ public class XmlQuestionBean {
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.xml.XmlQuestion#makeAnswer(java.util.Map, int,
-     *      int)
+     * int)
      */
     public XmlAnswerBean makeAnswer(Map<String, String> params, int startIndex,
             int endIndex) throws WdkModelException {
-        XmlAnswerValue answer = question.makeAnswer(params, startIndex, endIndex);
+        XmlAnswerValue answer = question.makeAnswer(params, startIndex,
+                endIndex);
         return new XmlAnswerBean(answer);
     }
 
     public XmlAnswerBean getFullAnswer() throws WdkModelException {
-	
-	XmlAnswerBean a = makeAnswer(null, 1, 3);
-	int c = a.getResultSize();
-	return makeAnswer(null, 1, c);
+        try {
+            XmlAnswerBean a = makeAnswer(null, 1, 3);
+            int c = a.getResultSize();
+            return makeAnswer(null, 1, c);
+        } catch (WdkModelException ex) {
+            logger.error("Error on getting answer from xmlQuestion '"
+                    + getFullName() + "'");
+            throw ex;
+        }
     }
 }
