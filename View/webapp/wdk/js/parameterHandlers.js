@@ -1,7 +1,10 @@
-var dependedParams = new Array();
-var displayTermMap = new Array();
+var dependedParams;
+var displayTermMap;
 
 function initParamHandlers(isPopup, isEdit) {
+	dependedParams = new Array();
+	displayTermMap = new Array();
+
 	if(isEdit == undefined) isEdit = false;
 	initTypeAhead(isEdit);
 	initDependentParamHandlers(isEdit);
@@ -27,15 +30,12 @@ function initDependentParamHandlers(isEdit) {
 	});
 
 	//Trigger the change function so dependent params are initialized correctly
-	if(!isEdit){
-		for (var name in dependedParams) {
-			dependedParam =  $("td#" + dependedParams[name] + "aaa input[name='myMultiProp(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='myMultiProp(" + dependedParams[name] + ")']");
-			dependedParam.change();
-		}
-	}else{
-		$('div.dependentParam').each(function() {
-			$('input, select', this).attr('disabled',false);
-		});
+	for (var name in dependedParams) {
+		var parameterValue;
+		if (isEdit) parameterValue = $("div.dependentParam[name='" + name + "']").find("input,select").val();
+		dependedParam =  $("td#" + dependedParams[name] + "aaa input[name='myMultiProp(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='myMultiProp(" + dependedParams[name] + ")']");
+		dependedParam.change();
+		if (isEdit) $("div.dependentParam[name='" + name + "']").find("input,select").val(parameterValue);
 	}
 }
 
