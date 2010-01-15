@@ -24,7 +24,7 @@
 <c:set var="steps" value="${latestStep.allSteps}"/>
 <c:forEach items="${steps}" var="step">
   <c:choose>
-    <c:when test="${i % 2 == 0}"><tr class="lines" style="display: none;"></c:when>
+    <c:when test="${rowNum % 2 == 0}"><tr class="lines" style="display: none;"></c:when>
     <c:otherwise><tr class="linesalt" style="display: none;"></c:otherwise>
   </c:choose>
   <!-- offer a rename here too? -->
@@ -66,7 +66,7 @@
 
   </tr>
   <c:if test="${step.childStep.isCollapsible}">
-    <wdk:stepRows latestStep="${step.childStep}" rowNum="${i}" indent="${indent + 40}"/>
+    <wdk:stepRows latestStep="${step.childStep}" rowNum="${rowNum}" indent="${indent + 40}"/>
   </c:if>
   <c:set var="j" value="${j + 1}"/>
 </c:forEach>
