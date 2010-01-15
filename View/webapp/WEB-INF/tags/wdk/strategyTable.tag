@@ -18,7 +18,7 @@
               required="false"
               description="Text to add before 'Strategy' in column header"
 %>
-
+<!-- strategyTable.tag -->
 <c:set var="scheme" value="${pageContext.request.scheme}" />
 <c:set var="serverName" value="${pageContext.request.serverName}" />
 <c:set var="request_uri" value="${requestScope['javax.servlet.forward.request_uri']}" />
@@ -147,7 +147,8 @@
     </tr>
 
 <%-- description : because of being in a diferent tr, we can expand to use all horizontal space  --%>
-<tr id="desc_${strategyId}"  style="display: none;"><td colspan="11">
+
+<tr id="desc_${strategyId}" style="display: none;"><td colspan="11">
 
 
 	<table id="strat_description">
@@ -164,3 +165,4 @@
   <!-- end of forEach strategy in the category -->
   </tbody>
 </table>
+<!-- end strategyTable.tag -->

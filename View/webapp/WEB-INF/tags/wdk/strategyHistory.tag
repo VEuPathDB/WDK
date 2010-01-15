@@ -14,7 +14,7 @@
               required="false"
               description="Currently active user object"
 %>
-
+<!--strategyHistory.tag-->
 <c:set var="unsavedStrategiesMap" value="${user.unsavedStrategiesByCategory}"/>
 <c:set var="savedStrategiesMap" value="${user.savedStrategiesByCategory}"/>
 <c:set var="invalidStrategies" value="${user.invalidStrategies}"/>
@@ -166,3 +166,4 @@
   </c:otherwise>
 </c:choose> 
 <!-- end of deciding strategy emptiness -->
+<!--end strategyHistory.tag-->
