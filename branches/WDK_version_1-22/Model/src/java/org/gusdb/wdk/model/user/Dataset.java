@@ -116,7 +116,7 @@ public class Dataset {
                 if (column != null && column.length() > 0) {
                     if (first) first = false;
                     else sbSummary.append(":");
-                    sbSummary.append(value);
+                    sbSummary.append(column);
                 }
             }
             if (sbSummary.length() > maxLength) break;
