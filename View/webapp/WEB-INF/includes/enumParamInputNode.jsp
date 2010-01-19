@@ -13,11 +13,16 @@ Provides form input element for a given term tree node of EnumParam.
 <c:set var="children" value="${node.children}" />
 <c:set var="pNam" value="${qP.name}" />
 
+<%-- set left margin for node (instead of using spacer gif
+     for the leaves) --%>
+<c:if test="${fn:length(children) == 0}">
+    <c:set var="nodeMargin" value="margin-left:13px;" />
+</c:if>
+
 <%-- display param term --%>
-<div id="${pNam}-info" class="term-node">
+<div id="${pNam}-info" class="term-node" style="${nodeMargin}">
     <c:choose>
         <c:when test="${fn:length(children) == 0}">
-            <img src="images/spacer.gif" width="13" height="13" />
             <c:set var="nodeValue" value="${node.term}" />
         </c:when>
         <c:otherwise>
