@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wsf.util.BaseCLI;
 import org.json.JSONException;
@@ -142,9 +143,9 @@ public class ModelCacher extends BaseCLI {
                     + "VALUES (?, ?, ?, ?, ?, ?)";
             psQuestion = SqlUtils.getPreparedStatement(dataSource, sql);
 
-            sql = "INSERT INTO " + schema + "wdk_params "
-                    + "(param_id, question_id, param_name, param_type) "
-                    + "VALUES (?, ?, ?, ?)";
+            sql = "INSERT INTO " + schema + "wdk_params (param_id, "
+                    + " question_id, param_name, param_type, record_class) "
+                    + "VALUES (?, ?, ?, ?, ?)";
             psParam = SqlUtils.getPreparedStatement(dataSource, sql);
 
             sql = "INSERT INTO " + schema + "wdk_enum_params "
@@ -248,7 +249,8 @@ public class ModelCacher extends BaseCLI {
                 + "param_id NUMBER(12) NOT NULL, "
                 + "question_id NUMBER(12) NOT NULL, "
                 + "param_name VARCHAR(200) NOT NULL, "
-                + "param_type  VARCHAR(200) NOT NULL, "
+                + "param_type VARCHAR(200) NOT NULL, "
+                + "record_class VARCHAR(200), "
                 + "CONSTRAINT wdk_params_pk PRIMARY KEY (param_id), "
                 + "CONSTRAINT wdk_params_question_id_fk FOREIGN KEY (question_id) "
                 + "  REFERENCES wdk_questions (question_id), "
@@ -343,11 +345,16 @@ public class ModelCacher extends BaseCLI {
             NoSuchAlgorithmException, JSONException, WdkUserException {
         DBPlatform platform = wdkModel.getUserPlatform();
 
+        String recordClass = null;
+        if (param instanceof DatasetParam)
+            recordClass = ((DatasetParam)param).getRecordClass().getFullName();
+        
         int paramId = platform.getNextId(schemaWithoutDot, "wdk_params");
         psParam.setInt(1, paramId);
         psParam.setInt(2, questionId);
         psParam.setString(3, param.getName());
         psParam.setString(4, param.getClass().getSimpleName());
+        psParam.setString(5, recordClass);
         psParam.executeUpdate();
 
         if (param instanceof AbstractEnumParam)
