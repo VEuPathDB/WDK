@@ -303,6 +303,9 @@
       <c:choose>
         <c:when test="${j == 0}">
           <c:if test="${recHasBasket}">
+            <c:if test="${!wdkUser.guest}">
+              <c:set var="basketClick" value="updateBasket(this,'single', '${primaryKey.value}', '${modelName}', '${recNam}')" />
+            </c:if>
 	    <a href="javascript:void(0)" onclick="${basketClick}">
 	      <img title="${basketTitle}" class="basket" value="${is_basket}" src="<c:url value='wdk/images/${basket_img}'/>" width="16" height="16"/>
 	    </a>
