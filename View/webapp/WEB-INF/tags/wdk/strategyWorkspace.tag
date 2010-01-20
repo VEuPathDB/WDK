@@ -58,6 +58,7 @@ My Search Strategies Workspace
 </div>
 
 <div id="basket">
+  <wdk:basketControls />
   <div class="Workspace">
   </div>
 </div>
