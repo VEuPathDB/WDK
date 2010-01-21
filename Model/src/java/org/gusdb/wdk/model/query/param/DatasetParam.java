@@ -97,6 +97,7 @@ public class DatasetParam extends Param {
         logger.debug("dependent to independent: " + dependentValue);
         int userDatasetId = Integer.parseInt(dependentValue);
         Dataset dataset = user.getDataset(userDatasetId);
+        dataset.setRecordClass(recordClass);
         return dataset.getChecksum();
     }
 
@@ -152,6 +153,7 @@ public class DatasetParam extends Param {
         logger.debug("dependent to raw: " + dependentValue);
         int userDatasetId = Integer.parseInt(dependentValue);
         Dataset dataset = user.getDataset(userDatasetId);
+        dataset.setRecordClass(recordClass);
         return dataset.getValue();
     }
 
