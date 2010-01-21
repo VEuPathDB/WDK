@@ -195,7 +195,7 @@ public class Dataset {
         return recordClass;
     }
 
-    void setRecordClass(RecordClass recordClass) {
+    public void setRecordClass(RecordClass recordClass) {
         this.recordClass = recordClass;
     }
 }

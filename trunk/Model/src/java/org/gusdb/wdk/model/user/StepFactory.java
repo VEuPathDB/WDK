@@ -961,9 +961,12 @@ public class StepFactory {
                 Step newChildStep = importStep(newUser, oldChildStep);
                 paramValue = Integer.toString(newChildStep.getDisplayId());
             } else if (param instanceof DatasetParam) {
+                DatasetParam datasetParam = (DatasetParam)param;
                 int oldUserDatasetId = Integer.parseInt(paramValue);
                 Dataset oldDataset = oldUser.getDataset(oldUserDatasetId);
+                oldDataset.setRecordClass(datasetParam.getRecordClass());
                 Dataset newDataset = newUser.getDataset(oldDataset.getChecksum());
+                newDataset.setRecordClass(datasetParam.getRecordClass());
                 paramValue = Integer.toString(newDataset.getUserDatasetId());
             }
             paramValues.put(paramName, paramValue);

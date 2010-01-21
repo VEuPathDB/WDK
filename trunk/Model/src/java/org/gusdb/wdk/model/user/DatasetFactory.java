@@ -95,6 +95,7 @@ public class DatasetFactory {
                 // get dataset id, catch WdkModelException if it doesn't exist
                 int datasetId = getDatasetId(connection, checksum);
                 dataset = new Dataset(this, datasetId);
+                dataset.setRecordClass(recordClass);
                 loadDatasetIndex(connection, dataset);
             } catch (WdkModelException ex) {
                 logger.debug("Creating dataset for user #" + user.getUserId());
@@ -443,8 +444,10 @@ public class DatasetFactory {
             dataset.setSummary(resultSet.getString(COLUMN_SUMMARY));
 
             String rcName = resultSet.getString(COLUMN_RECORD_CLASS);
-            RecordClass recordClass = (RecordClass) wdkModel.resolveReference(rcName);
-            dataset.setRecordClass(recordClass);
+            // the recordClass might be determined by the datasetParam later
+            if (dataset.getRecordClass() == null) {
+                dataset.setRecordClass((RecordClass) wdkModel.resolveReference(rcName));
+            }
         } finally {
             try {
                 if (resultSet != null) resultSet.close();
@@ -487,7 +490,7 @@ public class DatasetFactory {
                 int limit = Math.min(o1.length, o2.length);
                 for (int i = 0; i < limit; i++) {
                     if (o1[i] == null || o2[i] == null) break;
-                    int result =  o1[i].compareTo(o2[i]);
+                    int result = o1[i].compareTo(o2[i]);
                     if (result != 0) return result;
                 }
                 return 0;

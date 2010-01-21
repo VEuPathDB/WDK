@@ -6,6 +6,7 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.Date;
 import java.util.List;
 
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.user.Dataset;
 
 /**
@@ -112,4 +113,11 @@ public class DatasetBean {
         return dataset.getUserDatasetId();
     }
 
+    void setRecordClass(RecordClassBean recordClass) {
+        dataset.setRecordClass(recordClass.recordClass);
+    }
+    
+    public RecordClassBean getRecordClass() {
+        return new RecordClassBean(dataset.getRecordClass());
+    }
 }
