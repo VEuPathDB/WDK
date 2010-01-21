@@ -28,7 +28,9 @@ public class DatasetParamBean extends ParamBean {
             SQLException, NoSuchAlgorithmException, JSONException {
         String independentValue = param.dependentValueToIndependentValue(
                 user.getUser(), dependentValue);
-        return user.getDataset(independentValue);
+        DatasetBean dataset = user.getDataset(independentValue);
+        dataset.setRecordClass(getRecordClass());
+        return dataset;
     }
 
     /**
