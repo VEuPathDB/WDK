@@ -15,9 +15,9 @@
 
 <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkCommon.css' />">
 <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkFilter.css' />">
-<link rel="stylesheet" type="text/css" href="<c:url value='wdk/css/jquery-ui-1.7.2.custom.css' />"/>
-<link rel="StyleSheet" type="text/css" href="<c:url value='wdk/css/jquery.autocomplete.css' />"/>
-<link rel="StyleSheet" type="text/css" href="<c:url value='wdk/css/jquery.multiSelect.css' />"/>
+<link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/jquery-ui-1.7.2.custom.css' />"/>
+<link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/jquery.autocomplete.css' />"/>
+<link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/jquery.multiSelect.css' />"/>
 
 <link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/history.css"/>'/>
 <link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/dyk.css"/>'/>
