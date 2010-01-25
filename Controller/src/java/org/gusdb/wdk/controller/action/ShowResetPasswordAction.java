@@ -31,7 +31,7 @@ public class ShowResetPasswordAction extends Action {
         String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
 	    + File.separator + CConstants.WDK_PAGES_DIR;
         String customViewFile = customViewDir + File.separator
-                + CConstants.WDK_CUSTOM_RESET_PASSWORD_PAGE;
+                + CConstants.WDK_RESET_PASSWORD_PAGE;
 
         // check whether the user is logged in; if so, redirect to profile page
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
@@ -39,7 +39,7 @@ public class ShowResetPasswordAction extends Action {
         ActionForward forward = null;
         if (wdkUser != null && !wdkUser.isGuest()) {
             String customProfileViewFile = customViewDir + File.separator
-                    + CConstants.WDK_CUSTOM_PROFILE_PAGE;
+                    + CConstants.WDK_PROFILE_PAGE;
             if (ApplicationInitListener.resourceExists(customProfileViewFile,
                     svltCtx)) {
                 forward = new ActionForward(customProfileViewFile);

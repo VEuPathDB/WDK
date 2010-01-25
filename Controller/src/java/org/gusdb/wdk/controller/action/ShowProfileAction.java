@@ -32,7 +32,7 @@ public class ShowProfileAction extends Action {
 	String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
 	    + File.separator + CConstants.WDK_PAGES_DIR;
         String customViewFile = customViewDir + File.separator
-                + CConstants.WDK_CUSTOM_PROFILE_PAGE;
+                + CConstants.WDK_PROFILE_PAGE;
         ActionForward forward = null;
         
         

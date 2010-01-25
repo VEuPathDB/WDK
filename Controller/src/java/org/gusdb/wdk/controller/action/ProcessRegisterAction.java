@@ -37,7 +37,7 @@ public class ProcessRegisterAction extends Action {
         String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
 	    + File.separator + CConstants.WDK_PAGES_DIR;
         String customViewFile = customViewDir + File.separator
-                + CConstants.WDK_CUSTOM_REGISTER_PAGE;
+                + CConstants.WDK_REGISTER_PAGE;
         ActionForward forward = null;
         if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
             forward = new ActionForward(customViewFile);
