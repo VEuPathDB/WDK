@@ -57,6 +57,17 @@ function displayModel(strat){
 	  $("#Strategies").removeAttr("style");
 	  if(strat.isDisplay){
 		var div_strat = document.createElement("div");
+		var div_steps = document.createElement("div");
+		$(div_steps).css({
+			"border-color":"black",
+			"border-style":"none",
+			"border-width":"medium 1px medium medium",
+			"height":"130px",
+			"min-width":"770px",
+			"overflow-x":"auto",
+			"overflow-y":"hidden",
+			"width":"90%"
+		});
 		$(div_strat).attr("id","diagram_" + strat.frontId).addClass("diagram");
 		var close_span = document.createElement('span');
 		$(close_span).addClass("closeStrategy").html(""+
@@ -66,7 +77,8 @@ function displayModel(strat){
 		$(div_strat).append(close_span);
 		$(div_strat).append(createStrategyName(strat));
 		$(div_strat).append(createParentStep(strat));
-		displaySteps = createSteps(strat,div_strat);
+		//displaySteps = createSteps(strat,div_strat);
+		displaySteps = createSteps(strat,div_steps);
 		$(div_strat).append(createRecordTypeName(strat));
 		buttonleft = offset(null);
 		button = document.createElement('a');
@@ -79,9 +91,11 @@ function displayModel(strat){
 		$(button).css({ position: "absolute",
 						left: buttonleft + "px",
 						top: "56px"});
-		$(div_strat).append(button);
+		//$(div_strat).append(button);
+		$(div_steps).append(button);
+		$(div_strat).append(div_steps);
 		var diagram_width = buttonleft + 200;
-		$(div_strat).css("min-width",diagram_width + "px");
+		//$(div_strat).css("min-width",diagram_width + "px");
 	    return div_strat;
 	  }
     }
