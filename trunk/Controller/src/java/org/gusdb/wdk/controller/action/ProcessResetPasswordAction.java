@@ -56,7 +56,7 @@ public class ProcessResetPasswordAction extends Action {
         String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
 	    + File.separator + CConstants.WDK_PAGES_DIR;
         String customViewFile = customViewDir + File.separator
-                + CConstants.WDK_CUSTOM_RESET_PASSWORD_PAGE;
+                + CConstants.WDK_RESET_PASSWORD_PAGE;
         if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
             forward = new ActionForward(customViewFile);
             forward.setRedirect(false);
