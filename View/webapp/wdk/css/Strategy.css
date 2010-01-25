@@ -37,7 +37,7 @@
 	margin:   0 auto; /* Sorry, IE5.x/Win. */
 	left:    0em;
 	background-color: #EDEDED;
-	height:   120px;
+	height:   130px;
 	border-color: #ffffff #cccccc #666677 #aaaaaa;
 	border-style: ridge;
 	border-width: 4px;
@@ -327,6 +327,7 @@ span.stepNumber {
 	position: absolute;
 	top:8.25em;
 	font-weight:bold;
+	white-space:nowrap;
 }
 	
 h6.resultCount {
