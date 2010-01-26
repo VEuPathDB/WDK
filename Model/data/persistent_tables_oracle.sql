@@ -3,7 +3,7 @@ DROP SEQUENCE wdkengine.dataset_indices_pkseq;
 DROP SEQUENCE wdkengine.answers_pkseq;
 
 DROP SEQUENCE wdkuser.migration_pkseq;
-DROP SEQUENCE wdkuser.user_datasets_pkseq;
+DROP SEQUENCE wdkuser.user_datasets2_pkseq;
 DROP SEQUENCE wdkuser.steps_pkseq;
 DROP SEQUENCE wdkuser.strategies_pkseq;
 DROP SEQUENCE wdkuser.users_pkseq;
@@ -12,7 +12,7 @@ DROP TABLE wdkuser.user_baskets;
 DROP TABLE wdkuser.strategies;
 DROP TABLE wdkuser.step_params;
 DROP TABLE wdkuser.steps;
-DROP TABLE wdkuser.user_datasets;
+DROP TABLE wdkuser.user_datasets2;
 DROP TABLE wdkuser.preferences;
 DROP TABLE wdkuser.user_roles;
 DROP TABLE wdkuser.users;
@@ -65,10 +65,10 @@ GRANT select ON wdkuser.steps_pkseq TO GUS_W;
 GRANT select ON wdkuser.steps_pkseq TO GUS_R;
 
 
-CREATE SEQUENCE wdkuser.user_datasets_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE wdkuser.user_datasets2_pkseq INCREMENT BY 1 START WITH 1;
 
-GRANT select ON wdkuser.user_datasets_pkseq TO GUS_W;
-GRANT select ON wdkuser.user_datasets_pkseq TO GUS_R;
+GRANT select ON wdkuser.user_datasets2_pkseq TO GUS_W;
+GRANT select ON wdkuser.user_datasets2_pkseq TO GUS_R;
 
 
 
@@ -300,7 +300,7 @@ GRANT insert, update, delete on wdkuser.strategies to GUS_W;
 GRANT select on wdkuser.strategies to GUS_R;
 
 
-CREATE TABLE wdkuser.user_datasets
+CREATE TABLE wdkuser.user_datasets2
 (
   user_dataset_id NUMBER(12) NOT NULL,
   dataset_id NUMBER(12) NOT NULL,
@@ -317,8 +317,8 @@ CREATE TABLE wdkuser.user_datasets
       REFERENCES wdkuser.users (user_id)
 );
 
-GRANT insert, update, delete ON wdkuser.user_datasets TO GUS_W;
-GRANT select ON wdkuser.user_datasets TO GUS_R;
+GRANT insert, update, delete ON wdkuser.user_datasets2 TO GUS_W;
+GRANT select ON wdkuser.user_datasets2 TO GUS_R;
 
 
 CREATE TABLE wdkuser.user_baskets
