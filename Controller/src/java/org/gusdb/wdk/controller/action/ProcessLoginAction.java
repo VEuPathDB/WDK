@@ -3,9 +3,12 @@
  */
 package org.gusdb.wdk.controller.action;
 
+import java.io.File;
+
 import java.security.MessageDigest;
 
 import java.net.URLEncoder;
+import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -14,6 +17,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -131,7 +135,20 @@ public class ProcessLoginAction extends Action {
                     referer);
             request.getSession().setAttribute(CConstants.WDK_ORIGIN_URL_KEY,
                     request.getParameter(CConstants.WDK_ORIGIN_URL_KEY));
-            ActionForward loginPage = mapping.findForward(CConstants.SHOW_LOGIN_MAPKEY);
+
+	    ServletContext svltCtx = getServlet().getServletContext();
+	    String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+		+ File.separator + CConstants.WDK_PAGES_DIR;
+	    String customViewFile = customViewDir + File.separator
+                + CConstants.WDK_LOGIN_PAGE;
+
+            ActionForward loginPage =  null;
+	    if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
+		loginPage = new ActionForward(customViewFile);
+		loginPage.setRedirect(false);
+	    } else {
+		loginPage = mapping.findForward(CConstants.SHOW_LOGIN_MAPKEY);
+	    }
             forwardUrl = loginPage.getPath();
         } catch (Exception ex) {
             ex.printStackTrace();
