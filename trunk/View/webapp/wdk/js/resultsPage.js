@@ -246,6 +246,9 @@ function ResultsToGrid(data, ignoreFilters) {
 
 	// convert results table to drag-and-drop flex grid
 	createFlexigridFromTable($("#strategy_results #Results_Table"));
+
+	// check the basket for the page if needed
+	checkPageBasket();
 }
 
 function createMultiSelectAttributes(attrSelect) {
