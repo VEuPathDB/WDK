@@ -95,7 +95,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 		da = $.json.serialize(a);
 		action = (i.attr("value") == '0') ? "add" : "remove";
 	}else if(type == "page"){
-		$("a[class^='primaryKey_']").each(function(){
+		$("#Results_Pane a.primaryKey").each(function(){
 			var o = new Object();
 			sid = $(this).attr("class").split("_||_")[1];
 			o.source_id = sid;

@@ -300,6 +300,12 @@
     <td ${align} ${nowrap} style="white-space:nowrap; padding:3px 2px"><div>
       <c:set var="recNam" value="${record.recordClass.fullName}"/>
       <c:set var="fieldVal" value="${recAttr.briefValue}"/>
+      <!-- store the primary key pairs here -->
+      <div class="primaryKey" style="display:none;">
+        <c:forEach items="${pkValues}" var="pkValue">
+          <span key="${pkValue.key}">${pkValue.value}</span>
+        </c:forEach>
+      </div>
       <c:choose>
         <c:when test="${j == 0}">
           <c:if test="${recHasBasket}">
