@@ -84,6 +84,7 @@ public class ProcessQueryInstance extends QueryInstance {
     public void insertToCache(Connection connection, String tableName,
             int instanceId) throws WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException, WdkUserException {
+        logger.debug("inserting process query result to cache...");
         Column[] columns = query.getColumns();
 
         // prepare the sql
@@ -147,6 +148,7 @@ public class ProcessQueryInstance extends QueryInstance {
             // connection open to finish the transaction.
             if (ps != null) ps.close();
         }
+        logger.debug("process query cache insertion finished.");
     }
 
     /*
@@ -284,6 +286,7 @@ public class ProcessQueryInstance extends QueryInstance {
             int instanceId, String[] indexColumns) throws WdkModelException,
             SQLException, NoSuchAlgorithmException, JSONException,
             WdkUserException {
+        logger.debug("creating process query cache...");
         DBPlatform platform = query.getWdkModel().getQueryPlatform();
         Column[] columns = query.getColumns();
 
