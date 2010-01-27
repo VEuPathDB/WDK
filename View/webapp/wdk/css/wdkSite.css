@@ -212,7 +212,7 @@ img.switch,img.plus-minus {
 /* used to position the strategy workspace title */
 .innertube{
 	margin: 6px; /*Margins for inner DIV inside each column (to provide padding)*/
-	position: relative;   
+	/*position: relative;   */
 }
 
 /* used by sidebar */
