@@ -1,11 +1,11 @@
 
 #strategy_workspace {
-	position: absolute;
-/*	top: 1px; 
-	right:0.5em;
-	z-index: 1;*/
-	right:1.5em;
-
+/*	position: absolute;
+	right:1.5em;*/
+	margin-top:-27px;
+	position:relative;
+	text-align:right;
+	top:27px;
 }
 
 #strat-instructions {
