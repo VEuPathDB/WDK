@@ -251,3 +251,8 @@ div.bottom-close{
 .crumb_details .form_subtitle {
     font-size: 15px;
 }
+
+.clear {
+   clear:both;
+}
+
