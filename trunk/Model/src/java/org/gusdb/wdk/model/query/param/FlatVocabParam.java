@@ -131,7 +131,7 @@ public class FlatVocabParam extends AbstractEnumParam {
 	    values.put(dependedParam.getName(), dependedValue);
 
         User user = wdkModel.getSystemUser();
-        QueryInstance instance = query.makeInstance(user, values, true);
+        QueryInstance instance = query.makeInstance(user, values, true, 0);
         ResultList result = instance.getResults();
         while (result.next()) {
             String term = result.get(COLUMN_TERM).toString().trim();

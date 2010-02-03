@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.query.Column;
 
 /**
  * @author Jerric Gao
@@ -23,19 +22,14 @@ public class ArrayResultList<T> implements ResultList {
      * @param columns
      * @throws WdkModelException
      */
-    public ArrayResultList(Column[] columns, T[][] result)
+    public ArrayResultList(Map<String, Integer> columns, T[][] result)
             throws WdkModelException {
         this.result = result;
         this.rowIndex = -1;
-        this.columns = new LinkedHashMap<String, Integer>();
-
-        int columnIndex = 0;
-        for (Column column : columns) {
-            this.columns.put(column.getName(), columnIndex++);
-        }
+        this.columns = new LinkedHashMap<String, Integer>(columns);
 
         // verify the columns and result
-        if (result.length > 0 && result[0].length < columns.length)
+        if (result.length > 0 && result[0].length < columns.size())
             throw new WdkModelException(
                     "The result has fewer columns than the column definition");
     }
@@ -67,7 +61,7 @@ public class ArrayResultList<T> implements ResultList {
     public Object get(String columnName) throws WdkModelException {
         if (!contains(columnName))
             throw new WdkModelException(
-                    "The column does not exist in ResultList");
+                    "The column does not exist in ResultList: " + columnName);
         if (rowIndex >= result.length)
             throw new WdkModelException("There is no next row available");
 

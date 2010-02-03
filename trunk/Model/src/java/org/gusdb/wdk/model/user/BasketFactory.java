@@ -284,6 +284,7 @@ public class BasketFactory {
         try {
             long start = System.currentTimeMillis();
             PreparedStatement ps = SqlUtils.getPreparedStatement(ds, sql);
+            ps.setFetchSize(1000);
             ps.setString(1, wdkModel.getProjectId());
             ps.setInt(2, user.getUserId());
             ps.setString(3, recordClass.getFullName());
@@ -602,8 +603,8 @@ public class BasketFactory {
         ColumnAttributeField attribute = new ColumnAttributeField();
         attribute.setName(BASKET_ATTRIBUTE);
         attribute.setDisplayName("In Basket");
-        attribute.setInternal(false);
-        attribute.setInReportMaker(true);
+        attribute.setInternal(true);
+        attribute.setInReportMaker(false);
         attribute.setSortable(true);
 
         AttributeQueryReference reference = new AttributeQueryReference();

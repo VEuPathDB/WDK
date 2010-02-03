@@ -366,11 +366,10 @@ public class DatasetFactory {
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(wdkSchema).append(TABLE_DATASET_VALUE);
         sql.append(" (").append(COLUMN_DATASET_ID);
-        sql.append(", dataset_value");
         for (int i = 1; i <= columnCount; i++) {
             sql.append(", ").append(Utilities.COLUMN_PK_PREFIX + i);
         }
-        sql.append(") VALUES (?, ' '");
+        sql.append(") VALUES (?");
         for (int i = 1; i <= columnCount; i++) {
             sql.append(", ?");
         }

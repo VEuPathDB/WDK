@@ -74,6 +74,7 @@ public class StepFactory {
     private static final String COLUMN_DESCRIPTION = "description";
     private static final String COLUMN_LAST_VIEWED_TIME = "last_view_time";
     private static final String COLUMN_LAST_MODIFIED_TIME = "last_modify_time";
+    private static final String COLUMN_ASSIGNED_WEIGHT = "assigned_weight";
 
     private static final String COLUMN_STRATEGY_INTERNAL_ID = "strategy_id";
     private static final String COLUMN_ROOT_STEP_ID = "root_step_id";
@@ -105,9 +106,9 @@ public class StepFactory {
     // parse boolexp to pass left_child_id, right_child_id to loadAnswer
     Step createStep(User user, Question question,
             Map<String, String> dependentValues, AnswerFilterInstance filter,
-            int pageStart, int pageEnd, boolean deleted, boolean validate)
-            throws SQLException, WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, JSONException {
+            int pageStart, int pageEnd, boolean deleted, boolean validate,
+            int assignedWeight) throws SQLException, WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, JSONException {
 
         // get summary list and sorting list
         String questionName = question.getFullName();
@@ -117,7 +118,7 @@ public class StepFactory {
         // create answer
         AnswerValue answerValue = question.makeAnswerValue(user,
                 dependentValues, pageStart, pageEnd, sortingAttributes, filter,
-                validate);
+                validate, assignedWeight);
         if (summaryAttributes != null) {
             answerValue.setSumaryAttributes(summaryAttributes);
         }
@@ -166,8 +167,9 @@ public class StepFactory {
         sqlInsertStep.append(COLUMN_ESTIMATE_SIZE).append(", ");
         sqlInsertStep.append(COLUMN_ANSWER_FILTER).append(", ");
         sqlInsertStep.append(COLUMN_IS_DELETED).append(", ");
+        sqlInsertStep.append(COLUMN_ASSIGNED_WEIGHT).append(", ");
         sqlInsertStep.append(COLUMN_DISPLAY_PARAMS).append(") ");
-        sqlInsertStep.append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        sqlInsertStep.append("VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
         // Now that we have the Answer, create the Step
         Date createTime = new Date();
@@ -200,7 +202,8 @@ public class StepFactory {
             psInsertStep.setInt(7, estimateSize);
             psInsertStep.setString(8, filterName);
             psInsertStep.setBoolean(9, deleted);
-            userPlatform.setClobData(psInsertStep, 10, displayParamContent,
+            psInsertStep.setInt(10, assignedWeight);
+            userPlatform.setClobData(psInsertStep, 11, displayParamContent,
                     false);
             psInsertStep.executeUpdate();
 
@@ -222,6 +225,7 @@ public class StepFactory {
         step.setParamValues(dependentValues);
         step.setAnswerValue(answerValue);
         step.setEstimateSize(estimateSize);
+        step.setAssignedWeight(assignedWeight);
 
         // update step dependencies
         updateStepTree(user, step);
@@ -445,19 +449,11 @@ public class StepFactory {
 
         String answerIdColumn = AnswerFactory.COLUMN_ANSWER_ID;
         ResultSet rsStep = null;
-        String sql = "SELECT h." + COLUMN_STEP_INTERNAL_ID + ", h."
-                + COLUMN_DISPLAY_ID + ", a."
-                + AnswerFactory.COLUMN_ANSWER_CHECKSUM + ", h."
-                + COLUMN_CREATE_TIME + ", h." + COLUMN_LAST_RUN_TIME + ", h."
-                + COLUMN_CUSTOM_NAME + ", h." + COLUMN_IS_DELETED + ", h."
-                + COLUMN_IS_COLLAPSIBLE + ", h." + COLUMN_IS_VALID + ", h."
-                + COLUMN_COLLAPSED_NAME + ", h." + COLUMN_LEFT_CHILD_ID
-                + ", h." + COLUMN_RIGHT_CHILD_ID + ", h."
-                + COLUMN_ESTIMATE_SIZE + ", h." + COLUMN_ANSWER_FILTER + ", h."
-                + COLUMN_DISPLAY_PARAMS + " FROM " + userSchema + TABLE_STEP
-                + " h, " + wdkSchema + AnswerFactory.TABLE_ANSWER
-                + " a WHERE h." + Utilities.COLUMN_USER_ID + " = ? AND h."
-                + answerIdColumn + " = a." + answerIdColumn + " AND a."
+        String sql = "SELECT h.*, a." + AnswerFactory.COLUMN_ANSWER_CHECKSUM
+                + " FROM " + userSchema + TABLE_STEP + " h, " + wdkSchema
+                + AnswerFactory.TABLE_ANSWER + " a WHERE h."
+                + Utilities.COLUMN_USER_ID + " = ? AND h." + answerIdColumn
+                + " = a." + answerIdColumn + " AND a."
                 + AnswerFactory.COLUMN_PROJECT_ID + " = ? ORDER BY h."
                 + COLUMN_LAST_RUN_TIME + " DESC";
         try {
@@ -491,19 +487,11 @@ public class StepFactory {
             SQLException, WdkModelException, JSONException {
         String answerIdColumn = AnswerFactory.COLUMN_ANSWER_ID;
         ResultSet rsStep = null;
-        String sql = "SELECT h." + COLUMN_STEP_INTERNAL_ID + ", h."
-                + COLUMN_DISPLAY_ID + ", a."
-                + AnswerFactory.COLUMN_ANSWER_CHECKSUM + ", h."
-                + COLUMN_CREATE_TIME + ", h." + COLUMN_LAST_RUN_TIME + ", h."
-                + COLUMN_CUSTOM_NAME + ", h." + COLUMN_IS_DELETED + ", h."
-                + COLUMN_IS_COLLAPSIBLE + ", h." + COLUMN_IS_VALID + ", h."
-                + COLUMN_COLLAPSED_NAME + ", h." + COLUMN_LEFT_CHILD_ID
-                + ", h." + COLUMN_RIGHT_CHILD_ID + ", h."
-                + COLUMN_ESTIMATE_SIZE + ", h." + COLUMN_ANSWER_FILTER + ", h."
-                + COLUMN_DISPLAY_PARAMS + " FROM " + userSchema + TABLE_STEP
-                + " h, " + wdkSchema + AnswerFactory.TABLE_ANSWER
-                + " a WHERE h." + Utilities.COLUMN_USER_ID + " = ? AND h."
-                + answerIdColumn + " = a." + answerIdColumn + " AND a."
+        String sql = "SELECT h.*, a." + AnswerFactory.COLUMN_ANSWER_CHECKSUM
+                + " FROM " + userSchema + TABLE_STEP + " h, " + wdkSchema
+                + AnswerFactory.TABLE_ANSWER + " a WHERE h."
+                + Utilities.COLUMN_USER_ID + " = ? AND h." + answerIdColumn
+                + " = a." + answerIdColumn + " AND a."
                 + AnswerFactory.COLUMN_PROJECT_ID + " = ? AND h."
                 + COLUMN_DISPLAY_ID + " = ?";
         try {
@@ -543,6 +531,8 @@ public class StepFactory {
         step.setFilterName(rsStep.getString(COLUMN_ANSWER_FILTER));
         if (rsStep.getObject(COLUMN_IS_VALID) != null)
             step.setValid(rsStep.getBoolean(COLUMN_IS_VALID));
+        if (rsStep.getObject(COLUMN_ASSIGNED_WEIGHT) != null)
+            step.setAssignedWeight(rsStep.getInt(COLUMN_ASSIGNED_WEIGHT));
 
         // load left and right child
         if (loadTree) {
@@ -673,7 +663,6 @@ public class StepFactory {
     void updateStep(User user, Step step, boolean updateTime)
             throws WdkUserException, SQLException, NoSuchAlgorithmException,
             WdkModelException, JSONException {
-        // TEST
         // update custom name
         Date lastRunTime = (updateTime) ? new Date() : step.getLastRunTime();
         int estimateSize = step.getEstimateSize();
@@ -683,6 +672,7 @@ public class StepFactory {
                 + " = ?, " + COLUMN_IS_DELETED + " = ?, "
                 + COLUMN_IS_COLLAPSIBLE + " = ?, " + COLUMN_COLLAPSED_NAME
                 + " = ?, " + COLUMN_ESTIMATE_SIZE + " = ?, " + COLUMN_IS_VALID
+                + " = ?, " + COLUMN_ASSIGNED_WEIGHT
                 + " = ? WHERE " + COLUMN_STEP_INTERNAL_ID + " = ?";
         try {
             long start = System.currentTimeMillis();
@@ -694,7 +684,8 @@ public class StepFactory {
             psStep.setString(5, step.getCollapsedName());
             psStep.setInt(6, estimateSize);
             psStep.setBoolean(7, step.isValid());
-            psStep.setInt(8, step.getInternalId());
+            psStep.setInt(8, step.getAssignedWeight());
+            psStep.setInt(9, step.getInternalId());
             int result = psStep.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql, start);
             if (result == 0)
@@ -961,7 +952,7 @@ public class StepFactory {
                 Step newChildStep = importStep(newUser, oldChildStep);
                 paramValue = Integer.toString(newChildStep.getDisplayId());
             } else if (param instanceof DatasetParam) {
-                DatasetParam datasetParam = (DatasetParam)param;
+                DatasetParam datasetParam = (DatasetParam) param;
                 int oldUserDatasetId = Integer.parseInt(paramValue);
                 Dataset oldDataset = oldUser.getDataset(oldUserDatasetId);
                 oldDataset.setRecordClass(datasetParam.getRecordClass());
@@ -975,8 +966,9 @@ public class StepFactory {
         int startIndex = 1;
         int endIndex = oldStep.getUser().getItemsPerPage();
         boolean deleted = oldStep.isDeleted();
+        int assignedWeight = oldStep.getAssignedWeight();
         Step newStep = newUser.createStep(question, paramValues, filter,
-                startIndex, endIndex, deleted, false);
+                startIndex, endIndex, deleted, false, assignedWeight);
         newStep.setCollapsedName(oldStep.getCollapsedName());
         newStep.setCollapsible(oldStep.isCollapsible());
         String customeName = oldStep.getBaseCustomName();

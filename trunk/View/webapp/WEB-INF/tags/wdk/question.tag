@@ -63,6 +63,11 @@
 
 <c:set target="${helps}" property="${fromAnchorQ}" value="${helpQ}"/>
 
+<%-- set the weight --%>
+<div align="center">
+  Assign Weight: <input type="text" name="weight" value="0">
+</div>
+
 <div class="filter-button"><html:submit property="questionSubmit" value="Get Answer"/></div>
 </html:form>
 

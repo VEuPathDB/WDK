@@ -59,12 +59,15 @@ public class Step {
 
     private Map<String, String> paramValues = new LinkedHashMap<String, String>();
 
+    private int assignedWeight;
+
     Step(StepFactory stepFactory, User user, int displayId, int internalId) {
         this.stepFactory = stepFactory;
         this.user = user;
         this.displayId = displayId;
         this.internalId = internalId;
         isDeleted = false;
+        assignedWeight = 0;
     }
 
     public Step getPreviousStep() {
@@ -505,20 +508,22 @@ public class Step {
         throw new WdkUserException("Id not found!");
     }
 
-    public Step createStep(String filterName) throws NoSuchAlgorithmException,
+    public Step createStep(String filterName, int assignedWeight) throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
         RecordClass recordClass = getQuestion().getRecordClass();
         AnswerFilterInstance filter = recordClass.getFilter(filterName);
-        return createStep(filter);
+        return createStep(filter, assignedWeight);
     }
 
-    public Step createStep(AnswerFilterInstance filter)
+    public Step createStep(AnswerFilterInstance filter, int assignedWeight)
             throws NoSuchAlgorithmException, WdkModelException, JSONException,
             WdkUserException, SQLException {
         AnswerFilterInstance oldFilter = getFilter();
-        if (filter == null && oldFilter == null) return this;
+        if (filter == null && oldFilter == null 
+                && this.assignedWeight == assignedWeight) return this;
         if (filter != null && oldFilter != null
-                && filter.getName().equals(oldFilter.getName())) return this;
+                && filter.getName().equals(oldFilter.getName())
+                && this.assignedWeight == assignedWeight) return this;
 
         // create new steps
         Question question = getQuestion();
@@ -526,7 +531,7 @@ public class Step {
         int startIndex = getAnswerValue().getStartIndex();
         int endIndex = getAnswerValue().getEndIndex();
         Step step = user.createStep(question, params, filter, startIndex,
-                endIndex, isDeleted, false);
+                endIndex, isDeleted, false, assignedWeight);
         step.collapsedName = collapsedName;
         step.customName = customName;
         step.isCollapsible = isCollapsible;
@@ -550,7 +555,7 @@ public class Step {
         Step step;
         AnswerValue answerValue = getAnswerValue();
         if (!isCombined()) {
-            step = user.createStep(answerValue, isDeleted);
+            step = user.createStep(answerValue, isDeleted, assignedWeight);
         } else {
             Question question = getQuestion();
             Map<String, String> paramValues = new LinkedHashMap<String, String>();
@@ -569,7 +574,7 @@ public class Step {
             int pageStart = answerValue.getStartIndex();
             int pageEnd = answerValue.getEndIndex();
             step = user.createStep(question, paramValues, filter, pageStart,
-                    pageEnd, isDeleted, false);
+                    pageEnd, isDeleted, false, assignedWeight);
         }
         step.collapsedName = collapsedName;
         step.customName = customName;
@@ -660,9 +665,9 @@ public class Step {
             Map<String, Boolean> sortingMap = user.getSortingAttributes(question.getFullName());
             int endIndex = user.getItemsPerPage();
             answerValue = question.makeAnswerValue(user, paramValues, 1,
-                    endIndex, sortingMap, getFilter());
-	    this.estimateSize = answerValue.getResultSize();
-	    update(false);
+                    endIndex, sortingMap, getFilter(), assignedWeight);
+            this.estimateSize = answerValue.getResultSize();
+            update(false);
         }
         return answerValue;
     }
@@ -746,4 +751,20 @@ public class Step {
     public void setValidationMessage(String validationMessage) {
         this.validationMessage = validationMessage;
     }
+
+    /**
+     * @return the assignedWeight
+     */
+    public int getAssignedWeight() {
+        return assignedWeight;
+    }
+
+    /**
+     * @param assignedWeight
+     *            the assignedWeight to set
+     */
+    public void setAssignedWeight(int assignedWeight) {
+        this.assignedWeight = assignedWeight;
+    }
+
 }

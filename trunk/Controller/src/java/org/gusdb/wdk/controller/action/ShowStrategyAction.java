@@ -349,6 +349,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("urlParams", step.getQuestionUrlParams());
         jsStep.put("isValid", step.getIsValid());
         jsStep.put("validationMessage", step.getValidationMessage());
+        jsStep.put("assignedWeight", step.getAssignedWeight());
 
         // determine the types of the step
         if (showSubStrategy && step.getIsCollapsible()) {

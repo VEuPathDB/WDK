@@ -8,8 +8,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.query.Column;
+import org.gusdb.wdk.model.query.ColumnType;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -211,15 +214,15 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
      * @throws NoSuchAlgorithmException
      */
     public AnswerValue makeAnswerValue(User user,
-            Map<String, String> dependentValues) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+            Map<String, String> dependentValues, int assignedWeight)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         int pageStart = 1;
         int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
         Map<String, Boolean> sortingMap = this.defaultSortingMap;
         AnswerFilterInstance filter = recordClass.getDefaultFilter();
         AnswerValue answerValue = makeAnswerValue(user, dependentValues,
-                pageStart, pageEnd, sortingMap, filter);
+                pageStart, pageEnd, sortingMap, filter, assignedWeight);
         if (this.fullAnswer) {
             int resultSize = answerValue.getResultSize();
             if (resultSize > pageEnd)
@@ -230,11 +233,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     public AnswerValue makeAnswerValue(User user,
             Map<String, String> dependentValues, int pageStart, int pageEnd,
-            Map<String, Boolean> sortingAttributes, AnswerFilterInstance filter)
+            Map<String, Boolean> sortingAttributes,
+            AnswerFilterInstance filter, int assignedWeight)
             throws NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException, JSONException {
         return makeAnswerValue(user, dependentValues, pageStart, pageEnd,
-                sortingAttributes, filter, true);
+                sortingAttributes, filter, true, assignedWeight);
     }
 
     /**
@@ -254,10 +258,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     public AnswerValue makeAnswerValue(User user,
             Map<String, String> dependentValues, int pageStart, int pageEnd,
             Map<String, Boolean> sortingAttributes,
-            AnswerFilterInstance filter, boolean validate)
+            AnswerFilterInstance filter, boolean validate, int assignedWeight)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        QueryInstance qi = query.makeInstance(user, dependentValues, validate);
+        QueryInstance qi = query.makeInstance(user, dependentValues, validate,
+                assignedWeight);
         AnswerValue answerValue = new AnswerValue(user, this, qi, pageStart,
                 pageEnd, sortingAttributes, filter);
         String[] summaryAttributes = user.getSummaryAttributes(getFullName());
@@ -453,6 +458,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         } else {
             attributeFields = recordClass.getSummaryAttributeFieldMap();
         }
+
+        // add weight to the list
+        Map<String, AttributeField> dynamicFields = dynamicAttributeSet.getAttributeFieldMap();
+        AttributeField weightField = dynamicFields.get(Utilities.COLUMN_WEIGHT);
+        attributeFields.put(weightField.getName(), weightField);
+
         return attributeFields;
     }
 
@@ -495,7 +506,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
             // dynamic attribute set need to be initialized after the id query.
             if (dynamicAttributeSet != null) {
-                this.dynamicAttributeQuery = createDynamicAttributeQuery();
+                this.dynamicAttributeQuery = createDynamicAttributeQuery(model);
+                dynamicAttributeQuery.resolveReferences(model);
                 dynamicAttributeSet.resolveReferences(model);
             }
 
@@ -694,6 +706,14 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         }
         dynamicAttributeSets = null;
 
+        // add weight as an attribute
+        if (dynamicAttributeSet == null) {
+            DynamicAttributeSet dynamicSet = new DynamicAttributeSet();
+            dynamicSet.setQuestion(this);
+            dynamicSet.excludeResources(projectId);
+            this.dynamicAttributeSet = dynamicSet;
+        }
+
         // exclude property lists
         for (PropertyList propList : propertyLists) {
             if (propList.include(projectId)) {
@@ -712,14 +732,35 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         propertyLists = null;
     }
 
-    private Query createDynamicAttributeQuery() throws WdkModelException {
+    private Query createDynamicAttributeQuery(WdkModel wdkModel) throws WdkModelException {
         SqlQuery query = new SqlQuery();
         query.setIsCacheable(false);
         query.setName(this.query.getName() + DYNAMIC_QUERY_SUFFIX);
-        this.query.getQuerySet().addQuery(query);
+        QuerySet querySet = wdkModel.getQuerySet(Utilities.INTERNAL_QUERY_SET);
+        querySet.addQuery(query);
 
         // set the columns, which as the same column as the id query
-        query.setColumns(this.query.getColumns());
+        boolean hasWeight = false;
+        for (Column column : this.query.getColumns()) {
+            query.addColumn(new Column(column));
+            if (column.getName().equals(Utilities.COLUMN_WEIGHT))
+                hasWeight = true;
+        }
+        if (!hasWeight) {
+            // create and add the weight column
+            Column column = new Column();
+            column.setName(Utilities.COLUMN_WEIGHT);
+            column.setType(ColumnType.NUMBER);
+            column.setWidth(12);
+            query.addColumn(column);
+        }
+
+        // dynamic query doesn't have sql defined, here just fill in the stub
+        // sql; the real sql will be constructed by answerValue
+        query.setSql("");
+        
+        query.excludeResources(wdkModel.getProjectId());
+
         return query;
     }
 

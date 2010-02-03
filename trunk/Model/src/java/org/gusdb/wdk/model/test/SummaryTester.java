@@ -124,7 +124,7 @@ public class SummaryTester {
 
                 AnswerValue answerValue = question.makeAnswerValue(user,
                         paramValues, nextStartRow, nextEndRow, sortingMap,
-                        filter);
+                        filter, 0);
 
                 // this is wrong. it only shows one attribute query, not
                 // all. Fix this in Answer by saving a list of attribute
@@ -195,10 +195,10 @@ public class SummaryTester {
         Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
 
         AnswerValue answerValue = question.makeAnswerValue(user, paramValues,
-                1, 2, sortingMap, filter);
+                1, 2, sortingMap, filter, 0);
         int resultSize = answerValue.getResultSize();
         answerValue = question.makeAnswerValue(user, paramValues, 1,
-                resultSize, sortingMap, filter);
+                resultSize, sortingMap, filter, 0);
         FileWriter fw = new FileWriter(new File(xmlFile), false);
 
         String newline = System.getProperty("line.separator");

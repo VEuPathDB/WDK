@@ -147,7 +147,7 @@ public class SanityTester {
         try {
             question.getQuery().setIsCacheable(false);
             AnswerValue answerValue = question.makeAnswerValue(user,
-                    paramValuesSet.getParamValues());
+                    paramValuesSet.getParamValues(), 0);
 
             int resultSize = answerValue.getResultSize();
 
@@ -328,7 +328,7 @@ public class SanityTester {
         int count = 0;
 
         QueryInstance instance = query.makeInstance(user,
-                paramValuesSet.getParamValues(), true);
+                paramValuesSet.getParamValues(), true, 0);
         ResultList rs = instance.getResults();
 
         while (rs.next()) {
@@ -346,7 +346,7 @@ public class SanityTester {
         params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
 
         SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
-                params, true);
+                params, true, 0);
 
         if (paramValuesSet.getParamValues().size() != 2) {
             throw new WdkUserException(
@@ -374,7 +374,7 @@ public class SanityTester {
         params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
 
         SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
-                params, true);
+                params, true, 0);
 
         String sql = "select * from (" + instance.getUncachedSql() + ") "
                 + paramValuesSet.getWhereClause();

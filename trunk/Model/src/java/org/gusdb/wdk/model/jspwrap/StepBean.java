@@ -331,10 +331,10 @@ public class StepBean {
      * @throws SQLException
      * @see org.gusdb.wdk.model.user.Step#createStep(org.gusdb.wdk.model.AnswerFilterInstance)
      */
-    public StepBean createStep(String filterName)
+    public StepBean createStep(String filterName, int assignedWeight)
             throws NoSuchAlgorithmException, WdkModelException, JSONException,
             WdkUserException, SQLException {
-        return new StepBean(user, step.createStep(filterName));
+        return new StepBean(user, step.createStep(filterName, assignedWeight));
     }
 
     /**
@@ -493,4 +493,14 @@ public class StepBean {
             WdkModelException {
         return step.validate();
     }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Step#getAssignedWeight()
+     */
+    public int getAssignedWeight() {
+        return step.getAssignedWeight();
+    }
+    
+    
 }

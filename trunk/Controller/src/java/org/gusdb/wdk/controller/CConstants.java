@@ -78,6 +78,7 @@ public class CConstants {
     public static final String WDK_STATE_KEY = "state";
     public static final String WDK_OPEN_KEY = "open";
     public static final String WDK_NEW_STRATEGY_KEY = "newStrategy";
+    public static final String WDK_ASSIGNED_WEIGHT_KEY = "weight";
 
     // params used in the url
     public static final String WDK_STEP_ID_PARAM = "step";
@@ -122,6 +123,7 @@ public class CConstants {
     public static final String SKIPTO_DOWNLOAD_MAPKEY = "skip_to_download";
     public static final String SHOW_RECORD_MAPKEY = "show_record";
     public static final String PQ_SHOW_SUMMARY_MAPKEY = "pq_show_summary";
+    public static final String PQ_SHOW_BASKET_MAPKEY = "pq_show_basket";
     public static final String PQ_START_BOOLEAN_MAPKEY = "pq_start_boolean";
     public static final String PBQ_GET_BOOLEAN_ANSWER_MAPKEY = "pbq_get_boolean_answer";
     public static final String PBQ_GROW_BOOLEAN_MAPKEY = "pbq_grow_boolean";
