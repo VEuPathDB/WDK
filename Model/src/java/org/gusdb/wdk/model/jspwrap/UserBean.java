@@ -618,10 +618,11 @@ public class UserBean /* implements Serializable */{
      */
     public StepBean createStep(QuestionBean question,
             Map<String, String> params, String filterName, boolean deleted,
-            boolean validate) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
+            boolean validate, int assignedWeight) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, JSONException,
+            SQLException {
         Step step = user.createStep(question.question, params, filterName,
-                deleted, validate);
+                deleted, validate, assignedWeight);
         latestStep = new StepBean(this, step);
         return latestStep;
     }
@@ -1121,7 +1122,8 @@ public class UserBean /* implements Serializable */{
 
     public void setViewResults(String strategyKey, int stepId,
             int viewPagerOffset) {
-        logger.debug("setting view steps: " + strategyKey + ", " + stepId + ", " + viewPagerOffset);
+        logger.debug("setting view steps: " + strategyKey + ", " + stepId
+                + ", " + viewPagerOffset);
         user.setViewResults(strategyKey, stepId, viewPagerOffset);
     }
 

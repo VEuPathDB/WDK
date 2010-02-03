@@ -66,7 +66,7 @@ public abstract class Query extends WdkModelBase {
             throws JSONException;
 
     public abstract QueryInstance makeInstance(User user,
-            Map<String, String> values, boolean validate)
+            Map<String, String> values, boolean validate, int assignedWeight)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException;
 
@@ -208,20 +208,6 @@ public abstract class Query extends WdkModelBase {
         Column[] array = new Column[columnMap.size()];
         columnMap.values().toArray(array);
         return array;
-    }
-
-    /**
-     * Skip the initialization, and set the column directly
-     * 
-     * @param columns
-     */
-    public void setColumns(Column[] columns) {
-        columnMap.clear();
-        for (Column column : columns) {
-            Column newColumn = new Column(column);
-            newColumn.setQuery(this);
-            columnMap.put(column.getName(), newColumn);
-        }
     }
 
     // exclude this query from sanity testing
@@ -369,6 +355,15 @@ public abstract class Query extends WdkModelBase {
                         + "the same query.");
         }
         resolved = true;
+
+        // if the query is a transform, it has to return weight column.
+        // this applies to both explicit transform and filter queries.
+        if (isTransform()) {
+            if (!columnMap.containsKey(Utilities.COLUMN_WEIGHT))
+                throw new WdkModelException("Transform query [" + getFullName()
+                        + "] doesn't define the required " + Utilities.COLUMN_WEIGHT
+                        + " column.");
+        }
     }
 
     private Param resolveParamReference(WdkModel wdkModel,

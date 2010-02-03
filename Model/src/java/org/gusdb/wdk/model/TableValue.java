@@ -252,7 +252,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
 
         // run the table query, and get the resultList
         Query query = tableField.getQuery();
-        this.instance = query.makeInstance(user, primaryKey.getValues(), true);
+        this.instance = query.makeInstance(user, primaryKey.getValues(), true, 0);
     }
 
     public TableField getTableField() {

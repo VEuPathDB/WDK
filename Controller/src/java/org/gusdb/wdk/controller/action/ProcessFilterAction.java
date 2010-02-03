@@ -90,6 +90,13 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             String filterName = request.getParameter("filter");
             boolean hasFilter = (filterName != null && filterName.length() > 0);
 
+            // get the assigned weight
+            String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
+            boolean hasWeight = (strWeight != null && strWeight.length() > 0);
+            int weight = hasWeight ? Integer.parseInt(strWeight) : 0;
+
+            logger.debug("process action weight: " + weight);
+
             // Are we revising or inserting a step?
             // changing filter is considered a revise
             String reviseStep = request.getParameter("revise");
@@ -113,19 +120,24 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 newStep.setIsCollapsible(true);
                 newStep.setCollapsedName("Copy of " + insertStrat.getName());
                 newStep.update(false);
-            } else if (isRevise && hasFilter || isRevise
-                    && (qFullName == null || qFullName.trim().length() == 0)) {
+            } else if (isRevise
+                    && (hasWeight || hasFilter || qFullName == null || qFullName.trim().length() == 0)) {
                 logger.debug("change filter: " + filterName);
                 // change the filter of an existing step, which can be a child
                 // step, or a boolean step
                 StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
-                if (hasFilter) newStep = oldStep.createStep(filterName);
-                else {
+                if (hasFilter) {
+                    newStep = oldStep.createStep(filterName,
+                            oldStep.getAssignedWeight());
+                } else if (hasWeight) {
+                    newStep = oldStep.createStep(oldStep.getFilterName(),
+                            weight);
+                } else {
                     newStep = oldStep.getChildStep();
                 }
                 // reset pager info in session
                 wdkUser.setViewResults(wdkUser.getViewStrategyId(),
-                                       wdkUser.getViewStepId(), 0);
+                        wdkUser.getViewStepId(), 0);
             } else {
                 // no: get question
                 wdkQuestion = getQuestionByFullName(qFullName);
@@ -137,8 +149,13 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 Map<String, String> params = prepareParams(wdkUser, request,
                         fForm);
 
+                if (isRevise) {
+                    StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
+                    weight = (oldStep.getChildStep() == null) 
+                        ? oldStep.getAssignedWeight() : oldStep.getChildStep().getAssignedWeight();
+                }
                 newStep = ShowSummaryAction.summaryPaging(request, wdkQuestion,
-                        params, filterName, false);
+                        params, filterName, false, weight);
 
                 // We only set isTransform = true if we're running a new query &
                 // it's a transform If we're inserting a strategy, it has to be
@@ -163,7 +180,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             }
 
             String boolExp = null;
-            if (isRevise && hasFilter) {
+            if (isRevise && (hasFilter || hasWeight)) {
                 // get the original step
                 int originalStepId = Integer.parseInt(reviseStep);
                 StepBean targetStep = strategy.getStepById(originalStepId);
@@ -243,7 +260,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
                             if (parent.getIsTransform()) {
                                 newStep = updateTransform(wdkUser, parent,
-                                        newStepId);
+                                        newStepId, weight);
                             } else {
                                 StepBean previous = newStep;
                                 StepBean child = parent.getChildStep();
@@ -294,8 +311,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                                 // save the old child id into revise
                                 reviseStep = Integer.toString(parent.getChildStep().getStepId());
                                 StepBean child = newStep;
-                                String operator = (op == null)
-                                        ? parent.getOperation() : op;
+                                String operator = (op == null) ? parent.getOperation()
+                                        : op;
                                 boolean useBooleanFilter = parent.isUseBooleanFilter();
                                 String bfName = parent.getFilterName();
                                 newStep = wdkUser.createBooleanStep(previous,
@@ -377,8 +394,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     }
 
     protected StepBean updateTransform(UserBean wdkUser, StepBean step,
-            int newStepId) throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            int newStepId, int assignedWeight) throws WdkModelException,
+            WdkUserException, NoSuchAlgorithmException, SQLException,
+            JSONException {
         // Get question
         QuestionBean wdkQuestion = step.getQuestion();
         // Get internal params
@@ -391,7 +409,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         }
         String filterName = step.getFilterName();
         StepBean newStep = wdkUser.createStep(wdkQuestion, paramValues,
-                filterName, step.getIsDeleted(), false);
+                filterName, step.getIsDeleted(), false, assignedWeight);
         newStep.setCustomName(step.getBaseCustomName());
         newStep.update(false);
         return newStep;

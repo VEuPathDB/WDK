@@ -64,15 +64,19 @@ public abstract class QueryInstance {
     protected boolean cached;
 
     private String checksum;
+    protected int assignedWeight;
 
     protected QueryInstance(User user, Query query, Map<String, String> values,
-            boolean validate) throws WdkModelException,
+            boolean validate, int assignedWeight) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         this.user = user;
         this.query = query;
         this.wdkModel = query.getWdkModel();
         this.cached = query.isCached();
+        this.assignedWeight = assignedWeight;
+
+        logger.debug("query weight: " + assignedWeight);
 
         // logger.debug("validating param values of query [" +
         // query.getFullName() + "]");
@@ -167,6 +171,7 @@ public abstract class QueryInstance {
         jsInstance.put("query", query.getFullName());
 
         jsInstance.put("params", getIndependentParamValuesJSONObject());
+        jsInstance.put("assignedWeight", assignedWeight);
 
         // include extra info from child
         appendSJONContent(jsInstance);
@@ -338,4 +343,7 @@ public abstract class QueryInstance {
         return internalValues;
     }
 
+    public int getAssignedWeight() {
+        return assignedWeight;
+    }
 }

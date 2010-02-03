@@ -710,4 +710,32 @@ function ChangeFilter(strategyId, stepId, url, filter) {
 }
 
 
-
+function SetWeight(e, f_strategyId, f_stepId){
+        var strategy = getStrategy(f_strategyId);
+        var step = strategy.getStep(f_stepId, true);
+        var cs = strategy.checksum;
+        var weight = $(e).siblings("input#weight").val();
+        if(strategy.subStratOf != null)
+                cs = getStrategy(strategy.subStratOf).checksum;
+        var url = "processFilter.do?strategy=" + strategy.backId + "&revise=" + step.back_step_Id + "&weight=" + weight + "&strategy_checksum="+cs;
+        $.ajax({
+                url: url,
+                type: "post",
+                dataType: "json",
+                data: "state=" + p_state,
+                beforeSend: function(){
+                        showLoading(f_strategyId);
+                },
+                success: function(data){
+                        if(ErrorHandler("SetWeight", data, strategy, null)){
+                                updateStrategies(data);
+                        }else{
+                                removeLoading(f_strategyId);
+                        }
+                },
+                error: function(data, msg, e){
+                        alert("ERROR \n " + msg + "\n" + e
+                                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
+                }
+        });
+}

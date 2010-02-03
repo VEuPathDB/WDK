@@ -13,6 +13,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
@@ -50,10 +51,10 @@ public class SqlQueryInstance extends QueryInstance {
      * @throws NoSuchAlgorithmException
      */
     protected SqlQueryInstance(User user, SqlQuery query,
-            Map<String, String> values, boolean validate)
+            Map<String, String> values, boolean validate, int assignedWeight)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        super(user, query, values, validate);
+        super(user, query, values, validate, assignedWeight);
         this.query = query;
     }
 
@@ -99,20 +100,24 @@ public class SqlQueryInstance extends QueryInstance {
     public void insertToCache(Connection connection, String tableName,
             int instanceId) throws WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException, WdkUserException {
-        Column[] columns = query.getColumns();
+        String idColumn = CacheFactory.COLUMN_INSTANCE_ID;
+        String weightColumn = Utilities.COLUMN_WEIGHT;
+        Map<String, Column> columns = query.getColumnMap();
         StringBuffer columnList = new StringBuffer();
-        columnList.append(CacheFactory.COLUMN_INSTANCE_ID);
-        for (Column column : columns) {
-            columnList.append(", ").append(column.getName());
+        for (Column column : columns.values()) {
+            columnList.append(", " + column.getName());
         }
+        if (!columns.containsKey(weightColumn))
+            columnList.append(", " + weightColumn);
 
-        // get the sql with param values applied.
+        // get the sql with param values applied. The last column has to be the
+        // weight.
         String sql = getUncachedSql();
 
-        StringBuffer buffer = new StringBuffer("INSERT INTO ");
-        buffer.append(tableName).append(" (").append(columnList).append(") ");
+        StringBuffer buffer = new StringBuffer("INSERT INTO " + tableName);
+        buffer.append(" (" + idColumn + columnList + ") ");
         buffer.append("SELECT ");
-        buffer.append(instanceId).append(" AS ").append(columnList);
+        buffer.append(instanceId + " AS " + idColumn + columnList);
         buffer.append(" FROM (").append(sql).append(") f");
 
         Statement stmt = null;
@@ -136,6 +141,14 @@ public class SqlQueryInstance extends QueryInstance {
             Param param = params.get(paramName);
             String value = internalValues.get(paramName);
             sql = param.replaceSql(sql, value);
+        }
+        // add weight to the last column if it doesn't exist, it has to be the
+        // last column.
+        Map<String, Column> columns = query.getColumnMap();
+        String weightColumn = Utilities.COLUMN_WEIGHT;
+        if (!columns.containsKey(weightColumn)) {
+            sql = "SELECT o.*, " + assignedWeight + " AS " + weightColumn
+                    + " FROM (" + sql + ") o";
         }
         return sql;
 
@@ -168,10 +181,9 @@ public class SqlQueryInstance extends QueryInstance {
         // get the sql with param values applied.
         String sql = getUncachedSql();
 
-        StringBuffer buffer = new StringBuffer("CREATE TABLE ");
-        buffer.append(tableName).append(" AS ").append("SELECT ");
-        buffer.append(instanceId).append(" AS ").append(
-                CacheFactory.COLUMN_INSTANCE_ID);
+        StringBuffer buffer = new StringBuffer("CREATE TABLE " + tableName);
+        buffer.append(" AS SELECT ");
+        buffer.append(instanceId + " AS " + CacheFactory.COLUMN_INSTANCE_ID);
         buffer.append(", f.* FROM (").append(sql).append(") f");
 
         Statement stmt = null;

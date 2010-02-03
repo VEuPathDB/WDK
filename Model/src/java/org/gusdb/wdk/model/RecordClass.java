@@ -19,10 +19,12 @@ import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
+import org.apache.log4j.Logger;
+
 public class RecordClass extends WdkModelBase implements
         AttributeFieldContainer {
 
-    // private static final Logger logger = Logger.getLogger(RecordClass.class);
+    private static final Logger logger = Logger.getLogger(RecordClass.class);
 
     public static Query prepareQuery(WdkModel wdkModel, Query query,
             String[] paramNames) throws WdkModelException,

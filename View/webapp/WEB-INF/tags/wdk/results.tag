@@ -44,9 +44,14 @@
     <c:set var="commandUrl" value="${commandUrl}${prm}&" />
   </c:if>
 </c:forEach>
-<c:if test="${strategy != null}">
-  <c:set var="commandUrl" value="${commandUrl}strategy_checksum=${strategy.checksum}" />
-</c:if>
+<c:choose>
+  <c:when test="${strategy != null}"> <%-- this is on the run page --%>
+    <c:set var="commandUrl" value="${commandUrl}strategy_checksum=${strategy.checksum}" />
+  </c:when>
+  <c:otherwise> <%-- this is on the basket page --%>
+    <c:set var="commandUrl" value="${commandUrl}from_basket=true" />
+  </c:otherwise>
+</c:choose>
 <c:set var="commandUrl"><c:url value="/processSummary.do?${commandUrl}" /></c:set>
 
 <c:if test="${strategy != null}">

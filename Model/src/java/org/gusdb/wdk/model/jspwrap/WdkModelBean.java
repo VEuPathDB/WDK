@@ -3,14 +3,11 @@ package org.gusdb.wdk.model.jspwrap;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
 import org.gusdb.wdk.model.Category;
-import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
@@ -234,4 +231,8 @@ public class WdkModelBean {
         return model.getReleaseDate();
     }
 
+    public QuestionBean getQuestion(String questionFullName)
+           throws WdkUserException, WdkModelException {
+        return new QuestionBean(model.getQuestion(questionFullName));
+    }
 }

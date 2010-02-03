@@ -45,7 +45,8 @@ public class ShowBasketAction extends Action {
             Map<String, String> params = new LinkedHashMap<String, String>();
             params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
 
-            StepBean step = user.createStep(question, params, null, true, false);
+            StepBean step = user.createStep(question, params, null, true,
+                    false, 0);
 
             ActionForward forward = mapping.findForward(MAPKEY_SHOW_BASKET);
             String path = forward.getPath() + "?"

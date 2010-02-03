@@ -382,7 +382,8 @@ public class User /* implements Serializable */{
      * @throws WdkUserException
      * @throws NoSuchAlgorithmException
      */
-    public synchronized Step createStep(AnswerValue answerValue, boolean deleted)
+    public synchronized Step createStep(AnswerValue answerValue,
+            boolean deleted, int assignedWeight)
             throws NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException, JSONException {
         Question question = answerValue.getQuestion();
@@ -392,39 +393,40 @@ public class User /* implements Serializable */{
         int endIndex = answerValue.getEndIndex();
 
         return createStep(question, paramValues, filter, startIndex, endIndex,
-                deleted, true);
+                deleted, true, assignedWeight);
     }
 
     public synchronized Step createStep(Question question,
             Map<String, String> paramValues, String filterName,
-            boolean deleted, boolean validate) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+            boolean deleted, boolean validate, int assignedWeight)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         AnswerFilterInstance filter = null;
         RecordClass recordClass = question.getRecordClass();
         if (filterName != null) {
             filter = recordClass.getFilter(filterName);
         } else filter = recordClass.getDefaultFilter();
-        return createStep(question, paramValues, filter, deleted, validate);
+        return createStep(question, paramValues, filter, deleted, validate,
+                assignedWeight);
     }
 
     public synchronized Step createStep(Question question,
             Map<String, String> paramValues, AnswerFilterInstance filter,
-            boolean deleted, boolean validate) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
-        int endIndex = getItemsPerPage();
-        return createStep(question, paramValues, filter, 1, endIndex, deleted,
-                validate);
-    }
-
-    public synchronized Step createStep(Question question,
-            Map<String, String> paramValues, AnswerFilterInstance filter,
-            int pageStart, int pageEnd, boolean deleted, boolean validate)
+            boolean deleted, boolean validate, int assignedWeight)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
+        int endIndex = getItemsPerPage();
+        return createStep(question, paramValues, filter, 1, endIndex, deleted,
+                validate, assignedWeight);
+    }
+
+    public synchronized Step createStep(Question question,
+            Map<String, String> paramValues, AnswerFilterInstance filter,
+            int pageStart, int pageEnd, boolean deleted, boolean validate,
+            int assignedWeight) throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         Step step = stepFactory.createStep(this, question, paramValues, filter,
-                pageStart, pageEnd, deleted, validate);
+                pageStart, pageEnd, deleted, validate, assignedWeight);
         if (stepCount != null) stepCount++;
         return step;
     }
@@ -435,9 +437,9 @@ public class User /* implements Serializable */{
         return createStrategy(step, null, null, saved, null, false);
     }
 
-    public synchronized Strategy createStrategy(Step step, boolean saved, boolean hidden)
-            throws WdkUserException, WdkModelException, SQLException,
-            JSONException, NoSuchAlgorithmException {
+    public synchronized Strategy createStrategy(Step step, boolean saved,
+            boolean hidden) throws WdkUserException, WdkModelException,
+            SQLException, JSONException, NoSuchAlgorithmException {
         return createStrategy(step, null, null, saved, null, hidden);
     }
 
@@ -883,8 +885,7 @@ public class User /* implements Serializable */{
     public Dataset createDataset(RecordClass recordClass, String uploadFile,
             List<String[]> values) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException {
-        return datasetFactory.getDataset(this, recordClass, uploadFile,
-                values);
+        return datasetFactory.getDataset(this, recordClass, uploadFile, values);
     }
 
     public void save() throws WdkUserException, WdkModelException {
@@ -1308,7 +1309,7 @@ public class User /* implements Serializable */{
         params.put(booleanQuery.getUseBooleanFilter().getName(),
                 Boolean.toString(useBooleanFilter));
 
-        Step booleanStep = createStep(question, params, filter, false, false);
+        Step booleanStep = createStep(question, params, filter, false, false, 0);
         booleanStep.setPreviousStep(leftStep);
         booleanStep.setChildStep(rightStep);
         return booleanStep;
