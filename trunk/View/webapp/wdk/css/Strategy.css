@@ -38,10 +38,11 @@
 	margin:   0 auto; /* Sorry, IE5.x/Win. */
 	left:    0em;
 	background-color: #EDEDED;
-	height:   130px;
+	height:   135px;
 	border-color: #ffffff #cccccc #666677 #aaaaaa;
 	border-style: ridge;
 	border-width: 4px;
+	padding-top:5px;
 }
 
 .invalid-image:hover{
