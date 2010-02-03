@@ -191,7 +191,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
             request.setAttribute("wdk_summary_url", requestUrl);
             request.setAttribute("wdk_query_string", queryString);
 
-
             logger.debug("Leaving showSummary");
             return forward;
         } catch (Exception ex) {
@@ -252,11 +251,17 @@ public class ShowSummaryAction extends ShowQuestionAction {
             // get the hidden flag
             String strHidden = request.getParameter(PARAM_HIDDEN_STEP);
             boolean hidden = "true".equalsIgnoreCase(strHidden);
-
+            
+            // get the assigned weight
+            String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
+            int weight = 0;
+            if (strWeight != null && strWeight.matches("^\\d+$"))
+                weight = Integer.parseInt(strWeight);
+            
             // make the answer
             String filterName = request.getParameter("filter");
             step = summaryPaging(request, wdkQuestion, params, filterName,
-                    hidden);
+                    hidden, weight);
         } else {
             logger.debug("load existing step");
 
@@ -280,16 +285,16 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         AnswerValueBean answerValue = step.getAnswerValue();
         ServletContext svltCtx = getServlet().getServletContext();
-	String baseFilePath = CConstants.WDK_CUSTOM_VIEW_DIR
-	    + File.separator + CConstants.WDK_PAGES_DIR
-	    + File.separator + CConstants.WDK_RESULTS_DIR;
+        String baseFilePath = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator
+                + CConstants.WDK_PAGES_DIR + File.separator
+                + CConstants.WDK_RESULTS_DIR;
         String customViewFile1 = baseFilePath + File.separator
-	    + answerValue.getQuestion().getFullName() + ".results.jsp";
+                + answerValue.getQuestion().getFullName() + ".results.jsp";
         String customViewFile2 = baseFilePath + File.separator
-	    + answerValue.getRecordClass().getFullName() + ".results.jsp";
-	String defaultViewFile = CConstants.WDK_DEFAULT_VIEW_DIR
-	    + File.separator + CConstants.WDK_PAGES_DIR
-	    + File.separator + CConstants.WDK_RESULTS_PAGE;
+                + answerValue.getRecordClass().getFullName() + ".results.jsp";
+        String defaultViewFile = CConstants.WDK_DEFAULT_VIEW_DIR
+                + File.separator + CConstants.WDK_PAGES_DIR + File.separator
+                + CConstants.WDK_RESULTS_PAGE;
 
         ActionForward forward = null;
 
@@ -309,7 +314,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             forward = new ActionForward(customViewFile2);
         } else {
             forward = new ActionForward(defaultViewFile);
-	}
+        }
 
         logger.debug("end getting forward");
         return forward;
@@ -321,14 +326,16 @@ public class ShowSummaryAction extends ShowQuestionAction {
         QuestionBean question = step.getQuestion();
         Map<String, String> paramValues = step.getParams();
         String filterName = step.getFilterName();
-        return summaryPaging(request, question, paramValues, filterName, false);
+        int assignedWeight = step.getAssignedWeight();
+        return summaryPaging(request, question, paramValues, filterName, false,
+                assignedWeight);
     }
 
     public static StepBean summaryPaging(HttpServletRequest request,
             QuestionBean question, Map<String, String> params,
-            String filterName, boolean deleted) throws WdkModelException,
-            WdkUserException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+            String filterName, boolean deleted, int assignedWeight)
+            throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         logger.debug("start summary paging...");
 
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
@@ -340,7 +347,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         logger.info("Make answer with start=" + start + ", end=" + end);
 
         StepBean step = wdkUser.createStep(question, params, filterName,
-                deleted, true);
+                deleted, true, assignedWeight);
         AnswerValueBean answerValue = step.getAnswerValue();
         int totalSize = answerValue.getResultSize();
         if (end > totalSize) end = totalSize;
@@ -426,8 +433,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
         }
         request.setAttribute(CConstants.WDK_RESULT_SET_ONLY_KEY, resultOnly);
 
-        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
-	    + File.separator + CConstants.WDK_PAGES_DIR;
+        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator
+                + CConstants.WDK_PAGES_DIR;
         String customViewFile = customViewDir + File.separator
                 + CConstants.WDK_SUMMARY_ERROR_PAGE;
 

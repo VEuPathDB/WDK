@@ -87,6 +87,13 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                 url.append("=" + skipToDownloadKey);
             }
 
+            // get the assigned weight
+            String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
+            if (strWeight != null && strWeight.length() > 0) {
+                int weight = Integer.parseInt(strWeight);
+                url.append("&" + CConstants.WDK_ASSIGNED_WEIGHT_KEY + "=" + weight);
+            }
+
             /*
              * Charles Treatman 4/23/09 Add code here to set the
              * current_application_tab cookie so that user will go to the Run

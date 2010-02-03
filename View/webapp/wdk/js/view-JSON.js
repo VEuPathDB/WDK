@@ -411,6 +411,14 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 		"		</div>"+ name +
 		"		<table></table><hr class='clear' />" + filteredName +
 		"		<p><b>Results:&nbsp;</b>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.displayType,jsonstep.results);// + "&nbsp;&nbsp;|&nbsp;&nbsp;<a href='downloadStep.do?step_id=" + modelstep.back_step_Id + "'>Download</a>";
+       
+        // display & assign weight
+        var set_weight = "<div align='center'><b>Assign weight to results:</b> <input id='weight' type='text' value='" + jsonstep.assignedWeight + "' >";
+        set_weight += "<input type='button' value='Assign' onclick='SetWeight(this, " + sid + "," + modelstep.frontId + ");hideDetails(this)' >";
+        set_weight += "<p>You can assign an integral weight to the results, and the weight will be summed up when union with other search results.</p>";
+        set_weight += "<p>sample weights are 10, 200, -50, etc.</p>";
+        set_weight += "</div>";
+        inner += "<hr class='clear' />" + set_weight;
 
 	$(detail_div).html(inner);
 	$("table", detail_div).replaceWith(params_table);

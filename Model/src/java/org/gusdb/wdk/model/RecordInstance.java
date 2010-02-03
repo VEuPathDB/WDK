@@ -25,7 +25,7 @@ public class RecordInstance extends AttributeValueContainer {
     private AnswerValue answerValue;
 
     private boolean isValidRecord;
-
+    
     /**
      * 
      * @param recordClass
@@ -132,7 +132,7 @@ public class RecordInstance extends AttributeValueContainer {
         // put user id in the attribute query
         String userId = Integer.toString(user.getUserId());
         paramValues.put(Utilities.PARAM_USER_ID, userId);
-        QueryInstance instance = query.makeInstance(user, paramValues, true);
+        QueryInstance instance = query.makeInstance(user, paramValues, true, 0);
 
         ResultList resultList = null;
         try {
@@ -340,7 +340,7 @@ public class RecordInstance extends AttributeValueContainer {
         AnswerFilterInstance filter = question.getRecordClass().getDefaultFilter();
         // create an answer with maximium allowed rows
         return question.makeAnswerValue(user, params, pageStart, pageEnd,
-                sortingMap, filter);
+                sortingMap, filter, 0);
     }
 
     // maybe change this to RecordInstance[][] for jspwrap purposes?
@@ -550,7 +550,7 @@ public class RecordInstance extends AttributeValueContainer {
             oldValues.put(oldParam, value);
         }
 
-        QueryInstance instance = aliasQuery.makeInstance(user, oldValues, true);
+        QueryInstance instance = aliasQuery.makeInstance(user, oldValues, true, 0);
         ResultList resultList = instance.getResults();
         if (resultList.next()) {
             for (String param : pkValues.keySet()) {

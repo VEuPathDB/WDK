@@ -16,6 +16,7 @@ import javax.sql.DataSource;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -250,7 +251,7 @@ public class AnswerFilterInstance extends WdkModelBase {
                 throw new WdkModelException("The param [" + paramName
                         + "] declared in answerFilterInstance [" + name
                         + "] of type " + recordClass.getFullName()
-                        + " does not exist in the" + " filter query ["
+                        + " does not exist in the filter query ["
                         + filterQuery.getFullName() + "]");
         }
         // User user = wdkModel.getSystemUser();
@@ -276,8 +277,10 @@ public class AnswerFilterInstance extends WdkModelBase {
             NoSuchAlgorithmException, WdkModelException, JSONException,
             WdkUserException {
         // use only the id query sql as input
-        String sql = answerValue.getIdsQueryInstance().getSql();
-        sql = applyFilter(answerValue.getUser(), sql);
+        QueryInstance idInstance = answerValue.getIdsQueryInstance();
+        String sql = idInstance.getSql();
+        int assignedWeight = idInstance.getAssignedWeight();
+        sql = applyFilter(answerValue.getUser(), sql, assignedWeight);
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
         try {
@@ -288,9 +291,9 @@ public class AnswerFilterInstance extends WdkModelBase {
         }
     }
 
-    public String applyFilter(User user, String sql) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public String applyFilter(User user, String sql, int assignedWeight)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         Map<String, Param> params = filterQuery.getParamMap();
 
         String filterSql = filterQuery.getSql();
@@ -310,6 +313,13 @@ public class AnswerFilterInstance extends WdkModelBase {
                     dependentValue);
             filterSql = param.replaceSql(filterSql, internal);
         }
+
+        // if the filter doesn't return weight, assigned weight will be used
+        if (!filterQuery.getColumnMap().containsKey(Utilities.COLUMN_WEIGHT)) {
+            filterSql = "SELECT f.*, " + assignedWeight + " AS "
+                    + Utilities.COLUMN_WEIGHT + " FROM (" + filterSql + ") f";
+        }
+
         return filterSql;
     }
 }

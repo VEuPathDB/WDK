@@ -604,7 +604,7 @@ public class AnswerValue {
             String userId = Integer.toString(user.getUserId());
             params.put(Utilities.PARAM_USER_ID, userId);
             QueryInstance queryInstance = attributeQuery.makeInstance(user,
-                    params, true);
+                    params, true, 0);
             return queryInstance.getSql();
         }
     }
@@ -670,25 +670,29 @@ public class AnswerValue {
 
     public String getIdSql() throws NoSuchAlgorithmException, SQLException,
             WdkModelException, JSONException, WdkUserException {
-        String[] pkColumns = question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
-
-        StringBuffer sql = new StringBuffer("(SELECT DISTINCT ");
-        boolean firstColumn = true;
-        for (String column : pkColumns) {
-            if (firstColumn) firstColumn = false;
-            else sql.append(", ");
-            sql.append(column);
-        }
-        sql.append(" FROM (");
+        // String[] pkColumns =
+        // question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
+        //
+        // StringBuffer sql = new StringBuffer("(SELECT DISTINCT ");
+        // boolean firstColumn = true;
+        // for (String column : pkColumns) {
+        // if (firstColumn) firstColumn = false;
+        // else sql.append(", ");
+        // sql.append(column);
+        // }
+        // sql.append(" FROM (");
 
         String innerSql = idsQueryInstance.getSql();
+        int assignedWeight = idsQueryInstance.getAssignedWeight();
         // apply filter
-        if (filter != null) innerSql = filter.applyFilter(user, innerSql);
-        sql.append(innerSql).append(") bidq)");
-
-        logger.debug("id sql constructed.");
-
-        return sql.toString();
+        if (filter != null)
+            innerSql = filter.applyFilter(user, innerSql, assignedWeight);
+        return "(" + innerSql + ")";
+        // sql.append(innerSql).append(") bidq)");
+        //
+        // logger.debug("id sql constructed.");
+        //
+        // return sql.toString();
     }
 
     private void prepareSortingSqls(Map<String, String> sqls,
@@ -800,8 +804,10 @@ public class AnswerValue {
                 if (buffer.length() > 0) buffer.append(", ");
                 buffer.append(name);
             }
-            logger.debug("resultSize: " + resultSize + ", start: " + startIndex + ", end: " + endIndex);
-            logger.debug("expected: " + expected + ", actual: " + pageRecordInstances.size());
+            logger.debug("resultSize: " + resultSize + ", start: " + startIndex
+                    + ", end: " + endIndex);
+            logger.debug("expected: " + expected + ", actual: "
+                    + pageRecordInstances.size());
             logger.debug("Paged ID SQL:\n" + sql);
             throw new WdkModelException("The expacted result size is different"
                     + " from the actual size. Please check the id query "
@@ -957,7 +963,8 @@ public class AnswerValue {
             AnswerFilterInstance filter = recordClass.getFilter(filterName);
 
             String innerSql = idsQueryInstance.getSql();
-            innerSql = filter.applyFilter(user, innerSql);
+            int assignedWeight = idsQueryInstance.getAssignedWeight();
+            innerSql = filter.applyFilter(user, innerSql, assignedWeight);
 
             StringBuffer sql = new StringBuffer("SELECT count(*) FROM ");
             sql.append("(").append(innerSql).append(") f");
@@ -1008,9 +1015,9 @@ public class AnswerValue {
         resultSizesByProject = null;
     }
 
-    public List<String[]> getAllIds()
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+    public List<String[]> getAllIds() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         String idSql = getIdSql();
         PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
         String[] pkColumns = pkField.getColumnRefs();
@@ -1022,7 +1029,7 @@ public class AnswerValue {
             resultSet = SqlUtils.executeQuery(wdkModel, dataSource, idSql);
             while (resultSet.next()) {
                 String[] values = new String[pkColumns.length];
-                for (int i = 0 ; i < pkColumns.length; i++) {
+                for (int i = 0; i < pkColumns.length; i++) {
                     Object value = resultSet.getObject(pkColumns[i]);
                     values[i] = (value == null) ? null : value.toString();
                 }

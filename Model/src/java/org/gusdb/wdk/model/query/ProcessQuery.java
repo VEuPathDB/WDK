@@ -99,10 +99,11 @@ public class ProcessQuery extends Query {
      */
     @Override
     public QueryInstance makeInstance(User user, Map<String, String> values,
-            boolean validate) throws WdkModelException,
+            boolean validate, int assignedWeight) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        return new ProcessQueryInstance(user, this, values, validate);
+        return new ProcessQueryInstance(user, this, values, validate,
+                assignedWeight);
     }
 
     /*

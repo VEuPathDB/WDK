@@ -151,6 +151,7 @@ public final class SqlUtils {
             long start = System.currentTimeMillis();
             connection = dataSource.getConnection();
             Statement stmt = connection.createStatement();
+            stmt.setFetchSize(1000);
             resultSet = stmt.executeQuery(sql);
             verifyTime(wdkModel, sql, start);
             return resultSet;
@@ -218,8 +219,8 @@ public final class SqlUtils {
     public static void verifyTime(WdkModel wdkModel, String sql, long fromTime)
             throws WdkUserException, WdkModelException {
         double seconds = (System.currentTimeMillis() - fromTime) / 1000D;
-        logger.debug("SQL executed in " + seconds + " seconds.");
-        logger.debug(sql);
+        logger.trace("SQL executed in " + seconds + " seconds.");
+        logger.trace(sql);
 
         if (seconds < 0) {
             logger.error("code error, negative exec time:");

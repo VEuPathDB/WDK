@@ -83,6 +83,7 @@ public class Utilities {
     public static final String COLUMN_PROJECT_ID = "project_id";
     public static final String COLUMN_USER_ID = "user_id";
     public static final String COLUMN_PK_PREFIX = "pk_column_";
+    public static final String COLUMN_WEIGHT = "wdk_weight";
 
     public static final String PARAM_PROJECT_ID = COLUMN_PROJECT_ID;
     public static final String PARAM_USER_ID = COLUMN_USER_ID;

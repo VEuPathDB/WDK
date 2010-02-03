@@ -35,7 +35,6 @@ public class Strategy {
     private String description;
     private String name;
     private String savedName = null;
-    private String version;
 
     Strategy(StepFactory factory, User user, int displayId, int internalId) {
         this.stepFactory = factory;
@@ -56,6 +55,7 @@ public class Strategy {
     void setDeleted(boolean isDeleted) {
         this.isDeleted = isDeleted;
     }
+
     public String getVersion() {
         return latestStep.getAnswer().getProjectVersion();
     }
@@ -274,14 +274,16 @@ public class Strategy {
                     // non-boolean op
                     Step rightStep = moveFromStep.getChildStep();
                     moveFromStep = user.createBooleanStep(step, rightStep,
-                            moveFromStep.getOperation(), false, moveFromStep.getFilterName());
+                            moveFromStep.getOperation(), false,
+                            moveFromStep.getFilterName());
                     step = moveFromStep;
                 }
                 // again, assuming boolean, will need to add case for
                 // non-boolean
                 Step rightStep = moveToStep.getChildStep();
-                moveToStep = user.createBooleanStep(step, rightStep, moveToStep.getOperation(),
-                        false, moveToStep.getFilterName());
+                moveToStep = user.createBooleanStep(step, rightStep,
+                        moveToStep.getOperation(), false,
+                        moveToStep.getFilterName());
                 step = moveToStep;
             } else if (i == moveFromIx) {
                 // do nothing; this step was moved, so we just ignore it.
@@ -293,8 +295,9 @@ public class Strategy {
                     // again, assuming boolean, will need to add case for
                     // non-boolean
                     Step rightStep = newStep.getChildStep();
-                    newStep = user.createBooleanStep(step, rightStep, newStep.getOperation(),
-                            false, newStep.getFilterName());
+                    newStep = user.createBooleanStep(step, rightStep,
+                            newStep.getOperation(), false,
+                            newStep.getFilterName());
                     step = moveToStep;
                 }
             }
@@ -320,8 +323,9 @@ public class Strategy {
                         newStep.getDisplayId());
             } else {
                 Step rightStep = targetStep.getChildStep();
-                newStep = user.createBooleanStep(newStep, rightStep, targetStep.getOperation(),
-                        false, targetStep.getFilterName());
+                newStep = user.createBooleanStep(newStep, rightStep,
+                        targetStep.getOperation(), false,
+                        targetStep.getFilterName());
             }
             stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(
                     newStep.getDisplayId()));
@@ -348,7 +352,8 @@ public class Strategy {
                 } else {
                     Step rightStep = newStep.getChildStep();
                     newStep = user.createBooleanStep(targetStep, rightStep,
-                            newStep.getOperation(), false, newStep.getFilterName());
+                            newStep.getOperation(), false,
+                            newStep.getFilterName());
                 }
                 newStep.setParentStep(parent);
                 newStep.setCollapsible(targetStep.isCollapsible());
@@ -371,8 +376,9 @@ public class Strategy {
 
             Step leftStep = targetStep.getPreviousStep();
             // update parent, then update subsequent
-            newStep = user.createBooleanStep(leftStep, newStep, targetStep.getOperation(),
-                    false, targetStep.getFilterName());
+            newStep = user.createBooleanStep(leftStep, newStep,
+                    targetStep.getOperation(), false,
+                    targetStep.getFilterName());
             stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(
                     newStep.getDisplayId()));
             while (targetStep.getNextStep() != null) {
@@ -386,7 +392,8 @@ public class Strategy {
                 } else {
                     Step rightStep = targetStep.getChildStep();
                     newStep = user.createBooleanStep(newStep, rightStep,
-                            targetStep.getOperation(), false, targetStep.getFilterName());
+                            targetStep.getOperation(), false,
+                            targetStep.getFilterName());
                 }
                 stepIdsMap.put(new Integer(targetStep.getDisplayId()),
                         new Integer(newStep.getDisplayId()));
@@ -417,7 +424,7 @@ public class Strategy {
         Question wdkQuestion = step.getQuestion();
         // Get internal params
         Map<String, String> paramValues = step.getParamValues();
-        // Change HistoryParam
+        // Change AnswerParam
         AnswerParam[] answerParams = wdkQuestion.getTransformParams(recordClass);
         for (AnswerParam p : answerParams) {
             paramValues.put(p.getName(), Integer.toString(newStepId));
@@ -425,8 +432,10 @@ public class Strategy {
         AnswerFilterInstance filter = step.getFilter();
         String filterName = (filter == null) ? null : filter.getName();
 
+        // the assigned weight for transform is 0, since the weight of
+        // individual ones are determined by the input
         Step newStep = user.createStep(wdkQuestion, paramValues, filterName,
-                step.isDeleted(), false);
+                step.isDeleted(), false, 0);
         newStep.setCustomName(step.getBaseCustomName());
         newStep.update(false);
         return newStep;

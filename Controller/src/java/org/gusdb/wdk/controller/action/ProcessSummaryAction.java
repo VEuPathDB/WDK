@@ -17,6 +17,7 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -62,6 +63,7 @@ public class ProcessSummaryAction extends Action {
 
             questionName = step.getQuestionName();
         }
+        QuestionBean question = wdkModel.getQuestion(questionName);
 
         // get summary checksum, if have
         String summaryChecksum = null; //request.getParameter(CConstants.WDK_SUMMARY_KEY);
@@ -165,13 +167,26 @@ public class ProcessSummaryAction extends Action {
         queryString = queryString.replaceAll("&"
                 + CConstants.WDK_SUMMARY_SORTING_ORDER_KEY + "=[^&]*", "");
 
-        logger.debug("url after process: " + queryString);
 
-        // construct url to show summary action
-        ActionForward showSummary = mapping.findForward(CConstants.PQ_SHOW_SUMMARY_MAPKEY);
-        StringBuffer url = new StringBuffer(showSummary.getPath());
-        url.append("?");
-        url.append(queryString);
+        String strBasket = request.getParameter("from_basket");
+        boolean fromBasket = (strBasket != null && strBasket.equals("true"));
+        logger.debug("to basket: " + fromBasket);
+
+        StringBuffer url = new StringBuffer();
+        if (!fromBasket) {
+            // construct url to show summary action
+            ActionForward showSummary = mapping.findForward(CConstants.PQ_SHOW_SUMMARY_MAPKEY);
+            url.append(showSummary.getPath());
+            url.append("?");
+            url.append(queryString);
+        } else {
+            ActionForward showBasket = mapping.findForward(CConstants.PQ_SHOW_BASKET_MAPKEY);
+            url.append(showBasket.getPath());
+            String rcName = question.getRecordClass().getFullName();
+            url.append("?recordClass=" + rcName); 
+        }
+
+        logger.debug("url after process: " + queryString);
 
         ActionForward forward = new ActionForward(url.toString());
         forward.setRedirect(true);

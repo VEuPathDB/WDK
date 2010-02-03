@@ -3,11 +3,11 @@ package org.gusdb.wdk.controller.action;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.AbstractMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -134,7 +134,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
             // FROM SHOWSUMMARY
 
             StepBean step = wdkUser.createStep(wdkQuestion, params,
-                    "all_results", false, true);
+                    "all_results", false, true, 0);
             AnswerValueBean answerValue = step.getAnswerValue();
             // construct the forward to show_summary action
             request.setAttribute("wdkAnswer", answerValue);
@@ -176,7 +176,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
                 reportError(response, errMap, "User Error", "020", outputType);
             } else {
                 logger.info("OtherException\n" + ex.toString());
-				ex.printStackTrace();
+                ex.printStackTrace();
                 Map<String, String> exMap = new LinkedHashMap<String, String>();
                 exMap.put("0", ex.getMessage());
                 reportError(response, exMap, "Unknown Error", "000", outputType);
@@ -223,55 +223,57 @@ public class ProcessRESTAction extends ShowQuestionAction {
 
     private void createWADL(HttpServletRequest request,
             HttpServletResponse response, String qFullName) throws Exception {
-		ServletOutputStream out = response.getOutputStream();
+        ServletOutputStream out = response.getOutputStream();
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
-        try{
-		String sQName = qFullName.replace('.', ':');
-        // get question
-        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
-        QuestionBean wdkQuestion = null;
-        QuestionSetBean wdkQuestionSet = null;
-        response.setHeader("Pragma", "Public");
-        response.setContentType("text/xml");
+        try {
+            String sQName = qFullName.replace('.', ':');
+            // get question
+            WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
+            QuestionBean wdkQuestion = null;
+            QuestionSetBean wdkQuestionSet = null;
+            response.setHeader("Pragma", "Public");
+            response.setContentType("text/xml");
 
-        writer.println("<?xml version='1.0'?>");
-        writer.println("<application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' "
-                + "xsi:schemaLocation='http://wadl.dev.java.net/2009/02 wadl.xsd' "
-                + "xmlns:xsd='http://www.w3.org/2001/XMLSchema' "
-                + "xmlns='http://wadl.dev.java.net/2009/02'>");
-        String base = request.getHeader("Host") + "/webservices/";
-        writer.println("<resources base='http://" + base + "'>");
-        if (sQName.split(":")[1].equals("all")) {
-            if (qFullName != null)
-                wdkQuestionSet = wdkModel.getQuestionSetsMap().get(
-                        sQName.split(":")[0]);
-            if (wdkQuestionSet == null)
-                throw new WdkUserException("The question set '"
-                        + sQName.split(":")[0] + "' doesn't exist.");
-            writer.println("<resource path='" + wdkQuestionSet.getName() + "'>");
-            for (String ques : wdkQuestionSet.getQuestionsMap().keySet()) {
-                writeWADL(wdkQuestionSet.getQuestionsMap().get(ques), writer);
+            writer.println("<?xml version='1.0'?>");
+            writer.println("<application xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' "
+                    + "xsi:schemaLocation='http://wadl.dev.java.net/2009/02 wadl.xsd' "
+                    + "xmlns:xsd='http://www.w3.org/2001/XMLSchema' "
+                    + "xmlns='http://wadl.dev.java.net/2009/02'>");
+            String base = request.getHeader("Host") + "/webservices/";
+            writer.println("<resources base='http://" + base + "'>");
+            if (sQName.split(":")[1].equals("all")) {
+                if (qFullName != null)
+                    wdkQuestionSet = wdkModel.getQuestionSetsMap().get(
+                            sQName.split(":")[0]);
+                if (wdkQuestionSet == null)
+                    throw new WdkUserException("The question set '"
+                            + sQName.split(":")[0] + "' doesn't exist.");
+                writer.println("<resource path='" + wdkQuestionSet.getName()
+                        + "'>");
+                for (String ques : wdkQuestionSet.getQuestionsMap().keySet()) {
+                    writeWADL(wdkQuestionSet.getQuestionsMap().get(ques),
+                            writer);
+                }
+                writer.println("</resource>");
+            } else {
+                if (qFullName != null)
+                    wdkQuestion = getQuestionByFullName(qFullName);
+                if (wdkQuestion == null)
+                    throw new WdkUserException("The question '" + qFullName
+                            + "' doesn't exist.");
+                writer.println("<resource path='" + sQName.split(":")[0] + "'>");
+                writeWADL(wdkQuestion, writer);
+                writer.println("</resource>");
             }
-            writer.println("</resource>");
-        } else {
-            if (qFullName != null)
-                wdkQuestion = getQuestionByFullName(qFullName);
-            if (wdkQuestion == null)
-                throw new WdkUserException("The question '" + qFullName
-                        + "' doesn't exist.");
-            writer.println("<resource path='" + sQName.split(":")[0] + "'>");
-            writeWADL(wdkQuestion, writer);
-            writer.println("</resource>");
+            writer.println("</resources>");
+            writer.println("</application>");
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            writer.flush();
+            out.flush();
+            out.close();
         }
-        writer.println("</resources>");
-        writer.println("</application>");
-    	}catch(Exception e){
-			throw e;
-		}finally{
-		writer.flush();
-        out.flush();
-        out.close();
-		}
     }
 
     private void writeWADL(QuestionBean wdkQuestion, PrintWriter writer)
@@ -287,7 +289,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
         writer.println("</resource>");
         writer.println("<method name='POST' id='"
                 + wdkQuestion.getName().toLowerCase() + "'>");
-		writer.println("<doc title='display_name'><![CDATA["
+        writer.println("<doc title='display_name'><![CDATA["
                 + wdkQuestion.getDisplayName() + "]]></doc>");
         writer.println("<doc title='summary'><![CDATA["
                 + wdkQuestion.getSummary() + "]]></doc>");
@@ -297,49 +299,59 @@ public class ProcessRESTAction extends ShowQuestionAction {
         for (String key : wdkQuestion.getParamsMap().keySet()) {
             writer.println("<param name='" + key + "' type='xsd:string'>");
             writer.println("<doc title='prompt'><![CDATA["
-                    + wdkQuestion.getParamsMap().get(key).getPrompt() + "]]></doc>");
-			writer.println("<doc title='help'><![CDATA["
-                    + wdkQuestion.getParamsMap().get(key).getHelp() + "]]></doc>");
-			if(wdkQuestion.getParamsMap().get(key).getDefault() != null && wdkQuestion.getParamsMap().get(key).getDefault().length() > 0 && wdkQuestion.getParamsMap().get(key).getIsAllowEmpty() && wdkQuestion.getParamsMap().get(key).getEmptyValue() == null){
-				writer.println("<doc title='default'><![CDATA["
-	                    + wdkQuestion.getParamsMap().get(key).getDefault() + "]]></doc>");
-			}
+                    + wdkQuestion.getParamsMap().get(key).getPrompt()
+                    + "]]></doc>");
+            writer.println("<doc title='help'><![CDATA["
+                    + wdkQuestion.getParamsMap().get(key).getHelp()
+                    + "]]></doc>");
+            if (wdkQuestion.getParamsMap().get(key).getDefault() != null
+                    && wdkQuestion.getParamsMap().get(key).getDefault().length() > 0
+                    && wdkQuestion.getParamsMap().get(key).getIsAllowEmpty()
+                    && wdkQuestion.getParamsMap().get(key).getEmptyValue() == null) {
+                writer.println("<doc title='default'><![CDATA["
+                        + wdkQuestion.getParamsMap().get(key).getDefault()
+                        + "]]></doc>");
+            }
             ParamBean p = wdkQuestion.getParamsMap().get(key);
             if (p instanceof EnumParamBean) {
                 EnumParamBean ep = (EnumParamBean) p;
-				if(ep.getMultiPick())
-					writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
-				else
-					writer.println("<doc title='SingleValued'>Choose at most one value from the options</doc>");
-                if(ep.getDependedParam() == null){
-					for (String term : ep.getVocabMap().keySet()) {
-                    	//writer.println("<option>" + term + "</option>");
-						writer.println("<option value='" + term + "'><doc title='description'><![CDATA[" + ep.getDisplayMap().get(term) + "]]></doc></option>");
-                	}
-				}else{
-					HashSet pSet = new HashSet();
-					EnumParamBean depep = new EnumParamBean(ep.getDependedParam());
-					for(String depterm : depep.getVocabMap().keySet()){
-						ep.setDependedValue(depterm);
-						try{ 
-							pSet.addAll(ep.getDisplayMap().entrySet());
-						}catch(Exception e){
-							if(e instanceof WdkModelException){
-								logger.info("expected Empty result set for dependent parameter.");
-								continue;
-							}else{
-								logger.info(e.toString());
-								e.printStackTrace();
-							}
-						}
-					}
-					Iterator iter = pSet.iterator();
-					while(iter.hasNext()){
-						Map.Entry mp = (Map.Entry) iter.next();
-                    	//writer.println("<option>" + term + "</option>");
-						writer.println("<option value='" + mp.getKey() + "'><doc title='description'><![CDATA[" + mp.getValue() + "]]></doc></option>");
-                	}
-				}
+                if (ep.getMultiPick()) writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
+                else writer.println("<doc title='SingleValued'>Choose at most one value from the options</doc>");
+                if (ep.getDependedParam() == null) {
+                    for (String term : ep.getVocabMap().keySet()) {
+                        // writer.println("<option>" + term + "</option>");
+                        writer.println("<option value='" + term
+                                + "'><doc title='description'><![CDATA["
+                                + ep.getDisplayMap().get(term)
+                                + "]]></doc></option>");
+                    }
+                } else {
+                    HashSet pSet = new HashSet();
+                    EnumParamBean depep = new EnumParamBean(
+                            ep.getDependedParam());
+                    for (String depterm : depep.getVocabMap().keySet()) {
+                        ep.setDependedValue(depterm);
+                        try {
+                            pSet.addAll(ep.getDisplayMap().entrySet());
+                        } catch (Exception e) {
+                            if (e instanceof WdkModelException) {
+                                logger.info("expected Empty result set for dependent parameter.");
+                                continue;
+                            } else {
+                                logger.info(e.toString());
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    Iterator iter = pSet.iterator();
+                    while (iter.hasNext()) {
+                        Map.Entry mp = (Map.Entry) iter.next();
+                        // writer.println("<option>" + term + "</option>");
+                        writer.println("<option value='" + mp.getKey()
+                                + "'><doc title='description'><![CDATA["
+                                + mp.getValue() + "]]></doc></option>");
+                    }
+                }
             }
             writer.println("</param>");
         }
@@ -347,27 +359,35 @@ public class ProcessRESTAction extends ShowQuestionAction {
         writer.println("<doc title='Prompt'><![CDATA[Output Fields]]></doc>");
         writer.println("<doc title='help'><![CDATA[Single valued attributes of the feature.]]></doc>");
         writer.println("<doc title='default'><![CDATA[none]]></doc>");
-		writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
-        //writer.println("<option>all</option>");
-        //writer.println("<option>none</option>");
+        writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
+        // writer.println("<option>all</option>");
+        // writer.println("<option>none</option>");
         writer.println("<option value='all'><doc title='description'>Show all attributes</doc></option>");
         writer.println("<option value='none'><doc title='description'>Show no attributes</doc></option>");
-		for (String attr : wdkQuestion.getReportMakerAttributesMap().keySet())
-			writer.println("<option value='" + attr + "'><doc title='description'><![CDATA[" + wdkQuestion.getReportMakerAttributesMap().get(attr).getDisplayName() + "]]></doc></option>");
-            //writer.println("<option>" + attr + "</option>");
+        for (String attr : wdkQuestion.getReportMakerAttributesMap().keySet())
+            writer.println("<option value='"
+                    + attr
+                    + "'><doc title='description'><![CDATA["
+                    + wdkQuestion.getReportMakerAttributesMap().get(attr).getDisplayName()
+                    + "]]></doc></option>");
+        // writer.println("<option>" + attr + "</option>");
         writer.println("</param>");
         writer.println("<param name='o-tables' type='xsd:string'>");
-		writer.println("<doc title='Prompt'><![CDATA[Output Tables]]></doc>");
+        writer.println("<doc title='Prompt'><![CDATA[Output Tables]]></doc>");
         writer.println("<doc title='help'><![CDATA[Multi-valued attributes of the feature.]]></doc>");
         writer.println("<doc title='default'><![CDATA[none]]></doc>");
-		writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
-		//writer.println("<option >all</option>");
-        //writer.println("<option>none</option>");
+        writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
+        // writer.println("<option >all</option>");
+        // writer.println("<option>none</option>");
         writer.println("<option value='all'><doc title='description'>Show all tables</doc></option>");
         writer.println("<option value='none'><doc title='description'>Show no tables</doc></option>");
         for (String tab : wdkQuestion.getReportMakerTablesMap().keySet())
-			writer.println("<option value='" + tab + "'><doc title='description'><![CDATA[" + wdkQuestion.getReportMakerTablesMap().get(tab).getDisplayName() + "]]></doc></option>");
-            //writer.println("<option>" + tab + "</option>");
+            writer.println("<option value='"
+                    + tab
+                    + "'><doc title='description'><![CDATA["
+                    + wdkQuestion.getReportMakerTablesMap().get(tab).getDisplayName()
+                    + "]]></doc></option>");
+        // writer.println("<option>" + tab + "</option>");
         writer.println("</param>");
         writer.println("</request>");
         writer.println("<response>");

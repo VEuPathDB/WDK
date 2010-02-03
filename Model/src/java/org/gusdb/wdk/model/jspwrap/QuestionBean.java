@@ -39,7 +39,7 @@ public class QuestionBean {
     private static final long serialVersionUID = 6353373897551871273L;
 
     Question question;
-    
+
     /**
      * the recordClass full name for the answerParams input type.
      */
@@ -244,8 +244,8 @@ public class QuestionBean {
      */
     public AnswerValueBean makeAnswerValue(UserBean user,
             Map<String, String> paramValues, int pageStart, int pageEnd,
-            Map<String, Boolean> sortingMap, String filterName)
-            throws WdkModelException, WdkUserException,
+            Map<String, Boolean> sortingMap, String filterName,
+            int assignedWeight) throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
         AnswerFilterInstance filter = null;
         if (filterName != null) {
@@ -253,7 +253,8 @@ public class QuestionBean {
             filter = recordClass.getFilter(filterName);
         }
         AnswerValue answerValue = question.makeAnswerValue(user.getUser(),
-                paramValues, pageStart, pageEnd, sortingMap, filter);
+                paramValues, pageStart, pageEnd, sortingMap, filter,
+                assignedWeight);
         return new AnswerValueBean(answerValue);
     }
 
@@ -299,11 +300,11 @@ public class QuestionBean {
      * @see org.gusdb.wdk.model.Question#makeAnswer(java.util.Map)
      */
     public AnswerValueBean makeAnswerValue(UserBean user,
-            Map<String, String> paramValues) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+            Map<String, String> paramValues, int assignedWeight)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         return new AnswerValueBean(question.makeAnswerValue(user.getUser(),
-                paramValues));
+                paramValues, assignedWeight));
     }
 
     /**
@@ -346,11 +347,11 @@ public class QuestionBean {
     public void setInputType(String inputType) {
         this.inputType = inputType;
     }
-    
+
     public List<AnswerParamBean> getTransformParams() throws WdkModelException {
         List<AnswerParamBean> beans = new ArrayList<AnswerParamBean>();
         RecordClass input = question.getWdkModel().getRecordClass(inputType);
-        for(AnswerParam answerParam : question.getTransformParams(input)) {
+        for (AnswerParam answerParam : question.getTransformParams(input)) {
             beans.add(new AnswerParamBean(answerParam));
         }
         return beans;

@@ -74,7 +74,8 @@ public class SqlQuery extends Query {
      * @param sql
      */
     public void setSql(String sql) {
-        this.sql = sql;
+        // append new line to the end, in case the last line is a comment; otherwise, all modified sql will fail.
+        this.sql = sql + "\n";
     }
 
     /*
@@ -83,10 +84,12 @@ public class SqlQuery extends Query {
      * @see org.gusdb.wdk.model.query.Query#makeInstance()
      */
     @Override
-    public QueryInstance makeInstance(User user, Map<String, String> values, boolean validate)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
-        return new SqlQueryInstance(user, this, values, validate);
+    public QueryInstance makeInstance(User user, Map<String, String> values,
+            boolean validate, int assignedWeight) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        return new SqlQueryInstance(user, this, values, validate,
+                assignedWeight);
     }
 
     /*
@@ -128,7 +131,7 @@ public class SqlQuery extends Query {
         for (WdkModelText sql : sqlList) {
             if (sql.include(projectId)) {
                 sql.excludeResources(projectId);
-                this.sql = sql.getText();
+                this.setSql(sql.getText());
                 break;
             }
         }

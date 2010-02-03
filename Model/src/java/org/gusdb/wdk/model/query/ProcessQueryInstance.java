@@ -12,6 +12,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.xml.rpc.ServiceException;
@@ -53,10 +54,10 @@ public class ProcessQueryInstance extends QueryInstance {
      * @throws NoSuchAlgorithmException
      */
     public ProcessQueryInstance(User user, ProcessQuery query,
-            Map<String, String> values, boolean validate)
+            Map<String, String> values, boolean validate, int assignedWeight)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        super(user, query, values, validate);
+        super(user, query, values, validate, assignedWeight);
         this.query = query;
     }
 
@@ -85,22 +86,27 @@ public class ProcessQueryInstance extends QueryInstance {
             int instanceId) throws WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException, WdkUserException {
         logger.debug("inserting process query result to cache...");
-        Column[] columns = query.getColumns();
+        Map<String, Column> columns = query.getColumnMap();
+        String weightColumn = Utilities.COLUMN_WEIGHT;
 
         // prepare the sql
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(tableName);
         sql.append(" (");
         sql.append(CacheFactory.COLUMN_INSTANCE_ID);
-        for (Column column : columns) {
-            sql.append(", ");
-            sql.append(column.getName());
+        for (String column : columns.keySet()) {
+            sql.append(", " + column);
         }
+        if (!columns.containsKey(weightColumn))
+            sql.append(", " + weightColumn);
         sql.append(") VALUES (");
         sql.append(instanceId);
-        for (int i = 0; i < columns.length; i++) {
+        for (int i = 0; i < columns.size(); i++) {
             sql.append(", ?");
         }
+        // insert weight to the last column, if doesn't exist
+        if (!columns.containsKey(weightColumn))
+            sql.append(", " + assignedWeight);
         sql.append(")");
 
         DBPlatform platform = query.getWdkModel().getQueryPlatform();
@@ -111,7 +117,7 @@ public class ProcessQueryInstance extends QueryInstance {
             int rowId = 0;
             while (resultList.next()) {
                 int columnId = 1;
-                for (Column column : columns) {
+                for (Column column : columns.values()) {
                     String value = (String) resultList.get(column.getName());
 
                     // determine the type
@@ -171,14 +177,20 @@ public class ProcessQueryInstance extends QueryInstance {
             params[idx++] = param + "=" + value;
         }
 
-        Column[] columns = query.getColumns();
-        String[] columnNames = new String[columns.length];
-        for (int i = 0; i < columns.length; i++) {
-            columnNames[i] = columns[i].getName();
+        Map<String, Column> columns = query.getColumnMap();
+        String[] columnNames = new String[columns.size()];
+        Map<String, Integer> indices = new LinkedHashMap<String, Integer>();
+        columns.keySet().toArray(columnNames);
+        String temp = "";
+        for (int i = 0; i < columnNames.length; i++) {
             // if the wsName is defined, reassign it to the columns
-            if (columns[i].getWsName() != null)
-                columnNames[i] = columns[i].getWsName();
+            Column column = columns.get(columnNames[i]);
+            if (column.getWsName() != null)
+                columnNames[i] = column.getWsName();
+            indices.put(column.getName(), i);
+            temp += columnNames[i] + ", ";
         }
+        logger.debug("process query columns: " + temp);
 
         String invokeKey = query.getFullName();
 
@@ -188,12 +200,25 @@ public class ProcessQueryInstance extends QueryInstance {
                     params, columnNames, query.isLocal());
             this.resultMessage = result.getMessage();
             this.signal = result.getSignal();
+            String[][] content = result.getResult();
 
-            // TEST
             logger.debug("WSQI Result Message:" + resultMessage);
-            logger.info("Result Array size = " + result.getResult().length);
+            logger.info("Result Array size = " + content.length);
 
-            return new ArrayResultList<String>(columns, result.getResult());
+            // add weight if needed
+            String weightColumn = Utilities.COLUMN_WEIGHT;
+            if (!columns.containsKey(weightColumn)) {
+                indices.put(weightColumn, indices.size());
+                for (int i = 0; i < content.length; i++) {
+                    String[] line = content[i];
+                    String[] newLine = new String[line.length + 1];
+                    System.arraycopy(line, 0, newLine, 0, line.length);
+                    newLine[line.length] = Integer.toString(assignedWeight);
+                    content[i] = newLine;
+                }
+            }
+
+            return new ArrayResultList<String>(indices, content);
 
         } catch (RemoteException ex) {
             throw new WdkModelException(ex);
@@ -294,8 +319,10 @@ public class ProcessQueryInstance extends QueryInstance {
         sqlTable.append(tableName).append(" (");
 
         // define the instance id column
-        sqlTable.append(CacheFactory.COLUMN_INSTANCE_ID).append(" ");
-        sqlTable.append(platform.getNumberDataType(12)).append(" NOT NULL");
+        String numberType = platform.getNumberDataType(12);
+        sqlTable.append(CacheFactory.COLUMN_INSTANCE_ID + " " + numberType);
+        sqlTable.append(" NOT NULL, ");
+        sqlTable.append(Utilities.COLUMN_WEIGHT + " " + numberType);
 
         // define the rest of the columns
         for (Column column : columns) {
@@ -320,8 +347,7 @@ public class ProcessQueryInstance extends QueryInstance {
                         + "] of column [" + column.getName() + "]");
             }
 
-            sqlTable.append(", ").append(column.getName()).append(" ");
-            sqlTable.append(strType);
+            sqlTable.append(", " + column.getName() + " " + strType);
         }
         sqlTable.append(")");
 

@@ -54,7 +54,7 @@ public class QueryTester {
     private String showSql(Query query, Map<String, String> paramHash)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        QueryInstance instance = query.makeInstance(user, paramHash, true);
+        QueryInstance instance = query.makeInstance(user, paramHash, true, 0);
         if (instance instanceof SqlQueryInstance) {
             return ((SqlQueryInstance) instance).getUncachedSql();
         } else return instance.getSql();
@@ -63,7 +63,7 @@ public class QueryTester {
     private String showResultTable(Query query, Map<String, String> paramHash)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        QueryInstance instance = query.makeInstance(user, paramHash, true);
+        QueryInstance instance = query.makeInstance(user, paramHash, true, 0);
         ResultFactory resultFactory = wdkModel.getResultFactory();
         CacheFactory cacheFactory = resultFactory.getCacheFactory();
         QueryInfo queryInfo = cacheFactory.getQueryInfo(instance.getQuery());
@@ -210,7 +210,7 @@ public class QueryTester {
                 System.out.println(table);
             } else {
                 QueryInstance instance = query.makeInstance(tester.user,
-                        dependentValues, true);
+                        dependentValues, true, 0);
                 ResultList rs = instance.getResults();
                 print(query, rs);
             }
