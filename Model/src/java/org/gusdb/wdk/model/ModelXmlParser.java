@@ -273,8 +273,7 @@ public class ModelXmlParser extends XmlParser {
 
         configureNode(digester, "wdkModel/category/questionRef",
                 CategoryQuestionRef.class, "addQuestionRef");
-        digester.addCallMethod("wdkModel/category/questionRef",
-                "setText", 0);
+        digester.addCallMethod("wdkModel/category/questionRef", "setText", 0);
 
         // configure property macros
         configureNode(digester, "wdkModel/declaredMacro",
@@ -300,7 +299,7 @@ public class ModelXmlParser extends XmlParser {
 
         // configure all sub nodes of xmlRecordSet
         configureGroupSet(digester);
-        
+
         // configure query monitor
         configureQueryMonitor(digester);
 
@@ -430,6 +429,18 @@ public class ModelXmlParser extends XmlParser {
                 WdkModelText.class, "addDescription");
         digester.addCallMethod(
                 "wdkModel/recordClassSet/recordClass/table/description",
+                "setText", 0);
+
+        // tableField's property list
+        configureNode(digester,
+                "wdkModel/recordClassSet/recordClass/table/propertyList",
+                PropertyList.class, "addPropertyList");
+
+        configureNode(digester,
+                "wdkModel/recordClassSet/recordClass/table/propertyList/value",
+                WdkModelText.class, "addValue");
+        digester.addCallMethod(
+                "wdkModel/recordClassSet/recordClass/table/propertyList/value",
                 "setText", 0);
 
         configureNode(digester,
@@ -565,9 +576,8 @@ public class ModelXmlParser extends XmlParser {
         digester.addBeanPropertySetter(path + "/enumValue/internal");
         digester.addBeanPropertySetter(path + "/enumValue/parentTerm");
 
-
-        configureNode(digester, path + "/enumValue/dependedValue", WdkModelText.class,
-                "addDependedValue");
+        configureNode(digester, path + "/enumValue/dependedValue",
+                WdkModelText.class, "addDependedValue");
         digester.addCallMethod(path + "/enumValue/dependedValue", "setText", 0);
 
         // timestamp param
@@ -738,7 +748,7 @@ public class ModelXmlParser extends XmlParser {
                 WdkModelText.class, "addText");
         digester.addCallMethod(prefix + "textAttribute/text", "setText", 0);
     }
-    
+
     private void configureQueryMonitor(Digester digester) {
         // load GroupSet
         configureNode(digester, "wdkModel/queryMonitor", QueryMonitor.class,

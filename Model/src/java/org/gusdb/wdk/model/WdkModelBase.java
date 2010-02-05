@@ -5,7 +5,11 @@ package org.gusdb.wdk.model;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONException;
@@ -16,28 +20,33 @@ import org.json.JSONException;
  */
 public abstract class WdkModelBase {
 
-    /**
-     * exclude the resources the object hold which are not included in the
-     * current project
-     * 
-     * @param projectId
-     * @throws WdkModelException
-     */
-    public abstract void excludeResources(String projectId)
-            throws WdkModelException;
-
-    public abstract void resolveReferences(WdkModel wodkModel)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException;
-
     private Set<String> includeProjects;
     private Set<String> excludeProjects;
 
     protected boolean resolved = false;
 
+    private List<PropertyList> propertyLists;
+    private Map<String, String[]> propertyListMap;
+
+    private WdkModel wdkModel;
+
     public WdkModelBase() {
         includeProjects = new LinkedHashSet<String>();
         excludeProjects = new LinkedHashSet<String>();
+        propertyLists = new ArrayList<PropertyList>();
+        propertyListMap = new LinkedHashMap<String, String[]>();
+    }
+
+    public WdkModelBase(WdkModelBase base) {
+        this.wdkModel = base.wdkModel;
+        resolved = base.resolved;
+        includeProjects = new LinkedHashSet<String>(base.includeProjects);
+        excludeProjects = new LinkedHashSet<String>(base.excludeProjects);
+        if (base.propertyLists != null)
+            propertyLists = new ArrayList<PropertyList>(base.propertyLists);
+        if (base.propertyListMap != null)
+            propertyListMap = new LinkedHashMap<String, String[]>(
+                    base.propertyListMap);
     }
 
     /**
@@ -86,5 +95,74 @@ public abstract class WdkModelBase {
      */
     public boolean isResolved() {
         return resolved;
+    }
+
+    /**
+     * This method is supposed to be called by the digester
+     * 
+     * @param propertyList
+     */
+    public void addPropertyList(PropertyList propertyList) {
+        this.propertyLists.add(propertyList);
+    }
+
+    /**
+     * if the property list of the given name doesn't exist, it will try to get
+     * a default property list from the WdkModel.
+     * 
+     * @param propertyListName
+     * @return
+     */
+    public String[] getPropertyList(String propertyListName) {
+        if (!propertyListMap.containsKey(propertyListName))
+            return wdkModel.getDefaultPropertyList(propertyListName);
+        return propertyListMap.get(propertyListName);
+    }
+
+    public Map<String, String[]> getPropertyLists() {
+        // get the default property lists
+        Map<String, String[]> propLists = wdkModel.getDefaultPropertyLists();
+        // replace the default ones with the ones defined in the question
+        for (String plName : propertyListMap.keySet()) {
+            String[] values = propertyListMap.get(plName);
+            String[] array = new String[values.length];
+            System.arraycopy(values, 0, array, 0, array.length);
+            propLists.put(plName, array);
+        }
+        return propLists;
+    }
+
+    /**
+     * exclude the resources the object hold which are not included in the
+     * current project
+     * 
+     * @param projectId
+     * @throws WdkModelException
+     */
+    public void excludeResources(String projectId) throws WdkModelException {
+        // exclude property lists
+        for (PropertyList propList : propertyLists) {
+            if (propList.include(projectId)) {
+                String listName = propList.getName();
+                if (propertyListMap.containsKey(listName)) {
+                    throw new WdkModelException("The node "
+                            + this.getClass().getName() + " has more than one "
+                            + "propertyList \"" + listName + "\" for project "
+                            + projectId);
+                } else {
+                    propList.excludeResources(projectId);
+                    propertyListMap.put(propList.getName(),
+                            propList.getValues());
+                }
+            }
+        }
+        propertyLists = null;
+
+    }
+
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        this.wdkModel = wdkModel;
     }
 }

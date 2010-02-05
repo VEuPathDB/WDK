@@ -5,6 +5,8 @@ package org.gusdb.wdk.model.query.param;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import junit.framework.Assert;
@@ -33,27 +35,34 @@ public class ParamTest {
     @Test
     public void testClone() throws NoSuchAlgorithmException, WdkModelException,
             SQLException, JSONException, WdkUserException {
+        List<Param> params = new ArrayList<Param>();
         for (ParamSet paramSet : wdkModel.getAllParamSets()) {
             for (Param param : paramSet.getParams()) {
-                Param clone = param.clone();
-
-                // make sure everything is identical
-                Assert.assertEquals(param.getDefault(), clone.getDefault());
-                Assert.assertEquals(param.getEmptyValue(),
-                        clone.getEmptyValue());
-                Assert.assertEquals(param.getFullName(), clone.getFullName());
-                Assert.assertEquals(param.getGroup(), clone.getGroup());
-                Assert.assertEquals(param.getHelp(), clone.getHelp());
-                Assert.assertEquals(param.getId(), clone.getId());
-                Assert.assertEquals(param.getJSONContent(true).toString(),
-                        clone.getJSONContent(true).toString());
-                Assert.assertEquals(param.getName(), clone.getName());
-                Assert.assertEquals(param.getPrompt(), clone.getPrompt());
-                Assert.assertEquals(param.isAllowEmpty(), clone.isAllowEmpty());
-                Assert.assertEquals(param.isReadonly(), clone.isReadonly());
-                Assert.assertEquals(param.isResolved(), clone.isResolved());
-                Assert.assertEquals(param.toString(), clone.toString());
+                params.add(param);
             }
+        }
+        Random random = UnitTestHelper.getRandom();
+        for (int i = 0; i < 10; i++) {
+            int index = random.nextInt(params.size());
+            Param param = params.get(index);
+            Param clone = param.clone();
+
+            // make sure everything is identical
+            Assert.assertEquals(param.getDefault(), clone.getDefault());
+            Assert.assertEquals(param.getEmptyValue(),
+                    clone.getEmptyValue());
+            Assert.assertEquals(param.getFullName(), clone.getFullName());
+            Assert.assertEquals(param.getGroup(), clone.getGroup());
+            Assert.assertEquals(param.getHelp(), clone.getHelp());
+            Assert.assertEquals(param.getId(), clone.getId());
+            Assert.assertEquals(param.getJSONContent(true).toString(),
+                    clone.getJSONContent(true).toString());
+            Assert.assertEquals(param.getName(), clone.getName());
+            Assert.assertEquals(param.getPrompt(), clone.getPrompt());
+            Assert.assertEquals(param.isAllowEmpty(), clone.isAllowEmpty());
+            Assert.assertEquals(param.isReadonly(), clone.isReadonly());
+            Assert.assertEquals(param.isResolved(), clone.isResolved());
+            Assert.assertEquals(param.toString(), clone.toString());
         }
     }
 

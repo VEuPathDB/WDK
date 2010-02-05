@@ -26,7 +26,8 @@ public class StepBean {
         this.step = step;
     }
 
-    public StepBean getPreviousStep() {
+    public StepBean getPreviousStep() throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
         if (step.getPreviousStep() != null) {
             return new StepBean(user, step.getPreviousStep());
         }
@@ -55,7 +56,8 @@ public class StepBean {
         return null;
     }
 
-    public StepBean getChildStep() {
+    public StepBean getChildStep() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         if (step.getChildStep() != null) {
             return new StepBean(user, step.getChildStep());
         }
@@ -248,8 +250,13 @@ public class StepBean {
 
     /**
      * @return the isValid
+     * @throws JSONException
+     * @throws SQLException
+     * @throws WdkModelException
+     * @throws WdkUserException
      */
-    public boolean getIsValid() {
+    public boolean getIsValid() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         return step.isValid();
     }
 
@@ -280,11 +287,13 @@ public class StepBean {
     }
 
     /* functions for navigating/manipulating step tree */
-    public StepBean getStep(int index) {
+    public StepBean getStep(int index) throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
         return new StepBean(user, step.getStep(index));
     }
 
-    public StepBean[] getAllSteps() {
+    public StepBean[] getAllSteps() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         Step[] steps = step.getAllSteps();
         StepBean[] beans = new StepBean[steps.length];
         for (int i = 0; i < steps.length; ++i) {
@@ -293,7 +302,8 @@ public class StepBean {
         return beans;
     }
 
-    public StepBean getStepByDisplayId(int stepId) {
+    public StepBean getStepByDisplayId(int stepId) throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
         Step target = step.getStepByDisplayId(stepId);
         if (target != null) {
             return new StepBean(user, target);
@@ -301,7 +311,8 @@ public class StepBean {
         return null;
     }
 
-    public int getLength() {
+    public int getLength() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         return step.getLength();
     }
 
@@ -317,7 +328,8 @@ public class StepBean {
         step.setEstimateSize(estimateSize);
     }
 
-    public int getIndexFromId(int stepId) throws WdkUserException {
+    public int getIndexFromId(int stepId) throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
         return step.getIndexFromId(stepId);
     }
 
@@ -366,7 +378,8 @@ public class StepBean {
         return step.getFilterDisplayName();
     }
 
-    public StepBean getFirstStep() {
+    public StepBean getFirstStep() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         return new StepBean(user, step.getFirstStep());
     }
 
@@ -487,10 +500,11 @@ public class StepBean {
      * @throws SQLException
      * @throws WdkModelException
      * @throws WdkUserException
+     * @throws JSONException
      * @see org.gusdb.wdk.model.user.Step#validate()
      */
     public boolean validate() throws SQLException, WdkUserException,
-            WdkModelException {
+            WdkModelException, JSONException {
         return step.validate();
     }
 
@@ -501,6 +515,5 @@ public class StepBean {
     public int getAssignedWeight() {
         return step.getAssignedWeight();
     }
-    
-    
+
 }

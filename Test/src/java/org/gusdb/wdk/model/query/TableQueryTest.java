@@ -17,7 +17,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
-import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -48,7 +47,7 @@ public class TableQueryTest {
                         int min = valueSet.getMinRows();
                         int max = valueSet.getMaxRows();
                         QueryInstance instance = query.makeInstance(user,
-                                values, true);
+                                values, true, 0);
                         int result = instance.getResultSize();
                         // Assert.assertTrue(result + " >= " + min, result >=
                         // min);

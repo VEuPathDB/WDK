@@ -61,6 +61,9 @@ public class Step {
 
     private int assignedWeight;
 
+    private int previousStepId;
+    private int childStepId;
+
     Step(StepFactory stepFactory, User user, int displayId, int internalId) {
         this.stepFactory = stepFactory;
         this.user = user;
@@ -70,7 +73,10 @@ public class Step {
         assignedWeight = 0;
     }
 
-    public Step getPreviousStep() {
+    public Step getPreviousStep() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
+        if (previousStep == null && previousStepId != 0)
+            setPreviousStep(stepFactory.loadStep(user, previousStepId));
         return previousStep;
     }
 
@@ -82,7 +88,10 @@ public class Step {
         return parentStep;
     }
 
-    public Step getChildStep() {
+    public Step getChildStep() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
+        if (childStep == null && childStepId != 0)
+            setChildStep(stepFactory.loadStep(user, childStepId));
         return childStep;
     }
 
@@ -109,26 +118,38 @@ public class Step {
 
     public void setParentStep(Step parentStep) {
         this.parentStep = parentStep;
-        if (parentStep != null) parentStep.childStep = this;
+        if (parentStep != null) {
+            parentStep.childStep = this;
+            parentStep.childStepId = displayId;
+        }
     }
 
     public void setChildStep(Step childStep) {
         this.childStep = childStep;
-        if (childStep != null) childStep.parentStep = this;
+        if (childStep != null) {
+            childStep.parentStep = this;
+            childStepId = childStep.getDisplayId();
+        } else childStepId = 0;
     }
 
     public void setNextStep(Step nextStep) {
         this.nextStep = nextStep;
-        if (nextStep != null) nextStep.previousStep = this;
+        if (nextStep != null) {
+            nextStep.previousStep = this;
+            nextStep.previousStepId = displayId;
+        }
     }
 
     public void setPreviousStep(Step previousStep) {
         this.previousStep = previousStep;
-        if (previousStep != null) previousStep.nextStep = this;
+        if (previousStep != null) {
+            previousStep.nextStep = this;
+            previousStepId = previousStep.getDisplayId();
+        } else previousStepId = 0;
     }
 
     public boolean isFirstStep() {
-        return (previousStep == null);
+        return (previousStepId == 0);
     }
 
     public User getUser() {
@@ -374,12 +395,18 @@ public class Step {
 
     /**
      * @return the isValid
+     * @throws JSONException 
+     * @throws SQLException 
+     * @throws WdkModelException 
+     * @throws WdkUserException 
      */
-    public boolean isValid() {
+    public boolean isValid() throws WdkUserException, WdkModelException, SQLException, JSONException {
         if (!valid) return false;
-        if (previousStep != null) {
-            if (!previousStep.isValid()) return false;
+        Step prevStep = getPreviousStep();
+        if (prevStep != null) {
+            if (!prevStep.isValid()) return false;
         }
+        Step childStep = getChildStep();
         if (childStep != null) {
             if (!childStep.isValid()) return false;
         }
@@ -412,22 +439,27 @@ public class Step {
     }
 
     /* functions for navigating/manipulating step tree */
-    public Step getStep(int index) {
+    public Step getStep(int index) throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         Step[] steps = getAllSteps();
         return steps[index];
     }
 
-    public Step[] getAllSteps() {
+    public Step[] getAllSteps() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         ArrayList<Step> allSteps = new ArrayList<Step>();
         allSteps = buildAllStepsArray(allSteps, this);
         return allSteps.toArray(new Step[allSteps.size()]);
     }
 
-    public int getLength() {
+    public int getLength() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         return getAllSteps().length;
     }
 
-    private ArrayList<Step> buildAllStepsArray(ArrayList<Step> array, Step step) {
+    private ArrayList<Step> buildAllStepsArray(ArrayList<Step> array, Step step)
+            throws WdkUserException, WdkModelException, SQLException,
+            JSONException {
         if (step.isFirstStep()) {
             array.add(step);
         } else {
@@ -442,19 +474,21 @@ public class Step {
         this.setNextStep(step);
     }
 
-    public Step getStepByDisplayId(int displayId) {
+    public Step getStepByDisplayId(int displayId) throws WdkUserException, WdkModelException, SQLException, JSONException {
         Step target;
         if (this.displayId == displayId) {
             return this;
         }
+        Step childStep = getChildStep();
         if (childStep != null) {
             target = childStep.getStepByDisplayId(displayId);
             if (target != null) {
                 return target;
             }
         }
-        if (previousStep != null) {
-            target = previousStep.getStepByDisplayId(displayId);
+        Step prevStep = getPreviousStep();
+        if (prevStep != null) {
+            target = prevStep.getStepByDisplayId(displayId);
             if (target != null) {
                 return target;
             }
@@ -497,7 +531,8 @@ public class Step {
         }
     }
 
-    public int getIndexFromId(int displayId) throws WdkUserException {
+    public int getIndexFromId(int displayId) throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
         Step[] steps = getAllSteps();
         for (int i = 0; i < steps.length; ++i) {
             if (steps[i].getDisplayId() == displayId
@@ -508,8 +543,9 @@ public class Step {
         throw new WdkUserException("Id not found!");
     }
 
-    public Step createStep(String filterName, int assignedWeight) throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public Step createStep(String filterName, int assignedWeight)
+            throws NoSuchAlgorithmException, WdkModelException, JSONException,
+            WdkUserException, SQLException {
         RecordClass recordClass = getQuestion().getRecordClass();
         AnswerFilterInstance filter = recordClass.getFilter(filterName);
         return createStep(filter, assignedWeight);
@@ -519,7 +555,7 @@ public class Step {
             throws NoSuchAlgorithmException, WdkModelException, JSONException,
             WdkUserException, SQLException {
         AnswerFilterInstance oldFilter = getFilter();
-        if (filter == null && oldFilter == null 
+        if (filter == null && oldFilter == null
                 && this.assignedWeight == assignedWeight) return this;
         if (filter != null && oldFilter != null
                 && filter.getName().equals(oldFilter.getName())
@@ -601,7 +637,8 @@ public class Step {
         return (filter != null) ? filter.getDisplayName() : filterName;
     }
 
-    public Step getFirstStep() {
+    public Step getFirstStep() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         Step step = this;
         while (step.getPreviousStep() != null)
             step = step.getPreviousStep();
@@ -613,7 +650,7 @@ public class Step {
         return getQuestion().getQuery().isBoolean();
     }
 
-    public JSONObject getJSONContent(int strategyId) throws JSONException {
+    public JSONObject getJSONContent(int strategyId) throws JSONException, WdkUserException, WdkModelException, SQLException {
         JSONObject jsStep = new JSONObject();
         jsStep.put("id", this.displayId);
         jsStep.put("customName", this.customName);
@@ -622,10 +659,12 @@ public class Step {
         jsStep.put("collapsedName", this.collapsedName);
         jsStep.put("deleted", isDeleted);
         jsStep.put("size", this.estimateSize);
-        if (this.previousStep != null) {
-            jsStep.put("previous", previousStep.getJSONContent(strategyId));
+        Step prevStep = getPreviousStep();
+        if (prevStep != null) {
+            jsStep.put("previous", prevStep.getJSONContent(strategyId));
         }
-        if (this.childStep != null) {
+        Step childStep = getChildStep();
+        if (childStep != null) {
             jsStep.put("child", childStep.getJSONContent(strategyId));
         }
         if (this.isCollapsible) { // a sub-strategy, needs to get order number
@@ -712,12 +751,15 @@ public class Step {
      * @throws SQLException
      * @throws WdkModelException
      * @throws WdkUserException
+     * @throws JSONException 
      */
     public boolean validate() throws SQLException, WdkUserException,
-            WdkModelException {
+            WdkModelException, JSONException {
         // only validate leaf steps. the validation of a combined step is
         // determined by the children.
-        if (childStep == null && previousStep == null) {
+        Step prevStep = getPreviousStep();
+        Step childStep = getChildStep();
+        if (childStep == null && prevStep == null) {
             if (!valid) return valid;
             try {
                 getAnswerValue();
@@ -728,8 +770,8 @@ public class Step {
         } else {
             if (childStep != null) {
                 if (!childStep.validate()) this.valid = false;
-            } else if (previousStep != null) {
-                if (!previousStep.validate()) this.valid = false;
+            } else if (prevStep != null) {
+                if (!prevStep.validate()) this.valid = false;
             }
         }
         // set the invalid flag
@@ -767,4 +809,33 @@ public class Step {
         this.assignedWeight = assignedWeight;
     }
 
+    /**
+     * @return the previousStepId
+     */
+    public int getPreviousStepId() {
+        return previousStepId;
+    }
+
+    /**
+     * @param previousStepId
+     *            the previousStepId to set
+     */
+    public void setPreviousStepId(int previousStepId) {
+        this.previousStepId = previousStepId;
+    }
+
+    /**
+     * @return the childStepId
+     */
+    public int getChildStepId() {
+        return childStepId;
+    }
+
+    /**
+     * @param childStepId
+     *            the childStepId to set
+     */
+    public void setChildStepId(int childStepId) {
+        this.childStepId = childStepId;
+    }
 }

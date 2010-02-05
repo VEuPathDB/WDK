@@ -236,7 +236,6 @@ CREATE TABLE wdkuser.strategies
      name varchar(200) NOT NULL,
      saved_name varchar(200),
      is_deleted BOOLEAN,
-     is_valid BOOLEAN,
      prev_strategy_id NUMERIC(12),
      migration NUMERIC(12),
      CONSTRAINT "STRATEGIES_PK" PRIMARY KEY (strategy_id),

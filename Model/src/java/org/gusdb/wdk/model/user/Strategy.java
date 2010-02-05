@@ -29,12 +29,19 @@ public class Strategy {
     private boolean isSaved;
     private boolean isDeleted = false;
     private Date createdTime;
-    private Date lastViewedTime;
     private Date lastModifiedTime;
     private String signature;
     private String description;
     private String name;
     private String savedName = null;
+
+    private int latestStepId = 0;
+    private int estimateSize;
+    private String version;
+    private String type;
+    private String displayType;
+    private boolean valid = true;
+    private Date lastRunTime;
 
     Strategy(StepFactory factory, User user, int displayId, int internalId) {
         this.stepFactory = factory;
@@ -57,7 +64,13 @@ public class Strategy {
     }
 
     public String getVersion() {
-        return latestStep.getAnswer().getProjectVersion();
+        if (latestStep != null)
+            version = latestStep.getAnswer().getProjectVersion();
+        return version;
+    }
+
+    void setVersion(String version) {
+        this.version = version;
     }
 
     public void setName(String name) {
@@ -92,8 +105,18 @@ public class Strategy {
         return isSaved;
     }
 
-    public Step getLatestStep() {
+    public Step getLatestStep() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
+        if (latestStep == null && latestStepId != 0)
+            setLatestStep(stepFactory.loadStep(user, latestStepId));
         return latestStep;
+    }
+
+    public void setLatestStep(Step step) throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
+        this.latestStep = step;
+        // also update the cached info
+        latestStepId = step.getDisplayId();
     }
 
     void setDisplayId(int displayId) {
@@ -127,40 +150,32 @@ public class Strategy {
         this.createdTime = createdTime;
     }
 
-    /**
-     * @return Returns the lastRunTime.
-     */
-    public Date getLastRunTime() {
-        return latestStep.getLastRunTime();
-    }
-
-    public Step getStep(int index) {
-        return latestStep.getStep(index);
-    }
-
-    public Step[] getAllSteps() {
-        return latestStep.getAllSteps();
-    }
-
-    public int getLength() {
-        return latestStep.getLength();
-    }
-
-    public void addStep(Step step) throws WdkUserException, WdkModelException,
+    public Step getStep(int index) throws WdkUserException, WdkModelException,
             SQLException, JSONException {
-        if (latestStep != null) {
-            latestStep.addStep(step);
-        }
-        setLatestStep(step);
+        return getLatestStep().getStep(index);
     }
 
-    public void setLatestStep(Step step) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
-        this.latestStep = step;
+    public Step[] getAllSteps() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
+        return getLatestStep().getAllSteps();
     }
 
-    public Step getStepById(int id) {
-        return latestStep.getStepByDisplayId(id);
+    public int getLength() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
+        return getLatestStep().getLength();
+    }
+
+    public void setLatestStepId(int displayId) {
+        this.latestStepId = displayId;
+    }
+
+    public int getLatestStepId() {
+        return latestStepId;
+    }
+
+    public Step getStepById(int id) throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
+        return getLatestStep().getStepByDisplayId(id);
     }
 
     public void update(boolean overwrite) throws WdkUserException,
@@ -170,7 +185,12 @@ public class Strategy {
     }
 
     public String getType() {
-        return latestStep.getType();
+        if (latestStep != null) type = latestStep.getType();
+        return type;
+    }
+
+    void setType(String type) {
+        this.type = type;
     }
 
     public Map<Integer, Integer> addStep(int targetStepId, Step step)
@@ -191,7 +211,7 @@ public class Strategy {
     public Map<Integer, Integer> deleteStep(int stepId, boolean isBranch)
             throws WdkModelException, WdkUserException, JSONException,
             NoSuchAlgorithmException, SQLException {
-        Step step = latestStep.getStepByDisplayId(stepId);
+        Step step = getStepById(stepId);
         int targetStepId = step.getDisplayId();
 
         // are we deleting the first step?
@@ -243,9 +263,10 @@ public class Strategy {
             JSONException, NoSuchAlgorithmException, SQLException {
         Step targetStep;
         if (branch == null) {
-            targetStep = latestStep;
+            targetStep = getLatestStep();
         } else {
-            targetStep = latestStep.getStepByDisplayId(Integer.parseInt(branch));
+            targetStep = getLatestStep().getStepByDisplayId(
+                    Integer.parseInt(branch));
         }
 
         int moveFromIx = targetStep.getIndexFromId(moveFromId);
@@ -310,7 +331,7 @@ public class Strategy {
             throws WdkModelException, WdkUserException, JSONException,
             NoSuchAlgorithmException, SQLException {
         Map<Integer, Integer> stepIdsMap = new HashMap<Integer, Integer>();
-        Step targetStep = latestStep.getStepByDisplayId(targetStepId);
+        Step targetStep = getLatestStep().getStepByDisplayId(targetStepId);
 
         stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(
                 newStep.getDisplayId()));
@@ -441,8 +462,9 @@ public class Strategy {
         return newStep;
     }
 
-    public Step getFirstStep() {
-        return latestStep.getFirstStep();
+    public Step getFirstStep() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
+        return getLatestStep().getFirstStep();
     }
 
     /**
@@ -455,46 +477,63 @@ public class Strategy {
      * @throws JSONException
      * @throws NoSuchAlgorithmException
      * @throws WdkModelException
+     * @throws SQLException
+     * @throws WdkUserException
      */
     public String getChecksum() throws JSONException, NoSuchAlgorithmException,
-            WdkModelException {
+            WdkModelException, WdkUserException, SQLException {
         JSONObject jsStrategy = getJSONContent();
         return Utilities.encrypt(jsStrategy.toString());
     }
 
-    public JSONObject getJSONContent() throws JSONException {
+    public JSONObject getJSONContent() throws JSONException, WdkUserException,
+            WdkModelException, SQLException {
         JSONObject jsStrategy = new JSONObject();
         jsStrategy.put("id", this.displayId);
         jsStrategy.put("name", this.name);
         jsStrategy.put("savedName", this.savedName);
         jsStrategy.put("saved", this.isSaved);
         jsStrategy.put("deleted", this.isDeleted);
-        jsStrategy.put("valid", this.isValid());
-        jsStrategy.put("latestStep", latestStep.getJSONContent(this.displayId));
+        jsStrategy.put("latestStep", latestStepId);
+        jsStrategy.put("valid", isValid());
+        jsStrategy.put("resultSize", getEstimateSize());
+        jsStrategy.put("version", getVersion());
+        jsStrategy.put("type", getType());
 
         return jsStrategy;
     }
 
     /**
      * @return the valid
+     * @throws JSONException
+     * @throws SQLException
+     * @throws WdkModelException
+     * @throws WdkUserException
      */
-    public boolean isValid() {
-        return latestStep.isValid();
+    public boolean isValid() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
+        if (latestStep != null) valid = latestStep.isValid();
+        return valid;
+    }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
     }
 
     /**
-     * @return the lastViewedTime
+     * @return the lastRunTime
      */
-    public Date getLastViewedTime() {
-        return lastViewedTime;
+    public Date getLastRunTime() {
+        if (latestStep != null) lastRunTime = latestStep.getLastRunTime();
+        return lastRunTime;
     }
 
     /**
-     * @param lastViewedTime
-     *            the lastViewedTime to set
+     * @param lastRunTime
+     *            the lastRunTime to set
      */
-    public void setLastViewedTime(Date lastViewedTime) {
-        this.lastViewedTime = lastViewedTime;
+    public void setLastRunTime(Date lastRunTime) {
+        this.lastRunTime = lastRunTime;
     }
 
     /**
@@ -546,4 +585,30 @@ public class Strategy {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public int getEstimateSize() {
+        if (latestStep != null) estimateSize = latestStep.getEstimateSize();
+        return estimateSize;
+    }
+
+    void setEstimateSize(int estimateSize) {
+        this.estimateSize = estimateSize;
+    }
+
+    /**
+     * @return the displayType
+     */
+    public String getDisplayType() {
+        if (latestStep != null) displayType = latestStep.getDisplayType();
+        return displayType;
+    }
+
+    /**
+     * @param displayType
+     *            the displayType to set
+     */
+    public void setDisplayType(String displayType) {
+        this.displayType = displayType;
+    }
+
 }

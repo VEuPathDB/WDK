@@ -20,7 +20,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -31,6 +30,7 @@ import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.ModelConfigUserDB;
 import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkException;
 import org.gusdb.wdk.model.WdkModel;
@@ -538,15 +538,11 @@ public class StepFactory {
         if (loadTree) {
             if (rsStep.getObject(COLUMN_LEFT_CHILD_ID) != null) {
                 int leftStepId = rsStep.getInt(COLUMN_LEFT_CHILD_ID);
-                Step leftStep = loadStep(user, leftStepId);
-                step.setPreviousStep(leftStep);
-                if (!leftStep.isValid()) step.setValid(false);
+                step.setPreviousStepId(leftStepId);
             }
             if (rsStep.getObject(COLUMN_RIGHT_CHILD_ID) != null) {
                 int rightStepId = rsStep.getInt(COLUMN_RIGHT_CHILD_ID);
-                Step rightStep = loadStep(user, rightStepId);
-                step.setChildStep(rightStep);
-                if (!rightStep.isValid()) step.setValid(false);
+                step.setChildStepId(rightStepId);
             }
         }
 
@@ -672,8 +668,8 @@ public class StepFactory {
                 + " = ?, " + COLUMN_IS_DELETED + " = ?, "
                 + COLUMN_IS_COLLAPSIBLE + " = ?, " + COLUMN_COLLAPSED_NAME
                 + " = ?, " + COLUMN_ESTIMATE_SIZE + " = ?, " + COLUMN_IS_VALID
-                + " = ?, " + COLUMN_ASSIGNED_WEIGHT
-                + " = ? WHERE " + COLUMN_STEP_INTERNAL_ID + " = ?";
+                + " = ?, " + COLUMN_ASSIGNED_WEIGHT + " = ? WHERE "
+                + COLUMN_STEP_INTERNAL_ID + " = ?";
         try {
             long start = System.currentTimeMillis();
             psStep = SqlUtils.getPreparedStatement(dataSource, sql);
@@ -746,22 +742,27 @@ public class StepFactory {
             throws SQLException, WdkUserException, WdkModelException,
             JSONException, NoSuchAlgorithmException {
         String userColumn = Utilities.COLUMN_USER_ID;
-        StringBuffer sql = new StringBuffer("SELECT DISTINCT * FROM ");
-        sql.append(" (SELECT  sr.* FROM ");
-        sql.append(userSchema).append(TABLE_STRATEGY).append(" sr, ");
-        sql.append(userSchema).append(TABLE_STEP).append(" sp ");
-        sql.append(" WHERE sr.").append(COLUMN_ROOT_STEP_ID);
-        sql.append(" = sp.").append(COLUMN_DISPLAY_ID);
+        String answerColumn = AnswerFactory.COLUMN_ANSWER_ID;
+        StringBuffer sql = new StringBuffer("SELECT DISTINCT sr.* ");
+        sql.append(", sp." + COLUMN_LAST_RUN_TIME + ", sp."
+                + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", a."
+                + AnswerFactory.COLUMN_PROJECT_VERSION + ", a."
+                + AnswerFactory.COLUMN_QUESTION_NAME);
+        sql.append(" FROM " + userSchema + TABLE_STRATEGY + " sr, "
+                + userSchema + TABLE_STEP + " sp, " + wdkSchema
+                + AnswerFactory.TABLE_ANSWER + " a");
+        sql.append(" WHERE sr." + COLUMN_ROOT_STEP_ID + " = sp."
+                + COLUMN_DISPLAY_ID + " AND sp." + answerColumn + " = a."
+                + answerColumn + " AND sr." + userColumn + " = sp."
+                + userColumn + " AND sr." + COLUMN_PROJECT_ID + " = a."
+                + COLUMN_PROJECT_ID);
         sql.append(" AND sr.").append(userColumn).append(" = ?");
-        sql.append(" AND sr.").append(userColumn).append(" = sp.").append(
-                userColumn);
+        sql.append(" AND sr." + userColumn + " = sp." + userColumn);
         sql.append(" AND sr.").append(COLUMN_PROJECT_ID).append(" = ?");
         sql.append(" AND sr.").append(COLUMN_IS_SAVED).append(" = ?");
         sql.append(" AND sr.").append(COLUMN_IS_DELETED).append(" = ?");
-        if (recent)
-            sql.append(" AND sp.").append(COLUMN_LAST_RUN_TIME).append(" >= ?");
-        sql.append(" ORDER BY sp.").append(COLUMN_LAST_RUN_TIME).append(
-                " DESC)");
+        if (recent) sql.append(" AND sp." + COLUMN_LAST_RUN_TIME + " >= ?");
+        sql.append(" ORDER BY sp." + COLUMN_LAST_RUN_TIME + " DESC");
 
         List<Strategy> strategies = new ArrayList<Strategy>();
         ResultSet resultSet = null;
@@ -818,10 +819,21 @@ public class StepFactory {
         strategy.setIsSaved(resultSet.getBoolean(COLUMN_IS_SAVED));
         strategy.setDeleted(resultSet.getBoolean(COLUMN_IS_DELETED));
         strategy.setSavedName(resultSet.getString(COLUMN_SAVED_NAME));
-        strategy.setLastViewedTime(resultSet.getTimestamp(COLUMN_LAST_VIEWED_TIME));
         strategy.setLastModifiedTime(resultSet.getTimestamp(COLUMN_LAST_MODIFIED_TIME));
         strategy.setSignature(resultSet.getString(COLUMN_SIGNATURE));
         strategy.setDescription(resultSet.getString(COLUMN_DESCRIPTION));
+        strategy.setLatestStepId(resultSet.getInt(COLUMN_ROOT_STEP_ID));
+
+        strategy.setLastRunTime(resultSet.getTimestamp(COLUMN_LAST_RUN_TIME));
+        strategy.setEstimateSize(resultSet.getInt(COLUMN_ESTIMATE_SIZE));
+        strategy.setVersion(resultSet.getString(AnswerFactory.COLUMN_PROJECT_VERSION));
+        strategy.setValid(resultSet.getBoolean(COLUMN_IS_VALID));
+
+        String questionName = resultSet.getString(AnswerFactory.COLUMN_QUESTION_NAME);
+        Question question = (Question) wdkModel.getQuestion(questionName);
+        RecordClass recordClass = question.getRecordClass();
+        strategy.setType(recordClass.getFullName());
+        strategy.setDisplayType(recordClass.getDisplayName());
 
         String signature = strategy.getSignature();
         if (signature == null || signature.trim().length() == 0) {
@@ -832,83 +844,80 @@ public class StepFactory {
             strategy.setSignature(signature);
         }
 
-        int rootStepId = resultSet.getInt(COLUMN_ROOT_STEP_ID);
-        Step rootStep = loadStepTree(user, rootStepId);
-        strategy.setLatestStep(rootStep);
-
         return strategy;
     }
 
-    private Step loadStepTree(User user, int stepId) throws SQLException,
-            WdkUserException, WdkModelException, JSONException {
-        Step step = loadStep(user, stepId);
-        if (!step.isCombined()) return step;
-
-        Stack<Integer> stepTree = new Stack<Integer>();
-        stepTree.push(stepId);
-
-        Map<Integer, Step> steps = new LinkedHashMap<Integer, Step>();
-        steps.put(stepId, step);
-
-        Integer parentAnswerId;
-        Step parentStep;
-
-        PreparedStatement psStepTree = null;
-        String sql = "SELECT " + COLUMN_LEFT_CHILD_ID + ", "
-                + COLUMN_RIGHT_CHILD_ID + " FROM " + userSchema + TABLE_STEP
-                + " WHERE " + Utilities.COLUMN_USER_ID + " = ? AND "
-                + COLUMN_DISPLAY_ID + " = ?";
-        try {
-            psStepTree = SqlUtils.getPreparedStatement(dataSource, sql);
-
-            while (!stepTree.empty()) {
-                parentAnswerId = stepTree.pop();
-                long start = System.currentTimeMillis();
-                psStepTree.setInt(1, user.getUserId());
-                psStepTree.setInt(2, parentAnswerId.intValue());
-
-                ResultSet rsAnswerTree = null;
-                try {
-                    rsAnswerTree = psStepTree.executeQuery();
-                    SqlUtils.verifyTime(wdkModel, sql, start);
-                    if (rsAnswerTree.next()) {
-                        parentStep = steps.get(parentAnswerId);
-
-                        // left child
-                        Step currentStep;
-                        int currentStepId = rsAnswerTree.getInt(COLUMN_LEFT_CHILD_ID);
-                        if (currentStepId >= 1) {
-                            currentStep = loadStep(user, currentStepId);
-                            stepTree.push(currentStepId);
-                            steps.put(currentStepId, currentStep);
-
-                            parentStep.setPreviousStep(currentStep);
-                            currentStep.setNextStep(parentStep);
-                            if (!currentStep.isValid())
-                                parentStep.setValid(false);
-                        }
-                        // right child
-                        currentStepId = rsAnswerTree.getInt(COLUMN_RIGHT_CHILD_ID);
-                        if (currentStepId >= 1) {
-                            currentStep = loadStep(user, currentStepId);
-                            stepTree.push(currentStepId);
-                            steps.put(currentStepId, currentStep);
-
-                            parentStep.setChildStep(currentStep);
-                            currentStep.setParentStep(parentStep);
-                            if (!currentStep.isValid())
-                                parentStep.setValid(false);
-                        }
-                    }
-                } finally {
-                    if (rsAnswerTree != null) rsAnswerTree.close();
-                }
-            }
-        } finally {
-            SqlUtils.closeStatement(psStepTree);
-        }
-        return step;
-    }
+    //
+    // private Step loadStepTree(User user, int stepId) throws SQLException,
+    // WdkUserException, WdkModelException, JSONException {
+    // Step step = loadStep(user, stepId);
+    // if (!step.isCombined()) return step;
+    //
+    // Stack<Integer> stepTree = new Stack<Integer>();
+    // stepTree.push(stepId);
+    //
+    // Map<Integer, Step> steps = new LinkedHashMap<Integer, Step>();
+    // steps.put(stepId, step);
+    //
+    // Integer parentAnswerId;
+    // Step parentStep;
+    //
+    // PreparedStatement psStepTree = null;
+    // String sql = "SELECT " + COLUMN_LEFT_CHILD_ID + ", "
+    // + COLUMN_RIGHT_CHILD_ID + " FROM " + userSchema + TABLE_STEP
+    // + " WHERE " + Utilities.COLUMN_USER_ID + " = ? AND "
+    // + COLUMN_DISPLAY_ID + " = ?";
+    // try {
+    // psStepTree = SqlUtils.getPreparedStatement(dataSource, sql);
+    //
+    // while (!stepTree.empty()) {
+    // parentAnswerId = stepTree.pop();
+    // long start = System.currentTimeMillis();
+    // psStepTree.setInt(1, user.getUserId());
+    // psStepTree.setInt(2, parentAnswerId.intValue());
+    //
+    // ResultSet rsAnswerTree = null;
+    // try {
+    // rsAnswerTree = psStepTree.executeQuery();
+    // SqlUtils.verifyTime(wdkModel, sql, start);
+    // if (rsAnswerTree.next()) {
+    // parentStep = steps.get(parentAnswerId);
+    //
+    // // left child
+    // Step currentStep;
+    // int currentStepId = rsAnswerTree.getInt(COLUMN_LEFT_CHILD_ID);
+    // if (currentStepId >= 1) {
+    // currentStep = loadStep(user, currentStepId);
+    // stepTree.push(currentStepId);
+    // steps.put(currentStepId, currentStep);
+    //
+    // parentStep.setPreviousStep(currentStep);
+    // currentStep.setNextStep(parentStep);
+    // if (!currentStep.isValid())
+    // parentStep.setValid(false);
+    // }
+    // // right child
+    // currentStepId = rsAnswerTree.getInt(COLUMN_RIGHT_CHILD_ID);
+    // if (currentStepId >= 1) {
+    // currentStep = loadStep(user, currentStepId);
+    // stepTree.push(currentStepId);
+    // steps.put(currentStepId, currentStep);
+    //
+    // parentStep.setChildStep(currentStep);
+    // currentStep.setParentStep(parentStep);
+    // if (!currentStep.isValid())
+    // parentStep.setValid(false);
+    // }
+    // }
+    // } finally {
+    // if (rsAnswerTree != null) rsAnswerTree.close();
+    // }
+    // }
+    // } finally {
+    // SqlUtils.closeStatement(psStepTree);
+    // }
+    // return step;
+    // }
 
     Strategy importStrategy(User user, Strategy oldStrategy)
             throws WdkUserException, WdkModelException, SQLException,
@@ -980,20 +989,35 @@ public class StepFactory {
     Strategy loadStrategy(User user, int displayId, boolean allowDeleted)
             throws WdkUserException, WdkModelException, JSONException,
             SQLException, NoSuchAlgorithmException {
-        String userIdColumn = Utilities.COLUMN_USER_ID;
+        String userColumn = Utilities.COLUMN_USER_ID;
+        String answerColumn = AnswerFactory.COLUMN_ANSWER_ID;
 
         PreparedStatement psStrategy = null;
         ResultSet rsStrategy = null;
         try {
-            String query = "SELECT * FROM " + userSchema + TABLE_STRATEGY
-                    + " WHERE " + userIdColumn + " = ? AND "
-                    + COLUMN_DISPLAY_ID + " = ? AND " + COLUMN_PROJECT_ID
-                    + " = ?";
+            StringBuffer sql = new StringBuffer("SELECT sr.* ");
+            sql.append(", sp." + COLUMN_LAST_RUN_TIME + ", sp."
+                    + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", a."
+                    + AnswerFactory.COLUMN_PROJECT_VERSION + ", a."
+                    + AnswerFactory.COLUMN_QUESTION_NAME);
+            sql.append(" FROM " + userSchema + TABLE_STRATEGY + " sr, "
+                    + userSchema + TABLE_STEP + " sp, " + wdkSchema
+                    + AnswerFactory.TABLE_ANSWER + " a");
+            sql.append(" WHERE sr." + COLUMN_ROOT_STEP_ID + " = sp."
+                    + COLUMN_DISPLAY_ID + " AND sp." + answerColumn + " = a."
+                    + answerColumn + " AND sr." + userColumn + " = sp."
+                    + userColumn + " AND sr." + COLUMN_PROJECT_ID + " = a."
+                    + COLUMN_PROJECT_ID);
+            sql.append(" AND sr.").append(userColumn).append(" = ? ");
+            sql.append(" AND sr.").append(COLUMN_DISPLAY_ID).append(" = ?");
+            sql.append(" AND sr.").append(COLUMN_PROJECT_ID).append(" = ?");
+
             if (!allowDeleted) {
-                query += " AND " + COLUMN_IS_DELETED + " = ?";
+                sql.append(" AND sr." + COLUMN_IS_DELETED + " = ?");
             }
             long start = System.currentTimeMillis();
-            psStrategy = SqlUtils.getPreparedStatement(dataSource, query);
+            psStrategy = SqlUtils.getPreparedStatement(dataSource,
+                    sql.toString());
             psStrategy.setInt(1, user.getUserId());
             psStrategy.setInt(2, displayId);
             psStrategy.setString(3, wdkModel.getProjectId());
@@ -1001,7 +1025,7 @@ public class StepFactory {
                 psStrategy.setBoolean(4, false);
             }
             rsStrategy = psStrategy.executeQuery();
-            SqlUtils.verifyTime(wdkModel, query, start);
+            SqlUtils.verifyTime(wdkModel, sql.toString(), start);
             if (!rsStrategy.next()) {
                 throw new WdkUserException("The strategy " + displayId
                         + " does not exist " + "for user " + user.getEmail());
@@ -1028,10 +1052,23 @@ public class StepFactory {
     Strategy loadStrategy(String strategySignature) throws WdkUserException,
             SQLException, WdkModelException, JSONException,
             NoSuchAlgorithmException {
-        StringBuffer sql = new StringBuffer("SELECT * ");
-        sql.append(" FROM ").append(userSchema).append(TABLE_STRATEGY);
-        sql.append(" WHERE ").append(COLUMN_SIGNATURE).append(" = ? ");
-        sql.append(" AND ").append(COLUMN_PROJECT_ID).append(" = ?");
+        String userColumn = Utilities.COLUMN_USER_ID;
+        String answerColumn = AnswerFactory.COLUMN_ANSWER_ID;
+        StringBuffer sql = new StringBuffer("SELECT sr.* ");
+        sql.append(", sp." + COLUMN_LAST_RUN_TIME + ", sp."
+                + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", a."
+                + AnswerFactory.COLUMN_PROJECT_VERSION + ", a."
+                + AnswerFactory.COLUMN_QUESTION_NAME);
+        sql.append(" FROM " + userSchema + TABLE_STRATEGY + " sr, "
+                + userSchema + TABLE_STEP + " sp, " + wdkSchema
+                + AnswerFactory.TABLE_ANSWER + " a");
+        sql.append(" WHERE sr." + COLUMN_ROOT_STEP_ID + " = sp."
+                + COLUMN_DISPLAY_ID + " AND sp." + answerColumn + " = a."
+                + answerColumn + " AND sr." + userColumn + " = sp."
+                + userColumn + " AND sr." + COLUMN_PROJECT_ID + " = a."
+                + COLUMN_PROJECT_ID);
+        sql.append(" AND sr.").append(COLUMN_SIGNATURE).append(" = ? ");
+        sql.append(" AND sr.").append(COLUMN_PROJECT_ID).append(" = ?");
         ResultSet resultSet = null;
         PreparedStatement ps = null;
         try {
@@ -1250,7 +1287,9 @@ public class StepFactory {
             SqlUtils.closeResultSet(rsMax);
         }
 
-        return loadStrategy(user, displayId, false);
+        Strategy strategy = loadStrategy(user, displayId, false);
+        strategy.setLatestStep(root);
+        return strategy;
     }
 
     int getStrategyCount(User user) throws WdkUserException, SQLException,
@@ -1455,7 +1494,7 @@ public class StepFactory {
     }
 
     void setStepValidFlag(Step step) throws SQLException, WdkUserException,
-            WdkModelException {
+            WdkModelException, JSONException {
         String sql = "UPDATE " + userSchema + TABLE_STEP + " SET "
                 + COLUMN_IS_VALID + " = ? WHERE step_id = ?";
         PreparedStatement psUpdate = null;

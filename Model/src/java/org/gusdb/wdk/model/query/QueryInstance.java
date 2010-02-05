@@ -76,8 +76,6 @@ public abstract class QueryInstance {
         this.cached = query.isCached();
         this.assignedWeight = assignedWeight;
 
-        logger.debug("query weight: " + assignedWeight);
-
         // logger.debug("validating param values of query [" +
         // query.getFullName() + "]");
         setValues(values, validate);
