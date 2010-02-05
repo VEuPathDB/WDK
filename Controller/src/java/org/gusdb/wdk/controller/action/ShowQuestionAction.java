@@ -96,7 +96,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             String customViewFile1 = baseFilePath
 		+ File.separator + wdkQuestion.getFullName() + ".form.jsp";
             String customViewFile2 = baseFilePath
-		+ File.separator + wdkQuestion.getRecordClass().getFullName()
+		+ File.separator + wdkQuestion.getQuestionSetName()
 		+ ".form.jsp";
             String customViewFile3 = baseFilePath
 		+ File.separator + "question.form.jsp";
@@ -266,6 +266,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
         Vector<String> v = new Vector<String>();
         int halfLen = maxLength / 2;
         for (String l : labels) {
+            if (l == null) continue;
             int len = l.length();
             if (len > maxLength) {
                 l = l.substring(0, halfLen) + "..."
