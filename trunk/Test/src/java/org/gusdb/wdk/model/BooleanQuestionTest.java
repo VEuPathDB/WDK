@@ -85,7 +85,7 @@ public class BooleanQuestionTest {
         paramValues.put(expansion.getName(), "false");
 
         AnswerValue answerValue = booleanQuestion.makeAnswerValue(user,
-                paramValues);
+                paramValues, 0);
         int size = answerValue.getResultSize();
 
         Assert.assertTrue("bigger than left",
@@ -117,7 +117,7 @@ public class BooleanQuestionTest {
         paramValues.put(expansion.getName(), "false");
 
         AnswerValue answerValue = booleanQuestion.makeAnswerValue(user,
-                paramValues);
+                paramValues, 0);
         int size = answerValue.getResultSize();
 
         Assert.assertTrue("smaller than left",
@@ -149,7 +149,7 @@ public class BooleanQuestionTest {
         paramValues.put(expansion.getName(), "false");
 
         AnswerValue answerValue = booleanQuestion.makeAnswerValue(user,
-                paramValues);
+                paramValues, 0);
         int size = answerValue.getResultSize();
 
         Assert.assertTrue("smaller than left",
@@ -179,7 +179,7 @@ public class BooleanQuestionTest {
         paramValues.put(expansion.getName(), "false");
 
         AnswerValue answerValue = booleanQuestion.makeAnswerValue(user,
-                paramValues);
+                paramValues, 0);
         int size = answerValue.getResultSize();
 
         Assert.assertTrue("smaller than right",

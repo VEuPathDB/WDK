@@ -33,8 +33,8 @@ public class AnswerFactory {
     static final String COLUMN_ANSWER_ID = "answer_id";
     static final String COLUMN_ANSWER_CHECKSUM = "answer_checksum";
     static final String COLUMN_PROJECT_ID = "project_id";
-    private static final String COLUMN_PROJECT_VERSION = "project_version";
-    private static final String COLUMN_QUESTION_NAME = "question_name";
+    static final String COLUMN_PROJECT_VERSION = "project_version";
+    static final String COLUMN_QUESTION_NAME = "question_name";
     private static final String COLUMN_QUERY_CHECKSUM = "query_checksum";
     // private static final String COLUMN_PARAMS = "params";
 

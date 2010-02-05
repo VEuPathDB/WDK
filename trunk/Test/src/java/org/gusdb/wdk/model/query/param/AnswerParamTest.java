@@ -70,7 +70,7 @@ public class AnswerParamTest {
             } else paramValue = param.getDefault();
             paramValues.put(param.getName(), paramValue);
         }
-        AnswerValue answerValue = question.makeAnswerValue(user, paramValues);
+        AnswerValue answerValue = question.makeAnswerValue(user, paramValues, 0);
 
         Assert.assertTrue("result size", answerValue.getResultSize() >= 0);
     }

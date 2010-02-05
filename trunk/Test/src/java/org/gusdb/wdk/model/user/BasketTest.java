@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -79,7 +78,7 @@ public class BasketTest {
         Question question = recordClass.getRealtimeBasketQuestion();
         Map<String, String> params = new HashMap<String, String>();
         params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
-        AnswerValue answerValue = question.makeAnswerValue(user, params);
+        AnswerValue answerValue = question.makeAnswerValue(user, params, 0);
         Assert.assertTrue("answer size >= 5", answerValue.getResultSize() >= 5);
         // check each records
         for (RecordInstance instance : answerValue.getRecordInstances()) {
@@ -124,7 +123,7 @@ public class BasketTest {
         List<String[]> ids = new ArrayList<String[]>();
         Query query = recordClass.getAllRecordsQuery();
         Map<String, String> params = new HashMap<String, String>();
-        QueryInstance instance = query.makeInstance(user, params, true);
+        QueryInstance instance = query.makeInstance(user, params, true, 0);
         String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
         ResultList results = instance.getResults();
         int count = 0;

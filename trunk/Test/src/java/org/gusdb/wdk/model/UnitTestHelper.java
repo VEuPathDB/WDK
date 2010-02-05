@@ -49,10 +49,8 @@ public class UnitTestHelper {
     public static WdkModel getModel() throws Exception {
         if (wdkModel == null) {
             logger.info("Loading model...");
-            String projectId = System
-                    .getProperty(Utilities.ARGUMENT_PROJECT_ID);
-            String gusHome = System
-                    .getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+            String projectId = System.getProperty(Utilities.ARGUMENT_PROJECT_ID);
+            String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
             try {
                 wdkModel = WdkModel.construct(projectId, gusHome);
 
@@ -83,8 +81,7 @@ public class UnitTestHelper {
             UserFactory userFactory = wdkModel.getUserFactory();
             // check if user exist
             try {
-                registeredUser = userFactory
-                        .getUserByEmail(REGISTERED_USER_EMAIL);
+                registeredUser = userFactory.getUserByEmail(REGISTERED_USER_EMAIL);
             } catch (WdkUserException ex) {
                 // user doesn't exist, create one
                 registeredUser = userFactory.createUser(REGISTERED_USER_EMAIL,
@@ -118,12 +115,10 @@ public class UnitTestHelper {
 
     public static Step createNormalStep(User user) throws Exception {
         Question question = getNormalQuestion();
-        List<ParamValuesSet> paramValueSets = question.getQuery()
-                .getParamValuesSets();
-        ParamValuesSet paramValueSet = paramValueSets.get(random
-                .nextInt(paramValueSets.size()));
+        List<ParamValuesSet> paramValueSets = question.getQuery().getParamValuesSets();
+        ParamValuesSet paramValueSet = paramValueSets.get(random.nextInt(paramValueSets.size()));
         Map<String, String> params = paramValueSet.getParamValues();
-        return user.createStep(question, params, (String) null, false, false);
+        return user.createStep(question, params, (String) null, false, false, 0);
     }
 
     private static void loadQuestions() throws Exception {
@@ -154,7 +149,8 @@ public class UnitTestHelper {
                     allAnswerQuestions.get(rcName).add(question);
                 if (hasDatasetParam)
                     allDatasetQuestions.get(rcName).add(question);
-                if (!hasAnswerParam && !hasDatasetParam)
+                if (!hasAnswerParam && !hasDatasetParam
+                        && !question.getQuery().getDoNotTest())
                     allNormalQuestions.get(rcName).add(question);
             }
         }

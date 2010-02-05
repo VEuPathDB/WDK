@@ -4,7 +4,6 @@
 package org.gusdb.wdk.model.query;
 
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -103,7 +102,8 @@ public class QueryTest {
                     user, rawValues);
 
             // try to make a query instance
-            QueryInstance instance = query.makeInstance(user, dependentValues, true);
+            QueryInstance instance = query.makeInstance(user, dependentValues,
+                    true, 0);
             int rows = instance.getResultSize();
 
             String qName = query.getFullName();
