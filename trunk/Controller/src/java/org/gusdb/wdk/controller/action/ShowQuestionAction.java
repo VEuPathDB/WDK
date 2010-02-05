@@ -96,7 +96,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
             String customViewFile1 = baseFilePath
 		+ File.separator + wdkQuestion.getFullName() + ".form.jsp";
             String customViewFile2 = baseFilePath
-		+ File.separator + wdkQuestion.getRecordClass().getFullName()
+		+ File.separator + wdkQuestion.getQuestionSetName()
 		+ ".form.jsp";
             String customViewFile3 = baseFilePath
 		+ File.separator + "question.form.jsp";
