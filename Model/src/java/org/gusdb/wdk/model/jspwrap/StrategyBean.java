@@ -86,19 +86,8 @@ public class StrategyBean {
         return strategy.getLastModifiedTime();
     }
 
-    public String getLastViewedTimeFormatted() {
-        return formatDate(strategy.getLastViewedTime());
-    }
-
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.user.Strategy#getLastViewedTime()
-     */
-    public Date getLastViewedTime() {
-        return strategy.getLastViewedTime();
-    }
-
-    public StepBean getLatestStep() {
+    public StepBean getLatestStep() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         return new StepBean(user, strategy.getLatestStep());
     }
 
@@ -110,27 +99,29 @@ public class StrategyBean {
         return strategy.getInternalId();
     }
 
-    public StepBean getStep(int index) {
-        StepBean latestStep = new StepBean(user, strategy.getLatestStep());
-        return latestStep.getStep(index);
+    public StepBean getStep(int index) throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
+        return new StepBean(user, strategy.getStep(index));
     }
 
-    public StepBean[] getAllSteps() {
+    public StepBean[] getAllSteps() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         StepBean latestStep = new StepBean(user, strategy.getLatestStep());
         return latestStep.getAllSteps();
     }
 
-    public void addStep(StepBean step) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
-        strategy.addStep(step.step);
-    }
+    // public void addStep(StepBean step) throws WdkUserException,
+    // WdkModelException, SQLException, JSONException {
+    // strategy.addStep(step.step);
+    // }
 
     public void setLatestStep(StepBean step) throws WdkUserException,
             WdkModelException, SQLException, JSONException {
         strategy.setLatestStep(step.step);
     }
 
-    public StepBean getStepById(int stepId) {
+    public StepBean getStepById(int stepId) throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
         Step target = strategy.getStepById(stepId);
         if (target != null) {
             return new StepBean(user, target);
@@ -138,7 +129,8 @@ public class StrategyBean {
         return null;
     }
 
-    public int getLength() {
+    public int getLength() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         return getAllSteps().length;
     }
 
@@ -177,12 +169,13 @@ public class StrategyBean {
         return strategy.getSignature();
     }
 
-    public StepBean getFirstStep() {
+    public StepBean getFirstStep() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         return new StepBean(user, strategy.getFirstStep());
     }
 
     public String getChecksum() throws NoSuchAlgorithmException, JSONException,
-            WdkModelException {
+            WdkModelException, WdkUserException, SQLException {
         return strategy.getChecksum();
     }
 
@@ -209,13 +202,19 @@ public class StrategyBean {
 
     /**
      * @return
+     * @throws JSONException
+     * @throws SQLException
+     * @throws WdkModelException
+     * @throws WdkUserException
      * @see org.gusdb.wdk.model.user.Strategy#isValid()
      */
-    public boolean isValid() {
+    public boolean isValid() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         return strategy.isValid();
     }
-    
-    public String getDisplayType() {
-        return strategy.getLatestStep().getDisplayType();
+
+    public String getDisplayType() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
+        return strategy.getDisplayType();
     }
 }

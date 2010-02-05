@@ -78,9 +78,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     private DynamicAttributeSet dynamicAttributeSet;
     private Query dynamicAttributeQuery;
 
-    private List<PropertyList> propertyLists = new ArrayList<PropertyList>();
-    private Map<String, String[]> propertyListMap = new LinkedHashMap<String, String[]>();
-
     private WdkModel wdkModel;
 
     private boolean noSummaryOnSingleRecord = false;
@@ -104,6 +101,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
      * @param question
      */
     public Question(Question question) {
+        super(question);
         this.category = question.category;
         this.description = question.description;
         this.displayName = question.displayName;
@@ -112,7 +110,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         this.dynamicAttributeSet = question.dynamicAttributeSet;
 
         this.help = question.help;
-        this.propertyListMap.putAll(question.propertyListMap);
 
         // need to deep-copy query as well
         this.query = question.query;
@@ -491,7 +488,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         if (resolved) return;
-
+        super.resolveReferences(model);
         this.wdkModel = model;
 
         try {
@@ -568,41 +565,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     }
 
     /**
-     * This method is supposed to be called by the digester
-     * 
-     * @param propertyList
-     */
-    public void addPropertyList(PropertyList propertyList) {
-        this.propertyLists.add(propertyList);
-    }
-
-    /**
-     * if the property list of the given name doesn't exist, it will try to get
-     * a default property list from the WdkModel.
-     * 
-     * @param propertyListName
-     * @return
-     */
-    public String[] getPropertyList(String propertyListName) {
-        if (!propertyListMap.containsKey(propertyListName))
-            return wdkModel.getDefaultPropertyList(propertyListName);
-        return propertyListMap.get(propertyListName);
-    }
-
-    public Map<String, String[]> getPropertyLists() {
-        // get the default property lists
-        Map<String, String[]> propLists = wdkModel.getDefaultPropertyLists();
-        // replace the default ones with the ones defined in the question
-        for (String plName : propertyListMap.keySet()) {
-            String[] values = propertyListMap.get(plName);
-            String[] array = new String[values.length];
-            System.arraycopy(values, 0, array, 0, array.length);
-            propLists.put(plName, array);
-        }
-        return propLists;
-    }
-
-    /**
      * @return the ignoreSubType
      */
     public boolean isIgnoreSubType() {
@@ -624,6 +586,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
      */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
+        super.excludeResources(projectId);
+        
         // exclude descriptions
         boolean hasDescription = false;
         for (WdkModelText description : descriptions) {
@@ -713,23 +677,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             dynamicSet.excludeResources(projectId);
             this.dynamicAttributeSet = dynamicSet;
         }
-
-        // exclude property lists
-        for (PropertyList propList : propertyLists) {
-            if (propList.include(projectId)) {
-                String listName = propList.getName();
-                if (propertyListMap.containsKey(listName)) {
-                    throw new WdkModelException("The question " + getFullName()
-                            + " has more than one propertyList \"" + listName
-                            + "\" for project " + projectId);
-                } else {
-                    propList.excludeResources(projectId);
-                    propertyListMap.put(propList.getName(),
-                            propList.getValues());
-                }
-            }
-        }
-        propertyLists = null;
     }
 
     private Query createDynamicAttributeQuery(WdkModel wdkModel) throws WdkModelException {

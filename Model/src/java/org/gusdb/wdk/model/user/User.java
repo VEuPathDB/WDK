@@ -1149,7 +1149,7 @@ public class User /* implements Serializable */{
         Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy);
         newStrategy.update(true);
         // highlight the imported strategy
-        int rootStepId = newStrategy.getLatestStep().getDisplayId();
+        int rootStepId = newStrategy.getLatestStepId();
         String strategyKey = Integer.toString(newStrategy.getStrategyId());
         if (newStrategy.isValid()) setViewResults(strategyKey, rootStepId, 0);
         if (strategyCount != null) strategyCount++;

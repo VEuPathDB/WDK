@@ -57,7 +57,8 @@ public class MergeUserTest {
         guest.createStrategy(step, false);
 
         User registeredUser = UnitTestHelper.getRegisteredUser();
-        int count = guest.getStrategyCount() + registeredUser.getStrategyCount();
+        int count = guest.getStrategyCount()
+                + registeredUser.getStrategyCount();
         int unsavedCount = countStrategies(registeredUser.getUnsavedStrategiesByCategory());
 
         registeredUser.mergeUser(guest);
@@ -74,7 +75,8 @@ public class MergeUserTest {
         guest.createStrategy(UnitTestHelper.createNormalStep(guest), false);
 
         User registeredUser = UnitTestHelper.getRegisteredUser();
-        int count = guest.getStrategyCount() + registeredUser.getStrategyCount();
+        int count = guest.getStrategyCount()
+                + registeredUser.getStrategyCount();
 
         registeredUser.mergeUser(guest);
 
@@ -89,60 +91,65 @@ public class MergeUserTest {
 
         Step step2 = UnitTestHelper.createNormalStep(guest);
         Step boolean2 = guest.createBooleanStep(step1, step2, "OR", false, null);
-        strategy.addStep(boolean2);
+        strategy.addStep(step1.getDisplayId(), boolean2);
 
         Step step3 = UnitTestHelper.createNormalStep(guest);
         Step boolean3 = guest.createBooleanStep(boolean2, step3, "OR", false,
                 null);
-        strategy.addStep(boolean3);
+        strategy.addStep(boolean2.getDisplayId(), boolean3);
         strategy.update(true);
 
         User registeredUser = UnitTestHelper.getRegisteredUser();
-        int count = guest.getStrategyCount() + registeredUser.getStrategyCount();
+        int count = guest.getStrategyCount()
+                + registeredUser.getStrategyCount();
 
         registeredUser.mergeUser(guest);
 
         Assert.assertEquals(count, registeredUser.getStrategyCount());
     }
-    
+
     @Test
     public void testMergeUserWithStrategiesOfSameName() throws Exception {
         String existName = "Name" + UnitTestHelper.getRandom().nextInt();
         User guest = UnitTestHelper.getGuest();
         Step step = UnitTestHelper.createNormalStep(guest);
-        guest.createStrategy(step,existName, false);
-        
+        guest.createStrategy(step, existName, false);
+
         User registeredUser = UnitTestHelper.getRegisteredUser();
         Step newStep = UnitTestHelper.createNormalStep(registeredUser);
-        Strategy expected = registeredUser.createStrategy(newStep, existName, false);
-        
-        int count = registeredUser.getStrategyCount() + guest.getStrategyCount();
-        
+        Strategy expected = registeredUser.createStrategy(newStep, existName,
+                false);
+
+        int count = registeredUser.getStrategyCount()
+                + guest.getStrategyCount();
+
         registeredUser.mergeUser(guest);
-        
+
         Assert.assertEquals(count, registeredUser.getStrategyCount());
-        
+
         Strategy actual = registeredUser.getStrategy(expected.getStrategyId());
         StrategyTest.compareStrategy(expected, actual);
     }
-    
+
     @Test
     public void testMergeUserWithSavedStrategiesOfSameName() throws Exception {
         String existName = "Name" + UnitTestHelper.getRandom().nextInt();
         User guest = UnitTestHelper.getGuest();
         Step step = UnitTestHelper.createNormalStep(guest);
-        guest.createStrategy(step,existName, false);
-        
+        guest.createStrategy(step, existName, false);
+
         User registeredUser = UnitTestHelper.getRegisteredUser();
         Step newStep = UnitTestHelper.createNormalStep(registeredUser);
-        Strategy expected = registeredUser.createStrategy(newStep, existName, true);
-        
-        int count = registeredUser.getStrategyCount() + guest.getStrategyCount();
-        
+        Strategy expected = registeredUser.createStrategy(newStep, existName,
+                true);
+
+        int count = registeredUser.getStrategyCount()
+                + guest.getStrategyCount();
+
         registeredUser.mergeUser(guest);
-        
+
         Assert.assertEquals(count, registeredUser.getStrategyCount());
-        
+
         Strategy actual = registeredUser.getStrategy(expected.getStrategyId());
         StrategyTest.compareStrategy(expected, actual);
     }

@@ -99,6 +99,9 @@ public class TableField extends Field implements AttributeFieldContainer {
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
+        if (resolved) return;
+        super.resolveReferences(wdkModel);
+        
         // resolve Query
         Query query = (Query) wdkModel.resolveReference(queryTwoPartName);
 
@@ -117,6 +120,7 @@ public class TableField extends Field implements AttributeFieldContainer {
                 ((ColumnAttributeField) field).setColumn(column);
             } // else, it's okay to have unmatched columns
         }
+        resolved = true;
     }
 
     /*
@@ -136,6 +140,8 @@ public class TableField extends Field implements AttributeFieldContainer {
      */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
+        super.excludeResources(projectId);
+        
         // exclude descriptions
         boolean hasDescription = false;
         for (WdkModelText description : descriptions) {

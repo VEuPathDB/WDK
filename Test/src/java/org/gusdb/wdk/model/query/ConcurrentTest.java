@@ -15,36 +15,40 @@ import org.junit.Test;
 
 /**
  * @author xingao
- *
+ * 
  */
 public class ConcurrentTest {
-    
+
     private class TestThread extends Thread {
-        
+
         private int id;
         private User user;
         private Query query;
         private Map<String, String> values;
-        
-        TestThread(int id, Query query, Map<String, String> values) throws Exception {
+
+        TestThread(int id, Query query, Map<String, String> values)
+                throws Exception {
             this.id = id;
             this.query = query;
             this.values = values;
             this.user = UnitTestHelper.getRegisteredUser();
         }
 
-        /* (non-Javadoc)
+        /*
+         * (non-Javadoc)
+         * 
          * @see java.lang.Thread#run()
          */
         @Override
         public void run() {
             System.out.println("start test thread: #" + id);
             try {
-            QueryInstance instance = query.makeInstance(user, values, true);
-            ResultList resultList = instance.getResults();
-            resultList.next();
-            resultList.close();
-            } catch(Exception ex) {
+                QueryInstance instance = query.makeInstance(user, values, true,
+                        0);
+                ResultList resultList = instance.getResults();
+                resultList.next();
+                resultList.close();
+            } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
         }
@@ -61,12 +65,12 @@ public class ConcurrentTest {
         ParamValuesSet paramValues = query.getParamValuesSets().get(0);
         Map<String, String> values = paramValues.getParamValues();
         List<TestThread> threads = new ArrayList<TestThread>();
-        for(int i = 1; i <= 3; i++) {
+        for (int i = 1; i <= 3; i++) {
             threads.add(new TestThread(i, query, values));
         }
-        for(TestThread thread : threads) {
+        for (TestThread thread : threads) {
             thread.start();
         }
     }
-    
+
 }

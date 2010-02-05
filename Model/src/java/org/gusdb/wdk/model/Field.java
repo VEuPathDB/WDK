@@ -14,10 +14,6 @@ import org.json.JSONException;
  */
 public abstract class Field extends WdkModelBase {
 
-    public abstract void resolveReferences(WdkModel wdkModel)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException;
-
     protected String name;
     protected String displayName;
     protected String help;
