@@ -3,9 +3,9 @@
 	position:absolute;
 	width:417px;
 	height:87px;
-	top:50px;
+	top:200px;
 	left:313px;
-	z-index:81;
+	z-index:510;
 	border:1px solid #888888;
 	-webkit-border-bottom-left-radius:10px;
 	-webkit-border-bottom-right-radius:10px;
@@ -21,7 +21,7 @@ div#dyk-shadow{
 	background-color:#000000;
 	left:319px;
 	opacity:0.2;
-	top:56px;
+	top:206px;
 	z-index:80;
 }
 
