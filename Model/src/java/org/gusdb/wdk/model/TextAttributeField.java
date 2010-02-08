@@ -9,8 +9,12 @@ public class TextAttributeField extends AttributeField {
     private List<WdkModelText> texts;
     private String text;
 
+    private List<WdkModelText> displays;
+    private String display;
+
     public TextAttributeField() {
         texts = new ArrayList<WdkModelText>();
+        displays = new ArrayList<WdkModelText>();
     }
 
     public void addText(WdkModelText text) {
@@ -19,6 +23,14 @@ public class TextAttributeField extends AttributeField {
 
     public String getText() {
         return text;
+    }
+
+    public void addDisplay(WdkModelText display) {
+        this.displays.add(display);
+    }
+
+    public String getDisplay() {
+        return display;
     }
 
     /*
@@ -37,7 +49,7 @@ public class TextAttributeField extends AttributeField {
             if (text.include(projectId)) {
                 if (hasText) {
                     throw new WdkModelException("The textAttribute " + rcName
-                            + getName() + " has more than one <url> for "
+                            + getName() + " has more than one <text> for "
                             + "project " + projectId);
                 } else {
                     this.text = text.getText();
@@ -51,17 +63,37 @@ public class TextAttributeField extends AttributeField {
                     + getName() + " does not have a <text> tag for project "
                     + projectId);
         texts = null;
+
+        // exclude display
+        boolean hasDisplay = false;
+        for (WdkModelText display : displays) {
+            if (display.include(projectId)) {
+                if (hasDisplay) {
+                    throw new WdkModelException("The textAttribute " + rcName
+                            + getName() + " has more than one <display> for "
+                            + "project " + projectId);
+                } else {
+                    this.display = display.getText();
+                    hasDisplay = true;
+                }
+            }
+        }
+        if (this.display == null) display = text;
+        displays = null;
     }
 
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.Field#presolveReferences(org.gusdb.wdk.model.WdkModel)
+     * @see
+     * org.gusdb.wdk.model.Field#presolveReferences(org.gusdb.wdk.model.WdkModel
+     * )
      */
     @Override
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
         // try the parse out the embedded column fields
         parseFields(text);
+        if (!display.equals(text)) parseFields(display);
     }
 
     /*
@@ -70,8 +102,7 @@ public class TextAttributeField extends AttributeField {
      * @see org.gusdb.wdk.model.AttributeField#getDependents()
      */
     @Override
-    public Collection<AttributeField> getDependents()
-            throws WdkModelException {
-        return parseFields(text).values();
+    public Collection<AttributeField> getDependents() throws WdkModelException {
+        return parseFields(text + "\n" + display).values();
     }
 }

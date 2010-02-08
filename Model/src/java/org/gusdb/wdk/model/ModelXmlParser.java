@@ -747,6 +747,10 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester, prefix + "textAttribute/text",
                 WdkModelText.class, "addText");
         digester.addCallMethod(prefix + "textAttribute/text", "setText", 0);
+
+        configureNode(digester, prefix + "textAttribute/display",
+                WdkModelText.class, "addDisplay");
+        digester.addCallMethod(prefix + "textAttribute/display", "setText", 0);
     }
 
     private void configureQueryMonitor(Digester digester) {

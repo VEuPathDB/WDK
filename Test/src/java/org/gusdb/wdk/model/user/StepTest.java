@@ -62,6 +62,8 @@ public class StepTest {
         Assert.assertFalse("Step shouldn't be deleted", step.isDeleted());
         Assert.assertFalse("This is not combined", step.isCombined());
         Assert.assertFalse("This is not transform", step.isTransform());
+        Assert.assertTrue("get result",
+                step.getAnswerValue().getResultSize() > 0);
     }
 
     @Test
