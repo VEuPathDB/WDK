@@ -90,6 +90,10 @@ public class StrategyBean {
             SQLException, JSONException {
         return new StepBean(user, strategy.getLatestStep());
     }
+    
+    public int getLatestStepId() {
+        return strategy.getLatestStepId();
+    }
 
     public int getStrategyId() {
         return strategy.getStrategyId();
@@ -213,8 +217,28 @@ public class StrategyBean {
         return strategy.isValid();
     }
 
-    public String getDisplayType() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Strategy#getDisplayType()
+     */
+    public String getDisplayType() {
         return strategy.getDisplayType();
     }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Strategy#getEstimateSize()
+     */
+    public int getEstimateSize() {
+        return strategy.getEstimateSize();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Strategy#getType()
+     */
+    public String getType() {
+        return strategy.getType();
+    }
+    
 }
