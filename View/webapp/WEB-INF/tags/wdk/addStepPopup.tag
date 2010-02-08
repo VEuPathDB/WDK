@@ -122,8 +122,7 @@
 		<!-- Display the currently ACTIVE (OPENED) Strategies -->
 		<option value="--">----Opened strategies----</option>
 		<c:forEach items="${user.activeStrategies}" var="storedStrategy">
-			<c:set var="l" value="${storedStrategy.length-1}"/>
-		 	<c:if test="${storedStrategy.allSteps[l].dataType == rcName}">
+		 	<c:if test="${storedStrategy.type == rcName}">
 				<c:set var="displayName" value="${storedStrategy.name}" />
 				<c:if test="${fn:length(displayName) > 30}">
                                     <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
