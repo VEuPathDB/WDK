@@ -31,9 +31,9 @@ My Search Strategies Workspace
    <li><a id="tab_search_history" title="Summary of all your strategies. From here you can open/close strategies on the 'Run Strategies' tab, our graphical display." 
 	onclick="this.blur()" href="javascript:showPanel('search_history')">All</a></li>
 
-<%--
+
    <li><a style="padding-left:5px;" id="tab_basket" title="Where to store your GENES of interest. YOU NEED TO LOGIN to use the basket. In the future you will be able to have baskets for other feature types such as ESTs, SNPs, genomic sequences, etc." onclick="this.blur()" href="javascript:showPanel('basket')"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;My Basket</a></li>
---%>
+
 
    <li><a id="tab_sample_strat" title="View some examples of linear and non-linear strategies." 
 	onclick="this.blur()" href="javascript:showPanel('sample_strat')">Examples</a></li>
