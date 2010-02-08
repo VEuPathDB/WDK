@@ -825,7 +825,8 @@ public class StepFactory {
         strategy.setLastRunTime(resultSet.getTimestamp(COLUMN_LAST_RUN_TIME));
         strategy.setEstimateSize(resultSet.getInt(COLUMN_ESTIMATE_SIZE));
         strategy.setVersion(resultSet.getString(AnswerFactory.COLUMN_PROJECT_VERSION));
-        strategy.setValid(resultSet.getBoolean(COLUMN_IS_VALID));
+        if (resultSet.getObject(COLUMN_IS_VALID) != null)
+            strategy.setValid(resultSet.getBoolean(COLUMN_IS_VALID));
 
         String questionName = resultSet.getString(AnswerFactory.COLUMN_QUESTION_NAME);
         Question question = (Question) wdkModel.getQuestion(questionName);
