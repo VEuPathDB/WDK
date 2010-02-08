@@ -742,7 +742,7 @@ public class StepFactory {
         String userColumn = Utilities.COLUMN_USER_ID;
         String answerColumn = AnswerFactory.COLUMN_ANSWER_ID;
         StringBuffer sql = new StringBuffer("SELECT DISTINCT sr.* ");
-        sql.append(", sp." + COLUMN_LAST_RUN_TIME + ", sp."
+        sql.append(", sr." + COLUMN_LAST_VIEWED_TIME + ", sp."
                 + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", a."
                 + AnswerFactory.COLUMN_PROJECT_VERSION + ", a."
                 + AnswerFactory.COLUMN_QUESTION_NAME);
@@ -759,8 +759,8 @@ public class StepFactory {
         sql.append(" AND sr.").append(COLUMN_PROJECT_ID).append(" = ?");
         sql.append(" AND sr.").append(COLUMN_IS_SAVED).append(" = ?");
         sql.append(" AND sr.").append(COLUMN_IS_DELETED).append(" = ?");
-        if (recent) sql.append(" AND sp." + COLUMN_LAST_RUN_TIME + " >= ?");
-        sql.append(" ORDER BY sp." + COLUMN_LAST_RUN_TIME + " DESC");
+        if (recent) sql.append(" AND sr." + COLUMN_LAST_VIEWED_TIME + " >= ?");
+        sql.append(" ORDER BY sr." + COLUMN_LAST_VIEWED_TIME + " DESC");
 
         List<Strategy> strategies = new ArrayList<Strategy>();
         ResultSet resultSet = null;
@@ -822,7 +822,7 @@ public class StepFactory {
         strategy.setDescription(resultSet.getString(COLUMN_DESCRIPTION));
         strategy.setLatestStepId(resultSet.getInt(COLUMN_ROOT_STEP_ID));
 
-        strategy.setLastRunTime(resultSet.getTimestamp(COLUMN_LAST_RUN_TIME));
+        strategy.setLastRunTime(resultSet.getTimestamp(COLUMN_LAST_VIEWED_TIME));
         strategy.setEstimateSize(resultSet.getInt(COLUMN_ESTIMATE_SIZE));
         strategy.setVersion(resultSet.getString(AnswerFactory.COLUMN_PROJECT_VERSION));
         if (resultSet.getObject(COLUMN_IS_VALID) != null)
@@ -995,7 +995,7 @@ public class StepFactory {
         ResultSet rsStrategy = null;
         try {
             StringBuffer sql = new StringBuffer("SELECT sr.* ");
-            sql.append(", sp." + COLUMN_LAST_RUN_TIME + ", sp."
+            sql.append(", sr." + COLUMN_LAST_VIEWED_TIME + ", sp."
                     + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", a."
                     + AnswerFactory.COLUMN_PROJECT_VERSION + ", a."
                     + AnswerFactory.COLUMN_QUESTION_NAME);
@@ -1054,7 +1054,7 @@ public class StepFactory {
         String userColumn = Utilities.COLUMN_USER_ID;
         String answerColumn = AnswerFactory.COLUMN_ANSWER_ID;
         StringBuffer sql = new StringBuffer("SELECT sr.* ");
-        sql.append(", sp." + COLUMN_LAST_RUN_TIME + ", sp."
+        sql.append(", sr." + COLUMN_LAST_VIEWED_TIME + ", sp."
                 + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", a."
                 + AnswerFactory.COLUMN_PROJECT_VERSION + ", a."
                 + AnswerFactory.COLUMN_QUESTION_NAME);

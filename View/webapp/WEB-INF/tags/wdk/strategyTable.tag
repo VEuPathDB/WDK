@@ -113,7 +113,7 @@
       </td>
 
       <td>
-         <input type='button' value='Download' onclick="downloadStep('${strategy.latestStep.stepId}')" />
+         <input type='button' value='Download' onclick="downloadStep('${strategy.latestStepId}')" />
       </td>
       <td nowrap>
          <c:set var="saveAction" value="showHistSave(this, '${strategyId}', true);"/>
@@ -142,23 +142,24 @@
           <c:otherwise>${strategy.version}</c:otherwise>
         </c:choose>
       </td>
-      <td nowrap style="text-align:right">${strategy.latestStep.estimateSize}</td>
+      <td nowrap style="text-align:right">${strategy.estimateSize}</td>
       <td>&nbsp;&nbsp;</td>
     </tr>
 
 <%-- description : because of being in a diferent tr, we can expand to use all horizontal space  --%>
 
+<%-- disable the loading of steps
 <tr id="desc_${strategyId}" style="display: none;"><td colspan="11">
-
 
 	<table id="strat_description">
           <tbody id="steps_${strategyId}">
           <wdk:stepRows latestStep="${strategy.latestStep}" rowNum="${i}" indent="50"/>
           </tbody>    
         </table>
-
+     
 
 </td></tr>
+// end disable loading of steps --%>
 
     <c:set var="i" value="${i+1}"/>
   </c:forEach>
