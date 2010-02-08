@@ -1089,7 +1089,7 @@
     <element name="textAttribute">
       <ref name="AttributeFieldCotent" />
       <zeroOrMore>
-	    <choose>
+	    <choice>
 			<element name="display">
 			  <ref name="IncludeExclude" />
 			  <text />
@@ -1098,7 +1098,7 @@
 			  <ref name="IncludeExclude" />
 			  <text />
 			</element>
-		</choose>
+		</choice>
       </zeroOrMore>
     </element>
   </define>
