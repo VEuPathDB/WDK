@@ -101,6 +101,7 @@ ul#strategy_tabs {
 	position: absolute;
 	left: -999em;
 	width:100%;
+	float:left;
 }
 
 .toggle {display: none;}
