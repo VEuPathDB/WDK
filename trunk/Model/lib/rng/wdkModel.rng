@@ -1088,12 +1088,18 @@
   <define name ="textAttribute">
     <element name="textAttribute">
       <ref name="AttributeFieldCotent" />
-      <oneOrMore>
-        <element name="text">
-          <ref name="IncludeExclude" />
-          <text />
-        </element>
-      </oneOrMore>
+      <zeroOrMore>
+	    <choose>
+			<element name="display">
+			  <ref name="IncludeExclude" />
+			  <text />
+			</element>
+			 <element name="text">
+			  <ref name="IncludeExclude" />
+			  <text />
+			</element>
+		</choose>
+      </zeroOrMore>
     </element>
   </define>
 

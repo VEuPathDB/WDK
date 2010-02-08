@@ -97,7 +97,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
             // the union query is reused, and having count(*) > 1 is appended to
             // last group by to get intersect results. the unioned sql has to have
             // group by as the last clause.
-            sql = getUnionSql(leftSql, rightSql, operator);
+            sql = getUnionSql(leftSql, rightSql, BooleanOperator.UNION.getOperator(platform));
             sql += " HAVING count(*) > 1";
         } else {
             // swap sqls if it is right_minus

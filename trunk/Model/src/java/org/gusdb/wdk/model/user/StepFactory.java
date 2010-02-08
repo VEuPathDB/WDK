@@ -466,7 +466,7 @@ public class StepFactory {
             SqlUtils.verifyTime(wdkModel, sql, start);
 
             while (rsStep.next()) {
-                Step step = loadStep(user, rsStep, false);
+                Step step = loadStep(user, rsStep);
                 int stepId = step.getDisplayId();
                 // if (step.isValid()) {
                 steps.put(stepId, step);
@@ -507,13 +507,13 @@ public class StepFactory {
                 throw new WdkUserException("The Step #" + displayId
                         + " of user " + user.getEmail() + " doesn't exist.");
 
-            return loadStep(user, rsStep, false);
+            return loadStep(user, rsStep);
         } finally {
             SqlUtils.closeResultSet(rsStep);
         }
     }
 
-    private Step loadStep(User user, ResultSet rsStep, boolean loadTree)
+    private Step loadStep(User user, ResultSet rsStep)
             throws WdkModelException, SQLException, JSONException,
             WdkUserException {
         // load Step info
@@ -535,15 +535,13 @@ public class StepFactory {
             step.setAssignedWeight(rsStep.getInt(COLUMN_ASSIGNED_WEIGHT));
 
         // load left and right child
-        if (loadTree) {
-            if (rsStep.getObject(COLUMN_LEFT_CHILD_ID) != null) {
-                int leftStepId = rsStep.getInt(COLUMN_LEFT_CHILD_ID);
-                step.setPreviousStepId(leftStepId);
-            }
-            if (rsStep.getObject(COLUMN_RIGHT_CHILD_ID) != null) {
-                int rightStepId = rsStep.getInt(COLUMN_RIGHT_CHILD_ID);
-                step.setChildStepId(rightStepId);
-            }
+        if (rsStep.getObject(COLUMN_LEFT_CHILD_ID) != null) {
+            int leftStepId = rsStep.getInt(COLUMN_LEFT_CHILD_ID);
+            step.setPreviousStepId(leftStepId);
+        }
+        if (rsStep.getObject(COLUMN_RIGHT_CHILD_ID) != null) {
+            int rightStepId = rsStep.getInt(COLUMN_RIGHT_CHILD_ID);
+            step.setChildStepId(rightStepId);
         }
 
         String dependentParamContent = userPlatform.getClobData(rsStep,
