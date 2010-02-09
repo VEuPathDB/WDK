@@ -9,6 +9,7 @@ DROP SEQUENCE IF EXISTS wdkuser.steps_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.strategies_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.users_pkseq;
 
+DROP TABLE IF EXISTS wdkuser.favorites;
 DROP TABLE IF EXISTS wdkuser.user_baskets;
 DROP TABLE IF EXISTS wdkuser.strategies;
 DROP TABLE IF EXISTS wdkuser.step_params;
