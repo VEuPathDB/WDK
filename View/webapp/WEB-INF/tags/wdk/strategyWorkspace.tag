@@ -22,8 +22,10 @@ My Search Strategies Workspace
 <ul id="strategy_tabs">
 <%-- showPanel() is in filter_menu.js --%>
 
+   <li><span style="border:none;font-weight:bold;color:#610B0B;font-size:14px">Search Strategies:</span></li> 
+
    <li><a id="tab_strategy_new" title="START a NEW strategy: CLICK to access the page with all available searches"   
-	href="javascript:showPanel('strategy_new')" ><span style="font-weight:bold;color:black">Searched Strategies:</span> New</a></li>
+	href="javascript:showPanel('strategy_new')" >New</a></li>
 
    <li><a id="tab_strategy_results" title="Graphical display of your opened strategies. To close a strategy click on the right top corner X." 
 	onclick="this.blur()" href="javascript:showPanel('strategy_results')">Opened</a></li>
