@@ -8,6 +8,7 @@ DROP SEQUENCE wdkuser.steps_pkseq;
 DROP SEQUENCE wdkuser.strategies_pkseq;
 DROP SEQUENCE wdkuser.users_pkseq;
 
+DROP TABLE wdkuser.favorites;
 DROP TABLE wdkuser.user_baskets;
 DROP TABLE wdkuser.strategies;
 DROP TABLE wdkuser.step_params;
@@ -293,3 +294,22 @@ CREATE TABLE wdkuser.user_baskets
 CREATE INDEX wdkuser.user_baskets_idx01 
   ON wdkuser.user_baskets 
   (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
+
+
+
+CREATE TABLE wdkuser.favorites
+(
+  user_id NUMBER(12) NOT NULL,
+  project_id VARCHAR(50) NOT NULL,
+  record_class VARCHAR(100) NOT NULL,
+  pk_column_1 VARCHAR(1999) NOT NULL,
+  pk_column_2 VARCHAR(1999),
+  pk_column_3 VARCHAR(1999),
+  CONSTRAINT "FAVORITES_USER_ID_FK" FOREIGN KEY (user_id)
+      REFERENCES wdkuser.users (user_id)
+);
+
+CREATE INDEX wdkuser.favorites_idx01 
+  ON wdkuser.favorites
+  (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
+
