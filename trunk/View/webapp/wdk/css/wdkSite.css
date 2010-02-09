@@ -101,7 +101,6 @@ ul#strategy_tabs {
 	position: absolute;
 	left: -999em;
 	width:100%;
-	float:left;
 }
 
 .toggle {display: none;}
@@ -604,7 +603,6 @@ a.redbutton:active span {
 	max-height: 300px;
 	overflow-y: auto;
 	border: 2px solid gray;
-	float:left;
 }
 
 div.Workspace {
