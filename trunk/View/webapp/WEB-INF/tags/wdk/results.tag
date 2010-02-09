@@ -82,7 +82,7 @@
     ${wdkAnswer.resultSize} <span id="text_data_type">${type}</span>
 </td>
 
-<td  style="vertical-align:middle;text-align:right" nowrap>
+<td  style="vertical-align:middle;text-align:right;white-space:nowrap;">
   <div style="float:right">
    <c:if test="${strategy != null}">
     <c:choose>
@@ -126,10 +126,10 @@
 <%--------- PAGING TOP BAR ----------%>
 <table width="100%" border="0" cellpadding="3" cellspacing="0">
 	<tr class="subheaderrow">
-	<th style="text-align: left" nowrap> 
+	<th style="text-align: left;white-space:nowrap;"> 
 	       <wdk:pager pager_id="top"/> 
 	</th>
-	<th nowrap style="text-align: right">
+	<th style="text-align: right;white-space:nowrap;">
 		           <%-- display a list of sortable attributes --%>
 		           <c:set var="addAttributes" value="${wdkAnswer.displayableAttributes}" />
 		           <select id="addAttributes" style="display:none;" commandUrl="${commandUrl}" multiple="multiple">
@@ -139,7 +139,7 @@
 		               </c:forEach>
 		           </select>
 	</th>
-	<th nowrap style="text-align: right" width="5%">
+	<th style="text-align: right;white-space:nowrap;width:5%;">
 	    &nbsp;
 	   <input type="button" value="Reset Columns" onClick="resetAttr('${commandUrl}', this)" />
 	</th>
@@ -158,13 +158,8 @@
 <table id="Results_Table" width="100%" border="0" cellpadding="3" cellspacing="0" step="wdkStep.stepId">
 <thead>
 <tr class="headerrow">
-  <c:set var="j" value="0"/>
-  <c:forEach items="${wdkAnswer.summaryAttributes}" var="sumAttrib">
-    <c:set var="attrName" value="${sumAttrib.name}" />
-    <th id="${attrName}" align="left" valign="middle">
-	<table>
-          <tr>
-            <c:if test="${recHasBasket && j == 0}">
+            <c:if test="${recHasBasket}">
+              <th>
               <c:choose>
                 <c:when test="${wdkUser.guest}">
                   <c:set var="basketClick" value="popLogin()" />
@@ -174,12 +169,17 @@
                   <c:set var="basketClick" value="updateBasket(this,'page', '0', '${modelName}', '${wdkAnswer.recordClass.fullName}')" />
                 </c:otherwise>
               </c:choose>
-	      <td style="padding:0;">
                 <a href="javascript:void(0)" onclick="${basketClick}">
 		  <img title="${basketTitle}" class="head basket" src="<c:url value='/wdk/images/basket_gray.png'/>" height="16" width="16" value="0"/>
 		</a>
-              </td>
+              </th>
             </c:if>
+  <c:set var="j" value="0"/>
+  <c:forEach items="${wdkAnswer.summaryAttributes}" var="sumAttrib">
+    <c:set var="attrName" value="${sumAttrib.name}" />
+    <th id="${attrName}" align="left" valign="middle">
+	<table>
+          <tr>
             <td>
 		<table>
                   <tr>
@@ -236,7 +236,7 @@
                  </tr>
                </table>
              </td>
-        <td nowrap><span title="${sumAttrib.help}">${sumAttrib.displayName}</span></td>
+        <td style="white-space:nowrap;"><span title="${sumAttrib.help}">${sumAttrib.displayName}</span></td>
         <%-- <c:if test="${j != 0}">
           <div style="float:left;">
             <a href="javascript:void(0)">
@@ -271,11 +271,30 @@
 <c:set var="i" value="0"/>
 
 <c:forEach items="${wdkAnswer.records}" var="record">
+    <c:set value="${record.primaryKey}" var="primaryKey"/>
 
 <c:choose>
   <c:when test="${i % 2 == 0}"><tr class="lines"></c:when>
   <c:otherwise><tr class="linesalt"></c:otherwise>
 </c:choose>
+
+
+
+	<c:if test="${recHasBasket}">
+          <td>
+		<c:set value="${record.attributes['in_basket']}" var="is_basket"/>
+		<c:set var="basket_img" value="basket_gray.png"/>
+		<c:if test="${is_basket == '1'}">
+			<c:set var="basket_img" value="basket_color.png"/>
+		</c:if>
+            <c:if test="${!wdkUser.guest}">
+              <c:set var="basketClick" value="updateBasket(this,'single', '${primaryKey.value}', '${modelName}', '${recNam}')" />
+            </c:if>
+	    <a href="javascript:void(0)" onclick="${basketClick}">
+	      <img title="${basketTitle}" class="basket" value="${is_basket}" src="<c:url value='wdk/images/${basket_img}'/>" width="16" height="16"/>
+	    </a>
+            </td>
+          </c:if>
 
   <c:set var="j" value="0"/>
 
@@ -283,18 +302,9 @@
     <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
     <c:set var="align" value="align='${recAttr.attributeField.align}'" />
     <c:set var="nowrap">
-        <c:if test="${recAttr.attributeField.nowrap}">nowrap</c:if>
+        <c:if test="${recAttr.attributeField.nowrap}">white-space:nowrap;</c:if>
     </c:set>
 
-    <c:set value="${record.primaryKey}" var="primaryKey"/>
-
-	<c:if test="${recHasBasket}">
-		<c:set value="${record.attributes['in_basket']}" var="is_basket"/>
-		<c:set var="basket_img" value="basket_gray.png"/>
-		<c:if test="${is_basket == '1'}">
-			<c:set var="basket_img" value="basket_color.png"/>
-		</c:if>
-	</c:if>
 
     <c:set var="pkValues" value="${primaryKey.values}" />
     <c:set var="recordLinkKeys" value="" />
@@ -302,7 +312,7 @@
       <c:set var="recordLinkKeys" value="${recordLinkKeys}&${pkValue.key}=${pkValue.value}" />
     </c:forEach>
 
-    <td ${align} ${nowrap} style="white-space:nowrap; padding:3px 2px"><div>
+    <td ${align} style="${nowrap}padding:3px 2px"><div>
       <c:set var="recNam" value="${record.recordClass.fullName}"/>
       <c:set var="fieldVal" value="${recAttr.briefValue}"/>
       <!-- store the primary key pairs here -->
@@ -313,14 +323,6 @@
       </div>
       <c:choose>
         <c:when test="${j == 0}">
-          <c:if test="${recHasBasket}">
-            <c:if test="${!wdkUser.guest}">
-              <c:set var="basketClick" value="updateBasket(this,'single', '${primaryKey.value}', '${modelName}', '${recNam}')" />
-            </c:if>
-	    <a href="javascript:void(0)" onclick="${basketClick}">
-	      <img title="${basketTitle}" class="basket" value="${is_basket}" src="<c:url value='wdk/images/${basket_img}'/>" width="16" height="16"/>
-	    </a>
-          </c:if>
 	  <%-- display a link to record page --%>
           <a href="showRecord.do?name=${recNam}${recordLinkKeys}">${fieldVal}</a>
         </c:when>   <%-- when j=0 --%>
@@ -362,13 +364,13 @@
 <%--------- PAGING BOTTOM BAR ----------%>
 <table width="100%" border="0" cellpadding="3" cellspacing="0">
 	<tr class="subheaderrow">
-	<th align="left" nowrap> 
+	<th style="text-align:left;white-space:nowrap;"> 
 	       <wdk:pager pager_id="bottom"/> 
 	</th>
-	<th nowrap align="right">
+	<th style="text-align:right;white-space:nowrap;">
 		&nbsp;
 	</th>
-	<th nowrap align="right" width="5%">
+	<th style="text-align:right;white-space:nowrap;width:5%;">
 	    &nbsp;
 	</th>
 	</tr>
