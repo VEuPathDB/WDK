@@ -19,9 +19,11 @@ function showPanel(panel) {
 		initDYK(false);
 	
 	$("#strategy_tabs li").each(function(){
-		var hidePanel = $("a", this).attr("id").substring(4);
-		$("#tab_" + hidePanel).parent().removeAttr("id");
-		$("#" + hidePanel).css({'position':'absolute','left':'-1000em','width':'100%','display':'none'});
+		if($("a", this).length > 0){
+			var hidePanel = $("a", this).attr("id").substring(4);
+			$("#tab_" + hidePanel).parent().removeAttr("id");
+			$("#" + hidePanel).css({'position':'absolute','left':'-1000em','width':'100%','display':'none'});
+		}
 	});
 	$("#basket").css({'position':'absolute','left':'-1000em','width':'100%','display':'none'});
 	$("#tab_" + panel).parent().attr("id", "selected");
