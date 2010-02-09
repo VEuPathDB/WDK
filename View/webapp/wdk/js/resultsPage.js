@@ -191,7 +191,7 @@ function GetResultsPage(url, update, ignoreFilters){
 			if(strat != false) showLoading(strat.frontId);
 		},
 		success: function(data){
-			if (update) {
+			if (update && ErrorHandler("GetResultsPage", data, strat, null)) {
 				ResultsToGrid(data, ignoreFilters);
 				$("span#text_strategy_number").html(strat.JSON.name);
 				$("span#text_step_number").html(step.frontId);
