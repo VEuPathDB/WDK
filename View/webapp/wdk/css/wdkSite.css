@@ -758,3 +758,11 @@ table.basket {
 	margin-top: 3px;
 	margin-left:2px;
 }
+
+
+span.subscriptCount {
+	color:#610B0B;
+	display:inline;
+	font-size:10px;
+	vertical-align:sub;
+}
