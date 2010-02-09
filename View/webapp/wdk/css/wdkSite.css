@@ -643,7 +643,7 @@ td.strat_inactive {
     background: url(/assets/images/eyeGrey.png) no-repeat 8px 8px;
 }
 
-#strategy_tabs a:link, #strategy_tabs a:visited {
+#strategy_tabs a:link, #strategy_tabs a:visited, #strategy_tabs li span {
     border-color: #CCCCCC #CCCCCC #777777;
     border-style: solid;
     border-width: 1px;
