@@ -97,8 +97,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
             // the union query is reused, and having count(*) > 1 is appended to
             // last group by to get intersect results. the unioned sql has to have
             // group by as the last clause.
-            sql = getUnionSql(leftSql, rightSql, BooleanOperator.UNION.getOperator(platform));
-            sql += " HAVING count(*) > 1";
+            sql = getIntersectSql(leftSql, rightSql, BooleanOperator.UNION.getOperator(platform));
         } else {
             // swap sqls if it is right_minus
             if (op == BooleanOperator.RIGHT_MINUS) {
@@ -165,6 +164,34 @@ public class BooleanQueryInstance extends SqlQueryInstance {
             sql.append((i == 0) ? "" : ",");
             sql.append(pkColumns[i]);
         }
+        return sql.toString();
+    }
+
+
+    private String getIntersectSql(String leftSql, String rightSql, String operator) {
+        // just sum the weight from original sql
+        StringBuffer sql = new StringBuffer();
+        sql.append("SELECT ");
+
+        RecordClass rc = booleanQuery.getRecordClass();
+        String[] pkColumns = rc.getPrimaryKeyAttributeField().getColumnRefs();
+        for (String column : pkColumns) {
+            sql.append(column + ", ");
+        }
+        // weight has to be the last column to ensure the values are inserted
+        // correctly
+        String weightColumn = Utilities.COLUMN_WEIGHT;
+        sql.append("sum (" + weightColumn + ") AS " + weightColumn);
+        sql.append(" FROM (");
+        sql.append("(SELECT 1 AS wdk_t, l.* FROM (" + leftSql + ") l) ");
+        sql.append(operator);
+        sql.append(" (SELECT 2 AS wdk_t, r.* FROM (" + rightSql + ") r)");
+        sql.append(") GROUP BY ");
+        for (int i = 0; i < pkColumns.length; i++) {
+            sql.append((i == 0) ? "" : ",");
+            sql.append(pkColumns[i]);
+        }
+        sql.append(" HAVING count(*) > 1"); 
         return sql.toString();
     }
 
