@@ -498,7 +498,7 @@ public class Strategy {
         jsStrategy.put("resultSize", getEstimateSize());
         jsStrategy.put("version", getVersion());
         jsStrategy.put("type", getType());
-        jsStrategy.put("latestStep", latestStep.getJSONContent(this.displayId));
+        jsStrategy.put("latestStep", getLatestStep().getJSONContent(this.displayId));
 
         return jsStrategy;
     }
