@@ -374,7 +374,7 @@ function AddStepToStrategy(url, proto, stpId){
 		},
 		success: function(data){
 			if(ErrorHandler("AddStep", data, strategy, $("div#query_form"))){
-				$("div#query_form").remove();
+				if($("div#query_form").css("display") == "none") $("div#query_form").remove();
 				updateStrategies(data);
 			}else{
 				removeLoading(f_strategyId);
