@@ -6,8 +6,9 @@
 
 <c:set var="err" scope="request" value="${requestScope['org.apache.struts.action.ERROR']}"/>
 <c:set var="exp" scope="request" value="${requestScope['org.apache.struts.action.EXCEPTION']}"/>
+<c:set var="pex" scope="request" value="${pageContext.exception}"/>
 
-<c:if test="${err != null || exp != null}"><br></c:if>
+<c:if test="${err != null || exp != null || pex != null }"><br></c:if>
 
 <!-- html:errors/ -->
 
@@ -22,16 +23,26 @@
 
 </logic:messagesPresent>
 
-
-<c:if test="${exp != null}">
-  <c:set var="site" value="${initParam.wdkDevelopmentSite}" />
-  <c:if test="${(site eq 'Yes' || site eq 'yes' || site eq 'YES' || 
-         showStackTrace eq 'true') && showStackTrace ne 'false'}">
-     <b>${exp}</b><br>
+<c:set var="site" value="${initParam.wdkDevelopmentSite}" />
+<c:if test="${(site eq 'Yes' || site eq 'yes' || site eq 'YES' || 
+     showStackTrace eq 'true') && showStackTrace ne 'false'}">
+  
+  <c:if test="${pex != null}">
+    <b>${pex.message}</b><br>
      Stacktrace: <br>
-     <c:forEach items="${exp.stackTrace}" var="st">
-        ${st} <br>
+     <c:forEach items="${pex.stackTrace}" var="st" >
+       ${st}<br>
      </c:forEach>
+    <br><br>
   </c:if>
-  <br><br>
+  
+  <c:if test="${exp != null}">
+       <b>${exp}</b><br>
+       Stacktrace: <br>
+       <c:forEach items="${exp.stackTrace}" var="st">
+          ${st} <br>
+       </c:forEach>
+    <br><br>
+  </c:if>
+
 </c:if>
