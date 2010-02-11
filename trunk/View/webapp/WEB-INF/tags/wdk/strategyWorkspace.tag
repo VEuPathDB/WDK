@@ -22,7 +22,7 @@ My Search Strategies Workspace
 <ul id="strategy_tabs">
 <%-- showPanel() is in filter_menu.js --%>
 
-   <li><span id="stratTitle">My Strategies:</span></li> 
+   <li><span id="stratTitle" class="h4left">My Strategies:</span></li> 
 
    <li><a id="tab_strategy_new" title="START a NEW strategy: CLICK to access the page with all available searches"   
 	href="javascript:showPanel('strategy_new')" >New</a></li>
