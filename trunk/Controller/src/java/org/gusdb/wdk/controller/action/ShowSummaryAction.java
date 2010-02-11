@@ -98,7 +98,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
                         + step.getStepId();
                 return new ActionForward(path, true);
             } else if (!noSkip && answerValue.getResultSize() == 1
-                    && !answerValue.getIsDynamic()
                     && answerValue.getQuestion().isNoSummaryOnSingleRecord()) {
                 RecordBean rec = (RecordBean) answerValue.getRecords().next();
                 forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
