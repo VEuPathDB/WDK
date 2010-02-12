@@ -191,7 +191,7 @@ function GetResultsPage(url, update, ignoreFilters){
 			if(strat != false) showLoading(strat.frontId);
 		},
 		success: function(data){
-			if (update) {
+			if (update && ErrorHandler("Results", data, strat, null)) {
 				ResultsToGrid(data, ignoreFilters);
 				$("span#text_strategy_number").html(strat.JSON.name);
 				$("span#text_step_number").html(step.frontId);
@@ -318,4 +318,63 @@ function openAdvancedPaging(element){
                     panel.css({"display" : "none"});
                     button.val("Advanced Paging");
 	}
+}
+
+
+// favorite on clickFunction
+function updateFavorite(ele, type, pk, pid,recordType) {
+	var i = $("img",ele);
+	var a = new Array();
+	var action = null;
+	var da = null;
+	if(type == "single"){
+		var o = new Object();
+		o.source_id = pk;
+		o.project_id = pid;
+		a.push(o);
+		da = $.json.serialize(a);
+		action = (i.attr("value") == '0') ? "add" : "remove";
+	}else if(type == "clear"){
+		action = "clear";
+	}else{
+		alert("Unknown action for favorite");
+		return;
+	}
+	var d = "action="+action+"&type="+recordType+"&data="+da;
+	$.ajax({
+		url: "processFavorite.do",
+		type: "post",
+		data: d,
+		dataType: "html",
+		beforeSend: function(){
+			$("body").block();
+		},
+		success: function(data){
+			$("body").unblock();
+			if(type == "single"){
+				if(action == "add") {
+					i.attr("src","wdk/images/favorite_color.png");
+					i.attr("value", "1");
+					i.attr("title","Click to remove this item from the favorite.");
+				}else{
+					i.attr("src","wdk/images/favorite_gray.png");
+					i.attr("value", "0");
+					i.attr("title","Click to add this item to the favorite.");
+				}
+			}else if(type == "clear"){
+				showFavorite();
+			}else{
+				alert("Unknown action for favorite");
+				return;
+			}
+		},
+		error: function(){
+			$("body").unblock();
+			alert("Error adding record to favorite!");
+		}
+	});
+}
+
+function showFavorite() {
+
 }

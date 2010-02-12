@@ -92,7 +92,7 @@ function updateStrategies(data, ignoreFilters){
 	removeClosedStrategies();
 	for(st in state){
           if(st == "count")
-                $("#mysearch").text("My Searches: " + state[st]);
+                $("#mysearch span").text(state[st]);
 	  else if(st != "length"){
 		var str = state[st].id;
 		if(isLoaded(str)){
@@ -374,7 +374,7 @@ function AddStepToStrategy(url, proto, stpId){
 		},
 		success: function(data){
 			if(ErrorHandler("AddStep", data, strategy, $("div#query_form"))){
-				$("div#query_form").remove();
+				if($("div#query_form").css("display") == "none") $("div#query_form").remove();
 				updateStrategies(data);
 			}else{
 				removeLoading(f_strategyId);
