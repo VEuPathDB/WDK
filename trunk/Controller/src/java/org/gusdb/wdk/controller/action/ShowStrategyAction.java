@@ -53,8 +53,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
         try {
             String strStratKeys = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
-            String[] stratKeys = (strStratKeys == null || strStratKeys.length() == 0)
-                    ? new String[0] : strStratKeys.split(",");
+            String[] stratKeys = (strStratKeys == null || strStratKeys.length() == 0) ? new String[0]
+                    : strStratKeys.split(",");
 
             String strOpen = request.getParameter(CConstants.WDK_OPEN_KEY);
             boolean open = (strOpen == null || strOpen.length() == 0) ? true
@@ -276,7 +276,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         String viewStrategyKey = user.getViewStrategyId();
         if (viewStrategyKey != null) {
             jsView.put("strategy", viewStrategyKey);
-            jsView.put("step", user.getViewStepId());
+            int viewStep = user.getViewStepId();
+            if (viewStep != 0) jsView.put("step", viewStep);
             jsView.put("pagerOffset", user.getViewPagerOffset());
         }
         jsMessage.put("currentView", jsView);
@@ -383,8 +384,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
             Map<String, ParamBean> params = groups.get(group);
             for (String paramName : params.keySet()) {
                 ParamBean param = params.get(paramName);
-                String dependentValue = paramValues.containsKey(paramName)
-                        ? paramValues.get(paramName) : param.getDefault();
+                String dependentValue = paramValues.containsKey(paramName) ? paramValues.get(paramName)
+                        : param.getDefault();
 
                 JSONObject jsParam = new JSONObject();
                 jsParam.put("name", paramName);

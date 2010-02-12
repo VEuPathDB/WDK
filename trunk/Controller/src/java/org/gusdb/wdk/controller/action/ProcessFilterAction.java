@@ -104,12 +104,11 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             String insertStep = request.getParameter("insert");
             boolean isInsert = (insertStep != null && insertStep.length() != 0);
             boolean isOrtholog = Boolean.valueOf(request.getParameter("ortholog"));
+            boolean hasQuestion = (qFullName != null && qFullName.trim().length() > 0);
 
-            System.out.println("isRevise: " + isRevise + "; isInsert: "
-                    + isInsert);
-            System.out.println("qFullName? "
-                    + (qFullName == null || qFullName.trim().length() == 0));
-            System.out.println("qFullName: " + qFullName);
+            logger.debug("isRevise: " + isRevise + "; isInsert: " + isInsert);
+            logger.debug("has question? " + hasQuestion);
+            logger.debug("qFullName: " + qFullName);
             // are we inserting an existing step?
             StepBean newStep;
             if (insertStratIdStr != null && insertStratIdStr.length() != 0) {
@@ -120,8 +119,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 newStep.setIsCollapsible(true);
                 newStep.setCollapsedName("Copy of " + insertStrat.getName());
                 newStep.update(false);
-            } else if (isRevise
-                    && (hasWeight || hasFilter || qFullName == null || qFullName.trim().length() == 0)) {
+            } else if (isRevise && (hasWeight || hasFilter) && !hasQuestion) {
                 logger.debug("change filter: " + filterName);
                 // change the filter of an existing step, which can be a child
                 // step, or a boolean step
@@ -138,8 +136,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 // reset pager info in session
                 wdkUser.setViewResults(wdkUser.getViewStrategyId(),
                         wdkUser.getViewStepId(), 0);
-            } else {
-                // no: get question
+            } else { // no: get question
                 wdkQuestion = getQuestionByFullName(qFullName);
                 // QuestionForm fForm = prepareQuestionForm(wdkQuestion,
                 // request, (QuestionForm) form);
@@ -151,8 +148,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
                 if (isRevise) {
                     StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
-                    weight = (oldStep.getChildStep() == null) 
-                        ? oldStep.getAssignedWeight() : oldStep.getChildStep().getAssignedWeight();
+                    weight = (oldStep.getChildStep() == null) ? oldStep.getAssignedWeight()
+                            : oldStep.getChildStep().getAssignedWeight();
                 }
                 newStep = ShowSummaryAction.summaryPaging(request, wdkQuestion,
                         params, filterName, false, weight);
