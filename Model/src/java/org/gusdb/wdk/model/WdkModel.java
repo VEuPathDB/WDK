@@ -28,6 +28,7 @@ import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.user.AnswerFactory;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.DatasetFactory;
+import org.gusdb.wdk.model.user.FavoriteFactory;
 import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
@@ -142,6 +143,7 @@ public class WdkModel {
     private DatasetFactory datasetFactory;
     private QueryFactory queryFactory;
     private BasketFactory basketFactory;
+    private FavoriteFactory favoriteFactory;
 
     private List<PropertyList> defaultPropertyLists = new ArrayList<PropertyList>();
     private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<String, String[]>();
@@ -470,6 +472,7 @@ public class WdkModel {
         queryFactory = new QueryFactory(this);
         answerFactory = new AnswerFactory(this);
         basketFactory = new BasketFactory(this);
+        favoriteFactory = new FavoriteFactory(this);
 
         // set the exception header
         WdkModelException.modelName = getProjectId();
@@ -1106,6 +1109,10 @@ public class WdkModel {
 
     public BasketFactory getBasketFactory() {
         return basketFactory;
+    }
+    
+    public FavoriteFactory getFavoriteFactory() {
+        return favoriteFactory;
     }
 
     public String getReleaseDate() {

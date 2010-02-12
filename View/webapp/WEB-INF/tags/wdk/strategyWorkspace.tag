@@ -22,8 +22,10 @@ My Search Strategies Workspace
 <ul id="strategy_tabs">
 <%-- showPanel() is in filter_menu.js --%>
 
+   <li><span id="stratTitle">My Strategies:</span></li> 
+
    <li><a id="tab_strategy_new" title="START a NEW strategy: CLICK to access the page with all available searches"   
-	href="javascript:showPanel('strategy_new')" ><span style="font-weight:bold;color:black">Searched Strategies:</span> New</a></li>
+	href="javascript:showPanel('strategy_new')" >New</a></li>
 
    <li><a id="tab_strategy_results" title="Graphical display of your opened strategies. To close a strategy click on the right top corner X." 
 	onclick="this.blur()" href="javascript:showPanel('strategy_results')">Opened</a></li>
@@ -32,7 +34,7 @@ My Search Strategies Workspace
 	onclick="this.blur()" href="javascript:showPanel('search_history')">All</a></li>
 
 
-   <li><a style="padding-left:5px;" id="tab_basket" title="Where to store your GENES of interest. YOU NEED TO LOGIN to use the basket. In the future you will be able to have baskets for other feature types such as ESTs, SNPs, genomic sequences, etc." onclick="this.blur()" href="javascript:showPanel('basket')"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;My Basket</a></li>
+   <li><a style="padding-left:5px;" id="tab_basket" title="Group IDs together to later make a step in a strategy." onclick="this.blur()" href="javascript:showPanel('basket')"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
 
 
    <li><a id="tab_sample_strat" title="View some examples of linear and non-linear strategies." 

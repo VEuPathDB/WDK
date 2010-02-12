@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.Dataset;
+import org.gusdb.wdk.model.user.Favorite;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
@@ -1235,4 +1236,76 @@ public class UserBean /* implements Serializable */{
         BasketFactory basketFactory = user.getWdkModel().getBasketFactory();
         return basketFactory.getBasketCounts(user);
     }
+
+    /**
+     * @param recordClass
+     * @param pkValues
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @throws SQLException
+     * @see org.gusdb.wdk.model.user.User#addToFavorite(org.gusdb.wdk.model.RecordClass,
+     *      java.util.List)
+     */
+    public void addToFavorite(RecordClassBean recordClass,
+            List<String[]> pkValues) throws WdkUserException,
+            WdkModelException, SQLException {
+        user.addToFavorite(recordClass.recordClass, pkValues);
+    }
+
+    /**
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @throws SQLException
+     * @see org.gusdb.wdk.model.user.User#clearFavorite()
+     */
+    public void clearFavorite() throws WdkUserException, WdkModelException,
+            SQLException {
+        user.clearFavorite();
+    }
+
+    /**
+     * @return
+     * @throws SQLException
+     * @see org.gusdb.wdk.model.user.User#getFavoriteCount()
+     */
+    public int getFavoriteCount() throws SQLException {
+        return user.getFavoriteCount();
+    }
+
+    /**
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @throws SQLException
+     * @throws JSONException
+     * @see org.gusdb.wdk.model.user.User#getFavorites()
+     */
+    public Map<String, FavoriteBean> getFavorites() throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
+        Map<String, Favorite> favorites = user.getFavorites();
+        Map<String, FavoriteBean> beans = new LinkedHashMap<String, FavoriteBean>();
+        for (String rcName : favorites.keySet()) {
+            FavoriteBean bean = new FavoriteBean(favorites.get(rcName));
+            beans.put(rcName, bean);
+        }
+        return beans;
+    }
+
+    /**
+     * @param recordClass
+     * @param pkValues
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @throws SQLException
+     * @see org.gusdb.wdk.model.user.User#removeFromFavorite(org.gusdb.wdk.model.RecordClass,
+     *      java.util.List)
+     */
+    public void removeFromFavorite(RecordClassBean recordClass,
+            List<String[]> pkValues) throws WdkUserException,
+            WdkModelException, SQLException {
+        user.removeFromFavorite(recordClass.recordClass, pkValues);
+    }
+
 }

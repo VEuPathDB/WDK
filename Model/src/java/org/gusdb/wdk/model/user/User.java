@@ -1340,4 +1340,38 @@ public class User /* implements Serializable */{
         if (strategyCount != null) strategyCount++;
         return copy;
     }
+
+    public void addToFavorite(RecordClass recordClass, List<String[]> pkValues)
+            throws WdkUserException, WdkModelException, SQLException {
+        FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
+        favoriteFactory.addToFavorite(this, recordClass, pkValues);
+    }
+
+    public void clearFavorite() throws WdkUserException, WdkModelException,
+            SQLException {
+        wdkModel.getFavoriteFactory().clearFavorite(this);
+    }
+
+    public int getFavoriteCount() throws SQLException {
+        return wdkModel.getFavoriteFactory().getFavoriteCounts(this);
+    }
+
+    public Map<String, Favorite> getFavorites() throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
+        return wdkModel.getFavoriteFactory().getFavorites(this);
+    }
+
+    public void removeFromFavorite(RecordClass recordClass,
+            List<String[]> pkValues) throws WdkUserException,
+            WdkModelException, SQLException {
+        FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
+        favoriteFactory.removeFromFavorite(this, recordClass, pkValues);
+    }
+
+    public boolean isInFavorite(RecordClass recordClass, String[] pkValue)
+            throws WdkUserException, WdkModelException, SQLException {
+        FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
+        return favoriteFactory.isInFavorite(this, recordClass, pkValue);
+    }
 }

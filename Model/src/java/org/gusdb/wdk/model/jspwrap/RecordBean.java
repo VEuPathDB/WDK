@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.AttributeValue;
 import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.PrimaryKeyAttributeValue;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.TableValue;
@@ -143,6 +144,15 @@ public class RecordBean {
         if (!recordInstance.getRecordClass().hasBasket()) return false;
         AttributeValue value = recordInstance.getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
         return "1".equals(value.getValue());
+    }
+
+    public boolean isInFavorite() throws SQLException, WdkUserException,
+            WdkModelException {
+        RecordClass recordClass = recordInstance.getRecordClass();
+        Map<String, String> values = recordInstance.getPrimaryKey().getValues();
+        String[] pkValues = new String[values.size()];
+        values.values().toArray(pkValues);
+        return user.isInFavorite(recordClass, pkValues);
     }
 
     private class AttributeValueMap implements Map<String, AttributeValue> {
