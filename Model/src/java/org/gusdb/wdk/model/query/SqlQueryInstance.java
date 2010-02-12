@@ -122,8 +122,12 @@ public class SqlQueryInstance extends QueryInstance {
 
         Statement stmt = null;
         try {
+            long start = System.currentTimeMillis();
+            
             stmt = connection.createStatement();
             stmt.execute(buffer.toString());
+            
+            SqlUtils.verifyTime(wdkModel, buffer.toString(), start);
         } catch (SQLException ex) {
             logger.error("Fail to run SQL:\n" + buffer);
             throw ex;
@@ -188,8 +192,11 @@ public class SqlQueryInstance extends QueryInstance {
 
         Statement stmt = null;
         try {
+            long start = System.currentTimeMillis();
             stmt = connection.createStatement();
             stmt.execute(buffer.toString());
+            
+            SqlUtils.verifyTime(wdkModel, buffer.toString(), start);
 
             ResultFactory resultFactory = wdkModel.getResultFactory();
             resultFactory.createCacheTableIndex(connection, tableName,
