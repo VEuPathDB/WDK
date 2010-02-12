@@ -1206,7 +1206,7 @@ public class User /* implements Serializable */{
         return this.activeStrategyFactory.getViewStrategyKey();
     }
 
-    public Integer getViewStepId() {
+    public int getViewStepId() {
         return this.activeStrategyFactory.getViewStepId();
     }
 
