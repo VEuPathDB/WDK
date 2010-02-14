@@ -765,8 +765,8 @@ table.basket {
 }
 
 span.subscriptCount {
-	color:white;
+	color:yellow;
 	display:inline;
-	font-size:10px;
-	vertical-align:sub;
+	font-size:12px;
+	vertical-align:middle;
 }
