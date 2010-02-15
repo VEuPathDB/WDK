@@ -39,6 +39,7 @@ function showDetails(det){
 			position: "absolute"
 		});
 	det2.appendTo("body");
+	initShowHide(det2);
 	var op = $(".question_name .operation", det2);
 	if (op.length > 0) {
 		var opstring = op.removeClass("operation").attr('class');
