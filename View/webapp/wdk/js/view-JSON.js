@@ -421,6 +421,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 
 function createWeightSection(jsonstep,modelstep,sid){
 	// display & assign weight
+if(modelstep.isTransform || jsonstep.isboolean) return "";
 	
 var set_weight = "<div name='All_weighting' class='param-group' type='ShowHide'>"+
 					"<div class='group-title'> "+
@@ -436,17 +437,6 @@ var set_weight = "<div name='All_weighting' class='param-group' type='ShowHide'>
 						"<br>"+
 					"</div>"+
 				"</div>";
-	
-	
-	/*
-    var set_weight = "<div align='center'>"+
-						"<b>Assign weight to results:</b> "+
-						"<input id='weight' type='text' value='" + jsonstep.assignedWeight + "' >"+
-    					"<input type='button' value='Assign' onclick='SetWeight(this, " + sid + "," + modelstep.frontId + ");hideDetails(this)' >"+
-    					"<p>Optionally give this search a 'weight' (for example 10, 200, -50)."+
-							"<br>In a search strategy, unions and intersects will sum the weights, giving higher scores to items found in multiple searches. "+
-						"</p>"+
-					 "</div>";*/
 	return set_weight;
 }
 
