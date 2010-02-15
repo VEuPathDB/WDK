@@ -715,6 +715,8 @@ function SetWeight(e, f_strategyId, f_stepId){
         var step = strategy.getStep(f_stepId, true);
         var cs = strategy.checksum;
         var weight = $(e).siblings("input#weight").val();
+		if(weight == undefined)
+			weight = $(e).siblings().find("input[name='weight']").val();
         if(strategy.subStratOf != null)
                 cs = getStrategy(strategy.subStratOf).checksum;
         var url = "processFilter.do?strategy=" + strategy.backId + "&revise=" + step.back_step_Id + "&weight=" + weight + "&strategy_checksum="+cs;
