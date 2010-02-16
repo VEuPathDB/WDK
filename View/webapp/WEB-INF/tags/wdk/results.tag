@@ -156,7 +156,7 @@
 <div id="Results_Div" class="flexigrid">
 <div class="bDiv">
 <div class="bDivBox">
-<table id="Results_Table" width="100%" border="0" cellpadding="3" cellspacing="0" step="wdkStep.stepId">
+<table id="Results_Table" width="100%" border="0" cellpadding="3" cellspacing="0" step="${wdkStep.stepId}">
 <thead>
 <tr class="headerrow">
             <c:if test="${recHasBasket}">
