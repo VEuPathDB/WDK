@@ -63,13 +63,23 @@ public class ShowApplicationAction extends ShowSummaryAction {
              */
             StrategyBean[] openedStrategies = wdkUser.getActiveStrategies();
             if (openedStrategies.length == 0) {
-                Cookie tabCookie = new Cookie("current_application_tab",
-                        "search_history");
-                // make sure it's only a session cookie, not persistent
-                tabCookie.setMaxAge(-1);
-                // make sure the cookie is good for whole site, not just webapp
-                tabCookie.setPath("/");
-                response.addCookie(tabCookie);
+		Cookie[] cookies = request.getCookies();
+		Cookie tabCookie = null;
+		for (Cookie cookie : cookies) {
+		    if (cookie.getName().compareTo("current_application_tab") == 0) {
+			tabCookie = cookie;
+			break;
+		    }
+		}
+		if (tabCookie == null || tabCookie.getValue().compareTo("basket") != 0) {
+		    tabCookie = new Cookie("current_application_tab",
+						  "search_history");
+		    // make sure it's only a session cookie, not persistent
+		    tabCookie.setMaxAge(-1);
+		    // make sure the cookie is good for whole site, not just webapp
+		    tabCookie.setPath("/");
+		    response.addCookie(tabCookie);
+		}
             }
 
 	    String strategyViewFile = CConstants.WDK_CUSTOM_VIEW_DIR
