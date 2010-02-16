@@ -33,8 +33,14 @@ My Search Strategies Workspace
    <li><a id="tab_search_history" title="Summary of all your strategies. From here you can open/close strategies on the 'Run Strategies' tab, our graphical display." 
 	onclick="this.blur()" href="javascript:showPanel('search_history')">All</a></li>
 
-
+<c:choose>
+  <c:when test="${wdkUser.guest}">
+   <li><a style="padding-left:5px;" id="tab_basket" title="Group IDs together to later make a step in a strategy." onclick="this.blur()" href="javascript:popLogin();"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
+  </c:when>
+  <c:otherwise>
    <li><a style="padding-left:5px;" id="tab_basket" title="Group IDs together to later make a step in a strategy." onclick="this.blur()" href="javascript:showPanel('basket')"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
+  </c:otherwise>
+</c:choose>
 
 
    <li><a id="tab_sample_strat" title="View some examples of linear and non-linear strategies." 
