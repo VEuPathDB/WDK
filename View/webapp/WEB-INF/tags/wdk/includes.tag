@@ -13,7 +13,6 @@
 <script type="text/javascript" src="<c:url value='wdk/js/stratTabCookie.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/htmltooltip.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/js-utils.js'/>"></script>
-<script type="text/javascript" src="<c:url value='/wdk/js/menuItems.js'/>"></script>
 
 <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkCommon.css' />">
 <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkFilter.css' />">
