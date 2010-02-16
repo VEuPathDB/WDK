@@ -170,7 +170,7 @@
 <c:set var="image" value="plus.gif"/>
 <div class="group-title">
     <img class="group-handle" src='<c:url value="/images/${image}" />' />
-    Add Weight To Results
+    Give this search a weight
 </div>
 <div class="group-detail" style="display:${display};text-align:center">
     <div class="group-description">
