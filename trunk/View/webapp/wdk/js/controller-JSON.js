@@ -500,7 +500,7 @@ function openStrategy(stratId){
 		success: function(data){
 			if(ErrorHandler("Open", data, null, null)){
 				updateStrategies(data);
-				if (getCurrentTabCookie(false) != 'strategy_results') showPanel('strategy_results');
+				if ($("#strategy_results").css('display') != 'none') showPanel('strategy_results');
 			}
 		},
 		error: function(data, msg, e){
@@ -540,7 +540,7 @@ function deleteStrategy(stratId, fromHist){
 			if (ErrorHandler("DeleteStrategy", data, null, null)){
 				updateStrategies(data);
 				updateHist = true;
-				if (getCurrentTabCookie(false) == 'search_history'){
+				if ($('#search_history').css('display') != 'none'){
 					updateHistory();
 				}
 			}
@@ -573,7 +573,7 @@ function closeStrategy(stratId, isBackId){
 		success: function(data){
 			if(ErrorHandler("CloseStrategy", data, strat, null)){
 				updateStrategies(data);
-				if (getCurrentTabCookie(false) == 'search_history'){
+				if ($('#search_history').css('display') != 'none') {
 					update_hist = true;
 					updateHistory();
 				}
