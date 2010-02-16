@@ -41,17 +41,22 @@ public abstract class AttributeValue {
         return field.getName();
     }
 
-    public String getBriefValue() throws WdkModelException,
+    public String getBriefDisplay() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        Object value = getValue();
-        if (value == null) return "";
-        String strValue = value.toString();
+        String display = getDisplay();
         int truncateTo = field.getTruncateTo();
         if (truncateTo == 0) truncateTo = Utilities.TRUNCATE_DEFAULT;
-        if (strValue.length() > truncateTo)
-            strValue = strValue.substring(0, truncateTo) + "...";
-        return strValue;
+        if (display.length() > truncateTo)
+            display = display.substring(0, truncateTo) + "...";
+        return display;
+    }
+
+    public String getDisplay() throws WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, SQLException,
+            JSONException {
+        Object value = getValue();
+        return (value != null) ? value.toString() : "";
     }
 
     /*

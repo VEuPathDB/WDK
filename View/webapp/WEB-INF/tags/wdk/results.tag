@@ -315,7 +315,7 @@
 
     <td ${align} style="${nowrap}padding:3px 2px"><div>
       <c:set var="recNam" value="${record.recordClass.fullName}"/>
-      <c:set var="fieldVal" value="${recAttr.briefValue}"/>
+      <c:set var="fieldVal" value="${recAttr.briefDisplay}"/>
       <!-- store the primary key pairs here -->
       <div class="primaryKey" style="display:none;">
         <c:forEach items="${pkValues}" var="pkValue">

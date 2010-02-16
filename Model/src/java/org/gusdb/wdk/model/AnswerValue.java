@@ -420,7 +420,7 @@ public class AnswerValue {
                 // make data row
                 AttributeValue value = recordInstance.getAttributeValue(nextAttName);
                 // only print part of the string
-                String str = value.getBriefValue();
+                String str = value.getBriefDisplay();
                 buf.append(str + "\t");
             }
             buf.append(newline);

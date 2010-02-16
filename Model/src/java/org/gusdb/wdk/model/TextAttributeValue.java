@@ -19,6 +19,7 @@ public class TextAttributeValue extends AttributeValue {
     private AttributeValueContainer container;
     private TextAttributeField field;
     private String text;
+    private String display;
 
     /**
      * @param attributeValueContainer
@@ -53,4 +54,23 @@ public class TextAttributeValue extends AttributeValue {
         }
         return this.text;
     }
+
+    @Override
+    public String getDisplay() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        if (this.display == null) {
+            String content = field.getDisplay();
+            Map<String, AttributeField> subFields = field.parseFields(content);
+            Map<String, Object> values = new LinkedHashMap<String, Object>();
+            for (String subField : subFields.keySet()) {
+                AttributeValue value = container.getAttributeValue(subField);
+                Object object = value.getValue();
+                values.put(subField, (object == null) ? "" : object.toString());
+            }
+            this.display = Utilities.replaceMacros(content, values);
+        }
+        return this.display;
+    }
+
 }
