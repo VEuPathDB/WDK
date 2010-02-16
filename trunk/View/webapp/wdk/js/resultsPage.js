@@ -12,25 +12,26 @@ function moveAttr(col_ix, table) {
 	var left, strat, step;
 	if (col_ix > 0) left = $(headers[col_ix-1]).attr("id");
 	// Figure out what step/strategy is currently displayed in results panel
-	if (table.parents("#strategy_results").length > 0) {
+	if ($(table).parents("#strategy_results").length > 0) {
 		var step = $("div.selectedarrow");
 	        if (step.length == 0) step = $("div.selectedtransform");
 		if (step.length == 0) step = $("div.selected");
 		var stepfId = step.attr("id").split('_')[1];
-		var stratfId = step.parent().attr("id").split('_')[1];
+		var stratfId = step.parent().parent().attr("id");
+		stratfId = stratfId.substring(stratfId.indexOf('_') + 1);
 		strat = getStrategy(stratfId).backId;
 		step = getStep(stratfId, stepfId).back_step_Id;
 	}
 	else {
-		step = table.attr('step');
+		step = $(table).attr('step');
 	}
 	// build url.
 	var url = "processSummary.do?strategy=" + strat + "&step=" + step + "&command=arrange&attribute=" + attr + "&left=" + left;
-	if (table.parents("#strategy_results").length > 0) {
+	if ($(table).parents("#strategy_results").length > 0) {
 		GetResultsPage(url, false, true);
 	}
 	else {
-		ChangeBasket(url + "&results_only=true");
+		ChangeBasket(url + "&results_only=true", true);
 	}
 }
 
@@ -65,14 +66,16 @@ function resetAttr(url, button) {
     }
 }
 
-function ChangeBasket(url) {
+function ChangeBasket(url, noUpdate) {
 	$("body").block();
 	$.ajax({
 		url: url,
 		dataType: "html",
 		success: function(data){
 			$("body").unblock();  //Gets blocked again by the next line anyway
-			showBasket();
+			if (!noUpdate) { // For things like moving columns, don't need to refresh
+				showBasket();
+			}
 		},
 		error : function(data, msg, e){
 			  alert("ERROR \n "+ msg + "\n" + e
