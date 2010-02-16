@@ -1135,7 +1135,7 @@ public class UserBean /* implements Serializable */{
         return user.getViewStrategyKey();
     }
 
-    public Integer getViewStepId() {
+    public int getViewStepId() {
         return user.getViewStepId();
     }
 
