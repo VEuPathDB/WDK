@@ -412,7 +412,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 		"		<table></table><hr class='clear' />" + filteredName +
 		"		<p><b>Results:&nbsp;</b>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.displayType,jsonstep.results);// + "&nbsp;&nbsp;|&nbsp;&nbsp;<a href='downloadStep.do?step_id=" + modelstep.back_step_Id + "'>Download</a>";
        
-    inner += "<hr class='clear' />" + createWeightSection(jsonstep,modelstep);
+    inner += "<hr class='clear' />" + createWeightSection(jsonstep,modelstep,sid);
 
 	$(detail_div).html(inner);
 	$("table", detail_div).replaceWith(params_table);
