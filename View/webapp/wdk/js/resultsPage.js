@@ -140,9 +140,11 @@ function updateBasket(ele, type, pk, pid,recordType) {
 				}else{
 					if(action == "add-all" || action == "add") {
 						$("div#" + currentDiv + " div#Results_Div img.basket").attr("src","wdk/images/basket_color.png");
+						$("div#" + currentDiv + " div#Results_Div img.basket").attr("title","Click to remove this item from the basket.");
 						$("div#" + currentDiv + " div#Results_Div img.basket").attr("value", "1");
 					}else{
 						$("div#" + currentDiv + " div#Results_Div img.basket").attr("src","wdk/images/basket_gray.png");
+						$("div#" + currentDiv + " div#Results_Div img.basket").attr("title","Click to add this item to the basket.");
 						$("div#" + currentDiv + " div#Results_Div img.basket").attr("value", "0");
 					}
 				}
@@ -167,9 +169,11 @@ function checkPageBasket(){
 	});
 	if(allIn){
 		$("div#" + current + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_color.png");
+		$("div#" + current + " div#Results_Div img.head.basket").attr("title","Click to remove this item from the basket.");
 		$("div#" + current + " div#Results_Div img.head.basket").attr("value", "1");
 	}else{
 		$("div#" + current + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_gray.png");
+		$("div#" + current + " div#Results_Div img.head.basket").attr("title","Click to add this item to the basket.");
 		$("div#" + current + " div#Results_Div img.head.basket").attr("value", "0");
 	}
 }
