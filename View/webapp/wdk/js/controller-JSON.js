@@ -274,8 +274,10 @@ function unloadStrategy(id){
 function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters){
 	if(f_strategyId == -1){
 		$("#strategy_results > div.Workspace").html("");
+		current_Front_Strategy_Id = null;
 		return;
 	}
+	current_Front_Strategy_Id = f_strategyId;
 	var strategy = getStrategy(f_strategyId);
 	var step = strategy.getStep(f_stepId,true);
 	url = "showSummary.do";
