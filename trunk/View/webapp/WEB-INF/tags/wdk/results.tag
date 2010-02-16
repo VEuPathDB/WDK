@@ -10,6 +10,7 @@
 <c:set var="recordName" value="${wdkAnswer.question.recordClass.fullName}" />
 <c:set var="recHasBasket" value="${wdkAnswer.question.recordClass.hasBasket}" />
 <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
+<c:set var="answerRecords" value="${wdkAnswer.records}" />
 
 <%@ attribute name="strategy"
 			  type="org.gusdb.wdk.model.jspwrap.StrategyBean"
@@ -270,7 +271,7 @@
 
 <c:set var="i" value="0"/>
 
-<c:forEach items="${wdkAnswer.records}" var="record">
+<c:forEach items="${answerRecords}" var="record">
     <c:set value="${record.primaryKey}" var="primaryKey"/>
 
 <c:choose>
