@@ -500,7 +500,7 @@ function openStrategy(stratId){
 		success: function(data){
 			if(ErrorHandler("Open", data, null, null)){
 				updateStrategies(data);
-				if ($("#strategy_results").css('display') != 'none') showPanel('strategy_results');
+				if ($("#strategy_results").css('display') == 'none') showPanel('strategy_results');
 			}
 		},
 		error: function(data, msg, e){
