@@ -12,25 +12,26 @@ function moveAttr(col_ix, table) {
 	var left, strat, step;
 	if (col_ix > 0) left = $(headers[col_ix-1]).attr("id");
 	// Figure out what step/strategy is currently displayed in results panel
-	if (table.parents("#strategy_results").length > 0) {
+	if ($(table).parents("#strategy_results").length > 0) {
 		var step = $("div.selectedarrow");
 	        if (step.length == 0) step = $("div.selectedtransform");
 		if (step.length == 0) step = $("div.selected");
 		var stepfId = step.attr("id").split('_')[1];
-		var stratfId = step.parent().attr("id").split('_')[1];
+		var stratfId = step.parent().parent().attr("id");
+		stratfId = stratfId.substring(stratfId.indexOf('_') + 1);
 		strat = getStrategy(stratfId).backId;
 		step = getStep(stratfId, stepfId).back_step_Id;
 	}
 	else {
-		step = table.attr('step');
+		step = $(table).attr('step');
 	}
 	// build url.
 	var url = "processSummary.do?strategy=" + strat + "&step=" + step + "&command=arrange&attribute=" + attr + "&left=" + left;
-	if (table.parents("#strategy_results").length > 0) {
+	if ($(table).parents("#strategy_results").length > 0) {
 		GetResultsPage(url, false, true);
 	}
 	else {
-		ChangeBasket(url + "&results_only=true");
+		ChangeBasket(url + "&results_only=true", true);
 	}
 }
 
@@ -65,14 +66,16 @@ function resetAttr(url, button) {
     }
 }
 
-function ChangeBasket(url) {
+function ChangeBasket(url, noUpdate) {
 	$("body").block();
 	$.ajax({
 		url: url,
 		dataType: "html",
 		success: function(data){
 			$("body").unblock();  //Gets blocked again by the next line anyway
-			showBasket();
+			if (!noUpdate) { // For things like moving columns, don't need to refresh
+				showBasket();
+			}
 		},
 		error : function(data, msg, e){
 			  alert("ERROR \n "+ msg + "\n" + e
@@ -87,6 +90,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 	var a = new Array();
 	var action = null;
 	var da = null;
+	var currentDiv = getCurrentBasketWrapper();
 	if(type == "single"){
 		var o = new Object();
 		o.source_id = pk;
@@ -135,11 +139,13 @@ function updateBasket(ele, type, pk, pid,recordType) {
 					showBasket();
 				}else{
 					if(action == "add-all" || action == "add") {
-						$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.basket").attr("src","wdk/images/basket_color.png");
-						$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.basket").attr("value", "1");
+						$("div#" + currentDiv + " div#Results_Div img.basket").attr("src","wdk/images/basket_color.png");
+						$("div#" + currentDiv + " div#Results_Div img.basket").attr("title","Click to remove this item from the basket.");
+						$("div#" + currentDiv + " div#Results_Div img.basket").attr("value", "1");
 					}else{
-						$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.basket").attr("src","wdk/images/basket_gray.png");
-						$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.basket").attr("value", "0");
+						$("div#" + currentDiv + " div#Results_Div img.basket").attr("src","wdk/images/basket_gray.png");
+						$("div#" + currentDiv + " div#Results_Div img.basket").attr("title","Click to add this item to the basket.");
+						$("div#" + currentDiv + " div#Results_Div img.basket").attr("value", "0");
 					}
 				}
 				checkPageBasket();
@@ -153,7 +159,8 @@ function updateBasket(ele, type, pk, pid,recordType) {
 
 function checkPageBasket(){
 	allIn = true;
-	$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.basket").each(function(){
+	var current = getCurrentBasketWrapper();
+	$("div#" + current + " div#Results_Div img.basket").each(function(){
 		if(!($(this).hasClass("head"))){
 			if($(this).attr("value") == 0){
 				allIn = false;
@@ -161,11 +168,13 @@ function checkPageBasket(){
 		}
 	});
 	if(allIn){
-		$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_color.png");
-		$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.head.basket").attr("value", "1");
+		$("div#" + current + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_color.png");
+		$("div#" + current + " div#Results_Div img.head.basket").attr("title","Click to remove this item from the basket.");
+		$("div#" + current + " div#Results_Div img.head.basket").attr("value", "1");
 	}else{
-		$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_gray.png");
-		$("div#" + getCurrentTabCookie(false) + " div#Results_Div img.head.basket").attr("value", "0");
+		$("div#" + current + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_gray.png");
+		$("div#" + current + " div#Results_Div img.head.basket").attr("title","Click to add this item to the basket.");
+		$("div#" + current + " div#Results_Div img.head.basket").attr("value", "0");
 	}
 }
 
@@ -318,6 +327,13 @@ function openAdvancedPaging(element){
                     panel.css({"display" : "none"});
                     button.val("Advanced Paging");
 	}
+}
+
+function getCurrentBasketWrapper() {"strategy_results";
+	if ($("#strategy_results").css('display') == 'none') {
+		return "basket";
+	}
+	return "strategy_results";
 }
 
 

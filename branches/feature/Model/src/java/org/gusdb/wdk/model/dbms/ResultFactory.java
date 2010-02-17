@@ -213,7 +213,8 @@ public class ResultFactory {
     }
 
     public void createCacheTableIndex(Connection connection, String cacheTable,
-            String[] indexColumns) throws SQLException {
+            String[] indexColumns) throws SQLException, WdkUserException,
+            WdkModelException {
         // create index on query instance id
         StringBuffer sqlId = new StringBuffer("CREATE INDEX ");
         sqlId.append(cacheTable).append("_idx01 ON ").append(cacheTable);
@@ -236,10 +237,16 @@ public class ResultFactory {
 
         Statement stmt = null;
         try {
+            long start = System.currentTimeMillis();
             stmt = connection.createStatement();
 
             stmt.execute(sqlId.toString());
-            if (indexColumns != null) stmt.execute(sqlOther.toString());
+            SqlUtils.verifyTime(wdkModel, sqlId.toString(), start);
+            if (indexColumns != null) {
+                start = System.currentTimeMillis();
+                stmt.execute(sqlOther.toString());
+                SqlUtils.verifyTime(wdkModel, sqlOther.toString(), start);
+            }
         } finally {
             if (stmt != null) stmt.close();
         }

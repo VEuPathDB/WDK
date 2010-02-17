@@ -494,11 +494,11 @@ public class Strategy {
         jsStrategy.put("savedName", this.savedName);
         jsStrategy.put("saved", this.isSaved);
         jsStrategy.put("deleted", this.isDeleted);
-        jsStrategy.put("latestStep", latestStepId);
         jsStrategy.put("valid", isValid());
         jsStrategy.put("resultSize", getEstimateSize());
         jsStrategy.put("version", getVersion());
         jsStrategy.put("type", getType());
+        jsStrategy.put("latestStep", getLatestStep().getJSONContent(this.displayId));
 
         return jsStrategy;
     }

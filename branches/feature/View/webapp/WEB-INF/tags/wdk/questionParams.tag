@@ -160,7 +160,9 @@
     </div> <%-- end of param-group div --%>
 
 </c:forEach> <%-- end of foreach on paramGroups --%>
-<br/>
+
+<%-- set the weight --%>
+<c:if test="${!(wdkQuestion.isTransform)}">
 <div name="All_weighting"
      class="param-group" 
      type="ShowHide">
@@ -168,14 +170,14 @@
 <c:set var="image" value="plus.gif"/>
 <div class="group-title">
     <img class="group-handle" src='<c:url value="/images/${image}" />' />
-    Weighting Results
+    Give this search a weight
 </div>
-<div class="group-detail" style="display:${display};">
+<div class="group-detail" style="display:${display};text-align:center">
     <div class="group-description">
+	<p><input type="text" name="weight" value="0">  </p> 
 	<p>Optionally give this search a "weight" (for example 10, 200, -50).<br>In a search strategy, unions and intersects will sum the weights, giving higher scores to items found in multiple searches. </p>
 	
-    </div>
-  <p><b>Assign Weight to results:</b> <input type="text" name="weight" value="0">   
+    </div><br>
 </div>
 </div>
-<br/>
+</c:if>

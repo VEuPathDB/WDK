@@ -32,7 +32,7 @@ function showPanel(panel) {
 		if(getCurrentTabCookie(false) == 'basket' && current_Front_Strategy_Id != null){
 			var stgy = getStrategy(current_Front_Strategy_Id);
 			//var stgy = getStrategyFromBackId(init_view_strat);
-			var stp = stgy.getStep(init_view_step, false);
+			var stp = stgy.getStep(init_view_step.split(".")[0], false);
 			NewResults(stgy.frontId, stp.frontId, stp.isboolean);
 		}
 		$("body > #query_form").show();

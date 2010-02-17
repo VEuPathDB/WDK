@@ -529,7 +529,7 @@ public class RecordInstance extends AttributeValueContainer {
         for (String attributeName : attributes.keySet()) {
             AttributeValue attribute = attributes.get(attributeName);
             buf.append(attribute.getAttributeField().getDisplayName());
-            buf.append(":   " + attribute.getBriefValue());
+            buf.append(":   " + attribute.getBriefDisplay());
             buf.append(newline);
         }
     }

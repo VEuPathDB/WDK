@@ -412,16 +412,32 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 		"		<table></table><hr class='clear' />" + filteredName +
 		"		<p><b>Results:&nbsp;</b>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.displayType,jsonstep.results);// + "&nbsp;&nbsp;|&nbsp;&nbsp;<a href='downloadStep.do?step_id=" + modelstep.back_step_Id + "'>Download</a>";
        
-        // display & assign weight
-        var set_weight = "<div align='center'><b>Assign weight to results:</b> <input id='weight' type='text' value='" + jsonstep.assignedWeight + "' >";
-        set_weight += "<input type='button' value='Assign' onclick='SetWeight(this, " + sid + "," + modelstep.frontId + ");hideDetails(this)' >";
-        set_weight += "	<p>Optionally give this search a 'weight' (for example 10, 200, -50).<br>In a search strategy, unions and intersects will sum the weights, giving higher scores to items found in multiple searches. </p>";
-        set_weight += "</div>";
-        inner += "<hr class='clear' />" + set_weight;
+    inner += "<hr class='clear' />" + createWeightSection(jsonstep,modelstep,sid);
 
 	$(detail_div).html(inner);
 	$("table", detail_div).replaceWith(params_table);
 	return detail_div;       
+}
+
+function createWeightSection(jsonstep,modelstep,sid){
+	// display & assign weight
+if(modelstep.isTransform || jsonstep.isboolean) return "";
+	
+var set_weight = "<div name='All_weighting' class='param-group' type='ShowHide'>"+
+					"<div class='group-title'> "+
+	    				"<img style='position:relative;top:5px;'  class='group-handle' src='/images/plus.gif' onclick=''/>"+
+	    				"Give this step a weight"+
+					"</div>"+
+					"<div class='group-detail' style='display:none;text-align:center'>"+
+	    				"<div class='group-description'>"+
+							"<p><input type='text' name='weight' value='" + jsonstep.assignedWeight + "'>  </p> "+
+							"<input type='button' value='Assign' onclick='SetWeight(this, " + sid + "," + modelstep.frontId + ");hideDetails(this)' >"+
+							"<p>Optionally give this search a 'weight' (for example 10, 200, -50).<br>In a search strategy, unions and intersects will sum the weights, giving higher scores to items found in multiple searches. </p>"+
+						"</div>"+
+						"<br>"+
+					"</div>"+
+				"</div>";
+	return set_weight;
 }
 
 // HANDLE THE DISPLAY OF THE PARAMETERS IN THE STEP DETAILS BOX

@@ -16,7 +16,7 @@ Provides form input element for a given term tree node of EnumParam.
 <%-- set left margin for node (instead of using spacer gif
      for the leaves) --%>
 <c:if test="${fn:length(children) == 0}">
-    <c:set var="nodeMargin" value="margin-left:13px;" />
+    <c:set var="nodeMargin" value="margin-left:16px;" />
 </c:if>
 
 <%-- display param term --%>

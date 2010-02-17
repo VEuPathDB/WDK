@@ -232,8 +232,8 @@ class ActiveStrategyFactory {
     /**
      * @return the viewStepId
      */
-    public Integer getViewStepId() {
-        if (getViewStrategyKey() == null) return null;
+    public int getViewStepId() {
+        if (getViewStrategyKey() == null) return 0;
         return viewStepId;
     }
 

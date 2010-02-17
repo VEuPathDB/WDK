@@ -22,25 +22,34 @@ My Search Strategies Workspace
 <ul id="strategy_tabs">
 <%-- showPanel() is in filter_menu.js --%>
 
-   <li><span id="stratTitle">My Strategies:</span></li> 
+   <li><span id="stratTitle" class="h4left">My Strategies:</span></li> 
 
-   <li><a id="tab_strategy_new" title="START a NEW strategy: CLICK to access the page with all available searches"   
+   <li><a id="tab_strategy_new" title="Start a new strategy. (Your opened strategies will remain untouched)"   
 	href="javascript:showPanel('strategy_new')" >New</a></li>
 
-   <li><a id="tab_strategy_results" title="Graphical display of your opened strategies. To close a strategy click on the right top corner X." 
+   <li><a id="tab_strategy_results" title="View and interact with your opened strategies. To close a strategy, click the [X] in its upper right corner" 
 	onclick="this.blur()" href="javascript:showPanel('strategy_results')">Opened</a></li>
 
-   <li><a id="tab_search_history" title="Summary of all your strategies. From here you can open/close strategies on the 'Run Strategies' tab, our graphical display." 
+   <li><a id="tab_search_history" title="View and browse all your strategies" 
 	onclick="this.blur()" href="javascript:showPanel('search_history')">All</a></li>
 
 
-   <li><a style="padding-left:5px;" id="tab_basket" title="Group IDs together to later make a step in a strategy." onclick="this.blur()" href="javascript:showPanel('basket')"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
+<c:set var="basketTitle" value="View your basket. Use the basket to operate on the items in it. For example, add them as a step in a strategy"/>
+
+<c:choose>
+  <c:when test="${wdkUser.guest}">
+   <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:popLogin();"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
+  </c:when>
+  <c:otherwise>
+   <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:showPanel('basket')"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
+  </c:otherwise>
+</c:choose>
 
 
-   <li><a id="tab_sample_strat" title="View some examples of linear and non-linear strategies." 
+   <li><a id="tab_sample_strat" title="View example strategies, both simple and more complex" 
 	onclick="this.blur()" href="javascript:showPanel('sample_strat')">Examples</a></li>
 
-   <li><a id="tab_help" title="List of hints on how to use our website, also available in the Did You Know popup"
+   <li><a id="tab_help" title="Help in using strategies"
 	href="javascript:showPanel('help')">Help</a></li>
 
 </ul>
