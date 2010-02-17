@@ -93,7 +93,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 	var currentDiv = getCurrentBasketWrapper();
 	if(type == "single"){
 		var o = new Object();
-		var pkDiv = $("#" + currentDiv + " #Results_Pane div.primaryKey span[key='source_id']:contains(" + pk + ")");
+		var pkDiv = $("#" + currentDiv + " #Results_Pane div.primaryKey span:contains(" + pk + ")");
 		$("span", pkDiv.parent()).each(function(){
 			o[$(this).attr("key")] = $(this).text();
 		});
@@ -151,13 +151,6 @@ function updateBasket(ele, type, pk, pid,recordType) {
 					}
 				}
 				checkPageBasket();
-				if (currentDiv == 'basket') {
-					// If any results are showing (and we're not already on the results page) update them.
-					var currentStep = $("#Strategies div.selected");
-					if (currentStep.length == 0) currentStep = $("#Strategies div.selectedarrow");
-					if (currentStep.length == 0) currentStep = $("#Strategies div.selectedtransform");
-					$("a.results_link", currentStep).click();
-				}
 			},
 			error: function(){
 				$("body").unblock();
