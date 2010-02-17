@@ -125,7 +125,6 @@ function updateBasket(ele, type, pk, pid,recordType) {
 			},
 			success: function(data){
 				$("body").unblock();
-				$("body").unblock();
 				if(type == "single"){
 					if(action == "add") {
 						i.attr("src","wdk/images/basket_color.png");
