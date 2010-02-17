@@ -296,6 +296,7 @@ public class TabularReporter extends Reporter {
                 writer.flush();
                 count += 7;
 
+                // logger.debug("Excel download - written: " + count);
                 // check if the output exceeds the max allowed size
                 if (count > MAX_EXCEL_LENGTH) {
                     writer.print("<tr><td colspan=\"" + fields.size() + "\">");
@@ -310,6 +311,7 @@ public class TabularReporter extends Reporter {
                 }
                 if (count > MAX_EXCEL_LENGTH) break;
             }
+            if (count > MAX_EXCEL_LENGTH) break;
         }
         writer.println("</table>");
         writer.flush();
