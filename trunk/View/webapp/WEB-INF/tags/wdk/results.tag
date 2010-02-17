@@ -273,7 +273,7 @@
 
 <c:forEach items="${answerRecords}" var="record">
     <c:set value="${record.primaryKey}" var="primaryKey"/>
-
+	<c:set var="recNam" value="${record.recordClass.fullName}"/>
 <c:choose>
   <c:when test="${i % 2 == 0}"><tr class="lines"></c:when>
   <c:otherwise><tr class="linesalt"></c:otherwise>
@@ -314,7 +314,7 @@
     </c:forEach>
 
     <td ${align} style="${nowrap}padding:3px 2px"><div>
-      <c:set var="recNam" value="${record.recordClass.fullName}"/>
+      
       <c:set var="fieldVal" value="${recAttr.briefDisplay}"/>
       <!-- store the primary key pairs here -->
       <div class="primaryKey" style="display:none;">
