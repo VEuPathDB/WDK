@@ -93,17 +93,19 @@ function updateBasket(ele, type, pk, pid,recordType) {
 	var currentDiv = getCurrentBasketWrapper();
 	if(type == "single"){
 		var o = new Object();
-		o.source_id = pk;
-		o.project_id = pid;
+		var pkDiv = $("#" + currentDiv + " #Results_Pane div.primaryKey span[key='source_id']:contains(" + pk + ")");
+		$("span", pkDiv.parent()).each(function(){
+			o[$(this).attr("key")] = $(this).text();
+		});
 		a.push(o);
 		da = $.json.serialize(a);
 		action = (i.attr("value") == '0') ? "add" : "remove";
 	}else if(type == "page"){
-		$("#Results_Pane a.primaryKey").each(function(){
+		$("#" + currentDiv + " #Results_Pane div.primaryKey").each(function(){
 			var o = new Object();
-			sid = $(this).attr("class").split("_||_")[1];
-			o.source_id = sid;
-			o.project_id = pid;
+			$("span",this).each(function(){;
+				o[$(this).attr("key")] = $(this).text();
+			});
 			a.push(o);
 		});
 		action = (i.attr("value") == '0') ? "add" : "remove";
