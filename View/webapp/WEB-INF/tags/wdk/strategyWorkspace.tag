@@ -24,17 +24,17 @@ My Search Strategies Workspace
 
    <li><span id="stratTitle" class="h4left">My Strategies:</span></li> 
 
-   <li><a id="tab_strategy_new" title="Start a new strategy.  (Your opened strategies will remain untouched)"   
+   <li><a id="tab_strategy_new" title="Start a new strategy. (Your opened strategies will remain untouched)"   
 	href="javascript:showPanel('strategy_new')" >New</a></li>
 
-   <li><a id="tab_strategy_results" title="View and interact with your opened strategies.  To close a strategy, click the [X] in its upper right corner" 
+   <li><a id="tab_strategy_results" title="View and interact with your opened strategies. To close a strategy, click the [X] in its upper right corner" 
 	onclick="this.blur()" href="javascript:showPanel('strategy_results')">Opened</a></li>
 
-   <li><a id="tab_search_history" title="View and browse all of your strategies" 
+   <li><a id="tab_search_history" title="View and browse all your strategies" 
 	onclick="this.blur()" href="javascript:showPanel('search_history')">All</a></li>
 
 
-<c:set var="basketTitle" value="View your basket.  Use the basket to operate on the items in it.  For example, add them as a step in a strategy"/>
+<c:set var="basketTitle" value="View your basket. Use the basket to operate on the items in it. For example, add them as a step in a strategy"/>
 
 <c:choose>
   <c:when test="${wdkUser.guest}">
