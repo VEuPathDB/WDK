@@ -120,3 +120,24 @@ function getDisplayType(type, number){
 		return type + 's';
 	}
 }
+
+function initShowHide(details){
+	$(".param-group[type='ShowHide']",details).each(function() {
+        // register the click event
+        var name = $(this).attr("name");
+        var expire = 365;   // in days
+        $(this).find(".group-handle").click(function() {
+            var handle = this;
+            var path = handle.src.substr(0, handle.src.lastIndexOf("/"));
+            var detail = $(this).parents(".param-group").children(".group-detail");
+            detail.toggle();
+            if (detail.css("display") == "none") {
+                handle.src = path + "/plus.gif";
+                wdk.createCookie(name, "hide", expire);
+            } else {
+                handle.src = path + "/minus.gif";
+                wdk.createCookie(name, "show", expire);
+            }
+        });
+	});
+}

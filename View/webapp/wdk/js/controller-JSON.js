@@ -92,7 +92,7 @@ function updateStrategies(data, ignoreFilters){
 	removeClosedStrategies();
 	for(st in state){
           if(st == "count")
-                $("#mysearch span").text(state[st]);
+                $("#mysearch span").text('('+state[st]+')');
 	  else if(st != "length"){
 		var str = state[st].id;
 		if(isLoaded(str)){
@@ -274,8 +274,10 @@ function unloadStrategy(id){
 function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters){
 	if(f_strategyId == -1){
 		$("#strategy_results > div.Workspace").html("");
+		current_Front_Strategy_Id = null;
 		return;
 	}
+	current_Front_Strategy_Id = f_strategyId;
 	var strategy = getStrategy(f_strategyId);
 	var step = strategy.getStep(f_stepId,true);
 	url = "showSummary.do";
@@ -500,7 +502,7 @@ function openStrategy(stratId){
 		success: function(data){
 			if(ErrorHandler("Open", data, null, null)){
 				updateStrategies(data);
-				if (getCurrentTabCookie(false) != 'strategy_results') showPanel('strategy_results');
+				if ($("#strategy_results").css('display') == 'none') showPanel('strategy_results');
 			}
 		},
 		error: function(data, msg, e){
@@ -540,7 +542,7 @@ function deleteStrategy(stratId, fromHist){
 			if (ErrorHandler("DeleteStrategy", data, null, null)){
 				updateStrategies(data);
 				updateHist = true;
-				if (getCurrentTabCookie(false) == 'search_history'){
+				if ($('#search_history').css('display') != 'none'){
 					updateHistory();
 				}
 			}
@@ -573,7 +575,7 @@ function closeStrategy(stratId, isBackId){
 		success: function(data){
 			if(ErrorHandler("CloseStrategy", data, strat, null)){
 				updateStrategies(data);
-				if (getCurrentTabCookie(false) == 'search_history'){
+				if ($('#search_history').css('display') != 'none') {
 					update_hist = true;
 					updateHistory();
 				}
@@ -715,6 +717,8 @@ function SetWeight(e, f_strategyId, f_stepId){
         var step = strategy.getStep(f_stepId, true);
         var cs = strategy.checksum;
         var weight = $(e).siblings("input#weight").val();
+		if(weight == undefined)
+			weight = $(e).siblings().find("input[name='weight']").val();
         if(strategy.subStratOf != null)
                 cs = getStrategy(strategy.subStratOf).checksum;
         var url = "processFilter.do?strategy=" + strategy.backId + "&revise=" + step.back_step_Id + "&weight=" + weight + "&strategy_checksum="+cs;

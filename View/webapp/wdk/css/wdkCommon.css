@@ -7,11 +7,12 @@
 
 .param-group .group-title {
 	text-align: center;
-    	padding: 5px;
+    	padding: 0 0 5px;
 }
 
 .param-group[type='ShowHide'] {
     background-color: #DEDEDE;
+    border: 2px solid white;
 }
 
 .param-group .group-title {

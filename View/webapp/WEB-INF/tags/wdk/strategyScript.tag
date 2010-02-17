@@ -15,8 +15,6 @@
 <!-- history page code -->
 <script type="text/javascript" src="<c:url value='wdk/js/history.js'/>"></script>
 
-<script type="text/javascript" src="<c:url value='wdk/js/stratTabCookie.js'/>"></script>
-
 <!-- Strategy Interaction javascript -->
 <script type="text/javascript" src="<c:url value='wdk/js/model-JSON.js'/>"></script>
 <script type="text/javascript" src="<c:url value='wdk/js/view-JSON.js'/>"></script>

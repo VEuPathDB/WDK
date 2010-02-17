@@ -24,7 +24,7 @@
 <%@ attribute name="suppressDisplayName"
               description="Should the display name be skipped?"
 %>
-
+<c:catch var="tableError">
 <c:set value="${requestScope.wdkRecord}" var="wdkRecord"/>
 <c:set value="${wdkRecord.tables[tblName]}" var="tbl"/>
 <c:if test="${suppressDisplayName == null || !suppressDisplayName}">
@@ -97,6 +97,11 @@
 ${postscript}
 
 </c:set>
+
+</c:catch>
+<c:if test="${tableError != null}">
+    <c:set var="tblContent" value="<i>Error. Data is temporarily unavailable</i>"/>
+</c:if>
 
 <wdk:toggle name="${tblName}" displayName="${tableDisplayName}"
              content="${tblContent}" isOpen="${isOpen}" noData="${noData}"

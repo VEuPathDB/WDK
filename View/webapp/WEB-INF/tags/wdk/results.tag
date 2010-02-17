@@ -10,6 +10,7 @@
 <c:set var="recordName" value="${wdkAnswer.question.recordClass.fullName}" />
 <c:set var="recHasBasket" value="${wdkAnswer.question.recordClass.hasBasket}" />
 <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
+<c:set var="answerRecords" value="${wdkAnswer.records}" />
 
 <%@ attribute name="strategy"
 			  type="org.gusdb.wdk.model.jspwrap.StrategyBean"
@@ -155,7 +156,7 @@
 <div id="Results_Div" class="flexigrid">
 <div class="bDiv">
 <div class="bDivBox">
-<table id="Results_Table" width="100%" border="0" cellpadding="3" cellspacing="0" step="wdkStep.stepId">
+<table id="Results_Table" width="100%" border="0" cellpadding="3" cellspacing="0" step="${wdkStep.stepId}">
 <thead>
 <tr class="headerrow">
             <c:if test="${recHasBasket}">
@@ -270,7 +271,7 @@
 
 <c:set var="i" value="0"/>
 
-<c:forEach items="${wdkAnswer.records}" var="record">
+<c:forEach items="${answerRecords}" var="record">
     <c:set value="${record.primaryKey}" var="primaryKey"/>
 
 <c:choose>
@@ -314,7 +315,7 @@
 
     <td ${align} style="${nowrap}padding:3px 2px"><div>
       <c:set var="recNam" value="${record.recordClass.fullName}"/>
-      <c:set var="fieldVal" value="${recAttr.briefValue}"/>
+      <c:set var="fieldVal" value="${recAttr.briefDisplay}"/>
       <!-- store the primary key pairs here -->
       <div class="primaryKey" style="display:none;">
         <c:forEach items="${pkValues}" var="pkValue">

@@ -457,9 +457,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         }
 
         // add weight to the list
-        Map<String, AttributeField> dynamicFields = dynamicAttributeSet.getAttributeFieldMap();
-        AttributeField weightField = dynamicFields.get(Utilities.COLUMN_WEIGHT);
-        attributeFields.put(weightField.getName(), weightField);
+        // for now, it is commented out, maybe re-activated in the future.
+        // Map<String, AttributeField> dynamicFields =
+        // dynamicAttributeSet.getAttributeFieldMap();
+        // AttributeField weightField =
+        // dynamicFields.get(Utilities.COLUMN_WEIGHT);
+        // attributeFields.put(weightField.getName(), weightField);
 
         return attributeFields;
     }
@@ -587,7 +590,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
         super.excludeResources(projectId);
-        
+
         // exclude descriptions
         boolean hasDescription = false;
         for (WdkModelText description : descriptions) {
@@ -679,7 +682,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         }
     }
 
-    private Query createDynamicAttributeQuery(WdkModel wdkModel) throws WdkModelException {
+    private Query createDynamicAttributeQuery(WdkModel wdkModel)
+            throws WdkModelException {
         SqlQuery query = new SqlQuery();
         query.setIsCacheable(false);
         query.setName(this.query.getName() + DYNAMIC_QUERY_SUFFIX);
@@ -705,7 +709,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         // dynamic query doesn't have sql defined, here just fill in the stub
         // sql; the real sql will be constructed by answerValue
         query.setSql("");
-        
+
         query.excludeResources(wdkModel.getProjectId());
 
         return query;
