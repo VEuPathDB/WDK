@@ -452,7 +452,8 @@ function createParameters(params){
 			var value = document.createElement('td');
 			$(prompt).addClass("medium").css({
 				"text-align":"right",
-				"vertical-align":"top"
+				"vertical-align":"top",
+                                "white-space" : "nowrap",
 			});
 			$(prompt).html("<b><i>" + this.prompt + "</i></b>");
 			$(space).addClass("medium").attr("valign","top");
