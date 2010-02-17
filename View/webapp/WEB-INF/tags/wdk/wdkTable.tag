@@ -100,6 +100,7 @@ ${postscript}
 
 </c:catch>
 <c:if test="${tableError != null}">
+    <c:set var="exception" value="${tableError}" scope="request"/>
     <c:set var="tblContent" value="<i>Error. Data is temporarily unavailable</i>"/>
 </c:if>
 
