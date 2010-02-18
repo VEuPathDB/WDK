@@ -119,7 +119,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 newStep.setIsCollapsible(true);
                 newStep.setCollapsedName("Copy of " + insertStrat.getName());
                 newStep.update(false);
-            } else if (isRevise && (hasWeight || hasFilter) && !hasQuestion) {
+            } else if (isRevise && (hasWeight || hasFilter || !hasQuestion)) {
                 logger.debug("change filter: " + filterName);
                 // change the filter of an existing step, which can be a child
                 // step, or a boolean step
