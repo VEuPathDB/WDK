@@ -600,7 +600,7 @@ a.redbutton:active span {
 #Strategies {
 	width: 100%;
 	min-height: 130px;
-	max-height: 300px;
+	max-height: 330px;
 	overflow-y: auto;
 	border: 2px solid gray;
 }
