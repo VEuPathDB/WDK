@@ -51,7 +51,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             }
             String strBranchId = null;
 
-            QuestionBean wdkQuestion;
+            QuestionBean wdkQuestion = null;
 
             boolean isTransform = false;
 
@@ -137,7 +137,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 wdkUser.setViewResults(wdkUser.getViewStrategyId(),
                         wdkUser.getViewStepId(), 0);
             } else { // no: get question
-                wdkQuestion = getQuestionByFullName(qFullName);
                 // QuestionForm fForm = prepareQuestionForm(wdkQuestion,
                 // request, (QuestionForm) form);
                 QuestionForm fForm = (QuestionForm) form;
@@ -150,6 +149,13 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                     StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
                     weight = (oldStep.getChildStep() == null) ? oldStep.getAssignedWeight()
                             : oldStep.getChildStep().getAssignedWeight();
+                    if (!hasQuestion) wdkQuestion = oldStep.getQuestion();
+                }
+                if (wdkQuestion == null) {
+                    if (!hasQuestion)
+                        throw new WdkUserException(
+                                "The required question name is not provided, cannot process operation.");
+                    wdkQuestion = getQuestionByFullName(qFullName);
                 }
                 newStep = ShowSummaryAction.summaryPaging(request, wdkQuestion,
                         params, filterName, false, weight);
