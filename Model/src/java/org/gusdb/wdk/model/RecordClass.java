@@ -285,9 +285,10 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public TableField[] getTableFields() {
-        TableField[] tableFields = new TableField[tableFieldsMap.size()];
-        tableFieldsMap.values().toArray(tableFields);
-        return tableFields;
+        Map<String, TableField> tables = getTableFieldMap();
+        TableField[] array = new TableField[tables.size()];
+        tables.values().toArray(array);
+        return array;
     }
 
     public Map<String, AttributeField> getAttributeFieldMap() {
@@ -310,9 +311,10 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public AttributeField[] getAttributeFields() {
-        AttributeField[] attributeFields = new AttributeField[attributeFieldsMap.size()];
-        attributeFieldsMap.values().toArray(attributeFields);
-        return attributeFields;
+        Map<String, AttributeField> attributes = getAttributeFieldMap();
+        AttributeField[] array = new AttributeField[attributes.size()];
+        attributes.values().toArray(array);
+        return array;
     }
 
     public Field[] getFields() {
