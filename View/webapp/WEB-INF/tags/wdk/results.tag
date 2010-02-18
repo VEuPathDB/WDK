@@ -164,14 +164,13 @@
               <c:choose>
                 <c:when test="${wdkUser.guest}">
                   <c:set var="basketClick" value="popLogin()" />
-                  <c:set var="basketTitle" value="Please log in to use the basket." />
                 </c:when>
                 <c:otherwise>
                   <c:set var="basketClick" value="updateBasket(this,'page', '0', '${modelName}', '${wdkAnswer.recordClass.fullName}')" />
                 </c:otherwise>
               </c:choose>
                 <a href="javascript:void(0)" onclick="${basketClick}">
-		  <img title="${basketTitle}" class="head basket" src="<c:url value='/wdk/images/basket_gray.png'/>" height="16" width="16" value="0"/>
+		  <img class="head basket" src="<c:url value='/wdk/images/basket_gray.png'/>" height="16" width="16" value="0"/>
 		</a>
               </th>
             </c:if>
@@ -285,11 +284,14 @@
           <td>
 		<c:set value="${record.attributes['in_basket']}" var="is_basket"/>
 		<c:set var="basket_img" value="basket_gray.png"/>
+              <c:set var="basketTitle" value="Click to add this item to the basket." />
 		<c:if test="${is_basket == '1'}">
 			<c:set var="basket_img" value="basket_color.png"/>
+              <c:set var="basketTitle" value="Click to remove this item from the basket." />
 		</c:if>
             <c:if test="${!wdkUser.guest}">
               <c:set var="basketClick" value="updateBasket(this,'single', '${primaryKey.value}', '${modelName}', '${recNam}')" />
+              <c:set var="basketTitle" value="Please login to use the basket." />
             </c:if>
 	    <a href="javascript:void(0)" onclick="${basketClick}">
 	      <img title="${basketTitle}" class="basket" value="${is_basket}" src="<c:url value='wdk/images/${basket_img}'/>" width="16" height="16"/>
