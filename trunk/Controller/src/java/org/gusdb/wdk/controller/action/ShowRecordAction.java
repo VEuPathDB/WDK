@@ -2,6 +2,7 @@ package org.gusdb.wdk.controller.action;
 
 import java.io.File;
 import java.net.URLEncoder;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -16,7 +17,9 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -35,6 +38,7 @@ public class ShowRecordAction extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+        logger.debug("Entering ShowRecordAction...");
         long start = System.currentTimeMillis();
 
         ServletContext svltCtx = getServlet().getServletContext();
@@ -43,8 +47,7 @@ public class ShowRecordAction extends Action {
         String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator
                 + CConstants.WDK_PAGES_DIR;
 
-        RecordClassBean wdkRecordClass = wdkModel.findRecordClass(request
-                .getParameter("name"));
+        RecordClassBean wdkRecordClass = wdkModel.findRecordClass(request.getParameter("name"));
         String[] pkColumns = wdkRecordClass.getPrimaryKeyColumns();
 
         Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
@@ -79,6 +82,23 @@ public class ShowRecordAction extends Action {
         }
 
         RecordBean wdkRecord = new RecordBean(user, wdkRecordClass, pkValues);
+
+        // try getting some attributes
+        Map<String, AttributeFieldBean> attributes = wdkRecordClass.getAttributeFields();
+        // record will always have primary key field as the first attribute
+        if (attributes.size() > 1) {
+            Iterator<String> names = attributes.keySet().iterator();
+            names.next();
+            String fieldName = names.next();
+            try {
+                wdkRecord.getAttributes().get(fieldName);
+            } catch (WdkModelException ex) {
+                // most likely user provided an invalid record id, the record
+                // has been marked as invalid, and ex can be ignored.
+                logger.info(ex);
+                ex.printStackTrace();
+            }
+        }
 
         request.setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 
