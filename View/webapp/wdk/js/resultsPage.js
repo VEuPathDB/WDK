@@ -35,8 +35,6 @@ function moveAttr(col_ix, table) {
 	}
 }
 
-// FOLLOWING TAKEN FROM OLD CUSTOMSUMMARY
-
 function addAttr(attrSelector) {
 	var attributes = attrSelector.val();
 
@@ -314,6 +312,7 @@ function gotoPage(pager_id) {
     gotoPageUrl = gotoPageUrl.replace(/\&pageSize=\d+/, "");
     gotoPageUrl += "&pager.offset=" + pageOffset;
     gotoPageUrl += "&pageSize=" + pageSize;
+    $("div.advanced-paging").hide();
     GetResultsPage(gotoPageUrl, true, true);
 }
 
