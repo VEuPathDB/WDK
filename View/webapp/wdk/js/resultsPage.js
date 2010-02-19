@@ -181,23 +181,29 @@ function updateBasketCount(c){
 }
 
 function checkPageBasket(){
-	allIn = true;
 	var current = getCurrentBasketWrapper();
-	$("div#" + current + " div#Results_Div img.basket").each(function(){
-		if(!($(this).hasClass("head"))){
-			if($(this).attr("value") == 0){
-				allIn = false;
-			}
-		}
-	});
-	if(allIn){
-		$("div#" + current + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_color.png");
-		$("div#" + current + " div#Results_Div img.head.basket").attr("title","Click to remove this item from the basket.");
-		$("div#" + current + " div#Results_Div img.head.basket").attr("value", "1");
-	}else{
+	if (guestUser == 'true') {
 		$("div#" + current + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_gray.png");
-		$("div#" + current + " div#Results_Div img.head.basket").attr("title","Click to add this item to the basket.");
-		$("div#" + current + " div#Results_Div img.head.basket").attr("value", "0");
+		$("div#" + current + " div#Results_Div img.head.basket").attr("title","Please log in to use the basket.");
+	}
+	else {
+		allIn = true;
+		$("div#" + current + " div#Results_Div img.basket").each(function(){
+			if(!($(this).hasClass("head"))){
+				if($(this).attr("value") == 0){
+					allIn = false;
+				}
+			}
+		});
+		if(allIn){
+			$("div#" + current + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_color.png");
+			$("div#" + current + " div#Results_Div img.head.basket").attr("title","Click to remove the items in this page from the basket.");
+			$("div#" + current + " div#Results_Div img.head.basket").attr("value", "1");
+		}else{
+			$("div#" + current + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_gray.png");
+			$("div#" + current + " div#Results_Div img.head.basket").attr("title","Click to add the items in this page to the basket.");
+			$("div#" + current + " div#Results_Div img.head.basket").attr("value", "0");
+		}
 	}
 }
 
