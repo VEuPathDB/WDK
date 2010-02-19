@@ -119,24 +119,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 newStep.setIsCollapsible(true);
                 newStep.setCollapsedName("Copy of " + insertStrat.getName());
                 newStep.update(false);
-            } else if (isRevise && (hasWeight || hasFilter || !hasQuestion)) {
-                logger.debug("change filter: " + filterName);
-                // change the filter of an existing step, which can be a child
-                // step, or a boolean step
-                StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
-                if (hasFilter) {
-                    newStep = oldStep.createStep(filterName,
-                            oldStep.getAssignedWeight());
-                } else if (hasWeight) {
-                    newStep = oldStep.createStep(oldStep.getFilterName(),
-                            weight);
-                } else {
-                    newStep = oldStep.getChildStep();
-                }
-                // reset pager info in session
-                wdkUser.setViewResults(wdkUser.getViewStrategyId(),
-                        wdkUser.getViewStepId(), 0);
-            } else { // no: get question
+            } else if (hasQuestion) { // no: get question
                 // QuestionForm fForm = prepareQuestionForm(wdkQuestion,
                 // request, (QuestionForm) form);
                 QuestionForm fForm = (QuestionForm) form;
@@ -164,6 +147,23 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 // it's a transform If we're inserting a strategy, it has to be
                 // a boolean (given current operations, at least)
                 isTransform = newStep.getIsTransform();
+            } else { // revise, but just change filter or weight.
+                logger.debug("change filter: " + filterName);
+                // change the filter of an existing step, which can be a child
+                // step, or a boolean step
+                StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
+                if (hasFilter) {
+                    newStep = oldStep.createStep(filterName,
+                            oldStep.getAssignedWeight());
+                } else if (hasWeight) {
+                    newStep = oldStep.createStep(oldStep.getFilterName(),
+                            weight);
+                } else {
+                    newStep = oldStep.getChildStep();
+                }
+                // reset pager info in session
+                wdkUser.setViewResults(wdkUser.getViewStrategyId(),
+                        wdkUser.getViewStepId(), 0);
             }
 
             int newStepId = newStep.getStepId();
