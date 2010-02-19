@@ -429,6 +429,7 @@ public class User /* implements Serializable */{
             int assignedWeight) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         if (assignedWeight != 0) usedWeight = true;
+        logger.debug("assigne weight: " + assignedWeight +", used weight: " + usedWeight);
 
         Step step = stepFactory.createStep(this, question, paramValues, filter,
                 pageStart, pageEnd, deleted, validate, assignedWeight);
@@ -1021,25 +1022,38 @@ public class User /* implements Serializable */{
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
         String summaryChecksum = projectPreferences.get(summaryKey);
         String[] summary = null;
+        boolean savedSummary = false;
         if (summaryChecksum != null && summaryChecksum.length() > 0) {
             // get summary list
             QueryFactory queryFactory = wdkModel.getQueryFactory();
             summary = queryFactory.getSummaryAttributes(summaryChecksum);
-            if (summary != null && summary.length > 0) return summary;
+            if (summary != null && summary.length > 0) savedSummary = true;
         }
 
-        // user does't have preference, use the default of the question
-        Question question = wdkModel.getQuestion(questionFullName);
-        Map<String, AttributeField> attributes = question.getSummaryAttributeFieldMap();
-        summary = new String[attributes.size()];
-        attributes.keySet().toArray(summary);
+        if (!savedSummary) {
+            // user does't have preference, use the default of the question 
+            Question question = wdkModel.getQuestion(questionFullName);
+            Map<String, AttributeField> attributes = question.getSummaryAttributeFieldMap();
+            summary = new String[attributes.size()];
+            attributes.keySet().toArray(summary);
+        }
 
         // if user has assigned non-zero weight, display the weight column
-        if (usedWeight && !attributes.containsKey(Utilities.COLUMN_WEIGHT)) {
-            String[] array = new String[summary.length + 1];
-            System.arraycopy(summary, 0, array, 0, summary.length);
-            array[summary.length] = Utilities.COLUMN_WEIGHT;
-            summary = array;
+        logger.debug("used weight: " + usedWeight);
+        if (usedWeight) {
+            boolean hasWeight = false;
+            for (String attribute : summary) {
+                if (attribute.equals(Utilities.COLUMN_WEIGHT)) {
+                    hasWeight = true;
+                    break;
+                }
+            }
+            if (!hasWeight) {
+                String[] array = new String[summary.length + 1];
+                System.arraycopy(summary, 0, array, 0, summary.length);
+                array[summary.length] = Utilities.COLUMN_WEIGHT;
+                summary = array;
+            }
         }
 
         if (summaryChecksum == null || summaryChecksum.length() == 0)
@@ -1052,6 +1066,7 @@ public class User /* implements Serializable */{
         projectPreferences.remove(summaryKey);
         // also reset the usedWeight flag
         usedWeight = false;
+        logger.debug("reset used weight to false");
     }
 
     public String setSummaryAttributes(String questionFullName,
@@ -1356,7 +1371,8 @@ public class User /* implements Serializable */{
         return copy;
     }
     
-    public void setUsedWeight(boolean userWeight) {
-        this.usedWeight = userWeight;
+    public void setUsedWeight(boolean usedWeight) {
+        logger.debug("set used weight: " + usedWeight);
+        this.usedWeight = usedWeight;
     }
 }
