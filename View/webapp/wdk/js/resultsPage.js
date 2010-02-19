@@ -35,6 +35,8 @@ function moveAttr(col_ix, table) {
 	}
 }
 
+// FOLLOWING TAKEN FROM OLD CUSTOMSUMMARY
+
 function addAttr(attrSelector) {
 	var attributes = attrSelector.val();
 
@@ -89,6 +91,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 	var action = null;
 	var da = null;
 	var currentDiv = getCurrentBasketWrapper();
+	var count = 0;
 	if(type == "single"){
 		var o = new Object();
 		var pkDiv = $("#" + currentDiv + " #Results_Pane div.primaryKey span:contains(" + pk + ")");
@@ -98,6 +101,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 		a.push(o);
 		da = $.json.serialize(a);
 		action = (i.attr("value") == '0') ? "add" : "remove";
+		count = 1;
 	}else if(type == "page"){
 		$("#" + currentDiv + " #Results_Pane div.primaryKey").each(function(){
 			var o = new Object();
@@ -108,12 +112,16 @@ function updateBasket(ele, type, pk, pid,recordType) {
 		});
 		action = (i.attr("value") == '0') ? "add" : "remove";
 		da = $.json.serialize(a);
+		count = a.length;
 	}else if(type == "clear"){
 		action = "clear";
+		count = null
 	}else{
 		da = type;
 		action = "add-all";//(i.attr("value") == '0') ? "add-all" : "remove-all";
+		count = new Number($("span#text_step_count").text());
 	}
+	
 	var d = "action="+action+"&type="+recordType+"&data="+da;
 		$.ajax({
 			url: "processBasket.do",
@@ -121,47 +129,55 @@ function updateBasket(ele, type, pk, pid,recordType) {
 			data: d,
 			dataType: "html",
 			beforeSend: function(){
-				$("body").block();
+				//$("body").block();
 			},
 			success: function(data){
-				$("body").unblock();
+				//$("body").unblock();
 				if(type == "single"){
 					if(action == "add") {
+						updateBasketCount(count);
 						i.attr("src","wdk/images/basket_color.png");
 						i.attr("value", "1");
 						i.attr("title","Click to remove this item from the basket.");
 					}else{
+						updateBasketCount(-1 * count);
 						i.attr("src","wdk/images/basket_gray.png");
 						i.attr("value", "0");
 						i.attr("title","Click to add this item to the basket.");
 					}
 				}else if(type == "clear"){
+					updateBasketCount(count);
 					showBasket();
 				}else{
 					if(action == "add-all" || action == "add") {
 						$("div#" + currentDiv + " div#Results_Div img.basket").attr("src","wdk/images/basket_color.png");
 						$("div#" + currentDiv + " div#Results_Div img.basket").attr("title","Click to remove this item from the basket.");
 						$("div#" + currentDiv + " div#Results_Div img.basket").attr("value", "1");
+						updateBasketCount(count);
 					}else{
 						$("div#" + currentDiv + " div#Results_Div img.basket").attr("src","wdk/images/basket_gray.png");
 						$("div#" + currentDiv + " div#Results_Div img.basket").attr("title","Click to add this item to the basket.");
 						$("div#" + currentDiv + " div#Results_Div img.basket").attr("value", "0");
+						updateBasketCount(-1*count)
 					}
 				}
 				checkPageBasket();
-				if (currentDiv == 'basket') {
-					// If any results are showing (and we're not already on the results page) update them.
-					var currentStep = $("#Strategies div.selected");
-					if (currentStep.length == 0) currentStep = $("#Strategies div.selectedarrow");
-					if (currentStep.length == 0) currentStep = $("#Strategies div.selectedtransform");
-					$("a.results_link", currentStep).click();
-				}
 			},
 			error: function(){
-				$("body").unblock();
+				//$("body").unblock();
 				alert("Error adding Gene to basket!");
 			}
 		});
+}
+
+function updateBasketCount(c){
+	if(c == null){
+		$("#menu a#mybasket span.subscriptCount v").text(0)
+	}else{
+		c = new Number(c);
+		var n = new Number($("#menu a#mybasket span.subscriptCount v").text());
+		$("#menu a#mybasket span.subscriptCount v").text(n + c)
+	}
 }
 
 function checkPageBasket(){
@@ -312,7 +328,6 @@ function gotoPage(pager_id) {
     gotoPageUrl = gotoPageUrl.replace(/\&pageSize=\d+/, "");
     gotoPageUrl += "&pager.offset=" + pageOffset;
     gotoPageUrl += "&pageSize=" + pageSize;
-    $("div.advanced-paging").hide();
     GetResultsPage(gotoPageUrl, true, true);
 }
 
