@@ -162,6 +162,13 @@ function updateBasket(ele, type, pk, pid,recordType) {
 					}
 				}
 				checkPageBasket();
+				if (currentDiv == 'basket') {
+					// If any results are showing (and we're not already on the results page) update them.
+					var currentStep = $("#Strategies div.selected");
+					if (currentStep.length == 0) currentStep = $("#Strategies div.selectedarrow");
+					if (currentStep.length == 0) currentStep = $("#Strategies div.selectedtransform");
+					$("a.results_link", currentStep).click();
+				}
 			},
 			error: function(){
 				//$("body").unblock();
