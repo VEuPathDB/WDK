@@ -1035,7 +1035,7 @@ public class User /* implements Serializable */{
         attributes.keySet().toArray(summary);
 
         // if user has assigned non-zero weight, display the weight column
-        if (!attributes.containsKey(Utilities.COLUMN_WEIGHT)) {
+        if (usedWeight && !attributes.containsKey(Utilities.COLUMN_WEIGHT)) {
             String[] array = new String[summary.length + 1];
             System.arraycopy(summary, 0, array, 0, summary.length);
             array[summary.length] = Utilities.COLUMN_WEIGHT;
