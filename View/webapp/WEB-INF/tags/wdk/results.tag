@@ -80,7 +80,7 @@
         <span id="text_strategy_number">${strategy.name}</span> 
         (step <span id="text_step_number">${strategy.length}</span>) - 
     </c:if>
-    ${wdkAnswer.resultSize} <span id="text_data_type">${type}</span>
+    <span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${type}</span>
 </td>
 
 <td  style="vertical-align:middle;text-align:right;white-space:nowrap;">
