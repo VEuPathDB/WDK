@@ -499,13 +499,20 @@ function openStrategy(stratId){
 		url: url,
 		dataType:"json",
 		data:"state=" + p_state,
+		beforeSend: function(){
+			$("body").block();
+		},
 		success: function(data){
+			$("body").unblock();
 			if(ErrorHandler("Open", data, null, null)){
 				updateStrategies(data);
+				cc = new Number($("#tab_strategy_results font v").text());
+				$("#tab_strategy_results font v").text(cc + 1);
 				if ($("#strategy_results").css('display') == 'none') showPanel('strategy_results');
 			}
 		},
 		error: function(data, msg, e){
+			$("body").unblock();
 			alert("ERROR \n "+ msg + "\n" + e
                                       + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
 		}
@@ -562,8 +569,9 @@ function closeStrategy(stratId, isBackId){
 		stratId = strat.frontId;
 	}
 	var cs = strat.checksum;
-	if(strat.subStratOf != null)
+	if(strat.subStratOf != null){
 		cs = getStrategy(strat.subStratOf).checksum;
+	}
 	var url = "closeStrategy.do?strategy=" + strat.backId+"&strategy_checksum="+cs;
 	$.ajax({
 		url: url,
@@ -575,6 +583,10 @@ function closeStrategy(stratId, isBackId){
 		success: function(data){
 			if(ErrorHandler("CloseStrategy", data, strat, null)){
 				updateStrategies(data);
+				if(strat.subStratOf == null){
+					cc = new Number($("#tab_strategy_results font v").text());
+					$("#tab_strategy_results font v").text(cc - 1);
+				}
 				if ($('#search_history').css('display') != 'none') {
 					update_hist = true;
 					updateHistory();
