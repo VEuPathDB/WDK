@@ -764,7 +764,7 @@ table.basket {
 	padding-left:0em;
 }
 
-span.subscriptCount {
+span.subscriptCount, font.subscriptCount {
 	color:#600000;   /*dark red, tested against color blindness */
 	display:inline;
 	font-size:12px;
