@@ -33,7 +33,7 @@
     <c:set var="type" value="${strategyEntry.key}"/>
     <c:set var="unsavedStratList" value="${strategyEntry.value}"/>
     <c:set var="savedStratList" value="${savedStrategiesMap[type]}" />
-
+	<c:set var="totalStratsCount" value="${fn:length(savedStratList) + fn:length(unsavedStratList)}"/>
     <c:if test="${fn:length(unsavedStratList) > 0 || fn:length(savedStratList) > 0}">
       <c:choose>
         <c:when test="${fn:length(unsavedStratList) > 0}">
@@ -52,7 +52,7 @@
       </c:if>
       <li>
         <a id="tab_${recTabName}" onclick="displayHist('${recTabName}')"
-           href="javascript:void(0)">${recDispName}&nbsp;Strategies</a>
+           href="javascript:void(0)">${recDispName}&nbsp;Strategies&nbsp;(${totalStratsCount})</a>
       </li>
     </c:if>
   </c:forEach>
