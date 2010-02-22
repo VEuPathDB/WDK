@@ -326,6 +326,7 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters){
                         } 
                 removeLoading(f_strategyId);
 				checkPageBasket();
+				$.cookie("refresh_results", "false", { path : '/' });
 		},
 		error : function(data, msg, e){
 			  alert("ERROR \n "+ msg + "\n" + e
@@ -584,10 +585,6 @@ function closeStrategy(stratId, isBackId){
 		success: function(data){
 			if(ErrorHandler("CloseStrategy", data, strat, null)){
 				updateStrategies(data);
-				if(strat.subStratOf == null){
-					cc = new Number($("#tab_strategy_results font v").text());
-					$("#tab_strategy_results font v").text(cc - 1);
-				}
 				if ($('#search_history').css('display') != 'none') {
 					update_hist = true;
 					updateHistory();
