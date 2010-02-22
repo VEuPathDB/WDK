@@ -94,8 +94,8 @@ function updateBasket(ele, type, pk, pid,recordType) {
 	var count = 0;
 	if(type == "single"){
 		var o = new Object();
-		var pkDiv = $("#" + currentDiv + " #Results_Pane div.primaryKey span:contains(" + pk + ")");
-		$("span", pkDiv.parent()).each(function(){
+		var pkDiv = $("#" + currentDiv + " #Results_Pane div.primaryKey[fvalue='" + pk + "']");
+		$("span", pkDiv).each(function(){
 			o[$(this).attr("key")] = $(this).text();
 		});
 		a.push(o);
@@ -155,13 +155,15 @@ function updateBasket(ele, type, pk, pid,recordType) {
 				updateBasketCount(data.count);
 				checkPageBasket();
 				if (currentDiv == 'basket') {
+					//Using cookie to determine that the results need to be updated when the 'Opened' tab is selected
+					$.cookie("refresh_results", "true", { path : '/' });
 					// If any results are showing (and we're not already on the results page) update them.
-					var currentStep = $("#Strategies div.selected");
+					/*var currentStep = $("#Strategies div.selected");
 					if (currentStep.length == 0) currentStep = $("#Strategies div.selectedarrow");
 					if (currentStep.length == 0) currentStep = $("#Strategies div.selectedtransform");
 					var active_link = $("a.results_link", currentStep);
 					if(active_link.length == 0) active_link = $(".resultCount a.operation", currentStep);
-					active_link.click();
+					active_link.click();*/
 				}
 			},
 			error: function(){
