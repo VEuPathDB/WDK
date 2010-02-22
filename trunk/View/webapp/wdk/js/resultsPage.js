@@ -159,7 +159,9 @@ function updateBasket(ele, type, pk, pid,recordType) {
 					var currentStep = $("#Strategies div.selected");
 					if (currentStep.length == 0) currentStep = $("#Strategies div.selectedarrow");
 					if (currentStep.length == 0) currentStep = $("#Strategies div.selectedtransform");
-					$("a.results_link", currentStep).click();
+					var active_link = $("a.results_link", currentStep);
+					if(active_link.length == 0) active_link = $(".resultCount a.operation", currentStep);
+					active_link.click();
 				}
 			},
 			error: function(){
@@ -204,6 +206,7 @@ function GetResultsPage(url, update, ignoreFilters){
 	var s = parseUrlUtil("strategy", url);
 	var st = parseUrlUtil("step", url);
 	var strat = getStrategyFromBackId(s[0]);
+	var currentDiv = getCurrentBasketWrapper();
 	var step = null;
 	if(strat == false){
 		strat = new Object();
@@ -214,7 +217,8 @@ function GetResultsPage(url, update, ignoreFilters){
 	}else
 		step = strat.getStep(st[0], false);
 	url = url + "&resultsOnly=true";
-	if (update){$("#strategy_results > div.Workspace").block();}
+//	if (update){$("#strategy_results > div.Workspace").block();}
+	if (update){$("#" + currentDiv + " > div.Workspace").block();}
 	$.ajax({
 		url: url,
 		dataType: "html",
@@ -233,7 +237,7 @@ function GetResultsPage(url, update, ignoreFilters){
 				catch(err) {
 					//Do nothing;
 				}
-				$("#strategy_results > div.Workspace").unblock();
+				$("#" + currentDiv + " > div.Workspace").unblock();
 			}
 			if(strat != false) removeLoading(strat.frontId);
 		},
@@ -244,13 +248,15 @@ function GetResultsPage(url, update, ignoreFilters){
 	});
 }
 
-function ResultsToGrid(data, ignoreFilters) {
+function ResultsToGrid(data, ignoreFilters, div) {
 	var oldFilters;
+	var currentDiv = div;
+	if(currentDiv == undefined) currentDiv = getCurrentBasketWrapper();
 	if (ignoreFilters) {
 		oldFilters = $("#strategy_results > div.Workspace div.layout-detail div.filter-instance .link-url");
 	}
 
-	$("#strategy_results > div.Workspace").html(data);
+	$("#" + currentDiv + " > div.Workspace").html(data);
 	
 	// invoke filters
         var wdkFilter = new WdkFilter();
@@ -273,10 +279,10 @@ function ResultsToGrid(data, ignoreFilters) {
 	}
 
 	// create multi select control for adding columns
-	createMultiSelectAttributes($("#strategy_results #addAttributes"));
+	createMultiSelectAttributes($("#" + currentDiv + " #addAttributes"));
 
 	// convert results table to drag-and-drop flex grid
-	createFlexigridFromTable($("#strategy_results #Results_Table"));
+	createFlexigridFromTable($("#" + currentDiv + " #Results_Table"));
 
 	// check the basket for the page if needed
 	checkPageBasket();
