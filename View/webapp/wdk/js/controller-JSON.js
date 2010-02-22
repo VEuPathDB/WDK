@@ -104,7 +104,7 @@ function updateStrategies(data, ignoreFilters){
 		}
 	  }
 	}
-	showStrategies(data.currentView, ignoreFilters);
+	showStrategies(data.currentView, ignoreFilters, data.state.length);
 }
 
 function removeClosedStrategies(){
@@ -156,7 +156,8 @@ function removeSubStrategies(ord1, ord2){
 	}
 }
 
-function showStrategies(view, ignoreFilters){
+function showStrategies(view, ignoreFilters, besc){
+	$("#tab_strategy_results font.subscriptCount v").text(besc);
 	var sC = 0;
 	for(s in strats){
 		if(s.indexOf(".") == -1)
@@ -289,10 +290,12 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters){
 	if(bool){
 		d.step = step.back_boolean_Id;
 	}
-	if (!pagerOffset) 
+	if (!pagerOffset) {
 		d.noskip = 1;
-	else 
+	}else{ 
+		d.pager = new Object();
 		d.pager.offset = pagerOffset;    
+	}
 	$.ajax({
 		url: url,
 		dataType: "html",
@@ -316,7 +319,7 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters){
 					$("#Strategies div#diagram_" + strategy.frontId + " div[id='step_" + step.frontId + "_sub']").addClass("selectedarrow");
 					init_view_step = step.back_step_Id;
 				}
-			    ResultsToGrid(data, ignoreFilters);
+			    ResultsToGrid(data, ignoreFilters, "strategy_results");
 			    $("span#text_strategy_number").html(strategy.JSON.name);
 			    $("span#text_step_number").html(step.frontId);
 			    $("span#text_strategy_number").parent().show();
@@ -506,8 +509,6 @@ function openStrategy(stratId){
 			$("body").unblock();
 			if(ErrorHandler("Open", data, null, null)){
 				updateStrategies(data);
-				cc = new Number($("#tab_strategy_results font v").text());
-				$("#tab_strategy_results font v").text(cc + 1);
 				if ($("#strategy_results").css('display') == 'none') showPanel('strategy_results');
 			}
 		},
