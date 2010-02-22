@@ -101,7 +101,6 @@ function updateBasket(ele, type, pk, pid,recordType) {
 		a.push(o);
 		da = $.json.serialize(a);
 		action = (i.attr("value") == '0') ? "add" : "remove";
-		count = 1;
 	}else if(type == "page"){
 		$("#" + currentDiv + " #Results_Pane div.primaryKey").each(function(){
 			var o = new Object();
@@ -112,14 +111,11 @@ function updateBasket(ele, type, pk, pid,recordType) {
 		});
 		action = (i.attr("value") == '0') ? "add" : "remove";
 		da = $.json.serialize(a);
-		count = a.length;
 	}else if(type == "clear"){
 		action = "clear";
-		count = null
 	}else{
 		da = type;
 		action = "add-all";//(i.attr("value") == '0') ? "add-all" : "remove-all";
-		count = new Number($("span#text_step_count").text());
 	}
 	
 	var d = "action="+action+"&type="+recordType+"&data="+da;
@@ -127,7 +123,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 			url: "processBasket.do",
 			type: "post",
 			data: d,
-			dataType: "html",
+			dataType: "json",
 			beforeSend: function(){
 				//$("body").block();
 			},
@@ -135,32 +131,28 @@ function updateBasket(ele, type, pk, pid,recordType) {
 				//$("body").unblock();
 				if(type == "single"){
 					if(action == "add") {
-						updateBasketCount(count);
 						i.attr("src","wdk/images/basket_color.png");
 						i.attr("value", "1");
 						i.attr("title","Click to remove this item from the basket.");
 					}else{
-						updateBasketCount(-1 * count);
 						i.attr("src","wdk/images/basket_gray.png");
 						i.attr("value", "0");
 						i.attr("title","Click to add this item to the basket.");
 					}
 				}else if(type == "clear"){
-					updateBasketCount(count);
 					showBasket();
 				}else{
 					if(action == "add-all" || action == "add") {
 						$("div#" + currentDiv + " div#Results_Div img.basket").attr("src","wdk/images/basket_color.png");
 						$("div#" + currentDiv + " div#Results_Div img.basket").attr("title","Click to remove this item from the basket.");
 						$("div#" + currentDiv + " div#Results_Div img.basket").attr("value", "1");
-						updateBasketCount(count);
 					}else{
 						$("div#" + currentDiv + " div#Results_Div img.basket").attr("src","wdk/images/basket_gray.png");
 						$("div#" + currentDiv + " div#Results_Div img.basket").attr("title","Click to add this item to the basket.");
 						$("div#" + currentDiv + " div#Results_Div img.basket").attr("value", "0");
-						updateBasketCount(-1*count)
 					}
 				}
+				updateBasketCount(data.count);
 				checkPageBasket();
 				if (currentDiv == 'basket') {
 					// If any results are showing (and we're not already on the results page) update them.
@@ -178,13 +170,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 }
 
 function updateBasketCount(c){
-	if(c == null){
-		$("#menu a#mybasket span.subscriptCount v").text(0)
-	}else{
-		c = new Number(c);
-		var n = new Number($("#menu a#mybasket span.subscriptCount v").text());
-		$("#menu a#mybasket span.subscriptCount v").text(n + c)
-	}
+		$("#menu a#mybasket span.subscriptCount v").text(c)
 }
 
 function checkPageBasket(){
