@@ -92,10 +92,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
             // get the assigned weight
             String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
-            boolean hasWeight = (strWeight != null && strWeight.length() > 0);
+            boolean hasWeight = (strWeight != null && strWeight.length() > 0 && !strWeight.equals("0"));
             int weight = hasWeight ? Integer.parseInt(strWeight) : 0;
-
-            logger.debug("process action weight: " + weight);
 
             // Are we revising or inserting a step?
             // changing filter is considered a revise
@@ -107,8 +105,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             boolean hasQuestion = (qFullName != null && qFullName.trim().length() > 0);
 
             logger.debug("isRevise: " + isRevise + "; isInsert: " + isInsert);
-            logger.debug("has question? " + hasQuestion);
-            logger.debug("qFullName: " + qFullName);
+            logger.debug("has question? " + hasQuestion + "; qFullName: " + qFullName);
+            logger.debug("has filter? " + hasFilter + "; filter: " + filterName);
+            logger.debug("has weight? " + hasWeight + "; weight: " + weight);
             // are we inserting an existing step?
             StepBean newStep;
             if (insertStratIdStr != null && insertStratIdStr.length() != 0) {
@@ -130,8 +129,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
                 if (isRevise) {
                     StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
-                    weight = (oldStep.getChildStep() == null) ? oldStep.getAssignedWeight()
-                            : oldStep.getChildStep().getAssignedWeight();
+                    if (!hasWeight)
+                        weight = (oldStep.getChildStep() == null) ? oldStep.getAssignedWeight()
+                                : oldStep.getChildStep().getAssignedWeight();
                     if (!hasQuestion) wdkQuestion = oldStep.getQuestion();
                 }
                 if (wdkQuestion == null) {
@@ -183,7 +183,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             }
 
             String boolExp = null;
-            if (isRevise && (hasFilter || hasWeight)) {
+            if (isRevise && (hasFilter || (hasWeight && !hasQuestion))) {
                 // get the original step
                 int originalStepId = Integer.parseInt(reviseStep);
                 StepBean targetStep = strategy.getStepById(originalStepId);
