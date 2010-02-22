@@ -330,7 +330,7 @@
         <c:when test="${j == 0}">
 	  <%-- display a link to record page --%>
 	<!-- store the primary key pairs here -->
-      <div class="primaryKey" style="display:none;">
+      <div class="primaryKey" fvalue="${fieldVal}" style="display:none;">
         <c:forEach items="${pkValues}" var="pkValue">
           <span key="${pkValue.key}">${pkValue.value}</span>
         </c:forEach>
