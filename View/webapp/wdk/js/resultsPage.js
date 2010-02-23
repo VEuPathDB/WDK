@@ -35,8 +35,6 @@ function moveAttr(col_ix, table) {
 	}
 }
 
-// FOLLOWING TAKEN FROM OLD CUSTOMSUMMARY
-
 function addAttr(attrSelector) {
 	var attributes = attrSelector.val();
 
@@ -233,12 +231,6 @@ function GetResultsPage(url, update, ignoreFilters){
 				$("span#text_strategy_number").html(strat.JSON.name);
 				$("span#text_step_number").html(step.frontId);
 				$("span#text_strategy_number").parent().show();
-				try {
-					customResultsPage();
-				}
-				catch(err) {
-					//Do nothing;
-				}
 				$("#" + currentDiv + " > div.Workspace").unblock();
 			}
 			if(strat != false) removeLoading(strat.frontId);
@@ -256,6 +248,13 @@ function ResultsToGrid(data, ignoreFilters, div) {
 	if(currentDiv == undefined) currentDiv = getCurrentBasketWrapper();
 	if (ignoreFilters) {
 		oldFilters = $("#strategy_results > div.Workspace div.layout-detail div.filter-instance .link-url");
+	}
+
+	try {
+		customResultsPage();
+	}
+	catch(err) {
+		//Do nothing;
 	}
 
 	$("#" + currentDiv + " > div.Workspace").html(data);
@@ -335,6 +334,7 @@ function gotoPage(pager_id) {
     gotoPageUrl = gotoPageUrl.replace(/\&pageSize=\d+/, "");
     gotoPageUrl += "&pager.offset=" + pageOffset;
     gotoPageUrl += "&pageSize=" + pageSize;
+    $("div.advanced-paging").hide();
     GetResultsPage(gotoPageUrl, true, true);
 }
 
