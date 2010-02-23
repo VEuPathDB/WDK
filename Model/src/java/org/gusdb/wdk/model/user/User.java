@@ -908,7 +908,7 @@ public class User /* implements Serializable */{
     public void setItemsPerPage(int itemsPerPage) throws WdkUserException,
             WdkModelException {
         if (itemsPerPage <= 0) itemsPerPage = 20;
-        else if (itemsPerPage > 100) itemsPerPage = 100;
+        else if (itemsPerPage > 1000) itemsPerPage = 1000;
         setGlobalPreference(User.PREF_ITEMS_PER_PAGE,
                 Integer.toString(itemsPerPage));
         save();
