@@ -70,90 +70,98 @@ public class ProcessLoginAction extends Action {
         }
 
         if (!guest.isGuest()) { // user has been logged in, redirect back
-            response.sendRedirect(response.encodeRedirectURL(request.getRequestURL().toString()));
-        }
-
-        // get user's input
-        String email = request.getParameter(CConstants.WDK_EMAIL_KEY);
-        String password = request.getParameter(CConstants.WDK_PASSWORD_KEY);
-        boolean remember = request.getParameter("remember") != null
-                && request.getParameter("remember").equals("on");
-
-        // authenticate
-        try {
-            UserBean user = factory.login(guest, email, password);
-            // Create & send cookie
-            Cookie loginCookie = new Cookie(CConstants.WDK_LOGIN_COOKIE_KEY,
-                    URLEncoder.encode(user.getEmail()));
-
-            if (remember) {
-                loginCookie.setMaxAge(java.lang.Integer.MAX_VALUE / 256);
-                loginCookie.setValue(loginCookie.getValue() + "-remember");
-            } else {
-                loginCookie.setMaxAge(-1);
-            }
-
-            String secretValue = wdkModel.getSecretKey();
-            secretValue = factory.md5(loginCookie.getValue() + secretValue);
-
-            loginCookie.setValue(loginCookie.getValue() + "-"
-                    + secretValue);
-
-            // make sure the cookie is good for whole site, not just webapp
-            loginCookie.setPath("/");
-
-            response.addCookie(loginCookie);
-
-            request.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
-            request.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
 
             if (originUrl != null) {
                 forwardUrl = originUrl;
                 request.getSession().setAttribute(
-                        CConstants.WDK_ORIGIN_URL_KEY, null);
+			CConstants.WDK_ORIGIN_URL_KEY, null);
             } else {
                 forwardUrl = referer;
             }
-
-            forward.setRedirect(true);
-            // history ids don't show up in url anymore, so this isn't needed
-            // login succeeded, redirect to "show_history page if history_id
-            // contained in the url. since the history id is invalid/changed
-            // after login
-            // if (forwardUrl.indexOf(CConstants.WDK_HISTORY_ID_KEY) >= 0) {
-            // forward =
-            // mapping.findForward(CConstants.SHOW_QUERY_HISTORY_MAPKEY);
-            // return forward;
-            // }
-        } catch (WdkUserException ex) {
-            ex.printStackTrace();
-            // user authentication failed, set the error message
-            request.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY,
-                    ex.getMessage());
-            // use session so attributes survive the redirect
-            request.getSession().setAttribute(CConstants.WDK_REFERER_URL_KEY,
-                    referer);
-            request.getSession().setAttribute(CConstants.WDK_ORIGIN_URL_KEY,
-                    request.getParameter(CConstants.WDK_ORIGIN_URL_KEY));
-
-	    ServletContext svltCtx = getServlet().getServletContext();
-	    String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
-		+ File.separator + CConstants.WDK_PAGES_DIR;
-	    String customViewFile = customViewDir + File.separator
-                + CConstants.WDK_LOGIN_PAGE;
-
-            ActionForward loginPage =  null;
-	    if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
-		loginPage = new ActionForward(customViewFile);
-		loginPage.setRedirect(false);
-	    } else {
-		loginPage = mapping.findForward(CConstants.SHOW_LOGIN_MAPKEY);
-	    }
-            forwardUrl = loginPage.getPath();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw ex;
         }
+	else {
+	    // get user's input
+	    String email = request.getParameter(CConstants.WDK_EMAIL_KEY);
+	    String password = request.getParameter(CConstants.WDK_PASSWORD_KEY);
+	    boolean remember = request.getParameter("remember") != null
+                && request.getParameter("remember").equals("on");
+
+	    // authenticate
+	    try {
+		UserBean user = factory.login(guest, email, password);
+		// Create & send cookie
+		Cookie loginCookie = new Cookie(CConstants.WDK_LOGIN_COOKIE_KEY,
+						URLEncoder.encode(user.getEmail()));
+
+		if (remember) {
+		    loginCookie.setMaxAge(java.lang.Integer.MAX_VALUE / 256);
+		    loginCookie.setValue(loginCookie.getValue() + "-remember");
+		} else {
+		    loginCookie.setMaxAge(-1);
+		}
+
+		String secretValue = wdkModel.getSecretKey();
+		secretValue = factory.md5(loginCookie.getValue() + secretValue);
+
+		loginCookie.setValue(loginCookie.getValue() + "-"
+				     + secretValue);
+
+		// make sure the cookie is good for whole site, not just webapp
+		loginCookie.setPath("/");
+
+		response.addCookie(loginCookie);
+
+		request.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
+		request.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
+
+		if (originUrl != null) {
+		    forwardUrl = originUrl;
+		    request.getSession().setAttribute(
+						      CConstants.WDK_ORIGIN_URL_KEY, null);
+		} else {
+		    forwardUrl = referer;
+		}
+
+		forward.setRedirect(true);
+		// history ids don't show up in url anymore, so this isn't needed
+		// login succeeded, redirect to "show_history page if history_id
+		// contained in the url. since the history id is invalid/changed
+		// after login
+		// if (forwardUrl.indexOf(CConstants.WDK_HISTORY_ID_KEY) >= 0) {
+		// forward =
+		// mapping.findForward(CConstants.SHOW_QUERY_HISTORY_MAPKEY);
+		// return forward;
+		// }
+	    } catch (WdkUserException ex) {
+		ex.printStackTrace();
+		// user authentication failed, set the error message
+		request.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY,
+						  ex.getMessage());
+		// use session so attributes survive the redirect
+		request.getSession().setAttribute(CConstants.WDK_REFERER_URL_KEY,
+						  referer);
+		request.getSession().setAttribute(CConstants.WDK_ORIGIN_URL_KEY,
+						  request.getParameter(CConstants.WDK_ORIGIN_URL_KEY));
+
+		ServletContext svltCtx = getServlet().getServletContext();
+		String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
+		    + File.separator + CConstants.WDK_PAGES_DIR;
+		String customViewFile = customViewDir + File.separator
+		    + CConstants.WDK_LOGIN_PAGE;
+
+		ActionForward loginPage =  null;
+		if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
+		    loginPage = new ActionForward(customViewFile);
+		    loginPage.setRedirect(false);
+		} else {
+		    loginPage = mapping.findForward(CConstants.SHOW_LOGIN_MAPKEY);
+		}
+		forwardUrl = loginPage.getPath();
+	    } catch (Exception ex) {
+		ex.printStackTrace();
+		throw ex;
+	    }
+	}
         forward.setPath(forwardUrl);
         return forward;
     }
