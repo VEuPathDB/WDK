@@ -449,10 +449,17 @@ public class ShowSummaryAction extends ShowQuestionAction {
         AnswerValueBean answerValue = step.getAnswerValue();
         int start = getPageStart(request);
         int pageSize = getPageSize(request, step.getQuestion(), user);
-        int end = start + pageSize - 1;
-        answerValue.setPageIndex(start, end);
 
         int totalSize = answerValue.getResultSize();
+
+	if (start > totalSize) {
+	    int pages = totalSize / pageSize;
+	    start = (pages * pageSize) + 1;
+	}
+
+        int end = start + pageSize - 1;
+
+        answerValue.setPageIndex(start, end);
 
         List<String> editedParamNames = new ArrayList<String>();
         for (Enumeration<?> en = request.getParameterNames(); en.hasMoreElements();) {
@@ -463,6 +470,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 editedParamNames.add(key);
             }
         }
+
         request.setAttribute("wdk_paging_total", new Integer(totalSize));
         request.setAttribute("wdk_paging_pageSize", new Integer(pageSize));
         request.setAttribute("wdk_paging_start", new Integer(start));
