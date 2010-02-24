@@ -18,9 +18,14 @@
 		<c:set var="image" value="${wdkRecord.inBasket ? 'color' : 'gray'}" />
 		<c:set var="imagevalue" value="${wdkRecord.inBasket ? '1' : '0'}"/>
 		<c:set var="imagetitle" value="${wdkRecord.inBasket ? 'Click to remove this item from the basket.' : 'Click to add this item to the basket.'}"/>
-        <a class="basket" href="javascript:void(0)" onClick="updateBasket(this, 'single', '${id}', '${pid}', '${wdkRecord.recordClass.fullName}')">
+        <a class="basket" href="javascript:void(0)" onClick="updateBasket(this, 'recordPage', '${id}', '${pid}', '${wdkRecord.recordClass.fullName}')">
 			<img src="<c:url value='/wdk/images/basket_${image}.png' />" width='${imagesize}' height='${imagesize}' value="${imagevalue}" title="${imagetitle}"/>
 		</a>
 	</c:otherwise>
 </c:choose>
+<div class="primaryKey" style="display:none">
+	<c:forEach items="${vals}" var="key">
+		<span key="${key.key}">${key.value}</span>
+	</c:forEach>
+</div>
 		
