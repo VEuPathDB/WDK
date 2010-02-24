@@ -101,6 +101,7 @@ public class RecordClass extends WdkModelBase implements
     private String name;
     private String fullName;
     private String displayName;
+    private String shortDisplayName;
     private String attributeOrdering;
     private String type;
 
@@ -1106,5 +1107,19 @@ public class RecordClass extends WdkModelBase implements
         Question[] array = new Question[list.size()];
         list.toArray(array);
         return array;
+    }
+
+    /**
+     * @return the shortDisplayName
+     */
+    public String getShortDisplayName() {
+        return (shortDisplayName != null) ? shortDisplayName : getDisplayName();
+    }
+
+    /**
+     * @param shortDisplayName the shortDisplayName to set
+     */
+    public void setShortDisplayName(String shortDisplayName) {
+        this.shortDisplayName = shortDisplayName;
     }
 }
