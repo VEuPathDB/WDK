@@ -141,7 +141,7 @@ function booleanStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 		"			</a>"+
 		"			<div class='crumb_details'></div>"+
 		"			<h6 class='resultCount'>"+
-		"				<a title='CLICK to show these results in the area below.' class='operation' onclick='" + bool_link + "' href='javascript:void(0)'>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.displayType, jsonstep.results) + "</a>"+
+		"				<a title='CLICK to show these results in the area below.' class='operation' onclick='" + bool_link + "' href='javascript:void(0)'>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.shortDisplayType, jsonstep.results) + "</a>"+
 		"			</h6>" + filterImg;
 		if(!modelstep.isLast){
 			if(modelstep.nextStepType == "transform"){
@@ -186,7 +186,7 @@ function booleanStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 		"			<span id='fullStepName' style='display: none;'>" + fullName + "</span>"+
 		"			<div class='crumb_details'></div>"+
 		"		</h3>"+
-		"		<h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + childStp.results + "&nbsp;" + getDisplayType(childStp.displayType, childStp.results) + "</a></h6>"+
+		"		<h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + childStp.results + "&nbsp;" + getDisplayType(childStp.shortDisplayType, childStp.results) + "</a></h6>"+
 		childfilterImg +
 		"		<ul>"+
 		"			<li><img class='downarrow' src='wdk/images/arrow_chain_down2.png' alt='equals'></li>"+
@@ -248,7 +248,7 @@ function singleStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 		"			<span id='fullStepName' style='display: none;'>" + fullName + "</span>"+
 		"			<div class='crumb_details'></div>"+
 		"		</h3>"+
-		"		<h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.displayType,jsonstep.results) + "</a></h6>"+
+		"		<h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.shortDisplayType,jsonstep.results) + "</a></h6>"+
 		 filterImg;
 	if(!modelstep.isLast){
 		inner = inner + 
@@ -412,7 +412,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 	    "		<div class='crumb_menu'>"+ rename_step + view_step + edit_step + expand_step + insert_step + customMenu + delete_step + close_button +
 		"		</div>"+ name +
 		"		<table></table><hr class='clear' />" + filteredName +
-		"		<p><b>Results:&nbsp;</b>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.displayType,jsonstep.results);// + "&nbsp;&nbsp;|&nbsp;&nbsp;<a href='downloadStep.do?step_id=" + modelstep.back_step_Id + "'>Download</a>";
+		"		<p><b>Results:&nbsp;</b>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.shortDisplayType,jsonstep.results);// + "&nbsp;&nbsp;|&nbsp;&nbsp;<a href='downloadStep.do?step_id=" + modelstep.back_step_Id + "'>Download</a>";
        
     inner += "<hr class='clear' />" + createWeightSection(jsonstep,modelstep,sid);
 
