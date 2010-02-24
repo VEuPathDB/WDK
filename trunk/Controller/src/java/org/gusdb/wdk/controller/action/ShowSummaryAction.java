@@ -253,10 +253,15 @@ public class ShowSummaryAction extends ShowQuestionAction {
             
             // get the assigned weight
             String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
+            boolean hasWeight = (strWeight != null && strWeight.length() > 0);
             int weight = 0;
-            if (strWeight != null && strWeight.matches("^\\d+$"))
+            if (hasWeight) {
+                if (!strWeight.matches("[\\-\\+]?\\d+"))
+                    throw new WdkUserException("Invalid weight value: '"
+                         + strWeight + "'. Only integer numbers are allowed.");
                 weight = Integer.parseInt(strWeight);
-            
+            }
+
             // make the answer
             String filterName = request.getParameter("filter");
             step = summaryPaging(request, wdkQuestion, params, filterName,
