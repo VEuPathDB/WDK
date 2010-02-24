@@ -169,4 +169,21 @@ public class RecordClassBean {
     public void setChangeType(boolean changeType) {
         this.changeType = changeType;
     }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.RecordClass#getDisplayName()
+     */
+    public String getDisplayName() {
+        return recordClass.getDisplayName();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.RecordClass#getShortDisplayName()
+     */
+    public String getShortDisplayName() {
+        return recordClass.getShortDisplayName();
+    }
+    
 }
