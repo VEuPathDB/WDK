@@ -88,11 +88,17 @@ public class ProcessQuestionAction extends ShowQuestionAction {
             }
 
             // get the assigned weight
+            // get the assigned weight
             String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
-            if (strWeight != null && strWeight.length() > 0) {
-                int weight = Integer.parseInt(strWeight);
-                url.append("&" + CConstants.WDK_ASSIGNED_WEIGHT_KEY + "=" + weight);
+            boolean hasWeight = (strWeight != null && strWeight.length() > 0);
+            int weight = 0;
+            if (hasWeight) {
+                if (!strWeight.matches("[\\-\\+]?\\d+"))
+                    throw new WdkUserException("Invalid weight value: '" 
+                         + strWeight + "'. Only integer numbers are allowed.");
+                weight = Integer.parseInt(strWeight);
             }
+            url.append("&" + CConstants.WDK_ASSIGNED_WEIGHT_KEY + "=" + weight);
 
             /*
              * Charles Treatman 4/23/09 Add code here to set the

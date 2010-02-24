@@ -92,8 +92,14 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
             // get the assigned weight
             String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
-            boolean hasWeight = (strWeight != null && strWeight.length() > 0 && !strWeight.equals("0"));
-            int weight = hasWeight ? Integer.parseInt(strWeight) : 0;
+            boolean hasWeight = (strWeight != null && strWeight.length() > 0);
+            int weight = 0;
+            if (hasWeight) {
+                if (!strWeight.matches("[\\-\\+]?\\d+"))
+                    throw new WdkUserException("Invalid weight value: '" 
+                            + strWeight + "'. Only integer numbers are allowed.");
+                weight = Integer.parseInt(strWeight);
+            }
 
             // Are we revising or inserting a step?
             // changing filter is considered a revise
@@ -129,10 +135,6 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
                 if (isRevise) {
                     StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
-                    if (!hasWeight)
-                        weight = (oldStep.getChildStep() == null) ? oldStep.getAssignedWeight()
-                                : oldStep.getChildStep().getAssignedWeight();
-                    if (!hasQuestion) wdkQuestion = oldStep.getQuestion();
                 }
                 if (wdkQuestion == null) {
                     if (!hasQuestion)
