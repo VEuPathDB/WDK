@@ -250,7 +250,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             // get the hidden flag
             String strHidden = request.getParameter(PARAM_HIDDEN_STEP);
             boolean hidden = "true".equalsIgnoreCase(strHidden);
-            
+
             // get the assigned weight
             String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
             boolean hasWeight = (strWeight != null && strWeight.length() > 0);
@@ -258,7 +258,11 @@ public class ShowSummaryAction extends ShowQuestionAction {
             if (hasWeight) {
                 if (!strWeight.matches("[\\-\\+]?\\d+"))
                     throw new WdkUserException("Invalid weight value: '"
-                         + strWeight + "'. Only integer numbers are allowed.");
+                            + strWeight
+                            + "'. Only integer numbers are allowed.");
+                if (strWeight.length() > 9)
+                    throw new WdkUserException("Weight number is too big: "
+                            + strWeight);
                 weight = Integer.parseInt(strWeight);
             }
 
@@ -457,10 +461,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         int totalSize = answerValue.getResultSize();
 
-	if (start > totalSize) {
-	    int pages = totalSize / pageSize;
-	    start = (pages * pageSize) + 1;
-	}
+        if (start > totalSize) {
+            int pages = totalSize / pageSize;
+            start = (pages * pageSize) + 1;
+        }
 
         int end = start + pageSize - 1;
 

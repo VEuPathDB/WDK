@@ -96,6 +96,9 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                 if (!strWeight.matches("[\\-\\+]?\\d+"))
                     throw new WdkUserException("Invalid weight value: '" 
                          + strWeight + "'. Only integer numbers are allowed.");
+                if (strWeight.length() > 9)
+                    throw new WdkUserException("Weight number is too big: "
+                            + strWeight);
                 weight = Integer.parseInt(strWeight);
             }
             url.append("&" + CConstants.WDK_ASSIGNED_WEIGHT_KEY + "=" + weight);
