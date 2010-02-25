@@ -383,6 +383,7 @@ public class JSONReporter extends Reporter {
                 writer.print(content);
                 writer.flush();
             }
+			c++;
         }
         if (tables.size() > 0) writer.print("]");
         if (tableCache != null && needUpdate) {
