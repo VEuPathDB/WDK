@@ -113,14 +113,14 @@ function ResultsToGrid(data, ignoreFilters, div) {
 		oldFilters = $("#strategy_results > div.Workspace div.layout-detail div.filter-instance .link-url");
 	}
 
+	$("#" + currentDiv + " > div.Workspace").html(data);
+
 	try {
 		customResultsPage();
 	}
 	catch(err) {
 		//Do nothing;
 	}
-
-	$("#" + currentDiv + " > div.Workspace").html(data);
 	
 	// invoke filters
         var wdkFilter = new WdkFilter();
