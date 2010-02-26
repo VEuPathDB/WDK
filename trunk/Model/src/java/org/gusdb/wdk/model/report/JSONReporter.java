@@ -334,8 +334,8 @@ public class JSONReporter extends Reporter {
             sb.append("{\"name\":\"" + table.getDisplayName() + "\",\"rows\":[");
             int tableSize = 0;
             for (Map<String, AttributeValue> row : tableValue) {
+				if (tableSize > 0) sb.append(",");
                 sb.append("{\"fields\":[");
-                if (tableSize > 0) sb.append(",");
                 int f = 0;
                 for (String fieldName : row.keySet()) {
                     if (f > 0) sb.append(",");
