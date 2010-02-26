@@ -455,7 +455,7 @@ function createParameters(params){
 			$(prompt).addClass("medium").css({
 				"text-align":"right",
 				"vertical-align":"top",
-                                "white-space" : "nowrap",
+                		"white-space" : "nowrap"
 			});
 			$(prompt).html("<b><i>" + this.prompt + "</i></b>");
 			$(space).addClass("medium").attr("valign","top");
