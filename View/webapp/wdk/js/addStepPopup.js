@@ -29,11 +29,14 @@ function showPanel(panel) {
 	$("#tab_" + panel).parent().attr("id", "selected");
 	$("#" + panel).css({'position':'relative','left':'auto','display':'block'});
 	if (panel == 'strategy_results') {
-		if(getCurrentTabCookie(false) == 'basket' && current_Front_Strategy_Id != null){
-			var stgy = getStrategy(current_Front_Strategy_Id);
-			//var stgy = getStrategyFromBackId(init_view_strat);
-			var stp = stgy.getStep(init_view_step.split(".")[0], false);
-			NewResults(stgy.frontId, stp.frontId, stp.isboolean);
+		if($.cookie("refresh_results") == "true"){
+			var currentStep = $("#Strategies div.selected");
+			if (currentStep.length == 0) currentStep = $("#Strategies div.selectedarrow");
+			if (currentStep.length == 0) currentStep = $("#Strategies div.selectedtransform");
+			var active_link = $("a.results_link", currentStep);
+			if(active_link.length == 0) active_link = $(".resultCount a.operation", currentStep);
+			active_link.click();
+			$.cookie("refresh_results", "false", { path : '/' });
 		}
 		$("body > #query_form").show();
 		$("body > .crumb_details").show();

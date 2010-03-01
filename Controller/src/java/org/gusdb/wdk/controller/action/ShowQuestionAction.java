@@ -201,21 +201,23 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                             paramValues);
                 }
             } else if (param instanceof AnswerParamBean) {
-                AnswerParamBean answerParam = (AnswerParamBean) param;
-                StepBean[] steps = answerParam.getSteps(user);
-                String[] terms = new String[steps.length];
-                String[] labels = new String[steps.length];
-                for (int idx = 0; idx < steps.length; idx++) {
-                    StepBean step = steps[idx];
-                    terms[idx] = Integer.toString(step.getStepId());
-                    labels[idx] = "#" + step.getStepId() + " - "
-                            + step.getCustomName();
-                }
-                qForm.setMyLabels(paramName, getLengthBoundedLabels(labels));
-                qForm.setMyValues(paramName, terms);
+                if (paramValues == null) {
+                    AnswerParamBean answerParam = (AnswerParamBean) param;
+                    StepBean[] steps = answerParam.getSteps(user);
+                    String[] terms = new String[steps.length];
+                    String[] labels = new String[steps.length];
+                    for (int idx = 0; idx < steps.length; idx++) {
+                        StepBean step = steps[idx];
+                        terms[idx] = Integer.toString(step.getStepId());
+                        labels[idx] = "#" + step.getStepId() + " - "
+                                + step.getCustomName();
+                    }
+                    qForm.setMyLabels(paramName, getLengthBoundedLabels(labels));
+                    qForm.setMyValues(paramName, terms);
 
-                // if no step is assigned, use the first step
-                if (paramValues == null) paramValues = terms[0];
+                    // if no step is assigned, use the first step
+                    paramValues = terms[0];
+                }
             } else if (param instanceof DatasetParamBean) {
                 DatasetParamBean datasetParam = (DatasetParamBean) param;
 

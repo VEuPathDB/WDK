@@ -101,6 +101,7 @@ public class RecordClass extends WdkModelBase implements
     private String name;
     private String fullName;
     private String displayName;
+    private String shortDisplayName;
     private String attributeOrdering;
     private String type;
 
@@ -285,9 +286,10 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public TableField[] getTableFields() {
-        TableField[] tableFields = new TableField[tableFieldsMap.size()];
-        tableFieldsMap.values().toArray(tableFields);
-        return tableFields;
+        Map<String, TableField> tables = getTableFieldMap();
+        TableField[] array = new TableField[tables.size()];
+        tables.values().toArray(array);
+        return array;
     }
 
     public Map<String, AttributeField> getAttributeFieldMap() {
@@ -310,9 +312,10 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public AttributeField[] getAttributeFields() {
-        AttributeField[] attributeFields = new AttributeField[attributeFieldsMap.size()];
-        attributeFieldsMap.values().toArray(attributeFields);
-        return attributeFields;
+        Map<String, AttributeField> attributes = getAttributeFieldMap();
+        AttributeField[] array = new AttributeField[attributes.size()];
+        attributes.values().toArray(array);
+        return array;
     }
 
     public Field[] getFields() {
@@ -1104,5 +1107,19 @@ public class RecordClass extends WdkModelBase implements
         Question[] array = new Question[list.size()];
         list.toArray(array);
         return array;
+    }
+
+    /**
+     * @return the shortDisplayName
+     */
+    public String getShortDisplayName() {
+        return (shortDisplayName != null) ? shortDisplayName : getDisplayName();
+    }
+
+    /**
+     * @param shortDisplayName the shortDisplayName to set
+     */
+    public void setShortDisplayName(String shortDisplayName) {
+        this.shortDisplayName = shortDisplayName;
     }
 }

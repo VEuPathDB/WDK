@@ -15,6 +15,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -66,7 +67,7 @@ public class ProcessSummaryAction extends Action {
         QuestionBean question = wdkModel.getQuestion(questionName);
 
         // get summary checksum, if have
-        String summaryChecksum = null; //request.getParameter(CConstants.WDK_SUMMARY_KEY);
+        String summaryChecksum = null; // request.getParameter(CConstants.WDK_SUMMARY_KEY);
         if (summaryChecksum != null && summaryChecksum.length() > 0) {
             // apply the current summary to the question first, then do other
             // command
@@ -96,7 +97,7 @@ public class ProcessSummaryAction extends Action {
                 String sortingParam = CConstants.WDK_SORTING_KEY + "="
                         + checksum;
                 queryString = queryString.replaceAll("\\b"
-                            + CConstants.WDK_SORTING_KEY + "=[^&]*", "");
+                        + CConstants.WDK_SORTING_KEY + "=[^&]*", "");
                 queryString += "&" + sortingParam;
             } else { // summary modification
                 if (command.equalsIgnoreCase("reset")) {
@@ -107,22 +108,27 @@ public class ProcessSummaryAction extends Action {
                 } else {
                     String[] summary = wdkUser.getSummaryAttributes(questionName);
                     List<String> summaryList = new ArrayList<String>();
-                        for (String attribute : summary) {
-                            summaryList.add(attribute);
-                        }
+                    for (String attribute : summary) {
+                        summaryList.add(attribute);
+                    }
 
                     String[] attributeNames = request.getParameterValues(CConstants.WDK_SUMMARY_ATTRIBUTE_KEY);
-		    if (attributeNames == null) attributeNames = new String[0];
+                    if (attributeNames == null) attributeNames = new String[0];
 
                     if (command.equalsIgnoreCase("add")) {
-			for (String attributeName : attributeNames) {
-			    if (!summaryList.contains(attributeName))
-				summaryList.add(attributeName);
-			}
+                        for (String attributeName : attributeNames) {
+                            if (!summaryList.contains(attributeName))
+                                summaryList.add(attributeName);
+                        }
                     } else if (command.equalsIgnoreCase("remove")) {
-			for (String attributeName : attributeNames) {
-			    summaryList.remove(attributeName);
-			}
+                        boolean removeWeight = false;
+                        for (String attributeName : attributeNames) {
+                            summaryList.remove(attributeName);
+                            if (attributeName.equals(Utilities.COLUMN_WEIGHT))
+                                removeWeight = true;
+                        }
+                        // reset the used weight column.
+                        if (removeWeight)wdkUser.setUsedWeight(false);
                     } else if (command.equalsIgnoreCase("arrange")) {
                         // Get the attribute that will be to the left of
                         // attributeName after attributeName is moved
@@ -131,11 +137,11 @@ public class ProcessSummaryAction extends Action {
                         // attributeName the first element.
                         // Otherwise, make it the first element AFTER
                         // attributeToLeft
-			for (String attributeName : attributeNames) {
-			    summaryList.remove(attributeName);
-			    int toIndex = summaryList.indexOf(attributeToLeft) + 1;
-			    summaryList.add(toIndex, attributeName);
-			}
+                        for (String attributeName : attributeNames) {
+                            summaryList.remove(attributeName);
+                            int toIndex = summaryList.indexOf(attributeToLeft) + 1;
+                            summaryList.add(toIndex, attributeName);
+                        }
                     } else {
                         throw new WdkModelException("Unknown command: "
                                 + command);
@@ -149,7 +155,7 @@ public class ProcessSummaryAction extends Action {
                     String summaryParam = CConstants.WDK_SUMMARY_KEY + "="
                             + checksum;
                     queryString = queryString.replaceAll("\\b"
-                                + CConstants.WDK_SUMMARY_KEY + "=[^&]*", "");
+                            + CConstants.WDK_SUMMARY_KEY + "=[^&]*", "");
                     queryString += "&" + summaryParam;
                 }
             }
@@ -167,7 +173,6 @@ public class ProcessSummaryAction extends Action {
         queryString = queryString.replaceAll("&"
                 + CConstants.WDK_SUMMARY_SORTING_ORDER_KEY + "=[^&]*", "");
 
-
         String strBasket = request.getParameter("from_basket");
         boolean fromBasket = (strBasket != null && strBasket.equals("true"));
         logger.debug("to basket: " + fromBasket);
@@ -183,7 +188,7 @@ public class ProcessSummaryAction extends Action {
             ActionForward showBasket = mapping.findForward(CConstants.PQ_SHOW_BASKET_MAPKEY);
             url.append(showBasket.getPath());
             String rcName = question.getRecordClass().getFullName();
-            url.append("?recordClass=" + rcName); 
+            url.append("?recordClass=" + rcName);
         }
 
         logger.debug("url after process: " + queryString);
