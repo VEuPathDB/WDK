@@ -65,7 +65,7 @@ function hideDetails(det){
 	$("a.crumb_name img").attr("src","wdk/images/plus.gif");
 }
 
-function Edit_Step(ele, questionName, url, hideQuery, hideOp){
+function Edit_Step(ele, questionName, url, hideQuery, hideOp, assignedWeight){
 	//	hideDetails();
 		url = "showQuestion.do?questionFullName=" + questionName + url + "&partial=true";
 		closeAll(false);
@@ -81,6 +81,10 @@ function Edit_Step(ele, questionName, url, hideQuery, hideOp){
 		var reviseStepNumber = strat + ":" + revisestep + ":0:0:" + operation;
         var questionUrl = url + "&showParams=false";
 		var paramsUrl = url + "&showParams=true";
+                if (assignedWeight)  {
+                    questionUrl += "&weight=" + assignedWeight;
+                    paramsUrl += "&weight=" + assignedWeight;
+                }
 		$.ajax({
 			url: questionUrl,
 			dataType: "html",

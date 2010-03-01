@@ -780,6 +780,9 @@
         <attribute name="displayName" />
       </optional>
       <optional>
+        <attribute name="shortDisplayName" />
+      </optional>
+      <optional>
         <attribute name="doNotTest">
           <data type="boolean" />
         </attribute>

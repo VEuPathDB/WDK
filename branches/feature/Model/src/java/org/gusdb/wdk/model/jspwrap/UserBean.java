@@ -1236,6 +1236,10 @@ public class UserBean /* implements Serializable */{
         BasketFactory basketFactory = user.getWdkModel().getBasketFactory();
         return basketFactory.getBasketCounts(user);
     }
+    
+    public void setUsedWeight(boolean usedWeight) {
+        user.setUsedWeight(usedWeight);
+    }
 
     /**
      * @param recordClass

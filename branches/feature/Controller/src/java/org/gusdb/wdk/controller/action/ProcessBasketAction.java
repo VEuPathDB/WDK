@@ -3,10 +3,12 @@
  */
 package org.gusdb.wdk.controller.action;
 
+import java.io.PrintWriter;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -116,6 +118,17 @@ public class ProcessBasketAction extends Action {
             throw new WdkUserException("Unknown Basket operation: '" + action
                     + "'.");
         }
+
+        // output the total count
+        int count = 0;
+        Map<String, Integer> counts = user.getBasketCount();
+        for (Integer c : counts.values()) {
+            count += c;
+        }
+        JSONObject jsMessage = new JSONObject();
+        jsMessage.put("count", count);
+        PrintWriter writer = response.getWriter();
+        writer.print(jsMessage.toString());
 
         logger.debug("Leaving ProcessBasketAction...");
         return null;

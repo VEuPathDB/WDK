@@ -35,8 +35,6 @@ function moveAttr(col_ix, table) {
 	}
 }
 
-// FOLLOWING TAKEN FROM OLD CUSTOMSUMMARY
-
 function addAttr(attrSelector) {
 	var attributes = attrSelector.val();
 
@@ -66,122 +64,12 @@ function resetAttr(url, button) {
     }
 }
 
-function ChangeBasket(url, noUpdate) {
-	$("body").block();
-	$.ajax({
-		url: url,
-		dataType: "html",
-		success: function(data){
-			$("body").unblock();  //Gets blocked again by the next line anyway
-			if (!noUpdate) { // For things like moving columns, don't need to refresh
-				showBasket();
-			}
-		},
-		error : function(data, msg, e){
-			  alert("ERROR \n "+ msg + "\n" + e
-                                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
-		}
-	});
-}
-
-//Shopping basket on clickFunction
-function updateBasket(ele, type, pk, pid,recordType) {
-	var i = $("img",ele);
-	var a = new Array();
-	var action = null;
-	var da = null;
-	var currentDiv = getCurrentBasketWrapper();
-	if(type == "single"){
-		var o = new Object();
-		o.source_id = pk;
-		o.project_id = pid;
-		a.push(o);
-		da = $.json.serialize(a);
-		action = (i.attr("value") == '0') ? "add" : "remove";
-	}else if(type == "page"){
-		$("#Results_Pane a.primaryKey").each(function(){
-			var o = new Object();
-			sid = $(this).attr("class").split("_||_")[1];
-			o.source_id = sid;
-			o.project_id = pid;
-			a.push(o);
-		});
-		action = (i.attr("value") == '0') ? "add" : "remove";
-		da = $.json.serialize(a);
-	}else if(type == "clear"){
-		action = "clear";
-	}else{
-		da = type;
-		action = "add-all";//(i.attr("value") == '0') ? "add-all" : "remove-all";
-	}
-	var d = "action="+action+"&type="+recordType+"&data="+da;
-		$.ajax({
-			url: "processBasket.do",
-			type: "post",
-			data: d,
-			dataType: "html",
-			beforeSend: function(){
-				$("body").block();
-			},
-			success: function(data){
-				$("body").unblock();
-				if(type == "single"){
-					if(action == "add") {
-						i.attr("src","wdk/images/basket_color.png");
-						i.attr("value", "1");
-						i.attr("title","Click to remove this item from the basket.");
-					}else{
-						i.attr("src","wdk/images/basket_gray.png");
-						i.attr("value", "0");
-						i.attr("title","Click to add this item to the basket.");
-					}
-				}else if(type == "clear"){
-					showBasket();
-				}else{
-					if(action == "add-all" || action == "add") {
-						$("div#" + currentDiv + " div#Results_Div img.basket").attr("src","wdk/images/basket_color.png");
-						$("div#" + currentDiv + " div#Results_Div img.basket").attr("title","Click to remove this item from the basket.");
-						$("div#" + currentDiv + " div#Results_Div img.basket").attr("value", "1");
-					}else{
-						$("div#" + currentDiv + " div#Results_Div img.basket").attr("src","wdk/images/basket_gray.png");
-						$("div#" + currentDiv + " div#Results_Div img.basket").attr("title","Click to add this item to the basket.");
-						$("div#" + currentDiv + " div#Results_Div img.basket").attr("value", "0");
-					}
-				}
-				checkPageBasket();
-			},
-			error: function(){
-				$("body").unblock();
-				alert("Error adding Gene to basket!");
-			}
-		});
-}
-
-function checkPageBasket(){
-	allIn = true;
-	var current = getCurrentBasketWrapper();
-	$("div#" + current + " div#Results_Div img.basket").each(function(){
-		if(!($(this).hasClass("head"))){
-			if($(this).attr("value") == 0){
-				allIn = false;
-			}
-		}
-	});
-	if(allIn){
-		$("div#" + current + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_color.png");
-		$("div#" + current + " div#Results_Div img.head.basket").attr("title","Click to remove this item from the basket.");
-		$("div#" + current + " div#Results_Div img.head.basket").attr("value", "1");
-	}else{
-		$("div#" + current + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_gray.png");
-		$("div#" + current + " div#Results_Div img.head.basket").attr("title","Click to add this item to the basket.");
-		$("div#" + current + " div#Results_Div img.head.basket").attr("value", "0");
-	}
-}
 
 function GetResultsPage(url, update, ignoreFilters){
 	var s = parseUrlUtil("strategy", url);
 	var st = parseUrlUtil("step", url);
 	var strat = getStrategyFromBackId(s[0]);
+	var currentDiv = getCurrentBasketWrapper();
 	var step = null;
 	if(strat == false){
 		strat = new Object();
@@ -192,7 +80,8 @@ function GetResultsPage(url, update, ignoreFilters){
 	}else
 		step = strat.getStep(st[0], false);
 	url = url + "&resultsOnly=true";
-	if (update){$("#strategy_results > div.Workspace").block();}
+//	if (update){$("#strategy_results > div.Workspace").block();}
+	if (update){$("#" + currentDiv + " > div.Workspace").block();}
 	$.ajax({
 		url: url,
 		dataType: "html",
@@ -205,13 +94,7 @@ function GetResultsPage(url, update, ignoreFilters){
 				$("span#text_strategy_number").html(strat.JSON.name);
 				$("span#text_step_number").html(step.frontId);
 				$("span#text_strategy_number").parent().show();
-				try {
-					customResultsPage();
-				}
-				catch(err) {
-					//Do nothing;
-				}
-				$("#strategy_results > div.Workspace").unblock();
+				$("#" + currentDiv + " > div.Workspace").unblock();
 			}
 			if(strat != false) removeLoading(strat.frontId);
 		},
@@ -222,13 +105,22 @@ function GetResultsPage(url, update, ignoreFilters){
 	});
 }
 
-function ResultsToGrid(data, ignoreFilters) {
+function ResultsToGrid(data, ignoreFilters, div) {
 	var oldFilters;
+	var currentDiv = div;
+	if(currentDiv == undefined) currentDiv = getCurrentBasketWrapper();
 	if (ignoreFilters) {
 		oldFilters = $("#strategy_results > div.Workspace div.layout-detail div.filter-instance .link-url");
 	}
 
-	$("#strategy_results > div.Workspace").html(data);
+	$("#" + currentDiv + " > div.Workspace").html(data);
+
+	try {
+		customResultsPage();
+	}
+	catch(err) {
+		//Do nothing;
+	}
 	
 	// invoke filters
         var wdkFilter = new WdkFilter();
@@ -251,10 +143,10 @@ function ResultsToGrid(data, ignoreFilters) {
 	}
 
 	// create multi select control for adding columns
-	createMultiSelectAttributes($("#strategy_results #addAttributes"));
+	createMultiSelectAttributes($("#" + currentDiv + " #addAttributes"));
 
 	// convert results table to drag-and-drop flex grid
-	createFlexigridFromTable($("#strategy_results #Results_Table"));
+	createFlexigridFromTable($("#" + currentDiv + " #Results_Table"));
 
 	// check the basket for the page if needed
 	checkPageBasket();
@@ -305,6 +197,7 @@ function gotoPage(pager_id) {
     gotoPageUrl = gotoPageUrl.replace(/\&pageSize=\d+/, "");
     gotoPageUrl += "&pager.offset=" + pageOffset;
     gotoPageUrl += "&pageSize=" + pageSize;
+    $("div.advanced-paging").hide();
     GetResultsPage(gotoPageUrl, true, true);
 }
 
@@ -329,68 +222,4 @@ function openAdvancedPaging(element){
 	}
 }
 
-function getCurrentBasketWrapper() {"strategy_results";
-	if ($("#strategy_results").css('display') == 'none') {
-		return "basket";
-	}
-	return "strategy_results";
-}
 
-
-// favorite on clickFunction
-function updateFavorite(ele, type, pk, pid,recordType) {
-	var i = $("img",ele);
-	var a = new Array();
-	var action = null;
-	var da = null;
-	if(type == "single"){
-		var o = new Object();
-		o.source_id = pk;
-		o.project_id = pid;
-		a.push(o);
-		da = $.json.serialize(a);
-		action = (i.attr("value") == '0') ? "add" : "remove";
-	}else if(type == "clear"){
-		action = "clear";
-	}else{
-		alert("Unknown action for favorite");
-		return;
-	}
-	var d = "action="+action+"&type="+recordType+"&data="+da;
-	$.ajax({
-		url: "processFavorite.do",
-		type: "post",
-		data: d,
-		dataType: "html",
-		beforeSend: function(){
-			$("body").block();
-		},
-		success: function(data){
-			$("body").unblock();
-			if(type == "single"){
-				if(action == "add") {
-					i.attr("src","wdk/images/favorite_color.png");
-					i.attr("value", "1");
-					i.attr("title","Click to remove this item from the favorite.");
-				}else{
-					i.attr("src","wdk/images/favorite_gray.png");
-					i.attr("value", "0");
-					i.attr("title","Click to add this item to the favorite.");
-				}
-			}else if(type == "clear"){
-				showFavorite();
-			}else{
-				alert("Unknown action for favorite");
-				return;
-			}
-		},
-		error: function(){
-			$("body").unblock();
-			alert("Error adding record to favorite!");
-		}
-	});
-}
-
-function showFavorite() {
-
-}

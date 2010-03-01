@@ -742,6 +742,14 @@ public class Step {
         }
     }
 
+    public String getShortDisplayType() {
+        try {
+            return getQuestion().getRecordClass().getShortDisplayName();
+        } catch (WdkModelException ex) {
+            return getType();
+        }
+    }
+
     /**
      * Validate a step and all the children steps it depends on. the result of
      * validation will also be stored in "valid" variable. If a step was already

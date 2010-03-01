@@ -80,7 +80,7 @@
         <span id="text_strategy_number">${strategy.name}</span> 
         (step <span id="text_step_number">${strategy.length}</span>) - 
     </c:if>
-    ${wdkAnswer.resultSize} <span id="text_data_type">${type}</span>
+    <span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${type}</span>
 </td>
 
 <td  style="vertical-align:middle;text-align:right;white-space:nowrap;">
@@ -273,7 +273,7 @@
 
 <c:forEach items="${answerRecords}" var="record">
     <c:set value="${record.primaryKey}" var="primaryKey"/>
-
+	<c:set var="recNam" value="${record.recordClass.fullName}"/>
 <c:choose>
   <c:when test="${i % 2 == 0}"><tr class="lines"></c:when>
   <c:otherwise><tr class="linesalt"></c:otherwise>
@@ -283,14 +283,23 @@
 
 	<c:if test="${recHasBasket}">
           <td>
+            <c:set var="basket_img" value="basket_gray.png"/>
+            <c:choose>
+              <c:when test="${!wdkUser.guest}">
 		<c:set value="${record.attributes['in_basket']}" var="is_basket"/>
-		<c:set var="basket_img" value="basket_gray.png"/>
+                <c:set var="basketTitle" value="Click to add this item to the basket." />
+
 		<c:if test="${is_basket == '1'}">
-			<c:set var="basket_img" value="basket_color.png"/>
+                  <c:set var="basket_img" value="basket_color.png"/>
+                  <c:set var="basketTitle" value="Click to remove this item from the basket." />
+
 		</c:if>
-            <c:if test="${!wdkUser.guest}">
-              <c:set var="basketClick" value="updateBasket(this,'single', '${primaryKey.value}', '${modelName}', '${recNam}')" />
-            </c:if>
+                <c:set var="basketClick" value="updateBasket(this,'single', '${primaryKey.value}', '${modelName}', '${recNam}')" />
+              </c:when>
+              <c:otherwise>
+                <c:set var="basketTitle" value="Please log in to use the basket." />
+              </c:otherwise>
+            </c:choose>
 	    <a href="javascript:void(0)" onclick="${basketClick}">
 	      <img title="${basketTitle}" class="basket" value="${is_basket}" src="<c:url value='wdk/images/${basket_img}'/>" width="16" height="16"/>
 	    </a>
@@ -314,17 +323,18 @@
     </c:forEach>
 
     <td ${align} style="${nowrap}padding:3px 2px"><div>
-      <c:set var="recNam" value="${record.recordClass.fullName}"/>
+      
       <c:set var="fieldVal" value="${recAttr.briefDisplay}"/>
-      <!-- store the primary key pairs here -->
-      <div class="primaryKey" style="display:none;">
+      
+      <c:choose>
+        <c:when test="${j == 0}">
+	  <%-- display a link to record page --%>
+	<!-- store the primary key pairs here -->
+      <div class="primaryKey" fvalue="${fieldVal}" style="display:none;">
         <c:forEach items="${pkValues}" var="pkValue">
           <span key="${pkValue.key}">${pkValue.value}</span>
         </c:forEach>
       </div>
-      <c:choose>
-        <c:when test="${j == 0}">
-	  <%-- display a link to record page --%>
           <a href="showRecord.do?name=${recNam}${recordLinkKeys}">${fieldVal}</a>
         </c:when>   <%-- when j=0 --%>
 

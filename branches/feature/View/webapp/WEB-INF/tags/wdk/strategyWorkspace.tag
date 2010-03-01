@@ -1,10 +1,18 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <%@ attribute name="includeDYK"
               required="true"
 %>
-
+<c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
+<c:set var="allCount" value="${wdkUser.strategyCount}"/>
+<c:set var="openCount" value="${fn:length(wdkUser.activeStrategies)}"/>
+<c:set var="basketCountMap" value="${wdkUser.basketCount}"/>
+<c:set var="basketCount" value="0"/>
+<c:forEach items="${basketCountMap.keySet}" var="key">
+	<c:set var="basketCount" value="${basketCount + basketCountMap[key]}"/>
+</c:forEach>
   <div id="contentwrapper">
     <div id="contentcolumn2">
       <div class="innertube">
@@ -28,10 +36,10 @@ My Search Strategies Workspace
 	href="javascript:showPanel('strategy_new')" >New</a></li>
 
    <li><a id="tab_strategy_results" title="View and interact with your opened strategies. To close a strategy, click the [X] in its upper right corner" 
-	onclick="this.blur()" href="javascript:showPanel('strategy_results')">Opened</a></li>
+	onclick="this.blur()" href="javascript:showPanel('strategy_results')">Opened <font class="subscriptCount">(<v>${openCount}</v>)</font></a></li>
 
    <li><a id="tab_search_history" title="View and browse all your strategies" 
-	onclick="this.blur()" href="javascript:showPanel('search_history')">All</a></li>
+	onclick="this.blur()" href="javascript:showPanel('search_history')">All <font class="subscriptCount">(${allCount})</font></a></li>
 
 
 <c:set var="basketTitle" value="View your basket. Use the basket to operate on the items in it. For example, add them as a step in a strategy"/>

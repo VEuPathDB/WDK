@@ -1,9 +1,13 @@
 var dependedParams;
 var displayTermMap;
+var oldValues
+var termDisplayMap;
 
 function initParamHandlers(isPopup, isEdit) {
 	dependedParams = new Array();
 	displayTermMap = new Array();
+	termDisplayMap = new Array();
+	oldValues = new Array();
 
 	if(isEdit == undefined) isEdit = false;
 	initTypeAhead(isEdit);
@@ -31,11 +35,27 @@ function initDependentParamHandlers(isEdit) {
 
 	//Trigger the change function so dependent params are initialized correctly
 	for (var name in dependedParams) {
-		var parameterValue;
-		if (isEdit) parameterValue = $("div.dependentParam[name='" + name + "']").find("input,select").val();
+		if (isEdit) {
+			var input = $("input.typeAhead[name='myProp(" + name + ")']");
+			if (input.length == 0) {
+				input = $("div.dependentParam[name='" + name + "']").find("select");
+				if (input.length > 0) {
+					// If this is a select, there's only one value
+					oldValues[name] = input.val();
+				}
+				else {
+					// Otherwise, we have to know which option(s) are checked
+					input = $("div.dependentParam[name='" + name + "']").find("input");
+					var allVals = [];
+    					 $(':checked',input).each(function() {
+       						allVals.push($(this).val());
+	     				});
+					oldValues[name] = allVals;
+				}
+			}
+		}
 		dependedParam =  $("td#" + dependedParams[name] + "aaa input[name='myMultiProp(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='myMultiProp(" + dependedParams[name] + ")']");
 		dependedParam.change();
-		if (isEdit) $("div.dependentParam[name='" + name + "']").find("input,select").val(parameterValue);
 	}
 }
 
@@ -43,11 +63,11 @@ function initTypeAhead(isEdit) {
 	$("input:hidden.typeAhead").each(function() {
 		var questionName = $(this).closest("form").children("input:hidden[name=questionFullName]").val();
 		var paramName = $(this).attr('name');
-		paramName = paramName.substring(paramName.indexOf("myMultiProp(") + 12, paramName.indexOf(")"));
+		paramName = paramName.substring(paramName.indexOf("myProp(") + 7, paramName.indexOf(")"));
 		$("#" + paramName + "_display").attr('disabled',true);
+		if (isEdit) oldValues[paramName] = $(this).val();
 		if(!$(this).parent('div').hasClass('dependentParam')) {
-			if(!isEdit)
-				$("#" + paramName + "_display").val('Loading options...');
+			$("#" + paramName + "_display").val('Loading options...');
 			var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&xml=true';
 			$.ajax({
 				url: sendReqUrl,
@@ -64,20 +84,27 @@ function createAutoComplete(obj, name) {
 	$("div.ac_results").remove(); // Remove any pre-existing type-ahead results.
 	var def = new Array()
 	displayTermMap[name] = new Array();
+	termDisplayMap[name] = new Array();
 	var term;
 	var display;
+	var value = '';
 	if( $("term",obj).length != 0 ){
 		$("term",obj).each(function(){
 			term = this.getAttribute('id');
 			display = this.firstChild.data;
 			def.push(display);
 			displayTermMap[name][display] = term;
+			termDisplayMap[name][term] = display;
 		});		
 	}
 	$("#" + name + "_display").unautocomplete().autocomplete(def,{
 		matchContains: true
 	});
-	$("#" + name + "_display").val('').removeAttr('disabled');
+	if (oldValues[name]) {
+		value = termDisplayMap[name][oldValues[name]];
+		oldValues[name] = null;
+	}
+	$("#" + name + "_display").val(value).removeAttr('disabled');
 }
 
 function updateDependentParam(paramName, dependedValue) {
@@ -105,6 +132,20 @@ function updateDependentParam(paramName, dependedValue) {
 				success: function(data){
 					var newContent = $("div.param, div.param-multiPick",data);
 					dependentParam.html(newContent.html());
+					if (oldValues[paramName]) {
+						var input = $("select",dependentParam);
+						if (input.length > 0) {
+							input.val(oldValues[paramName]);
+						}
+						else {
+							input = $("input", dependentParam);
+							var allVals = oldValues[paramName];
+							jQuery.each(allVals, function() {
+								$("[name=" + this + "]", input).attr('checked',true);
+							});
+						}
+						oldValues[name] = null;
+					}
 				}
 			});
 		}
@@ -114,7 +155,7 @@ function updateDependentParam(paramName, dependedValue) {
 function mapTypeAheads() {
 	$("input:hidden.typeAhead").each(function() {
 		var paramName = $(this).attr('name');
-		paramName = paramName.substring(paramName.indexOf("myMultiProp(") + 12, paramName.indexOf(")"));
+		paramName = paramName.substring(paramName.indexOf("myProp(") + 7, paramName.indexOf(")"));
 		var newValue = displayTermMap[paramName][$("#" + paramName + "_display").val()];
 		if (!newValue) newValue = $("#" + paramName + "_display").val();
 		$(this).val(newValue);
