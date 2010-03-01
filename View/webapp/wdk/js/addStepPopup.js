@@ -96,6 +96,7 @@ function validateSaveForm(form){
 function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isOrtholog){
 	//edit = 0 ::: adding a new step
 	//edit = 1 ::: editing a current step
+	$("div#query_tooltips").remove();
 	var ps = document.createElement('div');
 	var qf = document.createElement('div');
 	var topMenu_script = null;
@@ -154,7 +155,6 @@ function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isO
 	}
 	var quesDescription = $("#query-description-section",qf);//data);
 	var dataSources = $("#attributions-section",qf);
-	var tooltips = $("div.htmltooltip",qf);//data);
 	$("input[value=Get Answer]",quesForm).val("Run Step");
 	$("input[value=Run Step]",quesForm).attr("id","executeStepButton");
 	$(".params", quesForm).wrap("<div class='filter params'></div>");
@@ -231,7 +231,12 @@ function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isO
 	}
 	
 	$("#query_form").append(quesForm);
-	$("#query_form").append(tooltips);
+	var tooltips = $("#query_form div.htmltooltip");
+	if (tooltips.length > 0) {
+		$('body').append("<div id='query_tooltips'></div>");
+		tooltips.remove().appendTo("div#query_tooltips");
+	}
+
 	if(edit == 1)
 		$("#query_form div#operations input#" + operation).attr('checked','checked'); 
 	
