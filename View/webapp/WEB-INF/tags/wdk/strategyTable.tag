@@ -37,14 +37,14 @@
     <th scope="col" style="width: 3em;">&nbsp;</th>
     <th scope="col" style="width: 4em">&nbsp;</th>
     <th scope="col" style="width: 9em">&nbsp;</th>
-    <th scope="col" style="width: 5em;text-align:center">Created At</th>
+    <th scope="col" style="width: 5em;text-align:center">Created</th>
     <th scope="col" style="width: 5em;text-align:center">
       <c:choose>
         <c:when test="${prefix == 'Saved'}">Saved At</c:when>
         <c:otherwise>Last Modified</c:otherwise>
       </c:choose>
     </th>
-    <th scope="col" style="width: 5em;text-align:center">Last Opened</th>
+<%--     <th scope="col" style="width: 5em;text-align:center">Last Opened</th> --%>
     <th scope="col" style="width: 4em">Version</th>
     <th scope="col" style="width: 4em;text-align:right">Size</th>
     <th>&nbsp;&nbsp;</th>
@@ -139,7 +139,7 @@
       </td>
       <td nowrap style="padding:0 2px 0 2px;">${strategy.createdTimeFormatted}</td>
       <td nowrap style="padding:0 2px 0 2px;">${strategy.lastModifiedTimeFormatted}</td>
-      <td nowrap  style="padding:0 2px;text-align:right">${strategy.lastRunTimeFormatted}</td>
+<%--       <td nowrap  style="padding:0 2px;text-align:right">${strategy.lastRunTimeFormatted}</td> --%>
       <td nowrap style="text-align:center">
         <c:choose>
           <c:when test="${strategy.version == null || strategy.version eq ''}">${wdkModel.version}</c:when>
