@@ -101,12 +101,14 @@ public class ShowStrategyAction extends ShowQuestionAction {
                 }
             }
             outputSuccessJSON(wdkUser, response, displayStrategies);
+            logger.debug("Leaving ShowStrategyAction...");
             return null;
 
         } catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
             outputErrorJSON(wdkUser, response, ex);
+            logger.debug("Leaving ShowStrategyAction...");
             return null;
         }
     }
