@@ -127,10 +127,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             // forward to the results page, if requested
             if (resultOnly) {
-                // update the step size
+                // try getting the current result size
                 logger.info("updating result size: " + step.getResultSize());
-                step.setEstimateSize(step.getResultSize());
-                step.update(true);
+                step.getResultSize();
 
                 if (strategy != null) {
                     wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
