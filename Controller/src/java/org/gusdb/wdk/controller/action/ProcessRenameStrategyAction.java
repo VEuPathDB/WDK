@@ -15,6 +15,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
@@ -80,9 +81,11 @@ public class ProcessRenameStrategyAction extends Action {
                     // doing a "save as"), then make a new copy of this
                     // strategy.
                     if (strategy.getIsSaved()
-                            && !customName.equals(strategy.getSavedName()))
-                        strategy = wdkUser.createStrategy(
-                                strategy.getLatestStep(), false);
+                            && !customName.equals(strategy.getSavedName())) {
+                        // clone the last step
+                        StepBean step = strategy.getLatestStep().deepClone();
+                        strategy = wdkUser.createStrategy(step, false);
+                    }
 
                     // mark the strategy as saved, set saved name
                     strategy.setIsSaved(true);
