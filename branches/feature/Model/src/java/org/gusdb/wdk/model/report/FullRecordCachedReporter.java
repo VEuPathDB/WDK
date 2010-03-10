@@ -33,7 +33,9 @@ import org.json.JSONException;
 /**
  * @author xingao
  * 
+ * there is a newer version in ApiCommonShared.
  */
+@Deprecated
 public class FullRecordCachedReporter extends Reporter {
 
     private static Logger logger = Logger.getLogger(TabularReporter.class);

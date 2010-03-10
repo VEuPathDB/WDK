@@ -78,13 +78,14 @@
 <td class="h4left" style="vertical-align:middle;padding-bottom:7px;">
     <c:if test="${strategy != null}">
         <span id="text_strategy_number">${strategy.name}</span> 
-        (step <span id="text_step_number">${strategy.length}</span>) - 
+        - step <span id="text_step_number">${strategy.length}</span> - 
     </c:if>
     <span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${type}</span>
 </td>
 
 <td  style="vertical-align:middle;text-align:right;white-space:nowrap;">
   <div style="float:right">
+   <c:set var="r_count" value="${wdkAnswer.resultSize} ${type}" />
    <c:if test="${strategy != null}">
     <c:choose>
       <c:when test="${wdkUser.guest}">
@@ -94,9 +95,9 @@
         <c:set var="basketClick" value="updateBasket(this, '${wdkStep.stepId}', '0', '${modelName}', '${recordName}')" />
       </c:otherwise>
     </c:choose>
-    <c:if test="${recHasBasket}"><a style="font-size:120%" href="javascript:void(0)" onClick="${basketClick}"><b>Add Results to Basket</b></a>&nbsp;|&nbsp;</c:if>
+    <c:if test="${recHasBasket}"><a style="font-size:120%" href="javascript:void(0)" onClick="${basketClick}"><b>Add ${r_count} to Basket</b></a>&nbsp;|&nbsp;</c:if>
    </c:if>
-    <a style="font-size:120%" href="downloadStep.do?step_id=${wdkHistory.stepId}"><b>Download Results</b></a>
+    <a style="font-size:120%" href="downloadStep.do?step_id=${wdkHistory.stepId}"><b>Download ${r_count}</b></a>
   <c:if test="${!empty sessionScope.GALAXY_URL}">
     &nbsp;|&nbsp;<a href="downloadStep.do?step_id=${wdkHistory.stepId}&wdkReportFormat=tabular"><b>SEND TO GALAXY</b></a>
   </c:if>
