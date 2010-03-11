@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.user.Favorite;
 
 public class FavoriteBean {
@@ -13,23 +12,18 @@ public class FavoriteBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.user.Favorite#getRecordClass()
+     * @see org.gusdb.wdk.model.user.Favorite#getRecordInstances()
      */
-    public RecordClassBean getRecordClass() {
-        return new RecordClassBean(favorite.getRecordClass());
+    public RecordBean getRecordInstance() {
+        return new RecordBean(null, favorite.getRecordInstance());
     }
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.user.Favorite#getRecordInstances()
+     * @see org.gusdb.wdk.model.user.Favorite#getRecordClass()
      */
-    public RecordBean[] getRecordInstances() {
-        RecordInstance[] instances = favorite.getRecordInstances();
-        RecordBean[] beans = new RecordBean[instances.length];
-        for (int i = 0; i < instances.length; i++) {
-            beans[i] = new RecordBean(favorite.getUser(), instances[i]);
-        }
-        return beans;
+    public RecordClassBean getRecordClass() {
+        return new RecordClassBean(favorite.getRecordClass());
     }
 
     /**
@@ -39,13 +33,4 @@ public class FavoriteBean {
     public UserBean getUser() {
         return new UserBean(favorite.getUser());
     }
-
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.user.Favorite#getCount()
-     */
-    public int getCount() {
-        return favorite.getCount();
-    }
-
 }

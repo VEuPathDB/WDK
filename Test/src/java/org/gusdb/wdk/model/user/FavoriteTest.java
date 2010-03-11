@@ -27,7 +27,7 @@ import org.junit.Test;
 public class FavoriteTest {
 
     private static final int POOL_SIZE = 10;
-    private static final int OPEARTION_SIZE = 5;
+    static final int OPEARTION_SIZE = 5;
 
     private WdkModel wdkModel;
     private List<RecordClass> recordClasses;
@@ -49,11 +49,17 @@ public class FavoriteTest {
         int index = UnitTestHelper.getRandom().nextInt(recordClasses.size());
         RecordClass recordClass = recordClasses.get(index);
 
+        user.clearFavorite();
         List<String[]> added = addSomeRecords(user, recordClass);
 
-        Assert.assertTrue(added.size() <= user.getFavoriteCount());
-        Favorite favorite = user.getFavorites().get(recordClass.getFullName());
-        Assert.assertTrue(added.size() <= favorite.getRecordInstances().length);
+        String rcName = recordClass.getFullName();
+        Assert.assertEquals(added.size(), user.getFavoriteCount());
+        List<Favorite> favorites = user.getFavorites().get(rcName);
+        Assert.assertEquals(added.size(), favorites.size());
+        for (Favorite favorite : favorites) {
+            RecordClass actual = favorite.getRecordInstance().getRecordClass();
+            Assert.assertEquals(rcName, actual.getFullName());
+        }
     }
 
     @Test
@@ -65,10 +71,11 @@ public class FavoriteTest {
         List<String[]> added = addSomeRecords(user, recordClass);
         user.removeFromFavorite(recordClass, added);
 
-        Map<String, Favorite> favorites = user.getFavorites();
+        Map<String, List<Favorite>> favorites = user.getFavorites();
         if (favorites.containsKey(recordClass.getFullName())) {
-            Favorite favorite = favorites.get(recordClass.getFullName());
-            for (RecordInstance instance : favorite.getRecordInstances()) {
+            List<Favorite> list = favorites.get(recordClass.getFullName());
+            for (Favorite favorite : list) {
+                RecordInstance instance = favorite.getRecordInstance();
                 Map<String, String> values = instance.getPrimaryKey().getValues();
                 String[] pkValues = new String[values.size()];
                 values.values().toArray(pkValues);
@@ -124,22 +131,70 @@ public class FavoriteTest {
         Assert.assertEquals(expected, user.getFavoriteCount());
     }
 
+    @Test
+    public void testSetNote() throws Exception {
+        User user = UnitTestHelper.getRegisteredUser();
+        int index = UnitTestHelper.getRandom().nextInt(recordClasses.size());
+        RecordClass recordClass = recordClasses.get(index);
+
+        user.clearFavorite();
+
+        List<String[]> added = addSomeRecords(user, recordClass);
+        String rcName = recordClass.getFullName();
+        Assert.assertEquals(added.size(), user.getFavoriteCount());
+
+        Random random = UnitTestHelper.getRandom();
+        String note = "note " + random.nextInt();
+        user.setFavoriteNotes(recordClass, added, note);
+
+        List<Favorite> favorites = user.getFavorites().get(rcName);
+        for (Favorite favorite : favorites) {
+            Assert.assertEquals(note, favorite.getNote());
+        }
+    }
+
+    @Test
+    public void testSetGroup() throws Exception {
+        User user = UnitTestHelper.getRegisteredUser();
+        int index = UnitTestHelper.getRandom().nextInt(recordClasses.size());
+        RecordClass recordClass = recordClasses.get(index);
+
+        user.clearFavorite();
+
+        List<String[]> added = addSomeRecords(user, recordClass);
+        String rcName = recordClass.getFullName();
+        Assert.assertEquals(added.size(), user.getFavoriteCount());
+
+        Random random = UnitTestHelper.getRandom();
+        String group = "group " + random.nextInt();
+        user.setFavoriteGroups(recordClass, added, group);
+
+        List<Favorite> favorites = user.getFavorites().get(rcName);
+        for (Favorite favorite : favorites) {
+            Assert.assertEquals(group, favorite.getGroup());
+        }
+    }
+
     private List<String[]> addSomeRecords(User user, RecordClass recordClass)
             throws Exception {
         // get a list of record ids
         List<String[]> ids = getIds(recordClass, POOL_SIZE);
         // randomly pick up 5 ids from the list, and add them into basket
-        List<String[]> selected = new ArrayList<String[]>();
+        Map<Integer, String[]> selected = new HashMap<Integer, String[]>();
         Random random = UnitTestHelper.getRandom();
-        int i = Math.max(0, random.nextInt(ids.size() - OPEARTION_SIZE + 1));
-        for (; i < OPEARTION_SIZE; i++) {
-            selected.add(ids.get(i));
+        int count = 0;
+        while (count < OPEARTION_SIZE) {
+            int i = random.nextInt(ids.size());
+            if (selected.containsKey(i)) continue;
+            selected.put(i, ids.get(i));
+            count++;
         }
-        user.addToFavorite(recordClass, selected);
-        return selected;
+        List<String[]> list = new ArrayList<String[]>(selected.values());
+        user.addToFavorite(recordClass, list);
+        return list;
     }
 
-    private List<String[]> getIds(RecordClass recordClass, int limit)
+    static List<String[]> getIds(RecordClass recordClass, int limit)
             throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
         List<String[]> ids = new ArrayList<String[]>();

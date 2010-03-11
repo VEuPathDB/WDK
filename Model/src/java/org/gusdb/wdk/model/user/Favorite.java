@@ -1,21 +1,18 @@
 package org.gusdb.wdk.model.user;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
-import org.gusdb.wdk.model.WdkModelException;
 
 public class Favorite {
 
     private User user;
     private RecordClass recordClass;
-    private List<RecordInstance> recordInstances;
+    private RecordInstance recordInstance;
+    private String note;
+    private String group;
 
     public Favorite(User user) {
         this.user = user;
-        recordInstances = new ArrayList<RecordInstance>();
     }
 
     public User getUser() {
@@ -26,28 +23,43 @@ public class Favorite {
         return recordClass;
     }
 
-    void setRecordClass(RecordClass recordClass) {
-        this.recordClass = recordClass;
+    public RecordInstance getRecordInstance() {
+        return recordInstance;
     }
 
-    public RecordInstance[] getRecordInstances() {
-        RecordInstance[] array = new RecordInstance[recordInstances.size()];
-        recordInstances.toArray(array);
-        return array;
-    }
-    
-    public int getCount() {
-        return recordInstances.size();
+    void setRecordInstance(RecordInstance recordInstance) {
+        this.recordInstance = recordInstance;
+        this.recordClass = recordInstance.getRecordClass();
     }
 
-    void addRecordInstance(RecordInstance recordInstance)
-            throws WdkModelException {
-        // make sure the record instance is of the recordClass type
-        String rcName = recordInstance.getRecordClass().getFullName();
-        if (!recordClass.getFullName().equals(rcName))
-            throw new WdkModelException("The type of the record instance ("
-                    + rcName + ") doesn't match the type of the favorite: '"
-                    + recordClass.getFullName() + "'");
-        recordInstances.add(recordInstance);
+    /**
+     * @return the note
+     */
+    public String getNote() {
+        return note;
     }
+
+    /**
+     * @param note
+     *            the note to set
+     */
+    void setNote(String note) {
+        this.note = note;
+    }
+
+    /**
+     * @return the group
+     */
+    public String getGroup() {
+        return group;
+    }
+
+    /**
+     * @param group
+     *            the group to set
+     */
+    void setGroup(String group) {
+        this.group = group;
+    }
+
 }
