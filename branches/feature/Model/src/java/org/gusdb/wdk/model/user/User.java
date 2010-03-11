@@ -429,7 +429,8 @@ public class User /* implements Serializable */{
             int assignedWeight) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         if (assignedWeight != 0) usedWeight = true;
-        logger.debug("assigne weight: " + assignedWeight +", used weight: " + usedWeight);
+        logger.debug("assigne weight: " + assignedWeight + ", used weight: "
+                + usedWeight);
 
         Step step = stepFactory.createStep(this, question, paramValues, filter,
                 pageStart, pageEnd, deleted, validate, assignedWeight);
@@ -1031,7 +1032,7 @@ public class User /* implements Serializable */{
         }
 
         if (!savedSummary) {
-            // user does't have preference, use the default of the question 
+            // user does't have preference, use the default of the question
             Question question = wdkModel.getQuestion(questionFullName);
             Map<String, AttributeField> attributes = question.getSummaryAttributeFieldMap();
             summary = new String[attributes.size()];
@@ -1370,7 +1371,7 @@ public class User /* implements Serializable */{
         if (strategyCount != null) strategyCount++;
         return copy;
     }
-    
+
     public void setUsedWeight(boolean usedWeight) {
         logger.debug("set used weight: " + usedWeight);
         this.usedWeight = usedWeight;
@@ -1391,7 +1392,7 @@ public class User /* implements Serializable */{
         return wdkModel.getFavoriteFactory().getFavoriteCounts(this);
     }
 
-    public Map<String, Favorite> getFavorites() throws WdkUserException,
+    public Map<String, List<Favorite>> getFavorites() throws WdkUserException,
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException {
         return wdkModel.getFavoriteFactory().getFavorites(this);
@@ -1408,5 +1409,19 @@ public class User /* implements Serializable */{
             throws WdkUserException, WdkModelException, SQLException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         return favoriteFactory.isInFavorite(this, recordClass, pkValue);
+    }
+
+    public void setFavoriteNotes(RecordClass recordClass,
+            List<String[]> pkValues, String note) throws WdkUserException,
+            WdkModelException, SQLException {
+        FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
+        favoriteFactory.setNotes(this, recordClass, pkValues, note);
+    }
+
+    public void setFavoriteGroups(RecordClass recordClass,
+            List<String[]> pkValues, String group) throws WdkUserException,
+            WdkModelException, SQLException {
+        FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
+        favoriteFactory.setGroups(this, recordClass, pkValues, group);
     }
 }

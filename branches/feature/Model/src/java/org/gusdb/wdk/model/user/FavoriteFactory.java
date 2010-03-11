@@ -4,6 +4,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +27,8 @@ public class FavoriteFactory {
     private static final String COLUMN_USER_ID = "user_id";
     private static final String COLUMN_PROJECT_ID = "project_id";
     private static final String COLUMN_RECORD_CLASS = "record_class";
+    private static final String COLUMN_RECORD_NOTE = "record_note";
+    private static final String COLUMN_RECORD_GROUP = "record_group";
 
     private static final Logger logger = Logger.getLogger(FavoriteFactory.class);
 
@@ -207,7 +210,7 @@ public class FavoriteFactory {
         return count;
     }
 
-    public Map<String, Favorite> getFavorites(User user)
+    public Map<String, List<Favorite>> getFavorites(User user)
             throws WdkUserException, WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException {
         String sql = "SELECT * FROM " + schema + TABLE_FAVORITES + " WHERE "
@@ -224,17 +227,16 @@ public class FavoriteFactory {
             rs = ps.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql, start);
 
-            Map<String, Favorite> favorites = new LinkedHashMap<String, Favorite>();
+            Map<String, List<Favorite>> favorites = new LinkedHashMap<String, List<Favorite>>();
             while (rs.next()) {
                 String rcName = rs.getString(COLUMN_RECORD_CLASS);
                 RecordClass recordClass = (RecordClass) wdkModel.getRecordClass(rcName);
-                Favorite favorite;
+                List<Favorite> list;
                 if (favorites.containsKey(rcName)) {
-                    favorite = favorites.get(rcName);
+                    list = favorites.get(rcName);
                 } else {
-                    favorite = new Favorite(user);
-                    favorite.setRecordClass(recordClass);
-                    favorites.put(rcName, favorite);
+                    list = new ArrayList<Favorite>();
+                    favorites.put(rcName, list);
                 }
 
                 String[] columns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
@@ -245,7 +247,11 @@ public class FavoriteFactory {
                 }
                 RecordInstance instance = new RecordInstance(user, recordClass,
                         primaryKeys);
-                favorite.addRecordInstance(instance);
+                Favorite favorite = new Favorite(user);
+                favorite.setRecordInstance(instance);
+                favorite.setNote(rs.getString(COLUMN_RECORD_NOTE));
+                favorite.setGroup(rs.getString(COLUMN_RECORD_GROUP));
+                list.add(favorite);
             }
             return favorites;
         } finally {
@@ -287,6 +293,138 @@ public class FavoriteFactory {
                 hasRecord = (rsCount > 0);
             }
             return hasRecord;
+        } finally {
+            SqlUtils.closeResultSet(resultSet);
+        }
+    }
+
+    public void setNotes(User user, RecordClass recordClass,
+            List<String[]> pkValues, String note) throws SQLException,
+            WdkUserException, WdkModelException {
+        int userId = user.getUserId();
+        String projectId = wdkModel.getProjectId();
+        String rcName = recordClass.getFullName();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+        String sql = "UPDATE " + schema + TABLE_FAVORITES + " SET "
+                + COLUMN_RECORD_NOTE + " = ? WHERE " + COLUMN_USER_ID
+                + "= ? AND " + COLUMN_PROJECT_ID + " = ? AND "
+                + COLUMN_RECORD_CLASS + " = ?";
+        for (int i = 1; i <= pkColumns.length; i++) {
+            sql += " AND " + Utilities.COLUMN_PK_PREFIX + i + " = ?";
+        }
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        PreparedStatement psUpdate = null;
+        try {
+            psUpdate = SqlUtils.getPreparedStatement(dataSource, sql);
+
+            int count = 0;
+            for (String[] row : pkValues) {
+                // truncate the pk columns
+                String[] pkValue = new String[pkColumns.length];
+                int length = Math.min(row.length, pkValue.length);
+                System.arraycopy(row, 0, pkValue, 0, length);
+
+                // check if the record already exists.
+                psUpdate.setString(1, note);
+                psUpdate.setInt(2, userId);
+                psUpdate.setString(3, projectId);
+                psUpdate.setString(4, rcName);
+                for (int i = 0; i < pkValue.length; i++) {
+                    psUpdate.setString(i + 5, pkValue[i]);
+                }
+                psUpdate.addBatch();
+                count++;
+                if (count % 100 == 0) {
+                    long start = System.currentTimeMillis();
+                    psUpdate.executeBatch();
+                    SqlUtils.verifyTime(wdkModel, sql, start);
+                }
+            }
+            if (count % 100 != 0) {
+                long start = System.currentTimeMillis();
+                psUpdate.executeBatch();
+                SqlUtils.verifyTime(wdkModel, sql, -start);
+            }
+        } finally {
+            SqlUtils.closeStatement(psUpdate);
+        }
+    }
+
+    public void setGroups(User user, RecordClass recordClass,
+            List<String[]> pkValues, String group) throws SQLException,
+            WdkUserException, WdkModelException {
+        int userId = user.getUserId();
+        String projectId = wdkModel.getProjectId();
+        String rcName = recordClass.getFullName();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+        String sql = "UPDATE " + schema + TABLE_FAVORITES + " SET "
+                + COLUMN_RECORD_GROUP + " = ? WHERE " + COLUMN_USER_ID
+                + "= ? AND " + COLUMN_PROJECT_ID + " = ? AND "
+                + COLUMN_RECORD_CLASS + " = ?";
+        for (int i = 1; i <= pkColumns.length; i++) {
+            sql += " AND " + Utilities.COLUMN_PK_PREFIX + i + " = ?";
+        }
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        PreparedStatement psUpdate = null;
+        try {
+            psUpdate = SqlUtils.getPreparedStatement(dataSource, sql);
+
+            int count = 0;
+            for (String[] row : pkValues) {
+                // truncate the pk columns
+                String[] pkValue = new String[pkColumns.length];
+                int length = Math.min(row.length, pkValue.length);
+                System.arraycopy(row, 0, pkValue, 0, length);
+
+                // check if the record already exists.
+                psUpdate.setString(1, group);
+                psUpdate.setInt(2, userId);
+                psUpdate.setString(3, projectId);
+                psUpdate.setString(4, rcName);
+                for (int i = 0; i < pkValue.length; i++) {
+                    psUpdate.setString(i + 5, pkValue[i]);
+                }
+                psUpdate.addBatch();
+                count++;
+                if (count % 100 == 0) {
+                    long start = System.currentTimeMillis();
+                    psUpdate.executeBatch();
+                    SqlUtils.verifyTime(wdkModel, sql, start);
+                }
+            }
+            if (count % 100 != 0) {
+                long start = System.currentTimeMillis();
+                psUpdate.executeBatch();
+                SqlUtils.verifyTime(wdkModel, sql, -start);
+            }
+        } finally {
+            SqlUtils.closeStatement(psUpdate);
+        }
+    }
+
+    public String[] getGroups(User user) throws WdkUserException,
+            WdkModelException, SQLException {
+        String sql = "SELECT " + COLUMN_RECORD_GROUP + " FROM " + schema
+                + TABLE_FAVORITES + " WHERE " + COLUMN_USER_ID + "= ? AND "
+                + COLUMN_PROJECT_ID + " = ?";
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        ResultSet resultSet = null;
+        try {
+            PreparedStatement psSelect = SqlUtils.getPreparedStatement(
+                    dataSource, sql);
+            psSelect.setInt(1, user.getUserId());
+            psSelect.setString(2, wdkModel.getProjectId());
+
+            long start = System.currentTimeMillis();
+            resultSet = psSelect.executeQuery();
+            SqlUtils.verifyTime(wdkModel, sql, start);
+            List<String> groups = new ArrayList<String>();
+            while (resultSet.next()) {
+                groups.add(resultSet.getString(COLUMN_RECORD_GROUP));
+            }
+            String[] array = new String[groups.size()];
+            groups.toArray(array);
+            return array;
         } finally {
             SqlUtils.closeResultSet(resultSet);
         }

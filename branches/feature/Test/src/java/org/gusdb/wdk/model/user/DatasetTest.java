@@ -3,9 +3,8 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.Random;
+import java.util.List;
 
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.UnitTestHelper;
@@ -35,8 +34,7 @@ public class DatasetTest {
     }
 
     @Test
-    public void testCreateDataset() throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException {
+    public void testCreateDataset() throws Exception {
         String values = generateRandomValues();
 
         Dataset dataset = user.createDataset(recordClass, null, values);
@@ -51,8 +49,7 @@ public class DatasetTest {
     }
 
     @Test
-    public void testCreateDatasetWithUpload() throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException {
+    public void testCreateDatasetWithUpload() throws Exception {
         String uploadFile = "sample.file";
         String values = generateRandomValues();
         Dataset dataset = user.createDataset(recordClass, uploadFile, values);
@@ -61,8 +58,7 @@ public class DatasetTest {
     }
 
     @Test
-    public void testCreateIdenticalDataset() throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException {
+    public void testCreateIdenticalDataset() throws Exception {
         String values = generateRandomValues();
         Dataset expected = user.createDataset(recordClass, null, values);
         Dataset actual = user.createDataset(recordClass, null, values);
@@ -70,8 +66,7 @@ public class DatasetTest {
     }
 
     @Test
-    public void testGetDatasetById() throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException {
+    public void testGetDatasetById() throws Exception {
         String values = generateRandomValues();
         Dataset expected = user.createDataset(recordClass, null, values);
         Dataset actual = user.getDataset(expected.getUserDatasetId());
@@ -108,18 +103,18 @@ public class DatasetTest {
         Assert.assertEquals(expected.getValue(), actual.getValue());
     }
 
-    private String generateRandomValues() {
-        StringBuffer buffer = new StringBuffer();
-        Random random = UnitTestHelper.getRandom();
-        int rowCount = random.nextInt(10) + 1;
-        int columnCount = recordClass.getPrimaryKeyAttributeField().getColumnRefs().length;
-        for (int i = 0; i < rowCount; i++) {
-            for (int j = 0; j < columnCount; j++) {
-                if (j > 0) buffer.append(", ");
-                buffer.append(random.nextInt());
+    private String generateRandomValues() throws Exception {
+        List<String[]> ids = FavoriteTest.getIds(recordClass,
+                FavoriteTest.OPEARTION_SIZE);
+
+        StringBuilder builder = new StringBuilder();
+        for (String[] id : ids) {
+            for (int i = 0; i < id.length; i++) {
+                if (i > 0) builder.append(':');
+                builder.append(id[i]);
             }
-            buffer.append("\n");
+            builder.append('\n');
         }
-        return buffer.toString();
+        return builder.toString();
     }
 }

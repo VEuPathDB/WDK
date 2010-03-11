@@ -51,6 +51,9 @@ public class ProcessFavoriteAction extends Action {
      */
     private static final String PARAM_DATA = "data";
 
+    private static final String PARAM_NOTE = "note";
+    private static final String PARAM_GROUP = "group";
+
     /**
      * add a list of ids into favorite. It requires TYPE & DATA params, and DATA
      * is a JSON list of primary keys.
@@ -65,6 +68,12 @@ public class ProcessFavoriteAction extends Action {
      * clear the favorite. it doesn't require any param.
      */
     private static final String ACTION_CLEAR = "clear";
+
+    /**
+     * set the note for a given gene
+     */
+    private static final String ACTION_NOTE = "note";
+    private static final String ACTION_GROUP = "group";
 
     private static final Logger logger = Logger.getLogger(ProcessFavoriteAction.class);
 
@@ -89,6 +98,18 @@ public class ProcessFavoriteAction extends Action {
         } else if (action.equalsIgnoreCase(ACTION_CLEAR)) {
             // doesn't need any param, will remove all favorites
             user.clearFavorite();
+        } else if (action.equalsIgnoreCase(ACTION_NOTE)) {
+            // need type, data, note params
+            RecordClassBean recordClass = getRecordClass(request, wdkModel);
+            List<String[]> records = getRecords(request, recordClass);
+            String note = request.getParameter(PARAM_NOTE);
+            user.setFavoriteNotes(recordClass, records, note);
+        } else if (action.equalsIgnoreCase(ACTION_GROUP)) {
+            // need type, data, group params
+            RecordClassBean recordClass = getRecordClass(request, wdkModel);
+            List<String[]> records = getRecords(request, recordClass);
+            String group = request.getParameter(PARAM_GROUP);
+            user.setFavoriteGroups(recordClass, records, group);
         } else {
             throw new WdkUserException("Unknown Favorite operation: '" + action
                     + "'.");
