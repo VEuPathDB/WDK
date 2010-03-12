@@ -441,6 +441,12 @@ public class AnswerValueBean {
         return new AnswerFilterInstanceBean(filter);
     }
 
+    public List<String[]> getAllIds() throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        return answerValue.getAllIds();
+    }
+
     /**
      * @return
      * @throws WdkModelException
