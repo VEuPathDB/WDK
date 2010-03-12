@@ -38,14 +38,28 @@ function WdkFilter() {
             // add mouse over to the link
             var detail = $(this).find(".instance-detail");
 //cris: z-index added to show filter popup over column titles in result
-            $(this).hover(function() {
-                              var position = $(this).position();
-                              var top = position.top + $(this).height() + 3;
-                              var left = position.left - 3;
-                              detail.css("left", left + "px");
-                              detail.css("top", top + "px");
-                              detail.css("display", "block");
-			      detail.css("z-index", "10");
+ 
+	var popupWidth = 300;
+	var winWidth=0;
+	if (document.documentElement) {
+		winWidth = document.documentElement.offsetWidth;
+	} else if (window.innerWidth && window.innerHeight) {
+		winWidth = window.innerWidth;
+	}
+           $(this).hover(function() {
+                          	var position = $(this).position();
+                       /*      	var top = position.top + $(this).height();   not needed */
+                              	var left = position.left;
+				var winMinusLeft = winWidth - left;
+				if( winMinusLeft < popupWidth ) {
+					left = left - (popupWidth - winMinusLeft);	
+					detail.css("left", left + "px"); 
+				}
+                   	/*     	detail.css("left", left + "px"); 
+                             	detail.css("top", top + "px");    not needed    */
+                              	detail.css("width", popupWidth + "px");
+				detail.css("display", "block");
+			      	detail.css("z-index", "10"); 
                           },
                           function() {
                               detail.css("display", "none");
