@@ -97,7 +97,7 @@ public class ProcessQueryInstance extends QueryInstance {
         for (String column : columns.keySet()) {
             sql.append(", " + column);
         }
-        if (!columns.containsKey(weightColumn))
+        if (query.isHasWeight() && !columns.containsKey(weightColumn))
             sql.append(", " + weightColumn);
         sql.append(") VALUES (");
         sql.append(instanceId);
@@ -105,7 +105,7 @@ public class ProcessQueryInstance extends QueryInstance {
             sql.append(", ?");
         }
         // insert weight to the last column, if doesn't exist
-        if (!columns.containsKey(weightColumn))
+        if (query.isHasWeight() && !columns.containsKey(weightColumn))
             sql.append(", " + assignedWeight);
         sql.append(")");
 
@@ -207,7 +207,7 @@ public class ProcessQueryInstance extends QueryInstance {
 
             // add weight if needed
             String weightColumn = Utilities.COLUMN_WEIGHT;
-            if (!columns.containsKey(weightColumn)) {
+            if (query.isHasWeight() && !columns.containsKey(weightColumn)) {
                 indices.put(weightColumn, indices.size());
                 for (int i = 0; i < content.length; i++) {
                     String[] line = content[i];
@@ -321,8 +321,9 @@ public class ProcessQueryInstance extends QueryInstance {
         // define the instance id column
         String numberType = platform.getNumberDataType(12);
         sqlTable.append(CacheFactory.COLUMN_INSTANCE_ID + " " + numberType);
-        sqlTable.append(" NOT NULL, ");
-        sqlTable.append(Utilities.COLUMN_WEIGHT + " " + numberType);
+        sqlTable.append(" NOT NULL");
+        if (query.isHasWeight())
+            sqlTable.append(", " + Utilities.COLUMN_WEIGHT + " " + numberType);
 
         // define the rest of the columns
         for (Column column : columns) {
