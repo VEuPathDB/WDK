@@ -1392,9 +1392,9 @@ public class User /* implements Serializable */{
         return wdkModel.getFavoriteFactory().getFavoriteCounts(this);
     }
 
-    public Map<RecordClass, List<Favorite>> getFavorites() throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+    public Map<RecordClass, List<Favorite>> getFavorites()
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
         return wdkModel.getFavoriteFactory().getFavorites(this);
     }
 
@@ -1423,5 +1423,11 @@ public class User /* implements Serializable */{
             WdkModelException, SQLException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         favoriteFactory.setGroups(this, recordClass, pkValues, group);
+    }
+
+    public String[] getFavoriteGroups() throws WdkUserException,
+            WdkModelException, SQLException {
+        FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
+        return favoriteFactory.getGroups(this);
     }
 }

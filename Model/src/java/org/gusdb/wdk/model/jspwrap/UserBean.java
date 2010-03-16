@@ -1350,4 +1350,16 @@ public class UserBean /* implements Serializable */{
         user.setFavoriteNotes(recordClass.recordClass, pkValues, note);
     }
 
+    /**
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @throws SQLException
+     * @see org.gusdb.wdk.model.user.User#getFavoriteGroups()
+     */
+    public String[] getFavoriteGroups() throws WdkUserException,
+            WdkModelException, SQLException {
+        return user.getFavoriteGroups();
+    }
+
 }
