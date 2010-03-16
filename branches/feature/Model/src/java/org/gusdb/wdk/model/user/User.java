@@ -1392,7 +1392,7 @@ public class User /* implements Serializable */{
         return wdkModel.getFavoriteFactory().getFavoriteCounts(this);
     }
 
-    public Map<String, List<Favorite>> getFavorites() throws WdkUserException,
+    public Map<RecordClass, List<Favorite>> getFavorites() throws WdkUserException,
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException {
         return wdkModel.getFavoriteFactory().getFavorites(this);

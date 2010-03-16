@@ -770,3 +770,16 @@ span.subscriptCount, font.subscriptCount {
 	font-size:12px;
 	vertical-align:middle;
 }
+
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      = Favorite/Primary key Styles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+.record .primaryKey {
+    display: none;
+}
+
+.clickable {
+    cursor: hand;
+}

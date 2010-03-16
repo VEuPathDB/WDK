@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.BasketFactory;
@@ -1285,19 +1286,19 @@ public class UserBean /* implements Serializable */{
      * @throws JSONException
      * @see org.gusdb.wdk.model.user.User#getFavorites()
      */
-    public Map<String, List<FavoriteBean>> getFavorites()
+    public Map<RecordClassBean, List<FavoriteBean>> getFavorites()
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        Map<String, List<Favorite>> favorites = user.getFavorites();
-        Map<String, List<FavoriteBean>> beans = new LinkedHashMap<String, List<FavoriteBean>>();
-        for (String rcName : favorites.keySet()) {
+        Map<RecordClass, List<Favorite>> favorites = user.getFavorites();
+        Map<RecordClassBean, List<FavoriteBean>> beans = new LinkedHashMap<RecordClassBean, List<FavoriteBean>>();
+        for (RecordClass recordClass : favorites.keySet()) {
             List<FavoriteBean> beanList = new ArrayList<FavoriteBean>();
-            List<Favorite> list = favorites.get(rcName);
+            List<Favorite> list = favorites.get(recordClass);
             for (Favorite favorite : list) {
                 FavoriteBean bean = new FavoriteBean(favorite);
                 beanList.add(bean);
             }
-            beans.put(rcName, beanList);
+            beans.put(new RecordClassBean(recordClass), beanList);
         }
         return beans;
     }
