@@ -39,6 +39,7 @@ function WdkFilter() {
             var detail = $(this).find(".instance-detail");
 //cris: z-index added to show filter popup over column titles in result
  
+//cris: code added to keep a filter popup from hiding outside the window on the right side
 	var popupWidth = 300;
 	var winWidth=0;
 	if (document.documentElement) {
@@ -51,8 +52,8 @@ function WdkFilter() {
                        /*      	var top = position.top + $(this).height();   not needed */
                               	var left = position.left;
 				var winMinusLeft = winWidth - left;
-				if( winMinusLeft < popupWidth ) {
-					left = left - (popupWidth - winMinusLeft);	
+				if( winMinusLeft < (popupWidth + 40) ) {
+					left = left - (popupWidth - winMinusLeft + 40);	
 					detail.css("left", left + "px"); 
 				}
                    	/*     	detail.css("left", left + "px"); 
