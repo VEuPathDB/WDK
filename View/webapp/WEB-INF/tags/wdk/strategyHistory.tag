@@ -21,6 +21,7 @@
 <c:set var="modelName" value="${model.name}"/>
 
 <!-- decide whether strategy history is empty -->
+<span style="display:none" id="totalStrategyCount">${user.strategyCount}</span>
 <c:choose>
   <c:when test="${user == null || user.strategyCount == 0}">
   <div style="font-size:120%;line-height:1.2em;text-indent:10em;padding:0.5em">You have no search strategies in your history. <p style="text-indent:10em;">Please run a search to start a strategy.</p></div>
