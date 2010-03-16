@@ -36,7 +36,7 @@ My Search Strategies Workspace
 	href="javascript:showPanel('strategy_new')" >New</a></li>
 
    <li><a id="tab_strategy_results" title="View and interact with your opened strategies. To close a strategy, click the [X] in its upper right corner" 
-	onclick="this.blur()" href="javascript:showPanel('strategy_results')">Opened <font class="subscriptCount">(<v>${openCount}</v>)</font></a></li>
+	onclick="this.blur()" href="javascript:showPanel('strategy_results')">Opened <font class="subscriptCount">(<var>${openCount}</var>)</font></a></li>
 
    <li><a id="tab_search_history" title="View and browse all your strategies" 
 	onclick="this.blur()" href="javascript:showPanel('search_history')">All <font class="subscriptCount">(${allCount})</font></a></li>

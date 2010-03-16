@@ -157,7 +157,7 @@ function removeSubStrategies(ord1, ord2){
 }
 
 function showStrategies(view, ignoreFilters, besc){
-	$("#tab_strategy_results font.subscriptCount v").text(besc);
+	$("#tab_strategy_results font.subscriptCount var").text(besc);
 	var sC = 0;
 	for(s in strats){
 		if(s.indexOf(".") == -1)
