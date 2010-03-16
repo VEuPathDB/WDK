@@ -8,7 +8,7 @@
 <c:set value="${vals['project_id']}" var="pid"/>
 <c:set value="20" var="imagesize"/>
         
-<div class="record">
+<span class="wdk-record" recordClass="${wdkRecord.recordClass.fullName}">
     <c:choose>
         <c:when test="${wdkUser.guest}">
           <a class="basket" href="javascript:void(0)" onClick="popLogin()">
@@ -38,10 +38,10 @@
             
         </c:otherwise>
     </c:choose>
-    <div class="primaryKey">
+    <span class="primaryKey">
         <c:forEach items="${vals}" var="key">
             <span key="${key.key}">${key.value}</span>
         </c:forEach>
-    </div>
-</div>
+    </span>
+</span>
 		
