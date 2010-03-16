@@ -210,7 +210,7 @@ public class FavoriteFactory {
         return count;
     }
 
-    public Map<String, List<Favorite>> getFavorites(User user)
+    public Map<RecordClass, List<Favorite>> getFavorites(User user)
             throws WdkUserException, WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException {
         String sql = "SELECT * FROM " + schema + TABLE_FAVORITES + " WHERE "
@@ -227,7 +227,7 @@ public class FavoriteFactory {
             rs = ps.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql, start);
 
-            Map<String, List<Favorite>> favorites = new LinkedHashMap<String, List<Favorite>>();
+            Map<RecordClass, List<Favorite>> favorites = new LinkedHashMap<RecordClass, List<Favorite>>();
             while (rs.next()) {
                 String rcName = rs.getString(COLUMN_RECORD_CLASS);
                 RecordClass recordClass = (RecordClass) wdkModel.getRecordClass(rcName);
@@ -236,7 +236,7 @@ public class FavoriteFactory {
                     list = favorites.get(rcName);
                 } else {
                     list = new ArrayList<Favorite>();
-                    favorites.put(rcName, list);
+                    favorites.put(recordClass, list);
                 }
 
                 String[] columns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
