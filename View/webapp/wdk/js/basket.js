@@ -118,7 +118,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 
 
 function updateBasketCount(c){
-		jQuery("#menu a#mybasket span.subscriptCount v").text(c)
+		jQuery("#menu a#mybasket span.subscriptCount var").text(c)
 }
 
 function checkPageBasket(){
