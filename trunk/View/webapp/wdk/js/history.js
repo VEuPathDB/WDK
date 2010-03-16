@@ -28,6 +28,7 @@ function updateHistory(){
 			dataType: "html",
 			success: function(data){
 				$("#search_history").html(data);
+				$("#strategy_tabs li a#tab_search_history font.subscriptCount").html("(" + $("#search_history span#totalStrategyCount").html() + ")");
 				initDisplayType();
 				$("body").unblock();
 			},
