@@ -26,6 +26,7 @@
 
 .multiSelectOptions {
 	width: auto;
+	min-width: 206px;
 	max-height: 150px;
 	margin-top: -1px;
 	overflow-y: scroll;

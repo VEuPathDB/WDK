@@ -21,6 +21,7 @@
 <c:set var="modelName" value="${model.name}"/>
 
 <!-- decide whether strategy history is empty -->
+<span style="display:none" id="totalStrategyCount">${user.strategyCount}</span>
 <c:choose>
   <c:when test="${user == null || user.strategyCount == 0}">
   <div style="font-size:120%;line-height:1.2em;text-indent:10em;padding:0.5em">You have no search strategies in your history. <p style="text-indent:10em;">Please run a search to start a strategy.</p></div>
@@ -33,7 +34,7 @@
     <c:set var="type" value="${strategyEntry.key}"/>
     <c:set var="unsavedStratList" value="${strategyEntry.value}"/>
     <c:set var="savedStratList" value="${savedStrategiesMap[type]}" />
-
+	<c:set var="totalStratsCount" value="${fn:length(savedStratList) + fn:length(unsavedStratList)}"/>
     <c:if test="${fn:length(unsavedStratList) > 0 || fn:length(savedStratList) > 0}">
       <c:choose>
         <c:when test="${fn:length(unsavedStratList) > 0}">
@@ -52,7 +53,7 @@
       </c:if>
       <li>
         <a id="tab_${recTabName}" onclick="displayHist('${recTabName}')"
-           href="javascript:void(0)">${recDispName}&nbsp;Strategies</a>
+           href="javascript:void(0)">${recDispName}&nbsp;Strategies&nbsp;(${totalStratsCount})</a>
       </li>
     </c:if>
   </c:forEach>

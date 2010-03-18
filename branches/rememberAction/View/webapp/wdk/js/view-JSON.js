@@ -141,7 +141,7 @@ function booleanStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 		"			</a>"+
 		"			<div class='crumb_details'></div>"+
 		"			<h6 class='resultCount'>"+
-		"				<a title='CLICK to show these results in the area below.' class='operation' onclick='" + bool_link + "' href='javascript:void(0)'>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.displayType, jsonstep.results) + "</a>"+
+		"				<a title='CLICK to show these results in the area below.' class='operation' onclick='" + bool_link + "' href='javascript:void(0)'>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.shortDisplayType, jsonstep.results) + "</a>"+
 		"			</h6>" + filterImg;
 		if(!modelstep.isLast){
 			if(modelstep.nextStepType == "transform"){
@@ -186,7 +186,7 @@ function booleanStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 		"			<span id='fullStepName' style='display: none;'>" + fullName + "</span>"+
 		"			<div class='crumb_details'></div>"+
 		"		</h3>"+
-		"		<h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + childStp.results + "&nbsp;" + getDisplayType(childStp.displayType, childStp.results) + "</a></h6>"+
+		"		<h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + childStp.results + "&nbsp;" + getDisplayType(childStp.shortDisplayType, childStp.results) + "</a></h6>"+
 		childfilterImg +
 		"		<ul>"+
 		"			<li><img class='downarrow' src='wdk/images/arrow_chain_down2.png' alt='equals'></li>"+
@@ -248,7 +248,7 @@ function singleStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 		"			<span id='fullStepName' style='display: none;'>" + fullName + "</span>"+
 		"			<div class='crumb_details'></div>"+
 		"		</h3>"+
-		"		<h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.displayType,jsonstep.results) + "</a></h6>"+
+		"		<h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.shortDisplayType,jsonstep.results) + "</a></h6>"+
 		 filterImg;
 	if(!modelstep.isLast){
 		inner = inner + 
@@ -379,7 +379,9 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 		}
 		parms = jsonstep.urlParams;
 
-		edit_step =	"<a title='" + ss_edit_popup + "'  class='edit_step_link " + disab + "' href='javascript:void(0)' onclick='Edit_Step(this,\"" + questionName + "\",\"" + parms + "\"," + hideQu + "," + hideOp + ");hideDetails(this)' id='" + sid + "|" + parentid + "|" + modelstep.operation + "'>Revise</a>&nbsp;|&nbsp;";
+		edit_step =	"<a title='" + ss_edit_popup + "'  class='edit_step_link " + disab 
+                    + "' href='javascript:void(0)' onclick='Edit_Step(this,\"" + questionName 
+                    + "\",\"" + parms + "\"," + hideQu + "," + hideOp + "," + jsonstep.assignedWeight + ");hideDetails(this)' id='" + sid + "|" + parentid + "|" + modelstep.operation + "'>Revise</a>&nbsp;|&nbsp;";
 
 		if(modelstep.frontId == 1 || modelstep.isTransform || jsonstep.isboolean){
 			expand_step = 	"<a title='" + ss_expand_popup + "' class='expand_step_link disabled' href='javascript:void(0)'>Make Nested Strategy</a>&nbsp;|&nbsp;";
@@ -410,7 +412,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 	    "		<div class='crumb_menu'>"+ rename_step + view_step + edit_step + expand_step + insert_step + customMenu + delete_step + close_button +
 		"		</div>"+ name +
 		"		<table></table><hr class='clear' />" + filteredName +
-		"		<p><b>Results:&nbsp;</b>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.displayType,jsonstep.results);// + "&nbsp;&nbsp;|&nbsp;&nbsp;<a href='downloadStep.do?step_id=" + modelstep.back_step_Id + "'>Download</a>";
+		"		<p><b>Results:&nbsp;</b>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.shortDisplayType,jsonstep.results);// + "&nbsp;&nbsp;|&nbsp;&nbsp;<a href='downloadStep.do?step_id=" + modelstep.back_step_Id + "'>Download</a>";
        
     inner += "<hr class='clear' />" + createWeightSection(jsonstep,modelstep,sid);
 
@@ -452,7 +454,8 @@ function createParameters(params){
 			var value = document.createElement('td');
 			$(prompt).addClass("medium").css({
 				"text-align":"right",
-				"vertical-align":"top"
+				"vertical-align":"top",
+                		"white-space" : "nowrap"
 			});
 			$(prompt).html("<b><i>" + this.prompt + "</i></b>");
 			$(space).addClass("medium").attr("valign","top");
@@ -505,7 +508,7 @@ function createStrategyName(strat){
 	var share = "";
 
 	if(json.saved){
-		share = "<a title='Email this URL to your best friend.' href=\"javascript:showExportLink('" + id + "')\"><b style='font-size:120%'>Share</b></a>"+
+		share = "<a id='share_" + id + "' title='Email this URL to your best friend.' href=\"javascript:showExportLink('" + id + "')\"><b style='font-size:120%'>Share</b></a>"+
 		"<div class='modal_div export_link' id='export_link_div_" + id + "'>" +
 	        "<div class='dragHandle'>" +
 		"<div class='modal_name'>"+
@@ -518,9 +521,9 @@ function createStrategyName(strat){
 		"<input type='text' size=" + (exportURL.length-6) + " value=" + exportURL + " readonly='true' />" +
 		"</div>";
 	}else if(guestUser == 'true'){
-		share = "<a title='Please LOGIN so you can SAVE and then SHARE (email) your strategy.' href='javascript:void(0)' onclick='popLogin()'><b style='font-size:120%'>Share</b></a>";
+		share = "<a id='share_" + id + "' title='Please LOGIN so you can SAVE and then SHARE (email) your strategy.' href='javascript:void(0)' onclick=\"popLogin();setFrontAction('share'," + id + ");\"><b style='font-size:120%'>Share</b></a>";
 	}else{
-		share = "<a title='SAVE this strategy so you can SHARE it (email its URL).' href='javascript:void(0)' onclick=\"showSaveForm('" + id + "', true,true)\"><b style='font-size:120%'>Share</b></a>";
+		share = "<a id='share_" + id + "' title='SAVE this strategy so you can SHARE it (email its URL).' href='javascript:void(0)' onclick=\"showSaveForm('" + id + "', true,true)\"><b style='font-size:120%'>Share</b></a>";
 	}
 
 
@@ -529,10 +532,10 @@ function createStrategyName(strat){
 	var sTitle = "Save As";
 	// if(json.saved) sTitle = "COPY AS";
 	if (guestUser == 'true') {
-		save = "<a title='Please LOGIN so you can SAVE (make a snapshot) your strategy.' class='save_strat_link' href='javascript:void(0)' onclick='popLogin()'><b style='font-size:120%'>" + sTitle + "</b></a>";
+		save = "<a id='save_" + id + "' title='Please LOGIN so you can SAVE (make a snapshot) your strategy.' class='save_strat_link' href='javascript:void(0)' onclick=\"popLogin();setFrontAction('save'," + id + ");\"><b style='font-size:120%'>" + sTitle + "</b></a>";
 	}
 	else {
-		save = "<a title='A saved strategy is like a snapshot, it cannot be changed.' class='save_strat_link' href='javascript:void(0)' onclick=\"showSaveForm('" + id + "', true)\"><b style='font-size:120%'>" + sTitle + "</b></a>";
+		save = "<a id='save_" + id + "' title='A saved strategy is like a snapshot, it cannot be changed.' class='save_strat_link' href='javascript:void(0)' onclick=\"showSaveForm('" + id + "', true)\"><b style='font-size:120%'>" + sTitle + "</b></a>";
 	}
 	save += "<div id='save_strat_div_" + id + "' class='modal_div save_strat'>" +
 		"<div class='dragHandle'>" +
@@ -639,6 +642,12 @@ function createInvalidDiv(){
 function reviseInvalidSteps(ele){
 	var iv_id = $(ele).parent().attr("id").split("_");
 	$("div#diagram_" + iv_id[0] + " div#step_" + iv_id[1] + "_sub h3 a#stepId_" + iv_id[1]).click();
+}
+
+function setFrontAction(action, strat, step) {
+	$("#loginForm form[name=loginForm]").append("<input type='hidden' name='action' value='" + action + "'/>");
+	$("#loginForm form[name=loginForm]").append("<input type='hidden' name='actionStrat' value='" + strat + "'/>");
+	$("#loginForm form[name=loginForm]").append("<input type='hidden' name='actionStep' value='" + step + "'/>");
 }
 
 function popLogin() {

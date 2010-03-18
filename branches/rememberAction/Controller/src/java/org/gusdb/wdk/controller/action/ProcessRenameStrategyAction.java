@@ -15,6 +15,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
@@ -80,9 +81,11 @@ public class ProcessRenameStrategyAction extends Action {
                     // doing a "save as"), then make a new copy of this
                     // strategy.
                     if (strategy.getIsSaved()
-                            && !customName.equals(strategy.getSavedName()))
-                        strategy = wdkUser.createStrategy(
-                                strategy.getLatestStep(), false);
+                            && !customName.equals(strategy.getSavedName())) {
+                        // clone the last step
+                        StepBean step = strategy.getLatestStep().deepClone();
+                        strategy = wdkUser.createStrategy(step, false);
+                    }
 
                     // mark the strategy as saved, set saved name
                     strategy.setIsSaved(true);
@@ -100,6 +103,35 @@ public class ProcessRenameStrategyAction extends Action {
                 } catch (WdkUserException ex) {
                     // Adding active strat will be handled by ShowStrategyAction
                 }
+
+		// If a front end action is specified in the url, set it in the current user
+		String frontAction = request.getParameter("action");
+		Integer frontStrategy = null;
+		try {
+		    frontStrategy = Integer.valueOf(request.getParameter("actionStrat"));
+		}
+		catch (Exception ex) {
+		}
+		Integer frontStep = null;
+		try {
+		    frontStep = Integer.valueOf(request.getParameter("actionStep"));
+		}
+		catch (Exception ex) {
+		}
+
+		if (frontStrategy != null && frontStrategy.intValue() == oldStrategyId) {
+		    frontStrategy = strategy.getStrategyId();
+		}
+		System.out.println("front strategy: " + frontStrategy);
+		System.out.println("front step: " + frontStep);
+
+		wdkUser.setFrontAction(frontAction);
+		if (frontStrategy != null) {
+		    wdkUser.setFrontStrategy(frontStrategy);
+		}
+		if (frontStep != null) {
+		    wdkUser.setFrontStep(frontStep);
+		}
 
                 request.setAttribute(CConstants.WDK_STEP_KEY,
                         strategy.getLatestStep());

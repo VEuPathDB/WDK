@@ -487,6 +487,10 @@ public class StepBean {
         return step.getDisplayType();
     }
 
+    public String getShortDisplayType() {
+        return step.getShortDisplayType();
+    }
+
     /**
      * @return
      * @see org.gusdb.wdk.model.user.Step#getValidationMessage()

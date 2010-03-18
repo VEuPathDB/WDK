@@ -65,7 +65,7 @@
 
 <%-- set the weight --%>
 <div align="center">
-  Assign Weight: <input type="text" name="weight" value="0">
+  Assign Weight: <input type="text" name="weight" value="${weight}">
 </div>
 
 <div class="filter-button"><html:submit property="questionSubmit" value="Get Answer"/></div>

@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.BooleanOperator;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -89,12 +90,17 @@ public class User /* implements Serializable */{
     // currently open strategies
     private transient ActiveStrategyFactory activeStrategyFactory;
 
-    // currently viewed results, identified by strategy id & step id
+    // keep track of most recent front end action
+    private String frontAction = null;
+    private Integer frontStrategy = null;
+    private Integer frontStep = null;
 
     /**
      * cache the last step. This data may have impact on the memory usage.
      */
     private Step cachedStep;
+
+    private boolean usedWeight = false;
 
     User(WdkModel model, int userId, String email, String signature)
             throws WdkUserException {
@@ -363,6 +369,38 @@ public class User /* implements Serializable */{
         userRoles.remove(userRole);
     }
 
+    public String getFrontAction() {
+	return frontAction;
+    }
+
+    public Integer getFrontStrategy() {
+	return frontStrategy;
+    }
+
+    public Integer getFrontStep() {
+	return frontStep;
+    }
+
+    public void setFrontAction(String frontAction) {
+	this.frontAction = frontAction;
+    }
+
+    public void setFrontStrategy(int frontStrategy) {
+	System.out.println("Setting frontStrategy.");
+	this.frontStrategy = Integer.valueOf(frontStrategy);
+	System.out.println("Done.");
+    }
+
+    public void setFrontStep(int frontStep) {
+	this.frontStep = Integer.valueOf(frontStep);
+    }
+
+    public void resetFrontAction() {
+	frontAction = null;
+	frontStrategy = null;
+	frontStep = null;
+    }
+
     /**
      * @param guest
      *            The guest to set.
@@ -425,6 +463,9 @@ public class User /* implements Serializable */{
             int pageStart, int pageEnd, boolean deleted, boolean validate,
             int assignedWeight) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
+        if (assignedWeight != 0) usedWeight = true;
+        logger.debug("assigne weight: " + assignedWeight +", used weight: " + usedWeight);
+
         Step step = stepFactory.createStep(this, question, paramValues, filter,
                 pageStart, pageEnd, deleted, validate, assignedWeight);
         if (stepCount != null) stepCount++;
@@ -487,15 +528,17 @@ public class User /* implements Serializable */{
         logger.debug("Merging user #" + user.getUserId() + " into user #"
                 + userId + "...");
 
+
         // first of all we import all the strategies
         Set<Integer> importedSteps = new LinkedHashSet<Integer>();
         Map<Integer, Integer> strategiesMap = new LinkedHashMap<Integer, Integer>();
+	Map<Integer, Integer> stepsMap = new LinkedHashMap<Integer, Integer>();
         for (Strategy strategy : user.getStrategies()) {
             // the root step is considered as imported
             Step rootStep = strategy.getLatestStep();
 
             // import the strategy
-            Strategy newStrategy = this.importStrategy(strategy);
+            Strategy newStrategy = this.importStrategy(strategy, stepsMap);
 
             importedSteps.add(rootStep.getDisplayId());
             strategiesMap.put(strategy.getStrategyId(),
@@ -517,8 +560,20 @@ public class User /* implements Serializable */{
                 continue;
             if (importedSteps.contains(step.getDisplayId())) continue;
 
-            stepFactory.importStep(this, step);
+            stepFactory.importStep(this, step, stepsMap);
         }
+
+	// if a front action is specified, copy it over and update ids
+	
+	if (user.getFrontAction() != null) {
+	    setFrontAction(user.getFrontAction());
+	    if (strategiesMap.containsKey(user.getFrontStrategy())) {
+		setFrontStrategy(strategiesMap.get(user.getFrontStrategy()));
+	    }
+	    if (stepsMap.containsKey(user.getFrontStep())) {
+		setFrontStep(stepsMap.get(user.getFrontStep()));
+	    }
+	}
     }
 
     public Map<Integer, Step> getStepsMap() throws WdkUserException,
@@ -902,7 +957,7 @@ public class User /* implements Serializable */{
     public void setItemsPerPage(int itemsPerPage) throws WdkUserException,
             WdkModelException {
         if (itemsPerPage <= 0) itemsPerPage = 20;
-        else if (itemsPerPage > 100) itemsPerPage = 100;
+        else if (itemsPerPage > 1000) itemsPerPage = 1000;
         setGlobalPreference(User.PREF_ITEMS_PER_PAGE,
                 Integer.toString(itemsPerPage));
         save();
@@ -1016,18 +1071,39 @@ public class User /* implements Serializable */{
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
         String summaryChecksum = projectPreferences.get(summaryKey);
         String[] summary = null;
+        boolean savedSummary = false;
         if (summaryChecksum != null && summaryChecksum.length() > 0) {
             // get summary list
             QueryFactory queryFactory = wdkModel.getQueryFactory();
             summary = queryFactory.getSummaryAttributes(summaryChecksum);
-            if (summary != null && summary.length > 0) return summary;
+            if (summary != null && summary.length > 0) savedSummary = true;
         }
 
-        // user does't have preference, use the default of the question
-        Question question = wdkModel.getQuestion(questionFullName);
-        Map<String, AttributeField> attributes = question.getSummaryAttributeFieldMap();
-        summary = new String[attributes.size()];
-        attributes.keySet().toArray(summary);
+        if (!savedSummary) {
+            // user does't have preference, use the default of the question 
+            Question question = wdkModel.getQuestion(questionFullName);
+            Map<String, AttributeField> attributes = question.getSummaryAttributeFieldMap();
+            summary = new String[attributes.size()];
+            attributes.keySet().toArray(summary);
+        }
+
+        // if user has assigned non-zero weight, display the weight column
+        logger.debug("used weight: " + usedWeight);
+        if (usedWeight) {
+            boolean hasWeight = false;
+            for (String attribute : summary) {
+                if (attribute.equals(Utilities.COLUMN_WEIGHT)) {
+                    hasWeight = true;
+                    break;
+                }
+            }
+            if (!hasWeight) {
+                String[] array = new String[summary.length + 1];
+                System.arraycopy(summary, 0, array, 0, summary.length);
+                array[summary.length] = Utilities.COLUMN_WEIGHT;
+                summary = array;
+            }
+        }
 
         if (summaryChecksum == null || summaryChecksum.length() == 0)
             setSummaryAttributes(questionFullName, summary);
@@ -1037,6 +1113,9 @@ public class User /* implements Serializable */{
     public void resetSummaryAttributes(String questionFullName) {
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
         projectPreferences.remove(summaryKey);
+        // also reset the usedWeight flag
+        usedWeight = false;
+        logger.debug("reset used weight to false");
     }
 
     public String setSummaryAttributes(String questionFullName,
@@ -1140,13 +1219,13 @@ public class User /* implements Serializable */{
             User user = userFactory.getUser(userSignature);
             oldStrategy = user.getStrategy(displayId, true);
         }
-        return importStrategy(oldStrategy);
+        return importStrategy(oldStrategy, null);
     }
 
-    public synchronized Strategy importStrategy(Strategy oldStrategy)
+    public synchronized Strategy importStrategy(Strategy oldStrategy, Map <Integer,Integer> stepIdsMap)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy);
+        Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy, stepIdsMap);
         newStrategy.update(true);
         // highlight the imported strategy
         int rootStepId = newStrategy.getLatestStepId();
@@ -1339,5 +1418,10 @@ public class User /* implements Serializable */{
         Strategy copy = stepFactory.copyStrategy(strategy, stepId);
         if (strategyCount != null) strategyCount++;
         return copy;
+    }
+    
+    public void setUsedWeight(boolean usedWeight) {
+        logger.debug("set used weight: " + usedWeight);
+        this.usedWeight = usedWeight;
     }
 }

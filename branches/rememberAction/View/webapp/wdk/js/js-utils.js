@@ -122,9 +122,10 @@ function getDisplayType(type, number){
 }
 
 function initShowHide(details){
+	var wdk = new WDK();
 	$(".param-group[type='ShowHide']",details).each(function() {
         // register the click event
-        var name = $(this).attr("name");
+        var name = $(this).attr("name") + "_details";
         var expire = 365;   // in days
         $(this).find(".group-handle").click(function() {
             var handle = this;
@@ -139,5 +140,18 @@ function initShowHide(details){
                 wdk.createCookie(name, "show", expire);
             }
         });
+
+		// decide whether need to change the display or not
+        var showFlag = wdk.readCookie(name);
+        if (showFlag == null) return;
+        
+        var status = $(this).children(".group-detail").css("display");
+        if ((showFlag == "show") && (status == "none")) {   
+            // should show, but it is hidden
+            $(this).find(".group-handle").trigger("click");
+        } else if ((showFlag == "hide") && (status != "none")) {
+            // should hide, bit it is shown
+            $(this).find(".group-handle").trigger("click");
+        }
 	});
 }

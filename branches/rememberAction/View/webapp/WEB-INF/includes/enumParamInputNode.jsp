@@ -16,7 +16,7 @@ Provides form input element for a given term tree node of EnumParam.
 <%-- set left margin for node (instead of using spacer gif
      for the leaves) --%>
 <c:if test="${fn:length(children) == 0}">
-    <c:set var="nodeMargin" value="margin-left:16px;" />
+    <c:set var="nodeMargin" value="margin-left:22px;" />
 </c:if>
 
 <%-- display param term --%>
@@ -26,7 +26,7 @@ Provides form input element for a given term tree node of EnumParam.
             <c:set var="nodeValue" value="${node.term}" />
         </c:when>
         <c:otherwise>
-            <img class="switch plus" title="Click to expand(+) or collapse(-)" src="images/plus.gif" width="13" height="13" onclick="toggleChildren(this)"/>
+            <img class="switch plus" title="Click to expand(+) or collapse(-)" src="images/plus.gif" style="vertical-align:bottom" onclick="toggleChildren(this)"/>
             <c:set var="nodeValue" />
         </c:otherwise>
     </c:choose>
