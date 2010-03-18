@@ -45,7 +45,8 @@ public class BooleanQuestionTest {
     public BooleanQuestionTest() throws Exception {
         // load the model
         wdkModel = UnitTestHelper.getModel();
-        user = UnitTestHelper.getRegisteredUser();
+        //user = UnitTestHelper.getRegisteredUser();
+        user = UnitTestHelper.getGuest();
         platform = wdkModel.getQueryPlatform();
     }
 
