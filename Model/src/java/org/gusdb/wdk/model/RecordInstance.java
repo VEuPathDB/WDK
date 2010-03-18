@@ -142,7 +142,7 @@ public class RecordInstance extends AttributeValueContainer {
                 // throwing exception prevents proper handling in front
                 // end...just return?
                 isValidRecord = false;
-                throw new WdkModelException("Attribute query " + queryName
+                throw new WdkUserException("Attribute query " + queryName
                         + " doesn't return any row: \n" + instance.getSql());
             }
 
@@ -292,7 +292,7 @@ public class RecordInstance extends AttributeValueContainer {
             for (int i = 0; i < nq.length; i++) {
                 Question nextNq = nq[i];
                 AnswerValue a = getNestedRecordAnswer(nextNq);
-                // TODO
+
                 // the reset function is no longer available; instead call
                 // cloneAnswer() to get a new answer object and work on it
                 // a.resetRecordInstanceCounter();

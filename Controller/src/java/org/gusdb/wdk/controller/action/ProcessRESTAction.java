@@ -320,7 +320,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
                 if (ep.getDependedParam() == null) {
                     for (String term : ep.getVocabMap().keySet()) {
                         // writer.println("<option>" + term + "</option>");
-                        writer.println("<option value='" + term
+                        writer.println("<option value='" + term.replaceAll("'","&apos;")
                                 + "'><doc title='description'><![CDATA["
                                 + ep.getDisplayMap().get(term)
                                 + "]]></doc></option>");
@@ -365,8 +365,8 @@ public class ProcessRESTAction extends ShowQuestionAction {
         writer.println("<option value='all'><doc title='description'>Show all attributes</doc></option>");
         writer.println("<option value='none'><doc title='description'>Show no attributes</doc></option>");
         for (String attr : wdkQuestion.getReportMakerAttributesMap().keySet())
-            writer.println("<option value='"
-                    + attr
+    		writer.println("<option value='"
+                    + attr.replaceAll("'","&apos;")
                     + "'><doc title='description'><![CDATA["
                     + wdkQuestion.getReportMakerAttributesMap().get(attr).getDisplayName()
                     + "]]></doc></option>");

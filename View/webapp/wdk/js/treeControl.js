@@ -17,6 +17,9 @@ function initTreeState(rootNode){
 			for(var m = 0; m < subnodes.length; m++)
 				toggleChildrenCheck(subnodes[m]);
 		}
+		var a = $("a", rootNode)[0];
+		expandCollapseAll(a, true);
+		expandCollapseAll(a, false);
 	}
 }
 

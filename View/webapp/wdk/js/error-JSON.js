@@ -1,4 +1,4 @@
-var OOSMessage = "Sorry, there was a synchronization problem.\nWe have updated the page what the latest infromation we have.\nPlease re-do your last action.";
+var OOSMessage = "Sorry, there was a synchronization problem.\nWe have updated the page with the latest infromation we have.\nPlease re-do your last action.";
 var SessionTimeOutMessage = "Your session may have timed out and all of your data has been lost.  By registering and logging in you can prevent this from happening in the future.";
 function ErrorHandler(evt, data, strategy, qform, name, fromHist){
 	var type = null;

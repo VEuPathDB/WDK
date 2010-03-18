@@ -835,6 +835,7 @@ public class WdkModel {
             internalQuestionSet.setName(Utilities.INTERNAL_QUESTION_SET);
             internalQuestionSet.setDoNotTest(true);
             addQuestionSet(internalQuestionSet);
+            internalQuestionSet.excludeResources(projectId);
         }
     }
 

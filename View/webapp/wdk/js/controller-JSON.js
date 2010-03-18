@@ -78,11 +78,11 @@ function initDisplay(){
 	});
 }
 
-function highlightStep(str, stp, v, pagerOffset, ignoreFilters){
+function highlightStep(str, stp, v, pagerOffset, ignoreFilters, action){
 	if(!str || stp == null){
 		NewResults(-1);
 	}else{
-		NewResults(str.frontId, stp.frontId, v, pagerOffset, ignoreFilters);
+		NewResults(str.frontId, stp.frontId, v, pagerOffset, ignoreFilters, action);
 	}
 }
 
@@ -104,7 +104,7 @@ function updateStrategies(data, ignoreFilters){
 		}
 	  }
 	}
-	showStrategies(data.currentView, ignoreFilters);
+	showStrategies(data.currentView, ignoreFilters, data.state.length);
 }
 
 function removeClosedStrategies(){
@@ -156,7 +156,8 @@ function removeSubStrategies(ord1, ord2){
 	}
 }
 
-function showStrategies(view, ignoreFilters){
+function showStrategies(view, ignoreFilters, besc){
+	$("#tab_strategy_results font.subscriptCount var").text(besc);
 	var sC = 0;
 	for(s in strats){
 		if(s.indexOf(".") == -1)
@@ -168,6 +169,12 @@ function showStrategies(view, ignoreFilters){
 		displayOpenSubStrategies(strats[t], s2);
 	}
 	$("#Strategies").html($(s2).html());
+	if(view.action != undefined) {
+		if (view.action == "share" || view.action == "save") {
+			var x = $("a#" + view.action + "_" + view.actionStrat);
+			x.click();
+		}			
+	}
 	if(view.strategy != undefined || view.step != undefined){
 		var initStr = getStrategyFromBackId(view.strategy);
 		var initStp = initStr.getStep(view.step, false);
@@ -176,7 +183,12 @@ function showStrategies(view, ignoreFilters){
 		}else{
 			var isVenn = (initStp.back_boolean_Id == view.step);
 			var pagerOffset = view.pagerOffset;
-			highlightStep(initStr, initStp, isVenn, pagerOffset, ignoreFilters);
+			if(view.action != undefined && view.action.match("^basket")) {
+				highlightStep(initStr, initStp, isVenn, pagerOffset, ignoreFilters, view.action);
+			}
+			else {
+				highlightStep(initStr, initStp, isVenn, pagerOffset, ignoreFilters);
+			}
 		}
 	}else{
 		NewResults(-1);
@@ -271,7 +283,7 @@ function unloadStrategy(id){
 }
 
 
-function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters){
+function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters, action){
 	if(f_strategyId == -1){
 		$("#strategy_results > div.Workspace").html("");
 		current_Front_Strategy_Id = null;
@@ -289,10 +301,12 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters){
 	if(bool){
 		d.step = step.back_boolean_Id;
 	}
-	if (!pagerOffset) 
+	if (!pagerOffset) {
 		d.noskip = 1;
-	else 
+	}else{ 
+		d.pager = new Object();
 		d.pager.offset = pagerOffset;    
+	}
 	$.ajax({
 		url: url,
 		dataType: "html",
@@ -316,13 +330,18 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters){
 					$("#Strategies div#diagram_" + strategy.frontId + " div[id='step_" + step.frontId + "_sub']").addClass("selectedarrow");
 					init_view_step = step.back_step_Id;
 				}
-			    ResultsToGrid(data, ignoreFilters);
+			    ResultsToGrid(data, ignoreFilters, "strategy_results");
 			    $("span#text_strategy_number").html(strategy.JSON.name);
 			    $("span#text_step_number").html(step.frontId);
 			    $("span#text_strategy_number").parent().show();
                         } 
+			if (action != undefined) {
+				$("#" + action).click();
+			}
+				
                 removeLoading(f_strategyId);
 				checkPageBasket();
+				$.cookie("refresh_results", "false", { path : '/' });
 		},
 		error : function(data, msg, e){
 			  alert("ERROR \n "+ msg + "\n" + e
@@ -499,13 +518,18 @@ function openStrategy(stratId){
 		url: url,
 		dataType:"json",
 		data:"state=" + p_state,
+		beforeSend: function(){
+			$("body").block();
+		},
 		success: function(data){
+			$("body").unblock();
 			if(ErrorHandler("Open", data, null, null)){
 				updateStrategies(data);
 				if ($("#strategy_results").css('display') == 'none') showPanel('strategy_results');
 			}
 		},
 		error: function(data, msg, e){
+			$("body").unblock();
 			alert("ERROR \n "+ msg + "\n" + e
                                       + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
 		}
@@ -562,8 +586,9 @@ function closeStrategy(stratId, isBackId){
 		stratId = strat.frontId;
 	}
 	var cs = strat.checksum;
-	if(strat.subStratOf != null)
+	if(strat.subStratOf != null){
 		cs = getStrategy(strat.subStratOf).checksum;
+	}
 	var url = "closeStrategy.do?strategy=" + strat.backId+"&strategy_checksum="+cs;
 	$.ajax({
 		url: url,
@@ -643,11 +668,13 @@ function saveOrRenameStrategy(stratId, checkName, save, fromHist){
 	if (fromHist) form = $(".viewed-popup-box form");
 	var name = $("input[name='name']",form).attr("value");
 	var strategy = $("input[name='strategy']",form).attr("value");
+	var action = $("input[name='action']",form).val();
+	var actionStrat = $("input[name='actionStrat']",form).val();
 	var url="renameStrategy.do?strategy=";
 	var cs = strat.checksum;
 	if(strat.subStratOf != null)
 		cs = getStrategy(strat.subStratOf).checksum;
-	url = url + strategy + "&name=" + escape(name) + "&checkName=" + checkName+"&save=" + save + "&strategy_checksum="+cs;
+	url = url + strategy + "&name=" + escape(name) + "&checkName=" + checkName+"&save=" + save + "&action=" + action + "&actionStrat=" + actionStrat + "&strategy_checksum="+cs;
 	if (fromHist) url = url + "&showHistory=true";
 	$.ajax({
 		url: url,

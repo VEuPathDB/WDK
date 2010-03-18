@@ -30,20 +30,21 @@
   <thead>
   <tr class="headerrow">
     <th scope="col" style="width: 25px;">&nbsp;</th>
-    <th scope="col" style="width: 20px;">&nbsp;</th>
+    <%-- th scope="col" style="width: 20px;">&nbsp;</th --%>
     <th scope="col">
       <c:if test="${prefix != null}">${prefix}&nbsp;</c:if>Strategies&nbsp;(${fn:length(strategies)})
     </th>
     <th scope="col" style="width: 3em;">&nbsp;</th>
     <th scope="col" style="width: 4em">&nbsp;</th>
     <th scope="col" style="width: 9em">&nbsp;</th>
+    <th scope="col" style="width: 5em;text-align:center">Created</th>
     <th scope="col" style="width: 5em;text-align:center">
       <c:choose>
-        <c:when test="${prefix == 'Saved'}">Saved</c:when>
-        <c:otherwise>Modified</c:otherwise>
+        <c:when test="${prefix == 'Saved'}">Saved At</c:when>
+        <c:otherwise>Last Modified</c:otherwise>
       </c:choose>
     </th>
-    <th scope="col" style="width: 5em;text-align:center">Viewed</th>
+<%--     <th scope="col" style="width: 5em;text-align:center">Last Opened</th> --%>
     <th scope="col" style="width: 4em">Version</th>
     <th scope="col" style="width: 4em;text-align:right">Size</th>
     <th>&nbsp;&nbsp;</th>
@@ -72,9 +73,11 @@
         </c:if>
       </c:forEach>
 
+<%--
       <td>
         <img id="img_${strategyId}" class="plus-minus plus" src="<c:url value='/wdk/images/sqr_bullet_plus.png'/>" alt="" onclick="toggleSteps2(${strategyId})"/>
       </td>
+--%>
 
       <c:set var="dispNam" value="${strategy.name}"/>
 
@@ -134,8 +137,9 @@
             <option value="deleteStrategy(${strategyId}, true)">Delete</option>
          </select>
       </td>
+      <td nowrap style="padding:0 2px 0 2px;">${strategy.createdTimeFormatted}</td>
       <td nowrap style="padding:0 2px 0 2px;">${strategy.lastModifiedTimeFormatted}</td>
-      <td nowrap  style="padding:0 2px;text-align:right">${strategy.lastRunTimeFormatted}</td>
+<%--       <td nowrap  style="padding:0 2px;text-align:right">${strategy.lastRunTimeFormatted}</td> --%>
       <td nowrap style="text-align:center">
         <c:choose>
           <c:when test="${strategy.version == null || strategy.version eq ''}">${wdkModel.version}</c:when>

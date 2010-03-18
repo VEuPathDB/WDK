@@ -56,32 +56,6 @@ public class ShowApplicationAction extends ShowSummaryAction {
             request.setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY,
                     activeStrategies);
 
-            /*
-             * Charles Treatman 6/5/09 Add code here to set the
-             * current_application_tab cookie so that user will go to the Browse
-             * Strategies tab if no strats are opened.
-             */
-            StrategyBean[] openedStrategies = wdkUser.getActiveStrategies();
-            if (openedStrategies.length == 0) {
-		Cookie[] cookies = request.getCookies();
-		Cookie tabCookie = null;
-		for (Cookie cookie : cookies) {
-		    if (cookie.getName().compareTo("current_application_tab") == 0) {
-			tabCookie = cookie;
-			break;
-		    }
-		}
-		if (tabCookie == null || tabCookie.getValue().compareTo("basket") != 0) {
-		    tabCookie = new Cookie("current_application_tab",
-						  "search_history");
-		    // make sure it's only a session cookie, not persistent
-		    tabCookie.setMaxAge(-1);
-		    // make sure the cookie is good for whole site, not just webapp
-		    tabCookie.setPath("/");
-		    response.addCookie(tabCookie);
-		}
-            }
-
 	    String strategyViewFile = CConstants.WDK_CUSTOM_VIEW_DIR
 		+ File.separator + CConstants.WDK_PAGES_DIR
 		//+ File.separator + CConstants.WDK_STRATEGY_DIR

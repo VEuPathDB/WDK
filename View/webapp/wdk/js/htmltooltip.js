@@ -57,9 +57,8 @@ var htmltooltip={
 				this.tippos=ancpos+'_tip';
 				var tooltip=$('#'+this.tippos+'.'+htmltooltip.tipclass).get(0); //ref corresponding tooltip
 				if (tooltip==null) //if no corresponding tooltip found
-					return; //exist
+					return; //exit
 				tooltip.dimensions={w:tooltip.offsetWidth, h:tooltip.offsetHeight};
-				$(tooltip).remove().appendTo('body'); //add tooltip to end of BODY for easier positioning
 				htmltooltip.tooltips[this.tippos]=tooltip; //store reference to each tooltip
 				ancpos = ancpos + i++;
 				htmltooltip.anchors[ancpos]=this;

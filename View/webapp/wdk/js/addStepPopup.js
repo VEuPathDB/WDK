@@ -29,11 +29,14 @@ function showPanel(panel) {
 	$("#tab_" + panel).parent().attr("id", "selected");
 	$("#" + panel).css({'position':'relative','left':'auto','display':'block'});
 	if (panel == 'strategy_results') {
-		if(getCurrentTabCookie(false) == 'basket' && current_Front_Strategy_Id != null){
-			var stgy = getStrategy(current_Front_Strategy_Id);
-			//var stgy = getStrategyFromBackId(init_view_strat);
-			var stp = stgy.getStep(init_view_step.split(".")[0], false);
-			NewResults(stgy.frontId, stp.frontId, stp.isboolean);
+		if($.cookie("refresh_results") == "true"){
+			var currentStep = $("#Strategies div.selected");
+			if (currentStep.length == 0) currentStep = $("#Strategies div.selectedarrow");
+			if (currentStep.length == 0) currentStep = $("#Strategies div.selectedtransform");
+			var active_link = $("a.results_link", currentStep);
+			if(active_link.length == 0) active_link = $(".resultCount a.operation", currentStep);
+			active_link.click();
+			$.cookie("refresh_results", "false", { path : '/' });
 		}
 		$("body > #query_form").show();
 		$("body > .crumb_details").show();
@@ -58,6 +61,8 @@ function showSaveForm(stratId, save, share){
          $("span.h3left", saveForm).text("Save As");
          $("input[type=submit]", saveForm).attr("value", "Save");
          if (share) {
+		  $("form", saveForm).append("<input type='hidden' name='action' value='share'/>");
+                  $("form", saveForm).append("<input type='hidden' name='actionStrat' value='" + stratId + "'/>");
 		  $("span.h3left", saveForm).text("First you need to Save it!");
          }
        }
@@ -93,6 +98,7 @@ function validateSaveForm(form){
 function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isOrtholog){
 	//edit = 0 ::: adding a new step
 	//edit = 1 ::: editing a current step
+	$("div#query_tooltips").remove();
 	var ps = document.createElement('div');
 	var qf = document.createElement('div');
 	var topMenu_script = null;
@@ -151,7 +157,6 @@ function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isO
 	}
 	var quesDescription = $("#query-description-section",qf);//data);
 	var dataSources = $("#attributions-section",qf);
-	var tooltips = $("div.htmltooltip",qf);//data);
 	$("input[value=Get Answer]",quesForm).val("Run Step");
 	$("input[value=Run Step]",quesForm).attr("id","executeStepButton");
 	$(".params", quesForm).wrap("<div class='filter params'></div>");
@@ -228,7 +233,12 @@ function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isO
 	}
 	
 	$("#query_form").append(quesForm);
-	$("#query_form").append(tooltips);
+	var tooltips = $("#query_form div.htmltooltip");
+	if (tooltips.length > 0) {
+		$('body').append("<div id='query_tooltips'></div>");
+		tooltips.remove().appendTo("div#query_tooltips");
+	}
+
 	if(edit == 1)
 		$("#query_form div#operations input#" + operation).attr('checked','checked'); 
 	
@@ -282,8 +292,8 @@ function validateAndCall(type, url, proto, rs){
 function getQueryForm(url,hideOp,isOrtholog, loadingParent){
     // retrieve the question form, but leave out all params
     	var questionName = parseUrlUtil("questionFullName", url)[0];
-		var questionUrl = url + "&showParams=false";
-		var paramsUrl = url + "&showParams=true";
+		var questionUrl = url + "&showParams=false&isInsert=" + isInsert;
+		var paramsUrl = url + "&showParams=true&isInsert=" + isInsert;
 	    original_Query_Form_Text = $("#query_form").html();
 		if(loadingParent == undefined) loadingParent = "query_form";
 		$.ajax({

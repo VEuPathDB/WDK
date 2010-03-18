@@ -101,12 +101,14 @@ public class ShowStrategyAction extends ShowQuestionAction {
                 }
             }
             outputSuccessJSON(wdkUser, response, displayStrategies);
+            logger.debug("Leaving ShowStrategyAction...");
             return null;
 
         } catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
             outputErrorJSON(wdkUser, response, ex);
+            logger.debug("Leaving ShowStrategyAction...");
             return null;
         }
     }
@@ -263,6 +265,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
             JSONObject jsStrategy = new JSONObject();
             jsStrategy.put("id", stratId);
             jsStrategy.put("checksum", strat.getChecksum());
+	    System.out.println("ID: " + stratId);
+	    System.out.println("Checksum: " + strat.getChecksum());
             jsState.put(Integer.toString(order + 1), jsStrategy);
         }
         jsState.put("length", openedStrategies.length);
@@ -280,6 +284,13 @@ public class ShowStrategyAction extends ShowQuestionAction {
             if (viewStep != 0) jsView.put("step", viewStep);
             jsView.put("pagerOffset", user.getViewPagerOffset());
         }
+	String frontAction = user.getFrontAction();
+	if (frontAction != null) {
+	    jsView.put("action", frontAction);
+	    jsView.put("actionStrat", user.getFrontStrategy());
+	    jsView.put("actionStep", user.getFrontStep());
+	}
+	user.resetFrontAction();
         jsMessage.put("currentView", jsView);
     }
 
@@ -290,6 +301,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         JSONObject jsStrategies = new JSONObject();
         for (StrategyBean strategy : strategies.values()) {
             JSONObject jsStrategy = outputStrategy(user, strategy);
+	    System.out.println("ID: " + strategy.getStrategyId());
+	    System.out.println("Checksum: " + strategy.getChecksum());
             jsStrategies.put(strategy.getChecksum(), jsStrategy);
         }
         jsStrategies.put("length", strategies.size());
@@ -339,6 +352,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("isCollapsed", step.getIsCollapsible() && showSubStrategy);
         jsStep.put("dataType", step.getDataType());
         jsStep.put("displayType", step.getDisplayType());
+        jsStep.put("shortDisplayType", step.getShortDisplayType());
         jsStep.put("shortName", step.getShortDisplayName());
         jsStep.put("results", step.getEstimateSize());
         jsStep.put("questionName", step.getQuestionName());

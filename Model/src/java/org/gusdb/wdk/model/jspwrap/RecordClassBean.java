@@ -38,10 +38,10 @@ public class RecordClassBean {
      * @return Map of fieldName --> {@link org.gusdb.wdk.model.FieldI}
      */
     public Map<String, AttributeFieldBean> getAttributeFields() {
-        AttributeField[] fields = recordClass.getAttributeFields();
+        Map<String, AttributeField> fields = recordClass.getAttributeFieldMap();
         Map<String, AttributeFieldBean> fieldBeans = new LinkedHashMap<String, AttributeFieldBean>(
-                fields.length);
-        for (AttributeField field : fields) {
+                fields.size());
+        for (AttributeField field : fields.values()) {
             fieldBeans.put(field.getName(), new AttributeFieldBean(field));
         }
         return fieldBeans;
@@ -169,4 +169,21 @@ public class RecordClassBean {
     public void setChangeType(boolean changeType) {
         this.changeType = changeType;
     }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.RecordClass#getDisplayName()
+     */
+    public String getDisplayName() {
+        return recordClass.getDisplayName();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.RecordClass#getShortDisplayName()
+     */
+    public String getShortDisplayName() {
+        return recordClass.getShortDisplayName();
+    }
+    
 }

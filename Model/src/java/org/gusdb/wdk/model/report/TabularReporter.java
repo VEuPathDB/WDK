@@ -41,6 +41,8 @@ public class TabularReporter extends Reporter {
     public static final String FIELD_DIVIDER = "divider";
     public static final String FIELD_SELECTED_COLUMNS = "selectedFields";
 
+    public static final long MAX_EXCEL_LENGTH = 1024 * 1024 * 10;
+
     private boolean hasHeader = true;
     private String divider = "\t";
 
@@ -58,8 +60,8 @@ public class TabularReporter extends Reporter {
         // get basic configurations
         if (config.containsKey(FIELD_HAS_HEADER)) {
             String value = config.get(FIELD_HAS_HEADER);
-            hasHeader = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true"))
-                    ? true : false;
+            hasHeader = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true
+                    : false;
         }
 
         if (config.containsKey(FIELD_DIVIDER)) {
@@ -257,17 +259,24 @@ public class TabularReporter extends Reporter {
     private void format2Excel(Set<AttributeField> fields, PrintWriter writer)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        writer.println("<table border=\"1\">");
+        int count = 0;
+        String header = "<table border=\"1\">";
+        writer.println(header);
+        count += header.length() + 5;
 
         // print the header
         if (hasHeader) {
             writer.println("<tr>");
+            count += 5;
             for (AttributeField field : fields) {
-                writer.print("<th>[" + field.getDisplayName() + "]</th>");
+                String title = "<th>[" + field.getDisplayName() + "]</th>";
+                writer.print(title);
+                count += title.length();
             }
             writer.println();
             writer.println("</tr>");
             writer.flush();
+            count += 7;
         }
 
         // get page based answers with a maximum size (defined in
@@ -275,16 +284,34 @@ public class TabularReporter extends Reporter {
         for (AnswerValue answerValue : this) {
             for (RecordInstance record : answerValue.getRecordInstances()) {
                 writer.println("<tr>");
+                count += 5;
                 for (AttributeField field : fields) {
                     AttributeValue value = record.getAttributeValue(field.getName());
-                    writer.print("<td>");
-                    writer.print(value.getValue());
-                    writer.print("</td>");
+                    String val = "<td>" + value.getValue() + "</td>";
+                    writer.print(val);
+                    count += val.length();
                 }
                 writer.println();
                 writer.println("</tr>");
                 writer.flush();
+                count += 7;
+
+                // logger.debug("Excel download - written: " + count);
+                // check if the output exceeds the max allowed size
+                if (count > MAX_EXCEL_LENGTH) {
+                    writer.print("<tr><td colspan=\"" + fields.size() + "\">");
+                    writer.print("The result size exceeds the maximum allowed "
+                            + "size for downloading excel files. The rest of "
+                            + "the results are ignored. Opening huge excel "
+                            + "files may crash your system. If you need to "
+                            + "get the complete results, please choose the "
+                            + "download type as Text File, or Show in Browser.");
+                    writer.println("</td></tr>");
+                    break;
+                }
+                if (count > MAX_EXCEL_LENGTH) break;
             }
+            if (count > MAX_EXCEL_LENGTH) break;
         }
         writer.println("</table>");
         writer.flush();
