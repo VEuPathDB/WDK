@@ -335,8 +335,9 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters, ac
 			    $("span#text_step_number").html(step.frontId);
 			    $("span#text_strategy_number").parent().show();
                         } 
-			if (action != undefined) {
-				$("#" + action).click();
+			var linkToClick = $("a#" + action);
+			if (linkToClick.length > 0) {
+				linkToClick.click();
 			}
 				
                 removeLoading(f_strategyId);
