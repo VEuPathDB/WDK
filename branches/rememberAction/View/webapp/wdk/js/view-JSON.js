@@ -508,7 +508,7 @@ function createStrategyName(strat){
 	var share = "";
 
 	if(json.saved){
-		share = "<a id='share_" + id + "' title='Email this URL to your best friend.' href=\"javascript:showExportLink('" + id + "')\"><b style='font-size:120%'>Share</b></a>"+
+		share = "<a id='share_" + id + "' title='Email this URL to your best friend.' href=\"javascript:void(0)\" onclick=\"showExportLink('" + id + "')\"><b style='font-size:120%'>Share</b></a>"+
 		"<div class='modal_div export_link' id='export_link_div_" + id + "'>" +
 	        "<div class='dragHandle'>" +
 		"<div class='modal_name'>"+
