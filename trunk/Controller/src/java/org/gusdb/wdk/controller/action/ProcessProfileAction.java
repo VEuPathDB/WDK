@@ -18,8 +18,6 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * @author xingao
@@ -53,7 +51,7 @@ public class ProcessProfileAction extends Action {
             // clear the preference
             user.clearPreferences();
 
-            Set params = request.getParameterMap().keySet();
+            Set<?> params = request.getParameterMap().keySet();
             for (Object param : params) {
                 String paramName = (String) param;
                 if (paramName.equalsIgnoreCase("email")) {
@@ -92,9 +90,6 @@ public class ProcessProfileAction extends Action {
             }
 
             // update and save the user with user input
-            WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
-                    CConstants.WDK_MODEL_KEY);
-            UserFactoryBean factory = wdkModel.getUserFactory();
             try {
                 user.save();
                 // Update profile succeed
