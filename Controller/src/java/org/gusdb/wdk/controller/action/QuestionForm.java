@@ -28,6 +28,7 @@ public class QuestionForm extends QuestionSetForm {
     private QuestionBean question = null;
     private boolean validating = true;
     private boolean paramsFilled = false;
+    private String weight = null;
 
     /**
      * validate the properties that have been sent from the HTTP request, and
@@ -74,28 +75,23 @@ public class QuestionForm extends QuestionSetForm {
                     param.validate(user, dependentValue);
             } catch (Exception ex) {
                 ex.printStackTrace();
-                // ActionMessage message = new
-                // ActionMessage("mapped.properties",
-                // prompt, ex.getMessage());
-                ActionMessage message = new ActionMessage(paramName, prompt,
-                        ex.getMessage());
+                ActionMessage message = new ActionMessage("mapped.properties", prompt, ex.getMessage());
                 errors.add(ActionErrors.GLOBAL_MESSAGE, message);
             }
         }
 
         // validate weight
-        String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
-        boolean hasWeight = (strWeight != null && strWeight.length() > 0);
+        boolean hasWeight = (weight != null && weight.length() > 0);
         if (hasWeight) {
             String message = null;
-            if (!strWeight.matches("[\\-\\+]?\\d+")) {
-                message = "Invalid weight value: '" + strWeight
+            if (!weight.matches("[\\-\\+]?\\d+")) {
+                message = "Invalid weight value: '" + weight
                         + "'. Only integer numbers are allowed.";
-            } else if (strWeight.length() > 9) {
-                message = "Weight number is too big: " + strWeight;
+            } else if (weight.length() > 9) {
+                message = "Weight number is too big: " + weight;
             }
             if (message != null) {
-                ActionMessage am = new ActionMessage("weight",
+                ActionMessage am = new ActionMessage("mapped.properties",
                         "Assigned weight", message);
                 errors.add(ActionErrors.GLOBAL_MESSAGE, am);
             }
@@ -137,5 +133,13 @@ public class QuestionForm extends QuestionSetForm {
 
     public boolean getParamsFilled() {
         return paramsFilled;
+    }
+
+    public void setWeight(String weight) {
+        this.weight = weight;
+    }
+
+    public String getWeight() {
+        return weight;
     }
 }
