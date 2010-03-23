@@ -4,9 +4,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -74,11 +74,33 @@ public class QuestionForm extends QuestionSetForm {
                     param.validate(user, dependentValue);
             } catch (Exception ex) {
                 ex.printStackTrace();
-                ActionError error = new ActionError("mapped.properties",
-                        prompt, ex.getMessage());
-                errors.add(ActionErrors.GLOBAL_MESSAGE, error);
+                // ActionMessage message = new
+                // ActionMessage("mapped.properties",
+                // prompt, ex.getMessage());
+                ActionMessage message = new ActionMessage(paramName, prompt,
+                        ex.getMessage());
+                errors.add(ActionErrors.GLOBAL_MESSAGE, message);
             }
         }
+
+        // validate weight
+        String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
+        boolean hasWeight = (strWeight != null && strWeight.length() > 0);
+        if (hasWeight) {
+            String message = null;
+            if (!strWeight.matches("[\\-\\+]?\\d+")) {
+                message = "Invalid weight value: '" + strWeight
+                        + "'. Only integer numbers are allowed.";
+            } else if (strWeight.length() > 9) {
+                message = "Weight number is too big: " + strWeight;
+            }
+            if (message != null) {
+                ActionMessage am = new ActionMessage("weight",
+                        "Assigned weight", message);
+                errors.add(ActionErrors.GLOBAL_MESSAGE, am);
+            }
+        }
+
         return errors;
     }
 
