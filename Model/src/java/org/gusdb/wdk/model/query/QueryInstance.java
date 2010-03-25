@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -114,11 +115,20 @@ public abstract class QueryInstance {
     private void setValues(Map<String, String> values, boolean validate)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        // logger.debug("----- input value for [" + query.getFullName() +
-        // "] -----");
-        // for(String paramName : values.keySet()) {
-        // logger.debug(paramName + "='" + values.get(paramName) + "'");
-        // }
+        logger.trace("----- input value for [" + query.getFullName()
+                + "] -----");
+        for (String paramName : values.keySet()) {
+            logger.trace(paramName + "='" + values.get(paramName) + "'");
+        }
+
+        // convert the values into dependent values
+        for (Param param : query.getParams()) {
+            if (values.containsKey(param.getName())) {
+                String value = values.get(param.getName());
+                value = param.rawOrDependentValueToDependentValue(user, value);
+                values.put(param.getName(), value);
+            }
+        }
 
         if (validate) validateValues(user, values);
         // passed, assign the value

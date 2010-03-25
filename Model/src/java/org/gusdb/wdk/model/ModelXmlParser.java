@@ -532,6 +532,8 @@ public class ModelXmlParser extends XmlParser {
         String path = "wdkModel/paramSet/stringParam";
         configureNode(digester, path, StringParam.class, "addParam");
         configureParamContent(digester, path);
+        configureNode(digester, path + "/regex", WdkModelText.class, "addRegex");
+        digester.addCallMethod(path + "/regex", "setText", 0);
 
         // typeAhead param
         path = "wdkModel/paramSet/typeAheadParam";

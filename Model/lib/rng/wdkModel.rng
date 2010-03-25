@@ -249,9 +249,6 @@
   <define name="stringParamContent">
     <ref name="ParamBaseContents" />
     <optional>
-      <attribute name="regex" />
-    </optional>
-    <optional>
       <attribute name="substitute" />
     </optional>
     <optional>
@@ -264,17 +261,24 @@
         <data type="boolean" />
       </attribute>
     </optional>
-    <zeroOrMore>
-      <element name="suggest">
-        <ref name="SuggestContent" />
-        <optional>
-          <attribute name="sample" />
-        </optional>
-        <optional>
-          <attribute name="default" />
-        </optional>
-      </element>
-    </zeroOrMore>
+    <interleave>
+        <zeroOrMore>
+            <element name="regex">
+                <text />
+            </element>
+        </zeroOrMore>
+        <zeroOrMore>
+          <element name="suggest">
+            <ref name="SuggestContent" />
+            <optional>
+              <attribute name="sample" />
+            </optional>
+            <optional>
+              <attribute name="default" />
+            </optional>
+          </element>
+        </zeroOrMore>
+    </interleave>
   </define>
 
   <define name="stringParam">
