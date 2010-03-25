@@ -32,6 +32,8 @@ public class ModelConfig {
 
     // location of secret key file
     private String secretKeyFile;
+    
+    private String paramRegex;
 
     /**
      * @return the projectId
@@ -215,4 +217,17 @@ public class ModelConfig {
         this.adminEmail = adminEmail;
     }
 
+    /**
+     * @return the paramRegex
+     */
+    public String getParamRegex() {
+        return paramRegex;
+    }
+
+    /**
+     * @param paramRegex the paramRegex to set
+     */
+    public void setParamRegex(String paramRegex) {
+        this.paramRegex = paramRegex;
+    }
 }
