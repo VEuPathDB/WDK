@@ -4,9 +4,9 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -28,6 +28,7 @@ public class QuestionForm extends QuestionSetForm {
     private QuestionBean question = null;
     private boolean validating = true;
     private boolean paramsFilled = false;
+    private String weight = null;
 
     /**
      * validate the properties that have been sent from the HTTP request, and
@@ -74,11 +75,28 @@ public class QuestionForm extends QuestionSetForm {
                     param.validate(user, dependentValue);
             } catch (Exception ex) {
                 ex.printStackTrace();
-                ActionError error = new ActionError("mapped.properties",
-                        prompt, ex.getMessage());
-                errors.add(ActionErrors.GLOBAL_MESSAGE, error);
+                ActionMessage message = new ActionMessage("mapped.properties", prompt, ex.getMessage());
+                errors.add(ActionErrors.GLOBAL_MESSAGE, message);
             }
         }
+
+        // validate weight
+        boolean hasWeight = (weight != null && weight.length() > 0);
+        if (hasWeight) {
+            String message = null;
+            if (!weight.matches("[\\-\\+]?\\d+")) {
+                message = "Invalid weight value: '" + weight
+                        + "'. Only integer numbers are allowed.";
+            } else if (weight.length() > 9) {
+                message = "Weight number is too big: " + weight;
+            }
+            if (message != null) {
+                ActionMessage am = new ActionMessage("mapped.properties",
+                        "Assigned weight", message);
+                errors.add(ActionErrors.GLOBAL_MESSAGE, am);
+            }
+        }
+
         return errors;
     }
 
@@ -115,5 +133,13 @@ public class QuestionForm extends QuestionSetForm {
 
     public boolean getParamsFilled() {
         return paramsFilled;
+    }
+
+    public void setWeight(String weight) {
+        this.weight = weight;
+    }
+
+    public String getWeight() {
+        return weight;
     }
 }

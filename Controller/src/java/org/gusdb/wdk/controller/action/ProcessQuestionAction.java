@@ -88,7 +88,6 @@ public class ProcessQuestionAction extends ShowQuestionAction {
             }
 
             // get the assigned weight
-            // get the assigned weight
             String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
             boolean hasWeight = (strWeight != null && strWeight.length() > 0);
             int weight = 0;
