@@ -19,6 +19,12 @@
             
             <interleave>
 
+                <optional>
+                    <element name="paramRegex">
+                        <text />
+                    </element>   
+                </optional>
+
                 <element name="appDb">
                     <attribute name="userDbLink" />
                     <ref name="DBBaseContent" />
