@@ -66,14 +66,14 @@ function updateBasket(ele, type, pk, pid,recordType) {
 			data: d,
 			dataType: "json",
 			beforeSend: function(){
-				if (type == 'add-all' || type == 'remove-all' || type == 'page') {
+				if (action == 'add-all' || type == 'page') {
 					$("#" + currentDiv + " #Results_Pane").block();
 				}
 				//jQuery("body").block();
 			},
 			success: function(data){
 				//jQuery("body").unblock();
-				if (type == 'add-all' || type == 'remove-all' || type == 'page') {
+				if (action == 'add-all' || type == 'page') {
 					$("#" + currentDiv + " #Results_Pane").unblock();
 				}
 				if(type == "single" || type == "recordPage"){
