@@ -66,10 +66,16 @@ function updateBasket(ele, type, pk, pid,recordType) {
 			data: d,
 			dataType: "json",
 			beforeSend: function(){
+				if (action == 'add-all' || type == 'page') {
+					$("#" + currentDiv + " #Results_Pane").block();
+				}
 				//jQuery("body").block();
 			},
 			success: function(data){
 				//jQuery("body").unblock();
+				if (action == 'add-all' || type == 'page') {
+					$("#" + currentDiv + " #Results_Pane").unblock();
+				}
 				if(type == "single" || type == "recordPage"){
 					if(action == "add") {
 						i.attr("src","wdk/images/basket_color.png");

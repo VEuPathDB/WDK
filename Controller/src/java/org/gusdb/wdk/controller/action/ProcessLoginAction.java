@@ -84,13 +84,36 @@ public class ProcessLoginAction extends Action {
 	    boolean remember = request.getParameter("remember") != null
                 && request.getParameter("remember").equals("on");
 
+	    // If a front end action is specified in the url, set it in the current user
+	    String frontAction = request.getParameter("action");
+	    Integer frontStrategy = null;
+	    try {
+		frontStrategy = Integer.valueOf(request.getParameter("actionStrat"));
+	    }
+	    catch (NumberFormatException ex) {
+	    }
+	    Integer frontStep = null;
+	    try {
+		frontStep = Integer.valueOf(request.getParameter("actionStep"));
+	    }
+	    catch (NumberFormatException ex) {
+	    }
+	    
+	    guest.setFrontAction(frontAction);
+	    if (frontStrategy != null) {
+		guest.setFrontStrategy(frontStrategy);
+	    }
+	    if (frontStep != null) {
+		guest.setFrontStep(frontStep);
+	    }
+	    
 	    // authenticate
 	    try {
 		UserBean user = factory.login(guest, email, password);
 		// Create & send cookie
 		Cookie loginCookie = new Cookie(CConstants.WDK_LOGIN_COOKIE_KEY,
 						URLEncoder.encode(user.getEmail(), "utf-8"));
-
+		
 		if (remember) {
 		    loginCookie.setMaxAge(java.lang.Integer.MAX_VALUE / 256);
 		    loginCookie.setValue(loginCookie.getValue() + "-remember");
