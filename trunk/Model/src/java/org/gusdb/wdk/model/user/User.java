@@ -90,7 +90,10 @@ public class User /* implements Serializable */{
     // currently open strategies
     private transient ActiveStrategyFactory activeStrategyFactory;
 
-    // currently viewed results, identified by strategy id & step id
+    // keep track of most recent front end action
+    private String frontAction = null;
+    private Integer frontStrategy = null;
+    private Integer frontStep = null;
 
     /**
      * cache the last step. This data may have impact on the memory usage.
@@ -366,6 +369,38 @@ public class User /* implements Serializable */{
         userRoles.remove(userRole);
     }
 
+    public String getFrontAction() {
+	return frontAction;
+    }
+
+    public Integer getFrontStrategy() {
+	return frontStrategy;
+    }
+
+    public Integer getFrontStep() {
+	return frontStep;
+    }
+
+    public void setFrontAction(String frontAction) {
+	this.frontAction = frontAction;
+    }
+
+    public void setFrontStrategy(int frontStrategy) {
+	System.out.println("Setting frontStrategy.");
+	this.frontStrategy = Integer.valueOf(frontStrategy);
+	System.out.println("Done.");
+    }
+
+    public void setFrontStep(int frontStep) {
+	this.frontStep = Integer.valueOf(frontStep);
+    }
+
+    public void resetFrontAction() {
+	frontAction = null;
+	frontStrategy = null;
+	frontStep = null;
+    }
+
     /**
      * @param guest
      *            The guest to set.
@@ -493,15 +528,17 @@ public class User /* implements Serializable */{
         logger.debug("Merging user #" + user.getUserId() + " into user #"
                 + userId + "...");
 
+
         // first of all we import all the strategies
         Set<Integer> importedSteps = new LinkedHashSet<Integer>();
         Map<Integer, Integer> strategiesMap = new LinkedHashMap<Integer, Integer>();
+	Map<Integer, Integer> stepsMap = new LinkedHashMap<Integer, Integer>();
         for (Strategy strategy : user.getStrategies()) {
             // the root step is considered as imported
             Step rootStep = strategy.getLatestStep();
 
             // import the strategy
-            Strategy newStrategy = this.importStrategy(strategy);
+            Strategy newStrategy = this.importStrategy(strategy, stepsMap);
 
             importedSteps.add(rootStep.getDisplayId());
             strategiesMap.put(strategy.getStrategyId(),
@@ -523,8 +560,20 @@ public class User /* implements Serializable */{
                 continue;
             if (importedSteps.contains(step.getDisplayId())) continue;
 
-            stepFactory.importStep(this, step);
+            stepFactory.importStep(this, step, stepsMap);
         }
+
+	// if a front action is specified, copy it over and update ids
+	
+	if (user.getFrontAction() != null) {
+	    setFrontAction(user.getFrontAction());
+	    if (strategiesMap.containsKey(user.getFrontStrategy())) {
+		setFrontStrategy(strategiesMap.get(user.getFrontStrategy()));
+	    }
+	    if (stepsMap.containsKey(user.getFrontStep())) {
+		setFrontStep(stepsMap.get(user.getFrontStep()));
+	    }
+	}
     }
 
     public Map<Integer, Step> getStepsMap() throws WdkUserException,
@@ -1170,13 +1219,13 @@ public class User /* implements Serializable */{
             User user = userFactory.getUser(userSignature);
             oldStrategy = user.getStrategy(displayId, true);
         }
-        return importStrategy(oldStrategy);
+        return importStrategy(oldStrategy, null);
     }
 
-    public synchronized Strategy importStrategy(Strategy oldStrategy)
+    public synchronized Strategy importStrategy(Strategy oldStrategy, Map <Integer,Integer> stepIdsMap)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy);
+        Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy, stepIdsMap);
         newStrategy.update(true);
         // highlight the imported strategy
         int rootStepId = newStrategy.getLatestStepId();

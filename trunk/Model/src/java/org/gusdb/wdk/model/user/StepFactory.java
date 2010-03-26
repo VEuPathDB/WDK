@@ -466,7 +466,7 @@ public class StepFactory {
             SqlUtils.verifyTime(wdkModel, sql, start);
 
             while (rsStep.next()) {
-                Step step = loadStep(user, rsStep);
+                Step step = loadStep(user, rsStep, false);
                 int stepId = step.getDisplayId();
                 // if (step.isValid()) {
                 steps.put(stepId, step);
@@ -507,13 +507,13 @@ public class StepFactory {
                 throw new WdkUserException("The Step #" + displayId
                         + " of user " + user.getEmail() + " doesn't exist.");
 
-            return loadStep(user, rsStep);
+            return loadStep(user, rsStep, false);
         } finally {
             SqlUtils.closeResultSet(rsStep);
         }
     }
 
-    private Step loadStep(User user, ResultSet rsStep)
+    private Step loadStep(User user, ResultSet rsStep, boolean loadTree)
             throws WdkModelException, SQLException, JSONException,
             WdkUserException {
         // load Step info
@@ -543,6 +543,7 @@ public class StepFactory {
             int rightStepId = rsStep.getInt(COLUMN_RIGHT_CHILD_ID);
             step.setChildStepId(rightStepId);
         }
+
 
         String dependentParamContent = userPlatform.getClobData(rsStep,
                 COLUMN_DISPLAY_PARAMS);
@@ -919,18 +920,20 @@ public class StepFactory {
     // return step;
     // }
 
-    Strategy importStrategy(User user, Strategy oldStrategy)
+    Strategy importStrategy(User user, Strategy oldStrategy, Map<Integer,Integer> stepIdsMap)
             throws WdkUserException, WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException {
         logger.debug("import strategy #" + oldStrategy.getInternalId()
                 + "(internal) to user #" + user.getUserId());
+
+	if (stepIdsMap == null) stepIdsMap = new LinkedHashMap<Integer,Integer>();
 
         Step oldRootStep = oldStrategy.getLatestStep();
         String name = getNextName(user, oldStrategy.getName(), false);
 
         // If user does not already have a copy of this strategy, need to
         // look up the answers recursively, construct step objects.
-        Step latestStep = importStep(user, oldRootStep);
+        Step latestStep = importStep(user, oldRootStep, stepIdsMap);
         // Need to create strategy & then load it so that all AnswerValues
         // are created properly
         // Jerric - the imported strategy should always be unsaved.
@@ -939,9 +942,9 @@ public class StepFactory {
         return loadStrategy(user, strategy.getStrategyId(), false);
     }
 
-    Step importStep(User newUser, Step oldStep) throws WdkUserException,
-            WdkModelException, SQLException, NoSuchAlgorithmException,
-            JSONException {
+    Step importStep(User newUser, Step oldStep, Map<Integer,Integer> stepIdsMap) 
+	throws WdkUserException, WdkModelException, SQLException,
+	       NoSuchAlgorithmException, JSONException {
         User oldUser = oldStep.getUser();
 
         // Is this answer a boolean? Import depended steps first.
@@ -958,7 +961,7 @@ public class StepFactory {
             if (param instanceof AnswerParam) {
                 int oldStepId = Integer.parseInt(paramValue);
                 Step oldChildStep = oldUser.getStep(oldStepId);
-                Step newChildStep = importStep(newUser, oldChildStep);
+                Step newChildStep = importStep(newUser, oldChildStep, stepIdsMap);
                 paramValue = Integer.toString(newChildStep.getDisplayId());
             } else if (param instanceof DatasetParam) {
                 DatasetParam datasetParam = (DatasetParam) param;
@@ -978,10 +981,11 @@ public class StepFactory {
         int assignedWeight = oldStep.getAssignedWeight();
         Step newStep = newUser.createStep(question, paramValues, filter,
                 startIndex, endIndex, deleted, false, assignedWeight);
+	stepIdsMap.put(oldStep.getDisplayId(), newStep.getDisplayId());
         newStep.setCollapsedName(oldStep.getCollapsedName());
         newStep.setCollapsible(oldStep.isCollapsible());
-        String customeName = oldStep.getBaseCustomName();
-        if (customeName != null) newStep.setCustomName(customeName);
+        String customName = oldStep.getBaseCustomName();
+        if (customName != null) newStep.setCustomName(customName);
         newStep.update(false);
         return newStep;
     }

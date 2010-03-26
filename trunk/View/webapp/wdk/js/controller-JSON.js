@@ -78,11 +78,11 @@ function initDisplay(){
 	});
 }
 
-function highlightStep(str, stp, v, pagerOffset, ignoreFilters){
+function highlightStep(str, stp, v, pagerOffset, ignoreFilters, action){
 	if(!str || stp == null){
 		NewResults(-1);
 	}else{
-		NewResults(str.frontId, stp.frontId, v, pagerOffset, ignoreFilters);
+		NewResults(str.frontId, stp.frontId, v, pagerOffset, ignoreFilters, action);
 	}
 }
 
@@ -169,6 +169,12 @@ function showStrategies(view, ignoreFilters, besc){
 		displayOpenSubStrategies(strats[t], s2);
 	}
 	$("#Strategies").html($(s2).html());
+	if(view.action != undefined) {
+		if (view.action == "share" || view.action == "save") {
+			var x = $("a#" + view.action + "_" + view.actionStrat);
+			x.click();
+		}			
+	}
 	if(view.strategy != undefined || view.step != undefined){
 		var initStr = getStrategyFromBackId(view.strategy);
 		var initStp = initStr.getStep(view.step, false);
@@ -177,7 +183,12 @@ function showStrategies(view, ignoreFilters, besc){
 		}else{
 			var isVenn = (initStp.back_boolean_Id == view.step);
 			var pagerOffset = view.pagerOffset;
-			highlightStep(initStr, initStp, isVenn, pagerOffset, ignoreFilters);
+			if(view.action != undefined && view.action.match("^basket")) {
+				highlightStep(initStr, initStp, isVenn, pagerOffset, ignoreFilters, view.action);
+			}
+			else {
+				highlightStep(initStr, initStp, isVenn, pagerOffset, ignoreFilters);
+			}
 		}
 	}else{
 		NewResults(-1);
@@ -272,7 +283,7 @@ function unloadStrategy(id){
 }
 
 
-function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters){
+function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters, action){
 	if(f_strategyId == -1){
 		$("#strategy_results > div.Workspace").html("");
 		current_Front_Strategy_Id = null;
@@ -324,6 +335,11 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters){
 			    $("span#text_step_number").html(step.frontId);
 			    $("span#text_strategy_number").parent().show();
                         } 
+			var linkToClick = $("a#" + action);
+			if (linkToClick.length > 0) {
+				linkToClick.click();
+			}
+				
                 removeLoading(f_strategyId);
 				checkPageBasket();
 				$.cookie("refresh_results", "false", { path : '/' });
@@ -653,11 +669,13 @@ function saveOrRenameStrategy(stratId, checkName, save, fromHist){
 	if (fromHist) form = $(".viewed-popup-box form");
 	var name = $("input[name='name']",form).attr("value");
 	var strategy = $("input[name='strategy']",form).attr("value");
+	var action = $("input[name='action']",form).val();
+	var actionStrat = $("input[name='actionStrat']",form).val();
 	var url="renameStrategy.do?strategy=";
 	var cs = strat.checksum;
 	if(strat.subStratOf != null)
 		cs = getStrategy(strat.subStratOf).checksum;
-	url = url + strategy + "&name=" + escape(name) + "&checkName=" + checkName+"&save=" + save + "&strategy_checksum="+cs;
+	url = url + strategy + "&name=" + escape(name) + "&checkName=" + checkName+"&save=" + save + "&action=" + action + "&actionStrat=" + actionStrat + "&strategy_checksum="+cs;
 	if (fromHist) url = url + "&showHistory=true";
 	$.ajax({
 		url: url,
