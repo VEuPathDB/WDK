@@ -156,6 +156,17 @@ public class SqlQueryInstance extends QueryInstance {
             if (!columns.containsKey(weightColumn)) {
                 sql = "SELECT o.*, " + assignedWeight + " AS " + weightColumn
                         + " FROM (" + sql + ") o";
+            } else { // has weight column defined, add assigned weight to it
+                StringBuilder builder = new StringBuilder();
+                for (String column : columns.keySet()) {
+                    if (column.equals(weightColumn)) continue;
+                    if (builder.length() == 0) builder.append("SELECT ");
+                    else builder.append(", o.");
+                    builder.append(column);
+                }
+                builder.append(", (o." + weightColumn + " + " + assignedWeight);
+                builder.append(") AS " + weightColumn);
+                builder.append(" FROM (" + sql + ") o");
             }
         }
         return sql;
