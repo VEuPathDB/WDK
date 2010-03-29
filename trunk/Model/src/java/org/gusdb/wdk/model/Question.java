@@ -216,7 +216,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             NoSuchAlgorithmException, SQLException, JSONException {
         int pageStart = 1;
         int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
-        Map<String, Boolean> sortingMap = this.defaultSortingMap;
+        Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>(defaultSortingMap);
         AnswerFilterInstance filter = recordClass.getDefaultFilter();
         AnswerValue answerValue = makeAnswerValue(user, dependentValues,
                 pageStart, pageEnd, sortingMap, filter, assignedWeight);
@@ -557,11 +557,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
      */
     public Map<String, Boolean> getSortingAttributeMap() {
         Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
-        int count = 0;
+        
         for (String attrName : defaultSortingMap.keySet()) {
             map.put(attrName, defaultSortingMap.get(attrName));
-            count++;
-            if (count >= User.SORTING_LEVEL) break;
+            if (map.size() >= User.SORTING_LEVEL) break;
         }
 
         // no sorting map defined, use the definition in recordClass
