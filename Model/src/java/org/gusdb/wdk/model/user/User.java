@@ -464,7 +464,8 @@ public class User /* implements Serializable */{
             int assignedWeight) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         if (assignedWeight != 0) usedWeight = true;
-        logger.debug("assigne weight: " + assignedWeight +", used weight: " + usedWeight);
+        logger.debug("assigne weight: " + assignedWeight + ", used weight: "
+                + usedWeight);
 
         Step step = stepFactory.createStep(this, question, paramValues, filter,
                 pageStart, pageEnd, deleted, validate, assignedWeight);
@@ -1028,7 +1029,16 @@ public class User /* implements Serializable */{
 
         // user doesn't have preference, use the default one of the question
         Question question = wdkModel.getQuestion(questionFullName);
-        return question.getSortingAttributeMap();
+        Map<String, Boolean> attributes = question.getSortingAttributeMap();
+        if (usedWeight && question.getQuery().isCombined()) {
+            // if the weight is used on boolean or transform, sort by weight as
+            // default.
+            Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
+            map.put(Utilities.COLUMN_WEIGHT, false);
+            map.putAll(attributes);
+            attributes = map;
+        }
+        return attributes;
     }
 
     public Map<String, Boolean> getSortingAttributesByChecksum(
@@ -1080,7 +1090,7 @@ public class User /* implements Serializable */{
         }
 
         if (!savedSummary) {
-            // user does't have preference, use the default of the question 
+            // user does't have preference, use the default of the question
             Question question = wdkModel.getQuestion(questionFullName);
             Map<String, AttributeField> attributes = question.getSummaryAttributeFieldMap();
             summary = new String[attributes.size()];
@@ -1419,7 +1429,7 @@ public class User /* implements Serializable */{
         if (strategyCount != null) strategyCount++;
         return copy;
     }
-    
+
     public void setUsedWeight(boolean usedWeight) {
         logger.debug("set used weight: " + usedWeight);
         this.usedWeight = usedWeight;
