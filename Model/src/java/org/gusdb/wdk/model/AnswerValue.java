@@ -146,6 +146,13 @@ public class AnswerValue {
         // get sorting columns
         if (sortingMap == null) {
             sortingMap = question.getSortingAttributeMap();
+            if (question.getQuery().isCombined() 
+                && !sortingMap.containsKey(Utilities.COLUMN_WEIGHT)) {
+                Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
+                map.put(Utilities.COLUMN_WEIGHT, false);
+                map.putAll(sortingMap);
+                sortingMap = map;
+            }
         }
         this.sortingMap = sortingMap;
         this.summaryFieldMap = new LinkedHashMap<String, AttributeField>();

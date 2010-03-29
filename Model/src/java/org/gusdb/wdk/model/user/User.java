@@ -1029,16 +1029,7 @@ public class User /* implements Serializable */{
 
         // user doesn't have preference, use the default one of the question
         Question question = wdkModel.getQuestion(questionFullName);
-        Map<String, Boolean> attributes = question.getSortingAttributeMap();
-        if (usedWeight && question.getQuery().isCombined()) {
-            // if the weight is used on boolean or transform, sort by weight as
-            // default.
-            Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
-            map.put(Utilities.COLUMN_WEIGHT, false);
-            map.putAll(attributes);
-            attributes = map;
-        }
-        return attributes;
+        return question.getSortingAttributeMap();
     }
 
     public Map<String, Boolean> getSortingAttributesByChecksum(
