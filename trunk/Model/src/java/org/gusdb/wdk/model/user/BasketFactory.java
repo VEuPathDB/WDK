@@ -511,7 +511,7 @@ public class BasketFactory {
         param.setName(PARAM_USER_SIGNATURE);
         param.setAllowEmpty(false);
         param.setId(PARAM_USER_SIGNATURE);
-        param.setQuote(true);
+        param.setNumber(false);
         param.setVisible(false);
         paramSet.addParam(param);
         param.excludeResources(wdkModel.getProjectId());
