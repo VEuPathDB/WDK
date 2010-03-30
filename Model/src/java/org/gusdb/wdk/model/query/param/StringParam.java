@@ -32,13 +32,12 @@ public class StringParam extends Param {
      */
     private static final long serialVersionUID = 7561711069245980824L;
 
-    // private static final Logger logger = WdkLogManager.getLogger(
-    // "org.gusdb.wdk.model.StringParam" );
+    private static final String NUMBER_REGEX = "[+-]?\\d*(\\.\\d+)?([Ee][+-]?\\d+)?";
 
     private List<WdkModelText> regexes = new ArrayList<WdkModelText>();
     private String regex;
     private int length = 0;
-    private boolean quote = true;
+    private boolean number = false;
 
     public StringParam() {}
 
@@ -48,7 +47,7 @@ public class StringParam extends Param {
             this.regexes = new ArrayList<WdkModelText>();
         this.regex = param.regex;
         this.length = param.length;
-        this.quote = param.quote;
+        this.number = param.number;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -83,18 +82,18 @@ public class StringParam extends Param {
     }
 
     /**
-     * @return the quote
+     * @return the isNumber
      */
-    public boolean isQuote() {
-        return quote;
+    public boolean isNumber() {
+        return number;
     }
 
     /**
-     * @param quote
-     *            the quote to set
+     * @param isNumber
+     *            the isNumber to set
      */
-    public void setQuote(boolean quote) {
-        this.quote = quote;
+    public void setNumber(boolean isNumber) {
+        this.number = isNumber;
     }
 
     public String toString() {
@@ -160,7 +159,7 @@ public class StringParam extends Param {
         String rawValue = decompressValue(dependentValue);
         if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
         rawValue = rawValue.replaceAll("'", "''");
-        if (quote) rawValue = "'" + rawValue + "'";
+        if (!number) rawValue = "'" + rawValue + "'";
         return rawValue;
     }
 
@@ -201,12 +200,18 @@ public class StringParam extends Param {
     protected void validateValue(User user, String dependentValue)
             throws WdkUserException, WdkModelException {
         String rawValue = decompressValue(dependentValue);
+        if (number && !rawValue.trim().matches(NUMBER_REGEX))
+            throw new WdkUserException("stringParam " + getFullName() + " is "
+                    + "declared as a number, but the Value '" + rawValue
+                    + "' is invalid number format.");
         if (regex != null && !rawValue.matches(regex))
-            throw new WdkUserException("Value '" + rawValue
-                    + "'does not match regular expression '" + regex + "'");
+            throw new WdkUserException("stringParam " + getFullName()
+                    + " value '" + rawValue + "' does not match regular "
+                    + "expression '" + regex + "'");
         if (length != 0 && rawValue.length() > length)
-            throw new WdkModelException("Value may be no longer than " + length
-                    + " characters.  (It is " + rawValue.length() + ".)");
+            throw new WdkModelException("stringParam " + getFullName()
+                    + " value cannot be longer than " + length + " characters."
+                    + " (It is " + rawValue.length() + ".)");
     }
 
     /*

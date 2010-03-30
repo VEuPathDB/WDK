@@ -52,9 +52,9 @@ public class RecordClass extends WdkModelBase implements
                 param = new StringParam();
                 Column column = columns.get(columnName);
                 ColumnType type = column.getType();
-                boolean quote = type.isText();
+                boolean number = !type.isText();
                 param.setName(columnName);
-                param.setQuote(quote);
+                param.setNumber(number);
                 // param.setAllowEmpty(true);
 
                 param.excludeResources(wdkModel.getProjectId());
@@ -599,7 +599,7 @@ public class RecordClass extends WdkModelBase implements
 
         StringParam userParam = new StringParam();
         userParam.setName(Utilities.PARAM_USER_ID);
-        userParam.setQuote(false);
+        userParam.setNumber(true);
 
         userParam.excludeResources(wdkModel.getProjectId());
         userParam.resolveReferences(wdkModel);
