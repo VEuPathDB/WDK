@@ -71,27 +71,27 @@ public class FavoriteTest {
         List<String[]> added = addSomeRecords(user, recordClass);
         user.removeFromFavorite(recordClass, added);
 
-        Map<String, List<Favorite>> favorites = user.getFavorites();
-        if (favorites.containsKey(recordClass.getFullName())) {
-            List<Favorite> list = favorites.get(recordClass.getFullName());
-            for (Favorite favorite : list) {
-                RecordInstance instance = favorite.getRecordInstance();
-                Map<String, String> values = instance.getPrimaryKey().getValues();
-                String[] pkValues = new String[values.size()];
-                values.values().toArray(pkValues);
+        Map<RecordClass, List<Favorite>> favorites = user.getFavorites();
+        Assert.assertTrue(favorites.containsKey(recordClass));
+        List<Favorite> list = favorites.get(recordClass);
+        for (Favorite favorite : list) {
+            RecordInstance instance = favorite.getRecordInstance();
+            Map<String, String> values = instance.getPrimaryKey().getValues();
+            String[] pkValues = new String[values.size()];
+            values.values().toArray(pkValues);
 
-                for (String[] add : added) {
-                    boolean match = true;
-                    for (int i = 0; i < pkValues.length; i++) {
-                        if (!add[i].equals(pkValues[i])) {
-                            match = false;
-                            break;
-                        }
+            for (String[] add : added) {
+                boolean match = true;
+                for (int i = 0; i < pkValues.length; i++) {
+                    if (!add[i].equals(pkValues[i])) {
+                        match = false;
+                        break;
                     }
-                    Assert.assertFalse(match);
                 }
+                Assert.assertFalse(match);
             }
         }
+
     }
 
     @Test
