@@ -37,7 +37,8 @@ public class ModelConfigParser extends XmlParser {
 
         digester.addObjectCreate("modelConfig", ModelConfig.class);
         digester.addSetProperties("modelConfig");
-        digester.addBeanPropertySetter("modelConfig/emailSubject");
+        digester.addBeanPropertySetter("modelConfig/paramRegex");
+        digester.addBeanPropertySetter("modelConfig/emailContent");
         digester.addBeanPropertySetter("modelConfig/emailContent");
 
         // load application db

@@ -104,6 +104,35 @@ public class ProcessRenameStrategyAction extends Action {
                     // Adding active strat will be handled by ShowStrategyAction
                 }
 
+		// If a front end action is specified in the url, set it in the current user
+		String frontAction = request.getParameter("action");
+		Integer frontStrategy = null;
+		try {
+		    frontStrategy = Integer.valueOf(request.getParameter("actionStrat"));
+		}
+		catch (Exception ex) {
+		}
+		Integer frontStep = null;
+		try {
+		    frontStep = Integer.valueOf(request.getParameter("actionStep"));
+		}
+		catch (Exception ex) {
+		}
+
+		if (frontStrategy != null && frontStrategy.intValue() == oldStrategyId) {
+		    frontStrategy = strategy.getStrategyId();
+		}
+		System.out.println("front strategy: " + frontStrategy);
+		System.out.println("front step: " + frontStep);
+
+		wdkUser.setFrontAction(frontAction);
+		if (frontStrategy != null) {
+		    wdkUser.setFrontStrategy(frontStrategy);
+		}
+		if (frontStep != null) {
+		    wdkUser.setFrontStep(frontStep);
+		}
+
                 request.setAttribute(CConstants.WDK_STEP_KEY,
                         strategy.getLatestStep());
                 request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);

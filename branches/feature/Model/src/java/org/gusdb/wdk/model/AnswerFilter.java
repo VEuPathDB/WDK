@@ -88,6 +88,10 @@ public class AnswerFilter extends WdkModelBase {
         if (resolved) return;
         // resolve the reference to the filter query
         SqlQuery query = (SqlQuery)wdkModel.resolveReference(queryRef);
+        
+        // all the filter query should has a weight column
+        query.setHasWeight(true);
+        
         // make sure the query has exactly one answerParam
         AnswerParam answerParam = null;
         for (Param param : query.getParams()) {
