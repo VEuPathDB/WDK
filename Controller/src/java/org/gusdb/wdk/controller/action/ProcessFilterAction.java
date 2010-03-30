@@ -136,7 +136,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 Map<String, String> params = prepareParams(wdkUser, request,
                         fForm);
 
-                if (isRevise) {
+                if (isRevise) { // TODO need investigation of this code
                     StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
                 }
                 if (wdkQuestion == null) {

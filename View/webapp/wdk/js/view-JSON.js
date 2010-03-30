@@ -508,7 +508,7 @@ function createStrategyName(strat){
 	var share = "";
 
 	if(json.saved){
-		share = "<a title='Email this URL to your best friend.' href=\"javascript:showExportLink('" + id + "')\"><b style='font-size:120%'>Share</b></a>"+
+		share = "<a id='share_" + id + "' title='Email this URL to your best friend.' href=\"javascript:void(0)\" onclick=\"showExportLink('" + id + "')\"><b style='font-size:120%'>Share</b></a>"+
 		"<div class='modal_div export_link' id='export_link_div_" + id + "'>" +
 	        "<div class='dragHandle'>" +
 		"<div class='modal_name'>"+
@@ -521,9 +521,9 @@ function createStrategyName(strat){
 		"<input type='text' size=" + (exportURL.length-6) + " value=" + exportURL + " readonly='true' />" +
 		"</div>";
 	}else if(guestUser == 'true'){
-		share = "<a title='Please LOGIN so you can SAVE and then SHARE (email) your strategy.' href='javascript:void(0)' onclick='popLogin()'><b style='font-size:120%'>Share</b></a>";
+		share = "<a id='share_" + id + "' title='Please LOGIN so you can SAVE and then SHARE (email) your strategy.' href='javascript:void(0)' onclick=\"popLogin();setFrontAction('share'," + id + ");\"><b style='font-size:120%'>Share</b></a>";
 	}else{
-		share = "<a title='SAVE this strategy so you can SHARE it (email its URL).' href='javascript:void(0)' onclick=\"showSaveForm('" + id + "', true,true)\"><b style='font-size:120%'>Share</b></a>";
+		share = "<a id='share_" + id + "' title='SAVE this strategy so you can SHARE it (email its URL).' href='javascript:void(0)' onclick=\"showSaveForm('" + id + "', true,true)\"><b style='font-size:120%'>Share</b></a>";
 	}
 
 
@@ -532,10 +532,10 @@ function createStrategyName(strat){
 	var sTitle = "Save As";
 	// if(json.saved) sTitle = "COPY AS";
 	if (guestUser == 'true') {
-		save = "<a title='Please LOGIN so you can SAVE (make a snapshot) your strategy.' class='save_strat_link' href='javascript:void(0)' onclick='popLogin()'><b style='font-size:120%'>" + sTitle + "</b></a>";
+		save = "<a id='save_" + id + "' title='Please LOGIN so you can SAVE (make a snapshot) your strategy.' class='save_strat_link' href='javascript:void(0)' onclick=\"popLogin();setFrontAction('save'," + id + ");\"><b style='font-size:120%'>" + sTitle + "</b></a>";
 	}
 	else {
-		save = "<a title='A saved strategy is like a snapshot, it cannot be changed.' class='save_strat_link' href='javascript:void(0)' onclick=\"showSaveForm('" + id + "', true)\"><b style='font-size:120%'>" + sTitle + "</b></a>";
+		save = "<a id='save_" + id + "' title='A saved strategy is like a snapshot, it cannot be changed.' class='save_strat_link' href='javascript:void(0)' onclick=\"showSaveForm('" + id + "', true)\"><b style='font-size:120%'>" + sTitle + "</b></a>";
 	}
 	save += "<div id='save_strat_div_" + id + "' class='modal_div save_strat'>" +
 		"<div class='dragHandle'>" +
@@ -642,6 +642,12 @@ function createInvalidDiv(){
 function reviseInvalidSteps(ele){
 	var iv_id = $(ele).parent().attr("id").split("_");
 	$("div#diagram_" + iv_id[0] + " div#step_" + iv_id[1] + "_sub h3 a#stepId_" + iv_id[1]).click();
+}
+
+function setFrontAction(action, strat, step) {
+	$("#loginForm form[name=loginForm]").append("<input type='hidden' name='action' value='" + action + "'/>");
+	$("#loginForm form[name=loginForm]").append("<input type='hidden' name='actionStrat' value='" + strat + "'/>");
+	$("#loginForm form[name=loginForm]").append("<input type='hidden' name='actionStep' value='" + step + "'/>");
 }
 
 function popLogin() {

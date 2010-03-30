@@ -427,7 +427,7 @@ public abstract class AbstractEnumParam extends Param {
     }
 
     protected void applySelectMode() {
-        logger.debug("select mode: '" + selectMode + "'");
+        logger.trace("select mode: '" + selectMode + "'");
         if (defaultValue != null && defaultValue.length() > 0) return;
 
         if (selectMode == null) selectMode = SELECT_MODE_FIRST;

@@ -101,14 +101,16 @@ public class SqlQueryInstance extends QueryInstance {
             int instanceId) throws WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException, WdkUserException {
         String idColumn = CacheFactory.COLUMN_INSTANCE_ID;
-        String weightColumn = Utilities.COLUMN_WEIGHT;
         Map<String, Column> columns = query.getColumnMap();
         StringBuffer columnList = new StringBuffer();
         for (Column column : columns.values()) {
             columnList.append(", " + column.getName());
         }
-        if (!columns.containsKey(weightColumn))
-            columnList.append(", " + weightColumn);
+        if (query.isHasWeight()) {
+            String weightColumn = Utilities.COLUMN_WEIGHT;
+            if (!columns.containsKey(weightColumn))
+                columnList.append(", " + weightColumn);
+        }
 
         // get the sql with param values applied. The last column has to be the
         // weight.
@@ -123,10 +125,10 @@ public class SqlQueryInstance extends QueryInstance {
         Statement stmt = null;
         try {
             long start = System.currentTimeMillis();
-            
+
             stmt = connection.createStatement();
             stmt.execute(buffer.toString());
-            
+
             SqlUtils.verifyTime(wdkModel, buffer.toString(), start);
         } catch (SQLException ex) {
             logger.error("Fail to run SQL:\n" + buffer);
@@ -146,13 +148,26 @@ public class SqlQueryInstance extends QueryInstance {
             String value = internalValues.get(paramName);
             sql = param.replaceSql(sql, value);
         }
-        // add weight to the last column if it doesn't exist, it has to be the
-        // last column.
-        Map<String, Column> columns = query.getColumnMap();
-        String weightColumn = Utilities.COLUMN_WEIGHT;
-        if (!columns.containsKey(weightColumn)) {
-            sql = "SELECT o.*, " + assignedWeight + " AS " + weightColumn
-                    + " FROM (" + sql + ") o";
+        if (query.isHasWeight()) {
+            // add weight to the last column if it doesn't exist, it has to be
+            // the last column.
+            Map<String, Column> columns = query.getColumnMap();
+            String weightColumn = Utilities.COLUMN_WEIGHT;
+            if (!columns.containsKey(weightColumn)) {
+                sql = "SELECT o.*, " + assignedWeight + " AS " + weightColumn
+                        + " FROM (" + sql + ") o";
+            } else { // has weight column defined, add assigned weight to it
+                StringBuilder builder = new StringBuilder();
+                for (String column : columns.keySet()) {
+                    if (column.equals(weightColumn)) continue;
+                    if (builder.length() == 0) builder.append("SELECT ");
+                    else builder.append(", o.");
+                    builder.append(column);
+                }
+                builder.append(", (o." + weightColumn + " + " + assignedWeight);
+                builder.append(") AS " + weightColumn);
+                builder.append(" FROM (" + sql + ") o");
+            }
         }
         return sql;
 
@@ -195,7 +210,7 @@ public class SqlQueryInstance extends QueryInstance {
             long start = System.currentTimeMillis();
             stmt = connection.createStatement();
             stmt.execute(buffer.toString());
-            
+
             SqlUtils.verifyTime(wdkModel, buffer.toString(), start);
 
             ResultFactory resultFactory = wdkModel.getResultFactory();

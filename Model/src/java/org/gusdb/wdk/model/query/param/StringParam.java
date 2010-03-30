@@ -1,9 +1,12 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -32,6 +35,7 @@ public class StringParam extends Param {
     // private static final Logger logger = WdkLogManager.getLogger(
     // "org.gusdb.wdk.model.StringParam" );
 
+    private List<WdkModelText> regexes = new ArrayList<WdkModelText>();
     private String regex;
     private int length = 0;
     private boolean quote = true;
@@ -40,6 +44,8 @@ public class StringParam extends Param {
 
     public StringParam(StringParam param) {
         super(param);
+        if (param.regexes != null)
+            this.regexes = new ArrayList<WdkModelText>();
         this.regex = param.regex;
         this.length = param.length;
         this.quote = param.quote;
@@ -48,6 +54,10 @@ public class StringParam extends Param {
     // ///////////////////////////////////////////////////////////////////
     // /////////// Public properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
+
+    public void addRegex(WdkModelText regex) {
+        this.regexes.add(regex);
+    }
 
     public void setRegex(String regex) {
         this.regex = regex;
@@ -99,7 +109,9 @@ public class StringParam extends Param {
     // protected methods
     // ///////////////////////////////////////////////////////////////
 
-    public void resolveReferences(WdkModel model) throws WdkModelException {}
+    public void resolveReferences(WdkModel model) throws WdkModelException {
+        if (regex == null) regex = model.getModelConfig().getParamRegex();
+    }
 
     /*
      * (non-Javadoc)
@@ -144,7 +156,7 @@ public class StringParam extends Param {
     public String dependentValueToInternalValue(User user, String dependentValue)
             throws WdkModelException, WdkUserException {
         if (noTranslation) return dependentValue;
-        
+
         String rawValue = decompressValue(dependentValue);
         if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
         rawValue = rawValue.replaceAll("'", "''");
@@ -174,7 +186,8 @@ public class StringParam extends Param {
      */
     @Override
     public String rawOrDependentValueToDependentValue(User user, String rawValue)
-            throws NoSuchAlgorithmException, WdkModelException, WdkUserException {
+            throws NoSuchAlgorithmException, WdkModelException,
+            WdkUserException {
         return compressValue(rawValue);
     }
 
@@ -195,4 +208,31 @@ public class StringParam extends Param {
             throw new WdkModelException("Value may be no longer than " + length
                     + " characters.  (It is " + rawValue.length() + ".)");
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * org.gusdb.wdk.model.query.param.Param#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        super.excludeResources(projectId);
+
+        boolean hasRegex = false;
+        for (WdkModelText regex : regexes) {
+            if (regex.include(projectId)) {
+                if (hasRegex) {
+                    throw new WdkModelException("The param " + getFullName()
+                            + " has more than one regex for project "
+                            + projectId);
+                } else {
+                    this.regex = regex.getText();
+                    hasRegex = true;
+                }
+            }
+        }
+        regexes = null;
+    }
+
 }

@@ -57,6 +57,8 @@ public abstract class Query extends WdkModelBase {
     private QuerySet querySet;
 
     private String[] indexColumns;
+    
+    private boolean hasWeight;
 
     // =========================================================================
     // Abstract methods
@@ -81,14 +83,7 @@ public abstract class Query extends WdkModelBase {
         paramMap = new LinkedHashMap<String, Param>();
         columnList = new ArrayList<Column>();
         columnMap = new LinkedHashMap<String, Column>();
-    }
-
-    public void setIndexColumns(String[] indexColumns) {
-        this.indexColumns = indexColumns;
-    }
-
-    public String[] getIndexColumns() {
-        return indexColumns;
+        hasWeight = false;
     }
 
     /**
@@ -108,6 +103,7 @@ public abstract class Query extends WdkModelBase {
         this.paramValuesSets = new ArrayList<ParamValuesSet>(
                 query.paramValuesSets);
         this.wdkModel = query.wdkModel;
+        this.hasWeight = query.hasWeight;
 
         // clone columns
         for (String columnName : query.columnMap.keySet()) {
@@ -121,6 +117,14 @@ public abstract class Query extends WdkModelBase {
             Param param = query.paramMap.get(paramName).clone();
             paramMap.put(paramName, param);
         }
+    }
+
+    public void setIndexColumns(String[] indexColumns) {
+        this.indexColumns = indexColumns;
+    }
+
+    public String[] getIndexColumns() {
+        return indexColumns;
     }
 
     /**
@@ -560,5 +564,19 @@ public abstract class Query extends WdkModelBase {
             independentValues.put(paramName, independentValue);
         }
         return independentValues;
+    }
+
+    /**
+     * @param hasWeight the hasWeight to set
+     */
+    public void setHasWeight(boolean hasWeight) {
+        this.hasWeight = hasWeight;
+    }
+
+    /**
+     * @return the hasWeight
+     */
+    public boolean isHasWeight() {
+        return hasWeight;
     }
 }

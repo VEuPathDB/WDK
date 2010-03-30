@@ -348,6 +348,34 @@ public class UserBean /* implements Serializable */{
         return user.getSignature();
     }
 
+    public String getFrontAction() {
+	return user.getFrontAction();
+    }
+
+    public Integer getFrontStrategy() {
+	return user.getFrontStrategy();
+    }
+
+    public Integer getFrontStep() {
+	return user.getFrontStep();
+    }
+
+    public void setFrontAction(String frontAction) {
+	user.setFrontAction(frontAction);
+    }
+
+    public void setFrontStrategy(int frontStrategy) {
+	user.setFrontStrategy(frontStrategy);
+    }
+
+    public void setFrontStep(int frontStep) {
+	user.setFrontStep(frontStep);
+    }
+
+    public void resetFrontAction() {
+	user.resetFrontAction();
+    }
+
     /*
      * (non-Javadoc)
      * 

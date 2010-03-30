@@ -211,7 +211,7 @@ public class Step {
      * @throws NoSuchAlgorithmException
      */
     public String getShortDisplayName() throws WdkModelException {
-        String name = customName;
+        /*String name = customName;
 
         if (name == null) name = getQuestion().getShortDisplayName();
         if (name != null) {
@@ -221,7 +221,8 @@ public class Step {
             name = name.trim().replaceAll("\\s+", " ");
             if (name.length() > 4000) name = name.substring(0, 4000);
         }
-        return name;
+        return name;*/
+		return getQuestion().getShortDisplayName();
     }
 
     public String getDisplayName() throws WdkModelException {

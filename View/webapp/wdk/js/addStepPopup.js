@@ -61,6 +61,8 @@ function showSaveForm(stratId, save, share){
          $("span.h3left", saveForm).text("Save As");
          $("input[type=submit]", saveForm).attr("value", "Save");
          if (share) {
+		  $("form", saveForm).append("<input type='hidden' name='action' value='share'/>");
+                  $("form", saveForm).append("<input type='hidden' name='actionStrat' value='" + stratId + "'/>");
 		  $("span.h3left", saveForm).text("First you need to Save it!");
          }
        }
