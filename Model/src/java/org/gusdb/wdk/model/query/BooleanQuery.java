@@ -174,7 +174,7 @@ public class BooleanQuery extends SqlQuery {
         } else {
             param = new StringParam();
             param.setName(paramName);
-            param.setNumber(true);
+            param.setNumber(false);
             param.resolveReferences(wdkModel);
             param.setResources(wdkModel);
             paramSet.addParam(param);
