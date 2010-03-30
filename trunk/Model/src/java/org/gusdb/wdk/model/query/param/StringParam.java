@@ -32,8 +32,6 @@ public class StringParam extends Param {
      */
     private static final long serialVersionUID = 7561711069245980824L;
 
-    private static final String NUMBER_REGEX = "[+-]?\\d*(\\.\\d+)?([Ee][+-]?\\d+)?";
-
     private List<WdkModelText> regexes = new ArrayList<WdkModelText>();
     private String regex;
     private int length = 0;
@@ -200,10 +198,15 @@ public class StringParam extends Param {
     protected void validateValue(User user, String dependentValue)
             throws WdkUserException, WdkModelException {
         String rawValue = decompressValue(dependentValue);
-        if (number && !rawValue.trim().matches(NUMBER_REGEX))
-            throw new WdkUserException("stringParam " + getFullName() + " is "
-                    + "declared as a number, but the Value '" + rawValue
-                    + "' is invalid number format.");
+        if (number) {
+            try {
+                Double.valueOf(rawValue);
+            } catch (NumberFormatException ex) {
+                throw new WdkUserException("stringParam " + getFullName()
+                        + " is declared as a number, but the Value '"
+                        + rawValue + "' is invalid number format.");
+            }
+        }
         if (regex != null && !rawValue.matches(regex))
             throw new WdkUserException("stringParam " + getFullName()
                     + " value '" + rawValue + "' does not match regular "
