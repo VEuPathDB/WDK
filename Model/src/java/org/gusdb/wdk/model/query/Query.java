@@ -57,7 +57,7 @@ public abstract class Query extends WdkModelBase {
     private QuerySet querySet;
 
     private String[] indexColumns;
-    
+
     private boolean hasWeight;
 
     // =========================================================================
@@ -365,8 +365,8 @@ public abstract class Query extends WdkModelBase {
         if (isTransform()) {
             if (!columnMap.containsKey(Utilities.COLUMN_WEIGHT))
                 throw new WdkModelException("Transform query [" + getFullName()
-                        + "] doesn't define the required " + Utilities.COLUMN_WEIGHT
-                        + " column.");
+                        + "] doesn't define the required "
+                        + Utilities.COLUMN_WEIGHT + " column.");
         }
     }
 
@@ -393,18 +393,26 @@ public abstract class Query extends WdkModelBase {
             if (emptyValue != null) param.setEmptyValue(emptyValue);
         }
         Boolean noTranslation = paramRef.getNoTranslation();
-        if (noTranslation != null) {
-            param.setNoTranslation(noTranslation);
-        }
+        if (noTranslation != null) param.setNoTranslation(noTranslation);
+
+        // if the visible is set
+        Boolean visible = paramRef.getVisible();
+        if (visible != null) param.setVisible(visible);
+
+        Boolean number = paramRef.getNumber();
 
         Boolean quote = paramRef.getQuote();
         Boolean multiPick = paramRef.isMultiPick();
         Boolean useTermOnly = paramRef.getUseTermOnly();
-        Boolean visible = paramRef.getVisible();
-        String queryRef = paramRef.getQueryRef();
         String displayType = paramRef.getDisplayType();
         String selectMode = paramRef.getSelectMode();
+        String queryRef = paramRef.getQueryRef();
         if (param instanceof AbstractEnumParam) {
+            // check those invalid properties
+            if (number != null)
+                throw new WdkModelException("The 'number' property is not "
+                        + "allowed in param '" + twoPartName + "'");
+
             if (param instanceof FlatVocabParam)
                 ((FlatVocabParam) param).setServedQueryName(getFullName());
 
@@ -415,10 +423,6 @@ public abstract class Query extends WdkModelBase {
             // if the useTermOnly is set
             if (useTermOnly != null)
                 ((AbstractEnumParam) param).setUseTermOnly(useTermOnly);
-
-            // if the visible is set
-            if (visible != null)
-                ((AbstractEnumParam) param).setVisible(visible);
 
             // if the queryRef is set for FlatVocabParam
             if (queryRef != null) {
@@ -439,16 +443,24 @@ public abstract class Query extends WdkModelBase {
 
             if (selectMode != null)
                 ((AbstractEnumParam) param).setSelectMode(selectMode);
-        } else if (multiPick != null || useTermOnly != null
-                || displayType != null || selectMode != null) {
-            throw new WdkModelException("The paramRef to '" + twoPartName
-                    + "' is not a flatVocabParam nor enumParam. The "
-                    + "'multiPick', 'useTermOnly', 'displayType', "
-                    + "'selectMode' property can only be applied to "
-                    + "paramRefs of flatVocabParams or enumParams.");
-        } else if (param instanceof StringParam) {
-            // if quote is set, it overrides the value of the param
-            if (quote != null) ((StringParam) param).setQuote(quote);
+        } else { // or other param types
+            if (multiPick != null || useTermOnly != null || quote != null
+                    || displayType != null || selectMode != null
+                    || queryRef != null)
+                throw new WdkModelException("The paramRef to '" + twoPartName
+                        + "' is not a flatVocabParam nor enumParam. The "
+                        + "'multiPick', 'useTermOnly', 'displayType', 'quote',"
+                        + " 'selectMode', 'queryRef' properties can only be "
+                        + "applied to paramRefs of flatVocabParams or "
+                        + "enumParams.");
+            if (param instanceof StringParam) {
+                // if quote is set, it overrides the value of the param
+                if (number != null) ((StringParam) param).setNumber(number);
+            } else if (number != null) {
+                throw new WdkModelException("The paramRef to '" + twoPartName
+                        + "' is not a stringParam. The 'number' property can "
+                        + "only be applied to paramRefs of stringParams.");
+            }
         }
 
         // resolve the group reference
@@ -567,7 +579,8 @@ public abstract class Query extends WdkModelBase {
     }
 
     /**
-     * @param hasWeight the hasWeight to set
+     * @param hasWeight
+     *            the hasWeight to set
      */
     public void setHasWeight(boolean hasWeight) {
         this.hasWeight = hasWeight;
