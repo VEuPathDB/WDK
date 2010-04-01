@@ -53,8 +53,7 @@ public abstract class AbstractEnumParam extends Param {
     protected String dependedParamRef;
     protected String dependedValue;
 
-    public AbstractEnumParam() {
-    }
+    public AbstractEnumParam() {}
 
     public AbstractEnumParam(AbstractEnumParam param) {
         super(param);
@@ -75,10 +74,10 @@ public abstract class AbstractEnumParam extends Param {
         this.quote = param.quote;
         this.useTermOnly = param.useTermOnly;
         this.displayType = param.displayType;
-	this.dependedParam = param.dependedParam;
-	this.dependedParamRef = param.dependedParamRef;
-	this.dependedValue = param.dependedValue;
-	this.skipValidation = param.skipValidation;
+        this.dependedParam = param.dependedParam;
+        this.dependedParamRef = param.dependedParamRef;
+        this.dependedValue = param.dependedValue;
+        this.skipValidation = param.skipValidation;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -223,19 +222,19 @@ public abstract class AbstractEnumParam extends Param {
     }
 
     public Param getDependedParam() {
-	return dependedParam;
+        return dependedParam;
     }
 
     public void setDependedParamRef(String dependedParamRef) {
-	this.dependedParamRef = dependedParamRef;
+        this.dependedParamRef = dependedParamRef;
     }
 
     public String getDependedValue() {
-	return dependedValue;
+        return dependedValue;
     }
 
     public void setDependedValue(String dependedValue) {
-	this.dependedValue = dependedValue;
+        this.dependedValue = dependedValue;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -269,8 +268,7 @@ public abstract class AbstractEnumParam extends Param {
         useTermOnlies = null;
     }
 
-    protected void initTreeMap()
-            throws WdkModelException {
+    protected void initTreeMap() throws WdkModelException {
 
         termTreeList = new ArrayList<EnumParamTermNode>();
 
@@ -317,9 +315,9 @@ public abstract class AbstractEnumParam extends Param {
         initVocabMap();
         for (String term : terms) {
             if (!termInternalMap.containsKey(term))
-		throw new WdkModelException(" - Invalid term '" + term
-					    + "' for parameter '" + name + "'");
-	}
+                throw new WdkModelException(" - Invalid term '" + term
+                        + "' for parameter '" + name + "'");
+        }
         return terms;
     }
 
@@ -348,16 +346,16 @@ public abstract class AbstractEnumParam extends Param {
     public String dependentValueToInternalValue(User user, String dependentValue)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        if (noTranslation) return dependentValue;
-        
+
         String rawValue = decompressValue(dependentValue);
         if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
+        if (noTranslation) return dependentValue;
 
-	if (skipValidation) {
-	    rawValue = rawValue.replaceAll("'", "''");
-	    if (quote) rawValue = "'" + rawValue + "'";
-	    return rawValue;
-	}
+        if (skipValidation) {
+            rawValue = rawValue.replaceAll("'", "''");
+            if (quote) rawValue = "'" + rawValue + "'";
+            return rawValue;
+        }
 
         String[] terms = getTerms(rawValue);
         StringBuffer buf = new StringBuffer();
@@ -409,13 +407,14 @@ public abstract class AbstractEnumParam extends Param {
     protected void validateValue(User user, String dependentValue)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-	if (!skipValidation) {
-	    String rawValue = decompressValue(dependentValue);
-	    String[] terms = getTerms(rawValue);
-	    if (terms.length == 0 && !allowEmpty)
-		throw new WdkUserException("The value to enumParam/flatVocabParam "
-					   + getFullName() + " cannot be empty");
-	}
+        if (!skipValidation) {
+            String rawValue = decompressValue(dependentValue);
+            String[] terms = getTerms(rawValue);
+            if (terms.length == 0 && !allowEmpty)
+                throw new WdkUserException(
+                        "The value to enumParam/flatVocabParam "
+                                + getFullName() + " cannot be empty");
+        }
     }
 
     /**
@@ -455,8 +454,8 @@ public abstract class AbstractEnumParam extends Param {
     }
 
     protected void loadDependedParam() throws WdkModelException {
-	if (dependedParamRef != null && dependedParamRef.length() != 0) {
-	    dependedParam = (Param) wdkModel.resolveReference(dependedParamRef);
-	}
+        if (dependedParamRef != null && dependedParamRef.length() != 0) {
+            dependedParam = (Param) wdkModel.resolveReference(dependedParamRef);
+        }
     }
 }
