@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.AttributeValue;
 import org.gusdb.wdk.model.FieldScope;
@@ -29,6 +30,8 @@ import org.json.JSONException;
  * consumption by a view
  */
 public class RecordBean {
+
+    private static final Logger logger = Logger.getLogger(RecordBean.class);
 
     private User user;
     private RecordInstance recordInstance;
@@ -148,11 +151,25 @@ public class RecordBean {
 
     public boolean isInFavorite() throws SQLException, WdkUserException,
             WdkModelException {
+        try {
         RecordClass recordClass = recordInstance.getRecordClass();
         Map<String, String> values = recordInstance.getPrimaryKey().getValues();
         String[] pkValues = new String[values.size()];
         values.values().toArray(pkValues);
         return user.isInFavorite(recordClass, pkValues);
+        } catch (SQLException ex) {
+            logger.error(ex);
+            ex.printStackTrace();
+            throw ex;
+        } catch (WdkUserException ex) {
+            logger.error(ex);
+            ex.printStackTrace();
+            throw ex;
+        } catch (WdkModelException ex) {
+            logger.error(ex);
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 
     private class AttributeValueMap implements Map<String, AttributeValue> {
