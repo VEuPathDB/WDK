@@ -23,6 +23,7 @@ public class ParamReference extends Reference {
     private Boolean useTermOnly;
     private String queryRef;
     private Boolean quote;
+    private Boolean number;
     private String emptyValue;
     private String displayType;
     private Boolean visible;
@@ -193,5 +194,19 @@ public class ParamReference extends Reference {
      */
     public void setNoTranslation(Boolean noTranslation) {
         this.noTranslation = noTranslation;
+    }
+
+    /**
+     * @return the number
+     */
+    public Boolean getNumber() {
+        return number;
+    }
+
+    /**
+     * @param number the number to set
+     */
+    public void setNumber(Boolean number) {
+        this.number = number;
     }
 }
