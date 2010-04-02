@@ -37,11 +37,46 @@ function updateFavorite(holder, action) {
     });
 }
 
-function updateFavoriteNote(holder) {
+function showInputBox(holder, type, callback){
+	var noteSpan = jQuery(holder).parents("td").find("span.favorite-" + type);
+	var note = jQuery(noteSpan).text();
+	jQuery(noteSpan).html("<input type='text' name='favorite-" + type + "' value='" + note + "'/>");
+	jQuery("input", noteSpan).focus();
+	jQuery("input", noteSpan).bind('blur', function(){ eval(callback); });
+}
 
+function updateFavoriteNote(holder) {
+	var record = getRecord(holder);
+    var rcName = jQuery(holder).parents(".wdk-record").attr("recordClass");
+	var noteSpan = jQuery(holder).parents("td").find("span.favorite-note");
+	var note = jQuery("input",noteSpan).val();
+	var d = "action=note&note=" + note + "&type=" + rcName + "&data=" + record;
+	jQuery.ajax({
+		url: "processFavorite.do",
+		data: d,
+		dataType: "html",
+		type: "post",
+		success: function(data){
+			jQuery(noteSpan).html(note);
+		}
+	});
 }
 
 function updateFavoriteGroup(holder) {
+	var record = getRecord(holder);
+    var rcName = jQuery(holder).parents(".wdk-record").attr("recordClass");
+	var groupSpan = jQuery(holder).parents("td").find("span.favorite-group");
+	var group = jQuery("input",groupSpan).val();
+	var d = "action=group&group=" + group + "&type=" + rcName + "&data=" + record;
+	jQuery.ajax({
+		url: "processFavorite.do",
+		data: d,
+		dataType: "html",
+		type: "post",
+		success: function(data){
+			jQuery(groupSpan).html(group);
+		}
+	});
 
 }
 
