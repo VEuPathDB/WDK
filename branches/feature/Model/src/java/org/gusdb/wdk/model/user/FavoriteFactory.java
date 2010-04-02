@@ -5,9 +5,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -418,12 +421,16 @@ public class FavoriteFactory {
             long start = System.currentTimeMillis();
             resultSet = psSelect.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql, start);
-            List<String> groups = new ArrayList<String>();
+            Set<String> groups = new HashSet<String>();
             while (resultSet.next()) {
-                groups.add(resultSet.getString(COLUMN_RECORD_GROUP));
+                String group = resultSet.getString(COLUMN_RECORD_GROUP);
+                if (group == null || group.trim().length() == 0) continue;
+                group = group.trim();
+                groups.add(group);
             }
             String[] array = new String[groups.size()];
             groups.toArray(array);
+            Arrays.sort(array);
             return array;
         } finally {
             SqlUtils.closeResultSet(resultSet);
