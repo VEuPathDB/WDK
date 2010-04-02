@@ -54,7 +54,7 @@ public class FavoriteTest {
 
         String rcName = recordClass.getFullName();
         Assert.assertEquals(added.size(), user.getFavoriteCount());
-        List<Favorite> favorites = user.getFavorites().get(rcName);
+        List<Favorite> favorites = user.getFavorites().get(recordClass);
         Assert.assertEquals(added.size(), favorites.size());
         for (Favorite favorite : favorites) {
             RecordClass actual = favorite.getRecordInstance().getRecordClass();
@@ -147,7 +147,7 @@ public class FavoriteTest {
         String note = "note " + random.nextInt();
         user.setFavoriteNotes(recordClass, added, note);
 
-        List<Favorite> favorites = user.getFavorites().get(rcName);
+        List<Favorite> favorites = user.getFavorites().get(recordClass);
         for (Favorite favorite : favorites) {
             Assert.assertEquals(note, favorite.getNote());
         }
@@ -169,7 +169,7 @@ public class FavoriteTest {
         String group = "group " + random.nextInt();
         user.setFavoriteGroups(recordClass, added, group);
 
-        List<Favorite> favorites = user.getFavorites().get(rcName);
+        List<Favorite> favorites = user.getFavorites().get(recordClass);
         for (Favorite favorite : favorites) {
             Assert.assertEquals(group, favorite.getGroup());
         }
