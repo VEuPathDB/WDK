@@ -232,8 +232,8 @@ public class FavoriteFactory {
                 String rcName = rs.getString(COLUMN_RECORD_CLASS);
                 RecordClass recordClass = (RecordClass) wdkModel.getRecordClass(rcName);
                 List<Favorite> list;
-                if (favorites.containsKey(rcName)) {
-                    list = favorites.get(rcName);
+                if (favorites.containsKey(recordClass)) {
+                    list = favorites.get(recordClass);
                 } else {
                     list = new ArrayList<Favorite>();
                     favorites.put(recordClass, list);
