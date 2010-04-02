@@ -781,5 +781,5 @@ span.subscriptCount, font.subscriptCount {
 }
 
 .clickable {
-    cursor: hand;
+    cursor: pointer;
 }
