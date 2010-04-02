@@ -33,4 +33,20 @@ public class FavoriteBean {
     public UserBean getUser() {
         return new UserBean(favorite.getUser());
     }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Favorite#getGroup()
+     */
+    public String getGroup() {
+        return favorite.getGroup();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Favorite#getNote()
+     */
+    public String getNote() {
+        return favorite.getNote();
+    }
 }
