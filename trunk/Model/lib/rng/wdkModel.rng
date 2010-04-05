@@ -192,7 +192,7 @@
     </element>
   </define>
 
-  <define name="ParamBaseContents">
+  <define name="ParamBaseProperties">
     <attribute name="name" />
     <ref name="IncludeExclude" />
     <optional>
@@ -219,12 +219,13 @@
         <data type="boolean" />
       </attribute>
     </optional>
-    <zeroOrMore>
-      <element name="help">
+  </define>
+
+  <define name="ParamBaseTags">
+    <element name="help">
         <ref name="IncludeExclude" />
         <text />
-      </element>
-    </zeroOrMore>
+    </element>
   </define>
 
   <define name="useTermOnly">
@@ -246,161 +247,167 @@
     <ref name="IncludeExclude" />
   </define>
 
-  <define name="stringParamContent">
-    <ref name="ParamBaseContents" />
-    <attribute name="number">
-        <data type="boolean" />
-    </attribute>
-    <optional>
-      <attribute name="length">
-        <data type="positiveInteger" />
-      </attribute>
-    </optional>
-    <zeroOrMore>
-        <choice>
-            <element name="regex">
-                <text />
-            </element>
-            <element name="suggest">
-                <ref name="SuggestContent" />
-                <optional>
-                  <attribute name="sample" />
-                </optional>
-                <optional>
-                  <attribute name="default" />
-                </optional>
-            </element>
-        </choice> 
-    </zeroOrMore>
-  </define>
-
   <define name="stringParam">
     <element name="stringParam">
-      <ref name="stringParamContent" />
+        <ref name="ParamBaseProperties" />
+        <attribute name="number">
+            <data type="boolean" />
+        </attribute>
+        <optional>
+          <attribute name="length">
+            <data type="positiveInteger" />
+          </attribute>
+        </optional>
+        <zeroOrMore>
+            <choice>
+                <ref name="ParamBaseTags" />
+                <element name="regex">
+                    <text />
+                </element>
+                <element name="suggest">
+                    <ref name="SuggestContent" />
+                    <optional>
+                      <attribute name="sample" />
+                    </optional>
+                    <optional>
+                      <attribute name="default" />
+                    </optional>
+                </element>
+            </choice> 
+        </zeroOrMore>
     </element>
   </define>
 
   <define name="timestampParam">
     <element name="timestampParam">
-      <ref name="ParamBaseContents" />
+      <ref name="ParamBaseProperties" />
       <!-- defines the type of the values of this answerParam -->
       <zeroOrMore>
-        <element name="suggest">
-          <ref name="SuggestContent" />
-        </element>
+        <choice>
+            <ref name="ParamBaseTags" />
+            <element name="suggest">
+              <ref name="SuggestContent" />
+            </element>
+        </choice>
       </zeroOrMore>
     </element>
   </define>
 
   <define name="answerParam">
     <element name="answerParam">
-      <ref name="ParamBaseContents" />
+      <ref name="ParamBaseProperties" />
       <!-- defines the type of the values of this answerParam -->
       <attribute name="recordClassRef" />
       <zeroOrMore>
-        <element name="suggest">
-          <ref name="SuggestContent" />
-        </element>
+        <choice>
+            <ref name="ParamBaseTags" />
+            <element name="suggest">
+              <ref name="SuggestContent" />
+            </element>
+        </choice>
       </zeroOrMore>
     </element>
   </define>
 
   <define name="datasetParam">
     <element name="datasetParam">
-      <ref name="ParamBaseContents" />
+      <ref name="ParamBaseProperties" />
       <attribute name="recordClassRef" />
       <zeroOrMore>
-        <element name="suggest">
-          <ref name="SuggestContent" />
-          <optional>
-            <attribute name="sample" />
-          </optional>
-          <optional>
-            <attribute name="default" />
-          </optional>
-          <optional>
-            <attribute name="columnName" />
-          </optional>
-		  <optional>
-			<attribute name="defaultType">
-				<choice>
-					<value>data</value>
-					<value>file</value>
-					<value>basket</value>
-				</choice>
-			</attribute>
-		  </optional>
-        </element>
+        <choice>
+            <ref name="ParamBaseTags" />
+            <element name="suggest">
+              <ref name="SuggestContent" />
+              <optional>
+                <attribute name="sample" />
+              </optional>
+              <optional>
+                <attribute name="default" />
+              </optional>
+              <optional>
+                <attribute name="columnName" />
+              </optional>
+              <optional>
+                  <attribute name="defaultType">
+                    <choice>
+                        <value>data</value>
+                        <value>file</value>
+                        <value>basket</value>
+                    </choice>
+                  </attribute>
+              </optional>
+            </element>
+        </choice>
       </zeroOrMore>
     </element>
   </define>
 
   <define name="enumParam">
     <element name="enumParam">
-      <ref name="EnumParamBaseContents" />
+      <ref name="EnumParamBaseProperties" />
       <zeroOrMore>
         <choice>
-          <element name="suggest">
+           <ref name="ParamBaseTags" />
+           <element name="suggest">
               <ref name="SuggestContent" />
               <optional>
                 <ref name="SelectModeContents" />
               </optional>
-          </element>
-          <ref name="useTermOnly" />
-        </choice>
-      </zeroOrMore>
-      <oneOrMore>
-        <element name="enumList">
-          <ref name="IncludeExclude" />
-          <zeroOrMore>
-            <ref name="useTermOnly" />
-          </zeroOrMore>
-          <oneOrMore>
-            <element name="enumValue">
+           </element>
+           <ref name="useTermOnly" />
+           <element name="enumList">
               <ref name="IncludeExclude" />
-              <optional>
-                <attribute name="default">
-                  <data type="boolean" />
-                </attribute>
-              </optional>
-              <interleave>
-                <element name="term">
-                  <text />
-                </element>
-                <element name="internal">
-                  <text />
-                </element>
-                <optional>
-                  <element name="display">
-                    <text />
-                  </element>
-                </optional>
-                <optional>
-                  <element name="parentTerm">
-                    <text />
-                  </element>
-                </optional>
-                <optional>
-                  <oneOrMore>
-                    <element name="dependedValue">
+              <zeroOrMore>
+                <ref name="useTermOnly" />
+              </zeroOrMore>
+              <oneOrMore>
+                <element name="enumValue">
+                  <ref name="IncludeExclude" />
+                  <optional>
+                    <attribute name="default">
+                      <data type="boolean" />
+                    </attribute>
+                  </optional>
+                  <interleave>
+                    <element name="term">
                       <text />
                     </element>
-                  </oneOrMore>
-                </optional>
-              </interleave>
-            </element>
-          </oneOrMore>
-        </element>
-      </oneOrMore>
+                    <element name="internal">
+                      <text />
+                    </element>
+                    <optional>
+                      <element name="display">
+                        <text />
+                      </element>
+                    </optional>
+                    <optional>
+                      <element name="parentTerm">
+                        <text />
+                      </element>
+                    </optional>
+                    <optional>
+                      <oneOrMore>
+                        <element name="dependedValue">
+                          <text />
+                        </element>
+                      </oneOrMore>
+                    </optional>
+                  </interleave>
+                </element>
+              </oneOrMore>
+           </element>
+        </choice>
+      </zeroOrMore>
     </element>
   </define>
 
   <define name="flatVocabParam">
     <element name="flatVocabParam">
-      <ref name="EnumParamBaseContents" />
+      <ref name="EnumParamBaseProperties" />
       <attribute name="queryRef" />
       <zeroOrMore>
         <choice>
+          <ref name="ParamBaseTags" />
           <element name="suggest">
             <ref name="SuggestContent" />
             <optional>
@@ -411,13 +418,13 @@
             </optional>
           </element>
           <ref name="useTermOnly" />
-        </choice>
+       </choice>
       </zeroOrMore>
     </element>
   </define>
 
-  <define name="EnumParamBaseContents">
-    <ref name="ParamBaseContents" />
+  <define name="EnumParamBaseProperties">
+    <ref name="ParamBaseProperties" />
     <optional>
       <attribute name="dependedParamRef">
       </attribute>
