@@ -1,6 +1,10 @@
 // cannot use $ for jQuery, since this script is also included in record page, 
 // and might have conflict if gbrowse is included.
 
+jQuery(document).ready(function(){
+	loadFavoriteGroups();
+});
+
 function showFavorites() {
 
 }
@@ -42,7 +46,14 @@ function showInputBox(holder, type, callback){
 	var note = jQuery(noteSpan).text();
 	jQuery(noteSpan).html("<input type='text' name='favorite-" + type + "' value='" + note + "'/>");
 	jQuery("input", noteSpan).focus();
-	jQuery("input", noteSpan).bind('blur', function(){ eval(callback); });
+	if(type == 'group'){
+		jQuery("div#groups-list").css("display","block");
+//		jQuery("input", noteSpan).bind('blur', function(){ eval(callback); });
+		jQuery(noteSpan).append("<input type='button' value='Save'/>");
+		jQuery("input[type='button']", noteSpan).click(function(){ eval(callback); });
+	}else{
+		jQuery("input", noteSpan).bind('blur', function(){ eval(callback); });
+	}
 }
 
 function updateFavoriteNote(holder) {
@@ -75,13 +86,34 @@ function updateFavoriteGroup(holder) {
 		type: "post",
 		success: function(data){
 			jQuery(groupSpan).html(group);
+			loadFavoriteGroups();
 		}
 	});
+	jQuery("div#groups-list").css("display","none");
 
 }
 
 function loadFavoriteGroups() {
-
+	jQuery.ajax({
+		url: "showFavorite.do?showGroup=true",
+		dataType: "json",
+		type: "post",
+		success: function(data){
+			var l = jQuery("div#groups-list ul");
+			jQuery(l).html("");
+			for(i in data){
+				var li = document.createElement('li');
+				jQuery(li).css({
+					cursor: "pointer",
+				});
+				jQuery(li).html(data[i]);
+				jQuery(li).click(function(){
+					jQuery("span.favorite-group input[type='text']").val(jQuery(this).text());
+				});
+				jQuery(l).append(li);
+			}
+		}
+	});
 }
 
 function getRecord(holder) {
