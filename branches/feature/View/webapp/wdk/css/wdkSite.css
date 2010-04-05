@@ -783,3 +783,13 @@ span.subscriptCount, font.subscriptCount {
 .clickable {
     cursor: pointer;
 }
+
+div#groups-list {
+	background-color:paleGoldenRod;
+	border:1px solid #000000;
+	padding:3px;
+	position:absolute;
+	right:689px;
+	text-align:center;
+	width:125px;
+}
