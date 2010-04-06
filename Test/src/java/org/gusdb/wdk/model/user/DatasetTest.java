@@ -5,6 +5,7 @@ package org.gusdb.wdk.model.user;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.UnitTestHelper;
@@ -104,14 +105,16 @@ public class DatasetTest {
     }
 
     private String generateRandomValues() throws Exception {
-        List<String[]> ids = FavoriteTest.getIds(recordClass,
+        List<Map<String, Object>> ids = FavoriteTest.getIds(recordClass,
                 FavoriteTest.OPEARTION_SIZE);
 
         StringBuilder builder = new StringBuilder();
-        for (String[] id : ids) {
-            for (int i = 0; i < id.length; i++) {
-                if (i > 0) builder.append(':');
-                builder.append(id[i]);
+        for (Map<String, Object> id : ids) {
+            boolean first = true;
+            for (Object value : id.values()) {
+                if (first) first = false;
+                else builder.append(":");
+                builder.append(value);
             }
             builder.append('\n');
         }

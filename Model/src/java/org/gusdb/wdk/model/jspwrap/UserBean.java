@@ -349,31 +349,31 @@ public class UserBean /* implements Serializable */{
     }
 
     public String getFrontAction() {
-	return user.getFrontAction();
+        return user.getFrontAction();
     }
 
     public Integer getFrontStrategy() {
-	return user.getFrontStrategy();
+        return user.getFrontStrategy();
     }
 
     public Integer getFrontStep() {
-	return user.getFrontStep();
+        return user.getFrontStep();
     }
 
     public void setFrontAction(String frontAction) {
-	user.setFrontAction(frontAction);
+        user.setFrontAction(frontAction);
     }
 
     public void setFrontStrategy(int frontStrategy) {
-	user.setFrontStrategy(frontStrategy);
+        user.setFrontStrategy(frontStrategy);
     }
 
     public void setFrontStep(int frontStep) {
-	user.setFrontStep(frontStep);
+        user.setFrontStep(frontStep);
     }
 
     public void resetFrontAction() {
-	user.resetFrontAction();
+        user.resetFrontAction();
     }
 
     /*
@@ -1276,12 +1276,15 @@ public class UserBean /* implements Serializable */{
      * @throws WdkUserException
      * @throws WdkModelException
      * @throws SQLException
+     * @throws JSONException
+     * @throws NoSuchAlgorithmException
      * @see org.gusdb.wdk.model.user.User#addToFavorite(org.gusdb.wdk.model.RecordClass,
      *      java.util.List)
      */
     public void addToFavorite(RecordClassBean recordClass,
-            List<String[]> pkValues) throws WdkUserException,
-            WdkModelException, SQLException {
+            List<Map<String, Object>> pkValues) throws WdkUserException,
+            WdkModelException, SQLException, NoSuchAlgorithmException,
+            JSONException {
         user.addToFavorite(recordClass.recordClass, pkValues);
     }
 
@@ -1341,7 +1344,7 @@ public class UserBean /* implements Serializable */{
      *      java.util.List)
      */
     public void removeFromFavorite(RecordClassBean recordClass,
-            List<String[]> pkValues) throws WdkUserException,
+            List<Map<String, Object>> pkValues) throws WdkUserException,
             WdkModelException, SQLException {
         user.removeFromFavorite(recordClass.recordClass, pkValues);
     }
@@ -1357,8 +1360,8 @@ public class UserBean /* implements Serializable */{
      *      java.util.List, java.lang.String)
      */
     public void setFavoriteGroups(RecordClassBean recordClass,
-            List<String[]> pkValues, String group) throws WdkUserException,
-            WdkModelException, SQLException {
+            List<Map<String, Object>> pkValues, String group)
+            throws WdkUserException, WdkModelException, SQLException {
         user.setFavoriteGroups(recordClass.recordClass, pkValues, group);
     }
 
@@ -1373,8 +1376,8 @@ public class UserBean /* implements Serializable */{
      *      java.util.List, java.lang.String)
      */
     public void setFavoriteNotes(RecordClassBean recordClass,
-            List<String[]> pkValues, String note) throws WdkUserException,
-            WdkModelException, SQLException {
+            List<Map<String, Object>> pkValues, String note)
+            throws WdkUserException, WdkModelException, SQLException {
         user.setFavoriteNotes(recordClass.recordClass, pkValues, note);
     }
 
