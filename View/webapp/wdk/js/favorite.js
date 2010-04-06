@@ -40,20 +40,48 @@ function updateFavorite(holder, action) {
         }	
     });
 }
-
+var old_holder = null;
 function showInputBox(holder, type, callback){
-	var noteSpan = jQuery(holder).parents("td").find("span.favorite-" + type);
-	var note = jQuery(noteSpan).text();
-	jQuery(noteSpan).html("<input type='text' name='favorite-" + type + "' value='" + note + "'/>");
-	jQuery("input", noteSpan).focus();
-	if(type == 'group'){
-		jQuery("div#groups-list").css("display","block");
-//		jQuery("input", noteSpan).bind('blur', function(){ eval(callback); });
-		jQuery(noteSpan).append("<input type='button' value='Save'/>");
-		jQuery("input[type='button']", noteSpan).click(function(){ eval(callback); });
-	}else{
-		jQuery("input", noteSpan).bind('blur', function(){ eval(callback); });
+	if(old_holder != null){
+		jQuery("input[id$='_Cancel']").click();
 	}
+	var noteSpan = jQuery(holder).parents("td").find("span.favorite-" + type);
+	old_holder = holder;
+	jQuery(holder).remove();
+	var note = jQuery(noteSpan).text();
+	var opacity = jQuery(noteSpan).css("opacity");
+	jQuery(noteSpan).css("opacity","1");
+	var value = note;
+	jQuery(noteSpan).html("<input size='64%' type='text' name='favorite-" + type + "' value='" + value + "'/>");
+	jQuery(noteSpan).append("<input id='" + type + "_Save' type='button' value='Save'/>");
+	jQuery(noteSpan).append("<input id='" + type + "_Cancel' type='button' value='Cancel'/>");
+	jQuery("input#" + type + "_Save", noteSpan).click(function(){ 
+		eval(callback); 
+		jQuery(this).parent().after(old_holder);
+		old_holder = null;
+	});
+	jQuery("input#" + type + "_Cancel", noteSpan).click(function(){ CancelChange(this, value, opacity); });
+	if(type == 'group' && jQuery("div#groups-list ul li").length > 0){
+		var groupList = jQuery("div#groups-list").clone();
+		jQuery("li", groupList).each(function(){
+			jQuery(this).click(function(){
+				jQuery("span.favorite-group input[type='text']").val(jQuery(this).text());
+			});
+		});
+		jQuery(noteSpan).append(groupList.show("fast"));
+		jQuery("input[type='text']",noteSpan).attr("size","");
+	}
+	jQuery("input", noteSpan).focus().select();
+}
+
+function CancelChange(h, v, o){
+	h = jQuery(h).parent();
+	h.html(v);
+	h.after(old_holder);
+	old_holder = null;
+	jQuery("div#groups-list", h).remove();
+	if(o != "1")
+		h.css("opacity",o);
 }
 
 function updateFavoriteNote(holder) {
@@ -85,11 +113,11 @@ function updateFavoriteGroup(holder) {
 		dataType: "html",
 		type: "post",
 		success: function(data){
-			jQuery(groupSpan).html(group);
+			jQuery(groupSpan).css("opacity","1.0").html(group);
 			loadFavoriteGroups();
 		}
 	});
-	jQuery("div#groups-list").css("display","none");
+	jQuery("div#groups-list", groupSpan).remove();
 
 }
 
@@ -105,11 +133,13 @@ function loadFavoriteGroups() {
 				var li = document.createElement('li');
 				jQuery(li).css({
 					cursor: "pointer",
+					padding: "3px"
 				});
+				if(i%2 == 0)
+					jQuery(li).css("background-color","#FFFFFF");
+				else
+					jQuery(li).css("background-color","#DDDDDD");
 				jQuery(li).html(data[i]);
-				jQuery(li).click(function(){
-					jQuery("span.favorite-group input[type='text']").val(jQuery(this).text());
-				});
 				jQuery(l).append(li);
 			}
 		}

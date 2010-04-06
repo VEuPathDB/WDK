@@ -780,16 +780,31 @@ span.subscriptCount, font.subscriptCount {
     display: none;
 }
 
+div#favorites{
+	padding:10px;
+}
+
+div.favorite-button-div{
+	width:20px;
+	height:100%;
+	float:right;
+}
+
 .clickable {
     cursor: pointer;
 }
 
+.favorite-group-button, .favorite-note-button {
+	float:right;
+	text
+}
+
 div#groups-list {
-	background-color:paleGoldenRod;
-	border:1px solid #000000;
+	background-color:#FFFFFF;
+	border:1px solid #CCCCCC;
 	padding:3px;
-	position:absolute;
-	right:689px;
+	position:relative;
+	right:0;
 	text-align:center;
-	width:125px;
+	width:147px;
 }
