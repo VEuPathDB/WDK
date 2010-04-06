@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ColumnType;
 import org.gusdb.wdk.model.query.Query;
@@ -18,8 +19,6 @@ import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
-
-import org.apache.log4j.Logger;
 
 public class RecordClass extends WdkModelBase implements
         AttributeFieldContainer {
@@ -157,6 +156,9 @@ public class RecordClass extends WdkModelBase implements
 
     private String allRecordsQueryRef;
     private Query allRecordsQuery;
+
+    private List<FavoriteReference> favorites = new ArrayList<FavoriteReference>();
+    private AttributeField favoriteNoteField;
 
     // ////////////////////////////////////////////////////////////////////
     // Called at model creation time
@@ -911,6 +913,19 @@ public class RecordClass extends WdkModelBase implements
             }
         }
         attributeLists = null;
+
+        // exlcude favorite references
+        for (FavoriteReference favorite : favorites) {
+            if (favorite.include(projectId)) {
+                String noteField = favorite.getNoteField();
+                this.favoriteNoteField = attributeFieldsMap.get(noteField);
+                if (favoriteNoteField == null)
+                    throw new WdkModelException("The attribute '" + noteField
+                            + "' for the default favorite note content of "
+                            + "recordClass '" + getFullName() + "' is invalid.");
+            }
+        }
+        favorites = null;
     }
 
     public void addFilter(AnswerFilter filter) {
@@ -1117,9 +1132,18 @@ public class RecordClass extends WdkModelBase implements
     }
 
     /**
-     * @param shortDisplayName the shortDisplayName to set
+     * @param shortDisplayName
+     *            the shortDisplayName to set
      */
     public void setShortDisplayName(String shortDisplayName) {
         this.shortDisplayName = shortDisplayName;
+    }
+
+    public void addFavorite(FavoriteReference favorite) {
+        this.favorites.add(favorite);
+    }
+
+    public AttributeField getFavoriteNoteField() {
+        return favoriteNoteField;
     }
 }

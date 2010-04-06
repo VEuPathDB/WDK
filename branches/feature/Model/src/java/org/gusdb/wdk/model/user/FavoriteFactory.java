@@ -15,6 +15,8 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.AttributeField;
+import org.gusdb.wdk.model.AttributeValue;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.Utilities;
@@ -46,16 +48,19 @@ public class FavoriteFactory {
     /**
      * @param user
      * @param recordClass
-     * @param pkValues
+     * @param recordIds
      *            a list of primary key values. the inner map is a primary-key
      *            column-value map.
      * @throws SQLException
      * @throws WdkModelException
      * @throws WdkUserException
+     * @throws JSONException
+     * @throws NoSuchAlgorithmException
      */
     public void addToFavorite(User user, RecordClass recordClass,
-            List<String[]> pkValues) throws SQLException, WdkUserException,
-            WdkModelException {
+            List<Map<String, Object>> recordIds) throws SQLException,
+            WdkUserException, WdkModelException, NoSuchAlgorithmException,
+            JSONException {
         logger.debug("adding favorite...");
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
@@ -73,21 +78,18 @@ public class FavoriteFactory {
             sqlValues += ", ?";
             sqlCount += " AND " + Utilities.COLUMN_PK_PREFIX + i + " = ?";
         }
-        sqlInsert += ") VALUES (?, ?, ?" + sqlValues + ")";
+        sqlInsert += ", " + COLUMN_RECORD_NOTE + ") VALUES (?, ?, ?"
+                + sqlValues + ", ?)";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         PreparedStatement psInsert = null, psCount = null;
         try {
             psInsert = SqlUtils.getPreparedStatement(dataSource, sqlInsert);
             psCount = SqlUtils.getPreparedStatement(dataSource, sqlCount);
             int count = 0;
-            for (String[] row : pkValues) {
-                // fill or truncate the pk columns
-                String[] pkValue = new String[pkColumns.length];
-                int length = Math.min(row.length, pkValue.length);
-                System.arraycopy(row, 0, pkValue, 0, length);
-
+            for (Map<String, Object> recordId : recordIds) {
                 // check if the record already exists.
-                setParams(psCount, userId, projectId, rcName, pkValue);
+                setParams(psCount, userId, projectId, rcName, pkColumns,
+                        recordId, 1);
                 boolean hasRecord = false;
                 ResultSet resultSet = null;
                 try {
@@ -103,8 +105,20 @@ public class FavoriteFactory {
                 }
                 if (hasRecord) continue;
 
+                // get the default favorite note
+                AttributeField noteField = recordClass.getFavoriteNoteField();
+                String note = null;
+                if (noteField != null) {
+                    RecordInstance instance = new RecordInstance(user,
+                            recordClass, recordId);
+                    AttributeValue noteValue = instance.getAttributeValue(noteField.getName());
+                    note = noteValue.getValue().toString();
+                }
+
                 // insert new record
-                setParams(psInsert, userId, projectId, rcName, pkValue);
+                setParams(psInsert, userId, projectId, rcName, pkColumns,
+                        recordId, 1);
+                psInsert.setString(4 + pkColumns.length, note);
                 psInsert.addBatch();
 
                 count++;
@@ -126,8 +140,8 @@ public class FavoriteFactory {
     }
 
     public void removeFromFavorite(User user, RecordClass recordClass,
-            List<String[]> pkValues) throws SQLException, WdkUserException,
-            WdkModelException {
+            List<Map<String, Object>> recordIds) throws SQLException,
+            WdkUserException, WdkModelException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -144,13 +158,9 @@ public class FavoriteFactory {
         try {
             psDelete = SqlUtils.getPreparedStatement(dataSource, sqlDelete);
             int count = 0;
-            for (String[] row : pkValues) {
-                // fill or truncate the pk columns
-                String[] pkValue = new String[pkColumns.length];
-                int length = Math.min(row.length, pkValue.length);
-                System.arraycopy(row, 0, pkValue, 0, length);
-
-                setParams(psDelete, userId, projectId, rcName, pkValue);
+            for (Map<String, Object> recordId : recordIds) {
+                setParams(psDelete, userId, projectId, rcName, pkColumns,
+                        recordId, 1);
                 psDelete.addBatch();
                 count++;
                 if (count % 100 == 0) {
@@ -218,7 +228,9 @@ public class FavoriteFactory {
             NoSuchAlgorithmException, JSONException {
         String sql = "SELECT * FROM " + schema + TABLE_FAVORITES + " WHERE "
                 + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_USER_ID + " =?"
-                + " ORDER BY " + COLUMN_RECORD_CLASS;
+                + " ORDER BY " + COLUMN_RECORD_CLASS + " ASC, "
+                + COLUMN_RECORD_GROUP + " ASC, " + Utilities.COLUMN_PK_PREFIX
+                + "1 ASC";
         DataSource ds = wdkModel.getUserPlatform().getDataSource();
         ResultSet rs = null;
         try {
@@ -263,8 +275,8 @@ public class FavoriteFactory {
     }
 
     public boolean isInFavorite(User user, RecordClass recordClass,
-            String[] pkValue) throws SQLException, WdkUserException,
-            WdkModelException {
+            Map<String, Object> recordId) throws SQLException,
+            WdkUserException, WdkModelException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -280,13 +292,9 @@ public class FavoriteFactory {
         try {
             PreparedStatement psCount = SqlUtils.getPreparedStatement(
                     dataSource, sqlCount);
-            // truncate the pk columns
-            String[] value = new String[pkColumns.length];
-            int length = Math.min(pkColumns.length, pkValue.length);
-            System.arraycopy(pkValue, 0, value, 0, length);
-
             // check if the record already exists.
-            setParams(psCount, userId, projectId, rcName, value);
+            setParams(psCount, userId, projectId, rcName, pkColumns, recordId,
+                    1);
             boolean hasRecord = false;
             long start = System.currentTimeMillis();
             resultSet = psCount.executeQuery();
@@ -302,8 +310,8 @@ public class FavoriteFactory {
     }
 
     public void setNotes(User user, RecordClass recordClass,
-            List<String[]> pkValues, String note) throws SQLException,
-            WdkUserException, WdkModelException {
+            List<Map<String, Object>> recordIds, String note)
+            throws SQLException, WdkUserException, WdkModelException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -321,20 +329,11 @@ public class FavoriteFactory {
             psUpdate = SqlUtils.getPreparedStatement(dataSource, sql);
 
             int count = 0;
-            for (String[] row : pkValues) {
-                // truncate the pk columns
-                String[] pkValue = new String[pkColumns.length];
-                int length = Math.min(row.length, pkValue.length);
-                System.arraycopy(row, 0, pkValue, 0, length);
-
+            for (Map<String, Object> recordId : recordIds) {
                 // check if the record already exists.
                 psUpdate.setString(1, note);
-                psUpdate.setInt(2, userId);
-                psUpdate.setString(3, projectId);
-                psUpdate.setString(4, rcName);
-                for (int i = 0; i < pkValue.length; i++) {
-                    psUpdate.setString(i + 5, pkValue[i]);
-                }
+                setParams(psUpdate, userId, projectId, rcName, pkColumns,
+                        recordId, 2);
                 psUpdate.addBatch();
                 count++;
                 if (count % 100 == 0) {
@@ -354,8 +353,8 @@ public class FavoriteFactory {
     }
 
     public void setGroups(User user, RecordClass recordClass,
-            List<String[]> pkValues, String group) throws SQLException,
-            WdkUserException, WdkModelException {
+            List<Map<String, Object>> recordIds, String group)
+            throws SQLException, WdkUserException, WdkModelException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -373,20 +372,11 @@ public class FavoriteFactory {
             psUpdate = SqlUtils.getPreparedStatement(dataSource, sql);
 
             int count = 0;
-            for (String[] row : pkValues) {
-                // truncate the pk columns
-                String[] pkValue = new String[pkColumns.length];
-                int length = Math.min(row.length, pkValue.length);
-                System.arraycopy(row, 0, pkValue, 0, length);
-
+            for (Map<String, Object> recordId : recordIds) {
                 // check if the record already exists.
                 psUpdate.setString(1, group);
-                psUpdate.setInt(2, userId);
-                psUpdate.setString(3, projectId);
-                psUpdate.setString(4, rcName);
-                for (int i = 0; i < pkValue.length; i++) {
-                    psUpdate.setString(i + 5, pkValue[i]);
-                }
+                setParams(psUpdate, userId, projectId, rcName, pkColumns,
+                        recordId, 2);
                 psUpdate.addBatch();
                 count++;
                 if (count % 100 == 0) {
@@ -438,12 +428,13 @@ public class FavoriteFactory {
     }
 
     private void setParams(PreparedStatement ps, int userId, String projectId,
-            String rcName, String[] pkValue) throws SQLException {
-        ps.setInt(1, userId);
-        ps.setString(2, projectId);
-        ps.setString(3, rcName);
-        for (int i = 0; i < pkValue.length; i++) {
-            ps.setString(i + 4, pkValue[i]);
+            String rcName, String[] pkColumns, Map<String, Object> recordId,
+            int index) throws SQLException {
+        ps.setInt(index++, userId);
+        ps.setString(index++, projectId);
+        ps.setString(index++, rcName);
+        for (String column : pkColumns) {
+            ps.setObject(index++, recordId.get(column));
         }
     }
 }

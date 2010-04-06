@@ -20,6 +20,8 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.junit.Assert;
 import org.junit.Test;
 
+import sun.awt.SunHints.Value;
+
 /**
  * @author xingao
  * 
@@ -50,7 +52,7 @@ public class FavoriteTest {
         RecordClass recordClass = recordClasses.get(index);
 
         user.clearFavorite();
-        List<String[]> added = addSomeRecords(user, recordClass);
+        List<Map<String, Object>> added = addSomeRecords(user, recordClass);
 
         String rcName = recordClass.getFullName();
         Assert.assertEquals(added.size(), user.getFavoriteCount());
@@ -68,7 +70,9 @@ public class FavoriteTest {
         RecordClass recordClass = recordClasses.get(index);
         User user = UnitTestHelper.getRegisteredUser();
 
-        List<String[]> added = addSomeRecords(user, recordClass);
+        List<Map<String, Object>> added = addSomeRecords(user, recordClass);
+        // add more records, but those are not deleted
+        List<Map<String, Object>> more = addSomeRecords(user, recordClass);
         user.removeFromFavorite(recordClass, added);
 
         Map<RecordClass, List<Favorite>> favorites = user.getFavorites();
@@ -77,18 +81,13 @@ public class FavoriteTest {
         for (Favorite favorite : list) {
             RecordInstance instance = favorite.getRecordInstance();
             Map<String, String> values = instance.getPrimaryKey().getValues();
-            String[] pkValues = new String[values.size()];
-            values.values().toArray(pkValues);
 
-            for (String[] add : added) {
-                boolean match = true;
-                for (int i = 0; i < pkValues.length; i++) {
-                    if (!add[i].equals(pkValues[i])) {
-                        match = false;
-                        break;
-                    }
+            for (Map<String, Object> add : more) {
+                Assert.assertEquals(add.size(), values.size());
+                for (String column : add.keySet()) {
+                    String expected = add.get(column).toString();
+                    Assert.assertEquals(expected, values.get(column));
                 }
-                Assert.assertFalse(match);
             }
         }
 
@@ -114,7 +113,7 @@ public class FavoriteTest {
 
         int index = UnitTestHelper.getRandom().nextInt(recordClasses.size());
         RecordClass recordClass = recordClasses.get(index);
-        List<String[]> added1 = addSomeRecords(user, recordClass);
+        List<Map<String, Object>> added1 = addSomeRecords(user, recordClass);
 
         // now add some records of other record types
         while (true) {
@@ -125,7 +124,7 @@ public class FavoriteTest {
             }
         }
         recordClass = recordClasses.get(index);
-        List<String[]> added2 = addSomeRecords(user, recordClass);
+        List<Map<String, Object>> added2 = addSomeRecords(user, recordClass);
 
         int expected = added1.size() + added2.size();
         Assert.assertEquals(expected, user.getFavoriteCount());
@@ -139,8 +138,7 @@ public class FavoriteTest {
 
         user.clearFavorite();
 
-        List<String[]> added = addSomeRecords(user, recordClass);
-        String rcName = recordClass.getFullName();
+        List<Map<String, Object>> added = addSomeRecords(user, recordClass);
         Assert.assertEquals(added.size(), user.getFavoriteCount());
 
         Random random = UnitTestHelper.getRandom();
@@ -161,8 +159,7 @@ public class FavoriteTest {
 
         user.clearFavorite();
 
-        List<String[]> added = addSomeRecords(user, recordClass);
-        String rcName = recordClass.getFullName();
+        List<Map<String, Object>> added = addSomeRecords(user, recordClass);
         Assert.assertEquals(added.size(), user.getFavoriteCount());
 
         Random random = UnitTestHelper.getRandom();
@@ -175,12 +172,12 @@ public class FavoriteTest {
         }
     }
 
-    private List<String[]> addSomeRecords(User user, RecordClass recordClass)
+    private List<Map<String, Object>> addSomeRecords(User user, RecordClass recordClass)
             throws Exception {
         // get a list of record ids
-        List<String[]> ids = getIds(recordClass, POOL_SIZE);
+        List<Map<String, Object>> ids = getIds(recordClass, POOL_SIZE);
         // randomly pick up 5 ids from the list, and add them into basket
-        Map<Integer, String[]> selected = new HashMap<Integer, String[]>();
+        Map<Integer, Map<String, Object>> selected = new HashMap<Integer, Map<String, Object>>();
         Random random = UnitTestHelper.getRandom();
         int count = 0;
         while (count < OPEARTION_SIZE) {
@@ -189,15 +186,15 @@ public class FavoriteTest {
             selected.put(i, ids.get(i));
             count++;
         }
-        List<String[]> list = new ArrayList<String[]>(selected.values());
+        List<Map<String, Object>> list = new ArrayList<Map<String, Object>>(selected.values());
         user.addToFavorite(recordClass, list);
         return list;
     }
 
-    static List<String[]> getIds(RecordClass recordClass, int limit)
+    static List<Map<String, Object>> getIds(RecordClass recordClass, int limit)
             throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
-        List<String[]> ids = new ArrayList<String[]>();
+        List<Map<String, Object>> ids = new ArrayList<Map<String, Object>>();
         Query query = recordClass.getAllRecordsQuery();
         String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
         int count = 0;
@@ -206,10 +203,10 @@ public class FavoriteTest {
             QueryInstance instance = query.makeInstance(user, params, true, 0);
             ResultList results = instance.getResults();
             while (results.next()) {
-                String[] values = new String[pkColumns.length];
+                Map<String, Object> values = new HashMap<String, Object>();
                 for (int i = 0; i < pkColumns.length; i++) {
                     String value = results.get(pkColumns[i]).toString();
-                    values[i] = value;
+                    values.put(pkColumns[i], value);
                 }
                 ids.add(values);
                 count++;
@@ -218,9 +215,10 @@ public class FavoriteTest {
             results.close();
         } else {
             for (; count < limit; count++) {
-                String[] values = new String[pkColumns.length];
+                Map<String, Object> values = new HashMap<String, Object>();
                 for (int i = 0; i < pkColumns.length; i++) {
-                    values[i] = UnitTestHelper.getRandom().nextInt() + "";
+                    String value = UnitTestHelper.getRandom().nextInt() + "";
+                    values.put(pkColumns[i], value);
                 }
                 ids.add(values);
             }

@@ -152,11 +152,13 @@ public class RecordBean {
     public boolean isInFavorite() throws SQLException, WdkUserException,
             WdkModelException {
         try {
-        RecordClass recordClass = recordInstance.getRecordClass();
-        Map<String, String> values = recordInstance.getPrimaryKey().getValues();
-        String[] pkValues = new String[values.size()];
-        values.values().toArray(pkValues);
-        return user.isInFavorite(recordClass, pkValues);
+            RecordClass recordClass = recordInstance.getRecordClass();
+            Map<String, String> pkValues = recordInstance.getPrimaryKey().getValues();
+            Map<String, Object> values = new LinkedHashMap<String, Object>();
+            for (String column : pkValues.keySet()) {
+                values.put(column, pkValues.get(column));
+            }
+            return user.isInFavorite(recordClass, values);
         } catch (SQLException ex) {
             logger.error(ex);
             ex.printStackTrace();

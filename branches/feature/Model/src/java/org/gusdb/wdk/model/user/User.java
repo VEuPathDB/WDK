@@ -370,35 +370,35 @@ public class User /* implements Serializable */{
     }
 
     public String getFrontAction() {
-	return frontAction;
+        return frontAction;
     }
 
     public Integer getFrontStrategy() {
-	return frontStrategy;
+        return frontStrategy;
     }
 
     public Integer getFrontStep() {
-	return frontStep;
+        return frontStep;
     }
 
     public void setFrontAction(String frontAction) {
-	this.frontAction = frontAction;
+        this.frontAction = frontAction;
     }
 
     public void setFrontStrategy(int frontStrategy) {
-	System.out.println("Setting frontStrategy.");
-	this.frontStrategy = Integer.valueOf(frontStrategy);
-	System.out.println("Done.");
+        System.out.println("Setting frontStrategy.");
+        this.frontStrategy = Integer.valueOf(frontStrategy);
+        System.out.println("Done.");
     }
 
     public void setFrontStep(int frontStep) {
-	this.frontStep = Integer.valueOf(frontStep);
+        this.frontStep = Integer.valueOf(frontStep);
     }
 
     public void resetFrontAction() {
-	frontAction = null;
-	frontStrategy = null;
-	frontStep = null;
+        frontAction = null;
+        frontStrategy = null;
+        frontStep = null;
     }
 
     /**
@@ -529,11 +529,10 @@ public class User /* implements Serializable */{
         logger.debug("Merging user #" + user.getUserId() + " into user #"
                 + userId + "...");
 
-
         // first of all we import all the strategies
         Set<Integer> importedSteps = new LinkedHashSet<Integer>();
         Map<Integer, Integer> strategiesMap = new LinkedHashMap<Integer, Integer>();
-	Map<Integer, Integer> stepsMap = new LinkedHashMap<Integer, Integer>();
+        Map<Integer, Integer> stepsMap = new LinkedHashMap<Integer, Integer>();
         for (Strategy strategy : user.getStrategies()) {
             // the root step is considered as imported
             Step rootStep = strategy.getLatestStep();
@@ -564,17 +563,17 @@ public class User /* implements Serializable */{
             stepFactory.importStep(this, step, stepsMap);
         }
 
-	// if a front action is specified, copy it over and update ids
-	
-	if (user.getFrontAction() != null) {
-	    setFrontAction(user.getFrontAction());
-	    if (strategiesMap.containsKey(user.getFrontStrategy())) {
-		setFrontStrategy(strategiesMap.get(user.getFrontStrategy()));
-	    }
-	    if (stepsMap.containsKey(user.getFrontStep())) {
-		setFrontStep(stepsMap.get(user.getFrontStep()));
-	    }
-	}
+        // if a front action is specified, copy it over and update ids
+
+        if (user.getFrontAction() != null) {
+            setFrontAction(user.getFrontAction());
+            if (strategiesMap.containsKey(user.getFrontStrategy())) {
+                setFrontStrategy(strategiesMap.get(user.getFrontStrategy()));
+            }
+            if (stepsMap.containsKey(user.getFrontStep())) {
+                setFrontStep(stepsMap.get(user.getFrontStep()));
+            }
+        }
     }
 
     public Map<Integer, Step> getStepsMap() throws WdkUserException,
@@ -1223,10 +1222,12 @@ public class User /* implements Serializable */{
         return importStrategy(oldStrategy, null);
     }
 
-    public synchronized Strategy importStrategy(Strategy oldStrategy, Map <Integer,Integer> stepIdsMap)
-            throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
-        Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy, stepIdsMap);
+    public synchronized Strategy importStrategy(Strategy oldStrategy,
+            Map<Integer, Integer> stepIdsMap) throws WdkModelException,
+            WdkUserException, NoSuchAlgorithmException, SQLException,
+            JSONException {
+        Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy,
+                stepIdsMap);
         newStrategy.update(true);
         // highlight the imported strategy
         int rootStepId = newStrategy.getLatestStepId();
@@ -1426,8 +1427,10 @@ public class User /* implements Serializable */{
         this.usedWeight = usedWeight;
     }
 
-    public void addToFavorite(RecordClass recordClass, List<String[]> pkValues)
-            throws WdkUserException, WdkModelException, SQLException {
+    public void addToFavorite(RecordClass recordClass,
+            List<Map<String, Object>> pkValues) throws WdkUserException,
+            WdkModelException, SQLException, NoSuchAlgorithmException,
+            JSONException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         favoriteFactory.addToFavorite(this, recordClass, pkValues);
     }
@@ -1448,28 +1451,29 @@ public class User /* implements Serializable */{
     }
 
     public void removeFromFavorite(RecordClass recordClass,
-            List<String[]> pkValues) throws WdkUserException,
+            List<Map<String, Object>> pkValues) throws WdkUserException,
             WdkModelException, SQLException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         favoriteFactory.removeFromFavorite(this, recordClass, pkValues);
     }
 
-    public boolean isInFavorite(RecordClass recordClass, String[] pkValue)
-            throws WdkUserException, WdkModelException, SQLException {
+    public boolean isInFavorite(RecordClass recordClass,
+            Map<String, Object> pkValue) throws WdkUserException,
+            WdkModelException, SQLException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         return favoriteFactory.isInFavorite(this, recordClass, pkValue);
     }
 
     public void setFavoriteNotes(RecordClass recordClass,
-            List<String[]> pkValues, String note) throws WdkUserException,
-            WdkModelException, SQLException {
+            List<Map<String, Object>> pkValues, String note)
+            throws WdkUserException, WdkModelException, SQLException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         favoriteFactory.setNotes(this, recordClass, pkValues, note);
     }
 
     public void setFavoriteGroups(RecordClass recordClass,
-            List<String[]> pkValues, String group) throws WdkUserException,
-            WdkModelException, SQLException {
+            List<Map<String, Object>> pkValues, String group)
+            throws WdkUserException, WdkModelException, SQLException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         favoriteFactory.setGroups(this, recordClass, pkValues, group);
     }

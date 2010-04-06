@@ -4,7 +4,9 @@
 package org.gusdb.wdk.controller.action;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -88,12 +90,12 @@ public class ProcessFavoriteAction extends Action {
         if (action.equalsIgnoreCase(ACTION_ADD)) {
             // need type & data params, where data is a JSON list of record ids
             RecordClassBean recordClass = getRecordClass(request, wdkModel);
-            List<String[]> records = getRecords(request, recordClass);
+            List<Map<String, Object>> records = getRecords(request, recordClass);
             user.addToFavorite(recordClass, records);
         } else if (action.equalsIgnoreCase(ACTION_REMOVE)) {
             // need type & data params, where data is a JSON list of record ids
             RecordClassBean recordClass = getRecordClass(request, wdkModel);
-            List<String[]> records = getRecords(request, recordClass);
+            List<Map<String, Object>> records = getRecords(request, recordClass);
             user.removeFromFavorite(recordClass, records);
         } else if (action.equalsIgnoreCase(ACTION_CLEAR)) {
             // doesn't need any param, will remove all favorites
@@ -101,13 +103,13 @@ public class ProcessFavoriteAction extends Action {
         } else if (action.equalsIgnoreCase(ACTION_NOTE)) {
             // need type, data, note params
             RecordClassBean recordClass = getRecordClass(request, wdkModel);
-            List<String[]> records = getRecords(request, recordClass);
+            List<Map<String, Object>> records = getRecords(request, recordClass);
             String note = request.getParameter(PARAM_NOTE);
             user.setFavoriteNotes(recordClass, records, note);
         } else if (action.equalsIgnoreCase(ACTION_GROUP)) {
             // need type, data, group params
             RecordClassBean recordClass = getRecordClass(request, wdkModel);
-            List<String[]> records = getRecords(request, recordClass);
+            List<Map<String, Object>> records = getRecords(request, recordClass);
             String group = request.getParameter(PARAM_GROUP);
             user.setFavoriteGroups(recordClass, records, group);
         } else {
@@ -126,7 +128,7 @@ public class ProcessFavoriteAction extends Action {
         return wdkModel.findRecordClass(type);
     }
 
-    private List<String[]> getRecords(HttpServletRequest request,
+    private List<Map<String, Object>> getRecords(HttpServletRequest request,
             RecordClassBean recordClass) throws JSONException, WdkUserException {
         String data = request.getParameter(PARAM_DATA);
         if (data == null)
@@ -135,14 +137,14 @@ public class ProcessFavoriteAction extends Action {
 
         String[] pkColumns = recordClass.getPrimaryKeyColumns();
         JSONArray array = new JSONArray(data);
-        List<String[]> ids = new ArrayList<String[]>();
+        List<Map<String, Object>> ids = new ArrayList<Map<String, Object>>();
         for (int i = 0; i < array.length(); i++) {
             JSONObject object = array.getJSONObject(i);
-            String[] values = new String[pkColumns.length];
-            for (int j = 0; j < values.length; j++) {
-                values[j] = object.getString(pkColumns[j]);
+            Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+            for (String column : pkColumns) {
+                pkValues.put(column, object.getString(column));
             }
-            ids.add(values);
+            ids.add(pkValues);
         }
         return ids;
     }
