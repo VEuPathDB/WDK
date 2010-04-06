@@ -1,6 +1,8 @@
 var currentTip = 0;
 var tipMax;
 var tips = null;
+var dykHide = 'hide';
+var dykHidePermanent = 'permanent_hide';
 
 function initHelp() {
 	var url = "showXmlDataContent.do?name=XmlQuestions.StrategiesHelp";
@@ -30,8 +32,9 @@ function initDYK(o,co){
 	if(!o){
 		tips = $("#dyk-box,#dyk-shadow").hide();
 		return;
-	}else if(co){
+	}else if(co == dykHide || co == dykHidePermanent){
 		tips = $("#dyk-box,#dyk-shadow").hide();
+		if (co == dykHidePermanent) setDYKCookie(true); // Renew the cookie if needed
 		return;
 	}
 	$("#dyk-box,#dyk-shadow").show();
@@ -140,9 +143,9 @@ function dykClose(){
 
 function setDYKCookie(expire){
 	if(expire)
-		$.cookie("DYK","true",{domain: secondLevelDomain(),path: '/',expires: 300});
+		$.cookie("DYK",dykHidePermanent,{domain: secondLevelDomain(),path: '/',expires: 300}); // Use different value if user checked "never show again"
 	else
-		$.cookie("DYK","true",{domain: secondLevelDomain(),path: '/'});
+		$.cookie("DYK",dykHide,{domain: secondLevelDomain(),path: '/'});
 }
 
 
