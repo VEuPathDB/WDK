@@ -158,6 +158,7 @@ public class RecordClass extends WdkModelBase implements
     private Query allRecordsQuery;
 
     private List<FavoriteReference> favorites = new ArrayList<FavoriteReference>();
+    private String favoriteNoteFieldName;
     private AttributeField favoriteNoteField;
 
     // ////////////////////////////////////////////////////////////////////
@@ -590,6 +591,17 @@ public class RecordClass extends WdkModelBase implements
             this.allRecordsQuery = query;
         }
 
+        // resolve the favorite note reference to attribute field
+        if (favoriteNoteFieldName != null) {
+            favoriteNoteField = attributeFieldsMap.get(favoriteNoteFieldName);
+            if (favoriteNoteField == null)
+                throw new WdkModelException("The attribute '"
+                        + favoriteNoteFieldName + "' for the default favorite "
+                        + "note content of recordClass '" + getFullName()
+                        + "' is invalid.");
+        }
+        favoriteNoteField = null;
+
         resolved = true;
     }
 
@@ -917,12 +929,10 @@ public class RecordClass extends WdkModelBase implements
         // exlcude favorite references
         for (FavoriteReference favorite : favorites) {
             if (favorite.include(projectId)) {
-                String noteField = favorite.getNoteField();
-                this.favoriteNoteField = attributeFieldsMap.get(noteField);
-                if (favoriteNoteField == null)
-                    throw new WdkModelException("The attribute '" + noteField
-                            + "' for the default favorite note content of "
-                            + "recordClass '" + getFullName() + "' is invalid.");
+                if (favoriteNoteFieldName != null)
+                    throw new WdkModelException("The favorite tag is "
+                            + "duplicated on the recordClass " + getFullName());
+                this.favoriteNoteFieldName = favorite.getNoteField();
             }
         }
         favorites = null;
