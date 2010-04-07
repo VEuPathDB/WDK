@@ -10,6 +10,7 @@ import java.util.Map;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -90,6 +91,11 @@ public class ProcessQuery extends Query {
         super.resolveReferences(wdkModel);
         if (webServiceUrl == null)
             webServiceUrl = wdkModel.getModelConfig().getWebServiceUrl();
+        
+        // set defaults for noTranslation to true
+        for (Param param : paramMap.values()) {
+            if (!param.isNoTranslationSet()) param.setNoTranslation(true);
+        }
     }
 
     /*
