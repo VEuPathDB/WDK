@@ -18,7 +18,9 @@ function ChangeBasket(url, noUpdate) {
 
 //Shopping basket on clickFunction
 function updateBasket(ele, type, pk, pid,recordType) {
-	var i = jQuery("img",ele);
+	var i = jQuery(ele);
+	if(ele.tagName != "IMG")
+		i = jQuery("img",ele);
 	var a = new Array();
 	var action = null;
 	var da = null;
@@ -26,7 +28,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 	var count = 0;
 	if(type == "recordPage"){
 		var o = new Object();
-		var pkDiv = jQuery("div.primaryKey");
+		var pkDiv = jQuery(i).parents(".wdk-record").find("span.primaryKey");
 		jQuery("span", pkDiv).each(function(){
 			o[jQuery(this).attr("key")] = jQuery(this).text();
 		});
@@ -35,7 +37,8 @@ function updateBasket(ele, type, pk, pid,recordType) {
 		action = (i.attr("value") == '0') ? "add" : "remove";
 	}else if(type == "single"){
 		var o = new Object();
-		var pkDiv = jQuery("#" + currentDiv + " #Results_Pane div.primaryKey[fvalue='" + pk + "']");
+		//var pkDiv = jQuery("#" + currentDiv + " #Results_Pane div.primaryKey[fvalue='" + pk + "']");
+		var pkDiv = jQuery(ele).parents("tr").find("div.primaryKey");
 		jQuery("span", pkDiv).each(function(){
 			o[jQuery(this).attr("key")] = jQuery(this).text();
 		});
@@ -124,7 +127,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 
 
 function updateBasketCount(c){
-		jQuery("#menu a#mybasket span.subscriptCount var").text(c)
+		jQuery("#menu a#mybasket span.subscriptCount var").text(c);
 }
 
 function checkPageBasket(){
