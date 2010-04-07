@@ -85,10 +85,9 @@ public class ProcessQuery extends Query {
      * .WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
+    public void resolveQueryReferences(WdkModel wdkModel) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        super.resolveReferences(wdkModel);
         if (webServiceUrl == null)
             webServiceUrl = wdkModel.getModelConfig().getWebServiceUrl();
         
