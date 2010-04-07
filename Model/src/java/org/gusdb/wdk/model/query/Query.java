@@ -358,7 +358,6 @@ public abstract class Query extends WdkModelBase {
                         + "], but the sorting column doesn't exist in "
                         + "the same query.");
         }
-        resolved = true;
 
         // if the query is a transform, it has to return weight column.
         // this applies to both explicit transform and filter queries.
@@ -368,6 +367,7 @@ public abstract class Query extends WdkModelBase {
                         + "] doesn't define the required "
                         + Utilities.COLUMN_WEIGHT + " column.");
         }
+        resolved = true;
     }
 
     private Param resolveParamReference(WdkModel wdkModel,

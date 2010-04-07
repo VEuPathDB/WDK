@@ -180,7 +180,6 @@
       <ref name="IncludeExclude" />
       <oneOrMore>
         <choice>
-          <ref name="useTermOnly" />
           <ref name="stringParam" />
           <ref name="enumParam" />
           <ref name="flatVocabParam" />
@@ -214,25 +213,21 @@
     <optional>
       <attribute name="default" />
     </optional>
-    <optional>
-      <attribute name="noTranslation">
-        <data type="boolean" />
-      </attribute>
-    </optional>
   </define>
 
   <define name="ParamBaseTags">
-    <element name="help">
-        <ref name="IncludeExclude" />
-        <text />
-    </element>
-  </define>
-
-  <define name="useTermOnly">
-    <element name="useTermOnly">
-      <attribute name="value" />
-      <ref name="IncludeExclude" />
-    </element>
+    <choice>
+        <element name="help">
+            <ref name="IncludeExclude" />
+            <text />
+        </element>
+        <element name="noTranslation">
+           <ref name="IncludeExclude" />
+           <attribute name="value">
+               <data type="boolean" />
+           </attribute>
+        </element>
+    </choice>
   </define>
 
   <define name="SuggestContent">
@@ -354,12 +349,8 @@
                 <ref name="SelectModeContents" />
               </optional>
            </element>
-           <ref name="useTermOnly" />
            <element name="enumList">
               <ref name="IncludeExclude" />
-              <zeroOrMore>
-                <ref name="useTermOnly" />
-              </zeroOrMore>
               <oneOrMore>
                 <element name="enumValue">
                   <ref name="IncludeExclude" />
@@ -417,7 +408,6 @@
               </choice>
             </optional>
           </element>
-          <ref name="useTermOnly" />
        </choice>
       </zeroOrMore>
     </element>
@@ -591,11 +581,6 @@
         </optional>
         <optional>
           <attribute name="emptyValue" />
-        </optional>
-        <optional>
-          <attribute name="useTermOnly">
-            <data type="boolean" />
-          </attribute>
         </optional>
         <optional>
           <attribute name="number">
