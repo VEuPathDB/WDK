@@ -74,6 +74,10 @@ public abstract class Query extends WdkModelBase {
 
     public abstract Query clone();
 
+    public abstract void resolveQueryReferences(WdkModel wdkModel)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException;
+
     // =========================================================================
     // Constructors
     // =========================================================================
@@ -367,6 +371,8 @@ public abstract class Query extends WdkModelBase {
                         + "] doesn't define the required "
                         + Utilities.COLUMN_WEIGHT + " column.");
         }
+
+        resolveQueryReferences(wdkModel);
         resolved = true;
     }
 

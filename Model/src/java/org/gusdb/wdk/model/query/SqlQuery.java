@@ -171,11 +171,9 @@ public class SqlQuery extends Query {
      * .WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
+    public void resolveQueryReferences(WdkModel wdkModel) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        super.resolveReferences(wdkModel);
-
         // apply the sql macros into sql
         if (sql == null)
             throw new WdkModelException("null sql in "
