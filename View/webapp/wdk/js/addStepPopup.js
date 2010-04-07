@@ -25,7 +25,6 @@ function showPanel(panel) {
 			$("#" + hidePanel).css({'position':'absolute','left':'-1000em','width':'100%','display':'none'});
 		}
 	});
-	$("#basket").css({'position':'absolute','left':'-1000em','width':'100%','display':'none'});
 	$("#tab_" + panel).parent().attr("id", "selected");
 	$("#" + panel).css({'position':'relative','left':'auto','display':'block'});
 	if (panel == 'strategy_results') {
