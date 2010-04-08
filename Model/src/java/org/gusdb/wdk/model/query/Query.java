@@ -336,6 +336,7 @@ public abstract class Query extends WdkModelBase {
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
+        logger.debug("Resolving " + getFullName() + " - " + resolved);
         if (resolved) return;
 
         this.wdkModel = wdkModel;

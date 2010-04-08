@@ -371,13 +371,15 @@ public abstract class Param extends WdkModelBase {
         suggestions = null;
 
         // exclude noTranslations
+        boolean hasNoTranslation = false;
         for (ParamConfiguration noTrans : noTranslations) {
             if (noTrans.include(projectId)) {
-                if (noTranslation != null)
+                if (hasNoTranslation)
                     throw new WdkModelException("The param " + getFullName()
                             + " has more than one <noTranslation> for project "
                             + projectId);
                 noTranslation = noTrans.isValue();
+                hasNoTranslation = true;
             }
         }
         noTranslations = null;
