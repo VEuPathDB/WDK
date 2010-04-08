@@ -24,12 +24,14 @@ function updateFavorite(holder, action) {
         	
 			var star = (action == "add") ? "color" : "gray";
 			var new_action = (action == "add") ? "remove" : "add";
+			var new_title = (action == "add") ? "Click to remove this item from the favorites." : "Click to add this item to the favorites";
 			star_arr = jQuery(holder).attr("src").split("_");
 			star_arr[1] = star + ".gif";
 			star_src = star_arr.join("_");
 			jQuery(holder).attr("src",star_src);
-			jQuery(holder).unbind("click");
-			jQuery(holder).bind('click', function(){ updateFavorite(this, new_action)});
+			jQuery(holder).attr("title",new_title);
+			jQuery(holder).removeAttr("onclick");
+			jQuery(holder).bind('click', function(){ updateFavorite(this, new_action); });
 			// not sure what this is for
 			//if (!noUpdate) { // For things like moving columns, do not need to refresh
             //	show();
