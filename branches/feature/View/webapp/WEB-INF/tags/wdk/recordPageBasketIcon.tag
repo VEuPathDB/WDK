@@ -15,7 +15,9 @@
 <c:set value="20" var="imagesize"/>
 
 ${id} <br /> <span style="font-size:80%">${desc}</span> <br/>
-
+<style type="text/css">
+	img {vertical-align:bottom;}
+</style>
 <span class="wdk-record" recordClass="${wdkRecord.recordClass.fullName}">
     <c:choose>
         <c:when test="${wdkUser.guest}">
@@ -25,7 +27,7 @@ ${id} <br /> <span style="font-size:80%">${desc}</span> <br/>
           &nbsp;&nbsp;&nbsp;&nbsp;
 
           <a class="favorite" href="javascript:void(0)" onClick="popLogin()">Add to Favorites
-            <img src="<c:url value='/wdk/images/favorite_gray.gif'/>" width='${imagesize}' value="0" title="Please log in to access the favorites./>
+            <img src="<c:url value='/wdk/images/favorite_gray.gif'/>" width='${imagesize}' value="0" title="Please log in to access the favorites."/>
           </a>
          </c:when>
 
@@ -45,14 +47,14 @@ ${id} <br /> <span style="font-size:80%">${desc}</span> <br/>
             <c:set var="image" value="${favorite ? 'color' : 'gray'}" />
             <c:set var="action" value="${favorite ? 'remove' : 'add'}"/>
             <c:set var="actionWritten" value="${favorite ? 'Remove from' : 'Add to'}"/>
-            <c:set var="imagetitle" value="Click to ${favorite ? 'remove this item from' : 'add this item to'} the Favorite."/>
+            <c:set var="imagetitle" value="Click to ${favorite ? 'Remove this item from' : 'Add this item to'} Favorites."/>
             ${actionWritten} Favorites 
 	    <img class="clickable" src="<c:url value='/wdk/images/favorite_${image}.gif'/>"  width='${imagesize}' 
                  title="${imagetitle}" onClick="updateFavorite(this, '${action}')" />
         </c:otherwise>
     </c:choose>
 
-    <span class="primaryKey">
+    <span class="primaryKey" >
         <c:forEach items="${vals}" var="key">
             <span key="${key.key}">${key.value}</span>
         </c:forEach>
