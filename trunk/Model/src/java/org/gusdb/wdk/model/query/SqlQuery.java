@@ -231,4 +231,15 @@ public class SqlQuery extends Query {
         dependentTableMap.keySet().toArray(array);
         return array;
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.query.Query#addParam(org.gusdb.wdk.model.query.param.Param)
+     */
+    @Override
+    public void addParam(Param param) {
+        super.addParam(param);
+        if (!param.isNoTranslationSet()) param.setNoTranslation(false);
+    }
+    
+    
 }
