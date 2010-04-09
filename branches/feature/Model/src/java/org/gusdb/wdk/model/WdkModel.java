@@ -395,12 +395,12 @@ public class WdkModel {
             String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
             booleanQuery.setIndexColumns(pkColumns);
 
+            internalQuerySet.addQuery(booleanQuery);
+
             booleanQuery.excludeResources(projectId);
             booleanQuery.resolveReferences(this);
             booleanQuery.setDoNotTest(true);
             booleanQuery.setIsCacheable(true); // cache the boolean query
-
-            internalQuerySet.addQuery(booleanQuery);
         }
         return booleanQuery;
     }

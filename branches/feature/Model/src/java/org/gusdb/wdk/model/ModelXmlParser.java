@@ -530,9 +530,6 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester, "wdkModel/paramSet", ParamSet.class,
                 "addParamSet");
 
-        configureNode(digester, "wdkModel/paramSet/useTermOnly",
-                ParamConfiguration.class, "addUseTermOnly");
-
         // string param
         String path = "wdkModel/paramSet/stringParam";
         configureNode(digester, path, StringParam.class, "addParam");
@@ -549,8 +546,6 @@ public class ModelXmlParser extends XmlParser {
         path = "wdkModel/paramSet/flatVocabParam";
         configureNode(digester, path, FlatVocabParam.class, "addParam");
         configureParamContent(digester, path);
-        configureNode(digester, path + "/useTermOnly",
-                ParamConfiguration.class, "addUseTermOnly");
 
         // answer param
         configureNode(digester, "wdkModel/paramSet/answerParam",
@@ -567,14 +562,8 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester, path, EnumParam.class, "addParam");
         configureParamContent(digester, path);
 
-        configureNode(digester, path + "/useTermOnly",
-                ParamConfiguration.class, "addUseTermOnly");
-
         path = path + "/enumList";
         configureNode(digester, path, EnumItemList.class, "addEnumItemList");
-
-        configureNode(digester, path + "/useTermOnly",
-                ParamConfiguration.class, "addUseTermOnly");
 
         configureNode(digester, path + "/enumValue", EnumItem.class,
                 "addEnumItem");
@@ -600,6 +589,8 @@ public class ModelXmlParser extends XmlParser {
 
         configureNode(digester, paramPath + "/suggest", ParamSuggestion.class,
                 "addSuggest");
+        configureNode(digester, paramPath + "/noTranslation",
+                ParamConfiguration.class, "addNoTranslation");
     }
 
     private void configureQuestionSet(Digester digester) {

@@ -115,7 +115,7 @@ public class DatasetParam extends Param {
         // the input has to be a user-dataset-id
         int userDatasetId = Integer.parseInt(dependentValue);
         
-        if (noTranslation) return Integer.toString(userDatasetId);
+        if (isNoTranslation()) return Integer.toString(userDatasetId);
 
         ModelConfig config = wdkModel.getModelConfig();
         String dbLink = config.getAppDB().getUserDbLink();
