@@ -139,7 +139,7 @@ public class AnswerParam extends Param {
             JSONException, WdkUserException {
         int stepId = Integer.parseInt(dependentValue);
 
-        if (noTranslation) return Integer.toString(stepId);
+        if (isNoTranslation()) return Integer.toString(stepId);
 
         Step step = user.getStep(stepId);
         AnswerValue answerValue = step.getAnswerValue();

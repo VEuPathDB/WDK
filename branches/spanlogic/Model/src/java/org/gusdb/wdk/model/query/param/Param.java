@@ -127,12 +127,13 @@ public abstract class Param extends WdkModelBase {
      */
     protected String defaultType;
 
+    private List<ParamConfiguration> noTranslations;
     /**
      * if this flag is set to true, the internal value will be the same as
      * dependent value. This flag is useful when the dependent value is sent to
      * other sites to process using ProcessQuery.
      */
-    protected boolean noTranslation;
+    private Boolean noTranslation;
 
     public Param() {
         visible = true;
@@ -140,9 +141,9 @@ public abstract class Param extends WdkModelBase {
         group = Group.Empty();
         helps = new ArrayList<WdkModelText>();
         suggestions = new ArrayList<ParamSuggestion>();
+        noTranslations = new ArrayList<ParamConfiguration>();
         allowEmpty = false;
         emptyValue = "";
-        noTranslation = false;
     }
 
     public Param(Param param) {
@@ -317,7 +318,8 @@ public abstract class Param extends WdkModelBase {
                 + newline + "  prompt='" + prompt + "'" + newline + "  help='"
                 + help + "'" + newline + "  default='" + defaultValue + "'"
                 + newline + "  readonly=" + readonly + newline + "  visible="
-                + visible + newline);
+                + visible + newline + "  noTranslation=" + noTranslation
+                + newline);
         if (group != null) buf.append("  group=" + group.getName() + newline);
 
         return buf.toString();
@@ -349,24 +351,38 @@ public abstract class Param extends WdkModelBase {
         boolean hasSuggest = false;
         for (ParamSuggestion suggest : suggestions) {
             if (suggest.include(projectId)) {
-                if (hasSuggest) {
+                if (hasSuggest)
                     throw new WdkModelException("The param " + getFullName()
                             + " has more than one <suggest> for project "
                             + projectId);
-                } else {
-                    suggest.excludeResources(projectId);
-                    defaultValue = suggest.getDefault();
-                    sample = suggest.getSample();
-                    allowEmpty = suggest.isAllowEmpty();
-                    emptyValue = suggest.getEmptyValue();
-                    selectMode = suggest.getSelectMode();
-                    defaultType = suggest.getDefaultType();
 
-                    hasSuggest = true;
-                }
+                suggest.excludeResources(projectId);
+                defaultValue = suggest.getDefault();
+                sample = suggest.getSample();
+                allowEmpty = suggest.isAllowEmpty();
+                emptyValue = suggest.getEmptyValue();
+                selectMode = suggest.getSelectMode();
+                defaultType = suggest.getDefaultType();
+
+                hasSuggest = true;
+
             }
         }
         suggestions = null;
+
+        // exclude noTranslations
+        boolean hasNoTranslation = false;
+        for (ParamConfiguration noTrans : noTranslations) {
+            if (noTrans.include(projectId)) {
+                if (hasNoTranslation)
+                    throw new WdkModelException("The param " + getFullName()
+                            + " has more than one <noTranslation> for project "
+                            + projectId);
+                noTranslation = noTrans.isValue();
+                hasNoTranslation = true;
+            }
+        }
+        noTranslations = null;
     }
 
     public String compressValue(String value) throws WdkModelException,
@@ -432,8 +448,16 @@ public abstract class Param extends WdkModelBase {
         validateValue(user, dependentValue);
     }
 
+    public void addNoTranslation(ParamConfiguration noTranslation) {
+        this.noTranslations.add(noTranslation);
+    }
+
     public boolean isNoTranslation() {
-        return noTranslation;
+        return (noTranslation == null) ? false : noTranslation;
+    }
+
+    public boolean isNoTranslationSet() {
+        return (noTranslation != null);
     }
 
     public void setNoTranslation(boolean noTranslation) {

@@ -74,6 +74,10 @@ public abstract class Query extends WdkModelBase {
 
     public abstract Query clone();
 
+    public abstract void resolveQueryReferences(WdkModel wdkModel)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException;
+
     // =========================================================================
     // Constructors
     // =========================================================================
@@ -332,6 +336,7 @@ public abstract class Query extends WdkModelBase {
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
+        //logger.debug("Resolving " + getFullName() + " - " + resolved);
         if (resolved) return;
 
         this.wdkModel = wdkModel;
@@ -358,7 +363,6 @@ public abstract class Query extends WdkModelBase {
                         + "], but the sorting column doesn't exist in "
                         + "the same query.");
         }
-        resolved = true;
 
         // if the query is a transform, it has to return weight column.
         // this applies to both explicit transform and filter queries.
@@ -368,6 +372,9 @@ public abstract class Query extends WdkModelBase {
                         + "] doesn't define the required "
                         + Utilities.COLUMN_WEIGHT + " column.");
         }
+
+        resolveQueryReferences(wdkModel);
+        resolved = true;
     }
 
     private Param resolveParamReference(WdkModel wdkModel,
@@ -403,7 +410,6 @@ public abstract class Query extends WdkModelBase {
 
         Boolean quote = paramRef.getQuote();
         Boolean multiPick = paramRef.isMultiPick();
-        Boolean useTermOnly = paramRef.getUseTermOnly();
         String displayType = paramRef.getDisplayType();
         String selectMode = paramRef.getSelectMode();
         String queryRef = paramRef.getQueryRef();
@@ -419,10 +425,6 @@ public abstract class Query extends WdkModelBase {
             // if the param has customized multi pick
             if (multiPick != null)
                 ((AbstractEnumParam) param).setMultiPick(multiPick);
-
-            // if the useTermOnly is set
-            if (useTermOnly != null)
-                ((AbstractEnumParam) param).setUseTermOnly(useTermOnly);
 
             // if the queryRef is set for FlatVocabParam
             if (queryRef != null) {
@@ -444,12 +446,11 @@ public abstract class Query extends WdkModelBase {
             if (selectMode != null)
                 ((AbstractEnumParam) param).setSelectMode(selectMode);
         } else { // or other param types
-            if (multiPick != null || useTermOnly != null || quote != null
-                    || displayType != null || selectMode != null
-                    || queryRef != null)
+            if (multiPick != null || quote != null || displayType != null
+                    || selectMode != null || queryRef != null)
                 throw new WdkModelException("The paramRef to '" + twoPartName
                         + "' is not a flatVocabParam nor enumParam. The "
-                        + "'multiPick', 'useTermOnly', 'displayType', 'quote',"
+                        + "'multiPick', 'displayType', 'quote',"
                         + " 'selectMode', 'queryRef' properties can only be "
                         + "applied to paramRefs of flatVocabParams or "
                         + "enumParams.");
