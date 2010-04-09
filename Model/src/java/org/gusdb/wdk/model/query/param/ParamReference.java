@@ -20,7 +20,6 @@ public class ParamReference extends Reference {
     private String defaultValue;
     private Boolean allowEmpty;
     private Boolean multiPick;
-    private Boolean useTermOnly;
     private String queryRef;
     private Boolean quote;
     private Boolean number;
@@ -85,21 +84,6 @@ public class ParamReference extends Reference {
      */
     public void setMultiPick(boolean multiPick) {
         this.multiPick = multiPick;
-    }
-
-    /**
-     * @return the useTermOnly
-     */
-    public Boolean getUseTermOnly() {
-        return this.useTermOnly;
-    }
-
-    /**
-     * @param useTermOnly
-     *            the useTermOnly to set
-     */
-    public void setUseTermOnly(Boolean useTermOnly) {
-        this.useTermOnly = useTermOnly;
     }
 
     /**
