@@ -154,7 +154,7 @@ public class StringParam extends Param {
             throws WdkModelException, WdkUserException {
         String rawValue = decompressValue(dependentValue);
         if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
-        if (noTranslation) return rawValue;
+        if (isNoTranslation()) return rawValue;
         
         rawValue = rawValue.replaceAll("'", "''");
         if (!number) rawValue = "'" + rawValue + "'";

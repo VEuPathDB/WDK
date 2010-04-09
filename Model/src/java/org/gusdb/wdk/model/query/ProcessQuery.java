@@ -10,6 +10,7 @@ import java.util.Map;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -84,12 +85,16 @@ public class ProcessQuery extends Query {
      * .WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
+    public void resolveQueryReferences(WdkModel wdkModel) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        super.resolveReferences(wdkModel);
         if (webServiceUrl == null)
             webServiceUrl = wdkModel.getModelConfig().getWebServiceUrl();
+        
+        // set defaults for noTranslation to true
+        for (Param param : paramMap.values()) {
+            if (!param.isNoTranslationSet()) param.setNoTranslation(true);
+        }
     }
 
     /*
@@ -138,4 +143,15 @@ public class ProcessQuery extends Query {
     public boolean isCached() {
         return true;
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.query.Query#addParam(org.gusdb.wdk.model.query.param.Param)
+     */
+    @Override
+    public void addParam(Param param) {
+        super.addParam(param);
+        if (!param.isNoTranslationSet()) param.setNoTranslation(true);
+    }
+    
+    
 }

@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -170,11 +171,9 @@ public class SqlQuery extends Query {
      * .WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
+    public void resolveQueryReferences(WdkModel wdkModel) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        super.resolveReferences(wdkModel);
-
         // apply the sql macros into sql
         if (sql == null)
             throw new WdkModelException("null sql in "
@@ -192,6 +191,10 @@ public class SqlQuery extends Query {
                     + matcher.group(1) + " found in <sql> of query "
                     + getFullName() + ", but it's not defined.");
 
+        // set defaults for noTranslation to false
+        for (Param param : paramMap.values()) {
+            if (!param.isNoTranslationSet()) param.setNoTranslation(false);
+        }
     }
 
     /*
@@ -228,4 +231,15 @@ public class SqlQuery extends Query {
         dependentTableMap.keySet().toArray(array);
         return array;
     }
+
+    /* (non-Javadoc)
+     * @see org.gusdb.wdk.model.query.Query#addParam(org.gusdb.wdk.model.query.param.Param)
+     */
+    @Override
+    public void addParam(Param param) {
+        super.addParam(param);
+        if (!param.isNoTranslationSet()) param.setNoTranslation(false);
+    }
+    
+    
 }

@@ -71,7 +71,7 @@ My Search Strategies Workspace
 <c:set var="newStrategy" value="${requestScope.newStrategy}" />
 <c:set var="newStrat"><c:if test="${newStrategy != null && newStrategy == true}">newStrategy="true"</c:if></c:set>
 
-<div id="strategy_results">
+<div id="strategy_results" class="workspace_panel">
 	<div id="Strategies" ${newStrat}>
 	</div>
 
@@ -82,23 +82,23 @@ My Search Strategies Workspace
 
 </div>
 
-<div id="search_history">
+<div id="search_history" class="workspace_panel">
 </div>
 
-<div id="basket">
+<div id="basket" class="workspace_panel">
   <wdk:basketControls />
   <div class="Workspace">
   </div>
 </div>
 
-<div id="sample_strat">
+<div id="sample_strat" class="workspace_panel">
 </div>
 
 
-<div id="help" style="display:none">
+<div id="help">
 </div>
 
-<div id="strategy_new" style="display:none">
+<div id="strategy_new" class="workspace_panel">
 </div>
 
       </div>

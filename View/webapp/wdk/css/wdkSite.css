@@ -97,7 +97,7 @@ ul#strategy_tabs {
 	min-height: 130px;
 }
 
-#search_history, #sample_strat, #strategy_results {
+.workspace_panel {
 	position: absolute;
 	left: -999em;
 	width:100%;
