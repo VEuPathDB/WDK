@@ -43,6 +43,7 @@ function updateFavorite(holder, action) {
     });
 }
 var old_holder = null;
+
 function showInputBox(holder, type, callback){
 	if(old_holder != null){
 		jQuery("input[id$='_Cancel']").click();
@@ -70,7 +71,7 @@ function showInputBox(holder, type, callback){
 				jQuery("span.favorite-group input[type='text']").val(jQuery(this).text());
 			});
 		});
-		jQuery(noteSpan).append(groupList.show("fast"));
+		jQuery(noteSpan).append(groupList.css("display","block"));
 		jQuery("input[type='text']",noteSpan).attr("size","");
 	}
 	jQuery("input", noteSpan).focus().select();
