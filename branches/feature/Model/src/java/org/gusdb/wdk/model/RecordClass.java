@@ -600,7 +600,6 @@ public class RecordClass extends WdkModelBase implements
                         + "note content of recordClass '" + getFullName()
                         + "' is invalid.");
         }
-        favoriteNoteField = null;
 
         resolved = true;
     }
