@@ -50,6 +50,12 @@ public class FavoriteTest {
         User user = UnitTestHelper.getRegisteredUser();
         int index = UnitTestHelper.getRandom().nextInt(recordClasses.size());
         RecordClass recordClass = recordClasses.get(index);
+        for(RecordClass rc : recordClasses) {
+            if (rc.getFavoriteNoteField() != null) {
+                recordClass = rc;
+                break;
+            }
+        }
 
         user.clearFavorite();
         List<Map<String, Object>> added = addSomeRecords(user, recordClass);
