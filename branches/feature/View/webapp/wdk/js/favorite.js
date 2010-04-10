@@ -26,7 +26,7 @@ function updateFavorite(holder, action) {
 			var new_action = (action == "add") ? "remove" : "add";
 			var new_title = (action == "add") ? "Click to remove this item from the favorites." : "Click to add this item to the favorites";
 			var new_prompt = (action == "add") ? "Remove from Favorites" : "Add to Favorites";
-			jQuery("#favorites").text(new_prompt);
+			jQuery("#favoritesrp").text(new_prompt);
 			star_arr = jQuery(holder).attr("src").split("_");
 			star_arr[1] = star + ".gif";
 			star_src = star_arr.join("_");
