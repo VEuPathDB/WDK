@@ -37,7 +37,7 @@ ${id} <br /> <span style="font-size:80%">${desc}</span> <br/>
             <c:set var="imagevalue" value="${wdkRecord.inBasket ? '1' : '0'}"/>
             <c:set var="imagetitle" value="${wdkRecord.inBasket ? 'Click to remove this item from the basket.' : 'Click to add this item to the basket.'}"/>
 
-            <span id="basket">${action} Basket</span>
+            <span id="basketrp">${action} Basket</span>
 	    <a class="basket" href="javascript:void(0)" 
 		onClick="updateBasket(this, 'recordPage', '${id}', '${pid}', '${wdkRecord.recordClass.fullName}')">
             <img src="<c:url value='/wdk/images/basket_${image}.png' />" width='${imagesize}' value="${imagevalue}" title="${imagetitle}"/>
@@ -50,7 +50,7 @@ ${id} <br /> <span style="font-size:80%">${desc}</span> <br/>
             <c:set var="actionWritten" value="${favorite ? 'Remove from' : 'Add to'}"/>
             <c:set var="imagetitle" value="Click to ${favorite ? 'Remove this item from' : 'Add this item to'} Favorites."/>
  
-           <span id="favorites">${actionWritten} Favorites</span> 
+           <span id="favoritesrp">${actionWritten} Favorites</span> 
 	    <img class="clickable" src="<c:url value='/wdk/images/favorite_${image}.gif'/>"  width='${imagesize}' 
                  title="${imagetitle}" onClick="updateFavorite(this, '${action}')" />
         </c:otherwise>
