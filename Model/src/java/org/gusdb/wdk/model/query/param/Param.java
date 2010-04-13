@@ -164,6 +164,7 @@ public abstract class Param extends WdkModelBase {
         this.selectMode = param.selectMode;
         this.defaultType = param.defaultType;
         this.noTranslation = param.noTranslation;
+        this.resolved = param.resolved;
     }
 
     /**
