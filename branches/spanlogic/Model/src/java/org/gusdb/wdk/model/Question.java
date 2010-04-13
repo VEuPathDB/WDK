@@ -216,7 +216,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             NoSuchAlgorithmException, SQLException, JSONException {
         int pageStart = 1;
         int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
-        Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>(defaultSortingMap);
+        Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>(
+                defaultSortingMap);
         AnswerFilterInstance filter = recordClass.getDefaultFilter();
         AnswerValue answerValue = makeAnswerValue(user, dependentValues,
                 pageStart, pageEnd, sortingMap, filter, assignedWeight);
@@ -503,7 +504,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             // the id query is forced to be cache-able.
             query = (Query) model.resolveReference(idQueryRef);
             // query.setIsCacheable(true);
-            
+
             // all the id queries should has a weight column
             query.setHasWeight(true);
 
@@ -557,7 +558,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
      */
     public Map<String, Boolean> getSortingAttributeMap() {
         Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
-        
+
         for (String attrName : defaultSortingMap.keySet()) {
             map.put(attrName, defaultSortingMap.get(attrName));
             if (map.size() >= User.SORTING_LEVEL) break;
@@ -727,11 +728,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     public AnswerParam[] getTransformParams(RecordClass recordClass) {
         List<AnswerParam> list = new ArrayList<AnswerParam>();
+        String rcName = recordClass.getFullName();
         for (Param param : query.getParams()) {
             if (param instanceof AnswerParam) {
                 AnswerParam answerParam = (AnswerParam) param;
-                if (answerParam.getRecordClassRef().equals(
-                        recordClass.getFullName())) list.add(answerParam);
+                Map<String, RecordClass> recordClasses = answerParam.getRecordClasses();
+                if (recordClasses.containsKey(rcName)) list.add(answerParam);
             }
         }
         AnswerParam[] array = new AnswerParam[list.size()];

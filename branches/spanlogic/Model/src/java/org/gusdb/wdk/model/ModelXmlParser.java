@@ -51,6 +51,7 @@ import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamSuggestion;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.query.param.RecordClassReference;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.param.TypeAheadParam;
 import org.gusdb.wdk.model.query.param.TimestampParam;
@@ -546,6 +547,8 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester, "wdkModel/paramSet/answerParam",
                 AnswerParam.class, "addParam");
         configureParamContent(digester, "wdkModel/paramSet/answerParam");
+        configureNode(digester, "wdkModel/paramSet/answerParam/recordClass",
+                RecordClassReference.class, "addRecordClassRef");
 
         // dataset param
         path = "wdkModel/paramSet/datasetParam";

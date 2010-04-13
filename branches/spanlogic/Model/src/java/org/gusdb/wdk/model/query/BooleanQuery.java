@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.ParamSet;
+import org.gusdb.wdk.model.query.param.RecordClassReference;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -158,7 +159,8 @@ public class BooleanQuery extends SqlQuery {
         } else {
             operand = new AnswerParam();
             operand.setName(paramName);
-            operand.setRecordClassRef(recordClass.getFullName());
+            String rcName = recordClass.getFullName();
+            operand.addRecordClassRef(new RecordClassReference(rcName));
             paramSet.addParam(operand);
             operand.resolveReferences(wdkModel);
             operand.setResources(wdkModel);
