@@ -89,6 +89,12 @@ function updateBasket(ele, type, pk, pid,recordType) {
 						i.attr("value", "0");
 						i.attr("title","Click to add this item to the basket.");
 					}
+					if(type == "recordPage"){
+						if(action == "add")
+							i.parent().prev().html("Remove from Basket");
+						else
+							i.parent().prev().html("Add to Basket");
+					}
 				}else if(type == "clear"){
 					showBasket();
 				}else{
