@@ -155,3 +155,13 @@ function initShowHide(details){
         }
 	});
 }
+
+function setFrontAction(action, strat, step) {
+	jQuery("#loginForm form[name=loginForm]").append("<input type='hidden' name='action' value='" + action + "'/>");
+	jQuery("#loginForm form[name=loginForm]").append("<input type='hidden' name='actionStrat' value='" + strat + "'/>");
+	jQuery("#loginForm form[name=loginForm]").append("<input type='hidden' name='actionStep' value='" + step + "'/>");
+}
+
+function popLogin() {
+	jQuery.blockUI({message: '<h1>You have to be logged in to do that!</h1><input type="button" value="OK" onclick="$.unblockUI();" />'});
+}
