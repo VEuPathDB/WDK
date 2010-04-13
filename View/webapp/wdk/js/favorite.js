@@ -33,6 +33,7 @@ function updateFavorite(holder, action) {
 			jQuery(holder).attr("src",star_src);
 			jQuery(holder).attr("title",new_title);
 			jQuery(holder).removeAttr("onclick");
+			jQuery(holder).unbind('click');
 			jQuery(holder).bind('click', function(){ updateFavorite(this, new_action); });
 			// not sure what this is for
 			//if (!noUpdate) { // For things like moving columns, do not need to refresh
