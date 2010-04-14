@@ -124,6 +124,11 @@ public class StepFactory {
         }
         Answer answer = answerValue.getAnswer();
 
+logger.debug("id query name  :" + answerValue.getIdsQueryInstance().getQuery().getFullName());
+logger.debug("answer checksum:" + answerValue.getChecksum());
+logger.debug("question name:  " + question.getFullName());
+logger.debug("answer question:" + answer.getQuestionName());
+
         // prepare the values to be inserted.
         int userId = user.getUserId();
         int answerId = answer.getAnswerId();
