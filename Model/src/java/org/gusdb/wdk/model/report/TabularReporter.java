@@ -137,6 +137,7 @@ public class TabularReporter extends Reporter {
         Set<AttributeField> columns = new LinkedHashSet<AttributeField>();
 
         String fieldsList = config.get(FIELD_SELECTED_COLUMNS);
+        logger.debug("Selected fields: " + fieldsList);
         if (fieldsList == null) {
             columns.addAll(summary.values());
         } else {
