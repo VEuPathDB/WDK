@@ -330,19 +330,18 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters, ac
 					$("#Strategies div#diagram_" + strategy.frontId + " div[id='step_" + step.frontId + "_sub']").addClass("selectedarrow");
 					init_view_step = step.back_step_Id;
 				}
-			    ResultsToGrid(data, ignoreFilters, "strategy_results");
-			    $("span#text_strategy_number").html(strategy.JSON.name);
-			    $("span#text_step_number").html(step.frontId);
-			    $("span#text_strategy_number").parent().show();
+				ResultsToGrid(data, ignoreFilters, "strategy_results");
+				$("span#text_strategy_number").html(strategy.JSON.name);
+				$("span#text_step_number").html(step.frontId);
+				$("span#text_strategy_number").parent().show();
+				var linkToClick = $("a#" + action);
+				if (linkToClick.length > 0) {
+					linkToClick.click();
+				}
                         } 
-			var linkToClick = $("a#" + action);
-			if (linkToClick.length > 0) {
-				linkToClick.click();
-			}
-				
-                removeLoading(f_strategyId);
-				checkPageBasket();
-				$.cookie("refresh_results", "false", { path : '/' });
+	                removeLoading(f_strategyId);
+			checkPageBasket();
+			$.cookie("refresh_results", "false", { path : '/' });
 		},
 		error : function(data, msg, e){
 			  alert("ERROR \n "+ msg + "\n" + e
@@ -722,6 +721,7 @@ function ChangeFilter(strategyId, stepId, url, filter) {
                 dataType:"json",
 				data:"state=" + p_state,
                 beforeSend: function(){
+			$("#strategy_results > div.Workspace").block();
                         showLoading(f_strategyId);
                 },
                 success: function(data){
