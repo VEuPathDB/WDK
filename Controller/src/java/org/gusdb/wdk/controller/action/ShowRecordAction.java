@@ -102,6 +102,12 @@ public class ShowRecordAction extends Action {
 
         request.setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 
+	String frontAction = user.getFrontAction();
+	if (frontAction != null) {
+	    request.setAttribute("action", frontAction);
+	}
+	user.resetFrontAction();
+
         String defaultViewFile = customViewDir + File.separator
                 + CConstants.WDK_RECORD_PAGE;
 

@@ -1,4 +1,4 @@
-
+DROP SEQUENCE wdkuser.migration_pkseq;
 DROP SEQUENCE wdkengine.dataset_indices_pkseq;
 DROP SEQUENCE wdkengine.answers_pkseq;
 
@@ -28,7 +28,7 @@ DROP TABLE wdkengine.dataset_indices;
 /* =========================================================================
    create sequences
    ========================================================================= */
-
+CREATE SEQUENCE wdkuser.migration_pkseq INCREMENT BY 1 START WITH 1;
 
 CREATE SEQUENCE wdkengine.dataset_indices_pkseq INCREMENT BY 1 START WITH 1;
 
@@ -49,7 +49,6 @@ CREATE SEQUENCE wdkuser.steps_pkseq INCREMENT BY 1 START WITH 1;
 
 
 CREATE SEQUENCE wdkuser.user_datasets2_pkseq INCREMENT BY 1 START WITH 1;
-
 
 
 /* =========================================================================
@@ -291,10 +290,7 @@ CREATE TABLE wdkuser.user_baskets
       REFERENCES wdkuser.users (user_id)
 );
 
-CREATE INDEX wdkuser.user_baskets_idx01 
-  ON wdkuser.user_baskets 
-  (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
-
+CREATE INDEX wdkuser.user_baskets_idx01 ON wdkuser.user_baskets (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
 
 
 CREATE TABLE wdkuser.favorites
@@ -305,11 +301,11 @@ CREATE TABLE wdkuser.favorites
   pk_column_1 VARCHAR(1999) NOT NULL,
   pk_column_2 VARCHAR(1999),
   pk_column_3 VARCHAR(1999),
+  record_note VARCHAR(200),
+  record_group VARCHAR(50),
   CONSTRAINT "FAVORITES_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id)
 );
 
-CREATE INDEX wdkuser.favorites_idx01 
-  ON wdkuser.favorites
-  (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
-
+CREATE INDEX wdkuser.favorites_idx01 ON wdkuser.favorites (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
+CREATE INDEX wdkuser.favorites_idx02 ON wdkuser.favorites (record_group, user_id, project_id);
