@@ -14,7 +14,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -84,6 +86,9 @@ public class DatasetFactory {
         if (values.size() == 0)
             throw new WdkDatasetException("The dataset is empty. User #"
                     + user.getUserId());
+
+        // remove duplicates
+        removeDuplicates(values);
         String checksum = getChecksum(values);
         Connection connection = userPlatform.getDataSource().getConnection();
         try {
@@ -525,5 +530,19 @@ public class DatasetFactory {
             records.add(record);
         }
         return records;
+    }
+
+    public void removeDuplicates(List<String[]> values) {
+        Set<String> set = new HashSet<String>();
+        for (int i = values.size() - 1; i >= 0; i--) {
+            String[] value = values.get(i);
+            StringBuilder builder = new StringBuilder();
+            for (String val : value) {
+                builder.append(val).append("!!!{WDK_DIVIDER}!!!");
+            }
+            String key = builder.toString();
+            if (set.contains(key)) values.remove(i);
+            else set.add(key);
+        }
     }
 }
