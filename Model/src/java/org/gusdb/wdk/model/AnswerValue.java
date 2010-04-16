@@ -146,8 +146,8 @@ public class AnswerValue {
         // get sorting columns
         if (sortingMap == null) {
             sortingMap = question.getSortingAttributeMap();
-            if (question.getQuery().isCombined() 
-                && !sortingMap.containsKey(Utilities.COLUMN_WEIGHT)) {
+            if (question.getQuery().isCombined()
+                    && !sortingMap.containsKey(Utilities.COLUMN_WEIGHT)) {
                 Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
                 map.put(Utilities.COLUMN_WEIGHT, false);
                 map.putAll(sortingMap);
@@ -955,7 +955,8 @@ public class AnswerValue {
             WdkModelException, JSONException, WdkUserException {
         if (answer == null) {
             AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
-            answer = answerFactory.getAnswer(getChecksum());
+            String questionName = question.getFullName();
+            answer = answerFactory.getAnswer(questionName, getChecksum());
             if (answer == null) answer = answerFactory.saveAnswerValue(this);
         }
         return answer;

@@ -124,6 +124,11 @@ public class StepFactory {
         }
         Answer answer = answerValue.getAnswer();
 
+logger.debug("id query name  :" + answerValue.getIdsQueryInstance().getQuery().getFullName());
+logger.debug("answer checksum:" + answerValue.getChecksum());
+logger.debug("question name:  " + question.getFullName());
+logger.debug("answer question:" + answer.getQuestionName());
+
         // prepare the values to be inserted.
         int userId = user.getUserId();
         int answerId = answer.getAnswerId();
@@ -450,7 +455,8 @@ public class StepFactory {
         String answerIdColumn = AnswerFactory.COLUMN_ANSWER_ID;
         ResultSet rsStep = null;
         String sql = "SELECT h.*, a." + AnswerFactory.COLUMN_ANSWER_CHECKSUM
-                + " FROM " + userSchema + TABLE_STEP + " h, " + wdkSchema
+                + ", a." + AnswerFactory.COLUMN_QUESTION_NAME + " FROM "
+                + userSchema + TABLE_STEP + " h, " + wdkSchema
                 + AnswerFactory.TABLE_ANSWER + " a WHERE h."
                 + Utilities.COLUMN_USER_ID + " = ? AND h." + answerIdColumn
                 + " = a." + answerIdColumn + " AND a."
@@ -488,7 +494,8 @@ public class StepFactory {
         String answerIdColumn = AnswerFactory.COLUMN_ANSWER_ID;
         ResultSet rsStep = null;
         String sql = "SELECT h.*, a." + AnswerFactory.COLUMN_ANSWER_CHECKSUM
-                + " FROM " + userSchema + TABLE_STEP + " h, " + wdkSchema
+                + ", a." + AnswerFactory.COLUMN_QUESTION_NAME + " FROM "
+                + userSchema + TABLE_STEP + " h, " + wdkSchema
                 + AnswerFactory.TABLE_ANSWER + " a WHERE h."
                 + Utilities.COLUMN_USER_ID + " = ? AND h." + answerIdColumn
                 + " = a." + answerIdColumn + " AND a."
@@ -519,6 +526,7 @@ public class StepFactory {
         // load Step info
         int stepId = rsStep.getInt(COLUMN_STEP_INTERNAL_ID);
         int displayId = rsStep.getInt(COLUMN_DISPLAY_ID);
+        String questionName = rsStep.getString(AnswerFactory.COLUMN_QUESTION_NAME);
 
         Step step = new Step(this, user, displayId, stepId);
         step.setCreatedTime(rsStep.getTimestamp(COLUMN_CREATE_TIME));
@@ -544,7 +552,6 @@ public class StepFactory {
             step.setChildStepId(rightStepId);
         }
 
-
         String dependentParamContent = userPlatform.getClobData(rsStep,
                 COLUMN_DISPLAY_PARAMS);
         Map<String, String> dependentValues = parseParamContent(dependentParamContent);
@@ -554,7 +561,8 @@ public class StepFactory {
         try {
             // load Answer
             AnswerFactory answerFactory = wdkModel.getAnswerFactory();
-            Answer answer = answerFactory.getAnswer(answerChecksum);
+            Answer answer = answerFactory.getAnswer(questionName,
+                    answerChecksum);
             step.setAnswer(answer);
             step.setParamValues(dependentValues);
         } catch (Exception ex) {
@@ -920,13 +928,15 @@ public class StepFactory {
     // return step;
     // }
 
-    Strategy importStrategy(User user, Strategy oldStrategy, Map<Integer,Integer> stepIdsMap)
-            throws WdkUserException, WdkModelException, SQLException,
-            NoSuchAlgorithmException, JSONException {
+    Strategy importStrategy(User user, Strategy oldStrategy,
+            Map<Integer, Integer> stepIdsMap) throws WdkUserException,
+            WdkModelException, SQLException, NoSuchAlgorithmException,
+            JSONException {
         logger.debug("import strategy #" + oldStrategy.getInternalId()
                 + "(internal) to user #" + user.getUserId());
 
-	if (stepIdsMap == null) stepIdsMap = new LinkedHashMap<Integer,Integer>();
+        if (stepIdsMap == null)
+            stepIdsMap = new LinkedHashMap<Integer, Integer>();
 
         Step oldRootStep = oldStrategy.getLatestStep();
         String name = getNextName(user, oldStrategy.getName(), false);
@@ -942,9 +952,9 @@ public class StepFactory {
         return loadStrategy(user, strategy.getStrategyId(), false);
     }
 
-    Step importStep(User newUser, Step oldStep, Map<Integer,Integer> stepIdsMap) 
-	throws WdkUserException, WdkModelException, SQLException,
-	       NoSuchAlgorithmException, JSONException {
+    Step importStep(User newUser, Step oldStep, Map<Integer, Integer> stepIdsMap)
+            throws WdkUserException, WdkModelException, SQLException,
+            NoSuchAlgorithmException, JSONException {
         User oldUser = oldStep.getUser();
 
         // Is this answer a boolean? Import depended steps first.
@@ -961,7 +971,8 @@ public class StepFactory {
             if (param instanceof AnswerParam) {
                 int oldStepId = Integer.parseInt(paramValue);
                 Step oldChildStep = oldUser.getStep(oldStepId);
-                Step newChildStep = importStep(newUser, oldChildStep, stepIdsMap);
+                Step newChildStep = importStep(newUser, oldChildStep,
+                        stepIdsMap);
                 paramValue = Integer.toString(newChildStep.getDisplayId());
             } else if (param instanceof DatasetParam) {
                 DatasetParam datasetParam = (DatasetParam) param;
@@ -981,7 +992,7 @@ public class StepFactory {
         int assignedWeight = oldStep.getAssignedWeight();
         Step newStep = newUser.createStep(question, paramValues, filter,
                 startIndex, endIndex, deleted, false, assignedWeight);
-	stepIdsMap.put(oldStep.getDisplayId(), newStep.getDisplayId());
+        stepIdsMap.put(oldStep.getDisplayId(), newStep.getDisplayId());
         newStep.setCollapsedName(oldStep.getCollapsedName());
         newStep.setCollapsible(oldStep.isCollapsible());
         String customName = oldStep.getBaseCustomName();
