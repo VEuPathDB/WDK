@@ -785,20 +785,6 @@
         <attribute name="allRecordsQueryRef" />
       </optional>
       <ref name="IncludeExclude" />
-      <zeroOrMore>
-        <element name="testParamValues">
-          <optional>
-            <attribute name="minRows"/>
-          </optional>
-          <oneOrMore>
-            <element name="paramValue">
-              <attribute name="name"/>
-              <text/>
-            </element>
-          </oneOrMore>
-          <ref name="IncludeExclude" />
-        </element>
-      </zeroOrMore>
       <optional>
         <attribute name="attributeOrdering" />
       </optional>
@@ -815,6 +801,25 @@
           <ref name="table" />
           <ref name="attributesList" />
 
+          <!-- define the default note field for the recordClass -->
+          <element name="favorite">
+              <ref name="IncludeExclude" />
+              <attribute name="noteField"/>
+          </element>
+          
+          <element name="testParamValues">
+              <optional>
+                <attribute name="minRows"/>
+              </optional>
+              <oneOrMore>
+                <element name="paramValue">
+                  <attribute name="name"/>
+                  <text/>
+                </element>
+              </oneOrMore>
+              <ref name="IncludeExclude" />
+          </element>
+          
           <element name="reporter">
             <attribute name="name" />
             <attribute name="displayName" />

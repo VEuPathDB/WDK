@@ -34,7 +34,21 @@
 /* css for the tree box enum param */
 .param-group .term-children {
     display: none;
-    padding-left: 20px;
 }
 
+span.wdk-record {        /*to not affect a tr same class in favorites page */
+    font-size:60%;
+    font-weight:normal;
+}
 
+.wdk-record .primaryKey {
+    display: none;
+}
+
+#favorites .favorite-note-button {
+    text-align: right;
+}
+
+#favorites .favorite-group-button {
+    text-align: right;
+}
