@@ -70,7 +70,7 @@ CREATE TABLE wdkengine.answers
   prev_answer_id NUMERIC(12),
   migration NUMERIC(12),
   CONSTRAINT "answers_pk" PRIMARY KEY (answer_id),
-  CONSTRAINT "answers_uq1" UNIQUE (project_id, answer_checksum)
+  CONSTRAINT "answers_uq1" UNIQUE (project_id, question_name, answer_checksum)
 );
 
 CREATE INDEX answers_idx01 ON wdkengine.answers (prev_answer_id);
