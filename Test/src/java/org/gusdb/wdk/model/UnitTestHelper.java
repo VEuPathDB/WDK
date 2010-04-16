@@ -39,7 +39,6 @@ public class UnitTestHelper {
     private static User registeredUser;
 
     private static List<Question> normalQuestions;
-    private static List<Question> answerQuestions;
     private static List<Question> datasetQuestions;
 
     public static Random getRandom() {
@@ -168,7 +167,6 @@ public class UnitTestHelper {
             }
         }
         normalQuestions = allNormalQuestions.get(maxRcName);
-        answerQuestions = allAnswerQuestions.get(maxRcName);
         datasetQuestions = allDatasetQuestions.get(maxRcName);
     }
 }
