@@ -676,7 +676,7 @@ div#groups-list {
 	position:relative;
 	right:0;
 	text-align:center;
-	width:147px;
+	width:285px;
 }
 
 span.wdk-record {        /*to not affect a tr same class in favorites page */
