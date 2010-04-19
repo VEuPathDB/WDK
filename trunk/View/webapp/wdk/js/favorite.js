@@ -60,7 +60,7 @@ function showInputBox(holder, type, callback){
 	var value = note;
 	if(type == 'group') var perc = 60;
 	else var perc = 80;
-	jQuery(noteSpan).html("<input style='width:" + perc  + "%' type='text' name='favorite-" + type + "' value='" + value + "'/>");
+	jQuery(noteSpan).html("<input style='width:" + perc  + "%' type='text' name='favorite-" + type + "' value='" + value + "' maxlength='42'/>");
 	jQuery(noteSpan).append("<input id='" + type + "_Save' type='button' value='Save'/>");
 	jQuery(noteSpan).append("<input id='" + type + "_Cancel' type='button' value='Cancel'/>");
 	jQuery("input#" + type + "_Save", noteSpan).click(function(){ 
