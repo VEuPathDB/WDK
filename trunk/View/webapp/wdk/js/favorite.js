@@ -58,9 +58,14 @@ function showInputBox(holder, type, callback){
 	var opacity = jQuery(noteSpan).css("opacity");
 	jQuery(noteSpan).css("opacity","1");
 	var value = note;
-	if(type == 'group') var perc = 60;
-	else var perc = 80;
-	jQuery(noteSpan).html("<input style='width:" + perc  + "%' type='text' name='favorite-" + type + "' value='" + value + "' maxlength='42'/>");
+	if(type == 'group') {
+		var perc = 60;
+		var maxlen = 42;
+	}else{
+		var perc = 80;
+		var maxlen = 198;
+	}
+	jQuery(noteSpan).html("<input style='width:" + perc  + "%' type='text' name='favorite-" + type + "' value='" + value + "' maxlength='" + maxlen + "'/>");
 	jQuery(noteSpan).append("<input id='" + type + "_Save' type='button' value='Save'/>");
 	jQuery(noteSpan).append("<input id='" + type + "_Cancel' type='button' value='Cancel'/>");
 	jQuery("input#" + type + "_Save", noteSpan).click(function(){ 
