@@ -680,7 +680,7 @@ div#groups-list {
 }
 
 span.wdk-record {        /*to not affect a tr same class in favorites page */
-    font-size:60%;
+    font-size:70%;
     font-weight:normal;
 }
 
