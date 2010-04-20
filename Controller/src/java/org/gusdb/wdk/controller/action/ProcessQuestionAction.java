@@ -150,7 +150,8 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                 if (type == null)
                     throw new WdkUserException("Missing input parameter: "
                             + paramName + "_type.");
-
+                
+                RecordClassBean recordClass = ((DatasetParamBean)param).getRecordClass();
                 String data = null;
                 String uploadFile = "";
                 if (type.equalsIgnoreCase("data")) {
@@ -162,7 +163,6 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                     logger.debug("upload file: " + uploadFile);
                     data = new String(file.getFileData());
                 } else if (type.equalsIgnoreCase("basket")) {
-                    RecordClassBean recordClass = question.getRecordClass();
                     data = user.getBasket(recordClass);
                 } else if (type.equals("strategy")) {
                     String strId = request.getParameter(paramName + "_strategy");
@@ -174,7 +174,6 @@ public class ProcessQuestionAction extends ShowQuestionAction {
 
                 logger.debug("dataset data: '" + data + "'");
                 if (data != null && data.trim().length() > 0) {
-                    RecordClassBean recordClass = ((DatasetParamBean)param).getRecordClass();
                     DatasetBean dataset = user.createDataset(recordClass, uploadFile, data);
                     dependentValue = Integer.toString(dataset.getUserDatasetId());
                 }
