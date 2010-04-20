@@ -76,7 +76,7 @@ function chooseAll(bool, form, node) {
 //}
 
 function checkAll(bool, form, node) {
-    var cb = form[node];
+    var cb = form[node];//document.getElementsByName(node);
     for (var i=0; i<cb.length; i++) {
          if (cb[i].disabled) continue;
 	 if(bool && cb[i].checked == false) cb[i].click();
