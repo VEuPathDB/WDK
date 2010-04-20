@@ -350,8 +350,8 @@ public abstract class AbstractEnumParam extends Param {
         String rawValue = decompressValue(dependentValue);
         if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
         if (isNoTranslation()) {
-            if (quote) dependentValue = "'" + dependentValue + "'";
-            return dependentValue;
+            if (quote) rawValue = "'" + rawValue + "'";
+            return rawValue;
         }
 
         if (skipValidation) {
