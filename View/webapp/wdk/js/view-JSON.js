@@ -434,7 +434,7 @@ var set_weight = "<div name='All_weighting' class='param-group' type='ShowHide'>
 	    				"<div class='group-description'>"+
 							"<p><input type='text' name='weight' value='" + jsonstep.assignedWeight + "'>  </p> "+
 							"<input type='button' value='Assign' onclick='SetWeight(this, " + sid + "," + modelstep.frontId + ");hideDetails(this)' >"+
-							"<p>Optionally give this search a 'weight' (for example 10, 200, -50).<br>In a search strategy, unions and intersects will sum the weights, giving higher scores to items found in multiple searches. </p>"+
+							"<p>Optionally give this search a 'weight' (for example 10, 200, -50).<br>In a search strategy, unions and intersects will sum the weights, giving higher scores to items found in multiple searches.<br>Please, be aware that when combining two weighed strategies it is important to take into account the scale (range of weights) used in both. </p>"+
 						"</div>"+
 						"<br>"+
 					"</div>"+
