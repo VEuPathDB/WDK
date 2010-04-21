@@ -126,7 +126,7 @@ function chooseType(paramName, type) {
             </td>
         </tr>
 
-<tr><td>&nbsp;</td><td><span style="font-style:italic;font-size:85%">(Please, make sure you upload a plain text file)</span></td></tr>
+<tr><td>&nbsp;</td><td><span style="font-style:italic;font-size:85%">(Please, upload only plain text files)</span></td></tr>
 
     </c:if>
 </table>
