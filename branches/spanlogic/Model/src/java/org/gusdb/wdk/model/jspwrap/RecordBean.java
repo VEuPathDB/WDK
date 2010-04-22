@@ -10,10 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.AttributeValue;
 import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.PrimaryKeyAttributeValue;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.TableValue;
@@ -28,6 +30,8 @@ import org.json.JSONException;
  * consumption by a view
  */
 public class RecordBean {
+
+    private static final Logger logger = Logger.getLogger(RecordBean.class);
 
     private User user;
     private RecordInstance recordInstance;
@@ -143,6 +147,31 @@ public class RecordBean {
         if (!recordInstance.getRecordClass().hasBasket()) return false;
         AttributeValue value = recordInstance.getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
         return "1".equals(value.getValue());
+    }
+
+    public boolean isInFavorite() throws SQLException, WdkUserException,
+            WdkModelException {
+        try {
+            RecordClass recordClass = recordInstance.getRecordClass();
+            Map<String, String> pkValues = recordInstance.getPrimaryKey().getValues();
+            Map<String, Object> values = new LinkedHashMap<String, Object>();
+            for (String column : pkValues.keySet()) {
+                values.put(column, pkValues.get(column));
+            }
+            return user.isInFavorite(recordClass, values);
+        } catch (SQLException ex) {
+            logger.error(ex);
+            ex.printStackTrace();
+            throw ex;
+        } catch (WdkUserException ex) {
+            logger.error(ex);
+            ex.printStackTrace();
+            throw ex;
+        } catch (WdkModelException ex) {
+            logger.error(ex);
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 
     private class AttributeValueMap implements Map<String, AttributeValue> {

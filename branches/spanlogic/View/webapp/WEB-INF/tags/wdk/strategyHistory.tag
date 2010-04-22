@@ -63,9 +63,9 @@
       <a id="tab_invalid" onclick="displayHist('invalid')"
        href="javascript:void(0)">Invalid&nbsp;Strategies</a></li>
   </c:if>
-  <li class="cmplt_hist_link">
+  <%-- <li class="cmplt_hist_link">
     <a id="tab_cmplt" onclick="displayHist('cmplt')" href="javascript:void(0)">All My Queries</a>
-  </li>
+  </li> --%>
   </ul>
 
 <table class="history_controls clear">

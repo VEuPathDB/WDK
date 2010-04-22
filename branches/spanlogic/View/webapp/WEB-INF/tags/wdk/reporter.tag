@@ -28,10 +28,13 @@ function changeFormat(e)
 
 <hr>
 
-<!-- handle empty result set situation -->
-<c:if test='${step.estimateSize != 0}'>
+<h2><center>Download ${step.displayType}s from the ${step.displayName} search:</center></h2> 
+<p><center>${step.question.displayName}, ${step.estimateSize} ${step.question.recordClass.type}(s)</center></p>
 
-<h3>Download ${step.displayType}s from the ${step.displayName} search: </h3>
+<!-- handle empty result set situation -->
+<c:choose>
+<c:when test='${step.estimateSize != 0}'>
+
 <br />
 <!-- the supported format -->
 <form name="formatForm" method="get" action="<c:url value='/downloadStep.do' />">
@@ -55,4 +58,8 @@ function changeFormat(e)
 
 <hr>
 
-</c:if>
+</c:when> <%-- end of ${step.estimateSize != 0} --%>
+<c:otherwise>
+  The step doesn't contain any result.
+</c:otherwise>
+</c:choose>

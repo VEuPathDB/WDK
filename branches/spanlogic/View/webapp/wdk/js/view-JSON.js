@@ -434,7 +434,7 @@ var set_weight = "<div name='All_weighting' class='param-group' type='ShowHide'>
 	    				"<div class='group-description'>"+
 							"<p><input type='text' name='weight' value='" + jsonstep.assignedWeight + "'>  </p> "+
 							"<input type='button' value='Assign' onclick='SetWeight(this, " + sid + "," + modelstep.frontId + ");hideDetails(this)' >"+
-							"<p>Optionally give this search a 'weight' (for example 10, 200, -50).<br>In a search strategy, unions and intersects will sum the weights, giving higher scores to items found in multiple searches. </p>"+
+							"<p>Optionally give this search a 'weight' (for example 10, 200, -50).<br>In a search strategy, unions and intersects will sum the weights, giving higher scores to items found in multiple searches.<br>Please, be aware that when combining two weighed strategies it is important to take into account the scale (range of weights) used in both. </p>"+
 						"</div>"+
 						"<br>"+
 					"</div>"+
@@ -642,14 +642,4 @@ function createInvalidDiv(){
 function reviseInvalidSteps(ele){
 	var iv_id = $(ele).parent().attr("id").split("_");
 	$("div#diagram_" + iv_id[0] + " div#step_" + iv_id[1] + "_sub h3 a#stepId_" + iv_id[1]).click();
-}
-
-function setFrontAction(action, strat, step) {
-	$("#loginForm form[name=loginForm]").append("<input type='hidden' name='action' value='" + action + "'/>");
-	$("#loginForm form[name=loginForm]").append("<input type='hidden' name='actionStrat' value='" + strat + "'/>");
-	$("#loginForm form[name=loginForm]").append("<input type='hidden' name='actionStep' value='" + step + "'/>");
-}
-
-function popLogin() {
-	$.blockUI({message: '<h1>You have to be logged in to do that!</h1><input type="button" value="OK" onclick="$.unblockUI();" />'});
 }

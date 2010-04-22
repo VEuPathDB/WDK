@@ -334,6 +334,11 @@ public class ModelXmlParser extends XmlParser {
                 "wdkModel/recordClassSet/recordClass/primaryKeyAttribute/text",
                 "setText", 0);
 
+        // favorite references
+        configureNode(digester,
+                "wdkModel/recordClassSet/recordClass/favorite",
+                FavoriteReference.class, "addFavorite");
+
         configureNode(digester,
                 "wdkModel/recordClassSet/recordClass/attributesList",
                 AttributeList.class, "addAttributeList");

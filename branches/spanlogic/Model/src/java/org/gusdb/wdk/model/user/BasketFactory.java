@@ -252,10 +252,11 @@ public class BasketFactory {
             }
         }
         // load the unique counts
-        String sql = "SELECT " + COLUMN_RECORD_CLASS + ", count(*) AS record_size "
-                + " FROM (SELECT DISTINCT * FROM " + schema + TABLE_BASKET + " WHERE "
-                + COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID + " = ?) "
-                + " GROUP BY " + COLUMN_RECORD_CLASS;
+        String sql = "SELECT " + COLUMN_RECORD_CLASS
+                + ", count(*) AS record_size "
+                + " FROM (SELECT DISTINCT * FROM " + schema + TABLE_BASKET
+                + " WHERE " + COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID
+                + " = ?) " + " GROUP BY " + COLUMN_RECORD_CLASS;
         DataSource ds = wdkModel.getUserPlatform().getDataSource();
         ResultSet rs = null;
         try {
@@ -295,9 +296,10 @@ public class BasketFactory {
             String[] columns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
             int columnCount = columns.length;
             while (rs.next()) {
-                if (buffer.length() > 0) buffer.append(";");
+                if (buffer.length() > 0)
+                    buffer.append(DatasetFactory.RECORD_DIVIDER);
                 for (int i = 1; i <= columnCount; i++) {
-                    if (i > 1) buffer.append(":");
+                    if (i > 1) buffer.append(DatasetFactory.COLUMN_DIVIDER);
                     String value = rs.getString(Utilities.COLUMN_PK_PREFIX + i);
                     buffer.append(value);
                 }
@@ -330,7 +332,7 @@ public class BasketFactory {
         String rcName = recordClass.getDisplayName();
         Question question = new Question();
         question.setName(qname);
-        question.setDisplayName("Copy of "  + rcName + " Basket");
+        question.setDisplayName("Copy of " + rcName + " Basket");
         question.setShortDisplayName("Copy of Basket");
         question.setRecordClass(recordClass);
         Query query = getBasketSnapshotIdQuery(recordClass);

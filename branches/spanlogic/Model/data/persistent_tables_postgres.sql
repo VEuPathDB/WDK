@@ -1,6 +1,4 @@
-
-DROP SEQUENCE IF EXISTS wdkuser.migration_pkseq;
-
+DROP SEQUENCE IF EXISTS wdkengine.migration_pkseq;
 DROP SEQUENCE IF EXISTS wdkengine.dataset_indices_pkseq;
 DROP SEQUENCE IF EXISTS wdkengine.answers_pkseq;
 
@@ -30,7 +28,7 @@ DROP TABLE IF EXISTS wdkengine.dataset_indices;
    create sequences
    ========================================================================= */
 
-CREATE SEQUENCE wdkuser.migration_pkseq INCREMENT BY 1 START WITH 1;
+CREATE SEQUENCE wdkengine.migration_pkseq INCREMENT BY 1 START WITH 1;
 
 
 CREATE SEQUENCE wdkengine.dataset_indices_pkseq INCREMENT BY 1 START WITH 1;
@@ -40,6 +38,9 @@ CREATE SEQUENCE wdkengine.answers_pkseq INCREMENT BY 1 START WITH 1;
 
 
 CREATE SEQUENCE wdkuser.users_pkseq INCREMENT BY 1 START WITH 1;
+
+
+CREATE SEQUENCE wdkuser.migration_pkseq INCREMENT BY 1 START WITH 1;
 
 
 CREATE SEQUENCE wdkuser.strategies_pkseq INCREMENT BY 1 START WITH 1;
@@ -70,7 +71,7 @@ CREATE TABLE wdkengine.answers
   prev_answer_id NUMERIC(12),
   migration NUMERIC(12),
   CONSTRAINT "answers_pk" PRIMARY KEY (answer_id),
-  CONSTRAINT "answers_uq1" UNIQUE (project_id, answer_checksum)
+  CONSTRAINT "answers_uq1" UNIQUE (project_id, question_name, answer_checksum)
 );
 
 CREATE INDEX answers_idx01 ON wdkengine.answers (prev_answer_id);
@@ -81,6 +82,7 @@ CREATE TABLE wdkengine.dataset_indices
 (
   dataset_id NUMERIC(12) NOT NULL,
   dataset_checksum VARCHAR(40) NOT NULL,
+  record_class VARCHAR(200) NOT NULL,
   summary VARCHAR(200) NOT NULL,
   dataset_size NUMERIC(12) NOT NULL,
   PREV_DATASET_ID NUMERIC(12),
@@ -95,13 +97,14 @@ CREATE INDEX dataset_indices_idx01 ON wdkengine.dataset_indices (prev_dataset_id
 CREATE TABLE wdkengine.dataset_values
 (
   dataset_id NUMERIC(12) NOT NULL,
-  dataset_value VARCHAR(4000) NOT NULL,
+  pk_column_1 VARCHAR(1999) NOT NULL,
+  pk_column_2 VARCHAR(1999),
+  pk_column_3 VARCHAR(1999),
   migration NUMERIC(12),
+  CONSTRAINT "DATASET_VALUES_PK" PRIMARY KEY (dataset_id, pk_column_1, pk_column_2, pk_column_3),
   CONSTRAINT "DATASET_VALUES_DATASET_ID_FK" FOREIGN KEY (dataset_id)
       REFERENCES wdkengine.dataset_indices (dataset_id)
 );
-
-CREATE INDEX dataset_values_idx01 ON wdkengine.dataset_values (dataset_id);
 
 
 CREATE TABLE wdkengine.clob_values
@@ -280,12 +283,25 @@ CREATE TABLE wdkuser.user_baskets
   pk_column_1 VARCHAR(1999) NOT NULL,
   pk_column_2 VARCHAR(1999),
   pk_column_3 VARCHAR(1999),
+  CONSTRAINT "USER_BASKETS_PK" PRIMARY KEY (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3),
   CONSTRAINT "USER_BASKETS_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id)
 );
 
-CREATE INDEX wdkuser.user_baskets_idx01 
-  ON wdkuser.user_baskets
-  (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
 
+CREATE TABLE wdkuser.favorites
+(
+  user_id NUMERIC(12) NOT NULL,
+  project_id VARCHAR(50) NOT NULL,
+  record_class VARCHAR(100) NOT NULL,
+  pk_column_1 VARCHAR(1999) NOT NULL,
+  pk_column_2 VARCHAR(1999),
+  pk_column_3 VARCHAR(1999),
+  record_note VARCHAR(200),
+  record_group VARCHAR(50),
+  CONSTRAINT "FAVORITES_PK" PRIMARY KEY (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3),
+  CONSTRAINT "FAVORITES_USER_ID_FK" FOREIGN KEY (user_id)
+      REFERENCES wdkuser.users (user_id)
+);
 
+CREATE INDEX wdkuser.favorites_idx02 ON wdkuser.favorites (record_group, user_id, project_id);

@@ -110,12 +110,12 @@ public class Dataset {
         StringBuffer sbSummary = new StringBuffer();
         int maxLength = Utilities.MAX_PARAM_VALUE_SIZE;
         for (String[] value : values) {
-            if (sbSummary.length() != 0) sbSummary.append("; ");
+            if (sbSummary.length() != 0) sbSummary.append(DatasetFactory.RECORD_DIVIDER);
             boolean first = true;
             for (String column : value) {
                 if (column != null && column.length() > 0) {
                     if (first) first = false;
-                    else sbSummary.append(":");
+                    else sbSummary.append(DatasetFactory.COLUMN_DIVIDER);
                     sbSummary.append(column);
                 }
             }
@@ -123,7 +123,7 @@ public class Dataset {
         }
         summary = sbSummary.toString();
         if (summary.length() > maxLength) {
-            int pos = summary.lastIndexOf(";", maxLength - 3);
+            int pos = summary.lastIndexOf(DatasetFactory.RECORD_DIVIDER, maxLength - 3);
             summary = summary.substring(0, (pos > 0) ? pos + 1 : maxLength - 3);
             summary += "...";
         }
@@ -156,12 +156,12 @@ public class Dataset {
         List<String[]> values = getValues();
         StringBuffer sb = new StringBuffer();
         for (String[] columns : values) {
-            if (sb.length() > 0) sb.append("; ");
+            if (sb.length() > 0) sb.append(DatasetFactory.RECORD_DIVIDER);
             boolean first = true;
             for (String column : columns) {
                 if (column == null || column.length() == 0) continue;
                 if (first) first = false;
-                else sb.append(":");
+                else sb.append(DatasetFactory.COLUMN_DIVIDER);
                 sb.append(column);
             }
         }

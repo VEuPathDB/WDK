@@ -60,10 +60,11 @@ public class AnswerFactory {
             NoSuchAlgorithmException, WdkModelException, JSONException,
             WdkUserException {
         // use transaction
+        String questionName = answerValue.getQuestion().getFullName();
         String answerChecksum = answerValue.getChecksum();
 
         // check if answer has been saved.
-        Answer answer = getAnswer(answerChecksum);
+        Answer answer = getAnswer(questionName, answerChecksum);
         if (answer == null) {
             Question question = answerValue.getQuestion();
             // the answer hasn't been stored, create an answerInfo, and save it
@@ -91,7 +92,7 @@ public class AnswerFactory {
      * @throws WdkModelException
      * @throws WdkUserException
      */
-    public Answer getAnswer(String answerChecksum) throws SQLException,
+    public Answer getAnswer(String questionName, String answerChecksum) throws SQLException,
             WdkUserException, WdkModelException {
         String projectId = wdkModel.getProjectId();
 
@@ -103,15 +104,20 @@ public class AnswerFactory {
         String sql = "SELECT " + COLUMN_ANSWER_ID + ", "
                 + COLUMN_PROJECT_VERSION + ", " + COLUMN_QUERY_CHECKSUM + ", "
                 + COLUMN_QUESTION_NAME + " FROM " + wdkSchema + TABLE_ANSWER
-                + " WHERE " + COLUMN_PROJECT_ID + " = '"
-                + projectId.replaceAll("'", "''") + "' AND "
-                + COLUMN_ANSWER_CHECKSUM + " = '"
-                + answerChecksum.replaceAll("'", "''") + "'";
+                + " WHERE " + COLUMN_PROJECT_ID + " = ? AND "
+                + COLUMN_QUESTION_NAME + " = ? AND "
+                + COLUMN_ANSWER_CHECKSUM + " = ?";
 
         ResultSet resultSet = null;
         try {
             DataSource dataSource = userPlatform.getDataSource();
-            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+            long start = System.currentTimeMillis();
+            PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, sql);
+            ps.setString(1, projectId);
+            ps.setString(2, questionName);
+            ps.setString(3, answerChecksum);
+            resultSet = ps.executeQuery();
+            SqlUtils.verifyTime(wdkModel, sql, start);
 
             if (resultSet.next()) {
                 answer = new Answer(resultSet.getInt(COLUMN_ANSWER_ID));
