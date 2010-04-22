@@ -327,7 +327,10 @@ function getQueryForm(url,hideOp,isOrtholog, loadingParent){
 
 function OpenOperationBox(stratId, insertId) {
 	var selectedStrat = $("#query_form select#selected_strategy").val();
-	var selectedName = $("#query_form select#selected_strategy option[selected]").text();
+	var selectedName = null;//$("#query_form select#selected_strategy option[selected]").text();
+	$("#query_form select#selected_strategy option").each(function(){
+		if(this.selected) selectedName = $(this).text(); return;
+	});
         if (insertId == undefined) insertId = "";
 	var url = "processFilter.do?strategy=" + getStrategy(stratId).backId + "&insert=" + insertId + "&insertStrategy=" + selectedStrat +"&checksum=" + getStrategy(stratId).checksum;
 	var oform = "<form id='form_question' enctype='multipart/form-data' action='javascript:validateAndCall(\"add\",\""+ url + "\", \"" + getStrategy(stratId).backId + "\")' method='post' name='questionForm'>";
