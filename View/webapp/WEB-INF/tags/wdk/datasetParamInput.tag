@@ -66,8 +66,8 @@ function chooseType(paramName, type) {
 
 <input type="hidden" id="${pNam}_type" name="${pNam}_type" value="${defaultType}" />
 
-<table id="${qp.name}" border="0" bgcolor="#EEEEEE" cellspacing="0" cellpadding="0">
-   
+<table id="${qp.name}">
+
   <c:if test="${dataset != null || defaultType != 'basket'}"> 
     <!-- display an input box for user to enter data -->
     <tr>
@@ -99,7 +99,7 @@ function chooseType(paramName, type) {
         <td colspan="2" align="left" valign="top" nowrap>
             <input type="radio" name="${pNam}_radio" ${basketChecked}
                    onclick="chooseType('${pNam}', 'basket');" />
-            A copy of ${recordType}s in the basket (${basketCount} ${recordType}s)&nbsp;
+            Copy ${recordType}s from My Basket (${basketCount} ${recordType}s)&nbsp;
         </td>
     </tr>
     </c:if>
@@ -116,14 +116,20 @@ function chooseType(paramName, type) {
     <c:if test="${partial == null || partial == false}">
         <!-- display an input box and upload file button -->
         <tr class="dataset-file">
-            <td align="left" valign="top" nowrap>
+            <td align="left" valign="top">
                 <input type="radio" name="${pNam}_radio" ${fileChecked}
                        onclick="chooseType('${pNam}', 'file');" />
-                Upload from file:&nbsp;
+               Upload from text file:&nbsp;
             </td>
             <td align="left">
                 <html:file styleId="${pNam}_file" styleClass="input" property="myPropObject(${pNam}_file)" disabled="true"/>
             </td>
         </tr>
+
+<%--
+<tr><td>&nbsp;</td>
+    <td><span style="font-style:italic;font-size:85%">(Please, upload only plain text files)</span></td>
+</tr>
+--%>
     </c:if>
 </table>

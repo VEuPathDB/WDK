@@ -4,6 +4,10 @@
 <%@ taglib prefix="c"  uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
+<%@ attribute name="path"
+              required="false"
+              description="An optional argument.  If provided, use this path instead of the path to the current page."
+%>
 <c:choose>
 
 <c:when test="${not empty param.originParam}">
@@ -26,23 +30,28 @@
   </c:if>
   
   <c:choose>
-  <c:when test="${requestScope['javax.servlet.forward.request_uri'] != null}">
-    <c:set var="requestUri" value="${requestScope['javax.servlet.forward.request_uri']}"/>
-  </c:when>
-  <c:otherwise>
-    <c:set var="requestUri" value="${request.requestURI}"/>
-  </c:otherwise>
+    <c:when test="${path != null}">
+      <c:url var="requestUri" value="${path}" />
+    </c:when>
+    <c:when test="${requestScope['javax.servlet.forward.request_uri'] != null}">
+      <c:set var="requestUri" value="${requestScope['javax.servlet.forward.request_uri']}"/>
+    </c:when>
+    <c:otherwise>
+      <c:set var="requestUri" value="${request.requestURI}"/>
+    </c:otherwise>
   </c:choose>
   
-  <c:choose>
-  <c:when test="${requestScope['javax.servlet.forward.query_string'] != null}">
-    <c:set var="queryString" value="${requestScope['javax.servlet.forward.query_string']}"/>
-  </c:when>
-  <c:otherwise>
-      <c:set var="queryString" value="${request.queryString}"/>
-  </c:otherwise>
-  </c:choose>
-  
+  <c:if test="${path == null}">
+    <c:choose>
+      <c:when test="${requestScope['javax.servlet.forward.query_string'] != null}">
+        <c:set var="queryString" value="${requestScope['javax.servlet.forward.query_string']}"/>
+      </c:when>
+      <c:otherwise>
+        <c:set var="queryString" value="${request.queryString}"/>
+      </c:otherwise>
+    </c:choose>
+  </c:if>
+
   <c:set var="preOriReqUri" value="${scheme}://${serverName}${port}${requestUri}" />
   
   <c:if test="${queryString != null}">

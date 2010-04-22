@@ -5,9 +5,28 @@ var sidIndex = 0;
 var recordType= new Array();   //stratid, recordType which is the type of the last step
 var state = null;
 var p_state = null;
+var ajaxTimeout = 60000;
 $(document).ready(function(){
 	// tell jQuery not to cache ajax requests.
-	$.ajaxSetup ({ cache: false});
+	$.ajaxSetup ({ 
+		cache: false,
+		timeout: ajaxTimeout,
+		error: function(data, msg, e){
+			if(msg == "timeout"){
+				var c = confirm("This request has timed out.\nWould you like to try again? (This request will timeout after " +  ((this.timeout / 60000) + 1) +" minutes.)");
+				if(c){
+					this.timeout = this.timeout + 60000;
+					$.ajax(this);
+				}else{
+					initDisplay();
+				}
+			}else{
+				alert("error");
+				initDisplay();
+			}
+			//this.timeout = ajaxTimeout;
+		}
+	});
 	initStrategyPanels();
 	var current = getCurrentTabCookie();
 	if (!current || current == null)
@@ -30,7 +49,6 @@ function initStrategyPanels() {
 		},
 		error: function() {
 			$("#tab_sample_strat").parent("li").remove();
-			
 		}
 	});
 	$.ajax({
@@ -42,7 +60,6 @@ function initStrategyPanels() {
 		},
 		error: function() {
 			$("#tab_strategy_new").parent("li").remove();
-			
 		}
 	});
 	$.ajax({
@@ -54,7 +71,6 @@ function initStrategyPanels() {
 		},
 		error: function() {
 			$("#tab_help").parent("li").remove();
-			
 		},
 		complete: function() {
 			initHelp();
@@ -330,24 +346,23 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters, ac
 					$("#Strategies div#diagram_" + strategy.frontId + " div[id='step_" + step.frontId + "_sub']").addClass("selectedarrow");
 					init_view_step = step.back_step_Id;
 				}
-			    ResultsToGrid(data, ignoreFilters, "strategy_results");
-			    $("span#text_strategy_number").html(strategy.JSON.name);
-			    $("span#text_step_number").html(step.frontId);
-			    $("span#text_strategy_number").parent().show();
+				ResultsToGrid(data, ignoreFilters, "strategy_results");
+				$("span#text_strategy_number").html(strategy.JSON.name);
+				$("span#text_step_number").html(step.frontId);
+				$("span#text_strategy_number").parent().show();
+				var linkToClick = $("a#" + action);
+				if (linkToClick.length > 0) {
+					linkToClick.click();
+				}
                         } 
-			var linkToClick = $("a#" + action);
-			if (linkToClick.length > 0) {
-				linkToClick.click();
-			}
-				
-                removeLoading(f_strategyId);
-				checkPageBasket();
-				$.cookie("refresh_results", "false", { path : '/' });
-		},
-		error : function(data, msg, e){
-			  alert("ERROR \n "+ msg + "\n" + e
-                                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
-		}
+	                removeLoading(f_strategyId);
+			checkPageBasket();
+			$.cookie("refresh_results", "false", { path : '/' });
+		}//,
+		//error : function(data, msg, e){
+		//	  alert("ERROR \n "+ msg + "\n" + e
+        //                              + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
+		//}
 	});
 }
 
@@ -369,11 +384,11 @@ function RenameStep(ele, s, stp){
 				}else{
 					removeLoading(f_strategyId);
 				}
-			},
-			error: function(data, msg, e){
-				alert("ERROR \n "+ msg + "\n" + e
-                                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
-			}
+			}//,
+			//error: function(data, msg, e){
+			//	alert("ERROR \n "+ msg + "\n" + e
+            //                          + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
+			//}
 		});
 }
 
@@ -401,12 +416,12 @@ function AddStepToStrategy(url, proto, stpId){
 			}else{
 				removeLoading(f_strategyId);
 			}
-		},
-		error: function(data, msg, e){
-			removeLoading(f_strategyId);
-			alert("ERROR \n "+ msg + "\n" + e
-                                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
-		}
+		}//,
+		//error: function(data, msg, e){
+		//	removeLoading(f_strategyId);
+		//	alert("ERROR \n "+ msg + "\n" + e
+        //                              + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
+		//}
 	});
 	isInsert = "";
 	closeAll(true);
@@ -437,11 +452,11 @@ function EditStep(url, proto, step_number){
 			}else{
 				removeLoading(ss.frontId);
 			}
-		},
-		error: function(data, msg, e){
-			alert("ERROR \n "+ msg + "\n" + e
-                                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
-		}
+		}//,
+		//error: function(data, msg, e){
+		//	alert("ERROR \n "+ msg + "\n" + e
+        //                              + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
+		//}
 	});
 	closeAll(true);
 }
@@ -473,13 +488,13 @@ function DeleteStep(f_strategyId,f_stepId){
 				}else{
 					removeLoading(strategy.frontId);
 				}	
-			},
-		error: function(data, msg, e){
-				removeStrategyDivs(strategy.backId);
-				if($("#Strategies div").length == 0){
-					showInstructions();
-				}
-			}
+			}//,
+		//error: function(data, msg, e){
+		//		removeStrategyDivs(strategy.backId);
+		//		if($("#Strategies div").length == 0){
+		//			showInstructions();
+		//		}
+		//	}
 	});
 }
 
@@ -504,11 +519,11 @@ function ExpandStep(e, f_strategyId, f_stepId, collapsedName){
 			}else{
 				removeLoading(f_strategyId);
 			}
-		},
-		error: function(data, msg, e){
-			alert("ERROR \n " + msg + "\n" + e
-                                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
-		}
+		}//,
+		//error: function(data, msg, e){
+		//	alert("ERROR \n " + msg + "\n" + e
+        //                              + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
+		//}
 	});
 }
 
@@ -528,12 +543,12 @@ function openStrategy(stratId){
 				updateStrategies(data);
 				if ($("#strategy_results").css('display') == 'none') showPanel('strategy_results');
 			}
-		},
-		error: function(data, msg, e){
-			$("body").unblock();
-			alert("ERROR \n "+ msg + "\n" + e
-                                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
-		}
+		}//,
+		//error: function(data, msg, e){
+		//	$("body").unblock();
+		//	alert("ERROR \n "+ msg + "\n" + e
+        //                              + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
+		//}
 	});
 }
 
@@ -571,11 +586,11 @@ function deleteStrategy(stratId, fromHist){
 					updateHistory();
 				}
 			}
-		},
-		error: function(data, msg, e){
-			alert("ERROR \n "+ msg + "\n" + e
-                                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
-		}
+		}//,
+		//error: function(data, msg, e){
+		//	alert("ERROR \n "+ msg + "\n" + e
+        //                              + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
+		//}
 	});
 	}
 }
@@ -606,11 +621,11 @@ function closeStrategy(stratId, isBackId){
 					updateHistory();
 				}
 			}
-		},
-		error: function(data, msg, e){
-			alert("ERROR \n "+ msg + "\n" + e
-                                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
-		}
+		}//,
+		//error: function(data, msg, e){
+		//	alert("ERROR \n "+ msg + "\n" + e
+        //                              + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
+		//}
 	});
 }
 
@@ -648,18 +663,18 @@ function copyStrategy(stratId, fromHist){
 						showLoading(ss.frontId);
 				},
                 success: function(data){
-			if(ErrorHandler("Copystrategy", data, ss, null)){
-				updateStrategies(data);
-				if (fromHist) {
-					update_hist = true;
-					updateHistory();
-				}
-			}
-                },
-                error: function(data, msg, e){
-                        alert("ERROR \n "+ msg + "\n" + e
-                                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
-                }
+					if(ErrorHandler("Copystrategy", data, ss, null)){
+						updateStrategies(data);
+						if (fromHist) {
+							update_hist = true;
+							updateHistory();
+						}
+					}
+                }//,
+                //error: function(data, msg, e){
+                //        alert("ERROR \n "+ msg + "\n" + e
+                //                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
+                //}
         });     
 }
 
@@ -696,11 +711,11 @@ function saveOrRenameStrategy(stratId, checkName, save, fromHist){
 					}
 					if(!fromHist)
 						removeLoading(strat.frontId);
-		},
-		error: function(data, msg, e){
-			alert("ERROR \n "+ msg + "\n" + e
-                                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
-		}
+		}//,
+		//error: function(data, msg, e){
+		//	alert("ERROR \n "+ msg + "\n" + e
+        //                              + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
+		//}
 	});
 }
 
@@ -722,20 +737,21 @@ function ChangeFilter(strategyId, stepId, url, filter) {
                 dataType:"json",
 				data:"state=" + p_state,
                 beforeSend: function(){
+			$("#strategy_results > div.Workspace").block();
                         showLoading(f_strategyId);
                 },
                 success: function(data){
                         if(ErrorHandler("ChangeFilter", data, strategy, null)){
                         	updateStrategies(data, true);
-				$("div.layout-detail td div.filter-instance div.current").removeClass('current');
-				$(filterElt).parent('div').addClass('current');
-			}
-                },
-                error: function(data, msg, e){
-                        removeLoading(f_strategyId);
-                        alert("ERROR \n "+ msg + "\n" + e
-                                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
-                }
+							$("div.layout-detail td div.filter-instance div.current").removeClass('current');
+							$(filterElt).parent('div').addClass('current');
+						}
+                }//,
+                //error: function(data, msg, e){
+                //        removeLoading(f_strategyId);
+                //        alert("ERROR \n "+ msg + "\n" + e
+                //                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
+                //}
         });
 }
 
@@ -764,10 +780,10 @@ function SetWeight(e, f_strategyId, f_stepId){
                         }else{
                                 removeLoading(f_strategyId);
                         }
-                },
-                error: function(data, msg, e){
-                        alert("ERROR \n " + msg + "\n" + e
-                                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
-                }
+                }//,
+                //error: function(data, msg, e){
+                //        alert("ERROR \n " + msg + "\n" + e
+                //                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
+                //}
         });
 }
