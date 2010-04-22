@@ -329,7 +329,7 @@ function OpenOperationBox(stratId, insertId) {
 	var selectedStrat = $("#query_form select#selected_strategy").val();
 	var selectedName = null;//$("#query_form select#selected_strategy option[selected]").text();
 	$("#query_form select#selected_strategy option").each(function(){
-		if(this.selected) selectedName = $(this).text(); return;
+		if(this.selected) selectedName = $(this).text().replace(/^\s*/, ""); return;
 	});
         if (insertId == undefined) insertId = "";
 	var url = "processFilter.do?strategy=" + getStrategy(stratId).backId + "&insert=" + insertId + "&insertStrategy=" + selectedStrat +"&checksum=" + getStrategy(stratId).checksum;
