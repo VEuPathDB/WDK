@@ -41,6 +41,7 @@ function uncheckFields(notFirst) {
     var cb = form.selectedFields;
     if (notFirst) {
         for (var i=1; i<cb.length; i++) {
+            if (cb[i].disabled) continue;
             cb[i].checked = null;
         }
     } else {
@@ -53,6 +54,7 @@ function checkFields(all) {
     var cb = form.selectedFields;
     cb[0].checked = (all > 0 ? null : 'checked');
     for (var i=1; i<cb.length; i++) {
+        if (cb[i].disabled) continue;
         cb[i].checked = (all > 0 ? 'checked' : null);
     }
 }
@@ -74,8 +76,9 @@ function chooseAll(bool, form, node) {
 //}
 
 function checkAll(bool, form, node) {
-    var cb = form[node];
+    var cb = form[node];//document.getElementsByName(node);
     for (var i=0; i<cb.length; i++) {
+         if (cb[i].disabled) continue;
 	 if(bool && cb[i].checked == false) cb[i].click();
          if(!bool && cb[i].checked == true) cb[i].click();
     }

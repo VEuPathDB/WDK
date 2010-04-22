@@ -92,16 +92,6 @@
 
       </td>
 
-
-<%-- here, the description cannot expand beyond the td, it wraps using more vertical space.
-	<table id="strat_description">
-          <tbody id="steps_${strategyId}">
-          <wdk:stepRows latestStep="${strategy.latestStep}" rowNum="${i}" indent="0"/>
-          </tbody>    
-        </table>
---%>
-
-
       <td nowrap>
         <div id="activate_${strategyId}">
           <c:choose>
@@ -149,21 +139,6 @@
       <td nowrap style="text-align:right">${strategy.estimateSize}</td>
       <td>&nbsp;&nbsp;</td>
     </tr>
-
-<%-- description : because of being in a diferent tr, we can expand to use all horizontal space  --%>
-
-<%-- disable the loading of steps
-<tr id="desc_${strategyId}" style="display: none;"><td colspan="11">
-
-	<table id="strat_description">
-          <tbody id="steps_${strategyId}">
-          <wdk:stepRows latestStep="${strategy.latestStep}" rowNum="${i}" indent="50"/>
-          </tbody>    
-        </table>
-     
-
-</td></tr>
-// end disable loading of steps --%>
 
     <c:set var="i" value="${i+1}"/>
   </c:forEach>
