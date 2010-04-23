@@ -67,7 +67,7 @@ $.blockUI.defaults = {
     // styles for the overlay
     overlayCSS:  { 
         backgroundColor:'#000', 
-        opacity:        '0.3' 
+        opacity:        '0.1' 
     },
     
     // z-index for the blocking overlay
