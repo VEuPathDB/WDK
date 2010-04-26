@@ -50,6 +50,35 @@ div.htmltooltip{
     display: none;
 }
 
+.param-group img.plus-minus, .param-group .term-node input {
+    float: left;
+}
+
+.param-group .term-node span {
+    margin-left: 5px;
+}
+
+.param-group .term-node {
+    clear: left;
+    line-height: 1.5;
+}
+
+.param-controls {
+    float: left;
+    clear: left;
+}
+
+.param-controls > a:link, 
+.param-controls > a:visited,
+.param-controls > a:hover,
+.param-controls > a:active,
+.param-multiPick  a:link, 
+.param-multiPick  a:visited,
+.param-multiPick  a:hover,
+.param-multiPick  a:active{
+	font-size:  8pt;
+}
+
 /~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =TABLES 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -153,19 +182,6 @@ a:link, a:visited {
 a:hover, a:active {
 	text-decoration: none;
 }
-
-div.param-tree > a:link, 
-div.param-tree > a:visited,
-div.param-tree > a:hover,
-div.param-tree > a:active,
-div.param-multiPick  a:link, 
-div.param-multiPick  a:visited,
-div.param-multiPick  a:hover,
-div.param-multiPick  a:active{
-
-	font-size:  8pt;
-}
-
 
 #wrap {
 	width: 100%;
