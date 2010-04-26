@@ -74,10 +74,11 @@ Otherwise a standard select menu is used.
 		<div class="param-tree ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
 
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <div class="param-controls">
             <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
             | <a href="javascript:void(0)" onclick="expandCollapseAll(this, true);">expand all</a>
             | <a href="javascript:void(0)" onclick="expandCollapseAll(this, false);">collapse all</a>
-
+            </div>
         <c:set var="recurse_enum_param" value="${qP}" scope="request"/>
         <c:forEach items="${qP.vocabTreeRoots}" var="root">
             <c:set var="recurse_term_node" value="${root}" scope="request"/>
@@ -87,9 +88,11 @@ Otherwise a standard select menu is used.
         <c:remove var="recurse_enum_param" scope="request"/>
 
 		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <div class="param-controls">
             <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
             | <a href="javascript:void(0)" onclick="expandCollapseAll(this, true);">expand all</a>
-            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, false);">collapse all</a><br><br>
+            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, false);">collapse all</a>
+            </div><br><br>
     </c:when>
 
     <c:otherwise>
