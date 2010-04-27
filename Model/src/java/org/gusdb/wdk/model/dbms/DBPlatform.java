@@ -172,6 +172,8 @@ public abstract class DBPlatform {
      */
     public abstract String[] queryTableNames(String schema, String pattern)
             throws SQLException, WdkUserException, WdkModelException;
+    
+    public abstract String getIdSql(String[] pkColumns);
 
     // #########################################################################
     // Common methods are platform independent

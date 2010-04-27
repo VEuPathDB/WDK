@@ -598,10 +598,12 @@ public class AnswerValue {
             JSONException, WdkUserException {
         String queryName = attributeQuery.getFullName();
         Query dynaQuery = question.getDynamicAttributeQuery();
+        String idSql = idsQueryInstance.getSql();
+        String sql;
         if (dynaQuery != null && queryName.equals(dynaQuery.getFullName())) {
             // the dynamic query doesn't have sql defined, the sql will be
             // constructed from the id query cache table.
-            return idsQueryInstance.getSql();
+            sql = idSql;
         } else {
             // make an instance from the original attribute query, and attribute
             // query has only one param, user_id. Note that the original
@@ -612,8 +614,12 @@ public class AnswerValue {
             params.put(Utilities.PARAM_USER_ID, userId);
             QueryInstance queryInstance = attributeQuery.makeInstance(user,
                     params, true, 0);
-            return queryInstance.getSql();
+            sql = queryInstance.getSql();
+            
+            // replace the id_sql macro
+            sql = sql.replace(Utilities.MACRO_ID_SQL, idSql);
         }
+        return sql;
     }
 
     private String getPagedIdSql() throws NoSuchAlgorithmException,
