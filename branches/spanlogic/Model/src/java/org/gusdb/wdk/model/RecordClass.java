@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ColumnType;
 import org.gusdb.wdk.model.query.Query;
@@ -66,17 +67,24 @@ public class RecordClass extends WdkModelBase implements
 
         // if the new query is SqlQuery, modify the sql
         if (newQuery instanceof SqlQuery && newParams.size() > 0) {
-            StringBuffer sql = new StringBuffer("SELECT f.* FROM (");
-            sql.append(((SqlQuery) newQuery).getSql());
-            sql.append(") f WHERE ");
+            StringBuilder builder = new StringBuilder("SELECT f.* FROM (");
+            builder.append(((SqlQuery) newQuery).getSql());
+            builder.append(") f WHERE ");
             boolean firstColumn = true;
             for (String columnName : newParams) {
                 if (firstColumn) firstColumn = false;
-                else sql.append(" AND ");
-                sql.append("f.").append(columnName);
-                sql.append(" = $$").append(columnName).append("$$");
+                else builder.append(" AND ");
+                builder.append("f.").append(columnName);
+                builder.append(" = $$").append(columnName).append("$$");
             }
-            ((SqlQuery) newQuery).setSql(sql.toString());
+            
+            // replace the id_sql macro
+            DBPlatform platform = wdkModel.getQueryPlatform();
+            String idSql = "(" + platform.getIdSql(paramNames) + ")";
+            String sql = builder.toString();
+            sql = sql.replace(Utilities.MACRO_ID_SQL, idSql);
+            
+            ((SqlQuery) newQuery).setSql(sql);
         }
         return newQuery;
     }
