@@ -88,6 +88,7 @@ public class Utilities {
     public static final String PARAM_PROJECT_ID = COLUMN_PROJECT_ID;
     public static final String PARAM_USER_ID = COLUMN_USER_ID;
     
+    public static final String MACRO_ID_SQL = "##WDK_ID_SQL##";
 
     public static String encrypt(String data) throws WdkModelException,
             NoSuchAlgorithmException {

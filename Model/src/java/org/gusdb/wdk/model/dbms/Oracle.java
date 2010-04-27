@@ -319,4 +319,16 @@ public class Oracle extends DBPlatform {
         }
     }
 
+    @Override
+    public String getIdSql(String[] pkColumns) {
+        StringBuilder builder = new StringBuilder();
+        for (String column : pkColumns) {
+            if (builder.length() == 0) builder.append("SELECT ");
+            else builder.append(", ");
+            builder.append("$$" + column + "$$");
+        }
+        builder.append(" FROM dual");
+        return builder.toString();
+    }
+
 }
