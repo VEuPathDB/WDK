@@ -18,11 +18,19 @@ $(document).ready(function(){
 					this.timeout = this.timeout + 60000;
 					$.ajax(this);
 				}else{
-					initDisplay();
+					if(url.indexOf("showSummary.do") != -1){
+						removeLoading();
+					}else{
+						initDisplay();
+					}
 				}
 			}else{
-				alert("error");
-				initDisplay();
+				alert("An error was discovered. \n The EuPathDB Team is currently working to resolve this issue.");
+				if(url.indexOf("showSummary.do") != -1){
+					removeLoading();
+				}else{
+					initDisplay();
+				}
 			}
 			//this.timeout = ajaxTimeout;
 		}
