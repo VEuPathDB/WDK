@@ -78,9 +78,18 @@ public class RecordClass extends WdkModelBase implements
                 builder.append(" = $$").append(columnName).append("$$");
             }
             
-            // replace the id_sql macro
+            // replace the id_sql macro        
+            StringBuilder idqBuilder = new StringBuilder();
+            for (String column : paramNames) {
+                if (idqBuilder.length() == 0) idqBuilder.append("(SELECT ");
+                else idqBuilder.append(", ");
+                idqBuilder.append("$$" + column + "$$ AS " + column);
+            }
             DBPlatform platform = wdkModel.getQueryPlatform();
-            String idSql = "(" + platform.getIdSql(paramNames) + ")";
+            idqBuilder.append(platform.getDummyTable());
+            idqBuilder.append(")");
+
+            String idSql = idqBuilder.toString();
             String sql = builder.toString();
             sql = sql.replace(Utilities.MACRO_ID_SQL, idSql);
             

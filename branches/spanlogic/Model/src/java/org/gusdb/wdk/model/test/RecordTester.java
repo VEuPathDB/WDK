@@ -128,6 +128,7 @@ public class RecordTester {
                 "space delimited list of column_name column_value ....");
         primaryKey.setArgName("primaryKey");
         primaryKey.setArgs(Option.UNLIMITED_VALUES);
+        primaryKey.setRequired(true);
         options.addOption(primaryKey);
 
         return options;
