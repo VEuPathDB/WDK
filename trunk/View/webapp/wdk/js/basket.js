@@ -37,8 +37,10 @@ function updateBasket(ele, type, pk, pid,recordType) {
 		action = (i.attr("value") == '0') ? "add" : "remove";
 	}else if(type == "single"){
 		var o = new Object();
-		//var pkDiv = jQuery("#" + currentDiv + " #Results_Pane div.primaryKey[fvalue='" + pk + "']");
+
+		//var pkDiv = jQuery("#" + currentDiv + " .Results_Pane div.primaryKey[fvalue='" + pk + "']");
 		var pkDiv = jQuery(ele).parents("tr").find("div.primaryKey");
+
 		jQuery("span", pkDiv).each(function(){
 			o[jQuery(this).attr("key")] = jQuery(this).text();
 		});
@@ -46,7 +48,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 		da = jQuery.json.serialize(a);
 		action = (i.attr("value") == '0') ? "add" : "remove";
 	}else if(type == "page"){
-		jQuery("#" + currentDiv + " #Results_Pane div.primaryKey").each(function(){
+		jQuery("#" + currentDiv + " .Results_Pane div.primaryKey").each(function(){
 			var o = new Object();
 			jQuery("span",this).each(function(){;
 				o[jQuery(this).attr("key")] = jQuery(this).text();
@@ -70,14 +72,14 @@ function updateBasket(ele, type, pk, pid,recordType) {
 			dataType: "json",
 			beforeSend: function(){
 				if (action == 'add-all' || type == 'page') {
-					$("#" + currentDiv + " #Results_Pane").block();
+					$("#" + currentDiv + " .Results_Pane").block();
 				}
 				//jQuery("body").block();
 			},
 			success: function(data){
 				//jQuery("body").unblock();
 				if (action == 'add-all' || type == 'page') {
-					$("#" + currentDiv + " #Results_Pane").unblock();
+					$("#" + currentDiv + " .Results_Pane").unblock();
 				}
 				if(type == "single" || type == "recordPage"){
 					if(action == "add") {
@@ -99,13 +101,13 @@ function updateBasket(ele, type, pk, pid,recordType) {
 					showBasket();
 				}else{
 					if(action == "add-all" || action == "add") {
-						jQuery("div#" + currentDiv + " div#Results_Div img.basket").attr("src","wdk/images/basket_color.png");
-						jQuery("div#" + currentDiv + " div#Results_Div img.basket").attr("title","Click to remove this item from the basket.");
-						jQuery("div#" + currentDiv + " div#Results_Div img.basket").attr("value", "1");
+						jQuery("div#" + currentDiv + " div.Results_Div img.basket").attr("src","wdk/images/basket_color.png");
+						jQuery("div#" + currentDiv + " div.Results_Div img.basket").attr("title","Click to remove this item from the basket.");
+						jQuery("div#" + currentDiv + " div.Results_Div img.basket").attr("value", "1");
 					}else{
-						jQuery("div#" + currentDiv + " div#Results_Div img.basket").attr("src","wdk/images/basket_gray.png");
-						jQuery("div#" + currentDiv + " div#Results_Div img.basket").attr("title","Click to add this item to the basket.");
-						jQuery("div#" + currentDiv + " div#Results_Div img.basket").attr("value", "0");
+						jQuery("div#" + currentDiv + " div.Results_Div img.basket").attr("src","wdk/images/basket_gray.png");
+						jQuery("div#" + currentDiv + " div.Results_Div img.basket").attr("title","Click to add this item to the basket.");
+						jQuery("div#" + currentDiv + " div.Results_Div img.basket").attr("value", "0");
 					}
 				}
 					updateBasketCount(data.count);
@@ -139,12 +141,12 @@ function updateBasketCount(c){
 function checkPageBasket(){
 	var current = getCurrentBasketWrapper();
 	if (guestUser == 'true') {
-		jQuery("div#" + current + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_gray.png");
-		jQuery("div#" + current + " div#Results_Div img.head.basket").attr("title","Please log in to use the basket.");
+		jQuery("div#" + current + " div.Results_Div img.head.basket").attr("src","wdk/images/basket_gray.png");
+		jQuery("div#" + current + " div.Results_Div img.head.basket").attr("title","Please log in to use the basket.");
 	}
 	else {
 		allIn = true;
-		jQuery("div#" + current + " div#Results_Div img.basket").each(function(){
+		jQuery("div#" + current + " div.Results_Div img.basket").each(function(){
 			if(!(jQuery(this).hasClass("head"))){
 				if(jQuery(this).attr("value") == 0){
 					allIn = false;
@@ -152,13 +154,13 @@ function checkPageBasket(){
 			}
 		});
 		if(allIn){
-			jQuery("div#" + current + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_color.png");
-			jQuery("div#" + current + " div#Results_Div img.head.basket").attr("title","Click to remove the items in this page from the basket.");
-			jQuery("div#" + current + " div#Results_Div img.head.basket").attr("value", "1");
+			jQuery("div#" + current + " div.Results_Div img.head.basket").attr("src","wdk/images/basket_color.png");
+			jQuery("div#" + current + " div.Results_Div img.head.basket").attr("title","Click to remove the items in this page from the basket.");
+			jQuery("div#" + current + " div.Results_Div img.head.basket").attr("value", "1");
 		}else{
-			jQuery("div#" + current + " div#Results_Div img.head.basket").attr("src","wdk/images/basket_gray.png");
-			jQuery("div#" + current + " div#Results_Div img.head.basket").attr("title","Click to add the items in this page to the basket.");
-			jQuery("div#" + current + " div#Results_Div img.head.basket").attr("value", "0");
+			jQuery("div#" + current + " div.Results_Div img.head.basket").attr("src","wdk/images/basket_gray.png");
+			jQuery("div#" + current + " div.Results_Div img.head.basket").attr("title","Click to add the items in this page to the basket.");
+			jQuery("div#" + current + " div.Results_Div img.head.basket").attr("value", "0");
 		}
 	}
 }
