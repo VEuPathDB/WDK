@@ -20,9 +20,9 @@ import org.gusdb.wsf.util.BaseCLI;
 /**
  * @author steve fischer
  * 
- *  this script needs to be run after the model expander & step expander.
- *
- *  prints a report of invalid steps 
+ *         this script needs to be run after the model expander & step expander.
+ * 
+ *         prints a report of invalid steps
  */
 public class InvalidStepReporter extends BaseCLI {
 
@@ -60,10 +60,14 @@ public class InvalidStepReporter extends BaseCLI {
     @Override
     protected void declareOptions() {
         addSingleValueOption(ARG_PROJECT_ID, true, null, "ProjectId, which "
-                + "should match the directory name"
-                + " under $GUS_HOME, where model-config.xml is stored.  This model-conig.xml file is only used to find the login info for the User database.");
+                + "should match the directory name under $GUS_HOME, where "
+                + "model-config.xml is stored.  This model-conig.xml file is "
+                + "only used to find the login info for the User database.");
 
-	addNonValueOption(ARG_ALREADY_INVALID, false, "Provide this flag to get a report of Steps that are already marked as invalid.  Otherwise the report only considers steps that are currently not marked as invalid");
+        addNonValueOption(ARG_ALREADY_INVALID, false, "Provide this flag to "
+                + "get a report of Steps that are already marked as "
+                + "invalid. Otherwise the report only considers steps "
+                + "that are currently not marked as invalid");
 
     }
 
@@ -82,170 +86,193 @@ public class InvalidStepReporter extends BaseCLI {
         report(wdkModel, alreadyInvalid);
     }
 
-    private void report(WdkModel wdkModel, Boolean alreadyInvalid) throws SQLException,
-            WdkUserException, WdkModelException {
-	// not previously marked invalid
-	String s = alreadyInvalid? "" : "NOT ";
-	System.out.println("=== Reporting on invalid steps that are "+ s + "already marked invalid"); 
-	questionNames(wdkModel, alreadyInvalid);
-        paramNames(wdkModel, alreadyInvalid);
-        paramValues(wdkModel, "FlatVocabParam", alreadyInvalid);
-        paramValues(wdkModel, "EnumParam", alreadyInvalid);
+    private void report(WdkModel wdkModel, boolean alreadyInvalid)
+            throws SQLException, WdkUserException, WdkModelException {
+        // not previously marked invalid
+        String s = alreadyInvalid ? "" : "NOT ";
+        System.out.println("=== Reporting on invalid steps that are " + s
+                + "already marked invalid");
+
+        String flag;
+        if (alreadyInvalid) flag = "a.is_valid = 0";
+        else flag = "(a.is_valid IS NULL OR a.is_valid != 0)";
+
+        questionNames(wdkModel, flag);
+        paramNames(wdkModel, flag);
+        paramValues(wdkModel, "FlatVocabParam", flag);
+        paramValues(wdkModel, "EnumParam", flag);
     }
 
-    private void questionNames(WdkModel wdkModel, Boolean alreadyInvalid) throws SQLException,
-            WdkUserException, WdkModelException {
+    private void questionNames(WdkModel wdkModel, String flag)
+            throws SQLException, WdkUserException, WdkModelException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
 
-	String operator = alreadyInvalid? "=" : "!=";
+        String sql = "SELECT count(*) count, a.project_id, a.question_name"
+                + " FROM " + answer + " a,"
+                + "  (SELECT project_id, question_name FROM " + answer
+                + "   MINUS"
+                + "   SELECT project_id, question_name FROM wdk_questions) d"
+                + " WHERE a.project_id = d.project_id"
+                + " AND a.question_name = d.question_name AND " + flag
+                + " group by a.project_id, a.question_name"
+                + " order by a.project_id, a.question_name";
 
-	String sql = 
-	    "SELECT count(*) count, a.project_id, a.question_name" 
-	    + " FROM " + answer + " a,"
-	    + "  (SELECT project_id, question_name FROM " + answer
-	    + "   MINUS"
-	    + "   SELECT project_id, question_name FROM wdk_questions) d"
-	    + " WHERE a.project_id = d.project_id"
-	    + " AND a.question_name = d.question_name"
-	    + " AND a.is_valid " + operator + "0"
-	    + " group by a.project_id, a.question_name"
-	    + " order by a.project_id, a.question_name";
-
-	ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
-	System.out.println("----------- Invalid Question Name ------------");
-	System.out.println("");
-	System.out.println("count\tproject_id\tquestion_name");
-	try {
-	    while (resultSet.next()) {
-		String count = resultSet.getString("count");
-		String project_id = resultSet.getString("project_id");
-		String question_name = resultSet.getString("question_name");
-		System.out.println(count + "\t" + project_id + "\t" + question_name);
-	    }
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+        System.out.println("----------- Invalid Question Name ------------");
+        System.out.println("");
+        System.out.println("count\tproject_id\tquestion_name");
+        try {
+            while (resultSet.next()) {
+                String count = resultSet.getString("count");
+                String project_id = resultSet.getString("project_id");
+                String question_name = resultSet.getString("question_name");
+                System.out.println(count + "\t" + project_id + "\t"
+                        + question_name);
+            }
         } finally {
             resultSet.close();
         }
-	System.out.println("");
-	System.out.println("");
+        System.out.println("");
+        System.out.println("");
     }
 
-    private void paramNames(WdkModel wdkModel, Boolean alreadyInvalid) throws SQLException,
-            WdkUserException, WdkModelException {
-        ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
-        String answer = userDB.getWdkEngineSchema() + "answers";
-        String step = userDB.getUserSchema() + "steps";
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
-
-	String operator = alreadyInvalid? "=" : "!=";
-
-	String sql = 
-	    "SELECT count(*) count, a.project_id, a.question_name, sp.param_name"                
-	    + " FROM step_params sp, " + answer + " a, " + step + " s, wdk_questions wq,"
-	    + "      (SELECT a.project_id, a.question_name, sp.param_name "
-	    + "       FROM step_params sp, " + step + " s, " + answer + " a"
-	    + "       WHERE sp.step_id = s.step_id "
-	    + "         AND s.answer_id = a.answer_id "
-	    + "         AND a.is_valid " + operator + "0"
-	    + "       MINUS  "                 
-	    + "       SELECT q.project_id, q.question_name, p.param_name  "
-	    + "       FROM wdk_questions q, wdk_params p "
-	    + "       WHERE q.question_id = p.question_id) d     "
-	    + "    WHERE a.project_id = d.project_id  "
-	    + "      AND a.question_name = d.question_name  "
-	    + "      AND a.is_valid " + operator + "0"
-	    + "      AND s.answer_id = a.answer_id  "
-	    + "      AND sp.step_id = s.step_id  "
-	    + "      AND sp.param_name = d.param_name " 
-	    + "      and a.project_id = wq.project_id "
-	    + "      and a.question_name = wq.question_name "
-	    + "      group by a.project_id, a.question_name, sp.param_name "
-	    + "      order by a.project_id, a.question_name, sp.param_name ";
-
-	ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
-	System.out.println("----------- Invalid Param Name ------------");
-	System.out.println("");
-	System.out.println("count\tproject_id\tquestion_name\tparam_name");
-	try {
-	    while (resultSet.next()) {
-		String count = resultSet.getString("count");
-		String project_id = resultSet.getString("project_id");
-		String question_name = resultSet.getString("question_name");
-		String param_name = resultSet.getString("param_name");
-		System.out.println(count + "\t" + project_id + "\t" + question_name + "\t" + param_name);
-
-	    }
-        } finally {
-            resultSet.close();
-        }
-	System.out.println("");
-	System.out.println("");
-    }
-
-    private void paramValues(WdkModel wdkModel, String type, Boolean alreadyInvalid) throws SQLException,
-            WdkUserException, WdkModelException {
+    private void paramNames(WdkModel wdkModel, String flag)
+            throws SQLException, WdkUserException, WdkModelException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
 
-	String operator = alreadyInvalid? "=" : "!=";
+        String sql = "SELECT count(*) count, a.project_id, a.question_name, "
+                + "sp.param_name" + " FROM step_params sp, "
+                + answer
+                + " a, "
+                + step
+                + " s, wdk_questions wq,"
+                + "      (SELECT a.project_id, a.question_name, sp.param_name "
+                + "       FROM step_params sp, "
+                + step
+                + " s, "
+                + answer
+                + " a"
+                + "       WHERE sp.step_id = s.step_id "
+                + "         AND s.answer_id = a.answer_id "
+                + "         AND "
+                + flag
+                + "       MINUS  "
+                + "       SELECT q.project_id, q.question_name, p.param_name  "
+                + "       FROM wdk_questions q, wdk_params p "
+                + "       WHERE q.question_id = p.question_id) d     "
+                + "    WHERE a.project_id = d.project_id  "
+                + "      AND a.question_name = d.question_name  "
+                + "      AND "
+                + flag
+                + "      AND s.answer_id = a.answer_id  "
+                + "      AND sp.step_id = s.step_id  "
+                + "      AND sp.param_name = d.param_name "
+                + "      and a.project_id = wq.project_id "
+                + "      and a.question_name = wq.question_name "
+                + "      group by a.project_id, a.question_name, sp.param_name"
+                + "      order by a.project_id, a.question_name, sp.param_name";
 
-	String sql = 
-"SELECT count(*) count, a.project_id, a.question_name, sp.param_name, d.param_value"                   
-	    + " FROM step_params sp, " + answer + "  a, " + step + "  s, wdk_questions wq, wdk_params wp, "
-	    + " (SELECT a.project_id, a.question_name,  "
-	    + "         sp.param_name, sp.param_value  "
-	    + "  FROM step_params sp, " + step + "  s, " + answer + "  a, "
-	    + "        wdk_questions q, wdk_params p  "
-	    + "  WHERE sp.step_id = s.step_id  "
-	    + "    AND s.answer_id = a.answer_id  "
-	    + "    AND a.is_valid " + operator + "0"
-	    + "    AND a.project_id = q.project_id  "
-	    + "    AND a.question_name = q.question_name  "
-	    + "    AND q.question_id = p.question_id  "
-	    + "    AND sp.param_name = p.param_name  "
-	    + "    AND p.param_type = '" + type + "'"
-	    + "  MINUS  "                 
-	    + "  SELECT q.project_id, q.question_name,  "
-	    + "         p.param_name, ep.param_value  "
-	    + "  FROM wdk_questions q, wdk_params p,  "
-	    + "       wdk_enum_params ep  "
-	    + "  WHERE q.question_id = p.question_id  "
-	    + "    AND p.param_id = ep.param_id) d  "
-	    + " WHERE a.project_id = d.project_id  "
-	    + " AND a.question_name = d.question_name  "
-	    + " AND s.answer_id = a.answer_id  "
-	    + " AND sp.step_id = s.step_id  "
-	    + " AND sp.param_name = d.param_name  "
-	    + " AND sp.param_value = d.param_value  "
-	    + " and a.project_id = wq.project_id "
-	    + " and a.question_name = wq.question_name "
-	    + " and wp.question_id = wq.question_id "
-	    + " and sp.param_name = wp.param_name "
-	    + " AND a.is_valid " + operator + "0"
- 	    + " group by a.project_id, a.question_name, sp.param_name, d.param_value "
-	    + " order by a.project_id, a.question_name, sp.param_name, d.param_value ";     
-     
-	System.out.println("----------- Invalid Param Value (" + type + ") ------------");
-	System.out.println("");
-	System.out.println("count\tproject_id\tquestion_name\tparam_name\tparam_value");
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+        System.out.println("----------- Invalid Param Name ------------");
+        System.out.println("");
+        System.out.println("count\tproject_id\tquestion_name\tparam_name");
+        try {
+            while (resultSet.next()) {
+                String count = resultSet.getString("count");
+                String project_id = resultSet.getString("project_id");
+                String question_name = resultSet.getString("question_name");
+                String param_name = resultSet.getString("param_name");
+                System.out.println(count + "\t" + project_id + "\t"
+                        + question_name + "\t" + param_name);
 
-	ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
-	try {
-	    while (resultSet.next()) {
-		String count = resultSet.getString("count");
-		String project_id = resultSet.getString("project_id");
-		String question_name = resultSet.getString("question_name");
-		String param_name = resultSet.getString("param_name");
-		String param_value = resultSet.getString("param_value");
-		System.out.println(count + "\t" + project_id + "\t" + question_name + "\t" + param_name + "\t" + param_value);
-	    }
+            }
         } finally {
             resultSet.close();
         }
-	System.out.println("");
-	System.out.println("");
+        System.out.println("");
+        System.out.println("");
+    }
+
+    private void paramValues(WdkModel wdkModel, String type, String flag)
+            throws SQLException, WdkUserException, WdkModelException {
+        ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
+        String answer = userDB.getWdkEngineSchema() + "answers";
+        String step = userDB.getUserSchema() + "steps";
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+
+        String sql = "SELECT count(*) count, a.project_id, a.question_name, "
+                + "sp.param_name, d.param_value" + " FROM step_params sp, "
+                + answer
+                + "  a, "
+                + step
+                + "  s, wdk_questions wq, wdk_params wp, "
+                + " (SELECT a.project_id, a.question_name,  "
+                + "         sp.param_name, sp.param_value  "
+                + "  FROM step_params sp, "
+                + step
+                + "  s, "
+                + answer
+                + "  a, "
+                + "        wdk_questions q, wdk_params p  "
+                + "  WHERE sp.step_id = s.step_id  "
+                + "    AND s.answer_id = a.answer_id  "
+                + "    AND "
+                + flag
+                + "    AND a.project_id = q.project_id  "
+                + "    AND a.question_name = q.question_name  "
+                + "    AND q.question_id = p.question_id  "
+                + "    AND sp.param_name = p.param_name  "
+                + "    AND p.param_type = '"
+                + type
+                + "'"
+                + "  MINUS  "
+                + "  SELECT q.project_id, q.question_name,  "
+                + "         p.param_name, ep.param_value  "
+                + "  FROM wdk_questions q, wdk_params p,  "
+                + "       wdk_enum_params ep  "
+                + "  WHERE q.question_id = p.question_id  "
+                + "    AND p.param_id = ep.param_id) d  "
+                + " WHERE a.project_id = d.project_id  "
+                + " AND a.question_name = d.question_name  "
+                + " AND s.answer_id = a.answer_id  "
+                + " AND sp.step_id = s.step_id  "
+                + " AND sp.param_name = d.param_name  "
+                + " AND sp.param_value = d.param_value  "
+                + " and a.project_id = wq.project_id "
+                + " and a.question_name = wq.question_name "
+                + " and wp.question_id = wq.question_id "
+                + " and sp.param_name = wp.param_name "
+                + " AND "
+                + flag
+                + " group by a.project_id, a.question_name, sp.param_name, d.param_value "
+                + " order by a.project_id, a.question_name, sp.param_name, d.param_value ";
+
+        System.out.println("----------- Invalid Param Value (" + type
+                + ") ------------");
+        System.out.println("");
+        System.out.println("count\tproject_id\tquestion_name\tparam_name\tparam_value");
+
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+        try {
+            while (resultSet.next()) {
+                String count = resultSet.getString("count");
+                String project_id = resultSet.getString("project_id");
+                String question_name = resultSet.getString("question_name");
+                String param_name = resultSet.getString("param_name");
+                String param_value = resultSet.getString("param_value");
+                System.out.println(count + "\t" + project_id + "\t"
+                        + question_name + "\t" + param_name + "\t"
+                        + param_value);
+            }
+        } finally {
+            resultSet.close();
+        }
+        System.out.println("");
+        System.out.println("");
     }
 }
