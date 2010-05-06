@@ -12,6 +12,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -29,7 +30,8 @@ import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
-import org.gusdb.wsf.plugin.WsfResult;
+import org.gusdb.wsf.plugin.WsfRequest;
+import org.gusdb.wsf.plugin.WsfResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -39,6 +41,9 @@ import org.json.JSONObject;
  */
 public class ProcessQueryInstance extends QueryInstance {
 
+    public static final String CTX_QUERY = "wdk-query";
+    public static final String CTX_USER = "wdk-user";
+    
     private static final Logger logger = Logger.getLogger(ProcessQueryInstance.class);
 
     private ProcessQuery query;
@@ -168,15 +173,18 @@ public class ProcessQueryInstance extends QueryInstance {
     protected ResultList getUncachedResults() throws WdkModelException,
             SQLException, NoSuchAlgorithmException, JSONException,
             WdkUserException {
-        // prepare parameters and columns
-        Map<String, String> paramValues = getInternalParamValues();
-        String[] params = new String[paramValues.size()];
-        int idx = 0;
-        for (String param : paramValues.keySet()) {
-            String value = paramValues.get(param);
-            params[idx++] = param + "=" + value;
-        }
+        WsfRequest request = new WsfRequest();
+        request.setProjectId(wdkModel.getProjectId());
 
+        // prepare parameters
+        Map<String, String> paramValues = getInternalParamValues();
+        HashMap<String, String> params = new HashMap<String, String>();
+        for (String name : paramValues.keySet()) {
+            params.put(name, paramValues.get(name));
+        }
+        request.setParams(params);
+
+        // prepare columns
         Map<String, Column> columns = query.getColumnMap();
         String[] columnNames = new String[columns.size()];
         Map<String, Integer> indices = new LinkedHashMap<String, Integer>();
@@ -190,17 +198,21 @@ public class ProcessQueryInstance extends QueryInstance {
             indices.put(column.getName(), i);
             temp += columnNames[i] + ", ";
         }
+        request.setOrderedColumns(columnNames);
         logger.debug("process query columns: " + temp);
 
-        String invokeKey = query.getFullName();
+        // prepage context info
+        HashMap<String, String> context = new HashMap<String, String>();
+        context.put(CTX_QUERY, query.getFullName());
+        context.put(CTX_USER, user.getSignature());
 
         StringBuffer resultMessage = new StringBuffer();
         try {
-            WsfResult result = getResult(query.getProcessName(), invokeKey,
-                    params, columnNames, query.isLocal());
-            this.resultMessage = result.getMessage();
-            this.signal = result.getSignal();
-            String[][] content = result.getResult();
+            WsfResponse response = getResponse(query.getProcessName(), request,
+                    query.isLocal());
+            this.resultMessage = response.getMessage();
+            this.signal = response.getSignal();
+            String[][] content = response.getResult();
 
             logger.debug("WSQI Result Message:" + resultMessage);
             logger.info("Result Array size = " + content.length);
@@ -229,27 +241,26 @@ public class ProcessQueryInstance extends QueryInstance {
         }
     }
 
-    private WsfResult getResult(String processName, String invokeKey,
-            String[] params, String[] columnNames, boolean local)
-            throws ServiceException, WdkModelException, RemoteException,
-            MalformedURLException, JSONException {
+    private WsfResponse getResponse(String processName, WsfRequest request,
+            boolean local) throws ServiceException, WdkModelException,
+            RemoteException, MalformedURLException, JSONException {
         String serviceUrl = query.getWebServiceUrl();
 
         // DEBUG
         logger.info("Invoking " + processName + " at " + serviceUrl);
         long start = System.currentTimeMillis();
 
-        WsfResult result;
+        WsfResponse response;
         if (local) { // invoke the process query locally
             org.gusdb.wsf.service.WsfService service = new org.gusdb.wsf.service.WsfService();
 
             // get the response from the local service
-            result = service.invokeEx(processName, invokeKey, params,
-                    columnNames);
-            int packets = result.getTotalPackets();
+            response = service.invoke(processName, request);
+            int packets = response.getTotalPackets();
             if (packets > 1) {
-                StringBuffer buffer = new StringBuffer(result.getResult()[0][0]);
-                String requestId = result.getRequestId();
+                StringBuffer buffer = new StringBuffer(
+                        response.getResult()[0][0]);
+                String requestId = response.getRequestId();
                 for (int i = 1; i < packets; i++) {
                     logger.debug("getting message " + requestId + " pieces: "
                             + i + "/" + packets);
@@ -257,7 +268,7 @@ public class ProcessQueryInstance extends QueryInstance {
                     buffer.append(more);
                 }
                 String[][] content = Utilities.convertContent(buffer.toString());
-                result.setResult(content);
+                response.setResult(content);
             }
         } else { // invoke the process query via web service
             // get a WSF Service client stub
@@ -265,12 +276,12 @@ public class ProcessQueryInstance extends QueryInstance {
             WsfService client = locator.getWsfService(new URL(serviceUrl));
 
             // get the response from the web service
-            result = client.invokeEx(processName, invokeKey, params,
-                    columnNames);
-            int packets = result.getTotalPackets();
+            response = client.invoke(processName, request);
+            int packets = response.getTotalPackets();
             if (packets > 1) {
-                StringBuffer buffer = new StringBuffer(result.getResult()[0][0]);
-                String requestId = result.getRequestId();
+                StringBuffer buffer = new StringBuffer(
+                        response.getResult()[0][0]);
+                String requestId = response.getRequestId();
                 for (int i = 1; i < packets; i++) {
                     logger.debug("getting message " + requestId + " pieces: "
                             + i + "/" + packets);
@@ -278,13 +289,13 @@ public class ProcessQueryInstance extends QueryInstance {
                     buffer.append(more);
                 }
                 String[][] content = Utilities.convertContent(buffer.toString());
-                result.setResult(content);
+                response.setResult(content);
             }
         }
         long end = System.currentTimeMillis();
         logger.debug("Client took " + ((end - start) / 1000.0) + " seconds.");
 
-        return result;
+        return response;
     }
 
     /*

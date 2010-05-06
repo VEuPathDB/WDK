@@ -82,5 +82,6 @@ public class ApplicationInitListener implements ServletContextListener {
         application.setAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY,
                 alwaysGoToSummary);
         application.setAttribute(CConstants.WDK_LOGIN_URL_KEY, loginUrl);
+        application.setAttribute(CConstants.GUS_HOME_KEY, gusHome);
     }
 }
