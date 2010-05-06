@@ -33,7 +33,7 @@ Provides form input element for a given term tree node of EnumParam.
 
     <%-- hide parent nodes if it has children. --%>
     <html:multibox property="myMultiProp(${pNam})" value="${nodeValue}" styleId="${pNam}" onclick="toggleChildrenCheck(this)" />   
- 
+    <span>
     <c:choose>
     <%-- test for param labels to italicize --%>
         <c:when test="${pNam == 'organism' or pNam == 'ecorganism'}">
@@ -43,7 +43,7 @@ Provides form input element for a given term tree node of EnumParam.
             ${node.display}&nbsp;
         </c:otherwise>
     </c:choose>
-
+    </span>
 
 <%-- recursively display children terms --%>
 <c:if test="${fn:length(children) != 0}">
