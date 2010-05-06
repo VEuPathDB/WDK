@@ -111,10 +111,6 @@ public class EnumParam extends AbstractEnumParam {
                     itemList.excludeResources(projectId);
                     this.enumItemList = itemList;
 
-                    // apply the use term only from enumList
-                    Boolean useTermOnly = itemList.isUseTermOnly();
-                    if (useTermOnly != null) this.useTermOnly = useTermOnly;
-
                     hasEnumList = true;
                 }
             }

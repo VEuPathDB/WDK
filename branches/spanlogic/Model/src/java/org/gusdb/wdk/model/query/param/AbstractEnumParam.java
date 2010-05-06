@@ -45,9 +45,6 @@ public abstract class AbstractEnumParam extends Param {
     protected boolean quote = true;
     private boolean skipValidation = false;
 
-    private List<ParamConfiguration> useTermOnlies = new ArrayList<ParamConfiguration>();
-    protected boolean useTermOnly = false;
-
     private String displayType;
     protected Param dependedParam;
     protected String dependedParamRef;
@@ -72,7 +69,6 @@ public abstract class AbstractEnumParam extends Param {
                     param.termTreeList);
         }
         this.quote = param.quote;
-        this.useTermOnly = param.useTermOnly;
         this.displayType = param.displayType;
         this.dependedParam = param.dependedParam;
         this.dependedParamRef = param.dependedParamRef;
@@ -108,10 +104,6 @@ public abstract class AbstractEnumParam extends Param {
         return quote;
     }
 
-    public void addUseTermOnly(ParamConfiguration paramConfig) {
-        this.useTermOnlies.add(paramConfig);
-    }
-
     public String[] getVocab() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
@@ -135,7 +127,7 @@ public abstract class AbstractEnumParam extends Param {
             WdkUserException {
         initVocabMap();
         String[] array = new String[termInternalMap.size()];
-        if (useTermOnly) termInternalMap.keySet().toArray(array);
+        if (isNoTranslation()) termInternalMap.keySet().toArray(array);
         else termInternalMap.values().toArray(array);
         return array;
     }
@@ -155,7 +147,7 @@ public abstract class AbstractEnumParam extends Param {
         initVocabMap();
         Map<String, String> newVocabMap = new LinkedHashMap<String, String>();
         for (String term : termInternalMap.keySet()) {
-            newVocabMap.put(term, useTermOnly ? term
+            newVocabMap.put(term, isNoTranslation() ? term
                     : termInternalMap.get(term));
         }
         return newVocabMap;
@@ -193,20 +185,6 @@ public abstract class AbstractEnumParam extends Param {
     }
 
     /**
-     * @return the useTermOnly
-     */
-    public boolean isUseTermOnly() {
-        return this.useTermOnly;
-    }
-
-    /**
-     * @param useTermOnly
-     */
-    public void setUseTermOnly(boolean useTermOnly) {
-        this.useTermOnly = useTermOnly;
-    }
-
-    /**
      * @return the displayType
      */
     public String getDisplayType() {
@@ -240,33 +218,6 @@ public abstract class AbstractEnumParam extends Param {
     // ///////////////////////////////////////////////////////////////////
     // /////////// Protected properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.Param#excludeResources(java.lang.String)
-     */
-    @Override
-    public void excludeResources(String projectId) throws WdkModelException {
-        super.excludeResources(projectId);
-
-        // exclude userTermOnly
-        boolean hasUseTermOnly = false;
-        for (ParamConfiguration paramConfig : useTermOnlies) {
-            if (paramConfig.include(projectId)) {
-                if (hasUseTermOnly) {
-                    throw new WdkModelException("More than one <useTermOnly> "
-                            + "are included in param " + getFullName());
-                } else {
-                    this.useTermOnly = paramConfig.isValue();
-                    hasUseTermOnly = true;
-                }
-            }
-        }
-        // if no useTermOnly setting, use parent's
-        if (!hasUseTermOnly) useTermOnly = paramSet.isUseTermOnly();
-        useTermOnlies = null;
-    }
 
     protected void initTreeMap() throws WdkModelException {
 
@@ -312,11 +263,13 @@ public abstract class AbstractEnumParam extends Param {
                 terms[i] = terms[i].trim();
         } else terms = new String[] { termList.trim() };
 
-        initVocabMap();
-        for (String term : terms) {
-            if (!termInternalMap.containsKey(term))
-                throw new WdkModelException(" - Invalid term '" + term
-                        + "' for parameter '" + name + "'");
+        if (!skipValidation) {
+            initVocabMap();
+            for (String term : terms) {
+                if (!termInternalMap.containsKey(term))
+                    throw new WdkModelException(" - Invalid term '" + term
+                            + "' for parameter '" + name + "'");
+            }
         }
         return terms;
     }
@@ -349,21 +302,12 @@ public abstract class AbstractEnumParam extends Param {
 
         String rawValue = decompressValue(dependentValue);
         if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
-        if (isNoTranslation()) {
-            if (quote) rawValue = "'" + rawValue + "'";
-            return rawValue;
-        }
-
-        if (skipValidation) {
-            rawValue = rawValue.replaceAll("'", "''");
-            if (quote) rawValue = "'" + rawValue + "'";
-            return rawValue;
-        }
 
         String[] terms = getTerms(rawValue);
         StringBuffer buf = new StringBuffer();
         for (String term : terms) {
-            String internal = useTermOnly ? term : termInternalMap.get(term);
+            String internal = isNoTranslation() ? term : termInternalMap.get(term);
+            if (skipValidation && internal == null) continue;
             if (quote) internal = "'" + internal.replaceAll("'", "''") + "'";
             if (buf.length() != 0) buf.append(", ");
             buf.append(internal);

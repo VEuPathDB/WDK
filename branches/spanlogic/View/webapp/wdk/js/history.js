@@ -200,47 +200,51 @@ function downloadStep(stepId) {
 }
 
 function handleBulkStrategies(type) {
-	var agree;
-	var url;
-	if (type == 'delete') url = "deleteStrategy.do?strategy=";
-	else if (type == 'open') url = "showStrategy.do?strategy=";
-	else url = "closeStrategy.do?strategy=";
 	// make sure something is selected.
 	if (selected.length == 0) {
 		alert("No strategies were selected!");
 		return false;
 	}
-	var stratNames = '';
-	$.each(selected, function(i, n){
-		stratNames += $.trim($("div#text_" + n).text())+ "\n";
-	});
-	if (type == 'delete'){
-		// else delete and replace page sections that have changed
-		agree=confirm("You are about to delete the following strategies:\n" + stratNames + "Are you sure you want to do that?");
-	}
-	if (type != 'delete' || agree) {
-		url = url + selected.join(",");
-		$.ajax({
-			url: url,
-			dataType: "json",
-			data:"state=" + p_state,
-			success: function(data) {
-				selectNoneHist();
-				updateStrategies(data);
-				if (type == 'open') showPanel('strategy_results');
-				else{
-					update_hist = true;
-					updateHistory(); // update history immediately, since we're already on the history page
-				}
-			},
-			error: function(data, msg, e) {
-				selectNoneHist();
-				$("div#search_history").unblock();
-				alert("ERROR \n " + msg + "\n" + e
-                                     + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
-			}
+	if (type == 'delete') {
+		var stratNames = '<ol>';
+		$.each(selected, function(i, n){
+			stratNames += "<li>" + $.trim($("div#text_" + n).text())+ "</li>";
 		});
+		stratNames += '</ol>';
+		$.blockUI({message: "<h2>Delete Strategies</h2><span style='font-weight:bold'>You are about to delete the following strategies:</span><br />" + stratNames + "<br /><span style='font-weight:bold'>Are you sure you want to do that?</span><br/><form action='javascript:performBulkAction(\"" + type + "\");'><input type='submit' onclick='$.unblockUI();return false;' value='Cancel'/><input type='submit' onclick='$.unblockUI();return true;' value='OK' /></form>", css: {position : 'absolute', backgroundImage : 'none'}});
 	}
+	else {
+		performBulkAction(type);
+	}
+}
+
+function performBulkAction(type) {
+	var agree;
+	var url;
+	if (type == 'delete') url = "deleteStrategy.do?strategy=";
+	else if (type == 'open') url = "showStrategy.do?strategy=";
+	else url = "closeStrategy.do?strategy=";
+	url = url + selected.join(",");
+	$.ajax({
+		url: url,
+		dataType: "json",
+		data:"state=" + p_state,
+		success: function(data) {
+			selectNoneHist();
+			updateStrategies(data);
+			if (type == 'open') showPanel('strategy_results');
+			else{
+				update_hist = true;
+				updateHistory(); // update history immediately, since we're already on the history page
+			}
+		},
+		error: function(data, msg, e) {
+			selectNoneHist();
+			$("div#search_history").unblock();
+			alert("ERROR \n " + msg + "\n" + e
+                           + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
+		}
+	});
 }
 
 function displayName(histId) {
