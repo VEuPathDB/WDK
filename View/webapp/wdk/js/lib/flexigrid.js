@@ -340,7 +340,7 @@
 			}, */
 			switchCol: function(cdrag,cdrop) { //switch columns
 				
-				$('tbody#rootBody tr',t).each
+				$('tbody.rootBody tr',t).each
 					(
 						function ()
 							{

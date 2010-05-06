@@ -154,10 +154,10 @@
 <c:set var="sortingAttrOrders" value="${wdkAnswer.sortingAttributeOrders}" />
 
 <%--------- RESULTS  ----------%>
-<div id="Results_Div" class="flexigrid">
+<div class="Results_Div" class="flexigrid">
 <div class="bDiv">
 <div class="bDivBox">
-<table id="Results_Table" width="100%" border="0" cellpadding="3" cellspacing="0" step="${wdkStep.stepId}">
+<table class="Results_Table" width="100%" border="0" cellpadding="3" cellspacing="0" step="${wdkStep.stepId}">
 <thead>
 <tr class="headerrow">
             <c:if test="${recHasBasket}">
@@ -268,7 +268,7 @@
   </c:forEach>
 </tr>
 </thead>
-<tbody id="rootBody">
+<tbody class="rootBody">
 
 <c:set var="i" value="0"/>
 

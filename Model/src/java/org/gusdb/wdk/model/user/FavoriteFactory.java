@@ -228,8 +228,8 @@ public class FavoriteFactory {
             NoSuchAlgorithmException, JSONException {
         String sql = "SELECT * FROM " + schema + TABLE_FAVORITES + " WHERE "
                 + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_USER_ID + " =?"
-                + " ORDER BY " + COLUMN_RECORD_CLASS + " ASC, "
-                + COLUMN_RECORD_GROUP + " ASC, " + Utilities.COLUMN_PK_PREFIX
+                + " ORDER BY " + COLUMN_RECORD_CLASS + " ASC, lower("
+                + COLUMN_RECORD_GROUP + ") ASC, " + Utilities.COLUMN_PK_PREFIX
                 + "1 ASC";
         DataSource ds = wdkModel.getUserPlatform().getDataSource();
         ResultSet rs = null;

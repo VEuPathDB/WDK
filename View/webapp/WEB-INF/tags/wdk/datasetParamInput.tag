@@ -119,17 +119,11 @@ function chooseType(paramName, type) {
             <td align="left" valign="top">
                 <input type="radio" name="${pNam}_radio" ${fileChecked}
                        onclick="chooseType('${pNam}', 'file');" />
-               Upload from text file:&nbsp;
+               Upload from a <i>text</i> file:&nbsp;
             </td>
             <td align="left">
                 <html:file styleId="${pNam}_file" styleClass="input" property="myPropObject(${pNam}_file)" disabled="true"/>
             </td>
         </tr>
-
-<%--
-<tr><td>&nbsp;</td>
-    <td><span style="font-style:italic;font-size:85%">(Please, upload only plain text files)</span></td>
-</tr>
---%>
     </c:if>
 </table>
