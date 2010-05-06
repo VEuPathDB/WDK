@@ -7,6 +7,7 @@ public class CConstants {
     //key for objects in cache, used in Action/ActionForm classes and maybe jsp pages
     public static final String WDK_RESULTFACTORY_KEY = "wdkResultFactory";
     public static final String WDK_MODEL_KEY = "wdkModel";
+    public static final String GUS_HOME_KEY = "GUS_HOME";
     public static final String WDK_ALWAYSGOTOSUMMARY_KEY = "wdkAlwaysGoToSummary";
     public static final String WDK_DEFAULT_VIEW_DIR = "/wdk";
     public static final String WDK_CUSTOM_VIEW_DIR = "/wdkCustomization";
