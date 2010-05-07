@@ -43,7 +43,6 @@ public abstract class AbstractEnumParam extends Param {
     protected List<EnumParamTermNode> termTreeList;
 
     protected boolean quote = true;
-    private boolean skipValidation = false;
 
     private String displayType;
     protected Param dependedParam;
@@ -73,7 +72,6 @@ public abstract class AbstractEnumParam extends Param {
         this.dependedParam = param.dependedParam;
         this.dependedParamRef = param.dependedParamRef;
         this.dependedValue = param.dependedValue;
-        this.skipValidation = param.skipValidation;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -86,14 +84,6 @@ public abstract class AbstractEnumParam extends Param {
 
     public Boolean getMultiPick() {
         return new Boolean(multiPick);
-    }
-
-    public void setSkipValidation(boolean skipValidation) {
-        this.skipValidation = skipValidation;
-    }
-
-    public boolean getSkipValidation() {
-        return skipValidation;
     }
 
     public void setQuote(boolean quote) {
@@ -263,7 +253,7 @@ public abstract class AbstractEnumParam extends Param {
                 terms[i] = terms[i].trim();
         } else terms = new String[] { termList.trim() };
 
-        if (!skipValidation) {
+        if (!isNoTranslation()) {
             initVocabMap();
             for (String term : terms) {
                 if (!termInternalMap.containsKey(term))
@@ -307,7 +297,7 @@ public abstract class AbstractEnumParam extends Param {
         StringBuffer buf = new StringBuffer();
         for (String term : terms) {
             String internal = isNoTranslation() ? term : termInternalMap.get(term);
-            if (skipValidation && internal == null) continue;
+            if (internal == null) continue;
             if (quote) internal = "'" + internal.replaceAll("'", "''") + "'";
             if (buf.length() != 0) buf.append(", ");
             buf.append(internal);
@@ -354,7 +344,7 @@ public abstract class AbstractEnumParam extends Param {
     protected void validateValue(User user, String dependentValue)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        if (!skipValidation) {
+        if (!isNoTranslation()) {
             String rawValue = decompressValue(dependentValue);
             String[] terms = getTerms(rawValue);
             if (terms.length == 0 && !allowEmpty)
