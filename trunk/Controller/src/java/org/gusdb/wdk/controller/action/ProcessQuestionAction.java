@@ -132,7 +132,11 @@ public class ProcessQuestionAction extends ShowQuestionAction {
             IOException, NoSuchAlgorithmException, SQLException, JSONException {
         Map<String, String> paramValues = qform.getMyProps();
         QuestionBean question = qform.getQuestion();
-        
+        if (question == null) 
+            throw new WdkUserException("The question '" + 
+                request.getParameter(CConstants.QUESTION_FULLNAME_PARAM) +
+                "' doesn't exist.");
+
         Map<String, ParamBean> params = question.getParamsMap();
         // convert from raw data to user dependent data
         for (String paramName : params.keySet()) {
