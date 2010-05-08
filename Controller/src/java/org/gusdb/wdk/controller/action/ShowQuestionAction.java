@@ -58,6 +58,9 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 qFullName = (String) request.getAttribute(CConstants.QUESTION_FULLNAME_PARAM);
             }
             QuestionBean wdkQuestion = getQuestionByFullName(qFullName);
+            if (wdkQuestion == null) 
+                throw new WdkUserException("The question '" + qFullName
+                        + "' doesn't exist.");
 
             QuestionForm qForm = prepareQuestionForm(wdkQuestion, request,
                     (QuestionForm) form);
