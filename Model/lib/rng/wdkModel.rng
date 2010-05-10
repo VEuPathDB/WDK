@@ -430,6 +430,11 @@
       </attribute>
     </optional>
     <optional>
+      <attribute name="skipValidation">
+        <data type="boolean" />
+      </attribute>
+    </optional>
+    <optional>
       <attribute name="displayType">
         <choice>
           <value>listBox</value>
