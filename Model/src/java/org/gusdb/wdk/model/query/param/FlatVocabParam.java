@@ -111,7 +111,7 @@ public class FlatVocabParam extends AbstractEnumParam {
     protected synchronized void initVocabMap() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        if (termInternalMap != null && dependedParam == null) return;
+        if (termInternalMap != null && (dependedParam == null || !isDependedValueChanged())) return;
 
         termInternalMap = new LinkedHashMap<String, String>();
         termDisplayMap = new LinkedHashMap<String, String>();
@@ -166,6 +166,8 @@ public class FlatVocabParam extends AbstractEnumParam {
                     + " FlatVocabParam " + getFullName());
         initTreeMap();
         applySelectMode();
+
+	setDependedValueChanged(false);
     }
 
     /*
