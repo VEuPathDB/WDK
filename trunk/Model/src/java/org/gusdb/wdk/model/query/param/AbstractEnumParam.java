@@ -49,6 +49,7 @@ public abstract class AbstractEnumParam extends Param {
     protected Param dependedParam;
     protected String dependedParamRef;
     protected String dependedValue;
+    protected boolean dependedValueChanged = false;
 
     public AbstractEnumParam() {}
 
@@ -213,6 +214,15 @@ public abstract class AbstractEnumParam extends Param {
 
     public void setDependedValue(String dependedValue) {
         this.dependedValue = dependedValue;
+	setDependedValueChanged(true);
+    }
+
+    protected void setDependedValueChanged(boolean dependedValueChanged) {
+	this.dependedValueChanged = dependedValueChanged;
+    }
+
+    protected boolean isDependedValueChanged() {
+	return dependedValueChanged;
     }
 
     // ///////////////////////////////////////////////////////////////////
