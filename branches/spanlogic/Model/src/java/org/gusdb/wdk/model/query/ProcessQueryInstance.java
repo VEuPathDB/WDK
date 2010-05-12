@@ -43,7 +43,7 @@ public class ProcessQueryInstance extends QueryInstance {
 
     public static final String CTX_QUERY = "wdk-query";
     public static final String CTX_USER = "wdk-user";
-    
+
     private static final Logger logger = Logger.getLogger(ProcessQueryInstance.class);
 
     private ProcessQuery query;
@@ -174,6 +174,7 @@ public class ProcessQueryInstance extends QueryInstance {
             SQLException, NoSuchAlgorithmException, JSONException,
             WdkUserException {
         WsfRequest request = new WsfRequest();
+        request.setPluginClass(query.getProcessName());
         request.setProjectId(wdkModel.getProjectId());
 
         // prepare parameters
@@ -208,8 +209,7 @@ public class ProcessQueryInstance extends QueryInstance {
 
         StringBuffer resultMessage = new StringBuffer();
         try {
-            WsfResponse response = getResponse(query.getProcessName(), request,
-                    query.isLocal());
+            WsfResponse response = getResponse(request, query.isLocal());
             this.resultMessage = response.getMessage();
             this.signal = response.getSignal();
             String[][] content = response.getResult();
@@ -241,21 +241,24 @@ public class ProcessQueryInstance extends QueryInstance {
         }
     }
 
-    private WsfResponse getResponse(String processName, WsfRequest request,
-            boolean local) throws ServiceException, WdkModelException,
-            RemoteException, MalformedURLException, JSONException {
+    private WsfResponse getResponse(WsfRequest request, boolean local)
+            throws ServiceException, WdkModelException, RemoteException,
+            MalformedURLException, JSONException {
         String serviceUrl = query.getWebServiceUrl();
 
         // DEBUG
-        logger.info("Invoking " + processName + " at " + serviceUrl);
+        logger.info("Invoking " + request.getPluginClass() + " at "
+                + serviceUrl);
         long start = System.currentTimeMillis();
+
+        String jsonRequest = request.toString();
 
         WsfResponse response;
         if (local) { // invoke the process query locally
             org.gusdb.wsf.service.WsfService service = new org.gusdb.wsf.service.WsfService();
 
             // get the response from the local service
-            response = service.invoke(processName, request);
+            response = service.invoke(jsonRequest);
             int packets = response.getTotalPackets();
             if (packets > 1) {
                 StringBuffer buffer = new StringBuffer(
@@ -276,7 +279,7 @@ public class ProcessQueryInstance extends QueryInstance {
             WsfService client = locator.getWsfService(new URL(serviceUrl));
 
             // get the response from the web service
-            response = client.invoke(processName, request);
+            response = client.invoke(jsonRequest);
             int packets = response.getTotalPackets();
             if (packets > 1) {
                 StringBuffer buffer = new StringBuffer(
