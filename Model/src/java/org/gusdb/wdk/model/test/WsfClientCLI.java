@@ -122,7 +122,7 @@ public class WsfClientCLI extends BaseCLI {
             WsfService client = locator.getWsfService(new URL(serviceUrl));
 
             // get the response from the web service
-            WsfResponse result = client.invoke(processName, request);
+            WsfResponse result = client.invoke(request.toString());
             long end = System.currentTimeMillis();
 
             printResult(result, columns);
