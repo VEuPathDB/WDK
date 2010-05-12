@@ -149,9 +149,9 @@ public class WsfClientCLI extends BaseCLI {
         String[] columns = request.getOrderedColumns();
         System.out.println("Columns:\t" + Utilities.fromArray(columns));
 
-        Map<?, ?> context = request.getContext();
+        Map<String, String> context = request.getContext();
         System.out.println("Context:\n");
-        for (Object key : context.keySet()) {
+        for (String key : context.keySet()) {
             System.out.println("\t" + key + "=" + context.get(key));
         }
 
