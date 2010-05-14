@@ -243,6 +243,10 @@ public class SanityTester {
                     testQuery(querySet, query, queryType, minRows, maxRows,
                             paramValuesSet);
                 }
+		if (queryType.equals(QuerySet.TYPE_TABLE)) {
+                    testQuery(querySet, query, queryType + "TOTAL", 
+			      minRows, maxRows, null);
+		}
             }
         }
     }
@@ -276,6 +280,8 @@ public class SanityTester {
                 count = testAttributeQuery_Count(query, paramValuesSet);
                 start = System.currentTimeMillis();
                 testAttributeQuery_Time(query, paramValuesSet, count);
+            } else if (queryType.equals(QuerySet.TYPE_TABLE + "TOTAL")) {
+                count = testTableQuery_TotalTime(query);
             } else {
                 if (queryType.equals(QuerySet.TYPE_TABLE)) {
                     query = RecordClass.prepareQuery(wdkModel, query,
@@ -388,6 +394,26 @@ public class SanityTester {
             throw new WdkModelException(msg);
         }
         SqlUtils.closeResultSet(resultSet);
+    }
+
+    private int testTableQuery_TotalTime(Query query) throws NoSuchAlgorithmException,
+            SQLException, WdkModelException, JSONException, WdkUserException {
+        // put user id into the param
+        Map<String, String> params = new LinkedHashMap<String, String>();
+        params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
+
+        SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
+                params, true, 0);
+
+        String sql = "select count (*) from ("
+                + instance.getUncachedSql() + ")";
+
+        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+        resultSet.next();
+        int count = resultSet.getInt(1);
+        SqlUtils.closeResultSet(resultSet);
+	return count;
     }
 
     private void testRecordSets() throws SQLException, WdkModelException,
