@@ -1,0 +1,103 @@
+#!/usr/bin/perl
+use strict;
+my ($entityBasePairs, $beginAt, $beginSignString, $beginOffset, $endAt, $endSignString, $endOffset) = @ARGV;
+print "Input: " . join(" ", @ARGV) . "\n";
+
+# validate arguments
+if (($beginAt ne 'start' && $beginAt ne 'stop')
+    || ($endAt ne 'start' && $endAt ne 'stop')
+    || ($beginSignString ne '+' && $beginSignString ne '-')
+    || ($endSignString ne '+' && $endSignString ne '-')
+    || $beginOffset !~ /\d+/
+    || $endOffset !~ /\d+/
+   ) {
+  die "invalid input\n";
+}
+
+# validate entity base pairs
+if ($entityBasePairs < 12 || $entityBasePairs % 4 != 0) {
+  die "entity base pairs should be > 12 and a multiple of 4\n\n";
+}
+
+# get signs as numbers
+my $beginSign = $beginSignString eq '+'? 1 : -1;
+my $endSign = $endSignString eq '+'? 1 : -1;
+
+# get signed offsets
+my $beginSignedOffset = $beginSign * $beginOffset;
+my $endSignedOffset = $endSign * $endOffset;
+
+# validate user's choices.
+# for purposes of validating input, assume entity is one bp wide.
+my $validationEntityBegin = $beginAt eq 'start'? 0 : 1;
+my $validationEntityEnd = $endAt eq 'start'? 0 : 1;
+my $validationIntervalBegin = $validationEntityBegin + $beginSignedOffset;
+my $validationIntervalEnd += $validationEntityEnd + $endSignedOffset;
+
+if ($validationIntervalBegin >= $validationIntervalEnd) {
+ # die "please adjust input so that begin will always be less than end\n\n";
+}
+
+# find interval
+my $schematicEntityBegin = $beginAt eq 'start'? 0 : 1;
+my $schematicEntityEnd = $endAt eq 'start'? 0 : 1;
+my $schematicBeginOffset = $beginOffset? $entityBasePairs/4 : 0;
+my $schematicEndOffset = $endOffset? $entityBasePairs/4 : 0;
+
+my $intervalBegin = $schematicEntityBegin * ($entityBasePairs-1) + 1;
+my $intervalEnd = $schematicEntityEnd * ($entityBasePairs-1) + 1;
+my $intervalBeginOffset = $beginSign * $schematicBeginOffset;
+my $intervalEndOffset = $endSign * $schematicEndOffset;
+$intervalBegin += $intervalBeginOffset;
+$intervalEnd += $intervalEndOffset;
+
+# handle special cases
+if ($beginAt eq 'start' && $beginSign == -1
+    && $endAt eq 'start' && $endSignedOffset == -1) {
+  $intervalBegin = -$entityBasePairs/4;
+  $intervalEnd = $intervalBegin + $entityBasePairs/4;
+}
+
+if ($beginAt eq 'stop' && $beginSignedOffset == 1
+    && $endAt eq 'stop' && $endSign == 1) {
+  $intervalBegin = $entityBasePairs + 1;
+  $intervalEnd = $intervalBegin + $entityBasePairs/4;
+}
+
+if ($intervalBegin == $intervalEnd
+    && (($intervalBegin == -$entityBasePairs/4 + 1)
+	|| ($intervalBegin == $entityBasePairs - $entityBasePairs/4))) {
+  $intervalBegin -= $entityBasePairs/4;
+}
+
+if ($intervalBegin == $intervalEnd
+    && (($intervalBegin == $entityBasePairs + $entityBasePairs/4)
+	|| ($intervalBegin == $entityBasePairs/4 + 1))) {
+  $intervalEnd += $entityBasePairs/4;
+}
+
+# output interval
+print "Interval: ($intervalBegin, $intervalEnd)\n\n";
+
+
+# for testing purposes, render interval in characters
+my $entityString;
+my $entityPadding;
+for (my $i=0; $i<$entityBasePairs; $i++) {
+  $entityString .= '=';
+  $entityPadding.= ' ';
+}
+$entityString = $entityPadding . $entityString;
+
+my $intervalString;
+for (my $i = -$entityBasePairs; $i<$intervalBegin-1; $i++) {
+  $intervalString .= ' ';
+}
+
+for (my $i=$intervalBegin; $i<=$intervalEnd; $i++) {
+  $intervalString .= '-';
+}
+
+print $intervalString . "\n";
+print $entityString . "\n";
+
