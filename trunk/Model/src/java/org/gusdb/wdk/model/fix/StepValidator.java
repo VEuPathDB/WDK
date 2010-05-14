@@ -104,8 +104,8 @@ public class StepValidator extends BaseCLI {
                 + "answers SET is_valid = NULL");
         SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE " + userSchema
                 + "steps SET is_valid = NULL");
-        SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE " + userSchema
-                + "strategies SET is_valid = NULL");
+        // SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE " + userSchema
+        // + "strategies SET is_valid = NULL");
     }
 
     private void detectQuestions(WdkModel wdkModel) throws SQLException,
