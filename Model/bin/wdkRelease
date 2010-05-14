@@ -45,7 +45,7 @@ if ($status != 0) then
   exit(-1)
 endif
 
-svn co -q https://www.cbil.upenn.edu/svn/gus/WDKTemplateSite/branches/$VERSION WSFTemplateSite
+svn co -q https://www.cbil.upenn.edu/svn/gus/WDKTemplateSite/branches/$VERSION WDKTemplateSite
 if ($status != 0) then
   echo could not svn checkout $status
   exit(-1)
