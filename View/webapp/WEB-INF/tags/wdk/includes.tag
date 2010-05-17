@@ -20,8 +20,6 @@
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/jquery.autocomplete.css' />"/>
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/jquery.multiSelect.css' />"/>
 
-<link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/history.css"/>'/>
 <link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/dyk.css"/>'/>
 <link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/Strategy.css"/>'/>
-<link rel="StyleSheet" type="text/css" href='<c:url value="/wdk/css/filter_menu.css"/>'/>
 <link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/flexigrid.css"/>'/>
