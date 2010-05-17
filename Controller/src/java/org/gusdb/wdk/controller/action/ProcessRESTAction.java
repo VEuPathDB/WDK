@@ -306,10 +306,12 @@ public class ProcessRESTAction extends ShowQuestionAction {
             writer.println("<doc title='help'><![CDATA["
                     + wdkQuestion.getParamsMap().get(key).getHelp()
                     + "]]></doc>");
-            if (wdkQuestion.getParamsMap().get(key).getDefault() != null
+           /* if (wdkQuestion.getParamsMap().get(key).getDefault() != null
                     && wdkQuestion.getParamsMap().get(key).getDefault().length() > 0
                     && wdkQuestion.getParamsMap().get(key).getIsAllowEmpty()
-                    && wdkQuestion.getParamsMap().get(key).getEmptyValue() == null) {
+                     && wdkQuestion.getParamsMap().get(key).getEmptyValue() == null)*/
+ 			if (wdkQuestion.getParamsMap().get(key).getDefault() != null
+               && wdkQuestion.getParamsMap().get(key).getDefault().length() > 0){
                 writer.println("<doc title='default'><![CDATA["
                         + wdkQuestion.getParamsMap().get(key).getDefault()
                         + "]]></doc>");
