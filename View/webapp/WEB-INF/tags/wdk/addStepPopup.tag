@@ -1,7 +1,6 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
-<%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
+<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
 <%@ attribute name="model"
 	      type="org.gusdb.wdk.model.jspwrap.WdkModelBean"
@@ -65,23 +64,8 @@
                     <th title="Adding a strategy as a step allows you to generate non-linear strategies (trees).">Select a Strategy</th></tr>
 		<tr>
 				<td>
-<ul class="top_nav">
-<c:set var="rootCat" value="${model.websiteRootCategories[rcName]}" />
-<c:forEach items="${rootCat.websiteChildren}" var="catEntry">
-    <c:set var="cat" value="${catEntry.value}" />
-	<c:if test="${rootCat.multiCategory}">
-    	<li><a class="category" href="javascript:void(0)">${cat.displayName}</a>
-    	<ul>
-	</c:if>
-	<c:forEach items="${cat.websiteQuestions}" var="q">
-          <li><a href="javascript:getQueryForm('showQuestion.do?questionFullName=${q.fullName}&partial=true')">${q.displayName}</a></li>
-	</c:forEach>
-	<c:if test="${rootCat.multiCategory}">
-    	</ul>
-    	</li>
-	</c:if>
-</c:forEach>
-</ul>
+
+<wdk:listCategories category="${rcName}" />
 
 </td>
 <td></td>
