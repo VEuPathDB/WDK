@@ -2,6 +2,22 @@
 // the common functions provided by wdk
 // =============================================================================
 
+// On all pages, check that cookies are enabled.
+jQuery(document).ready(function() {
+	var testCookieName = 'wdkTestCookie';
+	var testCookieValue = 'test';
+	var wdk = new WDK();
+	wdk.createCookie(testCookieName,testCookieValue,1);
+	var test = wdk.readCookie(testCookieName);
+	if (test == 'test') {
+		wdk.eraseCookie(testCookieName);
+	}
+	else {
+		jQuery.blockUI({message: "<div><h2>Cookies are disabled</h2><p>This site requires cookies.  Please enable them in your browser preferences.</p><input type='submit' value='OK' onclick='jQuery.unblockUI();' /></div>", css: {position : 'absolute', backgroundImage : 'none'}});
+	}
+});
+
+
 function WDK() {
 
     // -------------------------------------------------------------------------
@@ -29,7 +45,7 @@ function WDK() {
     };
 
     this.eraseCookie = function(name) {
-    	createCookie(name,"",-1);
+    	this.createCookie(name,"",-1);
     }
 
 }

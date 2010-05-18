@@ -42,13 +42,6 @@ public class GetVocabAction extends ShowQuestionAction {
 
             param.setDependedValue(dependedValue);
 
-            // TO Charles: this step is unnecessary, the param map is always
-            // recreated and returned, the value put into will be ignored. by
-            // the way, you are changing a reference to Param object, and the
-            // change will be carried over (that's why your code works) -
-            // Jerric.
-            wdkQuestion.getParamsMap().put(paramName, param);
-
             // try the dependent value, and ignore empty list exception, since
             // it may be caused by the choices on the depended param.
             try {
@@ -56,13 +49,13 @@ public class GetVocabAction extends ShowQuestionAction {
             } catch (WdkEmptyEnumListException ex) {
                 // do nothing.
                 logger.debug("the choice of the depended param cause this: "
-                        + ex);
+			     + ex);
             }
-
+	    
             request.setAttribute("vocabParam", param);
-
+	    
 	    String xmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR
-	    + File.separator + CConstants.WDK_PAGES_DIR
+		+ File.separator + CConstants.WDK_PAGES_DIR
 	    + File.separator + "vocabXml.jsp";
 
 	    String htmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR

@@ -33,20 +33,8 @@ public class ProcessLogoutAction extends Action {
     @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
-            throws Exception {
-        // get the referer link
-        String referer = (String) request.getParameter(CConstants.WDK_REFERER_URL_KEY);
-        //if (referer == null) referer = request.getHeader("referer");
-        // int index = referer.lastIndexOf("/");
-        // referer = referer.substring(index);
-        
-        ActionForward forward;
-        if (referer != null) {
-            forward = new ActionForward(referer);
-            forward.setRedirect(true);
-         } else {
-            forward = mapping.findForward(CConstants.PROCESS_LOGOUT_MAPKEY);
-         }
+            throws Exception {        
+        ActionForward forward = mapping.findForward(CConstants.PROCESS_LOGOUT_MAPKEY);
         
         // clear the session, and reset the default user to guest
         WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
@@ -61,13 +49,13 @@ public class ProcessLogoutAction extends Action {
 	int numCookies = requestCookies.length;
 
 	for (int i = 0; i < numCookies; ++i) {
-	    System.out.println("checking request cookies in logout action...");
-	    System.out.println("cookie" + (i+1) + ": " + requestCookies[i].getName());
+	    //System.out.println("checking request cookies in logout action...");
+	    //System.out.println("cookie" + (i+1) + ": " + requestCookies[i].getName());
 	    if (requestCookies[i].getName().equals(CConstants.WDK_LOGIN_COOKIE_KEY)) {
 		requestCookies[i].setMaxAge(0);
 		requestCookies[i].setPath("/");
-		System.out.println("login cookie age:" + requestCookies[i].getMaxAge());
-		System.out.println("login cookie path:" + requestCookies[i].getPath());
+		//System.out.println("login cookie age:" + requestCookies[i].getMaxAge());
+		//System.out.println("login cookie path:" + requestCookies[i].getPath());
 		response.addCookie(requestCookies[i]);
 		break;
 	    }

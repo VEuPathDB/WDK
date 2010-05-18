@@ -59,8 +59,8 @@ public class StepValidator extends BaseCLI {
      */
     @Override
     protected void declareOptions() {
-        addSingleValueOption(ARG_PROJECT_ID, true, null, "ProjectId, which "
-                + "should match the directory name"
+        addSingleValueOption(ARG_PROJECT_ID, true, null, "a list of ProjectIds"
+                + ", which should match the directory name"
                 + " under $GUS_HOME, where model-config.xml is stored.");
     }
 
@@ -73,10 +73,14 @@ public class StepValidator extends BaseCLI {
     protected void execute() throws Exception {
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
-        String projectId = (String) getOptionValue(ARG_PROJECT_ID);
-        logger.info("Validate steps & answers... ");
-        WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-        validate(wdkModel);
+        String ids = (String) getOptionValue(ARG_PROJECT_ID);
+        String[] projectIds = ids.split(",");
+        for (String projectId : projectIds) {
+            projectId = projectId.trim();
+            logger.info("Validate steps & answers for " + projectId + "... ");
+            WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
+            validate(wdkModel);
+        }
     }
 
     private void validate(WdkModel wdkModel) throws SQLException,
@@ -100,8 +104,8 @@ public class StepValidator extends BaseCLI {
                 + "answers SET is_valid = NULL");
         SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE " + userSchema
                 + "steps SET is_valid = NULL");
-        SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE " + userSchema
-                + "strategies SET is_valid = NULL");
+        // SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE " + userSchema
+        // + "strategies SET is_valid = NULL");
     }
 
     private void detectQuestions(WdkModel wdkModel) throws SQLException,
