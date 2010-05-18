@@ -101,7 +101,8 @@ function createAutoComplete(obj, name) {
 		matchContains: true
 	});
 	if (oldValues[name]) {
-		value = termDisplayMap[name][oldValues[name]];
+		value = termDisplayMap[name][oldValues[name]]; // Look up the display for the old value
+		if (!value) value = oldValues[name]; // For typeaheads allowing arbitrary input
 		oldValues[name] = null;
 	}
 	$("#" + name + "_display").val(value).removeAttr('disabled');
