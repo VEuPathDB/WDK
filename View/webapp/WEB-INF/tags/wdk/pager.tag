@@ -11,11 +11,15 @@
 
 <input type="hidden" id="resultSize" value="${resultSize}" />
 
-<pg:index>
+<pg:page>
+  <c:set var="advancedPagingUrl" value="${pageUrl}"/>
+</pg:page>
+
   <table border="0">
     <tr>
       <td nowrap>
       
+<pg:index>
   <pg:first>
     <a href="javascript:GetResultsPage('${pageUrl}',true,true)">First</a>
   </pg:first>
@@ -46,6 +50,7 @@
     <a href="javascript:GetResultsPage('${pageUrl}',true,true)">Last</a>
     
   </pg:last>
+</pg:index>
   
       </td>
      
@@ -55,10 +60,10 @@
                 <input class="paging-button" style="width:150px" type="button" value="Advanced Paging" onclick="openAdvancedPaging(this)"/>
 		<div class="advanced-paging" style="">
 			<span id="CAP" onclick="openAdvancedPaging($(this).parent().prev())">[x]</span>
-        <pg:page>
+        <%-- <pg:page> --%>
           Jump To page:
           <input type="text" id="${pager_id}_pageNumber" size="5" value="${currentPageNumber}"/>
-          <input type="hidden" id="pageUrl" value="${pageUrl}" />
+          <input type="hidden" id="pageUrl" value="${advancedPagingUrl}" />
           <font size="-1">
             [1..<span id="${pager_id}_pageCount">${wdkAnswer.pageCount}</span>]
              <br/>Results Per Page:
@@ -76,12 +81,11 @@
            </select>
            <input type="button" value="GO" onclick="gotoPage('${pager_id}');"/>
         
-        </pg:page>
+        <%-- </pg:page> --%>
        </div>
       </td>
     </tr>
   </table> 
 
    
-</pg:index>
   
