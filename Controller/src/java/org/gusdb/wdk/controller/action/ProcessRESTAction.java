@@ -279,6 +279,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
     private void writeWADL(QuestionBean wdkQuestion, PrintWriter writer)
             throws Exception {
         logger.debug(wdkQuestion.getDisplayName());
+		String def_attr = null;
         writer.println("<resource path='" + wdkQuestion.getName() + ".xml'>");
         writer.println("<method href='#" + wdkQuestion.getName().toLowerCase()
                 + "'/>");
@@ -297,17 +298,20 @@ public class ProcessRESTAction extends ShowQuestionAction {
                 + wdkQuestion.getDescription() + "]]></doc>");
         writer.println("<request>");
         for (String key : wdkQuestion.getParamsMap().keySet()) {
-            writer.println("<param name='" + key + "' type='xsd:string'>");
+			def_attr = new String();
+            writer.println("<param name='" + key + "' type='xsd:string' required='" + !wdkQuestion.getParamsMap().get(key).getIsAllowEmpty() + "'>");
             writer.println("<doc title='prompt'><![CDATA["
                     + wdkQuestion.getParamsMap().get(key).getPrompt()
                     + "]]></doc>");
             writer.println("<doc title='help'><![CDATA["
                     + wdkQuestion.getParamsMap().get(key).getHelp()
                     + "]]></doc>");
-            if (wdkQuestion.getParamsMap().get(key).getDefault() != null
+           /* if (wdkQuestion.getParamsMap().get(key).getDefault() != null
                     && wdkQuestion.getParamsMap().get(key).getDefault().length() > 0
                     && wdkQuestion.getParamsMap().get(key).getIsAllowEmpty()
-                    && wdkQuestion.getParamsMap().get(key).getEmptyValue() == null) {
+                     && wdkQuestion.getParamsMap().get(key).getEmptyValue() == null)*/
+ 			if (wdkQuestion.getParamsMap().get(key).getDefault() != null
+               && wdkQuestion.getParamsMap().get(key).getDefault().length() > 0){
                 writer.println("<doc title='default'><![CDATA["
                         + wdkQuestion.getParamsMap().get(key).getDefault()
                         + "]]></doc>");
@@ -355,7 +359,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
             }
             writer.println("</param>");
         }
-        writer.println("<param name='o-fields' type='xsd:string'>");
+        writer.println("<param name='o-fields' type='xsd:string' required='false' default='none'>");
         writer.println("<doc title='Prompt'><![CDATA[Output Fields]]></doc>");
         writer.println("<doc title='help'><![CDATA[Single valued attributes of the feature.]]></doc>");
         writer.println("<doc title='default'><![CDATA[none]]></doc>");
@@ -372,7 +376,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
                     + "]]></doc></option>");
         // writer.println("<option>" + attr + "</option>");
         writer.println("</param>");
-        writer.println("<param name='o-tables' type='xsd:string'>");
+        writer.println("<param name='o-tables' type='xsd:string' required='false' default='none'>");
         writer.println("<doc title='Prompt'><![CDATA[Output Tables]]></doc>");
         writer.println("<doc title='help'><![CDATA[Multi-valued attributes of the feature.]]></doc>");
         writer.println("<doc title='default'><![CDATA[none]]></doc>");
