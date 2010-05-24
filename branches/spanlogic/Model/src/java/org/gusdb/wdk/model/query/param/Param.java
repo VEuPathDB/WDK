@@ -133,7 +133,7 @@ public abstract class Param extends WdkModelBase {
      * dependent value. This flag is useful when the dependent value is sent to
      * other sites to process using ProcessQuery.
      */
-    private Boolean noTranslation;
+    private boolean noTranslation = false;
 
     public Param() {
         visible = true;
@@ -454,11 +454,7 @@ public abstract class Param extends WdkModelBase {
     }
 
     public boolean isNoTranslation() {
-        return (noTranslation == null) ? false : noTranslation;
-    }
-
-    public boolean isNoTranslationSet() {
-        return (noTranslation != null);
+        return noTranslation;
     }
 
     public void setNoTranslation(boolean noTranslation) {
