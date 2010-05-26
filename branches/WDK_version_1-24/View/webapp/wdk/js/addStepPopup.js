@@ -53,7 +53,7 @@ function showSaveForm(stratId, save, share){
 	closeModal();
 	$("div.save_strat_div").addClass("hidden");
 	var saveForm = $("div#save_strat_div_" + stratId);
-	var stratName = saveForm.parent().parent().find("span:first").text();
+	var stratName = saveForm.parent().parent().parent().find(".strategy_tools:first").find("span:first").text();
 	$("input[type=text]", saveForm).attr("value", stratName);
        if (save){
          $("form", saveForm).attr("action", "javascript:saveOrRenameStrategy(" + stratId + ", true, true, false)");
