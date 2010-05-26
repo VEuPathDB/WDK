@@ -75,7 +75,9 @@ function displayModel(strat){
 		"		<img alt='Click here to close the strategy (it will only be removed from the display)' src='wdk/images/Close-X.png' title='Click here to close the strategy (it will only be removed from the display)' height='15' width='15' src='wdk/images/Close-X.png'/>"+
 		"	</a>");
 		$(div_strat).append(close_span);
-		$(div_strat).append(createStrategyName(strat));
+		var stratNameMenu = createStrategyName(strat);
+		$(div_strat).append(stratNameMenu[0]);
+		$(div_strat).append(stratNameMenu[1]);
 		$(div_strat).append(createParentStep(strat));
 		//displaySteps = createSteps(strat,div_strat);
 		displaySteps = createSteps(strat,div_steps);
@@ -561,10 +563,14 @@ var rename = "<a id='rename_" + strat.frontId + "' href='javascript:void(0)' tit
 var deleteStrat = "<a id='delete_" + strat.frontId + "' href='javascript:void(0)' title='Click to delete.'  onclick=\"deleteStrategy('" + id + "', false)\"><b style='font-size:120%'>Delete</b></a>";
 
 	var div_sn = document.createElement("div");
+	var div_sm = document.createElement("div");
 	$(div_sn).attr("id","strategy_name");
+	$(div_sn).attr("class","strategy_tools");
+	$(div_sm).attr("id","strategy_menu");
+	$(div_sm).attr("class","strategy_tools");
 	if (strat.subStratOf == null){
-		$(div_sn).html("<span style='font-size:14px;font-weight:bold' title='Name of this strategy. The (*) indicates this strategy is NOT saved.'>" + name + "</span>" + append + "<span id='strategy_id_span' style='display: none;'>" + id + "</span>" +
-	"<span class='strategy_small_text'>" +
+		$(div_sn).html("<span style='font-size:14px;font-weight:bold' title='Name of this strategy. The (*) indicates this strategy is NOT saved.'>" + name + "</span>" + append + "<span id='strategy_id_span' style='display: none;'>" + id + "</span>");
+		$(div_sm).html("<span class='strategy_small_text'>" +
 	"<br/>" + 
 	rename +
 	"<br/>" +
@@ -579,9 +585,9 @@ var deleteStrat = "<a id='delete_" + strat.frontId + "' href='javascript:void(0)
 	}//else{
 		//$(div_sn).html("<span style='font-size:14px;font-weight:bold' title='Name of this substrategy. To rename, click on the corresponding step name in the parent strategy'>" + name + "</span>" + "<span id='strategy_id_span' style='display: none;'>" + id + "</span>"); 
 	//}
-	$(div_sn).css({'z-index' : 90}); // DO NOT DELETE, needed for IE7
+	$(div_sm).css({'z-index' : 90}); // DO NOT DELETE, needed for IE7
 	$(div_sn).css("top","0px");     // to have the strategy name closer to the top
-	return div_sn;
+	return [div_sn, div_sm];
 }
 
 //REMOVE ALL OF THE SUBSTRATEGIES OF A GIVEN STRATEGY FROM THE DISPLAY
