@@ -164,11 +164,6 @@ div.sub_diagram {
 	left: 100%;
 }
 
-#strategy_name {
-	font-size: 12pt;
-	margin-right: 18px;
-}
-
 /* Arrowheads */
    
 .diagram .right-down span {
@@ -450,9 +445,11 @@ div.crumb_details {
         text-decoration:none;;
 }
 
-.diagram div#strategy_name {
+.diagram div.strategy_tools {
 	border: none;
 	right: 0px;/*40px;*/
+	font-size: 12pt;
+	margin-right: 18px;
 	top: 5px;
 	text-align: right;
 }
@@ -461,7 +458,7 @@ span.closeStrategy {
 	float: right;
 }
 
-.diagram div#strategy_name span.strategy_small_text {
+.diagram div.strategy_tools span.strategy_small_text {
 	font-size: 10px;
 	color: #888;
 
