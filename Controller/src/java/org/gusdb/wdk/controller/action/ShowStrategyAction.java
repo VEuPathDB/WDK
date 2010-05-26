@@ -154,6 +154,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
             NoSuchAlgorithmException, WdkUserException, WdkModelException,
             SQLException {
         logger.debug("output JSON error message: " + ex);
+
         JSONObject jsMessage = new JSONObject();
         outputCommon(user, jsMessage);
 
@@ -185,6 +186,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsMessage.put("stackTrace", buffer.toString());
         buffer.close();
 
+        response.setContentType("text/json");
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
     }
@@ -243,6 +245,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         outputCommon(user, jsMessage);
         outputStrategies(user, jsMessage, displayStrategies);
 
+        response.setContentType("text/json");
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
     }
@@ -339,7 +342,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         return jsStrategy;
     }
 
-    static private JSONObject outputStep(UserBean user, StepBean step,
+    static public JSONObject outputStep(UserBean user, StepBean step,
             int strategyId, boolean showSubStrategy) throws JSONException,
             NoSuchAlgorithmException, WdkModelException, WdkUserException,
             SQLException {

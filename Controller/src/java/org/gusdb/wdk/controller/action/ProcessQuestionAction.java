@@ -66,9 +66,11 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                     + qFullName);
             for (String paramName : params.keySet()) {
                 String paramValue = params.get(paramName);
-                url.append("&" + URLEncoder.encode("myProp(" + paramName + ")", "utf-8"));
+                url.append("&"
+                        + URLEncoder.encode("myProp(" + paramName + ")",
+                                "utf-8"));
                 url.append("=");
-                if (paramValue != null) 
+                if (paramValue != null)
                     url.append(URLEncoder.encode(paramValue, "utf-8"));
             }
 
@@ -93,14 +95,22 @@ public class ProcessQuestionAction extends ShowQuestionAction {
             int weight = 0;
             if (hasWeight) {
                 if (!strWeight.matches("[\\-\\+]?\\d+"))
-                    throw new WdkUserException("Invalid weight value: '" 
-                         + strWeight + "'. Only integer numbers are allowed.");
+                    throw new WdkUserException("Invalid weight value: '"
+                            + strWeight
+                            + "'. Only integer numbers are allowed.");
                 if (strWeight.length() > 9)
                     throw new WdkUserException("Weight number is too big: "
                             + strWeight);
                 weight = Integer.parseInt(strWeight);
             }
             url.append("&" + CConstants.WDK_ASSIGNED_WEIGHT_KEY + "=" + weight);
+
+            // pass the noStrategy flag to showSummary
+            String noStrategy = request.getParameter(CConstants.WDK_NO_STRATEGY_PARAM);
+            if (noStrategy != null && noStrategy.length() > 0) {
+                url.append("&" + CConstants.WDK_NO_STRATEGY_PARAM + "="
+                        + noStrategy);
+            }
 
             /*
              * Charles Treatman 4/23/09 Add code here to set the
@@ -132,10 +142,10 @@ public class ProcessQuestionAction extends ShowQuestionAction {
             IOException, NoSuchAlgorithmException, SQLException, JSONException {
         Map<String, String> paramValues = qform.getMyProps();
         QuestionBean question = qform.getQuestion();
-        if (question == null) 
-            throw new WdkUserException("The question '" + 
-                request.getParameter(CConstants.QUESTION_FULLNAME_PARAM) +
-                "' doesn't exist.");
+        if (question == null)
+            throw new WdkUserException("The question '"
+                    + request.getParameter(CConstants.QUESTION_FULLNAME_PARAM)
+                    + "' doesn't exist.");
 
         Map<String, ParamBean> params = question.getParamsMap();
         // convert from raw data to user dependent data
@@ -154,8 +164,8 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                 if (type == null)
                     throw new WdkUserException("Missing input parameter: "
                             + paramName + "_type.");
-                
-                RecordClassBean recordClass = ((DatasetParamBean)param).getRecordClass();
+
+                RecordClassBean recordClass = ((DatasetParamBean) param).getRecordClass();
                 String data = null;
                 String uploadFile = "";
                 if (type.equalsIgnoreCase("data")) {
@@ -178,18 +188,19 @@ public class ProcessQuestionAction extends ShowQuestionAction {
 
                 logger.debug("dataset data: '" + data + "'");
                 if (data != null && data.trim().length() > 0) {
-                    DatasetBean dataset = user.createDataset(recordClass, uploadFile, data);
+                    DatasetBean dataset = user.createDataset(recordClass,
+                            uploadFile, data);
                     dependentValue = Integer.toString(dataset.getUserDatasetId());
                 }
             } else if (rawValue != null && rawValue.length() > 0) {
                 dependentValue = param.rawOrDependentValueToDependentValue(
                         user, rawValue);
             }
-            //if (dependentValue != null && dependentValue.length() > 0) {
-                logger.debug("param " + paramName + " - "
-                        + param.getClass().getSimpleName() + " = " + dependentValue);
-                paramValues.put(paramName, dependentValue);
-            //}
+            // if (dependentValue != null && dependentValue.length() > 0) {
+            logger.debug("param " + paramName + " - "
+                    + param.getClass().getSimpleName() + " = " + dependentValue);
+            paramValues.put(paramName, dependentValue);
+            // }
         }
         return paramValues;
     }

@@ -32,6 +32,7 @@ import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked. It
@@ -57,7 +58,15 @@ public class ShowSummaryAction extends ShowQuestionAction {
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
 
         String roFlag = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
-        boolean resultOnly = (roFlag != null && Boolean.valueOf(roFlag));
+        boolean resultOnly = false;
+        if (roFlag != null && Boolean.valueOf(roFlag))
+            resultOnly = Boolean.parseBoolean(roFlag);
+
+        String nsFlag = request.getParameter(CConstants.WDK_NO_STRATEGY_PARAM);
+        boolean noStrategy = false;
+        if (nsFlag != null && nsFlag.length() > 0)
+            noStrategy = Boolean.parseBoolean(nsFlag);
+
         StrategyBean strategy = null;
         try {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
@@ -154,6 +163,16 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     }
                 }
                 forward = getForward(request, step, mapping);
+            } else if (noStrategy) {
+                // only runs the step and return the step info in json, does not
+                // create a strategy or add to existing strategy
+                JSONObject jsStep = ShowStrategyAction.outputStep(wdkUser,
+                        step, 0, false);
+
+                response.setContentType("text/json");
+                PrintWriter writer = response.getWriter();
+                writer.print(jsStep.toString());
+                return null;
             } else { // otherwise, forward to the show application page
                 // create new strategy before going to application page
                 if (strategy == null) {
