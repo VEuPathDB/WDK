@@ -85,6 +85,7 @@ public class CConstants {
     public static final String WDK_STEP_ID_PARAM = "step";
     public static final String WDK_SKIPTO_DOWNLOAD_PARAM = "skip_to_download";
     public static final String WDK_HISTORY_TYPE_PARAM = "type";
+    public static final String WDK_NO_STRATEGY_PARAM = "no_strategy";
 
     // constants for remote logins
     public static final String WDK_REMOTE_URL_KEY = "remoteUrl";
