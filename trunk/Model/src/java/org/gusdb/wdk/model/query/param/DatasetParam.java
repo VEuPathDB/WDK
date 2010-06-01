@@ -133,7 +133,7 @@ public class DatasetParam extends Param {
             sql.append(" AS " + pkColumns[i - 1]);
         }
         sql.append(" FROM ");
-        sql.append(dvTable + " dv, " + udTable + " ud ");
+        sql.append(udTable + " ud, " + dvTable + " dv ");
         sql.append(" WHERE dv." + colDatasetId + " = ud." + colDatasetId);
         sql.append(" AND ud." + colUserDatasetId + " = " + userDatasetId);
         return sql.toString();
