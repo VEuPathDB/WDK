@@ -594,7 +594,7 @@ b.strat_help_title > span {
 	position: absolute;
 	left:140px;   /* Omar's request  150px; */  /*200px;*/ /*135px;*/
 	top:140px; /* -100px; */   /*   60px;  */    /*279px;*/
-	min-width: 800px;  /*  increase to accommodate gene basket 775px; */ /* increase to accommodate blast data type options   741px; */
+	min-width: 885px;  /*  increase to accommodate gene basket 775px; */ /* increase to accommodate blast data type options   741px; */
 	max-width: 78%;   /* increase to accommodate the basket */
 	background-color: #FFFFFF;
 /*	background-image: url(../images/filter_top.gif);  */
@@ -931,3 +931,42 @@ table.history_controls {
 	display:inline-block;
 }
 
+div#step_type{
+	margin-left:-10px;
+}
+div#sections{
+	line-height:1.25;
+}
+
+.qf_section{
+	height:190px;
+	margin-bottom:-11px;
+	margin-top:22px;
+	overflow-y:scroll;
+	padding:10px 8px 0 5px;
+	text-align:left;
+	width:150px;
+	margin-left:-6px;
+}
+.qf_section ul ul li{
+	text-indent:3px;
+}
+.qf_section ul li:hover{
+	cursor:pointer;
+	font-weight:bold;
+}
+
+.qf_section ul li.category{
+	background:url("/assets/images/menu_arrow.png") no-repeat scroll 100% 0 transparent;
+}
+
+div.operations input[type='radio']{
+	float:right;
+}
+div#span_popup{
+	
+}
+div#span_popup>table{
+	border:1px solid #BBBBBB;
+	margin-top:15px;
+}
