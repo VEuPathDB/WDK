@@ -341,6 +341,7 @@ public class ProcessQueryInstance extends QueryInstance {
 
         // define the rest of the columns
         for (Column column : columns) {
+            // weight column is already added to the sql.
             if (column.getName().equals(Utilities.COLUMN_WEIGHT)
                     && query.isHasWeight()) continue;
 
