@@ -964,9 +964,43 @@ div.operations input[type='radio']{
 	float:right;
 }
 div#span_popup{
-	
+	float:right;
 }
 div#span_popup>table{
 	border:1px solid #BBBBBB;
-	margin-top:15px;
+}
+td#middle{
+	border-right:1px solid #BBBBBB;
+	border-left:1px solid #BBBBBB;
+}
+ul#directions{
+	border:1px solid #BBBBBB;
+	font-size:8pt;
+	line-height:1.5;
+	padding:10px;
+	width:185px;
+}
+img.step_img{
+	width:20px;
+	position:absolute;
+}
+img#step_1{
+	left:209px;
+	top:15px;
+}
+img#step_2{
+	left:599px;
+	top:15px;
+}
+img#step_3{
+	left:484px;
+	top:15px;
+}
+img#step_4{
+	left:484px;
+	top:89px;
+}
+img#step_5{
+	left:267px;
+	top:153px;
 }
