@@ -124,10 +124,11 @@ public class StepFactory {
         }
         Answer answer = answerValue.getAnswer();
 
-logger.debug("id query name  :" + answerValue.getIdsQueryInstance().getQuery().getFullName());
-logger.debug("answer checksum:" + answerValue.getChecksum());
-logger.debug("question name:  " + question.getFullName());
-logger.debug("answer question:" + answer.getQuestionName());
+        logger.debug("id query name  :"
+                + answerValue.getIdsQueryInstance().getQuery().getFullName());
+        logger.debug("answer checksum:" + answerValue.getChecksum());
+        logger.debug("question name:  " + question.getFullName());
+        logger.debug("answer question:" + answer.getQuestionName());
 
         // prepare the values to be inserted.
         int userId = user.getUserId();
@@ -580,12 +581,10 @@ logger.debug("answer question:" + answer.getQuestionName());
         Map<String, String> displayParams = step.getParamValues();
 
         Query query = question.getQuery();
-        boolean isBoolean = query.isBoolean();
-        boolean isTransform = query.isTransform();
         int leftStepId = 0;
         int rightStepId = 0;
         String customName;
-        if (isBoolean) {
+        if (query.isBoolean()) {
             // boolean result, set the left and right step ids accordingly, and
             // set the constructed boolean expression to custom name.
             BooleanQuery booleanQuery = (BooleanQuery) query;
@@ -604,21 +603,20 @@ logger.debug("answer question:" + answer.getQuestionName());
             String operator = displayParams.get(operatorParam.getName());
 
             customName = leftStepId + " " + operator + " " + rightKey;
-        } else if (isTransform) {
-            // transform result, set the left step id only, and combine the step
-            // id into custom name.
-            // ASSUMPTION: we can only handle one answerParam transforms.
-            AnswerParam answerParam = null;
+        } else if (query.isCombined()) {
+            // transform result, set the first two params
             for (Param param : question.getParams()) {
                 if (param instanceof AnswerParam) {
-                    answerParam = (AnswerParam) param;
-                    break;
+                    AnswerParam answerParam = (AnswerParam) param;
+                    String stepId = displayParams.get(answerParam.getName());
+                    // put the first child into left, the second into right
+                    if (leftStepId == 0) leftStepId = Integer.valueOf(stepId);
+                    else {
+                        rightStepId = Integer.valueOf(stepId);
+                        break;
+                    }
                 }
             }
-            String combinedKey = displayParams.get(answerParam.getName());
-            String stepKey = combinedKey.substring(combinedKey.indexOf(":") + 1);
-            leftStepId = Integer.parseInt(stepKey);
-
             customName = step.getBaseCustomName();
         } else customName = step.getBaseCustomName();
 
@@ -626,10 +624,10 @@ logger.debug("answer question:" + answer.getQuestionName());
         StringBuffer sql = new StringBuffer("UPDATE ");
         sql.append(userSchema).append(TABLE_STEP).append(" SET ");
         sql.append(COLUMN_CUSTOM_NAME).append(" = ? ");
-        if (isBoolean || isTransform) {
+        if (query.isCombined()) {
             sql.append(", ").append(COLUMN_LEFT_CHILD_ID);
             sql.append(" = ").append(leftStepId);
-            if (isBoolean) {
+            if (rightStepId != 0) {
                 sql.append(", ").append(COLUMN_RIGHT_CHILD_ID);
                 sql.append(" = ").append(rightStepId);
             }

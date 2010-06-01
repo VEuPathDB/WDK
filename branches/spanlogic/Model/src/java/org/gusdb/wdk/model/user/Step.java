@@ -95,6 +95,17 @@ public class Step {
         return childStep;
     }
 
+    public int getChildrenCount() throws WdkUserException, WdkModelException {
+        String questionName = this.answer.getQuestionName();
+        Question question = this.user.getWdkModel().getQuestion(questionName);
+        Param[] params = question.getParams();
+        int count = 0;
+        for (Param param : params) {
+            if (param instanceof AnswerParam) count++;
+        }
+        return count;
+    }
+
     public int getResultSize() {
         try {
             this.estimateSize = getAnswerValue().getResultSize();
@@ -211,18 +222,16 @@ public class Step {
      * @throws NoSuchAlgorithmException
      */
     public String getShortDisplayName() throws WdkModelException {
-        /*String name = customName;
-
-        if (name == null) name = getQuestion().getShortDisplayName();
-        if (name != null) {
-            // remove script injections
-            name = name.replaceAll("<.+?>", " ");
-            name = name.replaceAll("['\"]", " ");
-            name = name.trim().replaceAll("\\s+", " ");
-            if (name.length() > 4000) name = name.substring(0, 4000);
-        }
-        return name;*/
-		return getQuestion().getShortDisplayName();
+        /*
+         * String name = customName;
+         * 
+         * if (name == null) name = getQuestion().getShortDisplayName(); if
+         * (name != null) { // remove script injections name =
+         * name.replaceAll("<.+?>", " "); name = name.replaceAll("['\"]", " ");
+         * name = name.trim().replaceAll("\\s+", " "); if (name.length() > 4000)
+         * name = name.substring(0, 4000); } return name;
+         */
+        return getQuestion().getShortDisplayName();
     }
 
     public String getDisplayName() throws WdkModelException {
@@ -396,12 +405,13 @@ public class Step {
 
     /**
      * @return the isValid
-     * @throws JSONException 
-     * @throws SQLException 
-     * @throws WdkModelException 
-     * @throws WdkUserException 
+     * @throws JSONException
+     * @throws SQLException
+     * @throws WdkModelException
+     * @throws WdkUserException
      */
-    public boolean isValid() throws WdkUserException, WdkModelException, SQLException, JSONException {
+    public boolean isValid() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
         if (!valid) return false;
         Step prevStep = getPreviousStep();
         if (prevStep != null) {
@@ -475,7 +485,8 @@ public class Step {
         this.setNextStep(step);
     }
 
-    public Step getStepByDisplayId(int displayId) throws WdkUserException, WdkModelException, SQLException, JSONException {
+    public Step getStepByDisplayId(int displayId) throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
         Step target;
         if (this.displayId == displayId) {
             return this;
@@ -651,7 +662,8 @@ public class Step {
         return getQuestion().getQuery().isBoolean();
     }
 
-    public JSONObject getJSONContent(int strategyId) throws JSONException, WdkUserException, WdkModelException, SQLException {
+    public JSONObject getJSONContent(int strategyId) throws JSONException,
+            WdkUserException, WdkModelException, SQLException {
         JSONObject jsStep = new JSONObject();
         jsStep.put("id", this.displayId);
         jsStep.put("customName", this.customName);
@@ -760,7 +772,7 @@ public class Step {
      * @throws SQLException
      * @throws WdkModelException
      * @throws WdkUserException
-     * @throws JSONException 
+     * @throws JSONException
      */
     public boolean validate() throws SQLException, WdkUserException,
             WdkModelException, JSONException {
