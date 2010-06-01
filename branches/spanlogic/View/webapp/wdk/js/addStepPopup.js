@@ -290,6 +290,7 @@ function validateAndCall(type, url, proto, rs){
 	}
 	return;
 }
+
 function spanOperation(stepid, type, url, proto, rs){
 	var currStrategy = getStrategy(current_Front_Strategy_Id);
 	var rectype = currStrategy.dataType;
@@ -310,10 +311,12 @@ function spanOperation(stepid, type, url, proto, rs){
 				success: function(stepData){
 					$("input#spanB").attr("value",stepData.id);
 					$("input#typeB").attr("value",stepData.dataType);
+					$("span#fromAjax").prepend(stepData.displayType);
 					$("#query_form input[type='submit']").attr("disabled","");
 				}
 			});
 			$("#query_form form#form_question").attr("action","javascript:callSpanLogic()");
+			$("#query_form form#form_question").css("height","248px");
 			$("#query_form div:not(.bottom-close)").remove();
 			$("#query_form form#form_question").html(data);
 			$("#query_form input[type='submit']").attr("disabled","disabled");
@@ -329,6 +332,13 @@ function callSpanLogic(){
 	outputType = $("#form_question input#type"+outputType.toUpperCase()).val();
 	if(outputType == "GeneRecordClasses.GeneRecordClass") quesName = "SpanQuestions.GenesBySpanLogic";
 	if(outputType == "OrfRecordClasses.OrfRecordClass") quesName = "SpanQuestions.OrfsBySpanLogic";
+	if(outputType == "IsolateRecordClasses.IsolateRecordClass") quesName = "SpanQuestions.IsolateBySpanLogic";
+	if(outputType == "EstRecordClasses.EstRecordClass") quesName = "SpanQuestions.EstBySpanLogic";
+	if(outputType == "SnpRecordClasses.SnpRecordClass") quesName = "SpanQuestions.SnpBySpanLogic";
+	if(outputType == "AssemblyRecordClasses.AssemblyRecordClass") quesName = "SpanQuestions.AssemblyBySpanLogic";
+	if(outputType == "SequenceRecordClasses.SequenceRecordClass") quesName = "SpanQuestions.SequenceBySpanLogic";
+	if(outputType == "SageTagRecordClasses.SageTagRecordClass") quesName = "SpanQuestions.SageTagBySpanLogic";
+	if(outputType == "DynSpanRecordClasses.DynSpanRecordClass") quesName = "SpanQuestions.DynSpanBySpanLogic";
 	if(outputType == "") return null;
 	$.ajax({
 		url:"processFilter.do?questionFullName="+quesName+"&strategy="+cstrt.backId+"&strategy_checksum="+cstrt.checksum,
