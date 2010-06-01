@@ -2,6 +2,7 @@ var _action = "";
 var original_Query_Form_Text;
 var original_Query_Form_CSS = new Object();
 var current_Front_Strategy_Id = null;
+var isSpan = false;
 
 function showExportLink(stratId){
  	closeModal();
@@ -199,10 +200,12 @@ function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isO
 			$(".filter.params", quesForm).after("<input type='hidden' name='booleanExpression' value='AND' />");
 		}
 	}
+	var actionFunction = "validateAndCall(";
+	if(isSpan) actionFunction = "spanOperation("+stp.frontId+",";
 	if(edit == 0)	
-		var action = "javascript:validateAndCall('add','" + pro_url + "', '" + stratBackId + "')";
+		var action = "javascript:"+actionFunction+"'add','" + pro_url + "', '" + stratBackId + "')";
 	else
-		var action = "javascript:validateAndCall('edit', '" + pro_url + "', '" + stratBackId + "', "+ parseInt(reviseStep) + ")";
+		var action = "javascript:"+actionFunction+"'edit', '" + pro_url + "', '" + stratBackId + "', "+ parseInt(reviseStep) + ")";
 	var formtitle = "";
 	if(edit == 0){
 		if(insert == "")
@@ -287,8 +290,64 @@ function validateAndCall(type, url, proto, rs){
 	}
 	return;
 }
+function spanOperation(stepid, type, url, proto, rs){
+	var currStrategy = getStrategy(current_Front_Strategy_Id);
+	var rectype = currStrategy.dataType;
+	url = url + "&no_strategy=true";
+	url = url.replace("processFilter","processQuestion");
+	var d = parseInputs();
+	$.ajax({
+		url:"wdk/jsp/addSpanPopup.jsp?prevStepNum="+stepid+"&dataType="+rectype+"&isAdd=",
+		dataType:"html",
+		success: function(data){
+			mapTypeAheads();
+			window.scrollTo(0,0);
+			$.ajax({
+				url: url,
+				dataType: "json",
+				type: "post",
+				data: d + "&state=" + p_state,
+				success: function(stepData){
+					$("input#spanB").attr("value",stepData.id);
+					$("input#typeB").attr("value",stepData.dataType);
+					$("#query_form input[type='submit']").attr("disabled","");
+				}
+			});
+			$("#query_form form#form_question").attr("action","javascript:callSpanLogic()");
+			$("#query_form div:not(.bottom-close)").remove();
+			$("#query_form form#form_question").html(data);
+			$("#query_form input[type='submit']").attr("disabled","disabled");
+		}
+	});
+}
+function callSpanLogic(){
+	var cstrt = getStrategy(current_Front_Strategy_Id);
+	var d = parseInputs();
+	var quesName = "";
+	var outputType = $("#form_question input[name='myProp(span_output)']").val();
+	if($("#form_question input[name='myProp(span_output)']").val().indexOf("A") != 0) outputType = "a";
+	outputType = $("#form_question input#type"+outputType.toUpperCase()).val();
+	if(outputType == "GeneRecordClasses.GeneRecordClass") quesName = "SpanQuestions.GenesBySpanLogic";
+	if(outputType == "OrfRecordClasses.OrfRecordClass") quesName = "SpanQuestions.OrfsBySpanLogic";
+	if(outputType == "") return null;
+	$.ajax({
+		url:"processFilter.do?questionFullName="+quesName+"&strategy="+cstrt.backId+"&strategy_checksum="+cstrt.checksum,
+		data: d+"&state="+p_state,
+		success: function(data){
+			if(data.type == "success") {
+				alert("Span Operation completed Successfully!");
+				//alert(data);
+				closeAll();
+			}else{
+				alert("Span Operation failed due to internal error.");
+				//alert(data);
+				closeAll();
+			}
+		}
+	});
+}
 
-function getQueryForm(url,hideOp,isOrtholog, loadingParent){
+function getQueryForm(url,hideOp,isOrtholog,loadingParent){
     // retrieve the question form, but leave out all params
     	var questionName = parseUrlUtil("questionFullName", url)[0];
 		var questionUrl = url + "&showParams=false&isInsert=" + isInsert;
@@ -338,10 +397,11 @@ function OpenOperationBox(stratId, insertId) {
 	var ops = "<div class='filter operators'><span class='form_subtitle' style='padding:0 20px'>Combine <b><i>" + getStrategy(stratId).name + "</i></b> with <b><i>" + selectedName + "</i></b></span><div id='operations'><table style='margin-left:auto; margin-right:auto;'><tr><td class='opcheck' valign='middle'><input type='radio' name='booleanExpression' value='INTERSECT' /></td><td class='operation INTERSECT'></td><td valign='middle'>&nbsp;" + (stp.frontId) + "&nbsp;<b>INTERSECT</b>&nbsp;" + (parseInt(stp.frontId)+1) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='UNION'></td><td class='operation UNION'></td><td>&nbsp;" + (stp.frontId) + "&nbsp;<b>UNION</b>&nbsp;" + (parseInt(stp.frontId)+1) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='NOT'></td><td class='operation MINUS'></td><td>&nbsp;" + (stp.frontId) + "&nbsp;<b>MINUS</b>&nbsp;" + (parseInt(stp.frontId)+1) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='RMINUS'></td><td class='operation RMINUS'></td><td>&nbsp;" + (parseInt(stp.frontId)+1) + "&nbsp;<b>MINUS</b>&nbsp;" + (stp.frontId) + "</td></tr></table></div></div>"
 	var button = "<div style='text-align:center'><input type='submit' value='Add Strategy' /></div>";
 	ops = oform + ops + button + cform;
-	$("#query_form div#query_selection").replaceWith(ops);
+	$("#query_form div#sections").replaceWith(ops);
 }
-
+var global_isAdd; 
 function openFilter(dtype,strat_id,step_id,isAdd){
+	global_isAdd = isAdd;
 	if(openDetail != null) hideDetails();
 	var isFirst = false;
 	steps = getStrategy(strat_id).Steps;
@@ -384,6 +444,11 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 					return false;
 				});
 		
+				$("#query_form #span_logic_button").click(function(){
+					original_Query_Form_Text = $("#query_form").html();
+					
+				});
+		
 				$("#query_form #continue_button_transforms").click(function(){
 					original_Query_Form_Text = $("#query_form").html();
 					getQueryForm($("#query_form select#transforms").val(),true);
@@ -411,12 +476,18 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 				}
 			});
 			}
-			setDraggable($("#query_form"), ".handle");
+			setDraggable($("#query_form"), ".dragHandle");
 		},
 		error: function(){
 			alert("Error getting the needed information from the server \n Please contact the system administrator");
 		}
 	});
+}
+
+function openAddStrategy(strat_id){
+	original_Query_Form_Text = $("#query_form").html();
+	OpenOperationBox(strat_id, (global_isAdd ? undefined : step_id));
+	return false;
 }
 
 function close(ele){
@@ -457,4 +528,31 @@ function setDraggable(e, handle){
 		handle: handle,
 		containment: [0,0,rlimit,blimit]
 	});
+}
+
+function showNewSection(ele,sectionName,sectionNumber){
+	isSpan = (sectionName == 'span_logic' || sectionName.split("_")[0] == 'sl'); 
+	var sec = document.createElement('td');
+	var s = $("div#" + sectionName + ".original").clone();
+	$(sec).html($(s)
+		.addClass("qf_section")
+		.removeClass("original")
+		.css({
+			"display":"block",
+			"background-color":"#EEEEEE"
+			}))
+		.attr("id","section-"+sectionNumber);
+	for(i=sectionNumber; i<=5; i++){
+		$("td#section-"+i).html("");
+	}
+	$(ele).parent().find("li").css({
+		"background":"",
+		"font-weight":""
+	});
+	$(ele).css({
+		"background-color":"#DDDDDD",
+		"font-weight":"bold"
+	});
+	$("#query_form table#sections-layout td#section-" + (sectionNumber-1) + " div").css("background-color","#FFFFFF");
+	$("#query_form table#sections-layout td#section-" + sectionNumber).replaceWith(sec);
 }
