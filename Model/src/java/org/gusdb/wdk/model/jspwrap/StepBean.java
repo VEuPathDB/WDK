@@ -520,4 +520,13 @@ public class StepBean {
         return step.getAssignedWeight();
     }
 
+    /**
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.user.Step#getChildrenCount()
+     */
+    public int getChildrenCount() throws WdkUserException, WdkModelException {
+        return step.getChildrenCount();
+    }
 }
