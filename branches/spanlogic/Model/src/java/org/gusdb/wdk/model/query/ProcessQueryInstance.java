@@ -341,6 +341,9 @@ public class ProcessQueryInstance extends QueryInstance {
 
         // define the rest of the columns
         for (Column column : columns) {
+            if (column.getName().equals(Utilities.COLUMN_WEIGHT)
+                    && query.isHasWeight()) continue;
+
             int width = column.getWidth();
             ColumnType type = column.getType();
 
