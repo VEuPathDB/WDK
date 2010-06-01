@@ -37,7 +37,6 @@ public class DatasetParam extends Param {
     public static final String TYPE_FILE = "file";
     public static final String TYPE_BASKET = "basket";
 
-
     private String recordClassRef;
     private RecordClass recordClass;
 
@@ -114,15 +113,17 @@ public class DatasetParam extends Param {
             JSONException, WdkUserException {
         // the input has to be a user-dataset-id
         int userDatasetId = Integer.parseInt(dependentValue);
-        
+
         if (isNoTranslation()) return Integer.toString(userDatasetId);
 
         ModelConfig config = wdkModel.getModelConfig();
         String dbLink = config.getAppDB().getUserDbLink();
         String wdkSchema = config.getUserDB().getWdkEngineSchema();
         String userSchema = config.getUserDB().getUserSchema();
-        String dvTable = wdkSchema + DatasetFactory.TABLE_DATASET_VALUE + dbLink;
-        String udTable = userSchema + DatasetFactory.TABLE_USER_DATASET + dbLink;
+        String dvTable = wdkSchema + DatasetFactory.TABLE_DATASET_VALUE
+                + dbLink;
+        String udTable = userSchema + DatasetFactory.TABLE_USER_DATASET
+                + dbLink;
         String colDatasetId = DatasetFactory.COLUMN_DATASET_ID;
         String colUserDatasetId = DatasetFactory.COLUMN_USER_DATASET_ID;
         StringBuffer sql = new StringBuffer("SELECT ");
@@ -133,7 +134,7 @@ public class DatasetParam extends Param {
             sql.append(" AS " + pkColumns[i - 1]);
         }
         sql.append(" FROM ");
-        sql.append(dvTable + " dv, " + udTable + " ud ");
+        sql.append(udTable + " ud, " + dvTable + " dv ");
         sql.append(" WHERE dv." + colDatasetId + " = ud." + colDatasetId);
         sql.append(" AND ud." + colUserDatasetId + " = " + userDatasetId);
         return sql.toString();
@@ -231,7 +232,7 @@ public class DatasetParam extends Param {
     public void setRecordClassRef(String recordClassRef) {
         this.recordClassRef = recordClassRef;
     }
-    
+
     public void setRecordClass(RecordClass recordClass) {
         this.recordClass = recordClass;
     }
