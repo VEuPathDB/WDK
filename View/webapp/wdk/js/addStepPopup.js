@@ -323,39 +323,7 @@ function spanOperation(stepid, type, url, proto, rs){
 		}
 	});
 }
-function callSpanLogic(){
-	var cstrt = getStrategy(current_Front_Strategy_Id);
-	var d = parseInputs();
-	var quesName = "";
-	var outputType = $("#form_question input[name='myProp(span_output)']").val();
-	if($("#form_question input[name='myProp(span_output)']").val().indexOf("A") != 0) outputType = "a";
-	outputType = $("#form_question input#type"+outputType.toUpperCase()).val();
-	if(outputType == "GeneRecordClasses.GeneRecordClass") quesName = "SpanQuestions.GenesBySpanLogic";
-	if(outputType == "OrfRecordClasses.OrfRecordClass") quesName = "SpanQuestions.OrfsBySpanLogic";
-	if(outputType == "IsolateRecordClasses.IsolateRecordClass") quesName = "SpanQuestions.IsolateBySpanLogic";
-	if(outputType == "EstRecordClasses.EstRecordClass") quesName = "SpanQuestions.EstBySpanLogic";
-	if(outputType == "SnpRecordClasses.SnpRecordClass") quesName = "SpanQuestions.SnpBySpanLogic";
-	if(outputType == "AssemblyRecordClasses.AssemblyRecordClass") quesName = "SpanQuestions.AssemblyBySpanLogic";
-	if(outputType == "SequenceRecordClasses.SequenceRecordClass") quesName = "SpanQuestions.SequenceBySpanLogic";
-	if(outputType == "SageTagRecordClasses.SageTagRecordClass") quesName = "SpanQuestions.SageTagBySpanLogic";
-	if(outputType == "DynSpanRecordClasses.DynSpanRecordClass") quesName = "SpanQuestions.DynSpanBySpanLogic";
-	if(outputType == "") return null;
-	$.ajax({
-		url:"processFilter.do?questionFullName="+quesName+"&strategy="+cstrt.backId+"&strategy_checksum="+cstrt.checksum,
-		data: d+"&state="+p_state,
-		success: function(data){
-			if(data.type == "success") {
-				alert("Span Operation completed Successfully!");
-				//alert(data);
-				closeAll();
-			}else{
-				alert("Span Operation failed due to internal error.");
-				//alert(data);
-				closeAll();
-			}
-		}
-	});
-}
+
 
 function getQueryForm(url,hideOp,isOrtholog,loadingParent){
     // retrieve the question form, but leave out all params

@@ -435,6 +435,46 @@ function AddStepToStrategy(url, proto, stpId){
 	closeAll(true);
 }
 
+function callSpanLogic(){
+	var cstrt = getStrategy(current_Front_Strategy_Id);
+	var f_strategyId = cstrt.frontId;
+	var b_strategyId = cstrt.backId;
+	var d = parseInputs();
+	var quesName = "";
+	var outputType = $("#form_question input[name='myProp(span_output)']").val();
+	if($("#form_question input[name='myProp(span_output)']").val().indexOf("A") != 0) outputType = "a";
+	outputType = $("#form_question input#type"+outputType.toUpperCase()).val();
+	if(outputType == "GeneRecordClasses.GeneRecordClass") quesName = "SpanQuestions.GenesBySpanLogic";
+	if(outputType == "OrfRecordClasses.OrfRecordClass") quesName = "SpanQuestions.OrfsBySpanLogic";
+	if(outputType == "IsolateRecordClasses.IsolateRecordClass") quesName = "SpanQuestions.IsolateBySpanLogic";
+	if(outputType == "EstRecordClasses.EstRecordClass") quesName = "SpanQuestions.EstBySpanLogic";
+	if(outputType == "SnpRecordClasses.SnpRecordClass") quesName = "SpanQuestions.SnpBySpanLogic";
+	if(outputType == "AssemblyRecordClasses.AssemblyRecordClass") quesName = "SpanQuestions.AssemblyBySpanLogic";
+	if(outputType == "SequenceRecordClasses.SequenceRecordClass") quesName = "SpanQuestions.SequenceBySpanLogic";
+	if(outputType == "SageTagRecordClasses.SageTagRecordClass") quesName = "SpanQuestions.SageTagBySpanLogic";
+	if(outputType == "DynSpanRecordClasses.DynSpanRecordClass") quesName = "SpanQuestions.DynSpanBySpanLogic";
+	if(outputType == "") return null;
+	$.ajax({
+		url:"processFilter.do?questionFullName="+quesName+"&strategy="+cstrt.backId+"&strategy_checksum="+cstrt.checksum,
+		data: d+"&state="+p_state,
+		type: "post",
+		dataType: "json",
+		beforeSend: function(){
+			showLoading(f_strategyId);
+		},
+		success: function(data){
+			if(ErrorHandler("AddStep", data, cstrt, $("div#query_form"))){
+				if($("div#query_form").css("display") == "none") $("div#query_form").remove();
+				updateStrategies(data);
+			}else{
+				removeLoading(f_strategyId);
+			}
+		}
+	});
+	isInsert = "";
+	closeAll(true);
+}
+
 function EditStep(url, proto, step_number){
 	$("#query_form").hide("fast");
 	var ss = getStrategyFromBackId(proto);
