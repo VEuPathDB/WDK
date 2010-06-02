@@ -372,7 +372,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         // determine the types of the step
         if (showSubStrategy && step.getIsCollapsible()) {
             outputSubStrategy(user, step, jsStep, strategyId);
-        } else if (step.isCombined() && step.getChildrenCount() > 1) {
+        } else if (step.isCombined()) {
             outputCombinedStep(user, step, jsStep, strategyId);
         } else { // both transform and normal steps
             outputNormalStep(user, step, jsStep);
@@ -384,10 +384,14 @@ public class ShowStrategyAction extends ShowQuestionAction {
     static private void outputCombinedStep(UserBean user, StepBean step,
             JSONObject jsStep, int strategyId) throws NoSuchAlgorithmException,
             JSONException, WdkModelException, WdkUserException, SQLException {
+        int childrenCount = step.getAnswerParamCount();
+        jsStep.put("childrenCount", childrenCount);
         if (step.getIsBoolean()) jsStep.put("operation", step.getOperation());
 
-        StepBean childStep = step.getChildStep();
-        jsStep.put("step", outputStep(user, childStep, strategyId, true));
+        if (childrenCount > 1) {
+            StepBean childStep = step.getChildStep();
+            jsStep.put("step", outputStep(user, childStep, strategyId, true));
+        }
     }
 
     static private void outputNormalStep(UserBean user, StepBean step,

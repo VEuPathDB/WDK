@@ -95,15 +95,10 @@ public class Step {
         return childStep;
     }
 
-    public int getChildrenCount() throws WdkUserException, WdkModelException {
+    public int getAnswerParamCount() throws WdkUserException, WdkModelException {
         String questionName = this.answer.getQuestionName();
         Question question = this.user.getWdkModel().getQuestion(questionName);
-        Param[] params = question.getParams();
-        int count = 0;
-        for (Param param : params) {
-            if (param instanceof AnswerParam) count++;
-        }
-        return count;
+        return question.getQuery().getAnswerParamCount();
     }
 
     public int getResultSize() {

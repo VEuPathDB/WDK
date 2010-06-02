@@ -497,19 +497,23 @@ public abstract class Query extends WdkModelBase {
      * @return the combined
      */
     public boolean isCombined() {
-        // check if the query contains any of the step param
-        for (Param param : paramMap.values()) {
-            if (param instanceof AnswerParam) return true;
-        }
-        return false;
+        return (getAnswerParamCount() > 0);
     }
 
     public boolean isBoolean() {
-        return false;
+        return (this instanceof BooleanQuery);
     }
 
     public boolean isTransform() {
-        return (!isBoolean() && isCombined());
+        return (getAnswerParamCount() == 1);
+    }
+    
+    public int getAnswerParamCount() {
+        int count = 0;
+        for (Param param : paramMap.values()) {
+            if (param instanceof AnswerParam) count++;
+        }
+        return count;
     }
 
     /*
