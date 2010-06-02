@@ -41,7 +41,6 @@
 		<tr>
 			<td id="left">
 				<div class="controls">
-					<img class="step_img" id="step_1" src="<c:url value="wdk/images/step1.png"/>"/>
 					<select name="myProp(span_begin_a)"><option value="start">start</option><option value="stop">stop</option></select>
 					<select name="myProp(span_begin_direction_a)"><option value="+">+</option><option value="-">-</option></select>
 					<input type="text" value="0" name="myProp(span_begin_offset_a)"/><br><br>
@@ -51,7 +50,6 @@
 				</div>
 			</td>
 			<td id="middle" style="border-bottom:1px solid #BBBBBB">
-					<img class="step_img" id="step_3" src="<c:url value="wdk/images/step3.png"/>"/>
 					<input type="radio" value="overlap" name="myProp(span_operation)" id="span-operation-overlap">&nbsp;&nbsp;<label>Overlap</label><br/>
 					<input type="radio" value="a_contain_b" name="myProp(span_operation)" id="span-operation-containing">&nbsp;&nbsp;<label>Containing</label><br/>
 					<input type="radio" value="b_contain_a" name="myProp(span_operation)" id="span-operation-contained">&nbsp;&nbsp;<label>Contained In</label><br/>
@@ -59,7 +57,6 @@
 			</td>
 			<td id="right">
 				<div class="controls">
-					<img class="step_img" id="step_2" src="<c:url value="wdk/images/step2.png"/>"/>
 					<select name="myProp(span_begin_b)"><option value="start">start</option><option value="stop">stop</option></select>
 					<select name="myProp(span_begin_direction_b)"><option value="+">+</option><option value="-">-</option></select>
 					<input type="text" value="0" name="myProp(span_begin_offset_b)"/><br><br>
@@ -73,7 +70,6 @@
 		<tr>
 			<td id="left"><div style="text-align:center;vertical-align:middle;">GRAPHICS</div></td>
 			<td id="middle">
-				<img class="step_img" id="step_4" src="<c:url value="wdk/images/step4.png"/>"/>
 				<input type="radio" value="Both strands" name="myProp(span_strand)" id="strand-operation-both">&nbsp;&nbsp;<label>Both Strands</label><br/>
 				<input type="radio" value="Same strand" name="myProp(span_strand)" id="strand-operation-same">&nbsp;&nbsp;<label>Same Strand</label><br/>
 				<input type="radio" value="Opposite strand" name="myProp(span_strand)" id="strand-operation-opposite">&nbsp;&nbsp;<label>Opposite Strand</label><br/>
@@ -82,13 +78,16 @@
 		</tr>
 		<tr>
 			<td id="left" style="text-align:center">
-				<img class="step_img" id="step_5" src="<c:url value="wdk/images/step5.png"/>"/>
 				<input type="radio" name="myProp(span_output)" value="type of input A" id="left_output"/>&nbsp;<label>Select Set A as output</label></td>
 				<td id="middle"></td>
 				<td id="right" style="text-align:center"><input type="radio" name="myProp(span_output)" value="type of input B" id="left_output"/>&nbsp;<label>Select Set B as output</label></td>
 		</tr>
 	</table>
 	<input type="submit" value="Get Result" style="margin-top:5px"/>
-
+	<img class="step_img" id="step_1" src="<c:url value="wdk/images/step1.png"/>"/>
+	<img class="step_img" id="step_3" src="<c:url value="wdk/images/step3.png"/>"/>
+	<img class="step_img" id="step_2" src="<c:url value="wdk/images/step2.png"/>"/>
+	<img class="step_img" id="step_4" src="<c:url value="wdk/images/step4.png"/>"/>
+	<img class="step_img" id="step_5" src="<c:url value="wdk/images/step5.png"/>"/>
 </div>
 	</td></tr></table>
