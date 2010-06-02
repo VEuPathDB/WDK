@@ -106,7 +106,7 @@
 </tr></table>
 
 
-<div id='Results_Pane'>
+<div class='Results_Pane'>
 <!-- pager -->
 <pg:pager isOffset="true"
           scope="request"
