@@ -982,25 +982,25 @@ ul#directions{
 }
 img.step_img{
 	width:20px;
-	position:absolute;
+	position:relative;
 }
 img#step_1{
-	left:209px;
-	top:15px;
+	left:-325px;
+	top:-161px;
 }
 img#step_2{
-	left:599px;
-	top:15px;
+	left:21px;
+	top:-161px;
 }
 img#step_3{
-	left:484px;
-	top:15px;
+	left:-71px;
+	top:-161px;
 }
 img#step_4{
-	left:484px;
-	top:89px;
+	left:-120px;
+	top:-86px;
 }
 img#step_5{
-	left:267px;
-	top:153px;
+	left:-359px;
+	top:-22px;
 }
