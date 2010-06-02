@@ -526,7 +526,7 @@ public class StepBean {
      * @throws WdkModelException
      * @see org.gusdb.wdk.model.user.Step#getChildrenCount()
      */
-    public int getChildrenCount() throws WdkUserException, WdkModelException {
-        return step.getChildrenCount();
+    public int getAnswerParamCount() throws WdkUserException, WdkModelException {
+        return step.getAnswerParamCount();
     }
 }
