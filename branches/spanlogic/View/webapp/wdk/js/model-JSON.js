@@ -95,10 +95,16 @@ Strategy.prototype.initSteps = function(steps, ord){
 	var stepCount = steps.length;
 	for(var i in steps){
 		if(i != "length" && i != "nonTransformLength"){
-			if(steps[i].isboolean){
+			if(steps[i].step != null){
 				st = new Step(i, steps[i].step.id, steps[i].id, null, steps[i].step.answerId);
 				st.operation = steps[i].operation;
-				st.isboolean = true;
+				if(steps[i].isboolean){ 
+					st.isboolean = true;
+					st.isSpan = false;
+				}else{
+					st.isSpan = true;
+					st.isboolean = false;
+				}
 				if(steps[i].step.isCollapsed && steps[i].step.strategy.order > 0){
 					this.subStratOrder[steps[i].step.strategy.order] = sidIndex;
 					subId = loadModel(steps[i].step.strategy, ord + "." + ssind);
@@ -144,6 +150,7 @@ function Step(frontId, back_step_Id, back_boolean_Id, child_Strat_Id, answerId){
 }
 Step.prototype.operation = null;
 Step.prototype.isboolean = false;
+Step.prototype.isSpan = false;
 Step.prototype.isSelected = false;
 Step.prototype.isTransform = false;
 Step.prototype.isFiltered = false;
