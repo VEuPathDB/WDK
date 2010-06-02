@@ -268,8 +268,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
             JSONObject jsStrategy = new JSONObject();
             jsStrategy.put("id", stratId);
             jsStrategy.put("checksum", strat.getChecksum());
-	    System.out.println("ID: " + stratId);
-	    System.out.println("Checksum: " + strat.getChecksum());
+            System.out.println("ID: " + stratId);
+            System.out.println("Checksum: " + strat.getChecksum());
             jsState.put(Integer.toString(order + 1), jsStrategy);
         }
         jsState.put("length", openedStrategies.length);
@@ -287,13 +287,13 @@ public class ShowStrategyAction extends ShowQuestionAction {
             if (viewStep != 0) jsView.put("step", viewStep);
             jsView.put("pagerOffset", user.getViewPagerOffset());
         }
-	String frontAction = user.getFrontAction();
-	if (frontAction != null) {
-	    jsView.put("action", frontAction);
-	    jsView.put("actionStrat", user.getFrontStrategy());
-	    jsView.put("actionStep", user.getFrontStep());
-	}
-	user.resetFrontAction();
+        String frontAction = user.getFrontAction();
+        if (frontAction != null) {
+            jsView.put("action", frontAction);
+            jsView.put("actionStrat", user.getFrontStrategy());
+            jsView.put("actionStep", user.getFrontStep());
+        }
+        user.resetFrontAction();
         jsMessage.put("currentView", jsView);
     }
 
@@ -304,8 +304,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         JSONObject jsStrategies = new JSONObject();
         for (StrategyBean strategy : strategies.values()) {
             JSONObject jsStrategy = outputStrategy(user, strategy);
-	    System.out.println("ID: " + strategy.getStrategyId());
-	    System.out.println("Checksum: " + strategy.getChecksum());
+            System.out.println("ID: " + strategy.getStrategyId());
+            System.out.println("Checksum: " + strategy.getChecksum());
             jsStrategies.put(strategy.getChecksum(), jsStrategy);
         }
         jsStrategies.put("length", strategies.size());
@@ -384,7 +384,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
     static private void outputCombinedStep(UserBean user, StepBean step,
             JSONObject jsStep, int strategyId) throws NoSuchAlgorithmException,
             JSONException, WdkModelException, WdkUserException, SQLException {
-        jsStep.put("operation", step.getOperation());
+        if (step.getIsBoolean()) jsStep.put("operation", step.getOperation());
 
         StepBean childStep = step.getChildStep();
         jsStep.put("step", outputStep(user, childStep, strategyId, true));
