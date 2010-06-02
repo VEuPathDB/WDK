@@ -294,7 +294,7 @@ function validateAndCall(type, url, proto, rs){
 function spanOperation(stepid, type, url, proto, rs){
 	var currStrategy = getStrategy(current_Front_Strategy_Id);
 	var rectype = currStrategy.dataType;
-	url = url + "&no_strategy=true";
+	url = url + "&no_strategy=true&noskip=true";
 	url = url.replace("processFilter","processQuestion");
 	var d = parseInputs();
 	$.ajax({
@@ -309,6 +309,9 @@ function spanOperation(stepid, type, url, proto, rs){
 				type: "post",
 				data: d + "&state=" + p_state,
 				success: function(stepData){
+					var stepnum = $("input#spanA").val();
+					var stp = currStrategy.getStep(stepnum, true);
+					$("input#spanA").attr("value",stp.back_step_Id);
 					$("input#spanB").attr("value",stepData.id);
 					$("input#typeB").attr("value",stepData.dataType);
 					$("span#fromAjax").prepend(stepData.displayType);
