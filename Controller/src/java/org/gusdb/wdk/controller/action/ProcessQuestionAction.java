@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Enumeration;
+import java.util.Iterator;
 import java.util.Map;
 
 import javax.servlet.http.Cookie;
@@ -110,6 +112,12 @@ public class ProcessQuestionAction extends ShowQuestionAction {
             if (noStrategy != null && noStrategy.length() > 0) {
                 url.append("&" + CConstants.WDK_NO_STRATEGY_PARAM + "="
                         + noStrategy);
+            }
+
+            // pass no_skip to showSummary
+            String noSkip = request.getParameter("noskip");
+            if (noSkip != null && noSkip.length() > 0) {
+                url.append("&noskip=" + noSkip);
             }
 
             /*
