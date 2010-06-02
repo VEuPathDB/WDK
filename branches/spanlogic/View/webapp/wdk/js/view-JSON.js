@@ -116,9 +116,11 @@ function createSteps(strat,div_strat){
 		cStp = strat.getStep(ind+1,true);
 		jsonStep = strat.JSON.steps[cStp.frontId];
 		prevJsonStep = (ind == 0) ? null : strat.JSON.steps[strat.getStep(ind,true).frontId];
-		if(cStp.isboolean){
-			booleanStep(cStp, prevJsonStep, jsonStep, strat.frontId, zIndex);
+		if(cStp.isboolean || cStp.isSpan){	
+			//Create the two layered Boolean Steps
+			multiStep(cStp, prevJsonStep, jsonStep, strat.frontId, zIndex);
 		}else{
+			//Create Single Layered Steps like First Step or Transforms
 			singleStep(cStp, prevJsonStep, jsonStep,strat.frontId, zIndex);
 		}
 		zIndex--; // DO NOT DELETE, needed for correct display in IE7.
@@ -129,7 +131,7 @@ function createSteps(strat,div_strat){
 }
 
 //Creates the boolean Step and the operand step displayed above it
-function booleanStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
+function multiStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 	// Create the boolean venn diagram box
 	var filterImg = "";
 	var bool_link = "";
