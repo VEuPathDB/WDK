@@ -169,7 +169,6 @@ public class SqlQueryInstance extends QueryInstance {
                 builder.append(" FROM (" + sql + ") o");
             }
         }
-	System.out.println("Getting uncached SQL: " + sql);
         return sql;
 
     }
