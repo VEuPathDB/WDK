@@ -107,14 +107,7 @@ public class ProcessQuestionAction extends ShowQuestionAction {
              * current_application_tab cookie so that user will go to the Run
              * Strategies tab after running a question from a question page.
              */
-            Cookie tabCookie = new Cookie("current_application_tab",
-                    "strategy_results");
-            // make sure it's only a session cookie, not persistent
-            tabCookie.setMaxAge(-1);
-            // make sure the cookie is good for whole site, not just webapp
-            tabCookie.setPath("/");
-
-            response.addCookie(tabCookie);
+	    ShowApplicationAction.setWdkTabStateCookie(request, response);
 
             // construct the forward to show_summary action
             ActionForward forward = new ActionForward(url.toString());

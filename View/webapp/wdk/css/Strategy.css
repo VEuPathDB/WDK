@@ -827,7 +827,7 @@ div.bottom-close{
       = Styles for All Strategies Tab
  * -------------------------------------------------------------------------- */
 
-ul#history_tabs {
+ul.menubar {
     border-bottom: 1px solid;
     list-style-image:none;
     list-style-position:outside;
@@ -839,13 +839,13 @@ ul#history_tabs {
     width: 98%;
 }
 
-#history_tabs li {;
+.menubar li {;
     float:left;
     padding:0.24em 0;
     margin:0;
 }
 
-#history_tabs li a {
+.menubar li a {
     color:black;
     display:inline-block;
     padding:0.24em 1em;
@@ -853,25 +853,25 @@ ul#history_tabs {
     text-decoration:none;
 }
 
-#history_tabs li a:hover {
+.menubar li a:hover {
     color:black;
     font-weight:bold;
     padding:0.24em 0.8em;
     position:relative;
 }
 
-#history_tabs #selected_type {
+.menubar .selected_type {
     background-color: #FFFFA0;
 }
 
-#history_tabs #selected_type a {
+.menubar .selected_type a {
     color:black;
     padding:0.24em 0.8em;
     font-weight:bold;
     position:relative;
 }
 
-#history_tabs .cmplt_hist_link {
+.menubar .cmplt_hist_link {
     float: right;
     display: inline-block;
     padding-top: 0.4em

@@ -21,14 +21,8 @@
   <wdk:dyk />
 </c:if>
 
-<%-- ****remove id entry in css******
-<div id="strategy_workspace" class="h2center">
-My Search Strategies Workspace
-</div>
---%>
-
 <ul id="strategy_tabs">
-<%-- showPanel() is in filter_menu.js --%>
+<%-- showPanel() is in addStepPopup.js --%>
 
    <li><span id="stratTitle" class="h4left">My Strategies:</span></li> 
 
@@ -86,9 +80,6 @@ My Search Strategies Workspace
 </div>
 
 <div id="basket" class="workspace_panel">
-  <wdk:basketControls />
-  <div class="Workspace">
-  </div>
 </div>
 
 <div id="sample_strat" class="workspace_panel">
