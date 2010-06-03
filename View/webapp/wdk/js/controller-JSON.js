@@ -36,7 +36,7 @@ $(document).ready(function(){
 		}
 	});
 	initStrategyPanels();
-	var current = getCurrentTabCookie();
+	var current = getCurrentTabCookie('application');
 	if (!current || current == null)
 		showPanel('strategy_results');
 	else

@@ -488,8 +488,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         request.setAttribute(CConstants.WDK_QUESTION_PARAMS_KEY,
                 answerValue.getInternalParams());
-        request.setAttribute(CConstants.WDK_ANSWER_KEY, answerValue);
-        request.setAttribute(CConstants.WDK_HISTORY_KEY, step);
+        request.setAttribute(CConstants.WDK_STEP_KEY, step);
     }
 
     private boolean updateSortingSummary(HttpServletRequest request,

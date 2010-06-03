@@ -640,6 +640,7 @@ tr.headerRow > td,th {
 table.basket {
 	margin-top: 3px;
 	margin-left:2px;
+	clear: both;
 }
 
 #strategy_tabs li span#stratTitle {

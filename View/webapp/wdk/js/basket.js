@@ -1,3 +1,67 @@
+
+function showBasket(recordClass, type){	
+	var url = "showBasket.do";
+	var d = new Object();
+	if (recordClass) {
+		 d.recordClass = recordClass;
+		$("#basket .menubar .selected_type").removeClass("selected_type");
+		$(".basket_panel").hide();
+		$("#basket .menubar li").each(function() {
+			var id = $("a", this).attr("id");
+			if (id == 'tab_' + type) {
+				$(this).addClass("selected_type");
+			}
+		});
+		$("div#basket_" + type).show();
+	}
+	$.ajax({
+		url: url,
+		data: d,
+		type: "post",
+		dataType: "html",
+		beforeSend:function(){
+			$("body").block();
+		},
+		success: function(data){
+			if (recordClass) {
+				setCurrentTabCookie('basket', type);
+				$("div#basket_" + type).html(data);
+				if ($("div#basket_" + type).find("table").length > 0) {
+					$("input#empty-basket-button").attr("disabled",false);
+					$("input#make-strategy-from-basket-button").attr("disabled",false);
+					// create multi select control for adding columns
+					checkPageBasket();
+					createMultiSelectAttributes($("#basket_" + type).find("#addAttributes"));
+					createFlexigridFromTable($("#basket_" + type).find("#Results_Table"));
+					try {
+						customBasketPage();
+					}
+					catch(err) {
+						//Do nothing
+					}
+				}else{
+					$("input#empty-basket-button").attr("disabled",true);
+					$("input#make-strategy-from-basket-button").attr("disabled",true);
+				}
+			}
+			else {
+				$("div#basket").html(data);
+				var current = getCurrentTabCookie('basket');
+				if (current && $("div#basket ul.menubar a#tab_" + current).length > 0) {
+					$("div#basket ul.menubar a#tab_" + current).click();
+				} else {
+					$("div#basket ul.menubar a:first").click();
+				}
+			}
+			$("body").unblock();
+		},
+		error: function(data,msg,e){
+			alert("Error occured in showBasket() function!!");
+			$("body").unblock();
+		}
+	});
+}
+
 function ChangeBasket(url, noUpdate) {
 	jQuery("body").block();
 	jQuery.ajax({
@@ -14,6 +78,18 @@ function ChangeBasket(url, noUpdate) {
                                       + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
 		}
 	});
+}
+
+function emptyBasket() {
+	var recordClass = jQuery("div#" + getCurrentBasketWrapper()).attr("recordClass");
+	updateBasket(this,'clear',0,0,recordClass);
+}
+
+function saveBasket() {
+	var recordClass = jQuery("div#" + getCurrentBasketWrapper()).attr("recordClass");
+	recordClass = recordClass.replace('.', '_');	
+	window.location='processQuestion.do?questionFullName=InternalQuestions.' + recordClass +
+		'BySnapshotBasket&' + recordClass + 'Dataset_type=basket&questionSubmit=Run+Step';
 }
 
 //Shopping basket on clickFunction
@@ -128,7 +204,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 			},
 			error: function(){
 				//jQuery("body").unblock();
-				alert("Error adding Gene to basket!");
+				alert("Error adding item to basket!");
 			}
 		});
 }
@@ -165,9 +241,9 @@ function checkPageBasket(){
 	}
 }
 
-function getCurrentBasketWrapper() {"strategy_results";
+function getCurrentBasketWrapper() {
 	if (jQuery("#strategy_results").css('display') == 'none') {
-		return "basket";
+		return "basket_" + getCurrentTabCookie('basket');
 	}
 	return "strategy_results";
 }
