@@ -54,6 +54,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             QuestionBean wdkQuestion = null;
 
             boolean isTransform = false;
+            boolean isBoolean = false;
 
             // did we get strategyId_stepId?
             String strategyKey = strStratId;
@@ -96,8 +97,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             int weight = 0;
             if (hasWeight) {
                 if (!strWeight.matches("[\\-\\+]?\\d+"))
-                    throw new WdkUserException("Invalid weight value: '" 
-                            + strWeight + "'. Only integer numbers are allowed.");
+                    throw new WdkUserException("Invalid weight value: '"
+                            + strWeight
+                            + "'. Only integer numbers are allowed.");
                 if (strWeight.length() > 9)
                     throw new WdkUserException("Weight number is too big: "
                             + strWeight);
@@ -114,7 +116,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             boolean hasQuestion = (qFullName != null && qFullName.trim().length() > 0);
 
             logger.debug("isRevise: " + isRevise + "; isInsert: " + isInsert);
-            logger.debug("has question? " + hasQuestion + "; qFullName: " + qFullName);
+            logger.debug("has question? " + hasQuestion + "; qFullName: "
+                    + qFullName);
             logger.debug("has filter? " + hasFilter + "; filter: " + filterName);
             logger.debug("has weight? " + hasWeight + "; weight: " + weight);
             // are we inserting an existing step?
@@ -137,7 +140,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         fForm);
 
                 if (isRevise) { // TODO need investigation of this code
-                    StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
+                    strategy.getStepById(Integer.parseInt(reviseStep));
                 }
                 if (wdkQuestion == null) {
                     if (!hasQuestion)
@@ -170,6 +173,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 wdkUser.setViewResults(wdkUser.getViewStrategyId(),
                         wdkUser.getViewStepId(), 0);
             }
+            isBoolean = newStep.getIsBoolean();
 
             int newStepId = newStep.getStepId();
             int baseNewStepId = newStepId;
@@ -219,7 +223,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             } else if (!isRevise && !isInsert) {
                 // add new step to the end of a strategy or a branch
                 targetStepId = rootStep.getStepId();
-                if (!isTransform) {
+                if (newStep.getIsBoolean()) {
                     // now create step for operation query, if it's a boolean
                     boolExp = rootStep.getStepId() + " " + op + " " + newStepId;
                     newStep = wdkUser.combineStep(boolExp, false);
@@ -302,7 +306,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         }
                     } else { // not the first step
                         if (isRevise) {
-                            if (!isTransform) {
+                            if (isBoolean) {
                                 // check if we've changed the query itself, or
                                 // just the operation
                                 logger.debug("targetStepId: " + targetStepId);
@@ -332,7 +336,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                             // we've already run the revised query,
                             // so we just need to update subsequent steps
                         } else {
-                            if (!isTransform) {
+                            if (isBoolean) {
                                 // the inserted step has to point to the step at
                                 // insertIx - 1
                                 boolExp = targetStep.getPreviousStep().getStepId()
