@@ -45,10 +45,10 @@ function updateHistory(){
 }
 
 function initDisplayType() {
-	var currentPanel = getCurrentTabCookie(true);
-	if($("#history_tabs").length > 0){
-		if ($("#tab_" + currentPanel).length == 0) {
-			var type = $("#history_tabs a:first").attr("id").substr(4);
+	var currentPanel = getCurrentTabCookie('browse');
+	if($("#search_history .menubar").length > 0){
+		if ($("#search_history .menubar #tab_" + currentPanel).length == 0) {
+			var type = $("#search_history .menubar a:first").attr("id").substr(4);
 			displayHist(type);
 		} else
 			displayHist(currentPanel);
@@ -142,7 +142,7 @@ function showHistShare(ele, stratId, url) {
 }
 
 function selectAllHist(type) {
-	var currentPanel = getCurrentTabCookie(true);
+	var currentPanel = getCurrentTabCookie('browse');
 	selectNoneHist();
 	if (type == 'saved'){
 		$("div.history_panel.saved-strategies.panel_" + currentPanel + " input:checkbox").attr("checked", "yes");
@@ -162,13 +162,13 @@ function selectNoneHist() {
 }
 
 function displayHist(type) {
-	$("#selected_type").removeAttr("id");
+	$("#search_history .menubar .selected_type").removeClass("selected_type");
 	$(".history_panel").hide();
 	selectNoneHist();
-	$("#history_tabs li").each(function() {
+	$("#search_history .menubar li").each(function() {
 		var id = $("a", this).attr("id");
 		if (id == 'tab_' + type) {
-			$(this).attr("id", "selected_type");
+			$(this).addClass("selected_type");
 		}
 	});
 	if (type == 'cmplt'){
@@ -181,8 +181,8 @@ function displayHist(type) {
 	else $(".history_controls").show();
 	$("div.panel_" + type).show();
 	if ($("div.panel_" + type + " .unsaved-strategies-body").height() > 250) $("div.panel_" + type + " .unsaved-strategies-body").addClass('tbody-overflow');
-	setCurrentTabCookie('search_history');
-	setCurrentTabCookie(type, true);
+	setCurrentTabCookie('application', 'search_history');
+	setCurrentTabCookie('browse', type);
 }
 
 function updateSelectedList() {

@@ -41,7 +41,7 @@ public class GetFilterLinkAction extends Action {
         }
 
         // get the history id
-        String displayId = request.getParameter(CConstants.WDK_HISTORY_ID_KEY);
+        String displayId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
         String filterName = request.getParameter("filter");
 
         if (displayId == null || displayId.length() == 0 || filterName == null

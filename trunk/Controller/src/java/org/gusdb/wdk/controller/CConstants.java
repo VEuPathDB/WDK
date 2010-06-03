@@ -53,9 +53,6 @@ public class CConstants {
     public static final String WDK_REPORT_FORMATS_KEY = "wdkReportFormats";
     public static final String WDK_REPORT_FORMAT_KEY = "wdkReportFormat";
     public static final String WDK_RECORD_KEY = "wdkRecord";
-    public static final String WDK_HISTORY_KEY = "wdkHistory";
-    public static final String WDK_HISTORY_ID_KEY = "wdk_history_id";
-    public static final String WDK_HISTORY_CUSTOM_NAME_KEY = "customHistoryName";
     public static final String NEXT_QUESTION_OPERAND = "nextQuestionOperand";
     public static final String QUESTIONFORM_KEY = "questionForm";
     public static final String BOOLEAN_QUESTION_FORM_KEY = "booleanQuestionForm";
@@ -187,7 +184,7 @@ public class CConstants {
 
     //keys for WDK cookies
     public static final String WDK_LOGIN_COOKIE_KEY = "wdk_check_auth";
-    public static final String WDK_LOGIN_SECRET_KEY = "grep 'model name' /proc/cpuinfo | md5sum";
+    public static final String WDK_TAB_STATE_COOKIE = "wdk_tab_state";
 
     //name of webapp init params, from web.xml, used in ApplicationInitListener.java
     protected static final String WDK_MODELCONFIGXML_PARAM = "wdkModelConfigXml_param";

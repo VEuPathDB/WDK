@@ -3,8 +3,8 @@
 <%@ taglib prefix="pg" uri="http://jsptags.com/tags/navigation/pager" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
-<c:set var="wdkAnswer" value="${requestScope.wdkAnswer}"/>
 <c:set var="wdkStep" value="${requestScope.wdkStep}"/>
+<c:set var="wdkAnswer" value="${wdkStep.answerValue}"/>
 <c:set var="qName" value="${wdkAnswer.question.fullName}" />
 <c:set var="modelName" value="${applicationScope.wdkModel.name}" />
 <c:set var="recordName" value="${wdkAnswer.question.recordClass.fullName}" />
@@ -18,7 +18,6 @@
               description="Strategy Id we are looking at"
 %>
 
-<c:set var="type" value="Results" />
 <c:set var="step_dataType" value="${wdkStep.displayType}" />
 <c:choose>
 	<c:when test="${fn:endsWith(step_dataType,'y')}">
@@ -57,7 +56,7 @@
 
 <c:if test="${strategy != null}">
     <wdk:filterLayouts strategyId="${strategy.strategyId}" 
-                       stepId="${wdkHistory.stepId}"
+                       stepId="${wdkStep.stepId}"
                        answerValue="${wdkAnswer}" />
 </c:if>
 
@@ -97,16 +96,16 @@
     </c:choose>
     <c:if test="${recHasBasket}"><a id="basketStep" style="font-size:120%" href="javascript:void(0)" onClick="${basketClick}"><b>Add ${r_count} to Basket</b></a>&nbsp;|&nbsp;</c:if>
    </c:if>
-    <a style="font-size:120%" href="downloadStep.do?step_id=${wdkHistory.stepId}"><b>Download ${r_count}</b></a>
+    <a style="font-size:120%" href="downloadStep.do?step_id=${wdkStep.stepId}"><b>Download ${r_count}</b></a>
   <c:if test="${!empty sessionScope.GALAXY_URL}">
-    &nbsp;|&nbsp;<a href="downloadStep.do?step_id=${wdkHistory.stepId}&wdkReportFormat=tabular"><b>SEND TO GALAXY</b></a>
+    &nbsp;|&nbsp;<a href="downloadStep.do?step_id=${wdkStep.stepId}&wdkReportFormat=tabular"><b>SEND TO GALAXY</b></a>
   </c:if>
   </div>
 </td>
 </tr></table>
 
 
-<div id='Results_Pane'>
+<div class='Results_Pane'>
 <!-- pager -->
 <pg:pager isOffset="true"
           scope="request"
