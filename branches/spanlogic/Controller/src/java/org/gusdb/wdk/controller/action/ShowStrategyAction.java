@@ -369,13 +369,13 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("validationMessage", step.getValidationMessage());
         jsStep.put("assignedWeight", step.getAssignedWeight());
 
+        outputParams(user, step, jsStep);
+
         // determine the types of the step
         if (showSubStrategy && step.getIsCollapsible()) {
             outputSubStrategy(user, step, jsStep, strategyId);
         } else if (step.isCombined()) {
             outputCombinedStep(user, step, jsStep, strategyId);
-        } else { // both transform and normal steps
-            outputNormalStep(user, step, jsStep);
         }
 
         return jsStep;
@@ -394,7 +394,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         }
     }
 
-    static private void outputNormalStep(UserBean user, StepBean step,
+    static private void outputParams(UserBean user, StepBean step,
             JSONObject jsStep) throws NoSuchAlgorithmException, JSONException,
             WdkModelException, WdkUserException, SQLException {
 
