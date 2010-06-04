@@ -607,15 +607,15 @@ offset = function(modelstep){
 	if(modelstep == null){
 		return leftOffset + 123;
 	}
-	if(modelstep.isboolean && modelstep.prevStepType == "boolean"){
+	if((modelstep.isboolean || modelstep.isSpan) && (modelstep.prevStepType == "boolean" || modelstep.prevStepType == "span")){
 		leftOffset += b2b;
-	}else if(modelstep.isboolean && modelstep.prevStepType == "transform"){
+	}else if((modelstep.isboolean || modelstep.isSpan) && modelstep.prevStepType == "transform"){
 		leftOffset += b2t;
-	}else if(modelstep.isTransform && modelstep.prevStepType == "boolean"){
+	}else if(modelstep.isTransform && (modelstep.prevStepType == "boolean" || modelstep.prevStepType == "span")){
 		leftOffset += t2b;
 	}else if(modelstep.isTransform && modelstep.prevStepType == "transform"){
 		leftOffset += t2t;
-	}else if(modelstep.isboolean){
+	}else if(modelstep.isboolean || modelstep.isSpan){
 		leftOffset += f2b;
 	}else if(modelstep.isTransform){
 		leftOffset += f2t;
