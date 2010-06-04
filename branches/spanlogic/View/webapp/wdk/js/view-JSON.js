@@ -160,6 +160,10 @@ function multiStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 		}
 	boolDiv = document.createElement('div');
 	$(boolDiv).attr("id","step_" + modelstep.frontId).addClass(booleanClasses + jsonstep.operation).html(boolinner).css({left: offset(modelstep) + "px", 'z-index' : zIndex});
+        
+        // use span icons instead if the step is a span step
+        if (modelstep.isSpan) $(boolDiv).attr("type", "span");
+
 	$(".crumb_details", boolDiv).replaceWith(createDetails(modelstep, prevjsonstep, jsonstep, sid));
 	zIndex++; // DO NOT DELETE this or previous line, needed for correct display in IE7.
 	stepNumber = document.createElement('span');
