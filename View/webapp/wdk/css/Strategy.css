@@ -267,6 +267,11 @@ td.operation, div.operation, li.operation {
 	background-image: url(../images/operationIcons.gif);
 }
 
+.operation[type="span"] {
+        background-image: url(../images/operationSpanIcons.gif);
+}
+
+
 td.operation {
 	height: 18px;
 	width: 44px;
