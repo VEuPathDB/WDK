@@ -857,7 +857,7 @@ ul#history_tabs {
     color:black;
     display:inline-block;
     padding:0.24em 1em;
-    text-align:center;
+<    text-align:center;
     text-decoration:none;
 }
 
@@ -943,6 +943,10 @@ div#sections{
 	line-height:1.25;
 }
 
+.menu_section {
+   text-indent:-5px;
+   margin-left:3px;
+}
 .qf_section{
 	height:190px;
 	margin-bottom:-11px;
@@ -1006,6 +1010,6 @@ img#step_4{
 	top:-86px;
 }
 img#step_5{
-	left:-359px;
+	left:-385px;
 	top:-22px;
 }
