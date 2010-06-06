@@ -22,11 +22,11 @@
 <table><tr><td style="vertical-align:top">
 	<!--	<span class="heading">Instructions</span>-->
 		<ul id="directions">
-			<li><img src="<c:url value="wdk/images/step1.png"/>" width="20"/> Define region for current results of the strategy</li>
-			<li><img src="<c:url value="wdk/images/step2.png"/>" width="20"/> Define region for results from the current step</li>
-			<li><img src="<c:url value="wdk/images/step3.png"/>" width="20"/> Choose the operation to relate the two sets of regions</li>
-			<li><img src="<c:url value="wdk/images/step4.png"/>" width="20"/> Choose the strands to which the operation should be applied</li>
-			<li><img src="<c:url value="wdk/images/step5.png"/>" width="20"/> Decide which result set the results of this operation should come from</li>
+			<li><img title="The default region is the genomic location of the feature ID in the result" src="<c:url value="wdk/images/step1.png"/>" width="20"/> Define a region for the strategy results</li>
+			<li><img title="The default region is the genomic location of the feature ID in the result" src="<c:url value="wdk/images/step2.png"/>" width="20"/> Define a region for results in the new step</li>
+			<li><img src="<c:url value="wdk/images/step3.png"/>" width="20"/> Choose the operation to relate these two sets of regions</li>
+			<li><img src="<c:url value="wdk/images/step4.png"/>" width="20"/> Choose the strands to which the operation should apply</li>
+			<li><img title="Think of what you are looking for" src="<c:url value="wdk/images/step5.png"/>" width="20"/> Decide data type of the Result</li>
 		</ul>
 	</td>
 	<td style="vertical-align:top">
@@ -50,7 +50,7 @@
 				</div>
 			</td>
 			<td id="middle" style="border-bottom:1px solid #BBBBBB">
-					<input type="radio" value="overlap" name="myProp(span_operation)" id="span-operation-overlap">&nbsp;&nbsp;<label>Overlap</label><br/>
+					<input checked type="radio" value="overlap" name="myProp(span_operation)" id="span-operation-overlap">&nbsp;&nbsp;<label>Overlap</label><br/>
 					<input type="radio" value="a_contain_b" name="myProp(span_operation)" id="span-operation-containing">&nbsp;&nbsp;<label>Containing</label><br/>
 					<input type="radio" value="b_contain_a" name="myProp(span_operation)" id="span-operation-contained">&nbsp;&nbsp;<label>Contained In</label><br/>
 				</div>
@@ -70,7 +70,7 @@
 		<tr>
 			<td id="left"><div style="text-align:center;vertical-align:middle;">GRAPHICS</div></td>
 			<td id="middle">
-				<input type="radio" value="Both strands" name="myProp(span_strand)" id="strand-operation-both">&nbsp;&nbsp;<label>Both Strands</label><br/>
+				<input checked type="radio" value="Both strands" name="myProp(span_strand)" id="strand-operation-both">&nbsp;&nbsp;<label>Both Strands</label><br/>
 				<input type="radio" value="Same strand" name="myProp(span_strand)" id="strand-operation-same">&nbsp;&nbsp;<label>Same Strand</label><br/>
 				<input type="radio" value="Opposite strand" name="myProp(span_strand)" id="strand-operation-opposite">&nbsp;&nbsp;<label>Opposite Strand</label><br/>
 			</td>
@@ -78,9 +78,9 @@
 		</tr>
 		<tr>
 			<td id="left" style="text-align:center">
-				<input type="radio" name="myProp(span_output)" value="type of input A" id="left_output"/>&nbsp;<label>Select Set A as output</label></td>
+				<input type="radio" name="myProp(span_output)" value="type of input A" id="left_output"/>&nbsp;<label>Select this datatype for Result</label></td>
 				<td id="middle"></td>
-				<td id="right" style="text-align:center"><input type="radio" name="myProp(span_output)" value="type of input B" id="left_output"/>&nbsp;<label>Select Set B as output</label></td>
+				<td id="right" style="text-align:center"><input type="radio" name="myProp(span_output)" value="type of input B" id="left_output"/>&nbsp;<label>Select this datatype for Result</label></td>
 		</tr>
 	</table>
 	<input type="submit" value="Get Result" style="margin-top:5px"/>

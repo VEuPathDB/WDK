@@ -51,30 +51,30 @@
 		<table id="sections-layout"><tr>
 			<td id="section-1">
 				<div class="qf_section" id="step_type">
-					<ul>
-						<li class="category" onclick="showNewSection(this,'boolean',2)" style="background-color:#DDDDDD; font-weight:bold">Add a Set Operation</li>
+					<ul class="menu_section">
+						<li class="category" onclick="showNewSection(this,'boolean',2)" style="background-color:#DDDDDD; font-weight:bold">Basic Step</li>
 						<c:if test="${fn:length(transformQuestions) > 0}">
-							<li class="category" onclick="showNewSection(this,'transforms',2)">Add a Tranform</li>
+							<li class="category" onclick="showNewSection(this,'transforms',2)">Transform to ...</li>
 						</c:if>
-						<li class="category" onclick="showNewSection(this,'span_logic',2)">Add a Span Operation</li>
+						<li class="category" onclick="showNewSection(this,'span_logic',2)">Advanced (location-based) Step</li>
 					</ul>
 				</div>
 			</td>
 			<td id="section-2">
 				<div class="qf_section" id="boolean" style="">
-				<ul>
-					<li class="category" onclick="showNewSection(this,'boolean_searches',3)" style="background-color:#DDDDDD; font-weight:bold">Run a Search</li>
-					<li class="category" onclick="showNewSection(this,'boolean_strategies',3)">Nest a Strategy</li>
+				<ul class="menu_section">
+					<li class="category" onclick="showNewSection(this,'boolean_searches',3)" style="background-color:#DDDDDD; font-weight:bold">Run a new Search</li>
+					<li class="category" onclick="showNewSection(this,'boolean_strategies',3)">Add an existing Strategy</li>
 					<%--<li><a href="javascript:void(0)" onclick="showNewSection(this,'boolean_basket')"></a>Basket</li>--%>
 					<c:if test="${recordClass.hasBasket}">
 						<c:set var="q" value="${recordClass.snapshotBasketQuestion}" />
-						<li style="width:auto;z-index:40;" onclick="getQueryForm('showQuestion.do?questionFullName=${q.fullName}&partial=true')">Copy from Basket</li>
+						<li style="width:auto;z-index:40;" onclick="getQueryForm('showQuestion.do?questionFullName=${q.fullName}&partial=true')">Add the Basket</li>
 					</c:if>
 				</ul>
 			</div></td>
 			<td id="section-3">
 				<div class="qf_section" id="boolean_searches" style="background-color:#EEEEEE;">
-					<ul>
+					<ul class="menu_section">
 						<c:set var="rootCat" value="${model.websiteRootCategories[rcName]}" />
 						<c:choose>
 						<c:when test="${rootCat.multiCategory}">
@@ -100,19 +100,19 @@
 		</tr></table>
 		
 		<div class="original" id="boolean" style="display:none">
-			<ul>
-				<li class="category" onclick="showNewSection(this,'boolean_searches',3)">Run a Search</li>
-				<li class="category" onclick="showNewSection(this,'boolean_strategies',3)">Nest a Strategy</li>
+			<ul class="menu_section">
+				<li class="category" onclick="showNewSection(this,'boolean_searches',3)">Run a new Search</li>
+				<li class="category" onclick="showNewSection(this,'boolean_strategies',3)">Add an existing Strategy</li>
 				<%--<li><a href="javascript:void(0)" onclick="showNewSection(this,'boolean_basket')"></a>Basket</li>--%>
 				<c:if test="${recordClass.hasBasket}">
 					<c:set var="q" value="${recordClass.snapshotBasketQuestion}" />
-					<li style="width:auto;z-index:40;" onclick="getQueryForm('showQuestion.do?questionFullName=${q.fullName}&partial=true')">Copy from Basket</li>
+					<li style="width:auto;z-index:40;" onclick="getQueryForm('showQuestion.do?questionFullName=${q.fullName}&partial=true')">Add the Basket</li>
 				</c:if>
 			</ul>
 		</div>
 <!--TRANSFORMS SECTION-->		
 		<div class="original" id="transforms" style="display:none">
-			<ul>
+			<ul class="menu_section">
 				<c:forEach items="${transformQuestions}" var="t">
 			      <jsp:setProperty name="t" property="inputType" value="${rcName}" />
 			      <c:set var="tparams" value="" />
@@ -126,7 +126,7 @@
 
 <!-- BOOLEAN SEARCHES SECTION -->		
 		<div class="original" id="boolean_searches" style="display:none">
-			<ul>
+			<ul class="menu_section">
 				<c:set var="rootCat" value="${model.websiteRootCategories[rcName]}" />
 				<c:choose>
 				<c:when test="${rootCat.multiCategory}">
@@ -151,7 +151,7 @@
 		<c:forEach items="${rootCat.websiteChildren}" var="catEntry">
 			<c:set var="cat" value="${catEntry.value}" />
 			<div class="original" id="${cat.name}" style="display:none">
-				<ul>
+				<ul class="menu_section">
 					<c:forEach items="${cat.websiteQuestions}" var="q">
    						<li onclick="getQueryForm('showQuestion.do?questionFullName=${q.fullName}&partial=true')">${q.displayName}</li>
 					</c:forEach>
@@ -160,8 +160,8 @@
 		</c:forEach>
 		
 		<div class="original" id="boolean_strategies" style="display:none">
-			<ul>
-				<li class="category" onclick="showNewSection(this,'boolean_open',4)">Open Strategies</li>
+			<ul class="menu_section">
+				<li class="category" onclick="showNewSection(this,'boolean_open',4)">Opened Strategies</li>
 				<c:set var="cls" value=""/>
 				<c:set var="cats" value=""/>
 				<c:if test="${fn:length(user.savedStrategiesByCategory[rcName]) > 0}">
@@ -179,7 +179,7 @@
 			</ul>
 		</div>
 		<div class="original" id="boolean_open" style="display:none">
-					<ul>
+					<ul class="menu_section">
 						<c:forEach items="${user.activeStrategies}" var="storedStrategy">
 				 			<c:if test="${storedStrategy.type == rcName}">
 								<c:set var="displayName" value="${storedStrategy.name}" />
@@ -194,7 +194,7 @@
 				<!-- Display the Saved Strategies -->
 				
 		<div class="original" id="boolean_saved" style="display:none">
-					<ul>
+					<ul class="menu_section">
 						<c:forEach items="${user.savedStrategiesByCategory[rcName]}" var="storedStrategy">
 							<c:set var="displayName" value="${storedStrategy.name}" />
 							<c:if test="${fn:length(displayName) > 30}">
@@ -207,7 +207,7 @@
 				<!-- Display the recent Strategies (Opened  viewed in the last 24 hours) -->
 				
 		<div class="original" id="boolean_recent" style="display:none">
-					<ul>
+					<ul class="menu_section">
 						<c:forEach items="${user.recentStrategiesByCategory[rcName]}" var="storedStrategy">
 							<c:set var="displayName" value="${storedStrategy.name}" />
 							<c:if test="${fn:length(displayName) > 30}">
@@ -220,19 +220,19 @@
 		
 <!-- SPAN LOGIC SECTION -->
 		<div id="span_logic" style="display:none" class="original">
-			<ul>
-				<li class="category" onclick="showNewSection(this,'sl_recordclasses',3)">Run a Search</li>
-				<li class="category" onclick="showNewSection(this,'sl_strategies',3)">Nest a Strategy</li>
-				<li>Copy from Basket</li>
-				<li>Include All Genes</li>
+			<ul class="menu_section">
+				<li class="category" onclick="showNewSection(this,'sl_recordclasses',3)">Run a new Search</li>
+				<li class="category" onclick="showNewSection(this,'sl_strategies',3)">Add an existing Strategy</li>
+				<li>Add the Basket</li>
+			<%--	<li>Include All Genes</li>
 				<li>Include All ORFs</li>
-				<li>Include All SNPs</li>
+				<li>Include All SNPs</li>  --%>
 			</ul>
 		</div>
 
 		<div class="original" id="sl_strategies" style="display:none">
-			<ul>
-				<li class="category" onclick="showNewSection(this,'sl_open',4)">Open Strategies</li>
+			<ul class="menu_section">
+				<li class="category" onclick="showNewSection(this,'sl_open',4)">Opened Strategies</li>
 				<c:set var="cls" value=""/>
 				<c:set var="cats" value=""/>
 				<c:set var="count_s" value=""/>
@@ -259,7 +259,7 @@
 		</div>
 		
 		<div class="original" id="sl_open" style="display:none">
-					<ul>
+					<ul class="menu_section">
 						<c:forEach items="${user.activeStrategies}" var="storedStrategy">
 								<c:set var="displayName" value="${storedStrategy.name}" />
 								<c:if test="${fn:length(displayName) > 30}">
@@ -272,7 +272,7 @@
 				<!-- Display the Saved Strategies -->
 				
 			<div class="original" id="sl_saved" style="display:none">
-					<ul>
+					<ul class="menu_section">
 						<c:forEach items="${model.websiteRootCategories}" var="rcs">
 							<c:forEach items="${user.savedStrategiesByCategory[rcs.value.name]}" var="storedStrategy">
 								<c:set var="displayName" value="${storedStrategy.name}" />
@@ -287,7 +287,7 @@
 					<!-- Display the recent Strategies (Opened  viewed in the last 24 hours) -->
 
 				<div class="original" id="sl_recent" style="display:none">
-					<ul>
+					<ul class="menu_section">
 						<c:forEach items="${model.websiteRootCategories}" var="rcs">
 							<c:forEach items="${user.recentStrategiesByCategory[rcs.value.name]}" var="storedStrategy">
 								<c:set var="displayName" value="${storedStrategy.name}" />
@@ -301,8 +301,8 @@
 				</div>
 		
 
-		<div id="sl_recordclasses" style="display:none" class="original">
-			<ul>
+		<div id="sl_recordclasses" class="original">
+			<ul class="menu_section">
 			<c:forEach var="rcs" items="${model.websiteRootCategories}">
 				<c:set var="classId" value="${fn:replace(rcs.value.name,'.','_')}"/>
 				<li class="category" onclick="showNewSection(this,'sl_${classId}',4)">${rcs.value.displayName}</li>
@@ -313,7 +313,7 @@
 		<c:forEach var="rcs" items="${model.websiteRootCategories}">
 			<c:set var="classId" value="${fn:replace(rcs.value.name,'.','_')}"/>
 			<div class="original" id="sl_${classId}" style="display:none">
-				<ul>
+				<ul class="menu_section">
 					<c:choose>
 					<c:when test="${rcs.value.multiCategory}">
 					<c:forEach items="${rcs.value.websiteChildren}" var="catEntry">
@@ -340,7 +340,7 @@
 			<c:forEach items="${rcs.value.websiteChildren}" var="catEntry">
     			<c:set var="cat" value="${catEntry.value}" />
 				<div class="original" id="sl_${cat.name}" style="display:none">
-					<ul>
+					<ul class="menu_section">
 						<c:forEach items="${cat.websiteQuestions}" var="q">
         					<li onclick="getQueryForm('showQuestion.do?questionFullName=${q.fullName}&partial=true',true)">${q.displayName}</li>
 						</c:forEach>
