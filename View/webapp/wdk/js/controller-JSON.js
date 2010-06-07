@@ -441,8 +441,11 @@ function callSpanLogic(){
 	var b_strategyId = cstrt.backId;
 	var d = parseInputs();
 	var quesName = "";
-	var outputType = $("#form_question input[name='myProp(span_output)']").val();
-	if($("#form_question input[name='myProp(span_output)']").val().indexOf("A") != 0) outputType = "a";
+	var outputType = "";
+	$("#form_question input[name='myProp(span_output)']").each(function(){
+		if(this.checked) outputType = $(this).val();
+	});
+	outputType = (outputType.indexOf("A") != -1) ? "a" : "b";
 	outputType = $("#form_question input#type"+outputType.toUpperCase()).val();
 	if(outputType == "GeneRecordClasses.GeneRecordClass") quesName = "SpanQuestions.GenesBySpanLogic";
 	if(outputType == "OrfRecordClasses.OrfRecordClass") quesName = "SpanQuestions.OrfsBySpanLogic";
