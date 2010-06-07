@@ -474,6 +474,7 @@ function callSpanLogic(){
 			}
 		}
 	});
+	isSpan = false;
 	isInsert = "";
 	closeAll(true);
 }
