@@ -491,10 +491,12 @@ function close(ele){
 }
 
 function closeAll(hide,as){
-	if(hide)
+	if(hide){
 		$("#query_form").hide();
-	else
+	}else{
+		isSpan = false;
 		$("#query_form").remove();
+	}
 	isInsert = "";
 	$("#Strategies div a#filter_link span").css({opacity: 1.0});
 }
