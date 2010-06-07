@@ -151,7 +151,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 // We only set isTransform = true if we're running a new query &
                 // it's a transform If we're inserting a strategy, it has to be
                 // a boolean (given current operations, at least)
-                isTransform = newStep.getIsTransform();
+                isTransform = newStep.getIsTransform() || (newStep.isCombined() && !newStep.getIsBoolean());
             } else { // revise, but just change filter or weight.
                 logger.debug("change filter: " + filterName);
                 // change the filter of an existing step, which can be a child
