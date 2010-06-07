@@ -396,7 +396,7 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 				if(fid > 1){
 					var value = $(this).attr('href');
 					var transformParams = value.match(/\w+_result=/gi);
-					for (i in transformParams) {
+					for (var i in transformParams) {
 						value = value.split(transformParams[i]);
 						var stpId = value[1].split("&");
 						prevStp = getStrategy(strat_id).getStep(fid-1,true);
