@@ -52,11 +52,11 @@
 			<td id="section-1">
 				<div class="qf_section" id="step_type">
 					<ul class="menu_section">
-						<li class="category" onclick="showNewSection(this,'boolean',2)" style="background-color:#DDDDDD; font-weight:bold">Basic Step</li>
+						<li class="category" onclick="showNewSection(this,'boolean',2);$('div#boolean.qf_section ul > li:first').click()" style="background-color:#DDDDDD; font-weight:bold">Basic Step</li>
 						<c:if test="${fn:length(transformQuestions) > 0}">
 							<li class="category" onclick="showNewSection(this,'transforms',2)">Transform to ...</li>
 						</c:if>
-						<li class="category" onclick="showNewSection(this,'span_logic',2)">Advanced (location-based) Step</li>
+						<li class="category" onclick="showNewSection(this,'span_logic',2);$('div#span_logic ul > li:first').click()">Advanced (location-based) Step</li>
 					</ul>
 				</div>
 			</td>
@@ -64,7 +64,7 @@
 				<div class="qf_section" id="boolean" style="">
 				<ul class="menu_section">
 					<li class="category" onclick="showNewSection(this,'boolean_searches',3)" style="background-color:#DDDDDD; font-weight:bold">Run a new Search</li>
-					<li class="category" onclick="showNewSection(this,'boolean_strategies',3)">Add an existing Strategy</li>
+					<li class="category" onclick="showNewSection(this,'boolean_strategies',3)">Add existing Strategy</li>
 					<%--<li><a href="javascript:void(0)" onclick="showNewSection(this,'boolean_basket')"></a>Basket</li>--%>
 					<c:if test="${recordClass.hasBasket}">
 						<c:set var="q" value="${recordClass.snapshotBasketQuestion}" />
@@ -102,7 +102,7 @@
 		<div class="original" id="boolean" style="display:none">
 			<ul class="menu_section">
 				<li class="category" onclick="showNewSection(this,'boolean_searches',3)">Run a new Search</li>
-				<li class="category" onclick="showNewSection(this,'boolean_strategies',3)">Add an existing Strategy</li>
+				<li class="category" onclick="showNewSection(this,'boolean_strategies',3)">Add existing Strategy</li>
 				<%--<li><a href="javascript:void(0)" onclick="showNewSection(this,'boolean_basket')"></a>Basket</li>--%>
 				<c:if test="${recordClass.hasBasket}">
 					<c:set var="q" value="${recordClass.snapshotBasketQuestion}" />
@@ -222,9 +222,9 @@
 		<div id="span_logic" style="display:none" class="original">
 			<ul class="menu_section">
 				<li class="category" onclick="showNewSection(this,'sl_recordclasses',3)">Run a new Search</li>
-				<li class="category" onclick="showNewSection(this,'sl_strategies',3)">Add an existing Strategy</li>
+			<%--	<li class="category" onclick="showNewSection(this,'sl_strategies',3)">Add existing Strategy</li>
 				<li>Add the Basket</li>
-			<%--	<li>Include All Genes</li>
+				<li>Include All Genes</li>
 				<li>Include All ORFs</li>
 				<li>Include All SNPs</li>  --%>
 			</ul>
@@ -305,7 +305,12 @@
 			<ul class="menu_section">
 			<c:forEach var="rcs" items="${model.websiteRootCategories}">
 				<c:set var="classId" value="${fn:replace(rcs.value.name,'.','_')}"/>
+<c:if test="${fn:containsIgnoreCase(rcs.value.displayName, 'gene') || 
+		fn:containsIgnoreCase(rcs.value.displayName, 'orf') || 
+		fn:containsIgnoreCase(rcs.value.displayName, 'snp') ||
+		fn:containsIgnoreCase(rcs.value.displayName, 'isolate')}">
 				<li class="category" onclick="showNewSection(this,'sl_${classId}',4)">${rcs.value.displayName}</li>
+</c:if>
 			</c:forEach>
 			</ul>
 		</div>
