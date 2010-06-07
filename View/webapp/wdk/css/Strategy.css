@@ -269,6 +269,7 @@ td.operation, div.operation, li.operation {
 
 .operation[type="span"] {
         background-image: url(../images/operationSpanIcons.gif);
+		background-position:7px -10px;
 }
 
 
