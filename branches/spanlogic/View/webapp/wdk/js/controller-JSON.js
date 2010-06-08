@@ -5,7 +5,7 @@ var sidIndex = 0;
 var recordType= new Array();   //stratid, recordType which is the type of the last step
 var state = null;
 var p_state = null;
-var ajaxTimeout = 60000;
+var ajaxTimeout = 180000;
 $(document).ready(function(){
 	// tell jQuery not to cache ajax requests.
 	$.ajaxSetup ({ 
