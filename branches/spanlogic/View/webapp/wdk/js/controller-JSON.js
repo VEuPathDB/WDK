@@ -449,13 +449,13 @@ function callSpanLogic(){
 	outputType = $("#form_question input#type"+outputType.toUpperCase()).val();
 	if(outputType == "GeneRecordClasses.GeneRecordClass") quesName = "SpanQuestions.GenesBySpanLogic";
 	if(outputType == "OrfRecordClasses.OrfRecordClass") quesName = "SpanQuestions.OrfsBySpanLogic";
-	if(outputType == "IsolateRecordClasses.IsolateRecordClass") quesName = "SpanQuestions.IsolateBySpanLogic";
-	if(outputType == "EstRecordClasses.EstRecordClass") quesName = "SpanQuestions.EstBySpanLogic";
-	if(outputType == "SnpRecordClasses.SnpRecordClass") quesName = "SpanQuestions.SnpBySpanLogic";
+	if(outputType == "IsolateRecordClasses.IsolateRecordClass") quesName = "SpanQuestions.IsolatesBySpanLogic";
+	if(outputType == "EstRecordClasses.EstRecordClass") quesName = "SpanQuestions.EstsBySpanLogic";
+	if(outputType == "SnpRecordClasses.SnpRecordClass") quesName = "SpanQuestions.SnpsBySpanLogic";
 	if(outputType == "AssemblyRecordClasses.AssemblyRecordClass") quesName = "SpanQuestions.AssemblyBySpanLogic";
 	if(outputType == "SequenceRecordClasses.SequenceRecordClass") quesName = "SpanQuestions.SequenceBySpanLogic";
-	if(outputType == "SageTagRecordClasses.SageTagRecordClass") quesName = "SpanQuestions.SageTagBySpanLogic";
-	if(outputType == "DynSpanRecordClasses.DynSpanRecordClass") quesName = "SpanQuestions.DynSpanBySpanLogic";
+	if(outputType == "SageTagRecordClasses.SageTagRecordClass") quesName = "SpanQuestions.SageTagsBySpanLogic";
+	if(outputType == "DynSpanRecordClasses.DynSpanRecordClass") quesName = "SpanQuestions.DynSpansBySpanLogic";
 	if(outputType == "") return null;
 	$.ajax({
 		url:"processFilter.do?questionFullName="+quesName+"&strategy="+cstrt.backId+"&strategy_checksum="+cstrt.checksum,
