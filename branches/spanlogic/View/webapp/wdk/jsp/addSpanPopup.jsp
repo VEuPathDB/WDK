@@ -72,7 +72,7 @@
 			<td id="middle">
 				<input checked type="radio" value="Both strands" name="myProp(span_strand)" id="strand-operation-both">&nbsp;&nbsp;<label>Both Strands</label><br/>
 				<input type="radio" value="Same strand" name="myProp(span_strand)" id="strand-operation-same">&nbsp;&nbsp;<label>Same Strand</label><br/>
-				<input type="radio" value="Opposite strand" name="myProp(span_strand)" id="strand-operation-opposite">&nbsp;&nbsp;<label>Opposite Strand</label><br/>
+				<input type="radio" value="Opposite strands" name="myProp(span_strand)" id="strand-operation-opposite">&nbsp;&nbsp;<label>Opposite Strand</label><br/>
 			</td>
 			<td id="right"><div style="text-align:center;vertical-align:middle;">GRAPHICS</div></td>
 		</tr>
