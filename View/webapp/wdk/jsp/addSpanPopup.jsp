@@ -83,7 +83,7 @@
 				<td id="right" style="text-align:center"><input type="radio" name="myProp(span_output)" value="type of input B" id="left_output"/>&nbsp;<label>Select this datatype for Result</label></td>
 		</tr>
 	</table>
-	<input type="submit" value="Get Result" style="margin-top:5px"/>
+	<input type="submit" value="Get Result" style="margin-top:5px"/><img id="loading_data_gif" style="display:none" src="<c:url value="wdk/images/getting-span-data.gif"/>"/>
 	<img class="step_img" id="step_1" src="<c:url value="wdk/images/step1.png"/>"/>
 	<img class="step_img" id="step_3" src="<c:url value="wdk/images/step3.png"/>"/>
 	<img class="step_img" id="step_2" src="<c:url value="wdk/images/step2.png"/>"/>
