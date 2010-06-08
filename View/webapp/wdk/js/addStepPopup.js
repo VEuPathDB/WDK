@@ -315,16 +315,16 @@ function spanOperation(stepid, type, url, proto, rs){
 					$("input#spanB").attr("value",stepData.id);
 					$("input#typeB").attr("value",stepData.dataType);
 					$("span#fromAjax").prepend(stepData.displayType);
-					$("#query_form img#loading_data_gif").hide();
-					$("#query_form input[type='submit']").show();
+					$("#query_form div#loading_data_gif").hide();
+					$("#query_form input[type='submit']").attr("disabled","");
 				}
 			});
 			$("#query_form form#form_question").attr("action","javascript:callSpanLogic()");
 			$("#query_form form#form_question").css("height","248px");
 			$("#query_form div:not(.bottom-close)").remove();
 			$("#query_form form#form_question").html(data);
-			$("#query_form input[type='submit']").hide();
-			$("#query_form img#loading_data_gif").show();
+			$("#query_form input[type='submit']").attr("disabled","disabled");
+			$("#query_form div#loading_data_gif").show();
 		}
 	});
 }
