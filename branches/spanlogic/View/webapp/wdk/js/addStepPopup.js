@@ -311,7 +311,7 @@ function spanOperation(stepid, type, url, proto, rs){
 				success: function(stepData){
 					var stepnum = $("input#spanA").val();
 					var stp = currStrategy.getStep(stepnum, true);
-					$("input#spanA").attr("value",stp.back_step_Id);
+					$("input#spanA").attr("value",(stp.back_boolean_Id.length == 0) ? stp.back_step_Id : stp.back_boolean_Id);
 					$("input#spanB").attr("value",stepData.id);
 					$("input#typeB").attr("value",stepData.dataType);
 					$("span#fromAjax").prepend(stepData.displayType);
@@ -366,12 +366,15 @@ function getQueryForm(url,hideOp,isOrtholog,loadingParent){
 }
 
 function OpenOperationBox(stratId, insertId) {
-	var selectedStrat = $("#query_form select#selected_strategy").val();
-	var selectedName = null;//$("#query_form select#selected_strategy option[selected]").text();
-	$("#query_form select#selected_strategy option").each(function(){
-		if(this.selected) selectedName = $(this).text().replace(/^\s*/, ""); return;
-	});
-        if (insertId == undefined) insertId = "";
+//	var selectedStrat = $("#query_form select#selected_strategy").val();
+//	var selectedName = null;//$("#query_form select#selected_strategy option[selected]").text();
+//	$("#query_form select#selected_strategy option").each(function(){
+//		if(this.selected) selectedName = $(this).text().replace(/^\s*/, ""); return;
+//	});
+	var selectedStrat = getStrategyFromBackId(stratId);
+	var selectedName = selectedStrat.name;
+	
+    if (insertId == undefined) insertId = "";
 	var url = "processFilter.do?strategy=" + getStrategy(stratId).backId + "&insert=" + insertId + "&insertStrategy=" + selectedStrat +"&checksum=" + getStrategy(stratId).checksum;
 	var oform = "<form id='form_question' enctype='multipart/form-data' action='javascript:validateAndCall(\"add\",\""+ url + "\", \"" + getStrategy(stratId).backId + "\")' method='post' name='questionForm'>";
 	var cform = "</form>";
