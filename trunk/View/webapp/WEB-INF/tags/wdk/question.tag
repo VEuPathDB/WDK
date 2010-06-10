@@ -80,7 +80,7 @@
 <c:set var="descripId" value="query-description-section"/>
 
 <%-- display description for wdkQuestion --%>
-<div id="${descripId}"><b>Query description: </b><jsp:getProperty name="wdkQuestion" property="description"/></div>
+<div id="${descripId}"><b>Query description: </b>${wdkQuestion.description}</div>
 <%--
 </tr>
 </table>
