@@ -101,6 +101,10 @@ public class DownloadStepAnswerValueAction extends Action {
                     CConstants.WDK_USER_KEY );
             
             StepBean step = wdkUser.getStep( stepId );
+            
+            // get new result count, in case the count may have been changed
+            step.getResultSize();
+            
             return step;
         } else {
             throw new Exception(
