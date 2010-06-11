@@ -53,13 +53,8 @@ public class ImportStrategyAction extends Action {
 	 * so that user will go to the Run Strategies tab after
 	 * importing a strategy
 	 */
-	Cookie tabCookie = new Cookie("current_application_tab","strategy_results");
-	// make sure it's only a session cookie, not persistent
-	tabCookie.setMaxAge(-1);
-	// make sure the cookie is good for whole site, not just webapp
-	tabCookie.setPath("/");
+	ShowApplicationAction.setWdkTabStateCookie(request, response);
 	
-	response.addCookie(tabCookie);
         ActionForward forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
         forward = new ActionForward(forward.getPath(), true);
         return forward;
