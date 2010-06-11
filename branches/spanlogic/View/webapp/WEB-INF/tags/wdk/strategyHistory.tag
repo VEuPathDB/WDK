@@ -29,7 +29,7 @@
   <c:otherwise>
   <c:set var="typeC" value="0"/>
   <!-- begin creating tabs for history sections -->
-  <ul id="history_tabs">
+  <ul class="menubar">
   <c:forEach items="${unsavedStrategiesMap}" var="strategyEntry">
     <c:set var="type" value="${strategyEntry.key}"/>
     <c:set var="unsavedStratList" value="${strategyEntry.value}"/>

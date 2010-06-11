@@ -40,13 +40,13 @@
             <!-- display description -->
             <tr><td colspan="2">
                 <img alt="spacer" width="12" height="16" src="<c:url value="/images/booleanBullet.gif" />">
-                <b><jsp:getProperty name="wdkQ" property="displayName"/></b></td></tr>
+                <b>${wdkQ.displayName}</b></td></tr>
 
             <!-- display params -->
             <c:forEach items="${qParams}" var="qP">
                <!-- an individual param (can not use fullName, w/ '.', for mapped props) -->
                <c:set value="${qP.name}" var="pNam"/>
-               <tr><td align="right"><b><jsp:getProperty name="qP" property="prompt"/></b></td>
+               <tr><td align="right"><b>${qP.prompt}</b></td>
 
                <!-- choose between flatVocabParam and straight text or number param -->
                <td>
