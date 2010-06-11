@@ -34,9 +34,9 @@ public class GetDownloadResultAction extends Action {
             throws Exception {
         try {
             // get answer
-            String histIdstr = request.getParameter( CConstants.WDK_HISTORY_ID_KEY );
+            String histIdstr = request.getParameter( CConstants.WDK_STEP_ID_KEY );
             if ( histIdstr == null ) {
-                histIdstr = ( String ) request.getAttribute( CConstants.WDK_HISTORY_ID_KEY );
+                histIdstr = ( String ) request.getAttribute( CConstants.WDK_STEP_ID_KEY );
             }
             if ( histIdstr == null )
                 throw new Exception(
@@ -55,7 +55,7 @@ public class GetDownloadResultAction extends Action {
             Map< String, String > config = new LinkedHashMap< String, String >();
             for ( Object objKey : request.getParameterMap().keySet() ) {
                 String key = objKey.toString();
-                if ( key.equalsIgnoreCase( CConstants.WDK_HISTORY_ID_KEY )
+                if ( key.equalsIgnoreCase( CConstants.WDK_STEP_ID_KEY )
                         || key.equalsIgnoreCase( CConstants.WDK_REPORT_FORMAT_KEY ) )
                     continue;
                 String[ ] values = request.getParameterValues( key );

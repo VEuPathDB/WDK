@@ -47,14 +47,14 @@ function showPanel(panel) {
 		$("body > #query_form").hide();
 		$("body > .crumb_details").hide();
 	}
-	setCurrentTabCookie(panel, false);
+	setCurrentTabCookie('application', panel);
 }
 
 function showSaveForm(stratId, save, share){
 	closeModal();
 	$("div.save_strat_div").addClass("hidden");
 	var saveForm = $("div#save_strat_div_" + stratId);
-	var stratName = saveForm.parent().parent().find("span:first").text();
+	var stratName = getStrategyOBJ(stratId).name;
 	$("input[type=text]", saveForm).attr("value", stratName);
        if (save){
          $("form", saveForm).attr("action", "javascript:saveOrRenameStrategy(" + stratId + ", true, true, false)");
@@ -447,7 +447,7 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 				if(fid > 1){
 					var value = $(this).attr('href');
 					var transformParams = value.match(/\w+_result=/gi);
-					for (i in transformParams) {
+					for (var i in transformParams) {
 						value = value.split(transformParams[i]);
 						var stpId = value[1].split("&");
 						prevStp = getStrategy(strat_id).getStep(fid-1,true);
