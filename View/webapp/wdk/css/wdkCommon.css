@@ -662,10 +662,6 @@ span.subscriptCount, font.subscriptCount {
     display: none;
 }
 
-div#favorites{
-	padding:10px;
-}
-
 div.favorite-button-div{
 	width:20px;
 	height:100%;
@@ -681,16 +677,6 @@ div.favorite-button-div{
 	text
 }
 
-div#groups-list {
-	background-color:#FFFFFF;
-	border:1px solid #CCCCCC;
-	padding:3px;
-	position:relative;
-	right:0;
-	text-align:center;
-	width:285px;
-}
-
 span.wdk-record {        /*to not affect a tr same class in favorites page */
     font-size:70%;
     font-weight:normal;
@@ -700,10 +686,19 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
     display: none;
 }
 
-#favorites .favorite-note-button {
+.favorites_panel {
+    display: none;
+    padding: 10px;
+}
+
+.favorites_panel .favorite-note-button {
     text-align: right;
 }
 
-#favorites .favorite-group-button {
+.favorites_panel .favorite-group-button {
     text-align: right;
+}
+
+.favorite-refresh-button {
+    clear: both;
 }
