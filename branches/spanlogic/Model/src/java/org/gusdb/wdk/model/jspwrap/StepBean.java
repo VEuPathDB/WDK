@@ -150,7 +150,7 @@ public class StepBean {
     public void setAnswerValue(AnswerValueBean answer)
             throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
-        step.setAnswer(answer.answerValue.getAnswer());
+        step.setAnswer(answer.getAnswerValue().getAnswer());
     }
 
     public int getEstimateSize() throws NoSuchAlgorithmException,
