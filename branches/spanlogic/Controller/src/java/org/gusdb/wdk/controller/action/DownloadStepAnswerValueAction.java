@@ -103,7 +103,8 @@ public class DownloadStepAnswerValueAction extends Action {
             StepBean step = wdkUser.getStep( stepId );
             
             // get new result count, in case the count may have been changed
-            step.getResultSize();
+            int size = step.getResultSize();
+            logger.debug("step size: " + size);
             
             return step;
         } else {
