@@ -206,6 +206,7 @@ public class ProcessQueryInstance extends QueryInstance {
         HashMap<String, String> context = new HashMap<String, String>();
         context.put(CTX_QUERY, query.getFullName());
         context.put(CTX_USER, user.getSignature());
+        request.setContext(context);
 
         StringBuffer resultMessage = new StringBuffer();
         try {
