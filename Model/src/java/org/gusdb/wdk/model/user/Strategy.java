@@ -330,6 +330,7 @@ public class Strategy {
     private Map<Integer, Integer> updateStepTree(int targetStepId, Step newStep)
             throws WdkModelException, WdkUserException, JSONException,
             NoSuchAlgorithmException, SQLException {
+        logger.debug("update step tree - target=" + targetStepId + ", newStep=" + newStep.getDisplayId());
         Map<Integer, Integer> stepIdsMap = new HashMap<Integer, Integer>();
         Step targetStep = getLatestStep().getStepByDisplayId(targetStepId);
 

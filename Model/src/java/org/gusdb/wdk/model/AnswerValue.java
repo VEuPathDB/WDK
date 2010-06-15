@@ -230,6 +230,7 @@ public class AnswerValue {
     public int getResultSize() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
+        logger.debug("getting result size: cache=" + resultSize + ", isCached=" + idsQueryInstance.isCached());
         if (resultSize == null || !idsQueryInstance.isCached()) {
             if (filter == null) {
                 resultSize = idsQueryInstance.getResultSize();
