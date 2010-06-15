@@ -50,6 +50,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
             throws Exception {
         logger.debug("Entering ShowStrategyAction...");
 
+        response.setContentType("application/json");
+
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
         try {
             String strStratKeys = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
@@ -186,7 +188,6 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsMessage.put("stackTrace", buffer.toString());
         buffer.close();
 
-        response.setContentType("text/json");
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
     }
@@ -245,7 +246,6 @@ public class ShowStrategyAction extends ShowQuestionAction {
         outputCommon(user, jsMessage);
         outputStrategies(user, jsMessage, displayStrategies);
 
-        response.setContentType("text/json");
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
     }
