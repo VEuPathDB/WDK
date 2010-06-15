@@ -223,8 +223,13 @@ public class AnswerParam extends Param {
             JSONException, WdkUserException {
         int stepId = Integer.parseInt(dependentValue);
         Step step = user.getStep(stepId);
-        // try to get the answer value
-        step.getAnswerValue();
+
+        // make sure the input step is of the acceptable type
+        String rcName = step.getAnswerValue().getQuestion().getRecordClass().getFullName();
+        if (!recordClasses.containsKey(rcName))
+            throw new WdkUserException("The step of record type '" + rcName
+                    + "' is not allowed in the answerParam "
+                    + this.getFullName());
     }
 
     /*
