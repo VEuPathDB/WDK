@@ -941,6 +941,9 @@ div#sections{
 	line-height:1.25;
 }
 
+/**************************************************
+ ******* CSS for AddStep PopUp ********************
+ *************************************************/
 .menu_section {
    text-indent:-5px;
    margin-left:3px;
@@ -967,7 +970,40 @@ div#sections{
 	background:url("/assets/images/menu_arrow.png") no-repeat scroll 100% 0 transparent;
 }
 
-div.operations input[type='radio']{
+#process-crumbs{
+	border-style:solid;
+	border-width:0 0 1px;
+	margin-bottom:-20px;
+	margin-top:30px;
+	padding-bottom:5px;
+	text-align:center;
+}
+#process-crumbs > div{
+	display:inline-block;
+	text-align:center;
+	width:56px;
+	opacity:0.3;
+}
+#process-crumbs > div.active{
+	opacity:1.0;
+}
+#process-crumbs > div > p{
+	font-size:8pt;
+	font-style:italic;
+}
+.step-image{
+	width:40px;
+}
+.transition{
+	height:15px;
+	margin-top:13px;
+	vertical-align:top;
+	width:108px;
+	opacity:0.3;
+}
+
+
+/*div.operations input[type='radio']{
 	float:right;
 }
 div#span_popup{
@@ -1011,3 +1047,6 @@ img#step_5{
 	left:-385px;
 	top:-22px;
 }
+*/
+
+/*CSS for Span Logic Operations Section*/
