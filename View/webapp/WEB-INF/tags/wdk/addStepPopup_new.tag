@@ -1,6 +1,7 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
+<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 
 <%@ attribute name="model"
@@ -39,14 +40,16 @@
 <c:set var="transformQuestions" value="${recordClass.transformQuestions}" />
 
 <div id="query_form" style="min-height:140px;">
-	<span class="dragHandle">
+	<wdk:addStepHeader/>
+	<wdk:addStepCrumbs currentStep="1"/>
+<%--%>	<span class="dragHandle">
 		<div class="modal_name">
 			<h1 style="font-size:130%;margin-top:4px;" id="query_form_title"></h1>
 		</div>
 		<a class='close_window' href='javascript:closeAll()'>
 			<img src="<c:url value='/wdk/images/Close-X-box.png'/>" alt='Close'/>
 		</a>
-	</span>
+	</span>--%>
 	<div id="sections">
 		<table id="sections-layout"><tr>
 			<td id="section-1">
