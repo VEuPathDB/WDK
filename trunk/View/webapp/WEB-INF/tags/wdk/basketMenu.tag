@@ -10,8 +10,8 @@
       <li>|</li>
     </c:if>
     <li>
-      <a id="tab_${basket.answerValue.recordClass.displayName}"
-         onclick="showBasket('${basket.answerValue.recordClass.fullName}','${basket.answerValue.recordClass.displayName}')"
+      <a id="tab_${basket.answerValue.recordClass.shortDisplayName}"
+         onclick="showBasket('${basket.answerValue.recordClass.fullName}','${basket.answerValue.recordClass.shortDisplayName}')"
          href="javascript:void(0)">${basket.answerValue.recordClass.displayName}&nbsp;(${basket.resultSize})</a>
     </li>
   </c:forEach>
