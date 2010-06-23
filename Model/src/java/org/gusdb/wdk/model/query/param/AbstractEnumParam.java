@@ -316,8 +316,15 @@ public abstract class AbstractEnumParam extends Param {
         String[] terms = getTerms(rawValue);
         StringBuffer buf = new StringBuffer();
         for (String term : terms) {
-            String internal = (isSkipValidation() || isNoTranslation()) ? term : termInternalMap.get(term);
-            if (internal == null) continue;
+            String internal = (isNoTranslation()) ? term : termInternalMap.get(term);
+            if (internal == null) {
+		// If skipping validation, and the term is not found
+		// in the map, just use the term as the internal value
+		if (isSkipValidation()) {
+		    internal = term;
+		}
+		else continue;
+	    }
             if (quote) internal = "'" + internal.replaceAll("'", "''") + "'";
             if (buf.length() != 0) buf.append(", ");
             buf.append(internal);
