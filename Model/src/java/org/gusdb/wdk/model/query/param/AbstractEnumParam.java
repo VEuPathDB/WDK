@@ -309,6 +309,7 @@ public abstract class AbstractEnumParam extends Param {
     public String dependentValueToInternalValue(User user, String dependentValue)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
+        initVocabMap();
 
         String rawValue = decompressValue(dependentValue);
         if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
@@ -316,7 +317,8 @@ public abstract class AbstractEnumParam extends Param {
         String[] terms = getTerms(rawValue);
         StringBuffer buf = new StringBuffer();
         for (String term : terms) {
-            String internal = (isNoTranslation()) ? term : termInternalMap.get(term);
+            String internal = (isNoTranslation()) 
+                              ? term : termInternalMap.get(term);
             if (internal == null) {
 		// If skipping validation, and the term is not found
 		// in the map, just use the term as the internal value
