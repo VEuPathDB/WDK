@@ -102,6 +102,7 @@ public class EnumParamBean extends ParamBean {
     
     public String getRawDisplayValue() throws Exception {
         String rawValue = getRawValue();
+        if (rawValue == null) rawValue = "";
 	if (!((AbstractEnumParam) param).isSkipValidation()) {
 	    String[] terms = rawValue.split(",");
 	    Map<String, String> displays = getDisplayMap();

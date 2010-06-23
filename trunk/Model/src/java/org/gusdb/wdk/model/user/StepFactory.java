@@ -554,6 +554,7 @@ logger.debug("answer question:" + answer.getQuestionName());
 
         String dependentParamContent = userPlatform.getClobData(rsStep,
                 COLUMN_DISPLAY_PARAMS);
+logger.debug("step #" + stepId);
         Map<String, String> dependentValues = parseParamContent(dependentParamContent);
 
         String answerChecksum = rsStep.getString(AnswerFactory.COLUMN_ANSWER_CHECKSUM);
@@ -1355,6 +1356,7 @@ logger.debug("answer question:" + answer.getQuestionName());
             if (paramNames != null) {
                 for (String paramName : paramNames) {
                     String paramValue = json.getString(paramName);
+logger.debug("param '" + paramName + "' = '" + paramValue + "'");
                     params.put(paramName, paramValue);
                 }
             }
