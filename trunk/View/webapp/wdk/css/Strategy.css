@@ -927,4 +927,11 @@ ul.menubar {
 table.history_controls {
 	display:inline-block;
 }
-
+#invalid-step-text{
+	background-color:#FFFFFF;
+	padding:5px;
+	position:absolute;
+	right:1px;
+	top:28px;
+	width:200px;
+}

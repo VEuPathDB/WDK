@@ -40,6 +40,7 @@ var sub_expand_popup = "Open into a new panel to add or edit nested steps";
 
 //VARIABLES
 //var div_strat = null;
+var hasinvalid = false;
 var stepDivs = null;
 var leftOffset = 0;
 // MANAGE THE DISPLAY OF THE STRATEGY BASED ON THE ID PASSED IN
@@ -49,6 +50,7 @@ var leftOffset = 0;
 // if there is strange behavior in the Strategy display, first step should be to comment out the try/catch blocks in order to see the errors more clearly.
 function displayModel(strat){
 //  try{
+	has_invalid = false;
 	if(strats){
 	  $("#strat-instructions").remove();
 	  $("#strat-instructions-2").remove();
@@ -198,8 +200,11 @@ function booleanStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 	zIndex--; // DO NOT DELETE this or previous line, needed for correct display in IE7.
 	$(".crumb_details", childDiv).replaceWith(createDetails(modelstep, prevjsonstep, childStp, sid));
 	var child_invalid = null;
+	var child_invalid_text = null;
 	if(!childStp.isValid){
 		child_invalid = createInvalidDiv();
+		if(!has_invalid)
+			child_invalid_text = createInvalidText();
 		$(child_invalid).attr("id",sid+"_"+modelstep.frontId).addClass(operandClasses).css({left: leftOffset + "px"});
 		$("img", child_invalid).click(function(){
 			var iv_id = $(this).parent().attr("id").split("_");
@@ -222,8 +227,11 @@ function booleanStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 	stepdivs.push(boolDiv);
 	stepdivs.push(stepNumber);
 	stepdivs.push(childDiv);
-	if(child_invalid != null)
+	if(child_invalid != null){
 		stepdivs.push(child_invalid);
+		if(child_invalid_text != null)
+			stepdivs.push(child_invalid_text);
+	}
 }
 
 //Creates all steps that are on the bottom line only ie. this first step and transform steps
@@ -276,16 +284,22 @@ function singleStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 	$(singleDiv).css({'z-index' : zIndex}); // DO NOT DELETE, needed for correct display in IE7.
 	$(".crumb_details", singleDiv).replaceWith(createDetails(modelstep, prevjsonstep, jsonstep, sid));
 	var step_invalid = null;
+	var step_invalid_text = null;
 	if(!modelstep.isTransform && !jsonstep.isValid){
 		step_invalid = createInvalidDiv();
+		if(!has_invalid)
+			step_invalid_text = createInvalidText();
 		//if(modelstep.isTransform)
 		//	$(step_invalid).attr("id",sid+"_"+modelstep.frontId).addClass(transformClasses).css({left: leftOffset + "px"});
 		//else
 		$(step_invalid).attr("id",sid+"_"+modelstep.frontId).addClass(firstClasses).css({left: leftOffset + "px"});
 	}
 	stepdivs.push(singleDiv);
-	if(step_invalid != null)
+	if(step_invalid != null){
 		stepdivs.push(step_invalid);
+		if(step_invalid_text != null)
+			stepdivs.push(step_invalid_text);
+	}
 	stepdivs.push(stepNumber);
 	
 }
@@ -645,7 +659,28 @@ function createInvalidDiv(){
 	return inval;
 }
 
+function createInvalidText(){
+	has_invalid = true;
+	var t = document.createElement('div');
+	$(t).attr("id","invalid-step-text");
+	$.ajax({
+		url:"wdk/jsp/InvalidText.html",
+		dataType: "html",
+		type:"get",
+		async:false,
+		success:function(data){
+			$(t).html(data); 
+		}
+	});
+	return t;
+}
+
+function closeInvalidText(ele){
+	$(ele).parent().remove();
+}
+
 function reviseInvalidSteps(ele){
 	var iv_id = $(ele).parent().attr("id").split("_");
 	$("div#diagram_" + iv_id[0] + " div#step_" + iv_id[1] + "_sub h3 a#stepId_" + iv_id[1]).click();
+	$(ele).parent().parent().find("div#invalid-step-text").remove();
 }
