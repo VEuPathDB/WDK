@@ -1261,9 +1261,18 @@ public class UserBean /* implements Serializable */{
         return basketFactory.getBasket(user, recordClass.recordClass);
     }
 
-    public Map<String, Integer> getBasketCount() throws SQLException {
+    public Map<String, Integer> getBasketCounts() throws SQLException {
         BasketFactory basketFactory = user.getWdkModel().getBasketFactory();
         return basketFactory.getBasketCounts(user);
+    }
+
+    public int getBasketCount() throws SQLException {
+        Map<String,Integer> baskets = getBasketCounts();
+	int total = 0;
+	for (String key : baskets.keySet()) {
+	    total += baskets.get(key);
+	}
+	return total;
     }
 
     public void setUsedWeight(boolean usedWeight) {
