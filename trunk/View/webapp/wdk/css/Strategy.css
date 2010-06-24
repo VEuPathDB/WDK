@@ -935,3 +935,10 @@ table.history_controls {
 	top:28px;
 	width:200px;
 }
+#invalid-legend{
+	position:relative;
+	float:right;
+	right:13px;
+	top:4px;
+	display:inline;
+}
