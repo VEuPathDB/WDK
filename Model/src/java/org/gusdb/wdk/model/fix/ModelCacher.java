@@ -359,7 +359,8 @@ public class ModelCacher extends BaseCLI {
 
         if (param instanceof AbstractEnumParam) {
             AbstractEnumParam enumParam = (AbstractEnumParam) param;
-            if (!enumParam.getDisplayType().equalsIgnoreCase("typeAhead"))
+            String displayType = enumParam.getDisplayType();
+            if (displayType == null || !displayType.equalsIgnoreCase("typeAhead"))
                 saveEnums(enumParam, paramId, psEnum);
         }
     }
