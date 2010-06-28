@@ -24,7 +24,6 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.TimestampParam;
-import org.gusdb.wdk.model.query.param.TypeAheadParam;
 import org.json.JSONException;
 
 /**
@@ -122,8 +121,6 @@ public class QuestionBean {
             return new DatasetParamBean((DatasetParam) param);
         } else if (param instanceof TimestampParam) {
             return new TimestampParamBean((TimestampParam) param);
-        } else if (param instanceof TypeAheadParam) {
-            return new TypeAheadParamBean((TypeAheadParam) param);
         } else {
             return new ParamBean(param);
         }
