@@ -347,8 +347,8 @@ public class ModelCacher extends BaseCLI {
 
         String recordClass = null;
         if (param instanceof DatasetParam)
-            recordClass = ((DatasetParam)param).getRecordClass().getFullName();
-        
+            recordClass = ((DatasetParam) param).getRecordClass().getFullName();
+
         int paramId = platform.getNextId(schemaWithoutDot, "wdk_params");
         psParam.setInt(1, paramId);
         psParam.setInt(2, questionId);
@@ -357,8 +357,11 @@ public class ModelCacher extends BaseCLI {
         psParam.setString(5, recordClass);
         psParam.executeUpdate();
 
-        if (param instanceof AbstractEnumParam)
-            saveEnums((AbstractEnumParam) param, paramId, psEnum);
+        if (param instanceof AbstractEnumParam) {
+            AbstractEnumParam enumParam = (AbstractEnumParam) param;
+            if (!enumParam.getDisplayType().equalsIgnoreCase("typeAhead"))
+                saveEnums(enumParam, paramId, psEnum);
+        }
     }
 
     private void saveEnums(AbstractEnumParam param, int paramId,
