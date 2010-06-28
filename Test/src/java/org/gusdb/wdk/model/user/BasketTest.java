@@ -92,7 +92,7 @@ public class BasketTest {
     @Test
     public void testGetCounts() throws Exception {
         UserBean user = new UserBean(UnitTestHelper.getRegisteredUser());
-        Map<String, Integer> counts = user.getBasketCount();
+        Map<String, Integer> counts = user.getBasketCounts();
         for (RecordClassSet rcSet : wdkModel.getAllRecordClassSets()) {
             for (RecordClass rc : rcSet.getRecordClasses()) {
                 if (!rc.hasBasket()) continue;
