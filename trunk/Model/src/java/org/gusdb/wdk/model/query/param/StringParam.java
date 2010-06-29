@@ -200,7 +200,9 @@ public class StringParam extends Param {
         String rawValue = decompressValue(dependentValue);
         if (number) {
             try {
-                Double.valueOf(rawValue);
+                // strip off the comma, if any
+                String value = rawValue.replaceAll(",", "");
+                Double.valueOf(value);
             } catch (NumberFormatException ex) {
                 throw new WdkUserException("stringParam " + getFullName()
                         + " is declared as a number, but the Value '"
