@@ -82,7 +82,7 @@
    </tr>
 </table>
 
-<div id="invalid-legend"><img src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/> = strategy contains outdated steps, click to revise</div>
+<div id="invalid-legend"><img src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/> = strategy contains outdated steps, open to revise</div>
 
 <!-- begin creating history sections to display strategies -->
 <c:forEach items="${unsavedStrategiesMap}" var="strategyEntry">
