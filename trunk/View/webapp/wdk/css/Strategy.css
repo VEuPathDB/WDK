@@ -36,6 +36,38 @@
 	top:-20px;
 }
 
+#strat-instructions-2 {
+	background-color:#EDEDED;
+	border-color:#FFFFFF #CCCCCC #666677 #AAAAAA;
+	border-style:solid;
+	border-width:2px;
+	font-size:11pt;
+	height:78px;
+	left:141px;
+	padding:0 5px;
+	position:absolute;
+	text-align:center;
+	top:10px;
+	width:187px;
+}
+
+#strat-instructions-2 img#ns-arrow {
+	height:46px;
+	left:-26px;
+	margin:0 0 -74px;
+	position:relative;
+	top:-57px;
+	width:45px;
+}
+
+#strat-instructions-2 img#bs-arrow {
+	height:86px;
+	left:73px;
+	margin:0 0 -79px;
+	position:relative;
+	top:-22px;
+}
+
 /* The main diagram container needs to be positioned relatively, so that
       it's children can be positioned within it. */
 .diagram {
