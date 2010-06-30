@@ -95,7 +95,7 @@ function chooseType(paramName, type) {
     <c:if test="${qp.recordClass.hasBasket}">	
     <!-- display option to use basket snapshot -->
     <tr>
-        <c:set var="basketCount" value="${wdkUser.basketCount[qp.recordClass.fullName]}" />
+        <c:set var="basketCount" value="${wdkUser.basketCounts[qp.recordClass.fullName]}" />
         <td colspan="2" align="left" valign="top" nowrap>
             <input type="radio" name="${pNam}_radio" ${basketChecked}
                    onclick="chooseType('${pNam}', 'basket');" />
