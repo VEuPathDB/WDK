@@ -243,21 +243,29 @@ function showInstructions(){
 	$("#strat-instructions-2").remove();
 	$("#Strategies").removeAttr("style"); // DO NOT DELETE.  This is for IE.
 	var instr = document.createElement('div');
-	id = "strat-instructions";
+	var id = "strat-instructions";
+	if ($("#strategy_new").length > 0) id = "strat-instructions-2"
 	$(instr).attr("id",id).html(getInstructionsHtml());
 	$("#Strategies").css({'overflow' : 'visible'}); // DO NOT DELETE.  This is for IE to display instructions correctly.
 	$("#Strategies").append(instr);
 }
 
 function getInstructionsHtml() {
-	arrow_image = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='wdk/images/lookUp2.png' width='45px'/>"; 
+	var arrow_image = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='wdk/images/lookUp2.png' width='45px'/>"; 
+	if ($("#strategy_new").length > 0) {
+		arrow_image = "<img id='ns-arrow' alt='Arrow pointing to New Search Button' src='wdk/images/lookUp.png' width='45px'/>" + arrow_image;
+	}
+	
 	arrow_image += getInstructionsText();
 	return arrow_image;
 }
 
 function getInstructionsText() {
-	instr_text = "<br>Run a new search to start a strategy";
-	instr_text2 = "Or Click on '<a href=\"javascript:showPanel('search_history')\">Browse Strategies</a>' to view your available strategies.";
+	var instr_text = "<p style='width: 85px; position: absolute; padding-top: 14px;'>Run a new search to start a strategy</p>";
+        if ($("#strategy_new").length > 0) {
+		instr_text = "<p style='width: 85px; position: absolute; padding-top: 14px;'>Click '<a href=\"javascript:showPanel('strategy_new')\">New</a>' to start a strategy</p>";
+	}
+	var instr_text2 = "<p style='width: 85px; position: absolute; right: 12px; padding-left: 1px;'>Or Click on '<a href=\"javascript:showPanel('search_history')\">All</a>' to view your strategies.</p>";
 	return instr_text + "<br>" + instr_text2
 }
 
