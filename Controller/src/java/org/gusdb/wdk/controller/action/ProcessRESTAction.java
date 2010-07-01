@@ -78,7 +78,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
                     String data = null;
                     String uploadFile = "";
                     // if (type.equalsIgnoreCase("data")) {
-                    String data = request.getParameter(key);
+                    data = request.getParameter(key);
                     /*
                      * } else if (type.equalsIgnoreCase("file")) { FormFile file
                      * = (FormFile) qform.getMyPropObject(paramName + "_file");
