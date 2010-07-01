@@ -78,7 +78,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
                     String data = null;
                     String uploadFile = "";
                     // if (type.equalsIgnoreCase("data")) {
-                    data = request.getParameter(key);
+                    String data = request.getParameter(key);
                     /*
                      * } else if (type.equalsIgnoreCase("file")) { FormFile file
                      * = (FormFile) qform.getMyPropObject(paramName + "_file");
@@ -281,6 +281,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
         logger.debug(wdkQuestion.getDisplayName());
 		String def_attr = null;
 		String def_value = "";
+		String repeating = "";
         writer.println("<resource path='" + wdkQuestion.getName() + ".xml'>");
         writer.println("<method href='#" + wdkQuestion.getName().toLowerCase()
                 + "'/>");
@@ -301,12 +302,19 @@ public class ProcessRESTAction extends ShowQuestionAction {
         for (String key : wdkQuestion.getParamsMap().keySet()) {
 			def_attr = new String();
 			def_value = new String();
+			repeating = "";
 			if (wdkQuestion.getParamsMap().get(key).getDefault() != null
                && wdkQuestion.getParamsMap().get(key).getDefault().length() > 0){
                 def_value = wdkQuestion.getParamsMap().get(key).getDefault();
 				def_value = htmlEncode(def_value);
             }
-			writer.println("<param name='" + key + "' type='xsd:string' required='" + !wdkQuestion.getParamsMap().get(key).getIsAllowEmpty() + "' default='" + def_value + "'>");
+			ParamBean p = wdkQuestion.getParamsMap().get(key);
+			if (p instanceof EnumParamBean) {
+                EnumParamBean ep = (EnumParamBean) p;
+                if (ep.getMultiPick()) repeating = "repeating='true'";
+                else repeating = "repeating='false'";
+			}
+			writer.println("<param name='" + key + "' type='xsd:string' required='" + !wdkQuestion.getParamsMap().get(key).getIsAllowEmpty() + "' default='" + def_value + "' " + repeating + ">");
             writer.println("<doc title='prompt'><![CDATA["
                     + wdkQuestion.getParamsMap().get(key).getPrompt()
                     + "]]></doc>");
@@ -316,7 +324,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
 			writer.println("<doc title='default'><![CDATA["
                     + wdkQuestion.getParamsMap().get(key).getDefault()
                     + "]]></doc>");
-            ParamBean p = wdkQuestion.getParamsMap().get(key);
+ 
             if (p instanceof EnumParamBean) {
                 EnumParamBean ep = (EnumParamBean) p;
                 if (ep.getMultiPick()) writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
@@ -359,7 +367,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
             }
             writer.println("</param>");
         }
-        writer.println("<param name='o-fields' type='xsd:string' required='false' default='none'>");
+        writer.println("<param name='o-fields' type='xsd:string' required='false' default='none' repeating='true'>");
         writer.println("<doc title='prompt'><![CDATA[Output Fields]]></doc>");
         writer.println("<doc title='help'><![CDATA[Single valued attributes of the feature.]]></doc>");
         writer.println("<doc title='default'><![CDATA[none]]></doc>");
@@ -376,7 +384,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
                     + "]]></doc></option>");
         // writer.println("<option>" + attr + "</option>");
         writer.println("</param>");
-        writer.println("<param name='o-tables' type='xsd:string' required='false' default='none'>");
+        writer.println("<param name='o-tables' type='xsd:string' required='false' default='none' repeating='true'>");
         writer.println("<doc title='prompt'><![CDATA[Output Tables]]></doc>");
         writer.println("<doc title='help'><![CDATA[Multi-valued attributes of the feature.]]></doc>");
         writer.println("<doc title='default'><![CDATA[none]]></doc>");
@@ -415,4 +423,16 @@ public class ProcessRESTAction extends ShowQuestionAction {
 		return x;
 	}	 
 
+	private String join(String[] a, String d){
+		String c = "";
+		boolean e = true;
+		for(String b : a){
+			if(!e) {
+				c = c + d;
+				e = false;
+			}
+			c = c + b;	
+		}
+		return c;
+	}
 }
