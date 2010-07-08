@@ -1,9 +1,9 @@
 package org.gusdb.wdk.model;
 
 import java.io.File;
-import java.io.InputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
@@ -33,6 +33,7 @@ import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
+import org.gusdb.wdk.model.wizard.WizardModel;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 import org.json.JSONException;
@@ -78,6 +79,10 @@ public class WdkModel {
 
         ModelXmlParser parser = new ModelXmlParser(gusHome);
         WdkModel wdkModel = parser.parseModel(projectId);
+        
+        // load process model
+        wdkModel.wizardModel = new WizardModel(gusHome);
+        
         logger.debug("Model ready to use.");
         return wdkModel;
     }
@@ -158,6 +163,8 @@ public class WdkModel {
 
     private List<QueryMonitor> queryMonitorList = new ArrayList<QueryMonitor>();
     private QueryMonitor queryMonitor;
+
+    private WizardModel wizardModel;
 
     /**
      * @param initRecordClassList
@@ -1111,7 +1118,7 @@ public class WdkModel {
     public BasketFactory getBasketFactory() {
         return basketFactory;
     }
-    
+
     public FavoriteFactory getFavoriteFactory() {
         return favoriteFactory;
     }
@@ -1137,5 +1144,20 @@ public class WdkModel {
      */
     public void setQueryMonitor(QueryMonitor queryMonitor) {
         this.queryMonitor = queryMonitor;
+    }
+
+    /**
+     * @return the processModel
+     */
+    public WizardModel getWizardModel() {
+        return wizardModel;
+    }
+
+    /**
+     * @param wizardModel
+     *            the processModel to set
+     */
+    public void setWizardModel(WizardModel wizardModel) {
+        this.wizardModel = wizardModel;
     }
 }
