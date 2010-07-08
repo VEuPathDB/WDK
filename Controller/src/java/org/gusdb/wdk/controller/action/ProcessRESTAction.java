@@ -280,6 +280,8 @@ public class ProcessRESTAction extends ShowQuestionAction {
             throws Exception {
         logger.debug(wdkQuestion.getDisplayName());
 		String def_attr = null;
+		String def_value = "";
+		String repeating = "";
         writer.println("<resource path='" + wdkQuestion.getName() + ".xml'>");
         writer.println("<method href='#" + wdkQuestion.getName().toLowerCase()
                 + "'/>");
@@ -299,24 +301,30 @@ public class ProcessRESTAction extends ShowQuestionAction {
         writer.println("<request>");
         for (String key : wdkQuestion.getParamsMap().keySet()) {
 			def_attr = new String();
-            writer.println("<param name='" + key + "' type='xsd:string' required='" + !wdkQuestion.getParamsMap().get(key).getIsAllowEmpty() + "'>");
+			def_value = new String();
+			repeating = "";
+			if (wdkQuestion.getParamsMap().get(key).getDefault() != null
+               && wdkQuestion.getParamsMap().get(key).getDefault().length() > 0){
+                def_value = wdkQuestion.getParamsMap().get(key).getDefault();
+				def_value = htmlEncode(def_value);
+            }
+			ParamBean p = wdkQuestion.getParamsMap().get(key);
+			if (p instanceof EnumParamBean) {
+                EnumParamBean ep = (EnumParamBean) p;
+                if (ep.getMultiPick()) repeating = "repeating='true'";
+                else repeating = "repeating='false'";
+			}
+			writer.println("<param name='" + key + "' type='xsd:string' required='" + !wdkQuestion.getParamsMap().get(key).getIsAllowEmpty() + "' default='" + def_value + "' " + repeating + ">");
             writer.println("<doc title='prompt'><![CDATA["
                     + wdkQuestion.getParamsMap().get(key).getPrompt()
                     + "]]></doc>");
             writer.println("<doc title='help'><![CDATA["
                     + wdkQuestion.getParamsMap().get(key).getHelp()
                     + "]]></doc>");
-           /* if (wdkQuestion.getParamsMap().get(key).getDefault() != null
-                    && wdkQuestion.getParamsMap().get(key).getDefault().length() > 0
-                    && wdkQuestion.getParamsMap().get(key).getIsAllowEmpty()
-                     && wdkQuestion.getParamsMap().get(key).getEmptyValue() == null)*/
- 			if (wdkQuestion.getParamsMap().get(key).getDefault() != null
-               && wdkQuestion.getParamsMap().get(key).getDefault().length() > 0){
-                writer.println("<doc title='default'><![CDATA["
-                        + wdkQuestion.getParamsMap().get(key).getDefault()
-                        + "]]></doc>");
-            }
-            ParamBean p = wdkQuestion.getParamsMap().get(key);
+			writer.println("<doc title='default'><![CDATA["
+                    + wdkQuestion.getParamsMap().get(key).getDefault()
+                    + "]]></doc>");
+ 
             if (p instanceof EnumParamBean) {
                 EnumParamBean ep = (EnumParamBean) p;
                 if (ep.getMultiPick()) writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
@@ -324,7 +332,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
                 if (ep.getDependedParam() == null) {
                     for (String term : ep.getVocabMap().keySet()) {
                         // writer.println("<option>" + term + "</option>");
-                        writer.println("<option value='" + term.replaceAll("'","&apos;")
+                        writer.println("<option value='" + htmlEncode(term)
                                 + "'><doc title='description'><![CDATA["
                                 + ep.getDisplayMap().get(term)
                                 + "]]></doc></option>");
@@ -351,7 +359,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
                     while (iter.hasNext()) {
                         Map.Entry mp = (Map.Entry) iter.next();
                         // writer.println("<option>" + term + "</option>");
-                        writer.println("<option value='" + mp.getKey()
+                        writer.println("<option value='" + htmlEncode(mp.getKey().toString())
                                 + "'><doc title='description'><![CDATA["
                                 + mp.getValue() + "]]></doc></option>");
                     }
@@ -359,8 +367,8 @@ public class ProcessRESTAction extends ShowQuestionAction {
             }
             writer.println("</param>");
         }
-        writer.println("<param name='o-fields' type='xsd:string' required='false' default='none'>");
-        writer.println("<doc title='Prompt'><![CDATA[Output Fields]]></doc>");
+        writer.println("<param name='o-fields' type='xsd:string' required='false' default='none' repeating='true'>");
+        writer.println("<doc title='prompt'><![CDATA[Output Fields]]></doc>");
         writer.println("<doc title='help'><![CDATA[Single valued attributes of the feature.]]></doc>");
         writer.println("<doc title='default'><![CDATA[none]]></doc>");
         writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
@@ -376,8 +384,8 @@ public class ProcessRESTAction extends ShowQuestionAction {
                     + "]]></doc></option>");
         // writer.println("<option>" + attr + "</option>");
         writer.println("</param>");
-        writer.println("<param name='o-tables' type='xsd:string' required='false' default='none'>");
-        writer.println("<doc title='Prompt'><![CDATA[Output Tables]]></doc>");
+        writer.println("<param name='o-tables' type='xsd:string' required='false' default='none' repeating='true'>");
+        writer.println("<doc title='prompt'><![CDATA[Output Tables]]></doc>");
         writer.println("<doc title='help'><![CDATA[Multi-valued attributes of the feature.]]></doc>");
         writer.println("<doc title='default'><![CDATA[none]]></doc>");
         writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
@@ -404,31 +412,27 @@ public class ProcessRESTAction extends ShowQuestionAction {
         return;
     }
 
-    /*
-     * <?xml version="1.0"?> <application
-     * xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-     * xsi:schemaLocation="http://wadl.dev.java.net/2009/02 wadl.xsd"
-     * xmlns:tns="urn:yahoo:yn" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-     * xmlns:yn="urn:yahoo:yn" xmlns:ya="urn:yahoo:api"
-     * xmlns="http://wadl.dev.java.net/2009/02"> <grammars> <include
-     * href="NewsSearchResponse.xsd"/> <include href="Error.xsd"/> </grammars>
-     * 
-     * <resources base="http://api.search.yahoo.com/NewsSearchService/V1/">
-     * <resource path="newsSearch"> <method name="GET" id="search"> <request>
-     * <param name="appid" type="xsd:string" style="query" required="true"/>
-     * <param name="query" type="xsd:string" style="query" required="true"/>
-     * <param name="type" style="query" default="all"> <option value="all"/>
-     * <option value="any"/> <option value="phrase"/> </param> <param
-     * name="results" style="query" type="xsd:int" default="10"/> <param
-     * name="start" style="query" type="xsd:int" default="1"/> <param
-     * name="sort" style="query" default="rank"> <option value="rank"/> <option
-     * value="date"/> </param> <param name="language" style="query"
-     * type="xsd:string"/> </request> <response status="200"> <representation
-     * mediaType="application/xml" element="yn:ResultSet"/> </response>
-     * <response status="400"> <representation mediaType="application/xml"
-     * element="ya:Error"/> </response> </method> </resource> </resources>
-     * 
-     * </application>
-     */
+    private String htmlEncode(String x){
+		LinkedHashMap<String,String> codeValues = new LinkedHashMap();
+		codeValues.put("\"", "&quot;");
+		codeValues.put("'", "&apos;");
+		//codeValues.put("", "&;");
+		for(String k : codeValues.keySet()){
+			x = x.replaceAll(k, codeValues.get(k));
+		}
+		return x;
+	}	 
 
+	private String join(String[] a, String d){
+		String c = "";
+		boolean e = true;
+		for(String b : a){
+			if(!e) {
+				c = c + d;
+				e = false;
+			}
+			c = c + b;	
+		}
+		return c;
+	}
 }

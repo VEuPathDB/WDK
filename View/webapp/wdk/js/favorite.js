@@ -3,10 +3,21 @@
 
 jQuery(document).ready(function(){
 	loadFavoriteGroups();
+	var current = getCurrentTabCookie("favorites");
+	if (current != null) {
+		showFavorites(current);
+	}
+	else {
+		$(".menubar li a:first").click();
+	}
 });
 
-function showFavorites() {
-
+function showFavorites(recordClass) {
+    $(".menubar li.selected_type").removeClass("selected_type");
+    $("#tab_" + recordClass).parent().addClass("selected_type");
+    $(".favorites_panel").hide();
+    $("#favorites_" + recordClass).show();
+    setCurrentTabCookie("favorites", recordClass);
 }
 
 function updateFavorite(holder, action) {

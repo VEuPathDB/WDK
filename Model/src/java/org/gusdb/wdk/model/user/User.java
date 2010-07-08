@@ -1124,12 +1124,21 @@ public class User /* implements Serializable */{
         // make sure all the attribute names exist
         Question question = (Question) wdkModel.resolveReference(questionFullName);
         Map<String, AttributeField> attributes = question.getAttributeFieldMap();
-        for (String summaryName : summaryNames) {
-            if (!attributes.containsKey(summaryName))
-                throw new WdkModelException("Invalid summary attribute ["
-                        + summaryName + "] for question [" + questionFullName
-                        + "]");
+
+        // instead throwing out an error, just ignore the invalid columns
+        // for (String summaryName : summaryNames) {
+        // if (!attributes.containsKey(summaryName))
+        // throw new WdkModelException("Invalid summary attribute ["
+        // + summaryName + "] for question [" + questionFullName
+        // + "]");
+        // }
+        
+        List<String> validNames = new ArrayList<String>();
+        for (String name : summaryNames) {
+            if (attributes.containsKey(name)) validNames.add(name);
         }
+        summaryNames = new String[validNames.size()];
+        validNames.toArray(summaryNames);
 
         // create checksum
         QueryFactory queryFactory = wdkModel.getQueryFactory();

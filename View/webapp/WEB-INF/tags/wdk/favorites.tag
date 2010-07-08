@@ -3,18 +3,31 @@
 
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="allFavorites" value="${wdkUser.favorites}" /><%-- a map of (RecordClass, List<Favorite>) --%>
+
+<span class ="h4left">My Favorites</span><br><br>
+
 <c:choose>
     <c:when test="${fn:length(allFavorites) == 0}">
         <p>You don't have any favorite IDs. You can add IDs to Favorites from the ID record page.</p>
     </c:when>
     <c:otherwise> <%-- has favorites --%>
-        <input title="Reload the page after you remove some IDs, or add a new project name." type="button" value="Refresh" onclick="window.location.reload();"/>
-<span style="font-style:italic;font-size:100%;padding-left:200px;" >(For Help, place your cursor over column headings or icons)</span>
-	<div id="favorites">
-            <c:forEach var="fav_item" items="${allFavorites}">
-                <c:set var="favorites" value="${fav_item.value}" /> <%-- a list of favorites of a record type --%>
+
+            <ul class="menubar">
+              <c:forEach var="fav_item" items="${allFavorites}">
                 <c:set var="recordClass" value="${fav_item.key}" />
-                <span class ="h4left">My Favorite ${fn:length(favorites)} ${recordClass.type}s</span><br><br>
+                <c:set var="favorites" value="${fav_item.value}" /> <%-- a list of favorites of a record type --%>
+                <li>
+                  <a id="tab_${recordClass.type}" href="javascript:void(0)" onclick="showFavorites('${recordClass.type}')">${recordClass.type}s (${fn:length(favorites)})</a>
+                </li>
+              </c:forEach>
+            </ul>
+
+            <span style="clear:both;font-style:italic;font-size:100%;padding-left:10px;" >(For Help, place your cursor over column headings or icons)</span>
+            <input class="favorite-refresh-button" title="Reload the page after you remove some IDs, or add a new project name." type="button" value="Refresh" onclick="window.location.reload();"/>
+            <c:forEach var="fav_item" items="${allFavorites}">
+              <c:set var="recordClass" value="${fav_item.key}" />
+              <div id="favorites_${recordClass.type}" class="favorites_panel">
+                <c:set var="favorites" value="${fav_item.value}" /> <%-- a list of favorites of a record type --%>
 
                 <table class="favorite-list mytableStyle" width="93%">
                     <tr>
@@ -76,11 +89,7 @@
                         </tr>
                     </c:forEach>
                 </table>
+               </div>
              </c:forEach>
-        </div>
-		<div id="groups-list" style="display:none">
-			<ul>	
-			</ul>
-		</div>
     </c:otherwise> <%-- END has favorites --%>
 </c:choose>
