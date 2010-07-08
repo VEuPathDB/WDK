@@ -32,6 +32,7 @@ public abstract class AbstractEnumParam extends Param {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException;
 
+    private static final String TYPE_AHEAD_DISPLAY = "typeAhead";
     static final String SELECT_MODE_NONE = "none";
     static final String SELECT_MODE_ALL = "all";
     static final String SELECT_MODE_FIRST = "first";
@@ -43,7 +44,6 @@ public abstract class AbstractEnumParam extends Param {
     protected List<EnumParamTermNode> termTreeList;
 
     protected boolean quote = true;
-    private boolean skipValidation = false;
 
     private String displayType;
     protected Param dependedParam;
@@ -74,7 +74,6 @@ public abstract class AbstractEnumParam extends Param {
         this.dependedParam = param.dependedParam;
         this.dependedParamRef = param.dependedParamRef;
         this.dependedValue = param.dependedValue;
-        this.skipValidation = param.skipValidation;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -89,12 +88,8 @@ public abstract class AbstractEnumParam extends Param {
         return new Boolean(multiPick);
     }
 
-    public void setSkipValidation(boolean skipValidation) {
-        this.skipValidation = skipValidation;
-    }
-
     public boolean isSkipValidation() {
-        return skipValidation;
+        return (displayType != null && displayType.compareTo(TYPE_AHEAD_DISPLAY) == 0);
     }
 
     public void setQuote(boolean quote) {
@@ -309,6 +304,7 @@ public abstract class AbstractEnumParam extends Param {
     public String dependentValueToInternalValue(User user, String dependentValue)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
+        initVocabMap();
 
         String rawValue = decompressValue(dependentValue);
         if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
@@ -316,8 +312,16 @@ public abstract class AbstractEnumParam extends Param {
         String[] terms = getTerms(rawValue);
         StringBuffer buf = new StringBuffer();
         for (String term : terms) {
-            String internal = (isSkipValidation() || isNoTranslation()) ? term : termInternalMap.get(term);
-            if (internal == null) continue;
+            String internal = (isNoTranslation()) 
+                              ? term : termInternalMap.get(term);
+            if (internal == null) {
+		// If skipping validation, and the term is not found
+		// in the map, just use the term as the internal value
+		if (isSkipValidation()) {
+		    internal = term;
+		}
+		else continue;
+	    }
             if (quote) internal = "'" + internal.replaceAll("'", "''") + "'";
             if (buf.length() != 0) buf.append(", ");
             buf.append(internal);

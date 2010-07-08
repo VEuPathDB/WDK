@@ -8,11 +8,7 @@
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="allCount" value="${wdkUser.strategyCount}"/>
 <c:set var="openCount" value="${fn:length(wdkUser.activeStrategies)}"/>
-<c:set var="basketCountMap" value="${wdkUser.basketCount}"/>
-<c:set var="basketCount" value="0"/>
-<c:forEach items="${basketCountMap.keySet}" var="key">
-	<c:set var="basketCount" value="${basketCount + basketCountMap[key]}"/>
-</c:forEach>
+
   <div id="contentwrapper">
     <div id="contentcolumn2">
       <div class="innertube">

@@ -1,4 +1,5 @@
 var dependedParams;
+var dependedValues;
 var displayTermMap;
 var oldValues
 var termDisplayMap;
@@ -29,13 +30,20 @@ function initDependentParamHandlers(isEdit) {
 		}
 		var dependedParam = $("td#" + dependedParams[name] + "aaa input[name='myMultiProp(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='myMultiProp(" + dependedParams[name] + ")']");
 		dependedParam.change(function() {
-			updateDependentParam(name, $(this).val());
+			dependedValues = [];
+			var paramName = $(this).attr('name');
+			paramName = paramName.substring(paramName.indexOf("myMultiProp(") + 12, paramName.indexOf(")"));
+			var inputs = $("td#" + paramName + "aaa input[name='myMultiProp(" + paramName + ")']:checked, td#" + paramName + "aaa select[name='myMultiProp(" + paramName + ")']");
+			inputs.each(function() {
+				dependedValues.push($(this).val());
+			});
+			updateDependentParam(name, dependedValues.join(","));
 		});
 	});
 
-	//Trigger the change function so dependent params are initialized correctly
-	for (var name in dependedParams) {
-		if (isEdit) {
+	//If revising, store all of the old param values before triggering the depended param's change function.
+	if (isEdit) {
+		for (var name in dependedParams) {
 			var input = $("input.typeAhead[name='myProp(" + name + ")']");
 			if (input.length == 0) {
 				input = $("div.dependentParam[name='" + name + "']").find("select");
@@ -45,17 +53,25 @@ function initDependentParamHandlers(isEdit) {
 				}
 				else {
 					// Otherwise, we have to know which option(s) are checked
-					input = $("div.dependentParam[name='" + name + "']").find("input");
 					var allVals = [];
-    					 $(':checked',input).each(function() {
+					$("div.dependentParam[name='" + name + "']").find("input:checked").each(function() {
        						allVals.push($(this).val());
 	     				});
 					oldValues[name] = allVals;
 				}
 			}
 		}
-		dependedParam =  $("td#" + dependedParams[name] + "aaa input[name='myMultiProp(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='myMultiProp(" + dependedParams[name] + ")']");
-		dependedParam.change();
+	}
+
+	// trigger the change function once for each depended param.
+	var triggeredParams = [];
+	for (var name in dependedParams) {
+		if (!triggeredParams[dependedParams[name]]) {
+			dependedParam =  $("td#" + dependedParams[name] + "aaa input[name='myMultiProp(" + dependedParams[name] + ")']:first," +
+                	                   "td#" + dependedParams[name] + "aaa select[name='myMultiProp(" + dependedParams[name] + ")']");
+			dependedParam.change();
+			triggeredParams[dependedParams[name]] = true;
+		}
 	}
 }
 
@@ -139,10 +155,9 @@ function updateDependentParam(paramName, dependedValue) {
 							input.val(oldValues[paramName]);
 						}
 						else {
-							input = $("input", dependentParam);
 							var allVals = oldValues[paramName];
 							jQuery.each(allVals, function() {
-								$("[name=" + this + "]", input).attr('checked',true);
+								$("input[value=" + this + "]", dependentParam).attr('checked',true);
 							});
 						}
 						oldValues[name] = null;

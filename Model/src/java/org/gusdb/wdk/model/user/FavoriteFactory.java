@@ -112,7 +112,8 @@ public class FavoriteFactory {
                     RecordInstance instance = new RecordInstance(user,
                             recordClass, recordId);
                     AttributeValue noteValue = instance.getAttributeValue(noteField.getName());
-                    note = noteValue.getValue().toString();
+                    Object value = noteValue.getValue();
+                    note = (value != null) ? value.toString() : "";
                 }
 
                 // insert new record

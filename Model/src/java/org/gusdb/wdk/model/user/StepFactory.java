@@ -555,6 +555,7 @@ public class StepFactory {
 
         String dependentParamContent = userPlatform.getClobData(rsStep,
                 COLUMN_DISPLAY_PARAMS);
+logger.debug("step #" + stepId);
         Map<String, String> dependentValues = parseParamContent(dependentParamContent);
 
         String answerChecksum = rsStep.getString(AnswerFactory.COLUMN_ANSWER_CHECKSUM);
@@ -1082,6 +1083,7 @@ public class StepFactory {
                 + COLUMN_PROJECT_ID);
         sql.append(" AND sr.").append(COLUMN_SIGNATURE).append(" = ? ");
         sql.append(" AND sr.").append(COLUMN_PROJECT_ID).append(" = ?");
+        sql.append(" ORDER BY sr.").append(COLUMN_LAST_MODIFIED_TIME).append(" DESC");
         ResultSet resultSet = null;
         PreparedStatement ps = null;
         try {
@@ -1091,6 +1093,9 @@ public class StepFactory {
             ps.setString(2, wdkModel.getProjectId());
             resultSet = ps.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql.toString(), start);
+	    System.out.println(sql);
+	    System.out.println(strategySignature);
+	    System.out.println(wdkModel.getProjectId());
             if (!resultSet.next())
                 throw new WdkUserException("The strategy " + strategySignature
                         + " does not exist");
@@ -1118,10 +1123,10 @@ public class StepFactory {
         try {
             if (overwrite) {
                 String sql = "SELECT " + COLUMN_STRATEGY_INTERNAL_ID + ", "
-                        + COLUMN_DISPLAY_ID + " FROM " + userSchema
-                        + TABLE_STRATEGY + " WHERE " + userIdColumn
-                        + " = ? AND " + COLUMN_PROJECT_ID + " = ? AND "
-                        + COLUMN_NAME + " = ? AND " + COLUMN_IS_SAVED
+                        + COLUMN_DISPLAY_ID + ", " + COLUMN_SIGNATURE 
+                        + " FROM " + userSchema + TABLE_STRATEGY + " WHERE "
+                        + userIdColumn + " = ? AND " + COLUMN_PROJECT_ID
+                        + " = ? AND " + COLUMN_NAME + " = ? AND " + COLUMN_IS_SAVED
                         + " = ? AND " + COLUMN_IS_DELETED + " = ? AND "
                         + COLUMN_DISPLAY_ID + " <> ?";
                 // If we're overwriting, need to look up saved strategy id by
@@ -1145,7 +1150,9 @@ public class StepFactory {
                 // saved strategy as deleted
                 if (rsStrategy.next()) {
                     int idToDelete = rsStrategy.getInt(COLUMN_DISPLAY_ID);
+		    String signature = rsStrategy.getString(COLUMN_SIGNATURE);
                     strategy.setIsSaved(true);
+		    strategy.setSignature(signature);
                     strategy.setSavedName(strategy.getName());
                     user.deleteStrategy(idToDelete);
                 }
@@ -1170,7 +1177,7 @@ public class StepFactory {
                     + COLUMN_NAME + " = ?, " + COLUMN_ROOT_STEP_ID + " = ?, "
                     + COLUMN_SAVED_NAME + " = ?, " + COLUMN_IS_SAVED + " = ?, "
                     + COLUMN_DESCRIPTION + " = ?, " + COLUMN_LAST_MODIFIED_TIME
-                    + " = ? WHERE " + COLUMN_STRATEGY_INTERNAL_ID + " = ?";
+                    + " = ?, " + COLUMN_SIGNATURE + "= ? WHERE " + COLUMN_STRATEGY_INTERNAL_ID + " = ?";
             long start = System.currentTimeMillis();
             psStrategy = SqlUtils.getPreparedStatement(dataSource, sql);
             psStrategy.setString(1, strategy.getName());
@@ -1179,7 +1186,8 @@ public class StepFactory {
             psStrategy.setBoolean(4, strategy.getIsSaved());
             psStrategy.setString(5, strategy.getDescription());
             psStrategy.setTimestamp(6, new Timestamp(modifiedTime.getTime()));
-            psStrategy.setInt(7, strategy.getInternalId());
+            psStrategy.setString(7, strategy.getSignature());
+            psStrategy.setInt(8, strategy.getInternalId());
             int result = psStrategy.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql, start);
 
@@ -1346,6 +1354,7 @@ public class StepFactory {
             if (paramNames != null) {
                 for (String paramName : paramNames) {
                     String paramValue = json.getString(paramName);
+logger.debug("param '" + paramName + "' = '" + paramValue + "'");
                     params.put(paramName, paramValue);
                 }
             }

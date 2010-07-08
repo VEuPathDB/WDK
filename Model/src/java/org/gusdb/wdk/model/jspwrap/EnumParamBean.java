@@ -102,13 +102,16 @@ public class EnumParamBean extends ParamBean {
     
     public String getRawDisplayValue() throws Exception {
         String rawValue = getRawValue();
+        if (rawValue == null) rawValue = "";
 	if (!((AbstractEnumParam) param).isSkipValidation()) {
 	    String[] terms = rawValue.split(",");
 	    Map<String, String> displays = getDisplayMap();
 	    StringBuffer buffer = new StringBuffer();
 	    for(String term : terms) {
 		if (buffer.length() > 0) buffer.append(", ");
-		buffer.append(displays.get(term.trim()));
+                String display = displays.get(term.trim());
+                if (display == null) display = term;
+		buffer.append(display);
 	    }
 	    return buffer.toString();
 	}
