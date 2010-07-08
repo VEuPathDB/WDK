@@ -257,6 +257,7 @@
             <choice>
                 <ref name="ParamBaseTags" />
                 <element name="regex">
+                    <ref name="IncludeExclude" />
                     <text />
                 </element>
                 <element name="suggest">

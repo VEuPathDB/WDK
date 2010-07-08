@@ -52,7 +52,7 @@ public class UserBean /* implements Serializable */{
         this.user = user;
     }
 
-    User getUser() {
+    public User getUser() {
         return user;
     }
 

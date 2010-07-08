@@ -3,10 +3,10 @@ package org.gusdb.wdk.controller.action;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
@@ -75,13 +75,13 @@ public class BooleanExpressionForm extends ActionForm {
 
             wdkUser.validateExpression(expression);
             if (errMsg != null) {
-                errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
+                errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
                         "mapped.properties", "booleanExpression", errMsg));
             }
         } catch (Exception ex) {
             ex.printStackTrace();
             errMsg = ex.getMessage();
-            errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
+            errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
                     "mapped.properties", "booleanExpression", errMsg));
         }
 
