@@ -120,11 +120,7 @@ public class ProcessBasketAction extends Action {
         }
 
         // output the total count
-        int count = 0;
-        Map<String, Integer> counts = user.getBasketCount();
-        for (Integer c : counts.values()) {
-            count += c;
-        }
+        int count = user.getBasketCount();
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("count", count);
         PrintWriter writer = response.getWriter();
