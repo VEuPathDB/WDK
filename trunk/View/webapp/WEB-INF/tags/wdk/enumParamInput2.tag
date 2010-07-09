@@ -34,9 +34,10 @@ Otherwise a standard select menu is used.
 	 <div class="param-multiPick">
       <c:set var="i" value="0"/>
       <table border="1" cellspacing="0"><tr><td>
+      <ul>
       <c:forEach items="${qP.displayMap}" var="entity">
+        <li>
         <c:if test="${i == 0}"><c:set var="checked" value="checked"/></c:if>
-        <c:if test="${i > 0}"><br></c:if>
         
         <c:choose>
         <%-- test for param labels to italicize --%>
@@ -52,10 +53,9 @@ Otherwise a standard select menu is used.
         
         <c:set var="i" value="${i+1}"/>
         <c:set var="checked" value=""/>
+        </li>
       </c:forEach>
-  <%--
-      <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
-   --%>
+      </ul>
       </td>
       </tr>
       </table>
