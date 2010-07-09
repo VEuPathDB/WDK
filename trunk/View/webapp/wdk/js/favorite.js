@@ -2,21 +2,24 @@
 // and might have conflict if gbrowse is included.
 
 jQuery(document).ready(function(){
-	loadFavoriteGroups();
-	var current = getCurrentTabCookie("favorites");
-	if (current != null) {
-		showFavorites(current);
-	}
-	else {
-		$(".menubar li a:first").click();
+	var firstType = jQuery(".menubar li a:first");
+	if (firstType.length > 0) {
+		loadFavoriteGroups();
+		var current = getCurrentTabCookie("favorites");
+		if (current != null) {
+			showFavorites(current);
+		}
+		else {
+			firstType.click();
+		}
 	}
 });
 
 function showFavorites(recordClass) {
-    $(".menubar li.selected_type").removeClass("selected_type");
-    $("#tab_" + recordClass).parent().addClass("selected_type");
-    $(".favorites_panel").hide();
-    $("#favorites_" + recordClass).show();
+    jQuery(".menubar li.selected_type").removeClass("selected_type");
+    jQuery("#tab_" + recordClass).parent().addClass("selected_type");
+    jQuery(".favorites_panel").hide();
+    jQuery("#favorites_" + recordClass).show();
     setCurrentTabCookie("favorites", recordClass);
 }
 
