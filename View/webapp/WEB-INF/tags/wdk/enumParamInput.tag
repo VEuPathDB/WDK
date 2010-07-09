@@ -29,8 +29,6 @@ Otherwise a standard select menu is used.
   <c:set var="dependentClass" value="dependentParam" />
 </c:if>
 
-<!--<div class="param">-->
-
 <c:choose>
 <c:when test="${qP.multiPick}">
   <%-- multiPick is true, use checkboxes or scroll pane --%>
@@ -40,12 +38,10 @@ Otherwise a standard select menu is used.
       <c:set var="i" value="0"/>
       <table border="1" cellspacing="0"><tr><td>
 
-<%--	<%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %><br> --%>
-
+      <ul>
       <c:forEach items="${qP.displayMap}" var="entity">
         <c:if test="${i == 0}"><c:set var="checked" value="checked"/></c:if>
-        <c:if test="${i > 0}"><br></c:if>
-        
+        <li>
         <c:choose>
         <%-- test for param labels to italicize --%>
         <c:when test="${pNam == 'organism' or pNam == 'ecorganism'}">
@@ -60,9 +56,10 @@ Otherwise a standard select menu is used.
         
         <c:set var="i" value="${i+1}"/>
         <c:set var="checked" value=""/>
+        </li>
       </c:forEach>
-  
-	<br>&nbsp;<%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
+      </ul>
+&nbsp;<%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
       
       </td>
       </tr>
@@ -114,11 +111,13 @@ Otherwise a standard select menu is used.
   <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
     <c:choose>
       <c:when test="${displayType eq 'radioBox'}">
+         <ul>
          <c:forEach items="${qP.displayMap}" var="entity">
-           <div>
+           <li>
              <html:radio property="myMultiProp(${pNam})" value="${entity.key}" /> ${entity.value}
-           </div>
+           </li>
          </c:forEach>
+         </ul>
       </c:when>
     
       <%-- use a type ahead --%>
