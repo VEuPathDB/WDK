@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wdkWizard name="boolean" display="Basic Step">
+  <description>Add a new step and use boolean to combine the result.</description>
+  <stage name="list" display="Select a search" view="/wdk/wizard/boolean_list.jsp">
+    <description>Please select a new search.</description>
+  </stage>
+  <stage name="detail" display="Select parameters" view="/wdk/wizard/boolean_question.jsp">
+    <description>Please choose parameters and boolean operation.</description>
+  </stage>
+</wdkWizard>

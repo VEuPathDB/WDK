@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -17,7 +18,9 @@ import org.xml.sax.SAXException;
 
 public class WizardModel {
 
-    private static final String WIZARD_PATH = "/xml/wdk-wizard/";
+    private static final String WIZARD_PATH = "/lib/wdk-wizard/";
+
+    private static final Logger logger = Logger.getLogger(WizardModel.class);
 
     private List<Wizard> wizardList = new ArrayList<Wizard>();
     private Map<String, Wizard> wizardMap;
@@ -28,9 +31,11 @@ public class WizardModel {
         WizardParser parser = new WizardParser(gusHome);
 
         File dir = new File(gusHome + WIZARD_PATH);
+        logger.debug("wizard-dir: " + dir.getAbsolutePath());
         File[] files = dir.listFiles();
         if (files != null) {
             for (File file : dir.listFiles()) {
+                logger.debug("wizard-file: " + file.getAbsolutePath());
                 String fileName = file.getName().toLowerCase();
                 if (!fileName.endsWith(".xml")) continue;
 
