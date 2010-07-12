@@ -81,7 +81,10 @@ public class WdkModel {
         WdkModel wdkModel = parser.parseModel(projectId);
         
         // load process model
-        wdkModel.wizardModel = new WizardModel(gusHome);
+        WizardModel wizardModel = new WizardModel(gusHome);
+        wizardModel.excludeResources(projectId);
+        wizardModel.resolveReferences(wdkModel);
+        wdkModel.wizardModel = wizardModel;
         
         logger.debug("Model ready to use.");
         return wdkModel;

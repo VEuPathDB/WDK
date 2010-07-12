@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.wizard;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 
@@ -23,7 +25,7 @@ public class WizardParser extends XmlParser {
         Digester digester = new Digester();
         digester.setValidating(false);
 
-        digester.addObjectCreate("wdkWizard", WizardModel.class);
+        digester.addObjectCreate("wdkWizard", Wizard.class);
         digester.addSetProperties("wdkWizard");
         configureNode(digester, "wdkWizard/description", WdkModelText.class,
                 "addDescription");
@@ -40,18 +42,18 @@ public class WizardParser extends XmlParser {
 
     public Wizard parseWizard(String resource) throws WdkModelException,
             SAXException, IOException {
-        URL wizardUrl = WizardParser.class.getResource(resource);
-        if (wizardUrl == null) {
+        File file = new File(resource);
+        if (!file.exists()) {
             logger.debug("wdk step wizard '" + resource + "' doesn't exist");
             return null;
         }
 
         // validate the process model file
-        if (!validate(wizardUrl))
+        if (!validate(file.toURI().toURL()))
             throw new WdkModelException("XML syntax validation failed on "
-                    + wizardUrl.toExternalForm());
+                    + resource);
 
-        Wizard wizard = (Wizard) digester.parse(wizardUrl.openStream());
+        Wizard wizard = (Wizard) digester.parse(new FileInputStream(file));
         return wizard;
 
     }
