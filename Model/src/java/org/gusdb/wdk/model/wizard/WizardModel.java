@@ -28,12 +28,15 @@ public class WizardModel {
         WizardParser parser = new WizardParser(gusHome);
 
         File dir = new File(gusHome + WIZARD_PATH);
-        for (File file : dir.listFiles()) {
-            String fileName = file.getName().toLowerCase();
-            if (!fileName.endsWith(".xml")) continue;
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File file : dir.listFiles()) {
+                String fileName = file.getName().toLowerCase();
+                if (!fileName.endsWith(".xml")) continue;
 
-            Wizard wizard = parser.parseWizard(file.getAbsolutePath());
-            wizardList.add(wizard);
+                Wizard wizard = parser.parseWizard(file.getAbsolutePath());
+                wizardList.add(wizard);
+            }
         }
     }
 
