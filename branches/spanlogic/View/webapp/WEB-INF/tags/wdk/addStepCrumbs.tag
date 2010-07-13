@@ -4,13 +4,27 @@
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 
-<%@ attribute name="currentStep"
+
+<%@ attribute name="totalStage"
               required="true"
-              description="Step to be highlighted"
+              description="Total number of stages in the current wizard"
 %>
-<c:set var="curr" value="${currentStep}"/>
+
+<%@ attribute name="currentStage"
+              required="true"
+              description="Stage to be highlighted"
+%>
+
+<%@ attribute name="stage"
+              required="false"
+              type="org.gusdb.wdk.model.wizard.Stage"
+              description="The current stage"
+%>
+
+
+<c:set var="curr" value="${currentStage}"/>
 <div id="process-crumbs">
-	<c:forEach begin="1" end="4" var="i">
+	<c:forEach begin="1" end="${totalStages}" var="i">
 		<c:set var="stepImage" value="step_bw_${i}.png"/>
 		<c:set var="dispClass" value=""/>
 		<c:if test="${i == curr}">
@@ -19,19 +33,13 @@
 		</c:if>
 		<div id="pStep_${i}" class="${dispClass}">
 			<img class="step-image" src="<c:url value="wdk/images/${stepImage}"/>"/>
-			<c:choose>
-				<c:when test="${i == 1}">
-					<p>Select Step Type</p>
+                        <c:choose>
+				<c:when test="${stage != null}">
+					<p>${stage.display}</p>
 				</c:when>
-				<c:when test="${i == 2}">
-					<p>Select Step Search</p>
-				</c:when>
-				<c:when test="${i == 3}">
-					<p>Run Search</p>
-				</c:when>
-				<c:when test="${i == 4}">
-					<p>Select Operations</p>
-				</c:when>
+				<c:otherwise>
+					<p>Please select</p>
+				</c:otherwise>
 			</c:choose>
 		</div>
 		<c:if test="${i != 4}">
