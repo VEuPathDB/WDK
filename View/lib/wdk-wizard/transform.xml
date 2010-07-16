@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wdkWizard name="transform" display="Transform to...">
+  <description>Transform the result.</description>
+  <stage name="list" display="Select a search" view="/wdk/wizard/boolean_list.jsp">
+    <description>Please select a new search, or an existing strategy.</description>
+  </stage>
+  <stage name="question" display="Select parameters" view="/wdk/wizard/boolean_question.jsp">
+    <description>Please choose parameters and boolean operation.</description>
+  </stage>
+  <stage name="strategy" display="Select boolean" view="/wdk/wizard/boolean_strategy.jsp">
+    <description>Please choose a boolean operation.</description>
+  </stage>
+</wdkWizard>
