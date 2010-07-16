@@ -11,20 +11,17 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.wizard.Stage;
 import org.gusdb.wdk.model.wizard.StageHandler;
 import org.gusdb.wdk.model.wizard.Wizard;
 import org.gusdb.wdk.model.wizard.WizardModel;
-import org.gusdb.wdk.model.wizard.Stage;
 import org.json.JSONException;
-
-import com.sun.tools.internal.ws.processor.model.Request;
 
 public class WizardAction extends Action {
 
