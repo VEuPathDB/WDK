@@ -75,6 +75,7 @@ public class ShowApplicationAction extends ShowSummaryAction {
     protected static void setWdkTabStateCookie(HttpServletRequest request, HttpServletResponse response) throws Exception {
 	    String cookieValue = null;
 	    Cookie[] cookies = request.getCookies();
+        if (cookies == null) return;
 	    for (Cookie cookie : cookies) {
 		if (cookie.getName().compareTo(CConstants.WDK_TAB_STATE_COOKIE) == 0) {
 		    cookieValue = URLDecoder.decode(cookie.getValue(), "utf-8");
