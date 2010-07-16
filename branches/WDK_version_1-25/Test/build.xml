@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<!-- ====================================================================== 
+     Jul 5, 2007 9:30:27 AM                                                        
+
+     wdk-deploy    
+     description
+                   
+     Jerric                                                                
+     ====================================================================== -->
+<project name="wdk-deploy" default="install">
+    <description>
+            description
+    </description>
+
+    <property name="gus_home" value="${GUS_HOME}"/>
+    <property name="project_home" value="${PROJECT_HOME}"/>
+    
+    <!-- ================================= 
+          target: install              
+         ================================= -->
+    <target name="install" depends="install-model, install-test" description="--> description">
+        
+    </target>
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: install-model                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="install-model">
+        <!-- copy rng files to the correct location --> 
+        <copy todir="${gus_home}/lib/rng">
+            <fileset dir="${project_home}/WDK/Model/lib/rng" />
+        </copy>
+        <!-- copy apicommon model --> 
+        <copy todir="${gus_home}/lib/wdk">
+            <fileset dir="${project_home}/ApiCommonData/Model/lib/wdk" />
+        </copy>
+        <!-- copy apicommon model --> 
+        <copy todir="${gus_home}/lib/wdk">
+            <fileset dir="${project_home}/WDKToySite/Model/lib/wdk" />
+        </copy>
+    </target>
+
+    <!-- - - - - - - - - - - - - - - - - - 
+          target: install-test                      
+         - - - - - - - - - - - - - - - - - -->
+    <target name="install-test">
+        <!-- copy sample model to the correct location --> 
+        <copy todir="${gus_home}/lib/wdk">
+            <fileset dir="${project_home}/WDK/Test/lib/wdk" />
+        </copy>
+        <copy todir="${gus_home}/config">
+            <fileset dir="${project_home}/WDK/Test/config">
+                <include name="*.prop"/>
+            </fileset>
+        </copy>
+        <copy todir="${gus_home}/lib/xml">
+            <fileset dir="${project_home}/WDK/Test/lib/xml" />
+        </copy>
+    </target>
+
+</project>
