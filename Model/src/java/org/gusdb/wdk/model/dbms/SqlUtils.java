@@ -152,6 +152,7 @@ public final class SqlUtils {
             connection = dataSource.getConnection();
             Statement stmt = connection.createStatement();
             stmt.setFetchSize(1000);
+	    logger.error("executing query: " + sql);
             resultSet = stmt.executeQuery(sql);
             verifyTime(wdkModel, sql, start);
             return resultSet;

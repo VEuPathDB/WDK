@@ -114,7 +114,9 @@ function createAutoComplete(obj, name) {
 		});		
 	}
 	$("#" + name + "_display").unautocomplete().autocomplete(def,{
-		matchContains: true
+		matchContains: true,
+		width: 'auto',
+		whiteSpace: 'nowrap'
 	});
 	if (oldValues[name]) {
 		value = termDisplayMap[name][oldValues[name]]; // Look up the display for the old value
