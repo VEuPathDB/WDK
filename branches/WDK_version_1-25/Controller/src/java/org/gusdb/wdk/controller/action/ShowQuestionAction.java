@@ -191,7 +191,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 EnumParamBean enumParam = (EnumParamBean) param;
                 String[] terms = enumParam.getVocab();
                 String[] labels = enumParam.getDisplays();
-                qForm.setMyLabels(paramName, getLengthBoundedLabels(labels));
+                qForm.setMyLabels(paramName, labels);
                 qForm.setMyValues(paramName, terms);
 
                 // if no default is assigned, use the first enum item
@@ -214,7 +214,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                         labels[idx] = "#" + step.getStepId() + " - "
                                 + step.getCustomName();
                     }
-                    qForm.setMyLabels(paramName, getLengthBoundedLabels(labels));
+                    qForm.setMyLabels(paramName, labels);
                     qForm.setMyValues(paramName, terms);
 
                     // if no step is assigned, use the first step
@@ -258,26 +258,5 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
         request.setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
 
         return qForm;
-    }
-
-    static String[] getLengthBoundedLabels(String[] labels) {
-        return getLengthBoundedLabels(labels, CConstants.MAX_PARAM_LABEL_LEN);
-    }
-
-    static String[] getLengthBoundedLabels(String[] labels, int maxLength) {
-        Vector<String> v = new Vector<String>();
-        int halfLen = maxLength / 2;
-        for (String l : labels) {
-            if (l == null) continue;
-            int len = l.length();
-            if (len > maxLength) {
-                l = l.substring(0, halfLen) + "..."
-                        + l.substring(len - halfLen, len);
-            }
-            v.add(l);
-        }
-        String[] newLabels = new String[v.size()];
-        v.copyInto(newLabels);
-        return newLabels;
     }
 }
