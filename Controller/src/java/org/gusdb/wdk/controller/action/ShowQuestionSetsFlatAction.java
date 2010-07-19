@@ -87,7 +87,7 @@ public class ShowQuestionSetsFlatAction extends ShowQuestionSetsAction {
                         qSetForm.getMyValues().put(p.getName(), flatVocab);
                         qSetForm.getMyLabels().put(
                                 p.getName(),
-                                ShowQuestionAction.getLengthBoundedLabels(labels));
+                                labels);
                     }
                     qSetForm.getMyProps().put(key, p.getDefault());
                 }
