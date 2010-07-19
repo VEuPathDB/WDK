@@ -4,8 +4,8 @@ import java.io.File;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Enumeration;
-import java.util.Vector;
 import java.util.Map;
+import java.util.Vector;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -29,7 +29,6 @@ import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
-import org.gusdb.wdk.model.jspwrap.TypeAheadParamBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
@@ -192,7 +191,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                 EnumParamBean enumParam = (EnumParamBean) param;
                 String[] terms = enumParam.getVocab();
                 String[] labels = enumParam.getDisplays();
-                qForm.setMyLabels(paramName, getLengthBoundedLabels(labels));
+                qForm.setMyLabels(paramName, labels);
                 qForm.setMyValues(paramName, terms);
 
                 // if no default is assigned, use the first enum item
@@ -215,7 +214,7 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
                         labels[idx] = "#" + step.getStepId() + " - "
                                 + step.getCustomName();
                     }
-                    qForm.setMyLabels(paramName, getLengthBoundedLabels(labels));
+                    qForm.setMyLabels(paramName, labels);
                     qForm.setMyValues(paramName, terms);
 
                     // if no step is assigned, use the first step
@@ -259,26 +258,5 @@ public class ShowQuestionAction extends ShowQuestionSetsFlatAction {
         request.setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
 
         return qForm;
-    }
-
-    static String[] getLengthBoundedLabels(String[] labels) {
-        return getLengthBoundedLabels(labels, CConstants.MAX_PARAM_LABEL_LEN);
-    }
-
-    static String[] getLengthBoundedLabels(String[] labels, int maxLength) {
-        Vector<String> v = new Vector<String>();
-        int halfLen = maxLength / 2;
-        for (String l : labels) {
-            if (l == null) continue;
-            int len = l.length();
-            if (len > maxLength) {
-                l = l.substring(0, halfLen) + "..."
-                        + l.substring(len - halfLen, len);
-            }
-            v.add(l);
-        }
-        String[] newLabels = new String[v.size()];
-        v.copyInto(newLabels);
-        return newLabels;
     }
 }
