@@ -25,6 +25,8 @@ public class Wizard extends WdkModelBase {
     private List<Stage> stageList = new ArrayList<Stage>();
     private Map<String, Stage> stageMap;
 
+    private String firstStageReference;
+
     /**
      * @return the name
      */
@@ -55,6 +57,10 @@ public class Wizard extends WdkModelBase {
         this.display = display;
     }
 
+    public void setFirstStage(String firstStageReference) {
+        this.firstStageReference = firstStageReference;
+    }
+
     public void addDescription(WdkModelText description) {
         this.descriptionList.add(description);
     }
@@ -64,6 +70,7 @@ public class Wizard extends WdkModelBase {
     }
 
     public void addStage(Stage stage) {
+        stage.setWizard(this);
         stageList.add(stage);
     }
 
@@ -86,7 +93,11 @@ public class Wizard extends WdkModelBase {
             }
         }
         stageList = null;
-        
+
+        if (stageMap.size() == 0)
+            throw new WdkModelException("wizard '" + name
+                    + "' doesn't contain any stage.");
+
         for (WdkModelText desc : descriptionList) {
             if (desc.include(projectId)) {
                 if (this.description != null)
@@ -95,7 +106,7 @@ public class Wizard extends WdkModelBase {
                 this.description = desc.getText();
             }
         }
-        
+
         super.excludeResources(projectId);
     }
 
@@ -114,6 +125,12 @@ public class Wizard extends WdkModelBase {
             stage.resolveReferences(wdkModel);
         }
 
+        if (firstStageReference != null
+                && !stageMap.containsKey(firstStageReference))
+            throw new WdkModelException("The first stage '"
+                    + firstStageReference + "' does not exist in wizard "
+                    + name);
+
         super.resolveReferences(wdkModel);
     }
 
@@ -122,6 +139,10 @@ public class Wizard extends WdkModelBase {
     }
 
     public Stage getFirstStage() {
-        return stageMap.values().iterator().next();
+        if (firstStageReference == null) {
+            return stageMap.values().iterator().next();
+        } else {
+            return stageMap.get(firstStageReference);
+        }
     }
 }

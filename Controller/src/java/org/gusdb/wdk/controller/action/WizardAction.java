@@ -27,6 +27,7 @@ public class WizardAction extends Action {
 
     private static final String PARAM_WIZARD = "wizard";
     private static final String PARAM_STAGE = "stage";
+    private static final String PARAM_LABEL = "label";
     private static final String PARAM_STRATEGY = "strategy";
     private static final String PARAM_STEP = "step";
 
@@ -50,8 +51,6 @@ public class WizardAction extends Action {
         // load strategy
         loadStrategy(request, user);
 
-        WizardModel wizardModel = wdkModel.getWizardModel();
-
         // get the wizard
         String wizardName = request.getParameter(PARAM_WIZARD);
         if (wizardName == null || wizardName.length() == 0) {
@@ -60,18 +59,12 @@ public class WizardAction extends Action {
             return forward;
         }
 
+        Stage nextStage = getNextStage(request, wdkModel, wizardName);
+
         Map<String, String> params = ActionUtility.getParams(request);
 
-        Wizard wizard = wizardModel.getWizard(wizardName);
-
-        // get the current stage, or use the first stage
-        String stageName = request.getParameter(PARAM_STAGE);
-        Stage stage;
-        if (stageName == null || stageName.length() == 0) stage = wizard.getFirstStage();
-        else stage = wizard.getStage(stageName);
-
         // check if there is a handler
-        StageHandler handler = stage.getHandler();
+        StageHandler handler = nextStage.getHandler();
         if (handler != null) {
             Map<String, Object> result = handler.execute(wdkModel.getModel(),
                     user.getUser(), params);
@@ -81,7 +74,7 @@ public class WizardAction extends Action {
         }
 
         // get the view from the stage
-        String view = stage.getView();
+        String view = nextStage.getView();
 
         return new ActionForward(view);
     }
@@ -107,5 +100,31 @@ public class WizardAction extends Action {
 
         request.setAttribute(PARAM_STRATEGY, strategy);
         request.setAttribute(PARAM_STEP, step);
+    }
+
+    private Stage getNextStage(HttpServletRequest request,
+            WdkModelBean wdkModel, String wizardName) throws WdkModelException {
+        WizardModel wizardModel = wdkModel.getWizardModel();
+
+        Wizard wizard = wizardModel.getWizard(wizardName);
+
+        // get the name of the current stage
+        String stageName = request.getParameter(PARAM_STAGE);
+        // if the current stage is not specified, the next stage would be the
+        // first stage, simply return it.
+        if (stageName == null || stageName.length() == 0)
+            return wizard.getFirstStage();
+
+        // get the current stage
+        Stage stage = wizard.getStage(stageName);
+
+        // get the label, which should map to the next stage
+        String label = request.getParameter(PARAM_LABEL);
+        Stage nextStage = stage.queryNextStage(label);
+        if (nextStage == null)
+            throw new WdkModelException("stage '" + stage.getName()
+                    + " in wizard " + wizard.getName() + " doesn't have a "
+                    + "next stage matching the label '" + label + "'");
+        return nextStage;
     }
 }
