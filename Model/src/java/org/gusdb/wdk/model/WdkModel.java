@@ -74,7 +74,8 @@ public class WdkModel {
             JSONException, WdkUserException, InstantiationException,
             IllegalAccessException, ClassNotFoundException {
         logger.debug("Constructing wdk model [" + projectId + "] (GUS_HOME="
-                + gusHome + ")...");
+                + gusHome + "); called by " 
+                + Class.forName(new Throwable().getStackTrace()[2].getClassName()));
 
         ModelXmlParser parser = new ModelXmlParser(gusHome);
         WdkModel wdkModel = parser.parseModel(projectId);
