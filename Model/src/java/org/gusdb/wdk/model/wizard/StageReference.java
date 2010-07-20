@@ -4,20 +4,35 @@ import org.gusdb.wdk.model.WdkModelBase;
 
 public class StageReference extends WdkModelBase {
 
-    private String name;
+    private String label;
+    private String stage;
 
     /**
      * @return the name
      */
-    public String getName() {
-        return name;
+    public String getLabel() {
+        return label;
     }
 
     /**
      * @param name
      *            the name to set
      */
-    public void setName(String name) {
-        this.name = name;
+    public void setLabel(String label) {
+        this.label = label;
+    }
+
+    /**
+     * @return the stage
+     */
+    public String getStage() {
+        return stage;
+    }
+
+    /**
+     * @param stage the stage to set
+     */
+    public void setStage(String stage) {
+        this.stage = stage;
     }
 }

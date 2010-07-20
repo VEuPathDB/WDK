@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.wizard;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URL;
 
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
@@ -36,6 +35,9 @@ public class WizardParser extends XmlParser {
         configureNode(digester, "wdkWizard/stage/description",
                 WdkModelText.class, "addDescription");
         digester.addCallMethod("wdkWizard/stage/description", "setText", 0);
+
+        configureNode(digester, "wdkWizard/stage/nextStage",
+                StageReference.class, "addNextStage");
 
         return digester;
     }

@@ -3,7 +3,9 @@ package org.gusdb.wdk.model.wizard;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -14,6 +16,7 @@ import org.json.JSONException;
 
 public class Stage extends WdkModelBase {
 
+    private Wizard wizard;
     private String name;
     private String display;
     private String view;
@@ -23,6 +26,24 @@ public class Stage extends WdkModelBase {
 
     private List<WdkModelText> descriptionList = new ArrayList<WdkModelText>();
     private String description;
+
+    private List<StageReference> nextStageReferences = new ArrayList<StageReference>();
+    private Map<String, Stage> nextStages;
+
+    /**
+     * @return the wizard
+     */
+    public Wizard getWizard() {
+        return wizard;
+    }
+
+    /**
+     * @param wizard
+     *            the wizard to set
+     */
+    public void setWizard(Wizard wizard) {
+        this.wizard = wizard;
+    }
 
     /**
      * @return the name
@@ -92,6 +113,29 @@ public class Stage extends WdkModelBase {
         return this.description;
     }
 
+    public void addNextStage(StageReference stageReference) {
+        this.nextStageReferences.add(stageReference);
+    }
+
+    public Stage queryNextStage(String label) {
+        return nextStages.get(label);
+    }
+
+    public boolean isBranched() {
+        return (nextStages.size() > 1);
+    }
+
+    public boolean isLastStage() {
+        return (nextStages.size() == 0);
+    }
+
+    public Stage getNextStage() throws WdkModelException {
+        if (isBranched() || isLastStage())
+            throw new WdkModelException("The stage '" + name + "' in wizard "
+                    + wizard.getName() + " doesn't have single next stage.");
+        return nextStages.values().iterator().next();
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -111,6 +155,14 @@ public class Stage extends WdkModelBase {
             }
         }
         this.descriptionList = null;
+
+        // exclude next stage references
+        for (int i = nextStageReferences.size(); i >= 0; i--) {
+            StageReference reference = nextStageReferences.get(i);
+            if (reference.include(projectId)) {
+                reference.excludeResources(projectId);
+            } else nextStageReferences.remove(i);
+        }
 
         super.excludeResources(projectId);
     }
@@ -136,6 +188,19 @@ public class Stage extends WdkModelBase {
                         + StageHandler.class + ". stage: " + name, ex);
             }
         }
+
+        // resolve the reference to the next stages
+        nextStages = new LinkedHashMap<String, Stage>();
+        for (StageReference reference : nextStageReferences) {
+            String label = reference.getLabel();
+            String stageName = reference.getStage();
+            Stage stage = wizard.getStage(stageName);
+            if (stage == null)
+                throw new WdkModelException("The stage '" + stageName
+                        + "' doesn't exist in the wizard " + wizard.getName());
+            nextStages.put(label, stage);
+        }
+        nextStageReferences = null;
 
         super.resolveReferences(wdkModel);
     }
