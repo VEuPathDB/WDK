@@ -494,14 +494,6 @@ a.redbutton:active span {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =MISC 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-#Strategies {
-	width: 100%;
-	min-height: 130px;
-	max-height: 330px;
-	overflow-y: auto;
-	border: 2px solid gray;
-}
-
 div.Workspace {
 	z-index: 50;
 }
@@ -514,17 +506,6 @@ span.marker a:link, span.marker a:visited {
 .help_div {
 	background-color: lightYellow;
 	border: 1px solid black;
-}
-
-/* APPLICATION PAGE STYLES */
-td.strat_active {
-    width: 30px;
-    background: url(/assets/images/eyeBlue.png) no-repeat 8px 8px;
-}
-
-td.strat_inactive {
-    width: 30px;
-    background: url(/assets/images/eyeGrey.png) no-repeat 8px 8px;
 }
 
 #strategy_tabs a:link, #strategy_tabs a:visited, #strategy_tabs li span {
