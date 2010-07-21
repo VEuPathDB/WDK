@@ -13,6 +13,27 @@
 	top:27px;
 }
 
+#strategy_results .resizable-wrapper {
+	padding-bottom: 10px;
+	border: 1px solid #000;
+	width: 100%;
+}
+
+#strategy_results .scrollable-wrapper {
+	overflow-y: scroll;
+	border: 1px solid #000;
+	height: 100%;
+}
+
+#strategy_results .ui-resizable-handle.ui-resizable-s {
+	background-color: #FBFBFB;
+	background-image: url(../images/bottomGrip.png);
+	background-position: center;
+	background-repeat: no-repeat;
+	bottom: 0;
+	height: 8px;
+}
+
 #strat-instructions {
 	background-color:#EDEDED;
 	border-color:#FFFFFF #CCCCCC #666677 #AAAAAA;
