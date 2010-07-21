@@ -7,6 +7,8 @@ var state = null;
 var p_state = null;
 var ajaxTimeout = 60000;
 $(document).ready(function(){
+	// Make the strategies window resizable
+	$(".resizable-wrapper").resizable({handles: 's', minHeight: 150, stop: function(event, ui) {setCurrentTabCookie('strategyWindow',$(".resizable-wrapper").height())}});
 	// tell jQuery not to cache ajax requests.
 	$.ajaxSetup ({ 
 		cache: false,
@@ -193,6 +195,13 @@ function showStrategies(view, ignoreFilters, besc){
 		displayOpenSubStrategies(strats[t], s2);
 	}
 	$("#Strategies").html($(s2).html());
+	var height = getCurrentTabCookie('strategyWindow');
+	if (!height && $("#Strategies").parent().parent().height() > 330) {
+		$("#Strategies").parent().parent().height(330);
+	}
+	else if (height && $("#Strategies").parent().parent().height() > parseInt(height)) {
+		$("#Strategies").parent().parent().height(parseInt(height));
+	}
 	if(view.action != undefined) {
 		if (view.action == "share" || view.action == "save") {
 			var x = $("a#" + view.action + "_" + view.actionStrat);
