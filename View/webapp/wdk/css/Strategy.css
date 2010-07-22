@@ -21,12 +21,13 @@
 
 #strategy_results .scrollable-wrapper {
 	overflow-y: scroll;
+	position: relative;
 	border: 1px solid #000;
 	height: 100%;
 }
 
 #strategy_results .ui-resizable-handle.ui-resizable-s {
-	background-color: #FBFBFB;
+	background-color: #F0F0F0;
 	background-image: url(../images/bottomGrip.png);
 	background-position: center;
 	background-repeat: no-repeat;
