@@ -18,8 +18,7 @@
 
 <c:set var="rcName" value="${step.type}" />
 
-
-<wdk:addStepCrumbs stages="2" stageNumber="1" stage="${stage}" />
+<wdk:addStepCrumbs wizard="${wizard}" stage="${stage}" />
 
 <div id="sections">
 	<table id="sections-layout"><tr>
