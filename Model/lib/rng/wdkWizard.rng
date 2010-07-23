@@ -4,7 +4,7 @@
     <start>
         <element name="wdkWizard">
             <attribute name="name" />
-            <attribute name="firstStage" />
+            <attribute name="nextStage" />
             <optional>
                 <attribute name="display" />
             </optional>
@@ -33,9 +33,10 @@
                 <attribute name="handler" />
             </optional>
             <ref name="IncludeExclude"/>
-            
-            <zeroOrMore>
-                <ref name="description" />
+            <optional>
+				<ref name="description" />
+			</optional>
+            <zeroOrMore>  
                 <element name="nextStage">
                     <attribute name="label" />
                     <attribute name="stage" />
