@@ -987,6 +987,9 @@ div#step_type{
 div#sections{
 	line-height:1.25;
 }
+div#sections td{
+	vertical-align: top;
+}
 
 /**************************************************
  ******* CSS for AddStep PopUp ********************
@@ -1030,6 +1033,7 @@ div#sections{
 	text-align:center;
 	width:56px;
 	opacity:0.3;
+	vertical-align:top;
 }
 #process-crumbs > div.active{
 	opacity:1.0;
