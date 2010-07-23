@@ -397,8 +397,10 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 		stp = getStrategy(strat_id).getStep(step_id,false)
 		if(stp != null && stp.frontId == 1 && !isAdd) isFirst = true;
 	}
+	currStrat = getStrategy(strat_id);
 	current_Front_Strategy_Id = strat_id;
 	var url = "wdk/jsp/addStepPopup.jsp?dataType=" + dtype + "&prevStepNum=" + step_id + "&isAdd=" + isAdd;
+//	var url = "wizard.do?strategy="+currStrat.backId;
 	$.ajax({
 		url: url,
 		dataType: "html",
@@ -470,6 +472,26 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 	});
 }
 
+function callWizard(url, ele, id, sec){
+	if(url == null){
+		showNewSection(ele,id,sec);
+	}else{
+		d = "strategy="+getStrategy(current_Front_Strategy_Id).backId;
+		$.ajax({
+			url: url,
+			type: "get",
+			dataType: "html",
+			data: d,
+			success: function(data){
+				$("#qf_content").html(data);
+				if(ele != undefined){
+					showNewSection(ele,id,sec);
+				}
+			}	
+		});
+	}
+}
+
 function openAddStrategy(strat_id){
 	original_Query_Form_Text = $("#query_form").html();
 	OpenOperationBox(strat_id, (global_isAdd ? undefined : step_id));
@@ -531,7 +553,7 @@ function showNewSection(ele,sectionName,sectionNumber){
 			}))
 		.attr("id","section-"+sectionNumber);
 	for(i=sectionNumber; i<=5; i++){
-		$("td#section-"+i).html("");
+		$("td#section-"+i+" div.qf_section").html("");
 	}
 	$(ele).parent().find("li").css({
 		"background":"",
