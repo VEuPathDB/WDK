@@ -6,13 +6,13 @@
   
   <stage name="list" 
          display="Select a search" 
-         view="/wdk/wizard/transform_list.jsp">
+         view="/wdk/jsp/wizard/transform_list.jsp">
     <description>Please select a transform.</description>
     <nextStage label="detail" stage="detail" />
   </stage>
   <stage name="detail" 
          display="Select transform params" 
-         view="/wdk/wizard/transform_params.jsp">
+         view="/wdk/jsp/wizard/transform_params.jsp">
     <description>Select the parameters for the transform.</description>
   </stage>
 </wdkWizard>
