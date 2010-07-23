@@ -5,26 +5,26 @@
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 
 
-<%@ attribute name="totalStage"
-              required="true"
+<%@ attribute name="stages"
+              required="false"
               description="Total number of stages in the current wizard"
 %>
-
-<%@ attribute name="currentStage"
-              required="true"
-              description="Stage to be highlighted"
-%>
-
 <%@ attribute name="stage"
               required="false"
               type="org.gusdb.wdk.model.wizard.Stage"
               description="The current stage"
 %>
+<%@ attribute name="stageNumber"
+              required="true"
+              description="The current stage Number"
+%>
 
+<c:set var="curr" value="${stageNumber}"/>
+<c:set var="stageCount" value="${stages}"/>
 
-<c:set var="curr" value="${currentStage}"/>
+<c:if test="${fn:length(stageCount) == 0}"><c:set var="stageCount" value="1"/></c:if>
 <div id="process-crumbs">
-	<c:forEach begin="1" end="${totalStages}" var="i">
+	<c:forEach begin="1" end="${stageCount}" var="i">
 		<c:set var="stepImage" value="step_bw_${i}.png"/>
 		<c:set var="dispClass" value=""/>
 		<c:if test="${i == curr}">
@@ -38,11 +38,11 @@
 					<p>${stage.display}</p>
 				</c:when>
 				<c:otherwise>
-					<p>Please select</p>
+					<p>Please select a Wizard</p>
 				</c:otherwise>
 			</c:choose>
 		</div>
-		<c:if test="${i != 4}">
+		<c:if test="${i > stageCount}">
 			<img class="transition" id="${i}-${i+1}" src="<c:url value="wdk/images/sStepTrans.png"/>"/>
 		</c:if>
 	</c:forEach>
