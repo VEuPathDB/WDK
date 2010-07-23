@@ -4,46 +4,59 @@
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 
-
-<%@ attribute name="stages"
-              required="false"
-              description="Total number of stages in the current wizard"
+<%@ attribute name="wizard"
+			  required="false"
+     		  type="org.gusdb.wdk.model.wizard.Wizard"
+			  description="Wizard that is being displayed"
 %>
+
 <%@ attribute name="stage"
               required="false"
               type="org.gusdb.wdk.model.wizard.Stage"
               description="The current stage"
 %>
-<%@ attribute name="stageNumber"
-              required="true"
-              description="The current stage Number"
-%>
 
-<c:set var="curr" value="${stageNumber}"/>
-<c:set var="stageCount" value="${stages}"/>
+<c:set var="stageCount" value="${fn:length(wizard.stages)}"/>
 
-<c:if test="${fn:length(stageCount) == 0}"><c:set var="stageCount" value="1"/></c:if>
 <div id="process-crumbs">
-	<c:forEach begin="1" end="${stageCount}" var="i">
+	<c:set var="stepImage" value="step_bw_1.png"/>
+	<c:set var="dispClass" value=""/>
+	<c:if test="${stage == null}">
+		<c:set var="stepImage" value="step1.png"/>
+		<c:set var="dispClass" value="active"/>
+	</c:if>
+	<div id="pStep_1" class="${dispClass}">
+		<img class="step-image" src="<c:url value="wdk/images/${stepImage}"/>"/>
+        <p>Please select a Wizard</p>
+	</div>
+	<c:if test="${stageCount > 1}">
+		<img class="transition" id="${i}-${i+1}" src="<c:url value="wdk/images/sStepTrans.png"/>"/>
+	</c:if>
+	<c:set var="i" value="2"/>
+	<c:forEach var="st" items="${wizard.stages}">
+	  <c:if test="${i > 0}">
 		<c:set var="stepImage" value="step_bw_${i}.png"/>
 		<c:set var="dispClass" value=""/>
-		<c:if test="${i == curr}">
+		<c:if test="${stage.name == st.name}">
 			<c:set var="stepImage" value="step${i}.png"/>
 			<c:set var="dispClass" value="active"/>
 		</c:if>
 		<div id="pStep_${i}" class="${dispClass}">
 			<img class="step-image" src="<c:url value="wdk/images/${stepImage}"/>"/>
-                        <c:choose>
+            <c:choose>
 				<c:when test="${stage != null}">
-					<p>${stage.display}</p>
+					<p>${st.display}</p>
 				</c:when>
 				<c:otherwise>
-					<p>Please select a Wizard</p>
+					<p>Stage ${i}</p>
 				</c:otherwise>
 			</c:choose>
 		</div>
-		<c:if test="${i > stageCount}">
+		<c:if test="${st.branched}"><c:set var="i" value="-1"/></c:if>
+		<c:if test="${i < stageCount}">
 			<img class="transition" id="${i}-${i+1}" src="<c:url value="wdk/images/sStepTrans.png"/>"/>
 		</c:if>
+		<c:set var="i" value="${i+1}"/>
+	  </c:if>
 	</c:forEach>
 </div>
