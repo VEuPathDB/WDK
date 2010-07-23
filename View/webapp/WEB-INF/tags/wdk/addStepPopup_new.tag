@@ -6,12 +6,12 @@
 
 <%@ attribute name="model"
 	      type="org.gusdb.wdk.model.jspwrap.WdkModelBean"
-              required="true"
+              required="false"
               description="Wdk Model Object for this site"
 %>
 
 <%@ attribute name="rcName"
-	      required="true"
+	      required="false"
               description="RecordClass Object for the Answer"
 %>
 
@@ -24,12 +24,13 @@
 	      required="false"
 	      description="true = adding a step.  false = inserting a step"
 %>
-
-<c:set var="siteName" value="${applicationScope.wdkModel.name}" />
+<c:set var="model" value="${applicationScope.wdkModel}" />
+<c:set var="siteName" value="${model.name}" />
 <c:set var="qSetName" value="none" />
 <c:set var="qSets" value="${model.questionSetsMap}" />
 <c:set var="qSet" value="${qSets[qSetName]}" />
 <c:set var="user" value="${sessionScope.wdkUser}"/>
+<c:set var="wizards" value="${model.wizardModel.wizards}" />
 <%-- the type is of the previous step, that is the input type of the new step  --%>
 <c:set var="recordClass" value="${model.recordClassMap[rcName]}" />
 
@@ -41,72 +42,37 @@
 
 <div id="query_form" style="min-height:140px;">
 	<wdk:addStepHeader/>
-	<wdk:addStepCrumbs currentStep="1"/>
-<%--%>	<span class="dragHandle">
-		<div class="modal_name">
-			<h1 style="font-size:130%;margin-top:4px;" id="query_form_title"></h1>
-		</div>
-		<a class='close_window' href='javascript:closeAll()'>
-			<img src="<c:url value='/wdk/images/Close-X-box.png'/>" alt='Close'/>
-		</a>
-	</span>--%>
+	<div id="qf_content">
+	<wdk:addStepCrumbs stageNumber="1"/>
 	<div id="sections">
 		<table id="sections-layout"><tr>
 			<td id="section-1">
-				<div class="qf_section" id="step_type">
+			<div class="qf_section" id="step_type">
 					<ul class="menu_section">
-						<li class="category" onclick="showNewSection(this,'boolean',2);$('div#boolean.qf_section ul > li:first').click()" style="background-color:#DDDDDD; font-weight:bold">Basic Step</li>
-						<c:if test="${fn:length(transformQuestions) > 0}">
-							<li class="category" onclick="showNewSection(this,'transforms',2)">Transform to ...</li>
-						</c:if>
-						<li class="category" onclick="showNewSection(this,'span_logic',2);$('div#span_logic ul > li:first').click()">Advanced (location-based) Step</li>
+						<c:forEach items="${wizards}" var="wizard">
+							<c:url var="wizardUrl" value="/wizard.do?wizard=${wizard.name}&stage=&label=${wizard.firstStage.name}" />
+							<li class="category" onclick="callWizard('${wizardUrl}',this,'${wizard.name}',2);">${wizard.display}</li>
+						</c:forEach>	
 					</ul>
 				</div>
 			</td>
-			<td id="section-2">
-				<div class="qf_section" id="boolean" style="">
-				<ul class="menu_section">
-					<li class="category" onclick="showNewSection(this,'boolean_searches',3)" style="background-color:#DDDDDD; font-weight:bold">Run a new Search</li>
-					<li class="category" onclick="showNewSection(this,'boolean_strategies',3)">Add existing Strategy</li>
-					<%--<li><a href="javascript:void(0)" onclick="showNewSection(this,'boolean_basket')"></a>Basket</li>--%>
-					<c:if test="${recordClass.hasBasket}">
-						<c:set var="q" value="${recordClass.snapshotBasketQuestion}" />
-						<li style="width:auto;z-index:40;" onclick="getQueryForm('showQuestion.do?questionFullName=${q.fullName}&partial=true')">Add the Basket</li>
-					</c:if>
-				</ul>
-			</div></td>
-			<td id="section-3">
-				<div class="qf_section" id="boolean_searches" style="background-color:#EEEEEE;">
-					<ul class="menu_section">
-						<c:set var="rootCat" value="${model.websiteRootCategories[rcName]}" />
-						<c:choose>
-						<c:when test="${rootCat.multiCategory}">
-						<c:forEach items="${rootCat.websiteChildren}" var="catEntry">
-				    		<c:set var="cat" value="${catEntry.value}" />
-							<li class="category" onclick="showNewSection(this,'${cat.name}',4)">${cat.displayName}</li>
-						</c:forEach>
-						</c:when>
-						<c:otherwise>
-						<c:forEach items="${rootCat.websiteChildren}" var="catEntry">
-				    	<c:set var="cat" value="${catEntry.value}" />
-						<c:forEach items="${cat.websiteQuestions}" var="q">
-							<li onclick="javascript:getQueryForm('showQuestion.do?questionFullName=${q.fullName}&partial=true')">${q.displayName}</li>
-						</c:forEach>
-						</c:forEach>
-						</c:otherwise>
-						</c:choose>
-					</ul>
-				</div>
-			</td>
-			<td id="section-4"></td>
-			<td id="section-5"></td>	
+			<td id="section-2"><div class="qf_section"></div></td>
+			<td id="section-3"><div class="qf_section"></div></td>
+			<td id="section-4"><div class="qf_section"></div></td>
+			<td id="section-5"><div class="qf_section"></div></td>	
 		</tr></table>
-		
-		<div class="original" id="boolean" style="display:none">
+		</div> <!--End Section Div-->
+		<div id="sections_data">
+		</div>
+		</div><!--Content Div -->
+		<div class="bottom-close">
+			<a class='close_window' href='javascript:closeAll(false)'>Close</a>
+		</div>
+	</div><!-- End of Query Form Div -->
+<%--		<div class="original" id="boolean" style="display:none">
 			<ul class="menu_section">
 				<li class="category" onclick="showNewSection(this,'boolean_searches',3)">Run a new Search</li>
 				<li class="category" onclick="showNewSection(this,'boolean_strategies',3)">Add existing Strategy</li>
-				<%--<li><a href="javascript:void(0)" onclick="showNewSection(this,'boolean_basket')"></a>Basket</li>--%>
 				<c:if test="${recordClass.hasBasket}">
 					<c:set var="q" value="${recordClass.snapshotBasketQuestion}" />
 					<li style="width:auto;z-index:40;" onclick="getQueryForm('showQuestion.do?questionFullName=${q.fullName}&partial=true')">Add the Basket</li>
@@ -225,11 +191,11 @@
 		<div id="span_logic" style="display:none" class="original">
 			<ul class="menu_section">
 				<li class="category" onclick="showNewSection(this,'sl_recordclasses',3)">Run a new Search</li>
-			<%--	<li class="category" onclick="showNewSection(this,'sl_strategies',3)">Add existing Strategy</li>
+				<li class="category" onclick="showNewSection(this,'sl_strategies',3)">Add existing Strategy</li>
 				<li>Add the Basket</li>
 				<li>Include All Genes</li>
 				<li>Include All ORFs</li>
-				<li>Include All SNPs</li>  --%>
+				<li>Include All SNPs</li> 
 			</ul>
 		</div>
 
@@ -358,9 +324,7 @@
 		</c:forEach>
 		
 	</div>
-	<div class="bottom-close">
-		<a class='close_window' href='javascript:closeAll(false)'>Close</a>
-	</div>
-</div><!-- End of Query Form Div -->
+--%>
+	
 
 
