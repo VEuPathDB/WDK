@@ -43,7 +43,7 @@
 <div id="query_form" style="min-height:140px;">
 	<wdk:addStepHeader/>
 	<div id="qf_content">
-	<wdk:addStepCrumbs stageNumber="1"/>
+	<wdk:addStepCrumbs/>
 	<div id="sections">
 		<table id="sections-layout"><tr>
 			<td id="section-1">
