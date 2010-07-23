@@ -4,6 +4,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -23,7 +24,11 @@ import org.gusdb.wdk.model.wizard.Wizard;
 import org.gusdb.wdk.model.wizard.WizardModel;
 import org.json.JSONException;
 
+
+
 public class WizardAction extends Action {
+
+	private static final Logger logger = Logger.getLogger(WizardAction.class);
 
     private static final String PARAM_WIZARD = "wizard";
     private static final String PARAM_STAGE = "stage";
@@ -53,6 +58,7 @@ public class WizardAction extends Action {
 
         // get the wizard
         String wizardName = request.getParameter(PARAM_WIZARD);
+		logger.info("wizardname = " + wizardName);
         if (wizardName == null || wizardName.length() == 0) {
             // no wizard specified, then show wizard list
             ActionForward forward = mapping.findForward(FORWARD_SHOW_WIZARDS);
@@ -60,7 +66,7 @@ public class WizardAction extends Action {
         }
 
         Stage nextStage = getNextStage(request, wdkModel, wizardName);
-
+		logger.info("nextStage = "+nextStage.getName());
         Map<String, String> params = ActionUtility.getParams(request);
 
         // check if there is a handler
@@ -72,10 +78,9 @@ public class WizardAction extends Action {
                 request.setAttribute(name, result.get(name));
             }
         }
-
         // get the view from the stage
         String view = nextStage.getView();
-
+		logger.info("view = " + view);
         return new ActionForward(view);
     }
 
@@ -107,17 +112,19 @@ public class WizardAction extends Action {
         WizardModel wizardModel = wdkModel.getWizardModel();
 
         Wizard wizard = wizardModel.getWizard(wizardName);
-
+		request.setAttribute("wizard", wizard);
         // get the name of the current stage
         String stageName = request.getParameter(PARAM_STAGE);
         // if the current stage is not specified, the next stage would be the
         // first stage, simply return it.
-        if (stageName == null || stageName.length() == 0)
-            return wizard.getFirstStage();
-
+        if (stageName == null || stageName.length() == 0){
+            request.setAttribute("stage", wizard.getFirstStage());
+			logger.info("wizard.name = " + wizard.getName() + "   stage.name = " + wizard.getFirstStage().getName());
+			return wizard.getFirstStage();
+		}
         // get the current stage
         Stage stage = wizard.getStage(stageName);
-
+		request.setAttribute("stage", stage);
         // get the label, which should map to the next stage
         String label = request.getParameter(PARAM_LABEL);
         Stage nextStage = stage.queryNextStage(label);
