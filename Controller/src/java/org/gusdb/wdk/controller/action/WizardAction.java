@@ -81,6 +81,11 @@ public class WizardAction extends Action {
         // get the view from the stage
         String view = nextStage.getView();
 		logger.info("view = " + view);
+		String qfn = request.getParameter("questionFullName");
+		if(qfn != null && qfn.length() != 0){
+			logger.info("qfn = " + wdkModel.getQuestion(qfn).getName());
+			request.setAttribute("wdkQuestion", wdkModel.getQuestion(qfn));
+		}
         return new ActionForward(view);
     }
 
@@ -119,7 +124,6 @@ public class WizardAction extends Action {
         // first stage, simply return it.
         if (stageName == null || stageName.length() == 0){
             request.setAttribute("stage", wizard.getFirstStage());
-			logger.info("wizard.name = " + wizard.getName() + "   stage.name = " + wizard.getFirstStage().getName());
 			return wizard.getFirstStage();
 		}
         // get the current stage
