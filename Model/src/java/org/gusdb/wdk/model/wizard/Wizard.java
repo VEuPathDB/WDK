@@ -34,6 +34,12 @@ public class Wizard extends WdkModelBase {
         return name;
     }
 
+	public Stage[] getStages() {
+        Stage[] stages = new Stage[stageMap.size()];
+        stageMap.values().toArray(stages);
+        return stages;
+    }
+
     /**
      * @param name
      *            the name to set

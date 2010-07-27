@@ -157,7 +157,7 @@ public class Stage extends WdkModelBase {
         this.descriptionList = null;
 
         // exclude next stage references
-        for (int i = nextStageReferences.size(); i >= 0; i--) {
+        for (int i = nextStageReferences.size()-1; i >= 0; i--) {
             StageReference reference = nextStageReferences.get(i);
             if (reference.include(projectId)) {
                 reference.excludeResources(projectId);
