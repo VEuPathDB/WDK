@@ -5,10 +5,12 @@
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
 <c:set var="wdkQuestion" value="${requestScope.wdkQuestion}"/>
+<c:set var="wizard" value="${requestScope.wizard}"/>
+<c:set var="stage" value="${requestScope.stage}"/>
 
 
-<wdk:addStepheader />
-<wdk:addStepCrumb totalStages="2" currentStage="1" stage="${stage}" />
+
+<wdk:addStepCrumbs wizard="${wizard}" stage="${stage}" />
 
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do">
 <%-- the following sections are copied from <question.tag>, need to refactor into a separate tag --%>
@@ -27,18 +29,19 @@
 
 <div class="params">
    <c:if test="${showParams == null}">
+TEST3
       <wdk:questionParams />
+TEST4
    </c:if>
 </div> <%-- end of params div --%>
-
+TEST1		
 <c:set target="${helps}" property="${fromAnchorQ}" value="${helpQ}"/>
-
+TEST2
 <%-- set the weight --%>
 <div align="center">
   Assign Weight: <html:text property="weight" maxlength="9" />
 </div>
 <%-- end of the copied content --%>
-
 <div id="operations">
     <table>
       <tr>
