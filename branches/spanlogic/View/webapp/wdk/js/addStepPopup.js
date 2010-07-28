@@ -474,7 +474,13 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 
 function callWizard(url, ele, id, sec){
 	if(url == null){
-		showNewSection(ele,id,sec);
+		if(id == null && sec == null){
+			act = $(ele).attr("action")+"?strategy="+getStrategy(current_Front_Strategy_Id).backId;
+			$(ele).attr("action", "javascript:void(0)");
+			validateAndCall('add',act,getStrategy(current_Front_Strategy_Id).backId, null);
+		}else{
+			showNewSection(ele,id,sec);
+		}
 	}else{
 		d = "strategy="+getStrategy(current_Front_Strategy_Id).backId;
 		$.ajax({
@@ -490,6 +496,7 @@ function callWizard(url, ele, id, sec){
 			}	
 		});
 	}
+	return false;
 }
 
 function openAddStrategy(strat_id){
