@@ -12,7 +12,7 @@
 
 <wdk:addStepCrumbs wizard="${wizard}" stage="${stage}" />
 
-<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do">
+<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do"  onsubmit="callWizard(null,this,null,null)">
 <%-- the following sections are copied from <question.tag>, need to refactor into a separate tag --%>
 <input type="hidden" name="questionFullName" value="${wdkQuestion.fullName}"/>
 
@@ -29,14 +29,10 @@
 
 <div class="params">
    <c:if test="${showParams == null}">
-TEST3
       <wdk:questionParams />
-TEST4
    </c:if>
-</div> <%-- end of params div --%>
-TEST1		
-<c:set target="${helps}" property="${fromAnchorQ}" value="${helpQ}"/>
-TEST2
+</div> <%-- end of params div --%>		
+<%--<c:set target="${helps}" property="${fromAnchorQ}" value="${helpQ}"/>--%>
 <%-- set the weight --%>
 <div align="center">
   Assign Weight: <html:text property="weight" maxlength="9" />
