@@ -145,14 +145,6 @@ div.sub_diagram {
 	text-align:  center;
 }
 
-/* The "current" state needs to stand out. */
-#current {
-	background-color: #fff;
-	color:            #000;
-}
-
-#current h3 { font-weight: bold }
-
 /* "Linked" states are indicated visually as state boxes. */
 .diagram div li a {
 	display:          block;

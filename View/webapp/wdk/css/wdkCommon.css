@@ -93,10 +93,6 @@ table.paneltoggle {
         padding-left: 3px;
 }
 
-td { 
-    padding: 3px 3px 3px 3px;
-}
-
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      = jquery validation plugin messages
@@ -152,6 +148,7 @@ ul#strategy_tabs {
 }
 
 .workspace_panel {
+	clear: both;
 	position: absolute;
 	left: -999em;
 	width:100%;
@@ -163,25 +160,6 @@ ul#strategy_tabs {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =TAGS 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-body {
-	text-align: left;
-	color: #000000;
-	background-color: #ffffff;
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 12px;
-	white-space: normal;
-	background-repeat: repeat-x;
-}
-
-
-a:link, a:visited {
-	text-decoration: none;
-}
-
-a:hover, a:active {
-	text-decoration: none;
-}
 
 #wrap {
 	width: 100%;
@@ -247,21 +225,6 @@ img.plus-minus {
 	 =Fonts 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-h1 {
-	font-size: 20px;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-weight: bold;
-	text-align: center;
-	margin-bottom: 14px;
-}
-h2 {
-	font-size: 18px;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-weight: bold;
-	margin-bottom: 11px;
- 	text-align: left;
-	margin-left: 11px;
-}
 .h2center {
 	font-size: 14px;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
