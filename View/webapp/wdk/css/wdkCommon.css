@@ -152,6 +152,7 @@ ul#strategy_tabs {
 }
 
 .workspace_panel {
+	clear: both;
 	position: absolute;
 	left: -999em;
 	width:100%;
