@@ -27,7 +27,12 @@ $(document).ready(function(){
 					}
 				}
 			}else{
-				alert("An error was discovered. \n The EuPathDB Team is currently working to resolve this issue.");
+				try {
+					customShowError();
+				}
+				catch(e) {
+					alert("An error occurred.");
+				}
 				if(url.indexOf("showSummary.do") != -1){
 					removeLoading();
 				}else{
