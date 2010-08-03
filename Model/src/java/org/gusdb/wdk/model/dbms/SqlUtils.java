@@ -110,6 +110,28 @@ public final class SqlUtils {
      * @throws WdkModelException
      * @throws WdkUserException
      */
+    public static boolean executePreparedStatement(WdkModel wdkModel, PreparedStatement stmt, String sql) throws SQLException, WdkUserException, WdkModelException {
+        try {
+            long start = System.currentTimeMillis();
+            boolean result = stmt.execute();
+            verifyTime(wdkModel, sql, start);
+            return result;
+        } catch (SQLException ex) {
+            logger.error("Failed to execute statement: \n" + sql);
+            throw ex;
+	}
+    }
+
+    /**
+     * execute the update, and returns the number of rows affected.
+     * 
+     * @param dataSource
+     * @param sql
+     * @return
+     * @throws SQLException
+     * @throws WdkModelException
+     * @throws WdkUserException
+     */
     public static int executeUpdate(WdkModel wdkModel, DataSource dataSource,
             String sql) throws SQLException, WdkUserException,
             WdkModelException {
