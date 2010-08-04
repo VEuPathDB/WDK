@@ -136,14 +136,20 @@ public final class SqlUtils {
             String sql) throws SQLException, WdkUserException,
             WdkModelException {
         Connection connection = null;
+        Statement stmt = null;
         try {
+            long start = System.currentTimeMillis();
             connection = dataSource.getConnection();
-	    return executeUpdate(wdkModel, connection, sql);
+            stmt = connection.createStatement();
+            int result = stmt.executeUpdate(sql);
+            verifyTime(wdkModel, sql, start);
+            return result;
         } catch (SQLException ex) {
             logger.error("Failed to run nonQuery:\n" + sql);
             throw ex;
         } finally {
-            if (connection != null) connection.close();
+            closeStatement(stmt);
+            if (stmt == null && connection != null) connection.close();
         }
     }
 
