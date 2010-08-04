@@ -136,10 +136,34 @@ public final class SqlUtils {
             String sql) throws SQLException, WdkUserException,
             WdkModelException {
         Connection connection = null;
+        try {
+            connection = dataSource.getConnection();
+	    return executeUpdate(wdkModel, connection, sql);
+        } catch (SQLException ex) {
+            logger.error("Failed to run nonQuery:\n" + sql);
+            throw ex;
+        } finally {
+            if (connection != null) connection.close();
+        }
+    }
+
+    /**
+     * execute the update using an open connection, and returns the number of rows affected.   Use this if you have a connection you want to use again
+     * such as one that is autocommit=false
+     * 
+     * @param connection
+     * @param sql
+     * @return
+     * @throws SQLException
+     * @throws WdkModelException
+     * @throws WdkUserException
+     */
+    public static int executeUpdate(WdkModel wdkModel, Connection connection,
+            String sql) throws SQLException, WdkUserException,
+            WdkModelException {
         Statement stmt = null;
         try {
             long start = System.currentTimeMillis();
-            connection = dataSource.getConnection();
             stmt = connection.createStatement();
             int result = stmt.executeUpdate(sql);
             verifyTime(wdkModel, sql, start);
@@ -149,7 +173,6 @@ public final class SqlUtils {
             throw ex;
         } finally {
             closeStatement(stmt);
-            if (stmt == null && connection != null) connection.close();
         }
     }
 
