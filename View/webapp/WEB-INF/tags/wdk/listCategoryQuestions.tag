@@ -8,10 +8,12 @@
               description="The category to display"
 %>
 
+<c:set var="i" value="0" />
+
 <c:forEach items="${category.websiteChildren}" var="catEntry">
   <c:set var="cat" value="${catEntry.value}" />
   <c:if test="${category.multiCategory}">
-    <li><a class="category" href="javascript:void(0)">${cat.displayName}</a>
+    <li style="z-index: ${(fn:length(category.websiteChildren) - i) * 10 + 50};"><a class="category" href="javascript:void(0)">${cat.displayName}</a>
       <ul>
   </c:if>
   <c:forEach items="${cat.websiteQuestions}" var="q">
@@ -21,4 +23,5 @@
       </ul>
     </li>
   </c:if>
+<c:set var="i" value="${i + 1}" />
 </c:forEach>
