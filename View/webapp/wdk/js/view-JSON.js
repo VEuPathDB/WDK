@@ -443,7 +443,7 @@ if(modelstep.isTransform || jsonstep.isboolean) return "";
 	
 var set_weight = "<div name='All_weighting' class='param-group' type='ShowHide'>"+
 					"<div class='group-title'> "+
-	    				"<img style='position:relative;top:5px;'  class='group-handle' src='/images/plus.gif' onclick=''/>"+
+	    				"<img style='position:relative;top:5px;'  class='group-handle' src='wdk/images/plus.gif' onclick=''/>"+
 	    				"Give this step a weight"+
 					"</div>"+
 					"<div class='group-detail' style='display:none;text-align:center'>"+
