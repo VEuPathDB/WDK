@@ -82,7 +82,13 @@ function ChangeBasket(url, noUpdate) {
 
 function emptyBasket() {
 	var recordClass = jQuery("div#" + getCurrentBasketWrapper()).attr("recordClass");
-	updateBasket(this,'clear',0,0,recordClass);
+	var display = jQuery("div#" + getCurrentBasketWrapper()).attr("displayName");
+	var message = jQuery("#basketConfirmation");
+	$("#basketName", message).text(display);
+	$("form", message).submit(function() {
+		updateBasket(this,'clear',0,0,recordClass);
+	});		
+	jQuery.blockUI({message : message});
 }
 
 function saveBasket() {
