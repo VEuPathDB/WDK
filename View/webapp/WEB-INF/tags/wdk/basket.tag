@@ -15,7 +15,7 @@
 
     <div class="Workspace">
       <c:forEach items="${baskets}" var="basket">
-        <div id="basket_${basket.shortDisplayType}" class="basket_panel" recordClass="${basket.type}">
+        <div id="basket_${basket.shortDisplayType}" class="basket_panel" recordClass="${basket.type}" displayName="${basket.displayType}">
         </div>
       </c:forEach>
     </div>
