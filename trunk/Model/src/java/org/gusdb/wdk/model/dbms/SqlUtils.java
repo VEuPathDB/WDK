@@ -178,7 +178,8 @@ public final class SqlUtils {
             logger.error("Failed to run nonQuery:\n" + sql);
             throw ex;
         } finally {
-            closeStatement(stmt);
+            // closeStatement(stmt);
+            if (stmt != null) stmt.close();
         }
     }
 
