@@ -158,7 +158,9 @@ public class BooleanQueryInstance extends SqlQueryInstance {
         String weightColumn = Utilities.COLUMN_WEIGHT;
         sql.append("sum (" + weightColumn + ") AS " + weightColumn);
         sql.append(" FROM (");
-        sql.append("(" + leftSql + ") " + operator + " (" + rightSql + ")");
+        sql.append("(SELECT 1 AS wdk_t, l.* FROM (" + leftSql + ") l) ");
+        sql.append(operator);
+        sql.append(" (SELECT 2 AS wdk_t, r.* FROM (" + rightSql + ") r)");
         sql.append(") GROUP BY ");
         for (int i = 0; i < pkColumns.length; i++) {
             sql.append((i == 0) ? "" : ",");
