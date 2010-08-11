@@ -61,7 +61,7 @@ public class FullRecordReporter extends Reporter {
     private String recordIdColumn;
 
     private boolean hasEmptyTable = false;
-    
+
     private String sqlInsert;
     private String sqlQuery;
 
@@ -102,8 +102,8 @@ public class FullRecordReporter extends Reporter {
         // get basic configurations
         if (config.containsKey(FIELD_HAS_EMPTY_TABLE)) {
             String value = config.get(FIELD_HAS_EMPTY_TABLE);
-            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true"))
-                    ? true : false;
+            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true
+                    : false;
         }
     }
 
@@ -329,7 +329,8 @@ public class FullRecordReporter extends Reporter {
                 }
                 psQuery.setString(pkColumns.length + 1, table.getName());
                 ResultSet rs = psQuery.executeQuery();
-                SqlUtils.verifyTime(wdkModel, sqlQuery, start);
+                SqlUtils.verifyTime(wdkModel, sqlQuery,
+                        "wdk-report-full-select-count", start);
                 rs.next();
                 int count = rs.getInt("cache_count");
                 if (count == 0) {
@@ -357,7 +358,8 @@ public class FullRecordReporter extends Reporter {
         if (tableCache != null && needUpdate) {
             long start = System.currentTimeMillis();
             psInsert.executeBatch();
-            SqlUtils.verifyTime(wdkModel, sqlInsert, start);
+            SqlUtils.verifyTime(wdkModel, sqlInsert, "wdk-report-full-insert",
+                    start);
         }
     }
 

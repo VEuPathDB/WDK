@@ -52,7 +52,7 @@ public class JSONReporter extends Reporter {
     private String recordIdColumn;
 
     private boolean hasEmptyTable = false;
-    
+
     private String sqlInsert;
     private String sqlQuery;
 
@@ -92,8 +92,8 @@ public class JSONReporter extends Reporter {
         // get basic configurations
         if (config.containsKey(FIELD_HAS_EMPTY_TABLE)) {
             String value = config.get(FIELD_HAS_EMPTY_TABLE);
-            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true"))
-                    ? true : false;
+            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true
+                    : false;
         }
     }
 
@@ -299,8 +299,8 @@ public class JSONReporter extends Reporter {
         for (AttributeField field : attributes) {
             if (c > 0) writer.print(",");
             AttributeValue value = record.getAttributeValue(field.getName());
-            writer.print("{\"name\":\"" + field.getName()
-                    + "\", \"value\":\"" + value + "\"}");
+            writer.print("{\"name\":\"" + field.getName() + "\", \"value\":\""
+                    + value + "\"}");
             c++;
         }
         if (attributes.size() > 0) writer.print("]");
@@ -334,7 +334,7 @@ public class JSONReporter extends Reporter {
             sb.append("{\"name\":\"" + table.getDisplayName() + "\",\"rows\":[");
             int tableSize = 0;
             for (Map<String, AttributeValue> row : tableValue) {
-				if (tableSize > 0) sb.append(",");
+                if (tableSize > 0) sb.append(",");
                 sb.append("{\"fields\":[");
                 int f = 0;
                 for (String fieldName : row.keySet()) {
@@ -359,7 +359,8 @@ public class JSONReporter extends Reporter {
                 }
                 psQuery.setString(pkColumns.length + 1, table.getName());
                 ResultSet rs = psQuery.executeQuery();
-                SqlUtils.verifyTime(wdkModel, sqlQuery, start);
+                SqlUtils.verifyTime(wdkModel, sqlQuery,
+                        "wdk-report-json-select-count", start);
                 rs.next();
                 int count = rs.getInt("cache_count");
                 if (count == 0) {
@@ -383,13 +384,14 @@ public class JSONReporter extends Reporter {
                 writer.print(content);
                 writer.flush();
             }
-			c++;
+            c++;
         }
         if (tables.size() > 0) writer.print("]");
         if (tableCache != null && needUpdate) {
             long start = System.currentTimeMillis();
             psInsert.executeBatch();
-            SqlUtils.verifyTime(wdkModel, sqlInsert, start);
+            SqlUtils.verifyTime(wdkModel, sqlInsert, "wdk-report-json-insert",
+                    start);
         }
     }
 }

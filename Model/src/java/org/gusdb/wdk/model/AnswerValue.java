@@ -518,7 +518,8 @@ public class AnswerValue {
         String sql = getPagedAttributeSql(attributeQuery);
         DBPlatform platform = wdkModel.getQueryPlatform();
         DataSource dataSource = platform.getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+                attributeQuery.getFullName() + "-paged");
         ResultList resultList = new SqlResultList(resultSet);
 
         // fill in the column attributes
@@ -782,7 +783,8 @@ public class AnswerValue {
         WdkModel wdkModel = question.getWdkModel();
         DBPlatform platform = wdkModel.getQueryPlatform();
         DataSource dataSource = platform.getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+                idsQueryInstance.getQuery().getFullName() + "-paged");
         ResultList resultList = new SqlResultList(resultSet);
         RecordClass recordClass = question.getRecordClass();
         PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
@@ -980,7 +982,8 @@ public class AnswerValue {
             WdkModel wdkModel = question.getWdkModel();
             DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
             Object result = SqlUtils.executeScalar(wdkModel, dataSource,
-                    sql.toString());
+                    sql.toString(), idsQueryInstance.getQuery().getFullName()
+                            + "-" + filterName + "-filter-size");
             size = Integer.parseInt(result.toString());
 
             resultSizesByFilter.put(filterName, size);
@@ -1034,7 +1037,8 @@ public class AnswerValue {
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         ResultSet resultSet = null;
         try {
-            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, idSql);
+            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, idSql,
+                    idsQueryInstance.getQuery().getFullName() + "-all-ids");
             while (resultSet.next()) {
                 String[] values = new String[pkColumns.length];
                 for (int i = 0; i < pkColumns.length; i++) {

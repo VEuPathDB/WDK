@@ -151,7 +151,8 @@ public class Migrator1_17To1_18 extends Migrator {
         sql.append("WHERE u3.prev_user_id = h2.user_id ");
         sql.append("ORDER BY h2.create_time DESC");
 
-        return SqlUtils.executeQuery(wdkModel, dataSource, sql.toString());
+        return SqlUtils.executeQuery(wdkModel, dataSource, sql.toString(),
+                "wdk-migrate-select-histories");
     }
 
     private void loadHistories(DataSource dataSource) throws SQLException,
@@ -160,7 +161,7 @@ public class Migrator1_17To1_18 extends Migrator {
         sql.append(NEW_USER_SCHEMA).append("histories ");
         historyKeys = new LinkedHashSet<String>();
         ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
-                sql.toString());
+                sql.toString(), "wdk-migrate-select-history-ids");
         while (resultSet.next()) {
             int userId = resultSet.getInt("user_id");
             int historyId = resultSet.getInt("history_id");
@@ -177,7 +178,7 @@ public class Migrator1_17To1_18 extends Migrator {
         sql.append(" project_id FROM ").append(NEW_WDK_SCHEMA).append("answer ");
         answerKeys = new LinkedHashMap<String, Integer>();
         ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
-                sql.toString());
+                sql.toString(), "wdk-migrate-select-answer-ids");
         while (resultSet.next()) {
             int answerId = resultSet.getInt("answer_id");
             String projectId = resultSet.getString("project_id");

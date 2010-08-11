@@ -1132,7 +1132,7 @@ public class User /* implements Serializable */{
         // + summaryName + "] for question [" + questionFullName
         // + "]");
         // }
-        
+
         List<String> validNames = new ArrayList<String>();
         for (String name : summaryNames) {
             if (attributes.containsKey(name)) validNames.add(name);
@@ -1449,7 +1449,8 @@ public class User /* implements Serializable */{
         wdkModel.getFavoriteFactory().clearFavorite(this);
     }
 
-    public int getFavoriteCount() throws SQLException {
+    public int getFavoriteCount() throws SQLException, WdkUserException,
+            WdkModelException {
         return wdkModel.getFavoriteFactory().getFavoriteCounts(this);
     }
 

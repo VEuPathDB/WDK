@@ -72,7 +72,8 @@ public class QueryFactory {
             psInsert.setString(1, checksum);
             psInsert.setString(2, summaryContent);
             psInsert.execute();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-insert-clob",
+                    start);
             return checksum;
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -93,7 +94,8 @@ public class QueryFactory {
                     dataSource, sql);
             psSelect.setString(1, summaryChecksum);
             rsSelect = psSelect.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-select-clob",
+                    start);
             if (!rsSelect.next()) return null;
 
             // get the configuration
@@ -145,7 +147,8 @@ public class QueryFactory {
             psInsert.setString(1, checksum);
             psInsert.setString(2, columnsContent);
             psInsert.execute();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-insert-clob",
+                    start);
             return checksum;
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -166,7 +169,8 @@ public class QueryFactory {
                     dataSource, sql);
             psSelect.setString(1, sortingChecksum);
             rsSelect = psSelect.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-select-clob",
+                    start);
 
             if (!rsSelect.next()) return null;
 
@@ -214,7 +218,8 @@ public class QueryFactory {
             psInsert.setString(1, checksum);
             psInsert.setString(2, paramValue);
             psInsert.execute();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-insert-clob",
+                    start);
 
             return checksum;
         } catch (SQLException ex) {
@@ -236,7 +241,8 @@ public class QueryFactory {
                     sql);
             ps.setString(1, paramChecksum);
             rs = ps.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-select-clob",
+                    start);
             if (!rs.next()) return null;
 
             String clobValue = userPlatform.getClobData(rs, COLUMN_CLOB_VALUE);

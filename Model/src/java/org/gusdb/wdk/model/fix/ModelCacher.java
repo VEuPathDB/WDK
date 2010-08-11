@@ -174,7 +174,7 @@ public class ModelCacher extends BaseCLI {
         for (String sequence : sequences) {
             try {
                 SqlUtils.executeUpdate(wdkModel, dataSource, "DROP SEQUENCE "
-                        + schema + sequence);
+                        + schema + sequence, "wdk-drop-sequence");
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -184,7 +184,7 @@ public class ModelCacher extends BaseCLI {
         for (String table : tables) {
             try {
                 SqlUtils.executeUpdate(wdkModel, dataSource, "DROP TABLE "
-                        + schema + table);
+                        + schema + table, "wdk-drop-table");
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -213,7 +213,7 @@ public class ModelCacher extends BaseCLI {
         // create sequence
         String sql = "CREATE SEQUENCE " + schema + "wdk_questions_pkseq "
                 + "INCREMENT BY 1 START WITH 1";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql, "wdk-create-sequence");
 
         // create table
         sql = "CREATE TABLE " + schema + "wdk_questions "
@@ -226,12 +226,12 @@ public class ModelCacher extends BaseCLI {
                 + "CONSTRAINT wdk_questions_pk PRIMARY KEY (question_id), "
                 + "CONSTRAINT wdk_questions_uq1 "
                 + "  UNIQUE (project_id, question_name) )";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql, "wdk-create-table");
 
         // create index
         sql = "CREATE INDEX " + schema + "wdk_questions_idx01 "
                 + "ON wdk_questions (question_checksum)";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql, "wdk-create-index");
     }
 
     private void createParamTable(WdkModel wdkModel, DataSource dataSource,
@@ -240,7 +240,7 @@ public class ModelCacher extends BaseCLI {
         // create sequence
         String sql = "CREATE SEQUENCE " + schema + "wdk_params_pkseq "
                 + "INCREMENT BY 1 START WITH 1";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql, "wdk-create-sequence");
 
         // create table
         sql = "CREATE TABLE "
@@ -255,12 +255,12 @@ public class ModelCacher extends BaseCLI {
                 + "CONSTRAINT wdk_params_question_id_fk FOREIGN KEY (question_id) "
                 + "  REFERENCES wdk_questions (question_id), "
                 + "CONSTRAINT wdk_params_uq1 UNIQUE (question_id, param_name) )";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql, "wdk-create-table");
 
         // create index
         sql = "CREATE INDEX " + schema + "wdk_params_idx01 "
                 + "ON wdk_params (param_type)";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql, "wdk-create-index");
     }
 
     private void createEnumParamTable(WdkModel wdkModel, DataSource dataSource,
@@ -272,12 +272,12 @@ public class ModelCacher extends BaseCLI {
                 + "param_value  VARCHAR(1000) NOT NULL, "
                 + "CONSTRAINT wdk_enum_params_fk01 FOREIGN KEY (param_id) "
                 + "   REFERENCES wdk_params (param_id) )";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql, "wdk-create-table");
 
         // create index
         sql = "CREATE INDEX " + schema + "wdk_enum_params_idx01 "
                 + "ON wdk_enum_params (param_id, param_value)";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql, "wdk-create-index");
     }
 
     private void deleteCache(DataSource dataSource, String projectId,

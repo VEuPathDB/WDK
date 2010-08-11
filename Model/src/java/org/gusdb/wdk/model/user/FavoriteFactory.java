@@ -95,7 +95,8 @@ public class FavoriteFactory {
                 try {
                     long start = System.currentTimeMillis();
                     resultSet = psCount.executeQuery();
-                    SqlUtils.verifyTime(wdkModel, sqlCount, start);
+                    SqlUtils.verifyTime(wdkModel, sqlCount,
+                            "wdk-favorite-count", start);
                     if (resultSet.next()) {
                         int rsCount = resultSet.getInt(1);
                         hasRecord = (rsCount > 0);
@@ -126,13 +127,15 @@ public class FavoriteFactory {
                 if (count % 100 == 0) {
                     long start = System.currentTimeMillis();
                     psInsert.executeBatch();
-                    SqlUtils.verifyTime(wdkModel, sqlInsert, start);
+                    SqlUtils.verifyTime(wdkModel, sqlInsert,
+                            "wdk-favorite-insert", start);
                 }
             }
             if (count % 100 != 0) {
                 long start = System.currentTimeMillis();
                 psInsert.executeBatch();
-                SqlUtils.verifyTime(wdkModel, sqlInsert, start);
+                SqlUtils.verifyTime(wdkModel, sqlInsert, "wdk-favorite-insert",
+                        start);
             }
         } finally {
             SqlUtils.closeStatement(psInsert);
@@ -167,13 +170,15 @@ public class FavoriteFactory {
                 if (count % 100 == 0) {
                     long start = System.currentTimeMillis();
                     psDelete.executeBatch();
-                    SqlUtils.verifyTime(wdkModel, sqlDelete, start);
+                    SqlUtils.verifyTime(wdkModel, sqlDelete,
+                            "wdk-favorite-delete", start);
                 }
             }
             if (count % 100 != 0) {
                 long start = System.currentTimeMillis();
                 psDelete.executeBatch();
-                SqlUtils.verifyTime(wdkModel, sqlDelete, -start);
+                SqlUtils.verifyTime(wdkModel, sqlDelete, "wdk-favorite-delete",
+                        -start);
             }
         } finally {
             SqlUtils.closeStatement(psDelete);
@@ -196,13 +201,15 @@ public class FavoriteFactory {
             psDelete.setInt(1, userId);
             psDelete.setString(2, projectId);
             psDelete.executeUpdate();
-            SqlUtils.verifyTime(wdkModel, sqlDelete, start);
+            SqlUtils.verifyTime(wdkModel, sqlDelete, "wdk-favorite-delete-all",
+                    start);
         } finally {
             SqlUtils.closeStatement(psDelete);
         }
     }
 
-    public int getFavoriteCounts(User user) throws SQLException {
+    public int getFavoriteCounts(User user) throws SQLException,
+            WdkUserException, WdkModelException {
         // load the unique counts
         String sql = "SELECT count(*) AS fav_size FROM " + schema
                 + TABLE_FAVORITES + " WHERE " + COLUMN_USER_ID + " = ? AND "
@@ -211,10 +218,12 @@ public class FavoriteFactory {
         ResultSet rs = null;
         int count = 0;
         try {
+            long start = System.currentTimeMillis();
             PreparedStatement ps = SqlUtils.getPreparedStatement(ds, sql);
             ps.setInt(1, user.getUserId());
             ps.setString(2, wdkModel.getProjectId());
             rs = ps.executeQuery();
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-favorite-count", start);
             if (rs.next()) {
                 count = rs.getInt("fav_size");
             }
@@ -241,7 +250,7 @@ public class FavoriteFactory {
             ps.setString(1, wdkModel.getProjectId());
             ps.setInt(2, user.getUserId());
             rs = ps.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-favorite-select-all", start);
 
             Map<RecordClass, List<Favorite>> favorites = new LinkedHashMap<RecordClass, List<Favorite>>();
             while (rs.next()) {
@@ -299,7 +308,7 @@ public class FavoriteFactory {
             boolean hasRecord = false;
             long start = System.currentTimeMillis();
             resultSet = psCount.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sqlCount, start);
+            SqlUtils.verifyTime(wdkModel, sqlCount, "wdk-favorite-count", start);
             if (resultSet.next()) {
                 int rsCount = resultSet.getInt(1);
                 hasRecord = (rsCount > 0);
@@ -340,13 +349,13 @@ public class FavoriteFactory {
                 if (count % 100 == 0) {
                     long start = System.currentTimeMillis();
                     psUpdate.executeBatch();
-                    SqlUtils.verifyTime(wdkModel, sql, start);
+                    SqlUtils.verifyTime(wdkModel, sql, "wdk-favorite-update-note", start);
                 }
             }
             if (count % 100 != 0) {
                 long start = System.currentTimeMillis();
                 psUpdate.executeBatch();
-                SqlUtils.verifyTime(wdkModel, sql, -start);
+                SqlUtils.verifyTime(wdkModel, sql, "wdk-favorite-update-note", -start);
             }
         } finally {
             SqlUtils.closeStatement(psUpdate);
@@ -383,13 +392,13 @@ public class FavoriteFactory {
                 if (count % 100 == 0) {
                     long start = System.currentTimeMillis();
                     psUpdate.executeBatch();
-                    SqlUtils.verifyTime(wdkModel, sql, start);
+                    SqlUtils.verifyTime(wdkModel, sql, "wdk-favorite-update-group", start);
                 }
             }
             if (count % 100 != 0) {
                 long start = System.currentTimeMillis();
                 psUpdate.executeBatch();
-                SqlUtils.verifyTime(wdkModel, sql, -start);
+                SqlUtils.verifyTime(wdkModel, sql, "wdk-favorite-update-group", -start);
             }
         } finally {
             SqlUtils.closeStatement(psUpdate);
@@ -411,7 +420,7 @@ public class FavoriteFactory {
 
             long start = System.currentTimeMillis();
             resultSet = psSelect.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-favorite-select-group", start);
             Set<String> groups = new HashSet<String>();
             while (resultSet.next()) {
                 String group = resultSet.getString(COLUMN_RECORD_GROUP);

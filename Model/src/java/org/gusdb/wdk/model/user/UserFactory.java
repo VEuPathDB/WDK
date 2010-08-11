@@ -78,8 +78,8 @@ public class UserFactory {
         byte[] encrypted = digest.digest(str.getBytes());
         StringBuffer buffer = new StringBuffer();
         for (byte code : encrypted) {
-            buffer.append(Integer.toString((code & 0xff) + 0x100, 16)
-                    .substring(1));
+            buffer.append(Integer.toString((code & 0xff) + 0x100, 16).substring(
+                    1));
         }
         return buffer.toString();
     }
@@ -190,7 +190,7 @@ public class UserFactory {
             psUser.setString(16, country);
             psUser.setString(17, signature);
             psUser.executeUpdate();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-user-register", start);
 
             // create user object
             User user = new User(wdkModel, userId, email, signature);
@@ -263,7 +263,7 @@ public class UserFactory {
             psUser.setString(6, firstName);
             psUser.setString(7, signature);
             psUser.executeUpdate();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-user-create-guest", start);
 
             User user = new User(wdkModel, userId, email, signature);
             user.setFirstName(firstName);
@@ -319,7 +319,7 @@ public class UserFactory {
             ps.setString(1, email);
             ps.setString(2, password);
             rs = ps.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-user-login", start);
             if (!rs.next())
                 throw new WdkUserException("Invalid email or password.");
             int userId = rs.getInt("user_id");
@@ -359,7 +359,8 @@ public class UserFactory {
                     dataSource, sql);
             psUser.setString(1, email);
             rsUser = psUser.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-user-get-id-by-email",
+                    start);
             if (!rsUser.next())
                 throw new WdkUserException("The user with email '" + email
                         + "' doesn't exist.");
@@ -384,7 +385,8 @@ public class UserFactory {
                     dataSource, sql);
             psUser.setString(1, signature);
             rsUser = psUser.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-user-get-id-by-signature",
+                    start);
             if (!rsUser.next())
                 throw new WdkUserException("The user with signature '"
                         + signature + "' doesn't exist.");
@@ -414,7 +416,7 @@ public class UserFactory {
                     dataSource, sql);
             psUser.setInt(1, userId);
             rsUser = psUser.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-user-get-user-by-id", start);
             if (!rsUser.next())
                 throw new WdkUserException("The user with id " + userId
                         + " doesn't exist.");
@@ -462,7 +464,8 @@ public class UserFactory {
         List<User> users = new ArrayList<User>();
         ResultSet rs = null;
         try {
-            rs = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+            rs = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+                    "wdk-user-query-users-by-email");
             while (rs.next()) {
                 int userId = rs.getInt("user_id");
                 User user = getUser(userId);
@@ -485,24 +488,24 @@ public class UserFactory {
             // update user's register time
             int count = SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE "
                     + userSchema + "users SET register_time = last_active "
-                    + "WHERE register_time is null");
+                    + "WHERE register_time is null",
+                    "wdk-user-update-register-time");
             System.out.println(count + " users with empty register_time have "
                     + "been updated");
 
             // update history's is_delete field
             count = SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE "
-                    + userSchema
-                    + "histories SET is_deleted = 0 WHERE is_deleted is null");
+                    + userSchema + "histories SET is_deleted = 0 "
+                    + "WHERE is_deleted is null", "wdk-user-update-deleted");
             System.out.println(count + " histories with empty is_deleted have "
                     + "been updated");
 
             // update user's signature
             String sql = "Update " + userSchema
                     + "users SET signature = ? WHERE user_id = ?";
-            long start = System.currentTimeMillis();
             psUser = SqlUtils.getPreparedStatement(dataSource, sql);
-            rs = SqlUtils.executeQuery(wdkModel, dataSource, sql);
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            rs = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+                    "wdk-user-update-signature");
             while (rs.next()) {
                 int userId = rs.getInt("user_id");
 
@@ -527,7 +530,7 @@ public class UserFactory {
     private void loadUserRoles(User user) throws WdkUserException,
             WdkModelException {
         ResultSet rsRole = null;
-        String sql = "SELECT " + "user_role from " + userSchema + "user_roles "
+        String sql = "SELECT user_role from " + userSchema + "user_roles "
                 + "WHERE user_id = ?";
         try {
             // load the user's roles
@@ -536,7 +539,7 @@ public class UserFactory {
                     dataSource, sql);
             psRole.setInt(1, user.getUserId());
             rsRole = psRole.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-user-get-roles", start);
             while (rsRole.next()) {
                 user.addUserRole(rsRole.getString("user_role"));
             }
@@ -555,7 +558,8 @@ public class UserFactory {
         try {
             // before that, remove the records first
             SqlUtils.executeUpdate(wdkModel, dataSource, "DELETE FROM "
-                    + userSchema + "user_roles WHERE user_id = " + userId);
+                    + userSchema + "user_roles WHERE user_id = " + userId,
+                    "wdk-user-delete-roles");
 
             // Then get a prepared statement to do the insertion
             String sql = "INSERT " + "INTO " + userSchema
@@ -567,7 +571,8 @@ public class UserFactory {
                 psRoleInsert.setInt(1, userId);
                 psRoleInsert.setString(2, role);
                 psRoleInsert.executeUpdate();
-                SqlUtils.verifyTime(wdkModel, sql, start);
+                SqlUtils.verifyTime(wdkModel, sql, "wdk-user-insert-roles",
+                        start);
             }
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -618,7 +623,8 @@ public class UserFactory {
             psUser.setString(15, user.getEmail());
             psUser.setInt(16, userId);
             psUser.executeUpdate();
-            SqlUtils.verifyTime(wdkModel, sqlUser, start);
+            SqlUtils.verifyTime(wdkModel, sqlUser, "wdk-user-update-user",
+                    start);
 
             // save user's roles
             // saveUserRoles(user);
@@ -651,7 +657,8 @@ public class UserFactory {
             psUser.setDate(1, new java.sql.Date(lastActiveTime.getTime()));
             psUser.setInt(2, user.getUserId());
             int result = psUser.executeUpdate();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql,
+                    "wdk-user-update-user-last-active", start);
             if (result == 0)
                 throw new WdkUserException("User " + user.getEmail()
                         + " cannot be found.");
@@ -679,7 +686,8 @@ public class UserFactory {
                     dataSource, sql);
             psUser.setTimestamp(1, timestamp);
             rsUser = psUser.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-user-select-expired-user",
+                    start);
             int count = 0;
             while (rsUser.next()) {
                 deleteUser(rsUser.getString("email"));
@@ -710,7 +718,8 @@ public class UserFactory {
             psDelete.setInt(1, userId);
             psDelete.setString(2, projectId);
             psDelete.executeUpdate();
-            SqlUtils.verifyTime(wdkModel, sqlDelete, start);
+            SqlUtils.verifyTime(wdkModel, sqlDelete,
+                    "wdk-user-delete-preference", start);
 
             // insert preferences
             String sqlInsert = "INSERT INTO " + userSchema
@@ -727,7 +736,8 @@ public class UserFactory {
                 psInsert.setString(3, prefName);
                 psInsert.setString(4, prefValue);
                 psInsert.execute();
-                SqlUtils.verifyTime(wdkModel, sqlInsert, start);
+                SqlUtils.verifyTime(wdkModel, sqlInsert,
+                        "wdk-user-insert-preference", start);
             }
             Map<String, String> project = user.getProjectPreferences();
             for (String prefName : project.keySet()) {
@@ -738,7 +748,8 @@ public class UserFactory {
                 psInsert.setString(3, prefName);
                 psInsert.setString(4, prefValue);
                 psInsert.execute();
-                SqlUtils.verifyTime(wdkModel, sqlInsert, start);
+                SqlUtils.verifyTime(wdkModel, sqlInsert,
+                        "wdk-user-insert-preference", start);
             }
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
@@ -766,7 +777,8 @@ public class UserFactory {
             psGlobal = SqlUtils.getPreparedStatement(dataSource, sqlGlobal);
             psGlobal.setInt(1, userId);
             rsGlobal = psGlobal.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sqlGlobal, start);
+            SqlUtils.verifyTime(wdkModel, sqlGlobal,
+                    "wdk-user-select-global-preference", start);
             while (rsGlobal.next()) {
                 String prefName = rsGlobal.getString("preference_name");
                 String prefValue = rsGlobal.getString("preference_value");
@@ -779,7 +791,8 @@ public class UserFactory {
             psProject.setInt(1, userId);
             psProject.setString(2, projectId);
             rsProject = psProject.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sqlProject, start);
+            SqlUtils.verifyTime(wdkModel, sqlProject,
+                    "wdk-user-select-project-preference", start);
             while (rsProject.next()) {
                 String prefName = rsProject.getString("preference_name");
                 String prefValue = rsProject.getString("preference_value");
@@ -828,15 +841,15 @@ public class UserFactory {
         // send an email to the user
         String pattern = "\\$\\$" + EMAIL_MACRO_USER_NAME + "\\$\\$";
         String name = user.getFirstName() + " " + user.getLastName();
-        String message = emailContent.replaceAll(pattern, Matcher
-                .quoteReplacement(name));
+        String message = emailContent.replaceAll(pattern,
+                Matcher.quoteReplacement(name));
 
         pattern = "\\$\\$" + EMAIL_MACRO_EMAIL + "\\$\\$";
         message = message.replaceAll(pattern, Matcher.quoteReplacement(email));
 
         pattern = "\\$\\$" + EMAIL_MACRO_PASSWORD + "\\$\\$";
-        message = message.replaceAll(pattern, Matcher
-                .quoteReplacement(password));
+        message = message.replaceAll(pattern,
+                Matcher.quoteReplacement(password));
 
         Utilities.sendEmail(wdkModel, user.getEmail(), supportEmail,
                 emailSubject, message);
@@ -868,7 +881,8 @@ public class UserFactory {
             ps.setString(1, email);
             ps.setString(2, oldPassword);
             rs = ps.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql,
+                    "wdk-user-count-user-by-email-password", start);
             rs.next();
             int count = rs.getInt(1);
             if (count <= 0)
@@ -901,7 +915,8 @@ public class UserFactory {
             ps.setString(1, encrypted);
             ps.setString(2, email);
             ps.executeUpdate();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-user-update-password",
+                    start);
         } catch (NoSuchAlgorithmException ex) {
             throw new WdkUserException(ex);
         } catch (SQLException ex) {
@@ -925,7 +940,8 @@ public class UserFactory {
                     sql);
             ps.setString(1, email);
             rs = ps.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-user-select-user-by-email",
+                    start);
             rs.next();
             int count = rs.getInt(1);
             return (count > 0);
@@ -949,15 +965,18 @@ public class UserFactory {
         try {
             // delete preference
             String sql = "DELETE FROM " + userSchema + "preferences" + where;
-            SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+            SqlUtils.executeUpdate(wdkModel, dataSource, sql,
+                    "wdk-user-delete-preference");
 
             // delete user roles
             sql = "DELETE FROM " + userSchema + "user_roles" + where;
-            SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+            SqlUtils.executeUpdate(wdkModel, dataSource, sql,
+                    "wdk-user-delete-role");
 
             // delete user
             sql = "DELETE FROM " + userSchema + "users" + where;
-            SqlUtils.executeUpdate(wdkModel, dataSource, sql);
+            SqlUtils.executeUpdate(wdkModel, dataSource, sql,
+                    "wdk-user-delete-user");
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         }
