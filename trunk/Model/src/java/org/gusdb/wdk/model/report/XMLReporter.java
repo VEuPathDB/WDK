@@ -54,7 +54,7 @@ public class XMLReporter extends Reporter {
     private String recordIdColumn;
 
     private boolean hasEmptyTable = false;
-    
+
     private String sqlInsert;
     private String sqlQuery;
 
@@ -94,8 +94,8 @@ public class XMLReporter extends Reporter {
         // get basic configurations
         if (config.containsKey(FIELD_HAS_EMPTY_TABLE)) {
             String value = config.get(FIELD_HAS_EMPTY_TABLE);
-            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true"))
-                    ? true : false;
+            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true
+                    : false;
         }
     }
 
@@ -295,8 +295,9 @@ public class XMLReporter extends Reporter {
         // print out attributes of the record first
         for (AttributeField field : attributes) {
             AttributeValue value = record.getAttributeValue(field.getName());
-            writer.println("<field name='" + field.getName() + "' title='" + field.getDisplayName()
-                    + "'><![CDATA[" + value + "]]></field>");
+            writer.println("<field name='" + field.getName() + "' title='"
+                    + field.getDisplayName() + "'><![CDATA[" + value
+                    + "]]></field>");
         }
         // print out attributes of the record first
         writer.println();
@@ -347,7 +348,8 @@ public class XMLReporter extends Reporter {
                 }
                 psQuery.setString(pkColumns.length + 1, table.getName());
                 ResultSet rs = psQuery.executeQuery();
-                SqlUtils.verifyTime(wdkModel, sqlQuery, start);
+                SqlUtils.verifyTime(wdkModel, sqlQuery,
+                        "wdk-report-xml-select-count", start);
                 rs.next();
                 int count = rs.getInt("cache_count");
                 if (count == 0) {
@@ -375,7 +377,8 @@ public class XMLReporter extends Reporter {
         if (tableCache != null && needUpdate) {
             long start = System.currentTimeMillis();
             psInsert.executeBatch();
-            SqlUtils.verifyTime(wdkModel, sqlInsert, start);
+            SqlUtils.verifyTime(wdkModel, sqlInsert, "wdk-report-xml-insert",
+                    start);
         }
     }
 }

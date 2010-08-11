@@ -23,7 +23,6 @@ import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
-import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -230,7 +229,7 @@ public abstract class QueryInstance {
         sql.append(getSql()).append(") f");
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         Object objSize = SqlUtils.executeScalar(wdkModel, dataSource,
-                sql.toString());
+                sql.toString(), query.getFullName() + "-count");
         int resultSize = Integer.parseInt(objSize.toString());
         logger.debug("end getting query size");
         return resultSize;

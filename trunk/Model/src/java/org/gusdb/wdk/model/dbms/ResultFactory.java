@@ -64,7 +64,7 @@ public class ResultFactory {
         // get the resultList
         DataSource dataSource = platform.getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
-                sql.toString());
+                sql.toString(), query.getFullName() + "-cached");
         return new SqlResultList(resultSet);
     }
 
@@ -125,7 +125,7 @@ public class ResultFactory {
         ResultSet resultSet = null;
         try {
             resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
-                    sql.toString());
+                    sql.toString(), "wdk_check_instance_exist");
             if (!resultSet.next()) return null;
 
             int instanceId = resultSet.getInt(CacheFactory.COLUMN_INSTANCE_ID);
@@ -241,11 +241,11 @@ public class ResultFactory {
             stmt = connection.createStatement();
 
             stmt.execute(sqlId.toString());
-            SqlUtils.verifyTime(wdkModel, sqlId.toString(), start);
+            SqlUtils.verifyTime(wdkModel, sqlId.toString(), "wdk_create_cache_index01", start);
             if (indexColumns != null) {
                 start = System.currentTimeMillis();
                 stmt.execute(sqlOther.toString());
-                SqlUtils.verifyTime(wdkModel, sqlOther.toString(), start);
+                SqlUtils.verifyTime(wdkModel, sqlOther.toString(), "wdk_create_cache_index02", start);
             }
         } finally {
             if (stmt != null) stmt.close();
