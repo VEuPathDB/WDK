@@ -33,7 +33,7 @@ import org.json.JSONException;
 /**
  * @author xingao
  * 
- * there is a newer version in ApiCommonShared.
+ *         there is a newer version in ApiCommonShared.
  */
 @Deprecated
 public class FullRecordCachedReporter extends Reporter {
@@ -91,8 +91,8 @@ public class FullRecordCachedReporter extends Reporter {
         // get basic configurations
         if (config.containsKey(FIELD_HAS_EMPTY_TABLE)) {
             String value = config.get(FIELD_HAS_EMPTY_TABLE);
-            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true"))
-                    ? true : false;
+            hasEmptyTable = (value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true")) ? true
+                    : false;
         }
     }
 
@@ -234,7 +234,8 @@ public class FullRecordCachedReporter extends Reporter {
                         ps.setObject(index + 1, value);
                     }
                     ResultSet resultSet = ps.executeQuery();
-                    SqlUtils.verifyTime(wdkModel, sql.toString(), start);
+                    SqlUtils.verifyTime(wdkModel, sql.toString(),
+                            "wdk-report-full-select-cache", start);
                     Map<String, String> tableValues = new LinkedHashMap<String, String>();
                     while (resultSet.next()) {
                         // check if display empty tables

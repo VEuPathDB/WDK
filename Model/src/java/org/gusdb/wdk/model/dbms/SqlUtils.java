@@ -110,16 +110,18 @@ public final class SqlUtils {
      * @throws WdkModelException
      * @throws WdkUserException
      */
-    public static boolean executePreparedStatement(WdkModel wdkModel, PreparedStatement stmt, String sql) throws SQLException, WdkUserException, WdkModelException {
+    public static boolean executePreparedStatement(WdkModel wdkModel,
+            PreparedStatement stmt, String sql, String name) throws SQLException,
+            WdkUserException, WdkModelException {
         try {
             long start = System.currentTimeMillis();
             boolean result = stmt.execute();
-            verifyTime(wdkModel, sql, start);
+            verifyTime(wdkModel, sql, name, start);
             return result;
         } catch (SQLException ex) {
             logger.error("Failed to execute statement: \n" + sql);
             throw ex;
-	}
+        }
     }
 
     /**
@@ -133,7 +135,7 @@ public final class SqlUtils {
      * @throws WdkUserException
      */
     public static int executeUpdate(WdkModel wdkModel, DataSource dataSource,
-            String sql) throws SQLException, WdkUserException,
+            String sql, String name) throws SQLException, WdkUserException,
             WdkModelException {
         Connection connection = null;
         Statement stmt = null;
@@ -142,7 +144,7 @@ public final class SqlUtils {
             connection = dataSource.getConnection();
             stmt = connection.createStatement();
             int result = stmt.executeUpdate(sql);
-            verifyTime(wdkModel, sql, start);
+            verifyTime(wdkModel, sql, name, start);
             return result;
         } catch (SQLException ex) {
             logger.error("Failed to run nonQuery:\n" + sql);
@@ -154,7 +156,8 @@ public final class SqlUtils {
     }
 
     /**
-     * execute the update using an open connection, and returns the number of rows affected.   Use this if you have a connection you want to use again
+     * execute the update using an open connection, and returns the number of
+     * rows affected. Use this if you have a connection you want to use again
      * such as one that is autocommit=false
      * 
      * @param connection
@@ -165,14 +168,14 @@ public final class SqlUtils {
      * @throws WdkUserException
      */
     public static int executeUpdate(WdkModel wdkModel, Connection connection,
-            String sql) throws SQLException, WdkUserException,
+            String sql, String name) throws SQLException, WdkUserException,
             WdkModelException {
         Statement stmt = null;
         try {
             long start = System.currentTimeMillis();
             stmt = connection.createStatement();
             int result = stmt.executeUpdate(sql);
-            verifyTime(wdkModel, sql, start);
+            verifyTime(wdkModel, name, sql, start);
             return result;
         } catch (SQLException ex) {
             logger.error("Failed to run nonQuery:\n" + sql);
@@ -195,7 +198,7 @@ public final class SqlUtils {
      * @throws WdkUserException
      */
     public static ResultSet executeQuery(WdkModel wdkModel,
-            DataSource dataSource, String sql) throws SQLException,
+            DataSource dataSource, String sql, String name) throws SQLException,
             WdkUserException, WdkModelException {
         ResultSet resultSet = null;
         Connection connection = null;
@@ -205,7 +208,7 @@ public final class SqlUtils {
             Statement stmt = connection.createStatement();
             stmt.setFetchSize(1000);
             resultSet = stmt.executeQuery(sql);
-            verifyTime(wdkModel, sql, start);
+            verifyTime(wdkModel, name, sql, start);
             return resultSet;
         } catch (SQLException ex) {
             logger.error("Failed to run query:\n" + sql);
@@ -232,11 +235,11 @@ public final class SqlUtils {
      * @throws WdkUserException
      */
     public static Object executeScalar(WdkModel wdkModel,
-            DataSource dataSource, String sql) throws SQLException,
+            DataSource dataSource, String sql, String name) throws SQLException,
             WdkModelException, WdkUserException {
         ResultSet resultSet = null;
         try {
-            resultSet = executeQuery(wdkModel, dataSource, sql);
+            resultSet = executeQuery(wdkModel, dataSource, sql, name);
             if (!resultSet.next())
                 throw new WdkModelException("The SQL doesn't return any row:\n"
                         + sql);
@@ -268,10 +271,10 @@ public final class SqlUtils {
         return value.replaceAll("%", "{%}").replaceAll("_", "{_}");
     }
 
-    public static void verifyTime(WdkModel wdkModel, String sql, long fromTime)
-            throws WdkUserException, WdkModelException {
+    public static void verifyTime(WdkModel wdkModel, String sql, String name,
+            long fromTime) throws WdkUserException, WdkModelException {
         double seconds = (System.currentTimeMillis() - fromTime) / 1000D;
-        logger.trace("SQL executed in " + seconds + " seconds.");
+        logger.trace("SQL [" + name + "] executed in " + seconds + " seconds.");
         logger.trace(sql);
 
         if (seconds < 0) {
@@ -285,12 +288,13 @@ public final class SqlUtils {
         boolean logged = false;
         if (seconds >= monitor.getBrokenQueryThreshold()) {
             if (!monitor.isIgnoredBrokenQuery(sql)) {
-                logger.warn("SUPER SLOW SQL: " + seconds + " seconds.\n" + sql);
+                logger.warn("SUPER SLOW SQL [" + name + "]: " + seconds
+                        + " seconds.\n" + sql);
                 // also send email to admin
                 String email = wdkModel.getModelConfig().getAdminEmail();
                 if (email != null) {
                     String subject = "[" + wdkModel.getProjectId()
-                            + "] Super Slow Query " + seconds + " seconds";
+                            + "] Super Slow Query [" + name + "] " + seconds + " seconds";
 
                     Calendar cal = Calendar.getInstance();
                     SimpleDateFormat sdf = new SimpleDateFormat(
@@ -306,7 +310,7 @@ public final class SqlUtils {
         }
         if (!logged && seconds >= monitor.getSlowQueryThreshold()) {
             if (!monitor.isIgnoredSlowQuery(sql))
-                logger.warn("SLOW SQL: " + seconds + " seconds.\n" + sql);
+                logger.warn("SLOW SQL [" + name + "]: " + seconds + " seconds.\n" + sql);
         }
     }
 

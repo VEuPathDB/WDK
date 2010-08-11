@@ -101,9 +101,9 @@ public class StepValidator extends BaseCLI {
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE " + wdkSchema
-                + "answers SET is_valid = NULL");
+                + "answers SET is_valid = NULL", "wdk-reset-answer-flag");
         SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE " + userSchema
-                + "steps SET is_valid = NULL");
+                + "steps SET is_valid = NULL", "wdk-reset-step-flag");
         // SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE " + userSchema
         // + "strategies SET is_valid = NULL");
     }
@@ -123,7 +123,7 @@ public class StepValidator extends BaseCLI {
                 + "     SELECT project_id, question_name FROM wdk_questions) d"
                 + "   WHERE a.project_id = d.project_id"
                 + "     AND a.question_name = d.question_name"
-                + "     AND a.is_valid IS NULL)");
+                + "     AND a.is_valid IS NULL)", "wdk-invalidate-question");
     }
 
     private void detectParams(WdkModel wdkModel) throws SQLException,
@@ -151,7 +151,7 @@ public class StepValidator extends BaseCLI {
                 + "     AND a.answer_id = s.answer_id "
                 + "     AND s.step_id = sp.step_id "
                 + "     AND sp.param_name = d.param_name "
-                + "     AND a.is_valid IS NULL)");
+                + "     AND a.is_valid IS NULL)", "wdk-invalidate-param");
     }
 
     private void detectEnumParams(WdkModel wdkModel) throws SQLException,
@@ -190,7 +190,7 @@ public class StepValidator extends BaseCLI {
                 + "     AND s.step_id = sp.step_id "
                 + "     AND sp.param_name = d.param_name "
                 + "     AND sp.param_value = d.param_value "
-                + "     AND a.is_valid IS NULL)");
+                + "     AND a.is_valid IS NULL)", "wdk-invalidate-enum-param");
     }
 
     private void flagSteps(WdkModel wdkModel) throws SQLException,
@@ -205,6 +205,7 @@ public class StepValidator extends BaseCLI {
                 + " SET is_valid = 0 "
                 + " WHERE (is_valid IS NULL OR is_valid = 1) "
                 + "   AND answer_id IN (SELECT answer_id FROM " + answer
-                + "                    WHERE is_valid = 0)");
+                + "                    WHERE is_valid = 0)",
+                "wdk-invalidate-step");
     }
 }

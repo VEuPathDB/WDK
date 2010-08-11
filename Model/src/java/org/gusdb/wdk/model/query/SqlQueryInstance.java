@@ -85,7 +85,8 @@ public class SqlQueryInstance extends QueryInstance {
 
         DBPlatform platform = query.getWdkModel().getQueryPlatform();
         DataSource dataSource = platform.getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+                query.getFullName() + "-uncached-result");
         return new SqlResultList(resultSet);
     }
 
@@ -129,7 +130,8 @@ public class SqlQueryInstance extends QueryInstance {
             stmt = connection.createStatement();
             stmt.execute(buffer.toString());
 
-            SqlUtils.verifyTime(wdkModel, buffer.toString(), start);
+            SqlUtils.verifyTime(wdkModel, buffer.toString(),
+                    query.getFullName() + "-insert-cache", start);
         } catch (SQLException ex) {
             logger.error("Fail to run SQL:\n" + buffer);
             throw ex;
@@ -211,7 +213,8 @@ public class SqlQueryInstance extends QueryInstance {
             stmt = connection.createStatement();
             stmt.execute(buffer.toString());
 
-            SqlUtils.verifyTime(wdkModel, buffer.toString(), start);
+            SqlUtils.verifyTime(wdkModel, buffer.toString(),
+                    "wdk-create-table", start);
 
             ResultFactory resultFactory = wdkModel.getResultFactory();
             resultFactory.createCacheTableIndex(connection, tableName,

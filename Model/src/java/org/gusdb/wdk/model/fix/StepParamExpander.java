@@ -118,10 +118,12 @@ public class StepParamExpander extends BaseCLI {
         SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE TABLE " + schema
                 + " step_params ( step_id NUMBER(12) NOT NULL, "
                 + " param_name VARCHAR(200) NOT NULL, "
-                + " param_value VARCHAR(4000), migration NUMBER(12))");
+                + " param_value VARCHAR(4000), migration NUMBER(12))",
+                "wdk-create-table");
 
         SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX " + schema
-                + "step_params_idx02 ON step_params (step_id, param_name)");
+                + "step_params_idx02 ON step_params (step_id, param_name)",
+                "wdk-create-indx");
     }
 
     private ResultSet prepareSelect(WdkModel wdkModel, String schema)
@@ -143,7 +145,8 @@ public class StepParamExpander extends BaseCLI {
         sql.append(" WHERE s.step_id = sp.step_id ");
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
-        return SqlUtils.executeQuery(wdkModel, dataSource, sql.toString());
+        return SqlUtils.executeQuery(wdkModel, dataSource, sql.toString(),
+                "wdk-select-step-params");
     }
 
     private PreparedStatement prepareInsert(WdkModel wdkModel, String schema)
