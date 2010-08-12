@@ -396,6 +396,7 @@ public class SanityTester {
                     + ")";
             throw new WdkModelException(msg);
         }
+	while(resultSet.next());  // bring full result over to test speed
         SqlUtils.closeResultSet(resultSet);
     }
 
@@ -409,14 +410,13 @@ public class SanityTester {
         SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
                 params, true, 0);
 
-        String sql = "select count (*) from (" + instance.getUncachedSql()
-                + ")";
+        String sql = instance.getUncachedSql();
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
                 query.getFullName() + "-test-total-time");
-        resultSet.next();
-        int count = resultSet.getInt(1);
+	int count = 0;
+	while(resultSet.next()) count++;  // bring full result over to test speed
         SqlUtils.closeResultSet(resultSet);
         return count;
     }
