@@ -73,9 +73,12 @@ public class WdkModel {
             TransformerException, IOException, SAXException, SQLException,
             JSONException, WdkUserException, InstantiationException,
             IllegalAccessException, ClassNotFoundException {
+        StackTraceElement[] stackTrace = new Throwable().getStackTrace();
+        int index = stackTrace.length - 1;
+        String tip = "";
+        if (index >= 0) tip = "called by " + stackTrace[index].getClassName();
         logger.debug("Constructing wdk model [" + projectId + "] (GUS_HOME="
-                + gusHome + "); called by " 
-                + Class.forName(new Throwable().getStackTrace()[2].getClassName()));
+                + gusHome + "); " + tip);
 
         ModelXmlParser parser = new ModelXmlParser(gusHome);
         WdkModel wdkModel = parser.parseModel(projectId);
@@ -1112,7 +1115,7 @@ public class WdkModel {
     public BasketFactory getBasketFactory() {
         return basketFactory;
     }
-    
+
     public FavoriteFactory getFavoriteFactory() {
         return favoriteFactory;
     }
