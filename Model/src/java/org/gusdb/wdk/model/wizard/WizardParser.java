@@ -26,9 +26,10 @@ public class WizardParser extends XmlParser {
 
         digester.addObjectCreate("wdkWizard", Wizard.class);
         digester.addSetProperties("wdkWizard");
-        configureNode(digester, "wdkWizard/description", WdkModelText.class,
-                "addDescription");
-        digester.addCallMethod("wdkWizard/description", "setText", 0);
+
+        // load default stage reference
+        configureNode(digester, "wdkWizard/defaultStageRef",
+                StageReference.class, "addDefaultStageReference");
 
         // load stages
         configureNode(digester, "wdkWizard/stage", Stage.class, "addStage");
@@ -36,8 +37,10 @@ public class WizardParser extends XmlParser {
                 WdkModelText.class, "addDescription");
         digester.addCallMethod("wdkWizard/stage/description", "setText", 0);
 
-        configureNode(digester, "wdkWizard/stage/nextStage",
-                StageReference.class, "addNextStage");
+        // load result
+        configureNode(digester, "wdkWizard/stage/result",
+                Result.class, "addResult");
+        digester.addCallMethod("wdkWizard/stage/result", "setText", 0);
 
         return digester;
     }

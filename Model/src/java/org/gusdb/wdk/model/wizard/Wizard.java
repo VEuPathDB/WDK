@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.wizard;
 
+import java.io.File;
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -7,72 +9,77 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
+import org.xml.sax.SAXException;
 
 public class Wizard extends WdkModelBase {
 
-    private String name;
-    private String display;
+    private static final String WIZARD_PATH = "/lib/wdk-wizard/";
+    private static final Logger logger = Logger.getLogger(Wizard.class);
 
-    private List<WdkModelText> descriptionList = new ArrayList<WdkModelText>();
-    private String description;
+    public static Wizard loadWizard(String gusHome) throws SAXException,
+            IOException, WdkModelException {
+        // load all the wizards
+        WizardParser parser = new WizardParser(gusHome);
+        Wizard wizard = null;
+
+        File dir = new File(gusHome + WIZARD_PATH);
+        logger.debug("wizard-dir: " + dir.getAbsolutePath());
+        File[] files = dir.listFiles();
+        if (files != null) {
+
+            for (File file : dir.listFiles()) {
+                logger.debug("wizard-file: " + file.getAbsolutePath());
+                String fileName = file.getName().toLowerCase();
+                if (!fileName.endsWith(".xml")) continue;
+
+                Wizard w = parser.parseWizard(file.getAbsolutePath());
+                if (wizard == null) wizard = w;
+                else wizard.merge(w);
+            }
+        }
+        return wizard;
+    }
+
+    private List<StageReference> defaultStageReferenceList = new ArrayList<StageReference>();
+    private String defaultStageName;
+    private Stage defaultStage;
 
     private List<Stage> stageList = new ArrayList<Stage>();
     private Map<String, Stage> stageMap;
 
-    private String firstStageReference;
-
     /**
-     * @return the name
+     * The merge has to occur before the exclusion.
+     * 
+     * @param wizard
+     * @throws WdkModelException
      */
-    public String getName() {
-        return name;
+    void merge(Wizard wizard) throws WdkModelException {
+        if (defaultStage != null || stageMap != null)
+            throw new WdkModelException("Merging of wizards has to occur "
+                    + "before the wizard being excluded or resolved.");
+
+        for (StageReference reference : wizard.defaultStageReferenceList) {
+            defaultStageReferenceList.add(reference);
+        }
+        for (Stage stage : wizard.stageList) {
+            stageList.add(stage);
+        }
     }
 
-	public Stage[] getStages() {
+    public Stage[] getStages() {
         Stage[] stages = new Stage[stageMap.size()];
         stageMap.values().toArray(stages);
         return stages;
     }
 
-    /**
-     * @param name
-     *            the name to set
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    /**
-     * @return the display
-     */
-    public String getDisplay() {
-        return display;
-    }
-
-    /**
-     * @param display
-     *            the display to set
-     */
-    public void setDisplay(String display) {
-        this.display = display;
-    }
-
-    public void setFirstStage(String firstStageReference) {
-        this.firstStageReference = firstStageReference;
-    }
-
-    public void addDescription(WdkModelText description) {
-        this.descriptionList.add(description);
-    }
-
-    public String getDescription() {
-        return this.description;
+    public void addDefaultStageReference(StageReference reference) {
+        defaultStageReferenceList.add(reference);
     }
 
     public void addStage(Stage stage) {
@@ -94,24 +101,32 @@ public class Wizard extends WdkModelBase {
                 String name = stage.getName();
                 if (stageMap.containsKey(name))
                     throw new WdkModelException("More than one stage '" + name
-                            + "' exist in wizard " + this.name);
+                            + "' exist in the wizard.");
                 stageMap.put(name, stage);
             }
         }
         stageList = null;
 
         if (stageMap.size() == 0)
-            throw new WdkModelException("wizard '" + name
-                    + "' doesn't contain any stage.");
+            throw new WdkModelException("The wizard does not contain any "
+                    + "stage.");
 
-        for (WdkModelText desc : descriptionList) {
-            if (desc.include(projectId)) {
-                if (this.description != null)
-                    throw new WdkModelException("More than one desc");
-                desc.excludeResources(projectId);
-                this.description = desc.getText();
+        for (StageReference reference : defaultStageReferenceList) {
+            if (reference.include(projectId)) {
+                String stageName = reference.getStage();
+                if (defaultStageName != null)
+                    throw new WdkModelException("More than one  "
+                            + "defaultStageReferences exist: ["
+                            + defaultStageName + "] and [" + stageName + "]");
+                reference.excludeResources(projectId);
+                defaultStageName = stageName;
             }
         }
+        defaultStageReferenceList = null;
+
+        if (defaultStageName == null)
+            throw new WdkModelException("Required defaultStageReference "
+                    + " is not defined");
 
         super.excludeResources(projectId);
     }
@@ -131,24 +146,23 @@ public class Wizard extends WdkModelBase {
             stage.resolveReferences(wdkModel);
         }
 
-        if (firstStageReference != null
-                && !stageMap.containsKey(firstStageReference))
-            throw new WdkModelException("The first stage '"
-                    + firstStageReference + "' does not exist in wizard "
-                    + name);
+        defaultStage = stageMap.get(defaultStageName);
+        if (defaultStage == null)
+            throw new WdkModelException("defaultStageReference ["
+                    + defaultStageName + "] references to an invalid stage.");
 
         super.resolveReferences(wdkModel);
     }
 
-    public Stage getStage(String stageName) {
-        return stageMap.get(stageName);
+    public Stage queryStage(String stageName) throws WdkUserException {
+        Stage stage = stageMap.get(stageName);
+        if (stage == null)
+            throw new WdkUserException("The stage name [" + stageName
+                    + "] is invalid.");
+        return stage;
     }
 
-    public Stage getFirstStage() {
-        if (firstStageReference == null) {
-            return stageMap.values().iterator().next();
-        } else {
-            return stageMap.get(firstStageReference);
-        }
+    public Stage getDefaultStage() {
+        return defaultStage;
     }
 }
