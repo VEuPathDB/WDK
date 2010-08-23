@@ -3,16 +3,14 @@
          datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
     <start>
         <element name="wdkWizard">
-            <attribute name="name" />
-            <attribute name="nextStage" />
-            <optional>
-                <attribute name="display" />
-            </optional>
-            <ref name="IncludeExclude"/>
             
             <oneOrMore>
                 <choice>
-                    <ref name="description" />
+                    <element name="defaultStageRef">
+                        <attribute name="stage" />
+                        <ref name="IncludeExclude"/>
+                    </element>
+                    
                     <ref name="stage" />
                 </choice>
             </oneOrMore>
@@ -27,9 +25,6 @@
                 <attribute name="display" />
             </optional>
             <optional>
-                <attribute name="view" />
-            </optional>
-            <optional>
                 <attribute name="handler" />
             </optional>
             <ref name="IncludeExclude"/>
@@ -37,10 +32,15 @@
 				<ref name="description" />
 			</optional>
             <zeroOrMore>  
-                <element name="nextStage">
-                    <attribute name="label" />
-                    <attribute name="stage" />
+                <element name="result">
+                    <attribute name="type">
+                        <choice>
+                            <value>view</value>
+                            <value>action</value>
+                        </choice>
+                    </attribute>
                     <ref name="IncludeExclude"/>
+                    <text />
                 </element>
             </zeroOrMore>
         </element>

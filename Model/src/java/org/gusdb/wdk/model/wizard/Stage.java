@@ -3,9 +3,7 @@ package org.gusdb.wdk.model.wizard;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -19,16 +17,15 @@ public class Stage extends WdkModelBase {
     private Wizard wizard;
     private String name;
     private String display;
-    private String view;
 
-    private String handler;
-    private StageHandler stageHandler;
+    private String handlerName;
+    private StageHandler handler;
 
     private List<WdkModelText> descriptionList = new ArrayList<WdkModelText>();
     private String description;
 
-    private List<StageReference> nextStageReferences = new ArrayList<StageReference>();
-    private Map<String, Stage> nextStages;
+    private List<Result> resultList = new ArrayList<Result>();
+    private Result result;
 
     /**
      * @return the wizard
@@ -76,33 +73,18 @@ public class Stage extends WdkModelBase {
     }
 
     /**
-     * @return the view
-     */
-    public String getView() {
-        return view;
-    }
-
-    /**
-     * @param view
-     *            the view to set
-     */
-    public void setView(String view) {
-        this.view = view;
-    }
-
-    /**
      * @param handlerClass
      *            the handlerClass to set
      */
-    public void setHandler(String handler) {
-        this.handler = handler;
+    public void setHandler(String handlerName) {
+        this.handlerName = handlerName;
     }
 
     /**
      * @return the handler
      */
     public StageHandler getHandler() {
-        return stageHandler;
+        return handler;
     }
 
     public void addDescription(WdkModelText description) {
@@ -113,27 +95,12 @@ public class Stage extends WdkModelBase {
         return this.description;
     }
 
-    public void addNextStage(StageReference stageReference) {
-        this.nextStageReferences.add(stageReference);
+    public void addResult(Result result) {
+        this.resultList.add(result);
     }
 
-    public Stage queryNextStage(String label) {
-        return nextStages.get(label);
-    }
-
-    public boolean isBranched() {
-        return (nextStages.size() > 1);
-    }
-
-    public boolean isLastStage() {
-        return (nextStages.size() == 0);
-    }
-
-    public Stage getNextStage() throws WdkModelException {
-        if (isBranched() || isLastStage())
-            throw new WdkModelException("The stage '" + name + "' in wizard "
-                    + wizard.getName() + " doesn't have single next stage.");
-        return nextStages.values().iterator().next();
+    public Result getResult() {
+        return result;
     }
 
     /*
@@ -156,13 +123,21 @@ public class Stage extends WdkModelBase {
         }
         this.descriptionList = null;
 
-        // exclude next stage references
-        for (int i = nextStageReferences.size()-1; i >= 0; i--) {
-            StageReference reference = nextStageReferences.get(i);
-            if (reference.include(projectId)) {
-                reference.excludeResources(projectId);
-            } else nextStageReferences.remove(i);
+        // exclude result
+        for (Result result : resultList) {
+            if (result.include(projectId)) {
+                if (this.result != null)
+                    throw new WdkModelException("Only one result is allowed in"
+                            + " stage [" + name + "]");
+                result.excludeResources(projectId);
+                this.result = result;
+            }
         }
+        this.resultList = null;
+
+        if (result == null)
+            throw new WdkModelException("No result is defined in stage ["
+                    + name + "]");
 
         super.excludeResources(projectId);
     }
@@ -181,26 +156,16 @@ public class Stage extends WdkModelBase {
         // resolve the handler
         if (handler != null) {
             try {
-                Class<?> handlerClass = Class.forName(handler);
-                this.stageHandler = (StageHandler) handlerClass.newInstance();
+                Class<?> handlerClass = Class.forName(handlerName);
+                this.handler = (StageHandler) handlerClass.newInstance();
             } catch (Exception ex) {
                 new WdkModelException("The flow stage handler is not of type: "
                         + StageHandler.class + ". stage: " + name, ex);
             }
         }
 
-        // resolve the reference to the next stages
-        nextStages = new LinkedHashMap<String, Stage>();
-        for (StageReference reference : nextStageReferences) {
-            String label = reference.getLabel();
-            String stageName = reference.getStage();
-            Stage stage = wizard.getStage(stageName);
-            if (stage == null)
-                throw new WdkModelException("The stage '" + stageName
-                        + "' doesn't exist in the wizard " + wizard.getName());
-            nextStages.put(label, stage);
-        }
-        nextStageReferences = null;
+        // resolve the reference in the result;
+        result.resolveReferences(wdkModel);
 
         super.resolveReferences(wdkModel);
     }

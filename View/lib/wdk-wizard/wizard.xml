@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wdkWizard>
+  <defaultStageRef stage="list" />
+  
+  <stage name="list" display="Select a search">
+    <description>Please select a new search, or an existing strategy.</description>
+    <result type="view">/wdk/jsp/wizard/list.jsp</result>
+  </stage>
+  <stage name="question" display="Select parameters">
+    <description>Please choose parameters and the operation.</description>
+    <result type="view">/wdk/jsp/wizard/question.jsp</result>
+  </stage>
+  <stage name="strategy" display="Combine strategy with">
+    <description>Please choose the operation to combine the current strategy with the selected strategy.</description>
+    <result type="view">/wdk/jsp/wizard/strategy.jsp</result>
+  </stage>
+  <stage name="basket" display="Use basket">
+    <description>Please choose a boolean operation to combine the current strategy with the records from basket.</description>
+    <result type="view">/wdk/jsp/wizard/basket.jsp</result>
+  </stage>
+  
+  <stage name="transform" display="Transform Results">
+    <description>Process boolean operation and redirect to processFilter.</description>
+    <result type="action">org.gusdb.wdk.controller.action.ShowQuestionAction</result>
+  </stage>
+  
+  <stage name="boolean" display="Process Boolean">
+    <description>Process boolean operation and redirect to processFilter.</description>
+    <result type="action">org.gusdb.wdk.controller.action.ProcessFilterAction</result>
+  </stage>
+  <stage name="spanlogic" 
+         display="Select Parameters"
+         handler="org.apidb.apicomm.model.wizard.SpanLogicPreHandler">
+    <description>Select span logic paramters.</description>
+    <result type="view">/wdk/jsp/wizard/spanlogic.jsp</result>
+  </stage>
+  <stage name="process_span" 
+         display="Process Span Logic operation"
+         handler="org.apidb.apicomm.model.wizard.SpanLogicPostHandler">
+    <description>Process span logic operation and redirect to processFilter.</description>
+    <result type="action">org.gusdb.wdk.controller.action.ProcessFilterAction</result>
+  </stage>
+
+</wdkWizard>
