@@ -57,6 +57,7 @@ public class WizardAction extends Action {
         Stage stage;
         if (stageName == null || stageName.length() == 0) {
             stage = wizard.getDefaultStage();
+            stageName = stage.getName();
         } else {
             stage = wizard.queryStage(stageName);
         }
@@ -80,6 +81,8 @@ public class WizardAction extends Action {
         Result result = stage.getResult();
         String type = result.getType();
         if (type.equals(Result.TYPE_VIEW)) {
+            String view = result.getText();
+            logger.debug("wizard view: " + view);
             // forward to a jsp. the values will be set to request's attributes.
             for (String key : values.keySet()) {
                 request.setAttribute(key, values.get(key));
@@ -88,6 +91,7 @@ public class WizardAction extends Action {
         } else if (type.equals(Result.TYPE_ACTION)) {
             // forward to an action
             String className = result.getText();
+            logger.debug("wizard forward to action: " + className);
             Class<Action> actionClass = (Class<Action>) Class.forName(className);
             Action action = actionClass.newInstance();
             return action.execute(mapping, form, request, response);
