@@ -1131,7 +1131,8 @@ public class StepFactory {
     void updateStrategy(User user, Strategy strategy, boolean overwrite)
             throws WdkUserException, WdkModelException, SQLException,
             JSONException, NoSuchAlgorithmException {
-        logger.debug("Updating strategy internal#=" + strategy.getInternalId() + ", overwrite=" + overwrite);
+        logger.debug("Updating strategy internal#=" + strategy.getInternalId()
+                + ", overwrite=" + overwrite);
 
         // update strategy name, saved, step_id
         PreparedStatement psStrategy = null;
@@ -1148,10 +1149,13 @@ public class StepFactory {
                         + userIdColumn + " = ? AND " + COLUMN_PROJECT_ID
                         + " = ? AND " + COLUMN_NAME + " = ? AND "
                         + COLUMN_IS_SAVED + " = ? AND " + COLUMN_IS_DELETED
-                        + " = ? AND " + COLUMN_DISPLAY_ID + " <> ?";
+                        + " = ? "; // AND " + COLUMN_DISPLAY_ID + " <> ?";
                 // If we're overwriting, need to look up saved strategy id by
                 // name (only if the saved strategy is not the one we're
                 // updating, i.e. the saved strategy id != this strategy id)
+
+                // jerric - will also find the saved copy of itself, so that we
+                // can keep the signature.
                 long start = System.currentTimeMillis();
                 PreparedStatement psCheck = SqlUtils.getPreparedStatement(
                         dataSource, sql);
@@ -1160,7 +1164,7 @@ public class StepFactory {
                 psCheck.setString(3, strategy.getName());
                 psCheck.setBoolean(4, true);
                 psCheck.setBoolean(5, false);
-                psCheck.setInt(6, strategy.getStrategyId());
+                // psCheck.setInt(6, strategy.getStrategyId());
                 rsStrategy = psCheck.executeQuery();
                 SqlUtils.verifyTime(wdkModel, sql,
                         "wdk-step-factory-check-strategy-name", start);
@@ -1175,7 +1179,9 @@ public class StepFactory {
                     strategy.setIsSaved(true);
                     strategy.setSignature(signature);
                     strategy.setSavedName(strategy.getName());
-                    user.deleteStrategy(idToDelete);
+                    // jerric - only delete the strategy if it's a different one
+                    if (strategy.getStrategyId() != idToDelete)
+                        user.deleteStrategy(idToDelete);
                 }
             } else if (strategy.getIsSaved()) {
                 // If we're not overwriting a saved strategy, then we're
@@ -1183,14 +1189,14 @@ public class StepFactory {
                 // it. We need to get an unsaved copy to modify. Generate
                 // unsaved name
                 String name = getNextName(user, strategy.getName(), false);
-                Strategy newStrat = createStrategy(user,
-                        strategy.getLatestStep(), name, strategy.getName(),
-                        false, strategy.getDescription(), false);
-                strategy.setName(newStrat.getName());
-                strategy.setSavedName(newStrat.getSavedName());
-                strategy.setDisplayId(newStrat.getStrategyId());
-                strategy.setInternalId(newStrat.getInternalId());
-                strategy.setIsSaved(false);
+                strategy = createStrategy(user, strategy.getLatestStep(), name,
+                        strategy.getName(), false, strategy.getDescription(),
+                        false);
+                // strategy.setName(newStrat.getName());
+                // strategy.setSavedName(newStrat.getSavedName());
+                // strategy.setDisplayId(newStrat.getStrategyId());
+                // strategy.setInternalId(newStrat.getInternalId());
+                // strategy.setIsSaved(false);
             }
 
             Date modifiedTime = new Date();
