@@ -1131,6 +1131,8 @@ public class StepFactory {
     void updateStrategy(User user, Strategy strategy, boolean overwrite)
             throws WdkUserException, WdkModelException, SQLException,
             JSONException, NoSuchAlgorithmException {
+        logger.debug("Updating strategy internal#=" + strategy.getInternalId() + ", overwrite=" + overwrite);
+
         // update strategy name, saved, step_id
         PreparedStatement psStrategy = null;
         ResultSet rsStrategy = null;
@@ -1233,6 +1235,7 @@ public class StepFactory {
             String savedName, boolean saved, String description, boolean hidden)
             throws SQLException, WdkUserException, WdkModelException,
             JSONException, NoSuchAlgorithmException {
+        logger.debug("creating strategy, saved=" + saved);
         int userId = user.getUserId();
 
         String userIdColumn = Utilities.COLUMN_USER_ID;
@@ -1322,6 +1325,7 @@ public class StepFactory {
             SqlUtils.verifyTime(wdkModel, sql,
                     "wdk-step-factory-insert-strategy", start);
 
+            logger.debug("new strategy created, internal#=" + internalId);
             connection.commit();
         } catch (SQLException ex) {
             connection.rollback();
