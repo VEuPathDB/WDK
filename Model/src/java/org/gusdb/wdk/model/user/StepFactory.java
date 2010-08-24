@@ -1189,14 +1189,15 @@ public class StepFactory {
                 // it. We need to get an unsaved copy to modify. Generate
                 // unsaved name
                 String name = getNextName(user, strategy.getName(), false);
-                strategy = createStrategy(user, strategy.getLatestStep(), name,
-                        strategy.getName(), false, strategy.getDescription(),
-                        false);
-                // strategy.setName(newStrat.getName());
-                // strategy.setSavedName(newStrat.getSavedName());
-                // strategy.setDisplayId(newStrat.getStrategyId());
-                // strategy.setInternalId(newStrat.getInternalId());
-                // strategy.setIsSaved(false);
+                Strategy newStrat = createStrategy(user,
+                        strategy.getLatestStep(), name, strategy.getName(),
+                        false, strategy.getDescription(), false);
+                strategy.setName(newStrat.getName());
+                strategy.setSavedName(newStrat.getSavedName());
+                strategy.setDisplayId(newStrat.getStrategyId());
+                strategy.setInternalId(newStrat.getInternalId());
+                strategy.setSignature(newStrat.getSignature());
+                strategy.setIsSaved(false);
             }
 
             Date modifiedTime = new Date();
