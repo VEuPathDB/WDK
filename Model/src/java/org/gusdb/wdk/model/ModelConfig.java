@@ -22,6 +22,8 @@ public class ModelConfig {
 
     private ModelConfigUserDB userDB;
     private ModelConfigAppDB appDB;
+    
+    private QueryMonitor queryMonitor = new QueryMonitor();
 
     /**
      * The projectId is not part of the config file content, it is input by the
@@ -229,5 +231,19 @@ public class ModelConfig {
      */
     public void setParamRegex(String paramRegex) {
         this.paramRegex = paramRegex;
+    }
+
+    /**
+     * @return the queryMonitor
+     */
+    public QueryMonitor getQueryMonitor() {
+        return queryMonitor;
+    }
+
+    /**
+     * @param queryMonitor the queryMonitor to set
+     */
+    public void setQueryMonitor(QueryMonitor queryMonitor) {
+        this.queryMonitor = queryMonitor;
     }
 }
