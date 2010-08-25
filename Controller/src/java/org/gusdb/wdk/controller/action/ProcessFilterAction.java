@@ -388,12 +388,15 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             }
 
             // set the view, if it's not set yet
+            logger.debug("old view: strategy=" + wdkUser.getViewStrategyId() + ", step=" + wdkUser.getViewStepId());
             String viewStrategyKey = wdkUser.getViewStrategyId();
-            if (strStratId.equals(viewStrategyKey)) {
+            if (viewStrategyKey == null) viewStrategyKey = strategyKey;
+            if (strategyKey.equals(viewStrategyKey)) {
                 int viewStepId = wdkUser.getViewStepId();
                 if (0 == viewStepId || strategy.getStepById(viewStepId) == null) {
                     // the view is not set
                     wdkUser.setViewResults(viewStrategyKey, newStepId, 0);
+                    logger.debug("new view: strategy=" + viewStrategyKey + ", step=" + newStepId);
                 }
             }
 
@@ -403,7 +406,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
             ActionForward forward = new ActionForward(url.toString());
             forward.setRedirect(true);
-            System.out.println("Leaving ProcessFilterAction...");
+            logger.debug("Leaving ProcessFilterAction...");
             return forward;
         } catch (Exception ex) {
             logger.error(ex);

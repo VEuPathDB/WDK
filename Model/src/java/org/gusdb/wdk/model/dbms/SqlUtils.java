@@ -276,7 +276,7 @@ public final class SqlUtils {
     public static void verifyTime(WdkModel wdkModel, String sql, String name,
             long fromTime) throws WdkUserException, WdkModelException {
         // verify the name
-        if (name.length() > 50 || name.indexOf('\n') >= 0) {
+        if (name.length() > 100 || name.indexOf('\n') >= 0) {
             StringWriter writer = new StringWriter();
             new Exception().printStackTrace(new PrintWriter(writer));
             logger.warn("The name of the sql is suspicious, name: '" + name
