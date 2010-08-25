@@ -49,6 +49,14 @@ public class ModelConfigParser extends XmlParser {
         configureNode(digester, "modelConfig/userDb", ModelConfigUserDB.class,
                 "setUserDB");
 
+        configureNode(digester, "modelConfig/queryMonitor", QueryMonitor.class,
+                "setQueryMonitor");
+        digester.addCallMethod("modelConfig/queryMonitor/ignoreSlowQueryRegex",
+                "addIgnoreSlowQueryRegex", 0);
+        digester.addCallMethod(
+                "modelConfig/queryMonitor/ignoreBrokenQueryRegex",
+                "addIgnoreBrokenQueryRegex", 0);
+
         return digester;
     }
 }
