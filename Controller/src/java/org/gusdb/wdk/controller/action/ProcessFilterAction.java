@@ -96,8 +96,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             int weight = 0;
             if (hasWeight) {
                 if (!strWeight.matches("[\\-\\+]?\\d+"))
-                    throw new WdkUserException("Invalid weight value: '" 
-                            + strWeight + "'. Only integer numbers are allowed.");
+                    throw new WdkUserException("Invalid weight value: '"
+                            + strWeight
+                            + "'. Only integer numbers are allowed.");
                 if (strWeight.length() > 9)
                     throw new WdkUserException("Weight number is too big: "
                             + strWeight);
@@ -114,7 +115,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             boolean hasQuestion = (qFullName != null && qFullName.trim().length() > 0);
 
             logger.debug("isRevise: " + isRevise + "; isInsert: " + isInsert);
-            logger.debug("has question? " + hasQuestion + "; qFullName: " + qFullName);
+            logger.debug("has question? " + hasQuestion + "; qFullName: "
+                    + qFullName);
             logger.debug("has filter? " + hasFilter + "; filter: " + filterName);
             logger.debug("has weight? " + hasWeight + "; weight: " + weight);
             // are we inserting an existing step?
@@ -383,6 +385,16 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             } catch (WdkUserException ex) {
                 // Replace failed, need to add strategy to active list
                 // which is handled by ShowStrategyAction
+            }
+
+            // set the view, if it's not set yet
+            String viewStrategyKey = wdkUser.getViewStrategyId();
+            if (strStratId.equals(viewStrategyKey)) {
+                int viewStepId = wdkUser.getViewStepId();
+                if (0 == viewStepId || strategy.getStepById(viewStepId) == null) {
+                    // the view is not set
+                    wdkUser.setViewResults(viewStrategyKey, newStepId, 0);
+                }
             }
 
             ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
