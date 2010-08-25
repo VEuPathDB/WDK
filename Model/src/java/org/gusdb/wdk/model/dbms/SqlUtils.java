@@ -3,6 +3,8 @@
  */
 package org.gusdb.wdk.model.dbms;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -111,8 +113,8 @@ public final class SqlUtils {
      * @throws WdkUserException
      */
     public static boolean executePreparedStatement(WdkModel wdkModel,
-            PreparedStatement stmt, String sql, String name) throws SQLException,
-            WdkUserException, WdkModelException {
+            PreparedStatement stmt, String sql, String name)
+            throws SQLException, WdkUserException, WdkModelException {
         try {
             long start = System.currentTimeMillis();
             boolean result = stmt.execute();
@@ -175,7 +177,7 @@ public final class SqlUtils {
             long start = System.currentTimeMillis();
             stmt = connection.createStatement();
             int result = stmt.executeUpdate(sql);
-            verifyTime(wdkModel, name, sql, start);
+            verifyTime(wdkModel, sql, name, start);
             return result;
         } catch (SQLException ex) {
             logger.error("Failed to run nonQuery:\n" + sql);
@@ -198,8 +200,8 @@ public final class SqlUtils {
      * @throws WdkUserException
      */
     public static ResultSet executeQuery(WdkModel wdkModel,
-            DataSource dataSource, String sql, String name) throws SQLException,
-            WdkUserException, WdkModelException {
+            DataSource dataSource, String sql, String name)
+            throws SQLException, WdkUserException, WdkModelException {
         ResultSet resultSet = null;
         Connection connection = null;
         try {
@@ -208,7 +210,7 @@ public final class SqlUtils {
             Statement stmt = connection.createStatement();
             stmt.setFetchSize(1000);
             resultSet = stmt.executeQuery(sql);
-            verifyTime(wdkModel, name, sql, start);
+            verifyTime(wdkModel, sql, name, start);
             return resultSet;
         } catch (SQLException ex) {
             logger.error("Failed to run query:\n" + sql);
@@ -235,8 +237,8 @@ public final class SqlUtils {
      * @throws WdkUserException
      */
     public static Object executeScalar(WdkModel wdkModel,
-            DataSource dataSource, String sql, String name) throws SQLException,
-            WdkModelException, WdkUserException {
+            DataSource dataSource, String sql, String name)
+            throws SQLException, WdkModelException, WdkUserException {
         ResultSet resultSet = null;
         try {
             resultSet = executeQuery(wdkModel, dataSource, sql, name);
@@ -273,6 +275,14 @@ public final class SqlUtils {
 
     public static void verifyTime(WdkModel wdkModel, String sql, String name,
             long fromTime) throws WdkUserException, WdkModelException {
+        // verify the name
+        if (name.length() > 50 || name.indexOf('\n') >= 0) {
+            StringWriter writer = new StringWriter();
+            new Exception().printStackTrace(new PrintWriter(writer));
+            logger.warn("The name of the sql is suspicious, name: '" + name
+                    + "', trace:\n" + writer.toString());
+        }
+
         double seconds = (System.currentTimeMillis() - fromTime) / 1000D;
         logger.trace("SQL [" + name + "] executed in " + seconds + " seconds.");
         logger.trace(sql);
@@ -294,7 +304,8 @@ public final class SqlUtils {
                 String email = wdkModel.getModelConfig().getAdminEmail();
                 if (email != null) {
                     String subject = "[" + wdkModel.getProjectId()
-                            + "] Super Slow Query [" + name + "] " + seconds + " seconds";
+                            + "] Super Slow Query [" + name + "] " + seconds
+                            + " seconds";
 
                     Calendar cal = Calendar.getInstance();
                     SimpleDateFormat sdf = new SimpleDateFormat(
@@ -310,7 +321,8 @@ public final class SqlUtils {
         }
         if (!logged && seconds >= monitor.getSlowQueryThreshold()) {
             if (!monitor.isIgnoredSlowQuery(sql))
-                logger.warn("SLOW SQL [" + name + "]: " + seconds + " seconds.\n" + sql);
+                logger.warn("SLOW SQL [" + name + "]: " + seconds
+                        + " seconds.\n" + sql);
         }
     }
 
