@@ -33,6 +33,9 @@ public class WizardAction extends Action {
     private static final String PARAM_STRATEGY = "strategy";
     private static final String PARAM_STEP = "step";
 
+    private static final String ATTR_STRATEGY = "wdkStrategy";
+    private static final String ATTR_STEP = "wdkStep";
+
     /*
      * (non-Javadoc)
      * 
@@ -119,7 +122,7 @@ public class WizardAction extends Action {
             step = strategy.getStepById(stepId);
         }
 
-        request.setAttribute(PARAM_STRATEGY, strategy);
-        request.setAttribute(PARAM_STEP, step);
+        request.setAttribute(ATTR_STRATEGY, strategy);
+        request.setAttribute(ATTR_STEP, step);
     }
 }
