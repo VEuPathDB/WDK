@@ -80,16 +80,17 @@ public class WizardAction extends Action {
                 values.put(param, params.get(param));
             }
         }
+        // the values will be set to request's attributes.
+        for (String key : values.keySet()) {
+            request.setAttribute(key, values.get(key));
+        }
 
         Result result = stage.getResult();
         String type = result.getType();
         if (type.equals(Result.TYPE_VIEW)) {
+            // forward to a jsp.
             String view = result.getText();
             logger.debug("wizard view: " + view);
-            // forward to a jsp. the values will be set to request's attributes.
-            for (String key : values.keySet()) {
-                request.setAttribute(key, values.get(key));
-            }
             return new ActionForward(result.getText());
         } else if (type.equals(Result.TYPE_ACTION)) {
             // forward to an action
