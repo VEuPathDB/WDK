@@ -7,7 +7,7 @@
     <result type="view">/wdk/jsp/wizard/list.jsp</result>
   </stage>
   <stage name="question" display="Select parameters"
-         handler="org.gusdb.wdk.model.wizard.QuestionHandler">>
+         handler="org.gusdb.wdk.model.wizard.QuestionHandler">
     <description>Please choose parameters and the operation.</description>
     <result type="view">/wdk/jsp/wizard/question.jsp</result>
   </stage>
