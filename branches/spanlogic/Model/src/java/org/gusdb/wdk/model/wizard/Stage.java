@@ -154,7 +154,7 @@ public class Stage extends WdkModelBase {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         // resolve the handler
-        if (handler != null) {
+        if (handlerName != null) {
             try {
                 Class<?> handlerClass = Class.forName(handlerName);
                 this.handler = (StageHandler) handlerClass.newInstance();
