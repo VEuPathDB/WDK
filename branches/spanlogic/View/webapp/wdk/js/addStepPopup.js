@@ -399,8 +399,8 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 	}
 	currStrat = getStrategy(strat_id);
 	current_Front_Strategy_Id = strat_id;
-	var url = "wdk/jsp/addStepPopup.jsp?dataType=" + dtype + "&prevStepNum=" + step_id + "&isAdd=" + isAdd;
-//	var url = "wizard.do?strategy="+currStrat.backId;
+//	var url = "wdk/jsp/addStepPopup.jsp?dataType=" + dtype + "&prevStepNum=" + step_id + "&isAdd=" + isAdd;
+	var url = "wizard.do?strategy="+currStrat.backId+"&stage=list&step="+stp.back_step_Id;
 	$.ajax({
 		url: url,
 		dataType: "html",
