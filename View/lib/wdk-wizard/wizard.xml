@@ -7,7 +7,7 @@
     <result type="view">/wdk/jsp/wizard/list.jsp</result>
   </stage>
   <stage name="question" display="Select parameters"
-         handler="org.gusdb.wdk.model.wizard.QuestionHandler">
+         handlerClass="org.gusdb.wdk.model.wizard.QuestionHandler">
     <description>Please choose parameters and the operation.</description>
     <result type="view">/wdk/jsp/wizard/question.jsp</result>
   </stage>
@@ -21,7 +21,7 @@
   </stage>
   
   <stage name="transform" display="Transform Results"
-         handler="org.gusdb.wdk.model.wizard.QuestionHandler">
+         handlerClass="org.gusdb.wdk.model.wizard.QuestionHandler">
     <description>Process boolean operation and redirect to processFilter.</description>
     <result type="action">/wdk/jsp/wizard/transform.jsp</result>
   </stage>
@@ -32,13 +32,13 @@
   </stage>
   <stage name="spanlogic" 
          display="Select Parameters"
-         handler="org.apidb.apicomm.model.wizard.SpanLogicPreHandler">
+         handlerClass="org.apidb.apicomm.model.wizard.SpanLogicPreHandler">
     <description>Select span logic paramters.</description>
     <result type="view">/wdk/jsp/wizard/spanlogic.jsp</result>
   </stage>
   <stage name="process_span" 
          display="Process Span Logic operation"
-         handler="org.apidb.apicomm.model.wizard.SpanLogicPostHandler">
+         handlerClass="org.apidb.apicomm.model.wizard.SpanLogicPostHandler">
     <description>Process span logic operation and redirect to processFilter.</description>
     <result type="action">org.gusdb.wdk.controller.action.ProcessFilterAction</result>
   </stage>

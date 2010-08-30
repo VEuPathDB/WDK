@@ -25,7 +25,7 @@
                 <attribute name="display" />
             </optional>
             <optional>
-                <attribute name="handler" />
+                <attribute name="handlerClass" />
             </optional>
             <ref name="IncludeExclude"/>
             <optional>
