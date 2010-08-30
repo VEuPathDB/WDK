@@ -530,6 +530,7 @@ function closeAll(hide,as){
 	}else{
 		isSpan = false;
 		$("#query_form").remove();
+		$(".original").remove();
 	}
 	isInsert = "";
 	$("#Strategies div a#filter_link span").css({opacity: 1.0});
