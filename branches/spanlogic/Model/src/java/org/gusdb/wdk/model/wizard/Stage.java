@@ -18,7 +18,7 @@ public class Stage extends WdkModelBase {
     private String name;
     private String display;
 
-    private String handlerName;
+    private String handlerClass;
     private StageHandler handler;
 
     private List<WdkModelText> descriptionList = new ArrayList<WdkModelText>();
@@ -76,8 +76,8 @@ public class Stage extends WdkModelBase {
      * @param handlerClass
      *            the handlerClass to set
      */
-    public void setHandler(String handlerName) {
-        this.handlerName = handlerName;
+    public void setHandlerClass(String handlerClass) {
+        this.handlerClass = handlerClass;
     }
 
     /**
@@ -154,10 +154,10 @@ public class Stage extends WdkModelBase {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         // resolve the handler
-        if (handlerName != null) {
+        if (handlerClass != null) {
             try {
-                Class<?> handlerClass = Class.forName(handlerName);
-                this.handler = (StageHandler) handlerClass.newInstance();
+                Class<?> hClass = Class.forName(handlerClass);
+                this.handler = (StageHandler) hClass.newInstance();
             } catch (Exception ex) {
                 new WdkModelException("The flow stage handler is not of type: "
                         + StageHandler.class + ". stage: " + name, ex);
