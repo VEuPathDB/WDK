@@ -206,8 +206,14 @@ function showStrategies(view, ignoreFilters, besc){
 	if (!height && $("#Strategies").parent().parent().height() > 330) {
 		$("#Strategies").parent().parent().height(330);
 	}
-	else if (height && $("#Strategies").parent().parent().height() > parseInt(height)) {
-		$("#Strategies").parent().parent().height(parseInt(height));
+	else if (height) {
+		height = parseInt(height);
+		if ($("#strategy_results .resizable-wrapper:has(#Strategies)").height() > height) {
+			$("#strategy_results .resizable-wrapper:has(#Strategies)").height(height);
+		}
+		else if ($("#Strategies").height() + 10 < $("#strategy_results .resizable-wrapper:has(#Strategies)").height()) {
+			$("#strategy_results .resizable-wrapper:has(#Strategies)").height($("#Strategies").height() + 10);
+		}
 	}
 	if(view.action != undefined) {
 		if (view.action == "share" || view.action == "save") {
