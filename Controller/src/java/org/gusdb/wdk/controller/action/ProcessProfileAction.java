@@ -40,11 +40,9 @@ public class ProcessProfileAction extends Action {
                 + CConstants.WDK_PROFILE_PAGE;
         ActionForward forward = null;
         if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
-	    System.out.println("Forwarding to " + customViewFile);
             forward = new ActionForward(customViewFile);
             forward.setRedirect(false);
         } else {
-	    System.out.println("Forwarding to mapping from struts-config.");
             forward = mapping.findForward(CConstants.SHOW_PROFILE_MAPKEY);
         }
         // fails if the current use is a guest
@@ -103,7 +101,6 @@ public class ProcessProfileAction extends Action {
             }
         }
 
-	System.out.println("Forwarding to: " + forward.getPath());
         return forward;
     }
 }
