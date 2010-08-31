@@ -4,15 +4,15 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
-<c:set var="questionName" value="${requestScope.questionFullName}"/>
-<c:set var="question" value="${requestScope.question}" />
+
+<c:set var="wdkQuestion" value="${requestScope.question}"/>
 
 <c:set var="wizard" value="${requestScope.wizard}"/>
 <c:set var="stage" value="${requestScope.stage}"/>
-
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do"  onsubmit="callWizard(null,this,null,null)">
 <%-- the following sections are copied from <question.tag>, need to refactor into a separate tag --%>
-<input type="hidden" name="questionFullName" value="${questionName}"/>
+
+<input type="hidden" name="questionFullName" value="${wdkQuestion.fullName}"/>
 
 <!-- show error messages, if any -->
 <wdk:errors/>
