@@ -140,10 +140,12 @@ public class FlatVocabParam extends AbstractEnumParam {
             Object objInternal = result.get(COLUMN_INTERNAL);
             if (objTerm == null)
                 throw new WdkModelException("The term of flatVocabParam ["
-                        + getFullName() + "] is null");
+                        + getFullName() + "] is null. query ["
+                        + query.getFullName() + "].\n" + instance.getSql());
             if (objInternal == null)
                 throw new WdkModelException("The internal of flatVocabParam ["
-                        + getFullName() + "] is null");
+                        + getFullName() + "] is null. query ["
+                        + query.getFullName() + "].\n" + instance.getSql());
 
             String term = objTerm.toString().trim();
             String value = objInternal.toString().trim();
