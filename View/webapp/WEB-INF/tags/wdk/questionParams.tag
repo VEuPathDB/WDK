@@ -9,6 +9,9 @@
 
 <%-- get wdkQuestion; setup requestScope HashMap to collect help info for footer --%>
 <c:set var="wdkQuestion" value="${requestScope.question}"/>
+<c:if test="${wdkQuestion == null}">
+	<c:set var="wdkQuestion" value="${requestScope.question}"/>
+</c:if>
 <c:set var="qForm" value="${requestScope.questionForm}"/>
 <c:set var="wdkModel" value="${applicationScope.wdkModel}"/>
 
