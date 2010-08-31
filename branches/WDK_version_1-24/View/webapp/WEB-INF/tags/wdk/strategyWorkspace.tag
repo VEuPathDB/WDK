@@ -44,6 +44,7 @@ My Search Strategies Workspace
 
 <c:set var="basketTitle" value="View your basket. Use the basket to operate on the items in it. For example, add them as a step in a strategy"/>
 
+<c:if test="${fn:length(basketCountMap.keySet) > 0}">
 <c:choose>
   <c:when test="${wdkUser.guest}">
    <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:popLogin();"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
@@ -52,6 +53,7 @@ My Search Strategies Workspace
    <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:showPanel('basket')"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
   </c:otherwise>
 </c:choose>
+</c:if>
 
 
    <li><a id="tab_sample_strat" title="View example strategies, both simple and more complex" 
@@ -85,11 +87,13 @@ My Search Strategies Workspace
 <div id="search_history" class="workspace_panel">
 </div>
 
+<c:if test="${fn:length(basketCountMap.keySet) > 0}">
 <div id="basket" class="workspace_panel">
   <wdk:basketControls />
   <div class="Workspace">
   </div>
 </div>
+</c:if>
 
 <div id="sample_strat" class="workspace_panel">
 </div>
