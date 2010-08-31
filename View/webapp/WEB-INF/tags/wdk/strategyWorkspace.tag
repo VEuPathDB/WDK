@@ -62,6 +62,8 @@
 <c:set var="newStrat"><c:if test="${newStrategy != null && newStrategy == true}">newStrategy="true"</c:if></c:set>
 
 <div id="strategy_results" class="workspace_panel">
+  <div id="strategy_messages">
+  </div>
   <div class="resizable-wrapper">
     <div class="scrollable-wrapper">
       <div id="Strategies" ${newStrat}>
