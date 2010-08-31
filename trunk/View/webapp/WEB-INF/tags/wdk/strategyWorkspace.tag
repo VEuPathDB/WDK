@@ -8,6 +8,7 @@
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="allCount" value="${wdkUser.strategyCount}"/>
 <c:set var="openCount" value="${fn:length(wdkUser.activeStrategies)}"/>
+<c:set var="basketCounts" value="${wdkUser.basketCounts}"/>
 
   <div id="contentwrapper">
     <div id="contentcolumn2">
@@ -34,6 +35,7 @@
 
 <c:set var="basketTitle" value="View your basket. Use the basket to operate on the items in it. For example, add them as a step in a strategy"/>
 
+<c:if test="${fn:length(basketCounts.keySet) > 0}">
 <c:choose>
   <c:when test="${wdkUser.guest}">
    <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:popLogin();"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
@@ -42,7 +44,7 @@
    <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:showPanel('basket')"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
   </c:otherwise>
 </c:choose>
-
+</c:if>
 
    <li><a id="tab_sample_strat" title="View example strategies, both simple and more complex" 
 	onclick="this.blur()" href="javascript:showPanel('sample_strat')">Examples</a></li>
