@@ -169,7 +169,7 @@
 <c:set var="display" value="none"/>
 <c:set var="image" value="plus.gif"/>
 <div class="group-title">
-    <img class="group-handle" src='<c:url value="/images/${image}" />' />
+    <img class="group-handle" src='<c:url value="wdk/images/${image}" />' />
     Give this search a weight
 </div>
 <div class="group-detail" style="display:${display};text-align:center">
