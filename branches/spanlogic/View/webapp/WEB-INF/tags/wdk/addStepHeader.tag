@@ -8,7 +8,10 @@
 	<div class="modal_name">
 		<h1 style="font-size:130%;margin-top:4px;" id="query_form_title"></h1>
 	</div>
+	<a class="back" href="javascript:back()">
+		<img src="<c:url value='/wdk/images/backbutton.png'/>" alt='Close'/>
+	</a>
 	<a class='close_window' href='javascript:closeAll()'>
-		<img src="<c:url value='/wdk/images/Close-X-box.png'/>" alt='Close'/>
+		<img src="<c:url value='/wdk/images/closebutton.png'/>" alt='Close'/>
 	</a>
 </span>
