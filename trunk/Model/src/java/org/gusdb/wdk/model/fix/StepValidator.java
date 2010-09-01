@@ -91,6 +91,7 @@ public class StepValidator extends BaseCLI {
         detectEnumParams(wdkModel);
 
         flagSteps(wdkModel);
+        flagDependentSteps(wdkModel);
     }
 
     private void resetFlags(WdkModel wdkModel) throws SQLException,
@@ -200,12 +201,30 @@ public class StepValidator extends BaseCLI {
         String step = userDB.getUserSchema() + "steps";
         DataSource source = wdkModel.getUserPlatform().getDataSource();
 
+        String sql = "UPDATE " + step + " SET is_valid = 0 "
+                + "WHERE (is_valid IS NULL OR is_valid = 1) "
+                + "  AND answer_id IN (SELECT answer_id FROM " + answer
+                + "                    WHERE is_valid = 0)";
         // mark invalid steps
-        SqlUtils.executeUpdate(wdkModel, source, "UPDATE " + step
-                + " SET is_valid = 0 "
-                + " WHERE (is_valid IS NULL OR is_valid = 1) "
-                + "   AND answer_id IN (SELECT answer_id FROM " + answer
-                + "                    WHERE is_valid = 0)",
-                "wdk-invalidate-step");
+        SqlUtils.executeUpdate(wdkModel, source, sql, "wdk-invalidate-step");
+    }
+
+    private void flagDependentSteps(WdkModel wdkModel) throws WdkUserException,
+            WdkModelException, SQLException {
+        ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
+        String step = userDB.getUserSchema() + "steps";
+        DataSource source = wdkModel.getUserPlatform().getDataSource();
+
+        String sql = "UPDATE " + step + " SET is_valid = 0 "
+                + "WHERE is_valid IS NULL AND step_id IN ("
+                + "    SELECT step_id FROM " + step
+                + "    START WITH is_valid = 0 "
+                + "    CONNECT BY (prior display_id = right_child_id "
+                + "                OR prior display_id = left_child_id) "
+                + "               AND prior user_id = user_id)";
+
+        SqlUtils.executeUpdate(wdkModel, source, sql,
+                "wdk-invalidate-parent-step");
+
     }
 }
