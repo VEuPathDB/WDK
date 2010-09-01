@@ -708,11 +708,14 @@ b.strat_help_title > span {
 	top:0px;
 }
 
-#back_to_selection {
+.back {
 	position: absolute;
 	left: 0px;
 	top:0px;
 	z-index:1;
+}
+.back img, .close_window img{
+	width:25px;
 }
 
 #question_title {
