@@ -38,7 +38,7 @@
 			<td id="section-2"><div class="qf_section"></div></td>
 			<td id="section-3"><div class="qf_section"></div></td>
 			<td id="section-4"><div class="qf_section"></div></td>
-			<td id="section-5"><div class="qf_section"></div></td>	
+			<!--<td id="section-5"><div class="qf_section"></div></td>-->	
 		</tr></table>
 		</div> <!--End Section Div-->
 		<div id="sections_data">
