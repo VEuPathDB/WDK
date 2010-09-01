@@ -3,6 +3,7 @@ var original_Query_Form_Text;
 var original_Query_Form_CSS = new Object();
 var current_Front_Strategy_Id = null;
 var isSpan = false;
+var pop_up_state = new Array();
 
 function showExportLink(stratId){
  	closeModal();
@@ -385,7 +386,9 @@ function OpenOperationBox(stratId, insertId) {
 	ops = oform + ops + button + cform;
 	$("#query_form div#sections").replaceWith(ops);
 }
+
 var global_isAdd; 
+
 function openFilter(dtype,strat_id,step_id,isAdd){
 	global_isAdd = isAdd;
 	if(openDetail != null) hideDetails();
@@ -489,6 +492,7 @@ function callWizard(url, ele, id, sec){
 			dataType: "html",
 			data: d,
 			success: function(data){
+				pop_up_state.push($("#qf_content").html());
 				$("#qf_content").html(data);
 				if(ele != undefined){
 					showNewSection(ele,id,sec);
@@ -497,6 +501,14 @@ function callWizard(url, ele, id, sec){
 		});
 	}
 	return false;
+}
+
+function backStage(){
+	var h = pop_up_state.pop()
+	if(h == undefined)
+		closeAll();
+	else	
+		$("#qf_content").html(h);
 }
 
 function openAddStrategy(strat_id){
