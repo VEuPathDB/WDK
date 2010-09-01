@@ -49,6 +49,12 @@
         <td class="opcheck"><input name="booleanExpression" value="RMINUS" type="radio"></td>
         <td class="operation RMINUS"></td><td>&nbsp;2&nbsp;<b>MINUS</b>&nbsp;1</td>
       </tr>
+	<tr><td colspan="11" align="center"><b>OR</b></td></tr>
+	  <tr>	
+		<td class="opcheck" valign="middle"><input name="booleanExpression" value="SPAN" type="radio"></td>
+        <td class="operation SPAN"></td><td valign="middle">&nbsp;1&nbsp;<b>Span Logic</b>&nbsp;2</td>
+        <td colspan="9" align="center">Combine using span and regional alignments</td>
+      </tr>
     </table>
 </div>
 
