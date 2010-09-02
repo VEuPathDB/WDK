@@ -32,37 +32,37 @@
 	<td style="vertical-align:top">
 <div id="span_popup" width="100%" align="center">
 	
-	<input type="hidden" name="myProp(span_a)" value="${stepNum}" id="spanA"/>
+	<input type="hidden" name="value(span_a)" value="${stepNum}" id="spanA"/>
 	<input type="hidden" value="${dType}" id="typeA"/>
 	<input type="hidden" value="" id="typeB"/>
-	<input type="hidden" name="myProp(span_b)" value="" id="spanB"/>
+	<input type="hidden" name="value(span_b)" value="" id="spanB"/>
 	<table>
 		<tr><th><span class="heading">${displayType}&nbsp;Results</span></th><th></th><th><span class="heading" id="fromAjax">&nbsp;Results</span></th></tr>
 		<tr>
 			<td id="left">
 				<div class="controls">
-					<select name="myProp(span_begin_a)"><option value="start">start</option><option value="stop">stop</option></select>
-					<select name="myProp(span_begin_direction_a)"><option value="+">+</option><option value="-">-</option></select>
-					<input type="text" value="0" name="myProp(span_begin_offset_a)"/><br><br>
-					<select name="myProp(span_end_a)"><option value="start">start</option><option value="stop" SELECTED>stop</option></select>
-					<select name="myProp(span_end_direction_a)"><option value="+">+</option><option value="-" SELECTED>-</option></select>
-					<input type="text" value="0" name="myProp(span_end_offset_a)"/><br><br>
+					<select name="value(span_begin_a)"><option value="start">start</option><option value="stop">stop</option></select>
+					<select name="value(span_begin_direction_a)"><option value="+">+</option><option value="-">-</option></select>
+					<input type="text" value="0" name="value(span_begin_offset_a)"/><br><br>
+					<select name="value(span_end_a)"><option value="start">start</option><option value="stop" SELECTED>stop</option></select>
+					<select name="value(span_end_direction_a)"><option value="+">+</option><option value="-" SELECTED>-</option></select>
+					<input type="text" value="0" name="value(span_end_offset_a)"/><br><br>
 				</div>
 			</td>
 			<td id="middle" style="border-bottom:1px solid #BBBBBB">
-					<input checked type="radio" value="overlap" name="myProp(span_operation)" id="span-operation-overlap">&nbsp;&nbsp;<label>Overlap</label><br/>
-					<input type="radio" value="a_contain_b" name="myProp(span_operation)" id="span-operation-containing">&nbsp;&nbsp;<label>Containing</label><br/>
-					<input type="radio" value="b_contain_a" name="myProp(span_operation)" id="span-operation-contained">&nbsp;&nbsp;<label>Contained In</label><br/>
+					<input checked type="radio" value="overlap" name="value(span_operation)" id="span-operation-overlap">&nbsp;&nbsp;<label>Overlap</label><br/>
+					<input type="radio" value="a_contain_b" name="value(span_operation)" id="span-operation-containing">&nbsp;&nbsp;<label>Containing</label><br/>
+					<input type="radio" value="b_contain_a" name="value(span_operation)" id="span-operation-contained">&nbsp;&nbsp;<label>Contained In</label><br/>
 				</div>
 			</td>
 			<td id="right">
 				<div class="controls">
-					<select name="myProp(span_begin_b)"><option value="start">start</option><option value="stop">stop</option></select>
-					<select name="myProp(span_begin_direction_b)"><option value="+">+</option><option value="-">-</option></select>
-					<input type="text" value="0" name="myProp(span_begin_offset_b)"/><br><br>
-					<select name="myProp(span_end_b)"><option value="start">start</option><option value="stop" SELECTED>stop</option></select>
-					<select name="myProp(span_end_direction_b)"><option value="+">+</option><option value="-" SELECTED>-</option></select>
-					<input type="text" value="0" name="myProp(span_end_offset_b)"/><br><br>
+					<select name="value(span_begin_b)"><option value="start">start</option><option value="stop">stop</option></select>
+					<select name="value(span_begin_direction_b)"><option value="+">+</option><option value="-">-</option></select>
+					<input type="text" value="0" name="value(span_begin_offset_b)"/><br><br>
+					<select name="value(span_end_b)"><option value="start">start</option><option value="stop" SELECTED>stop</option></select>
+					<select name="value(span_end_direction_b)"><option value="+">+</option><option value="-" SELECTED>-</option></select>
+					<input type="text" value="0" name="value(span_end_offset_b)"/><br><br>
 					
 				</div>
 			</td>
@@ -70,17 +70,17 @@
 		<tr>
 			<td id="left"><div style="text-align:center;vertical-align:middle;">GRAPHICS</div></td>
 			<td id="middle">
-				<input checked type="radio" value="Both strands" name="myProp(span_strand)" id="strand-operation-both">&nbsp;&nbsp;<label>Both Strands</label><br/>
-				<input type="radio" value="Same strand" name="myProp(span_strand)" id="strand-operation-same">&nbsp;&nbsp;<label>Same Strand</label><br/>
-				<input type="radio" value="Opposite strands" name="myProp(span_strand)" id="strand-operation-opposite">&nbsp;&nbsp;<label>Opposite Strand</label><br/>
+				<input checked type="radio" value="Both strands" name="value(span_strand)" id="strand-operation-both">&nbsp;&nbsp;<label>Both Strands</label><br/>
+				<input type="radio" value="Same strand" name="value(span_strand)" id="strand-operation-same">&nbsp;&nbsp;<label>Same Strand</label><br/>
+				<input type="radio" value="Opposite strands" name="value(span_strand)" id="strand-operation-opposite">&nbsp;&nbsp;<label>Opposite Strand</label><br/>
 			</td>
 			<td id="right"><div style="text-align:center;vertical-align:middle;">GRAPHICS</div></td>
 		</tr>
 		<tr>
 			<td id="left" style="text-align:center">
-				<input type="radio" name="myProp(span_output)" value="type of input A" id="left_output"/>&nbsp;<label>Select this datatype for Result</label></td>
+				<input type="radio" name="value(span_output)" value="type of input A" id="left_output"/>&nbsp;<label>Select this datatype for Result</label></td>
 				<td id="middle"></td>
-				<td id="right" style="text-align:center"><input type="radio" name="myProp(span_output)" value="type of input B" id="left_output"/>&nbsp;<label>Select this datatype for Result</label></td>
+				<td id="right" style="text-align:center"><input type="radio" name="value(span_output)" value="type of input B" id="left_output"/>&nbsp;<label>Select this datatype for Result</label></td>
 		</tr>
 	</table>
 	<input type="submit" value="Get Result" style="margin-top:5px"/>

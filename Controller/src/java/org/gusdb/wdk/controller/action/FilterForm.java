@@ -110,14 +110,14 @@ public class FilterForm extends BooleanExpressionForm {
                 if (errMsg != null) {
                     errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
                             "mapped.properties", p.getPrompt(), errMsg));
-                    request.setAttribute(CConstants.QUESTIONSETFORM_KEY, this);
+                    request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
                 }
                 // System.out.println("===== Validated " + p.getName() + ": '" +
                 // errMsg + "'");
             } catch (WdkModelException exp) {
                 errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
                         "mapped.properties", p.getPrompt(), exp.getMessage()));
-                request.setAttribute(CConstants.QUESTIONSETFORM_KEY, this);
+                request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
             }
         }
         return errors;

@@ -122,7 +122,7 @@ function chooseType(paramName, type) {
                Upload from a <i>text</i> file:&nbsp;
             </td>
             <td align="left">
-                <html:file styleId="${pNam}_file" styleClass="input" property="myPropObject(${pNam}_file)" disabled="true"/>
+                <html:file styleId="${pNam}_file" styleClass="input" property="value(${pNam}_file)" disabled="true"/>
             </td>
         </tr>
     </c:if>

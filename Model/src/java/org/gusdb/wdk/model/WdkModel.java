@@ -33,7 +33,6 @@ import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
-import org.gusdb.wdk.model.wizard.Wizard;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 import org.json.JSONException;
@@ -79,12 +78,6 @@ public class WdkModel {
 
         ModelXmlParser parser = new ModelXmlParser(gusHome);
         WdkModel wdkModel = parser.parseModel(projectId);
-        
-        // load wizard
-        Wizard wizard = Wizard.loadWizard(gusHome);
-        wizard.excludeResources(projectId);
-        wizard.resolveReferences(wdkModel);
-        wdkModel.wizard = wizard;
         
         logger.debug("Model ready to use.");
         return wdkModel;
@@ -167,7 +160,6 @@ public class WdkModel {
     private List<QueryMonitor> queryMonitorList = new ArrayList<QueryMonitor>();
     private QueryMonitor queryMonitor;
 
-    private Wizard wizard;
 
     /**
      * @param initRecordClassList
@@ -1147,20 +1139,5 @@ public class WdkModel {
      */
     public void setQueryMonitor(QueryMonitor queryMonitor) {
         this.queryMonitor = queryMonitor;
-    }
-
-    /**
-     * @return the processModel
-     */
-    public Wizard getWizard() {
-        return wizard;
-    }
-
-    /**
-     * @param wizardModel
-     *            the processModel to set
-     */
-    public void setWizardModel(Wizard wizard) {
-        this.wizard = wizard;
     }
 }
