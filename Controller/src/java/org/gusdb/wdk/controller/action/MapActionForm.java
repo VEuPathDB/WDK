@@ -50,4 +50,12 @@ public abstract class MapActionForm extends ActionForm {
             arrays.put(key, form.arrays.get(key));
         }
     }
+    
+    /**
+     * The method is required by struts html tag-lib
+     */
+    public void reset() {
+        arrays.clear();
+        values.clear();
+    }
 }
