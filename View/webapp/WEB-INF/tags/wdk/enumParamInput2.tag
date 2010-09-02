@@ -41,11 +41,11 @@ Otherwise a standard select menu is used.
         <c:choose>
         <%-- test for param labels to italicize --%>
         <c:when test="${pNam == 'organism' or pNam == 'ecorganism'}">
-          <html:multibox property="myMultiProp(${pNam})" value="${entity.key}" styleId="${pNam}" />
+          <html:multibox property="array(${pNam})" value="${entity.key}" styleId="${pNam}" />
           <i>${entity.value}</i>&nbsp;
         </c:when>
         <c:otherwise> <%-- use multiselect menu --%>
-          <html:multibox property="myMultiProp(${pNam})" value="${entity.key}" styleId="${pNam}" />
+          <html:multibox property="array(${pNam})" value="${entity.key}" styleId="${pNam}" />
           ${entity.value}&nbsp;
         </c:otherwise>
         </c:choose> 
@@ -87,11 +87,11 @@ Otherwise a standard select menu is used.
 
     <c:otherwise>
 	  <div class="param-multiPick">
-      <html:select  property="myMultiProp(${pNam})" multiple="1" styleId="${pNam}">
+      <html:select  property="array(${pNam})" multiple="1" styleId="${pNam}">
         <c:set var="opt" value="${opt+1}"/>
         <c:set var="sel" value=""/>
         <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-        <html:options property="values(${pNam})" labelProperty="labels(${pNam})" />
+        <html:options property="values(${pNam}-values)" labelProperty="array(${pNam}-labels)" />
       </html:select>
   
       <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
@@ -103,11 +103,11 @@ Otherwise a standard select menu is used.
 <c:otherwise>
   <div class="param">
   <%-- multiPick is false, use pull down menu --%>
-  <html:select  property="myMultiProp(${pNam})" styleId="${pNam}">
+  <html:select  property="array(${pNam})" styleId="${pNam}">
     <c:set var="opt" value="${opt+1}"/>
     <c:set var="sel" value=""/>
     <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-    <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
+    <html:options property="array(${pNam}-values)" labelProperty="array(${pNam}-labels)"/>
   </html:select>
   </div>
 </c:otherwise>

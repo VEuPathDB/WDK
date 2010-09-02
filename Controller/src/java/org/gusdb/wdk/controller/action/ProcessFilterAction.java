@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
 
 /**
@@ -38,6 +39,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             throws Exception {
         logger.debug("Entering ProcessFilterAction...");
 
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
         try {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
@@ -143,7 +145,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                     if (!hasQuestion)
                         throw new WdkUserException(
                                 "The required question name is not provided, cannot process operation.");
-                    wdkQuestion = getQuestionByFullName(qFullName);
+                    wdkQuestion = wdkModel.getQuestion(qFullName);
                 }
                 newStep = ShowSummaryAction.summaryPaging(request, wdkQuestion,
                         params, filterName, false, weight);

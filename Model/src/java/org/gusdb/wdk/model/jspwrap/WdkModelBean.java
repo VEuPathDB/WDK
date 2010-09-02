@@ -14,7 +14,6 @@ import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.wizard.Wizard;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 
@@ -235,9 +234,5 @@ public class WdkModelBean {
     public QuestionBean getQuestion(String questionFullName)
             throws WdkUserException, WdkModelException {
         return new QuestionBean(wdkModel.getQuestion(questionFullName));
-    }
-
-    public Wizard getWizard() {
-        return wdkModel.getWizard();
     }
 }

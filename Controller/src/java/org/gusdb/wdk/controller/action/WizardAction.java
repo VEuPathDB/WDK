@@ -2,8 +2,6 @@ package org.gusdb.wdk.controller.action;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,16 +11,17 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.wizard.Result;
+import org.gusdb.wdk.controller.wizard.Stage;
+import org.gusdb.wdk.controller.wizard.StageHandler;
+import org.gusdb.wdk.controller.wizard.Wizard;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.wizard.Result;
-import org.gusdb.wdk.model.wizard.Stage;
-import org.gusdb.wdk.model.wizard.StageHandler;
-import org.gusdb.wdk.model.wizard.Wizard;
 import org.json.JSONException;
 
 public class WizardAction extends Action {
@@ -50,12 +49,14 @@ public class WizardAction extends Action {
             throws Exception {
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         UserBean user = ActionUtility.getUser(servlet, request);
+        WizardForm wizardForm = (WizardForm) form;
 
         // load strategy
-        loadStrategy(request, user);
+        loadStrategy(request, wizardForm, user);
 
         // get stage
-        Wizard wizard = wdkModel.getWizard();
+        Wizard wizard = (Wizard) servlet.getServletContext().getAttribute(
+                CConstants.WDK_WIZARD_KEY);
         String stageName = request.getParameter(PARAM_STAGE);
         Stage stage;
         if (stageName == null || stageName.length() == 0) {
@@ -66,23 +67,11 @@ public class WizardAction extends Action {
         }
         logger.info("stage: " + stageName);
 
-        Map<String, String> params = ActionUtility.getParams(request);
 
         // check if there is a handler
         StageHandler handler = stage.getHandler();
-        Map<String, Object> values;
         if (handler != null) {
-            values = handler.execute(wdkModel.getModel(), user.getUser(),
-                    params);
-        } else {
-            values = new HashMap<String, Object>();
-            for (String param : params.keySet()) {
-                values.put(param, params.get(param));
-            }
-        }
-        // the values will be set to request's attributes.
-        for (String key : values.keySet()) {
-            request.setAttribute(key, values.get(key));
+            handler.execute(servlet, request, response, wizardForm);
         }
 
         Result result = stage.getResult();
@@ -104,22 +93,21 @@ public class WizardAction extends Action {
         }
     }
 
-    private void loadStrategy(HttpServletRequest request, UserBean user)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
-        String strStratId = request.getParameter(PARAM_STRATEGY);
-        if (strStratId == null || strStratId.length() == 0)
-            throw new WdkUserException("The strategy is not passed in");
-        int stratId = Integer.valueOf(strStratId);
+    private void loadStrategy(HttpServletRequest request,
+            WizardForm wizardForm, UserBean user) throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, JSONException,
+            SQLException {
+        int stratId = wizardForm.getStrategy();
+        if (stratId == 0)
+            throw new WdkUserException("The required strategy id is missing");
         StrategyBean strategy = user.getStrategy(stratId);
 
-        String strStepId = request.getParameter(PARAM_STEP);
+        int stepId = wizardForm.getStep();
         StepBean step;
-        if (strStepId == null || strStepId.length() == 0) {
+        if (stepId == 0) {
             // get the last step from the strategy
             step = strategy.getLatestStep();
         } else {
-            int stepId = Integer.valueOf(strStepId);
             step = strategy.getStepById(stepId);
         }
 

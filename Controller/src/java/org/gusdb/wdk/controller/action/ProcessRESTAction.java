@@ -7,12 +7,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -37,7 +39,7 @@ import org.gusdb.wdk.model.report.Reporter;
  * answer 3) forwards control to a jsp page that displays a summary
  */
 
-public class ProcessRESTAction extends ShowQuestionAction {
+public class ProcessRESTAction extends Action {
 
     private static final Logger logger = Logger.getLogger(ProcessRESTAction.class);
 
@@ -47,6 +49,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
         logger.debug("Entering ProcessRESTAction..");
         String outputType = null;
         try {
+            WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
             UserBean wdkUser = ActionUtility.getUser(servlet, request);
             // get question
             String strutsParam = mapping.getParameter();
@@ -64,7 +67,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
 
             QuestionBean wdkQuestion = null;
             if (qFullName != null)
-                wdkQuestion = getQuestionByFullName(qFullName);
+                wdkQuestion = wdkModel.getQuestion(qFullName);
             if (wdkQuestion == null)
                 throw new WdkUserException("The question '" + qFullName
                         + "' doesn't exist.");
@@ -257,7 +260,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
                 writer.println("</resource>");
             } else {
                 if (qFullName != null)
-                    wdkQuestion = getQuestionByFullName(qFullName);
+                    wdkQuestion = wdkModel.getQuestion(qFullName);
                 if (wdkQuestion == null)
                     throw new WdkUserException("The question '" + qFullName
                             + "' doesn't exist.");
@@ -279,7 +282,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
     private void writeWADL(QuestionBean wdkQuestion, PrintWriter writer)
             throws Exception {
         logger.debug(wdkQuestion.getDisplayName());
-		String def_attr = null;
+		//String def_attr = null;
 		String def_value = "";
 		String repeating = "";
         writer.println("<resource path='" + wdkQuestion.getName() + ".xml'>");
@@ -300,7 +303,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
                 + wdkQuestion.getDescription() + "]]></doc>");
         writer.println("<request>");
         for (String key : wdkQuestion.getParamsMap().keySet()) {
-			def_attr = new String();
+			//def_attr = new String();
 			def_value = new String();
 			repeating = "";
 			if (wdkQuestion.getParamsMap().get(key).getDefault() != null
@@ -338,7 +341,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
                                 + "]]></doc></option>");
                     }
                 } else {
-                    HashSet pSet = new HashSet();
+                    Set pSet = new HashSet();
                     EnumParamBean depep = new EnumParamBean(
                             ep.getDependedParam());
                     for (String depterm : depep.getVocabMap().keySet()) {

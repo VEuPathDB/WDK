@@ -7,6 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -236,10 +237,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
     private StepBean getStep(HttpServletRequest request, UserBean wdkUser,
             ActionForm form) throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         QuestionForm qForm = (QuestionForm) form;
         StepBean step;
         boolean updated;
-        Map<String, String> params;
         String strStepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
         if (strStepId == null || strStepId.length() == 0) {
             logger.debug("create new steps");
@@ -253,7 +254,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
             if (wdkQuestion == null) {
                 if (qFullName != null)
-                    wdkQuestion = getQuestionByFullName(qFullName);
+                    wdkQuestion = wdkModel.getQuestion(qFullName);
             }
             if (wdkQuestion == null)
                 throw new WdkUserException("The question '" + qFullName
@@ -263,7 +264,11 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             updated = updateSortingSummary(request, wdkUser, questionName);
 
-            params = qForm.getMyProps();
+            Map<String, Object> values = qForm.getValues();
+            Map<String, String> params = new HashMap<String, String>();
+            for (String param : values.keySet()) {
+                params.put(param, (String)values.get(param));
+            }
 
             // get the hidden flag
             String strHidden = request.getParameter(PARAM_HIDDEN_STEP);

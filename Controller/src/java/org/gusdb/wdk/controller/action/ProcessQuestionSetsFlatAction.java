@@ -6,11 +6,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.jspwrap.EnumParamBean;
-import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * This Action is called by the ActionServlet when a flat display of
@@ -24,14 +22,18 @@ public class ProcessQuestionSetsFlatAction extends ShowQuestionAction {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-
-        QuestionSetForm qSetForm = (QuestionSetForm) form;
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(getServlet());
+        
+        QuestionForm qForm = (QuestionForm) form;
         // System.err.println("DEBUG: PQSFA: qFullName from form: " +
         // qSetForm.getQuestionFullName());
-        QuestionBean wdkQuestion = getQuestionByFullName(qSetForm.getQuestionFullName());
+        String questionName = qForm.getQuestionFullName();
+        QuestionBean wdkQuestion =wdkModel.getQuestion(questionName);
         // System.err.println("DEBUG: PQSFA: qFullName from question: " +
         // wdkQuestion.getFullName());
-        QuestionForm qForm = prepareQuestionForm(wdkQuestion, qSetForm);
+
+        ShowQuestionAction.prepareQuestionForm(wdkQuestion, servlet, request,
+                qForm);
 
         request.setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
         request.setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
@@ -40,38 +42,5 @@ public class ProcessQuestionSetsFlatAction extends ShowQuestionAction {
         ActionForward forward = mapping.findForward(CConstants.PROCESS_QUESTIONSETSFLAT_MAPKEY);
 
         return forward;
-    }
-
-    private QuestionForm prepareQuestionForm(QuestionBean wdkQuestion,
-            QuestionSetForm qSetForm) throws Exception {
-        QuestionForm qForm = new QuestionForm();
-
-        ActionServlet servlet = getServlet();
-        qForm.setServlet(servlet);
-
-        String qFullName = qSetForm.getQuestionFullName();
-        String pref = qFullName.replace('.', '_') + "_";
-        ParamBean[] params = wdkQuestion.getParams();
-        for (int i = 0; i < params.length; i++) {
-            ParamBean p = params[i];
-            if (p instanceof EnumParamBean) {
-                qForm.getMyLabels().put(p.getName(),
-                        qSetForm.getLabels(pref + p.getName()));
-                qForm.getMyValues().put(p.getName(),
-                        qSetForm.getValues(pref + p.getName()));
-            }
-            qForm.getMyProps().put(p.getName(),
-                    qSetForm.getMyProp(pref + p.getName()));
-        }
-        qForm.setQuestion(wdkQuestion);
-
-        /*
-         * java.util.Iterator it = qForm.getMyProps().keySet().iterator(); while
-         * (it.hasNext()) { String key = (String)it.next();
-         * System.err.println("DEBUG: PQSFA: qForm myProp(" + key + ") = " +
-         * qForm.getMyPropObject(key)); }
-         */
-        // System.err.println("DEBUG: qForm created in PQSFA: " + qForm);
-        return qForm;
     }
 }
