@@ -9,10 +9,10 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -23,7 +23,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  */
 public class ActionUtility {
 
-    public static UserBean getUser(ActionServlet servlet,
+    public static UserBean getUser(HttpServlet servlet,
             HttpServletRequest request) {
         try {
             // get model
@@ -46,7 +46,7 @@ public class ActionUtility {
         }
     }
 
-    public static WdkModelBean getWdkModel(ActionServlet servlet) {
+    public static WdkModelBean getWdkModel(HttpServlet servlet) {
         return (WdkModelBean) servlet.getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
     }

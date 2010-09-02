@@ -5,15 +5,14 @@ import java.io.IOException;
 import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.Enumeration;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
@@ -37,7 +36,7 @@ import org.json.JSONException;
  * answer 3) forwards control to a jsp page that displays a summary
  */
 
-public class ProcessQuestionAction extends ShowQuestionAction {
+public class ProcessQuestionAction extends Action {
 
     private static final Logger logger = Logger.getLogger(ProcessQuestionAction.class);
 
@@ -141,7 +140,8 @@ public class ProcessQuestionAction extends ShowQuestionAction {
             HttpServletRequest request, QuestionForm qform)
             throws WdkModelException, WdkUserException, FileNotFoundException,
             IOException, NoSuchAlgorithmException, SQLException, JSONException {
-        Map<String, String> paramValues = qform.getMyProps();
+        Map<String, String> paramValues = new HashMap<String, String>();
+        Map<String, Object> values = qform.getValues();
         QuestionBean question = qform.getQuestion();
         if (question == null)
             throw new WdkUserException("The question '"
@@ -154,10 +154,10 @@ public class ProcessQuestionAction extends ShowQuestionAction {
             ParamBean param = params.get(paramName);
 
             logger.debug("contains param: " + paramName + " = "
-                    + paramValues.containsKey(paramName));
+                    + values.containsKey(paramName));
             // logger.debug("param: " + paramName + "='" +
             // paramErrors.get(paramName) + "'");
-            String rawValue = paramValues.get(paramName);
+            String rawValue = (String)values.get(paramName);
             String dependentValue = null;
             if (param instanceof DatasetParamBean) {
                 // get the input type
@@ -172,7 +172,7 @@ public class ProcessQuestionAction extends ShowQuestionAction {
                 if (type.equalsIgnoreCase("data")) {
                     data = request.getParameter(paramName + "_data");
                 } else if (type.equalsIgnoreCase("file")) {
-                    FormFile file = (FormFile) qform.getMyPropObject(paramName
+                    FormFile file = (FormFile) qform.getValue(paramName
                             + "_file");
                     uploadFile = file.getFileName();
                     logger.debug("upload file: " + uploadFile);

@@ -80,7 +80,7 @@
                 <wdk:timestampParamInput qp="${qP}" />
             </c:when>
             <c:when test="${isHidden}">
-               <html:hidden property="myProp(${pNam})"/>
+               <html:hidden property="value(${pNam})"/>
             </c:when>
             <c:otherwise> <%-- visible param --%>
                 <%-- an individual param (can not use fullName, w/ '.', for mapped props) --%>
@@ -114,8 +114,8 @@
                                     <td width="30%" align="right" valign="top">
 					<b id="help_${pNam}" class="help_link" rel="htmltooltip">${qP.prompt}</b></td>
                                     <td align="left" valign="top">
-                                        <bean:write name="qForm" property="myProp(${pNam})"/>
-                                        <html:hidden property="myProp(${pNam})"/>
+                                        <bean:write name="qForm" property="value(${pNam})"/>
+                                        <html:hidden property="value(${pNam})"/>
                                     </td>
                                 </c:when>
                                 <c:otherwise>
@@ -123,7 +123,7 @@
 					<b id="help_${pNam}" class="help_link" rel="htmltooltip">${qP.prompt}</b>
 				    </td>
                                     <td align="left" valign="top">
-                                        <html:text styleId="${pNam}" property="myProp(${pNam})" size="35" />
+                                        <html:text styleId="${pNam}" property="value(${pNam})" size="35" />
                                     </td>
                                 </c:otherwise>
                             </c:choose>

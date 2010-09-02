@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.wizard;
+package org.gusdb.wdk.controller.wizard;
 
 import org.gusdb.wdk.model.WdkModelText;
 

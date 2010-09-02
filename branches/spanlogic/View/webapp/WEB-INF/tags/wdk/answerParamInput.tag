@@ -29,14 +29,14 @@ Otherwise a standard select menu is used.
     <jsp:setProperty name="qp" property="answerChecksum" value="${checksum}" /> 
     <c:set var="answer" value="${qp.answer}" />
     ${answer.question.displayName} (${answer.resultSize} records)
-    <html:hidden property="myProp(${pNam})" value="${checksum}"/>
+    <html:hidden property="value(${pNam})" value="${checksum}"/>
   </c:when>
   <c:otherwise>
-    <html:select  property="myMultiProp(${pNam})" styleId="${qP.id}">
+    <html:select  property="array(${pNam})" styleId="${qP.id}">
         <c:set var="opt" value="${opt+1}"/>
         <c:set var="sel" value=""/>
         <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-        <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
+        <html:options property="array(${pNam}-values)" labelProperty="array(${pNam}-labels)"/>
     </html:select>
   </c:otherwise>
 </c:choose>
