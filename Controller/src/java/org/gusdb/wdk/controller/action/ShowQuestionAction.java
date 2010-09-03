@@ -119,6 +119,8 @@ public class ShowQuestionAction extends Action {
                     paramValue = param.dependentValueToRawValue(user,
                             paramValue);
                 }
+                if (paramValue != null)
+                    qForm.setArray(paramName, paramValue.split(","));
             } else if (param instanceof AnswerParamBean) {
                 if (paramValue == null) {
                     AnswerParamBean answerParam = (AnswerParamBean) param;
