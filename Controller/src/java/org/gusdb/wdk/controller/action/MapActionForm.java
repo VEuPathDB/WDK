@@ -3,6 +3,7 @@ package org.gusdb.wdk.controller.action;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 
 public abstract class MapActionForm extends ActionForm {
@@ -11,6 +12,7 @@ public abstract class MapActionForm extends ActionForm {
      * 
      */
     private static final long serialVersionUID = 1L;
+    private static final Logger logger = Logger.getLogger(MapActionForm.class);
 
     private Map<String, Object> values = new HashMap<String, Object>();
     private Map<String, String[]> arrays = new HashMap<String, String[]>();
@@ -20,6 +22,7 @@ public abstract class MapActionForm extends ActionForm {
     }
 
     public void setValue(String key, Object value) {
+        logger.debug("set value: key=[" + key + "] value=[" + value + "]");
         values.put(key, value);
     }
 
@@ -28,6 +31,7 @@ public abstract class MapActionForm extends ActionForm {
     }
 
     public void setArray(String key, String[] array) {
+        logger.debug("set array: key=[" + key + "] length="+array.length+" array=[" + array[0] + "]");
         arrays.put(key, array);
     }
 
@@ -47,6 +51,7 @@ public abstract class MapActionForm extends ActionForm {
      * The method is required by struts html tag-lib
      */
     public void reset() {
+        logger.debug("reset form");
         arrays.clear();
         values.clear();
     }
