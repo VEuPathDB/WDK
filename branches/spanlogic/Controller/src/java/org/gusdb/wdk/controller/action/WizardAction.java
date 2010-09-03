@@ -2,6 +2,7 @@ package org.gusdb.wdk.controller.action;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -21,7 +22,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
 
 public class WizardAction extends Action {
@@ -29,8 +29,6 @@ public class WizardAction extends Action {
     private static final Logger logger = Logger.getLogger(WizardAction.class);
 
     private static final String PARAM_STAGE = "stage";
-    private static final String PARAM_STRATEGY = "strategy";
-    private static final String PARAM_STEP = "step";
 
     private static final String ATTR_STRATEGY = "wdkStrategy";
     private static final String ATTR_STEP = "wdkStep";
@@ -47,7 +45,6 @@ public class WizardAction extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         UserBean user = ActionUtility.getUser(servlet, request);
         WizardForm wizardForm = (WizardForm) form;
 
@@ -67,7 +64,6 @@ public class WizardAction extends Action {
         }
         logger.info("stage: " + stageName);
 
-
         // check if there is a handler
         StageHandler handler = stage.getHandler();
         if (handler != null) {
@@ -76,18 +72,22 @@ public class WizardAction extends Action {
 
         Result result = stage.getResult();
         String type = result.getType();
-        if (type.equals(Result.TYPE_VIEW)) {
-            // forward to a jsp.
-            String view = result.getText();
-            logger.debug("wizard view: " + view);
-            return new ActionForward(result.getText());
-        } else if (type.equals(Result.TYPE_ACTION)) {
+        String forward = result.getText();
+        if (type.equals(Result.TYPE_VIEW)) { // forward to a jsp.
+            logger.debug("wizard view: " + forward);
+            return new ActionForward(forward);
+        } else if (type.equals(Result.TYPE_ACTION)) { // forward to an action
+            logger.debug("wizard action: " + forward);
+            StringBuilder builder = new StringBuilder(forward);
+
             // forward to an action
-            String className = result.getText();
-            logger.debug("wizard forward to action: " + className);
-            Class<Action> actionClass = (Class<Action>) Class.forName(className);
-            Action action = actionClass.newInstance();
-            return action.execute(mapping, form, request, response);
+            Map<String, String> params = ActionUtility.getParams(request);
+            for (String param : params.keySet()) {
+                builder.append((forward.indexOf('?') < 0) ? "?" : "&");
+                builder.append(param + "=");
+                builder.append(params.get(param));
+            }
+            return new ActionForward(builder.toString());
         } else {
             throw new WdkModelException("Invalid result type: " + type);
         }
