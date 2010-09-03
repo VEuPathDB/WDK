@@ -32,7 +32,7 @@ Provides form input element for a given term tree node of EnumParam.
     </c:choose>
 
     <%-- hide parent nodes if it has children. --%>
-    <html:multibox property="myMultiProp(${pNam})" value="${nodeValue}" styleId="${pNam}" onclick="toggleChildrenCheck(this)" />   
+    <html:multibox property="array(${pNam})" value="${nodeValue}" styleId="${pNam}" onclick="toggleChildrenCheck(this)" />   
     <span>
     <c:choose>
     <%-- test for param labels to italicize --%>

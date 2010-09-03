@@ -443,8 +443,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
                         }
                         pValue = URLDecoder.decode(pValue, "utf-8");
                     }
-                    if (pName.startsWith("myProp(")) {
-                        pName = pName.substring(7, pName.length() - 1).trim();
+                    if (pName.startsWith("value(")) {
+                        pName = pName.substring(6, pName.length() - 1).trim();
                         params.put(pName, pValue);
 
                         String displayName = wdkModel.queryParamDisplayName(pName);

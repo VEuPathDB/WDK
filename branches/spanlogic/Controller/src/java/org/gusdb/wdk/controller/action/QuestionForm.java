@@ -4,6 +4,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
@@ -26,6 +27,7 @@ public class QuestionForm extends MapActionForm {
      * 
      */
     private static final long serialVersionUID = -7848685794514383434L;
+    private static final Logger logger = Logger.getLogger(QuestionForm.class);
 
     private String questionFullName;
     private QuestionBean question = null;
@@ -39,6 +41,7 @@ public class QuestionForm extends MapActionForm {
      */
     public ActionErrors validate(ActionMapping mapping,
             HttpServletRequest request) {
+        logger.debug("start form validation...");
         UserBean user = ActionUtility.getUser(servlet, request);
 
         // set the question name into request
@@ -101,6 +104,7 @@ public class QuestionForm extends MapActionForm {
             }
         }
 
+        logger.debug("finish validation...");
         return errors;
     }
 
@@ -161,9 +165,11 @@ public class QuestionForm extends MapActionForm {
         // in the case some params set value into array, we need to get it from
         // array too.
         Object value = super.getValue(key);
+        logger.debug("key=" + key + ", value=" + value + ", isNull=" + (value == null));
         if (value == null) {
             String[] array = super.getArray(key);
             value = Utilities.fromArray(array);
+            logger.debug("array_value=" + value + ", isNull=" + (value == null));
         }
         return value;
     }

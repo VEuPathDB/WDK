@@ -450,7 +450,7 @@ function callSpanLogic(){
 	var d = parseInputs();
 	var quesName = "";
 	var outputType = "";
-	$("#form_question input[name='myProp(span_output)']").each(function(){
+	$("#form_question input[name='value(span_output)']").each(function(){
 		if(this.checked) outputType = $(this).val();
 	});
 	outputType = (outputType.indexOf("A") != -1) ? "a" : "b";
