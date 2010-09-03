@@ -26,6 +26,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
+import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
@@ -264,10 +265,11 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             updated = updateSortingSummary(request, wdkUser, questionName);
 
-            Map<String, Object> values = qForm.getValues();
             Map<String, String> params = new HashMap<String, String>();
-            for (String param : values.keySet()) {
-                params.put(param, (String)values.get(param));
+            for (ParamBean param : wdkQuestion.getParams()) {
+                String paramName = param.getName();
+                Object value = qForm.getValue(paramName);
+                params.put(paramName, (String)value);
             }
 
             // get the hidden flag
