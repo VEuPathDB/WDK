@@ -15,20 +15,12 @@ public abstract class MapActionForm extends ActionForm {
     private Map<String, Object> values = new HashMap<String, Object>();
     private Map<String, String[]> arrays = new HashMap<String, String[]>();
 
-    public Map<String, Object> getValues() {
-        return new HashMap<String, Object>(values);
-    }
-
     public Object getValue(String key) {
         return values.get(key);
     }
 
     public void setValue(String key, Object value) {
         values.put(key, value);
-    }
-
-    public Map<String, String[]> getArrays() {
-        return new HashMap<String, String[]>(arrays);
     }
 
     public String[] getArray(String key) {

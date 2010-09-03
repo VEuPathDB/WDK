@@ -4,7 +4,6 @@ import java.io.File;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Enumeration;
-import java.util.Map;
 import java.util.Vector;
 
 import javax.servlet.ServletContext;
@@ -91,12 +90,11 @@ public class ShowQuestionAction extends Action {
         qForm.setServlet(servlet);
 
         boolean hasAllParams = true;
-        Map<String, Object> paramValueMap = qForm.getValues();
         ParamBean[] params = wdkQuestion.getParams();
         for (ParamBean param : params) {
             param.setUser(user);
             String paramName = param.getName();
-            String paramValue = (String) paramValueMap.get(paramName);
+            String paramValue = (String) qForm.getValue(paramName);
 
             if (paramValue == null || paramValue.length() == 0)
                 paramValue = Utilities.fromArray(request.getParameterValues(paramName));
