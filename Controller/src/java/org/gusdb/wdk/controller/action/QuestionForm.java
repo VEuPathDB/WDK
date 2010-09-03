@@ -8,6 +8,7 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -62,14 +63,13 @@ public class QuestionForm extends MapActionForm {
         }
 
         Map<String, ParamBean> params = wdkQuestion.getParamsMap();
-        Map<String, Object> paramValues = getValues();
         for (String paramName : params.keySet()) {
             String prompt = paramName;
             try {
                 ParamBean param = params.get(paramName);
                 param.setUser(user);
                 prompt = param.getPrompt();
-                String rawOrDependentValue = (String) paramValues.get(paramName);
+                String rawOrDependentValue = (String) getValue(paramName);
                 String dependentValue = param.rawOrDependentValueToDependentValue(
                         user, rawOrDependentValue);
 
@@ -154,5 +154,17 @@ public class QuestionForm extends MapActionForm {
 
     public String getWeight() {
         return weight;
+    }
+    
+    @Override
+    public Object getValue(String key) {
+        // in the case some params set value into array, we need to get it from
+        // array too.
+        Object value = super.getValue(key);
+        if (value == null) {
+            String[] array = super.getArray(key);
+            value = Utilities.fromArray(array);
+        }
+        return value;
     }
 }

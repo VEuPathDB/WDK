@@ -124,7 +124,7 @@ public class ProcessQuestionAction extends Action {
              * current_application_tab cookie so that user will go to the Run
              * Strategies tab after running a question from a question page.
              */
-	    ShowApplicationAction.setWdkTabStateCookie(request, response);
+            ShowApplicationAction.setWdkTabStateCookie(request, response);
 
             // construct the forward to show_summary action
             ActionForward forward = new ActionForward(url.toString());
@@ -141,7 +141,6 @@ public class ProcessQuestionAction extends Action {
             throws WdkModelException, WdkUserException, FileNotFoundException,
             IOException, NoSuchAlgorithmException, SQLException, JSONException {
         Map<String, String> paramValues = new HashMap<String, String>();
-        Map<String, Object> values = qform.getValues();
         QuestionBean question = qform.getQuestion();
         if (question == null)
             throw new WdkUserException("The question '"
@@ -153,11 +152,10 @@ public class ProcessQuestionAction extends Action {
         for (String paramName : params.keySet()) {
             ParamBean param = params.get(paramName);
 
-            logger.debug("contains param: " + paramName + " = "
-                    + values.containsKey(paramName));
+            String rawValue = (String) qform.getValue(paramName);
+            logger.debug("Param raw: " + paramName + " = " + rawValue);
             // logger.debug("param: " + paramName + "='" +
             // paramErrors.get(paramName) + "'");
-            String rawValue = (String)values.get(paramName);
             String dependentValue = null;
             if (param instanceof DatasetParamBean) {
                 // get the input type
