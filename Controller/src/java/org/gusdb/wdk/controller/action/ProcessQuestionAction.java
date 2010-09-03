@@ -68,7 +68,7 @@ public class ProcessQuestionAction extends Action {
             for (String paramName : params.keySet()) {
                 String paramValue = params.get(paramName);
                 url.append("&"
-                        + URLEncoder.encode("myProp(" + paramName + ")",
+                        + URLEncoder.encode("value(" + paramName + ")",
                                 "utf-8"));
                 url.append("=");
                 if (paramValue != null)
@@ -129,6 +129,9 @@ public class ProcessQuestionAction extends Action {
             // construct the forward to show_summary action
             ActionForward forward = new ActionForward(url.toString());
             forward.setRedirect(true);
+
+            logger.debug("Leaving ProcessQuestionAction, forward to " + url);
+
             return forward;
         } catch (Exception ex) {
             ex.printStackTrace();

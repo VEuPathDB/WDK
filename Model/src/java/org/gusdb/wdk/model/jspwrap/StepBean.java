@@ -422,7 +422,7 @@ public class StepBean {
             }
 
             try {
-                paramName = URLEncoder.encode("myProp(" + paramName + ")",
+                paramName = URLEncoder.encode("value(" + paramName + ")",
                         "UTF-8");
                 paramValue = URLEncoder.encode(paramValue, "UTF-8");
                 sb.append("&" + paramName + "=" + paramValue);
