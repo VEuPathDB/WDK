@@ -95,7 +95,7 @@ function validateSaveForm(form){
 	}
         return true;
 }
-
+/*
 function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isOrtholog){
 	//edit = 0 ::: adding a new step
 	//edit = 1 ::: editing a current step
@@ -266,7 +266,7 @@ function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isO
 	else
 		initParamHandlers(true);
 }
-
+*/
 function validateAndCall(type, url, proto, rs){
 	var valid = false;
 	if($("div#query_form div.filter.operators").length == 0){
@@ -330,7 +330,7 @@ function spanOperation(stepid, type, url, proto, rs){
 	});
 }
 
-
+/*
 function getQueryForm(url,hideOp,isOrtholog,loadingParent){
     // retrieve the question form, but leave out all params
     	var questionName = parseUrlUtil("questionFullName", url)[0];
@@ -367,13 +367,10 @@ function getQueryForm(url,hideOp,isOrtholog,loadingParent){
 			}
 		});
 }
-
+*/
+/*
 function OpenOperationBox(stratId, insertId) {
-//	var selectedStrat = $("#query_form select#selected_strategy").val();
-//	var selectedName = null;//$("#query_form select#selected_strategy option[selected]").text();
-//	$("#query_form select#selected_strategy option").each(function(){
-//		if(this.selected) selectedName = $(this).text().replace(/^\s*/, ""); return;
-//	});
+
 	var selectedStrat = getStrategyFromBackId(stratId);
 	var selectedName = selectedStrat.name;
 	
@@ -386,7 +383,7 @@ function OpenOperationBox(stratId, insertId) {
 	ops = oform + ops + button + cform;
 	$("#query_form div#sections").replaceWith(ops);
 }
-
+*/
 var global_isAdd; 
 
 function openFilter(dtype,strat_id,step_id,isAdd){
@@ -475,31 +472,54 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 	});
 }
 
-function callWizard(url, ele, id, sec){
-	if(url == null){
-		if(id == null && sec == null){
-			act = $(ele).attr("action")+"?strategy="+getStrategy(current_Front_Strategy_Id).backId;
-			$(ele).attr("action", "javascript:void(0)");
-			validateAndCall('add',act,getStrategy(current_Front_Strategy_Id).backId, null);
-		}else{
-			showNewSection(ele,id,sec);
-		}
-	}else{
-		d = "strategy="+getStrategy(current_Front_Strategy_Id).backId;
-		$.ajax({
-			url: url,
-			type: "get",
-			dataType: "html",
-			data: d,
-			success: function(data){
-				pop_up_state.push($("#qf_content").html());
-				$("#qf_content").html(data);
-				if(ele != undefined){
-					showNewSection(ele,id,sec);
-				}
-			}	
-		});
+function callWizard(url, ele, id, sec, action){
+	switch (action){
+			case "submit":
+				url = url + "stage="+$(ele).attr("action")+"?strategy="+getStrategy(current_Front_Strategy_Id).backId;
+				$(ele).attr("action", "javascript:void(0)");
+				$.ajax({
+					url: url,
+					type: "get",
+					dataType: "html",
+					data: parseInputs(),
+					success: function(data){
+						if(data.indexOf("{") == 0){
+							updateStrategies(data);
+						}else{
+							pop_up_state.push($("#qf_content").html());
+							$("#qf_content").html(data);
+							if(ele != undefined){
+								showNewSection(ele,id,sec);
+							}
+						}
+					}	
+				});
+				break;
+			case "next":
+				d = "strategy="+getStrategy(current_Front_Strategy_Id).backId;
+				$.ajax({
+					url: url,
+					type: "get",
+					dataType: "html",
+					data: d,
+					success: function(data){
+						if(data.indexOf("{") == 0){
+							updateStrategies(data);
+						}else{
+							pop_up_state.push($("#qf_content").html());
+							$("#qf_content").html(data);
+							if(ele != undefined){
+								showNewSection(ele,id,sec);
+							}
+						}
+					}	
+				});
+				break;
+			default:
+				showNewSection(ele,id,sec);
+				break;
 	}
+	
 	return false;
 }
 
@@ -585,4 +605,16 @@ function showNewSection(ele,sectionName,sectionNumber){
 	});
 	$("#query_form table#sections-layout td#section-" + (sectionNumber-1) + " div").css("background-color","#FFFFFF");
 	$("#query_form table#sections-layout td#section-" + sectionNumber).replaceWith(sec);
+}
+
+function changeButtonText(ele){
+	if($(ele).val() != "SPAN"){
+		$("form#form_question").attr("action","spanlogic");
+		$("#boolean_button").show();
+		$("#span_button").hide();
+	}else{
+		$("form#form_question").attr("action","boolean");
+		$("#boolean_button").hide();
+		$("#span_button").show();
+	}
 }
