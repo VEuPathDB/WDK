@@ -157,7 +157,6 @@ public abstract class AbstractEnumParam extends Param {
         for (String term : termDisplayMap.keySet()) {
             newDisplayMap.put(term, termDisplayMap.get(term));
         }
-	System.out.println(newDisplayMap);
         return newDisplayMap;
     }
 

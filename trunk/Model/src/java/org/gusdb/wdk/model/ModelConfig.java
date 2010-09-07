@@ -34,9 +34,6 @@ public class ModelConfig {
 
     // location of secret key file
     private String secretKeyFile;
-
-    // whether to include weight form
-    private boolean useWeights = true;
     
     private String paramRegex;
 
@@ -204,21 +201,6 @@ public class ModelConfig {
      */
     public void setSecretKeyFile(String secretKeyFile) {
         this.secretKeyFile = secretKeyFile;
-    }
-
-    /**
-     * @return the useWeights
-     */
-    public boolean getUseWeights() {
-        return useWeights;
-    }
-
-    /**
-     * @param secretKeyFile
-     *            the secretKeyFile to set
-     */
-    public void setUseWeights(boolean useWeights) {
-        this.useWeights = useWeights;
     }
 
     /**
