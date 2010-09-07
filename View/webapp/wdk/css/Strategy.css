@@ -306,6 +306,12 @@ td.operation {
 	background-repeat: no-repeat;
 }
 
+.operation.SPAN {
+	background-image:url("../images/operationSpanIcons.gif");
+	background-position:-28px -11px;
+	height:21px;
+}
+
 .operation.MINUS {
 	border: 2px solid #FFFFFF;
 	height: 25px;
