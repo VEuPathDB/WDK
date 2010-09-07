@@ -1082,6 +1082,10 @@ public class WdkModel {
         return secretKey;
     }
 
+    public boolean getUseWeights() {
+	return modelConfig.getUseWeights();
+    }
+
     public User getSystemUser() throws NoSuchAlgorithmException,
             WdkUserException, WdkModelException, SQLException {
         if (systemUser == null) systemUser = userFactory.createGuestUser();

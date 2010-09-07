@@ -505,7 +505,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             // query.setIsCacheable(true);
             
             // all the id queries should has a weight column
-            query.setHasWeight(true);
+	    query.setHasWeight(true);
 
             // dynamic attribute set need to be initialized after the id query.
             if (dynamicAttributeSet != null) {

@@ -1269,6 +1269,7 @@ public class UserBean /* implements Serializable */{
     public int getBasketCount() throws SQLException {
         Map<String, Integer> baskets = getBasketCounts();
         int total = 0;
+	System.out.println("Number of baskets in getBasketCount: " + baskets.keySet().size());
         for (String key : baskets.keySet()) {
             total += baskets.get(key);
         }

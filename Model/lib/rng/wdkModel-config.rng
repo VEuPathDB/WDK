@@ -16,6 +16,11 @@
             <optional>
                 <attribute name="adminEmail" />
             </optional>
+            <optional>
+                <attribute name="useWeights">
+                    <data type="boolean" />
+                </attribute>
+            </optional>
             
             <interleave>
             
