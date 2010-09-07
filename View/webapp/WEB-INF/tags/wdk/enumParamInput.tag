@@ -98,7 +98,7 @@ Otherwise a standard select menu is used.
         <c:set var="opt" value="${opt+1}"/>
         <c:set var="sel" value=""/>
         <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-        <html:options property="values(${pNam})" labelProperty="labels(${pNam})" />
+        <html:options property="values(${pNam})" labelProperty="labels(${pNam})" filter="false" />
       </html:select>
   
       <br><%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
@@ -132,7 +132,7 @@ Otherwise a standard select menu is used.
           <c:set var="opt" value="${opt+1}"/>
           <c:set var="sel" value=""/>
           <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-          <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
+          <html:options property="values(${pNam})" labelProperty="labels(${pNam})" filter="false" />
         </html:select>
       </c:otherwise>
     </c:choose>
