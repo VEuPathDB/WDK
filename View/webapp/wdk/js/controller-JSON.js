@@ -265,7 +265,7 @@ function showInstructions(){
 	$("#strat-instructions-2").remove();
 	var instr = document.createElement('div');
 	var id = "strat-instructions";
-	if ($("#tab_strategy_new").length > 0) id = "strat-instructions-2"
+	if ($("#strategy_new").length > 0) id = "strat-instructions-2"
 	$(instr).attr("id",id).html(getInstructionsHtml());
 	$("#strategy_messages").append(instr);
 	$("#strategy_results .resizable-wrapper:has(#Strategies)").hide();
@@ -274,7 +274,7 @@ function showInstructions(){
 
 function getInstructionsHtml() {
 	var arrow_image = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='wdk/images/lookUp2.png' width='45px'/>"; 
-	if ($("#tab_strategy_new").length > 0) {
+	if ($("#strategy_new").length > 0) {
 		arrow_image = "<img id='ns-arrow' alt='Arrow pointing to New Search Button' src='wdk/images/lookUp.png' width='45px'/>" + arrow_image;
 	}
 	
@@ -284,7 +284,7 @@ function getInstructionsHtml() {
 
 function getInstructionsText() {
 	var instr_text = "<p style='width: 85px; position: absolute; padding-top: 14px;'>Run a new search to start a strategy</p>";
-        if ($("#tab_strategy_new").length > 0) {
+        if ($("#strategy_new").length > 0) {
 		instr_text = "<p style='width: 85px; position: absolute; left: 12px; padding-top: 14px;'>Click '<a href=\"javascript:showPanel('strategy_new')\">New</a>' to start a strategy</p>";
 	}
 	var instr_text2 = "<p style='width: 85px; position: absolute; right: 12px; padding-left: 1px;'>Or Click on '<a href=\"javascript:showPanel('search_history')\">All</a>' to view your strategies.</p>";
