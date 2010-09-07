@@ -106,7 +106,7 @@
 								<c:if test="${fn:length(displayName) > 30}">
 		                                    <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
 		                        </c:if>
-								<li><a href="javascript:void(0)" onclick="callWizard('wizard.do?strategyId=${storedStrategy.strategyId}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=strategy')">${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if></a></li>
+								<li><a href="javascript:void(0)" onclick="callWizard('wizard.do?strategyId=${storedStrategy.strategyId}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=strategy',null,null,null,'next')">${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if></a></li>
 						</c:forEach>
 					</ul>
 				</div>
@@ -120,7 +120,7 @@
 								<c:if test="${fn:length(displayName) > 30}">
 			                    	<c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
 			                    </c:if>
-								<li><a href="javascript:void(0)" onclick="callWizard('wizard.do?strategyId=${storedStrategy.strategyId}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=strategy')">${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if></a></li>
+								<li><a href="javascript:void(0)" onclick="callWizard('wizard.do?strategyId=${storedStrategy.strategyId}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=strategy',null,null,null,'next')">${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if></a></li>
 							</c:forEach>
 						</c:forEach>
 					</ul>
@@ -135,7 +135,7 @@
 								<c:if test="${fn:length(displayName) > 30}">
 			                    	<c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
 			                    </c:if>
-								<li><a href="javascript:void(0)" onclick="callWizard('wizard.do?strategyId=${storedStrategy.strategyId}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=strategy')">${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if></a></li>
+								<li><a href="javascript:void(0)" onclick="callWizard('wizard.do?strategyId=${storedStrategy.strategyId}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=strategy',null,null,null,'next')">${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if></a></li>
 							</c:forEach>
 						</c:forEach>
 					</ul>
@@ -171,7 +171,7 @@
 					<c:forEach items="${rcs.value.websiteChildren}" var="catEntry">
 			    	<c:set var="cat" value="${catEntry.value}" />
 					<c:forEach items="${cat.websiteQuestions}" var="q">
-						<li onclick="callWizard('wizard.do?questionFullName=${q.fullName}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=question')">${q.displayName}</li>
+						<li onclick="callWizard('wizard.do?questionFullName=${q.fullName}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=question',null,null,null,'next')">${q.displayName}</li>
 					</c:forEach>
 					</c:forEach>
 					</c:otherwise>
@@ -188,7 +188,7 @@
 				<div class="original" id="sl_${cat.name}" style="display:none">
 					<ul class="menu_section">
 						<c:forEach items="${cat.websiteQuestions}" var="q">
-        					<li onclick="callWizard('wizard.do?questionFullName=${q.fullName}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=question')">${q.displayName}</li>
+        					<li onclick="callWizard('wizard.do?questionFullName=${q.fullName}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=question',null,null,null,'next')">${q.displayName}</li>
 						</c:forEach>
 					</ul>
 				</div>
