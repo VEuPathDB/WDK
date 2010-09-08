@@ -149,7 +149,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         return strategies;
     }
 
-    static void outputErrorJSON(UserBean user, HttpServletResponse response,
+    public static void outputErrorJSON(UserBean user, HttpServletResponse response,
             Exception ex) throws JSONException, IOException,
             NoSuchAlgorithmException, WdkUserException, WdkModelException,
             SQLException {
@@ -189,7 +189,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         writer.print(jsMessage.toString());
     }
 
-    static void outputOutOfSyncJSON(UserBean user,
+    public static void outputOutOfSyncJSON(UserBean user,
             HttpServletResponse response, String state) throws JSONException,
             NoSuchAlgorithmException, WdkUserException, WdkModelException,
             SQLException, IOException {
@@ -209,7 +209,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         writer.print(jsMessage.toString());
     }
 
-    static void outputDuplcicateNameJSON(UserBean user,
+   public  static void outputDuplcicateNameJSON(UserBean user,
             HttpServletResponse response, String state) throws JSONException,
             NoSuchAlgorithmException, WdkUserException, WdkModelException,
             SQLException, IOException {
