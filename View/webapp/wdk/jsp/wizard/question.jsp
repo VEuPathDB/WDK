@@ -9,7 +9,7 @@
 
 <c:set var="wizard" value="${requestScope.wizard}"/>
 <c:set var="stage" value="${requestScope.stage}"/>
-<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do"  onsubmit="callWizard('wizard.do?,this,null,null,'submit')">
+<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do"  onsubmit="callWizard('wizard.do?',this,null,null,'submit')">
 <%-- the following sections are copied from <question.tag>, need to refactor into a separate tag --%>
 
 <input type="hidden" name="questionFullName" value="${wdkQuestion.fullName}"/>
@@ -57,6 +57,5 @@
       </tr>
     </table>
 </div>
-<div id="span_button" class="filter-button" style="display:none"><html:submit property="questionSubmit" value="Continue"/></div>
 <div id="boolean_button" class="filter-button"><html:submit property="questionSubmit" value="Get Answer"/></div>
 </html:form>
