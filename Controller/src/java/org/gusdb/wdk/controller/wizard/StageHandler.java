@@ -9,5 +9,5 @@ import org.gusdb.wdk.controller.action.WizardForm;
 public interface StageHandler {
 
     public void execute(ActionServlet servlet, HttpServletRequest request,
-            HttpServletResponse response, WizardForm form) throws Exception;
+            HttpServletResponse response, WizardForm wizardForm) throws Exception;
 }
