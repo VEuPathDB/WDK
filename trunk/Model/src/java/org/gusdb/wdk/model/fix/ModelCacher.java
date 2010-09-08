@@ -320,6 +320,7 @@ public class ModelCacher extends BaseCLI {
             PreparedStatement psParam, PreparedStatement psEnum,
             String schemaWithoutDot) throws NoSuchAlgorithmException,
             JSONException, WdkModelException, SQLException, WdkUserException {
+        logger.debug("Caching question [" + question.getFullName() + "]...");
         WdkModel wdkModel = question.getWdkModel();
         DBPlatform platform = wdkModel.getUserPlatform();
 
