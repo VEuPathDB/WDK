@@ -1,5 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
+import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Map;
@@ -77,16 +78,18 @@ public class WizardAction extends Action {
             logger.debug("wizard view: " + forward);
             return new ActionForward(forward);
         } else if (type.equals(Result.TYPE_ACTION)) { // forward to an action
-            logger.debug("wizard action: " + forward);
             StringBuilder builder = new StringBuilder(forward);
 
             // forward to an action
+            boolean first = (forward.indexOf('?') < 0);
             Map<String, String> params = ActionUtility.getParams(request);
             for (String param : params.keySet()) {
-                builder.append((forward.indexOf('?') < 0) ? "?" : "&");
-                builder.append(param + "=");
-                builder.append(params.get(param));
+                builder.append(first ? "?" : "&");
+                first = false;
+                builder.append(URLEncoder.encode(param) + "=");
+                builder.append(URLEncoder.encode(params.get(param)));
             }
+            logger.debug("wizard action: " + builder);
             return new ActionForward(builder.toString());
         } else {
             throw new WdkModelException("Invalid result type: " + type);
