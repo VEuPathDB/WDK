@@ -11,13 +11,15 @@
     <description>Please choose parameters and the operation.</description>
     <result type="view">/wdk/jsp/wizard/question.jsp</result>
   </stage>
-  <stage name="strategy" display="Combine strategy with">
+  <stage name="strategy" display="Combine strategy with"
+         handlerClass="org.gusdb.wdk.controller.wizard.StrategyStageHandler">
     <description>Please choose the operation to combine the current strategy with the selected strategy.</description>
     <result type="view">/wdk/jsp/wizard/strategy.jsp</result>
   </stage>
-  <stage name="basket" display="Use basket">
+  <stage name="basket" display="Use basket"
+         handlerClass="org.gusdb.wdk.controller.wizard.QuestionStageHandler">
     <description>Please choose a boolean operation to combine the current strategy with the records from basket.</description>
-    <result type="view">/wdk/jsp/wizard/basket.jsp</result>
+    <result type="view">/wdk/jsp/wizard/question.jsp</result>
   </stage>
   
   <stage name="transform" display="Transform Results"
