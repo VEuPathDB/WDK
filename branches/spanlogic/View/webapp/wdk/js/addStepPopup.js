@@ -475,7 +475,7 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 function callWizard(url, ele, id, sec, action){
 	switch (action){
 			case "submit":
-				url = url + "stage="+$(ele).attr("action")+"?strategy="+getStrategy(current_Front_Strategy_Id).backId;
+				url = url + "stage="+$(ele).attr("action")+"&strategy="+getStrategy(current_Front_Strategy_Id).backId;
 				$(ele).attr("action", "javascript:void(0)");
 				$.ajax({
 					url: url,
@@ -484,6 +484,8 @@ function callWizard(url, ele, id, sec, action){
 					data: parseInputs(),
 					success: function(data){
 						if(data.indexOf("{") == 0){
+							data = eval("("+data+")");
+							closeAll();
 							updateStrategies(data);
 						}else{
 							pop_up_state.push($("#qf_content").html());
@@ -608,13 +610,15 @@ function showNewSection(ele,sectionName,sectionNumber){
 }
 
 function changeButtonText(ele){
+	var val = "";
+	var stage = "";
 	if($(ele).val() != "SPAN"){
-		$("form#form_question").attr("action","spanlogic");
-		$("#boolean_button").show();
-		$("#span_button").hide();
+		v = "Get Answer";
+		stage = "boolean";
 	}else{
-		$("form#form_question").attr("action","boolean");
-		$("#boolean_button").hide();
-		$("#span_button").show();
+		v = "Continue";
+		stage = "spanlogic";
 	}
+	$("form#form_question").attr("action",stage);
+	$(".filter-button input[name='questionSubmit']").attr("value",v);
 }
