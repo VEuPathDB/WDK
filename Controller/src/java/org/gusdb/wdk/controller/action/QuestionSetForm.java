@@ -82,7 +82,7 @@ public class QuestionSetForm extends ActionForm {
         return myValues.get(key);
     }
 
-    void setMyProps(Map<String, String> props) {
+    public void setMyProps(Map<String, String> props) {
         myProps = new LinkedHashMap<String, String>(props);
     }
 
@@ -90,19 +90,19 @@ public class QuestionSetForm extends ActionForm {
         return new LinkedHashMap<String, String>(myProps);
     }
 
-    void setMyLabels(String labelName, String[] labels) {
+    public void setMyLabels(String labelName, String[] labels) {
         myLabels.put(labelName, labels);
     }
 
-    Map<String, String[]> getMyLabels() {
+    public Map<String, String[]> getMyLabels() {
         return new LinkedHashMap<String, String[]>(myLabels);
     }
 
-    void setMyValues(String valueName, String[] values) {
+    public void setMyValues(String valueName, String[] values) {
         myValues.put(valueName, values);
     }
 
-    Map<String, String[]> getMyValues() {
+    public Map<String, String[]> getMyValues() {
         return new LinkedHashMap<String, String[]>(myValues);
     }
 
