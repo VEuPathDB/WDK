@@ -18,9 +18,9 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 public class StrategyStageHandler implements StageHandler {
 
-    private static final String PARAM_ADD_STRATEGY_ID = "addStrategy";
+    private static final String PARAM_INSERT_STRATEGY_ID = "insertStrategy";
 
-    private static final String ATTR_STEP = "step";
+    private static final String ATTR_INSERT_STEP = "insertStep";
 
     private static final Logger logger = Logger.getLogger(StrategyStageHandler.class);
 
@@ -29,9 +29,9 @@ public class StrategyStageHandler implements StageHandler {
             throws Exception {
         logger.debug("Entering StrategyStageHandler....");
 
-        String strStrategyId = request.getParameter(PARAM_ADD_STRATEGY_ID);
+        String strStrategyId = request.getParameter(PARAM_INSERT_STRATEGY_ID);
         if (strStrategyId == null || strStrategyId.length() == 0)
-            throw new WdkUserException("Required " + PARAM_ADD_STRATEGY_ID
+            throw new WdkUserException("Required " + PARAM_INSERT_STRATEGY_ID
                     + " parameter is missing");
 
         UserBean user = ActionUtility.getUser(servlet, request);
@@ -39,7 +39,7 @@ public class StrategyStageHandler implements StageHandler {
         StrategyBean strategy = user.getStrategy(strategyId);
         StepBean step = strategy.getLatestStep();
 
-        request.setAttribute(ATTR_STEP, step);
+        request.setAttribute(ATTR_INSERT_STEP, step);
 
         logger.debug("Leaving StrategyStageHandler....");
     }
