@@ -481,7 +481,7 @@ function callWizard(url, ele, id, sec, action){
 					url: url,
 					type: "get",
 					dataType: "html",
-					data: parseInputs(),
+					data: parseInputs()+"&state="+p_state,
 					success: function(data){
 						if(data.indexOf("{") == 0){
 							data = eval("("+data+")");
