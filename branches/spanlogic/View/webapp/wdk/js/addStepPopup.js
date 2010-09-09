@@ -490,9 +490,9 @@ function callWizard(url, ele, id, sec, action){
 						}else{
 							pop_up_state.push($("#qf_content").html());
 							$("#qf_content").html(data);
-							if(ele != undefined){
-								showNewSection(ele,id,sec);
-							}
+							//if(ele != undefined){
+							//	showNewSection(ele,id,sec);
+							//}
 						}
 					}	
 				});
