@@ -6,6 +6,18 @@
 
 
 <c:set var="wdkQuestion" value="${requestScope.question}"/>
+<c:set var="spanOnly" value="false"/>
+<c:set var="checked" value=""/>
+<c:set var="buttonVal" value="Get Answer"/>
+<c:set var="wdkStep" value="${requestScope.wdkStep}"/>
+
+
+
+<c:if test="${wdkQuestion.recordClass.fullName != wdkStep.dataType}">
+	<c:set var="checked" value="checked=''"/>
+	<c:set var="buttonVal" value="Continue"/>
+	<c:set var="spanOnly" value="true"/>
+</c:if>
 
 <c:set var="wizard" value="${requestScope.wizard}"/>
 <c:set var="stage" value="${requestScope.stage}"/>
@@ -35,7 +47,9 @@
 </div>
 <%-- end of the copied content --%>
 <div id="operations">
+
     <table>
+<c:if test="${spanOnly == 'false'}">
       <tr>
         <td class="opcheck" valign="middle"><input onclick="changeButtonText(this)" name="booleanExpression" value="INTERSECT" type="radio"></td>
         <td class="operation INTERSECT"></td><td valign="middle">&nbsp;1&nbsp;<b>INTERSECT</b>&nbsp;2</td>
@@ -50,12 +64,14 @@
         <td class="operation RMINUS"></td><td>&nbsp;2&nbsp;<b>MINUS</b>&nbsp;1</td>
       </tr>
 	<tr><td colspan="15" align="center"><hr><b>OR</b><hr></td></tr>
+</c:if>
+
 	  <tr>	
-		<td class="opcheck" valign="middle"><input onclick="changeButtonText(this)" name="booleanExpression" value="SPAN" type="radio"></td>
+		<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="booleanExpression" value="SPAN" type="radio"></td>
         <td class="operation SPAN"></td><td valign="middle">&nbsp;&nbsp;<b>Span Logic</b></td>
         <td colspan="12" align="left">&nbsp;&nbsp;&nbsp;Combine using span and regional alignments</td>
       </tr>
     </table>
 </div>
-<div id="boolean_button" class="filter-button"><html:submit property="questionSubmit" value="Get Answer"/></div>
+<div id="boolean_button" class="filter-button"><html:submit property="questionSubmit" value="${buttonVal}"/></div>
 </html:form>
