@@ -64,15 +64,15 @@ public class ImportStrategyAction extends Action {
         return forward;
     }
 
-    private void addActiveSubstrategies(UserBean wdkUser, int strategyId, StepBean substrategy)
+    private void addActiveSubstrategies(UserBean wdkUser, int strategyId, StepBean step)
 	throws Exception {
-	for (StepBean step : substrategy.getAllSteps()) {
-	    if (step.getIsCollapsible() && step.getParentStep() != null) {
-		wdkUser.addActiveStrategy(strategyId + "_" + Integer.toString(step.getStepId()));
-	    }
-	    if (step.getChildStep() != null) {
-		addActiveSubstrategies(wdkUser, strategyId, step.getChildStep());
-	    }
-	}
+        if (step == null) return;
+
+        if (step.getIsCollapsible() && step.getParentStep() != null) {
+            logger.debug("open sub-strategy: " + strategyId + "_" + step.getStepId());
+            wdkUser.addActiveStrategy(strategyId + "_" + Integer.toString(step.getStepId()));
+        }
+        addActiveSubstrategies(wdkUser, strategyId, step.getPreviousStep());
+	addActiveSubstrategies(wdkUser, strategyId, step.getChildStep());
     }
 }

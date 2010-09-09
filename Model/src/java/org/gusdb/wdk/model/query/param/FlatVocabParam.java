@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -175,8 +176,9 @@ public class FlatVocabParam extends AbstractEnumParam {
             termDisplayMap.put(term, display);
         }
         if (termInternalMap.isEmpty())
-            throw new WdkModelException("No item returned by the query of"
-                    + " FlatVocabParam " + getFullName());
+            throw new WdkModelException("No item returned by the query [" 
+                    + query.getFullName() + "] of FlatVocabParam [" + getFullName()
+                    +"].\n" + ((SqlQuery)query).getSql());
         initTreeMap();
         applySelectMode();
 
