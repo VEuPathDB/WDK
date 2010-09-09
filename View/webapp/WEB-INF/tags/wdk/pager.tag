@@ -7,6 +7,11 @@
               description="the unique identifier for the included pager"
 %>
 
+<%@ attribute name="wdkAnswer"
+              required="true"
+              type="org.gusdb.wdk.model.jspwrap.AnswerValueBean"
+              description="the AnswerValueBean for this pager"
+%>
 <c:set var="resultSize" value="${wdkAnswer.resultSize}" />
 
 <input type="hidden" id="resultSize" value="${resultSize}" />

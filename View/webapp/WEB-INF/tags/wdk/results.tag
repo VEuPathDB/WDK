@@ -3,7 +3,6 @@
 <%@ taglib prefix="pg" uri="http://jsptags.com/tags/navigation/pager" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
-<c:set var="wdkStep" value="${requestScope.wdkStep}"/>
 <c:set var="wdkAnswer" value="${wdkStep.answerValue}"/>
 <c:set var="qName" value="${wdkAnswer.question.fullName}" />
 <c:set var="modelName" value="${applicationScope.wdkModel.name}" />
@@ -128,7 +127,7 @@
 <table width="100%" border="0" cellpadding="3" cellspacing="0">
 	<tr class="subheaderrow">
 	<th style="text-align: left;white-space:nowrap;"> 
-	       <wdk:pager pager_id="top"/> 
+	       <wdk:pager wdkAnswer="${wdkAnswer}" pager_id="top"/> 
 	</th>
 	<th style="text-align: right;white-space:nowrap;">
 		           <%-- display a list of sortable attributes --%>
@@ -378,7 +377,7 @@
 <table width="100%" border="0" cellpadding="3" cellspacing="0">
 	<tr class="subheaderrow">
 	<th style="text-align:left;white-space:nowrap;"> 
-	       <wdk:pager pager_id="bottom"/> 
+	       <wdk:pager wdkAnswer="${wdkAnswer}" pager_id="bottom"/> 
 	</th>
 	<th style="text-align:right;white-space:nowrap;">
 		&nbsp;
