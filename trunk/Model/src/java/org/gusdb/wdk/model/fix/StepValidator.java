@@ -85,6 +85,9 @@ public class StepValidator extends BaseCLI {
 
     private void validate(WdkModel wdkModel) throws SQLException,
             WdkUserException, WdkModelException {
+        deleteDanglingSteps(wdkModel);
+        deleteInvalidParams(wdkModel);
+
         resetFlags(wdkModel);
         detectQuestions(wdkModel);
         detectParams(wdkModel);
@@ -227,4 +230,141 @@ public class StepValidator extends BaseCLI {
                 "wdk-invalidate-parent-step");
 
     }
+
+    private void deleteInvalidParams(WdkModel wdkModel)
+            throws WdkUserException, WdkModelException, SQLException {
+        logger.info("Deleting params which doesn't have a valid step...");
+        String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
+
+        StringBuilder sql = new StringBuilder("DELETE FROM ");
+        sql.append("step_params WHERE step_id IN ");
+        sql.append("(SELECT step_id FROM " + userSchema + "steps)");
+
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+                "wdk-delete-invalid-step-params");
+    }
+
+    private void deleteDanglingSteps(WdkModel wdkModel)
+            throws WdkUserException, WdkModelException, SQLException {
+        logger.info("deleting dangling steps and related resources...");
+
+        String danglingTable = "wdk_dangle_steps";
+        String parentTable = "wdk_parent_steps";
+
+        String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
+        if (schema.length() > 0 && !schema.endsWith(".")) schema += ".";
+
+        selectDanglingSteps(wdkModel, schema, danglingTable);
+        selectParentSteps(wdkModel, schema, danglingTable, parentTable);
+        deleteDanglingStrategies(wdkModel, schema, parentTable);
+        deleteDanglingSteps(wdkModel, schema, parentTable);
+
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        SqlUtils.executeUpdate(wdkModel, dataSource, "DROP TABLE "
+                + danglingTable, "wdk_drop_dangle_steps");
+        SqlUtils.executeUpdate(wdkModel, dataSource, "DROP TABLE "
+                + parentTable, "wdk_drop_parent_steps");
+    }
+
+    private void selectDanglingSteps(WdkModel wdkModel, String schema,
+            String danglingTable) throws WdkUserException, WdkModelException,
+            SQLException {
+        logger.debug("looking for dangling steps...");
+
+        String stepTable = schema + "steps";
+
+        StringBuilder sql = new StringBuilder("CREATE TABLE ");
+        sql.append(danglingTable + " AS ");
+        sql.append("  (( SELECT s.step_id ");
+        sql.append("     FROM " + stepTable + " s,  ");
+        sql.append("          (  SELECT user_id, left_child_id ");
+        sql.append("             FROM " + stepTable);
+        sql.append("             WHERE left_child_id IS NOT NULL ");
+        sql.append("           MINUS ");
+        sql.append("             SELECT user_id, display_id FROM " + stepTable);
+        sql.append("          ) u ");
+        sql.append("     WHERE s.user_id = u.user_id ");
+        sql.append("       AND s.left_child_id = u.left_child_id) ");
+        sql.append("   UNION ");
+        sql.append("   ( SELECT s.step_id  ");
+        sql.append("     FROM " + stepTable + " s,  ");
+        sql.append("          (  SELECT user_id, right_child_id ");
+        sql.append("             FROM " + stepTable);
+        sql.append("             WHERE right_child_id IS NOT NULL ");
+        sql.append("           MINUS ");
+        sql.append("             SELECT user_id, display_id FROM " + stepTable);
+        sql.append("          ) u ");
+        sql.append("     WHERE s.user_id = u.user_id ");
+        sql.append("       AND s.right_child_id = u.right_child_id) ");
+        sql.append("  )");
+
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+                "wdk-create-dangling-step");
+    }
+
+    private void selectParentSteps(WdkModel wdkModel, String schema,
+            String danglingTable, String parentTable) throws WdkUserException,
+            WdkModelException, SQLException {
+        logger.debug("looking for parents of dangling steps...");
+
+        StringBuilder sql = new StringBuilder("CREATE TABLE ");
+        sql.append(parentTable + " AS ");
+        sql.append("  (SELECT s.step_id, s.user_id, s.display_id ");
+        sql.append("   FROM " + schema + "steps s");
+        sql.append("   START WITH s.step_id IN ");
+        sql.append("     (SELECT step_id FROM " + danglingTable + ")");
+        sql.append("   CONNECT BY PRIOR s.user_id = s.user_id");
+        sql.append("     AND (PRIOR s.display_id = s.left_child_id");
+        sql.append("          OR PRIOR s.display_id = s.right_child_id))");
+
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+                "wdk-create-parent-step");
+    }
+
+    private void deleteDanglingStrategies(WdkModel wdkModel, String schema,
+            String parentTable) throws WdkUserException, WdkModelException,
+            SQLException {
+        logger.debug("Deleting dangling strategies...");
+
+        String stratTable = schema + "strategies";
+        String stepTable = schema + "steps";
+
+        StringBuilder sql = new StringBuilder("DELETE FROM " + stratTable);
+        sql.append("WHERE strategy_id IN ");
+        sql.append("  ( (SELECT sr.strategy_id  ");
+        sql.append("     FROM " + stratTable + " sr, wdk_parent_steps ps ");
+        sql.append("     WHERE sr.user_id = ps.user_id ");
+        sql.append("     AND sr.root_step_id = ps.display_id) ");
+        sql.append("   UNION ");
+        sql.append("    (SELECT sr.strategy_id ");
+        sql.append("     FROM " + stratTable + " sr ");
+        sql.append("       LEFT JOIN " + stepTable + " sp ");
+        sql.append("       ON sr.user_id = sp.user_id ");
+        sql.append("         AND sr.root_step_id = sp.display_id ");
+        sql.append("     WHERE sp.display_id IS NULL)");
+        sql.append("  )");
+
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+                "wdk-delete-dangling-strategy");
+    }
+
+    private void deleteDanglingSteps(WdkModel wdkModel, String schema,
+            String parentTable) throws WdkUserException, WdkModelException,
+            SQLException {
+        logger.debug("Deleting dangling steps...");
+
+        String stepTable = schema + "steps";
+
+        StringBuilder sql = new StringBuilder("DELETE FROM " + stepTable);
+        sql.append("WHERE step_id IN (SELECT step_id FROM " + parentTable + ")");
+
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+                "wdk-delete-dangling-step");
+    }
+
 }
