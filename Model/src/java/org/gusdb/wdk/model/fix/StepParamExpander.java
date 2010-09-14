@@ -211,8 +211,10 @@ public class StepParamExpander extends BaseCLI {
         schema = schema.trim();
         if (schema.length() > 0 && !schema.endsWith(".")) schema += ".";
 
-        logger.info("Expanding params...");
         WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
+
+        // expand step params
+        logger.info("Expanding params...");
         expand(wdkModel, schema);
     }
 }
