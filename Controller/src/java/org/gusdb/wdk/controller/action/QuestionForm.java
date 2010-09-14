@@ -9,7 +9,6 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -162,15 +161,6 @@ public class QuestionForm extends MapActionForm {
     
     @Override
     public Object getValue(String key) {
-        // in the case some params set value into array, we need to get it from
-        // array too.
-        Object value = super.getValue(key);
-        logger.debug("key=" + key + ", value=" + value + ", isNull=" + (value == null));
-        if (value == null) {
-            String[] array = super.getArray(key);
-            value = Utilities.fromArray(array);
-            logger.debug("array_value=" + value + ", isNull=" + (value == null));
-        }
-        return value;
+        return getValueOrArray(key);
     }
 }
