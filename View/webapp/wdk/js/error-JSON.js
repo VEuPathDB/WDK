@@ -2,7 +2,7 @@ var OOSMessage = "Sorry, there was a synchronization problem.\nWe have updated t
 var SessionTimeOutMessage = "Your session may have timed out and all of your data has been lost.  By registering and logging in you can prevent this from happening in the future.";
 function ErrorHandler(evt, data, strategy, qform, name, fromHist){
 	var type = null;
-	
+	if($("form#form_question table.parameter-errors").length > 0) $("form#form_question table.parameter-errors").remove();
 	if(evt == "Results") {
             if (data.substring(0,1) != "{") return true;
             data = eval("(" + data + ")");
