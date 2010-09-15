@@ -1,5 +1,8 @@
 package org.gusdb.wdk.controller.wizard;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -20,7 +23,7 @@ public class QuestionStageHandler implements StageHandler {
 
     private static final Logger logger = Logger.getLogger(QuestionStageHandler.class);
 
-    public void execute(ActionServlet servlet, HttpServletRequest request,
+    public Map<String, Object> execute(ActionServlet servlet, HttpServletRequest request,
             HttpServletResponse response, WizardForm wizardForm)
             throws Exception {
         logger.debug("Entering QuestionStageHandler....");
@@ -35,9 +38,11 @@ public class QuestionStageHandler implements StageHandler {
                 questionForm);
         wizardForm.copyFrom(questionForm);
 
-        request.setAttribute(ATTR_QUESTION, question);
+        Map<String, Object> results = new HashMap<String, Object>();
+        results.put(ATTR_QUESTION, question);
 
         logger.debug("Leaving QuestionStageHandler....");
+        return results; 
     }
 
 }

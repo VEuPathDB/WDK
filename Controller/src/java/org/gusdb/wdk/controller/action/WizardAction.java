@@ -3,6 +3,7 @@ package org.gusdb.wdk.controller.action;
 import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,8 +32,8 @@ public class WizardAction extends Action {
 
     private static final String PARAM_STAGE = "stage";
 
-    private static final String ATTR_STRATEGY = "wdkStrategy";
-    private static final String ATTR_STEP = "wdkStep";
+    public static final String ATTR_STRATEGY = "wdkStrategy";
+    public static final String ATTR_STEP = "wdkStep";
 
     /*
      * (non-Javadoc)
@@ -67,28 +68,45 @@ public class WizardAction extends Action {
 
         // check if there is a handler
         StageHandler handler = stage.getHandler();
+        Map<String, Object> values;
         if (handler != null) {
-            handler.execute(servlet, request, response, wizardForm);
-        }
+            values = handler.execute(servlet, request, response, wizardForm);
+        } else values = new HashMap<String, Object>();
 
         Result result = stage.getResult();
         String type = result.getType();
         String forward = result.getText();
         if (type.equals(Result.TYPE_VIEW)) { // forward to a jsp.
             logger.debug("wizard view: " + forward);
+
+            // put values into attibute
+            for (String key : values.keySet()) {
+                request.setAttribute(key, values.get(key));
+            }
+
             return new ActionForward(forward);
         } else if (type.equals(Result.TYPE_ACTION)) { // forward to an action
             StringBuilder builder = new StringBuilder(forward);
 
-            // forward to an action
+            // forward to an action, and append the params to the url
             boolean first = (forward.indexOf('?') < 0);
             Map<String, String> params = ActionUtility.getParams(request);
-            for (String param : params.keySet()) {
-                builder.append(first ? "?" : "&");
-                first = false;
-                builder.append(URLEncoder.encode(param) + "=");
-                builder.append(URLEncoder.encode(params.get(param)));
+
+            // add values to the params map
+            for (String key : values.keySet()) {
+                Object value = values.get(key);
+                params.put(key, ((value == null) ? null : value.toString()));
             }
+
+            for (String param : params.keySet()) {
+                String value = params.get(param);
+
+                builder.append(first ? "?" : "&");
+                builder.append(URLEncoder.encode(param, "utf-8") + "=");
+                builder.append(URLEncoder.encode(value, "utf-8"));
+                first = false;
+            }
+
             logger.debug("wizard action: " + builder);
             return new ActionForward(builder.toString());
         } else {
