@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * @author ctreatma
@@ -33,6 +34,8 @@ public class ProcessRenameStrategyAction extends Action {
         logger.debug("Entering Rename Strategy...");
 
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
+
         try {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
@@ -56,7 +59,7 @@ public class ProcessRenameStrategyAction extends Action {
             // verify the checksum
             String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
             if (checksum != null && !strategy.getChecksum().equals(checksum)) {
-                ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response, state);
+                ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser, response, state);
                 return null;
             }
 
@@ -137,7 +140,7 @@ public class ProcessRenameStrategyAction extends Action {
                         strategy.getLatestStep());
                 request.setAttribute(CConstants.WDK_STRATEGY_KEY, strategy);
             } else {    // name already exists
-                ShowStrategyAction.outputDuplcicateNameJSON(wdkUser, response, state);
+                ShowStrategyAction.outputDuplcicateNameJSON(wdkModel, wdkUser, response, state);
                 return null;
             }
 

@@ -21,6 +21,7 @@ import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
 
 /**
@@ -39,6 +40,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
         logger.debug("Entering ProcessFilterAction...");
 
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
+	WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         try {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
@@ -70,7 +72,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             if (checksum != null && !strategy.getChecksum().equals(checksum)) {
                 logger.error("strategy checksum: " + strategy.getChecksum()
                         + ", but the input checksum: " + checksum);
-                ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response, state);
+                ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser, response, state);
                 return null;
             }
 

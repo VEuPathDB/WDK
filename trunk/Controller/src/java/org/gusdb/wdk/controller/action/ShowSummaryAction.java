@@ -148,7 +148,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                         logger.info("strategy checksum: "
                                 + strategy.getChecksum()
                                 + ", but the input checksum: " + checksum);
-                        ShowStrategyAction.outputOutOfSyncJSON(wdkUser,
+                        ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser,
                                 response, state);
                         return null;
                     }
