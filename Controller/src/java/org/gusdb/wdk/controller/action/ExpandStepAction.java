@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * This Action handles expanding a step in a search strategy (i.e., turning the
@@ -30,6 +31,7 @@ public class ExpandStepAction extends Action {
         logger.debug("Entering ExpandStepAction...");
 
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
+	WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         try {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
@@ -54,7 +56,7 @@ public class ExpandStepAction extends Action {
             // verify the checksum
             String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
             if (checksum != null && !strategy.getChecksum().equals(checksum)) {
-                ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response, state);
+                ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser, response, state);
                 return null;
             }
 

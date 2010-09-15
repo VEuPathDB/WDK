@@ -218,6 +218,10 @@ public class WdkModelBean {
         return model.getSecretKey();
     }
 
+    public boolean getUseWeights() {
+	return model.getUseWeights();
+    }
+
     public UserBean getSystemUser() throws NoSuchAlgorithmException,
             WdkUserException, WdkModelException, SQLException {
         return new UserBean(model.getSystemUser());
