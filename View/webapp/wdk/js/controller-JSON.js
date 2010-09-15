@@ -466,7 +466,6 @@ function AddStepToStrategy(url, proto, stpId){
 }
 
 function EditStep(url, proto, step_number){
-	$("#query_form").hide("fast");
 	var ss = getStrategyFromBackId(proto);
 	var sss = ss.getStep(step_number, false);
 	var d = parseInputs();
@@ -480,6 +479,7 @@ function EditStep(url, proto, step_number){
 		dataType:"json",
 		data: d + "&state=" + p_state,
 		beforeSend: function(obj){
+			    closeAll(true);
 				showLoading(ss.frontId);
 			},
 		success: function(data){
@@ -496,7 +496,6 @@ function EditStep(url, proto, step_number){
         //                              + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
 		//}
 	});
-	closeAll(true);
 }
 
 
