@@ -1,5 +1,7 @@
 package org.gusdb.wdk.controller.wizard;
 
+import java.util.Map;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -8,6 +10,16 @@ import org.gusdb.wdk.controller.action.WizardForm;
 
 public interface StageHandler {
 
-    public void execute(ActionServlet servlet, HttpServletRequest request,
-            HttpServletResponse response, WizardForm wizardForm) throws Exception;
+    /**
+     * @param servlet
+     * @param request
+     * @param response
+     * @param wizardForm
+     * @return return extra param values that should be set into attributes if
+     *         going to view, or put into forward link if going to an action.
+     * @throws Exception
+     */
+    public Map<String, Object> execute(ActionServlet servlet,
+            HttpServletRequest request, HttpServletResponse response,
+            WizardForm wizardForm) throws Exception;
 }
