@@ -39,10 +39,10 @@ public abstract class MapActionForm extends ActionForm {
     public Object getValueOrArray(String key) {
         // in the case some params set value into array, we need to get it from
         // array too.
-        Object value = this.getValue(key);
+        Object value = values.get(key);
         logger.debug("key=" + key + ", value=" + value + ", isNull=" + (value == null));
         if (value == null) {
-            String[] array = this.getArray(key);
+            String[] array = arrays.get(key);
             value = Utilities.fromArray(array);
             logger.debug("array_value=" + value + ", isNull=" + (value == null));
         }
