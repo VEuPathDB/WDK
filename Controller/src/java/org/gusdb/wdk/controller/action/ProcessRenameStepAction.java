@@ -17,6 +17,7 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * @author xingao
@@ -32,6 +33,7 @@ public class ProcessRenameStepAction extends Action {
         logger.debug("Entering ProcessRenameStepAction...");
 
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         try {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
@@ -58,7 +60,7 @@ public class ProcessRenameStepAction extends Action {
             // verify the checksum
             String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
             if (checksum != null && !strategy.getChecksum().equals(checksum)) {
-                ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response, state);
+                ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser, response, state);
                 return null;
             }
 

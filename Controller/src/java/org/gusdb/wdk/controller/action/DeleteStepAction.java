@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * This Action handles moving a step in a search strategy to a different
@@ -31,6 +32,7 @@ public class DeleteStepAction extends ProcessFilterAction {
         logger.debug("Entering DeleteStepAction...");
 
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
+	WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         try {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
@@ -65,7 +67,7 @@ public class DeleteStepAction extends ProcessFilterAction {
             // verify the checksum
             String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
             if (checksum != null && !strategy.getChecksum().equals(checksum)) {
-                ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response, state);
+                ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser, response, state);
                 return null;
             }
 
