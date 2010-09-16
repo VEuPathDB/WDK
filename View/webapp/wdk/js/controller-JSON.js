@@ -61,6 +61,10 @@ function initStrategyPanels() {
 		dataType: "html",
 		success: function(data) {
 			$("#sample_strat").html(data);
+				try {
+					customSampleTab();
+				}
+				catch(e) {}
 		},
 		error: function() {
 			$("#tab_sample_strat").parent("li").remove();
@@ -72,6 +76,10 @@ function initStrategyPanels() {
 		dataType: "html",
 		success: function(data) {
 			$("#strategy_new").html(data);
+				try {
+					customNewTab();
+				}
+				catch(e) {}
 		},
 		error: function() {
 			$("#tab_strategy_new").parent("li").remove();
@@ -83,6 +91,10 @@ function initStrategyPanels() {
 		dataType: "html",
 		success: function(data) {
 			$("#help").html(data);
+				try {
+					customHelpTab();
+				}
+				catch(e) {}
 		},
 		error: function() {
 			$("#tab_help").parent("li").remove();
