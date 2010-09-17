@@ -47,6 +47,8 @@ public class WizardAction extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+        logger.debug("Entering WizardAction.....");
+
         UserBean user = ActionUtility.getUser(servlet, request);
         WizardForm wizardForm = (WizardForm) form;
 
@@ -84,6 +86,7 @@ public class WizardAction extends Action {
                 request.setAttribute(key, values.get(key));
             }
 
+            logger.debug("Leaving WizardAction.....");
             return new ActionForward(forward);
         } else if (type.equals(Result.TYPE_ACTION)) { // forward to an action
             StringBuilder builder = new StringBuilder(forward);
@@ -108,6 +111,7 @@ public class WizardAction extends Action {
             }
 
             logger.debug("wizard action: " + builder);
+            logger.debug("Leaving WizardAction.....");
             return new ActionForward(builder.toString());
         } else {
             throw new WdkModelException("Invalid result type: " + type);
