@@ -611,13 +611,11 @@ function showNewSection(ele,sectionName,sectionNumber){
 
 function changeButtonText(ele){
 	var val = "";
-	var stage = "";
+	var stage = $(ele).attr("stage");
 	if($(ele).val() != "SPAN"){
 		v = "Get Answer";
-		stage = "boolean";
 	}else{
 		v = "Continue";
-		stage = "spanlogic";
 	}
 	$("form#form_question").attr("action",stage);
 	$(".filter-button input[name='questionSubmit']").attr("value",v);
