@@ -106,7 +106,7 @@
 								<c:if test="${fn:length(displayName) > 30}">
 		                                    <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
 		                        </c:if>
-								<li><a href="javascript:void(0)" onclick="callWizard('wizard.do?strategyId=${storedStrategy.strategyId}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=strategy',null,null,null,'next')">${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if></a></li>
+								<li><a href="javascript:void(0)" onclick="callWizard('wizard.do?insertStrategy=${storedStrategy.strategyId}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=strategy',null,null,null,'next')">${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if></a></li>
 						</c:forEach>
 					</ul>
 				</div>
@@ -120,7 +120,7 @@
 								<c:if test="${fn:length(displayName) > 30}">
 			                    	<c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
 			                    </c:if>
-								<li><a href="javascript:void(0)" onclick="callWizard('wizard.do?strategyId=${storedStrategy.strategyId}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=strategy',null,null,null,'next')">${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if></a></li>
+								<li><a href="javascript:void(0)" onclick="callWizard('wizard.do?insertStrategy=${storedStrategy.strategyId}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=strategy',null,null,null,'next')">${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if></a></li>
 							</c:forEach>
 						</c:forEach>
 					</ul>
@@ -135,7 +135,7 @@
 								<c:if test="${fn:length(displayName) > 30}">
 			                    	<c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
 			                    </c:if>
-								<li><a href="javascript:void(0)" onclick="callWizard('wizard.do?strategyId=${storedStrategy.strategyId}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=strategy',null,null,null,'next')">${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if></a></li>
+								<li><a href="javascript:void(0)" onclick="callWizard('wizard.do?insertStrategy=${storedStrategy.strategyId}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=strategy',null,null,null,'next')">${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if></a></li>
 							</c:forEach>
 						</c:forEach>
 					</ul>
