@@ -1,6 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -91,24 +90,24 @@ public class WizardAction extends Action {
         } else if (type.equals(Result.TYPE_ACTION)) { // forward to an action
             StringBuilder builder = new StringBuilder(forward);
 
-            // forward to an action, and append the params to the url
-            boolean first = (forward.indexOf('?') < 0);
-            Map<String, String> params = ActionUtility.getParams(request);
-
-            // add values to the params map
-            for (String key : values.keySet()) {
-                Object value = values.get(key);
-                params.put(key, ((value == null) ? null : value.toString()));
-            }
-
-            for (String param : params.keySet()) {
-                String value = params.get(param);
-
-                builder.append(first ? "?" : "&");
-                builder.append(URLEncoder.encode(param, "utf-8") + "=");
-                builder.append(URLEncoder.encode(value, "utf-8"));
-                first = false;
-            }
+            // // forward to an action, and append the params to the url
+            // boolean first = (forward.indexOf('?') < 0);
+            // Map<String, String> params = ActionUtility.getParams(request);
+            //
+            // // add values to the params map
+            // for (String key : values.keySet()) {
+            // Object value = values.get(key);
+            // params.put(key, ((value == null) ? null : value.toString()));
+            // }
+            //
+            // for (String param : params.keySet()) {
+            // String value = params.get(param);
+            //
+            // builder.append(first ? "?" : "&");
+            // builder.append(URLEncoder.encode(param, "utf-8") + "=");
+            // builder.append(URLEncoder.encode(value, "utf-8"));
+            // first = false;
+            // }
 
             logger.debug("wizard action: " + builder);
             logger.debug("Leaving WizardAction.....");
