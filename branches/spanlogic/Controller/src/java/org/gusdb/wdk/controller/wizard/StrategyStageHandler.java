@@ -40,7 +40,7 @@ public class StrategyStageHandler implements StageHandler {
         
         Map<String, Object> results = new HashMap<String, Object>();
         results.put(ATTR_INSERT_STEP, step);
-
+        results.put(PARAM_INSERT_STRATEGY_ID, strStrategyId);
         logger.debug("Leaving StrategyStageHandler....");
         
         return results;
