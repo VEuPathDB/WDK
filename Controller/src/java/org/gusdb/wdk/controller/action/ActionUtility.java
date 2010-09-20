@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
@@ -56,7 +57,9 @@ public class ActionUtility {
         Enumeration<?> names = request.getParameterNames();
         while (names.hasMoreElements()) {
             String name = (String) names.nextElement();
-            params.put(name, request.getParameter(name));
+            String[] values = request.getParameterValues(name);
+            String value = Utilities.fromArray(values, ",");
+            params.put(name, value);
         }
         return params;
     }
