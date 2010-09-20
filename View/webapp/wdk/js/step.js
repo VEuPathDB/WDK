@@ -67,7 +67,8 @@ function hideDetails(det){
 
 function Edit_Step(ele, questionName, url, hideQuery, hideOp, assignedWeight){
 	//	hideDetails();
-		url = "showQuestion.do?questionFullName=" + questionName + url + "&partial=true";
+		//url = "showQuestion.do?questionFullName=" + questionName + url + "&partial=true";
+		url = "wizard.do?stage=question&questionFullName=" + questionName + url;
 		closeAll(false);
 	//	var link = $(".filter_link");
 	//	$(link).css({opacity:0.2});
@@ -78,14 +79,21 @@ function Edit_Step(ele, questionName, url, hideQuery, hideOp, assignedWeight){
 		current_Front_Strategy_Id = parts[0];
 		revisestep = parseInt(parts[1]);
 		var operation = parts[2];
-		var reviseStepNumber = strat + ":" + revisestep + ":0:0:" + operation;
-        var questionUrl = url + "&showParams=false";
-		var paramsUrl = url + "&showParams=true";
+		if(operation != "SPAN")
+			url = url + "&booleanExpression="+operation+"&strategy="+parts[0]+"&step="+revisestep;
+		if($("#qf_content").length == 0)
+			
+		//var reviseStepNumber = strat + ":" + revisestep + ":0:0:" + operation;
+        //var questionUrl = url + "&showParams=false";
+		//var paramsUrl = url + "&showParams=true";
                 if (assignedWeight)  {
-                    questionUrl += "&weight=" + assignedWeight;
-                    paramsUrl += "&weight=" + assignedWeight;
+        //            questionUrl += "&weight=" + assignedWeight;
+        //            paramsUrl += "&weight=" + assignedWeight;
+					url += "&weight=" + assignedWeight;
                 }
-		$.ajax({
+		//callWizard('wizard.do?questionFullName=GeneQuestions.GenesByGeneType&strategy=2&step=2&stage=question',null,null,null,'next')
+		callWizard(url,null,null,null,'next')
+		/*$.ajax({
 			url: questionUrl,
 			dataType: "html",
 			beforeSend: function(){
@@ -117,7 +125,7 @@ function Edit_Step(ele, questionName, url, hideQuery, hideOp, assignedWeight){
 				alert("ERROR \n "+ msg + "\n" + e
                                       + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
 			}
-		});
+		});*/
 		$(this).parent().parent().hide();
 }
 
