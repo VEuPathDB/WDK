@@ -134,7 +134,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
             // FROM SHOWSUMMARY
 
             StepBean step = wdkUser.createStep(wdkQuestion, params,
-                    "all_results", false, true, 0);
+                    null, false, true, 0);
             AnswerValueBean answerValue = step.getAnswerValue();
             // construct the forward to show_summary action
             request.setAttribute("wdkAnswer", answerValue);
