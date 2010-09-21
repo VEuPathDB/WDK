@@ -196,7 +196,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 				if(type != 'recordPage'){
 					checkPageBasket();
 				}
-				if (currentDiv == 'basket') {
+				if (currentDiv.match(/basket/)) {
 					//Using cookie to determine that the results need to be updated when the 'Opened' tab is selected
 					jQuery.cookie("refresh_results", "true", { path : '/' });
 					// If any results are showing (and we're not already on the results page) update them.
