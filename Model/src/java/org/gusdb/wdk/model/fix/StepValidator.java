@@ -80,7 +80,7 @@ public class StepValidator extends BaseCLI {
 
         WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
 
-        deleteDanglingSteps(wdkModel);
+        dropDanglingStepsTable(wdkModel);
         deleteInvalidParams(wdkModel);
 
         resetFlags(wdkModel);
@@ -240,9 +240,9 @@ public class StepValidator extends BaseCLI {
                 "wdk-delete-invalid-step-params");
     }
 
-    private void deleteDanglingSteps(WdkModel wdkModel)
+    private void dropDanglingStepsTable(WdkModel wdkModel)
             throws WdkUserException, WdkModelException, SQLException {
-        logger.info("deleting dangling steps and related resources...");
+        logger.info("drop dangling steps table and related resources...");
 
         String danglingTable = "wdk_dangle_steps";
         String parentTable = "wdk_parent_steps";
