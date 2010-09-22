@@ -59,9 +59,11 @@ public class StepValidator extends BaseCLI {
      */
     @Override
     protected void declareOptions() {
-        addSingleValueOption(ARG_PROJECT_ID, true, null, "a list of ProjectIds"
-                + ", which should match the directory name"
-                + " under $GUS_HOME, where model-config.xml is stored.");
+        addSingleValueOption(ARG_PROJECT_ID, true, null, "a ProjectId"
+                + ", which should match the directory name under $GUS_HOME, "
+                + "where model-config.xml is stored. You just need to use "
+                + "one project to provide connection to database, and the "
+                + "change will affect all projects.");
     }
 
     /*
@@ -73,18 +75,11 @@ public class StepValidator extends BaseCLI {
     protected void execute() throws Exception {
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
-        String ids = (String) getOptionValue(ARG_PROJECT_ID);
-        String[] projectIds = ids.split(",");
-        for (String projectId : projectIds) {
-            projectId = projectId.trim();
-            logger.info("Validate steps & answers for " + projectId + "... ");
-            WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-            validate(wdkModel);
-        }
-    }
+        String projectId = (String) getOptionValue(ARG_PROJECT_ID);
+        logger.info("Validate steps & answers for all projects... ");
 
-    private void validate(WdkModel wdkModel) throws SQLException,
-            WdkUserException, WdkModelException {
+        WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
+
         deleteDanglingSteps(wdkModel);
         deleteInvalidParams(wdkModel);
 
