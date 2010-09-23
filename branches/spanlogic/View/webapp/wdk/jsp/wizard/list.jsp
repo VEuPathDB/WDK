@@ -21,9 +21,7 @@
     <jsp:setProperty name="recordClass" property="changeType" value="false" />
 </c:if>
 
-<div id="query_form" style="min-height:140px;">
-	<wdk:addStepHeader/>
-	<div id="qf_content">
+	<wdk:addStepHeader title="Add Step"/>
 	<div id="sections">
 		<table id="sections-layout"><tr>
 			<td id="section-1">
@@ -43,11 +41,8 @@
 		</div> <!--End Section Div-->
 		<div id="sections_data">
 		</div>
-		</div><!--Content Div -->
-		<div class="bottom-close">
-			<a class='close_window' href='javascript:closeAll(false)'>Close</a>
-		</div>
-	</div><!-- End of Query Form Div -->
+	<wdk:addStepFooter/>
+		
 <!--TRANSFORMS SECTION-->		
 	<%--	<div class="original" id="transforms" style="display:none">
 			<ul class="menu_section">
