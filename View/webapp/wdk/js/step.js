@@ -80,7 +80,7 @@ function Edit_Step(ele, questionName, url, hideQuery, hideOp, assignedWeight){
 		revisestep = parseInt(parts[1]);
 		var operation = parts[2];
 		if(operation != "SPAN")
-			url = url + "&booleanExpression="+operation+"&strategy="+parts[0]+"&step="+revisestep;
+			url = url + "&booleanExpression="+operation+"&step="+revisestep;
 		if($("#qf_content").length == 0)
 			
 		//var reviseStepNumber = strat + ":" + revisestep + ":0:0:" + operation;
