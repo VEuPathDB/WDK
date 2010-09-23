@@ -215,7 +215,7 @@ public class StepValidator extends BaseCLI {
 
         String sql = "UPDATE " + step + " SET is_valid = 0 "
                 + "WHERE is_valid IS NULL AND step_id IN ("
-                + "    SELECT step_id FROM " + step
+                + "    SELECT step_id FROM (SELECT * FROM " + step + " WHERE is_valid = 0) "
                 + "    START WITH is_valid = 0 "
                 + "    CONNECT BY (prior display_id = right_child_id "
                 + "                OR prior display_id = left_child_id) "
@@ -328,7 +328,7 @@ public class StepValidator extends BaseCLI {
         String stepTable = schema + "steps";
 
         StringBuilder sql = new StringBuilder("DELETE FROM " + stratTable);
-        sql.append("WHERE strategy_id IN ");
+        sql.append(" WHERE strategy_id IN ");
         sql.append("  ( (SELECT sr.strategy_id  ");
         sql.append("     FROM " + stratTable + " sr, wdk_parent_steps ps ");
         sql.append("     WHERE sr.user_id = ps.user_id ");
@@ -355,7 +355,7 @@ public class StepValidator extends BaseCLI {
         String stepTable = schema + "steps";
 
         StringBuilder sql = new StringBuilder("DELETE FROM " + stepTable);
-        sql.append("WHERE step_id IN (SELECT step_id FROM " + parentTable + ")");
+        sql.append(" WHERE step_id IN (SELECT step_id FROM " + parentTable + ")");
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
