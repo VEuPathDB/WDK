@@ -213,19 +213,31 @@ public class StepValidator extends BaseCLI {
         String step = userDB.getUserSchema() + "steps";
         DataSource source = wdkModel.getUserPlatform().getDataSource();
 
-        String sql = "UPDATE " + step + " SET is_valid = 0 "
+
+        String tempTable = "wdk_part_steps";
+
+	String sql = "CREATE TABLE " + tempTable + " NOLOGGING AS "
+                + " SELECT step_id, user_id, display_id, left_child_id, "
+                + "        right_child_id, is_valid "
+                + " FROM " + step + " WHERE user_id IN "
+                + "   (SELECT user_id FROM " + step + " WHERE is_valid = 0)";
+        SqlUtils.executeUpdate(wdkModel, source, sql,
+                "wdk-invalidate-create-part-steps");
+
+
+        sql = "UPDATE " + step + " SET is_valid = 0 "
                 + "WHERE is_valid IS NULL AND step_id IN ("
-                + "  SELECT step_id          "
-                + "  FROM (SELECT s1.* FROM " + step + " s1, " + step + " s2"
-                + "        WHERE s1.user_id = s2.user_id "
-                + "          AND s2.is_valid = 0) "
+                + "  SELECT step_id FROM " + tempTable
                 + "  START WITH is_valid = 0 "
                 + "  CONNECT BY (prior display_id = right_child_id "
                 + "              OR prior display_id = left_child_id) "
                 + "            AND prior user_id = user_id)";
-
         SqlUtils.executeUpdate(wdkModel, source, sql,
                 "wdk-invalidate-parent-step");
+
+        sql = "DROP TABLE " + tempTable;
+        SqlUtils.executeUpdate(wdkModel, source, sql,
+                "wdk-invalidate-drop-part-steps");
 
     }
 
