@@ -215,11 +215,14 @@ public class StepValidator extends BaseCLI {
 
         String sql = "UPDATE " + step + " SET is_valid = 0 "
                 + "WHERE is_valid IS NULL AND step_id IN ("
-                + "    SELECT step_id FROM (SELECT * FROM " + step + " WHERE is_valid = 0) "
-                + "    START WITH is_valid = 0 "
-                + "    CONNECT BY (prior display_id = right_child_id "
-                + "                OR prior display_id = left_child_id) "
-                + "               AND prior user_id = user_id)";
+                + "  SELECT step_id          "
+                + "  FROM (SELECT s1.* FROM " + step + " s1, " + step + " s2"
+                + "        WHERE s1.user_id = s2.user_id "
+                + "          AND s2.is_valid = 0) "
+                + "  START WITH is_valid = 0 "
+                + "  CONNECT BY (prior display_id = right_child_id "
+                + "              OR prior display_id = left_child_id) "
+                + "            AND prior user_id = user_id)";
 
         SqlUtils.executeUpdate(wdkModel, source, sql,
                 "wdk-invalidate-parent-step");
@@ -271,27 +274,21 @@ public class StepValidator extends BaseCLI {
 
         StringBuilder sql = new StringBuilder("CREATE TABLE ");
         sql.append(danglingTable + " AS ");
-        sql.append("  (( SELECT s.step_id ");
-        sql.append("     FROM " + stepTable + " s,  ");
-        sql.append("          (  SELECT user_id, left_child_id ");
-        sql.append("             FROM " + stepTable);
-        sql.append("             WHERE left_child_id IS NOT NULL ");
-        sql.append("           MINUS ");
-        sql.append("             SELECT user_id, display_id FROM " + stepTable);
-        sql.append("          ) u ");
-        sql.append("     WHERE s.user_id = u.user_id ");
-        sql.append("       AND s.left_child_id = u.left_child_id) ");
+        sql.append("  ( (SELECT s1.step_id ");
+        sql.append("     FROM " + stepTable + " s1 ");
+        sql.append("     LEFT JOIN " + stepTable + " s2 ");
+        sql.append("       ON s1.user_id = s2.user_id");
+        sql.append("          AND s1.left_child_id = s2.display_id ");
+        sql.append("     WHERE s1.left_child_id IS NOT NULL ");
+        sql.append("       AND s2.display_id IS NULL) ");
         sql.append("   UNION ");
-        sql.append("   ( SELECT s.step_id  ");
-        sql.append("     FROM " + stepTable + " s,  ");
-        sql.append("          (  SELECT user_id, right_child_id ");
-        sql.append("             FROM " + stepTable);
-        sql.append("             WHERE right_child_id IS NOT NULL ");
-        sql.append("           MINUS ");
-        sql.append("             SELECT user_id, display_id FROM " + stepTable);
-        sql.append("          ) u ");
-        sql.append("     WHERE s.user_id = u.user_id ");
-        sql.append("       AND s.right_child_id = u.right_child_id) ");
+        sql.append("   ( SELECT s1.step_id  ");
+        sql.append("     FROM " + stepTable + " s1 ");
+        sql.append("     LEFT JOIN " + stepTable + " s2 ");
+        sql.append("       ON s1.user_id = s2.user_id");
+        sql.append("          AND s1.right_child_id = s2.display_id ");
+        sql.append("     WHERE s1.right_child_id IS NOT NULL ");
+        sql.append("       AND s2.display_id IS NULL) ");
         sql.append("  )");
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
@@ -304,15 +301,18 @@ public class StepValidator extends BaseCLI {
             WdkModelException, SQLException {
         logger.debug("looking for parents of dangling steps...");
 
+        String stepTable = schema + "steps";
+
         StringBuilder sql = new StringBuilder("CREATE TABLE ");
         sql.append(parentTable + " AS ");
         sql.append("  (SELECT s.step_id, s.user_id, s.display_id ");
-        sql.append("   FROM " + schema + "steps s");
+        sql.append("   FROM " + stepTable + " s ");
         sql.append("   START WITH s.step_id IN ");
-        sql.append("     (SELECT step_id FROM " + danglingTable + ")");
+        sql.append("     (SELECT step_id FROM " + danglingTable + ") ");
         sql.append("   CONNECT BY PRIOR s.user_id = s.user_id");
         sql.append("     AND (PRIOR s.display_id = s.left_child_id");
-        sql.append("          OR PRIOR s.display_id = s.right_child_id))");
+        sql.append("          OR PRIOR s.display_id = s.right_child_id) ");
+        sql.append("  )");
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
@@ -355,7 +355,8 @@ public class StepValidator extends BaseCLI {
         String stepTable = schema + "steps";
 
         StringBuilder sql = new StringBuilder("DELETE FROM " + stepTable);
-        sql.append(" WHERE step_id IN (SELECT step_id FROM " + parentTable + ")");
+        sql.append(" WHERE step_id IN (SELECT step_id FROM " + parentTable
+                + ")");
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
