@@ -235,7 +235,7 @@ public class StepValidator extends BaseCLI {
         String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
 
         StringBuilder sql = new StringBuilder("DELETE FROM ");
-        sql.append("step_params WHERE step_id IN ");
+        sql.append("step_params WHERE step_id NOT IN ");
         sql.append("(SELECT step_id FROM " + userSchema + "steps)");
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();

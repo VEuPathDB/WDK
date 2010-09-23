@@ -156,6 +156,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
             out.flush();
             out.close();
         } catch (Exception ex) {
+            ex.printStackTrace();
             if (ex instanceof WdkModelException && outputType != null) {
                 logger.info("WdkModelException");
                 WdkModelException wdkEx = (WdkModelException) ex;
