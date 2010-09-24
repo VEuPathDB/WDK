@@ -75,9 +75,7 @@ public abstract class QueryInstance {
         this.wdkModel = query.getWdkModel();
         this.cached = query.isCached();
         this.assignedWeight = assignedWeight;
-
-        // logger.debug("validating param values of query [" +
-        // query.getFullName() + "]");
+        
         setValues(values, validate);
     }
 

@@ -80,7 +80,7 @@ public class StepValidator extends BaseCLI {
 
         WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
 
-        dropDanglingStepsTable(wdkModel);
+        dropDanglingSteps(wdkModel);
         deleteInvalidParams(wdkModel);
 
         resetFlags(wdkModel);
@@ -94,6 +94,7 @@ public class StepValidator extends BaseCLI {
 
     private void resetFlags(WdkModel wdkModel) throws SQLException,
             WdkUserException, WdkModelException {
+        logger.debug("resetting is_valid flags...");
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String userSchema = userDB.getUserSchema();
         String wdkSchema = userDB.getWdkEngineSchema();
@@ -109,6 +110,8 @@ public class StepValidator extends BaseCLI {
 
     private void detectQuestions(WdkModel wdkModel) throws SQLException,
             WdkUserException, WdkModelException {
+        logger.debug("detecting invalid questions...");
+
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         DataSource source = wdkModel.getUserPlatform().getDataSource();
@@ -127,6 +130,8 @@ public class StepValidator extends BaseCLI {
 
     private void detectParams(WdkModel wdkModel) throws SQLException,
             WdkUserException, WdkModelException {
+        logger.debug("detecting invalid params...");
+
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
@@ -155,6 +160,8 @@ public class StepValidator extends BaseCLI {
 
     private void detectEnumParams(WdkModel wdkModel) throws SQLException,
             WdkUserException, WdkModelException {
+        logger.debug("detecting invalid enum params...");
+
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
@@ -194,6 +201,8 @@ public class StepValidator extends BaseCLI {
 
     private void flagSteps(WdkModel wdkModel) throws SQLException,
             WdkUserException, WdkModelException {
+        logger.debug("flagging invalid steps...");
+
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
@@ -209,21 +218,21 @@ public class StepValidator extends BaseCLI {
 
     private void flagDependentSteps(WdkModel wdkModel) throws WdkUserException,
             WdkModelException, SQLException {
+        logger.debug("Flagging invalid dependent steps...");
+
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String step = userDB.getUserSchema() + "steps";
         DataSource source = wdkModel.getUserPlatform().getDataSource();
 
-
         String tempTable = "wdk_part_steps";
 
-	String sql = "CREATE TABLE " + tempTable + " NOLOGGING AS "
+        String sql = "CREATE TABLE " + tempTable + " NOLOGGING AS "
                 + " SELECT step_id, user_id, display_id, left_child_id, "
-                + "        right_child_id, is_valid "
-                + " FROM " + step + " WHERE user_id IN "
-                + "   (SELECT user_id FROM " + step + " WHERE is_valid = 0)";
+                + "        right_child_id, is_valid " + " FROM " + step
+                + " WHERE user_id IN " + "   (SELECT user_id FROM " + step
+                + " WHERE is_valid = 0)";
         SqlUtils.executeUpdate(wdkModel, source, sql,
                 "wdk-invalidate-create-part-steps");
-
 
         sql = "UPDATE " + step + " SET is_valid = 0 "
                 + "WHERE is_valid IS NULL AND step_id IN ("
@@ -235,7 +244,7 @@ public class StepValidator extends BaseCLI {
         SqlUtils.executeUpdate(wdkModel, source, sql,
                 "wdk-invalidate-parent-step");
 
-        sql = "DROP TABLE " + tempTable;
+        sql = "DROP TABLE " + tempTable + " PURGE";
         SqlUtils.executeUpdate(wdkModel, source, sql,
                 "wdk-invalidate-drop-part-steps");
 
@@ -255,7 +264,7 @@ public class StepValidator extends BaseCLI {
                 "wdk-delete-invalid-step-params");
     }
 
-    private void dropDanglingStepsTable(WdkModel wdkModel)
+    private void dropDanglingSteps(WdkModel wdkModel)
             throws WdkUserException, WdkModelException, SQLException {
         logger.info("drop dangling steps table and related resources...");
 
@@ -272,9 +281,9 @@ public class StepValidator extends BaseCLI {
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         SqlUtils.executeUpdate(wdkModel, dataSource, "DROP TABLE "
-                + danglingTable, "wdk_drop_dangle_steps");
+                + danglingTable + " PURGE", "wdk_drop_dangle_steps");
         SqlUtils.executeUpdate(wdkModel, dataSource, "DROP TABLE "
-                + parentTable, "wdk_drop_parent_steps");
+                + parentTable + " PURGE", "wdk_drop_parent_steps");
     }
 
     private void selectDanglingSteps(WdkModel wdkModel, String schema,

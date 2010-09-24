@@ -8,11 +8,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 /**
  * @author xingao
  * 
  */
 public class ReporterRef extends WdkModelBase {
+
+    private static final Logger logger = Logger.getLogger(ReporterProperty.class);
 
     private String name;
     private String displayName;
@@ -36,7 +40,7 @@ public class ReporterRef extends WdkModelBase {
 
     /**
      * @param implementation
-     *                the implementation to set
+     *            the implementation to set
      */
     public void setImplementation(String implementation) {
         this.implementation = implementation;
@@ -51,7 +55,7 @@ public class ReporterRef extends WdkModelBase {
 
     /**
      * @param name
-     *                the name to set
+     *            the name to set
      */
     public void setName(String name) {
         this.name = name;
@@ -66,7 +70,7 @@ public class ReporterRef extends WdkModelBase {
 
     /**
      * @param displayName
-     *                the displayName to set
+     *            the displayName to set
      */
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
@@ -81,7 +85,7 @@ public class ReporterRef extends WdkModelBase {
 
     /**
      * @param inReportMaker
-     *                the inReportMaker to set
+     *            the inReportMaker to set
      */
     public void setInReportMaker(boolean inReportMaker) {
         this.inReportMaker = inReportMaker;
@@ -112,6 +116,8 @@ public class ReporterRef extends WdkModelBase {
                     throw new WdkModelException("The property " + propName
                             + " is duplicated in reporter " + name);
                 properties.put(propName, propValue);
+                logger.trace("reporter property: [" + propName + "]='"
+                        + propValue + "'");
             }
         }
         propertyList = null;
@@ -124,7 +130,9 @@ public class ReporterRef extends WdkModelBase {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
+     * @see
+     * org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
+     * .WdkModel)
      */
     @Override
     public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
