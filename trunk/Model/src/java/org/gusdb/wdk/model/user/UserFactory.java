@@ -175,7 +175,7 @@ public class UserFactory {
             psUser.setInt(1, userId);
             psUser.setString(2, email);
             psUser.setBoolean(3, false);
-            psUser.setDate(4, new java.sql.Date(registerTime.getTime()));
+            psUser.setTimestamp(4, new Timestamp(registerTime.getTime()));
             psUser.setString(5, lastName);
             psUser.setString(6, firstName);
             psUser.setString(7, middleName);
@@ -258,8 +258,8 @@ public class UserFactory {
             psUser.setInt(1, userId);
             psUser.setString(2, email);
             psUser.setBoolean(3, true);
-            psUser.setDate(4, new java.sql.Date(registerTime.getTime()));
-            psUser.setDate(5, new java.sql.Date(lastActiveTime.getTime()));
+            psUser.setTimestamp(4, new Timestamp(registerTime.getTime()));
+            psUser.setTimestamp(5, new Timestamp(lastActiveTime.getTime()));
             psUser.setString(6, firstName);
             psUser.setString(7, signature);
             psUser.executeUpdate();
@@ -607,7 +607,7 @@ public class UserFactory {
             long start = System.currentTimeMillis();
             psUser = SqlUtils.getPreparedStatement(dataSource, sqlUser);
             psUser.setBoolean(1, user.isGuest());
-            psUser.setDate(2, new java.sql.Date(lastActiveTime.getTime()));
+            psUser.setTimestamp(2, new Timestamp(lastActiveTime.getTime()));
             psUser.setString(3, user.getLastName());
             psUser.setString(4, user.getFirstName());
             psUser.setString(5, user.getMiddleName());
@@ -654,7 +654,7 @@ public class UserFactory {
             Date lastActiveTime = new Date();
             long start = System.currentTimeMillis();
             psUser = SqlUtils.getPreparedStatement(dataSource, sql);
-            psUser.setDate(1, new java.sql.Date(lastActiveTime.getTime()));
+            psUser.setTimestamp(1, new Timestamp(lastActiveTime.getTime()));
             psUser.setInt(2, user.getUserId());
             int result = psUser.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql,

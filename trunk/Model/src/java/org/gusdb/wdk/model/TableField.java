@@ -105,8 +105,8 @@ public class TableField extends Field implements AttributeFieldContainer {
         // resolve Query
         Query query = (Query) wdkModel.resolveReference(queryTwoPartName);
 
-        // validate the query
-        recordClass.validateQuery(query);
+        // validate the table query
+        recordClass.validateBulkQuery(query);
 
         // prepare the query and add primary key params
         String[] paramNames = recordClass.getPrimaryKeyAttributeField().getColumnRefs();

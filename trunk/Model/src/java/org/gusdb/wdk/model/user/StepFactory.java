@@ -797,9 +797,8 @@ public class StepFactory {
             if (recent) {
                 Calendar calendar = Calendar.getInstance();
                 calendar.add(Calendar.DATE, -1);
-                java.sql.Date date = new java.sql.Date(
-                        calendar.getTimeInMillis());
-                ps.setDate(5, date);
+                Date date = new Date();
+                ps.setTimestamp(5, new Timestamp(date.getTime()));
             }
             resultSet = ps.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql.toString(),
