@@ -65,12 +65,13 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
 
         }
 
+        private PrimaryKeyAttributeValue primaryKey;
         private Map<String, AttributeField> fields;
 
         private TableValueRow(TableValue tableValue)
                 throws NoSuchAlgorithmException, WdkModelException,
                 JSONException, SQLException {
-            this.setPrimaryKey(tableValue.primaryKey);
+            this.primaryKey = tableValue.primaryKey;
             this.fields = tableValue.getTableField().getAttributeFieldMap();
         }
 
@@ -233,6 +234,11 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
                 JSONException, SQLException {
         // do nothing, since the data is filled by the parent TableValue
         }
+
+        @Override
+        protected PrimaryKeyAttributeValue getPrimaryKey() {
+            return primaryKey;
+        }
     }
 
     private User user;
@@ -243,16 +249,24 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
     private List<Map<String, AttributeValue>> rows;
 
     public TableValue(User user, PrimaryKeyAttributeValue primaryKey,
-            TableField tableField) throws WdkModelException,
+            TableField tableField, boolean bulk) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         this.user = user;
         this.primaryKey = primaryKey;
         this.tableField = tableField;
 
-        // run the table query, and get the resultList
-        Query query = tableField.getQuery();
-        this.instance = query.makeInstance(user, primaryKey.getValues(), true, 0);
+        if (bulk) {
+            // bulk model, no need to create query instance, the rows will be
+            // initialized outside of TableValue.
+            rows = new ArrayList<Map<String,AttributeValue>>();
+        } else {
+            // not bulk model, need to create query instance, and initialize
+            // rows by the TableValue itself.
+            Query query = tableField.getQuery();
+            this.instance = query.makeInstance(user, primaryKey.getValues(),
+                    true, 0);
+        }
     }
 
     public TableField getTableField() {
@@ -459,23 +473,29 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         ResultList resultList = instance.getResults();
         try {
             while (resultList.next()) {
-                TableValueRow row = new TableValueRow(this);
-
-                // fill in the column attributes
-                for (AttributeField field : tableField.getAttributeFields()) {
-                    if (!(field instanceof ColumnAttributeField)) continue;
-
-                    Object value = resultList.get(field.getName());
-                    ColumnAttributeValue attributeValue = new ColumnAttributeValue(
-                            (ColumnAttributeField) field, value);
-                    row.addColumnAttributeValue(attributeValue);
-                }
-                rows.add(row);
+                initializeRow(resultList);
             }
         } finally {
             resultList.close();
         }
         logger.debug("Table value rows initialized.");
+    }
+
+    void initializeRow(ResultList resultList) throws NoSuchAlgorithmException,
+            WdkModelException, JSONException, SQLException {
+        TableValueRow row = new TableValueRow(this);
+
+        // fill in the column attributes
+        for (AttributeField field : tableField.getAttributeFields()) {
+            if (!(field instanceof ColumnAttributeField)) continue;
+
+            Object value = resultList.get(field.getName());
+            ColumnAttributeValue attributeValue = new ColumnAttributeValue(
+                    (ColumnAttributeField) field, value);
+            row.addAttributeValue(attributeValue);
+        }
+        rows.add(row);
+
     }
 
     /*

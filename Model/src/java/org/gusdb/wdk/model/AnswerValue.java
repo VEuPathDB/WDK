@@ -559,7 +559,7 @@ public class AnswerValue {
                     Object objValue = resultList.get(columnName);
                     ColumnAttributeValue value = new ColumnAttributeValue(
                             (ColumnAttributeField) field, objValue);
-                    record.addColumnAttributeValue(value);
+                    record.addAttributeValue(value);
                 }
             }
         }
@@ -590,6 +590,98 @@ public class AnswerValue {
             if (firstColumn) firstColumn = false;
             else sql.append(" AND ");
             sql.append("aq.").append(column).append(" = pidq.").append(column);
+        }
+        return sql.toString();
+    }
+
+    void integrateTableQuery(TableField tableField)
+            throws NoSuchAlgorithmException, WdkModelException,
+            WdkUserException, SQLException, JSONException {
+        initPageRecordInstances();
+
+        WdkModel wdkModel = question.getWdkModel();
+        // has to get a clean copy of the attribute query, without pk params
+        // appended
+        Query tableQuery = tableField.getQuery();
+        tableQuery = (Query) wdkModel.resolveReference(tableQuery.getFullName());
+
+        // get and run the paged attribute query sql
+        String sql = getPagedTableSql(tableQuery);
+        DBPlatform platform = wdkModel.getQueryPlatform();
+        DataSource dataSource = platform.getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+                tableQuery.getFullName() + "-paged");
+        ResultList resultList = new SqlResultList(resultSet);
+        
+        // initialize table values
+        for (RecordInstance record : pageRecordInstances.values()) {
+            PrimaryKeyAttributeValue primaryKey = record.getPrimaryKey();
+            TableValue tableValue = new TableValue(user, primaryKey, tableField, true);
+            record.addTableValue(tableValue);
+        }
+        
+        // make table values
+        PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
+        while (resultList.next()) {
+            // get primary key
+            Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+            for (String column : pkField.getColumnRefs()) {
+                pkValues.put(column, resultList.get(column));
+            }
+            PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
+                    pkField, pkValues);
+            RecordInstance record = pageRecordInstances.get(primaryKey);
+
+            if (record == null) {
+                StringBuffer error = new StringBuffer();
+                error.append("Paged table query [" + tableQuery.getFullName());
+                error.append("] returned rows that doesn't match the paged ");
+                error.append("records. (");
+                for (String pkName : pkValues.keySet()) {
+                    Object pkValue = pkValues.get(pkName);
+                    error.append(pkName + " = " + pkValue + ", ");
+                }
+                error.append(").\nPaged table SQL:\n" + sql);
+                error.append("\n" + "Paged ID SQL:\n" + getPagedIdSql());
+                throw new WdkModelException(error.toString());
+            }
+
+            TableValue tableValue= record.getTableValue(tableField.getName());
+            // initialize a row in table value
+            tableValue.initializeRow(resultList);
+        }
+        logger.debug("Table query [" + tableQuery.getFullName()
+                + "] integrated.");
+    }
+
+    private String getPagedTableSql(Query tableQuery) throws SQLException,
+            NoSuchAlgorithmException, WdkModelException, JSONException,
+            WdkUserException {
+        // get the paged SQL of id query
+        String idSql = getPagedIdSql();
+
+        PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
+
+        // combine the id query with attribute query
+        // make an instance from the original attribute query, and attribute
+        // query has only one param, user_id. Note that the original
+        // attribute query is different from the attribute query held by the
+        // recordClass.
+        Map<String, String> params = new LinkedHashMap<String, String>();
+        String userId = Integer.toString(user.getUserId());
+        params.put(Utilities.PARAM_USER_ID, userId);
+        QueryInstance queryInstance = tableQuery.makeInstance(user, params,
+                true, 0);
+        String tableSql = queryInstance.getSql();
+        StringBuffer sql = new StringBuffer("SELECT tq.* FROM (");
+        sql.append(idSql);
+        sql.append(") pidq, (").append(tableSql).append(") tq WHERE ");
+
+        boolean firstColumn = true;
+        for (String column : pkField.getColumnRefs()) {
+            if (firstColumn) firstColumn = false;
+            else sql.append(" AND ");
+            sql.append("tq.").append(column).append(" = pidq.").append(column);
         }
         return sql.toString();
     }

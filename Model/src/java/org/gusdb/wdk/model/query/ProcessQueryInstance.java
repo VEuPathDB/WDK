@@ -12,6 +12,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -127,7 +128,8 @@ public class ProcessQueryInstance extends QueryInstance {
                     } else if (type == ColumnType.CLOB) {
                         platform.setClobData(ps, columnId, value, false);
                     } else if (type == ColumnType.DATE) {
-                        ps.setDate(columnId, Date.valueOf(value));
+                        ps.setTimestamp(columnId, new Timestamp(Date.valueOf(
+                                value).getTime()));
                     } else if (type == ColumnType.FLOAT) {
                         ps.setFloat(columnId, Float.parseFloat(value));
                     } else if (type == ColumnType.NUMBER) {

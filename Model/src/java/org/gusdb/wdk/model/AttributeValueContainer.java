@@ -26,15 +26,9 @@ public abstract class AttributeValueContainer {
             throws WdkModelException, NoSuchAlgorithmException, JSONException,
             SQLException, WdkUserException;
 
-    protected PrimaryKeyAttributeValue primaryKey;
+    protected abstract PrimaryKeyAttributeValue getPrimaryKey();
 
     private Map<String, AttributeValue> attributeValueCache = new LinkedHashMap<String, AttributeValue>();
-
-    void setPrimaryKey(PrimaryKeyAttributeValue primaryKey) {
-        this.primaryKey = primaryKey;
-        attributeValueCache.put(primaryKey.getAttributeField().getName(),
-                primaryKey);
-    }
 
     public AttributeValue getAttributeValue(String fieldName)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
@@ -42,7 +36,6 @@ public abstract class AttributeValueContainer {
         // get the field from the cache; primary key always exists in the cache
         Map<String, AttributeField> fields = getAttributeFieldMap();
         AttributeField field = fields.get(fieldName);
-
         if (field == null)
             throw new WdkModelException("The attribute field [" + fieldName
                     + "]cannot be found");
@@ -59,7 +52,7 @@ public abstract class AttributeValueContainer {
             value = new TextAttributeValue((TextAttributeField) field, this);
             attributeValueCache.put(fieldName, value);
         } else if (field instanceof PrimaryKeyAttributeField) {
-            value = primaryKey;
+            value = getPrimaryKey();
             attributeValueCache.put(fieldName, value);
         } else if (field instanceof ColumnAttributeField) {
             Query query = ((ColumnAttributeField) field).getColumn().getQuery();
@@ -76,7 +69,7 @@ public abstract class AttributeValueContainer {
         return value;
     }
 
-    protected void addColumnAttributeValue(ColumnAttributeValue value) {
+    protected void addAttributeValue(AttributeValue value) {
         attributeValueCache.put(value.getAttributeField().getName(), value);
     }
 }
