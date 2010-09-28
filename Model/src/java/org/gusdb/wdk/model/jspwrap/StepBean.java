@@ -520,4 +520,11 @@ public class StepBean {
         return step.getAssignedWeight();
     }
 
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.user.Step#isRevisable()
+     */
+    public boolean isRevisable() {
+        return step.isRevisable();
+    }
 }
