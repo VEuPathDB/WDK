@@ -368,6 +368,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("validationMessage", step.getValidationMessage());
         jsStep.put("assignedWeight", step.getAssignedWeight());
         jsStep.put("useweights", model.getUseWeights());
+        jsStep.put("revisable", step.isRevisable());
 
         // determine the types of the step
         if (showSubStrategy && step.getIsCollapsible()) {

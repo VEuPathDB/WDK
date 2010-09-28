@@ -167,7 +167,7 @@ public class WdkModel {
      * @throws WdkModelException
      */
     public Question getQuestion(String questionFullName)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         Reference r = new Reference(questionFullName);
         QuestionSet ss = getQuestionSet(r.getSetName());
         return ss.getQuestion(r.getElementName());

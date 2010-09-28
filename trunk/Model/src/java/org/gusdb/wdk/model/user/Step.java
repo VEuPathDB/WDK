@@ -63,6 +63,8 @@ public class Step {
 
     private int previousStepId;
     private int childStepId;
+    
+    private boolean revisable = true;
 
     Step(StepFactory stepFactory, User user, int displayId, int internalId) {
         this.stepFactory = stepFactory;
@@ -257,6 +259,13 @@ public class Step {
      */
     public void setAnswer(Answer answer) {
         this.answer = answer;
+        String questionName = answer.getQuestionName();
+        try {
+            user.getWdkModel().getQuestion(questionName);
+        } catch (WdkModelException ex) {
+            this.valid = false;
+            this.revisable = false;
+        }
     }
 
     /**
@@ -429,10 +438,6 @@ public class Step {
             names.put(param.getName(), param.getPrompt());
         }
         return names;
-    }
-
-    void setQuestionName(String questionName) {
-        answer.setQuestionName(questionName);
     }
 
     public String getQuestionName() {
@@ -846,5 +851,9 @@ public class Step {
      */
     public void setChildStepId(int childStepId) {
         this.childStepId = childStepId;
+    }
+    
+    public boolean isRevisable() {
+        return revisable;
     }
 }
