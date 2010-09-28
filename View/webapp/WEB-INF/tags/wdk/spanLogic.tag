@@ -63,10 +63,8 @@
   <div id="spanLogicParams">
 	<table>
 		<tr>
-			<td>
+			<td colspan="2">
     <div class="roundLabel"><span>1</span></div>
-			</td>
-			<td> 
 				Text for Step 1
 			</td>
 		</tr>
@@ -124,7 +122,7 @@
 		</td>
 		</tr>
 		<tr>
-			<td>
+			<td colspan="2">
     <div class="roundLabel clear"><span>2</span></div>
 	Text for Step 2 </td>
 		</tr>
@@ -182,53 +180,54 @@
 	</td>
 </tr>
 </table>
-  </div>
+
   <br>
-<table>
+<table width="100%">
 	<tr>
 		<td>  
-<div class="roundLabel"><span>3</span> Text for Step 3</div>
+<div class="roundLabel"><span>3</span></div> Text for Step 3
 		</td>
 	</tr>
 	<tr>
 		<td>
-    <ul class="horizontal">
-      <li style="margin-bottom:5px;"><input type="radio" name="relationship" value="overlaps">Overlaps with</input></li>
-      <li style=""><input type="radio" name="relationship" value="contains">Containing</input></li>
-      <li style=""><input type="radio" name="relationship" value="contained">Contained within</input></li>
-    </ul>
+   			<table><tr>
+      <td style="margin-bottom:5px;"><input type="radio" name="relationship" value="overlaps">Overlaps with</input></td>
+      <td style=""><input type="radio" name="relationship" value="contains">Containing</input></td>
+      <td style=""><input type="radio" name="relationship" value="contained">Contained within</input></td>
+			</tr></table>
 		</td>
 	</tr>
 	<tr>
 		<td>
-<div class="roundLabel"><span>4</span>Text for Step 4</div>
+<div class="roundLabel"><span>4</span></div>Text for Step 4
 		</td>
 	</tr>
 	<tr>
 		<td>
-  <ul class="horizontal">
-    <li style="line-height:1.5">Select Strand:&nbsp;</li>
-    <li><input type="radio" name="strand" value="either">Either</input></li>
-    <li><input type="radio" name="strand" value="both">Both</input></li>
-    <li><input type="radio" name="strand" value="same">Same</input></li>
-  </ul>
+<table><tr>
+    <td style="line-height:1.5">Select Strand:&nbsp;</td>
+    <td><input type="radio" name="strand" value="either">Either</input></td>
+    <td><input type="radio" name="strand" value="both">Both</input></td>
+    <td><input type="radio" name="strand" value="same">Same</input></td>
+</tr></table>
 		</td>
 	</tr>
 	<tr>
 		<td>
-<div class="roundLabel"><span>5</span>Text for Step 5</div>
+<div class="roundLabel"><span>5</span></div>Text for Step 5
 		</td>
 	</tr>
 	<tr>
 		<td>
-  <ul class="horizontal">
-    <li style="line-height:1.5">Select Output Set:&nbsp;</li>
-    <li><input type="radio" name="output" value="A">Set A</input></li>
-    <li><input type="radio" name="output" value="B">Set B</input></li>
-  </ul>
+<table><tr>
+    <td style="line-height:1.5">Select Output Set:&nbsp;</td>
+    <td><input type="radio" name="output" value="A">Set A</input></td>
+    <td><input type="radio" name="output" value="B">Set B</input></td>
+</tr></table>
 		</td>
 	</tr>
 </table>
+  </div>
 </form>
 <script>
 	initWindow();
