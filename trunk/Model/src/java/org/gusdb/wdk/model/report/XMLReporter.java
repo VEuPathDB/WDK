@@ -99,6 +99,10 @@ public class XMLReporter extends Reporter {
         }
     }
 
+    public String getConfigInfo() {
+	return "This reporter does not have config info yet.";
+    }
+
     /*
      * (non-Javadoc)
      * 
