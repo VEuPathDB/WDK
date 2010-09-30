@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.report;
 
+import java.lang.reflect.Constructor;
 import java.io.OutputStream;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
@@ -31,7 +32,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
     private final static Logger logger = Logger.getLogger(Reporter.class);
 
-    private class PageAnswerIterator implements Iterator<AnswerValue> {
+    protected class PageAnswerIterator implements Iterator<AnswerValue> {
 
         private static final int MAX_PAGE_SIZE = 100;
 
@@ -39,7 +40,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         private int endIndex;
         private int startIndex;
 
-        PageAnswerIterator(AnswerValue answerValue, int startIndex, int endIndex)
+        public PageAnswerIterator(AnswerValue answerValue, int startIndex, int endIndex)
                 throws WdkModelException, NoSuchAlgorithmException,
                 SQLException, JSONException, WdkUserException {
             this.baseAnswer = answerValue;
@@ -77,6 +78,25 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
     }
 
+    public String getDescription() {
+	return description;
+    }
+
+    public void setDescription(String description) {
+	this.description = description;
+    }
+
+    public abstract String getConfigInfo();
+
+    public String getPropertyInfo() {
+	StringBuffer propInfo = new StringBuffer();
+	for (String propName : properties.keySet()) {
+	    propInfo.append(propName + ": " + properties.get(propName));
+	    propInfo.append(System.getProperty("line.separator"));
+	}
+	return propInfo.toString();
+    }
+
     public abstract void write(OutputStream out) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException;
@@ -91,6 +111,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
     private int endIndex;
 
     protected String format = "plain";
+    private String description = null;
 
     protected Reporter(AnswerValue answerValue, int startIndex, int endIndex) {
         this.baseAnswer = answerValue;
@@ -126,6 +147,19 @@ public abstract class Reporter implements Iterable<AnswerValue> {
             }
         }
     }
+
+    /**
+     * Hook used to perform any setup needed before
+     * calling the write method.
+     */
+    void initialize() {}
+
+
+    /**
+     * Hook used to perform any teardown needed after
+     * calling the write method.
+     */
+    void complete() {}
 
     public void setWdkModel(WdkModel wdkModel) {
         this.wdkModel = wdkModel;
