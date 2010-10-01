@@ -34,6 +34,7 @@ public class WizardAction extends Action {
 
     public static final String ATTR_STRATEGY = "wdkStrategy";
     public static final String ATTR_STEP = "wdkStep";
+    public static final String ATTR_ACTION = "action";
 
     /*
      * (non-Javadoc)
@@ -71,10 +72,13 @@ public class WizardAction extends Action {
 
             // check if there is a handler
             StageHandler handler = stage.getHandler();
-            Map<String, Object> values;
+            Map<String, Object> attributes;
             if (handler != null) {
-                values = handler.execute(servlet, request, response, wizardForm);
-            } else values = new HashMap<String, Object>();
+                attributes = handler.execute(servlet, request, response, wizardForm);
+            } else attributes = new HashMap<String, Object>();
+            
+            if (!attributes.containsKey(ATTR_ACTION))
+                attributes.put(ATTR_ACTION, wizardForm.getAction());
 
             Result result = stage.getResult();
             String type = result.getType();
@@ -83,8 +87,8 @@ public class WizardAction extends Action {
                 logger.debug("wizard view: " + forward);
 
                 // put values into attibute
-                for (String key : values.keySet()) {
-                    request.setAttribute(key, values.get(key));
+                for (String key : attributes.keySet()) {
+                    request.setAttribute(key, attributes.get(key));
                 }
 
                 logger.debug("Leaving WizardAction.....");
@@ -95,8 +99,8 @@ public class WizardAction extends Action {
 
                 // // forward to an action, and add values to the url
                 boolean first = (forward.indexOf('?') < 0);
-                for (String key : values.keySet()) {
-                    Object value = values.get(key);
+                for (String key : attributes.keySet()) {
+                    Object value = attributes.get(key);
                     String strValue = (value == null) ? null : value.toString();
                     builder.append(first ? "?" : "&");
                     builder.append(URLEncoder.encode(key, "utf-8") + "=");
