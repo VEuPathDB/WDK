@@ -88,6 +88,10 @@ public class Step {
         return parentStep;
     }
 
+    public Step getParentOrNextStep() {
+        return (nextStep != null) ? nextStep : parentStep;
+    }
+
     public Step getChildStep() throws WdkUserException, WdkModelException,
             SQLException, JSONException {
         if (childStep == null && childStepId != 0)
@@ -853,5 +857,39 @@ public class Step {
      */
     public void setChildStepId(int childStepId) {
         this.childStepId = childStepId;
+    }
+
+    /**
+     * The previous step param is always the first answerParam.
+     * 
+     * @return
+     * @throws WdkModelException
+     */
+    public String getPreviousStepParam() throws WdkModelException {
+        Param[] params = getQuestion().getParams();
+        for (Param param : params) {
+            if (param instanceof AnswerParam) {
+                return param.getName();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * the child step param is always the second answerParam
+     * 
+     * @return
+     * @throws WdkModelException
+     */
+    public String getChildStepParam() throws WdkModelException {
+        Param[] params = getQuestion().getParams();
+        int index = 0;
+        for (Param param : params) {
+            if (param instanceof AnswerParam) {
+                index++;
+                if (index == 2) return param.getName();
+            }
+        }
+        return null;
     }
 }

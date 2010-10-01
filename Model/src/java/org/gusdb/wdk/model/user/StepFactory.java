@@ -555,7 +555,7 @@ public class StepFactory {
 
         String dependentParamContent = userPlatform.getClobData(rsStep,
                 COLUMN_DISPLAY_PARAMS);
-logger.debug("step #" + stepId);
+        logger.debug("step #" + stepId);
         Map<String, String> dependentValues = parseParamContent(dependentParamContent);
 
         String answerChecksum = rsStep.getString(AnswerFactory.COLUMN_ANSWER_CHECKSUM);
@@ -1009,9 +1009,9 @@ logger.debug("step #" + stepId);
         PreparedStatement psStrategy = null;
         ResultSet rsStrategy = null;
         try {
-            StringBuffer sql = new StringBuffer("SELECT sr.* ");
-            sql.append(", sr." + COLUMN_LAST_VIEWED_TIME + ", sp."
-                    + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", a."
+            StringBuffer sql = new StringBuffer("SELECT sr.*, ");
+            sql.append(" sp." + COLUMN_ESTIMATE_SIZE + ", sp."
+                    + COLUMN_IS_VALID + ", a."
                     + AnswerFactory.COLUMN_PROJECT_VERSION + ", a."
                     + AnswerFactory.COLUMN_QUESTION_NAME);
             sql.append(" FROM " + userSchema + TABLE_STRATEGY + " sr, "
@@ -1068,10 +1068,9 @@ logger.debug("step #" + stepId);
             NoSuchAlgorithmException {
         String userColumn = Utilities.COLUMN_USER_ID;
         String answerColumn = AnswerFactory.COLUMN_ANSWER_ID;
-        StringBuffer sql = new StringBuffer("SELECT sr.* ");
-        sql.append(", sr." + COLUMN_LAST_VIEWED_TIME + ", sp."
-                + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", a."
-                + AnswerFactory.COLUMN_PROJECT_VERSION + ", a."
+        StringBuffer sql = new StringBuffer("SELECT sr.*, ");
+        sql.append(" sp." + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID
+                + ", a." + AnswerFactory.COLUMN_PROJECT_VERSION + ", a."
                 + AnswerFactory.COLUMN_QUESTION_NAME);
         sql.append(" FROM " + userSchema + TABLE_STRATEGY + " sr, "
                 + userSchema + TABLE_STEP + " sp, " + wdkSchema
@@ -1083,7 +1082,8 @@ logger.debug("step #" + stepId);
                 + COLUMN_PROJECT_ID);
         sql.append(" AND sr.").append(COLUMN_SIGNATURE).append(" = ? ");
         sql.append(" AND sr.").append(COLUMN_PROJECT_ID).append(" = ?");
-        sql.append(" ORDER BY sr.").append(COLUMN_LAST_MODIFIED_TIME).append(" DESC");
+        sql.append(" ORDER BY sr.").append(COLUMN_LAST_MODIFIED_TIME).append(
+                " DESC");
         ResultSet resultSet = null;
         PreparedStatement ps = null;
         try {
@@ -1093,9 +1093,9 @@ logger.debug("step #" + stepId);
             ps.setString(2, wdkModel.getProjectId());
             resultSet = ps.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql.toString(), start);
-	    System.out.println(sql);
-	    System.out.println(strategySignature);
-	    System.out.println(wdkModel.getProjectId());
+            System.out.println(sql);
+            System.out.println(strategySignature);
+            System.out.println(wdkModel.getProjectId());
             if (!resultSet.next())
                 throw new WdkUserException("The strategy " + strategySignature
                         + " does not exist");
@@ -1123,12 +1123,12 @@ logger.debug("step #" + stepId);
         try {
             if (overwrite) {
                 String sql = "SELECT " + COLUMN_STRATEGY_INTERNAL_ID + ", "
-                        + COLUMN_DISPLAY_ID + ", " + COLUMN_SIGNATURE 
+                        + COLUMN_DISPLAY_ID + ", " + COLUMN_SIGNATURE
                         + " FROM " + userSchema + TABLE_STRATEGY + " WHERE "
                         + userIdColumn + " = ? AND " + COLUMN_PROJECT_ID
-                        + " = ? AND " + COLUMN_NAME + " = ? AND " + COLUMN_IS_SAVED
-                        + " = ? AND " + COLUMN_IS_DELETED + " = ? AND "
-                        + COLUMN_DISPLAY_ID + " <> ?";
+                        + " = ? AND " + COLUMN_NAME + " = ? AND "
+                        + COLUMN_IS_SAVED + " = ? AND " + COLUMN_IS_DELETED
+                        + " = ? AND " + COLUMN_DISPLAY_ID + " <> ?";
                 // If we're overwriting, need to look up saved strategy id by
                 // name (only if the saved strategy is not the one we're
                 // updating, i.e. the saved strategy id != this strategy id)
@@ -1150,9 +1150,9 @@ logger.debug("step #" + stepId);
                 // saved strategy as deleted
                 if (rsStrategy.next()) {
                     int idToDelete = rsStrategy.getInt(COLUMN_DISPLAY_ID);
-		    String signature = rsStrategy.getString(COLUMN_SIGNATURE);
+                    String signature = rsStrategy.getString(COLUMN_SIGNATURE);
                     strategy.setIsSaved(true);
-		    strategy.setSignature(signature);
+                    strategy.setSignature(signature);
                     strategy.setSavedName(strategy.getName());
                     user.deleteStrategy(idToDelete);
                 }
@@ -1177,7 +1177,8 @@ logger.debug("step #" + stepId);
                     + COLUMN_NAME + " = ?, " + COLUMN_ROOT_STEP_ID + " = ?, "
                     + COLUMN_SAVED_NAME + " = ?, " + COLUMN_IS_SAVED + " = ?, "
                     + COLUMN_DESCRIPTION + " = ?, " + COLUMN_LAST_MODIFIED_TIME
-                    + " = ?, " + COLUMN_SIGNATURE + "= ? WHERE " + COLUMN_STRATEGY_INTERNAL_ID + " = ?";
+                    + " = ?, " + COLUMN_SIGNATURE + "= ? WHERE "
+                    + COLUMN_STRATEGY_INTERNAL_ID + " = ?";
             long start = System.currentTimeMillis();
             psStrategy = SqlUtils.getPreparedStatement(dataSource, sql);
             psStrategy.setString(1, strategy.getName());
@@ -1354,7 +1355,8 @@ logger.debug("step #" + stepId);
             if (paramNames != null) {
                 for (String paramName : paramNames) {
                     String paramValue = json.getString(paramName);
-logger.debug("param '" + paramName + "' = '" + paramValue + "'");
+                    logger.debug("param '" + paramName + "' = '" + paramValue
+                            + "'");
                     params.put(paramName, paramValue);
                 }
             }
