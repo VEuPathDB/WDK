@@ -53,7 +53,7 @@ public class BooleanStageHandler implements StageHandler {
         String strStrategyId = request.getParameter(PARAM_IMPORT_STRATEGY);
         if (questionName != null && questionName.length() > 0) {
             // a question name specified, create a step from it
-            childStep = createStepFromQuestion(request, wizardForm,
+            childStep = createStepFromQuestion(servlet, request, wizardForm,
                     questionName);
         } else if (strStrategyId != null && strStrategyId.length() > 0) {
             // a step specified, it must come from an insert strategy. make a
@@ -71,9 +71,9 @@ public class BooleanStageHandler implements StageHandler {
         return attributes;
     }
 
-    private StepBean createStepFromQuestion(HttpServletRequest request,
-            WizardForm wizardForm, String questionName)
-            throws WdkUserException, WdkModelException,
+    private StepBean createStepFromQuestion(ActionServlet servlet,
+            HttpServletRequest request, WizardForm wizardForm,
+            String questionName) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, IOException, SQLException, JSONException {
         // get the assigned weight
         String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
@@ -90,6 +90,7 @@ public class BooleanStageHandler implements StageHandler {
 
         // get params
         QuestionForm questionForm = new QuestionForm();
+        questionForm.setServlet(servlet);
         questionForm.setQuestionFullName(questionName);
         questionForm.copyFrom(wizardForm);
         Map<String, String> params = ProcessFilterAction.prepareParams(user,
