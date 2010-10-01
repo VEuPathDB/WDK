@@ -50,73 +50,80 @@ public class WizardAction extends Action {
         logger.debug("Entering WizardAction.....");
 
         UserBean user = ActionUtility.getUser(servlet, request);
-        WizardForm wizardForm = (WizardForm) form;
+        try {
+            WizardForm wizardForm = (WizardForm) form;
 
-        // load strategy
-        loadStrategy(request, wizardForm, user);
+            // load strategy
+            loadStrategy(request, wizardForm, user);
 
-        // get stage
-        Wizard wizard = (Wizard) servlet.getServletContext().getAttribute(
-                CConstants.WDK_WIZARD_KEY);
-        String stageName = request.getParameter(PARAM_STAGE);
-        Stage stage;
-        if (stageName == null || stageName.length() == 0) {
-            stage = wizard.getDefaultStage();
-            stageName = stage.getName();
-        } else {
-            stage = wizard.queryStage(stageName);
-        }
-        logger.info("stage: " + stageName);
-
-        // check if there is a handler
-        StageHandler handler = stage.getHandler();
-        Map<String, Object> values;
-        if (handler != null) {
-            values = handler.execute(servlet, request, response, wizardForm);
-        } else values = new HashMap<String, Object>();
-
-        Result result = stage.getResult();
-        String type = result.getType();
-        String forward = result.getText();
-        if (type.equals(Result.TYPE_VIEW)) { // forward to a jsp.
-            logger.debug("wizard view: " + forward);
-
-            // put values into attibute
-            for (String key : values.keySet()) {
-                request.setAttribute(key, values.get(key));
+            // get stage
+            Wizard wizard = (Wizard) servlet.getServletContext().getAttribute(
+                    CConstants.WDK_WIZARD_KEY);
+            String stageName = request.getParameter(PARAM_STAGE);
+            Stage stage;
+            if (stageName == null || stageName.length() == 0) {
+                stage = wizard.getDefaultStage();
+                stageName = stage.getName();
+            } else {
+                stage = wizard.queryStage(stageName);
             }
+            logger.info("stage: " + stageName);
 
-            logger.debug("Leaving WizardAction.....");
-            return new ActionForward(forward);
-        } else if (type.equals(Result.TYPE_ACTION)) { // forward to an action
-            StringBuilder builder = new StringBuilder(forward);
+            // check if there is a handler
+            StageHandler handler = stage.getHandler();
+            Map<String, Object> values;
+            if (handler != null) {
+                values = handler.execute(servlet, request, response, wizardForm);
+            } else values = new HashMap<String, Object>();
 
-            // // forward to an action, and add values to the url
-            boolean first = (forward.indexOf('?') < 0);
-            for (String key : values.keySet()) {
-                Object value = values.get(key);
-                String strValue = (value == null) ? null : value.toString();
-                builder.append(first ? "?" : "&");
-                builder.append(URLEncoder.encode(key, "utf-8") + "=");
-                builder.append(URLEncoder.encode(strValue, "utf-8"));
-                first = false;
+            Result result = stage.getResult();
+            String type = result.getType();
+            String forward = result.getText();
+            if (type.equals(Result.TYPE_VIEW)) { // forward to a jsp.
+                logger.debug("wizard view: " + forward);
+
+                // put values into attibute
+                for (String key : values.keySet()) {
+                    request.setAttribute(key, values.get(key));
+                }
+
+                logger.debug("Leaving WizardAction.....");
+                return new ActionForward(forward);
+            } else if (type.equals(Result.TYPE_ACTION)) { // forward to an
+                                                          // action
+                StringBuilder builder = new StringBuilder(forward);
+
+                // // forward to an action, and add values to the url
+                boolean first = (forward.indexOf('?') < 0);
+                for (String key : values.keySet()) {
+                    Object value = values.get(key);
+                    String strValue = (value == null) ? null : value.toString();
+                    builder.append(first ? "?" : "&");
+                    builder.append(URLEncoder.encode(key, "utf-8") + "=");
+                    builder.append(URLEncoder.encode(strValue, "utf-8"));
+                    first = false;
+                }
+
+                logger.debug("wizard action: " + builder);
+                logger.debug("Leaving WizardAction.....");
+                return new ActionForward(builder.toString());
+            } else {
+                throw new WdkModelException("Invalid result type: " + type);
             }
-
-            logger.debug("wizard action: " + builder);
-            logger.debug("Leaving WizardAction.....");
-            return new ActionForward(builder.toString());
-        } else {
-            throw new WdkModelException("Invalid result type: " + type);
+        } catch (Exception ex) {
+            logger.error(ex);
+            ex.printStackTrace();
+            ShowStrategyAction.outputErrorJSON(user, response, ex);
+            return null;
         }
+
     }
 
     private void loadStrategy(HttpServletRequest request,
             WizardForm wizardForm, UserBean user) throws WdkUserException,
             WdkModelException, NoSuchAlgorithmException, JSONException,
             SQLException {
-        int stratId = wizardForm.getStrategy();
-        if (stratId == 0)
-            throw new WdkUserException("The required strategy id is missing");
+        int stratId = wizardForm.getStrategyId();
         StrategyBean strategy = user.getStrategy(stratId);
 
         int stepId = wizardForm.getStep();

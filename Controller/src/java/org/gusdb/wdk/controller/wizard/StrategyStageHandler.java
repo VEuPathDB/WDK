@@ -17,9 +17,10 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 
 public class StrategyStageHandler implements StageHandler {
 
-    private static final String PARAM_INSERT_STRATEGY_ID = "insertStrategy";
+    private static final String PARAM_INSERT_STRATEGY_ID = "insertStrategyId";
 
-    private static final String ATTR_INSERT_STEP = "insertStep";
+    public static final String ATTR_INSERT_STEP = "insertStep";
+    public static final String ATTR_INSERT_STRATEGY = "insertStrategy";
 
     private static final Logger logger = Logger.getLogger(StrategyStageHandler.class);
 
@@ -38,12 +39,12 @@ public class StrategyStageHandler implements StageHandler {
         StrategyBean strategy = user.getStrategy(strategyId);
         StepBean step = strategy.getLatestStep();
         
-        Map<String, Object> results = new HashMap<String, Object>();
-        results.put(ATTR_INSERT_STEP, step);
-        results.put(PARAM_INSERT_STRATEGY_ID, strStrategyId);
+        Map<String, Object> attributes = new HashMap<String, Object>();
+        attributes.put(ATTR_INSERT_STEP, step);
+        attributes.put(ATTR_INSERT_STRATEGY, strategy);
         logger.debug("Leaving StrategyStageHandler....");
         
-        return results;
+        return attributes;
     }
 
 }
