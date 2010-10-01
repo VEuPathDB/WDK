@@ -332,7 +332,8 @@ public class Strategy {
         logger.debug("update step tree - target=" + targetStepId + ", newStep="
                 + newStep.getDisplayId());
         Map<Integer, Integer> stepIdsMap = new HashMap<Integer, Integer>();
-        Step targetStep = getLatestStep().getStepByDisplayId(targetStepId);
+        Step root = getLatestStep();
+        Step targetStep = root.getStepByDisplayId(targetStepId);
 
         int newStepId = newStep.getDisplayId();
         stepIdsMap.put(targetStepId, newStepId);
@@ -342,7 +343,7 @@ public class Strategy {
         newStep.update(false);
 
         // update the parents/nexts
-        while (targetStep.getParentOrNextStep() != null) {
+        while (targetStep.getInternalId() != root.getInternalId()) {
             targetStep = targetStep.getParentOrNextStep();
 
             // create a new step by replacing only the target step id in the
