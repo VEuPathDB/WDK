@@ -529,4 +529,23 @@ public class StepBean {
     public int getAnswerParamCount() throws WdkUserException, WdkModelException {
         return step.getAnswerParamCount();
     }
+
+    /**
+     * @return
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.user.Step#getChildStepParam()
+     */
+    public String getChildStepParam() throws WdkModelException {
+        return step.getChildStepParam();
+    }
+
+    /**
+     * @return
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.user.Step#getPreviousStepParam()
+     */
+    public String getPreviousStepParam() throws WdkModelException {
+        return step.getPreviousStepParam();
+    }
+    
 }

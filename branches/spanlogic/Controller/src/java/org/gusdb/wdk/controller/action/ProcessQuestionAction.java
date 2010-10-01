@@ -40,6 +40,74 @@ public class ProcessQuestionAction extends Action {
 
     private static final Logger logger = Logger.getLogger(ProcessQuestionAction.class);
 
+    public static Map<String, String> prepareParams(UserBean user,
+            HttpServletRequest request, QuestionForm qform)
+            throws WdkModelException, WdkUserException, FileNotFoundException,
+            IOException, NoSuchAlgorithmException, SQLException, JSONException {
+        Map<String, String> paramValues = new HashMap<String, String>();
+        QuestionBean question = qform.getQuestion();
+        if (question == null)
+            throw new WdkUserException("The question '"
+                    + request.getParameter(CConstants.QUESTION_FULLNAME_PARAM)
+                    + "' doesn't exist.");
+
+        Map<String, ParamBean> params = question.getParamsMap();
+        // convert from raw data to user dependent data
+        for (String paramName : params.keySet()) {
+            ParamBean param = params.get(paramName);
+
+            String rawValue = (String) qform.getValue(paramName);
+            logger.debug("Param raw: " + paramName + " = " + rawValue);
+            // logger.debug("param: " + paramName + "='" +
+            // paramErrors.get(paramName) + "'");
+            String dependentValue = null;
+            if (param instanceof DatasetParamBean) {
+                // get the input type
+                String type = request.getParameter(paramName + "_type");
+                if (type == null)
+                    throw new WdkUserException("Missing input parameter: "
+                            + paramName + "_type.");
+
+                RecordClassBean recordClass = ((DatasetParamBean) param).getRecordClass();
+                String data = null;
+                String uploadFile = "";
+                if (type.equalsIgnoreCase("data")) {
+                    data = request.getParameter(paramName + "_data");
+                } else if (type.equalsIgnoreCase("file")) {
+                    FormFile file = (FormFile) qform.getValue(paramName
+                            + "_file");
+                    uploadFile = file.getFileName();
+                    logger.debug("upload file: " + uploadFile);
+                    data = new String(file.getFileData());
+                } else if (type.equalsIgnoreCase("basket")) {
+                    data = user.getBasket(recordClass);
+                } else if (type.equals("strategy")) {
+                    String strId = request.getParameter(paramName + "_strategy");
+                    int displayId = Integer.parseInt(strId);
+                    StrategyBean strategy = user.getStrategy(displayId);
+                    StepBean step = strategy.getLatestStep();
+                    data = step.getAnswerValue().getAllIdList();
+                }
+
+                logger.debug("dataset data: '" + data + "'");
+                if (data != null && data.trim().length() > 0) {
+                    DatasetBean dataset = user.createDataset(recordClass,
+                            uploadFile, data);
+                    dependentValue = Integer.toString(dataset.getUserDatasetId());
+                }
+            } else if (rawValue != null && rawValue.length() > 0) {
+                dependentValue = param.rawOrDependentValueToDependentValue(
+                        user, rawValue);
+            }
+            // if (dependentValue != null && dependentValue.length() > 0) {
+            logger.debug("param " + paramName + " - "
+                    + param.getClass().getSimpleName() + " = " + dependentValue);
+            paramValues.put(paramName, dependentValue);
+            // }
+        }
+        return paramValues;
+    }
+
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -137,73 +205,5 @@ public class ProcessQuestionAction extends Action {
             ex.printStackTrace();
             throw ex;
         }
-    }
-
-    protected Map<String, String> prepareParams(UserBean user,
-            HttpServletRequest request, QuestionForm qform)
-            throws WdkModelException, WdkUserException, FileNotFoundException,
-            IOException, NoSuchAlgorithmException, SQLException, JSONException {
-        Map<String, String> paramValues = new HashMap<String, String>();
-        QuestionBean question = qform.getQuestion();
-        if (question == null)
-            throw new WdkUserException("The question '"
-                    + request.getParameter(CConstants.QUESTION_FULLNAME_PARAM)
-                    + "' doesn't exist.");
-
-        Map<String, ParamBean> params = question.getParamsMap();
-        // convert from raw data to user dependent data
-        for (String paramName : params.keySet()) {
-            ParamBean param = params.get(paramName);
-
-            String rawValue = (String) qform.getValue(paramName);
-            logger.debug("Param raw: " + paramName + " = " + rawValue);
-            // logger.debug("param: " + paramName + "='" +
-            // paramErrors.get(paramName) + "'");
-            String dependentValue = null;
-            if (param instanceof DatasetParamBean) {
-                // get the input type
-                String type = request.getParameter(paramName + "_type");
-                if (type == null)
-                    throw new WdkUserException("Missing input parameter: "
-                            + paramName + "_type.");
-
-                RecordClassBean recordClass = ((DatasetParamBean) param).getRecordClass();
-                String data = null;
-                String uploadFile = "";
-                if (type.equalsIgnoreCase("data")) {
-                    data = request.getParameter(paramName + "_data");
-                } else if (type.equalsIgnoreCase("file")) {
-                    FormFile file = (FormFile) qform.getValue(paramName
-                            + "_file");
-                    uploadFile = file.getFileName();
-                    logger.debug("upload file: " + uploadFile);
-                    data = new String(file.getFileData());
-                } else if (type.equalsIgnoreCase("basket")) {
-                    data = user.getBasket(recordClass);
-                } else if (type.equals("strategy")) {
-                    String strId = request.getParameter(paramName + "_strategy");
-                    int displayId = Integer.parseInt(strId);
-                    StrategyBean strategy = user.getStrategy(displayId);
-                    StepBean step = strategy.getLatestStep();
-                    data = step.getAnswerValue().getAllIdList();
-                }
-
-                logger.debug("dataset data: '" + data + "'");
-                if (data != null && data.trim().length() > 0) {
-                    DatasetBean dataset = user.createDataset(recordClass,
-                            uploadFile, data);
-                    dependentValue = Integer.toString(dataset.getUserDatasetId());
-                }
-            } else if (rawValue != null && rawValue.length() > 0) {
-                dependentValue = param.rawOrDependentValueToDependentValue(
-                        user, rawValue);
-            }
-            // if (dependentValue != null && dependentValue.length() > 0) {
-            logger.debug("param " + paramName + " - "
-                    + param.getClass().getSimpleName() + " = " + dependentValue);
-            paramValues.put(paramName, dependentValue);
-            // }
-        }
-        return paramValues;
     }
 }

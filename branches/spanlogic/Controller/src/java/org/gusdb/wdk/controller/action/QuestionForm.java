@@ -41,6 +41,9 @@ public class QuestionForm extends MapActionForm {
     public ActionErrors validate(ActionMapping mapping,
             HttpServletRequest request) {
         logger.debug("start form validation...");
+        ActionErrors errors = super.validate(mapping, request);
+        if (errors == null) errors = new ActionErrors();
+
         UserBean user = ActionUtility.getUser(servlet, request);
 
         // set the question name into request
@@ -48,10 +51,7 @@ public class QuestionForm extends MapActionForm {
         request.setAttribute(CConstants.QUESTION_FULLNAME_PARAM,
                 questionFullName);
 
-        ActionErrors errors = new ActionErrors();
-        if (!validating) {
-            return errors;
-        }
+        if (!validating) return errors;
 
         String clicked = request.getParameter(CConstants.PQ_SUBMIT_KEY);
         if (clicked != null
@@ -158,7 +158,7 @@ public class QuestionForm extends MapActionForm {
     public String getWeight() {
         return weight;
     }
-    
+
     @Override
     public Object getValue(String key) {
         return getValueOrArray(key);
