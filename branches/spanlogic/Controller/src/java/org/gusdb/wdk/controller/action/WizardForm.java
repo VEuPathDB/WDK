@@ -20,7 +20,7 @@ public class WizardForm extends MapActionForm {
     private String strategy;
     private int step;
     private String stage;
-    private String action = ACTION_ADD;
+    private String action;
 
     /**
      * @return the strategy
@@ -77,7 +77,7 @@ public class WizardForm extends MapActionForm {
      * @return the action
      */
     public String getAction() {
-        return action;
+        return (action == null) ? ACTION_ADD : action;
     }
 
     /**
