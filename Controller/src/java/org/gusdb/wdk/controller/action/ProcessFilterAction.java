@@ -30,7 +30,7 @@ import org.json.JSONException;
  * completes the partial boolean expression that was passed in, if any 4)
  * adds/inserts/edits step in strategy 5) forwards to application page
  */
-
+@deprecated
 public class ProcessFilterAction extends ProcessQuestionAction {
     private static final Logger logger = Logger.getLogger(ProcessFilterAction.class);
 
@@ -38,6 +38,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         logger.debug("Entering ProcessFilterAction...");
+
+        logger.debug("strategy: " + request.getParameter("strategy") + ", step: " + request.getParameter("step"));
 
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
