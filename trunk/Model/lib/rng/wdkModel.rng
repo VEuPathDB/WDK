@@ -971,7 +971,7 @@
             </zeroOrMore>
           </element>
           
-          <ref name="paramRef">
+          <ref name="paramRef" />
         </choice>
       </zeroOrMore>
 
