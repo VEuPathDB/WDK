@@ -638,6 +638,9 @@ public class ModelXmlParser extends XmlParser {
 
         configureLinkTextFields(digester,
                 "wdkModel/questionSet/question/dynamicAttributes/");
+        
+        configureNode(digester, "wdkModel/questionSet/question/paramRef",
+                ParamReference.class, "addParamRef");
     }
 
     private void configureXmlQuestionSet(Digester digester) {
