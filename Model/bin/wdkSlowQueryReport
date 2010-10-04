@@ -3,13 +3,14 @@ use strict;
 use Getopt::Long;
 use Time::Local;
 
-my ($threshold, $genepage, $width_filter, $time_filter, $sort_column);
+my ($threshold, $genepage, $width_filter, $time_filter, $sort_column, $plotOutputFile);
 $sort_column=2;
 &GetOptions('s=s' => \$threshold,
             'g' => \$genepage,
             'w=s' => \$width_filter,
             't=s' => \$time_filter,
             'c=s' => \$sort_column,
+            'p=s' => \$plotOutputFile,
             );
 
 
@@ -31,6 +32,10 @@ if ($time_filter) {
 
 # 89468376 [WARN ] org.gusdb.wdk.model.dbms.SqlUtils:324 - 130.91.178.191 - [27/Sep/2010:11:24:05 -0400] SLOW SQL [GeneVQ.DomainDatabase-uncached-result]: 11.295 seconds.
 my $h;
+
+if ($plotOutputFile) {
+  open(P, ">$plotOutputFile") || die "Can't open plot output file '$plotOutputFile'\n";
+}
 
 while(<STDIN>) {
   next unless /SLOW SQL/;
@@ -63,7 +68,14 @@ while(<STDIN>) {
     $h->{$name}->[4] += 1;           # count over threshold
   }
   $h->{$name}->[5] = $seconds if ($seconds > $h->{$name}->[5]); # max secs
+
+  # we are generating a plot data file too
+  if ($plotOutputFile) {
+    print P "$absoluteTime\t$seconds\t$name\n";
+  }
 }
+
+close(P) if ($plotOutputFile);
 
 my @sorted = sort {$b->[$sort_column-1] <=> $a->[$sort_column-1]} values(%$h);
 
