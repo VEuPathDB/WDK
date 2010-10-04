@@ -1010,6 +1010,7 @@ public class StepFactory {
         newStep.setCollapsible(oldStep.isCollapsible());
         String customName = oldStep.getBaseCustomName();
         if (customName != null) newStep.setCustomName(customName);
+        newStep.setValid(oldStep.isValid());
         newStep.update(false);
         return newStep;
     }
