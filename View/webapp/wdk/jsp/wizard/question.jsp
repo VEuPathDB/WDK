@@ -10,7 +10,7 @@
 <c:set var="checked" value=""/>
 <c:set var="buttonVal" value="Get Answer"/>
 <c:set var="wdkStep" value="${requestScope.wdkStep}"/>
-
+<c:set var="isRevise" value="false"/>
 
 
 <c:if test="${wdkQuestion.recordClass.fullName != wdkStep.dataType}">
@@ -21,7 +21,8 @@
 
 <c:set var="wizard" value="${requestScope.wizard}"/>
 <c:set var="stage" value="${requestScope.stage}"/>
-<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do"  onsubmit="callWizard('wizard.do?',this,null,null,'submit')">
+<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do"  onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
+
 <%-- the following sections are copied from <question.tag>, need to refactor into a separate tag --%>
 
 <input type="hidden" name="questionFullName" value="${wdkQuestion.fullName}"/>
