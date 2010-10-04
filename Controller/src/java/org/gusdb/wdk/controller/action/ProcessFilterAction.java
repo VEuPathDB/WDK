@@ -30,7 +30,7 @@ import org.json.JSONException;
  * completes the partial boolean expression that was passed in, if any 4)
  * adds/inserts/edits step in strategy 5) forwards to application page
  */
-@deprecated
+@Deprecated
 public class ProcessFilterAction extends ProcessQuestionAction {
     private static final Logger logger = Logger.getLogger(ProcessFilterAction.class);
 
