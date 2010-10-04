@@ -515,7 +515,12 @@
       </element>
     </zeroOrMore>
     <zeroOrMore>
-      <element name="paramRef">
+        <ref name="paramRef" />
+    </zeroOrMore>
+  </define>
+  
+  <define name="paramRef">
+    <element name="paramRef">
         <attribute name="ref" />
         <ref name="IncludeExclude" />
         <optional>
@@ -574,7 +579,6 @@
           </attribute>
         </optional>
       </element>
-    </zeroOrMore>
   </define>
 
   <!-- Instance grouping elements -->
@@ -966,6 +970,8 @@
               </choice>
             </zeroOrMore>
           </element>
+          
+          <ref name="paramRef">
         </choice>
       </zeroOrMore>
 

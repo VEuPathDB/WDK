@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
@@ -85,6 +86,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     private boolean ignoreSubType = false;
 
     private String shortDisplayName;
+
+    private List<ParamReference> paramRefs = new ArrayList<ParamReference>();
 
     // /////////////////////////////////////////////////////////////////////
     // setters called at initialization
@@ -216,7 +219,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             NoSuchAlgorithmException, SQLException, JSONException {
         int pageStart = 1;
         int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
-        Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>(defaultSortingMap);
+        Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>(
+                defaultSortingMap);
         AnswerFilterInstance filter = recordClass.getDefaultFilter();
         AnswerValue answerValue = makeAnswerValue(user, dependentValues,
                 pageStart, pageEnd, sortingMap, filter, assignedWeight);
@@ -502,8 +506,25 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
             // the id query is forced to be cache-able.
             query = (Query) model.resolveReference(idQueryRef);
-            // query.setIsCacheable(true);
-            
+
+            // check if we need to clone the query;
+            if (paramRefs.size() > 0) {
+                query = query.clone();
+                String queryName = query.getFullName();
+                Map<String, Param> params = query.getParamMap();
+                for (ParamReference paramRef : paramRefs) {
+                    String paramName = paramRef.getElementName();
+                    if (!params.containsKey(paramName))
+                        throw new WdkModelException("The paramRef ["
+                                + paramName + "] defined in QUESTION ["
+                                + getFullName() + "] doesn't exist in the "
+                                + "referenced id query [" + queryName + "].");
+                    Param param = ParamReference.resolveReference(model,
+                            paramRef, queryName);
+                    query.addParam(param);
+                }
+            }
+
             // all the id queries should has a weight column
             query.setHasWeight(true);
 
@@ -557,7 +578,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
      */
     public Map<String, Boolean> getSortingAttributeMap() {
         Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
-        
+
         for (String attrName : defaultSortingMap.keySet()) {
             map.put(attrName, defaultSortingMap.get(attrName));
             if (map.size() >= User.SORTING_LEVEL) break;
@@ -682,6 +703,16 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             dynamicSet.excludeResources(projectId);
             this.dynamicAttributeSet = dynamicSet;
         }
+
+        // exclude param refs
+        for (int i = paramRefs.size() - 1; i >= 0; i--) {
+            ParamReference paramRef = paramRefs.get(i);
+            if (paramRef.include(projectId)) {
+                paramRef.excludeResources(projectId);
+            } else {
+                paramRefs.remove(i);
+            }
+        }
     }
 
     private Query createDynamicAttributeQuery(WdkModel wdkModel)
@@ -737,5 +768,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         AnswerParam[] array = new AnswerParam[list.size()];
         list.toArray(array);
         return array;
+    }
+
+    public void addParamRef(ParamReference paramRef) {
+        this.paramRefs.add(paramRef);
     }
 }
