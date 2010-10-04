@@ -210,7 +210,6 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 function callWizard(url, ele, id, sec, action){
 	switch (action){
 			case "submit":
-				//url = url + "stage="+$(ele).attr("action")+"&strategy="+getStrategy(current_Front_Strategy_Id).backId;
 				url = url + "stage="+stage+"&strategy="+getStrategy(current_Front_Strategy_Id).backId;
 				$(ele).attr("action", "javascript:void(0)");
 				$.ajax({
@@ -226,9 +225,6 @@ function callWizard(url, ele, id, sec, action){
 						}else{
 							pop_up_state.push($("#qf_content").html());
 							$("#qf_content").html(data);
-							//if(ele != undefined){
-							//	showNewSection(ele,id,sec);
-							//}
 						}
 					}	
 				});
