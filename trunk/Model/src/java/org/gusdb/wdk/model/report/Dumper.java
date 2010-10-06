@@ -50,7 +50,7 @@ public class Dumper {
 
         // get arguments
         String modelName = cmdLine.getOptionValue("model");
-        String baseDir = cmdLine.getOptionValue("dir");
+        String baseDir = cmdLine.getOptionValue("baseDir");
         String reporterName = cmdLine.getOptionValue("reporter");
 	String questionName = cmdLine.getOptionValue("question");
 	String outputFileName = cmdLine.getOptionValue("fileName");
@@ -96,6 +96,9 @@ public class Dumper {
 	finally {
 	    // complete the reporter
 	    reporter.complete();
+	    // flush the output stream
+	    out.flush();
+	    out.close();
 	}
     }
 
