@@ -3,6 +3,8 @@
 
 <c:set var="importStep" value="${requestScope.importStep}"/>
 <c:set var="wdkStep" value="${requestScope.wdkStep}"/>
+<c:set var="allowChooseOutput" value="${requestScope.allowChooseOutput}"/>
+
 
 <style>
   #spanLogicParams, #spanLogicGraphics {
@@ -221,8 +223,13 @@
 		<td>
 <table><tr>
     <td style="line-height:1.5">Select Output Set:&nbsp;</td>
-    <td><input type="radio" name="output" value="A">Set A</input></td>
-    <td><input type="radio" name="output" value="B">Set B</input></td>
+    <c:if test="allowBoolean == false">
+      <c:set var="disabled" value="DISABLED"/>
+      <c:set var="selected" value="CHECKED" />
+      You cannot select output because there are steps in the strategy after the current one you are working on.
+    </c:if>
+    <td><input type="radio" name="output" value="A" ${disabled} ${selected}>Set A</input></td>
+    <td><input type="radio" name="output" value="B" ${disabled}>Set B</input></td>
 </tr></table>
 		</td>
 	</tr>
