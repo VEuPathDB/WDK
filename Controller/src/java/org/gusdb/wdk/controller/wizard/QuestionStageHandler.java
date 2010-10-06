@@ -24,6 +24,7 @@ public class QuestionStageHandler implements StageHandler {
     private static final String PARAM_QUESTION_NAME = "questionFullName";
 
     private static final String ATTR_QUESTION = "question";
+    private static final String ATTR_ALLOW_BOOLEAN = "allowBoolean";
 
     private static final Logger logger = Logger.getLogger(QuestionStageHandler.class);
 
@@ -58,20 +59,26 @@ public class QuestionStageHandler implements StageHandler {
         if (paramName != null) {
             String action = wizardForm.getAction();
             StepBean currentStep = (StepBean) request.getAttribute(WizardAction.ATTR_STEP);
-            int stepId;
+            StepBean inputStep;
             if (action.equals(WizardForm.ACTION_ADD)) {
-                // add, use the current step
-                stepId = currentStep.getStepId();
-            } else {
-                // revise or insert, use the previous step of the current
-                // one.
-                stepId = currentStep.getPreviousStep().getStepId();
+                // add, the current step is the last step of a strategy or a
+                // sub-strategy, use it as the input;
+                inputStep = currentStep;
+            } else { // revise or insert,
+                // the current step is always the lower step in the graph, no
+                // matter whether it's a boolean, or a combined step. Use the
+                // previous step as the input.
+                inputStep = currentStep.getPreviousStep();
             }
-            attributes.put("value(" + paramName + ")", stepId);
+            attributes.put("value(" + paramName + ")", inputStep.getStepId());
+
+            // check if boolean is allowed
+            String importType = question.getRecordClass().getFullName();
+            boolean allowBoolean = importType.equals(inputStep.getType());
+            attributes.put(ATTR_ALLOW_BOOLEAN, allowBoolean);
         }
 
         logger.debug("Leaving QuestionStageHandler....");
         return attributes;
     }
-
 }
