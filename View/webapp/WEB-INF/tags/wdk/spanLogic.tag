@@ -64,6 +64,8 @@
 <c:set var="pMap" value="${question.paramsMap}"/>
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do"  onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
   <div id="spanLogicParams">
+	<wdk:answerParamInput qp="${pMap['span_a']}"/>
+	<wdk:answerParamInput qp="${pMap['span_b']}"/>
 	<table>
 		<tr>
 			<td colspan="2">
@@ -184,7 +186,9 @@
           </td>
         </tr>
 </table>
+
   </div>
+<div class="filter-button"><html:submit property="questionSubmit" value="Run Step"/></div>
 </html:form>
 <script>
 	initWindow();
