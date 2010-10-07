@@ -1,6 +1,7 @@
+<%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-
+<c:set var="question" value="${requestScope.wdkQuestion}"/>
 <c:set var="importStep" value="${requestScope.importStep}"/>
 <c:set var="wdkStep" value="${requestScope.wdkStep}"/>
 <c:set var="allowChooseOutput" value="${requestScope.allowChooseOutput}"/>
@@ -60,8 +61,8 @@
 	border:1px solid black;
   }
 </style>
-
-<form>
+<c:set var="pMap" value="${question.paramsMap}"/>
+<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do"  onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
   <div id="spanLogicParams">
 	<table>
 		<tr>
@@ -75,44 +76,18 @@
     <fieldset id="setAFields">
       <table id="offsetOptions" cellpadding="2">
         <tr>
-          <td>begin</td>
-          <td align="left">
-            <select name="upstreamAnchor" onchange="redraw(true,'A')">
-              <option value="Start" selected>Start</option>
-              <option value="CodeStart">translation start (ATG)</option>
-              <option value="CodeEnd">translation stop codon</option>
-              <option value="End">Stop</option>
-            </select>
-          </td>
-          <td align="left">
-            <select name="upstreamSign" onchange="redraw(true,'A')">
-              <option value="plus" selected>+</option>
-              <option value="minus">-</option>
-            </select>
-	  </td>
-          <td align="left">
-            <input id="upstreamOffset" name="upstreamOffset" value="0" size="6" onchange="redraw(true,'A')"/> nucleotides
-          </td>
+		<td><wdk:enumParamInput qp="${pMap['span_begin_a']}"/></td>
+		<td><wdk:enumParamInput qp="${pMap['span_begin_direction_a']}"/></td>
+		<td align="left" valign="top">
+            <html:text styleId="span_begin_offset_a" property="value(span_begin_offset_a)" size="35" />
+        </td>
         </tr>
         <tr>
-          <td>end</td>
-          <td align="left">
-            <select name="downstreamAnchor" onchange="redraw(true,'A')">
-              <option value="Start">Start</option>
-              <option value="CodeStart">translation start (ATG)</option>
-              <option value="CodeEnd">translation stop codon</option>
-              <option value="End" selected>Stop</option>
-            </select>
-          </td>
-          <td align="left">
-            <select name="downstreamSign" onchange="redraw(true,'A')">
-              <option value="plus" selected>+</option>
-              <option value="minus">-</option>
-            </select>
-          </td>
-          <td align="left">
-            <input id="downstreamOffset" name="downstreamOffset" value="0" size="6" onchange="redraw(true,'A')"> nucleotides
-          </td>
+		<td><wdk:enumParamInput qp="${pMap['span_end_a']}"/></td>
+		<td><wdk:enumParamInput qp="${pMap['span_end_direction_a']}"/></td>
+		<td align="left" valign="top">
+            <html:text styleId="span_end_offset_a" property="value(span_end_offset_a)" size="35" />
+        </td>
         </tr>
       </table>
     </fieldset>
@@ -133,44 +108,18 @@
     <fieldset id="setBFields">
       <table id="offsetOptions" cellpadding="2">
         <tr>
-          <td>begin</td>
-          <td align="left">
-            <select name="upstreamAnchor" onchange="redraw(true,'B')">
-              <option value="Start" selected>Start</option>
-              <option value="CodeStart">translation start (ATG)</option>
-              <option value="CodeEnd">translation stop codon</option>
-              <option value="End">Stop</option>
-            </select>
-          </td>
-          <td align="left">
-            <select name="upstreamSign" onchange="redraw(true,'B')">
-              <option value="plus" selected>+</option>
-              <option value="minus">-</option>
-            </select>
-	  </td>
-          <td align="left">
-            <input id="upstreamOffset" name="upstreamOffset" value="0" size="6" onchange="redraw(true,'B')"/> nucleotides
-          </td>
-        </tr>
-        <tr>
-          <td>end</td>
-          <td align="left">
-            <select name="downstreamAnchor" onchange="redraw(true,'B')">
-              <option value="Start">Start</option>
-              <option value="CodeStart">translation start (ATG)</option>
-              <option value="CodeEnd">translation stop codon</option>
-              <option value="End" selected>Stop</option>
-            </select>
-          </td>
-          <td align="left">
-            <select name="downstreamSign" onchange="redraw(true,'B')">
-              <option value="plus" selected>+</option>
-              <option value="minus">-</option>
-            </select>
-          </td>
-          <td align="left">
-            <input id="downstreamOffset" name="downstreamOffset" value="0" size="6" onchange="redraw(true,'B')"/> nucleotides
-          </td>
+          	<td><wdk:enumParamInput qp="${pMap['span_begin_b']}"/></td>
+			<td><wdk:enumParamInput qp="${pMap['span_begin_direction_b']}"/></td>
+			<td align="left" valign="top">
+	            <html:text styleId="span_begin_offset_b" property="value(span_begin_offset_b)" size="35" />
+	        </td>
+	        </tr>
+	        <tr>
+			<td><wdk:enumParamInput qp="${pMap['span_end_b']}"/></td>
+			<td><wdk:enumParamInput qp="${pMap['span_end_direction_b']}"/></td>
+			<td align="left" valign="top">
+	            <html:text styleId="span_end_offset_b" property="value(span_end_offset_b)" size="35" />
+	        </td>
         </tr>
       </table>
     </fieldset>
@@ -193,9 +142,7 @@
 	<tr>
 		<td>
    			<table><tr>
-      <td style="margin-bottom:5px;"><input type="radio" name="relationship" value="overlaps">Overlaps with</input></td>
-      <td style=""><input type="radio" name="relationship" value="contains">Containing</input></td>
-      <td style=""><input type="radio" name="relationship" value="contained">Contained within</input></td>
+			<td><wdk:enumParamInput qp="${pMap['span_operation']}"/></td>
 			</tr></table>
 		</td>
 	</tr>
@@ -207,10 +154,7 @@
 	<tr>
 		<td>
 <table><tr>
-    <td style="line-height:1.5">Select Strand:&nbsp;</td>
-    <td><input type="radio" name="strand" value="either">Either</input></td>
-    <td><input type="radio" name="strand" value="both">Both</input></td>
-    <td><input type="radio" name="strand" value="same">Same</input></td>
+    <td><wdk:enumParamInput qp="${pMap['span_strand']}"/></td>
 </tr></table>
 		</td>
 	</tr>
@@ -228,14 +172,15 @@
       <c:set var="selected" value="CHECKED" />
       You cannot select output because there are steps in the strategy after the current one you are working on.
     </c:if>
-    <td><input type="radio" name="output" value="A" ${disabled} ${selected}>Set A</input></td>
-    <td><input type="radio" name="output" value="B" ${disabled}>Set B</input></td>
+    <!--<td><input type="radio" name="output" value="A" ${disabled} ${selected}>Set A</input></td>
+    <td><input type="radio" name="output" value="B" ${disabled}>Set B</input></td>-->
+	<wdk:enumParamInput qp="${pMap['span_output']}"/>
 </tr></table>
 		</td>
 	</tr>
 </table>
   </div>
-</form>
+</html:form>
 <script>
 	initWindow();
 </script>
