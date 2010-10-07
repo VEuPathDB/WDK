@@ -46,6 +46,21 @@ public class QuestionStageHandler implements StageHandler {
         Map<String, Object> attributes = new HashMap<String, Object>();
         attributes.put(ATTR_QUESTION, question);
 
+        // get input step
+        String action = wizardForm.getAction();
+        StepBean currentStep = (StepBean) request.getAttribute(WizardAction.ATTR_STEP);
+        StepBean inputStep;
+        if (action.equals(WizardForm.ACTION_ADD)) {
+            // add, the current step is the last step of a strategy or a
+            // sub-strategy, use it as the input;
+            inputStep = currentStep;
+        } else { // revise or insert,
+            // the current step is always the lower step in the graph, no
+            // matter whether it's a boolean, or a combined step. Use the
+            // previous step as the input.
+            inputStep = currentStep.getPreviousStep();
+        }
+
         // set the previous step value
         String paramName = null;
         for (ParamBean param : question.getParams()) {
@@ -57,26 +72,13 @@ public class QuestionStageHandler implements StageHandler {
             }
         }
         if (paramName != null) {
-            String action = wizardForm.getAction();
-            StepBean currentStep = (StepBean) request.getAttribute(WizardAction.ATTR_STEP);
-            StepBean inputStep;
-            if (action.equals(WizardForm.ACTION_ADD)) {
-                // add, the current step is the last step of a strategy or a
-                // sub-strategy, use it as the input;
-                inputStep = currentStep;
-            } else { // revise or insert,
-                // the current step is always the lower step in the graph, no
-                // matter whether it's a boolean, or a combined step. Use the
-                // previous step as the input.
-                inputStep = currentStep.getPreviousStep();
-            }
             attributes.put("value(" + paramName + ")", inputStep.getStepId());
-
-            // check if boolean is allowed
-            String importType = question.getRecordClass().getFullName();
-            boolean allowBoolean = importType.equals(inputStep.getType());
-            attributes.put(ATTR_ALLOW_BOOLEAN, allowBoolean);
         }
+        // check if boolean is allowed
+        String importType = question.getRecordClass().getFullName();
+        boolean allowBoolean = importType.equals(inputStep.getType());
+        logger.debug("allow boolean: " + allowBoolean);
+        attributes.put(ATTR_ALLOW_BOOLEAN, allowBoolean);
 
         logger.debug("Leaving QuestionStageHandler....");
         return attributes;
