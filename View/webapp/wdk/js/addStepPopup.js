@@ -5,7 +5,7 @@ var original_Query_Form_CSS = new Object();
 var current_Front_Strategy_Id = null;
 var isSpan = false;
 var pop_up_state = new Array();
-var stage = null;
+// var stage = null;
 function showExportLink(stratId){
  	closeModal();
  	var exportLink = $("div#export_link_div_" + stratId);
@@ -210,6 +210,7 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 function callWizard(url, ele, id, sec, action){
 	switch (action){
 			case "submit":
+                                var stage = $(ele).find("#stage").val();
 				url = url + "stage="+stage+"&strategy="+getStrategy(current_Front_Strategy_Id).backId;
 				$(ele).attr("action", "javascript:void(0)");
 				$.ajax({
@@ -358,7 +359,8 @@ function showNewSection(ele,sectionName,sectionNumber){
 
 function changeButtonText(ele){
 	var val = "";
- 	stage = $(ele).attr("stage");
+ 	var stage = $(ele).attr("stage");
+        $(ele).parents("form").find("#stage").val(stage);
 	if($(ele).val() != "SPAN"){
 		v = "Get Answer";
 	}else{
