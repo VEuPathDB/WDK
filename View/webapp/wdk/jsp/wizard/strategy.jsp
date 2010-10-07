@@ -35,13 +35,20 @@
 
 <div id="operations">
 
+<c:choose>
+  <c:when test="${allowBoolean == false}">
+    <c:set var="nextStage" value="process_boolean" />
+    <c:set var="disabled" value="DISABLED"/>
+    <p>Boolean operations are disabled because the input are of different record types.</p>
+  </c:when>
+  <c:otherwise>
+    <c:set var="nextStage" value="span_from_question" />
+  </c:otherwise>
+</c:choose>
+<html:hidden property="stage" styleId="stage" value="${nextStage}" />
+
     <table>
-<c:if test="${spanOnly == 'false'}">
       <tr>
-        <c:if test="allowBoolean == false">
-          <c:set var="disabled" value="DISABLED"/>
-          Boolean operations are disabled because the input are of different record types.
-        </c:if>
         <td class="opcheck" valign="middle"><input onclick="changeButtonText(this)" name="boolean" value="INTERSECT" type="radio" stage="process_boolean" ${disabled}></td>
         <td class="operation INTERSECT"></td><td valign="middle">&nbsp;1&nbsp;<b>INTERSECT</b>&nbsp;2</td>
         <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
@@ -55,7 +62,6 @@
         <td class="operation RMINUS"></td><td>&nbsp;2&nbsp;<b>MINUS</b>&nbsp;1</td>
       </tr>
 	<tr><td colspan="15" align="center"><hr><b>OR</b><hr></td></tr>
-</c:if>
 
 	  <tr>	
 		<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
