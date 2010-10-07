@@ -178,6 +178,11 @@
 </tr></table>
 		</td>
 	</tr>
+        <tr>
+          <td>
+            <html:submit property="questionSubmit" value="Get Answer" />
+          </td>
+        </tr>
 </table>
   </div>
 </html:form>
