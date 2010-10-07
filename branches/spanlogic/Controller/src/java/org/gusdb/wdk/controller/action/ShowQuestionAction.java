@@ -75,15 +75,10 @@ public class ShowQuestionAction extends Action {
             QuestionForm qForm) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         // get the current user
-        WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
-                CConstants.WDK_MODEL_KEY);
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
 
-        UserBean user = (UserBean) request.getSession().getAttribute(
-                CConstants.WDK_USER_KEY);
-        if (user == null) {
-            user = wdkModel.getUserFactory().getGuestUser();
-            request.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
-        }
+        UserBean user = ActionUtility.getUser(servlet, request);
+        wdkQuestion.setUser(user);
 
         logger.debug("strategy count: " + user.getStrategyCount());
 

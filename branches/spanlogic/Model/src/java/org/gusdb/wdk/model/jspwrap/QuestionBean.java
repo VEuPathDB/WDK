@@ -38,6 +38,7 @@ public class QuestionBean {
     private static final long serialVersionUID = 6353373897551871273L;
 
     Question question;
+    private UserBean user;
 
     /**
      * the recordClass full name for the answerParams input type.
@@ -46,6 +47,10 @@ public class QuestionBean {
 
     public QuestionBean(Question question) {
         this.question = question;
+    }
+    
+    public void setUser(UserBean user) {
+        this.user = user;
     }
 
     public RecordClassBean getRecordClass() {
@@ -113,17 +118,20 @@ public class QuestionBean {
     }
 
     private ParamBean getParam(Param param) {
+        ParamBean bean;
         if (param instanceof AbstractEnumParam) {
-            return new EnumParamBean((AbstractEnumParam) param);
+            bean = new EnumParamBean((AbstractEnumParam) param);
         } else if (param instanceof AnswerParam) {
-            return new AnswerParamBean((AnswerParam) param);
+            bean = new AnswerParamBean((AnswerParam) param);
         } else if (param instanceof DatasetParam) {
-            return new DatasetParamBean((DatasetParam) param);
+            bean = new DatasetParamBean((DatasetParam) param);
         } else if (param instanceof TimestampParam) {
-            return new TimestampParamBean((TimestampParam) param);
+            bean = new TimestampParamBean((TimestampParam) param);
         } else {
-            return new ParamBean(param);
+            bean = new ParamBean(param);
         }
+        bean.setUser(user);
+        return bean;
     }
 
     public Map<String, AttributeFieldBean> getSummaryAttributesMap() {
