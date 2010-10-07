@@ -25,11 +25,13 @@ Otherwise a standard select menu is used.
 
 <c:choose>
   <c:when test="${qp.isReadonly}">
-    <c:set var="checksum" value="${param[pNam]}" />
-    <jsp:setProperty name="qp" property="answerChecksum" value="${checksum}" /> 
-    <c:set var="answer" value="${qp.answer}" />
-    ${answer.question.displayName} (${answer.resultSize} records)
-    <html:hidden property="myProp(${pNam})" value="${checksum}"/>
+    <c:set var="dependentValue" value="${param[pNam]}" />
+    <c:if test="${qp.isVisible}">
+      <jsp:setProperty name="qp" property="dependentValue" value="${dependentValue}" /> 
+      <c:set var="answer" value="${qp.answerValue}" />
+      ${answer.question.displayName} (${answer.resultSize} records)
+    </c:if>
+    <html:hidden property="myProp(${pNam})" value="${dependentValue}"/>
   </c:when>
   <c:otherwise>
     <html:select  property="myMultiProp(${pNam})" styleId="${qP.id}">
