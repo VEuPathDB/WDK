@@ -22,7 +22,7 @@
 
 <c:set var="wizard" value="${requestScope.wizard}"/>
 <c:set var="stage" value="${requestScope.stage}"/>
-<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do"  onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
+<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
 
 <%-- the following sections are copied from <question.tag>, need to refactor into a separate tag --%>
 
@@ -49,11 +49,21 @@
 </div>
 <%-- end of the copied content --%>
 <div id="operations">
-
+<c:choose>
+  <c:when test="allowBoolean == false">
+    <c:set var="nextStage" value="process_boolean" />
+    <c:set var="disabled" value="DISABLED"/>
+    Boolean operations are disabled because the input are of different record types.
+  </c:when>
+  <c:otherwise>
+    <c:set var="nextStage" value="span_from_question" />
+  </c:otherwise>
+</c:choose>
+<h1>${allowBoolean}->${allowBoolean == false}</h1>
+<html:hidden property="stage" styleId="stage" value="${nextStage}" />
     <table>
-<c:if test="${spanOnly == 'false'}">
       <tr>
-        <c:if test="allowBoolean == false">
+        <c:if test="${allowBoolean == false}">
           <c:set var="disabled" value="DISABLED"/>
           Boolean operations are disabled because the input are of different record types.
         </c:if>
@@ -70,7 +80,6 @@
         <td class="operation RMINUS"></td><td>&nbsp;2&nbsp;<b>MINUS</b>&nbsp;1</td>
       </tr>
 	<tr><td colspan="15" align="center"><hr><b>OR</b><hr></td></tr>
-</c:if>
 
 	  <tr>	
 		<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
