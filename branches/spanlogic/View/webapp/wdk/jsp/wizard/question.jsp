@@ -24,6 +24,7 @@
 <c:set var="stage" value="${requestScope.stage}"/>
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
 
+<h3>${wdkQuestion.displayName}</h3>
 <%-- the following sections are copied from <question.tag>, need to refactor into a separate tag --%>
 
 <input type="hidden" name="questionFullName" value="${wdkQuestion.fullName}"/>
@@ -50,23 +51,18 @@
 <%-- end of the copied content --%>
 <div id="operations">
 <c:choose>
-  <c:when test="allowBoolean == false">
+  <c:when test="${allowBoolean == false}">
     <c:set var="nextStage" value="process_boolean" />
     <c:set var="disabled" value="DISABLED"/>
-    Boolean operations are disabled because the input are of different record types.
+    <p>Boolean operations are disabled because the input are of different record types.</p>
   </c:when>
   <c:otherwise>
     <c:set var="nextStage" value="span_from_question" />
   </c:otherwise>
 </c:choose>
-<h1>${allowBoolean}->${allowBoolean == false}</h1>
 <html:hidden property="stage" styleId="stage" value="${nextStage}" />
     <table>
       <tr>
-        <c:if test="${allowBoolean == false}">
-          <c:set var="disabled" value="DISABLED"/>
-          Boolean operations are disabled because the input are of different record types.
-        </c:if>
         <td class="opcheck" valign="middle"><input onclick="changeButtonText(this)" name="boolean" value="INTERSECT" type="radio" stage="process_boolean" ${disabled}></td>
         <td class="operation INTERSECT"></td><td valign="middle">&nbsp;1&nbsp;<b>INTERSECT</b>&nbsp;2</td>
         <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
@@ -89,4 +85,5 @@
     </table>
 </div>
 <div id="boolean_button" class="filter-button"><html:submit property="questionSubmit" value="${buttonVal}"/></div>
+<div id="description">${wdkQuestion.description}</div>
 </html:form>
