@@ -50,7 +50,7 @@ public class Dumper {
 
         // get arguments
         String modelName = cmdLine.getOptionValue("model");
-        String baseDir = cmdLine.getOptionValue("baseDir");
+        String baseDir = cmdLine.getOptionValue("dir");
         String reporterName = cmdLine.getOptionValue("reporter");
 	String questionName = cmdLine.getOptionValue("question");
 	String outputFileName = cmdLine.getOptionValue("fileName");
@@ -154,7 +154,7 @@ public class Dumper {
                 "The name to use for the raw output file.", true);
 
         // base directory
-        addOption(options, "baseDir", true,
+        addOption(options, "dir", true,
                 "The base directory for writing the report output.  If no directory is specified, the current directory is used.", false);
 
         // params
