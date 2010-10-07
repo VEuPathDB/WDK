@@ -29,18 +29,18 @@ import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 public abstract class Reporter implements Iterable<AnswerValue> {
 
     public static final String FIELD_FORMAT = "downloadType";
+    private static final String PROPERTY_PAGE_SIZE = "page_size";
 
     private final static Logger logger = Logger.getLogger(Reporter.class);
 
     protected class PageAnswerIterator implements Iterator<AnswerValue> {
 
-        private static final int MAX_PAGE_SIZE = 100;
-
         private AnswerValue baseAnswer;
         private int endIndex;
         private int startIndex;
+	private int maxPageSize;
 
-        public PageAnswerIterator(AnswerValue answerValue, int startIndex, int endIndex)
+        public PageAnswerIterator(AnswerValue answerValue, int startIndex, int endIndex, int maxPageSize)
                 throws WdkModelException, NoSuchAlgorithmException,
                 SQLException, JSONException, WdkUserException {
             this.baseAnswer = answerValue;
@@ -49,8 +49,8 @@ public abstract class Reporter implements Iterable<AnswerValue> {
             // since the index starts from 1
             int resultSize = baseAnswer.getResultSize();
             this.endIndex = Math.min(endIndex, resultSize);
-
             this.startIndex = startIndex;
+	    this.maxPageSize = maxPageSize;
         }
 
         public boolean hasNext() {
@@ -60,7 +60,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
         public AnswerValue next() {
             // decide the new end index for the page answer
-            int pageEndIndex = Math.min(endIndex, startIndex + MAX_PAGE_SIZE
+            int pageEndIndex = Math.min(endIndex, startIndex + maxPageSize
                     - 1);
 
             logger.debug("Getting records #" + startIndex + " to #"
@@ -112,6 +112,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
     protected String format = "plain";
     private String description = null;
+    protected int maxPageSize = 100;
 
     protected Reporter(AnswerValue answerValue, int startIndex, int endIndex) {
         this.baseAnswer = answerValue;
@@ -124,6 +125,8 @@ public abstract class Reporter implements Iterable<AnswerValue> {
     public void setProperties(Map<String, String> properties)
             throws WdkModelException {
         this.properties = properties;
+	if (properties.containsKey(PROPERTY_PAGE_SIZE))
+	    maxPageSize = Integer.valueOf(properties.get(PROPERTY_PAGE_SIZE));
     }
 
 	public int getResultSize() throws WdkModelException,
@@ -198,7 +201,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
     public Iterator<AnswerValue> iterator() {
         try {
-            return new PageAnswerIterator(baseAnswer, startIndex, endIndex);
+            return new PageAnswerIterator(baseAnswer, startIndex, endIndex, maxPageSize);
         } catch (WdkModelException ex) {
             throw new RuntimeException(ex);
         } catch (NoSuchAlgorithmException ex) {
