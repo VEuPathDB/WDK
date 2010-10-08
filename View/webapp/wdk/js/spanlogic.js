@@ -9,7 +9,6 @@
 */	
 	var A = null;
 	var B = null;
-	
 	function Diagram(name,ele){
 		this.name = name;
 		this.c = ele;
@@ -22,8 +21,8 @@
 		this.singlepoint = false;
 	}
 	
-	function initWindow(){
-		prepCanvas();
+	function initWindow(){ 
+//		prepCanvas();
 //		prepDynamicSpans();
 	}
 	function prepCanvas(){
