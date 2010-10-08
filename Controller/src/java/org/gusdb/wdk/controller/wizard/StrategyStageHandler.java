@@ -18,7 +18,7 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 
 public class StrategyStageHandler implements StageHandler {
 
-    private static final String PARAM_IMPORT_STRATEGY_ID = "insertStrategyId";
+    private static final String PARAM_IMPORT_STRATEGY = "insertStrategy";
 
     public static final String ATTR_IMPORT_STEP = "importStep";
     public static final String ATTR_IMPORT_STRATEGY = "importStrategy";
@@ -31,9 +31,9 @@ public class StrategyStageHandler implements StageHandler {
             WizardForm wizardForm) throws Exception {
         logger.debug("Entering StrategyStageHandler....");
 
-        String strStrategyId = request.getParameter(PARAM_IMPORT_STRATEGY_ID);
+        String strStrategyId = request.getParameter(PARAM_IMPORT_STRATEGY);
         if (strStrategyId == null || strStrategyId.length() == 0)
-            throw new WdkUserException("Required " + PARAM_IMPORT_STRATEGY_ID
+            throw new WdkUserException("Required " + PARAM_IMPORT_STRATEGY
                     + " parameter is missing");
 
         UserBean user = ActionUtility.getUser(servlet, request);
