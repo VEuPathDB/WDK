@@ -31,10 +31,10 @@ Otherwise a standard select menu is used.
       <c:set var="answer" value="${qp.answerValue}" />
       ${answer.question.displayName} (${answer.resultSize} records)
     </c:if>
-    <html:hidden property="myProp(${pNam})" value="${dependentValue}"/>
+    <html:hidden property="value(${pNam})" value="${dependentValue}"/>
   </c:when>
   <c:otherwise>
-    <html:select  property="myMultiProp(${pNam})" styleId="${qP.id}">
+    <html:select  property="array(${pNam})" styleId="${qP.id}">
         <c:set var="opt" value="${opt+1}"/>
         <c:set var="sel" value=""/>
         <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
