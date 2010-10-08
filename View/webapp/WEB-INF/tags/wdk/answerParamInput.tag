@@ -25,13 +25,13 @@ Otherwise a standard select menu is used.
 
 <c:choose>
   <c:when test="${qp.isReadonly}">
-    <c:set var="dependentValue" value="${param[pNam]}" />
+    <c:set var="dependentValue" value="${params[pNam]}" />
     <c:if test="${qp.isVisible}">
       <jsp:setProperty name="qp" property="dependentValue" value="${dependentValue}" /> 
       <c:set var="answer" value="${qp.answerValue}" />
       ${answer.question.displayName} (${answer.resultSize} records)
     </c:if>
-    <html:hidden property="value(${pNam})" value="${dependentValue}"/>
+    <html:hidden property="value(${pNam})" />
   </c:when>
   <c:otherwise>
     <html:select  property="array(${pNam})" styleId="${qP.id}">
