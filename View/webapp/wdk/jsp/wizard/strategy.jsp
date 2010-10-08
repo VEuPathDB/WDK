@@ -7,7 +7,6 @@
 
 <c:set var="strategy" value="${requestScope.wdkStrategy}"/>
 <c:set var="step" value="${requestScope.wdkStep}"/>
-<c:set var="importStrategyId" value="${requestScope.insertStrategy}" />
 <c:set var="importStrategy" value="${requestScope.importStrategy}" />
 <c:set var="importStep" value="${requestScope.importStep}" />
 <c:set var="allowBoolean" value="${requestScope.allowBoolean}"/>
@@ -30,7 +29,7 @@
 
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do"  onsubmit="callWizard('wizard.do?',this,null,null,'submit')">
 
-<input type="hidden" name="importStrategy" value="${importStrategyId}"/>
+<input type="hidden" name="importStrategy" value="${importStrategy.strategyId}"/>
 
 
 <div id="operations">

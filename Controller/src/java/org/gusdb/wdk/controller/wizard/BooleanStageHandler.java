@@ -65,6 +65,7 @@ public class BooleanStageHandler implements StageHandler {
         Map<String, Object> attributes = new HashMap<String, Object>();
         // the childStep might not be created, in which case user just revises
         // the boolean operator.
+        logger.debug("child step: " + childStep);
         if (childStep != null) {
             attributes.put(ATTR_IMPORT_STEP, childStep.getStepId());
         }
@@ -75,6 +76,8 @@ public class BooleanStageHandler implements StageHandler {
             HttpServletRequest request, WizardForm wizardForm,
             String questionName) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, IOException, SQLException, JSONException {
+        logger.debug("creating step from question: " + questionName);
+
         // get the assigned weight
         String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
         int weight = 0;
@@ -104,6 +107,7 @@ public class BooleanStageHandler implements StageHandler {
     private StepBean createStepFromStrategy(int strategyId)
             throws NoSuchAlgorithmException, WdkModelException,
             WdkUserException, JSONException, SQLException {
+        logger.debug("creating step from strategy: " + strategyId);
         StrategyBean strategy = user.getStrategy(strategyId);
         StepBean step = strategy.getLatestStep();
         StepBean childStep = step.deepClone();
