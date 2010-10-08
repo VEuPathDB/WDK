@@ -64,6 +64,7 @@
 <c:set var="pMap" value="${question.paramsMap}"/>
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do"  onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
   <div id="spanLogicParams">
+	<input type="hidden" id="stage" value="process_span"/>
 	<wdk:answerParamInput qp="${pMap['span_a']}"/>
 	<wdk:answerParamInput qp="${pMap['span_b']}"/>
 	<table>
@@ -180,11 +181,6 @@
 </tr></table>
 		</td>
 	</tr>
-        <tr>
-          <td>
-            <html:submit property="questionSubmit" value="Get Answer" />
-          </td>
-        </tr>
 </table>
 
   </div>
