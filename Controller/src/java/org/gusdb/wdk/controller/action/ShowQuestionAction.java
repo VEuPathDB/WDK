@@ -4,6 +4,8 @@ import java.io.File;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.servlet.ServletContext;
@@ -86,6 +88,7 @@ public class ShowQuestionAction extends Action {
 
         boolean hasAllParams = true;
         ParamBean[] params = wdkQuestion.getParams();
+        Map<String, String> paramValues = new LinkedHashMap<String, String>();
         for (ParamBean param : params) {
             param.setUser(user);
             String paramName = param.getName();
@@ -157,6 +160,7 @@ public class ShowQuestionAction extends Action {
             }
             if (paramValue == null) hasAllParams = false;
             else qForm.setValue(paramName, paramValue);
+            paramValues.put(paramName, paramValue);
             logger.debug("param: " + paramName + "='" + paramValue + "'");
         }
 
@@ -169,6 +173,7 @@ public class ShowQuestionAction extends Action {
 
         request.setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
         request.setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
+        request.setAttribute("params", paramValues);
     }
 
     @Override
