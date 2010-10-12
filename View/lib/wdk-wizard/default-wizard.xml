@@ -26,7 +26,7 @@
        In the future, it might go to its own basket page, where user can select basket type in that page.
   -->
   <stage name="basket" display="Use basket"
-         handlerClass="org.gusdb.wdk.controller.wizard.QuestionStageHandler">
+         handlerClass="org.gusdb.wdk.controller.wizard.BasketStageHandler">
     <description>Please choose a boolean operation to combine the current strategy with the records from basket.</description>
     <result type="view">/wdk/jsp/wizard/question.jsp</result>
   </stage>
