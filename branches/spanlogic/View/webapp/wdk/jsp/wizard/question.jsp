@@ -52,12 +52,12 @@
 <div id="operations">
 <c:choose>
   <c:when test="${allowBoolean == false}">
-    <c:set var="nextStage" value="process_boolean" />
+    <c:set var="nextStage" value="span_from_question" />
     <c:set var="disabled" value="DISABLED"/>
     <p>Boolean operations are disabled because the input are of different record types.</p>
   </c:when>
   <c:otherwise>
-    <c:set var="nextStage" value="span_from_question" />
+    <c:set var="nextStage" value="process_boolean" />
   </c:otherwise>
 </c:choose>
 <html:hidden property="stage" styleId="stage" value="${nextStage}" />

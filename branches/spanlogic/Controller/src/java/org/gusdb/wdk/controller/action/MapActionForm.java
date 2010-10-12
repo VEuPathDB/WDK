@@ -23,7 +23,7 @@ public abstract class MapActionForm extends ActionForm {
     }
 
     public void setValue(String key, Object value) {
-        logger.debug("set value: key=[" + key + "] value=[" + value + "]");
+        logger.trace("set value: key=[" + key + "] value=[" + value + "]");
         values.put(key, value);
     }
 
@@ -32,7 +32,7 @@ public abstract class MapActionForm extends ActionForm {
     }
 
     public void setArray(String key, String[] array) {
-        logger.debug("set array: key=[" + key + "] length="+array.length+" array=[" + array[0] + "]");
+        logger.trace("set array: key=[" + key + "] length="+array.length+" array=[" + array[0] + "]");
         arrays.put(key, array);
     }
     
@@ -40,11 +40,11 @@ public abstract class MapActionForm extends ActionForm {
         // in the case some params set value into array, we need to get it from
         // array too.
         Object value = values.get(key);
-        logger.debug("key=" + key + ", value=" + value + ", isNull=" + (value == null));
+        logger.trace("key=" + key + ", value=" + value + ", isNull=" + (value == null));
         if (value == null) {
             String[] array = arrays.get(key);
             value = Utilities.fromArray(array);
-            logger.debug("array_value=" + value + ", isNull=" + (value == null));
+            logger.trace("array_value=" + value + ", isNull=" + (value == null));
         }
         return value;
     }

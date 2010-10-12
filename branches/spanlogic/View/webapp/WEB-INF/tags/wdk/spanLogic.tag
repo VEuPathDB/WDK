@@ -63,6 +63,7 @@
 </style>
 <c:set var="pMap" value="${question.paramsMap}"/>
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/wizard.do"  onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
+  <input type="hidden" name="stage" value="process_stage" />
   <div id="spanLogicParams">
 	<wdk:answerParamInput qp="${pMap['span_a']}"/>
 	<wdk:answerParamInput qp="${pMap['span_b']}"/>
