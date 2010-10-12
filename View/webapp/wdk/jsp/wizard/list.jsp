@@ -29,7 +29,7 @@
                     <ul class="menu_section">
                         <li class="category" onclick="callWizard(null,this,'sl_recordclasses',2)">Run a new Search</li>
                         <li class="category" onclick="callWizard(null,this,'sl_strategies',2)">Add existing Strategy</li>
-                        <li>Add the Basket</li>
+                        <li class="category" onclick="callWizard(null,this,'sl_baskets',2)">Add the Basket</li>
                     </ul>
                 </div>
             </td>
@@ -62,10 +62,11 @@
             <ul class="menu_section">
                 <li class="category" onclick="callWizard(null,this,'sl_recordclasses',2)">Run a new Search</li>
                 <li class="category" onclick="callWizard(null,this,'sl_strategies',2)">Add existing Strategy</li>
-                <li>Add the Basket</li>
+                <li class="category" onclick="callWizard(null,this,'sl_baskets',2)">Add the Basket</li>
             </ul>
         </div>
 
+<%-- insert/add strategy section --%>
         <div class="original" id="sl_strategies" style="display:none">
             <ul class="menu_section">
                 <li class="category" onclick="callWizard(null,this,'sl_open',3)">Opened Strategies</li>
@@ -91,6 +92,30 @@
                     <c:set var="catr" value="category"/>
                 </c:if>
                 <li class="${catr}" onclick="${clr}">Recent Strategies</li>
+            </ul>
+        </div>
+
+
+<%-- insert/add basket section --%>
+        <div class="original" id="sl_baskets" style="display:none">
+            <ul class="menu_section">
+                <c:set var="recordClasses" value="${wdkModel.recordClassMap}" />
+                <c:set var="hasBasket" value="${false}" />
+                <c:forEach items="${user.basketCounts}" var="item">
+                    <c:set var="count" value="${item.value}" />
+                    <c:if test="${count > 0}">
+                        <c:set var="hasBasket" value="${true}" />
+                        <c:set var="rcName" value="${item.key}" />
+                        <c:set var="recordClass" value="${recordClasses[rcName]}" />
+                        <c:set var="rcDisplay" value="${recordClass.displayName}" />
+                        <li>
+                            <a href="javascript:void(0)" onclick="callWizard('wizard.do?stage=basket&strategy=${strategyId.strategyId}&step=${step.stepId}&recordClass=rcName',null,null,null,'next')">${rcDisplay} basket</a>
+                        </li>
+                    </c:if>
+                </c:forEach>
+                <c:if test="${hasBasket == false}">
+                    <li>Basket is empty.</li>
+                </c:if>
             </ul>
         </div>
         

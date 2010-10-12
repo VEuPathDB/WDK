@@ -36,12 +36,12 @@
 
 <c:choose>
   <c:when test="${allowBoolean == false}">
-    <c:set var="nextStage" value="process_boolean" />
+    <c:set var="nextStage" value="span_from_strategy" />
     <c:set var="disabled" value="DISABLED"/>
     <p>Boolean operations are disabled because the input are of different record types.</p>
   </c:when>
   <c:otherwise>
-    <c:set var="nextStage" value="span_from_question" />
+    <c:set var="nextStage" value="process_boolean" />
   </c:otherwise>
 </c:choose>
 <html:hidden property="stage" styleId="stage" value="${nextStage}" />
@@ -63,7 +63,7 @@
 	<tr><td colspan="15" align="center"><hr><b>OR</b><hr></td></tr>
 
 	  <tr>	
-		<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
+		<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_strategy"></td>
         <td class="operation SPAN"></td><td valign="middle">&nbsp;&nbsp;<b>Span Logic</b></td>
         <td colspan="12" align="left">&nbsp;&nbsp;&nbsp;Combine using span and regional alignments</td>
       </tr>
