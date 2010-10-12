@@ -109,7 +109,7 @@
                         <c:set var="recordClass" value="${recordClasses[rcName]}" />
                         <c:set var="rcDisplay" value="${recordClass.displayName}" />
                         <li>
-                            <a href="javascript:void(0)" onclick="callWizard('wizard.do?stage=basket&strategy=${strategyId.strategyId}&step=${step.stepId}&recordClass=rcName',null,null,null,'next')">${rcDisplay} basket</a>
+                            <a href="javascript:void(0)" onclick="callWizard('wizard.do?stage=basket&strategy=${strategyId.strategyId}&step=${step.stepId}&recordClass=${rcName}',null,null,null,'next')">${rcDisplay} basket</a>
                         </li>
                     </c:if>
                 </c:forEach>
