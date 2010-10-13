@@ -14,7 +14,7 @@ import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.action.ActionUtility;
 import org.gusdb.wdk.controller.action.ProcessBooleanAction;
-import org.gusdb.wdk.controller.action.ProcessFilterAction;
+import org.gusdb.wdk.controller.action.ProcessQuestionAction;
 import org.gusdb.wdk.controller.action.QuestionForm;
 import org.gusdb.wdk.controller.action.WizardForm;
 import org.gusdb.wdk.model.WdkModelException;
@@ -26,14 +26,14 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
 
-public class BooleanStageHandler implements StageHandler {
+public class ProcessBooleanStageHandler implements StageHandler {
 
     public static final String PARAM_QUESTION = "questionFullName";
     public static final String PARAM_IMPORT_STRATEGY = "importStrategy";
 
     public static final String ATTR_IMPORT_STEP = ProcessBooleanAction.PARAM_IMPORT_STEP;
 
-    private static final Logger logger = Logger.getLogger(BooleanStageHandler.class);
+    private static final Logger logger = Logger.getLogger(ProcessBooleanStageHandler.class);
 
     private UserBean user;
     private WdkModelBean wdkModel;
@@ -96,7 +96,7 @@ public class BooleanStageHandler implements StageHandler {
         questionForm.setServlet(servlet);
         questionForm.setQuestionFullName(questionName);
         questionForm.copyFrom(wizardForm);
-        Map<String, String> params = ProcessFilterAction.prepareParams(user,
+        Map<String, String> params = ProcessQuestionAction.prepareParams(user,
                 request, questionForm);
 
         // create child step
