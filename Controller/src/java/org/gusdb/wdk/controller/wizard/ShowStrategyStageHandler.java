@@ -9,14 +9,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.action.ActionUtility;
-import org.gusdb.wdk.controller.action.WizardAction;
 import org.gusdb.wdk.controller.action.WizardForm;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
-public class StrategyStageHandler implements StageHandler {
+public class ShowStrategyStageHandler implements StageHandler {
 
     private static final String PARAM_IMPORT_STRATEGY = "insertStrategy";
 
@@ -24,7 +23,7 @@ public class StrategyStageHandler implements StageHandler {
     public static final String ATTR_IMPORT_STRATEGY = "importStrategy";
     private static final String ATTR_ALLOW_BOOLEAN = "allowBoolean";
 
-    private static final Logger logger = Logger.getLogger(StrategyStageHandler.class);
+    private static final Logger logger = Logger.getLogger(ShowStrategyStageHandler.class);
 
     public Map<String, Object> execute(ActionServlet servlet,
             HttpServletRequest request, HttpServletResponse response,
@@ -39,29 +38,19 @@ public class StrategyStageHandler implements StageHandler {
         UserBean user = ActionUtility.getUser(servlet, request);
         int strategyId = Integer.parseInt(strStrategyId);
         StrategyBean strategy = user.getStrategy(strategyId);
-        StepBean importStep = strategy.getLatestStep();
+        StepBean childStep = strategy.getLatestStep();
 
         Map<String, Object> attributes = new HashMap<String, Object>();
-        attributes.put(ATTR_IMPORT_STEP, importStep);
+        attributes.put(ATTR_IMPORT_STEP, childStep);
         attributes.put(ATTR_IMPORT_STRATEGY, strategy);
 
         // need to check if the boolean is allowed
-        String action = wizardForm.getAction();
-        StepBean currentStep = (StepBean) request.getAttribute(WizardAction.ATTR_STEP);
-        StepBean inputStep;
-        if (action.equals(WizardForm.ACTION_ADD)) {
-            // add, the current step is the last step of a strategy or a
-            // sub-strategy, use it as the input;
-            inputStep = currentStep;
-        } else { // revise or insert,
-            // the current step is always the lower step in the graph, no
-            // matter whether it's a boolean, or a combined step. Use the
-            // previous step as the input.
-            inputStep = currentStep.getPreviousStep();
-        }
+        StepBean previousStep = StageHandlerUtility.getPreviousStep(servlet,
+                request, wizardForm);
+
         // check if boolean is allowed
-        String importType = importStep.getType();
-        boolean allowBoolean = importType.equals(inputStep.getType());
+        String childType = childStep.getType();
+        boolean allowBoolean = childType.equals(previousStep.getType());
         attributes.put(ATTR_ALLOW_BOOLEAN, allowBoolean);
 
         logger.debug("Leaving StrategyStageHandler....");

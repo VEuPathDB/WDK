@@ -10,14 +10,14 @@
   
   <!-- show question page, and allow user to choose the params, this page will go to one of the three stages: boolean, process_transform, or span -->
   <stage name="question" display="Select parameters"
-         handlerClass="org.gusdb.wdk.controller.wizard.QuestionStageHandler">
+         handlerClass="org.gusdb.wdk.controller.wizard.ShowQuestionStageHandler">
     <description>Please choose parameters and the operation.</description>
     <result type="view">/wdk/jsp/wizard/question.jsp</result>
   </stage>
   
   <!-- user select an existing strategy as input, and similar to question stage, it will go to either boolean, process_transform, or span -->
   <stage name="strategy" display="Combine strategy with"
-         handlerClass="org.gusdb.wdk.controller.wizard.StrategyStageHandler">
+         handlerClass="org.gusdb.wdk.controller.wizard.ShowStrategyStageHandler">
     <description>Please choose the operation to combine the current strategy with the selected strategy.</description>
     <result type="view">/wdk/jsp/wizard/strategy.jsp</result>
   </stage>
@@ -26,14 +26,14 @@
        In the future, it might go to its own basket page, where user can select basket type in that page.
   -->
   <stage name="basket" display="Use basket"
-         handlerClass="org.gusdb.wdk.controller.wizard.BasketStageHandler">
+         handlerClass="org.gusdb.wdk.controller.wizard.ShowBasketStageHandler">
     <description>Please choose a boolean operation to combine the current strategy with the records from basket.</description>
     <result type="view">/wdk/jsp/wizard/question.jsp</result>
   </stage>
   
   <!-- show the transform question page -->
   <stage name="transform" display="Select parameters for Transform"
-         handlerClass="org.gusdb.wdk.controller.wizard.QuestionStageHandler">
+         handlerClass="org.gusdb.wdk.controller.wizard.ShowQuestionStageHandler">
     <description>Go to transform question page.</description>
     <result type="action">/wdk/jsp/wizard/transform.jsp</result>
   </stage>
@@ -46,9 +46,16 @@
 
   <!-- process a boolean operation -->
   <stage name="process_boolean" display="Process Boolean"
-         handlerClass="org.gusdb.wdk.controller.wizard.BooleanStageHandler">
+         handlerClass="org.gusdb.wdk.controller.wizard.ProcessBooleanStageHandler">
     <description>Process boolean operation and redirect to processFilter.</description>
     <result type="action">/processBoolean.do</result>
   </stage>
-
+  
+  <!-- process a boolean operation -->
+  <stage name="revise_boolean" display="Process Boolean"
+         handlerClass="org.gusdb.wdk.controller.wizard.ProcessBooleanStageHandler">
+    <description>Process boolean operation and redirect to processFilter.</description>
+    <result type="action">/processBoolean.do</result>
+  </stage>
+  
 </wdkWizard>
