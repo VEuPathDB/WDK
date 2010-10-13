@@ -21,14 +21,14 @@ import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
-public class BasketStageHandler implements StageHandler {
+public class ShowBasketStageHandler implements StageHandler {
 
     private static final String PARAM_RECORD_CLASS = "recordClass";
 
     private static final String ATTR_QUESTION = "question";
     private static final String ATTR_ALLOW_BOOLEAN = "allowBoolean";
 
-    private static final Logger logger = Logger.getLogger(BasketStageHandler.class);
+    private static final Logger logger = Logger.getLogger(ShowBasketStageHandler.class);
 
     public Map<String, Object> execute(ActionServlet servlet,
             HttpServletRequest request, HttpServletResponse response,

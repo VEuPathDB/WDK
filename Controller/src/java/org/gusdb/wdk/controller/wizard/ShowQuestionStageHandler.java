@@ -11,7 +11,6 @@ import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.action.ActionUtility;
 import org.gusdb.wdk.controller.action.QuestionForm;
 import org.gusdb.wdk.controller.action.ShowQuestionAction;
-import org.gusdb.wdk.controller.action.WizardAction;
 import org.gusdb.wdk.controller.action.WizardForm;
 import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -19,14 +18,14 @@ import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
-public class QuestionStageHandler implements StageHandler {
+public class ShowQuestionStageHandler implements StageHandler {
 
     private static final String PARAM_QUESTION_NAME = "questionFullName";
 
     private static final String ATTR_QUESTION = "question";
     private static final String ATTR_ALLOW_BOOLEAN = "allowBoolean";
 
-    private static final Logger logger = Logger.getLogger(QuestionStageHandler.class);
+    private static final Logger logger = Logger.getLogger(ShowQuestionStageHandler.class);
 
     public Map<String, Object> execute(ActionServlet servlet,
             HttpServletRequest request, HttpServletResponse response,
@@ -46,20 +45,9 @@ public class QuestionStageHandler implements StageHandler {
         Map<String, Object> attributes = new HashMap<String, Object>();
         attributes.put(ATTR_QUESTION, question);
 
-        // get input step
-        String action = wizardForm.getAction();
-        StepBean currentStep = (StepBean) request.getAttribute(WizardAction.ATTR_STEP);
-        StepBean inputStep;
-        if (action.equals(WizardForm.ACTION_ADD)) {
-            // add, the current step is the last step of a strategy or a
-            // sub-strategy, use it as the input;
-            inputStep = currentStep;
-        } else { // revise or insert,
-            // the current step is always the lower step in the graph, no
-            // matter whether it's a boolean, or a combined step. Use the
-            // previous step as the input.
-            inputStep = currentStep.getPreviousStep();
-        }
+        // get previous step
+        StepBean previousStep = StageHandlerUtility.getPreviousStep(servlet,
+                request, wizardForm);
 
         // set the previous step value
         String paramName = null;
@@ -72,11 +60,11 @@ public class QuestionStageHandler implements StageHandler {
             }
         }
         if (paramName != null) {
-            attributes.put("value(" + paramName + ")", inputStep.getStepId());
+            attributes.put("value(" + paramName + ")", previousStep.getStepId());
         }
         // check if boolean is allowed
         String importType = question.getRecordClass().getFullName();
-        boolean allowBoolean = importType.equals(inputStep.getType());
+        boolean allowBoolean = importType.equals(previousStep.getType());
         logger.debug("allow boolean: " + allowBoolean);
         attributes.put(ATTR_ALLOW_BOOLEAN, allowBoolean);
 
