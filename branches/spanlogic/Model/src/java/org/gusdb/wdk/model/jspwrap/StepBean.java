@@ -35,10 +35,8 @@ public class StepBean {
     }
 
     public StepBean getNextStep() {
-        if (step.getNextStep() != null) {
-            return new StepBean(user, step.getNextStep());
-        }
-        return null;
+        Step nextStep = step.getNextStep();
+        return (nextStep == null) ? null : new StepBean(user, nextStep);
     }
 
     public void setNextStep(StepBean next) throws WdkUserException {
@@ -50,10 +48,13 @@ public class StepBean {
     }
 
     public StepBean getParentStep() {
-        if (step.getParentStep() != null) {
-            return new StepBean(user, step.getParentStep());
-        }
-        return null;
+        Step parent = step.getParentStep();
+        return (parent == null)? null : new StepBean(user, parent);
+    }
+    
+    public StepBean getParentOrNextStep() {
+        Step nextStep = step.getParentOrNextStep();
+        return (nextStep == null) ? null : new StepBean(user, nextStep);
     }
 
     public StepBean getChildStep() throws WdkUserException, WdkModelException,
