@@ -51,11 +51,4 @@
     <result type="action">/processBoolean.do</result>
   </stage>
   
-  <!-- process a boolean operation -->
-  <stage name="revise_boolean" display="Process Boolean"
-         handlerClass="org.gusdb.wdk.controller.wizard.ProcessBooleanStageHandler">
-    <description>Process boolean operation and redirect to processFilter.</description>
-    <result type="action">/processBoolean.do</result>
-  </stage>
-  
 </wdkWizard>
