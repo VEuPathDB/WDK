@@ -50,5 +50,11 @@
     <description>Process boolean operation and redirect to processFilter.</description>
     <result type="action">/processBoolean.do</result>
   </stage>
-  
+ 
+  <!-- process a boolean operation -->
+  <stage name="revise_boolean" display="Revise Boolean">
+    <description>Revise boolean operation and redirect to processFilter.</description>
+    <result type="view">/wdk/jsp/wizard/operation_revise.jsp</result>
+  </stage>
+ 
 </wdkWizard>
