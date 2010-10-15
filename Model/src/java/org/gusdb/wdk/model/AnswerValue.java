@@ -977,12 +977,12 @@ public class AnswerValue {
     public Map<String, AttributeField> getDisplayableAttributeMap() {
         Map<String, AttributeField> displayAttributes = new LinkedHashMap<String, AttributeField>();
         Map<String, AttributeField> attributes = question.getAttributeFieldMap(FieldScope.NON_INTERNAL);
-        Map<String, AttributeField> summaryAttributes = this.getSummaryAttributeFieldMap();
+        //Map<String, AttributeField> summaryAttributes = this.getSummaryAttributeFieldMap();
         for (String attriName : attributes.keySet()) {
             AttributeField attribute = attributes.get(attriName);
 
             // skip the attributes that are already displayed
-            if (summaryAttributes.containsKey(attriName)) continue;
+            //if (summaryAttributes.containsKey(attriName)) continue;
 
             displayAttributes.put(attriName, attribute);
         }
