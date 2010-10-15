@@ -397,9 +397,7 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters, ac
 					init_view_step = step.back_step_Id;
 				}
 				ResultsToGrid(data, ignoreFilters, "strategy_results");
-				$("span#text_strategy_number").html(strategy.JSON.name);
-				$("span#text_step_number").html(step.frontId);
-				$("span#text_strategy_number").parent().show();
+                                updateResultLabels("strategy_results", strat, step);
 				var linkToClick = $("a#" + action);
 				if (linkToClick.length > 0) {
 					linkToClick.click();

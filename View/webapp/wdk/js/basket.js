@@ -25,7 +25,7 @@ function showBasket(recordClass, type){
 		success: function(data){
 			if (recordClass) {
 				setCurrentTabCookie('basket', type);
-				$("div#basket_" + type).html(data);
+				$("div#basket_" + type + " > div.Workspace").html(data);
 				if ($("div#basket_" + type).find("table").length > 0) {
 					$("input#empty-basket-button").attr("disabled",false);
 					$("input#make-strategy-from-basket-button").attr("disabled",false);
