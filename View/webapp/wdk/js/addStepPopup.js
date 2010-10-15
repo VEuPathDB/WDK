@@ -447,14 +447,3 @@ function closeAll(hide,as){
 	$("#Strategies div a#filter_link span").css({opacity: 1.0});
 }
 
-
-
-function setDraggable(e, handle){
-	var rlimit = $("div#contentwrapper").width() - e.width() - 18;
-	if(rlimit < 0) rlimit = 525;
-	var blimit = $("body").height();
-	$(e).draggable({
-		handle: handle,
-		containment: [0,0,rlimit,blimit]
-	});
-}
