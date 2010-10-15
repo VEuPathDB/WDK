@@ -90,11 +90,8 @@ function GetResultsPage(url, update, ignoreFilters){
 		},
 		success: function(data){
 			if (update && ErrorHandler("Results", data, strat, null)) {
-				ResultsToGrid(data, ignoreFilters);
-				$("span#text_strategy_number").html(strat.JSON.name);
-				$("span#text_step_number").html(step.frontId);
-				$("span#text_strategy_number").parent().show();
-				$("#" + currentDiv + " > div.Workspace").unblock();
+				ResultsToGrid(data, ignoreFilters, currentDiv);
+				updateResultLabels(currentDiv, strat, step);
 			}
 			if(strat != false) removeLoading(strat.frontId);
 		},
@@ -103,6 +100,13 @@ function GetResultsPage(url, update, ignoreFilters){
                                       + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
 		}
 	});
+}
+
+function updateResultLabels(currentDiv, strat, step) {
+    if (currentDiv == 'strategy_results') {
+        $("#" + currentDiv + "span#text_strategy_number").html(strat.JSON.name);
+        $("#" + currentDiv + "span#text_step_number").html(step.frontId);
+    }
 }
 
 function ResultsToGrid(data, ignoreFilters, div) {
@@ -150,6 +154,8 @@ function ResultsToGrid(data, ignoreFilters, div) {
 
 	// check the basket for the page if needed
 	checkPageBasket();
+
+	$("#" + currentDiv + " > div.Workspace").unblock();
 }
 
 function createMultiSelectAttributes(attrSelect) {
