@@ -139,10 +139,12 @@ function multiStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 	// Create the boolean venn diagram box
 	var filterImg = "";
 	var bool_link = "";
+	var details_link = "showDetails(this)";
+	if(modelstep.isSpan) details_link = "void(0)";
 	if(jsonstep.isValid) bool_link = "NewResults(" + sid + "," + modelstep.frontId + ", true)";
 	if(jsonstep.filtered) filterImg = "<span class='filterImg'><img src='wdk/images/filter.gif' height='10px' width='10px'/></span>";
 	boolinner = ""+
-		"			<a id='" + sid + "|" + modelstep.back_boolean_Id + "|" + jsonstep.operation + "' title='CLICK to modify this boolean operation.' class='operation' href='javascript:void(0)' onclick='showDetails(this)'>"+
+		"			<a id='" + sid + "|" + modelstep.back_boolean_Id + "|" + jsonstep.operation + "' title='CLICK to modify this boolean operation.' class='operation' href='javascript:void(0)' onclick='"+details_link+"'>"+
 		"				<img src='wdk/images/transparent1.gif'>"+
 		"			</a>"+
 		"			<div class='crumb_details'></div>"+
