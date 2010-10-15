@@ -41,7 +41,7 @@
 
 
 
-<div id="query_form" style="min-height:140px;">
+<div id="query_form" class="formPopup">
 <span class="dragHandle"><div class="modal_name"><h1 style="font-size:130%;margin-top:4px;" id="query_form_title"></h1></div><a class='close_window' href='javascript:closeAll()'><img src="<c:url value='/wdk/images/Close-X-box.png'/>" alt='Close'/></a></span>
 
 <div id="query_selection">

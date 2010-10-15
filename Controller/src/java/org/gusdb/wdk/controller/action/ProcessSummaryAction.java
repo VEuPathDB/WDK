@@ -4,6 +4,7 @@
 package org.gusdb.wdk.controller.action;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -106,46 +107,70 @@ public class ProcessSummaryAction extends Action {
                     queryString = queryString.replaceAll("&"
                             + CConstants.WDK_SUMMARY_KEY + "=[^&]*", "");
                 } else {
-                    String[] summary = wdkUser.getSummaryAttributes(questionName);
+		    String[] summary = wdkUser.getSummaryAttributes(questionName);
                     List<String> summaryList = new ArrayList<String>();
-                    for (String attribute : summary) {
-                        summaryList.add(attribute);
-                    }
-
                     String[] attributeNames = request.getParameterValues(CConstants.WDK_SUMMARY_ATTRIBUTE_KEY);
                     if (attributeNames == null) attributeNames = new String[0];
 
-                    if (command.equalsIgnoreCase("add")) {
-                        for (String attributeName : attributeNames) {
-                            if (!summaryList.contains(attributeName))
-                                summaryList.add(attributeName);
-                        }
-                    } else if (command.equalsIgnoreCase("remove")) {
-                        boolean removeWeight = false;
-                        for (String attributeName : attributeNames) {
-                            summaryList.remove(attributeName);
-                            if (attributeName.equals(Utilities.COLUMN_WEIGHT))
-                                removeWeight = true;
-                        }
-                        // reset the used weight column.
-                        if (removeWeight)wdkUser.setUsedWeight(false);
-                    } else if (command.equalsIgnoreCase("arrange")) {
-                        // Get the attribute that will be to the left of
-                        // attributeName after attributeName is moved
-                        String attributeToLeft = request.getParameter(CConstants.WDK_SUMMARY_ARRANGE_ORDER_KEY);
-                        // If attributeToLeft is null (or not in list), make
-                        // attributeName the first element.
-                        // Otherwise, make it the first element AFTER
-                        // attributeToLeft
-                        for (String attributeName : attributeNames) {
-                            summaryList.remove(attributeName);
-                            int toIndex = summaryList.indexOf(attributeToLeft) + 1;
-                            summaryList.add(toIndex, attributeName);
-                        }
-                    } else {
-                        throw new WdkModelException("Unknown command: "
-                                + command);
-                    }
+		    if (command.equalsIgnoreCase("update")) {
+			boolean hasWeight = false;
+			boolean removeWeight = false;
+			List<String> attributeNamesList = new ArrayList<String>(Arrays.asList(attributeNames));
+			System.out.println("Summary list: " + summaryList);
+			for (String summaryName : summary) {
+			    if (attributeNamesList.contains(summaryName)) {
+				summaryList.add(summaryName);
+				attributeNamesList.remove(summaryName);
+			    }
+			    if (summaryName.equals(Utilities.COLUMN_WEIGHT))
+				hasWeight = true;
+			}
+			System.out.println("Summary list: " + summaryList);
+			for (String attributeName : attributeNamesList) {
+			    summaryList.add(attributeName);
+			    if (hasWeight && attributeName.equals(Utilities.COLUMN_WEIGHT))
+				removeWeight = true;
+			}
+			System.out.println("Summary list: " + summaryList);
+			// reset the used weight column.
+			if (removeWeight)wdkUser.setUsedWeight(false);
+		    } else {
+			for (String attribute : summary) {
+			    summaryList.add(attribute);
+			}
+
+			if (command.equalsIgnoreCase("add")) {
+			    for (String attributeName : attributeNames) {
+				if (!summaryList.contains(attributeName))
+				    summaryList.add(attributeName);
+			    }
+			} else if (command.equalsIgnoreCase("remove")) {
+			    boolean removeWeight = false;
+			    for (String attributeName : attributeNames) {
+				summaryList.remove(attributeName);
+				if (attributeName.equals(Utilities.COLUMN_WEIGHT))
+				    removeWeight = true;
+			    }
+			    // reset the used weight column.
+			    if (removeWeight)wdkUser.setUsedWeight(false);
+			} else if (command.equalsIgnoreCase("arrange")) {
+			// Get the attribute that will be to the left of
+			// attributeName after attributeName is moved
+			    String attributeToLeft = request.getParameter(CConstants.WDK_SUMMARY_ARRANGE_ORDER_KEY);
+			    // If attributeToLeft is null (or not in list), make
+			    // attributeName the first element.
+			    // Otherwise, make it the first element AFTER
+			    // attributeToLeft
+			    for (String attributeName : attributeNames) {
+				summaryList.remove(attributeName);
+				int toIndex = summaryList.indexOf(attributeToLeft) + 1;
+				summaryList.add(toIndex, attributeName);
+			    }
+			}  else {
+			    throw new WdkModelException("Unknown command: "
+							+ command);
+			}
+		    }
                     summary = new String[summaryList.size()];
                     summaryList.toArray(summary);
                     String checksum = wdkUser.setSummaryAttributes(
