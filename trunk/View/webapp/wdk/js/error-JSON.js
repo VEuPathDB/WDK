@@ -14,7 +14,7 @@ function ErrorHandler(evt, data, strategy, qform, name, fromHist){
 			x = new Object();
 			x.strategy = undefined;
 			x.step = undefined;
-			showStrategies(x);
+			showStrategies(x, false, 0);
 			return;
 	}
         if(data.type == "success"){
