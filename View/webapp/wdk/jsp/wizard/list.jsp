@@ -30,6 +30,7 @@
                         <li class="category" onclick="callWizard(null,this,'sl_recordclasses',2)">Run a new Search</li>
                         <li class="category" onclick="callWizard(null,this,'sl_strategies',2)">Add existing Strategy</li>
                         <li class="category" onclick="callWizard(null,this,'sl_baskets',2)">Add the Basket</li>
+                        <li class="category" onclick="callWizard(null,this,'sl_transforms',2)">Convert results</li>
                     </ul>
                 </div>
             </td>
@@ -43,28 +44,49 @@
         </div>
     <wdk:addStepFooter/>
         
-<!--TRANSFORMS SECTION-->        
-    <%--    <div class="original" id="transforms" style="display:none">
+
+<%-- insert/add basket section --%>
+        <div class="original" id="sl_baskets" style="display:none">
             <ul class="menu_section">
-                <c:forEach items="${transformQuestions}" var="t">
-                  <jsp:setProperty name="t" property="inputType" value="${rcName}" />
-                  <c:set var="tparams" value="" />
-                  <c:forEach items="${t.transformParams}" var="tp">
-                <c:set var="tparams" value="${tparams}&${tp.name}=${prevStepNum}" />
-                  </c:forEach>
-                  <li onclick="callWizard('wizard.do?questionFullName=${q.fullName}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=transform')">${t.displayName}</li>
+                <c:set var="recordClasses" value="${wdkModel.recordClassMap}" />
+                <c:set var="hasBasket" value="${false}" />
+                <c:forEach items="${user.basketCounts}" var="item">
+                    <c:set var="count" value="${item.value}" />
+                    <c:if test="${count > 0}">
+                        <c:set var="hasBasket" value="${true}" />
+                        <c:set var="rcName" value="${item.key}" />
+                        <c:set var="recordClass" value="${recordClasses[rcName]}" />
+                        <c:set var="rcDisplay" value="${recordClass.displayName}" />
+                        <li>
+                            <a href="javascript:void(0)" onclick="callWizard('wizard.do?stage=basket&strategy=${strategyId.strategyId}&step=${step.stepId}&recordClass=${rcName}',null,null,null,'next')">
+${rcDisplay} basket</a>
+                        </li>
+                    </c:if>
                 </c:forEach>
+                <c:if test="${hasBasket == false}">
+                    <li>Basket is empty.</li>
+                </c:if>
             </ul>
         </div>
---%>
-<!-- SPAN LOGIC SECTION -->
-        <div id="span_logic" style="display:none" class="original">
+
+
+<%-- insert/add transform section --%>
+        <div class="original" id="sl_transforms" style="display:none">
             <ul class="menu_section">
-                <li class="category" onclick="callWizard(null,this,'sl_recordclasses',2)">Run a new Search</li>
-                <li class="category" onclick="callWizard(null,this,'sl_strategies',2)">Add existing Strategy</li>
-                <li class="category" onclick="callWizard(null,this,'sl_baskets',2)">Add the Basket</li>
+                <c:set var="transforms" value="${recordClass.transformQuestions}" />
+                <c:forEach items="${transforms}" var="transform">
+                  <li>
+                    <a href="javascript:void(0)" onclick="callWizard('wizard.do?stage=transform&strategy=${strategyId.strategyId}&step=${step.stepId}&questionFullName=${transform.fullName}',null,null,null,'next')">
+                      ${transform.displayName}
+                    </a>
+                  </li>
+                </c:forEach>
+                <c:if test="${fn:length(transforms) == 0}">
+                    <li>No transform is available.</li>
+                </c:if>
             </ul>
         </div>
+
 
 <%-- insert/add strategy section --%>
         <div class="original" id="sl_strategies" style="display:none">
@@ -96,29 +118,6 @@
         </div>
 
 
-<%-- insert/add basket section --%>
-        <div class="original" id="sl_baskets" style="display:none">
-            <ul class="menu_section">
-                <c:set var="recordClasses" value="${wdkModel.recordClassMap}" />
-                <c:set var="hasBasket" value="${false}" />
-                <c:forEach items="${user.basketCounts}" var="item">
-                    <c:set var="count" value="${item.value}" />
-                    <c:if test="${count > 0}">
-                        <c:set var="hasBasket" value="${true}" />
-                        <c:set var="rcName" value="${item.key}" />
-                        <c:set var="recordClass" value="${recordClasses[rcName]}" />
-                        <c:set var="rcDisplay" value="${recordClass.displayName}" />
-                        <li>
-                            <a href="javascript:void(0)" onclick="callWizard('wizard.do?stage=basket&strategy=${strategyId.strategyId}&step=${step.stepId}&recordClass=${rcName}',null,null,null,'next')">${rcDisplay} basket</a>
-                        </li>
-                    </c:if>
-                </c:forEach>
-                <c:if test="${hasBasket == false}">
-                    <li>Basket is empty.</li>
-                </c:if>
-            </ul>
-        </div>
-        
         <div class="original" id="sl_open" style="display:none">
                     <ul class="menu_section">
                         <c:forEach items="${user.activeStrategies}" var="storedStrategy">
