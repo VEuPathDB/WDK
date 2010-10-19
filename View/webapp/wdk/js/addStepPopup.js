@@ -343,6 +343,7 @@ function OpenOperationBox(stratId, insertId) {
 
 function openFilter(dtype,strat_id,step_id,isAdd){
 	if(openDetail != null) hideDetails();
+	$("#strategy_results div.attributesList").hide();
 	var isFirst = false;
 	steps = getStrategy(strat_id).Steps;
 	if(step_id == undefined){

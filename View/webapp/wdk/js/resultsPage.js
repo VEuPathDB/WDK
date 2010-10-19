@@ -73,6 +73,7 @@ function GetResultsPage(url, update, ignoreFilters){
     }else
         step = strat.getStep(st[0], false);
     url = url + "&resultsOnly=true";
+    $("#" + currentDiv + " div.attributesList").hide();
     if (update){$("#" + currentDiv + " > div.Workspace").block();}
     $.ajax({
         url: url,
@@ -216,7 +217,7 @@ function openAttributeList(element){
 
     // Position the popup.
     var left = $(document).width()/2 - popup.width()/2
-    var top = button.position().top - 20;
+    var top = $(document).scrollTop();
     popup.css({'display' : 'block',
                'top' : top + 'px',
                'left' : left + 'px'});
