@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.WdkUserException;
 
 public class ShowQuestionStageHandler implements StageHandler {
 
@@ -30,13 +31,17 @@ public class ShowQuestionStageHandler implements StageHandler {
     public Map<String, Object> execute(ActionServlet servlet,
             HttpServletRequest request, HttpServletResponse response,
             WizardForm wizardForm) throws Exception {
-        logger.debug("Entering QuestionStageHandler....");
+        logger.debug("Entering ShowQuestionStageHandler....");
 
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         String questionName = request.getParameter(PARAM_QUESTION_NAME);
+        if (questionName == null || questionName.length() == 0)
+            throw new WdkUserException("Required param " + PARAM_QUESTION_NAME + " is missing.");
+
         QuestionBean question = wdkModel.getQuestion(questionName);
 
         // prepare question form
+        logger.debug("Preparing form for question: " + questionName);
         QuestionForm questionForm = new QuestionForm();
         ShowQuestionAction.prepareQuestionForm(question, servlet, request,
                 questionForm);
@@ -68,7 +73,7 @@ public class ShowQuestionStageHandler implements StageHandler {
         logger.debug("allow boolean: " + allowBoolean);
         attributes.put(ATTR_ALLOW_BOOLEAN, allowBoolean);
 
-        logger.debug("Leaving QuestionStageHandler....");
+        logger.debug("Leaving ShowQuestionStageHandler....");
         return attributes;
     }
 }
