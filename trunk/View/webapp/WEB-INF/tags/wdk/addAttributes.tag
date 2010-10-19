@@ -21,8 +21,7 @@
   <div class="attributesFormWrapper">
   <form action="javascript:void(0);" onSubmit="updateAttrs(this,'${commandUrl}')">
     <div class="formButtonPanel">
-      <input type="submit" value="Update Result"/>
-      <%-- <input type="button" value="Cancel" onclick="closeAttributeList(this);" /> --%>
+      <input type="submit" value="Update Columns"/>
     </div>
     <div class="formButtonPanel">
       <wdk:selectClearAll groupName="selectedFields" />
@@ -64,8 +63,7 @@
       <wdk:selectClearAll groupName="selectedFields" />
     </div>
     <div class="formButtonPanel">
-      <input type="submit" value="Update Result"/>
-      <%-- <input type="button" value="Cancel" onclick="closeAttributeList(this);" /> --%>
+      <input type="submit" value="Update Columns"/>
     </div>
   </form>
   </div>
