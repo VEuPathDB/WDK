@@ -196,8 +196,14 @@ public class ProcessBooleanAction extends Action {
             throw new WdkUserException("The required param "
                     + PARAM_BOOLEAN_OPERATOR + " is missing.");
 
-        StepBean previousStep = step.getPreviousStep();
         StepBean childStep = user.getStep(Integer.valueOf(strImport));
+        StepBean previousStep;
+        if (step.isCombined()) {
+            previousStep = step.getPreviousStep();
+        } else {
+            previousStep = childStep;
+            childStep = step;
+        }
 
         // use the default flags
         StepBean newStep = user.createBooleanStep(previousStep, childStep,
