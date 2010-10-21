@@ -59,7 +59,7 @@ public class ProcessBooleanAction extends Action {
             if (action.equals(WizardForm.ACTION_REVISE)) {
                 // revise a boolean step
                 stepIdsMap = reviseBoolean(request);
-            } else if (action.equals(WizardForm.ACTION_REVISE)) {
+            } else if (action.equals(WizardForm.ACTION_INSERT)) {
                 stepIdsMap = insertBoolean(request);
             } else { // add a boolean step
                 stepIdsMap = addBoolean(request);
@@ -137,6 +137,8 @@ public class ProcessBooleanAction extends Action {
     private Map<Integer, Integer> reviseBoolean(HttpServletRequest request)
             throws NumberFormatException, WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
+        logger.debug("Revising boolean...");
+
         // current step has to exist for revise
         if (step == null)
             throw new WdkUserException("Required param " + PARAM_STEP
@@ -181,6 +183,8 @@ public class ProcessBooleanAction extends Action {
     private Map<Integer, Integer> insertBoolean(HttpServletRequest request)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
+        logger.debug("Inserting boolean...");
+
         // current step has to exist for insert
         if (step == null)
             throw new WdkUserException("Required param " + PARAM_STEP
@@ -198,23 +202,29 @@ public class ProcessBooleanAction extends Action {
 
         StepBean childStep = user.getStep(Integer.valueOf(strImport));
         StepBean previousStep;
-        if (step.isCombined()) {
+        int targetId;
+        if (step.isCombined()) { // not the first step
             previousStep = step.getPreviousStep();
+            targetId = previousStep.getStepId();
         } else {
+            // the first step is not a combined step
             previousStep = childStep;
             childStep = step;
+           targetId = step.getStepId();
         }
 
         // use the default flags
         StepBean newStep = user.createBooleanStep(previousStep, childStep,
                 operator, false, null);
         // the new step is to replace the previous step of the current one
-        return strategy.editOrInsertStep(previousStep.getStepId(), newStep);
+        return strategy.editOrInsertStep(targetId, newStep);
     }
 
     private Map<Integer, Integer> addBoolean(HttpServletRequest request)
             throws WdkUserException, NumberFormatException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
+        logger.debug("Adding boolean...");
+
         // the importStep has to exist for insert
         String strImport = request.getParameter(PARAM_IMPORT_STEP);
         if (strImport == null || strImport.length() == 0)

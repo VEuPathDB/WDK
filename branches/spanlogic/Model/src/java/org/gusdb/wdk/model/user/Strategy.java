@@ -344,7 +344,9 @@ public class Strategy {
 
         // update the parents/nexts
         while (targetStep.getInternalId() != root.getInternalId()) {
+            logger.debug("target: " + targetStep.getDisplayId() + ", parent: " + targetStep.getParentStep() + ", next: " + targetStep.getNextStep() + ", parentOrNext: " + targetStep.getParentOrNextStep());
             targetStep = targetStep.getParentOrNextStep();
+            if (targetStep == null) break;
 
             // create a new step by replacing only the target step id in the
             // params.
