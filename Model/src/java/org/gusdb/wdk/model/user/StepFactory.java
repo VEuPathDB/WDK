@@ -1355,7 +1355,7 @@ public class StepFactory {
             if (paramNames != null) {
                 for (String paramName : paramNames) {
                     String paramValue = json.getString(paramName);
-                    logger.debug("param '" + paramName + "' = '" + paramValue
+                    logger.trace("param '" + paramName + "' = '" + paramValue
                             + "'");
                     params.put(paramName, paramValue);
                 }
