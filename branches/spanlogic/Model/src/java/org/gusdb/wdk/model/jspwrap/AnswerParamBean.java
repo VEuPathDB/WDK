@@ -48,4 +48,13 @@ public class AnswerParamBean extends ParamBean {
             throw ex;
         }
     }
+
+    /**
+     * @param recordClassName
+     * @return
+     * @see org.gusdb.wdk.model.query.param.AnswerParam#allowRecordClass(java.lang.String)
+     */
+    public boolean allowRecordClass(String recordClassName) {
+        return answerParam.allowRecordClass(recordClassName);
+    }
 }
