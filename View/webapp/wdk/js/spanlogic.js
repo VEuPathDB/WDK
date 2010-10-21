@@ -22,8 +22,17 @@
 	}
 	
 	function initWindow(){ 
-//		prepCanvas();
+		attachHandlers();
+		prepCanvas();
 //		prepDynamicSpans();
+	}
+	function attachHandlers(){
+		$("select[name*='_a'], input[name*='_a']").change(function(){
+			redraw(true,"A");
+		});
+		$("select[name*='_b'], input[name*='_b']").change(function(){
+			redraw(true,"B");
+		});
 	}
 	function prepCanvas(){
 		A = new Diagram("A",document.getElementById('scaleA'));
@@ -111,22 +120,24 @@
 		//drawRegionText(dia);
 	}
 	function setRegion(dia,i){
+		i = 0;
 		region = dia.region;
 		feature = dia.feature;
 		scale = dia.scale;
-		var ba = document.getElementsByName('upstreamAnchor')[i].value;
-		var bs = document.getElementsByName('upstreamSign')[i].value;
-		var bo = parseInt(document.getElementsByName('upstreamOffset')[i].value);
-		var ea = document.getElementsByName('downstreamAnchor')[i].value;
-		var es = document.getElementsByName('downstreamSign')[i].value;
-		var eo = parseInt(document.getElementsByName('downstreamOffset')[i].value);
+		dn = dia.name.toLowerCase();
+		var ba = $("select[name*='span_begin_"+dn+"']")[i].value;//document.getElementsByName('upstreamAnchor')[i].value;
+		var bs = $("select[name*='span_begin_direction_"+dn+"']")[i].value;//document.getElementsByName('upstreamSign')[i].value;
+		var bo = parseInt($("input[name*='span_begin_offset_"+dn+"']")[i].value);//parseInt(document.getElementsByName('upstreamOffset')[i].value);
+		var ea = $("select[name*='span_end_"+dn+"']")[i].value;//document.getElementsByName('downstreamAnchor')[i].value;
+		var es = $("select[name*='span_end_direction_"+dn+"']")[i].value;//document.getElementsByName('downstreamSign')[i].value;
+		var eo = parseInt($("input[name*='span_end_offset_"+dn+"']")[i].value);//parseInt(document.getElementsByName('downstreamOffset')[i].value);
 		dia.singlepoint = Single(dia,ba,bs,bo,ea,es,eo);
 		region.height = 15;
 		region.width = feature.length / scale;
-		var vs = (ba == "Start") ? feature.loc.x : feature.loc.x + region.width;
-		var ve = (ea == "Start") ? feature.loc.x : feature.loc.x + region.width;
-		vs = (bs == 'plus') ? vs + (bo/scale) : vs - (bo/scale); 
-		ve = (es == 'plus') ? ve + (eo/scale) : ve - (eo/scale);
+		var vs = (ba == "start") ? feature.loc.x : feature.loc.x + region.width;
+		var ve = (ea == "start") ? feature.loc.x : feature.loc.x + region.width;
+		vs = (bs == '+') ? vs + (bo/scale) : vs - (bo/scale); 
+		ve = (es == '+') ? ve + (eo/scale) : ve - (eo/scale);
 		region.width = Math.round(ve - vs);
 		region.start = new Object();
 		region.start.x = Math.round(vs);
