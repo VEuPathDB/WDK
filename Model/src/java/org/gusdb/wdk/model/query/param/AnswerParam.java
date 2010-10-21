@@ -251,4 +251,8 @@ public class AnswerParam extends Param {
                     + "answerParam " + getFullName() + " for project "
                     + projectId);
     }
+    
+    public boolean allowRecordClass(String recordClassName) {
+        return recordClasses.containsKey(recordClassName);
+    }
 }

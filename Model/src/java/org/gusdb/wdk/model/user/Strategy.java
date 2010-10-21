@@ -11,8 +11,6 @@ import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.Param;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -344,24 +342,27 @@ public class Strategy {
 
         // update the parents/nexts
         while (targetStep.getInternalId() != root.getInternalId()) {
-            logger.debug("target: " + targetStep.getDisplayId() + ", parent: " + targetStep.getParentStep() + ", next: " + targetStep.getNextStep() + ", parentOrNext: " + targetStep.getParentOrNextStep());
-            targetStep = targetStep.getParentOrNextStep();
-            if (targetStep == null) break;
+            Step parentStep = root.getStepByChildId(targetStepId);
+            Step nextStep = root.getStepByPreviousId(targetStepId);
+
+            logger.debug("target: " + targetStep.getDisplayId() + ", parent: "
+                    + parentStep + ", next: " + nextStep);
+            if (parentStep == null && nextStep == null) break;
+
+            targetStep = (parentStep != null) ? parentStep : nextStep;
 
             // create a new step by replacing only the target step id in the
             // params.
             Question question = targetStep.getQuestion();
-            Map<String, Param> params = targetStep.getQuestion().getParamMap();
             Map<String, String> values = targetStep.getParamValues();
-            for (Param param : params.values()) {
-                if (param instanceof AnswerParam) {
-                    String value = values.get(param.getName());
-                    if (value.equals(Integer.toString(targetStepId))) {
-                        values.put(param.getName(), Integer.toString(newStepId));
-                        break;
-                    }
-                }
+            String paramName;
+            if (parentStep != null) {
+                paramName = targetStep.getChildStepParam();
+            } else {
+                paramName = targetStep.getPreviousStepParam();
             }
+            values.put(paramName, Integer.toString(newStepId));
+            
             // replace newStep with new pnStep, and iterate to the parent/next
             // node
             newStep = user.createStep(question, values, targetStep.getFilter(),
