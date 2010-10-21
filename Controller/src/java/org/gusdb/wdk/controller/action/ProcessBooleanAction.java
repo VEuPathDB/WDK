@@ -202,22 +202,24 @@ public class ProcessBooleanAction extends Action {
 
         StepBean childStep = user.getStep(Integer.valueOf(strImport));
         StepBean previousStep;
-        int targetId;
         if (step.isCombined()) { // not the first step
             previousStep = step.getPreviousStep();
-            targetId = previousStep.getStepId();
-        } else {
-            // the first step is not a combined step
+        } else { // the first step is not a combined step
             previousStep = childStep;
             childStep = step;
-           targetId = step.getStepId();
         }
 
-        // use the default flags
+        // use the default flags to create the new boolean to be inserted
         StepBean newStep = user.createBooleanStep(previousStep, childStep,
                 operator, false, null);
+
+        // now set back the next step of the previous step. If we don't do this,
+        // the next step will be changed to the new boolean, which is not a part
+        // of the strategy yet.
+        previousStep.setNextStep(step);
+
         // the new step is to replace the previous step of the current one
-        return strategy.editOrInsertStep(targetId, newStep);
+        return strategy.editOrInsertStep(previousStep.getStepId(), newStep);
     }
 
     private Map<Integer, Integer> addBoolean(HttpServletRequest request)
