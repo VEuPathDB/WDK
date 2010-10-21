@@ -222,6 +222,10 @@ public class ProcessStepAction extends Action {
             return strategy.editOrInsertStep(step.getStepId(), newParent);
         } else {
             // the new step is to replace the previous step of the current one
+            
+            // need to recover the link to the original current step
+            previousStep.setNextStep(step);
+            
             return strategy.editOrInsertStep(previousStep.getStepId(), newStep);
         }
     }
