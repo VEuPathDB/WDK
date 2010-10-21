@@ -77,9 +77,6 @@ public class Step {
             SQLException, JSONException {
         if (previousStep == null && previousStepId != 0)
             setPreviousStep(stepFactory.loadStep(user, previousStepId));
-        // always reset the next step when the previous step is requested from
-        // next step.
-        previousStep.setNextStep(nextStep);
         return previousStep;
     }
 
@@ -99,8 +96,6 @@ public class Step {
             SQLException, JSONException {
         if (childStep == null && childStepId != 0)
             setChildStep(stepFactory.loadStep(user, childStepId));
-        // always reset the parent step when the child is requested from parent
-        childStep.setParentStep(this);
         return childStep;
     }
 
@@ -139,24 +134,14 @@ public class Step {
         }
     }
 
-    /**
-     * setting the child step doesn't se the parent step of the child. it has to
-     * be set explicitly.
-     * 
-     * @param childStep
-     */
     public void setChildStep(Step childStep) {
         this.childStep = childStep;
         if (childStep != null) {
+            childStep.parentStep = this;
             childStepId = childStep.getDisplayId();
         } else childStepId = 0;
     }
 
-    /**
-     * next step has to be set explicitly
-     * 
-     * @param nextStep
-     */
     public void setNextStep(Step nextStep) {
         this.nextStep = nextStep;
         if (nextStep != null) {
@@ -165,15 +150,10 @@ public class Step {
         }
     }
 
-    /**
-     * setting previous step does not set the next step of the previous one. it
-     * has to be set explicitly.
-     * 
-     * @param previousStep
-     */
     public void setPreviousStep(Step previousStep) {
         this.previousStep = previousStep;
         if (previousStep != null) {
+            previousStep.nextStep = this;
             previousStepId = previousStep.getDisplayId();
         } else previousStepId = 0;
     }
