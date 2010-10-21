@@ -134,8 +134,16 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 	}
 	currStrat = getStrategy(strat_id);
 	current_Front_Strategy_Id = strat_id;
+
+        var currentStepId = stp.back_boolean_Id;
+        if (currentStepId == '') currentStepId = stp.back_step_Id;
 //	var url = "wdk/jsp/addStepPopup.jsp?dataType=" + dtype + "&prevStepNum=" + step_id + "&isAdd=" + isAdd;
-	var url = "wizard.do?strategy="+currStrat.backId+"&stage=list&step="+stp.back_step_Id;
+	var url = "wizard.do?strategy="+currStrat.backId+"&stage=list&step=" + currentStepId;
+
+        // add insert flag
+        var action = isAdd ? "add" : "insert";
+        url += "&action=" + action;
+
 	$.ajax({
 		url: url,
 		dataType: "html",

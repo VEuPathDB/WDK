@@ -892,4 +892,8 @@ public class Step {
         }
         return null;
     }
+
+    public String toString() {
+        return displayId + " (" + internalId + ")";
+    }
 }

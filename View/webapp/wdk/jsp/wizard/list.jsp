@@ -13,8 +13,11 @@
 <c:set var="step" value="${requestScope.wdkStep}" />
 <c:set var="recordClass" value="${step.question.recordClass}" />
 <c:set var="strategyId" value="${requestScope.wdkStrategy}" />
+<c:set var="action" value="${requestScope.action}" />
 <%-- the type is of the previous step, that is the input type of the new step  
 <c:set var="recordClass" value="${model.recordClassMap[rcName]}" />--%>
+
+<c:set var="partialUrl" value="wizard.do?strategy=${strategyId.strategyId}&step=${step.stepId}&action=${action}" />
 
 <c:if test="${isAdd == 'false'}">
     <%-- insert a step in between, the transform cannot change type in this case --%>
@@ -58,7 +61,7 @@
                         <c:set var="recordClass" value="${recordClasses[rcName]}" />
                         <c:set var="rcDisplay" value="${recordClass.displayName}" />
                         <li>
-                            <a href="javascript:void(0)" onclick="callWizard('wizard.do?stage=basket&strategy=${strategyId.strategyId}&step=${step.stepId}&recordClass=${rcName}',null,null,null,'next')">
+                            <a href="javascript:void(0)" onclick="callWizard('${partialUrl}&stage=basket&recordClass=${rcName}',null,null,null,'next')">
 ${rcDisplay} basket</a>
                         </li>
                     </c:if>
@@ -76,7 +79,7 @@ ${rcDisplay} basket</a>
                 <c:set var="transforms" value="${recordClass.transformQuestions}" />
                 <c:forEach items="${transforms}" var="transform">
                   <li>
-                    <a href="javascript:void(0)" onclick="callWizard('wizard.do?stage=transform&strategy=${strategyId.strategyId}&step=${step.stepId}&questionFullName=${transform.fullName}',null,null,null,'next')">
+                    <a href="javascript:void(0)" onclick="callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',null,null,null,'next')">
                       ${transform.displayName}
                     </a>
                   </li>
@@ -125,7 +128,11 @@ ${rcDisplay} basket</a>
                                 <c:if test="${fn:length(displayName) > 30}">
                                             <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
                                 </c:if>
-                                <li><a href="javascript:void(0)" onclick="callWizard('wizard.do?insertStrategy=${storedStrategy.strategyId}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=strategy',null,null,null,'next')">${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if></a></li>
+                                <li>
+                                  <a href="javascript:void(0)" onclick="callWizard('${partialUrl}&insertStrategy=${storedStrategy.strategyId}&stage=strategy',null,null,null,'next')">
+                                    ${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if>
+                                  </a>
+                                </li>
                         </c:forEach>
                     </ul>
                 </div>
@@ -139,7 +146,11 @@ ${rcDisplay} basket</a>
                                 <c:if test="${fn:length(displayName) > 30}">
                                     <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
                                 </c:if>
-                                <li><a href="javascript:void(0)" onclick="callWizard('wizard.do?insertStrategy=${storedStrategy.strategyId}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=strategy',null,null,null,'next')">${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if></a></li>
+                                <li>
+                                  <a href="javascript:void(0)" onclick="callWizard('${partialUrl}&insertStrategy=${storedStrategy.strategyId}&stage=strategy',null,null,null,'next')">
+                                    ${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if>
+                                  </a>
+                                </li>
                             </c:forEach>
                         </c:forEach>
                     </ul>
@@ -154,7 +165,11 @@ ${rcDisplay} basket</a>
                                 <c:if test="${fn:length(displayName) > 30}">
                                     <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
                                 </c:if>
-                                <li><a href="javascript:void(0)" onclick="callWizard('wizard.do?insertStrategy=${storedStrategy.strategyId}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=strategy',null,null,null,'next')">${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if></a></li>
+                                <li>
+                                  <a href="javascript:void(0)" onclick="callWizard('${partialUrl}&insertStrategy=${storedStrategy.strategyId}&stage=strategy',null,null,null,'next')">
+                                    ${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if>
+                                  </a>
+                                </li>
                             </c:forEach>
                         </c:forEach>
                     </ul>
@@ -190,7 +205,7 @@ ${rcDisplay} basket</a>
                     <c:forEach items="${rcs.value.websiteChildren}" var="catEntry">
                     <c:set var="cat" value="${catEntry.value}" />
                     <c:forEach items="${cat.websiteQuestions}" var="q">
-                        <li onclick="callWizard('wizard.do?questionFullName=${q.fullName}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=question',null,null,null,'next')">${q.displayName}</li>
+                        <li onclick="callWizard('${partialUrl}&questionFullName=${q.fullName}&stage=question',null,null,null,'next')">${q.displayName}</li>
                     </c:forEach>
                     </c:forEach>
                     </c:otherwise>
@@ -207,7 +222,7 @@ ${rcDisplay} basket</a>
                 <div class="original" id="sl_${cat.name}" style="display:none">
                     <ul class="menu_section">
                         <c:forEach items="${cat.websiteQuestions}" var="q">
-                            <li onclick="callWizard('wizard.do?questionFullName=${q.fullName}&strategy=${strategyId.strategyId}&step=${step.stepId}&stage=question',null,null,null,'next')">${q.displayName}</li>
+                            <li onclick="callWizard('${partialUrl}&questionFullName=${q.fullName}&stage=question',null,null,null,'next')">${q.displayName}</li>
                         </c:forEach>
                     </ul>
                 </div>
