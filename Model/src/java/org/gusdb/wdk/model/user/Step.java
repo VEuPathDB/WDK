@@ -506,6 +506,54 @@ public class Step {
         }
         return null;
     }
+    
+
+    public Step getStepByChildId(int childId) throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
+        Step target;
+        if (this.childStepId == childId) {
+            return getChildStep();
+        }
+        Step childStep = getChildStep();
+        if (childStep != null) {
+            target = childStep.getStepByChildId(childId);
+            if (target != null) {
+                return target;
+            }
+        }
+        Step prevStep = getPreviousStep();
+        if (prevStep != null) {
+            target = prevStep.getStepByChildId(childId);
+            if (target != null) {
+                return target;
+            }
+        }
+        return null;
+    }
+
+    public Step getStepByPreviousId(int previousId) throws WdkUserException,
+            WdkModelException, SQLException, JSONException {
+        Step target;
+        if (this.previousStepId == previousId) {
+            return getChildStep();
+        }
+        Step childStep = getChildStep();
+        if (childStep != null) {
+            target = childStep.getStepByPreviousId(previousId);
+            if (target != null) {
+                return target;
+            }
+        }
+        Step prevStep = getPreviousStep();
+        if (prevStep != null) {
+            target = prevStep.getStepByPreviousId(previousId);
+            if (target != null) {
+                return target;
+            }
+        }
+        return null;
+    }
+
 
     /**
      * @return the paramErrors

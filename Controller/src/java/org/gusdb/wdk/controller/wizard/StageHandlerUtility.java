@@ -17,6 +17,10 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.json.JSONException;
 
 public class StageHandlerUtility {
+    
+    public static StrategyBean getCurrentStrategy(HttpServletRequest request) {
+        return (StrategyBean)request.getAttribute(WizardAction.ATTR_STRATEGY);
+    }
 
     public static StepBean getCurrentStep(HttpServletRequest request) {
         return (StepBean) request.getAttribute(WizardAction.ATTR_STEP);
