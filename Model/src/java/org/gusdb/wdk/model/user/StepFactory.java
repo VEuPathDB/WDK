@@ -555,7 +555,7 @@ public class StepFactory {
 
         String dependentParamContent = userPlatform.getClobData(rsStep,
                 COLUMN_DISPLAY_PARAMS);
-        logger.debug("step #" + stepId);
+        logger.debug("step #" + displayId + " (" + stepId + ")");
         Map<String, String> dependentValues = parseParamContent(dependentParamContent);
 
         String answerChecksum = rsStep.getString(AnswerFactory.COLUMN_ANSWER_CHECKSUM);
@@ -620,6 +620,9 @@ public class StepFactory {
             }
             customName = step.getBaseCustomName();
         } else customName = step.getBaseCustomName();
+
+        step.setPreviousStepId(leftStepId);
+        step.setChildStepId(rightStepId);
 
         // construct the update sql
         StringBuffer sql = new StringBuffer("UPDATE ");

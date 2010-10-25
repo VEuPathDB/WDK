@@ -159,7 +159,13 @@ public class ProcessBooleanAction extends Action {
 
         // check if the import step exists
         String strImport = request.getParameter(PARAM_IMPORT_STEP);
-        if (strImport != null && strImport.length() > 0) {
+        if (!step.isCombined()) {
+            // revise on the first step
+            previousStep = user.getStep(Integer.valueOf(strImport));
+            step = step.getNextStep();
+            childStep = step.getChildStep();
+            filterName = step.getFilterName();
+        } else if (strImport != null && strImport.length() > 0) {
             // revise with a new child step
             childStep = user.getStep(Integer.valueOf(strImport));
             // don't get the filter from request; it is for child only.
@@ -174,6 +180,7 @@ public class ProcessBooleanAction extends Action {
             filterName = (fName != null && fName.length() > 0) ? fName
                     : step.getFilterName();
         }
+        logger.debug("previous step: " + previousStep + ", child step: " + childStep + ", boolean: " + operator);
         StepBean newStep = user.createBooleanStep(previousStep, childStep,
                 operator, useBooleanFilter, filterName);
         // the new step is to replace the current one.
