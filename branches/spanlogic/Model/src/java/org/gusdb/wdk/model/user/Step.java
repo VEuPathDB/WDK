@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.Question;
@@ -30,6 +31,8 @@ public class Step {
     public static final String INTERNAL_AND = "INTERSECT";
     public static final String INTERNAL_OR = "UNION";
     public static final String INTERNAL_NOT = "MINUS";
+
+    private static final Logger logger = Logger.getLogger(Step.class);
 
     private StepFactory stepFactory;
     private User user;
@@ -510,6 +513,7 @@ public class Step {
 
     public Step getStepByChildId(int childId) throws WdkUserException,
             WdkModelException, SQLException, JSONException {
+        logger.debug("gettting step by child id. current=" + this + ", input=" + childId);
         Step target;
         if (this.childStepId == childId) {
             return getChildStep();
@@ -533,6 +537,7 @@ public class Step {
 
     public Step getStepByPreviousId(int previousId) throws WdkUserException,
             WdkModelException, SQLException, JSONException {
+        logger.debug("gettting step by prev id. current=" + this + ", input=" + previousId);
         Step target;
         if (this.previousStepId == previousId) {
             return getChildStep();
@@ -942,6 +947,6 @@ public class Step {
     }
 
     public String toString() {
-        return displayId + " (" + internalId + ")";
+        return displayId + " (" + previousStepId + ", " + childStepId + ")";
     }
 }
