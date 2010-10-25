@@ -30,6 +30,7 @@ import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
+import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
@@ -120,21 +121,20 @@ public class ShowQuestionAction extends Action {
             } else if (param instanceof AnswerParamBean) {
                 if (paramValue == null) {
                     AnswerParamBean answerParam = (AnswerParamBean) param;
-                    StepBean[] steps = answerParam.getSteps(user);
-                    String[] terms = new String[steps.length];
-                    String[] labels = new String[steps.length];
-                    for (int idx = 0; idx < steps.length; idx++) {
-                        StepBean step = steps[idx];
-                        terms[idx] = Integer.toString(step.getStepId());
-                        labels[idx] = "#" + step.getStepId() + " - "
-                                + step.getCustomName();
+                    
+                    String strategyKey = request.getParameter("strategy");
+                    int pos = strategyKey.indexOf("_");
+                    String stepId;
+                    if (pos < 0) {
+                        int strategyId = Integer.parseInt(strategyKey);
+                        StrategyBean strategy = user.getStrategy(strategyId);
+                        stepId = Integer.toString(strategy.getLatestStepId());
+                    } else {
+                        stepId = strategyKey.substring(pos + 1);
                     }
-                    labels = getLengthBoundedLabels(labels);
-                    qForm.setArray(paramName + LABELS_SUFFIX, labels);
-                    qForm.setArray(paramName + TERMS_SUFFIX, terms);
 
                     // if no step is assigned, use the first step
-                    paramValue = terms[0];
+                    paramValue = stepId;
                 }
             } else if (param instanceof DatasetParamBean) {
                 DatasetParamBean datasetParam = (DatasetParamBean) param;
