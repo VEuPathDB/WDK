@@ -548,5 +548,8 @@ public class StepBean {
     public String getPreviousStepParam() throws WdkModelException {
         return step.getPreviousStepParam();
     }
-    
+
+    public String toString() {
+       return step.toString();
+    }    
 }
