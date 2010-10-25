@@ -516,7 +516,7 @@ public class Step {
         logger.debug("gettting step by child id. current=" + this + ", input=" + childId);
         Step target;
         if (this.childStepId == childId) {
-            return getChildStep();
+            return this;
         }
         Step childStep = getChildStep();
         if (childStep != null) {
@@ -540,7 +540,7 @@ public class Step {
         logger.debug("gettting step by prev id. current=" + this + ", input=" + previousId);
         Step target;
         if (this.previousStepId == previousId) {
-            return getChildStep();
+            return this;
         }
         Step childStep = getChildStep();
         if (childStep != null) {
