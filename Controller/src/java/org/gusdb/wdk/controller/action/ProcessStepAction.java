@@ -79,7 +79,7 @@ public class ProcessStepAction extends Action {
 
             ActionForward forward = new ActionForward(url.toString());
             forward.setRedirect(true);
-            System.out.println("Leaving ProcessTransformAction...");
+            System.out.println("Leaving ProcessStepAction...");
             return forward;
         } catch (WdkOutOfSyncException ex) {
             logger.error(ex);
