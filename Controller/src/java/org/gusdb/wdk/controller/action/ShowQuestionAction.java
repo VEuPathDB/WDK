@@ -29,7 +29,6 @@ import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
-import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -78,8 +77,6 @@ public class ShowQuestionAction extends Action {
             QuestionForm qForm) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         // get the current user
-        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
-
         UserBean user = ActionUtility.getUser(servlet, request);
         wdkQuestion.setUser(user);
 
@@ -120,9 +117,8 @@ public class ShowQuestionAction extends Action {
                     qForm.setArray(paramName, paramValue.split(","));
             } else if (param instanceof AnswerParamBean) {
                 if (paramValue == null) {
-                    AnswerParamBean answerParam = (AnswerParamBean) param;
-                    
-                    String stepId = request.getParameter("step");
+                    String stepId = (String) request.getAttribute("step");
+                    if (stepId == null) stepId = request.getParameter("step");
                     if (stepId == null) {
                         String strategyKey = request.getParameter("strategy");
                         int pos = strategyKey.indexOf("_");
