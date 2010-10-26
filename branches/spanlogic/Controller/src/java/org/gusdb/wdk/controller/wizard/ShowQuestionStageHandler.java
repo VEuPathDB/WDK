@@ -54,6 +54,8 @@ public class ShowQuestionStageHandler implements StageHandler {
         StepBean previousStep = StageHandlerUtility.getPreviousStep(servlet,
                 request, wizardForm);
 
+        logger.debug("previous step: " + previousStep);
+
         // set the previous step value
         String paramName = null;
         for (ParamBean param : question.getParams()) {
@@ -65,8 +67,16 @@ public class ShowQuestionStageHandler implements StageHandler {
             }
         }
         if (paramName != null) {
-            attributes.put("value(" + paramName + ")", previousStep.getStepId());
+            int previousStepId = previousStep.getStepId();
+            attributes.put("value(" + paramName + ")", previousStepId);
+            wizardForm.setValue(paramName, previousStepId);
+            Map<String, String> paramValues = (Map<String, String>)request.getAttribute("params");
+            paramValues.put(paramName, Integer.toString(previousStepId));
+            request.setAttribute("params", paramValues);
         }
+
+        logger.debug("wizard form: " + wizardForm);
+
         // check if boolean is allowed
         String importType = question.getRecordClass().getFullName();
         boolean allowBoolean = true;

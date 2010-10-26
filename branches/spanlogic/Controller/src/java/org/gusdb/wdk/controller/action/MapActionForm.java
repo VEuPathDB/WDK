@@ -69,4 +69,19 @@ public abstract class MapActionForm extends ActionForm {
         arrays.clear();
         values.clear();
     }
+
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Printing out mapped form:\n");
+        builder.append("Values:\n");
+        for (String key : values.keySet()) {
+            builder.append("\t" + key + "=" + values.get(key) + "\n");
+        }
+        builder.append("Arrays:\n");
+        for (String key : arrays.keySet()) {
+            String[] array = arrays.get(key);
+            builder.append("\t" + key + "=[" + Utilities.fromArray(array) + "]\n");
+        }
+        return builder.toString();
+    }
 }

@@ -122,15 +122,17 @@ public class ShowQuestionAction extends Action {
                 if (paramValue == null) {
                     AnswerParamBean answerParam = (AnswerParamBean) param;
                     
-                    String strategyKey = request.getParameter("strategy");
-                    int pos = strategyKey.indexOf("_");
-                    String stepId;
-                    if (pos < 0) {
-                        int strategyId = Integer.parseInt(strategyKey);
-                        StrategyBean strategy = user.getStrategy(strategyId);
-                        stepId = Integer.toString(strategy.getLatestStepId());
-                    } else {
-                        stepId = strategyKey.substring(pos + 1);
+                    String stepId = request.getParameter("step");
+                    if (stepId == null) {
+                        String strategyKey = request.getParameter("strategy");
+                        int pos = strategyKey.indexOf("_");
+                        if (pos < 0) {
+                            int strategyId = Integer.parseInt(strategyKey);
+                            StrategyBean strategy = user.getStrategy(strategyId);
+                            stepId = Integer.toString(strategy.getLatestStepId());
+                        } else {
+                            stepId = strategyKey.substring(pos + 1);
+                        }
                     }
 
                     // if no step is assigned, use the first step

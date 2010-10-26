@@ -252,6 +252,7 @@ public class ProcessStepAction extends Action {
         StepBean newStep = user.createStep(question, params, null, false, true,
                 weight);
 
+        logger.debug("root step: " + rootStep);
         if (rootStep.getStepId() != strategy.getLatestStepId()) {
             // add on a branch, it is equivalent to a insert
             newStep.setIsCollapsible(true);

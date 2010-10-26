@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.action.ActionUtility;
 import org.gusdb.wdk.controller.action.WizardAction;
@@ -17,7 +18,9 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.json.JSONException;
 
 public class StageHandlerUtility {
-    
+   
+    private static final Logger logger = Logger.getLogger(StageHandlerUtility.class);
+ 
     public static StrategyBean getCurrentStrategy(HttpServletRequest request) {
         return (StrategyBean)request.getAttribute(WizardAction.ATTR_STRATEGY);
     }
@@ -45,6 +48,8 @@ public class StageHandlerUtility {
         UserBean user = ActionUtility.getUser(servlet, request);
         StrategyBean strategy = user.getStrategy(Integer.parseInt(strStratId));
 
+        logger.debug("strategy key: " + strategyKey);
+
         // load branch root, if exists
         StepBean rootStep;
         if (pos > 0) {
@@ -53,6 +58,7 @@ public class StageHandlerUtility {
         } else {
             rootStep = strategy.getLatestStep();
         }
+        logger.debug("root step: " + rootStep);
         return rootStep;
     }
 
