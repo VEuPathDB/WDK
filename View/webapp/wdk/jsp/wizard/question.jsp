@@ -51,7 +51,7 @@
 <%-- end of the copied content --%>
 
 <c:choose>
-    <c:when test="${!wdkStep.isBoolean && wdkStep.parentOrNextStep == null && action == 'revise'}">
+    <c:when test="${!wdkStep.isBoolean && action == 'revise'}">
         <c:set var="nextStage" value="process_question" />
     </c:when>
     <c:otherwise>
