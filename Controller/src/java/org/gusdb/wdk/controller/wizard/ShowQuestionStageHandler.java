@@ -36,16 +36,10 @@ public class ShowQuestionStageHandler implements StageHandler {
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         String questionName = request.getParameter(PARAM_QUESTION_NAME);
         if (questionName == null || questionName.length() == 0)
-            throw new WdkUserException("Required param " + PARAM_QUESTION_NAME + " is missing.");
+            throw new WdkUserException("Required param " + PARAM_QUESTION_NAME
+                    + " is missing.");
 
         QuestionBean question = wdkModel.getQuestion(questionName);
-
-        // prepare question form
-        logger.debug("Preparing form for question: " + questionName);
-        QuestionForm questionForm = new QuestionForm();
-        ShowQuestionAction.prepareQuestionForm(question, servlet, request,
-                questionForm);
-        wizardForm.copyFrom(questionForm);
 
         Map<String, Object> attributes = new HashMap<String, Object>();
         attributes.put(ATTR_QUESTION, question);
@@ -68,19 +62,24 @@ public class ShowQuestionStageHandler implements StageHandler {
         }
         if (paramName != null) {
             int previousStepId = previousStep.getStepId();
-            attributes.put("value(" + paramName + ")", previousStepId);
-            wizardForm.setValue(paramName, previousStepId);
-            Map<String, String> paramValues = (Map<String, String>)request.getAttribute("params");
-            paramValues.put(paramName, Integer.toString(previousStepId));
-            request.setAttribute("params", paramValues);
+            // the name here is hard-coded, it will be used by
+            // ShowQuestionAction.
+            request.setAttribute("step", previousStepId);
         }
 
+        // prepare question form
+        logger.debug("Preparing form for question: " + questionName);
+        QuestionForm questionForm = new QuestionForm();
+        ShowQuestionAction.prepareQuestionForm(question, servlet, request,
+                questionForm);
+        wizardForm.copyFrom(questionForm);
         logger.debug("wizard form: " + wizardForm);
 
         // check if boolean is allowed
         String importType = question.getRecordClass().getFullName();
         boolean allowBoolean = true;
-        if (previousStep != null) allowBoolean = importType.equals(previousStep.getType());
+        if (previousStep != null)
+            allowBoolean = importType.equals(previousStep.getType());
         logger.debug("allow boolean: " + allowBoolean);
         attributes.put(ATTR_ALLOW_BOOLEAN, allowBoolean);
 
