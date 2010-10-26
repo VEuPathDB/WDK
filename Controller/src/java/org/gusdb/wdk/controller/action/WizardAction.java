@@ -86,6 +86,10 @@ public class WizardAction extends Action {
             if (type.equals(Result.TYPE_VIEW)) { // forward to a jsp.
                 logger.debug("wizard view: " + forward);
 
+                // add the input strategy & step key into the attribute
+                request.setAttribute("strategy", wizardForm.getStrategy());
+                request.setAttribute("step", wizardForm.getStrategy());
+
                 // put values into attibute
                 for (String key : attributes.keySet()) {
                     request.setAttribute(key, attributes.get(key));

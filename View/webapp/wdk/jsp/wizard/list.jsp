@@ -12,12 +12,12 @@
 <c:set var="user" value="${sessionScope.wdkUser}"/>
 <c:set var="step" value="${requestScope.wdkStep}" />
 <c:set var="recordClass" value="${step.question.recordClass}" />
-<c:set var="strategyId" value="${requestScope.wdkStrategy}" />
+<c:set var="strategyId" value="${requestScope.strategy}" />
 <c:set var="action" value="${requestScope.action}" />
 <%-- the type is of the previous step, that is the input type of the new step  
 <c:set var="recordClass" value="${model.recordClassMap[rcName]}" />--%>
 
-<c:set var="partialUrl" value="wizard.do?strategy=${strategyId.strategyId}&step=${step.stepId}&action=${action}" />
+<c:set var="partialUrl" value="wizard.do?strategy=${strategyId}&step=${step.stepId}&action=${action}" />
 
 <c:if test="${isAdd == 'false'}">
     <%-- insert a step in between, the transform cannot change type in this case --%>
@@ -33,7 +33,10 @@
                         <li class="category" onclick="callWizard(null,this,'sl_recordclasses',2)">Run a new Search</li>
                         <li class="category" onclick="callWizard(null,this,'sl_strategies',2)">Add existing Strategy</li>
                         <li class="category" onclick="callWizard(null,this,'sl_baskets',2)">Add the Basket</li>
+                        <%-- only allow transform if the step has previous step --%>
+                        <c:if test="${step.previousStep != null || action != 'insert'}">
                         <li class="category" onclick="callWizard(null,this,'sl_transforms',2)">Convert results</li>
+                        </c:if>
                     </ul>
                 </div>
             </td>
