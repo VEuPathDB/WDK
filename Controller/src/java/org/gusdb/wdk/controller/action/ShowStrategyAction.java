@@ -267,8 +267,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
             JSONObject jsStrategy = new JSONObject();
             jsStrategy.put("id", stratId);
             jsStrategy.put("checksum", strat.getChecksum());
-	    System.out.println("ID: " + stratId);
-	    System.out.println("Checksum: " + strat.getChecksum());
+	    //System.out.println("ID: " + stratId);
+	    //System.out.println("Checksum: " + strat.getChecksum());
             jsState.put(Integer.toString(order + 1), jsStrategy);
         }
         jsState.put("length", openedStrategies.length);
