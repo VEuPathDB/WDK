@@ -24,6 +24,7 @@
 	function initWindow(){ 
 		attachHandlers();
 		prepCanvas();
+		prepSentence();
 //		prepDynamicSpans();
 	}
 	function attachHandlers(){
@@ -32,6 +33,9 @@
 		});
 		$("select[name*='_b'], input[name*='_b']").change(function(){
 			redraw(true,"B");
+		});
+		$("input[type*='radio']").click(function(){
+			drawSentence();
 		});
 	}
 	function prepCanvas(){
@@ -210,4 +214,57 @@
 		redraw();
 	}	
 */	
+/*-------------------------------------------------------------------
+ *Summary Sentence Code
+ ---------------------------------------------------------------------*/
+
+var recordTypes = new Array();
+var operations = ["overlaps with","contains","contained within"];
+var strands = ["either strand","same strand","opposite strand"];
+//var sentence = null;
+var sentence = "";
+var op = null;
+var strand = null;
+var type = null;
+function prepSentence(){
+	recordTypes = [$("#span_a_type").val(),$("#span_b_type").val()];
+	drawSentence();
+}
+function getIndex(n){
+	var i = 0;
+	var v = null;
+	$("input[name*='"+n+"']").each(function(){
+		if(this.checked == true) v = i;
+		i++;
+		return; 
+	});
+	return v;
+}
+function drawSentence(){
+	if (sentence == null){
+		sentence = "Please selected options for all parameters, then a Summary sentance will be displayed.";
+	}else{
+		s = "";
+		op = getIndex("span_operation");
+		strand = getIndex("span_strand");
+		type = getIndex("span_output");
+		typeA = null;
+		typeB = null;
+		if(type == 0){
+			typeA = recordTypes[0] + "s in set A";
+			typeB = recordTypes[1] + "s in set B"
+		}else{
+			typeA = recordTypes[1] + "s in set B";
+			typeB = recordTypes[0] + "s in set A"
+		}
+		if(op > 0 && type == 1){
+			op = (op == 1) ? 2 : 1;
+		}
+		s += "Find " + typeA + " whose selected interval " + operations[op] + " the " + typeB + "&apos;s selected interval in the " +strands[strand];
+		sentence = s;
+	}
+	$("div#sentence").html(sentence);
+}
+
+
 	
