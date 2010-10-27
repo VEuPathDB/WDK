@@ -67,6 +67,8 @@
   <div id="spanLogicParams">
 	<wdk:answerParamInput qp="${pMap['span_a']}"/>
 	<wdk:answerParamInput qp="${pMap['span_b']}"/>
+	<input type="hidden" value="${wdkStep.displayType}" id="span_a_type"/>
+	<input type="hidden" value="${importStep.displayType}" id="span_b_type"/>
 	<table>
 		<tr>
 			<td colspan="2">
@@ -186,6 +188,7 @@
   </div>
 <div class="filter-button"><html:submit property="questionSubmit" value="Run Step"/></div>
 </html:form>
+<div id="sentence"></div>
 <script>
 	initWindow();
 </script>
