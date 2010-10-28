@@ -9,6 +9,7 @@
 <c:set var="spanOnly" value="false"/>
 <c:set var="checked" value=""/>
 <c:set var="buttonVal" value="Get Answer"/>
+<c:set var="wdkStrategy" value="${requestScope.wdkStrategy}"/>
 <c:set var="wdkStep" value="${requestScope.wdkStep}"/>
 <c:set var="isRevise" value="false"/>
 <c:set var="allowBoolean" value="${requestScope.allowBoolean}"/>
@@ -51,7 +52,7 @@
 <%-- end of the copied content --%>
 
 <c:choose>
-    <c:when test="${!wdkStep.isBoolean && action == 'revise'}">
+    <c:when test="${(wdkStep.isTransform || wdkStrategy.length == 1) && action == 'revise'}">
         <c:set var="nextStage" value="process_question" />
     </c:when>
     <c:otherwise>
