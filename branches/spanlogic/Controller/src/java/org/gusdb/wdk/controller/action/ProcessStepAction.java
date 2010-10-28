@@ -62,7 +62,7 @@ public class ProcessStepAction extends Action {
             if (action.equals(WizardForm.ACTION_REVISE)) {
                 // revise a boolean step
                 stepIdsMap = reviseStep(request, questionForm);
-            } else if (action.equals(WizardForm.ACTION_REVISE)) {
+            } else if (action.equals(WizardForm.ACTION_INSERT)) {
                 stepIdsMap = insertStep(request, questionForm);
             } else { // add a boolean step
                 stepIdsMap = addStep(request, questionForm);
@@ -138,6 +138,8 @@ public class ProcessStepAction extends Action {
             QuestionForm form) throws NumberFormatException, WdkUserException,
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, FileNotFoundException, IOException {
+        logger.debug("Revising step...");
+
         // current step has to exist for revise
         if (step == null)
             throw new WdkUserException("Required param " + PARAM_STEP
@@ -180,6 +182,8 @@ public class ProcessStepAction extends Action {
             QuestionForm form) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             FileNotFoundException, IOException {
+        logger.debug("Inserting step...");
+
         // current step has to exist for insert
         if (step == null)
             throw new WdkUserException("Required param " + PARAM_STEP
@@ -234,6 +238,7 @@ public class ProcessStepAction extends Action {
             QuestionForm form) throws WdkUserException, NumberFormatException,
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, FileNotFoundException, IOException {
+        logger.debug("Adding step...");
 
         // the question name has to exist
         String questionName = request.getParameter(PARAM_QUESTION);
