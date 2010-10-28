@@ -64,7 +64,7 @@ public class ShowQuestionStageHandler implements StageHandler {
             int previousStepId = previousStep.getStepId();
             // the name here is hard-coded, it will be used by
             // ShowQuestionAction.
-            request.setAttribute("step", previousStepId);
+            request.setAttribute("step", Integer.toString(previousStepId));
         }
 
         // prepare question form
