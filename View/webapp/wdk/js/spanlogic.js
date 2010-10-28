@@ -219,8 +219,8 @@
  ---------------------------------------------------------------------*/
 
 var recordTypes = new Array();
-var operations = ["overlaps with","contains","contained within"];
-var strands = ["either strand","same strand","opposite strand"];
+var operations = ["overlaps with","contains","is contained within"];
+var strands = ["either strand","the same strand","the opposite strand"];
 //var sentence = null;
 var sentence = "";
 var op = null;
@@ -260,7 +260,7 @@ function drawSentence(){
 		if(op > 0 && type == 1){
 			op = (op == 1) ? 2 : 1;
 		}
-		s += "Find " + typeA + " whose selected interval " + operations[op] + " the " + typeB + "&apos;s selected interval in the " +strands[strand];
+		s = "Find <b>" + typeA + "</b> whose selected interval <b>" + operations[op] + "</b> the <b>" + typeB + "&apos;s</b> selected interval in <b>" + strands[strand] + "</b>.";
 		sentence = s;
 	}
 	$("div#sentence").html(sentence);
