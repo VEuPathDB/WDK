@@ -165,7 +165,7 @@
      <c:choose>
       <c:when test="${fn:contains(userAgent, 'Firefox') || fn:contains(userAgent, 'Red Hat') }">
         <c:if test="${isOpen}"> 
-           <script tupe="text/javascript">
+           <script type="text/javascript">
               toggleLayer('${name}', 'toggle${name}');
             </script>
         </c:if>
