@@ -52,7 +52,7 @@
 <%-- end of the copied content --%>
 
 <c:choose>
-    <c:when test="${(wdkStep.isTransform || wdkStrategy.length == 1) && action == 'revise'}">
+    <c:when test="${(wdkStep.isTransform || wdkStep.previousStep == null) && action == 'revise'}">
         <c:set var="nextStage" value="process_question" />
     </c:when>
     <c:otherwise>
