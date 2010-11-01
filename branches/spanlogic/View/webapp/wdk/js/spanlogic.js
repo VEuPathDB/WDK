@@ -45,7 +45,7 @@
 		B = new Diagram("B",document.getElementById('scaleB'));
 		prepDynamicSpans(B, 1);
 	}
-	function drawRect(cxt,x1,y1,x2,y2,a,b){
+	function drawRect(cxt,x1,y1,x2,y2,a,b,c){
 		//cxt.fillStyle = a;
 		//cxt.fillRect(x1,y1,x2,y2);
 		
@@ -66,11 +66,19 @@
 			});
 		}else{
 			$(rect).css({
-				"border-left":"2px solid #000000",
 				"border-top":"2px solid #000000",
-				"border-right":"2px solid #000000",
-				"border-bottom":"none",
+				"border-bottom":"none"
 			});
+			if(c.right){
+				$(rect).css({
+					"border-right":"2px solid #000000"
+				});
+			}
+			if(c.left){
+				$(rect).css({
+					"border-left":"2px solid #000000"
+				});
+			}
 		}
 		cxt.append(rect);
 	}
@@ -103,9 +111,12 @@
 	function drawFeature(dia){
 		feat = dia.feature;
 		cxt = dia.cxt;
-		if(feat.loc.x < 0) feat.loc.x = -1;
-		if(feat.loc.x + feat.width > dia.width) feat.width = dia.width - feat.loc.x - 1;
-		drawRect(cxt,feat.loc.x,feat.loc.y,feat.width,feat.height,"rgba(255,255,255,1.0)", false);
+		has_sides = new Object();
+		has_sides.left = true;
+		has_sides.right = true;
+		if(feat.loc.x < 0) {feat.loc.x = 0; has_sides.left = false;}
+		if(feat.loc.x + feat.width > dia.width) {feat.width = dia.width - feat.loc.x - 1;has_sides.right = false;}
+		drawRect(cxt,feat.loc.x,feat.loc.y,feat.width,feat.height,"rgba(255,255,255,1.0)", false, has_sides);
 		//drawFeatureText(dia);
 	}
 	function drawFeatureText(dia){
