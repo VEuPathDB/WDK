@@ -48,6 +48,12 @@
         </div> <!--End Section Div-->
         <div id="sections_data">
         </div>
+<script type="text/javascript">
+   callWizard(null,this,'sl_recordclasses',2);
+   callWizard(null,this,'sl_GeneRecordClasses_GeneRecordClass',3);
+</script>
+
+
     <wdk:addStepFooter/>
         
 
