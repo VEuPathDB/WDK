@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Random;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -33,6 +34,8 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 public class ShowRecordAction extends Action {
 
+    private static final String ATTR_PAGE_ID = "wdkPageId";
+    
     private static Logger logger = Logger.getLogger(ShowRecordAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
@@ -40,6 +43,11 @@ public class ShowRecordAction extends Action {
             throws Exception {
         logger.debug("Entering ShowRecordAction...");
         long start = System.currentTimeMillis();
+        
+        // generate a page id
+        Random random = new Random();
+        int pageId = random.nextInt();
+        request.setAttribute(ATTR_PAGE_ID, pageId);
 
         ServletContext svltCtx = getServlet().getServletContext();
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
