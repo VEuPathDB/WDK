@@ -9,6 +9,7 @@
 */	
 	var A = null;
 	var B = null;
+	var region_color = ["rgba(255,0,0,0.3)","rgba(0,0,255,0.3)"];
 	function Diagram(name,ele){
 		this.name = name;
 		this.c = ele;
@@ -44,7 +45,7 @@
 		B = new Diagram("B",document.getElementById('scaleB'));
 		prepDynamicSpans(B, 1);
 	}
-	function drawRect(cxt,x1,y1,x2,y2,a){
+	function drawRect(cxt,x1,y1,x2,y2,a,b){
 		//cxt.fillStyle = a;
 		//cxt.fillRect(x1,y1,x2,y2);
 		
@@ -55,8 +56,22 @@
 			"left":x1,
 			"width":x2,
 			"height":y2,
-			"background-color":a
+			"background-color":a,
 		});
+		if(b){
+			$(rect).css({
+				"border-width":"2px",
+				"border-color":b,
+				"border-style":"solid"
+			});
+		}else{
+			$(rect).css({
+				"border-left":"2px solid #000000",
+				"border-top":"2px solid #000000",
+				"border-right":"2px solid #000000",
+				"border-bottom":"none",
+			});
+		}
 		cxt.append(rect);
 	}
 	function drawLine(cxt,x1,y1,x2,y2,a, o){
@@ -88,7 +103,7 @@
 	function drawFeature(dia){
 		feat = dia.feature;
 		cxt = dia.cxt;
-		drawRect(cxt,feat.loc.x,feat.loc.y,feat.width,feat.height,"rgba(0,0,0,0.5)");
+		drawRect(cxt,feat.loc.x,feat.loc.y,feat.width,feat.height,"rgba(255,255,255,1.0)", false);
 		//drawFeatureText(dia);
 	}
 	function drawFeatureText(dia){
@@ -123,7 +138,7 @@
 		feature = dia.feature;
 		center = dia.center;
 		
-		var botPad = 5;
+		var botPad = 25;
 		feature.width = l / s;
 		feature.height = 20;
 		var dx1 = center - feature.width/2;
@@ -133,9 +148,10 @@
 		if(feature.loc.x + feature.width > dia.width) feature.width = dia.width - feature.loc.x;
 	}
 	function drawRegion(dia){
+		i = (dia.name == "A") ? 0 : 1; 
 		cxt = dia.cxt;
 		region = dia.region;
-		drawRect(cxt,region.start.x,region.start.y,region.width,region.height,"rgba(255,0,0,.5)");
+		drawRect(cxt,region.start.x,region.start.y,region.width,region.height,region_color[i],"#000000");
 		//drawLine(cxt,region.start.x, region.start.y, 0, region.height, "rgba(0,0,0,1)");
 		//drawLine(cxt,region.end.x, region.end.y, 0, region.height, "rgba(0,0,0,1)");
 		//drawLine(cxt,region.start.x, region.start.y + region.height/2, region.width, 0, "rgba(0,0,0,1)");
@@ -154,7 +170,7 @@
 		var es = $("select[name*='span_end_direction_"+dn+"']")[i].value;//document.getElementsByName('downstreamSign')[i].value;
 		var eo = parseInt($("input[name*='span_end_offset_"+dn+"']")[i].value);//parseInt(document.getElementsByName('downstreamOffset')[i].value);
 		dia.singlepoint = Single(dia,ba,bs,bo,ea,es,eo);
-		region.height = 15;
+		region.height = 45;
 		region.width = feature.length / scale;
 		var vs = (ba == "start") ? feature.loc.x : feature.loc.x + region.width;
 		var ve = (ea == "start") ? feature.loc.x : feature.loc.x + region.width;
@@ -168,7 +184,7 @@
 		}
 		region.start = new Object();
 		region.start.x = Math.round(vs);
-		region.start.y = feature.loc.y - 30;
+		region.start.y = feature.loc.y - 40;
 		region.end = new Object();
 		region.end.x = Math.round(ve);
 		region.end.y = region.start.y;
