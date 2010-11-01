@@ -57,8 +57,11 @@
   ul.horizontal li {
     display: inline;
   }
-  canvas{
+  canvas, div#scaleA, div#scaleB{
 	border:1px solid black;
+	height:75px;
+	margin:auto;
+	width:400px;
   }
 </style>
 <c:set var="pMap" value="${question.paramsMap}"/>
@@ -97,10 +100,10 @@
       </table>
     </fieldset>
 		</td>
-		<td>
-		<canvas id="scaleA" width="400" height="75">
+		<td><div id="scaleA"></div>
+		<!--><canvas id="scaleA" width="400" height="75">
 				This browser does not support Canvas Elements (probably IE) :(
-		</canvas>
+		</canvas>-->
 		</td>
 		</tr>
 		<tr>
@@ -129,10 +132,10 @@
       </table>
     </fieldset>
 </td>
-<td>
-	<canvas id="scaleB" width="400" height="75">
+<td><div id="scaleB"></div>
+	<!--<canvas id="scaleB" width="400" height="75">
 			This browser does not support Canvas Elements (probably IE) :(
-	</canvas>
+	</canvas>-->
 	</td>
 </tr>
 </table>
