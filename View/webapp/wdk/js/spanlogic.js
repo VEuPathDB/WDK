@@ -12,7 +12,7 @@
 	function Diagram(name,ele){
 		this.name = name;
 		this.c = ele;
-		this.cxt = this.c.getContext('2d');;
+		this.cxt = $(this.c);//this.c.getContext('2d');
 		this.scale = null; // Scale is an integer for number of nucleotides per 1px.
 		this.feature = null; // deafult length of the feature.
 		this.region = null;
@@ -45,20 +45,36 @@
 		prepDynamicSpans(B, 1);
 	}
 	function drawRect(cxt,x1,y1,x2,y2,a){
-		cxt.fillStyle = a;
-		cxt.fillRect(x1,y1,x2,y2);
+		//cxt.fillStyle = a;
+		//cxt.fillRect(x1,y1,x2,y2);
+		
+		rect = document.createElement("div");
+		$(rect).css({
+			"position":"relative",
+			"top":y1,
+			"left":x1,
+			"width":x2,
+			"height":y2,
+			"background-color":a
+		});
+		cxt.append(rect);
 	}
-	function drawLine(cxt,x1,y1,x2,y2,a){
-		cxt.strokeStyle = a;
-		cxt.lineWidth = "1";
-		cxt.beginPath();
-		cxt.moveTo(x1,y1);
-		cxt.lineTo(x1+x2,y1+y2);
-		cxt.closePath();
-		cxt.stroke();
+	function drawLine(cxt,x1,y1,x2,y2,a, o){
+		//cxt.strokeStyle = a;
+		//cxt.lineWidth = "1";
+		//cxt.beginPath();
+		//cxt.moveTo(x1,y1);
+		//cxt.lineTo(x1+x2,y1+y2);
+		//cxt.closePath();
+		//cxt.stroke();
+	
 	}
 	function prepDynamicSpans(dia, i){
-		dia.center = dia.c.width / 2;
+		w = dia.cxt.css("width");
+		h = dia.cxt.css("height");
+		dia.width = parseInt(w.substring(0, w.length-2));
+		dia.height = parseInt(h.substring(0, h.length-2));
+		dia.center = dia.width / 2;//dia.c.width / 2;
 		dia.scale = 10;
 		dia.feature = new Object();
 		dia.feature.length = 2000;
@@ -72,8 +88,8 @@
 	function drawFeature(dia){
 		feat = dia.feature;
 		cxt = dia.cxt;
-		drawRect(cxt,feat.loc.x,feat.loc.y,feat.width,feat.height,"rgba(0,0,0,.5)");
-		drawFeatureText(dia);
+		drawRect(cxt,feat.loc.x,feat.loc.y,feat.width,feat.height,"rgba(0,0,0,0.5)");
+		//drawFeatureText(dia);
 	}
 	function drawFeatureText(dia){
 		dia.cxt.fillText("Feature", center - 20, dia.feature.loc.y+15);
@@ -111,16 +127,18 @@
 		feature.width = l / s;
 		feature.height = 20;
 		var dx1 = center - feature.width/2;
-		var dy1 = dia.c.height - (botPad + feature.height);
+		var dy1 = dia.height - (botPad + feature.height);
 		feature.loc.x = dx1;
 		feature.loc.y = dy1;
+		if(feature.loc.x + feature.width > dia.width) feature.width = dia.width - feature.loc.x;
 	}
 	function drawRegion(dia){
 		cxt = dia.cxt;
 		region = dia.region;
-		drawLine(cxt,region.start.x, region.start.y, 0, region.height, "rgba(0,0,0,1)");
-		drawLine(cxt,region.end.x, region.end.y, 0, region.height, "rgba(0,0,0,1)");
-		drawLine(cxt,region.start.x, region.start.y + region.height/2, region.width, 0, "rgba(0,0,0,1)");
+		drawRect(cxt,region.start.x,region.start.y,region.width,region.height,"rgba(255,0,0,.5)");
+		//drawLine(cxt,region.start.x, region.start.y, 0, region.height, "rgba(0,0,0,1)");
+		//drawLine(cxt,region.end.x, region.end.y, 0, region.height, "rgba(0,0,0,1)");
+		//drawLine(cxt,region.start.x, region.start.y + region.height/2, region.width, 0, "rgba(0,0,0,1)");
 		//drawRegionText(dia);
 	}
 	function setRegion(dia,i){
@@ -143,6 +161,11 @@
 		vs = (bs == '+') ? vs + (bo/scale) : vs - (bo/scale); 
 		ve = (es == '+') ? ve + (eo/scale) : ve - (eo/scale);
 		region.width = Math.round(ve - vs);
+		if(region.width < 0){
+			region.width = Math.abs(region.width);
+			ve = vs;
+			vs = vs - region.width;
+		}
 		region.start = new Object();
 		region.start.x = Math.round(vs);
 		region.start.y = feature.loc.y - 30;
@@ -165,7 +188,7 @@
 			redraw(false,dia);
 			return;
 		}
-		if(Math.abs(dia.region.width) > dia.c.width){ // Zoom out
+		if(Math.abs(dia.region.width) > dia.width){ // Zoom out
 			dia.scale = dia.scale * 5;
 			redraw(false,dia);
 			return;
@@ -175,9 +198,9 @@
 			dia.center = dia.center + dif + 10;
 			redraw(false,dia);
 			return;
-		}else if(dia.region.start.x > dia.c.width || dia.region.end.x > dia.c.width){ // move left
-			if(dia.region.end.x > dia.c.width) dif = Math.abs(dia.region.end.x - dia.c.width);
-			else if(dia.region.start.x > dia.c.width) dif = Math.abs(dia.region.start.x - dia.c.width);
+		}else if(dia.region.start.x > dia.width || dia.region.end.x > dia.width){ // move left
+			if(dia.region.end.x > dia.width) dif = Math.abs(dia.region.end.x - dia.width);
+			else if(dia.region.start.x > dia.width) dif = Math.abs(dia.region.start.x - dia.width);
 			dia.center = dia.center - dif - 10;
 			redraw(false,dia);
 			return;
@@ -195,7 +218,7 @@
 		feature = dia.feature;
 		c = dia.c;
 		if(fromPage){
-			dia.center = center = c.width / 2;
+			dia.center = center = dia.width / 2;
 			dia.scale = scale = 10;
 		}
 		setFeature(dia);
@@ -203,7 +226,8 @@
 		checkMargins(dia);
 		singlepoint = false;
 		if(dia.draw){
-			c.width = c.width;
+			dia.cxt.html("");
+			//c.width = c.width;
 			drawFeature(dia);
 			drawRegion(dia);
 			dia.draw = false;
