@@ -103,6 +103,8 @@
 	function drawFeature(dia){
 		feat = dia.feature;
 		cxt = dia.cxt;
+		if(feat.loc.x < 0) feat.loc.x = -1;
+		if(feat.loc.x + feat.width > dia.width) feat.width = dia.width - feat.loc.x - 1;
 		drawRect(cxt,feat.loc.x,feat.loc.y,feat.width,feat.height,"rgba(255,255,255,1.0)", false);
 		//drawFeatureText(dia);
 	}
@@ -145,7 +147,7 @@
 		var dy1 = dia.height - (botPad + feature.height);
 		feature.loc.x = dx1;
 		feature.loc.y = dy1;
-		if(feature.loc.x + feature.width > dia.width) feature.width = dia.width - feature.loc.x;
+		//if(feature.loc.x + feature.width > dia.width) feature.width = dia.width - feature.loc.x;
 	}
 	function drawRegion(dia){
 		i = (dia.name == "A") ? 0 : 1; 
