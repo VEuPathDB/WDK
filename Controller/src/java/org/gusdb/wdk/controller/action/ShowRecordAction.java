@@ -133,6 +133,8 @@ public class ShowRecordAction extends Action {
         long end = System.currentTimeMillis();
         logger.info("showRecord took total: " + ((end - start) / 1000F)
                 + " seconds.");
+        logger.info("page-id=" + pageId + " --- start record page loading.");
+                
 
         return forward;
     }
