@@ -48,7 +48,40 @@
 	function drawRect(cxt,x1,y1,x2,y2,a,b,c){
 		//cxt.fillStyle = a;
 		//cxt.fillRect(x1,y1,x2,y2);
+	/*	right = left = null;
+		if(x1 < 0){
+			x1 = 20;
+			left = document.createElement("div");
+			$(left).css({
+				"position":"relative",
+				"top":y1,
+				"left":0,
+				"font-size":"0px",
+				"line-height":"0%",
+				"width":"0px",
+				"border-top": "10px solid #f6f6f6",
+				"border-right": "20px solid rbga(255,0,0,1)",
+				"border-bottom": "10px solid #f6f6f6"
+			});
+		}
+		if(x1 + x2 > 400){
+			x2 = x1 + x2 - 20;
+			if(x2 > 400) x2 = 380;
+			right = document.createElement("div");
+			$(right).css({
+				"position":"relative",
+				"top":y1,
+				"right":0,
+				"font-size":"0px",
+				"line-height":"0%",
+				"width":"0px",
+				"border-top": "10px solid #f6f6f6",
+				"border-left": "20px solid rbga(255,0,0,1)",
+				"border-bottom": "10px solid #f6f6f6"
+			});
+		}
 		
+	*/	
 		rect = document.createElement("div");
 		$(rect).css({
 			"position":"relative",
@@ -81,17 +114,19 @@
 			}
 		}
 		cxt.append(rect);
+	//	if(left != null) cxt.append(left);
+	//	if(right != null) cxt.append(right);
 	}
-	function drawLine(cxt,x1,y1,x2,y2,a, o){
-		//cxt.strokeStyle = a;
-		//cxt.lineWidth = "1";
-		//cxt.beginPath();
-		//cxt.moveTo(x1,y1);
-		//cxt.lineTo(x1+x2,y1+y2);
-		//cxt.closePath();
-		//cxt.stroke();
+	/*function drawLine(cxt,x1,y1,x2,y2,a, o){
+		cxt.strokeStyle = a;
+		cxt.lineWidth = "1";
+		cxt.beginPath();
+		cxt.moveTo(x1,y1);
+		cxt.lineTo(x1+x2,y1+y2);
+		cxt.closePath();
+		cxt.stroke();
 	
-	}
+	}*/
 	function prepDynamicSpans(dia, i){
 		w = dia.cxt.css("width");
 		h = dia.cxt.css("height");
@@ -164,7 +199,7 @@
 		i = (dia.name == "A") ? 0 : 1; 
 		cxt = dia.cxt;
 		region = dia.region;
-		drawRect(cxt,region.start.x,region.start.y,region.width,region.height,region_color[i],"#000000");
+		drawRect(cxt,region.start.x,region.start.y,region.width,region.height,region_color[i],region_color[i]);
 		//drawLine(cxt,region.start.x, region.start.y, 0, region.height, "rgba(0,0,0,1)");
 		//drawLine(cxt,region.end.x, region.end.y, 0, region.height, "rgba(0,0,0,1)");
 		//drawLine(cxt,region.start.x, region.start.y + region.height/2, region.width, 0, "rgba(0,0,0,1)");
@@ -212,16 +247,17 @@
 	function checkMargins(dia){
 		singlepoint = dia.singlepoint;
 		dia.draw = false;
-		if(!singlepoint && (dia.region.start.x == dia.region.end.x || Math.abs(dia.region.end.x - dia.region.start.x) < 15)){ // Zoom in
-			dia.scale = dia.scale / 5; 
-			redraw(false,dia);
-			return;
-		}
-		if(Math.abs(dia.region.width) > dia.width){ // Zoom out
+		
+		rs_fe = Math.abs(dia.region.start.x - (dia.feature.loc.x + dia.feature.width));
+		fs_re = Math.abs(dia.feature.loc.x - (dia.region.start.x + dia.region.width));
+		maxWidth = Math.max(rs_fe,fs_re,Math.abs(dia.feature.width),Math.abs(dia.region.width));
+		
+		if(maxWidth >= dia.width){ // Zoom out
 			dia.scale = dia.scale * 5;
 			redraw(false,dia);
 			return;
-		}else if(dia.region.start.x < 0 || dia.region.end.x < 0){ // move right
+		}
+		if(dia.region.start.x < 0 || dia.region.end.x < 0){ // move right
 			if(dia.region.start.x < 0 ) dif = Math.abs(dia.region.start.x);
 			else if(dia.region.end.x < 0 ) dif = Math.abs(dia.region.end.x);
 			dia.center = dia.center + dif + 10;
@@ -233,7 +269,7 @@
 			dia.center = dia.center - dif - 10;
 			redraw(false,dia);
 			return;
-		}
+		}	
 		dia.draw = true;
 	}
 	function redraw(fromPage, dia){
@@ -253,6 +289,7 @@
 		setFeature(dia);
 		setRegion(dia, i);
 		checkMargins(dia);
+		//dia.draw = true;
 		singlepoint = false;
 		if(dia.draw){
 			dia.cxt.html("");
