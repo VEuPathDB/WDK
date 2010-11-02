@@ -162,23 +162,23 @@ function createFlexigridFromTable(table) {
         resizable : false});
 }
 
-function updatePageCount(pager_id) {
-    var resultSize = parseInt($("input#resultSize").val());
-    var psSelect = document.getElementById(pager_id + "_pageSize");
-    var index = psSelect.selectedIndex;
-    var pageSize = psSelect.options[index].value;
+
+function updatePageCount(element) {
+    var advancedPaging = $(element).parent();
+    var resultSize = parseInt($("input.resultSize",advancedPaging).val());
+    var pageSize = $(".pageSize",advancedPaging).val();
     var pageCount = Math.ceil(resultSize / pageSize);
     if (pageCount * pageSize < resultSize) pageCount++;
-    var span = document.getElementById(pager_id + "_pageCount");
-    span.innerHTML = pageCount;
+    var span = $(".pageCount",advancedPaging);
+    span.html(pageCount);
 }
 
-function gotoPage(pager_id) {
-    var pageNumber = document.getElementById(pager_id + "_pageNumber").value;
-    var psSelect = document.getElementById(pager_id + "_pageSize");
-    var pageSize = psSelect.options[psSelect.selectedIndex].value;
+function gotoPage(element) {
+    var advancedPaging = $(element).parent();
+    var pageNumber = $(".pageNumber",advancedPaging).val();
+    var pageSize = $(".pageSize",advancedPaging).val();
 
-    var pageUrl = document.getElementById("pageUrl").value;
+    var pageUrl = $(".pageUrl").val();
     
     var pageOffset = (pageNumber - 1) * pageSize;
     var gotoPageUrl = pageUrl.replace(/\&pager\.offset=\d+/, "");
