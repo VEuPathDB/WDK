@@ -31,7 +31,6 @@ function showBasket(recordClass, type){
 					$("input#make-strategy-from-basket-button").attr("disabled",false);
 					// create multi select control for adding columns
 					checkPageBasket();
-					createMultiSelectAttributes($("#basket_" + type).find("#addAttributes"));
 					createFlexigridFromTable($("#basket_" + type).find("#Results_Table"));
 					try {
 						customBasketPage();
