@@ -25,10 +25,6 @@ div#dyk-shadow{
 	z-index:180;
 }
 
-div#dyk-box div.dragHandle{
-	height:5px;
-}
-
 
 div#dyk-box div#dyk-text{
 	background-color:#FFFFFF;
@@ -69,5 +65,5 @@ div#dyk-box div.dragHandle span#dyk-count{
 	float:right;
 	font-size:8pt;
 	font-weight:bold;
-	margin:-8px 7px 0 0;
+	margin:0 7px 0 0;
 }
