@@ -201,25 +201,6 @@ img.plus-minus {
 	clear: both;
 }
 
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 =Arrow Chains 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-.arrowgrey {
-   padding: 4px;
-   background-color: #d0cfcf;
-   text-align: left;
-   border-width: 1px;
-   border-color: #848484;
-}
-
-.selectedarrow {
-   padding: 4px;
-   background-color:#FFFFA0;
-   text-align: left;
-   border-width: 1px;
-
-}
-
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =Fonts 
@@ -405,26 +386,22 @@ tr.lines td, tr.linesalt td {
     =RED BUTTON
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 a.redbutton {
-   color: #FFFFFF;
-   font: normal 13px arial, sans-serif;
-   margin-right: 6px;
-   padding-right: 3px; /* sliding doors padding */
+   display: block;
    text-decoration: none;
    background-attachment: scroll;
    background-color: transparent;
+   background-image: url(../images/redboxb.gif);
    background-position: right top;   
-   width: 115px;
+   background-repeat: no-repeat;
 }
 
 a.redbutton span {
-   color: #FFFFFF;
    display: block;
+   color: #FFFFFF;
+   font: normal 13px arial, sans-serif;
    line-height: 13px;
-   padding: 15px 23px 12px 18px;
+   padding: 15px 21px 12px;
    text-decoration: none;
-   background-color: transparent;
-   background-image: url(../images/redboxb.gif);
-   background-repeat: no-repeat;
 }
 
 a.redbutton:active {
@@ -434,8 +411,7 @@ a.redbutton:active {
 }
 
 a.redbutton:active span {
-   background-position: bottom left;
-   padding: 16px 23px 11px 18px; /* push text down 1px */
+   padding: 16px 21px 11px; /* push text down 1px */
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
