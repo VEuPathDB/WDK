@@ -30,8 +30,6 @@ function showPanel(panel) {
 	if (panel == 'strategy_results') {
 		if($.cookie("refresh_results") == "true"){
 			var currentStep = $("#Strategies div.selected");
-			if (currentStep.length == 0) currentStep = $("#Strategies div.selectedarrow");
-			if (currentStep.length == 0) currentStep = $("#Strategies div.selectedtransform");
 			var active_link = $("a.results_link", currentStep);
 			if(active_link.length == 0) active_link = $(".resultCount a.operation", currentStep);
 			active_link.click();

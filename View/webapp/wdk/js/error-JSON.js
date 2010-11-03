@@ -46,7 +46,7 @@ function ErrorHandler(evt, data, strategy, qform, name, fromHist){
 			removeStrategyDivs(strategy.backId);
 			f_strategyId = updateStrategies(data, evt, strategy);
 			removeLoading(strategy.frontId);
-			$("#diagram_" + strategy.frontId + " div.venn:last .resultCount a").click();
+			$("#diagram_" + strategy.frontId + " div.stepBox:last h6.resultCount:last a").click();
 			isInsert = "";
 		}else if(type == "dup-name-error"){
 			if(evt == "SaveStrategy"){

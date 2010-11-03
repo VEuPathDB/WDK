@@ -255,6 +255,14 @@ function showStrategies(view, ignoreFilters, besc){
 }
 
 function displayOpenSubStrategies(s, d){
+	//Colors for expanded substrategies
+	var indent = 20;
+	var colors = new Array();
+	colors[0] = {step:"#A00000", top:"#A00000", right:"#A00000", bottom:"#A00000", left:"#A00000"};
+	colors[1] = {step:"#A0A000", top:"#A0A000", right:"#A0A000", bottom:"#A0A000", left:"#A0A000"};
+	colors[2] = {step:"#A000A0", top:"#A000A0", right:"#A000A0", bottom:"#A000A0", left:"#A000A0"};
+	colors[3] = {step:"#00A0A0", top:"#00A0A0", right:"#00A0A0", bottom:"#00A0A0", left:"#00A0A0"};
+	colors[4] = {step:"#0000A0", top:"#0000A0", right:"#0000A0", bottom:"#0000A0", left:"#0000A0"};
 	var sCount = 0;
 	for(j in s.subStratOrder)
 		sCount++;
@@ -384,16 +392,13 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters, ac
 		success: function(data){
 			step.isSelected = true;
 			if(ErrorHandler("Results", data, strategy, $("#diagram_" + strategy.frontId + " step_" + step.frontId + "_sub div.crumb_details div.crumb_menu a.edit_step_link"))){
-				$("#Strategies div").removeClass("selected").removeClass("selectedarrow").removeClass("selectedtransform");
+				$("#Strategies div").removeClass("selected");
 				init_view_strat = strategy.backId
 				if(bool){
 					$("#Strategies div#diagram_" + strategy.frontId + " div[id='step_" + step.frontId + "']").addClass("selected");
 					init_view_step = step.back_step_Id + ".v";
-				}else if (step.isTransform){
-					$("#Strategies div#diagram_" + strategy.frontId + " div[id='step_" + step.frontId + "_sub']").addClass("selectedtransform");
-					init_view_step = step.back_step_Id;
 				}else{
-					$("#Strategies div#diagram_" + strategy.frontId + " div[id='step_" + step.frontId + "_sub']").addClass("selectedarrow");
+					$("#Strategies div#diagram_" + strategy.frontId + " div[id='step_" + step.frontId + "_sub']").addClass("selected");
 					init_view_step = step.back_step_Id;
 				}
 				ResultsToGrid(data, ignoreFilters, "strategy_results");
@@ -686,7 +691,7 @@ function hideStrat(id){
 			hideStrat(strat.Steps[i].child_Strat_Id);
 		}
 	}
-	if($("#diagram_" + id + " div.selected,#diagram_" + id + " div.selectedarrow").length > 0){
+	if($("#diagram_" + id + " div.selected").length > 0){
 		NewResults(-1);
 	}
 	$("#diagram_" + id).hide("slow").remove();
