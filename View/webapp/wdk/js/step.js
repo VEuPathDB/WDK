@@ -2,7 +2,7 @@ var openDetail = null;
 var isInsert = "";
 
 $("#diagram").ready(function(){
-	$("div.diagram:first div.venn:last span.resultCount a").click();
+	$("div.diagram:first div.stepBox:last h6.resultCount:last a").click();
 });
 
 function showDetails(det){

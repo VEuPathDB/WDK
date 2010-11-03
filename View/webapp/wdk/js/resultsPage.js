@@ -13,9 +13,7 @@ function moveAttr(col_ix, table) {
     if (col_ix > 0) left = $(headers[col_ix-1]).attr("id");
     // Figure out what step/strategy is currently displayed in results panel
     if ($(table).parents("#strategy_results").length > 0) {
-        var step = $("div.selectedarrow");
-            if (step.length == 0) step = $("div.selectedtransform");
-        if (step.length == 0) step = $("div.selected");
+        var step = $("div.selected");
         var stepfId = step.attr("id").split('_')[1];
         var stratfId = step.parent().parent().attr("id");
         stratfId = stratfId.substring(stratfId.indexOf('_') + 1);

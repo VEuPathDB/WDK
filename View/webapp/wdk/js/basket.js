@@ -198,13 +198,6 @@ function updateBasket(ele, type, pk, pid,recordType) {
 				if (currentDiv.match(/basket/)) {
 					//Using cookie to determine that the results need to be updated when the 'Opened' tab is selected
 					jQuery.cookie("refresh_results", "true", { path : '/' });
-					// If any results are showing (and we're not already on the results page) update them.
-					/*var currentStep = jQuery("#Strategies div.selected");
-					if (currentStep.length == 0) currentStep = jQuery("#Strategies div.selectedarrow");
-					if (currentStep.length == 0) currentStep = jQuery("#Strategies div.selectedtransform");
-					var active_link = jQuery("a.results_link", currentStep);
-					if(active_link.length == 0) active_link = jQuery(".resultCount a.operation", currentStep);
-					active_link.click();*/
 				}
 			},
 			error: function(){
