@@ -19,6 +19,11 @@ Otherwise a standard select menu is used.
               description="parameter name"
 %>
 
+<%@ attribute name="layout"
+			  required="false"
+              description="parameter name"
+%>
+
 <c:set var="qP" value="${qp}"/>
 <c:set var="pNam" value="${qP.name}"/>
 <c:set var="opt" value="0"/>
@@ -28,6 +33,13 @@ Otherwise a standard select menu is used.
   <c:set var="dependedParam" value="${dependedParam.name}" />
   <c:set var="dependentClass" value="dependentParam" />
 </c:if>
+<%-- Setting a variable to display the items in the parameter in a horizontal layout --%>
+<c:set var="v" value=""/>
+<c:if test="${layout == 'horizontal'}">
+	<c:set var="v" value="style='display:inline'"/>
+</c:if>
+	
+
 
 <!--<div class="param">-->
 
@@ -115,7 +127,7 @@ Otherwise a standard select menu is used.
     <c:choose>
       <c:when test="${displayType eq 'radioBox'}">
          <c:forEach items="${qP.displayMap}" var="entity">
-           <div>
+           <div ${v}>
              <html:radio property="array(${pNam})" value="${entity.key}" /> ${entity.value}
            </div>
          </c:forEach>
