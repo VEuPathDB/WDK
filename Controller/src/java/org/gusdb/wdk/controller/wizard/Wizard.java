@@ -19,7 +19,7 @@ import org.xml.sax.SAXException;
 
 public class Wizard extends WdkModelBase {
 
-    private static final String WIZARD_PATH = "/lib/wdk-wizard/";
+    private static final String WIZARD_PATH = "/lib/wdk/wizard/";
     private static final Logger logger = Logger.getLogger(Wizard.class);
 
     public static Wizard loadWizard(String gusHome) throws SAXException,
