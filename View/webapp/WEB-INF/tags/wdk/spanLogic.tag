@@ -189,9 +189,9 @@
 </table>
 
   </div>
+  <div id="sentence"></div><br>
 <div class="filter-button"><html:submit property="questionSubmit" value="Run Step"/></div>
 </html:form>
-<div id="sentence"></div>
 <script>
 	initWindow();
 </script>
