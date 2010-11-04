@@ -35,6 +35,12 @@
 		$("select[name*='_b'], input[name*='_b']").change(function(){
 			redraw(true,"B");
 		});
+		$("input[type='text']").keydown(function(event){
+			if(event.keyCode == 13 && event.currentTarget.id != 'submitButton') {
+				event.keyCode = 9; 
+				return false;
+			}
+		});
 		$("input[type*='radio']").click(function(){
 			drawSentence();
 		});
