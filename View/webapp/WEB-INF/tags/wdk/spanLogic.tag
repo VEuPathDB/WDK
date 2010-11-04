@@ -84,14 +84,14 @@
     <fieldset id="setAFields">
       <table id="offsetOptions" cellpadding="2">
         <tr>
-		<td><wdk:enumParamInput qp="${pMap['span_begin_a']}"/></td>
+		<td style="text-align:right">begin at:</td><td><wdk:enumParamInput qp="${pMap['span_begin_a']}"/></td>
 		<td><wdk:enumParamInput qp="${pMap['span_begin_direction_a']}"/></td>
 		<td align="left" valign="top">
             <html:text styleId="span_begin_offset_a" property="value(span_begin_offset_a)" size="35" />
         </td>
         </tr>
         <tr>
-		<td><wdk:enumParamInput qp="${pMap['span_end_a']}"/></td>
+		<td style="text-align:right">end at:</td><td><wdk:enumParamInput qp="${pMap['span_end_a']}"/></td>
 		<td><wdk:enumParamInput qp="${pMap['span_end_direction_a']}"/></td>
 		<td align="left" valign="top">
             <html:text styleId="span_end_offset_a" property="value(span_end_offset_a)" size="35" />
@@ -116,14 +116,14 @@
     <fieldset id="setBFields">
       <table id="offsetOptions" cellpadding="2">
         <tr>
-          	<td><wdk:enumParamInput qp="${pMap['span_begin_b']}"/></td>
+          	<td style="text-align:right">begin at:</td><td><wdk:enumParamInput qp="${pMap['span_begin_b']}"/></td>
 			<td><wdk:enumParamInput qp="${pMap['span_begin_direction_b']}"/></td>
 			<td align="left" valign="top">
 	            <html:text styleId="span_begin_offset_b" property="value(span_begin_offset_b)" size="35" />
 	        </td>
 	        </tr>
 	        <tr>
-			<td><wdk:enumParamInput qp="${pMap['span_end_b']}"/></td>
+			<td style="text-align:right">end at:</td><td><wdk:enumParamInput qp="${pMap['span_end_b']}"/></td>
 			<td><wdk:enumParamInput qp="${pMap['span_end_direction_b']}"/></td>
 			<td align="left" valign="top">
 	            <html:text styleId="span_end_offset_b" property="value(span_end_offset_b)" size="35" />
@@ -150,7 +150,7 @@
 	<tr>
 		<td>
    			<table><tr>
-			<td><wdk:enumParamInput qp="${pMap['span_operation']}"/></td>
+			<td><wdk:enumParamInput qp="${pMap['span_operation']}" layout="horizontal"/></td>
 			</tr></table>
 		</td>
 	</tr>
@@ -162,7 +162,7 @@
 	<tr>
 		<td>
 <table><tr>
-    <td><wdk:enumParamInput qp="${pMap['span_strand']}"/></td>
+    <td><wdk:enumParamInput qp="${pMap['span_strand']}" layout="horizontal"/></td>
 </tr></table>
 		</td>
 	</tr>
@@ -182,7 +182,7 @@
     </c:if>
     <!--<td><input type="radio" name="output" value="A" ${disabled} ${selected}>Set A</input></td>
     <td><input type="radio" name="output" value="B" ${disabled}>Set B</input></td>-->
-	<wdk:enumParamInput qp="${pMap['span_output']}"/>
+	<wdk:enumParamInput qp="${pMap['span_output']}" layout="horizontal"/>
 </tr></table>
 		</td>
 	</tr>
