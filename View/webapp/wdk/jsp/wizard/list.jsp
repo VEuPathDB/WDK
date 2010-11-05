@@ -12,8 +12,10 @@
 <c:set var="user" value="${sessionScope.wdkUser}"/>
 <c:set var="step" value="${requestScope.wdkStep}" />
 <c:set var="recordClass" value="${step.question.recordClass}" />
+<c:set var="rClass" value="${step.question.recordClass}" />   <%-- used in script below --%>
 <c:set var="strategyId" value="${requestScope.strategy}" />
 <c:set var="action" value="${requestScope.action}" />
+
 <%-- the type is of the previous step, that is the input type of the new step  
 <c:set var="recordClass" value="${model.recordClassMap[rcName]}" />--%>
 
@@ -48,10 +50,6 @@
         </div> <!--End Section Div-->
         <div id="sections_data">
         </div>
-<script type="text/javascript">
-   callWizard(null,this,'sl_recordclasses',2);
-   callWizard(null,this,'sl_GeneRecordClasses_GeneRecordClass',3);
-</script>
 
 
     <wdk:addStepFooter/>
@@ -163,7 +161,7 @@ ${rcDisplay} basket</a>
                             </c:forEach>
                         </c:forEach>
                     </ul>
-                </li>
+                </div>
                     <!-- Display the recent Strategies (Opened  viewed in the last 24 hours) -->
 
                 <div class="original" id="sl_recent" style="display:none">
@@ -241,3 +239,18 @@ ${rcDisplay} basket</a>
     </div>
 
  
+<script type="text/javascript">
+   rclass = "${rClass.fullName}";
+   sdName = "${rClass.shortDisplayName}";
+  // alert(rclass);
+  // alert(sdName);
+
+   ele = $("li[onclick*='sl_recordclasses']")[0];
+   callWizard(null,ele,'sl_recordclasses',2);
+   // $("td#section-1 ul.menu_section:first > li:first").click();
+
+   ele = $('li[onclick*= "' + sdName + '" ]')[0];	
+   callWizard(null,ele,'sl_'+ sdName + 'RecordClasses_' + sdName + 'RecordClass' ,3);
+   // $("td#section-2 ul.menu_section:first > li:first").click();
+</script>
+
