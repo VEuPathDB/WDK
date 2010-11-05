@@ -137,7 +137,6 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 
         var currentStepId = stp.back_boolean_Id;
         if (currentStepId == '') currentStepId = stp.back_step_Id;
-//	var url = "wdk/jsp/addStepPopup.jsp?dataType=" + dtype + "&prevStepNum=" + step_id + "&isAdd=" + isAdd;
 	var url = "wizard.do?strategy="+currStrat.backId+"&stage=list&step=" + currentStepId;
 
         // add insert flag
@@ -155,58 +154,10 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 		success: function(data){
 			dykClose();
 			$("body").append(data);
-			original_Query_Form_CSS.maxW = $("#query_form").css("max-width");
-			original_Query_Form_CSS.minW = $("#query_form").css("min-width");
-			$("#query_form select#selected_strategy option[value='" + getStrategy(strat_id).backId + "']").remove();
 			if(isAdd)
 				$("#query_form h1#query_form_title").html("Add&nbsp;Step");
 			else
 				$("#query_form h1#query_form_title").html("Insert&nbsp;Step");
-			if(isFirst){
-				$("#query_form #selected_strategy,#continue_button").attr("disabled","disabled");
-				$("#query_form #transforms a").attr('href',"javascript:void(0);").addClass("disabled");
-			}else{
-				$("#query_form #continue_button").click(function(){
-				original_Query_Form_Text = $("#query_form").html();
-				if($("#query_form select#selected_strategy").val() == "--")
-						alert("Please select a strategy from the list.");
-					else
-						OpenOperationBox(strat_id, (isAdd ? undefined : step_id));
-					return false;
-				});
-		
-				$("#query_form #span_logic_button").click(function(){
-					original_Query_Form_Text = $("#query_form").html();
-					
-				});
-		
-				$("#query_form #continue_button_transforms").click(function(){
-					original_Query_Form_Text = $("#query_form").html();
-					getQueryForm($("#query_form select#transforms").val(),true);
-				});
-			}
-			if(!isAdd){
-			$("#query_form ul#transforms a").each(function(){
-				stp = getStrategy(strat_id).getStep(step_id,false);
-				fid = parseInt(stp.frontId);
-				if(fid > 1){
-					var value = $(this).attr('href');
-					var transformParams = value.match(/\w+_result=/gi);
-					for (var i in transformParams) {
-						value = value.split(transformParams[i]);
-						var stpId = value[1].split("&");
-						prevStp = getStrategy(strat_id).getStep(fid-1,true);
-						if(prevStp.back_boolean_Id != null && prevStp.back_boolean_Id != "")
-							stpId[0] = prevStp.back_boolean_Id;
-						else
-							stpId[0] = prevStp.back_step_Id;
-						value[1] = stpId.join("&");
-						value = value.join(transformParams[i]);
-					}
-					$(this).attr('href',value);
-				}
-			});
-			}
 			setDraggable($("#query_form"), ".dragHandle");
 		},
 		error: function(){
@@ -226,7 +177,11 @@ function callWizard(url, ele, id, sec, action){
 					type: "get",
 					dataType: "html",
 					data: parseInputs()+"&state="+p_state,
+					beforeSend: function(){
+						WizardLoading(true);
+					},
 					success: function(data){
+						WizardLoading(false);
 						if(data.indexOf("{") == 0){
 							data = eval("("+data+")");
 							closeAll();
