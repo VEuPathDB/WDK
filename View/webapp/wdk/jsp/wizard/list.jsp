@@ -183,7 +183,7 @@ ${rcDisplay} basket</a>
                 </div>
         
 
-        <div id="sl_recordclasses" class="original">
+        <div id="sl_recordclasses" class="original" style="display:none">
             <ul class="menu_section">
             <c:forEach var="rcs" items="${model.websiteRootCategories}">
                 <c:set var="classId" value="${fn:replace(rcs.value.name,'.','_')}"/>
