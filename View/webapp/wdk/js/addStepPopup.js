@@ -166,6 +166,13 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 	});
 }
 
+function WizardLoading(boo){
+	if(boo){
+		i = $("img#wizard-busy-image").clone();
+		$("div.filter-button").html(i.show());
+	}
+}
+
 function callWizard(url, ele, id, sec, action){
 	switch (action){
 			case "submit":
@@ -181,7 +188,6 @@ function callWizard(url, ele, id, sec, action){
 						WizardLoading(true);
 					},
 					success: function(data){
-						WizardLoading(false);
 						if(data.indexOf("{") == 0){
 							data = eval("("+data+")");
 							closeAll();
