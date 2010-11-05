@@ -45,10 +45,7 @@
 
 
 <%--<c:set target="${helps}" property="${fromAnchorQ}" value="${helpQ}"/>--%>
-<%-- set the weight --%>
-<div align="center">
-  Assign Weight: <html:text property="weight" maxlength="9" />
-</div>
+
 <%-- end of the copied content --%>
 
 <c:choose>
