@@ -35,19 +35,26 @@
     visibility: hidden;
   }  
 
+  .span-step-text{
+	font-size:13pt;
+	font-weight:bold;
+	padding:12px;
+  }
+
   .roundLabel {
-    float:left;
-    height: 3em;
-    margin: 7px;
-    width: 3em;
-    text-align:center;
-    border: 2px solid black;
-    -moz-border-radius: 1.7em; /* Not sure why this doesn't work @ 1.5em */
+    -moz-border-radius:1.7em 1.7em 1.7em 1.7em;/* Not sure why this doesn't work @ 1.5em */
+	border:2px solid red;
+	float:left;
+	height:2em;
+	margin:7px;
+	text-align:center;
+	width:2em; 
+	background-color:yellow;
   }
 
   .roundLabel span {
-    font-size:2em;
-    line-height: 1.5;
+    font-size:1.5em;
+	line-height:1.3;
   }
 
   ul.horizontal.center {
@@ -72,11 +79,18 @@
 	<wdk:answerParamInput qp="${pMap['span_b']}"/>
 	<input type="hidden" value="${wdkStep.displayType}" id="span_a_type"/>
 	<input type="hidden" value="${importStep.displayType}" id="span_b_type"/>
+	<c:set var="wdkStepRecType" value="${wdkStep.displayType}"/>
+	<c:set var="importStepRecType" value="${importStep.displayType}"/>
+	<c:set var="wdkStepResultSize" value="${wdkStep.resultSize}"/>
+	<c:set var="importStepResultSize" value="${importStep.resultSize}"/>
+	<c:if test="${wdkStepResultSize > 1}"><c:set var="wdkStepRecType" value="${wdkStepRecType}s"/></c:if>
+	<c:if test="${importStepResultSize > 1}"><c:set var="importStepRecType" value="${importStepRecType}s"/></c:if>
 	<table>
 		<tr>
 			<td colspan="2">
     <div class="roundLabel"><span>1</span></div>
-				Text for Step 1
+				<div class="span-step-text">Select intervals relative to the ${wdkStepResultSize} ${wdkStepRecType} in Step 1 of your strategy (Set A)
+				</div>
 			</td>
 		</tr>
 		<tr>
@@ -100,7 +114,7 @@
       </table>
     </fieldset>
 		</td>
-		<td><div id="scaleA"></div>
+		<td style="vertical-align:top;"><div id="scaleA"></div>
 		<!--><canvas id="scaleA" width="400" height="75">
 				This browser does not support Canvas Elements (probably IE) :(
 		</canvas>-->
@@ -109,7 +123,8 @@
 		<tr>
 			<td colspan="2">
     <div class="roundLabel clear"><span>2</span></div>
-	Text for Step 2 </td>
+<div class="span-step-text">Select intervals relative to the ${importStepResultSize} ${importStepRecType} in the step you are adding (Set B)
+</div></td>
 		</tr>
 		<tr>
 			<td>
@@ -132,7 +147,7 @@
       </table>
     </fieldset>
 </td>
-<td><div id="scaleB"></div>
+<td style="vertical-align:top;"><div id="scaleB"></div>
 	<!--<canvas id="scaleB" width="400" height="75">
 			This browser does not support Canvas Elements (probably IE) :(
 	</canvas>-->
@@ -144,7 +159,8 @@
 <table width="100%">
 	<tr>
 		<td>  
-<div class="roundLabel"><span>3</span></div> Text for Step 3
+<div class="roundLabel"><span>3</span></div> <div class="span-step-text">Restrict by how they relate
+</div>
 		</td>
 	</tr>
 	<tr>
@@ -156,7 +172,8 @@
 	</tr>
 	<tr>
 		<td>
-<div class="roundLabel"><span>4</span></div>Text for Step 4
+<div class="roundLabel"><span>4</span></div><div class="span-step-text">Restrict by strand
+</div>
 		</td>
 	</tr>
 	<tr>
@@ -168,7 +185,8 @@
 	</tr>
 	<tr>
 		<td>
-<div class="roundLabel"><span>5</span></div>Text for Step 5
+<div class="roundLabel"><span>5</span></div><div class="span-step-text">Choose output
+</div>
 		</td>
 	</tr>
 	<tr>
@@ -190,7 +208,7 @@
 
   </div>
   <div id="sentence"></div><br>
-<div class="filter-button"><html:submit property="questionSubmit" value="Run Step"/></div>
+<div class="filter-button"><html:submit property="questionSubmit" value="Run Step" styleId="submitButton"/></div>
 </html:form>
 <script>
 	initWindow();
