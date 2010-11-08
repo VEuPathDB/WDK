@@ -166,14 +166,20 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 	});
 }
 
+var buttonText = null;
 function WizardLoading(boo){
 	if(boo){
 		i = $("img#wizard-busy-image").clone();
+        buttonText = $("div.filter-button").html();
 		$("div.filter-button").html(i.show());
-	}
+	} else {
+        $("div.filter-button").html(buttonText);
+        buttonText = null;
+    }
 }
 
 function callWizard(url, ele, id, sec, action){
+    var strategy = getStrategy(current_Front_Strategy_Id);
 	switch (action){
 			case "submit":
                                 var stage = $(ele).find("#stage").val();
@@ -190,11 +196,17 @@ function callWizard(url, ele, id, sec, action){
 					success: function(data){
 						if(data.indexOf("{") == 0){
 							data = eval("("+data+")");
-							closeAll();
-							updateStrategies(data);
+                            // before close, check if json is success or error, if error, display 
+                            // it in the current qf_content
+                            if (ErrorHandler("Wizard", data, strategy, $("#errors")) {
+                                closeAll();
+                                updateStrategies(data);
+                            } else {
+                                WizardLoading(false);
+                            }
 						}else{
 							pop_up_state.push($("#qf_content").html());
-							$("#qf_content").html(data);
+							setPopupContent(data);
 						}
 					}	
 				});
@@ -224,7 +236,7 @@ function callWizard(url, ele, id, sec, action){
 							}else{
 								pop_up_state.push($("#qf_content").html());
 							}
-							$("#qf_content").html(data);
+							setPopupContent(data);
 							
 							if(ele != undefined){
 								showNewSection(ele,id,sec);
@@ -245,16 +257,22 @@ function backStage(){
 	var h = pop_up_state.pop()
 	if(h == undefined)
 		closeAll();
-	else	
-		$("#qf_content").html(h);
+	else {
+		setPopupContent(h);
 }
 
+function setPopupContent(data) {
+    $("#qf_content").html(data);
+}
+
+// deprecated
 function openAddStrategy(strat_id){
 	original_Query_Form_Text = $("#query_form").html();
 	OpenOperationBox(strat_id, (global_isAdd ? undefined : step_id));
 	return false;
 }
 
+// deprecated -- to close the old question form
 function close(ele){
 	cd = $("#query_form");
 	$(cd).html(original_Query_Form_Text);

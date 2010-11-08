@@ -36,7 +36,7 @@ function ErrorHandler(evt, data, strategy, qform, name, fromHist){
 					$(table).append(tr);
 				}
 			}
-			$("form",qform).prepend(table);
+			$(qform).prepend(table);
 			$(qform).show();
 		}else if(type == "out-of-sync"){ //Checksum sent did not match the back-end checksum
 			if(data.state.length == 0)
