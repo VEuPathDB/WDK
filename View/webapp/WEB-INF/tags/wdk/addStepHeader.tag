@@ -16,4 +16,5 @@
 		<img src="<c:url value='/wdk/images/closebutton.png'/>" alt='Close'/>
 	</a>
 </span>
+<div id="errors"></div>
 <div id="qf_content">
