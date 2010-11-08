@@ -83,6 +83,9 @@ public class ShowQuestionStageHandler implements StageHandler {
         logger.debug("allow boolean: " + allowBoolean);
         attributes.put(ATTR_ALLOW_BOOLEAN, allowBoolean);
 
+        // check the custom form
+        ShowQuestionAction.checkCustomForm(servlet, request, question);
+
         logger.debug("Leaving ShowQuestionStageHandler....");
         return attributes;
     }

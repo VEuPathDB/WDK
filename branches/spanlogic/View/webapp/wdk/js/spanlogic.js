@@ -159,6 +159,7 @@
 		cxt.stroke();
 	
 	}*/
+    // unit: base pairs
 	function prepDynamicSpans(dia, i){
 		w = dia.cxt.css("width");
 		h = dia.cxt.css("height");
@@ -237,7 +238,7 @@
 		//drawLine(cxt,region.start.x, region.start.y + region.height/2, region.width, 0, "rgba(0,0,0,1)");
 		//drawRegionText(dia);
 	}
-	function setRegion(dia,i){
+	function setRegion(dia){
 		i = 0;
 		region = dia.region;
 		feature = dia.feature;
@@ -319,7 +320,7 @@
 			dia.scale = scale = 10;
 		}
 		setFeature(dia);
-		setRegion(dia, i);
+		setRegion(dia);
 		checkMargins(dia);
 		//dia.draw = true;
 		singlepoint = false;
@@ -380,6 +381,7 @@ function drawSentence(){
 			typeB = recordTypes[0] + "s in set A"
 		}
 		if(op > 0 && type == 1){
+            // operation is not overlap, and if the output is b, then we flip the operation between contains & contained by.
 			op = (op == 1) ? 2 : 1;
 		}
 		s = "Find <b>" + typeA + "</b> whose selected interval <b>" + operations[op] + "</b> the <b>" + typeB + "&apos;s</b> selected interval in <b>" + strands[strand] + "</b>.";
