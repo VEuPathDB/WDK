@@ -364,6 +364,24 @@ function getIndex(n){
 	});
 	return v;
 }
+var current_words = new Object();
+function animateChanges(w){
+		if(w.output != current_words.output) flashWords("output_section");
+		if(w.operation != current_words.operation) flashWords("operation_section");
+		if(w.comparison != current_words.comparison) flashWords("comparison_section");
+		if(w.strand != current_words.strand) flashWords("strand_section");
+		current_words = w;
+}
+function flashWords(id){
+	$("b#"+id).css({
+			"color":"red",
+			"font-size":"15",
+			"vertical-align":"top",
+		}).animate({
+				"color":"black",
+				"font-size":"10",
+		},3000);
+}
 function drawSentence(){
 	if (sentence == null){
 		sentence = "Please selected options for all parameters, then a Summary sentance will be displayed.";
@@ -372,23 +390,25 @@ function drawSentence(){
 		op = getIndex("span_operation");
 		strand = getIndex("span_strand");
 		type = getIndex("span_output");
-		typeA = null;
-		typeB = null;
+		words = new Object();
 		if(type == 0){
-			typeA = recordTypes[0] + "s in set A";
-			typeB = recordTypes[1] + "s in set B"
+			words.output = recordTypes[0] + "s in Set A";
+			words.comparison = recordTypes[1] + "s in Set B"
 		}else{
-			typeA = recordTypes[1] + "s in set B";
-			typeB = recordTypes[0] + "s in set A"
+			words.output = recordTypes[1] + "s in Set B";
+			words.comparison = recordTypes[0] + "s in Set A"
 		}
 		if(op > 0 && type == 1){
             // operation is not overlap, and if the output is b, then we flip the operation between contains & contained by.
 			op = (op == 1) ? 2 : 1;
 		}
-		s = "Find <b>" + typeA + "</b> whose selected interval <b>" + operations[op] + "</b> the <b>" + typeB + "&apos;s</b> selected interval in <b>" + strands[strand] + "</b>.";
+		words.operation = operations[op];
+		words.strand = strands[strand];
+		s = "Find <b id='output_section'>" + words.output + "</b> whose selected region <b id='operation_section'>" + words.operation + "</b> the <b id='comparison_section'>" + words.comparison + "&apos;s</b> selected region in <b id='strand_section'>" + words.strand + "</b>.";
 		sentence = s;
 	}
 	$("div#sentence").html(sentence);
+	animateChanges(words);
 }
 
 
