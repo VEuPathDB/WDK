@@ -198,7 +198,7 @@ function callWizard(url, ele, id, sec, action){
 							data = eval("("+data+")");
                             // before close, check if json is success or error, if error, display 
                             // it in the current qf_content
-                            if (ErrorHandler("Wizard", data, strategy, $("#errors")) {
+                            if (ErrorHandler("Wizard", data, strategy, $("#errors"))) {
                                 closeAll();
                                 updateStrategies(data);
                             } else {
@@ -259,6 +259,7 @@ function backStage(){
 		closeAll();
 	else {
 		setPopupContent(h);
+        }
 }
 
 function setPopupContent(data) {
