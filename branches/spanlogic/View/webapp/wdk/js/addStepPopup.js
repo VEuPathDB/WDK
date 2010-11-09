@@ -181,6 +181,7 @@ function WizardLoading(boo){
 
 function callWizard(url, ele, id, sec, action){
     var strategy = getStrategy(current_Front_Strategy_Id);
+	$("div#errors").html("");
 	switch (action){
 			case "submit":
                                 var stage = $(ele).find("#stage").val();
