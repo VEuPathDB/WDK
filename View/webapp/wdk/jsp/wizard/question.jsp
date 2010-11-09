@@ -28,21 +28,7 @@
 <h3>${wdkQuestion.displayName}</h3>
 <%-- the following sections are copied from <question.tag>, need to refactor into a separate tag --%>
 
-<input type="hidden" name="questionFullName" value="${wdkQuestion.fullName}"/>
-
-<!-- show error messages, if any -->
-<wdk:errors/>
-
-<%-- the js has to be included here in order to appear in the step form --%>
-<script type="text/javascript" src='<c:url value="/wdk/js/wdkQuestion.js"/>'></script>
-<script type="text/javascript">
-    $(document).ready(function() { initParamHandlers(); });
-</script>
-
-<div class="params">
-      <wdk:questionParams />
-</div> <%-- end of params div --%>		
-
+<wdk:questionForm />
 
 <%--<c:set target="${helps}" property="${fromAnchorQ}" value="${helpQ}"/>--%>
 

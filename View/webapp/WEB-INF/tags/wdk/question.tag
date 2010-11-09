@@ -22,15 +22,6 @@
 <c:set value="Help for question: ${wdkQuestion.displayName}" var="fromAnchorQ"/>
 <jsp:useBean id="helpQ" class="java.util.LinkedHashMap"/>
 
-<c:choose>
-    <c:when test="${showParams == true}">
-        <%-- display params section only --%>
-        <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processQuestion.do">
-            <input type="hidden" name="questionFullName" value="${wdkQuestion.fullName}"/>
-            <wdk:questionParams />
-        </html:form>
-    </c:when>
-    <c:otherwise>
         <%-- display question section --%>
 <h1>Identify ${recordType}s based on ${wdkQuestion.displayName}</h1>
 
@@ -41,7 +32,6 @@
 <%-- put an anchor here for linking back from help sections --%>
 <A name="${fromAnchorQ}"></A>
 
-<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processQuestion.do">
 <input type="hidden" name="questionFullName" value="${wdkQuestion.fullName}"/>
 
 <!-- show error messages, if any -->
@@ -56,9 +46,7 @@
 </c:if>
 
 <div class="params">
-   <c:if test="${showParams == null}">
-      <wdk:questionParams />
-   </c:if>
+    <wdk:questionParams />
 </div> <%-- end of params div --%>
 
 <c:set target="${helps}" property="${fromAnchorQ}" value="${helpQ}"/>
@@ -68,8 +56,6 @@
   Assign Weight: <html:text property="weight" maxlength="9" />
 </div>
 
-<div class="filter-button"><html:submit property="questionSubmit" value="Get Answer"/></div>
-</html:form>
 
 </td>
 </tr>
@@ -81,9 +67,3 @@
 
 <%-- display description for wdkQuestion --%>
 <div id="${descripId}"><b>Query description: </b>${wdkQuestion.description}</div>
-<%--
-</tr>
-</table>
---%> 
-    </c:otherwise> <%-- otherwise of showParams == true --%>
-</c:choose>
