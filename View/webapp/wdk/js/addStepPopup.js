@@ -132,6 +132,7 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 		stp = getStrategy(strat_id).getStep(step_id,false)
 		if(stp != null && stp.frontId == 1 && !isAdd) isFirst = true;
 	}
+	current_Front_Strategy_Id = strat_id;
 	currStrat = getStrategy(strat_id);
 	current_Front_Strategy_Id = strat_id;
 
@@ -205,6 +206,7 @@ function callWizard(url, ele, id, sec, action){
                                 WizardLoading(false);
                             }
 						}else{
+							WizardLoading(false);
 							pop_up_state.push($("#qf_content").html());
 							setPopupContent(data);
 						}
