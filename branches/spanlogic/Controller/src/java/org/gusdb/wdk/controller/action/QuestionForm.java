@@ -117,6 +117,7 @@ public class QuestionForm extends MapActionForm {
 
     public void setQuestion(QuestionBean question) {
         this.question = question;
+        this.questionFullName = question.getFullName();
     }
 
     public QuestionBean getQuestion() {
