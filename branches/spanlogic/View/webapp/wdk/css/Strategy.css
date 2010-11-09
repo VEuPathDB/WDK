@@ -1110,3 +1110,9 @@ img#step_5{
 */
 
 /*CSS for Span Logic Operations Section*/
+
+#query_form #errors {
+  position: relative;
+  top: 35px;
+}
+
