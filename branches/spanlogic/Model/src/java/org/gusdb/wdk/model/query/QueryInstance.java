@@ -278,6 +278,7 @@ public abstract class QueryInstance {
                             + "' doesn't exist");
 
                 Param param = params.get(paramName);
+                prompt = param.getPrompt();
 
                 // check for dependent param
                 if (param instanceof AbstractEnumParam
@@ -301,7 +302,7 @@ public abstract class QueryInstance {
             }
         }
         if (errors != null) {
-            WdkModelException ex = new WdkModelException(errors);
+            WdkModelException ex = new WdkModelException("Some of the input parameters are invalid.", errors);
             logger.debug(ex.formatErrors());
             throw ex;
         }

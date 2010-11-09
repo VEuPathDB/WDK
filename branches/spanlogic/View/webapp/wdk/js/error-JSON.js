@@ -30,8 +30,8 @@ function ErrorHandler(evt, data, strategy, qform, name, fromHist){
 					tr = document.createElement('tr');
 					tdPrompt = document.createElement('td');
 					tdMessage = document.createElement('td');
-					$(tdPrompt).html(params[p].prompt + ": ");
-					$(tdMessage).html(params[p].message);
+					$(tdPrompt).html(p + ": ");
+					$(tdMessage).html(params[p]);
 					$(tr).append(tdPrompt).append(tdMessage);
 					$(table).append(tr);
 				}
