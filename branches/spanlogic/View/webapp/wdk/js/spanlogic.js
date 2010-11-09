@@ -34,11 +34,12 @@
 		});
 		$("select[name*='_b'], input[name*='_b']").change(function(){
 			redraw(true,"B");
+			$(this).keypress();
 		});
-		$("input[type='text']").keydown(function(event){
+		$("#spanLogicParams input[type='text']").keydown(function(event){
 			if(event.keyCode == 13 && event.currentTarget.id != 'submitButton') {
-				event.keyCode = 9; 
-				return false;
+				event.preventDefault();
+				$(this).change();
 			}
 		});
 		$("input[type*='radio']").click(function(){
