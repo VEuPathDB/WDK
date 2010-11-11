@@ -29,10 +29,11 @@ public class QuestionForm extends MapActionForm {
     private static final Logger logger = Logger.getLogger(QuestionForm.class);
 
     private String questionFullName;
-    private QuestionBean question = null;
+    private QuestionBean question;
     private boolean validating = true;
     private boolean paramsFilled = false;
-    private String weight = null;
+    private String weight;
+    private String customName;
 
     /**
      * validate the properties that have been sent from the HTTP request, and
