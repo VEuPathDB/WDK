@@ -29,6 +29,7 @@ import org.json.JSONException;
 public class ProcessBooleanStageHandler implements StageHandler {
 
     public static final String PARAM_QUESTION = "questionFullName";
+    public static final String PARAM_CUSTOM_NAME = "customName";
     public static final String PARAM_IMPORT_STRATEGY = "importStrategy";
 
     public static final String ATTR_IMPORT_STEP = ProcessBooleanAction.PARAM_IMPORT_STEP;
@@ -60,6 +61,12 @@ public class ProcessBooleanStageHandler implements StageHandler {
             // copy of it, and mark it as collapsable.
             int strategyId = Integer.valueOf(strStrategyId);
             childStep = createStepFromStrategy(strategyId);
+        }
+        
+        String customName = request.getParameter(PARAM_CUSTOM_NAME);
+        if (customName != null && customName.trim().length() > 0) {
+            childStep.setCustomName(customName);
+            childStep.update(false);
         }
 
         Map<String, Object> attributes = new HashMap<String, Object>();
