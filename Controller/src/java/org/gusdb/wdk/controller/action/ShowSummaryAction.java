@@ -48,6 +48,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     private static final int MAX_SIZE_CACHE_MAP = 100;
 
     private static final String PARAM_HIDDEN_STEP = "hidden";
+    private static final String PARAM_CUSTOM_NAME = "customName";
 
     private static Logger logger = Logger.getLogger(ShowSummaryAction.class);
 
@@ -381,6 +382,12 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         StepBean step = wdkUser.createStep(question, params, filterName,
                 deleted, true, assignedWeight);
+        String customName = request.getParameter(PARAM_CUSTOM_NAME);
+        if (customName != null && customName.trim().length() > 0) {
+            step.setCustomName(customName);
+            step.update(false);
+        }
+        
         AnswerValueBean answerValue = step.getAnswerValue();
         int totalSize = answerValue.getResultSize();
         if (end > totalSize) end = totalSize;
@@ -561,7 +568,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         ServletContext application = servlet.getServletContext();
         Object cache = application.getAttribute(KEY_SIZE_CACHE_MAP);
         Map<String, Integer> sizeCache;
-        if (cache == null || !(cache instanceof Map)) {
+        if (cache == null || !(cache instanceof Map<?, ?>)) {
             sizeCache = new LinkedHashMap<String, Integer>();
             application.setAttribute(KEY_SIZE_CACHE_MAP, sizeCache);
         } else sizeCache = (Map<String, Integer>) cache;
