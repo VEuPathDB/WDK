@@ -34,6 +34,7 @@ public class ProcessStepAction extends Action {
     public static final String PARAM_QUESTION = "questionFullName";
     public static final String PARAM_ACTION = "action";
     public static final String PARAM_FILTER = "filter";
+    public static final String PARAM_CUSTOM_NAME = "customName";
 
     private static final Logger logger = Logger.getLogger(ProcessStepAction.class);
 
@@ -42,6 +43,7 @@ public class ProcessStepAction extends Action {
     private StrategyBean strategy;
     private StepBean step;
     private StepBean rootStep;
+    private String customName;
 
     @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
@@ -132,6 +134,11 @@ public class ProcessStepAction extends Action {
         } else {
             rootStep = strategy.getLatestStep();
         }
+
+        // load custom name
+        String customName = request.getParameter(PARAM_CUSTOM_NAME);
+        if (customName != null && customName.trim().length() == 0)
+            customName = null;
     }
 
     private Map<Integer, Integer> reviseStep(HttpServletRequest request,
@@ -163,7 +170,10 @@ public class ProcessStepAction extends Action {
 
             newStep = user.createStep(question, params, filterName, false,
                     true, weight);
-
+            if (customName != null) {
+                step.setCustomName(customName);
+                step.update(false);
+            }
         } else {
             // just revise the current step with a new filter or new weight
 
@@ -205,6 +215,10 @@ public class ProcessStepAction extends Action {
 
         StepBean newStep = user.createStep(question, params, null, false, true,
                 weight);
+        if (customName != null) {
+            step.setCustomName(customName);
+            step.update(false);
+        }
 
         StepBean previousStep = step.getPreviousStep();
         if (previousStep == null) {
@@ -226,10 +240,10 @@ public class ProcessStepAction extends Action {
             return strategy.editOrInsertStep(step.getStepId(), newParent);
         } else {
             // the new step is to replace the previous step of the current one
-            
+
             // need to recover the link to the original current step
             previousStep.setNextStep(step);
-            
+
             return strategy.editOrInsertStep(previousStep.getStepId(), newStep);
         }
     }
@@ -256,6 +270,10 @@ public class ProcessStepAction extends Action {
 
         StepBean newStep = user.createStep(question, params, null, false, true,
                 weight);
+        if (customName != null) {
+            step.setCustomName(customName);
+            step.update(false);
+        }
 
         logger.debug("root step: " + rootStep);
         if (rootStep.getStepId() != strategy.getLatestStepId()) {
