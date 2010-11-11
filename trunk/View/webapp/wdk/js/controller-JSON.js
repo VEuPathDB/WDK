@@ -10,6 +10,7 @@ $(document).ready(function(){
 	// Make the strategies window resizable
 	$(".resizable-wrapper").resizable({handles: 's', minHeight: 150, stop: function(event, ui) {setCurrentTabCookie('strategyWindow',$(".resizable-wrapper").height())}});
 	// tell jQuery not to cache ajax requests.
+    // generic error handling of ajax calls
 	$.ajaxSetup ({ 
 		cache: false,
 		timeout: ajaxTimeout,
@@ -26,7 +27,7 @@ $(document).ready(function(){
 						initDisplay();
 					}
 				}
-			}else{
+			}else{  // not timeout, backend throws errors
 				try {
 					customShowError();
 				}
@@ -123,7 +124,7 @@ function initDisplay(){
 
 function highlightStep(str, stp, v, pagerOffset, ignoreFilters, action){
 	if(!str || stp == null){
-		NewResults(-1);
+		NewResults(-1); // don't show result, remove anything that is there, and empty the result section
 	}else{
 		NewResults(str.frontId, stp.frontId, v, pagerOffset, ignoreFilters, action);
 	}
@@ -403,6 +404,9 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters, ac
 				}
 				ResultsToGrid(data, ignoreFilters, "strategy_results");
                                 updateResultLabels("strategy_results", strat, step);
+                                
+                // remember user's action, if user is not logged in, and tries to save, this place 
+                // holds the previous action the user was doing.
 				var linkToClick = $("a#" + action);
 				if (linkToClick.length > 0) {
 					linkToClick.click();
@@ -445,6 +449,7 @@ function RenameStep(ele, s, stp){
 		});
 }
 
+// will be replaced by wizard
 function AddStepToStrategy(url, proto, stpId){	
 	var strategy = getStrategyFromBackId(proto);
 	var b_strategyId = strategy.backId;
@@ -480,6 +485,7 @@ function AddStepToStrategy(url, proto, stpId){
 	closeAll(true);
 }
 
+// will be replaced by wizard
 function EditStep(url, proto, step_number){
 	var ss = getStrategyFromBackId(proto);
 	var sss = ss.getStep(step_number, false);
@@ -681,6 +687,7 @@ function closeStrategy(stratId, isBackId){
 	});
 }
 
+// maybe deprecated??
 function hideStrat(id){
 	var strat = getStrategy(id);
 	if(!strat) return;
