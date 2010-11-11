@@ -156,8 +156,7 @@ r</echo>
                                             configLink,
                                             rngLink,
                                             xmlLink,
-                                            wdkLink,
-                                            wizardLink"/>
+                                            wdkLink"/>
 
   <target name="checkLinks">
      <available file="${webappTargetDir}/WEB-INF" property="webInfDirExists"/>
@@ -166,7 +165,6 @@ r</echo>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/rng" property="rngLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/xml" property="xmlLinkExists"/>
      <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/wdk" property="wdkLinkExists"/>
-     <available file="${webappTargetDir}/WEB-INF/wdk-model/lib/wdk-wizard" property="wizardLinkExists"/>
   </target>
 
   <target name="webInfDir" unless="webInfDirExists">
@@ -193,10 +191,6 @@ r</echo>
 
   <target name="wdkLink" unless="wdkLinkExists">
     <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/wdk" resource="${targetDir}/lib/wdk"/>
-  </target>
-
-  <target name="wizardLink" unless="wizardLinkExists">
-    <symlink link="${webappTargetDir}/WEB-INF/wdk-model/lib/wdk-wizard" resource="${targetDir}/lib/wdk-wizard"/>
   </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
