@@ -18,7 +18,6 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
@@ -43,11 +42,6 @@ public class ShowRecordAction extends Action {
             throws Exception {
         logger.debug("Entering ShowRecordAction...");
         long start = System.currentTimeMillis();
-        
-        // generate a page id
-        Random random = new Random();
-        int pageId = random.nextInt();
-        request.setAttribute(ATTR_PAGE_ID, pageId);
 
         ServletContext svltCtx = getServlet().getServletContext();
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
@@ -133,9 +127,13 @@ public class ShowRecordAction extends Action {
         long end = System.currentTimeMillis();
         logger.info("showRecord took total: " + ((end - start) / 1000F)
                 + " seconds.");
-        logger.info("page-id=" + pageId + " --- start record page loading.");
-                
 
+        // generate a page id
+        Random random = new Random();
+        int pageId = random.nextInt(Integer.MAX_VALUE);
+        request.setAttribute(ATTR_PAGE_ID, pageId);
+        logger.info("wdk-record-page-id=" + pageId + " --- start page loading.");
+                
         return forward;
     }
 }
