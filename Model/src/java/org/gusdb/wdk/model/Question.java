@@ -720,7 +720,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         SqlQuery query = new SqlQuery();
         query.setIsCacheable(false);
         query.setName(this.query.getName() + DYNAMIC_QUERY_SUFFIX);
-        QuerySet querySet = wdkModel.getQuerySet(Utilities.INTERNAL_QUERY_SET);
+        // put the dynamic query into the same query set of the id query.
+        QuerySet querySet = this.query.getQuerySet();
         querySet.addQuery(query);
 
         // set the columns, which as the same column as the id query
