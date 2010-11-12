@@ -763,7 +763,7 @@ b.strat_help_title > span {
 }
 
 #operations {
-	margin: 10px 20px 10px 40px; 
+	margin: 10px 20px 10px 10px; 
 }
 
 #operations ul li {
@@ -799,7 +799,7 @@ b.strat_help_title > span {
 }
 
 .filter-button {
-        margin-top: 10px;
+        margin-top: 25px;
         text-align: center;
 }
 

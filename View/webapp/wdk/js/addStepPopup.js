@@ -353,9 +353,9 @@ function changeButtonText(ele){
  	var stage = $(ele).attr("stage");
         $(ele).parents("form").find("#stage").val(stage);
 	if($(ele).val() != "SPAN"){
-		v = "Get Answer";
+		v = "Run Step";
 	}else{
-		v = "Continue";
+		v = "Continue to define the Regions and their Positional relationship....";
 	}
 	//$("form#form_question").attr("action",stage);
 	$(".filter-button input[name='questionSubmit']").attr("value",v);
