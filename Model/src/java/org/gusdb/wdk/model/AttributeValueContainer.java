@@ -9,7 +9,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.json.JSONException;
 
 /**
@@ -56,6 +58,14 @@ public abstract class AttributeValueContainer {
             attributeValueCache.put(fieldName, value);
         } else if (field instanceof ColumnAttributeField) {
             Query query = ((ColumnAttributeField) field).getColumn().getQuery();
+
+            logger.debug("filling attribute values from query " + query.getFullName());
+            for (Column column : query.getColumns()) {
+                logger.debug("column: " + column.getName());
+            }
+            if (query instanceof SqlQuery)
+                logger.debug("SQL: \n" + ((SqlQuery)query).getSql());
+
             fillColumnAttributeValues(query);
             if (!attributeValueCache.containsKey(fieldName))
             // something is wrong here, need further investigation.
