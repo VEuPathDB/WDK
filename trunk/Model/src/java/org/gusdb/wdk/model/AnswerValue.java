@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.query.BooleanQueryInstance;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.user.Answer;
@@ -513,6 +514,13 @@ public class AnswerValue {
         // has to get a clean copy of the attribute query, without pk params
         // appended
         attributeQuery = (Query) wdkModel.resolveReference(attributeQuery.getFullName());
+
+            logger.debug("filling attribute values from answer " + attributeQuery.getFullName());
+            for (Column column : attributeQuery.getColumns()) {
+                logger.debug("column: " + column.getName());
+            }
+            if (attributeQuery instanceof SqlQuery)
+                logger.debug("SQL: \n" + ((SqlQuery)attributeQuery).getSql());
 
         // get and run the paged attribute query sql
         String sql = getPagedAttributeSql(attributeQuery);

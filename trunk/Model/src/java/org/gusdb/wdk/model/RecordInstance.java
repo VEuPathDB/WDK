@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
@@ -116,6 +117,7 @@ public class RecordInstance extends AttributeValueContainer {
     protected void fillColumnAttributeValues(Query attributeQuery)
             throws WdkModelException, NoSuchAlgorithmException, JSONException,
             SQLException, WdkUserException {
+        logger.debug("filling column attribute values...");
         if (answerValue != null) {
             answerValue.integrateAttributesQuery(attributeQuery);
             return;
@@ -125,6 +127,13 @@ public class RecordInstance extends AttributeValueContainer {
         String queryName = attributeQuery.getFullName();
 
         Query query = recordClass.getAttributeQuery(queryName);
+
+            logger.debug("filling attribute values from record on query: " + query.getFullName());
+            for (Column column : query.getColumns()) {
+                logger.debug("column: " + column.getName());
+            }
+            if (query instanceof SqlQuery)
+                logger.debug("SQL: \n" + ((SqlQuery)query).getSql());
 
         Map<String, String> paramValues = primaryKey.getValues();
         // put user id in the attribute query
