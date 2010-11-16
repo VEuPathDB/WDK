@@ -517,7 +517,7 @@ public class AnswerValue {
 
             logger.debug("filling attribute values from answer " + attributeQuery.getFullName());
             for (Column column : attributeQuery.getColumns()) {
-                logger.debug("column: " + column.getName());
+                logger.debug("column: '" + column.getName() + "'");
             }
             if (attributeQuery instanceof SqlQuery)
                 logger.debug("SQL: \n" + ((SqlQuery)attributeQuery).getSql());
@@ -533,6 +533,7 @@ public class AnswerValue {
         // fill in the column attributes
         PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
         Map<String, AttributeField> fields = question.getAttributeFieldMap();
+        int count = 0;
         while (resultList.next()) {
             // get primary key
             Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
@@ -570,6 +571,12 @@ public class AnswerValue {
                     record.addAttributeValue(value);
                 }
             }
+            count++;
+        }
+        if (count != pageRecordInstances.size()) {
+            throw new WdkModelException("the integrated attribute query "
+                + "doesn't return the same number of records in the current "
+                + "page. Paged attribute sql:\n" + sql);
         }
         logger.debug("Attribute query [" + attributeQuery.getFullName()
                 + "] integrated.");
@@ -612,6 +619,11 @@ public class AnswerValue {
         // appended
         Query tableQuery = tableField.getQuery();
         tableQuery = (Query) wdkModel.resolveReference(tableQuery.getFullName());
+
+        logger.debug("integrate table query from answer: " + tableQuery.getFullName());
+        for (Param param : tableQuery.getParams()) {
+            logger.debug("param: " + param.getName());
+        }
 
         // get and run the paged attribute query sql
         String sql = getPagedTableSql(tableQuery);

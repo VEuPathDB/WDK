@@ -614,6 +614,7 @@ public class RecordClass extends WdkModelBase implements
             tableField.resolveReferences(wdkModel);
 
             Query query = tableField.getQuery();
+            query = (Query)wdkModel.resolveReference(query.getFullName());
 
             // add user param into the original table query, if needed
             if (!query.getParamMap().containsKey(Utilities.PARAM_USER_ID)) {
