@@ -76,7 +76,7 @@ function initDependentParamHandlers(isEdit) {
 
 function initTypeAhead(isEdit) {
 	$("input:hidden.typeAhead").each(function() {
-		var questionName = $(this).closest("form").children("input:hidden[name=questionFullName]").val();
+		var questionName = $(this).closest("form").find("input:hidden[name=questionFullName]").val();
 		var paramName = getParamName($(this).attr('name'));
 		$("#" + paramName + "_display").attr('disabled',true);
 		if (isEdit) oldValues[paramName] = $(this).val();
@@ -125,7 +125,7 @@ function createAutoComplete(obj, name) {
 function updateDependentParam(paramName, dependedValue) {
 	if (dependedValue && dependedValue != 'Choose one:') {
 		var dependentParam = $("td#" + paramName + "aaa > div.dependentParam[name='" + paramName + "']");
-		var questionName = dependentParam.closest("form").children("input:hidden[name=questionFullName]").val();
+		var questionName = dependentParam.closest("form").find("input:hidden[name=questionFullName]").val();
 		var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&dependedValue=' + dependedValue;
 		if ($('input.typeAhead',dependentParam).length > 0) {
 			var sendReqUrl = sendReqUrl + '&xml=true';
