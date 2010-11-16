@@ -52,7 +52,7 @@
                     <c:set var="nextStage" value="span_from_question" />
                     <c:set var="disabled" value="DISABLED"/>
 		     <c:set var="opaque" value="opacity:0.5;filters:alpha(opacity=40)"/>
-                    <p><i>Boolean operations are disabled because you are combining sets of different data types</i></p>
+                    <p><i>Boolean operations are disabled because you are combining sets 1 and 2 of different data types</i></p>
                 </c:when>
                 <c:otherwise>
                     <c:set var="nextStage" value="process_boolean" />
