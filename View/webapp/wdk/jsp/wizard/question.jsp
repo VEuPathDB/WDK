@@ -51,6 +51,7 @@
                 <c:when test="${allowBoolean == false}">
                     <c:set var="nextStage" value="span_from_question" />
                     <c:set var="disabled" value="DISABLED"/>
+		     <c:set var="opaque" value="opacity:0.5;filters:alpha(opacity=40)"/>
                     <p><i>Boolean operations are disabled because you are combining sets of different data types</i></p>
                 </c:when>
                 <c:otherwise>
@@ -58,7 +59,7 @@
                 </c:otherwise>
             </c:choose>
     <table style="margin-left:auto; margin-right:auto;">
-      <tr>
+      <tr style="${opaque}">
         <td class="opcheck" valign="middle"><input onclick="changeButtonText(this)" name="boolean" value="INTERSECT" type="radio" stage="process_boolean" ${disabled}></td>
         <td class="operation INTERSECT"></td>
 	<td valign="middle">&nbsp;1&nbsp;<b>INTERSECT</b>&nbsp;2</td>
