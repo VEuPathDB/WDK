@@ -9,7 +9,7 @@
 */	
 	var A = null;
 	var B = null;
-	var region_color = ["rgba(255,0,0,0.3)","rgba(0,0,255,0.3)"];
+	var region_color = ["rgba(100,100,100,0.1)","rgba(0,128,0,0.1)"];
 	function Diagram(name,ele){
 		this.name = name;
 		this.c = ele;
@@ -392,11 +392,11 @@ function drawSentence(){
 		type = getIndex("span_output");
 		words = new Object();
 		if(type == 0){
-			words.output = recordTypes[0] + "s in Set A";
-			words.comparison = recordTypes[1] + "s in Set B"
+			words.output = recordTypes[0] + "s in curent result";
+			words.comparison = recordTypes[1] + "s in new step"
 		}else{
-			words.output = recordTypes[1] + "s in Set B";
-			words.comparison = recordTypes[0] + "s in Set A"
+			words.output = recordTypes[1] + "s in new step";
+			words.comparison = recordTypes[0] + "s in current result"
 		}
 		if(op > 0 && type == 1){
             // operation is not overlap, and if the output is b, then we flip the operation between contains & contained by.
@@ -404,10 +404,11 @@ function drawSentence(){
 		}
 		words.operation = operations[op];
 		words.strand = strands[strand];
-		s = "Find <b id='output_section'>" + words.output + "</b> whose selected region <b id='operation_section'>" + words.operation + "</b> the <b id='comparison_section'>" + words.comparison + "&apos;s</b> selected region in <b id='strand_section'>" + words.strand + "</b>.";
+		s = "\"Find <b id='output_section'>" + words.output + "</b> whose selected region <b id='operation_section'>" + words.operation + "</b> the <b id='comparison_section'>" + words.comparison + "&apos;s</b> selected region in <b id='strand_section'>" + words.strand + "\"</b>.";
 		sentence = s;
 	}
-	$("div#sentence").html(sentence);
+
+	$("div#sentence").html("<hr>" + sentence);	
 	animateChanges(words);
 }
 

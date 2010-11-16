@@ -9,14 +9,14 @@
 
 <style>
   #spanLogicParams, #spanLogicGraphics {
-    float:left;
+ /*   float:left;  */
     margin:5px;
   }
 
   #spanLogicParams fieldset {
-    float:left;
-    border:1px solid gray;
-	height:75px;
+ /*   float:left;  */
+  /*  border:1px solid gray; */
+/*	height:75px; */
   }
 
   #spanLogicGraphics {
@@ -24,7 +24,7 @@
   }
  
   #spanLogicParams fieldset:first-of-type {
-    margin-bottom: 5px;
+/*    margin-bottom: 5px; */
   }
  
   #spanLogicParams fieldset:nth-of-type(2) {
@@ -65,16 +65,19 @@
     display: inline;
   }
   canvas, div#scaleA, div#scaleB{
-	border:1px solid black;
+/*	border:1px solid black; */
 	height:75px;
 	margin:auto;
 	width:400px;
   }
 </style>
 <c:set var="pMap" value="${question.paramsMap}"/>
+
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/wizard.do"  onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
-  <input type="hidden" id="stage" value="process_span" />
-  <div id="spanLogicParams">
+  
+<input type="hidden" id="stage" value="process_span" />
+  
+<div id="spanLogicParams">
 	<wdk:answerParamInput qp="${pMap['span_a']}"/>
 	<wdk:answerParamInput qp="${pMap['span_b']}"/>
 	<input type="hidden" value="${wdkStep.displayType}" id="span_a_type"/>
@@ -85,131 +88,146 @@
 	<c:set var="importStepResultSize" value="${importStep.resultSize}"/>
 	<c:if test="${wdkStepResultSize > 1}"><c:set var="wdkStepRecType" value="${wdkStepRecType}s"/></c:if>
 	<c:if test="${importStepResultSize > 1}"><c:set var="importStepRecType" value="${importStepRecType}s"/></c:if>
+
+
 	<table>
-		<tr>
-			<td colspan="2">
-    <div class="roundLabel"><span>1</span></div>
-				<div class="span-step-text">Select intervals relative to the ${wdkStepResultSize} ${wdkStepRecType} in Step 1 of your strategy (Set A)
-				</div>
-			</td>
-		</tr>
-		<tr>
-			<td>
-    <fieldset id="setAFields">
-      <table id="offsetOptions" cellpadding="2">
-        <tr>
+	<tr>
+	<td colspan="2">
+    		<div class="roundLabel"><span>1</span></div>
+		<div class="span-step-text">Select regions relative to the ${wdkStepResultSize} ${wdkStepRecType} in your current result (step xxx)
+		</div>
+	</td>
+	</tr>
+
+
+	<tr>
+	<td style="vertical-align:middle;">
+    		<fieldset id="setAFields">
+      		<table id="offsetOptions" cellpadding="2">
+        	<tr>
 		<td style="text-align:right">begin at:</td><td><wdk:enumParamInput qp="${pMap['span_begin_a']}"/></td>
 		<td><wdk:enumParamInput qp="${pMap['span_begin_direction_a']}"/></td>
 		<td align="left" valign="top">
-            <html:text styleId="span_begin_offset_a" property="value(span_begin_offset_a)" size="35" />
-        </td>
-        </tr>
-        <tr>
+            	<html:text styleId="span_begin_offset_a" property="value(span_begin_offset_a)" size="35" />
+        	</td>
+        	</tr>
+        	<tr>
 		<td style="text-align:right">end at:</td><td><wdk:enumParamInput qp="${pMap['span_end_a']}"/></td>
 		<td><wdk:enumParamInput qp="${pMap['span_end_direction_a']}"/></td>
 		<td align="left" valign="top">
-            <html:text styleId="span_end_offset_a" property="value(span_end_offset_a)" size="35" />
-        </td>
-        </tr>
-      </table>
-    </fieldset>
-		</td>
-		<td style="vertical-align:top;"><div id="scaleA"></div>
+            		<html:text styleId="span_end_offset_a" property="value(span_end_offset_a)" size="35" />
+        	</td>
+        	</tr>
+      		</table>
+    		</fieldset>
+	</td>
+	<td style="vertical-align:top;"><div id="scaleA"></div>
 		<!--><canvas id="scaleA" width="400" height="75">
 				This browser does not support Canvas Elements (probably IE) :(
 		</canvas>-->
-		</td>
-		</tr>
-		<tr>
-			<td colspan="2">
-    <div class="roundLabel clear"><span>2</span></div>
-<div class="span-step-text">Select intervals relative to the ${importStepResultSize} ${importStepRecType} in the step you are adding (Set B)
-</div></td>
-		</tr>
-		<tr>
-			<td>
-    <fieldset id="setBFields">
-      <table id="offsetOptions" cellpadding="2">
-        <tr>
+	</td>
+	</tr>
+
+
+	<tr>
+	<td colspan="2">
+    		<div class="roundLabel clear"><span>2</span></div>
+		<div class="span-step-text">Select regions relative to the ${importStepResultSize} ${importStepRecType} in your new step (step xxx + 1)
+		</div></td>
+	</tr>
+
+
+	<tr>
+	<td style="vertical-align:middle;">
+    		<fieldset id="setBFields">
+      		<table id="offsetOptions" cellpadding="2">
+        	<tr>
           	<td style="text-align:right">begin at:</td><td><wdk:enumParamInput qp="${pMap['span_begin_b']}"/></td>
-			<td><wdk:enumParamInput qp="${pMap['span_begin_direction_b']}"/></td>
-			<td align="left" valign="top">
-	            <html:text styleId="span_begin_offset_b" property="value(span_begin_offset_b)" size="35" />
+		<td><wdk:enumParamInput qp="${pMap['span_begin_direction_b']}"/></td>
+		<td align="left" valign="top">
+	        	<html:text styleId="span_begin_offset_b" property="value(span_begin_offset_b)" size="35" />
 	        </td>
 	        </tr>
 	        <tr>
-			<td style="text-align:right">end at:</td><td><wdk:enumParamInput qp="${pMap['span_end_b']}"/></td>
-			<td><wdk:enumParamInput qp="${pMap['span_end_direction_b']}"/></td>
-			<td align="left" valign="top">
-	            <html:text styleId="span_end_offset_b" property="value(span_end_offset_b)" size="35" />
+		<td style="text-align:right">end at:</td><td><wdk:enumParamInput qp="${pMap['span_end_b']}"/></td>
+		<td><wdk:enumParamInput qp="${pMap['span_end_direction_b']}"/></td>
+		<td align="left" valign="top">
+	        	<html:text styleId="span_end_offset_b" property="value(span_end_offset_b)" size="35" />
 	        </td>
-        </tr>
-      </table>
-    </fieldset>
-</td>
-<td style="vertical-align:top;"><div id="scaleB"></div>
-	<!--<canvas id="scaleB" width="400" height="75">
-			This browser does not support Canvas Elements (probably IE) :(
-	</canvas>-->
+        	</tr>
+      		</table>
+    		</fieldset>
 	</td>
-</tr>
-</table>
+	<td style="vertical-align:top;"><div id="scaleB"></div>
+		<!--<canvas id="scaleB" width="400" height="75">
+			This browser does not support Canvas Elements (probably IE) :(
+		</canvas>-->
+	</td>
+	</tr>
+	</table>
 
-  <br>
-<table width="100%">
+ 	 <br>
+	
+	<table width="100%">
 	<tr>
-		<td>  
-<div class="roundLabel"><span>3</span></div> <div class="span-step-text">Restrict by how they relate
-</div>
-		</td>
+	<td>  
+		<div class="roundLabel"><span>3</span></div> <div class="span-step-text">Define positional relationship between the above regions
+		</div>
+	</td>
 	</tr>
 	<tr>
-		<td>
-   			<table><tr>
+	<td>
+   		<table><tr>
 			<td><wdk:enumParamInput qp="${pMap['span_operation']}" layout="horizontal"/></td>
-			</tr></table>
-		</td>
+		</tr></table>
+	</td>
 	</tr>
 	<tr>
-		<td>
-<div class="roundLabel"><span>4</span></div><div class="span-step-text">Restrict by strand
-</div>
-		</td>
+	<td>
+		<div class="roundLabel"><span>4</span></div><div class="span-step-text">Restrict region pairs by strand
+		</div>
+	</td>
 	</tr>
 	<tr>
-		<td>
-<table><tr>
-    <td><wdk:enumParamInput qp="${pMap['span_strand']}" layout="horizontal"/></td>
-</tr></table>
-		</td>
+	<td>
+		<table><tr>
+    			<td><wdk:enumParamInput qp="${pMap['span_strand']}" layout="horizontal"/></td>
+		</tr></table>
+	</td>
 	</tr>
 	<tr>
-		<td>
-<div class="roundLabel"><span>5</span></div><div class="span-step-text">Choose output
-</div>
-		</td>
+	<td>
+		<div class="roundLabel"><span>5</span></div><div class="span-step-text">Choose your result from
+		</div>
+	</td>
 	</tr>
 	<tr>
-		<td>
-<table><tr>
-    <td style="line-height:1.5">Select Output Set:&nbsp;</td>
-    <c:if test="allowBoolean == false">
-      <c:set var="disabled" value="DISABLED"/>
-      <c:set var="selected" value="CHECKED" />
-      You cannot select output because there are steps in the strategy after the current one you are working on.
-    </c:if>
-    <!--<td><input type="radio" name="output" value="A" ${disabled} ${selected}>Set A</input></td>
-    <td><input type="radio" name="output" value="B" ${disabled}>Set B</input></td>-->
-	<wdk:enumParamInput qp="${pMap['span_output']}" layout="horizontal"/>
-</tr></table>
-		</td>
-	</tr>
-</table>
+	<td>
+		<table><tr>
 
-  </div>
-  <div id="sentence"></div><br>
+    			<c:if test="allowBoolean == false">
+      			<c:set var="disabled" value="DISABLED"/>
+      			<c:set var="selected" value="CHECKED" />
+      			You cannot select output because there are steps in the strategy after the current one you are working on.
+    			</c:if>
+    
+			<!--<td><input type="radio" name="output" value="A" ${disabled} ${selected}>Set A</input></td>
+    				<td><input type="radio" name="output" value="B" ${disabled}>Set B</input></td>-->
+	
+			<wdk:enumParamInput qp="${pMap['span_output']}" layout="horizontal"/>
+
+		</tr></table>
+	</td>
+	</tr>
+	</table>
+
+</div>
+
+<div id="sentence" style="text-align:center;font-size:150%"><br><hr></div><br>
+
 <div class="filter-button"><html:submit property="questionSubmit" value="Run Step" styleId="submitButton"/></div>
 </html:form>
+
 <script>
 	initWindow();
 </script>
