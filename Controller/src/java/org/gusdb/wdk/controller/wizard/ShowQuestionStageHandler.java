@@ -44,6 +44,13 @@ public class ShowQuestionStageHandler implements StageHandler {
         Map<String, Object> attributes = new HashMap<String, Object>();
         attributes.put(ATTR_QUESTION, question);
 
+        
+        if (wizardForm.getAction().equals(WizardForm.ACTION_REVISE)) {
+            StepBean currentStep = StageHandlerUtility.getCurrentStep(request);
+            attributes.put("customName", currentStep.getBaseCustomName());
+        }
+
+
         // get previous step
         StepBean previousStep = StageHandlerUtility.getPreviousStep(servlet,
                 request, wizardForm);
