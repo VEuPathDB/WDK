@@ -25,12 +25,17 @@
 <c:set var="stage" value="${requestScope.stage}"/>
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
 
-<%-- not needed
-<h3>${wdkQuestion.displayName}</h3>
---%>
 
+<c:set var="Question_Header" scope="request">
+<%-- has nothing --%>
+</c:set>
 
-<%-- the following sections are copied from <question.tag>, need to refactor into a separate tag --%>
+<c:set var="Question_Footer" scope="request">
+<%-- displays question description, can be overridden by the custom question form --%>
+<wdk:questionDescription />
+</c:set>
+
+${Question_Header}
 
 <wdk:questionForm />
 
@@ -103,8 +108,7 @@
 	<html:submit property="questionSubmit" value="${buttonVal}"/>
 </div>
 
-<%-- not needed
-<div id="description">${wdkQuestion.description}</div>
---%>
-
 </html:form>
+
+
+${Question_Footer}
