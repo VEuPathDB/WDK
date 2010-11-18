@@ -509,11 +509,11 @@ public class Step {
         }
         return null;
     }
-    
 
     public Step getStepByChildId(int childId) throws WdkUserException,
             WdkModelException, SQLException, JSONException {
-        logger.debug("gettting step by child id. current=" + this + ", input=" + childId);
+        logger.debug("gettting step by child id. current=" + this + ", input="
+                + childId);
         Step target;
         if (this.childStepId == childId) {
             return this;
@@ -537,7 +537,8 @@ public class Step {
 
     public Step getStepByPreviousId(int previousId) throws WdkUserException,
             WdkModelException, SQLException, JSONException {
-        logger.debug("gettting step by prev id. current=" + this + ", input=" + previousId);
+        logger.debug("gettting step by prev id. current=" + this + ", input="
+                + previousId);
         Step target;
         if (this.previousStepId == previousId) {
             return this;
@@ -558,7 +559,6 @@ public class Step {
         }
         return null;
     }
-
 
     /**
      * @return the paramErrors
@@ -944,6 +944,18 @@ public class Step {
             }
         }
         return null;
+    }
+
+    public int getFrontId() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
+        int frontId;
+        Step previousStep = getPreviousStep();
+        if (previousStep == null) frontId = 1;
+        else {
+            frontId = previousStep.getFrontId();
+            frontId++;
+        }
+        return frontId;
     }
 
     public String toString() {
