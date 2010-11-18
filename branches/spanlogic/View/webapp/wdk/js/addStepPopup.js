@@ -355,7 +355,7 @@ function changeButtonText(ele){
 	if($(ele).val() != "SPAN"){
 		v = "Run Step";
 	}else{
-		v = "Continue to define regions and their relationship....";
+		v = "Continue to define regions....";
 	}
 	//$("form#form_question").attr("action",stage);
 	$(".filter-button input[name='questionSubmit']").attr("value",v);

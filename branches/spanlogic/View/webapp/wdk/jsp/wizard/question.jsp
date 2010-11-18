@@ -17,7 +17,7 @@
 
 <c:if test="${wdkQuestion.recordClass.fullName != wdkStep.dataType}">
 	<c:set var="checked" value="checked=''"/>
-	<c:set var="buttonVal" value="Continue to define regions and their relationship...."/>
+	<c:set var="buttonVal" value="Continue to define regions...."/>
 	<c:set var="spanOnly" value="true"/>
 </c:if>
 
@@ -44,7 +44,7 @@
     </c:when>
     <c:otherwise>
 
-<hr><h1>Combine steps:</h1>
+<hr><h1>Combine with Step 2:</h1>
 
         <div style="text-align:center" id="operations">
             <c:choose>
@@ -52,7 +52,8 @@
                     <c:set var="nextStage" value="span_from_question" />
                     <c:set var="disabled" value="DISABLED"/>
 		     <c:set var="opaque" value="opacity:0.5;filters:alpha(opacity=40)"/>
-                    <p style="color:grey"><i>Set operations are not available because Steps 1 and 2 have different data types</i></p>
+<%--                    <p style="color:grey"><i>Set operations are not available because Steps 1 and 2 have different data types</i></p>  --%>
+                        <p style="color:grey"><i>Set operations are not available because Step 1 is a set of ${wdkStep.displayType}s while Step 2 is a set of ${wdkQuestion.recordClass.displayName}s; these are disjoint sets</i></p> 
                 </c:when>
                 <c:otherwise>
                     <c:set var="nextStage" value="process_boolean" />
@@ -87,7 +88,7 @@
 	  <tr>	
 		<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
         <td title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN"></td>
- 	<td  colspan="5" style="text-align:left;">&nbsp;1&nbsp;<b>OVERLAP/CONTAIN</b>&nbsp;2</td>
+ 	<td  colspan="11" style="text-align:left;">&nbsp;Genomic regions --to be defined-- for ${wdkStep.displayType}s in 1&nbsp;<b>OVERLAP/CONTAIN</b>&nbsp;regions --to be defined-- for ${wdkQuestion.recordClass.displayName}s in 2</td>
 
         <!--  <td colspan="12" align="left">&nbsp;&nbsp;&nbsp;Combine using span and regional alignments</td>   -->
       </tr>
