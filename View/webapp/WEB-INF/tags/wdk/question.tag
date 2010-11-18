@@ -56,6 +56,10 @@
   Assign Weight: <html:text property="weight" maxlength="9" />
 </div>
 
+<%-- give the new search a name --%>
+<div align=center">
+    Name this search: <html:text property="customName" maxlength="15" />
+</div>
 
 </td>
 </tr>

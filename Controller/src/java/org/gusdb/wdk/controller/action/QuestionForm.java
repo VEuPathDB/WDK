@@ -165,4 +165,19 @@ public class QuestionForm extends MapActionForm {
     public Object getValue(String key) {
         return getValueOrArray(key);
     }
+
+    /**
+     * @return the customName
+     */
+    public String getCustomName() {
+        return customName;
+    }
+
+    /**
+     * @param customName the customName to set
+     */
+    public void setCustomName(String customName) {
+        this.customName = customName;
+    }
+
 }
