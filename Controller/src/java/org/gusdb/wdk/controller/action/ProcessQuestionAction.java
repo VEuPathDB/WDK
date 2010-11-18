@@ -136,8 +136,7 @@ public class ProcessQuestionAction extends Action {
             for (String paramName : params.keySet()) {
                 String paramValue = params.get(paramName);
                 url.append("&"
-                        + URLEncoder.encode("value(" + paramName + ")",
-                                "utf-8"));
+                        + URLEncoder.encode("value(" + paramName + ")", "utf-8"));
                 url.append("=");
                 if (paramValue != null)
                     url.append(URLEncoder.encode(paramValue, "utf-8"));
@@ -185,6 +184,12 @@ public class ProcessQuestionAction extends Action {
             String noSkip = request.getParameter("noskip");
             if (noSkip != null && noSkip.length() > 0) {
                 url.append("&noskip=" + noSkip);
+            }
+
+            // pass custom name to showSummary
+            String customName = request.getParameter("customName");
+            if (customName != null && customName.length() > 0) {
+                url.append("&customName=" + customName);
             }
 
             /*
