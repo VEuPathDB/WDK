@@ -136,9 +136,10 @@ public class ProcessStepAction extends Action {
         }
 
         // load custom name
-        String customName = request.getParameter(PARAM_CUSTOM_NAME);
+        customName = request.getParameter(PARAM_CUSTOM_NAME);
         if (customName != null && customName.trim().length() == 0)
             customName = null;
+       logger.debug(PARAM_CUSTOM_NAME + "='" + customName + "'");
     }
 
     private Map<Integer, Integer> reviseStep(HttpServletRequest request,
@@ -170,10 +171,6 @@ public class ProcessStepAction extends Action {
 
             newStep = user.createStep(question, params, filterName, false,
                     true, weight);
-            if (customName != null) {
-                step.setCustomName(customName);
-                step.update(false);
-            }
         } else {
             // just revise the current step with a new filter or new weight
 
@@ -184,8 +181,16 @@ public class ProcessStepAction extends Action {
 
             newStep = step.createStep(filterName, weight);
         }
+
+        // set custom name to the new step
+        if (customName != null) {
+            newStep.setCustomName(customName);
+            newStep.update(false);
+        }
+
         // the new step is to replace the current one.
-        return strategy.editOrInsertStep(step.getStepId(), newStep);
+        Map<Integer, Integer> changeMap = strategy.editOrInsertStep(step.getStepId(), newStep);
+        return changeMap;
     }
 
     private Map<Integer, Integer> insertStep(HttpServletRequest request,
@@ -216,8 +221,8 @@ public class ProcessStepAction extends Action {
         StepBean newStep = user.createStep(question, params, null, false, true,
                 weight);
         if (customName != null) {
-            step.setCustomName(customName);
-            step.update(false);
+            newStep.setCustomName(customName);
+            newStep.update(false);
         }
 
         StepBean previousStep = step.getPreviousStep();
@@ -271,8 +276,8 @@ public class ProcessStepAction extends Action {
         StepBean newStep = user.createStep(question, params, null, false, true,
                 weight);
         if (customName != null) {
-            step.setCustomName(customName);
-            step.update(false);
+            newStep.setCustomName(customName);
+            newStep.update(false);
         }
 
         logger.debug("root step: " + rootStep);

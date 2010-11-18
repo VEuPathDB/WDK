@@ -668,7 +668,7 @@ public class StepFactory {
     void updateStep(User user, Step step, boolean updateTime)
             throws WdkUserException, SQLException, NoSuchAlgorithmException,
             WdkModelException, JSONException {
-        logger.debug("the new custom name: '" + step.getBaseCustomName() + "'");
+        logger.debug("step #" + step.getDisplayId() + " new custom name: '" + step.getBaseCustomName() + "'");
         // update custom name
         Date lastRunTime = (updateTime) ? new Date() : step.getLastRunTime();
         int estimateSize = step.getEstimateSize();
