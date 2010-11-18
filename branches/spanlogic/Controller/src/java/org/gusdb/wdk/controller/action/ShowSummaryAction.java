@@ -270,7 +270,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             for (ParamBean param : wdkQuestion.getParams()) {
                 String paramName = param.getName();
                 Object value = qForm.getValue(paramName);
-                params.put(paramName, (String)value);
+                params.put(paramName, (String) value);
             }
 
             // get the hidden flag
@@ -387,7 +387,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             step.setCustomName(customName);
             step.update(false);
         }
-        
+
         AnswerValueBean answerValue = step.getAnswerValue();
         int totalSize = answerValue.getResultSize();
         if (end > totalSize) end = totalSize;
@@ -428,7 +428,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
             } else {
                 params = new LinkedHashMap<String, String>();
                 paramNames = new LinkedHashMap<String, String>();
-                customName = qFullName;
+                customName = request.getParameter("customName");
+                if (customName == null || customName.length() == 0)
+                    customName = qFullName;
 
                 // get params from request
                 Map<?, ?> parameters = request.getParameterMap();
