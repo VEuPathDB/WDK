@@ -49,9 +49,9 @@ public class StepBean {
 
     public StepBean getParentStep() {
         Step parent = step.getParentStep();
-        return (parent == null)? null : new StepBean(user, parent);
+        return (parent == null) ? null : new StepBean(user, parent);
     }
-    
+
     public StepBean getParentOrNextStep() {
         Step nextStep = step.getParentOrNextStep();
         return (nextStep == null) ? null : new StepBean(user, nextStep);
@@ -549,7 +549,20 @@ public class StepBean {
         return step.getPreviousStepParam();
     }
 
+    /**
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @throws SQLException
+     * @throws JSONException
+     * @see org.gusdb.wdk.model.user.Step#getFrontId()
+     */
+    public int getFrontId() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
+        return step.getFrontId();
+    }
+
     public String toString() {
-       return step.toString();
-    }    
+        return step.toString();
+    }
 }

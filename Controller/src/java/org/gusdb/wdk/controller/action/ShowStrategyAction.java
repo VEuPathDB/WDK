@@ -368,6 +368,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("isValid", step.getIsValid());
         jsStep.put("validationMessage", step.getValidationMessage());
         jsStep.put("assignedWeight", step.getAssignedWeight());
+        jsStep.put("frontId", step.getFrontId());
 
         outputParams(user, step, jsStep);
 
