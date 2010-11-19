@@ -565,6 +565,10 @@ b.strat_help_title > span {
   margin-top:40px;
 }
 
+#query_form .dragHandle, .attributesList .dragHandle {
+  height: 23px;
+}
+
 #query_selection ul {
   background-image: url(../images/new_step_menu.jpg);
   list-style-type: none;
