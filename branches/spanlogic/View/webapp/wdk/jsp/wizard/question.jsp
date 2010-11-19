@@ -17,7 +17,7 @@
 
 <c:if test="${wdkQuestion.recordClass.fullName != wdkStep.dataType}">
 	<c:set var="checked" value="checked=''"/>
-	<c:set var="buttonVal" value="Continue to define regions...."/>
+	<c:set var="buttonVal" value="Continue...."/>
 	<c:set var="spanOnly" value="true"/>
 </c:if>
 
@@ -49,57 +49,60 @@ ${Question_Header}
     </c:when>
     <c:otherwise>
 
-<hr><h1>Combine with Step 2:</h1>
+    <hr><h1>Combine ${wdkStep.displayType}s in Step 1 with ${wdkQuestion.recordClass.displayName}s in Step 2:</h1>
+    <div style="text-align:center" id="operations">
 
-        <div style="text-align:center" id="operations">
             <c:choose>
                 <c:when test="${allowBoolean == false}">
                     <c:set var="nextStage" value="span_from_question" />
                     <c:set var="disabled" value="DISABLED"/>
-		     <c:set var="opaque" value="opacity:0.5;filters:alpha(opacity=40)"/>
-<%--                    <p style="color:grey"><i>Set operations are not available because Steps 1 and 2 have different data types</i></p>  --%>
-                        <p style="color:grey"><i>Set operations are not available because Step 1 is a set of ${wdkStep.displayType}s while Step 2 is a set of ${wdkQuestion.recordClass.displayName}s; these are disjoint sets</i></p> 
+		    <c:set var="opaque" value="opacity:0.5;filters:alpha(opacity=40)"/>
+                    <p style="color:grey"><i>Set operations are not available because Step 1 is a set of ${wdkStep.displayType}s while Step 2 is a set of ${wdkQuestion.recordClass.displayName}s; these are disjoint sets</i></p> 
                 </c:when>
                 <c:otherwise>
                     <c:set var="nextStage" value="process_boolean" />
                 </c:otherwise>
             </c:choose>
+
     <table style="margin-left:auto; margin-right:auto;">
-      <tr style="${opaque}">
-        <td class="opcheck" valign="middle"><input onclick="changeButtonText(this)" name="boolean" value="INTERSECT" type="radio" stage="process_boolean" ${disabled}></td>
+        <tr style="${opaque}">
+
+        <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="INTERSECT" type="radio" stage="process_boolean" ${disabled}></td>
         <td class="operation INTERSECT"></td>
-	<td valign="middle">&nbsp;1&nbsp;<b>INTERSECT</b>&nbsp;2</td>
+	<td >&nbsp;1&nbsp;<b style="font-size:120%">Intersect</b>&nbsp;2</td>
 
         <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
         <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="UNION" type="radio" stage="process_boolean" ${disabled}></td>
         <td class="operation UNION"></td>
-	<td>&nbsp;1&nbsp;<b>UNION</b>&nbsp;2</td>
+	<td>&nbsp;1&nbsp;<b style="font-size:120%">Union</b>&nbsp;2</td>
 
         <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
         <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="NOT" type="radio" stage="process_boolean" ${disabled}></td>
         <td class="operation MINUS"></td>
-	<td>&nbsp;1&nbsp;<b>MINUS</b>&nbsp;2</td>
+	<td>&nbsp;1&nbsp;<b style="font-size:120%">Minus</b>&nbsp;2</td>
 
         <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
         <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="RMINUS" type="radio" stage="process_boolean" ${disabled}></td>
         <td class="operation RMINUS"></td>
-	<td>&nbsp;2&nbsp;<b>MINUS</b>&nbsp;1</td>
-      </tr>
-	<tr><td colspan="15" align="center"><hr><b>OR</b><hr></td></tr>
+	<td>&nbsp;2&nbsp;<b style="font-size:120%">Minus</b>&nbsp;1</td>
 
-	  <tr>	
-		<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
+        </tr>
+	<tr style="${opaque}"><td colspan="15" style="text-align:center;"><hr><b style="font-size:120%">Or</b><hr></td></tr>
+
+	<tr>	
+	<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
         <td title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN"></td>
- 	<td  colspan="11" style="text-align:left;">&nbsp;Genomic regions --to be defined-- for ${wdkStep.displayType}s in 1&nbsp;<b>OVERLAP/CONTAIN</b>&nbsp;regions --to be defined-- for ${wdkQuestion.recordClass.displayName}s in 2</td>
+ 	<td  colspan="11" style="text-align:left;">&nbsp;Genomic regions for ${wdkStep.displayType}s in 1&nbsp;<span style="font-size:120%;font-weight:bold">Overlap / Contain / Are contained within</span>&nbsp; genomic regions for ${wdkQuestion.recordClass.displayName}s in 2</td>
 
-        <!--  <td colspan="12" align="left">&nbsp;&nbsp;&nbsp;Combine using span and regional alignments</td>   -->
-      </tr>
+        </tr>
     </table>
-        </div>
+
+    </div>
     </c:otherwise>
+
 </c:choose>
 
 <html:hidden property="stage" styleId="stage" value="${nextStage}" />

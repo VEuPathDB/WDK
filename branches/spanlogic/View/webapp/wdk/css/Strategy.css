@@ -309,7 +309,7 @@ td.operation {
 .operation.SPAN {
 	background-image:url("../images/operationSpanIcons.gif");
 	background-position:-28px -11px;
-	height:21px;
+	height:24px;
 }
 
 .operation.MINUS {
@@ -777,6 +777,8 @@ b.strat_help_title > span {
 
 #operations td {
 	padding: 0;
+        vertical-align:middle;
+	text-align:left;
 }
 
 .filter {
