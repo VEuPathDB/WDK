@@ -24,10 +24,14 @@
 	
 	function initWindow(){ 
 		attachHandlers();
+		//Should find a way to eliminate this call.
+		updateStepNumberReferences(); //This gets called again later, by the wizard mechanism
+		initOutputOptions();
 		prepCanvas();
-		prepSentence();
+	//	prepSentence();
 //		prepDynamicSpans();
 	}
+
 	function attachHandlers(){
 		$("select[name*='_a'], input[name*='_a']").change(function(){
 			redraw(true,"A");
@@ -42,9 +46,28 @@
 				$(this).change();
 			}
 		});
-		$("input[type*='radio']").click(function(){
-			drawSentence();
+		$("#span_output").change(function(){
+			updateStepReferences();
 		});
+	}
+	function initOutputOptions(){
+		$("#span_output option[value='a']").text(
+			$("#span_a_type").val() + " from Step " + $("#span_a_num").text());
+		$("#span_output option[value='b']").text(
+			$("#span_b_type").val() + " from Step " + $("#span_b_num").text());
+		$("#span_output").change();
+	}
+	function updateStepReferences(){
+		var selectedOutput = $("#span_output").val();
+		var type = $("#span_" + selectedOutput + "_type").val();
+		var num = $("#span_" + selectedOutput + "_num").text();
+		if (type) {
+			$(".selected_output_type").text(type);
+			$(".selected_output_num").text(num);
+		}
+		else {
+			alert("There was an error updating the span logic form.  Please notify us using the 'Contact Us' form.");
+		}
 	}
 	function prepCanvas(){
 		A = new Diagram("A",document.getElementById('scaleA'));
@@ -387,9 +410,9 @@ function drawSentence(){
 		sentence = "Please selected options for all parameters, then a Summary sentance will be displayed.";
 	}else{
 		s = "";
-		op = getIndex("span_operation");
-		strand = getIndex("span_strand");
-		type = getIndex("span_output");
+		op = $("#span_operation").attr("selectedIndex");
+		strand = $("#span_strand").attr("selectedIndex");
+		type = $("#span_output").attr("selectedIndex");
 		words = new Object();
 		if(type == 0){
 			words.output = recordTypes[0] + "s in curent result";

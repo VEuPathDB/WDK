@@ -267,6 +267,16 @@ function backStage(){
 
 function setPopupContent(data) {
     $("#qf_content").html(data);
+    updateStepNumberReferences();
+}
+
+function updateStepNumberReferences() {
+    var stratBackId = $("#strategyId").text();
+    var stepBackId = $("#stepId").text();
+    var step = getStepFromBackId(stratBackId, stepBackId);
+    var stepNumber = parseInt(step.frontId);
+    $("span.current_step_num").text(stepNumber);
+    $("span.new_step_num").text((stepNumber + 1));
 }
 
 // deprecated

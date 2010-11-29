@@ -24,7 +24,8 @@
 <c:set var="wizard" value="${requestScope.wizard}"/>
 <c:set var="stage" value="${requestScope.stage}"/>
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
-
+<span style="display:none" id="strategyId">${wdkStrategy.strategyId}</span>
+<span style="display:none" id="stepId">${wdkStep.stepId}</span>
 
 <c:set var="Question_Header" scope="request">
 <%-- has nothing --%>
@@ -49,7 +50,7 @@ ${Question_Header}
     </c:when>
     <c:otherwise>
 
-    <hr><h1>Combine ${wdkStep.displayType}s in Step 1 with ${wdkQuestion.recordClass.displayName}s in Step 2:</h1>
+    <hr><h1>Combine ${wdkStep.displayType}s in Step <span class="current_step_num"></span> with ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num"></span>:</h1>
     <div style="text-align:center" id="operations">
 
             <c:choose>
@@ -57,7 +58,7 @@ ${Question_Header}
                     <c:set var="nextStage" value="span_from_question" />
                     <c:set var="disabled" value="DISABLED"/>
 		    <c:set var="opaque" value="opacity:0.5;filters:alpha(opacity=40)"/>
-                    <p style="color:grey"><i>Set operations are not available because Step 1 is a set of ${wdkStep.displayType}s while Step 2 is a set of ${wdkQuestion.recordClass.displayName}s; these are disjoint sets</i></p> 
+                    <p style="color:grey"><i>Set operations are not available because Step <span class="current_step_num"></span> is a set of ${wdkStep.displayType}s while Step <span class="new_step_num"></span> is a set of ${wdkQuestion.recordClass.displayName}s; these are disjoint sets</i></p> 
                 </c:when>
                 <c:otherwise>
                     <c:set var="nextStage" value="process_boolean" />
@@ -69,25 +70,25 @@ ${Question_Header}
 
         <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="INTERSECT" type="radio" stage="process_boolean" ${disabled}></td>
         <td class="operation INTERSECT"></td>
-	<td >&nbsp;1&nbsp;<b style="font-size:120%">Intersect</b>&nbsp;2</td>
+	<td >&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Intersect</b>&nbsp;<span class="new_step_num"></span></td>
 
         <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
         <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="UNION" type="radio" stage="process_boolean" ${disabled}></td>
         <td class="operation UNION"></td>
-	<td>&nbsp;1&nbsp;<b style="font-size:120%">Union</b>&nbsp;2</td>
+	<td>&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Union</b>&nbsp;<span class="new_step_num"></span></td>
 
         <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
         <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="NOT" type="radio" stage="process_boolean" ${disabled}></td>
         <td class="operation MINUS"></td>
-	<td>&nbsp;1&nbsp;<b style="font-size:120%">Minus</b>&nbsp;2</td>
+	<td>&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="new_step_num"></span></td>
 
         <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
         <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="RMINUS" type="radio" stage="process_boolean" ${disabled}></td>
         <td class="operation RMINUS"></td>
-	<td>&nbsp;2&nbsp;<b style="font-size:120%">Minus</b>&nbsp;1</td>
+	<td>&nbsp;<span class="new_step_num"></span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="current_step_num"></span></td>
 
         </tr>
 	<tr style="${opaque}"><td colspan="15" style="text-align:center;"><hr><b style="font-size:120%">Or</b><hr></td></tr>
@@ -95,7 +96,7 @@ ${Question_Header}
 	<tr>	
 	<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
         <td title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN"></td>
- 	<td  colspan="11" style="text-align:left;">&nbsp;Genomic regions for ${wdkStep.displayType}s in 1&nbsp;<span style="font-size:120%;font-weight:bold">Overlap / Contain / Are contained within</span>&nbsp; genomic regions for ${wdkQuestion.recordClass.displayName}s in 2</td>
+ 	<td  colspan="11" style="text-align:left;">&nbsp;Genomic regions for ${wdkStep.displayType}s in <span class="current_step_num"></span>&nbsp;<span style="font-size:120%;font-weight:bold">Overlap / Contain / Are contained within</span>&nbsp; genomic regions for ${wdkQuestion.recordClass.displayName}s in <span class="new_step_num"></span></td>
 
         </tr>
     </table>
