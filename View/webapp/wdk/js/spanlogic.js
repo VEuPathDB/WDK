@@ -64,6 +64,12 @@
 		if (type) {
 			$(".selected_output_type").text(type);
 			$(".selected_output_num").text(num);
+			// Swap the output and comparison groups if needed
+			if ($("#outputGroup #group_" + selectedOutput).length === 0) {
+				var comparisonGroup = $("#outputGroup").html();
+				$("#outputGroup").html($("#comparisonGroup").html());
+				$("#comparisonGroup").html(comparisonGroup);
+			}
 		}
 		else {
 			alert("There was an error updating the span logic form.  Please notify us using the 'Contact Us' form.");
