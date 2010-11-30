@@ -85,8 +85,6 @@ function parseInputs(){
 	var quesForm = $("form#form_question[name='wizardForm']");
 	if(quesForm.length == 0) 
 		quesForm = $("form#form_question[name='questionForm']");
-	var inputs = $("input, textarea", quesForm);
-	var selects = $("select", quesForm);
 
         // Jerric - use ajax to serialize the form data
 	var d = quesForm.serialize();
