@@ -801,7 +801,7 @@ b.strat_help_title > span {
 }
 
 .filter-button {
-        margin-top: 25px;
+        padding-top: 10px;
         text-align: center;
 }
 
