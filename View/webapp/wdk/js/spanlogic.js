@@ -7,8 +7,8 @@
 	var draw = false;
 	var singlepoint = false;
 */	
-	var A = null;
-	var B = null;
+	var a = null;
+	var b = null;
 	var region_color = ["rgba(100,100,100,0.1)","rgba(0,128,0,0.1)"];
 	function Diagram(name,ele){
 		this.name = name;
@@ -23,6 +23,7 @@
 	}
 	
 	function initWindow(){ 
+		$("input[type=radio][name^=region_][value=exact]").click();
 		attachHandlers();
 		//Should find a way to eliminate this call.
 		updateStepNumberReferences(); //This gets called again later, by the wizard mechanism
@@ -33,12 +34,30 @@
 	}
 
 	function attachHandlers(){
+		$("#submitButton").click(function(){
+			// Enable params before the form action (callWizard()) is hit, so that
+			// they will be included in the serialization performed in parseInputs()
+			$(".offsetOptions input, .offsetOptions select").removeAttr("disabled");
+		});
 		$("select[name*='_a'], input[name*='_a']").change(function(){
-			redraw(true,"A");
+			redraw(true,"a");
 		});
 		$("select[name*='_b'], input[name*='_b']").change(function(){
-			redraw(true,"B");
+			redraw(true,"b");
 			$(this).keypress();
+		});
+		$("input[name='upstream_region_a'], input[name*='downstream_region_a'], input[name='upstream_region_b'], input[name*='downstream_region_b']").change(function(){
+			var group = $(this).attr('name');
+			group = group.substring(group.indexOf("region_")+7);
+			if ($(this).attr("name").indexOf('upstream') >=0) {
+				$("#span_begin_offset_" + group).val($(this).val()).change();
+			}
+			else if ($(this).attr("name").indexOf('downstream') >= 0) {
+				$("#span_end_offset_" + group).val($(this).val()).change();
+			}
+			else {
+				// TODO: Error case
+			}
 		});
 		$("#spanLogicParams input[type='text']").keydown(function(event){
 			if(event.keyCode == 13 && event.currentTarget.id != 'submitButton') {
@@ -59,27 +78,80 @@
 	}
 	function updateStepReferences(){
 		var selectedOutput = $("#span_output").val();
-		var type = $("#span_" + selectedOutput + "_type").val();
-		var num = $("#span_" + selectedOutput + "_num").text();
-		if (type) {
-			$(".selected_output_type").text(type);
-			$(".selected_output_num").text(num);
+		var selectedType = $("#span_" + selectedOutput + "_type").val();
+		var selectedNum = $("#span_" + selectedOutput + "_num").text();
+		if (selectedType) {
+			var comparison = $("#span_output option[value!='" + selectedOutput + "']").val();
+			var comparisonType = $("#span_" + comparison + "_type").val();
+			var comparisonNum = $("#span_" + comparison + "_num").text();
+			$(".comparison_type").text(comparisonType);
+			$(".comparison_num").text(comparisonNum);
 			// Swap the output and comparison groups if needed
 			if ($("#outputGroup #group_" + selectedOutput).length === 0) {
-				var comparisonGroup = $("#outputGroup").html();
-				$("#outputGroup").html($("#comparisonGroup").html());
+				var comparisonGroup = $("#outputGroup .regionParams");
+				$("#outputGroup").html($("#comparisonGroup .regionParams"));
 				$("#comparisonGroup").html(comparisonGroup);
+				updateRegionLabels();
+				attachHandlers(); // Switching contents seems to disable the handlers, need to reattach them
 			}
 		}
 		else {
 			alert("There was an error updating the span logic form.  Please notify us using the 'Contact Us' form.");
 		}
 	}
+	function updateRegionParams(ele){
+		var button = $(ele);
+		var group = button.attr('name');
+		group = group.substring(group.indexOf("_")+1);
+		var offsetOptions = $("#set_" + group + "Fields .offsetOptions");
+		if (button.val() === 'exact') {
+			$("select, input", offsetOptions).attr("disabled","true");
+			$("input[name='upstream_region_" + group + "']").attr("disabled","true").val("0");
+			$("input[name='downstream_region_" + group + "']").attr("disabled","true").val("0");
+			$("#span_begin_" + group).val("start");
+			$("#span_begin_offset_" + group).val("0");
+			$("#span_end_" + group).val("stop");
+			$("#span_end_offset_" + group).val("0");
+		}
+		else if (button.val() === 'upstream') {
+			$("select, input", offsetOptions).attr("disabled","true");
+			$("input[name='upstream_region_" + group + "']").removeAttr("disabled");
+			$("input[name='downstream_region_" + group + "']").attr("disabled","true").val("0");
+			$("#span_begin_" + group).val("start");
+			$("#span_begin_direction_" + group).val("-");
+			$("#span_end_" + group).val("start");
+			$("#span_end_offset_" + group).val("0");
+		}
+		else if (button.val() === 'downstream') {
+			$("select, input", offsetOptions).attr("disabled","true");
+			$("input[name='upstream_region_" + group + "']").attr("disabled","true").val("0");
+			$("input[name='downstream_region_" + group + "']").removeAttr("disabled");
+			$("#span_begin_" + group).val("stop");
+			$("#span_begin_offset_" + group).val("0");
+			$("#span_end_" + group).val("stop");
+			$("#span_end_direction_" + group).val("+");
+		}
+		else if (button.val() === 'custom') {
+			$("select, input", offsetOptions).removeAttr("disabled");
+			$("input[name='upstream_region_" + group + "']").attr("disabled","true").val("0");
+			$("input[name='downstream_region_" + group + "']").attr("disabled","true").val("0");
+		}
+		else {
+			// TODO: Error case
+		}
+		updateRegionLabels();
+	}
+	function updateRegionLabels() {
+		var outputRegion = $("#outputGroup input[type=radio][name^='region_']:checked").val();
+		$(".outputRegion").text(outputRegion + " region");
+		var comparisonRegion = $("#comparisonGroup input[type=radio][name^='region_']:checked").val();
+		$(".comparisonRegion").text(comparisonRegion + " region");
+	}
 	function prepCanvas(){
-		A = new Diagram("A",document.getElementById('scaleA'));
-		prepDynamicSpans(A, 0);
-		B = new Diagram("B",document.getElementById('scaleB'));
-		prepDynamicSpans(B, 1);
+		a = new Diagram("a",document.getElementById('scale_a'));
+		prepDynamicSpans(a, 0);
+		b = new Diagram("b",document.getElementById('scale_b'));
+		prepDynamicSpans(b, 1);
 	}
 	function drawRect(cxt,x1,y1,x2,y2,a,b,c){
 		//cxt.fillStyle = a;
@@ -221,7 +293,7 @@
 		dia.cxt.fillText("Feature", center - 20, dia.feature.loc.y+15);
 	}
 	function drawRegionText(dia){
-		var i = (dia.name == "A") ? 0 : 1;
+		var i = (dia.name == "a") ? 0 : 1;
 		var ba = document.getElementsByName('upstreamAnchor')[i].value;
 		var bs = document.getElementsByName('upstreamSign')[i].value;
 		var bo = parseInt(document.getElementsByName('upstreamOffset')[i].value);
@@ -259,7 +331,7 @@
 		//if(feature.loc.x + feature.width > dia.width) feature.width = dia.width - feature.loc.x;
 	}
 	function drawRegion(dia){
-		i = (dia.name == "A") ? 0 : 1; 
+		i = (dia.name == "a") ? 0 : 1; 
 		cxt = dia.cxt;
 		region = dia.region;
 		drawRect(cxt,region.start.x,region.start.y,region.width,region.height,region_color[i],region_color[i]);
@@ -339,7 +411,7 @@
 		if(dia.name == undefined){
 			dia = eval("("+dia+")");
 		}
-		i = (dia.name == "A") ? 0 : 1;
+		i = (dia.name == "a") ? 0 : 1;
 		cxt = dia.cxt;
 		center = dia.center;
 		scale = dia.scale;
