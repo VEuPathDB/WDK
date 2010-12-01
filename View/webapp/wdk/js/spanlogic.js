@@ -97,6 +97,8 @@
 			$(".comparison_num").text(comparisonNum);
 			// Swap the output and comparison groups if needed
 			if ($("#outputGroup #group_" + selectedOutput).length === 0) {
+				$(".outputRegion").removeClass("region_"+comparison).addClass("region_"+selectedOutput);
+				$(".comparisonRegion").removeClass("region_"+selectedOutput).addClass("region_"+comparison);
 				var comparisonGroup = $("#outputGroup .regionParams");
 				$("#outputGroup").html($("#comparisonGroup .regionParams"));
 				$("#comparisonGroup").html(comparisonGroup);
