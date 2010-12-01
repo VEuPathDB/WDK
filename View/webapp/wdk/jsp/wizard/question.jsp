@@ -58,7 +58,7 @@ ${Question_Header}
                     <c:set var="nextStage" value="span_from_question" />
                     <c:set var="disabled" value="DISABLED"/>
 		    <c:set var="opaque" value="opacity:0.5;filters:alpha(opacity=40)"/>
-                    <p style="color:grey"><i>Set operations are not available because Step <span class="current_step_num"></span> is a set of ${wdkStep.displayType}s while Step <span class="new_step_num"></span> is a set of ${wdkQuestion.recordClass.displayName}s; these are disjoint sets</i></p> 
+                    <p><i>Set operations are not available because Step <span class="current_step_num"></span> is a set of ${wdkStep.displayType}s while Step <span class="new_step_num"></span> is a set of ${wdkQuestion.recordClass.displayName}s; these are disjoint sets</i></p> 
                 </c:when>
                 <c:otherwise>
                     <c:set var="nextStage" value="process_boolean" />
@@ -91,12 +91,12 @@ ${Question_Header}
 	<td>&nbsp;<span class="new_step_num"></span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="current_step_num"></span></td>
 
         </tr>
-	<tr style="${opaque}"><td colspan="15" style="text-align:center;"><hr><b style="font-size:120%">Or</b><hr></td></tr>
+	<tr style="${opaque}"><td colspan="15" style="text-align:center;"><b style="font-size:120%">Or</b></td></tr>
 
 	<tr>	
 	<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
         <td title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN"></td>
- 	<td  colspan="11" style="text-align:left;">&nbsp;Genomic regions for ${wdkStep.displayType}s in <span class="current_step_num"></span>&nbsp;<span style="font-size:120%;font-weight:bold">Overlap / Contain / Are contained within</span>&nbsp; genomic regions for ${wdkQuestion.recordClass.displayName}s in <span class="new_step_num"></span></td>
+ 	<td  colspan="11" style="text-align:left;">&nbsp;Genomic regions for ${wdkStep.displayType}s in Step <span class="current_step_num"></span>&nbsp;&nbsp;<span style="font-size:120%;font-weight:bold">Overlap</span>&nbsp; genomic regions for ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num"></span></td>
 
         </tr>
     </table>
