@@ -960,9 +960,8 @@ public class StepFactory {
         // Need to create strategy & then load it so that all AnswerValues
         // are created properly
         // Jerric - the imported strategy should always be unsaved.
-        Strategy strategy = createStrategy(user, latestStep, name, null, false,
+        return createStrategy(user, latestStep, name, null, false,
                 oldStrategy.getDescription(), false);
-        return loadStrategy(user, strategy.getStrategyId(), false);
     }
 
     Step importStep(User newUser, Step oldStep, Map<Integer, Integer> stepIdsMap)
@@ -1111,9 +1110,6 @@ public class StepFactory {
             resultSet = ps.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql.toString(),
                     "wdk-step-factory-load-strategy-by-signature", start);
-            System.out.println(sql);
-            System.out.println(strategySignature);
-            System.out.println(wdkModel.getProjectId());
             if (!resultSet.next())
                 throw new WdkUserException("The strategy " + strategySignature
                         + " does not exist");
@@ -1242,7 +1238,7 @@ public class StepFactory {
             String savedName, boolean saved, String description, boolean hidden)
             throws SQLException, WdkUserException, WdkModelException,
             JSONException, NoSuchAlgorithmException {
-        logger.debug("creating strategy, saved=" + saved);
+	logger.debug("creating strategy, saved=" + saved);
         int userId = user.getUserId();
 
         String userIdColumn = Utilities.COLUMN_USER_ID;
