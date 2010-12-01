@@ -351,8 +351,7 @@ function showNewSection(ele,sectionName,sectionNumber){
 		"font-weight":""
 	});
 	$(ele).css({
-		"background-color":"#DDDDDD",
-		"font-weight":"bold"
+		"background-color":"#DDDDDD"
 	});
 	$("#query_form table#sections-layout td#section-" + (sectionNumber-1) + " div").css("background-color","#FFFFFF");
 	$("#query_form table#sections-layout td#section-" + sectionNumber).replaceWith(sec);
