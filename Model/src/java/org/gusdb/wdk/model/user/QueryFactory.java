@@ -237,7 +237,7 @@ public class QueryFactory {
             ps.setString(1, paramChecksum);
             rs = ps.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql, start);
-            if (!rs.next()) return null;
+            if (!rs.next()) return paramChecksum;
 
             String clobValue = userPlatform.getClobData(rs, COLUMN_CLOB_VALUE);
             return clobValue;

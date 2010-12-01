@@ -82,10 +82,6 @@ public class User /* implements Serializable */{
     private Map<String, String> globalPreferences;
     private Map<String, String> projectPreferences;
 
-    // cache the history count in memory
-    private Integer stepCount;
-    private Integer strategyCount;
-
     // keep track in session , but don't serialize:
     // currently open strategies
     private transient ActiveStrategyFactory activeStrategyFactory;
@@ -469,7 +465,6 @@ public class User /* implements Serializable */{
 
         Step step = stepFactory.createStep(this, question, paramValues, filter,
                 pageStart, pageEnd, deleted, validate, assignedWeight);
-        if (stepCount != null) stepCount++;
         return step;
     }
 
@@ -499,7 +494,6 @@ public class User /* implements Serializable */{
             JSONException, NoSuchAlgorithmException {
         Strategy strategy = stepFactory.createStrategy(this, step, name,
                 savedName, saved, description, hidden);
-        if (strategyCount != null) strategyCount++;
 
         // set the view to this one
         String strategyKey = Integer.toString(strategy.getStrategyId());
@@ -593,7 +587,6 @@ public class User /* implements Serializable */{
         Map<Integer, Strategy> strategies = stepFactory.loadStrategies(this,
                 invalidStrategies);
 
-        strategyCount = strategies.size();
         return strategies;
     }
 
@@ -807,7 +800,6 @@ public class User /* implements Serializable */{
             SQLException, WdkModelException {
         stepFactory.deleteSteps(this, allProjects);
         cachedStep = null;
-        stepCount = null;
     }
 
     public void deleteInvalidSteps() throws WdkUserException,
@@ -828,7 +820,6 @@ public class User /* implements Serializable */{
         // decrement the history count
         if (cachedStep != null && cachedStep.getDisplayId() == displayId)
             cachedStep = null;
-        if (stepCount != null) stepCount--;
     }
 
     public void deleteStrategy(int strategyId) throws WdkUserException,
@@ -837,7 +828,6 @@ public class User /* implements Serializable */{
         int order = activeStrategyFactory.getOrder(strategyKey);
         if (order > 0) activeStrategyFactory.closeActiveStrategy(strategyKey);
         stepFactory.deleteStrategy(this, strategyId);
-        if (strategyCount != null) strategyCount--;
     }
 
     public void deleteStrategies() throws SQLException, WdkUserException,
@@ -850,25 +840,15 @@ public class User /* implements Serializable */{
             WdkUserException, WdkModelException {
         activeStrategyFactory.clear();
         stepFactory.deleteStrategies(this, allProjects);
-        strategyCount = 0;
     }
 
     public int getStepCount() throws WdkUserException, WdkModelException {
-        if (stepCount == null) {
-            stepCount = stepFactory.getStepCount(this);
-        }
-        return stepCount;
+        return stepFactory.getStepCount(this);
     }
 
     public int getStrategyCount() throws WdkUserException, SQLException,
             WdkModelException {
-        if (strategyCount == null)
-            strategyCount = stepFactory.getStrategyCount(this);
-        return strategyCount;
-    }
-
-    public void setStrategyCount(int strategyCount) {
-        this.strategyCount = strategyCount;
+        return stepFactory.getStrategyCount(this);
     }
 
     public void setProjectPreference(String prefName, String prefValue) {
@@ -1132,7 +1112,7 @@ public class User /* implements Serializable */{
         // + summaryName + "] for question [" + questionFullName
         // + "]");
         // }
-        
+
         List<String> validNames = new ArrayList<String>();
         for (String name : summaryNames) {
             if (attributes.containsKey(name)) validNames.add(name);
@@ -1242,7 +1222,6 @@ public class User /* implements Serializable */{
         int rootStepId = newStrategy.getLatestStepId();
         String strategyKey = Integer.toString(newStrategy.getStrategyId());
         if (newStrategy.isValid()) setViewResults(strategyKey, rootStepId, 0);
-        if (strategyCount != null) strategyCount++;
         return newStrategy;
     }
 
@@ -1419,7 +1398,6 @@ public class User /* implements Serializable */{
             throws NoSuchAlgorithmException, SQLException, WdkUserException,
             WdkModelException, JSONException {
         Strategy copy = stepFactory.copyStrategy(strategy);
-        if (strategyCount != null) strategyCount++;
         return copy;
     }
 
@@ -1427,7 +1405,6 @@ public class User /* implements Serializable */{
             throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
         Strategy copy = stepFactory.copyStrategy(strategy, stepId);
-        if (strategyCount != null) strategyCount++;
         return copy;
     }
 
