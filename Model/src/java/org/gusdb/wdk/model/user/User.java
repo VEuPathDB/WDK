@@ -1237,7 +1237,6 @@ public class User /* implements Serializable */{
             JSONException {
         Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy,
                 stepIdsMap);
-        newStrategy.update(true);
         // highlight the imported strategy
         int rootStepId = newStrategy.getLatestStepId();
         String strategyKey = Integer.toString(newStrategy.getStrategyId());
