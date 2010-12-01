@@ -66,7 +66,14 @@
 			}
 		});
 		$("#span_output").change(function(){
+			$(".span_output").text($("option:selected",this).text());
 			updateStepReferences();
+		});
+		$("#span_operation").change(function(){
+			$(".span_operation").text($("option:selected",this).text());
+		});
+		$("#span_strand").change(function(){
+			$(".span_strand").text($("option:selected",this).text());
 		});
 	}
 	function initOutputOptions(){
@@ -75,6 +82,8 @@
 		$("#span_output option[value='b']").text(
 			$("#span_b_type").val() + " from Step " + $("#span_b_num").text());
 		$("#span_output").change();
+		$("#span_operation").change();
+		$("#span_strand").change();
 	}
 	function updateStepReferences(){
 		var selectedOutput = $("#span_output").val();
@@ -441,7 +450,6 @@
 */	
 /*-------------------------------------------------------------------
  *Summary Sentence Code
- ---------------------------------------------------------------------*/
 
 var recordTypes = new Array();
 var operations = ["overlaps with","contains","is contained within"];
@@ -512,6 +520,4 @@ function drawSentence(){
 	$("div#sentence").html("<hr>" + sentence);	
 	animateChanges(words);
 }
-
-
-	
+ ---------------------------------------------------------------------*/
