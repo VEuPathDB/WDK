@@ -28,6 +28,7 @@
 		//Should find a way to eliminate this call.
 		updateStepNumberReferences(); //This gets called again later, by the wizard mechanism
 		initOutputOptions();
+		initShowHide($(".regionParams"));
 		prepCanvas();
 	//	prepSentence();
 //		prepDynamicSpans();
@@ -70,6 +71,9 @@
 			updateStepReferences();
 		});
 		$("#span_operation").change(function(){
+			var selectedOperation = $(this).val();
+			$(".operation-help .operation").attr("style","opacity:0.5;");
+			$(".operation-help .operation." + selectedOperation).removeAttr("style");
 			$(".span_operation").text($("option:selected",this).text());
 		});
 		$("#span_strand").change(function(){

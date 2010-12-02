@@ -312,6 +312,14 @@ td.operation {
 	height:24px;
 }
 
+.operation.SPAN.a_contain_b {
+	background-position:-28px -47px;
+}
+
+.operation.SPAN.b_contain_a {
+	background-position:-28px -83px;
+}
+
 .operation.MINUS {
 	border: 2px solid #FFFFFF;
 	height: 25px;
