@@ -9,7 +9,7 @@
 */	
 	var a = null;
 	var b = null;
-	var region_color = ["rgba(100,100,100,0.1)","rgba(0,128,0,0.1)"];
+	var region_color = ["rgba(100,100,200,0.5)","rgba(0,128,0,0.5)"];
 	function Diagram(name,ele){
 		this.name = name;
 		this.c = ele;
@@ -181,6 +181,7 @@
 				"border-top": "10px solid #f6f6f6",
 				"border-right": "20px solid rbga(255,0,0,1)",
 				"border-bottom": "10px solid #f6f6f6"
+			
 			});
 		}
 		if(x1 + x2 > 400){
@@ -197,6 +198,7 @@
 				"border-top": "10px solid #f6f6f6",
 				"border-left": "20px solid rbga(255,0,0,1)",
 				"border-bottom": "10px solid #f6f6f6"
+			
 			});
 		}
 		
@@ -212,23 +214,23 @@
 		});
 		if(b){
 			$(rect).css({
-				"border-width":"2px",
+			/*	"border-width":"2px",
 				"border-color":b,
-				"border-style":"solid"
+				"border-style":"solid" */
 			});
 		}else{
 			$(rect).css({
-				"border-top":"2px solid #000000",
-				"border-bottom":"none"
+			/*	"border-top":"2px solid #000000",
+				"border-bottom":"none"  */
 			});
 			if(c.right){
 				$(rect).css({
-					"border-right":"2px solid #000000"
+				//	"border-right":"2px solid #000000"
 				});
 			}
 			if(c.left){
 				$(rect).css({
-					"border-left":"2px solid #000000"
+				//	"border-left":"2px solid #000000"
 				});
 			}
 		}
@@ -241,21 +243,22 @@
 				"position":"relative",
 				"bottom":"-12px",
 				"left":"-12px"
-			});
+				});
 			$(stop).css({
 				"display":"inline",
 				"position":"relative",
 				"bottom":"-12px",
 				"left":(x2 - 35)
-			});
+				});
 			if(b){
-				$(start).html("begin").css({"color":b, "bottom":"-49px"});
-				$(stop).html("end").css({"color":b, "bottom":"-49px"});
+				$(start).html("begin").css({"color":"white", "bottom":"-49px"});
+				$(stop).html("end").css({"color":"white", "bottom":"-49px"});
 			}else{
 				$(start).html("start");
 				$(stop).html("stop");
 			}
-			$(rect).append(start).append(stop);
+			
+			$(rect).append(start).append(stop);  
 		}
 		cxt.append(rect);
 		
@@ -297,7 +300,7 @@
 		has_sides.right = true;
 		if(feat.loc.x < 0) {feat.loc.x = 0; has_sides.left = false;}
 		if(feat.loc.x + feat.width > dia.width) {feat.width = dia.width - feat.loc.x - 1;has_sides.right = false;}
-		drawRect(cxt,feat.loc.x,feat.loc.y,feat.width,feat.height,"rgba(255,255,255,1.0)", false, has_sides);
+		drawRect(cxt,feat.loc.x,feat.loc.y,feat.width,feat.height,"rgba(100,100,100,1.0)", false, has_sides);
 		//drawFeatureText(dia);
 	}
 	function drawFeatureText(dia){
@@ -334,9 +337,9 @@
 		
 		var botPad = 25;
 		feature.width = l / s;
-		feature.height = 20;
+	//	feature.height = 20;
 		var dx1 = center - feature.width/2;
-		var dy1 = dia.height - (botPad + feature.height);
+		var dy1 = dia.height - (botPad + 10);  //feature.height);
 		feature.loc.x = dx1;
 		feature.loc.y = dy1;
 		//if(feature.loc.x + feature.width > dia.width) feature.width = dia.width - feature.loc.x;
@@ -364,7 +367,7 @@
 		var es = $("select[name*='span_end_direction_"+dn+"']")[i].value;//document.getElementsByName('downstreamSign')[i].value;
 		var eo = parseInt($("input[name*='span_end_offset_"+dn+"']")[i].value);//parseInt(document.getElementsByName('downstreamOffset')[i].value);
 		dia.singlepoint = Single(dia,ba,bs,bo,ea,es,eo);
-		region.height = 45;
+		region.height = 3;
 		region.width = feature.length / scale;
 		var vs = (ba == "start") ? feature.loc.x : feature.loc.x + region.width;
 		var ve = (ea == "start") ? feature.loc.x : feature.loc.x + region.width;
