@@ -127,7 +127,7 @@ function initShowHide(details){
         // register the click event
         var name = $(this).attr("name") + "_details";
         var expire = 365;   // in days
-        $(this).find(".group-handle").click(function() {
+        $(this).find(".group-handle").unbind('click').click(function() {
             var handle = this;
             var path = handle.src.substr(0, handle.src.lastIndexOf("/"));
             var detail = $(this).parents(".param-group").children(".group-detail");
