@@ -114,6 +114,7 @@
  				contains.val(containedVal);
 				contained.val(containsVal);
 				$("#span_operation").change();
+				initShowHide($(".regionParams"));
 				attachHandlers(); // Switching contents seems to disable the handlers, need to reattach them
 			}
 		}
