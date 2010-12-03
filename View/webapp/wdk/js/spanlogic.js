@@ -90,23 +90,30 @@
 		$("#span_strand").change();
 	}
 	function updateStepReferences(){
-		var selectedOutput = $("#span_output").val();
-		var selectedType = $("#span_" + selectedOutput + "_type").val();
-		var selectedNum = $("#span_" + selectedOutput + "_num").text();
-		if (selectedType) {
-			var comparison = $("#span_output option[value!='" + selectedOutput + "']").val();
+		var output = $("#span_output").val();
+		var outputType = $("#span_" + output + "_type").val();
+		var outputNum = $("#span_" + output + "_num").text();
+		if (outputType) {
+			var comparison = $("#span_output option[value!='" + output + "']").val();
 			var comparisonType = $("#span_" + comparison + "_type").val();
 			var comparisonNum = $("#span_" + comparison + "_num").text();
 			$(".comparison_type").text(comparisonType);
 			$(".comparison_num").text(comparisonNum);
 			// Swap the output and comparison groups if needed
-			if ($("#outputGroup #group_" + selectedOutput).length === 0) {
-				$(".outputRegion").removeClass("region_"+comparison).addClass("region_"+selectedOutput);
-				$(".comparisonRegion").removeClass("region_"+selectedOutput).addClass("region_"+comparison);
+			if ($("#outputGroup #group_" + output).length === 0) {
+				$(".outputRegion").removeClass("region_"+comparison).addClass("region_"+output);
+				$(".comparisonRegion").removeClass("region_"+output).addClass("region_"+comparison);
 				var comparisonGroup = $("#outputGroup .regionParams");
 				$("#outputGroup").html($("#comparisonGroup .regionParams"));
 				$("#comparisonGroup").html(comparisonGroup);
 				updateRegionLabels();
+				var contains = $("#span_operation option[value='" + output + "_contain_" + comparison + "']");
+				var contained = $("#span_operation option[value='" + comparison + "_contain_" + output + "']");
+				var containsVal = contains.val();
+				var containedVal = contained.val();
+ 				contains.val(containedVal);
+				contained.val(containsVal);
+				$("#span_operation").change();
 				attachHandlers(); // Switching contents seems to disable the handlers, need to reattach them
 			}
 		}
