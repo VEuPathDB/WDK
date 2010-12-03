@@ -411,7 +411,9 @@ public abstract class Param extends WdkModelBase {
         // decompress the value
         String checksum = value.substring(
                 Utilities.PARAM_COMPRESSE_PREFIX.length()).trim();
-        return queryFactory.getClobValue(checksum);
+        String decompressed = queryFactory.getClobValue(checksum);
+        if (decompressed != null) value = decompressed;
+        return value;
     }
 
     public JSONObject getJSONContent(boolean extra) throws JSONException {
