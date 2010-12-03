@@ -1245,15 +1245,26 @@ public class User /* implements Serializable */{
         return newStrategy;
     }
 
-    public Strategy[] getActiveStrategies() throws WdkUserException,
-            WdkModelException, JSONException, SQLException,
-            NoSuchAlgorithmException {
+    public Strategy[] getActiveStrategies() throws WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
         int[] ids = activeStrategyFactory.getRootStrategies();
-        Strategy[] strategies = new Strategy[ids.length];
-        for (int i = 0; i < ids.length; i++) {
-            strategies[i] = getStrategy(ids[i]);
+        List<Strategy> strategies = new ArrayList<Strategy>();
+        for (int id : ids) {
+            try {
+                Strategy strategy = getStrategy(id);
+                strategies.add(strategy);
+            } catch (WdkUserException ex) {
+                // something wrong with loading a strat, probably the strategy
+                // doesn't exist anymore
+                logger.warn("something wrong with loading a strat, probably "
+                        + "the strategy doesn't exist anymore. Please "
+                        + "investigate:\nUser #" + userId
+                        + ", strategy display Id: " + id + "\nException: " + ex);
+            }
         }
-        return strategies;
+        Strategy[] array = new Strategy[strategies.size()];
+        strategies.toArray(array);
+        return array;
     }
 
     public void addActiveStrategy(String strategyKey)
