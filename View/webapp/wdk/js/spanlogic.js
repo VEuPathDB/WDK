@@ -28,7 +28,6 @@
 		//Should find a way to eliminate this call.
 		updateStepNumberReferences(); //This gets called again later, by the wizard mechanism
 		initOutputOptions();
-		initShowHide($(".regionParams"));
 		prepCanvas();
 	//	prepSentence();
 //		prepDynamicSpans();
@@ -72,7 +71,7 @@
 		});
 		$("#span_operation").change(function(){
 			var selectedOperation = $(this).val();
-			$(".operation-help .operation").attr("style","opacity:0.5;");
+			$(".operation-help .operation").attr("style","opacity:0.3;filters:alpha(opacity=30);");
 			$(".operation-help .operation." + selectedOperation).removeAttr("style");
 			$(".span_operation").text($("option:selected",this).text());
 		});
@@ -114,7 +113,6 @@
  				contains.val(containedVal);
 				contained.val(containsVal);
 				$("#span_operation").change();
-				initShowHide($(".regionParams"));
 				attachHandlers(); // Switching contents seems to disable the handlers, need to reattach them
 			}
 		}
