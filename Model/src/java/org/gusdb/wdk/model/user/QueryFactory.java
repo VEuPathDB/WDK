@@ -11,6 +11,7 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -25,8 +26,7 @@ public class QueryFactory {
     private static final String COLUMN_CLOB_CHECKSUM = "clob_checksum";
     private static final String COLUMN_CLOB_VALUE = "clob_value";
 
-    // private static final Logger logger = Logger.getLogger( QueryFactory.class
-    // );
+    private static final Logger logger = Logger.getLogger( QueryFactory.class);
 
     private WdkModel wdkModel;
     private String wdkSchema;
@@ -204,10 +204,15 @@ public class QueryFactory {
         // make the checksum
         String checksum = Utilities.encrypt(paramValue);
 
+        logger.debug("param value to be compressed: '" + paramValue + "'");
+        logger.debug("param value checksum: " + checksum);
+
         PreparedStatement psInsert = null;
         try {
             // get the clob with the new checksum
             if (null != getClobValue(checksum)) return checksum;
+
+            logger.debug("checksum " + checksum + " doesn't exist, insert into clob table.");
 
             // clob value does not exist, add one
             String sql = "INSERT INTO" + " " + wdkSchema + TABLE_CLOB_VALUES
