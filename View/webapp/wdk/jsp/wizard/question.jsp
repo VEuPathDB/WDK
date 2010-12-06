@@ -57,7 +57,7 @@ ${Question_Header}
                 <c:when test="${allowBoolean == false}">
                     <c:set var="nextStage" value="span_from_question" />
                     <c:set var="disabled" value="DISABLED"/>
-		    <c:set var="opaque" value="opacity:0.5;filters:alpha(opacity=40)"/>
+		    <c:set var="opaque" value="opacity:0.3;filters:alpha(opacity=30);"/>
                     <p><i>Set operations are not available because Step <span class="current_step_num"></span> is a set of ${wdkStep.displayType}s while Step <span class="new_step_num"></span> is a set of ${wdkQuestion.recordClass.displayName}s; these are disjoint sets</i></p> 
                 </c:when>
                 <c:otherwise>
