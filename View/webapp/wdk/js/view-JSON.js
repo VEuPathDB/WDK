@@ -140,7 +140,10 @@ function multiStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 	var filterImg = "";
 	var bool_link = "";
 	var details_link = "showDetails(this)";
-	if(modelstep.isSpan) details_link = "void(0)";
+	if(modelstep.isSpan) {
+		details_link = "void(0)";
+		jsonstep.operation = "SPAN " + getSpanOperation(jsonstep.params);
+	}
 	if(jsonstep.isValid) bool_link = "NewResults(" + sid + "," + modelstep.frontId + ", true)";
 	if(jsonstep.filtered) filterImg = "<span class='filterImg'><img src='wdk/images/filter.gif' height='10px' width='10px'/></span>";
 	boolinner = ""+
@@ -166,9 +169,6 @@ function multiStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 		}
 	boolDiv = document.createElement('div');
 	$(boolDiv).attr("id","step_" + modelstep.frontId).addClass(booleanClasses + jsonstep.operation).html(boolinner).css({left: offset(modelstep) + "px", 'z-index' : zIndex});
-        
-        // use span icons instead if the step is a span step
-        if (modelstep.isSpan) $(boolDiv).attr("type", "span");
 
 	$(".crumb_details", boolDiv).replaceWith(createDetails(modelstep, prevjsonstep, jsonstep, sid));
 	zIndex++; // DO NOT DELETE this or previous line, needed for correct display in IE7.
@@ -693,4 +693,13 @@ function reviseInvalidSteps(ele){
 	var iv_id = $(ele).parent().attr("id").split("_");
 	$("div#diagram_" + iv_id[0] + " div#step_" + iv_id[1] + "_sub h3 a#stepId_" + iv_id[1]).click();
 	$(ele).parent().parent().find("div#invalid-step-text").remove();
+}
+function getSpanOperation(params) {
+	var op = '';
+	$(params).each(function() {
+		if (this.name == 'span_operation') {
+			op = this.internal;
+		}
+	});
+	return op;
 }

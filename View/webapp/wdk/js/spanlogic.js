@@ -71,8 +71,7 @@
 		});
 		$("#span_operation").change(function(){
 			var selectedOperation = $(this).val();
-			$(".operation-help .operation").attr("style","opacity:0.3;filters:alpha(opacity=30);");
-			$(".operation-help .operation." + selectedOperation).removeAttr("style");
+			$(".operation-help div").removeAttr('class').addClass("operation SPAN " + selectedOperation);
 			$(".span_operation").text($("option:selected",this).text());
 		});
 		$("#span_strand").change(function(){

@@ -282,6 +282,7 @@ div.sub_diagram {
 }
 	
 .operation {
+        background-repeat: no-repeat;
 	height: 18px;
 	text-align: center;
 	margin-top: -4px;
@@ -303,21 +304,23 @@ td.operation, div.operation, li.operation {
 td.operation {
 	height: 18px;
 	width: 44px;
-	background-repeat: no-repeat;
 }
 
 .operation.SPAN {
 	background-image:url("../images/operationSpanIcons.gif");
-	background-position:-36px -11px;
 	height:24px;
 }
 
+.operation.SPAN.overlap {
+	background-position:-32px -6px;
+}
+
 .operation.SPAN.a_contain_b {
-	background-position:-27px -47px;
+	background-position:-26px -42px;
 }
 
 .operation.SPAN.b_contain_a {
-	background-position:-26px -89px;
+	background-position:-26px -85px;
 }
 
 .operation.MINUS {
@@ -370,6 +373,18 @@ td.operation {
 	
 .diagram div.operation.RMINUS {
 	background-position: 0px -119px;
+}
+	
+.diagram div.operation.SPAN.overlap {
+	background-position: -5px -10px;
+}
+	
+.diagram div.operation.SPAN.a_contain_b {
+	background-position: 0px -48px;
+}
+	
+.diagram div.operation.SPAN.b_contain_a {
+	background-position: 0px -88px;
 }
 
 a.operation img {
