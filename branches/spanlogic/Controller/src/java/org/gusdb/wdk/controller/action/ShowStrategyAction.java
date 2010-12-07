@@ -424,6 +424,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
                             rawValue = ((EnumParamBean) param).getRawDisplayValue();
                         } else rawValue = param.getBriefRawValue();
                         jsParam.put("value", rawValue);
+			jsParam.put("internal",param.getRawValue());
                     } catch (Exception ex) {
                         throw new WdkModelException(ex);
                     }
