@@ -251,21 +251,23 @@
 			$(start).css({
 				"display":"inline",
 				"position":"relative",
+				"color":"white",
 				"bottom":"-12px",
 				"left":"-12px"
 				});
 			$(stop).css({
 				"display":"inline",
 				"position":"relative",
-				"bottom":"-12px",
-				"left":(x2 - 35)
+			//	"color":"white",
+			//	"bottom":"-12px",
+				"left":(x2 - 25)   //was  35  for stop
 				});
 			if(b){
 				$(start).html("begin").css({"color":"white", "bottom":"-49px"});
 				$(stop).html("end").css({"color":"white", "bottom":"-49px"});
 			}else{
 				$(start).html("start");
-				$(stop).html("stop");
+			//	$(stop).html("stop");
 			}
 			
 			$(rect).append(start).append(stop);  
