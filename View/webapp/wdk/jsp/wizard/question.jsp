@@ -95,7 +95,7 @@ ${Question_Header}
 
 	<tr>	
 	<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
-        <td title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN"></td>
+        <td title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN overlap"></td>
  	<td  colspan="11" style="text-align:left;">&nbsp;Genomic regions for ${wdkStep.displayType}s in Step <span class="current_step_num"></span>&nbsp;&nbsp;<span style="font-size:120%;font-weight:bold">Overlap</span>&nbsp; Genomic regions for ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num"></span></td>
 
         </tr>
