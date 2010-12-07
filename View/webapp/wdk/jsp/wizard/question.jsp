@@ -91,12 +91,12 @@ ${Question_Header}
 	<td>&nbsp;<span class="new_step_num"></span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="current_step_num"></span></td>
 
         </tr>
-	<tr style="${opaque}"><td colspan="15" style="text-align:center;"><b style="font-size:120%">Or</b></td></tr>
+	<tr style="${opaque}"><td colspan="15" style="text-align:center;font-size:120%;font-weight:bold;padding:10px;">Or</td></tr>
 
 	<tr>	
 	<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
         <td title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN"></td>
- 	<td  colspan="11" style="text-align:left;">&nbsp;Genomic regions for ${wdkStep.displayType}s in Step <span class="current_step_num"></span>&nbsp;&nbsp;<span style="font-size:120%;font-weight:bold">Overlap</span>&nbsp; genomic regions for ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num"></span></td>
+ 	<td  colspan="11" style="text-align:left;">&nbsp;Genomic regions for ${wdkStep.displayType}s in Step <span class="current_step_num"></span>&nbsp;&nbsp;<span style="font-size:120%;font-weight:bold">Overlap</span>&nbsp; Genomic regions for ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num"></span></td>
 
         </tr>
     </table>
