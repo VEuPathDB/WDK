@@ -264,8 +264,8 @@ public class StepValidator extends BaseCLI {
                 "wdk-delete-invalid-step-params");
     }
 
-    private void dropDanglingSteps(WdkModel wdkModel)
-            throws WdkUserException, WdkModelException, SQLException {
+    private void dropDanglingSteps(WdkModel wdkModel) throws WdkUserException,
+            WdkModelException, SQLException {
         logger.info("drop dangling steps table and related resources...");
 
         String danglingTable = "wdk_dangle_steps";
