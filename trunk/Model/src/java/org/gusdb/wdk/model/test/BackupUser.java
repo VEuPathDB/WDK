@@ -123,7 +123,8 @@ public class BackupUser extends BaseCLI {
 
         String filterClause = "user_id IN (SELECT user_id FROM " + userSchema
                 + "users WHERE is_guest = 1 AND register_time < to_date('"
-                + cutoffDate + "', 'yyyy/mm/dd'))";
+                + cutoffDate + "', 'yyyy/mm/dd')"
+                + " MINUS SELECT user_id FROM " + backupSchema + "users)";
 
         // copy tables from user schema
         copyUserRows(filterClause, "users", userColumns);
@@ -285,7 +286,8 @@ public class BackupUser extends BaseCLI {
                 "wdk-backup-delete-answers");
     }
 
-    private void deleteDatasetIndexRows() throws WdkUserException, WdkModelException, SQLException {
+    private void deleteDatasetIndexRows() throws WdkUserException,
+            WdkModelException, SQLException {
         logger.debug("deleting dataset index rows...");
 
         StringBuilder builder = new StringBuilder();
@@ -304,7 +306,8 @@ public class BackupUser extends BaseCLI {
                 "wdk-backup-delete-dataset-indices");
     }
 
-    private void deleteDatasetValueRows() throws WdkUserException, WdkModelException, SQLException {
+    private void deleteDatasetValueRows() throws WdkUserException,
+            WdkModelException, SQLException {
         logger.debug("deleting dataset value rows...");
 
         StringBuilder builder = new StringBuilder();
