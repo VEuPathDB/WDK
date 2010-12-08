@@ -16,9 +16,6 @@
 <c:set var="strategyId" value="${requestScope.strategy}" />
 <c:set var="action" value="${requestScope.action}" />
 
-<%-- the type is of the previous step, that is the input type of the new step  
-<c:set var="recordClass" value="${model.recordClassMap[rcName]}" />--%>
-
 <c:set var="partialUrl" value="wizard.do?strategy=${strategyId}&step=${step.stepId}&action=${action}" />
 
 <c:if test="${isAdd == 'false'}">
@@ -51,9 +48,7 @@
         <div id="sections_data">
         </div>
 
-
     <wdk:addStepFooter/>
-        
 
 <%-- insert/add basket section --%>
         <div class="original" id="sl_baskets" style="display:none">
@@ -102,16 +97,8 @@ ${rcDisplay} basket</a>
         <div class="original" id="sl_strategies" style="display:none">
             <ul class="menu_section">
                 <li class="category" onclick="callWizard(null,this,'sl_open',3)">Opened Strategies</li>
-                <c:set var="cls" value=""/>
-                <c:set var="cats" value=""/>
-                <c:set var="count_s" value=""/>
-                <c:forEach items="${model.websiteRootCategories}" var="rcs">
-                    <c:set var="count_s" value="${count_s + fn:length(user.savedStrategiesByCategory[rcs.value.name])}"/>
-                </c:forEach>
-                <c:if test="${count_s > 0}">
-                    <c:set var="cls" value="showNewSection(this,'sl_saved',3)"/>
-                    <c:set var="cats" value="category"/>
-                </c:if>
+                <c:set var="cls" value="showNewSection(this,'sl_saved',3)"/>
+                <c:set var="cats" value="category"/>
                 <li class="${cats}" onclick="${cls}">Saved Strategies</li>
                 <c:set var="clr" value=""/>
                 <c:set var="catr" value=""/>
@@ -146,20 +133,24 @@ ${rcDisplay} basket</a>
                 <!-- Display the Saved Strategies -->
                 
             <div class="original" id="sl_saved" style="display:none">
+                    <c:set var="savedStratCount" value="0"/>
                     <ul class="menu_section">
                         <c:forEach items="${model.websiteRootCategories}" var="rcs">
-                            <c:forEach items="${user.savedStrategiesByCategory[rcs.value.name]}" var="storedStrategy">
+                            <c:set var="savedStrategies" value="${user.savedStrategiesByCategory[rcs.value.name]}"/>
+                            <c:set var="savedStratCount" value="${savedStratCount + fn:length(savedStrategies)}" />
+                            <c:forEach items="${savedStrategies}" var="storedStrategy">
                                 <c:set var="displayName" value="${storedStrategy.name}" />
                                 <c:if test="${fn:length(displayName) > 30}">
                                     <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
                                 </c:if>
                                 <li>
                                   <a href="javascript:void(0)" onclick="callWizard('${partialUrl}&insertStrategy=${storedStrategy.strategyId}&stage=strategy',null,null,null,'next')">
-                                    ${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if>
+                                    ${displayName}
                                   </a>
                                 </li>
                             </c:forEach>
                         </c:forEach>
+                        <c:if test="${savedStratCount == 0}"><li>No saved strategies available.</li></c:if>
                     </ul>
                 </div>
                     <!-- Display the recent Strategies (Opened  viewed in the last 24 hours) -->
@@ -235,8 +226,6 @@ ${rcDisplay} basket</a>
                 </div>
             </c:forEach>
         </c:forEach>
-        
-    </div>
 
  
 <script type="text/javascript">
@@ -253,4 +242,3 @@ ${rcDisplay} basket</a>
    callWizard(null,ele,'sl_'+ sdName + 'RecordClasses_' + sdName + 'RecordClass' ,3);
    // $("td#section-2 ul.menu_section:first > li:first").click();
 </script>
-
