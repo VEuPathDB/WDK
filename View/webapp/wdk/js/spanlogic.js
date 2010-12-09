@@ -15,6 +15,7 @@
 		this.name = name;
 		this.c = ele;
 		this.cxt = $(this.c);//this.c.getContext('2d');
+		this.type = $("#span_" + name + "_type").val();
 		this.scale = null; // Scale is an integer for number of nucleotides per 1px.
 		this.feature = null; // deafult length of the feature.
 		this.region = null;
@@ -176,46 +177,9 @@
 		b = new Diagram("b",document.getElementById('scale_b'));
 		prepDynamicSpans(b, 1);
 	}
-	function drawRect(cxt,x1,y1,x2,y2,a,b,c){
-		//cxt.fillStyle = a;
-		//cxt.fillRect(x1,y1,x2,y2);
-	/*	right = left = null;
-		if(x1 < 0){
-			x1 = 20;
-			left = document.createElement("div");
-			$(left).css({
-				"position":"relative",
-				"top":y1,
-				"left":0,
-				"font-size":"0px",
-				"line-height":"0%",
-				"width":"0px",
-				"border-top": "10px solid #f6f6f6",
-				"border-right": "20px solid rbga(255,0,0,1)",
-				"border-bottom": "10px solid #f6f6f6"
-			
-			});
-		}
-		if(x1 + x2 > 400){
-			x2 = x1 + x2 - 20;
-			if(x2 > 400) x2 = 380;
-			right = document.createElement("div");
-			$(right).css({
-				"position":"relative",
-				"top":y1,
-				"right":0,
-				"font-size":"0px",
-				"line-height":"0%",
-				"width":"0px",
-				"border-top": "10px solid #f6f6f6",
-				"border-left": "20px solid rbga(255,0,0,1)",
-				"border-bottom": "10px solid #f6f6f6"
-			
-			});
-		}
-		
-	*/	
+	function drawRect(cxt,x1,y1,x2,y2,a,b,diaLength,type){	
 		rect = document.createElement("div");
+		if (x2 < 1) x2 *= 100;
 		$(rect).css({
 			"position":"relative",
 			"top":y1,
@@ -223,31 +187,8 @@
 			"width":x2,
 			"height":y2,
 			"background-color":a,
-		});
-/*		if(b){
-			$(rect).css({
-				"border-width":"2px",
-				"border-color":b,
-				"border-style":"solid" 
-			});
-		}else{
-			$(rect).css({
-				"border-top":"2px solid #000000",
-				"border-bottom":"none"  
-			});
-			if(c.right){
-				$(rect).css({
-					"border-right":"2px solid #000000"
-				});
-			}
-			if(c.left){
-				$(rect).css({
-					"border-left":"2px solid #000000"
-				});
-			}
-		}
-*/		
-		if(x2 > 30){
+		});	
+		if(x2 > 30 || (x2 > 0 && diaLength == 1)){
 			start = document.createElement("div");
 			stop = document.createElement("div");
 			$(start).css({
@@ -260,41 +201,24 @@
 				});
 			$(stop).css({
 				"display":"inline",
-			//	"position":"relative",
 				"position":"absolute",
-			//	"bottom":"-12px",
 				"left":(x2 - 12)   //was  35  for stop
 				});
 			if(b){
-			//	$(start).html("begin").css({"color":"white", "bottom":"-49px"});
-			//	$(stop).html("end").css({"color":"white", "bottom":"-49px"});
-				$(start).css({"background-color":"#0000EE","top":"-6px","height":"15px","width":"3px","left":"-2px"});
-				$(stop).css({"background-color":"#0000EE","top":"-6px","height":"15px","width":"3px","left":x2});
+				$(start).css({"background-color":b,"top":"-6px","height":"15px","width":"3px","left":"-2px"});
+				$(stop).css({"background-color":b,"top":"-6px","height":"15px","width":"3px","left":x2});
 			}else{
-				$(start).html("example: 2000 bp feature").css({"font-size":"90%","width":"200px"});
-			//	$(start).html("start"); 
-			//	$(stop).html("stop");
-				$(stop).append('<img height=8" src="/assets/images/arrow5.png" />');
+				$(start).html(type);
+				$(start).css({"font-size":"90%","white-space":"nowrap"});
+				if (diaLength > 1)
+					$(stop).append('<img height="8" src="/assets/images/arrow5.png" />');
 			}
 			
 			$(rect).append(start).append(stop);  
-		} 
+		}
 
 		cxt.append(rect);
-		
-	//	if(left != null) cxt.append(left);
-	//	if(right != null) cxt.append(right);
 	}
-	/*function drawLine(cxt,x1,y1,x2,y2,a, o){
-		cxt.strokeStyle = a;
-		cxt.lineWidth = "1";
-		cxt.beginPath();
-		cxt.moveTo(x1,y1);
-		cxt.lineTo(x1+x2,y1+y2);
-		cxt.closePath();
-		cxt.stroke();
-	
-	}*/
     // unit: base pairs
 	function prepDynamicSpans(dia, i){
 		w = dia.cxt.css("width");
@@ -304,7 +228,8 @@
 		dia.center = dia.width / 2;//dia.c.width / 2;
 		dia.scale = 10;
 		dia.feature = new Object();
-		dia.feature.length = 2000;
+		if (dia.name == "a") dia.feature.length = feature_length_a;
+		else dia.feature.length = feature_length_b;
 		dia.feature.loc = new Object();
 		dia.region = new Object();
 		setFeature(dia);
@@ -315,12 +240,9 @@
 	function drawFeature(dia){
 		feat = dia.feature;
 		cxt = dia.cxt;
-		has_sides = new Object();
-		has_sides.left = true;
-		has_sides.right = true;
 		if(feat.loc.x < 0) {feat.loc.x = 0; has_sides.left = false;}
 		if(feat.loc.x + feat.width > dia.width) {feat.width = dia.width - feat.loc.x - 1;has_sides.right = false;}
-		drawRect(cxt,feat.loc.x,feat.loc.y,feat.width,feat.height,"rgba(100,100,100,1.0)", false, has_sides);
+		drawRect(cxt,feat.loc.x,feat.loc.y,feat.width,feat.height,"rgba(100,100,100,1.0)", false,dia.feature.length,dia.type);
 		//drawFeatureText(dia);
 	}
 	function drawFeatureText(dia){
@@ -369,7 +291,7 @@
 		i = (dia.name == "a") ? 0 : 1; 
 		cxt = dia.cxt;
 		region = dia.region;
-		drawRect(cxt,region.start.x,region.start.y,region.width,region.height,region_color[i],region_color[i]);
+		drawRect(cxt,region.start.x,region.start.y,region.width,region.height,region_color[i],region_color[i],dia.feature.length);
 		//drawLine(cxt,region.start.x, region.start.y, 0, region.height, "rgba(0,0,0,1)");
 		//drawLine(cxt,region.end.x, region.end.y, 0, region.height, "rgba(0,0,0,1)");
 		//drawLine(cxt,region.start.x, region.start.y + region.height/2, region.width, 0, "rgba(0,0,0,1)");
@@ -389,7 +311,7 @@
 		var eo = parseInt($("input[name*='span_end_offset_"+dn+"']")[i].value);//parseInt(document.getElementsByName('downstreamOffset')[i].value);
 		dia.singlepoint = Single(dia,ba,bs,bo,ea,es,eo);
 		region.height = 3;  //45
-		region.width = feature.length / scale;
+		region.width = (feature.length > 1) ? feature.length / scale : 10;
 		var vs = (ba == "start") ? feature.loc.x : feature.loc.x + region.width;
 		var ve = (ea == "start") ? feature.loc.x : feature.loc.x + region.width;
 		vs = (bs == '+') ? vs + (bo/scale) : vs - (bo/scale); 
