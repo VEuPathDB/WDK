@@ -9,7 +9,8 @@
 */	
 	var a = null;
 	var b = null;
-	var region_color = ["rgba(100,100,200,0.5)","rgba(0,128,0,0.5)"];
+//	var region_color = ["rgba(100,100,200,0.5)","rgba(0,128,0,0.5)"];
+	var region_color = ["rgba(0,0,238,1)","rgba(0,153,51,1)"];
 	function Diagram(name,ele){
 		this.name = name;
 		this.c = ele;
@@ -223,56 +224,66 @@
 			"height":y2,
 			"background-color":a,
 		});
-		if(b){
+/*		if(b){
 			$(rect).css({
-			/*	"border-width":"2px",
+				"border-width":"2px",
 				"border-color":b,
-				"border-style":"solid" */
+				"border-style":"solid" 
 			});
 		}else{
 			$(rect).css({
-			/*	"border-top":"2px solid #000000",
-				"border-bottom":"none"  */
+				"border-top":"2px solid #000000",
+				"border-bottom":"none"  
 			});
 			if(c.right){
 				$(rect).css({
-				//	"border-right":"2px solid #000000"
+					"border-right":"2px solid #000000"
 				});
 			}
 			if(c.left){
 				$(rect).css({
-				//	"border-left":"2px solid #000000"
+					"border-left":"2px solid #000000"
 				});
 			}
 		}
-		
+*/		
 		if(x2 > 30){
 			start = document.createElement("div");
 			stop = document.createElement("div");
 			$(start).css({
 				"display":"inline",
-				"position":"relative",
-				"color":"white",
+			//	"position":"relative",
+				"position":"absolute",
+			//	"color":"white",
 				"bottom":"-12px",
-				"left":"-12px"
+			//	"left":"-12px"
+				"left":"15px"
 				});
 			$(stop).css({
 				"display":"inline",
-				"position":"relative",
+			//	"position":"relative",
+				"position":"absolute",
 			//	"color":"white",
 			//	"bottom":"-12px",
-				"left":(x2 - 25)   //was  35  for stop
+			//	"top":"-2px",
+			//	"left":(x2 - 49)   //was  35  for stop
+				"left":(x2 - 12)   //was  35  for stop
 				});
 			if(b){
-				$(start).html("begin").css({"color":"white", "bottom":"-49px"});
-				$(stop).html("end").css({"color":"white", "bottom":"-49px"});
+			//	$(start).html("begin").css({"color":"white", "bottom":"-49px"});
+			//	$(stop).html("end").css({"color":"white", "bottom":"-49px"});
+				$(start).css({"bottom":"-49px"});
+				$(stop).css({"bottom":"-49px"});
 			}else{
-				$(start).html("start");
+				$(start).html("example: 2000 bp feature").css({"width":"200px"});
+			//	$(start).html("start"); 
 			//	$(stop).html("stop");
+				$(stop).append('<img height=8" src="/assets/images/arrow5.png" />');
 			}
 			
 			$(rect).append(start).append(stop);  
-		}
+		} 
+
 		cxt.append(rect);
 		
 	//	if(left != null) cxt.append(left);
@@ -351,8 +362,9 @@
 		var botPad = 25;
 		feature.width = l / s;
 	//	feature.height = 20;
+		feature.height = 7;
 		var dx1 = center - feature.width/2;
-		var dy1 = dia.height - (botPad + 10);  //feature.height);
+		var dy1 = dia.height - (botPad + feature.height);
 		feature.loc.x = dx1;
 		feature.loc.y = dy1;
 		//if(feature.loc.x + feature.width > dia.width) feature.width = dia.width - feature.loc.x;
@@ -380,7 +392,7 @@
 		var es = $("select[name*='span_end_direction_"+dn+"']")[i].value;//document.getElementsByName('downstreamSign')[i].value;
 		var eo = parseInt($("input[name*='span_end_offset_"+dn+"']")[i].value);//parseInt(document.getElementsByName('downstreamOffset')[i].value);
 		dia.singlepoint = Single(dia,ba,bs,bo,ea,es,eo);
-		region.height = 3;
+		region.height = 3;  //45
 		region.width = feature.length / scale;
 		var vs = (ba == "start") ? feature.loc.x : feature.loc.x + region.width;
 		var ve = (ea == "start") ? feature.loc.x : feature.loc.x + region.width;
