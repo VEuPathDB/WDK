@@ -254,7 +254,6 @@
 				"display":"inline",
 			//	"position":"relative",
 				"position":"absolute",
-			//	"color":"white",
 				"bottom":"-12px",
 			//	"left":"-12px"
 				"left":"15px"
@@ -263,17 +262,14 @@
 				"display":"inline",
 			//	"position":"relative",
 				"position":"absolute",
-			//	"color":"white",
 			//	"bottom":"-12px",
-			//	"top":"-2px",
-			//	"left":(x2 - 49)   //was  35  for stop
 				"left":(x2 - 12)   //was  35  for stop
 				});
 			if(b){
 			//	$(start).html("begin").css({"color":"white", "bottom":"-49px"});
 			//	$(stop).html("end").css({"color":"white", "bottom":"-49px"});
-				$(start).css({"bottom":"-49px"});
-				$(stop).css({"bottom":"-49px"});
+				$(start).css({"background-color":"#0000EE","top":"-6px","height":"15px","width":"3px","left":"-2px"});
+				$(stop).css({"background-color":"#0000EE","top":"-6px","height":"15px","width":"3px","left":x2});
 			}else{
 				$(start).html("example: 2000 bp feature").css({"font-size":"90%","width":"200px"});
 			//	$(start).html("start"); 
