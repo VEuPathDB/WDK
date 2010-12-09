@@ -275,7 +275,7 @@
 				$(start).css({"bottom":"-49px"});
 				$(stop).css({"bottom":"-49px"});
 			}else{
-				$(start).html("example: 2000 bp feature").css({"width":"200px"});
+				$(start).html("example: 2000 bp feature").css({"font-size":"90%","width":"200px"});
 			//	$(start).html("start"); 
 			//	$(stop).html("stop");
 				$(stop).append('<img height=8" src="/assets/images/arrow5.png" />');
@@ -406,7 +406,7 @@
 		}
 		region.start = new Object();
 		region.start.x = Math.round(vs);
-		region.start.y = feature.loc.y - 40;
+		region.start.y = feature.loc.y - 30; //40
 		region.end = new Object();
 		region.end.x = Math.round(ve);
 		region.end.y = region.start.y;
