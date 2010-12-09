@@ -22,15 +22,19 @@ div.htmltooltip{
 .param-group .group-title {
 	text-align: center;
     //	padding: 0 0 5px;
+//	padding: 3px;
+	font-weight: bold;
+//	position: relative;
+}
+.param-group .group-title span{
+	position: relative;
+	top: -5px;
+
 }
 
 .param-group[type='ShowHide'] {
     background-color: #DEDEDE;
-    border: 2px solid white;
-}
-
-.param-group .group-title {
-    font-weight: bold;
+    border: 1px solid white;
 }
 
 .param-group[type='ShowHide'] .group-handle {
