@@ -67,7 +67,7 @@ ${Question_Header}
                     <c:set var="disabled" value="DISABLED"/>
 		    <c:set var="opaque" value="opacity:0.3;filters:alpha(opacity=30);"/>
                 <%--    <p><i>Set operations are not available because Step <span class="current_step_num"></span> is a set of ${wdkStep.displayType}s while Step <span class="new_step_num"></span> is a set of ${wdkQuestion.recordClass.displayName}s; these are disjoint sets</i></p> --%>
-		    <c:set var="explanation" value="Set operations are not possible because these sets are disjoint --do not have IDs in common" />
+		    <c:set var="explanation" value="Set operations are not available because your steps are of different types, and do not have IDs in common." />
                 </c:when>
                 <c:otherwise>
                     <c:set var="nextStage" value="process_boolean" />
@@ -101,11 +101,18 @@ ${Question_Header}
 
         </tr>
 	<tr style="${opaque}" title="${explanation}"><td colspan="15" style="text-align:center;font-size:120%;font-weight:bold;padding:10px;">Or</td></tr>
+</table>
 
+
+  <table style="margin-left:auto; margin-right:auto;">
 	<tr>	
 	<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
-        <td title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN overlap"></td>
- 	<td  colspan="11" style="text-align:left;">&nbsp;Genomic regions for ${wdkStep.displayType}s in Step <span class="current_step_num"></span>&nbsp;&nbsp;<span style="font-size:120%;font-weight:bold">Overlap</span>&nbsp; Genomic regions for ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num"></span></td>
+       
+ <%--	<td  colspan="11" style="text-align:left;">&nbsp;Genomic regions for ${wdkStep.displayType}s in Step <span class="current_step_num"></span>&nbsp;&nbsp;<span style="font-size:120%;font-weight:bold">Overlap</span>&nbsp; Genomic regions for ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num"></span></td> --%>
+	<td style="text-align:left;padding-right:10px">&nbsp;<span style="font-size:120%;font-weight:bold">Use Genomic locations</span></td>
+ <td style="padding-right:10px" title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN overlap"></td>
+ <td style="padding-right:10px" title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN a_contain_b"></td>
+ <td title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN b_contain_a"></td>
 
         </tr>
     </table>
