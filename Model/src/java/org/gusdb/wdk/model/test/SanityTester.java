@@ -78,6 +78,7 @@ public class SanityTester {
     boolean verbose;
     boolean failuresOnly;
     boolean indexOnly;
+    boolean skipProcessQueries;
     String modelName;
 
     public static final String BANNER_LINE_top = "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
@@ -86,7 +87,8 @@ public class SanityTester {
     private static final Logger logger = Logger.getLogger(SanityTester.class);
 
     public SanityTester(String modelName, boolean verbose,
-            String testFilterString, boolean failuresOnly, boolean indexOnly)
+			String testFilterString, boolean failuresOnly, 
+			boolean indexOnly, boolean skipProcessQueries)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, ParserConfigurationException,
             TransformerException, IOException, SAXException, SQLException,
@@ -97,6 +99,7 @@ public class SanityTester {
         this.verbose = verbose;
         this.failuresOnly = failuresOnly;
         this.indexOnly = indexOnly;
+        this.skipProcessQueries = skipProcessQueries;
         this.modelName = modelName;
         this.testFilterString = testFilterString;
         this.user = wdkModel.getSystemUser();
@@ -119,6 +122,8 @@ public class SanityTester {
                 Query query = question.getQuery();
                 if (query.getDoNotTest() || query.getQuerySet().getDoNotTest())
                     continue;
+		if (skipProcessQueries && query instanceof ProcessQuery)
+		    continue;
                 for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
                     testQuestion(question, paramValuesSet);
                 }
@@ -563,6 +568,11 @@ public class SanityTester {
         Option indexOnly = new Option("indexOnly",
                 "Only print an index of the tests.");
         options.addOption(indexOnly);
+
+        Option skipProcessQueries = new Option("skipProcessQueries",
+                "Skip all questions and queries that use web service queries.");
+        options.addOption(skipProcessQueries);
+
         return options;
     }
 
@@ -643,8 +653,11 @@ public class SanityTester {
 
         boolean indexOnly = cmdLine.hasOption("indexOnly");
 
-        SanityTester sanityTester = new SanityTester(modelName, verbose,
-                testFilterString, failuresOnly, indexOnly);
+        boolean skipProceeQueries = cmdLine.hasOption("skipWebSvcQueries");
+
+        SanityTester sanityTester = 
+	    new SanityTester(modelName, verbose, testFilterString,
+			     failuresOnly, indexOnly, skipProcessQueries);
 
         sanityTester.testQuerySets(QuerySet.TYPE_VOCAB);
         sanityTester.testQuerySets(QuerySet.TYPE_ATTRIBUTE);
