@@ -617,7 +617,7 @@ public class SanityTester {
 
         String newline = System.getProperty("line.separator");
         String cmdlineSyntax = cmdName + " -model model_name"
-                + " [-verbose] [-t testfilter] [-failuresOnly | -indexOnly";
+                + " [-verbose] [-t testfilter] [-failuresOnly | -indexOnly] [-skpWebSvcQueries]";
 
         String header = newline
                 + "Run a test on all queries and records in a wdk model."
