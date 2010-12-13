@@ -36,6 +36,7 @@ import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
@@ -653,7 +654,7 @@ public class SanityTester {
 
         boolean indexOnly = cmdLine.hasOption("indexOnly");
 
-        boolean skipProceeQueries = cmdLine.hasOption("skipWebSvcQueries");
+        boolean skipProcessQueries = cmdLine.hasOption("skipWebSvcQueries");
 
         SanityTester sanityTester = 
 	    new SanityTester(modelName, verbose, testFilterString,
