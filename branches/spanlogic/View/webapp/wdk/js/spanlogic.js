@@ -10,7 +10,7 @@
 	var a = null;
 	var b = null;
 //	var region_color = ["rgba(100,100,200,0.5)","rgba(0,128,0,0.5)"];
-	var region_color = ["rgba(0,0,238,1)","rgba(0,153,51,1)"];
+	var region_color = ["#0000FF","#1acd22"];
 	function Diagram(name,ele){
 		this.name = name;
 		this.c = ele;
