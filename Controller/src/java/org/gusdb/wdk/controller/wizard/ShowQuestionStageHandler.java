@@ -47,8 +47,13 @@ public class ShowQuestionStageHandler implements StageHandler {
         
         if (wizardForm.getAction().equals(WizardForm.ACTION_REVISE)) {
             StepBean currentStep = StageHandlerUtility.getCurrentStep(request);
-            attributes.put("customName", currentStep.getBaseCustomName());
-        }
+	    if (currentStep.getChildStep() != null) {
+		attributes.put("customName", currentStep.getChildStep().getBaseCustomName());
+	    }
+	    else {
+		attributes.put("customName", currentStep.getBaseCustomName());
+	    }
+	}
 
 
         // get previous step
