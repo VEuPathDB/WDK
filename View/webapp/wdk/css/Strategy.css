@@ -315,11 +315,11 @@ td.operation {
 	background-position:-32px -6px;
 }
 
-.operation.SPAN.a_contain_b {
+.operation.SPAN.b_contain_a {
 	background-position:-26px -42px;
 }
 
-.operation.SPAN.b_contain_a {
+.operation.SPAN.a_contain_b {
 	background-position:-26px -85px;
 }
 
