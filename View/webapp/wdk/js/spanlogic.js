@@ -202,16 +202,17 @@
 			$(stop).css({
 				"display":"inline",
 				"position":"absolute",
-				"left":(x2 - 12)   //was  35  for stop
+				"top":"-2px",
+				"left":(x2 - 12)   //was  35  for "stop" 
 				});
 			if(b){
-				$(start).css({"background-color":b,"top":"-6px","height":"15px","width":"3px","left":"-2px"});
-				$(stop).css({"background-color":b,"top":"-6px","height":"15px","width":"3px","left":x2});
+				$(start).css({"background-color":b,"top":"-3px","height":"9px","width":"2px","left":"-2px"});
+				$(stop).css({"background-color":b,"top":"-3px","height":"9px","width":"2px","left":x2});
 			}else{
 				$(start).html(type);
 				$(start).css({"font-size":"90%","white-space":"nowrap"});
 				if (diaLength > 1)
-					$(stop).append('<img height="8" src="/assets/images/arrow5.png" />');
+					$(stop).append('<img height="15" src="/assets/images/whitearrow.png" />');
 			}
 			
 			$(rect).append(start).append(stop);  
@@ -278,9 +279,9 @@
 		center = dia.center;
 		
 		var botPad = 25;
-		feature.width = l / s;
+		feature.width = (l / s);    
 	//	feature.height = 20;
-		feature.height = 7;
+		feature.height = 11;
 		var dx1 = center - feature.width/2;
 		var dy1 = dia.height - (botPad + feature.height);
 		feature.loc.x = dx1;
