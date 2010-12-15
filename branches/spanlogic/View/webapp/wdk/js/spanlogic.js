@@ -190,12 +190,19 @@
 		if(x2 > 30 || (x2 > 0 && diaLength == 1)){
 			start = document.createElement("div");
 			stop = document.createElement("div");
+			regiontext = document.createElement("div");
 			$(start).css({
 				"display":"inline",
 			//	"position":"relative",
 				"position":"absolute",
 				"bottom":"-12px",
 			//	"left":"-12px"
+				"left":"15px"
+				});
+			$(regiontext).css({
+				"display":"inline",
+				"position":"absolute",
+				"bottom":"-12px",
 				"left":"15px"
 				});
 			$(stop).css({
@@ -205,6 +212,8 @@
 				"left":(x2 - 12)   //was  35  for "stop" 
 				});
 			if(b){
+				$(regiontext).html("Region");
+				$(regiontext).css({"font-size":"90%","white-space":"nowrap"});
 				$(start).css({"background-color":b,"top":"-3px","height":"9px","width":"2px","left":"-2px"});
 				$(stop).css({"background-color":b,"top":"-3px","height":"9px","width":"2px","left":x2});
 			}else{
@@ -214,7 +223,7 @@
 					$(stop).append('<img height="15" src="/assets/images/whitearrow.png" />');
 			}
 			
-			$(rect).append(start).append(stop);  
+			$(rect).append(start).append(stop).append(regiontext);  
 		}
 
 		cxt.append(rect);
@@ -324,7 +333,7 @@
 		}
 		region.start = new Object();
 		region.start.x = Math.round(vs);
-		region.start.y = feature.loc.y - 30; //40
+		region.start.y = feature.loc.y - 34; //40
 		region.end = new Object();
 		region.end.x = Math.round(ve);
 		region.end.y = region.start.y;
