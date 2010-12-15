@@ -379,11 +379,11 @@ td.operation {
 	background-position: -5px -10px;
 }
 	
-.diagram div.operation.SPAN.a_contain_b {
+.diagram div.operation.SPAN.b_contain_a {
 	background-position: 0px -48px;
 }
 	
-.diagram div.operation.SPAN.b_contain_a {
+.diagram div.operation.SPAN.a_contain_b {
 	background-position: 0px -88px;
 }
 
