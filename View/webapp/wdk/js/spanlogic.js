@@ -109,11 +109,10 @@
 				updateRegionLabels();
 				var contains = $("#span_operation option[value='" + output + "_contain_" + comparison + "']");
 				var contained = $("#span_operation option[value='" + comparison + "_contain_" + output + "']");
-				var containsVal = contains.val();
-				var containedVal = contained.val();
- 				contains.val(containedVal);
-				contained.val(containsVal);
-				$("#span_operation").change();
+				var containsText = contains.text();
+				var containedText = contained.text();
+ 				contains.text(containedText);
+				contained.text(containsText);
 				attachHandlers(); // Switching contents seems to disable the handlers, need to reattach them
 			}
 		}
