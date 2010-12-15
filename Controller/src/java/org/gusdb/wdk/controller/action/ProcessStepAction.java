@@ -167,7 +167,11 @@ public class ProcessStepAction extends Action {
             Map<String, String> params = ProcessQuestionAction.prepareParams(
                     user, request, form);
             // reuse the filter of the current step
+	    // but only if it's valid for the revised recordclass
             String filterName = step.getFilterName();
+	    if (!question.getRecordClass().getFilterMap().containsKey(filterName)) {
+		filterName = null;
+	    }
 
             newStep = user.createStep(question, params, filterName, false,
                     true, weight);
