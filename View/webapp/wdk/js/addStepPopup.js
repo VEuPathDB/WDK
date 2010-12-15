@@ -149,8 +149,7 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 		dataType: "html",
 		beforeSend: function(){
 			$("#query_form").remove();
-			$("#Strategies div a#filter_link span").css({opacity: 1.0});
-			$("#Strategies div#diagram_" + current_Front_Strategy_Id + " a#filter_link span").css({opacity: 0.4});
+			disableAddStepButtons();
 		},
 		success: function(data){
 			dykClose();
@@ -163,6 +162,7 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 		},
 		error: function(){
 			alert("Error getting the needed information from the server \n Please contact the system administrator");
+			enableAddStepButtons();
 		}
 	});
 }
@@ -316,10 +316,27 @@ function closeAll(hide,as){
 		pop_up_state = new Array();
 	}
 	isInsert = "";
-	$("#Strategies div a#filter_link span").css({opacity: 1.0});
+	enableAddStepButtons();
 }
 
+function enableAddStepButtons() {
+	$("#Strategies div a#filter_link span").css({opacity: 1.0}).each(function() {
+		var button = $(this).parent("a");
+		var oldHref = button.attr("oldHref");
+		if (oldHref) {
+			button.attr("href",oldHref);
+			button.removeAttr("oldHref");
+		}
+	});
+}
 
+function disableAddStepButtons() {
+	$("#Strategies div a#filter_link span").css({opacity: 0.4}).each(function() {
+		var button = $(this).parent("a");
+		button.attr("oldHref",button.attr("href"));
+		button.attr("href","javascript:void(0);");
+	});
+}
 
 function setDraggable(e, handle){
 	var rlimit = $("div#contentwrapper").width() - e.width() - 18;
