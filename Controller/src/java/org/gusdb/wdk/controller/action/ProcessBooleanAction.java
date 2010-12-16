@@ -204,7 +204,7 @@ public class ProcessBooleanAction extends Action {
                     + PARAM_IMPORT_STEP + " is missing.");
 
         if (operator == null)
-            throw new WdkUserException("The required param "
+            throw new WdkUserException("The required param" 
                     + PARAM_BOOLEAN_OPERATOR + " is missing.");
 
         StepBean childStep = user.getStep(Integer.valueOf(strImport));
@@ -244,8 +244,8 @@ public class ProcessBooleanAction extends Action {
                     + PARAM_IMPORT_STEP + " is missing.");
 
         if (operator == null)
-            throw new WdkUserException("The required param "
-                    + PARAM_BOOLEAN_OPERATOR + " is missing.");
+            throw new WdkUserException("The required operator is missing.");
+				       //  + PARAM_BOOLEAN_OPERATOR + " is missing.");
 
         StepBean previousStep = rootStep;
         StepBean childStep = user.getStep(Integer.valueOf(strImport));
