@@ -11,7 +11,6 @@
 <c:set var="buttonVal" value="Run Step"/>
 <c:set var="wdkStrategy" value="${requestScope.wdkStrategy}"/>
 <c:set var="wdkStep" value="${requestScope.wdkStep}"/>
-<c:set var="isRevise" value="false"/>
 <c:set var="allowBoolean" value="${requestScope.allowBoolean}"/>
 <c:set var="action" value="${requestScope.action}"/>
 
@@ -23,6 +22,8 @@
 
 <c:set var="wizard" value="${requestScope.wizard}"/>
 <c:set var="stage" value="${requestScope.stage}"/>
+
+
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
 <span style="display:none" id="strategyId">${wdkStrategy.strategyId}</span>
 <c:choose>
@@ -46,63 +47,101 @@
 
 ${Question_Header}
 
-<wdk:questionForm />
 
-<%--<c:set target="${helps}" property="${fromAnchorQ}" value="${helpQ}"/>--%>
+<%-- display question param section --%>
+<div class="filter params">
+  <span class="form_subtitle">
+    <c:choose>
+      <c:when test="${action == 'add'}">
+        Add Step ${wdkStep.frontId + 1}
+      </c:when>
+      <c:when test="${action == 'insert'}">
+        Insert Step ${wdkStep.frontId + 1}
+      </c:when>
+      <c:otherwise>
+        Revise Step ${wdkStep.frontId}
+      </c:otherwise>
+    </c:choose>
+    : ${wdkQuestion.displayName}
+  </span>
 
-<%-- end of the copied content --%>
+  <wdk:questionForm />
+</div>
 
-<c:choose>
+
+<%-- display operators section --%>
+<c:set var="type" value="${wdkStep.shortDisplayType}" />
+<c:set var="allowSpan" value="${type eq 'Gene' || type eq 'Orf' || type eq 'SNP' || type eq 'Isolate'}" />
+
+<div class="filter operators">
+  <c:choose>
     <c:when test="${(wdkStep.isTransform || wdkStep.previousStep == null) && action == 'revise'}">
-        <c:set var="nextStage" value="process_question" />
+       <c:set var="nextStage" value="process_question" />
     </c:when>
+
     <c:otherwise>
       <c:if test="${wdkStep.previousStep != null && action == 'revise'}">
         <c:set var="wdkStep" value="${wdkStep.previousStep}" />
       </c:if>
-    <hr><h1>Combine ${wdkStep.displayType}s in Step <span class="current_step_num"></span> with ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num"></span>:</h1>
-    <div style="text-align:center" id="operations">
+      <h1>Combine ${wdkStep.displayType}s in Step <span class="current_step_num"></span> with ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num"></span>:</h1>
+      <div style="text-align:center" id="operations">
+                <c:choose>
+                    <c:when test="${allowBoolean == false}">
+                        <c:set var="nextStage" value="span_from_question" />
+                        <c:set var="disabled" value="DISABLED"/>
+                <c:set var="opaque" value="opacity:0.3;filters:alpha(opacity=30);"/>
+                    <%--    <p><i>Set operations are not available because Step <span class="current_step_num"></span> is a set of ${wdkStep.displayType}s while Step <span class="new_step_num"></span> is a set of ${wdkQuestion.recordClass.displayName}s; these are disjoint sets</i></p> --%>
+                <c:set var="explanation" value="Set operations are not available because your steps are of different types, and do not have IDs in common." />
+                    </c:when>
+                    <c:otherwise>
+                        <c:set var="nextStage" value="process_boolean" />
+                    </c:otherwise>
+                </c:choose>
 
-            <c:choose>
-                <c:when test="${allowBoolean == false}">
-                    <c:set var="nextStage" value="span_from_question" />
-                    <c:set var="disabled" value="DISABLED"/>
-		    <c:set var="opaque" value="opacity:0.3;filters:alpha(opacity=30);"/>
-		    <c:set var="explanation" value="Set operations are not available because your steps are of different types, and do not have IDs in common." />
-                </c:when>
-                <c:otherwise>
-                    <c:set var="nextStage" value="process_boolean" />
-                </c:otherwise>
-            </c:choose>
+        <table style="margin-left:auto; margin-right:auto;">
+            <tr style="${opaque}" title="${explanation}">
 
-    <table style="margin-left:auto; margin-right:auto;">
-        <tr style="${opaque}" title="${explanation}">
+            <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="INTERSECT" type="radio" stage="process_boolean" ${disabled}></td>
+            <td class="operation INTERSECT"></td>
+            <td >&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Intersect</b>&nbsp;<span class="new_step_num"></span></td>
 
-        <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="INTERSECT" type="radio" stage="process_boolean" ${disabled}></td>
-        <td class="operation INTERSECT"></td>
-	<td >&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Intersect</b>&nbsp;<span class="new_step_num"></span></td>
+                <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
-        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="UNION" type="radio" stage="process_boolean" ${disabled}></td>
+                <td class="operation UNION"></td>
+            <td>&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Union</b>&nbsp;<span class="new_step_num"></span></td>
 
-        <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="UNION" type="radio" stage="process_boolean" ${disabled}></td>
-        <td class="operation UNION"></td>
-	<td>&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Union</b>&nbsp;<span class="new_step_num"></span></td>
+                <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
-        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="NOT" type="radio" stage="process_boolean" ${disabled}></td>
+                <td class="operation MINUS"></td>
+            <td>&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="new_step_num"></span></td>
 
-        <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="NOT" type="radio" stage="process_boolean" ${disabled}></td>
-        <td class="operation MINUS"></td>
-	<td>&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="new_step_num"></span></td>
+                <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
-        <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="RMINUS" type="radio" stage="process_boolean" ${disabled}></td>
+                <td class="operation RMINUS"></td>
+            <td>&nbsp;<span class="new_step_num"></span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="current_step_num"></span></td>
 
-        <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="RMINUS" type="radio" stage="process_boolean" ${disabled}></td>
-        <td class="operation RMINUS"></td>
-	<td>&nbsp;<span class="new_step_num"></span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="current_step_num"></span></td>
+                </tr>
+            <tr style="${opaque}" title="${explanation}"><td colspan="15" style="text-align:center;font-size:120%;font-weight:bold;padding:10px;">Or</td></tr>
+        </table>
 
-        </tr>
-	<tr style="${opaque}" title="${explanation}"><td colspan="15" style="text-align:center;font-size:120%;font-weight:bold;padding:10px;">Or</td></tr>
-</table>
+        
+        <c:if test="${allowSpan}">
+            <table style="margin-left:auto; margin-right:auto;">
+              <tr>	
+               <td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
+               
+               <%--	<td  colspan="11" style="text-align:left;">&nbsp;Genomic regions for ${wdkStep.displayType}s in Step <span class="current_step_num"></span>&nbsp;&nbsp;<span style="font-size:120%;font-weight:bold">Overlap</span>&nbsp; Genomic regions for ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num"></span></td> --%>
+               <td style="text-align:left;padding-right:10px">&nbsp;<span style="font-size:120%;font-weight:bold">Use Genomic locations</span></td>
+               <td style="padding-right:10px" title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN overlap"></td>
+               <td style="padding-right:10px" title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN a_contain_b"></td>
+               <td title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN b_contain_a"></td>
+
+              </tr>
+            </table>
+        </c:if>
 
 
   <table style="margin-left:auto; margin-right:auto;">
@@ -119,8 +158,8 @@ ${Question_Header}
 
     </div>
     </c:otherwise>
-
-</c:choose>
+  </c:choose>
+</div>
 
 <html:hidden property="stage" styleId="stage" value="${nextStage}" />
 

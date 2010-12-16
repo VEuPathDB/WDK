@@ -1,27 +1,9 @@
 //CONSTANTS
-var booleanClasses = "venn row2 size2 arrowgrey operation ";
-var firstClasses = "box venn row2 size1 arrowgrey";
-var transformClasses = "box venn row2 size1 transform"; 
-var operandClasses = "box row1 size1 arrowgrey";
-var indent = 20;
+var booleanClasses = "box row2 arrowgrey operation ";
+var firstClasses = "box row2 arrowgrey simple";
+var transformClasses = "row2 transform"; 
+var operandClasses = "box row1 arrowgrey simple";
 
-//distances for the step layout
-var f2b = 114; // first step to boolean step
-var f2t = 147; // first step to transform step
-var b2b = 125; // boolean step to boolean step
-var b2t = 114; // boolean step to transform step
-var t2b = 113; // transform step to boolean step
-var t2t = 147; // transform step to transform step
-
-//Colors for explanded substrategies
-var colors = new Array();
-//colors[0] = {step:"#000000", top:"#FFFFFF", right:"#CCCCCC", bottom:"#666677", left:"#A0A0A0"};
-colors[0] = {step:"#A00000", top:"#A00000", right:"#A00000", bottom:"#A00000", left:"#A00000"};
-colors[1] = {step:"#A0A000", top:"#A0A000", right:"#A0A000", bottom:"#A0A000", left:"#A0A000"};
-colors[2] = {step:"#A000A0", top:"#A000A0", right:"#A000A0", bottom:"#A000A0", left:"#A000A0"};
-colors[3] = {step:"#00A0A0", top:"#00A0A0", right:"#00A0A0", bottom:"#00A0A0", left:"#00A0A0"};
-colors[4] = {step:"#0000A0", top:"#0000A0", right:"#0000A0", bottom:"#0000A0", left:"#0000A0"};
-var currentColor = 0;
 //Popup messages
 var insert_popup = "Insert a new step to the left of this one, by either running a new query or choosing an existing strategy";
 var delete_popup = "Delete this step from the strategy; if this step is the only step in this strategy, this will delete the strategy also";
@@ -38,19 +20,11 @@ var sub_view_popup = "View the results of this nested strategy in the Results ar
 var sub_edit_popup = "Open this nested step to revise";
 var sub_expand_popup = "Open into a new panel to add or edit nested steps";
 
-//VARIABLES
-//var div_strat = null;
-var hasinvalid = false;
-var stepDivs = null;
-var leftOffset = 0;
+//Variables
+var has_invalid = false;
+
 // MANAGE THE DISPLAY OF THE STRATEGY BASED ON THE ID PASSED IN
-// This function is bracketed in a try/catch block.  On an error thrown by this javascript, we will simply reload teh Strategy section of the page.
-// This is a fairly fast operation in most cases and shouldl put the site in the state that the user expected... but insome cases it could be slow,
-// thus it is only used in an error condition
-// if there is strange behavior in the Strategy display, first step should be to comment out the try/catch blocks in order to see the errors more clearly.
 function displayModel(strat){
-//  try{
-	has_invalid = false;
 	if(strats){
 	  $("#strat-instructions").remove();
 	  $("#strat-instructions-2").remove();
@@ -59,17 +33,11 @@ function displayModel(strat){
 	  $("#Strategies").removeAttr("style");
 	  if(strat.isDisplay){
 		var div_strat = document.createElement("div");
+		var div_steps_section = document.createElement("div");
+		div_steps_section.setAttribute('class','diagramSection scrollableSteps');
 		var div_steps = document.createElement("div");
-		$(div_steps).css({
-			"border-color":"black",
-			"border-style":"none",
-			"border-width":"medium 1px medium medium",
-			"height":"130px",
-			"min-width":"770px",
-			"overflow-x":"auto",
-			"overflow-y":"hidden",
-			"width":"90%"
-		});
+		div_steps.setAttribute('class','stepWrapper');
+		$(div_steps).css({"width":(118 * strat.Steps.length) + "px"});
 		$(div_strat).attr("id","diagram_" + strat.frontId).addClass("diagram");
 		var close_span = document.createElement('span');
 		$(close_span).addClass("closeStrategy").html(""+
@@ -81,61 +49,54 @@ function displayModel(strat){
 		$(div_strat).append(stratNameMenu[0]);
 		$(div_strat).append(stratNameMenu[1]);
 		$(div_strat).append(createParentStep(strat));
-		//displaySteps = createSteps(strat,div_strat);
 		displaySteps = createSteps(strat,div_steps);
 		$(div_strat).append(createRecordTypeName(strat));
-		buttonleft = offset(null);
 		button = document.createElement('a');
 		lsn = strat.getStep(strat.Steps.length,true).back_boolean_Id;
 		if(lsn == "" || lsn == null)
 			lsn = strat.getStep(strat.Steps.length, true).back_step_Id;	
 		dType = strat.dataType;
-		$(button).attr("id","filter_link").attr("href","javascript:openFilter('" + dType + "'," + strat.frontId + "," + lsn + ",true)").attr("onclick","this.blur()").addClass("filter_link redbutton");
-		$(button).html("<span title='CLICK to run a new query and combine its result with your current result.     Alternatively, you could obtain the orthologs to your current result or run another available transform.'>Add Step</span>");
-		$(button).css({ position: "absolute",
-						left: buttonleft + "px",
-						top: "56px"});
-		//$(div_strat).append(button);
-		$(div_steps).append(button);
-		$(div_strat).append(div_steps);
-		var diagram_width = buttonleft + 200;
-		//$(div_strat).css("min-width",diagram_width + "px");
+		$(button).attr("id","filter_link").attr("href","javascript:openFilter('" + dType + "'," + strat.frontId + "," + lsn + ",true)").attr("onclick","this.blur()").addClass("filter_link redbutton").attr("title","CLICK to run a new query and combine its result with your current result.     Alternatively, you could obtain the orthologs to your current result or run another available transform.").html("<span>Add Step</span>");
+		buttonDiv = document.createElement('div');
+		buttonDiv.setAttribute('class','diagramSection row2');
+		$(buttonDiv).append(button);
+		$(div_steps_section).append(div_steps);
+		$(div_strat).append(div_steps_section);
+		$(div_strat).append(buttonDiv);
+		if (has_invalid) {
+			$(div_strat).append(createInvalidText());
+		}
+			has_invalid = false;
 	    return div_strat;
 	  }
     }
- // }catch(e){
-//	alert(e);
-//	initDisplay(0);
-//  }
-	return null;
+    return null;
 }
 
 
 // HANDLES THE CREATION OF THE STEP BOX -- This function could be broken down to smaller bites based on the type of step -- future work
 function createSteps(strat,div_strat){
-	stepdivs = new Array();
-	leftOffset = 12;
 	var zIndex = 80;
+	var stepdiv;
 	for(var ind=0; ind < strat.Steps.length; ind++){  //cStp in strat.Steps){
 		cStp = strat.getStep(ind+1,true);
 		jsonStep = strat.JSON.steps[cStp.frontId];
 		prevJsonStep = (ind == 0) ? null : strat.JSON.steps[strat.getStep(ind,true).frontId];
 		if(cStp.isboolean || cStp.isSpan){	
 			//Create the two layered Boolean Steps
-			multiStep(cStp, prevJsonStep, jsonStep, strat.frontId, zIndex);
+			stepdiv = multiStep(cStp, prevJsonStep, jsonStep, strat.frontId);
 		}else{
 			//Create Single Layered Steps like First Step or Transforms
-			singleStep(cStp, prevJsonStep, jsonStep,strat.frontId, zIndex);
+			stepdiv = singleStep(cStp, prevJsonStep, jsonStep,strat.frontId);
 		}
+		$(stepdiv).css({'z-index' : zIndex});
+		$(div_strat).append(stepdiv);
 		zIndex--; // DO NOT DELETE, needed for correct display in IE7.
-	}
-	for(var id in stepdivs){
-		$(div_strat).append(stepdivs[id]);
 	}
 }
 
 //Creates the boolean Step and the operand step displayed above it
-function multiStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
+function multiStep(modelstep, prevjsonstep, jsonstep, sid){
 	// Create the boolean venn diagram box
 	var filterImg = "";
 	var bool_link = "";
@@ -147,7 +108,7 @@ function multiStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 	if(jsonstep.isValid) bool_link = "NewResults(" + sid + "," + modelstep.frontId + ", true)";
 	if(jsonstep.filtered) filterImg = "<span class='filterImg'><img src='wdk/images/filter.gif' height='10px' width='10px'/></span>";
 	boolinner = ""+
-		"			<a id='" + sid + "|" + modelstep.back_boolean_Id + "|" + jsonstep.operation + "' title='CLICK to modify this boolean operation.' class='operation' href='javascript:void(0)' onclick='"+details_link+"'>"+
+		"			<a id='" + sid + "|" + modelstep.back_boolean_Id + "|" + jsonstep.operation + "' title='CLICK to modify this boolean operation.' class='operation' href='javascript:void(0)' onclick='showDetails(this)'>"+
 		"				<img src='wdk/images/transparent1.gif'>"+
 		"			</a>"+
 		"			<div class='crumb_details'></div>"+
@@ -157,23 +118,18 @@ function multiStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 		if(!modelstep.isLast){
 			if(modelstep.nextStepType == "transform"){
 				boolinner = boolinner + 
-				"			<ul>"+
-				"				<li><img class='rightarrow3' src='wdk/images/arrow_chain_right3.png' alt='input into'></li>"+
-				"			</ul>";
+				"<div class='arrow right size3'></div>";
 			}else{
 				boolinner = boolinner + 
-				"			<ul>"+
-				"				<li><img class='rightarrow2' src='wdk/images/arrow_chain_right4.png' alt='input into'></li>"+
-				"			</ul>";
+				"<div class='arrow right size2'></div>";
 			}
 		}
 	boolDiv = document.createElement('div');
-	$(boolDiv).attr("id","step_" + modelstep.frontId).addClass(booleanClasses + jsonstep.operation).html(boolinner).css({left: offset(modelstep) + "px", 'z-index' : zIndex});
+	$(boolDiv).attr("id","step_" + modelstep.frontId).addClass(booleanClasses + jsonstep.operation).html(boolinner);
 
 	$(".crumb_details", boolDiv).replaceWith(createDetails(modelstep, prevjsonstep, jsonstep, sid));
-	zIndex++; // DO NOT DELETE this or previous line, needed for correct display in IE7.
 	stepNumber = document.createElement('span');
-	$(stepNumber).addClass('stepNumber').css({ left: (leftOffset + 30) + "px"}).text("Step " + modelstep.frontId);
+	$(stepNumber).addClass('stepNumber').text("Step " + modelstep.frontId);
 	//Create the operand Step Box
 	childStp = jsonstep.step;	
 	uname = "";
@@ -200,25 +156,24 @@ function multiStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 		"		</h3>"+
 		"		<h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + childStp.results + "&nbsp;" + getDisplayType(childStp.shortDisplayType, childStp.results) + "</a></h6>"+
 		childfilterImg +
-		"		<ul>"+
-		"			<li><img class='downarrow' src='wdk/images/arrow_chain_down2.png' alt='equals'></li>"+
-		"		</ul>";	
-	childDiv = document.createElement('div');
-	$(childDiv).attr("id","step_" + modelstep.frontId + "_sub").addClass(operandClasses).html(childinner).css({left: leftOffset + "px", 'z-index' : zIndex});
-	zIndex--; // DO NOT DELETE this or previous line, needed for correct display in IE7.
-	$(".crumb_details", childDiv).replaceWith(createDetails(modelstep, prevjsonstep, childStp, sid));
+		"<img class='arrow down' src='wdk/images/arrow_chain_down2.png' alt='equals'>";
+
 	var child_invalid = null;
-	var child_invalid_text = null;
 	if(!childStp.isValid){
 		child_invalid = createInvalidDiv();
-		if(!has_invalid)
-			child_invalid_text = createInvalidText();
-		$(child_invalid).attr("id",sid+"_"+modelstep.frontId).addClass(operandClasses).css({left: leftOffset + "px"});
+		$(child_invalid).attr("id",sid+"_"+modelstep.frontId);
 		$("img", child_invalid).click(function(){
 			var iv_id = $(this).parent().attr("id").split("_");
 			$("div#diagram_" + iv_id[0] + " div#step_" + iv_id[1] + "_sub div.crumb_menu a.edit_step_link").click();
 		});
 	}
+	
+	childDiv = document.createElement('div');
+	if(child_invalid != null){
+		childDiv.appendChild(child_invalid);
+	}
+	$(childDiv).attr("id","step_" + modelstep.frontId + "_sub").addClass(operandClasses).append(childinner);
+	$(".crumb_details", childDiv).replaceWith(createDetails(modelstep, prevjsonstep, childStp, sid));
 	
 	// Create the background div for a collapsed step if step is expanded
 	var bkgdDiv = null;
@@ -228,22 +183,19 @@ function multiStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 		$("span#fullStepName", childDiv).text(childStp.strategy.name);
 		bkgdDiv = document.createElement("div");
 		$(bkgdDiv).addClass("expandedStep");
-		$(bkgdDiv).css({ left: (leftOffset-2) + "px"});
 	}
+	var stepbox = document.createElement('div');
+	stepbox.setAttribute('class', 'stepBox');
 	if(bkgdDiv != null)
-		stepdivs.push(bkgdDiv);
-	stepdivs.push(boolDiv);
-	stepdivs.push(stepNumber);
-	stepdivs.push(childDiv);
-	if(child_invalid != null){
-		stepdivs.push(child_invalid);
-		if(child_invalid_text != null)
-			stepdivs.push(child_invalid_text);
-	}
+		stepbox.appendChild(bkgdDiv);
+	stepbox.appendChild(childDiv);
+	stepbox.appendChild(boolDiv);
+	stepbox.appendChild(stepNumber);
+	return stepbox;
 }
 
 //Creates all steps that are on the bottom line only ie. this first step and transform steps
-function singleStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
+function singleStep(modelstep, prevjsonstep, jsonstep, sid){
 	uname = "";
 	fullName = "";
 	if(jsonstep.name == jsonstep.customName){
@@ -269,47 +221,43 @@ function singleStep(modelstep, prevjsonstep, jsonstep, sid, zIndex){
 		"		<h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.shortDisplayType,jsonstep.results) + "</a></h6>"+
 		 filterImg;
 	if(!modelstep.isLast){
-		inner = inner + 
-			"		<ul>"+
-			"			<li><img class='rightarrow1' src='wdk/images/arrow_chain_right3.png' alt='input into'></li>"+
-			"		</ul>";
+		if(modelstep.isTransform){
+			inner = inner + 
+				"<div class='arrow right size4'></div>";
+		}
+		else{
+			if(modelstep.nextStepType == "transform"){
+				inner = inner + 
+					"<div class='arrow right size5'></div>";
+			} else {
+				inner = inner + 
+					"<div class='arrow right size1'></div>";
+			}
+		}
 	}
-	
+	var step_invalid = null;
+	if(!modelstep.isTransform && !jsonstep.isValid){
+		step_invalid = createInvalidDiv();
+		$(step_invalid).attr("id",sid+"_"+modelstep.frontId);
+	}
 	singleDiv = document.createElement('div');
-	$(singleDiv).attr("id","step_" + modelstep.frontId + "_sub").html(inner);
+	if(step_invalid != null){
+		singleDiv.appendChild(step_invalid);
+	}
+	$(singleDiv).attr("id","step_" + modelstep.frontId + "_sub").append(inner);
 	stepNumber = document.createElement('span');
 	$(stepNumber).addClass('stepNumber').text("Step " + modelstep.frontId);
 	if(modelstep.isTransform){
-		$(singleDiv).addClass(transformClasses).css({ left: offset(modelstep) + "px" });
-		$(stepNumber).css({ left: (leftOffset + 30) + "px"});
-		$("ul li img", singleDiv).css({left: "7.6em", top: "-3.1em"});
+		$(singleDiv).addClass(transformClasses);
 	}else{
-		$(singleDiv).addClass(firstClasses).css({ left: leftOffset + "px" });
-		$(stepNumber).css({ left: "44px"});
-		if(modelstep.nextStepType == "transform")
-			$("ul li img",singleDiv).css({width: "54px"});
+		$(singleDiv).addClass(firstClasses);
 	}
-	$(singleDiv).css({'z-index' : zIndex}); // DO NOT DELETE, needed for correct display in IE7.
 	$(".crumb_details", singleDiv).replaceWith(createDetails(modelstep, prevjsonstep, jsonstep, sid));
-	var step_invalid = null;
-	var step_invalid_text = null;
-	if(!modelstep.isTransform && !jsonstep.isValid){
-		step_invalid = createInvalidDiv();
-		if(!has_invalid)
-			step_invalid_text = createInvalidText();
-		//if(modelstep.isTransform)
-		//	$(step_invalid).attr("id",sid+"_"+modelstep.frontId).addClass(transformClasses).css({left: leftOffset + "px"});
-		//else
-		$(step_invalid).attr("id",sid+"_"+modelstep.frontId).addClass(firstClasses).css({left: leftOffset + "px"});
-	}
-	stepdivs.push(singleDiv);
-	if(step_invalid != null){
-		stepdivs.push(step_invalid);
-		if(step_invalid_text != null)
-			stepdivs.push(step_invalid_text);
-	}
-	stepdivs.push(stepNumber);
-	
+	var stepbox = document.createElement('div');
+	stepbox.setAttribute('class', 'stepBox');
+	stepbox.appendChild(singleDiv);
+	stepbox.appendChild(stepNumber);
+	return stepbox;	
 }
 
 //HANDLE THE CREATION OF TEH STEP DETAILS BOX
@@ -317,8 +265,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 	strat = getStrategy(sid);
 	var detail_div = document.createElement('div');
 	$(detail_div).addClass("crumb_details").attr("disp","0");
-	if (jsonstep.isboolean && !jsonstep.isCollapsed) $(detail_div).css({ display: "none", "width":"680px"});
-	else $(detail_div).css({ display: "none", "max-width":"650px", "min-width":"55%" });
+	if (jsonstep.isboolean && !jsonstep.isCollapsed) $(detail_div).addClass("operation_details");
 	var name = jsonstep.displayName;
 	var questionName = jsonstep.questionName;
 	
@@ -432,7 +379,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 		delete_step = "<a title='" + delete_popup + "' class='delete_step_link' href='javascript:void(0)' onclick='DeleteStep(" + sid + "," + modelstep.frontId + ");hideDetails(this)'>Delete</a>";
 	}
 
-	close_button = 	"<a href='javascript:void(0)' style='float: none; position: absolute; right: 6px;' onclick='hideDetails(this)'>[x]</a>";
+	close_button = 	"<a class='close_link' href='javascript:void(0)' style='float: none; position: absolute; right: 6px;' onclick='hideDetails(this)'>[x]</a>";
 
 	inner = ""+	
 	    "		<div class='crumb_menu'>"+ rename_step + view_step + edit_step + expand_step + insert_step + customMenu + delete_step + close_button +
@@ -443,17 +390,19 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
     inner += "<hr class='clear' />" + createWeightSection(jsonstep,modelstep,sid);
 
 	$(detail_div).html(inner);
+	if (!jsonstep.isValid)
+	    $(".crumb_menu a:not(.edit_step_link, .close_link)", detail_div).removeAttr('onclick').addClass('disabled');
 	$("table", detail_div).replaceWith(params_table);
 	return detail_div;       
 }
 
 function createWeightSection(jsonstep,modelstep,sid){
 	// display & assign weight
-if(modelstep.isTransform || jsonstep.isboolean) return "";
+if(!jsonstep.useweights || modelstep.isTransform || jsonstep.isboolean) return "";
 	
 var set_weight = "<div name='All_weighting' class='param-group' type='ShowHide'>"+
 					"<div class='group-title'> "+
-	    				"<img style='position:relative;top:5px;'  class='group-handle' src='/images/plus.gif' onclick=''/>"+
+	    				"<img style='position:relative;top:5px;'  class='group-handle' src='wdk/images/plus.gif' onclick=''/>"+
 	    				"Give this search a weight"+
 					"</div>"+
 					"<div class='group-detail' style='display:none;text-align:center'>"+
@@ -472,24 +421,16 @@ var set_weight = "<div name='All_weighting' class='param-group' type='ShowHide'>
 function createParameters(params){
 	var table = document.createElement('table');
 	$(params).each(function(){
- 		//var visible  = this.visible;
         if (this.visible) {
 			var tr = document.createElement('tr');
 			var prompt = document.createElement('td');
 			var space = document.createElement('td');
 			var value = document.createElement('td');
-			$(prompt).addClass("medium").css({
-				"text-align":"right",
-				"vertical-align":"top",
-                		"white-space" : "nowrap"
-			});
+			$(prompt).addClass("medium param name");
 			$(prompt).html("<b><i>" + this.prompt + "</i></b>");
-			$(space).addClass("medium").attr("valign","top");
+			$(space).addClass("medium param");
 			$(space).html("&nbsp;:&nbsp;");
-			$(value).addClass("medium").css({
-				"text-align":"left",
-				"vertical-align":"top"
-			});
+			$(value).addClass("medium param value");
 			$(value).html( this.value );
 			$(tr).append(prompt);
 			$(tr).append(space);
@@ -517,8 +458,8 @@ function createParentStep(strat){
 	if(parentStep == null){
 		return;
 	}else{
-		$(pstp).attr("id","record_name").css("width","85px");
-		$(pstp).append("Expanded View of Step <i>" + strat.JSON.name + "</i>");//parentStep.stp.frontId);
+		$(pstp).attr("id","record_name");
+		$(pstp).append("Expanded View of Step <i>" + strat.JSON.name + "</i>");
 		return pstp;
 	}
 }
@@ -588,10 +529,8 @@ var deleteStrat = "<a id='delete_" + strat.frontId + "' href='javascript:void(0)
 
 	var div_sn = document.createElement("div");
 	var div_sm = document.createElement("div");
-	$(div_sn).attr("id","strategy_name");
-	$(div_sn).attr("class","strategy_tools");
-	$(div_sm).attr("id","strategy_menu");
-	$(div_sm).attr("class","strategy_tools");
+	$(div_sn).attr("class","strategy_name");
+	$(div_sm).attr("class","strategy_menu");
 	if (strat.subStratOf == null){
 		$(div_sn).html("<span style='font-size:14px;font-weight:bold' title='Name of this strategy. The (*) indicates this strategy is NOT saved.'>" + name + "</span>" + append + "<span id='strategy_id_span' style='display: none;'>" + id + "</span>");
 		$(div_sm).html("<span class='strategy_small_text'>" +
@@ -610,7 +549,6 @@ var deleteStrat = "<a id='delete_" + strat.frontId + "' href='javascript:void(0)
 		//$(div_sn).html("<span style='font-size:14px;font-weight:bold' title='Name of this substrategy. To rename, click on the corresponding step name in the parent strategy'>" + name + "</span>" + "<span id='strategy_id_span' style='display: none;'>" + id + "</span>"); 
 	//}
 	$(div_sm).css({'z-index' : 90}); // DO NOT DELETE, needed for IE7
-	$(div_sn).css("top","0px");     // to have the strategy name closer to the top
 	return [div_sn, div_sm];
 }
 
@@ -653,26 +591,20 @@ offset = function(modelstep){
 
 function createInvalidDiv(){
 	var inval = document.createElement('div');
+	has_invalid = true;
+	inval.setAttribute("class","invalidStep");
 	var i = document.createElement('img');
 	$(i).attr("src","wdk/images/InvalidStep.png").
 	     attr("height","36").
 		 attr("width","98");
 	$(i).attr("onClick","reviseInvalidSteps(this)");
-	$(inval).css({
-				background: "none",
-				position: "absolute",
-				"z-index": 499,
-				opacity: 0.6,
-				border: "none",
-				"padding-top":"2px"
-	 	 	 }).append(i);
+	$(inval).append(i);
 	return inval;
 }
 
 function createInvalidText(){
-	has_invalid = true;
 	var t = document.createElement('div');
-	$(t).attr("id","invalid-step-text");
+	$(t).attr("id","invalid-step-text").attr('class','simple');
 	$.ajax({
 		url:"wdk/jsp/InvalidText.html",
 		dataType: "html",
@@ -692,7 +624,7 @@ function closeInvalidText(ele){
 function reviseInvalidSteps(ele){
 	var iv_id = $(ele).parent().attr("id").split("_");
 	$("div#diagram_" + iv_id[0] + " div#step_" + iv_id[1] + "_sub h3 a#stepId_" + iv_id[1]).click();
-	$(ele).parent().parent().find("div#invalid-step-text").remove();
+	$("div#diagram_" + iv_id[0] + " div#invalid-step-text").remove();
 }
 function getSpanOperation(params) {
 	var op = '';

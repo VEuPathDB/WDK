@@ -166,4 +166,9 @@ public class TimestampParam extends Param {
     public String getDefault() {
         return DateFormat.getDateTimeInstance().format(new Date());
     }
+
+    @Override
+    protected void applySuggection(ParamSuggestion suggest) {
+        // do nothing
+    }
 }

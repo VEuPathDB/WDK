@@ -7,7 +7,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ColumnType;
@@ -24,7 +23,7 @@ import org.json.JSONException;
 public class RecordClass extends WdkModelBase implements
         AttributeFieldContainer {
 
-    private static final Logger logger = Logger.getLogger(RecordClass.class);
+    // private static final Logger logger = Logger.getLogger(RecordClass.class);
 
     public static Query prepareQuery(WdkModel wdkModel, Query query,
             String[] paramNames) throws WdkModelException,
@@ -77,8 +76,8 @@ public class RecordClass extends WdkModelBase implements
                 builder.append("f.").append(columnName);
                 builder.append(" = $$").append(columnName).append("$$");
             }
-            
-            // replace the id_sql macro        
+
+            // replace the id_sql macro
             StringBuilder idqBuilder = new StringBuilder();
             for (String column : paramNames) {
                 if (idqBuilder.length() == 0) idqBuilder.append("(SELECT ");
@@ -92,7 +91,7 @@ public class RecordClass extends WdkModelBase implements
             String idSql = idqBuilder.toString();
             String sql = builder.toString();
             sql = sql.replace(Utilities.MACRO_ID_SQL, idSql);
-            
+
             ((SqlQuery) newQuery).setSql(sql);
         }
         return newQuery;
@@ -105,6 +104,7 @@ public class RecordClass extends WdkModelBase implements
     private List<AttributeQueryReference> attributesQueryRefList = new ArrayList<AttributeQueryReference>();
 
     private Map<String, Query> attributeQueries = new LinkedHashMap<String, Query>();
+    private Map<String, Query> tableQueries = new LinkedHashMap<String, Query>();
 
     private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
     private Map<String, AttributeField> attributeFieldsMap = new LinkedHashMap<String, AttributeField>();
@@ -467,55 +467,18 @@ public class RecordClass extends WdkModelBase implements
                     + "having single quotes: " + name);
 
         // resolve the references for attribute queries
-        String[] paramNames = primaryKeyField.getColumnRefs();
-        for (AttributeQueryReference reference : attributesQueryRefList) {
-            // validate attribute query
-            Query query = (Query) model.resolveReference(reference.getTwoPartName());
-            validateAttributeQuery(query);
-
-            // add fields into record level, and associate columns
-            Map<String, AttributeField> fields = reference.getAttributeFieldMap();
-            Map<String, Column> columns = query.getColumnMap();
-            for (AttributeField field : fields.values()) {
-                field.setRecordClass(this);
-                field.setContainer(this);
-                String fieldName = field.getName();
-                // check if the attribute is duplicated
-                if (attributeFieldsMap.containsKey(fieldName))
-                    throw new WdkModelException("The AttributeField "
-                            + fieldName + " is duplicated in the recordClass "
-                            + getFullName());
-
-                // link columnAttributes with columns
-                if (field instanceof ColumnAttributeField) {
-                    Column column = columns.get(fieldName);
-                    if (column == null)
-                        throw new WdkModelException("Column is missing for "
-                                + "the columnAttributeField " + fieldName
-                                + " in recordClass " + getFullName());
-                    ((ColumnAttributeField) field).setColumn(column);
-                }
-                attributeFieldsMap.put(fieldName, field);
-            }
-            // add user param into the original attribute query, if needed
-            if (!query.getParamMap().containsKey(Utilities.PARAM_USER_ID)) {
-                query.addParam(getUserParam());
-            }
-
-            Query attributeQuery = RecordClass.prepareQuery(wdkModel, query,
-                    paramNames);
-            attributeQueries.put(query.getFullName(), attributeQuery);
-        }
+        resolveAttributeQueryReferences(model);
 
         // resolve references for the attribute fields
         for (AttributeField field : attributeFieldsMap.values()) {
             field.resolveReferences(model);
         }
 
+        // resolve the alias query
+        resolveAliasQuery(model);
+
         // resolve the references for table queries
-        for (TableField tableField : tableFieldsMap.values()) {
-            tableField.resolveReferences(model);
-        }
+        resolveTableFieldReferences(model);
 
         if (attributeOrdering != null) {
             Map<String, AttributeField> orderedAttributes = sortAllAttributes();
@@ -533,51 +496,9 @@ public class RecordClass extends WdkModelBase implements
         }
 
         // resolve reference for alias query
-        if (aliasQueryRef != null) {
-            Query Query = (SqlQuery) model.resolveReference(aliasQueryRef);
-            validateAliasQuery(Query);
-            this.aliasQuery = prepareAliasQuery(Query);
-        }
 
-        // resolve references for filter instances
-        for (AnswerFilter filter : filterList) {
-            filter.resolveReferences(model);
-
-            Map<String, AnswerFilterInstance> instances = filter.getInstances();
-            for (String filterName : instances.keySet()) {
-                if (filterMap.containsKey(filterName))
-                    throw new WdkModelException("Filter instance ["
-                            + filterName + "] of type " + getFullName()
-                            + " is included more than once");
-                AnswerFilterInstance instance = instances.get(filterName);
-                filterMap.put(filterName, instance);
-
-                if (instance.isDefault()) {
-                    if (defaultFilter != null)
-                        throw new WdkModelException(
-                                "The default filter of type " + getFullName()
-                                        + " is defined more than once: ["
-                                        + defaultFilter.getName() + "], ["
-                                        + instance.getName() + "]");
-                    defaultFilter = instance;
-                }
-                if (instance.isBooleanExpansion()) {
-                    if (booleanExpansionFilter != null)
-                        throw new WdkModelException("The boolean expansion "
-                                + "filter of type " + getFullName()
-                                + " is defined more " + "than once: ["
-                                + booleanExpansionFilter.getName() + "] and ["
-                                + instance.getName() + "]");
-                    booleanExpansionFilter = instance;
-                }
-            }
-        }
-        filterList = null;
-
-        // resolve references for the filter layout instances
-        for (AnswerFilterLayout layout : filterLayoutMap.values()) {
-            layout.resolveReferences(model);
-        }
+        // resolve the filter and layout.
+        resolveFilterReferences(model);
 
         // resolve default summary attributes
         if (defaultSummaryAttributeNames != null) {
@@ -621,6 +542,151 @@ public class RecordClass extends WdkModelBase implements
         resolved = true;
     }
 
+    private void resolveAttributeQueryReferences(WdkModel wdkModel)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
+        String[] paramNames = primaryKeyField.getColumnRefs();
+        for (AttributeQueryReference reference : attributesQueryRefList) {
+            // validate attribute query
+            Query query = (Query) wdkModel.resolveReference(reference.getTwoPartName());
+            validateBulkQuery(query);
+
+            // add fields into record level, and associate columns
+            Map<String, AttributeField> fields = reference.getAttributeFieldMap();
+            Map<String, Column> columns = query.getColumnMap();
+            for (AttributeField field : fields.values()) {
+                field.setRecordClass(this);
+                field.setContainer(this);
+                String fieldName = field.getName();
+                // check if the attribute is duplicated
+                if (attributeFieldsMap.containsKey(fieldName))
+                    throw new WdkModelException("The AttributeField "
+                            + fieldName + " is duplicated in the recordClass "
+                            + getFullName());
+
+                // link columnAttributes with columns
+                if (field instanceof ColumnAttributeField) {
+                    Column column = columns.get(fieldName);
+                    if (column == null)
+                        throw new WdkModelException("Column is missing for "
+                                + "the columnAttributeField " + fieldName
+                                + " in recordClass " + getFullName());
+                    ((ColumnAttributeField) field).setColumn(column);
+                }
+                attributeFieldsMap.put(fieldName, field);
+            }
+            // add user param into the original attribute query, if needed
+            if (!query.getParamMap().containsKey(Utilities.PARAM_USER_ID)) {
+                query.addParam(getUserParam());
+            }
+
+            Query attributeQuery = RecordClass.prepareQuery(wdkModel, query,
+                    paramNames);
+            attributeQueries.put(query.getFullName(), attributeQuery);
+        }
+    }
+
+    private void resolveAliasQuery(WdkModel wdkModel) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        if (aliasQueryRef != null) {
+            Query query = (SqlQuery) wdkModel.resolveReference(aliasQueryRef);
+
+            validateBulkQuery(query);
+
+            Map<String, Column> columnMap = query.getColumnMap();
+            // make sure the attribute query also returns old primary key
+            // columns
+            for (String column : primaryKeyField.getColumnRefs()) {
+                column = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + column;
+                if (!columnMap.containsKey(column))
+                    throw new WdkModelException("The attribute query "
+                            + query.getFullName() + " of " + getFullName()
+                            + " does not return the required old primary key "
+                            + "column " + column);
+            }
+
+            // the alias query should also return columns for old primary key
+            // columns, with a prefix "old_".
+            String[] pkColumns = primaryKeyField.getColumnRefs();
+            String[] paramNames = new String[pkColumns.length];
+            for (int i = 0; i < pkColumns.length; i++) {
+                paramNames[i] = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX
+                        + pkColumns[i];
+            }
+
+            this.aliasQuery = RecordClass.prepareQuery(wdkModel, query,
+                    paramNames);
+        }
+    }
+
+    private void resolveTableFieldReferences(WdkModel wdkModel)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
+        String[] paramNames = primaryKeyField.getColumnRefs();
+
+        // resolve the references for table queries
+        for (TableField tableField : tableFieldsMap.values()) {
+            tableField.resolveReferences(wdkModel);
+
+            Query query = tableField.getQuery();
+            query = (Query) wdkModel.resolveReference(query.getFullName());
+
+            // add user param into the original table query, if needed
+            if (!query.getParamMap().containsKey(Utilities.PARAM_USER_ID)) {
+                query.addParam(getUserParam());
+            }
+            Query tableQuery = RecordClass.prepareQuery(wdkModel, query,
+                    paramNames);
+            tableQueries.put(query.getFullName(), tableQuery);
+        }
+
+    }
+
+    private void resolveFilterReferences(WdkModel wdkModel)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
+        // resolve references for filter instances
+        for (AnswerFilter filter : filterList) {
+            filter.resolveReferences(wdkModel);
+
+            Map<String, AnswerFilterInstance> instances = filter.getInstances();
+            for (String filterName : instances.keySet()) {
+                if (filterMap.containsKey(filterName))
+                    throw new WdkModelException("Filter instance ["
+                            + filterName + "] of type " + getFullName()
+                            + " is included more than once");
+                AnswerFilterInstance instance = instances.get(filterName);
+                filterMap.put(filterName, instance);
+
+                if (instance.isDefault()) {
+                    if (defaultFilter != null)
+                        throw new WdkModelException(
+                                "The default filter of type " + getFullName()
+                                        + " is defined more than once: ["
+                                        + defaultFilter.getName() + "], ["
+                                        + instance.getName() + "]");
+                    defaultFilter = instance;
+                }
+                if (instance.isBooleanExpansion()) {
+                    if (booleanExpansionFilter != null)
+                        throw new WdkModelException("The boolean expansion "
+                                + "filter of type " + getFullName()
+                                + " is defined more " + "than once: ["
+                                + booleanExpansionFilter.getName() + "] and ["
+                                + instance.getName() + "]");
+                    booleanExpansionFilter = instance;
+                }
+            }
+        }
+        filterList = null;
+
+        // resolve references for the filter layout instances
+        for (AnswerFilterLayout layout : filterLayoutMap.values()) {
+            layout.resolveReferences(wdkModel);
+        }
+    }
+
     private Param getUserParam() throws WdkModelException {
         // create the missing user_id param for the attribute query
         ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
@@ -638,11 +704,12 @@ public class RecordClass extends WdkModelBase implements
         return userParam;
     }
 
-    void validateAttributeQuery(Query query) throws WdkModelException {
+    void validateBulkQuery(Query query) throws WdkModelException {
         validateQuery(query);
 
-        // plus, attribute query can have only user_id param (optional)
-        String message = "Attribute query '" + query.getFullName()
+        // Further limit the attribute/table query to have only user_id param
+        // (optional). This is required to enable bulk query rewriting.
+        String message = "Bulk query '" + query.getFullName()
                 + "' can have only a '" + Utilities.PARAM_USER_ID
                 + "' param, and it is optional.";
         Param[] params = query.getParams();
@@ -652,6 +719,14 @@ public class RecordClass extends WdkModelBase implements
             throw new WdkModelException(message);
     }
 
+    /**
+     * validate a query, and make sure it returns primary key columns, and the
+     * params of it can have only primary_key-column-mapped params (optional)
+     * and user_id param (optional).
+     * 
+     * @param query
+     * @throws WdkModelException
+     */
     void validateQuery(Query query) throws WdkModelException {
         String[] pkColumns = primaryKeyField.getColumnRefs();
         Map<String, String> pkColumnMap = new LinkedHashMap<String, String>();
@@ -678,22 +753,6 @@ public class RecordClass extends WdkModelBase implements
                 throw new WdkModelException("The query " + query.getFullName()
                         + " of " + getFullName() + " doesn't return the "
                         + "required primary key column " + column);
-        }
-    }
-
-    private void validateAliasQuery(Query query) throws WdkModelException {
-        // alias query is also an attribute query
-        validateAttributeQuery(query);
-
-        Map<String, Column> columnMap = query.getColumnMap();
-        // make sure the attribute query also returns old primary key columns
-        for (String column : primaryKeyField.getColumnRefs()) {
-            column = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + column;
-            if (!columnMap.containsKey(column))
-                throw new WdkModelException("The attribute query "
-                        + query.getFullName() + " of " + getFullName()
-                        + " does not return the required old primary key "
-                        + "column " + column);
         }
     }
 
@@ -759,22 +818,6 @@ public class RecordClass extends WdkModelBase implements
             }
         }
         return orderedAttsMap;
-    }
-
-    private Query prepareAliasQuery(Query query) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        // the alias query should also return columns for old primary key
-        // columns, with a prefix "old_".
-        String[] pkColumns = primaryKeyField.getColumnRefs();
-        String[] paramNames = new String[pkColumns.length];
-        for (int i = 0; i < pkColumns.length; i++) {
-            paramNames[i] = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX
-                    + pkColumns[i];
-        }
-
-        // and it should be a valid attribute query too
-        return RecordClass.prepareQuery(wdkModel, query, paramNames);
     }
 
     /*

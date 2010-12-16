@@ -16,8 +16,9 @@
               <c:forEach var="fav_item" items="${allFavorites}">
                 <c:set var="recordClass" value="${fav_item.key}" />
                 <c:set var="favorites" value="${fav_item.value}" /> <%-- a list of favorites of a record type --%>
+				<c:set var="idTag" value="${fn:split(recordClass.type, ' ')[0]}" />
                 <li>
-                  <a id="tab_${recordClass.type}" href="javascript:void(0)" onclick="showFavorites('${recordClass.type}')">${recordClass.type}s (${fn:length(favorites)})</a>
+                  <a id="tab_${idTag}" href="javascript:void(0)" onclick="showFavorites('${idTag}')">${recordClass.type}s (${fn:length(favorites)})</a>
                 </li>
               </c:forEach>
             </ul>
@@ -26,9 +27,9 @@
             <input class="favorite-refresh-button" title="Reload the page after you remove some IDs, or add a new project name." type="button" value="Refresh" onclick="window.location.reload();"/>
             <c:forEach var="fav_item" items="${allFavorites}">
               <c:set var="recordClass" value="${fav_item.key}" />
-              <div id="favorites_${recordClass.type}" class="favorites_panel">
+			  <c:set var="idTag" value="${fn:split(recordClass.type, ' ')[0]}" /> 
+              <div id="favorites_${idTag}" class="favorites_panel">
                 <c:set var="favorites" value="${fav_item.value}" /> <%-- a list of favorites of a record type --%>
-
                 <table class="favorite-list mytableStyle" width="93%">
                     <tr>
 			<th title="Click on the star to remove an ID from Favorites. It will not be removed from this page until you hit 'Refresh' or reload the page." class="mythStyle">${recordClass.type}s</th>

@@ -162,6 +162,16 @@ function setFrontAction(action, strat, step) {
 	jQuery("#loginForm form[name=loginForm]").append("<input type='hidden' name='actionStep' value='" + step + "'/>");
 }
 
+function setDraggable(e, handle){
+	var rlimit = $("div#contentwrapper").width() - e.width() - 18;
+	if(rlimit < 0) rlimit = 525;
+	var blimit = $("body").height();
+	$(e).draggable({
+		handle: handle,
+		containment: [0,0,rlimit,blimit]
+	});
+}
+
 function popLogin() {
 	jQuery.blockUI({message: '<h1>You have to be logged in to do that!</h1><input type="button" value="OK" onclick="$.unblockUI();" />'});
 }

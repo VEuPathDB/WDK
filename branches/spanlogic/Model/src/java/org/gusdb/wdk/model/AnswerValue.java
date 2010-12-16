@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.query.BooleanQueryInstance;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.user.Answer;
@@ -515,16 +516,25 @@ public class AnswerValue {
         // appended
         attributeQuery = (Query) wdkModel.resolveReference(attributeQuery.getFullName());
 
+            logger.debug("filling attribute values from answer " + attributeQuery.getFullName());
+            for (Column column : attributeQuery.getColumns()) {
+                logger.debug("column: '" + column.getName() + "'");
+            }
+            if (attributeQuery instanceof SqlQuery)
+                logger.debug("SQL: \n" + ((SqlQuery)attributeQuery).getSql());
+
         // get and run the paged attribute query sql
         String sql = getPagedAttributeSql(attributeQuery);
         DBPlatform platform = wdkModel.getQueryPlatform();
         DataSource dataSource = platform.getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+                attributeQuery.getFullName() + "-paged");
         ResultList resultList = new SqlResultList(resultSet);
 
         // fill in the column attributes
         PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
         Map<String, AttributeField> fields = question.getAttributeFieldMap();
+        int count = 0;
         while (resultList.next()) {
             // get primary key
             Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
@@ -559,9 +569,15 @@ public class AnswerValue {
                     Object objValue = resultList.get(columnName);
                     ColumnAttributeValue value = new ColumnAttributeValue(
                             (ColumnAttributeField) field, objValue);
-                    record.addColumnAttributeValue(value);
+                    record.addAttributeValue(value);
                 }
             }
+            count++;
+        }
+        if (count != pageRecordInstances.size()) {
+            throw new WdkModelException("the integrated attribute query "
+                + "doesn't return the same number of records in the current "
+                + "page. Paged attribute sql:\n" + sql);
         }
         logger.debug("Attribute query [" + attributeQuery.getFullName()
                 + "] integrated.");
@@ -590,6 +606,103 @@ public class AnswerValue {
             if (firstColumn) firstColumn = false;
             else sql.append(" AND ");
             sql.append("aq.").append(column).append(" = pidq.").append(column);
+        }
+        return sql.toString();
+    }
+
+    void integrateTableQuery(TableField tableField)
+            throws NoSuchAlgorithmException, WdkModelException,
+            WdkUserException, SQLException, JSONException {
+        initPageRecordInstances();
+
+        WdkModel wdkModel = question.getWdkModel();
+        // has to get a clean copy of the attribute query, without pk params
+        // appended
+        Query tableQuery = tableField.getQuery();
+        tableQuery = (Query) wdkModel.resolveReference(tableQuery.getFullName());
+
+        logger.debug("integrate table query from answer: " + tableQuery.getFullName());
+        for (Param param : tableQuery.getParams()) {
+            logger.debug("param: " + param.getName());
+        }
+
+        // get and run the paged attribute query sql
+        String sql = getPagedTableSql(tableQuery);
+        DBPlatform platform = wdkModel.getQueryPlatform();
+        DataSource dataSource = platform.getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+                tableQuery.getFullName() + "-paged");
+        ResultList resultList = new SqlResultList(resultSet);
+        
+        // initialize table values
+        for (RecordInstance record : pageRecordInstances.values()) {
+            PrimaryKeyAttributeValue primaryKey = record.getPrimaryKey();
+            TableValue tableValue = new TableValue(user, primaryKey, tableField, true);
+            record.addTableValue(tableValue);
+        }
+        
+        // make table values
+        PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
+        while (resultList.next()) {
+            // get primary key
+            Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+            for (String column : pkField.getColumnRefs()) {
+                pkValues.put(column, resultList.get(column));
+            }
+            PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
+                    pkField, pkValues);
+            RecordInstance record = pageRecordInstances.get(primaryKey);
+
+            if (record == null) {
+                StringBuffer error = new StringBuffer();
+                error.append("Paged table query [" + tableQuery.getFullName());
+                error.append("] returned rows that doesn't match the paged ");
+                error.append("records. (");
+                for (String pkName : pkValues.keySet()) {
+                    Object pkValue = pkValues.get(pkName);
+                    error.append(pkName + " = " + pkValue + ", ");
+                }
+                error.append(").\nPaged table SQL:\n" + sql);
+                error.append("\n" + "Paged ID SQL:\n" + getPagedIdSql());
+                throw new WdkModelException(error.toString());
+            }
+
+            TableValue tableValue= record.getTableValue(tableField.getName());
+            // initialize a row in table value
+            tableValue.initializeRow(resultList);
+        }
+        logger.debug("Table query [" + tableQuery.getFullName()
+                + "] integrated.");
+    }
+
+    private String getPagedTableSql(Query tableQuery) throws SQLException,
+            NoSuchAlgorithmException, WdkModelException, JSONException,
+            WdkUserException {
+        // get the paged SQL of id query
+        String idSql = getPagedIdSql();
+
+        PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
+
+        // combine the id query with attribute query
+        // make an instance from the original attribute query, and attribute
+        // query has only one param, user_id. Note that the original
+        // attribute query is different from the attribute query held by the
+        // recordClass.
+        Map<String, String> params = new LinkedHashMap<String, String>();
+        String userId = Integer.toString(user.getUserId());
+        params.put(Utilities.PARAM_USER_ID, userId);
+        QueryInstance queryInstance = tableQuery.makeInstance(user, params,
+                true, 0);
+        String tableSql = queryInstance.getSql();
+        StringBuffer sql = new StringBuffer("SELECT tq.* FROM (");
+        sql.append(idSql);
+        sql.append(") pidq, (").append(tableSql).append(") tq WHERE ");
+
+        boolean firstColumn = true;
+        for (String column : pkField.getColumnRefs()) {
+            if (firstColumn) firstColumn = false;
+            else sql.append(" AND ");
+            sql.append("tq.").append(column).append(" = pidq.").append(column);
         }
         return sql.toString();
     }
@@ -789,7 +902,8 @@ public class AnswerValue {
         WdkModel wdkModel = question.getWdkModel();
         DBPlatform platform = wdkModel.getQueryPlatform();
         DataSource dataSource = platform.getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+                idsQueryInstance.getQuery().getFullName() + "-paged");
         ResultList resultList = new SqlResultList(resultSet);
         RecordClass recordClass = question.getRecordClass();
         PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
@@ -890,12 +1004,12 @@ public class AnswerValue {
     public Map<String, AttributeField> getDisplayableAttributeMap() {
         Map<String, AttributeField> displayAttributes = new LinkedHashMap<String, AttributeField>();
         Map<String, AttributeField> attributes = question.getAttributeFieldMap(FieldScope.NON_INTERNAL);
-        Map<String, AttributeField> summaryAttributes = this.getSummaryAttributeFieldMap();
+        //Map<String, AttributeField> summaryAttributes = this.getSummaryAttributeFieldMap();
         for (String attriName : attributes.keySet()) {
             AttributeField attribute = attributes.get(attriName);
 
             // skip the attributes that are already displayed
-            if (summaryAttributes.containsKey(attriName)) continue;
+            //if (summaryAttributes.containsKey(attriName)) continue;
 
             displayAttributes.put(attriName, attribute);
         }
@@ -987,7 +1101,8 @@ public class AnswerValue {
             WdkModel wdkModel = question.getWdkModel();
             DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
             Object result = SqlUtils.executeScalar(wdkModel, dataSource,
-                    sql.toString());
+                    sql.toString(), idsQueryInstance.getQuery().getFullName()
+                            + "-" + filterName + "-filter-size");
             size = Integer.parseInt(result.toString());
 
             resultSizesByFilter.put(filterName, size);
@@ -1041,7 +1156,8 @@ public class AnswerValue {
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         ResultSet resultSet = null;
         try {
-            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, idSql);
+            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, idSql,
+                    idsQueryInstance.getQuery().getFullName() + "-all-ids");
             while (resultSet.next()) {
                 String[] values = new String[pkColumns.length];
                 for (int i = 0; i < pkColumns.length; i++) {

@@ -15,8 +15,6 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
  * @author xingao

@@ -3,11 +3,9 @@ package org.gusdb.wdk.controller.action;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.HashSet;
-import java.util.Iterator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -136,8 +134,8 @@ public class ProcessRESTAction extends Action {
             outputConfig.put("hasEmptyTable", "true");
             // FROM SHOWSUMMARY
 
-            StepBean step = wdkUser.createStep(wdkQuestion, params,
-                    "all_results", false, true, 0);
+            StepBean step = wdkUser.createStep(wdkQuestion, params, null,
+                    false, true, 0);
             AnswerValueBean answerValue = step.getAnswerValue();
             // construct the forward to show_summary action
             request.setAttribute("wdkAnswer", answerValue);
@@ -159,6 +157,7 @@ public class ProcessRESTAction extends Action {
             out.flush();
             out.close();
         } catch (Exception ex) {
+            ex.printStackTrace();
             if (ex instanceof WdkModelException && outputType != null) {
                 logger.info("WdkModelException");
                 WdkModelException wdkEx = (WdkModelException) ex;
@@ -282,9 +281,9 @@ public class ProcessRESTAction extends Action {
     private void writeWADL(QuestionBean wdkQuestion, PrintWriter writer)
             throws Exception {
         logger.debug(wdkQuestion.getDisplayName());
-		//String def_attr = null;
-		String def_value = "";
-		String repeating = "";
+        // String def_attr = null;
+        String def_value = "";
+        String repeating = "";
         writer.println("<resource path='" + wdkQuestion.getName() + ".xml'>");
         writer.println("<method href='#" + wdkQuestion.getName().toLowerCase()
                 + "'/>");
@@ -303,35 +302,41 @@ public class ProcessRESTAction extends Action {
                 + wdkQuestion.getDescription() + "]]></doc>");
         writer.println("<request>");
         for (String key : wdkQuestion.getParamsMap().keySet()) {
-			//def_attr = new String();
-			def_value = new String();
-			repeating = "";
-			if (wdkQuestion.getParamsMap().get(key).getDefault() != null
-               && wdkQuestion.getParamsMap().get(key).getDefault().length() > 0){
+            // def_attr = new String();
+            def_value = new String();
+            repeating = "";
+            if (wdkQuestion.getParamsMap().get(key).getDefault() != null
+                    && wdkQuestion.getParamsMap().get(key).getDefault().length() > 0) {
                 def_value = wdkQuestion.getParamsMap().get(key).getDefault();
-				def_value = htmlEncode(def_value);
+                def_value = htmlEncode(def_value);
             }
-			ParamBean p = wdkQuestion.getParamsMap().get(key);
-			if (p instanceof EnumParamBean) {
+            ParamBean p = wdkQuestion.getParamsMap().get(key);
+            if (p instanceof EnumParamBean) {
                 EnumParamBean ep = (EnumParamBean) p;
                 if (ep.getMultiPick()) repeating = "repeating='true'";
                 else repeating = "repeating='false'";
-			}
-			writer.println("<param name='" + key + "' type='xsd:string' required='" + !wdkQuestion.getParamsMap().get(key).getIsAllowEmpty() + "' default='" + def_value + "' " + repeating + ">");
+            }
+            writer.println("<param name='" + key
+                    + "' type='xsd:string' required='"
+                    + !wdkQuestion.getParamsMap().get(key).getIsAllowEmpty()
+                    + "' default='" + def_value + "' " + repeating + ">");
             writer.println("<doc title='prompt'><![CDATA["
                     + wdkQuestion.getParamsMap().get(key).getPrompt()
                     + "]]></doc>");
             writer.println("<doc title='help'><![CDATA["
                     + wdkQuestion.getParamsMap().get(key).getHelp()
                     + "]]></doc>");
-			writer.println("<doc title='default'><![CDATA["
+            writer.println("<doc title='default'><![CDATA["
                     + wdkQuestion.getParamsMap().get(key).getDefault()
                     + "]]></doc>");
- 
+
             if (p instanceof EnumParamBean) {
                 EnumParamBean ep = (EnumParamBean) p;
-                if (ep.getMultiPick()) writer.println("<doc title='MultiValued'>Provide one or more values. Use comma as a delimter.</doc>");
-                else writer.println("<doc title='SingleValued'>Choose at most one value from the options</doc>");
+                if (ep.getMultiPick()) writer.println("<doc title='MultiValued'>"
+                        + "Provide one or more values. "
+                        + "Use comma as a delimter.</doc>");
+                else writer.println("<doc title='SingleValued'>Choose "
+                        + "at most one value from the options</doc>");
                 if (ep.getDependedParam() == null) {
                     for (String term : ep.getVocabMap().keySet()) {
                         // writer.println("<option>" + term + "</option>");
@@ -341,13 +346,13 @@ public class ProcessRESTAction extends Action {
                                 + "]]></doc></option>");
                     }
                 } else {
-                    Set pSet = new HashSet();
+                    Map<String, String> pMap = new HashMap<String, String>();
                     EnumParamBean depep = new EnumParamBean(
                             ep.getDependedParam());
                     for (String depterm : depep.getVocabMap().keySet()) {
                         ep.setDependedValue(depterm);
                         try {
-                            pSet.addAll(ep.getDisplayMap().entrySet());
+                            pMap.putAll(ep.getDisplayMap());
                         } catch (Exception e) {
                             if (e instanceof WdkModelException) {
                                 logger.info("expected Empty result set for dependent parameter.");
@@ -358,13 +363,12 @@ public class ProcessRESTAction extends Action {
                             }
                         }
                     }
-                    Iterator iter = pSet.iterator();
-                    while (iter.hasNext()) {
-                        Map.Entry mp = (Map.Entry) iter.next();
+                    for (String term : pMap.keySet()) {
+                        String display = pMap.get(term);
                         // writer.println("<option>" + term + "</option>");
-                        writer.println("<option value='" + htmlEncode(mp.getKey().toString())
+                        writer.println("<option value='" + htmlEncode(term)
                                 + "'><doc title='description'><![CDATA["
-                                + mp.getValue() + "]]></doc></option>");
+                                + display + "]]></doc></option>");
                     }
                 }
             }
@@ -380,8 +384,8 @@ public class ProcessRESTAction extends Action {
         writer.println("<option value='all'><doc title='description'>Show all attributes</doc></option>");
         writer.println("<option value='none'><doc title='description'>Show no attributes</doc></option>");
         for (String attr : wdkQuestion.getReportMakerAttributesMap().keySet())
-    		writer.println("<option value='"
-                    + attr.replaceAll("'","&apos;")
+            writer.println("<option value='"
+                    + attr.replaceAll("'", "&apos;")
                     + "'><doc title='description'><![CDATA["
                     + wdkQuestion.getReportMakerAttributesMap().get(attr).getDisplayName()
                     + "]]></doc></option>");
@@ -415,27 +419,27 @@ public class ProcessRESTAction extends Action {
         return;
     }
 
-    private String htmlEncode(String x){
-		LinkedHashMap<String,String> codeValues = new LinkedHashMap();
-		codeValues.put("\"", "&quot;");
-		codeValues.put("'", "&apos;");
-		//codeValues.put("", "&;");
-		for(String k : codeValues.keySet()){
-			x = x.replaceAll(k, codeValues.get(k));
-		}
-		return x;
-	}	 
+    private String htmlEncode(String x) {
+        Map<String, String> codeValues = new LinkedHashMap<String, String>();
+        codeValues.put("\"", "&quot;");
+        codeValues.put("'", "&apos;");
+        // codeValues.put("", "&;");
+        for (String k : codeValues.keySet()) {
+            x = x.replaceAll(k, codeValues.get(k));
+        }
+        return x;
+    }
 
-	private String join(String[] a, String d){
-		String c = "";
-		boolean e = true;
-		for(String b : a){
-			if(!e) {
-				c = c + d;
-				e = false;
-			}
-			c = c + b;	
-		}
-		return c;
-	}
+    // private String join(String[] a, String d) {
+    // String c = "";
+    // boolean e = true;
+    // for (String b : a) {
+    // if (!e) {
+    // c = c + d;
+    // e = false;
+    // }
+    // c = c + b;
+    // }
+    // return c;
+    // }
 }

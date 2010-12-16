@@ -7,14 +7,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.json.JSONException;
 
 public class TableField extends Field implements AttributeFieldContainer {
 
-    private static final Logger logger = Logger.getLogger(TableField.class);
+    //private static final Logger logger = Logger.getLogger(TableField.class);
 
     private String queryTwoPartName;
     private Query query;
@@ -105,8 +104,8 @@ public class TableField extends Field implements AttributeFieldContainer {
         // resolve Query
         Query query = (Query) wdkModel.resolveReference(queryTwoPartName);
 
-        // validate the query
-        recordClass.validateQuery(query);
+        // validate the table query
+        recordClass.validateBulkQuery(query);
 
         // prepare the query and add primary key params
         String[] paramNames = recordClass.getPrimaryKeyAttributeField().getColumnRefs();

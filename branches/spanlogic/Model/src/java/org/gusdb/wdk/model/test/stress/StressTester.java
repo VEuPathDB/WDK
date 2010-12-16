@@ -168,7 +168,7 @@ public class StressTester {
         // check if result table exists
         try {
             ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
-                    "SELECT * FROM " + TABLE_STRESS_RESULT);
+                    "SELECT * FROM " + TABLE_STRESS_RESULT, "wdk-stress-result");
             SqlUtils.closeResultSet(rs);
         } catch (SQLException e) {
             // table doesn't exist, create it
@@ -189,12 +189,14 @@ public class StressTester {
             sb.append(" PRIMARY KEY(test_tag, task_id))");
 
             // create the result table
-            SqlUtils.executeUpdate(wdkModel, dataSource, sb.toString());
+            SqlUtils.executeUpdate(wdkModel, dataSource, sb.toString(),
+                    "wdk-create-table");
         }
         // initialize update prepared statement
         StringBuffer sb = new StringBuffer();
         sb.append("INSERT INTO " + TABLE_STRESS_RESULT);
-        sb.append(" (test_tag, task_id, runner_id, task_type, start_time, end_time, result_type, result_message)");
+        sb.append(" (test_tag, task_id, runner_id, task_type, start_time, ");
+        sb.append("end_time, result_type, result_message)");
         sb.append(" VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
         preparedStatement = SqlUtils.getPreparedStatement(dataSource,
                 sb.toString());
@@ -203,7 +205,8 @@ public class StressTester {
     private long getNewTestTag(WdkModel wdkModel) throws SQLException,
             WdkUserException, WdkModelException {
         ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
-                "SELECT count(0), max(test_tag) FROM " + TABLE_STRESS_RESULT);
+                "SELECT count(0), max(test_tag) FROM " + TABLE_STRESS_RESULT,
+                "wdk-stress-next-tag");
         long testTag = 0;
         rs.next();
         int count = rs.getInt(1);

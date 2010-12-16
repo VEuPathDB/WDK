@@ -86,7 +86,8 @@ public class ProcessStepAction extends Action {
         } catch (WdkOutOfSyncException ex) {
             logger.error(ex);
             ex.printStackTrace();
-            ShowStrategyAction.outputOutOfSyncJSON(user, response, state);
+            ShowStrategyAction.outputOutOfSyncJSON(wdkModel, user, response,
+                    state);
             return null;
         } catch (Exception ex) {
             logger.error(ex);
@@ -139,7 +140,7 @@ public class ProcessStepAction extends Action {
         customName = request.getParameter(PARAM_CUSTOM_NAME);
         if (customName != null && customName.trim().length() == 0)
             customName = null;
-       logger.debug(PARAM_CUSTOM_NAME + "='" + customName + "'");
+        logger.debug(PARAM_CUSTOM_NAME + "='" + customName + "'");
     }
 
     private Map<Integer, Integer> reviseStep(HttpServletRequest request,
@@ -193,7 +194,8 @@ public class ProcessStepAction extends Action {
         }
 
         // the new step is to replace the current one.
-        Map<Integer, Integer> changeMap = strategy.editOrInsertStep(step.getStepId(), newStep);
+        Map<Integer, Integer> changeMap = strategy.editOrInsertStep(
+                step.getStepId(), newStep);
         return changeMap;
     }
 

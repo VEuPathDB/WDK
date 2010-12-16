@@ -109,6 +109,27 @@ public class StepParamExpander extends BaseCLI {
         }
     }
 
+    // private void createParamTable(WdkModel wdkModel, String schema)
+    // throws SQLException, WdkModelException, WdkUserException {
+    // DBPlatform platform = wdkModel.getUserPlatform();
+    // DataSource dataSource = platform.getDataSource();
+    //
+    // // check if table exists
+    // int length = schema.length();
+    // String s = (length == 0) ? null : schema.substring(0, length - 1);
+    // if (platform.checkTableExists(s, "step_params")) return;
+    //
+    // SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE TABLE " + schema
+    // + " step_params ( step_id NUMBER(12) NOT NULL, "
+    // + " param_name VARCHAR(200) NOT NULL, "
+    // + " param_value VARCHAR(4000), migration NUMBER(12))",
+    // "wdk-create-table");
+    //
+    // SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX " + schema
+    // + "step_params_idx02 ON step_params (step_id, param_name)",
+    // "wdk-create-indx");
+    // }
+
     private ResultSet prepareSelect(WdkModel wdkModel, String schema)
             throws SQLException, WdkUserException, WdkModelException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
@@ -128,7 +149,8 @@ public class StepParamExpander extends BaseCLI {
         sql.append(" WHERE s.step_id = sp.step_id ");
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
-        return SqlUtils.executeQuery(wdkModel, dataSource, sql.toString());
+        return SqlUtils.executeQuery(wdkModel, dataSource, sql.toString(),
+                "wdk-select-step-params");
     }
 
     private PreparedStatement prepareInsert(WdkModel wdkModel, String schema)
@@ -153,7 +175,8 @@ public class StepParamExpander extends BaseCLI {
             String prefix = Utilities.PARAM_COMPRESSE_PREFIX;
             if (value.startsWith(prefix)) {
                 String checksum = value.substring(prefix.length()).trim();
-                value = queryFactory.getClobValue(checksum);
+                String decompressed = queryFactory.getClobValue(checksum);
+                if (decompressed == null) value = decompressed;
             }
             String[] terms = value.split(",");
             for (String term : terms) {
@@ -187,8 +210,10 @@ public class StepParamExpander extends BaseCLI {
 
         String projectId = (String) getOptionValue(ARG_PROJECT_ID);
 
-        logger.info("Expanding params...");
         WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
+
+        // expand step params
+        logger.info("Expanding params...");
         expand(wdkModel);
     }
 }

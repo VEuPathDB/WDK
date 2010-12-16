@@ -99,7 +99,12 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
     public void addQuery(Query query) throws WdkModelException {
         query.setQuerySet(this);
         if (queryList != null) queryList.add(query);
-        else queries.put(query.getName(), query);
+        else {
+//            if (queries.containsKey(query.getName()))
+//                throw new WdkModelException("query [" + query.getFullName()
+//                        + "] already exists in the set.");
+            queries.put(query.getName(), query);
+        }
     }
 
     public void resolveReferences(WdkModel model) throws WdkModelException,

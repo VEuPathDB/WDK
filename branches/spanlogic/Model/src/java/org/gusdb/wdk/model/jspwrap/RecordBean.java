@@ -145,6 +145,7 @@ public class RecordBean {
             NoSuchAlgorithmException, WdkUserException, SQLException,
             JSONException {
         if (!recordInstance.getRecordClass().hasBasket()) return false;
+        if (!recordInstance.isValidRecord()) return false;
         AttributeValue value = recordInstance.getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
         return "1".equals(value.getValue());
     }

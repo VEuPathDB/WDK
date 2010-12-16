@@ -13,12 +13,12 @@
     <wdk:basketMenu />
     <wdk:basketControls />
 
-    <div class="Workspace">
-      <c:forEach items="${baskets}" var="basket">
-        <div id="basket_${basket.shortDisplayType}" class="basket_panel" recordClass="${basket.type}">
+    <c:forEach items="${baskets}" var="basket">
+      <div id="basket_${basket.shortDisplayType}" class="basket_panel" recordClass="${basket.type}" displayName="${basket.displayType}">
+        <div class="Workspace">
         </div>
-      </c:forEach>
-    </div>
+      </div>
+    </c:forEach>
   </c:when>
   <c:otherwise>
     <div style="font-size:120%;line-height:1.2em;text-indent:10em;padding:0.5em">You have no items in any of your baskets.</div>

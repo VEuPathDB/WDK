@@ -16,6 +16,7 @@ import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
@@ -85,6 +86,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     private boolean ignoreSubType = false;
 
     private String shortDisplayName;
+
+    private List<ParamReference> paramRefs = new ArrayList<ParamReference>();
 
     // /////////////////////////////////////////////////////////////////////
     // setters called at initialization
@@ -503,7 +506,24 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
             // the id query is forced to be cache-able.
             query = (Query) model.resolveReference(idQueryRef);
-            // query.setIsCacheable(true);
+
+            // check if we need to clone the query;
+            if (paramRefs.size() > 0) {
+                query = query.clone();
+                String queryName = query.getFullName();
+                Map<String, Param> params = query.getParamMap();
+                for (ParamReference paramRef : paramRefs) {
+                    String paramName = paramRef.getElementName();
+                    if (!params.containsKey(paramName))
+                        throw new WdkModelException("The paramRef ["
+                                + paramName + "] defined in QUESTION ["
+                                + getFullName() + "] doesn't exist in the "
+                                + "referenced id query [" + queryName + "].");
+                    Param param = ParamReference.resolveReference(model,
+                            paramRef, queryName);
+                    query.addParam(param);
+                }
+            }
 
             // all the id queries should has a weight column
             query.setHasWeight(true);
@@ -683,6 +703,16 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             dynamicSet.excludeResources(projectId);
             this.dynamicAttributeSet = dynamicSet;
         }
+
+        // exclude param refs
+        for (int i = paramRefs.size() - 1; i >= 0; i--) {
+            ParamReference paramRef = paramRefs.get(i);
+            if (paramRef.include(projectId)) {
+                paramRef.excludeResources(projectId);
+            } else {
+                paramRefs.remove(i);
+            }
+        }
     }
 
     private Query createDynamicAttributeQuery(WdkModel wdkModel)
@@ -690,7 +720,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         SqlQuery query = new SqlQuery();
         query.setIsCacheable(false);
         query.setName(this.query.getName() + DYNAMIC_QUERY_SUFFIX);
-        QuerySet querySet = wdkModel.getQuerySet(Utilities.INTERNAL_QUERY_SET);
+        // put the dynamic query into the same query set of the id query.
+        QuerySet querySet = this.query.getQuerySet();
         querySet.addQuery(query);
 
         // set the columns, which as the same column as the id query
@@ -739,5 +770,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         AnswerParam[] array = new AnswerParam[list.size()];
         list.toArray(array);
         return array;
+    }
+
+    public void addParamRef(ParamReference paramRef) {
+        this.paramRefs.add(paramRef);
     }
 }

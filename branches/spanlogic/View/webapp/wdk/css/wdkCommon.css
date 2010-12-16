@@ -21,10 +21,10 @@ div.htmltooltip{
  * -------------------------------------------------------------------------- */
 .param-group .group-title {
 	text-align: center;
-    //	padding: 0 0 5px;
-//	padding: 3px;
+/*	padding: 0 0 5px;  */
+/*	padding: 3px;  */
 	font-weight: bold;
-//	position: relative;
+/*	position: relative;  */
 }
 .param-group .group-title span{
 	position: relative;
@@ -83,7 +83,7 @@ div.htmltooltip{
 	font-size:  8pt;
 }
 
-/~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =TABLES 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 table.center {margin-left:auto; margin-right:auto;}
@@ -95,10 +95,6 @@ table.paneltoggle {
         padding-right: 3px;
         padding-bottom: 2.5px;
         padding-left: 3px;
-}
-
-td { 
-    padding: 3px 3px 3px 3px;
 }
 
 
@@ -156,6 +152,7 @@ ul#strategy_tabs {
 }
 
 .workspace_panel {
+	clear: both;
 	position: absolute;
 	left: -999em;
 	width:100%;
@@ -167,25 +164,6 @@ ul#strategy_tabs {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =TAGS 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-body {
-	text-align: left;
-	color: #000000;
-	background-color: #ffffff;
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 12px;
-	white-space: normal;
-	background-repeat: repeat-x;
-}
-
-
-a:link, a:visited {
-	text-decoration: none;
-}
-
-a:hover, a:active {
-	text-decoration: none;
-}
 
 #wrap {
 	width: 100%;
@@ -227,45 +205,11 @@ img.plus-minus {
 	clear: both;
 }
 
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 =Arrow Chains 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-.arrowgrey {
-   padding: 4px;
-   background-color: #d0cfcf;
-   text-align: left;
-   border-width: 1px;
-   border-color: #848484;
-}
-
-.selectedarrow {
-   padding: 4px;
-   background-color:#FFFFA0;
-   text-align: left;
-   border-width: 1px;
-
-}
-
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =Fonts 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-h1 {
-	font-size: 20px;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-weight: bold;
-	text-align: center;
-	margin-bottom: 14px;
-}
-h2 {
-	font-size: 18px;
-	font-family: Verdana, Arial, Helvetica, sans-serif;
-	font-weight: bold;
-	margin-bottom: 11px;
- 	text-align: left;
-	margin-left: 11px;
-}
 .h2center {
 	font-size: 14px;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
@@ -446,26 +390,22 @@ tr.lines td, tr.linesalt td {
     =RED BUTTON
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 a.redbutton {
-   color: #FFFFFF;
-   font: normal 13px arial, sans-serif;
-   margin-right: 6px;
-   padding-right: 3px; /* sliding doors padding */
+   display: block;
    text-decoration: none;
    background-attachment: scroll;
    background-color: transparent;
+   background-image: url(../images/redboxb.gif);
    background-position: right top;   
-   width: 115px;
+   background-repeat: no-repeat;
 }
 
 a.redbutton span {
-   color: #FFFFFF;
    display: block;
+   color: #FFFFFF;
+   font: normal 13px arial, sans-serif;
    line-height: 13px;
-   padding: 15px 23px 12px 18px;
+   padding: 15px 21px 12px;
    text-decoration: none;
-   background-color: transparent;
-   background-image: url(../images/redboxb.gif);
-   background-repeat: no-repeat;
 }
 
 a.redbutton:active {
@@ -475,8 +415,7 @@ a.redbutton:active {
 }
 
 a.redbutton:active span {
-   background-position: bottom left;
-   padding: 16px 23px 11px 18px; /* push text down 1px */
+   padding: 16px 21px 11px; /* push text down 1px */
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -498,14 +437,6 @@ a.redbutton:active span {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =MISC 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-#Strategies {
-	width: 100%;
-	min-height: 130px;
-	max-height: 330px;
-	overflow-y: auto;
-	border: 2px solid gray;
-}
-
 div.Workspace {
 	z-index: 50;
 }
@@ -518,17 +449,6 @@ span.marker a:link, span.marker a:visited {
 .help_div {
 	background-color: lightYellow;
 	border: 1px solid black;
-}
-
-/* APPLICATION PAGE STYLES */
-td.strat_active {
-    width: 30px;
-    background: url(/assets/images/eyeBlue.png) no-repeat 8px 8px;
-}
-
-td.strat_inactive {
-    width: 30px;
-    background: url(/assets/images/eyeGrey.png) no-repeat 8px 8px;
 }
 
 #strategy_tabs a:link, #strategy_tabs a:visited, #strategy_tabs li span {
@@ -600,6 +520,34 @@ tr.headerRow > td,th {
    border-style:solid;
    padding: 3px;
    vertical-align: middle;
+}
+
+.formPopup {
+	position: absolute;
+	background-color: #FFFFFF;
+	background-repeat: repeat-x;
+	background-position: 0 26px;   /* was 36px, decreased to have Add Step title thiner */
+	border: 1px solid #888888;	
+	padding: 0 8px 8px 8px;
+	z-index: 1000;
+}
+
+.attributesList {
+	display: none;
+	text-align: left;
+}
+
+.attributesFormWrapper {
+	margin-top: 30px;
+}
+
+.formButtonPanel {
+	text-align: center;
+	padding: 5px;
+}
+
+.clear {
+   clear:both;
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -678,7 +626,7 @@ div.favorite-button-div{
 
 .favorite-group-button, .favorite-note-button {
 	float:right;
-	text
+	text-align:left;
 }
 
 span.wdk-record {        /*to not affect a tr same class in favorites page */

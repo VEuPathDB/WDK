@@ -134,7 +134,7 @@ public class BasketFactory {
                 try {
                     long start = System.currentTimeMillis();
                     resultSet = psCount.executeQuery();
-                    SqlUtils.verifyTime(wdkModel, sqlCount, start);
+                    SqlUtils.verifyTime(wdkModel, sqlCount, "wdk-basket-factory-count", start);
                     if (resultSet.next()) {
                         int rsCount = resultSet.getInt(1);
                         hasRecord = (rsCount > 0);
@@ -152,13 +152,13 @@ public class BasketFactory {
                 if (count % 100 == 0) {
                     long start = System.currentTimeMillis();
                     psInsert.executeBatch();
-                    SqlUtils.verifyTime(wdkModel, sqlInsert, start);
+                    SqlUtils.verifyTime(wdkModel, sqlInsert, "wdk-basket-factory-insert", start);
                 }
             }
             if (count % 100 != 0) {
                 long start = System.currentTimeMillis();
                 psInsert.executeBatch();
-                SqlUtils.verifyTime(wdkModel, sqlInsert, start);
+                SqlUtils.verifyTime(wdkModel, sqlInsert, "wdk-basket-factory-insert", start);
             }
         } finally {
             SqlUtils.closeStatement(psInsert);
@@ -206,13 +206,13 @@ public class BasketFactory {
                 if (count % 100 == 0) {
                     long start = System.currentTimeMillis();
                     psDelete.executeBatch();
-                    SqlUtils.verifyTime(wdkModel, sqlDelete, start);
+                    SqlUtils.verifyTime(wdkModel, sqlDelete, "wdk-basket-factory-delete", start);
                 }
             }
             if (count % 100 != 0) {
                 long start = System.currentTimeMillis();
                 psDelete.executeBatch();
-                SqlUtils.verifyTime(wdkModel, sqlDelete, -start);
+                SqlUtils.verifyTime(wdkModel, sqlDelete, "wdk-basket-factory-delete", start);
             }
         } finally {
             SqlUtils.closeStatement(psDelete);
@@ -237,7 +237,7 @@ public class BasketFactory {
             psDelete.setString(2, projectId);
             psDelete.setString(3, rcName);
             psDelete.executeUpdate();
-            SqlUtils.verifyTime(wdkModel, sqlDelete, start);
+            SqlUtils.verifyTime(wdkModel, sqlDelete, "wdk-basket-factory-delete-all", start);
         } finally {
             SqlUtils.closeStatement(psDelete);
         }
@@ -290,7 +290,7 @@ public class BasketFactory {
             ps.setInt(2, user.getUserId());
             ps.setString(3, recordClass.getFullName());
             rs = ps.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-basket-factory-select-all", start);
 
             StringBuffer buffer = new StringBuffer();
             String[] columns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
@@ -409,6 +409,7 @@ public class BasketFactory {
         param.setRecordClass(recordClass);
         param.setPrompt(recordClass.getType() + "s from");
         param.setDefaultType(DatasetParam.TYPE_BASKET);
+        param.setAllowEmpty(false);
         paramSet.addParam(param);
         param.excludeResources(wdkModel.getProjectId());
         return param;

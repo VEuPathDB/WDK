@@ -12,19 +12,15 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
-import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -336,14 +332,15 @@ public abstract class Query extends WdkModelBase {
     public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        //logger.debug("Resolving " + getFullName() + " - " + resolved);
+        // logger.debug("Resolving " + getFullName() + " - " + resolved);
         if (resolved) return;
 
         this.wdkModel = wdkModel;
 
         // resolve the params
         for (ParamReference paramRef : paramRefList) {
-            Param param = resolveParamReference(wdkModel, paramRef);
+            Param param = ParamReference.resolveReference(wdkModel, paramRef,
+                    getFullName());
             String paramName = param.getName();
             if (paramMap.containsKey(paramName)) {
                 throw new WdkModelException("The param '" + paramName
@@ -375,104 +372,6 @@ public abstract class Query extends WdkModelBase {
 
         resolveQueryReferences(wdkModel);
         resolved = true;
-    }
-
-    private Param resolveParamReference(WdkModel wdkModel,
-            ParamReference paramRef) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        String twoPartName = paramRef.getTwoPartName();
-        Param param = (Param) wdkModel.resolveReference(twoPartName);
-        // clone the param to have different default values
-        param = param.clone();
-
-        // if the param has customized default value
-        String defaultValue = paramRef.getDefault();
-        if (defaultValue != null) param.setDefault(defaultValue);
-
-        // if the param has customized allowEmpty
-        Boolean allowEmpty = paramRef.isAllowEmpty();
-        if (allowEmpty != null) {
-            param.setAllowEmpty(allowEmpty);
-
-            // if the param has customized allowEmpty
-            String emptyValue = paramRef.getEmptyValue();
-            if (emptyValue != null) param.setEmptyValue(emptyValue);
-        }
-        Boolean noTranslation = paramRef.getNoTranslation();
-        if (noTranslation != null) param.setNoTranslation(noTranslation);
-
-        // if the visible is set
-        Boolean visible = paramRef.getVisible();
-        if (visible != null) param.setVisible(visible);
-
-        Boolean number = paramRef.getNumber();
-
-        Boolean quote = paramRef.getQuote();
-        Boolean multiPick = paramRef.isMultiPick();
-        String displayType = paramRef.getDisplayType();
-        String selectMode = paramRef.getSelectMode();
-        String queryRef = paramRef.getQueryRef();
-        if (param instanceof AbstractEnumParam) {
-            // check those invalid properties
-            if (number != null)
-                throw new WdkModelException("The 'number' property is not "
-                        + "allowed in param '" + twoPartName + "'");
-
-            if (param instanceof FlatVocabParam)
-                ((FlatVocabParam) param).setServedQueryName(getFullName());
-
-            // if the param has customized multi pick
-            if (multiPick != null)
-                ((AbstractEnumParam) param).setMultiPick(multiPick);
-
-            // if the queryRef is set for FlatVocabParam
-            if (queryRef != null) {
-                if (param instanceof FlatVocabParam) {
-                    ((FlatVocabParam) param).setQueryRef(queryRef);
-                } else throw new WdkModelException("The paramRef to '"
-                        + twoPartName + "' is not a flatVocabParam. The "
-                        + "'queryRef' property can only be applied to "
-                        + "paramRefs of flatVocabParams.");
-            }
-
-            // if quote is set, it overrides the value of the param
-            if (quote != null) ((AbstractEnumParam) param).setQuote(quote);
-
-            // if displayType is set, overrides the value in param
-            if (displayType != null)
-                ((AbstractEnumParam) param).setDisplayType(displayType);
-
-            if (selectMode != null)
-                ((AbstractEnumParam) param).setSelectMode(selectMode);
-        } else { // or other param types
-            if (multiPick != null || quote != null || displayType != null
-                    || selectMode != null || queryRef != null)
-                throw new WdkModelException("The paramRef to '" + twoPartName
-                        + "' is not a flatVocabParam nor enumParam. The "
-                        + "'multiPick', 'displayType', 'quote',"
-                        + " 'selectMode', 'queryRef' properties can only be "
-                        + "applied to paramRefs of flatVocabParams or "
-                        + "enumParams.");
-            if (param instanceof StringParam) {
-                // if quote is set, it overrides the value of the param
-                if (number != null) ((StringParam) param).setNumber(number);
-            } else if (number != null) {
-                throw new WdkModelException("The paramRef to '" + twoPartName
-                        + "' is not a stringParam. The 'number' property can "
-                        + "only be applied to paramRefs of stringParams.");
-            }
-        }
-
-        // resolve the group reference
-        String groupRef = paramRef.getGroupRef();
-        if (groupRef != null) {
-            Group group = (Group) wdkModel.resolveReference(groupRef);
-            param.setGroup(group);
-        }
-        param.resolveReferences(wdkModel);
-        param.setResources(wdkModel);
-        return param;
     }
 
     private void updateParamValuesSetsWithDefaults() throws WdkModelException,

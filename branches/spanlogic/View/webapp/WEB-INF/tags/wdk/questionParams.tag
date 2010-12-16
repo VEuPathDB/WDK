@@ -163,37 +163,16 @@
 
 </c:forEach> <%-- end of foreach on paramGroups --%>
 
-<%-- set the weight --%>
-<c:if test="${!(wdkQuestion.isTransform)}">
-<div name="All_weighting"
-     class="param-group" 
-     type="ShowHide">
-<c:set var="display" value="none"/>
-<c:set var="image" value="plus.gif"/>
-<div class="group-title">
-    <img class="group-handle" src='<c:url value="/images/${image}" />' />
-    Give this search a weight
-</div>
-<div class="group-detail" style="display:${display};text-align:center">
-    <div class="group-description">
-	<p><html:text property="weight" maxlength="9" />  </p> 
-	<p>Optionally give this search a "weight" (for example 10, 200, -50, integers only).<br>In a search strategy, unions and intersects will sum the weights, giving higher scores to items found in multiple searches.
-</p>
-	
-    </div><br>
-</div>
-</div>
-</c:if>
-
+<wdk:weight wdkModel="${wdkModel}" wdkQuestion="${wdkQuestion}" />
 
 
 <%-- set the custom name --%>
 <div name="All_weighting" class="param-group" type="ShowHide">
-  <c:set var="display" value="none"/>
+	  <c:set var="display" value="none"/>
   <c:set var="image" value="plus.gif"/>
   <div class="group-title">
-    <img style="position:relative;top:5px;" class="group-handle" src='<c:url value="/images/${image}" />'/>
-    <span title="This name will be the name of the step.">Give this search a name</span>
+	 <img class="group-handle" src='<c:url value="wdk/images/${image}" />'/>
+   	 <span title="This name will be the name of the step.">Give this search a name</span>
   </div>
   <div class="group-detail" style="display:${display};text-align:center">
     <div class="group-description">
@@ -201,3 +180,4 @@
     </div><br>
   </div>
 </div>
+

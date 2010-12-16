@@ -19,7 +19,6 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
@@ -50,7 +49,7 @@ public class ProcessRegisterAction extends Action {
         Map<String, String> globalPreferences = new LinkedHashMap<String, String>();
         Map<String, String> projectPreferences = new LinkedHashMap<String, String>();
 
-        Set params = request.getParameterMap().keySet();
+        Set<?> params = request.getParameterMap().keySet();
         for (Object param : params) {
             String paramName = (String) param;
             if (paramName.equals(CConstants.WDK_EMAIL_KEY)) {
@@ -94,7 +93,8 @@ public class ProcessRegisterAction extends Action {
                     CConstants.WDK_MODEL_KEY);
             UserFactoryBean factory = wdkModel.getUserFactory();
             try {
-                UserBean user = factory.createUser(email, lastName, firstName,
+                /*UserBean user = */
+                factory.createUser(email, lastName, firstName,
                         middleName, title, organization, department, address,
                         city, state, zipCode, phoneNumber, country,
                         globalPreferences, projectPreferences);

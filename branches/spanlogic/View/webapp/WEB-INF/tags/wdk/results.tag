@@ -3,7 +3,6 @@
 <%@ taglib prefix="pg" uri="http://jsptags.com/tags/navigation/pager" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
-<c:set var="wdkStep" value="${requestScope.wdkStep}"/>
 <c:set var="wdkAnswer" value="${wdkStep.answerValue}"/>
 <c:set var="qName" value="${wdkAnswer.question.fullName}" />
 <c:set var="modelName" value="${applicationScope.wdkModel.name}" />
@@ -123,17 +122,10 @@
 <table width="100%" border="0" cellpadding="3" cellspacing="0">
 	<tr class="subheaderrow">
 	<th style="text-align: left;white-space:nowrap;"> 
-	       <wdk:pager pager_id="top"/> 
+	       <wdk:pager wdkAnswer="${wdkAnswer}" pager_id="top"/> 
 	</th>
 	<th style="text-align: right;white-space:nowrap;">
-		           <%-- display a list of sortable attributes --%>
-		           <c:set var="addAttributes" value="${wdkAnswer.displayableAttributes}" />
-		           <select id="addAttributes" style="display:none;" commandUrl="${commandUrl}" multiple="multiple">
-		               <option value="">--- Add Column ---</option>
-		               <c:forEach items="${addAttributes}" var="attribute">
-		                 <option value="${attribute.name}" title="${attribute.help}">${attribute.displayName}</option>
-		               </c:forEach>
-		           </select>
+               <wdk:addAttributes wdkAnswer="${wdkAnswer}" commandUrl="${commandUrl}"/>
 	</th>
 	<th style="text-align: right;white-space:nowrap;width:5%;">
 	    &nbsp;
@@ -373,7 +365,7 @@
 <table width="100%" border="0" cellpadding="3" cellspacing="0">
 	<tr class="subheaderrow">
 	<th style="text-align:left;white-space:nowrap;"> 
-	       <wdk:pager pager_id="bottom"/> 
+	       <wdk:pager wdkAnswer="${wdkAnswer}" pager_id="bottom"/> 
 	</th>
 	<th style="text-align:right;white-space:nowrap;">
 		&nbsp;
