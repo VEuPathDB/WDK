@@ -218,15 +218,19 @@
 				$(regiontext).css({"font-size":"90%","white-space":"nowrap"});
 				$(start).css({"background-color":b,"top":"-3px","height":"9px","width":"2px","left":"-2px"});
 				$(stop).css({"background-color":b,"top":"-3px","height":"9px","width":"2px","left":x2});
+				if (diaLength == 1) {
+					$(rect).css({"left":(x1 + 3)});
+				}
+
 			}else{
 				$(start).html(type);
 				$(start).css({"font-size":"90%","white-space":"nowrap"});
 				if (diaLength > 1 && x2 > 1.6)
 					$(stop).append('<img height="15" src="wdk/images/whitearrow.png" />');
 				if (diaLength == 1) {
-					$(stop).css({"left":(x2 - 13)});
-					$(stop).append('<img height="15" width="15" src="wdk/images/diamond.png" />');
-					}
+					$(stop).css({"top":"-6px","left":(x2 - 16)});
+					$(stop).append('<img height="18" src="wdk/images/diamond.png" />');
+				}
 			}
 			
 			$(rect).append(start).append(stop).append(regiontext);  
@@ -326,7 +330,7 @@
 		var eo = parseInt($("input[name*='span_end_offset_"+dn+"']")[i].value);//parseInt(document.getElementsByName('downstreamOffset')[i].value);
 		dia.singlepoint = Single(dia,ba,bs,bo,ea,es,eo);
 		region.height = 3;  //45
-		region.width = (feature.length > 1) ? feature.length / scale : 10;
+		region.width = (feature.length > 1) ? feature.length / scale : 0;   //10;
 		var vs = (ba == "start") ? feature.loc.x : feature.loc.x + region.width;
 		var ve = (ea == "start") ? feature.loc.x : feature.loc.x + region.width;
 		vs = (bs == '+') ? vs + (bo/scale) : vs - (bo/scale); 
