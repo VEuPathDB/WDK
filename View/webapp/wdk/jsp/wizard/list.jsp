@@ -15,6 +15,8 @@
 <c:set var="rClass" value="${step.question.recordClass}" />   <%-- used in script below --%>
 <c:set var="strategyId" value="${requestScope.strategy}" />
 <c:set var="action" value="${requestScope.action}" />
+<c:set var="wdkStrategy" value="${requestScope.wdkStrategy}"/>
+
 
 <c:set var="partialUrl" value="wizard.do?strategy=${strategyId}&step=${step.stepId}&action=${action}" />
 
@@ -97,93 +99,107 @@ ${rcDisplay} basket</a>
         <div class="original" id="sl_strategies" style="display:none">
             <ul class="menu_section">
                 <li class="category" onclick="callWizard(null,this,'sl_open',3)">Opened Strategies</li>
-                <c:set var="cls" value="showNewSection(this,'sl_saved',3)"/>
-                <c:set var="cats" value="category"/>
-                <li class="${cats}" onclick="${cls}">Saved Strategies</li>
-                <c:set var="clr" value=""/>
-                <c:set var="catr" value=""/>
-                <c:set var="count_r" value=""/>
-                <c:forEach items="${model.websiteRootCategories}" var="rcs">
-                    <c:set var="count_r" value="${count_r + fn:length(user.recentStrategiesByCategory[rcs.value.name])}"/>
-                </c:forEach>
-                <c:if test="${count_r > 0}">
-                    <c:set var="clr" value="showNewSection(this,'sl_recent',3)"/>
-                    <c:set var="catr" value="category"/>
-                </c:if>
-                <li class="${catr}" onclick="${clr}">Recent Strategies</li>
+                <li class="category" onclick="callWizard(null,this,'sl_saved',3)">Saved Strategies</li>
+                <li class="category" onclick="callWizard(null,this,'sl_recent',3)">Recent Strategies</li>
             </ul>
         </div>
 
 
         <div class="original" id="sl_open" style="display:none">
-                    <ul class="menu_section">
-                        <c:forEach items="${user.activeStrategies}" var="storedStrategy">
-                                <c:set var="displayName" value="${storedStrategy.name}" />
-                                <c:if test="${fn:length(displayName) > 30}">
-                                            <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
-                                </c:if>
-                                <li>
-                                  <a href="javascript:void(0)" onclick="callWizard('${partialUrl}&insertStrategy=${storedStrategy.strategyId}&stage=strategy',null,null,null,'next')">
-                                    ${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if>
-                                  </a>
-                                </li>
-                        </c:forEach>
-                    </ul>
-                </div>
-                <!-- Display the Saved Strategies -->
-                
-            <div class="original" id="sl_saved" style="display:none">
-                    <c:set var="savedStratCount" value="0"/>
-                    <ul class="menu_section">
-                        <c:forEach items="${model.websiteRootCategories}" var="rcs">
-                            <c:set var="savedStrategies" value="${user.savedStrategiesByCategory[rcs.value.name]}"/>
-                            <c:set var="savedStratCount" value="${savedStratCount + fn:length(savedStrategies)}" />
-                            <c:forEach items="${savedStrategies}" var="storedStrategy">
-                                <c:set var="displayName" value="${storedStrategy.name}" />
-                                <c:if test="${fn:length(displayName) > 30}">
-                                    <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
-                                </c:if>
-                                <li>
-                                  <a href="javascript:void(0)" onclick="callWizard('${partialUrl}&insertStrategy=${storedStrategy.strategyId}&stage=strategy',null,null,null,'next')">
-                                    ${displayName}
-                                  </a>
-                                </li>
-                            </c:forEach>
-                        </c:forEach>
-                        <c:if test="${savedStratCount == 0}"><li>No saved strategies available.</li></c:if>
-                    </ul>
-                </div>
-                    <!-- Display the recent Strategies (Opened  viewed in the last 24 hours) -->
-
-                <div class="original" id="sl_recent" style="display:none">
-                    <ul class="menu_section">
-                        <c:forEach items="${model.websiteRootCategories}" var="rcs">
-                            <c:forEach items="${user.recentStrategiesByCategory[rcs.value.name]}" var="storedStrategy">
-                                <c:set var="displayName" value="${storedStrategy.name}" />
-                                <c:if test="${fn:length(displayName) > 30}">
-                                    <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
-                                </c:if>
-                                <li>
-                                  <a href="javascript:void(0)" onclick="callWizard('${partialUrl}&insertStrategy=${storedStrategy.strategyId}&stage=strategy',null,null,null,'next')">
-                                    ${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if>
-                                  </a>
-                                </li>
-                            </c:forEach>
-                        </c:forEach>
-                    </ul>
-                </div>
+          <ul class="menu_section">
+            <c:set var="hasStrategy" value="${false}" />
+            <c:forEach items="${user.activeStrategies}" var="storedStrategy">
+              <c:if test="${storedStrategy.strategyId != wdkStrategy.strategyId}">
+                <c:set var="displayName" value="${storedStrategy.name}" />
+                <c:if test="${fn:length(displayName) > 30}">
+                            <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
+                </c:if>
+                <li>
+                  <a href="javascript:void(0)" onclick="callWizard('${partialUrl}&insertStrategy=${storedStrategy.strategyId}&stage=strategy',null,null,null,'next')">
+                    ${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if>
+                  </a>
+                </li>
+                <c:set var="hasStrategy" value="${true}" />
+              </c:if>
+            </c:forEach>
+            <c:if test="${hasStrategy == false}">
+              <li>No opened strategies available.</li>
+            </c:if>
+          </ul>
+        </div>
+        
+        <!-- Display the Saved Strategies -->
+        <div class="original" id="sl_saved" style="display:none">
+          <c:set var="savedStratCount" value="0"/>
+          <ul class="menu_section">
+            <c:set var="hasStrategy" value="${false}" />
+            <c:forEach items="${model.websiteRootCategories}" var="rcs">
+              <c:set var="savedStrategies" value="${user.savedStrategiesByCategory[rcs.value.name]}"/>
+              <c:set var="savedStratCount" value="${savedStratCount + fn:length(savedStrategies)}" />
+              <c:forEach items="${savedStrategies}" var="storedStrategy">
+                <c:if test="${storedStrategy.strategyId != wdkStrategy.strategyId}">
+                  <c:set var="displayName" value="${storedStrategy.name}" />
+                  <c:if test="${fn:length(displayName) > 30}">
+                    <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
+                  </c:if>
+                  <li>
+                    <a href="javascript:void(0)" onclick="callWizard('${partialUrl}&insertStrategy=${storedStrategy.strategyId}&stage=strategy',null,null,null,'next')">
+                      ${displayName}
+                    </a>
+                  </li>
+                  <c:set var="hasStrategy" value="${true}" />
+                </c:if>
+              </c:forEach>
+            </c:forEach>
+            <c:if test="${hasStrategy == false}">
+              <li>No saved strategies available.</li>
+            </c:if>
+          </ul>
+        </div>
+        
+        <!-- Display the recent Strategies (Opened  viewed in the last 24 hours) -->
+        <div class="original" id="sl_recent" style="display:none">
+          <ul class="menu_section">
+            <c:set var="hasStrategy" value="${false}" />
+            <c:forEach items="${model.websiteRootCategories}" var="rcs">
+                <c:forEach items="${user.recentStrategiesByCategory[rcs.value.name]}" var="storedStrategy">
+                  <c:if test="${storedStrategy.strategyId != wdkStrategy.strategyId}">
+                    <c:set var="displayName" value="${storedStrategy.name}" />
+                    <c:if test="${fn:length(displayName) > 30}">
+                        <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
+                    </c:if>
+                    <li>
+                      <a href="javascript:void(0)" onclick="callWizard('${partialUrl}&insertStrategy=${storedStrategy.strategyId}&stage=strategy',null,null,null,'next')">
+                        ${displayName}<c:if test="${!storedStrategy.isSaved}">*</c:if>
+                      </a>
+                    </li>
+                    <c:set var="hasStrategy" value="${true}" />
+                  </c:if>
+                </c:forEach>
+            </c:forEach>
+            <c:if test="${hasStrategy == false}">
+              <li>No recent strategies available.</li>
+            </c:if>
+          </ul>
+        </div>
         
 
         <div id="sl_recordclasses" class="original" style="display:none">
             <ul class="menu_section">
+            <c:set var="type" value="${step.shortDisplayType}" />
             <c:forEach var="rcs" items="${model.websiteRootCategories}">
                 <c:set var="classId" value="${fn:replace(rcs.value.name,'.','_')}"/>
-<c:if test="${fn:containsIgnoreCase(rcs.value.displayName, 'gene') || 
-        fn:containsIgnoreCase(rcs.value.displayName, 'orf') || 
-        fn:containsIgnoreCase(rcs.value.displayName, 'snp') ||
-        fn:containsIgnoreCase(rcs.value.displayName, 'isolate')}">
-                <li class="category" onclick="callWizard(null,this,'sl_${classId}',3)">${rcs.value.displayName}</li>
-</c:if>
+                <c:if test="${fn:containsIgnoreCase(rcs.value.displayName, type)
+                                     ||
+                                     ((type eq 'Gene' || type eq 'Orf' || 
+                                       type eq 'SNP' || type eq 'Isolate')
+                                      &&
+                                      (fn:containsIgnoreCase(rcs.value.displayName, 'gene') || 
+                                       fn:containsIgnoreCase(rcs.value.displayName, 'orf') || 
+                                       fn:containsIgnoreCase(rcs.value.displayName, 'snp') ||
+                                       fn:containsIgnoreCase(rcs.value.displayName, 'isolate')))}">
+                    <li class="category" onclick="callWizard(null,this,'sl_${classId}',3)">${rcs.value.displayName}</li>
+                </c:if>
             </c:forEach>
             </ul>
         </div>

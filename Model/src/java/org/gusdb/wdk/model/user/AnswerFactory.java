@@ -92,8 +92,8 @@ public class AnswerFactory {
      * @throws WdkModelException
      * @throws WdkUserException
      */
-    public Answer getAnswer(String questionName, String answerChecksum) throws SQLException,
-            WdkUserException, WdkModelException {
+    public Answer getAnswer(String questionName, String answerChecksum)
+            throws SQLException, WdkUserException, WdkModelException {
         String projectId = wdkModel.getProjectId();
 
         // use the cache if exists.
@@ -105,19 +105,21 @@ public class AnswerFactory {
                 + COLUMN_PROJECT_VERSION + ", " + COLUMN_QUERY_CHECKSUM + ", "
                 + COLUMN_QUESTION_NAME + " FROM " + wdkSchema + TABLE_ANSWER
                 + " WHERE " + COLUMN_PROJECT_ID + " = ? AND "
-                + COLUMN_QUESTION_NAME + " = ? AND "
-                + COLUMN_ANSWER_CHECKSUM + " = ?";
+                + COLUMN_QUESTION_NAME + " = ? AND " + COLUMN_ANSWER_CHECKSUM
+                + " = ?";
 
         ResultSet resultSet = null;
         try {
             DataSource dataSource = userPlatform.getDataSource();
             long start = System.currentTimeMillis();
-            PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, sql);
+            PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource,
+                    sql);
             ps.setString(1, projectId);
             ps.setString(2, questionName);
             ps.setString(3, answerChecksum);
             resultSet = ps.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql,
+                    "wdk-answer-factory-answer-by-checksum", start);
 
             if (resultSet.next()) {
                 answer = new Answer(resultSet.getInt(COLUMN_ANSWER_ID));
@@ -159,7 +161,8 @@ public class AnswerFactory {
             ps.setString(6, answer.getQueryChecksum());
 
             ps.executeUpdate();
-            SqlUtils.verifyTime(wdkModel, sql.toString(), start);
+            SqlUtils.verifyTime(wdkModel, sql.toString(),
+                    "wdk-answer-factory-insert", start);
         } finally {
             SqlUtils.closeStatement(ps);
         }

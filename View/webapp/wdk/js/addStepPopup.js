@@ -33,8 +33,6 @@ function showPanel(panel) {
 	if (panel == 'strategy_results') {
 		if($.cookie("refresh_results") == "true"){
 			var currentStep = $("#Strategies div.selected");
-			if (currentStep.length == 0) currentStep = $("#Strategies div.selectedarrow");
-			if (currentStep.length == 0) currentStep = $("#Strategies div.selectedtransform");
 			var active_link = $("a.results_link", currentStep);
 			if(active_link.length == 0) active_link = $(".resultCount a.operation", currentStep);
 			active_link.click();
@@ -124,6 +122,7 @@ function validateAndCall(type, url, proto, rs){
 function openFilter(dtype,strat_id,step_id,isAdd){
 	global_isAdd = isAdd;
 	if(openDetail != null) hideDetails();
+	$("#strategy_results div.attributesList").hide();
 	var isFirst = false;
 	steps = getStrategy(strat_id).Steps;
 	if(step_id == undefined){

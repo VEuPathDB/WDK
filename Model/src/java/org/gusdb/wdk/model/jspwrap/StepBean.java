@@ -523,6 +523,13 @@ public class StepBean {
 
     /**
      * @return
+     * @see org.gusdb.wdk.model.user.Step#isRevisable()
+     */
+    public boolean isRevisable() {
+        return step.isRevisable();
+    }
+    /**
+     * @return
      * @throws WdkUserException
      * @throws WdkModelException
      * @see org.gusdb.wdk.model.user.Step#getChildrenCount()

@@ -5,6 +5,7 @@ import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Random;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -17,7 +18,6 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
@@ -33,6 +33,8 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 public class ShowRecordAction extends Action {
 
+    private static final String ATTR_PAGE_ID = "wdkPageId";
+    
     private static Logger logger = Logger.getLogger(ShowRecordAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
@@ -126,6 +128,12 @@ public class ShowRecordAction extends Action {
         logger.info("showRecord took total: " + ((end - start) / 1000F)
                 + " seconds.");
 
+        // generate a page id
+        Random random = new Random();
+        int pageId = random.nextInt(Integer.MAX_VALUE);
+        request.setAttribute(ATTR_PAGE_ID, pageId);
+        logger.info("wdk-record-page-id=" + pageId + " --- start page loading.");
+                
         return forward;
     }
 }

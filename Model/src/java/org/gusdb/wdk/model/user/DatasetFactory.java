@@ -167,7 +167,7 @@ public class DatasetFactory {
 
         DataSource dataSource = userPlatform.getDataSource();
         Object result = SqlUtils.executeScalar(wdkModel, dataSource,
-                sql.toString());
+                sql.toString(), "wdk-dataset-factory-dataset-by-user-dataset");
         int datasetId = Integer.parseInt(result.toString());
 
         Dataset dataset = new Dataset(this, datasetId);
@@ -214,7 +214,8 @@ public class DatasetFactory {
                     dataSource, sql);
             psQuery.setString(1, datasetChecksum);
             resultSet = psQuery.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, start);
+            SqlUtils.verifyTime(wdkModel, sql,
+                    "wdk-dataset-factory-dataset-by-checksum", start);
             if (!resultSet.next())
                 throw new WdkModelException("The dataset with checksum '"
                         + datasetChecksum + "' doesn't exist.");
@@ -269,7 +270,7 @@ public class DatasetFactory {
         DataSource dataSource = userPlatform.getDataSource();
         try {
             resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
-                    sql.toString());
+                    sql.toString(), "wdk-dataset-factory-dataset-by-id");
             List<String[]> values = new ArrayList<String[]>();
             while (resultSet.next()) {
                 String[] columns = new String[columnCount];
@@ -304,7 +305,7 @@ public class DatasetFactory {
         sql.append(" = '").append(datasetChecksum).append("'");
 
         Object result = SqlUtils.executeScalar(wdkModel, dataSource,
-                sql.toString());
+                sql.toString(), "wdk-dataset-factory-id-by-checksum");
         return Integer.parseInt(result.toString());
     }
 
@@ -329,7 +330,7 @@ public class DatasetFactory {
                 user.getUserId());
 
         Object result = SqlUtils.executeScalar(wdkModel, dataSource,
-                sql.toString());
+                sql.toString(), "wdk-dataset-factory-user-dataset-id");
         return Integer.parseInt(result.toString());
     }
 

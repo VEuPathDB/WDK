@@ -255,4 +255,9 @@ public class AnswerParam extends Param {
     public boolean allowRecordClass(String recordClassName) {
         return recordClasses.containsKey(recordClassName);
     }
+
+    @Override
+    protected void applySuggection(ParamSuggestion suggest) {
+        // do nothing
+    }
 }

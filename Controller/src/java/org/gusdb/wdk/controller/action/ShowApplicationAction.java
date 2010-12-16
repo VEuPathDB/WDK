@@ -14,7 +14,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONObject;
@@ -75,6 +74,7 @@ public class ShowApplicationAction extends ShowSummaryAction {
     protected static void setWdkTabStateCookie(HttpServletRequest request, HttpServletResponse response) throws Exception {
 	    String cookieValue = null;
 	    Cookie[] cookies = request.getCookies();
+        if (cookies == null) return;
 	    for (Cookie cookie : cookies) {
 		if (cookie.getName().compareTo(CConstants.WDK_TAB_STATE_COOKIE) == 0) {
 		    cookieValue = URLDecoder.decode(cookie.getValue(), "utf-8");

@@ -7,13 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.text.StyleConstants.CharacterConstants;
-
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.json.JSONException;
-
-import org.apache.log4j.Logger;
 
 
 public class DynamicAttributeSet extends WdkModelBase {
@@ -22,7 +18,7 @@ public class DynamicAttributeSet extends WdkModelBase {
      * 
      */
     private static final long serialVersionUID = -1373806354317917813L;
-    private static Logger logger =  Logger.getLogger(DynamicAttributeSet.class);
+    //private static Logger logger =  Logger.getLogger(DynamicAttributeSet.class);
 
     private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
     private Map<String, AttributeField> attributeFieldMap = new LinkedHashMap<String, AttributeField>();

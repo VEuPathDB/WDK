@@ -1,6 +1,110 @@
 
 ------------------------------------------------------------------------------
-ooooooooooooooooooooooooooo  WDK Version 1.19  ooooooooooooooooooooooooooooooo
+ooooooooooooooooooooooooooo  WDK Version 1.25  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+Summary: A minor release, fixed several bugs.
+
+=========================== Model Features ===========================
+
+* quote attribute is deprecated. Use number instead.
+* skipValidation attribute is deprecated.  All typeAhead params automatically
+  skip validation from this version forward.
+
+------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.24  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+Summary: A minor release, fixed several bugs, and added a new Favorites feature.
+
+=========================== Model Features ===========================
+
+* new Favorites feature
+* useTermOnly is deprecated.  Use noTranslation instead.
+
+=========================== View Features ===========================
+
+* display for new Favorites feature
+
+
+------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.23  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+Summary: This is a major release.  Strategies WDK code has been refactored so
+that all necessary code for running a basic Strategies WDK site is included in
+the WDK.
+
+=========================== View Features ===========================
+
+* Provide default css, javascript, and jsp in WDK/View/webapp/wdk
+
+=========================== Controller Features ===========================
+* Custom pages are no longer specified in struts-config.xml. Instead, they
+must be in specific locations in order to be found and used by the WDK.
+  Custom question pages:
+    webapp/wdkCustomization/jsp/questions/
+        <Full name of record class>.form.jsp : custom question form for all
+	questions for the specified record class
+        <Full name of question set>.formjsp : custom question form for all
+	questions in the specified set
+	<Full name of question>.form.jsp : custom question form for a single
+	question
+  Custom record pages:
+    webapp/wdkCustomization/jsp/records/
+        <Full name of record class>.jsp : custom record page for the specified
+	record class
+  Custom reporter pages:
+    webapp/wdkCustomization/jsp/reporters/
+        <Full name of reporter>.jsp : custom reporter page for the specified
+	reporter
+  Custom results pages:
+    webapp/wdkCustomization/jsp/results/
+	<Full name of record class>.results.jsp : custom results display for
+	all questions for the specified record class
+	<Full name of question>.results.jsp : custom results display for the
+	specified question
+  Optional strategies pages:
+    Note:  if these pages do not exist, the tabs will be hidden automatically
+    webapp/wdkCustomization/jsp/strategies/
+	helpTab.jsp : provides the content of the Help tab on the strategies
+	page
+	newTab.jsp : provides the content of the New tab on the strategies
+	page
+	samplesTab.jsp : provides the content of the Samples tab on the
+	strategies page
+	
+
+------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.22  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+Summary: A minor release, fixed several bugs.
+
+
+------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.21  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+Summary: A minor release, fixed several bugs, and added a new Basket feature
+as well as a REST web service
+
+=========================== Model Features ===========================
+
+* new Basket feature
+* useTermOnly is deprecated.  Use noTranslation instead.
+
+=========================== View Features ===========================
+
+* display for new Basket feature
+
+=========================== Controller Features ===========================
+
+* added REST web service action:  ProcessRESTAction
+
+
+------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.20  ooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 
 Summary: A minor release, fixed several bugs, and some new features.
@@ -21,20 +125,17 @@ Summary: A minor release, fixed several bugs, and some new features.
 ooooooooooooooooooooooooooo  WDK Version 1.19  ooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 
-Summary: This is a major release, the WDK is updated to support the Lasted UI 
-advancement, including the strategy systems.
-
-
-
+Summary: This is a major release, the WDK is updated to support the latest UI 
+	 advancement, including the strategy systems.
 
 
 ------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.18  ooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 
-Summary: This is a major release, many of the model code have been rewritten, 
-         including new caching strategy, and primaryKey can now have multiple 
-         columns, and new filter mechanism has been added.
+Summary: This is a major release, much of the model code has been rewritten, 
+         including a new caching strategy, and primaryKey can now have multiple 
+         columns, and a new filter mechanism has been added.
 
 
 =========================== Model Features ===========================

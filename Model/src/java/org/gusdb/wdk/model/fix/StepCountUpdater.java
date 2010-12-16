@@ -216,7 +216,8 @@ public class StepCountUpdater extends BaseCLI {
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         ResultSet resultSet = null;
         try {
-            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql);
+            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+                    "wdk-select-users");
             while (resultSet.next()) {
                 int userId = resultSet.getInt("user_id");
                 userIds.push(userId);

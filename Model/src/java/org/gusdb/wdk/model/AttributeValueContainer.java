@@ -9,7 +9,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.json.JSONException;
 
 /**
@@ -26,15 +28,9 @@ public abstract class AttributeValueContainer {
             throws WdkModelException, NoSuchAlgorithmException, JSONException,
             SQLException, WdkUserException;
 
-    protected PrimaryKeyAttributeValue primaryKey;
+    protected abstract PrimaryKeyAttributeValue getPrimaryKey();
 
     private Map<String, AttributeValue> attributeValueCache = new LinkedHashMap<String, AttributeValue>();
-
-    void setPrimaryKey(PrimaryKeyAttributeValue primaryKey) {
-        this.primaryKey = primaryKey;
-        attributeValueCache.put(primaryKey.getAttributeField().getName(),
-                primaryKey);
-    }
 
     public AttributeValue getAttributeValue(String fieldName)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
@@ -42,7 +38,6 @@ public abstract class AttributeValueContainer {
         // get the field from the cache; primary key always exists in the cache
         Map<String, AttributeField> fields = getAttributeFieldMap();
         AttributeField field = fields.get(fieldName);
-
         if (field == null)
             throw new WdkModelException("The attribute field [" + fieldName
                     + "]cannot be found");
@@ -59,16 +54,24 @@ public abstract class AttributeValueContainer {
             value = new TextAttributeValue((TextAttributeField) field, this);
             attributeValueCache.put(fieldName, value);
         } else if (field instanceof PrimaryKeyAttributeField) {
-            value = primaryKey;
+            value = getPrimaryKey();
             attributeValueCache.put(fieldName, value);
         } else if (field instanceof ColumnAttributeField) {
             Query query = ((ColumnAttributeField) field).getColumn().getQuery();
+
+            logger.debug("filling attribute values from query " + query.getFullName());
+            for (Column column : query.getColumns()) {
+                logger.debug("column: " + column.getName());
+            }
+            if (query instanceof SqlQuery)
+                logger.debug("SQL: \n" + ((SqlQuery)query).getSql());
+
             fillColumnAttributeValues(query);
-            value = attributeValueCache.get(fieldName);
-            if (value == null)
+            if (!attributeValueCache.containsKey(fieldName))
             // something is wrong here, need further investigation.
                 throw new WdkModelException("Field exists, but the value "
                         + "doesn't, need investigation: " + field.getName());
+            value = attributeValueCache.get(fieldName);
         } else {
             throw new WdkModelException(
                     "unsupported attribute field type for : " + fieldName);
@@ -76,7 +79,7 @@ public abstract class AttributeValueContainer {
         return value;
     }
 
-    protected void addColumnAttributeValue(ColumnAttributeValue value) {
+    protected void addAttributeValue(AttributeValue value) {
         attributeValueCache.put(value.getAttributeField().getName(), value);
     }
 }

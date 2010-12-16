@@ -30,7 +30,6 @@ import org.json.JSONException;
  * completes the partial boolean expression that was passed in, if any 4)
  * adds/inserts/edits step in strategy 5) forwards to application page
  */
-@Deprecated
 public class ProcessFilterAction extends ProcessQuestionAction {
     private static final Logger logger = Logger.getLogger(ProcessFilterAction.class);
 
@@ -74,7 +73,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             if (checksum != null && !strategy.getChecksum().equals(checksum)) {
                 logger.error("strategy checksum: " + strategy.getChecksum()
                         + ", but the input checksum: " + checksum);
-                ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response, state);
+                ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser, response, state);
                 return null;
             }
 
@@ -100,8 +99,9 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             int weight = 0;
             if (hasWeight) {
                 if (!strWeight.matches("[\\-\\+]?\\d+"))
-                    throw new WdkUserException("Invalid weight value: '" 
-                            + strWeight + "'. Only integer numbers are allowed.");
+                    throw new WdkUserException("Invalid weight value: '"
+                            + strWeight
+                            + "'. Only integer numbers are allowed.");
                 if (strWeight.length() > 9)
                     throw new WdkUserException("Weight number is too big: "
                             + strWeight);
@@ -118,7 +118,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             boolean hasQuestion = (qFullName != null && qFullName.trim().length() > 0);
 
             logger.debug("isRevise: " + isRevise + "; isInsert: " + isInsert);
-            logger.debug("has question? " + hasQuestion + "; qFullName: " + qFullName);
+            logger.debug("has question? " + hasQuestion + "; qFullName: "
+                    + qFullName);
             logger.debug("has filter? " + hasFilter + "; filter: " + filterName);
             logger.debug("has weight? " + hasWeight + "; weight: " + weight);
             // are we inserting an existing step?
@@ -141,7 +142,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         fForm);
 
                 if (isRevise) { // TODO need investigation of this code
-                    StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
+                    /* StepBean oldStep = */ 
+                    strategy.getStepById(Integer.parseInt(reviseStep));
                 }
                 if (wdkQuestion == null) {
                     if (!hasQuestion)
@@ -389,13 +391,26 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 // which is handled by ShowStrategyAction
             }
 
+            // set the view, if it's not set yet
+            logger.debug("old view: strategy=" + wdkUser.getViewStrategyId() + ", step=" + wdkUser.getViewStepId());
+            String viewStrategyKey = wdkUser.getViewStrategyId();
+            if (viewStrategyKey == null) viewStrategyKey = strategyKey;
+            if (strategyKey.equals(viewStrategyKey)) {
+                int viewStepId = wdkUser.getViewStepId();
+                if (0 == viewStepId || strategy.getStepById(viewStepId) == null) {
+                    // the view is not set
+                    wdkUser.setViewResults(viewStrategyKey, newStepId, 0);
+                    logger.debug("new view: strategy=" + viewStrategyKey + ", step=" + newStepId);
+                }
+            }
+
             ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
             StringBuffer url = new StringBuffer(showStrategy.getPath());
             url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
 
             ActionForward forward = new ActionForward(url.toString());
             forward.setRedirect(true);
-            System.out.println("Leaving ProcessFilterAction...");
+            logger.debug("Leaving ProcessFilterAction...");
             return forward;
         } catch (Exception ex) {
             logger.error(ex);

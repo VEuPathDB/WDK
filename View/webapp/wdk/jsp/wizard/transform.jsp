@@ -6,37 +6,69 @@
 
 
 <c:set var="wdkQuestion" value="${requestScope.question}"/>
+<c:set var="spanOnly" value="false"/>
 <c:set var="checked" value=""/>
-<c:set var="buttonVal" value="Get Answer"/>
+<c:set var="buttonVal" value="Run Step"/>
+<c:set var="wdkStrategy" value="${requestScope.wdkStrategy}"/>
 <c:set var="wdkStep" value="${requestScope.wdkStep}"/>
+<c:set var="allowBoolean" value="${requestScope.allowBoolean}"/>
+<c:set var="action" value="${requestScope.action}"/>
 
-
+<c:if test="${wdkQuestion.recordClass.fullName != wdkStep.dataType}">
+	<c:set var="checked" value="checked=''"/>
+	<c:set var="buttonVal" value="Continue...."/>
+	<c:set var="spanOnly" value="true"/>
+</c:if>
 
 <c:set var="wizard" value="${requestScope.wizard}"/>
 <c:set var="stage" value="${requestScope.stage}"/>
-<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do"  onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
-<%-- the following sections are copied from <question.tag>, need to refactor into a separate tag --%>
 
-<input type="hidden" name="questionFullName" value="${wdkQuestion.fullName}"/>
+
+<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
+<span style="display:none" id="strategyId">${wdkStrategy.strategyId}</span>
+<c:choose>
+    <c:when test="${wdkStep.previousStep == null || action != 'revise'}">
+        <c:set var="stepId" value="${wdkStep.stepId}" />
+    </c:when>
+    <c:otherwise>
+        <c:set var="stepId" value="${wdkStep.previousStep.stepId}" />
+    </c:otherwise>
+</c:choose>
+<span style="display:none" id="stepId">${stepId}</span>
+
+<c:set var="Question_Header" scope="request">
+<%-- has nothing --%>
+</c:set>
+
+<c:set var="Question_Footer" scope="request">
+<%-- displays question description, can be overridden by the custom question form --%>
+<wdk:questionDescription />
+</c:set>
+
+${Question_Header}
+
+
+<%-- display question param section --%>
+<div class="filter params">
+  <span class="form_subtitle">
+    <c:choose>
+      <c:when test="${action == 'add'}">
+        Add Step ${wdkStep.frontId + 1}
+      </c:when>
+      <c:when test="${action == 'insert'}">
+        Insert Step ${wdkStep.frontId + 1}
+      </c:when>
+      <c:otherwise>
+        Revise Step ${wdkStep.frontId}
+      </c:otherwise>
+    </c:choose>
+    : ${wdkQuestion.displayName}
+  </span>
+
+  <wdk:questionForm />
+</div>
+
 <html:hidden property="stage" styleId="stage" value="process_question"/>
-
-<!-- show error messages, if any -->
-<wdk:errors/>
-
-<%-- the js has to be included here in order to appear in the step form --%>
-<script type="text/javascript" src='<c:url value="/wdk/js/wdkQuestion.js"/>'></script>
-<c:if test="${showParams == null}">
-            <script type="text/javascript">
-              $(document).ready(function() { initParamHandlers(); });
-            </script>
-</c:if>
-
-<div class="params">
-      <wdk:questionParams />
-</div> <%-- end of params div --%>		
-<%--<c:set target="${helps}" property="${fromAnchorQ}" value="${helpQ}"/>--%>
-<%-- end of the copied content --%>
-
 
 <div id="transform_button" class="filter-button"><html:submit property="questionSubmit" value="${buttonVal}"/></div>
 </html:form>

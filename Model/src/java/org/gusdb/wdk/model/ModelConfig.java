@@ -22,6 +22,8 @@ public class ModelConfig {
 
     private ModelConfigUserDB userDB;
     private ModelConfigAppDB appDB;
+    
+    private QueryMonitor queryMonitor = new QueryMonitor();
 
     /**
      * The projectId is not part of the config file content, it is input by the
@@ -32,6 +34,9 @@ public class ModelConfig {
 
     // location of secret key file
     private String secretKeyFile;
+
+    // whether to include weight form
+    private boolean useWeights = true;
     
     private String paramRegex;
 
@@ -202,6 +207,21 @@ public class ModelConfig {
     }
 
     /**
+     * @return the useWeights
+     */
+    public boolean getUseWeights() {
+        return useWeights;
+    }
+
+    /**
+     * @param secretKeyFile
+     *            the secretKeyFile to set
+     */
+    public void setUseWeights(boolean useWeights) {
+        this.useWeights = useWeights;
+    }
+
+    /**
      * @return the adminEmail
      */
     public String getAdminEmail() {
@@ -229,5 +249,19 @@ public class ModelConfig {
      */
     public void setParamRegex(String paramRegex) {
         this.paramRegex = paramRegex;
+    }
+
+    /**
+     * @return the queryMonitor
+     */
+    public QueryMonitor getQueryMonitor() {
+        return queryMonitor;
+    }
+
+    /**
+     * @param queryMonitor the queryMonitor to set
+     */
+    public void setQueryMonitor(QueryMonitor queryMonitor) {
+        this.queryMonitor = queryMonitor;
     }
 }

@@ -100,7 +100,7 @@ public class TestDBManager extends BaseCLI {
                 System.err.println("Dropping table " + tableName);
                 String dropTable = "drop table " + tableName;
                 SqlUtils.executeUpdate(wdkModel, platform.getDataSource(),
-                        dropTable);
+                        dropTable, "wdk-drop-table");
             } catch (SQLException ex) {
                 System.err.println("Dropping table '" + tableName + "' failed.");
                 ex.printStackTrace();
@@ -233,7 +233,8 @@ public class TestDBManager extends BaseCLI {
 
         // System.err.println("creating test table with sql " + createTable);
 
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString());
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+                "wdk-create-table");
 
         return columnTypes;
     }

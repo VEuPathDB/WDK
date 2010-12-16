@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -90,7 +91,7 @@ public class FlatVocabParam extends AbstractEnumParam {
         query.addParam(param);
         this.query = query;
 
-	loadDependedParam();
+        loadDependedParam();
     }
 
     /*
@@ -111,12 +112,14 @@ public class FlatVocabParam extends AbstractEnumParam {
     protected synchronized void initVocabMap() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        if (termInternalMap != null && (dependedParam == null || !isDependedValueChanged())) return;
+        if (termInternalMap != null
+                && (dependedParam == null || !isDependedValueChanged()))
+            return;
 
         termInternalMap = new LinkedHashMap<String, String>();
         termDisplayMap = new LinkedHashMap<String, String>();
 
-	if (dependedParam != null && dependedValue == null) return;
+        if (dependedParam != null && dependedValue == null) return;
 
         // check if the query has "display" column
         boolean hasDisplay = query.getColumnMap().containsKey(COLUMN_DISPLAY);
@@ -127,15 +130,26 @@ public class FlatVocabParam extends AbstractEnumParam {
         // prepare param values
         Map<String, String> values = new LinkedHashMap<String, String>();
         values.put(PARAM_SERVED_QUERY, servedQueryName);
-	if (dependedParam != null)
-	    values.put(dependedParam.getName(), dependedValue);
+        if (dependedParam != null)
+            values.put(dependedParam.getName(), dependedValue);
 
         User user = wdkModel.getSystemUser();
         QueryInstance instance = query.makeInstance(user, values, true, 0);
         ResultList result = instance.getResults();
         while (result.next()) {
-            String term = result.get(COLUMN_TERM).toString().trim();
-            String value = result.get(COLUMN_INTERNAL).toString().trim();
+            Object objTerm = result.get(COLUMN_TERM);
+            Object objInternal = result.get(COLUMN_INTERNAL);
+            if (objTerm == null)
+                throw new WdkModelException("The term of flatVocabParam ["
+                        + getFullName() + "] is null. query ["
+                        + query.getFullName() + "].\n" + instance.getSql());
+            if (objInternal == null)
+                throw new WdkModelException("The internal of flatVocabParam ["
+                        + getFullName() + "] is null. query ["
+                        + query.getFullName() + "].\n" + instance.getSql());
+
+            String term = objTerm.toString().trim();
+            String value = objInternal.toString().trim();
             String display = hasDisplay ? result.get(COLUMN_DISPLAY).toString().trim()
                     : term;
             String parentTerm = null;
@@ -162,12 +176,13 @@ public class FlatVocabParam extends AbstractEnumParam {
             termDisplayMap.put(term, display);
         }
         if (termInternalMap.isEmpty())
-            throw new WdkModelException("No item returned by the query of"
-                    + " FlatVocabParam " + getFullName());
+            throw new WdkModelException("No item returned by the query [" 
+                    + query.getFullName() + "] of FlatVocabParam [" + getFullName()
+                    +"].\n" + ((SqlQuery)query).getSql());
         initTreeMap();
         applySelectMode();
 
-	setDependedValueChanged(false);
+        setDependedValueChanged(false);
     }
 
     /*

@@ -22,9 +22,6 @@
 <c:set value="Help for question: ${wdkQuestion.displayName}" var="fromAnchorQ"/>
 <jsp:useBean id="helpQ" class="java.util.LinkedHashMap"/>
 
-        <%-- display question section --%>
-<h1>Identify ${recordType}s based on ${wdkQuestion.displayName}</h1>
-
 <table width=100%> 
 <tr>
 <td bgcolor=white valign=top>
@@ -50,11 +47,6 @@
 </div> <%-- end of params div --%>
 
 <c:set target="${helps}" property="${fromAnchorQ}" value="${helpQ}"/>
-
-<%-- set the weight --%>
-<div align="center">
-  Assign Weight: <html:text property="weight" maxlength="9" />
-</div>
 
 <%-- give the new search a name --%>
 <div align=center">

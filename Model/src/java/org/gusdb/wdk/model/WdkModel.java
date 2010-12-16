@@ -73,8 +73,12 @@ public class WdkModel {
             TransformerException, IOException, SAXException, SQLException,
             JSONException, WdkUserException, InstantiationException,
             IllegalAccessException, ClassNotFoundException {
+        StackTraceElement[] stackTrace = new Throwable().getStackTrace();
+        int index = stackTrace.length - 1;
+        String tip = "";
+        if (index >= 0) tip = "called by " + stackTrace[index].getClassName();
         logger.debug("Constructing wdk model [" + projectId + "] (GUS_HOME="
-                + gusHome + ")...");
+                + gusHome + "); " + tip);
 
         ModelXmlParser parser = new ModelXmlParser(gusHome);
         WdkModel wdkModel = parser.parseModel(projectId);
@@ -157,9 +161,6 @@ public class WdkModel {
 
     private User systemUser;
 
-    private List<QueryMonitor> queryMonitorList = new ArrayList<QueryMonitor>();
-    private QueryMonitor queryMonitor;
-
 
     /**
      * @param initRecordClassList
@@ -168,7 +169,7 @@ public class WdkModel {
      * @throws WdkModelException
      */
     public Question getQuestion(String questionFullName)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         Reference r = new Reference(questionFullName);
         QuestionSet ss = getQuestionSet(r.getSetName());
         return ss.getQuestion(r.getElementName());
@@ -610,9 +611,6 @@ public class WdkModel {
             if (category.getParent() == null)
                 rootCategoryMap.put(category.getName(), category);
         }
-
-        // resolve reference for query monitor
-        queryMonitor.resolveReferences(this);
     }
 
     private void excludeResources() throws WdkModelException {
@@ -766,24 +764,6 @@ public class WdkModel {
             }
         }
         macroList = null;
-
-        // exclude query monitors
-        for (QueryMonitor monitor : queryMonitorList) {
-            if (!monitor.include(projectId)) continue;
-            if (this.queryMonitor != null)
-                throw new WdkModelException("the query monitor is included "
-                        + "more than once for project " + projectId);
-            monitor.excludeResources(projectId);
-            this.queryMonitor = monitor;
-        }
-        queryMonitorList = null;
-        // create the query monitor in case it is not specified, and provide a
-        // default monitor to the system.
-        if (queryMonitor == null) {
-            queryMonitor = new QueryMonitor();
-            queryMonitor.excludeResources(projectId);
-        }
-
     }
 
     /**
@@ -1104,6 +1084,10 @@ public class WdkModel {
         return secretKey;
     }
 
+    public boolean getUseWeights() {
+	return modelConfig.getUseWeights();
+    }
+
     public User getSystemUser() throws NoSuchAlgorithmException,
             WdkUserException, WdkModelException, SQLException {
         if (systemUser == null) systemUser = userFactory.createGuestUser();
@@ -1122,22 +1106,10 @@ public class WdkModel {
         return releaseDate;
     }
 
-    public void addQueryMonitor(QueryMonitor queryMonitor) {
-        this.queryMonitorList.add(queryMonitor);
-    }
-
     /**
      * @return the queryMonitor
      */
     public QueryMonitor getQueryMonitor() {
-        return queryMonitor;
-    }
-
-    /**
-     * @param queryMonitor
-     *            the queryMonitor to set
-     */
-    public void setQueryMonitor(QueryMonitor queryMonitor) {
-        this.queryMonitor = queryMonitor;
+        return modelConfig.getQueryMonitor();
     }
 }

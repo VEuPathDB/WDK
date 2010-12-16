@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.json.JSONException;
 
@@ -81,7 +82,9 @@ public class ProcessBooleanAction extends Action {
         } catch (WdkOutOfSyncException ex) {
             logger.error(ex);
             ex.printStackTrace();
-            ShowStrategyAction.outputOutOfSyncJSON(user, response, state);
+            WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
+            ShowStrategyAction.outputOutOfSyncJSON(wdkModel, user, response,
+                    state);
             return null;
         } catch (Exception ex) {
             logger.error(ex);
@@ -180,7 +183,8 @@ public class ProcessBooleanAction extends Action {
             filterName = (fName != null && fName.length() > 0) ? fName
                     : step.getFilterName();
         }
-        logger.debug("previous step: " + previousStep + ", child step: " + childStep + ", boolean: " + operator);
+        logger.debug("previous step: " + previousStep + ", child step: "
+                + childStep + ", boolean: " + operator);
         StepBean newStep = user.createBooleanStep(previousStep, childStep,
                 operator, useBooleanFilter, filterName);
         // the new step is to replace the current one.

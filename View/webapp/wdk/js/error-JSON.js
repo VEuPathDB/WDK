@@ -2,7 +2,7 @@ var OOSMessage = "Sorry, there was a synchronization problem.\nWe have updated t
 var SessionTimeOutMessage = "Your session may have timed out and all of your data has been lost.  By registering and logging in you can prevent this from happening in the future.";
 function ErrorHandler(evt, data, strategy, qform, name, fromHist){
 	var type = null;
-	
+	if($("form#form_question table.parameter-errors").length > 0) $("form#form_question table.parameter-errors").remove();
 	if(evt == "Results") {
             if (data.substring(0,1) != "{") return true;
             data = eval("(" + data + ")");
@@ -14,7 +14,7 @@ function ErrorHandler(evt, data, strategy, qform, name, fromHist){
 			x = new Object();
 			x.strategy = undefined;
 			x.step = undefined;
-			showStrategies(x);
+			showStrategies(x, false, 0);
 			return;
 	}
         if(data.type == "success"){
@@ -46,7 +46,7 @@ function ErrorHandler(evt, data, strategy, qform, name, fromHist){
 			removeStrategyDivs(strategy.backId);
 			f_strategyId = updateStrategies(data, evt, strategy);
 			removeLoading(strategy.frontId);
-			$("#diagram_" + strategy.frontId + " div.venn:last .resultCount a").click();
+			$("#diagram_" + strategy.frontId + " div.stepBox:last h6.resultCount:last a").click();
 			isInsert = "";
 		}else if(type == "dup-name-error"){
 			if(evt == "SaveStrategy"){

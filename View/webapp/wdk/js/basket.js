@@ -25,13 +25,12 @@ function showBasket(recordClass, type){
 		success: function(data){
 			if (recordClass) {
 				setCurrentTabCookie('basket', type);
-				$("div#basket_" + type).html(data);
+				$("div#basket_" + type + " > div.Workspace").html(data);
 				if ($("div#basket_" + type).find("table").length > 0) {
 					$("input#empty-basket-button").attr("disabled",false);
 					$("input#make-strategy-from-basket-button").attr("disabled",false);
 					// create multi select control for adding columns
 					checkPageBasket();
-					createMultiSelectAttributes($("#basket_" + type).find("#addAttributes"));
 					createFlexigridFromTable($("#basket_" + type).find("#Results_Table"));
 					try {
 						customBasketPage();
@@ -82,7 +81,13 @@ function ChangeBasket(url, noUpdate) {
 
 function emptyBasket() {
 	var recordClass = jQuery("div#" + getCurrentBasketWrapper()).attr("recordClass");
-	updateBasket(this,'clear',0,0,recordClass);
+	var display = jQuery("div#" + getCurrentBasketWrapper()).attr("displayName");
+	var message = jQuery("#basketConfirmation");
+	$("#basketName", message).text(display);
+	$("form", message).submit(function() {
+		updateBasket(this,'clear',0,0,recordClass);
+	});		
+	jQuery.blockUI({message : message});
 }
 
 function saveBasket() {
@@ -190,16 +195,9 @@ function updateBasket(ele, type, pk, pid,recordType) {
 				if(type != 'recordPage'){
 					checkPageBasket();
 				}
-				if (currentDiv == 'basket') {
+				if (currentDiv.match(/basket/)) {
 					//Using cookie to determine that the results need to be updated when the 'Opened' tab is selected
 					jQuery.cookie("refresh_results", "true", { path : '/' });
-					// If any results are showing (and we're not already on the results page) update them.
-					/*var currentStep = jQuery("#Strategies div.selected");
-					if (currentStep.length == 0) currentStep = jQuery("#Strategies div.selectedarrow");
-					if (currentStep.length == 0) currentStep = jQuery("#Strategies div.selectedtransform");
-					var active_link = jQuery("a.results_link", currentStep);
-					if(active_link.length == 0) active_link = jQuery(".resultCount a.operation", currentStep);
-					active_link.click();*/
 				}
 			},
 			error: function(){

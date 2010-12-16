@@ -76,8 +76,6 @@ public abstract class QueryInstance {
         this.cached = query.isCached();
         this.assignedWeight = assignedWeight;
 
-        // logger.debug("validating param values of query [" +
-        // query.getFullName() + "]");
         setValues(values, validate);
     }
 
@@ -120,8 +118,15 @@ public abstract class QueryInstance {
             logger.trace(paramName + "='" + values.get(paramName) + "'");
         }
 
+        // add user_id into the param values
+        Map<String, Param> params = query.getParamMap();
+        String userKey = Utilities.PARAM_USER_ID;
+        if (params.containsKey(userKey) && !values.containsKey(userKey)) {
+            values.put(userKey, Integer.toString(user.getUserId()));
+        }
+
         // convert the values into dependent values
-        for (Param param : query.getParams()) {
+        for (Param param : params.values()) {
             if (values.containsKey(param.getName())) {
                 String value = values.get(param.getName());
                 value = param.rawOrDependentValueToDependentValue(user, value);
@@ -229,7 +234,7 @@ public abstract class QueryInstance {
         sql.append(getSql()).append(") f");
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         Object objSize = SqlUtils.executeScalar(wdkModel, dataSource,
-                sql.toString());
+                sql.toString(), query.getFullName() + "-count");
         int resultSize = Integer.parseInt(objSize.toString());
         logger.debug("end getting query size");
         return resultSize;
