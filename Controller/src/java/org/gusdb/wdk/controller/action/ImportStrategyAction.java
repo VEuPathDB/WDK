@@ -1,6 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -11,6 +10,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -48,6 +48,9 @@ public class ImportStrategyAction extends Action {
 
 	wdkUser.addActiveStrategy(Integer.toString(strategy.getStrategyId()));
 
+	// Add any substrategies to the active strategies
+	addActiveSubstrategies(wdkUser, strategy.getStrategyId(), strategy.getLatestStep());
+
 	/* Charles Treatman 4/23/09
          * Add code here to set the current_application_tab cookie
 	 * so that user will go to the Run Strategies tab after
@@ -58,5 +61,17 @@ public class ImportStrategyAction extends Action {
         ActionForward forward = mapping.findForward(CConstants.SHOW_APPLICATION_MAPKEY);
         forward = new ActionForward(forward.getPath(), true);
         return forward;
+    }
+
+    private void addActiveSubstrategies(UserBean wdkUser, int strategyId, StepBean step)
+	throws Exception {
+        if (step == null) return;
+
+        if (step.getIsCollapsible() && step.getParentStep() != null) {
+            logger.debug("open sub-strategy: " + strategyId + "_" + step.getStepId());
+            wdkUser.addActiveStrategy(strategyId + "_" + Integer.toString(step.getStepId()));
+        }
+        addActiveSubstrategies(wdkUser, strategyId, step.getPreviousStep());
+	addActiveSubstrategies(wdkUser, strategyId, step.getChildStep());
     }
 }

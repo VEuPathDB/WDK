@@ -59,9 +59,11 @@ public class StepValidator extends BaseCLI {
      */
     @Override
     protected void declareOptions() {
-        addSingleValueOption(ARG_PROJECT_ID, true, null, "a list of ProjectIds"
-                + ", which should match the directory name"
-                + " under $GUS_HOME, where model-config.xml is stored.");
+        addSingleValueOption(ARG_PROJECT_ID, true, null, "a ProjectId"
+                + ", which should match the directory name under $GUS_HOME, "
+                + "where model-config.xml is stored. You just need to use "
+                + "one project to provide connection to database, and the "
+                + "change will affect all projects.");
     }
 
     /*
@@ -73,43 +75,43 @@ public class StepValidator extends BaseCLI {
     protected void execute() throws Exception {
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
-        String ids = (String) getOptionValue(ARG_PROJECT_ID);
-        String[] projectIds = ids.split(",");
-        for (String projectId : projectIds) {
-            projectId = projectId.trim();
-            logger.info("Validate steps & answers for " + projectId + "... ");
-            WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-            validate(wdkModel);
-        }
-    }
+        String projectId = (String) getOptionValue(ARG_PROJECT_ID);
+        logger.info("Validate steps & answers for all projects... ");
 
-    private void validate(WdkModel wdkModel) throws SQLException,
-            WdkUserException, WdkModelException {
+        WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
+
+        dropDanglingSteps(wdkModel);
+        deleteInvalidParams(wdkModel);
+
         resetFlags(wdkModel);
         detectQuestions(wdkModel);
         detectParams(wdkModel);
         detectEnumParams(wdkModel);
 
         flagSteps(wdkModel);
+        flagDependentSteps(wdkModel);
     }
 
     private void resetFlags(WdkModel wdkModel) throws SQLException,
             WdkUserException, WdkModelException {
+        logger.debug("resetting is_valid flags...");
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String userSchema = userDB.getUserSchema();
         String wdkSchema = userDB.getWdkEngineSchema();
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE " + wdkSchema
-                + "answers SET is_valid = NULL");
+                + "answers SET is_valid = NULL", "wdk-reset-answer-flag");
         SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE " + userSchema
-                + "steps SET is_valid = NULL");
+                + "steps SET is_valid = NULL", "wdk-reset-step-flag");
         // SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE " + userSchema
         // + "strategies SET is_valid = NULL");
     }
 
     private void detectQuestions(WdkModel wdkModel) throws SQLException,
             WdkUserException, WdkModelException {
+        logger.debug("detecting invalid questions...");
+
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         DataSource source = wdkModel.getUserPlatform().getDataSource();
@@ -123,11 +125,13 @@ public class StepValidator extends BaseCLI {
                 + "     SELECT project_id, question_name FROM wdk_questions) d"
                 + "   WHERE a.project_id = d.project_id"
                 + "     AND a.question_name = d.question_name"
-                + "     AND a.is_valid IS NULL)");
+                + "     AND a.is_valid IS NULL)", "wdk-invalidate-question");
     }
 
     private void detectParams(WdkModel wdkModel) throws SQLException,
             WdkUserException, WdkModelException {
+        logger.debug("detecting invalid params...");
+
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
@@ -151,11 +155,13 @@ public class StepValidator extends BaseCLI {
                 + "     AND a.answer_id = s.answer_id "
                 + "     AND s.step_id = sp.step_id "
                 + "     AND sp.param_name = d.param_name "
-                + "     AND a.is_valid IS NULL)");
+                + "     AND a.is_valid IS NULL)", "wdk-invalidate-param");
     }
 
     private void detectEnumParams(WdkModel wdkModel) throws SQLException,
             WdkUserException, WdkModelException {
+        logger.debug("detecting invalid enum params...");
+
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
@@ -190,21 +196,192 @@ public class StepValidator extends BaseCLI {
                 + "     AND s.step_id = sp.step_id "
                 + "     AND sp.param_name = d.param_name "
                 + "     AND sp.param_value = d.param_value "
-                + "     AND a.is_valid IS NULL)");
+                + "     AND a.is_valid IS NULL)", "wdk-invalidate-enum-param");
     }
 
     private void flagSteps(WdkModel wdkModel) throws SQLException,
             WdkUserException, WdkModelException {
+        logger.debug("flagging invalid steps...");
+
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
         DataSource source = wdkModel.getUserPlatform().getDataSource();
 
+        String sql = "UPDATE " + step + " SET is_valid = 0 "
+                + "WHERE (is_valid IS NULL OR is_valid = 1) "
+                + "  AND answer_id IN (SELECT answer_id FROM " + answer
+                + "                    WHERE is_valid = 0)";
         // mark invalid steps
-        SqlUtils.executeUpdate(wdkModel, source, "UPDATE " + step
-                + " SET is_valid = 0 "
-                + " WHERE (is_valid IS NULL OR is_valid = 1) "
-                + "   AND answer_id IN (SELECT answer_id FROM " + answer
-                + "                    WHERE is_valid = 0)");
+        SqlUtils.executeUpdate(wdkModel, source, sql, "wdk-invalidate-step");
     }
+
+    private void flagDependentSteps(WdkModel wdkModel) throws WdkUserException,
+            WdkModelException, SQLException {
+        logger.debug("Flagging invalid dependent steps...");
+
+        ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
+        String step = userDB.getUserSchema() + "steps";
+        DataSource source = wdkModel.getUserPlatform().getDataSource();
+
+        String tempTable = "wdk_part_steps";
+
+        String sql = "CREATE TABLE " + tempTable + " NOLOGGING AS "
+                + " SELECT step_id, user_id, display_id, left_child_id, "
+                + "        right_child_id, is_valid " + " FROM " + step
+                + " WHERE user_id IN " + "   (SELECT user_id FROM " + step
+                + " WHERE is_valid = 0)";
+        SqlUtils.executeUpdate(wdkModel, source, sql,
+                "wdk-invalidate-create-part-steps");
+
+        sql = "UPDATE " + step + " SET is_valid = 0 "
+                + "WHERE is_valid IS NULL AND step_id IN ("
+                + "  SELECT step_id FROM " + tempTable
+                + "  START WITH is_valid = 0 "
+                + "  CONNECT BY (prior display_id = right_child_id "
+                + "              OR prior display_id = left_child_id) "
+                + "            AND prior user_id = user_id)";
+        SqlUtils.executeUpdate(wdkModel, source, sql,
+                "wdk-invalidate-parent-step");
+
+        sql = "DROP TABLE " + tempTable + " PURGE";
+        SqlUtils.executeUpdate(wdkModel, source, sql,
+                "wdk-invalidate-drop-part-steps");
+
+    }
+
+    private void deleteInvalidParams(WdkModel wdkModel)
+            throws WdkUserException, WdkModelException, SQLException {
+        logger.info("Deleting params which doesn't have a valid step...");
+        String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
+
+        StringBuilder sql = new StringBuilder("DELETE FROM ");
+        sql.append("step_params WHERE step_id NOT IN ");
+        sql.append("(SELECT step_id FROM " + userSchema + "steps)");
+
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+                "wdk-delete-invalid-step-params");
+    }
+
+    private void dropDanglingSteps(WdkModel wdkModel) throws WdkUserException,
+            WdkModelException, SQLException {
+        logger.info("drop dangling steps table and related resources...");
+
+        String danglingTable = "wdk_dangle_steps";
+        String parentTable = "wdk_parent_steps";
+
+        String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
+        if (schema.length() > 0 && !schema.endsWith(".")) schema += ".";
+
+        selectDanglingSteps(wdkModel, schema, danglingTable);
+        selectParentSteps(wdkModel, schema, danglingTable, parentTable);
+        deleteDanglingStrategies(wdkModel, schema, parentTable);
+        deleteDanglingSteps(wdkModel, schema, parentTable);
+
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        SqlUtils.executeUpdate(wdkModel, dataSource, "DROP TABLE "
+                + danglingTable + " PURGE", "wdk_drop_dangle_steps");
+        SqlUtils.executeUpdate(wdkModel, dataSource, "DROP TABLE "
+                + parentTable + " PURGE", "wdk_drop_parent_steps");
+    }
+
+    private void selectDanglingSteps(WdkModel wdkModel, String schema,
+            String danglingTable) throws WdkUserException, WdkModelException,
+            SQLException {
+        logger.debug("looking for dangling steps...");
+
+        String stepTable = schema + "steps";
+
+        StringBuilder sql = new StringBuilder("CREATE TABLE ");
+        sql.append(danglingTable + " AS ");
+        sql.append("  ( (SELECT s1.step_id ");
+        sql.append("     FROM " + stepTable + " s1 ");
+        sql.append("     LEFT JOIN " + stepTable + " s2 ");
+        sql.append("       ON s1.user_id = s2.user_id");
+        sql.append("          AND s1.left_child_id = s2.display_id ");
+        sql.append("     WHERE s1.left_child_id IS NOT NULL ");
+        sql.append("       AND s2.display_id IS NULL) ");
+        sql.append("   UNION ");
+        sql.append("   ( SELECT s1.step_id  ");
+        sql.append("     FROM " + stepTable + " s1 ");
+        sql.append("     LEFT JOIN " + stepTable + " s2 ");
+        sql.append("       ON s1.user_id = s2.user_id");
+        sql.append("          AND s1.right_child_id = s2.display_id ");
+        sql.append("     WHERE s1.right_child_id IS NOT NULL ");
+        sql.append("       AND s2.display_id IS NULL) ");
+        sql.append("  )");
+
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+                "wdk-create-dangling-step");
+    }
+
+    private void selectParentSteps(WdkModel wdkModel, String schema,
+            String danglingTable, String parentTable) throws WdkUserException,
+            WdkModelException, SQLException {
+        logger.debug("looking for parents of dangling steps...");
+
+        String stepTable = schema + "steps";
+
+        StringBuilder sql = new StringBuilder("CREATE TABLE ");
+        sql.append(parentTable + " AS ");
+        sql.append("  (SELECT s.step_id, s.user_id, s.display_id ");
+        sql.append("   FROM " + stepTable + " s ");
+        sql.append("   START WITH s.step_id IN ");
+        sql.append("     (SELECT step_id FROM " + danglingTable + ") ");
+        sql.append("   CONNECT BY PRIOR s.user_id = s.user_id");
+        sql.append("     AND (PRIOR s.display_id = s.left_child_id");
+        sql.append("          OR PRIOR s.display_id = s.right_child_id) ");
+        sql.append("  )");
+
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+                "wdk-create-parent-step");
+    }
+
+    private void deleteDanglingStrategies(WdkModel wdkModel, String schema,
+            String parentTable) throws WdkUserException, WdkModelException,
+            SQLException {
+        logger.debug("Deleting dangling strategies...");
+
+        String stratTable = schema + "strategies";
+        String stepTable = schema + "steps";
+
+        StringBuilder sql = new StringBuilder("DELETE FROM " + stratTable);
+        sql.append(" WHERE strategy_id IN ");
+        sql.append("  ( (SELECT sr.strategy_id  ");
+        sql.append("     FROM " + stratTable + " sr, wdk_parent_steps ps ");
+        sql.append("     WHERE sr.user_id = ps.user_id ");
+        sql.append("     AND sr.root_step_id = ps.display_id) ");
+        sql.append("   UNION ");
+        sql.append("    (SELECT sr.strategy_id ");
+        sql.append("     FROM " + stratTable + " sr ");
+        sql.append("       LEFT JOIN " + stepTable + " sp ");
+        sql.append("       ON sr.user_id = sp.user_id ");
+        sql.append("         AND sr.root_step_id = sp.display_id ");
+        sql.append("     WHERE sp.display_id IS NULL)");
+        sql.append("  )");
+
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+                "wdk-delete-dangling-strategy");
+    }
+
+    private void deleteDanglingSteps(WdkModel wdkModel, String schema,
+            String parentTable) throws WdkUserException, WdkModelException,
+            SQLException {
+        logger.debug("Deleting dangling steps...");
+
+        String stepTable = schema + "steps";
+
+        StringBuilder sql = new StringBuilder("DELETE FROM " + stepTable);
+        sql.append(" WHERE step_id IN (SELECT step_id FROM " + parentTable
+                + ")");
+
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+                "wdk-delete-dangling-step");
+    }
+
 }

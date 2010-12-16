@@ -1267,12 +1267,12 @@ public class UserBean /* implements Serializable */{
     }
 
     public int getBasketCount() throws SQLException {
-        Map<String,Integer> baskets = getBasketCounts();
-	int total = 0;
-	for (String key : baskets.keySet()) {
-	    total += baskets.get(key);
-	}
-	return total;
+        Map<String, Integer> baskets = getBasketCounts();
+        int total = 0;
+        for (String key : baskets.keySet()) {
+            total += baskets.get(key);
+        }
+        return total;
     }
 
     public void setUsedWeight(boolean usedWeight) {
@@ -1311,9 +1311,12 @@ public class UserBean /* implements Serializable */{
     /**
      * @return
      * @throws SQLException
+     * @throws WdkModelException
+     * @throws WdkUserException
      * @see org.gusdb.wdk.model.user.User#getFavoriteCount()
      */
-    public int getFavoriteCount() throws SQLException {
+    public int getFavoriteCount() throws SQLException, WdkUserException,
+            WdkModelException {
         return user.getFavoriteCount();
     }
 

@@ -10,6 +10,7 @@ import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
@@ -19,13 +20,15 @@ public class RecordInstance extends AttributeValueContainer {
 
     private RecordClass recordClass;
 
+    private PrimaryKeyAttributeValue primaryKey;
+
     private Map<String, TableValue> tableValueCache = new LinkedHashMap<String, TableValue>();
 
     private User user;
     private AnswerValue answerValue;
 
     private boolean isValidRecord;
-    
+
     /**
      * 
      * @param recordClass
@@ -71,6 +74,11 @@ public class RecordInstance extends AttributeValueContainer {
         setPrimaryKey(primaryKey);
     }
 
+    void setPrimaryKey(PrimaryKeyAttributeValue primaryKey) {
+        this.primaryKey = primaryKey;
+        addAttributeValue(primaryKey);
+    }
+
     public boolean isValidRecord() {
         return isValidRecord;
     }
@@ -109,6 +117,7 @@ public class RecordInstance extends AttributeValueContainer {
     protected void fillColumnAttributeValues(Query attributeQuery)
             throws WdkModelException, NoSuchAlgorithmException, JSONException,
             SQLException, WdkUserException {
+        logger.debug("filling column attribute values...");
         if (answerValue != null) {
             answerValue.integrateAttributesQuery(attributeQuery);
             return;
@@ -117,17 +126,15 @@ public class RecordInstance extends AttributeValueContainer {
         // prepare the attribute query, and make a new one,
         String queryName = attributeQuery.getFullName();
 
-        Query query;
-        if (answerValue != null) {
-            Query dynaQuery = answerValue.getQuestion().getDynamicAttributeQuery();
-            if (dynaQuery != null && dynaQuery.getFullName().equals(queryName)) {
-                query = dynaQuery;
-            } else {
-                query = recordClass.getAttributeQuery(queryName);
+        Query query = recordClass.getAttributeQuery(queryName);
+
+            logger.debug("filling attribute values from record on query: " + query.getFullName());
+            for (Column column : query.getColumns()) {
+                logger.debug("column: " + column.getName());
             }
-        } else {
-            query = recordClass.getAttributeQuery(queryName);
-        }
+            if (query instanceof SqlQuery)
+                logger.debug("SQL: \n" + ((SqlQuery)query).getSql());
+
         Map<String, String> paramValues = primaryKey.getValues();
         // put user id in the attribute query
         String userId = Integer.toString(user.getUserId());
@@ -154,7 +161,7 @@ public class RecordInstance extends AttributeValueContainer {
                 Object objValue = resultList.get(column.getName());
                 ColumnAttributeValue value = new ColumnAttributeValue(
                         (ColumnAttributeField) field, objValue);
-                addColumnAttributeValue(value);
+                addAttributeValue(value);
             }
         } finally {
             if (resultList != null) resultList.close();
@@ -179,11 +186,6 @@ public class RecordInstance extends AttributeValueContainer {
         return attributeFields.get(fieldName);
     }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.AttributeValueContainer#getPrimaryKey()
-     */
     public PrimaryKeyAttributeValue getPrimaryKey() {
         return primaryKey;
     }
@@ -197,16 +199,26 @@ public class RecordInstance extends AttributeValueContainer {
     public TableValue getTableValue(String tableName, FieldScope scope)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-        TableValue value;
+        TableField tableField = recordClass.getTableField(tableName);
+
         // check if the table value has been cached
-        if (tableValueCache.containsKey(tableName)) {
-            value = tableValueCache.get(tableName);
-        } else {
-            // get the table field
-            TableField tableField = recordClass.getTableField(tableName);
-            value = new TableValue(user, primaryKey, tableField);
+        if (tableValueCache.containsKey(tableName))
+            return tableValueCache.get(tableName);
+
+        // not cached, if it's in the context of an answer, integrate it.
+        if (answerValue != null) {
+            answerValue.integrateTableQuery(tableField);
+            return tableValueCache.get(tableName);
         }
+
+        // in the context of record, create the value
+        TableValue value = new TableValue(user, primaryKey, tableField, false);
+        addTableValue(value);
         return value;
+    }
+
+    void addTableValue(TableValue tableValue) {
+        tableValueCache.put(tableValue.getTableField().getName(), tableValue);
     }
 
     /**
@@ -550,7 +562,8 @@ public class RecordInstance extends AttributeValueContainer {
             oldValues.put(oldParam, value);
         }
 
-        QueryInstance instance = aliasQuery.makeInstance(user, oldValues, true, 0);
+        QueryInstance instance = aliasQuery.makeInstance(user, oldValues, true,
+                0);
         ResultList resultList = instance.getResults();
         if (resultList.next()) {
             for (String param : pkValues.keySet()) {

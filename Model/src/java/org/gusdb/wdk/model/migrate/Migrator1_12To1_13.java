@@ -143,10 +143,10 @@ public class Migrator1_12To1_13 extends Migrator {
 
         ResultSet rsHistory = null;
         try {
-            rsHistory = SqlUtils.executeQuery(wdkModel, dataSource,
-                    "SELECT user_id, " + "project_id, history_id, params FROM "
-                            + newSchema
-                            + "histories WHERE query_instance_checksum IS NULL");
+            rsHistory = SqlUtils.executeQuery(wdkModel, dataSource, "SELECT "
+                    + "user_id, project_id, history_id, params FROM "
+                    + newSchema + "histories WHERE query_instance_checksum IS "
+                    + "NULL", "wdk-migrate-select-history");
 
             while (rsHistory.next()) {
                 int userId = rsHistory.getInt("user_id");

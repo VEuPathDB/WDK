@@ -171,7 +171,6 @@ public class CConstants {
     public static final String NO = "no"; 
     public static final String ALL = "all"; //match downloadConfig.jsp
     public static final String NAME = "name"; //match xmlDataList.jsp
-    public static final int MAX_PARAM_LABEL_LEN = 69;
     public static final String ERROR_TYPE_PARAM = "type"; //match struts-config.xml
     public static final String ERROR_TYPE_MODEL = "model"; 
     public static final String ERROR_TYPE_USER = "user";

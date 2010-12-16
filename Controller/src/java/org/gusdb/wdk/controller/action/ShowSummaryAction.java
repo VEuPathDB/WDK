@@ -160,7 +160,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                         logger.info("strategy checksum: "
                                 + strategy.getChecksum()
                                 + ", but the input checksum: " + checksum);
-                        ShowStrategyAction.outputOutOfSyncJSON(wdkUser,
+                        ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser,
                                 response, state);
                         return null;
                     }
@@ -169,7 +169,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             } else if (noStrategy) {
                 // only runs the step and return the step info in json, does not
                 // create a strategy or add to existing strategy
-                JSONObject jsStep = ShowStrategyAction.outputStep(wdkUser,
+                JSONObject jsStep = ShowStrategyAction.outputStep(wdkModel, wdkUser,
                         step, 0, false);
 
                 response.setContentType("text/json");

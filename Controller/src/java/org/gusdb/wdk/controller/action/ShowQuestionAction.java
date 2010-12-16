@@ -45,6 +45,7 @@ public class ShowQuestionAction extends Action {
     public static final String LABELS_SUFFIX = "-labels";
     public static final String TERMS_SUFFIX = "-values";
 
+    private static final int MAX_PARAM_LABEL_LEN = 200;
     /**
      * 
      */
@@ -52,7 +53,7 @@ public class ShowQuestionAction extends Action {
     private static final Logger logger = Logger.getLogger(ShowQuestionAction.class);
 
     static String[] getLengthBoundedLabels(String[] labels) {
-        return getLengthBoundedLabels(labels, CConstants.MAX_PARAM_LABEL_LEN);
+        return getLengthBoundedLabels(labels, MAX_PARAM_LABEL_LEN);
     }
 
     static String[] getLengthBoundedLabels(String[] labels, int maxLength) {

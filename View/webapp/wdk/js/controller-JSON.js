@@ -7,7 +7,10 @@ var state = null;
 var p_state = null;
 var ajaxTimeout = 180000;
 $(document).ready(function(){
+	// Make the strategies window resizable
+	$(".resizable-wrapper").resizable({handles: 's', minHeight: 150, stop: function(event, ui) {setCurrentTabCookie('strategyWindow',$(".resizable-wrapper").height())}});
 	// tell jQuery not to cache ajax requests.
+    // generic error handling of ajax calls
 	$.ajaxSetup ({ 
 		cache: false,
 		timeout: ajaxTimeout,
@@ -24,8 +27,13 @@ $(document).ready(function(){
 						initDisplay();
 					}
 				}
-			}else{
-				alert("An error was discovered. \n The EuPathDB Team is currently working to resolve this issue.");
+			}else{  // not timeout, backend throws errors
+				try {
+					customShowError();
+				}
+				catch(e) {
+					alert("An error occurred.");
+				}
 				if(url.indexOf("showSummary.do") != -1){
 					removeLoading();
 				}else{
@@ -54,6 +62,10 @@ function initStrategyPanels() {
 		dataType: "html",
 		success: function(data) {
 			$("#sample_strat").html(data);
+				try {
+					customSampleTab();
+				}
+				catch(e) {}
 		},
 		error: function() {
 			$("#tab_sample_strat").parent("li").remove();
@@ -65,6 +77,10 @@ function initStrategyPanels() {
 		dataType: "html",
 		success: function(data) {
 			$("#strategy_new").html(data);
+				try {
+					customNewTab();
+				}
+				catch(e) {}
 		},
 		error: function() {
 			$("#tab_strategy_new").parent("li").remove();
@@ -76,6 +92,10 @@ function initStrategyPanels() {
 		dataType: "html",
 		success: function(data) {
 			$("#help").html(data);
+				try {
+					customHelpTab();
+				}
+				catch(e) {}
 		},
 		error: function() {
 			$("#tab_help").parent("li").remove();
@@ -104,7 +124,7 @@ function initDisplay(){
 
 function highlightStep(str, stp, v, pagerOffset, ignoreFilters, action){
 	if(!str || stp == null){
-		NewResults(-1);
+		NewResults(-1); // don't show result, remove anything that is there, and empty the result section
 	}else{
 		NewResults(str.frontId, stp.frontId, v, pagerOffset, ignoreFilters, action);
 	}
@@ -192,7 +212,22 @@ function showStrategies(view, ignoreFilters, besc){
 		$(s2).prepend(strats[t].DIV);
 		displayOpenSubStrategies(strats[t], s2);
 	}
+	$("#strategy_messages").hide();
+	$("#strategy_results .resizable-wrapper:has(#Strategies)").show();
 	$("#Strategies").html($(s2).html());
+	var height = getCurrentTabCookie('strategyWindow');
+	if (!height && $("#Strategies").parent().parent().height() > 330) {
+		$("#Strategies").parent().parent().height(330);
+	}
+	else if (height) {
+		height = parseInt(height);
+		if ($("#strategy_results .resizable-wrapper:has(#Strategies)").height() > height) {
+			$("#strategy_results .resizable-wrapper:has(#Strategies)").height(height);
+		}
+		else if ($("#Strategies").height() + 10 < $("#strategy_results .resizable-wrapper:has(#Strategies)").height()) {
+			$("#strategy_results .resizable-wrapper:has(#Strategies)").height($("#Strategies").height() + 10);
+		}
+	}
 	if(view.action != undefined) {
 		if (view.action == "share" || view.action == "save") {
 			var x = $("a#" + view.action + "_" + view.actionStrat);
@@ -221,6 +256,14 @@ function showStrategies(view, ignoreFilters, besc){
 }
 
 function displayOpenSubStrategies(s, d){
+	//Colors for expanded substrategies
+	var indent = 20;
+	var colors = new Array();
+	colors[0] = {step:"#A00000", top:"#A00000", right:"#A00000", bottom:"#A00000", left:"#A00000"};
+	colors[1] = {step:"#A0A000", top:"#A0A000", right:"#A0A000", bottom:"#A0A000", left:"#A0A000"};
+	colors[2] = {step:"#A000A0", top:"#A000A0", right:"#A000A0", bottom:"#A000A0", left:"#A000A0"};
+	colors[3] = {step:"#00A0A0", top:"#00A0A0", right:"#00A0A0", bottom:"#00A0A0", left:"#00A0A0"};
+	colors[4] = {step:"#0000A0", top:"#0000A0", right:"#0000A0", bottom:"#0000A0", left:"#0000A0"};
 	var sCount = 0;
 	for(j in s.subStratOrder)
 		sCount++;
@@ -241,18 +284,18 @@ function displayOpenSubStrategies(s, d){
 function showInstructions(){
 	$("#strat-instructions").remove();
 	$("#strat-instructions-2").remove();
-	$("#Strategies").removeAttr("style"); // DO NOT DELETE.  This is for IE.
 	var instr = document.createElement('div');
 	var id = "strat-instructions";
-	if ($("#strategy_new").length > 0) id = "strat-instructions-2"
+	if ($("#tab_strategy_new").length > 0) id = "strat-instructions-2"
 	$(instr).attr("id",id).html(getInstructionsHtml());
-	$("#Strategies").css({'overflow' : 'visible'}); // DO NOT DELETE.  This is for IE to display instructions correctly.
-	$("#Strategies").append(instr);
+	$("#strategy_messages").append(instr);
+	$("#strategy_results .resizable-wrapper:has(#Strategies)").hide();
+	$("#strategy_messages").show();
 }
 
 function getInstructionsHtml() {
 	var arrow_image = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='wdk/images/lookUp2.png' width='45px'/>"; 
-	if ($("#strategy_new").length > 0) {
+	if ($("#tab_strategy_new").length > 0) {
 		arrow_image = "<img id='ns-arrow' alt='Arrow pointing to New Search Button' src='wdk/images/lookUp.png' width='45px'/>" + arrow_image;
 	}
 	
@@ -262,8 +305,8 @@ function getInstructionsHtml() {
 
 function getInstructionsText() {
 	var instr_text = "<p style='width: 85px; position: absolute; padding-top: 14px;'>Run a new search to start a strategy</p>";
-        if ($("#strategy_new").length > 0) {
-		instr_text = "<p style='width: 85px; position: absolute; padding-top: 14px;'>Click '<a href=\"javascript:showPanel('strategy_new')\">New</a>' to start a strategy</p>";
+        if ($("#tab_strategy_new").length > 0) {
+		instr_text = "<p style='width: 85px; position: absolute; left: 12px; padding-top: 14px;'>Click '<a href=\"javascript:showPanel('strategy_new')\">New</a>' to start a strategy</p>";
 	}
 	var instr_text2 = "<p style='width: 85px; position: absolute; right: 12px; padding-left: 1px;'>Or Click on '<a href=\"javascript:showPanel('search_history')\">All</a>' to view your strategies.</p>";
 	return instr_text + "<br>" + instr_text2
@@ -350,22 +393,20 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters, ac
 		success: function(data){
 			step.isSelected = true;
 			if(ErrorHandler("Results", data, strategy, $("#diagram_" + strategy.frontId + " step_" + step.frontId + "_sub div.crumb_details div.crumb_menu a.edit_step_link"))){
-				$("#Strategies div").removeClass("selected").removeClass("selectedarrow").removeClass("selectedtransform");
+				$("#Strategies div").removeClass("selected");
 				init_view_strat = strategy.backId
 				if(bool){
 					$("#Strategies div#diagram_" + strategy.frontId + " div[id='step_" + step.frontId + "']").addClass("selected");
 					init_view_step = step.back_step_Id + ".v";
-				}else if (step.isTransform){
-					$("#Strategies div#diagram_" + strategy.frontId + " div[id='step_" + step.frontId + "_sub']").addClass("selectedtransform");
-					init_view_step = step.back_step_Id;
 				}else{
-					$("#Strategies div#diagram_" + strategy.frontId + " div[id='step_" + step.frontId + "_sub']").addClass("selectedarrow");
+					$("#Strategies div#diagram_" + strategy.frontId + " div[id='step_" + step.frontId + "_sub']").addClass("selected");
 					init_view_step = step.back_step_Id;
 				}
 				ResultsToGrid(data, ignoreFilters, "strategy_results");
-				$("span#text_strategy_number").html(strategy.JSON.name);
-				$("span#text_step_number").html(step.frontId);
-				$("span#text_strategy_number").parent().show();
+                                updateResultLabels("strategy_results", strat, step);
+                                
+                // remember user's action, if user is not logged in, and tries to save, this place 
+                // holds the previous action the user was doing.
 				var linkToClick = $("a#" + action);
 				if (linkToClick.length > 0) {
 					linkToClick.click();
@@ -408,6 +449,7 @@ function RenameStep(ele, s, stp){
 		});
 }
 
+// will be replaced by wizard
 function AddStepToStrategy(url, proto, stpId){	
 	var strategy = getStrategyFromBackId(proto);
 	var b_strategyId = strategy.backId;
@@ -488,7 +530,6 @@ function callSpanLogic(){
 }
 
 function EditStep(url, proto, step_number){
-	$("#query_form").hide("fast");
 	var ss = getStrategyFromBackId(proto);
 	var sss = ss.getStep(step_number, false);
 	var d = parseInputs();
@@ -502,6 +543,7 @@ function EditStep(url, proto, step_number){
 		dataType:"json",
 		data: d + "&state=" + p_state,
 		beforeSend: function(obj){
+			    closeAll(true);
 				showLoading(ss.frontId);
 			},
 		success: function(data){
@@ -518,7 +560,6 @@ function EditStep(url, proto, step_number){
         //                              + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
 		//}
 	});
-	closeAll(true);
 }
 
 
@@ -689,6 +730,7 @@ function closeStrategy(stratId, isBackId){
 	});
 }
 
+// maybe deprecated??
 function hideStrat(id){
 	var strat = getStrategy(id);
 	if(!strat) return;
@@ -699,7 +741,7 @@ function hideStrat(id){
 			hideStrat(strat.Steps[i].child_Strat_Id);
 		}
 	}
-	if($("#diagram_" + id + " div.selected,#diagram_" + id + " div.selectedarrow").length > 0){
+	if($("#diagram_" + id + " div.selected").length > 0){
 		NewResults(-1);
 	}
 	$("#diagram_" + id).hide("slow").remove();

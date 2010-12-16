@@ -134,7 +134,8 @@ public class QuestionChecksumUpdater extends BaseCLI {
                     + "     wdkstorage.answer a  "
                     + "WHERE u.is_guest = 0 AND u.user_id = h.user_id "
                     + "  AND h.answer_id = a.answer_id "
-                    + "  AND length(h.display_params) = 0 ");
+                    + "  AND length(h.display_params) = 0 ",
+                    "wdk-select-history");
             psUpdate = SqlUtils.getPreparedStatement(dataSource, "UPDATE "
                     + "  userlogins3.histories SET display_params = ? "
                     + "WHERE user_id = ? AND history_id = ? ");

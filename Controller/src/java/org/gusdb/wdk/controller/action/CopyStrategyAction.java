@@ -16,6 +16,7 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * @author ctreatma
@@ -31,6 +32,7 @@ public class CopyStrategyAction extends Action {
         logger.debug("Entering Copy Strategy...");
 
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
+	WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         try {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
@@ -48,7 +50,7 @@ public class CopyStrategyAction extends Action {
             // verify the checksum
             String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
             if (checksum != null && !strategy.getChecksum().equals(checksum)) {
-                ShowStrategyAction.outputOutOfSyncJSON(wdkUser, response, state);
+                ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser, response, state);
                 return null;
             }
             boolean opened = (wdkUser.getStrategyOrder(strStratId) > 0);

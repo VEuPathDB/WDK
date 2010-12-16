@@ -35,7 +35,7 @@
   <stage name="transform" display="Select parameters for Transform"
          handlerClass="org.gusdb.wdk.controller.wizard.ShowQuestionStageHandler">
     <description>Go to transform question page.</description>
-    <result type="view">/wdk/jsp/wizard/transform.jsp</result>
+    <result type="view">/wdk/jsp/wizard/question.jsp</result>
   </stage>
 
   <!-- process the question. the question could be any question other than a boolean operation. -->

@@ -2,6 +2,8 @@ DROP SEQUENCE wdkengine.migration_pkseq;
 DROP SEQUENCE wdkengine.dataset_indices_pkseq;
 DROP SEQUENCE wdkengine.answers_pkseq;
 
+DROP SEQUENCE wdkuser.favorites_pkseq;
+DROP SEQUENCE wdkuser.user_baskets_pkseq;
 DROP SEQUENCE wdkuser.migration_pkseq;
 DROP SEQUENCE wdkuser.user_datasets2_pkseq;
 DROP SEQUENCE wdkuser.step_params_pkseq;
@@ -54,6 +56,13 @@ CREATE SEQUENCE wdkuser.step_params_pkseq INCREMENT BY 1 START WITH 1;
 
 
 CREATE SEQUENCE wdkuser.user_datasets2_pkseq INCREMENT BY 1 START WITH 1;
+
+
+CREATE SEQUENCE wdkuser.user_baskets_pkseq INCREMENT BY 1 START WITH 1;
+
+
+CREATE SEQUENCE wdkuser.favorites_pkseq INCREMENT BY 1 START WITH 1;
+
 
 
 /* =========================================================================
@@ -216,7 +225,11 @@ CREATE INDEX wdkuser.steps_idx01 ON wdkuser.steps (answer_id, user_id, left_chil
 CREATE INDEX wdkuser.steps_idx02 ON wdkuser.steps (user_id, answer_id, right_child_id);
 CREATE INDEX wdkuser.steps_idx03 ON wdkuser.steps (user_id, display_id, last_run_time);
 CREATE INDEX wdkuser.steps_idx04 ON wdkuser.steps (user_id, answer_id, is_deleted);
-CREATE INDEX wdkuser.steps_idx05 ON wdkuser.steps (user_id, answer_id, display_id);
+CREATE INDEX wdkuser.steps_idx05 ON wdkuser.steps (display_id, user_id, answer_id);
+CREATE INDEX wdkuser.steps_idx06 ON wdkuser.steps (is_valid, user_id, display_id);
+CREATE INDEX wdkuser.steps_idx06 ON wdkuser.steps (is_valid, user_id);
+CREATE INDEX wdkuser.steps_idx07 ON wdkuser.steps (left_child_id, user_id);
+CREATE INDEX wdkuser.steps_idx08 ON wdkuser.steps (right_child_id, user_id);
 
 
 CREATE TABLE wdkuser.step_params
@@ -286,20 +299,24 @@ CREATE TABLE wdkuser.user_datasets2
 
 CREATE TABLE wdkuser.user_baskets
 (
+  basket_id NUMBER(12) NOT NULL,
   user_id NUMBER(12) NOT NULL,
   project_id VARCHAR(50) NOT NULL,
   record_class VARCHAR(100) NOT NULL,
   pk_column_1 VARCHAR(1999) NOT NULL,
   pk_column_2 VARCHAR(1999),
   pk_column_3 VARCHAR(1999),
-  CONSTRAINT "USER_BASKETS_PK" PRIMARY KEY (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3),
+  CONSTRAINT "USER_BASKETS_PK" PRIMARY KEY (basket_id),
   CONSTRAINT "USER_BASKETS_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id)
 );
 
+CREATE INDEX wdkuser.user_baskets_idx01 ON wdkuser.user_baskets (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
+
 
 CREATE TABLE wdkuser.favorites
 (
+  favorite_id NUMBER(12) NOT NULL,
   user_id NUMBER(12) NOT NULL,
   project_id VARCHAR(50) NOT NULL,
   record_class VARCHAR(100) NOT NULL,
@@ -308,9 +325,10 @@ CREATE TABLE wdkuser.favorites
   pk_column_3 VARCHAR(1999),
   record_note VARCHAR(200),
   record_group VARCHAR(50),
-  CONSTRAINT "FAVORITES_PK" PRIMARY KEY (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3),
+  CONSTRAINT "FAVORITES_PK" PRIMARY KEY (favorite_id),
   CONSTRAINT "FAVORITES_USER_ID_FK" FOREIGN KEY (user_id)
       REFERENCES wdkuser.users (user_id)
 );
 
+CREATE INDEX wdkuser.favorites_idx01 ON wdkuser.favorites (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
 CREATE INDEX wdkuser.favorites_idx02 ON wdkuser.favorites (record_group, user_id, project_id);
