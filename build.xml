@@ -88,16 +88,16 @@
     <copy  file="${targetDir}/lib/java/WSF-Client.jar"
            toDir="../WDK/Model/lib/java" />
 
-    <ant target="defaultComponentInstall">
-      <property name="project" value="WDK"/>
-      <property name="component" value="Model"/>
-    </ant>
-
     <property environment="env"/>
     <available file="${env.ORACLE_HOME}/jdbc/lib/ojdbc14.jar" type="file"  property="ojdbc14.present" />
     <antcall target="copyLocal14Driver"/>
     <available file="${env.ORACLE_HOME}/jdbc/lib/ojdbc5.jar" type="file"  property="ojdbc5.present" />
     <antcall target="copyLocal5Driver"/>
+
+    <ant target="defaultComponentInstall">
+      <property name="project" value="WDK"/>
+      <property name="component" value="Model"/>
+    </ant>
 
   </target>  
 
@@ -116,8 +116,7 @@
   </target>
 
   <target name="copyLocal5Driver" if="ojdbc5.present">
-    <echo>Installing local ojdbc5.jar from ${env.ORACLE_HOME}/jdbc/lib/ojdbc5.ja
-r</echo>
+    <echo>Installing local ojdbc5.jar from ${env.ORACLE_HOME}/jdbc/lib/ojdbc5.jar</echo>
     <copy  file="${env.ORACLE_HOME}/jdbc/lib/ojdbc5.jar"
      toDir="${targetDir}/lib/java/db_driver"
      overwrite="true"/>
