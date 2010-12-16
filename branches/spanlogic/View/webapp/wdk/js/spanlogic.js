@@ -187,7 +187,8 @@
 			"height":y2,
 			"background-color":a,
 		});	
-		if(x2 > 30 || (x2 > 0 && diaLength == 1)){
+	//	if(x2 > 30 || (x2 > 0 && diaLength == 1)){
+		if(x2 >= 0) {
 			start = document.createElement("div");
 			stop = document.createElement("div");
 			regiontext = document.createElement("div");
@@ -219,8 +220,12 @@
 			}else{
 				$(start).html(type);
 				$(start).css({"font-size":"90%","white-space":"nowrap"});
-				if (diaLength > 1)
+				if (diaLength > 1 && x2 > 1.6)
 					$(stop).append('<img height="15" src="/assets/images/whitearrow.png" />');
+				if (diaLength == 1) {
+					$(stop).css({"left":(x2 - 13)});
+					$(stop).append('<img height="15" width="15" src="/assets/images/diamond.png" />');
+					}
 			}
 			
 			$(rect).append(start).append(stop).append(regiontext);  
