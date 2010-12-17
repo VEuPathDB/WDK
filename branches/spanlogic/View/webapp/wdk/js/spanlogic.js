@@ -259,8 +259,8 @@
 	function drawFeature(dia){
 		feat = dia.feature;
 		cxt = dia.cxt;
-		if(feat.loc.x < 0) {feat.loc.x = 0; has_sides.left = false;}
-		if(feat.loc.x + feat.width > dia.width) {feat.width = dia.width - feat.loc.x - 1;has_sides.right = false;}
+		if(feat.loc.x < 0) {feat.loc.x = 0;}
+		if(feat.loc.x + feat.width > dia.width) {feat.width = dia.width - feat.loc.x - 1;}
 		drawRect(cxt,feat.loc.x,feat.loc.y,feat.width,feat.height,"rgba(100,100,100,1.0)", false,dia.feature.length,dia.type);
 		//drawFeatureText(dia);
 	}
