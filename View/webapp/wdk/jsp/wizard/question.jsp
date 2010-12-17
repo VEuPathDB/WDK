@@ -144,18 +144,6 @@ ${Question_Header}
         </c:if>
 
 
-  <table style="margin-left:auto; margin-right:auto;">
-	<tr>	
-	<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
-       
-	<td style="text-align:left;padding-right:10px">&nbsp;<span style="font-size:120%;font-weight:bold">Use Genomic locations</span></td>
- <td style="padding-right:10px" title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN overlap"></td>
- <td style="padding-right:10px" title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN a_contain_b"></td>
- <td title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN b_contain_a"></td>
-
-        </tr>
-    </table>
-
     </div>
     </c:otherwise>
   </c:choose>
