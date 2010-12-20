@@ -1,17 +1,6 @@
-/*	var c = null;
-	var cxt = null;
-	var scale = null; // Scale is an integer for number of nucleotides per 1px.
-	var feature = null; // deafult length of the feature.
-	var region = null;
-	var center = null;
-	var draw = false;
-	var singlepoint = false;
-*/	
 	var a = null;
 	var b = null;
-//	var region_color = ["rgba(100,100,200,0.5)","rgba(0,128,0,0.5)"];
-//	var region_color = ["#0000FF","#1acd22"];
-	var region_color = ["#0000FF","#C80064"];  // same as rgb(200,0,100)
+	var region_color = ["#0000FF","#C80064"];
 	function Diagram(name,ele){
 		this.name = name;
 		this.c = ele;
@@ -188,7 +177,7 @@
 			"left":x1,
 			"width":x2,
 			"height":y2,
-			"background-color":a,
+			"background-color":a
 		});	
 	//	if(x2 > 30 || (x2 > 0 && diaLength == 1)){
 		if(x2 >= 0) {
@@ -242,11 +231,9 @@
 	}
     // unit: base pairs
 	function prepDynamicSpans(dia, i){
-		w = dia.cxt.css("width");
-		h = dia.cxt.css("height");
-		dia.width = parseInt(w.substring(0, w.length-2));
-		dia.height = parseInt(h.substring(0, h.length-2));
-		dia.center = dia.width / 2;//dia.c.width / 2;
+		dia.width = dia.cxt.innerWidth();
+		dia.height =  dia.cxt.innerHeight();
+		dia.center = dia.width / 2;
 		dia.scale = 10;
 		dia.feature = new Object();
 		if (dia.name == "a") dia.feature.length = feature_length_a;
@@ -263,7 +250,7 @@
 		cxt = dia.cxt;
 		if(feat.loc.x < 0) {feat.loc.x = 0;}
 		if(feat.loc.x + feat.width > dia.width) {feat.width = dia.width - feat.loc.x - 1;}
-		drawRect(cxt,feat.loc.x,feat.loc.y,feat.width,feat.height,"rgba(100,100,100,1.0)", false,dia.feature.length,dia.type);
+		drawRect(cxt,feat.loc.x,feat.loc.y,feat.width,feat.height,"#646464", false,dia.feature.length,dia.type);
 		//drawFeatureText(dia);
 	}
 	function drawFeatureText(dia){
@@ -313,10 +300,6 @@
 		cxt = dia.cxt;
 		region = dia.region;
 		drawRect(cxt,region.start.x,region.start.y,region.width,region.height,region_color[i],region_color[i],dia.feature.length);
-		//drawLine(cxt,region.start.x, region.start.y, 0, region.height, "rgba(0,0,0,1)");
-		//drawLine(cxt,region.end.x, region.end.y, 0, region.height, "rgba(0,0,0,1)");
-		//drawLine(cxt,region.start.x, region.start.y + region.height/2, region.width, 0, "rgba(0,0,0,1)");
-		//drawRegionText(dia);
 	}
 	function setRegion(dia){
 		i = 0;
