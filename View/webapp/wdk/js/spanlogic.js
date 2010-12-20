@@ -133,27 +133,29 @@
 			$("#span_begin_" + group).val("start");
 			$("#span_begin_offset_" + group).val("0");
 			$("#span_end_" + group).val("stop");
-			$("#span_end_offset_" + group).val("0");
+			$("#span_end_offset_" + group).val("0").change();
 		}
 		else if (button.val() === 'upstream') {
 			$("select, input", offsetOptions).attr("disabled","true");
-			$("input[name='upstream_region_" + group + "']").removeAttr("disabled").change();
+			$("input[name='upstream_region_" + group + "']").removeAttr("disabled");
 			$("input[name='downstream_region_" + group + "']").attr("disabled","true");
 			$("#span_begin_" + group).val("start");
 			$("#span_begin_direction_" + group).val("-");
 			$("#span_end_" + group).val("start");
 			$("#span_end_direction_" + group).val("-");
 			$("#span_end_offset_" + group).val("1");
+			$("input[name='upstream_region_" + group + "']").change();
 		}
 		else if (button.val() === 'downstream') {
 			$("select, input", offsetOptions).attr("disabled","true");
 			$("input[name='upstream_region_" + group + "']").attr("disabled","true");
-			$("input[name='downstream_region_" + group + "']").removeAttr("disabled").change();
+			$("input[name='downstream_region_" + group + "']").removeAttr("disabled");
 			$("#span_begin_" + group).val("stop");
 			$("#span_begin_direction_" + group).val("+");
 			$("#span_begin_offset_" + group).val("1");
 			$("#span_end_" + group).val("stop");
 			$("#span_end_direction_" + group).val("+");
+			$("input[name='downstream_region_" + group + "']").change();
 		}
 		else if (button.val() === 'custom') {
 			$("select, input", offsetOptions).removeAttr("disabled");
