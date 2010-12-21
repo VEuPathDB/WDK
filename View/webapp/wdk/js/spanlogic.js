@@ -75,6 +75,12 @@
 			$("#span_a_type").val() + " from Step " + $("#span_a_num").text());
 		$("#span_output option[value='b']").text(
 			$("#span_b_type").val() + " from Step " + $("#span_b_num").text());
+		if ($("#span_output_default").length > 0)
+			$("#span_output").val($("#span_output_default").val());
+		if ($("#span_operation_default").length > 0)
+			$("#span_operation").val($("#span_operation_default").val());
+		if ($("#span_strand_default").length > 0)
+			$("#span_strand").val($("#span_strand_default").val());
 		$("#span_output").change();
 		$("#span_operation").change();
 		$("#span_strand").change();
