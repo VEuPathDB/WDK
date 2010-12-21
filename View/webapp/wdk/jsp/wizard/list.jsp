@@ -192,11 +192,12 @@ ${rcDisplay} basket</a>
                 <c:if test="${fn:containsIgnoreCase(rcs.value.displayName, type)
                                      ||
                                      ((type eq 'Gene' || type eq 'Orf' || 
-                                       type eq 'SNP' || type eq 'Isolate')
+                                       type eq 'SNP' || type eq 'Isolate' || type eq 'Region')
                                       &&
                                       (fn:containsIgnoreCase(rcs.value.displayName, 'gene') || 
                                        fn:containsIgnoreCase(rcs.value.displayName, 'orf') || 
                                        fn:containsIgnoreCase(rcs.value.displayName, 'snp') ||
+				       fn:containsIgnoreCase(rcs.value.displayName, 'region') ||
                                        fn:containsIgnoreCase(rcs.value.displayName, 'isolate')))}">
                     <li class="category" onclick="callWizard(null,this,'sl_${classId}',3)">${rcs.value.displayName}</li>
                 </c:if>
