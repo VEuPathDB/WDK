@@ -1017,7 +1017,7 @@ div#sections td{
  ******* CSS for AddStep PopUp ********************
  *************************************************/
 .menu_section {
-/*   text-indent:-5px;  */
+   text-indent:-5px; 
    margin-left:3px;
 }
 .qf_section{
