@@ -16,13 +16,11 @@
 	
 	function initWindow(){ 
 		$("input[type=radio][name^=region_][value=exact]").click();
+		prepCanvas();
 		attachHandlers();
 		//Should find a way to eliminate this call.
 		updateStepNumberReferences(); //This gets called again later, by the wizard mechanism
 		initOutputOptions();
-		prepCanvas();
-	//	prepSentence();
-//		prepDynamicSpans();
 	}
 
 	function attachHandlers(){
@@ -75,12 +73,14 @@
 			$("#span_a_type").val() + " from Step " + $("#span_a_num").text());
 		$("#span_output option[value='b']").text(
 			$("#span_b_type").val() + " from Step " + $("#span_b_num").text());
-		if ($("#span_output_default").length > 0)
-			$("#span_output").val($("#span_output_default").val());
-		if ($("#span_operation_default").length > 0)
-			$("#span_operation").val($("#span_operation_default").val());
-		if ($("#span_strand_default").length > 0)
-			$("#span_strand").val($("#span_strand_default").val());
+		if ($("input[id^='span_'][id$='_default']").length > 0) {
+			$("input[id^='span_'][id$='_default']").each(function(){
+				var target = $(this).attr("id");
+				target = target.substring(0,target.indexOf("_default"));
+				$("#" + target).val($(this).val());
+			});
+			$("input[type=radio][name^=region_][value=custom]").click();
+		}
 		$("#span_output").change();
 		$("#span_operation").change();
 		$("#span_strand").change();
@@ -156,6 +156,7 @@
 			$("select, input", offsetOptions).removeAttr("disabled");
 			$("input[name='upstream_region_" + group + "']").attr("disabled","true");
 			$("input[name='downstream_region_" + group + "']").attr("disabled","true");
+			$("#span_end_offset_" + group).change();
 		}
 		else {
 			// TODO: Error case
