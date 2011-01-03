@@ -36,6 +36,7 @@ import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
@@ -78,6 +79,7 @@ public class SanityTester {
     boolean verbose;
     boolean failuresOnly;
     boolean indexOnly;
+    boolean skipWebSvcQueries;
     String modelName;
 
     public static final String BANNER_LINE_top = "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv";
@@ -86,7 +88,8 @@ public class SanityTester {
     private static final Logger logger = Logger.getLogger(SanityTester.class);
 
     public SanityTester(String modelName, boolean verbose,
-            String testFilterString, boolean failuresOnly, boolean indexOnly)
+			String testFilterString, boolean failuresOnly, 
+			boolean indexOnly, boolean skipWebSvcQueries)
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, ParserConfigurationException,
             TransformerException, IOException, SAXException, SQLException,
@@ -97,6 +100,7 @@ public class SanityTester {
         this.verbose = verbose;
         this.failuresOnly = failuresOnly;
         this.indexOnly = indexOnly;
+        this.skipWebSvcQueries = skipWebSvcQueries;
         this.modelName = modelName;
         this.testFilterString = testFilterString;
         this.user = wdkModel.getSystemUser();
@@ -119,6 +123,8 @@ public class SanityTester {
                 Query query = question.getQuery();
                 if (query.getDoNotTest() || query.getQuerySet().getDoNotTest())
                     continue;
+		if (skipWebSvcQueries && query instanceof ProcessQuery)
+		    continue;
                 for (ParamValuesSet paramValuesSet : query.getParamValuesSets()) {
                     testQuestion(question, paramValuesSet);
                 }
@@ -563,6 +569,11 @@ public class SanityTester {
         Option indexOnly = new Option("indexOnly",
                 "Only print an index of the tests.");
         options.addOption(indexOnly);
+
+        Option skipWebSvcQueries = new Option("skipWebSvcQueries",
+                "Skip all questions and queries that use web service queries.");
+        options.addOption(skipWebSvcQueries);
+
         return options;
     }
 
@@ -606,7 +617,7 @@ public class SanityTester {
 
         String newline = System.getProperty("line.separator");
         String cmdlineSyntax = cmdName + " -model model_name"
-                + " [-verbose] [-t testfilter] [-failuresOnly | -indexOnly";
+                + " [-verbose] [-t testfilter] [-failuresOnly | -indexOnly] [-skipWebSvcQueries]";
 
         String header = newline
                 + "Run a test on all queries and records in a wdk model."
@@ -643,8 +654,11 @@ public class SanityTester {
 
         boolean indexOnly = cmdLine.hasOption("indexOnly");
 
-        SanityTester sanityTester = new SanityTester(modelName, verbose,
-                testFilterString, failuresOnly, indexOnly);
+        boolean skipWebSvcQueries = cmdLine.hasOption("skipWebSvcQueries");
+
+        SanityTester sanityTester = 
+	    new SanityTester(modelName, verbose, testFilterString,
+			     failuresOnly, indexOnly, skipWebSvcQueries);
 
         sanityTester.testQuerySets(QuerySet.TYPE_VOCAB);
         sanityTester.testQuerySets(QuerySet.TYPE_ATTRIBUTE);
