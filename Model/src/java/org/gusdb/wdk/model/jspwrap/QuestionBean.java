@@ -38,7 +38,10 @@ public class QuestionBean {
     private static final long serialVersionUID = 6353373897551871273L;
 
     Question question;
+
+    private Map<String, String> params = new LinkedHashMap<String, String>();
     private UserBean user;
+    private int weight;
 
     /**
      * the recordClass full name for the answerParams input type.
@@ -47,10 +50,6 @@ public class QuestionBean {
 
     public QuestionBean(Question question) {
         this.question = question;
-    }
-    
-    public void setUser(UserBean user) {
-        this.user = user;
     }
 
     public RecordClassBean getRecordClass() {
@@ -360,5 +359,36 @@ public class QuestionBean {
             beans.add(new AnswerParamBean(answerParam));
         }
         return beans;
+    }
+
+    public void setParam(String nameValue) {
+        String[] parts = nameValue.split("=");
+        String name = parts[0].trim();
+        String value = parts[1].trim();
+        params.put(name, value);
+    }
+
+    public void setUser(UserBean user) {
+        this.user = user;
+    }
+
+    public void setWeight(int weight) {
+        this.weight = weight;
+    }
+
+    public AnswerValueBean getAnswerValue() throws WdkUserException,
+            WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException {
+        if (user == null)
+            throw new WdkUserException("User is not set. Please set user to "
+                    + "the questionBean before calling to create answerValue.");
+
+        AnswerValue answerValue = question.makeAnswerValue(user.getUser(),
+                params, weight);
+
+        // reset the params
+        params.clear();
+
+        return new AnswerValueBean(answerValue);
     }
 }

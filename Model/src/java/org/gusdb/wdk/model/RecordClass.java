@@ -382,12 +382,12 @@ public class RecordClass extends WdkModelBase implements
 
         buf.append("--- Attributes ---").append(newline);
         for (AttributeField attribute : attributeFieldsMap.values()) {
-            buf.append(attribute).append(newline);
+            buf.append(attribute.getName()).append(newline);
         }
 
         buf.append("--- Tables ---").append(newline);
         for (TableField table : tableFieldsMap.values()) {
-            buf.append(table).append(newline);
+            buf.append(table.getName()).append(newline);
         }
         return buf.toString();
     }
