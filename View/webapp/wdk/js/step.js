@@ -66,16 +66,18 @@ function hideDetails(det){
 }
 
 function Edit_Step(ele, questionName, url, hideQuery, hideOp, assignedWeight){
-		url = "wizard.do?action=revise&stage=question&questionFullName=" + questionName + url;
 		closeAll(false);
 		var revisestep = $(ele).attr("id");
 		var parts = revisestep.split("|");
-		var strat = parts[0];
+		var strat = getStrategy(parts[0]);
 		current_Front_Strategy_Id = parts[0];
 		revisestep = parseInt(parts[1]);
-		var operation = parts[2];
-		if(operation != "SPAN")
-			url = url + "&booleanExpression="+operation+"&step="+revisestep;
+		url = "wizard.do?action=revise&questionFullName=" + questionName + url;
+		var step = strat.getStep(revisestep);
+		if(!step.isSpan)
+			url = url + "&stage=question&booleanExpression="+parts[2]+"&step="+revisestep;
+		else
+			url = url + "&stage=revise_span";
 		if($("#qf_content").length == 0)
 	            if (assignedWeight)  {
     				url += "&weight=" + assignedWeight;
