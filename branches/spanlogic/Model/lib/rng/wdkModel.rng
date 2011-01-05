@@ -1031,6 +1031,11 @@
         <data type="boolean" />
       </attribute>
     </optional>
+    <optional>
+      <attribute name="removable">
+        <data type="boolean" />
+      </attribute>
+    </optional>
   </define>
 
   <define name="primaryKeyAttribute">

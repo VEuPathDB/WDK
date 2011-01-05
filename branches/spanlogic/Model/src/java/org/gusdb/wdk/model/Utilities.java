@@ -72,6 +72,8 @@ public class Utilities {
 
     public static final int DEFAULT_SUMMARY_ATTRIBUTE_SIZE = 6;
     
+    public static final int DEFAULT_WEIGHT = 10;
+    
     public static final int MAX_PK_COLUMN_COUNT = 3;
     
     public static final int MAX_PK_COLUMN_VALUE_SIZE = 1999;

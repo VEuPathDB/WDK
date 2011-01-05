@@ -382,9 +382,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
                 + getDescription() + "'" + newline + "  summaryAttributes='"
                 + saNames + "'" + newline + "  help='" + getHelp() + "'"
                 + newline);
-        if (dynamicAttributeSet != null) {
-            buf.append(dynamicAttributeSet.toString());
-        }
+        buf.append(dynamicAttributeSet.toString());
         return buf.toString();
     }
 
@@ -433,8 +431,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     // /////////////////////////////////////////////////////////////////////
 
     Map<String, AttributeField> getDynamicAttributeFields() {
-        return dynamicAttributeSet == null ? new LinkedHashMap<String, AttributeField>()
-                : dynamicAttributeSet.getAttributeFieldMap();
+        return dynamicAttributeSet.getAttributeFieldMap();
     }
 
     /**
@@ -484,8 +481,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
         attributeFields.putAll(recordClass.getAttributeFieldMap(scope));
 
-        if (dynamicAttributeSet != null)
-            attributeFields.putAll(dynamicAttributeSet.getAttributeFieldMap(scope));
+        attributeFields.putAll(dynamicAttributeSet.getAttributeFieldMap(scope));
 
         return attributeFields;
     }
@@ -529,10 +525,15 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             query.setHasWeight(true);
 
             // dynamic attribute set need to be initialized after the id query.
-            if (dynamicAttributeSet != null) {
-                this.dynamicAttributeQuery = createDynamicAttributeQuery(model);
-                dynamicAttributeQuery.resolveReferences(model);
-                dynamicAttributeSet.resolveReferences(model);
+            this.dynamicAttributeQuery = createDynamicAttributeQuery(model);
+            dynamicAttributeQuery.resolveReferences(model);
+            dynamicAttributeSet.resolveReferences(model);
+
+            // make sure we always display weight for combined question
+            if (query.isCombined()) {
+                AttributeField weight = dynamicAttributeSet.getAttributeFieldMap().get(
+                        Utilities.COLUMN_WEIGHT);
+                weight.setRemovable(false);
             }
 
             // resolve default summary attributes

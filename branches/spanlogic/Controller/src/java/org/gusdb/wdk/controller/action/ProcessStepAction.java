@@ -17,6 +17,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.WdkOutOfSyncException;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -168,11 +169,12 @@ public class ProcessStepAction extends Action {
             Map<String, String> params = ProcessQuestionAction.prepareParams(
                     user, request, form);
             // reuse the filter of the current step
-	    // but only if it's valid for the revised recordclass
+            // but only if it's valid for the revised recordclass
             String filterName = step.getFilterName();
-	    if (!question.getRecordClass().getFilterMap().containsKey(filterName)) {
-		filterName = null;
-	    }
+            if (!question.getRecordClass().getFilterMap().containsKey(
+                    filterName)) {
+                filterName = null;
+            }
 
             newStep = user.createStep(question, params, filterName, false,
                     true, weight);
@@ -222,7 +224,7 @@ public class ProcessStepAction extends Action {
 
         // get the weight, or use the current step's.
         Integer weight = getWeight(request);
-        if (weight == null) weight = 0;
+        if (weight == null) weight = Utilities.DEFAULT_WEIGHT;
 
         StepBean newStep = user.createStep(question, params, null, false, true,
                 weight);
@@ -277,7 +279,7 @@ public class ProcessStepAction extends Action {
 
         // get the weight, or use the current step's.
         Integer weight = getWeight(request);
-        if (weight == null) weight = 0;
+        if (weight == null) weight = Utilities.DEFAULT_WEIGHT;
 
         StepBean newStep = user.createStep(question, params, null, false, true,
                 weight);

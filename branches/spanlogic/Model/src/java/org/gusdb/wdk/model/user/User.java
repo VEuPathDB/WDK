@@ -96,8 +96,6 @@ public class User /* implements Serializable */{
      */
     private Step cachedStep;
 
-    private boolean usedWeight = false;
-
     User(WdkModel model, int userId, String email, String signature)
             throws WdkUserException {
         this.userId = userId;
@@ -416,10 +414,9 @@ public class User /* implements Serializable */{
      * @throws WdkUserException
      * @throws NoSuchAlgorithmException
      */
-    public synchronized Step createStep(AnswerValue answerValue,
-            boolean deleted, int assignedWeight)
-            throws NoSuchAlgorithmException, WdkUserException,
-            WdkModelException, SQLException, JSONException {
+    synchronized Step createStep(AnswerValue answerValue, boolean deleted,
+            int assignedWeight) throws NoSuchAlgorithmException,
+            WdkUserException, WdkModelException, SQLException, JSONException {
         Question question = answerValue.getQuestion();
         Map<String, String> paramValues = answerValue.getIdsQueryInstance().getValues();
         AnswerFilterInstance filter = answerValue.getFilter();
@@ -459,10 +456,6 @@ public class User /* implements Serializable */{
             int pageStart, int pageEnd, boolean deleted, boolean validate,
             int assignedWeight) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        if (assignedWeight != 0) usedWeight = true;
-        logger.debug("assigne weight: " + assignedWeight + ", used weight: "
-                + usedWeight);
-
         Step step = stepFactory.createStep(this, question, paramValues, filter,
                 pageStart, pageEnd, deleted, validate, assignedWeight);
         return step;
@@ -1059,29 +1052,32 @@ public class User /* implements Serializable */{
             if (summary != null && summary.length > 0) savedSummary = true;
         }
 
+        // if user does't have preference, use the default of the question
+        Question question = wdkModel.getQuestion(questionFullName);
         if (!savedSummary) {
-            // user does't have preference, use the default of the question
-            Question question = wdkModel.getQuestion(questionFullName);
             Map<String, AttributeField> attributes = question.getSummaryAttributeFieldMap();
             summary = new String[attributes.size()];
             attributes.keySet().toArray(summary);
         }
-
-        // if user has assigned non-zero weight, display the weight column
-        logger.debug("used weight: " + usedWeight);
-        if (usedWeight) {
+        
+        // always display weight for combined questions
+        if (question.getQuery().isCombined()) {
+            // check if weight already exists
             boolean hasWeight = false;
-            for (String attribute : summary) {
-                if (attribute.equals(Utilities.COLUMN_WEIGHT)) {
+            for(String name : summary) {
+                if (name.equals(Utilities.COLUMN_WEIGHT)) {
                     hasWeight = true;
                     break;
                 }
             }
+            
+            // add weight to the last item if it's not included
             if (!hasWeight) {
                 String[] array = new String[summary.length + 1];
                 System.arraycopy(summary, 0, array, 0, summary.length);
                 array[summary.length] = Utilities.COLUMN_WEIGHT;
                 summary = array;
+                summaryChecksum = null;
             }
         }
 
@@ -1093,8 +1089,6 @@ public class User /* implements Serializable */{
     public void resetSummaryAttributes(String questionFullName) {
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
         projectPreferences.remove(summaryKey);
-        // also reset the usedWeight flag
-        usedWeight = false;
         logger.debug("reset used weight to false");
     }
 
@@ -1416,11 +1410,6 @@ public class User /* implements Serializable */{
             JSONException, WdkUserException {
         Strategy copy = stepFactory.copyStrategy(strategy, stepId);
         return copy;
-    }
-
-    public void setUsedWeight(boolean usedWeight) {
-        logger.debug("set used weight: " + usedWeight);
-        this.usedWeight = usedWeight;
     }
 
     public void addToFavorite(RecordClass recordClass,

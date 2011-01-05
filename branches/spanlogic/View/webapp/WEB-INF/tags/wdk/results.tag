@@ -14,7 +14,7 @@
 <%@ attribute name="strategy"
 			  type="org.gusdb.wdk.model.jspwrap.StrategyBean"
               required="true"
-              description="Strategy Id we are looking at"
+              description="Strategy bean we are looking at"
 %>
 
 <jsp:useBean id="typeMap" class="java.util.HashMap"/>
@@ -231,7 +231,7 @@
               <img src="<c:url value='/wdk/images/results_grip.png'/>" alt="" border="0" /></a>
           </div>
         </c:if> --%>
-        <c:if test="${j != 0}">
+        <c:if test="${sumAttrib.removable}">
           <td style="width:20px;">
             <%-- display remove attribute button --%>
               <c:choose>

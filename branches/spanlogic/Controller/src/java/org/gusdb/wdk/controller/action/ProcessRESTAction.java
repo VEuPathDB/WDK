@@ -16,6 +16,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
@@ -135,7 +136,7 @@ public class ProcessRESTAction extends Action {
             // FROM SHOWSUMMARY
 
             StepBean step = wdkUser.createStep(wdkQuestion, params, null,
-                    false, true, 0);
+                    false, true, Utilities.DEFAULT_WEIGHT);
             AnswerValueBean answerValue = step.getAnswerValue();
             // construct the forward to show_summary action
             request.setAttribute("wdkAnswer", answerValue);
