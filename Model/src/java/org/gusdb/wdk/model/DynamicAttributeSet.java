@@ -11,35 +11,23 @@ import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.json.JSONException;
 
-
 public class DynamicAttributeSet extends WdkModelBase {
 
     /**
      * 
      */
     private static final long serialVersionUID = -1373806354317917813L;
-    //private static Logger logger =  Logger.getLogger(DynamicAttributeSet.class);
+    // private static Logger logger =
+    // Logger.getLogger(DynamicAttributeSet.class);
 
     private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
     private Map<String, AttributeField> attributeFieldMap = new LinkedHashMap<String, AttributeField>();
 
     private Question question;
-    
-    public DynamicAttributeSet() {
-        // always have weight as a dynamic attribute
-        ColumnAttributeField attribute = new ColumnAttributeField();
-        attribute.setName(Utilities.COLUMN_WEIGHT);
-        attribute.setDisplayName("Weight");
-        attribute.setInternal(false);
-        attribute.setInReportMaker(true);
-        attribute.setSortable(true);
-        attributeFieldList.add(attribute);
-    }
+
+    public DynamicAttributeSet() {}
 
     public void addAttributeField(AttributeField attributeField) {
-        // need to skip adding weight column
-        if (attributeField.getName().equals(Utilities.COLUMN_WEIGHT))
-            return;
         attributeFieldList.add(attributeField);
     }
 
@@ -107,6 +95,18 @@ public class DynamicAttributeSet extends WdkModelBase {
             }
         }
         attributeFieldList = null;
+
+        // check if weight is defined, if not, create it
+        if (!attributeFieldMap.containsKey(Utilities.COLUMN_WEIGHT)) {
+            // always have weight as a dynamic attribute
+            ColumnAttributeField attribute = new ColumnAttributeField();
+            attribute.setName(Utilities.COLUMN_WEIGHT);
+            attribute.setDisplayName("Weight");
+            attribute.setInternal(false);
+            attribute.setInReportMaker(true);
+            attribute.setSortable(true);
+            attributeFieldMap.put(Utilities.COLUMN_WEIGHT, attribute);
+        }
     }
 
     /*

@@ -16,7 +16,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
@@ -71,8 +70,7 @@ public class ProcessSummaryAction extends Action {
         if (summaryChecksum != null && summaryChecksum.length() > 0) {
             // apply the current summary to the question first, then do other
             // command
-            String summaryKey = questionName + User.SUMMARY_ATTRIBUTES_SUFFIX;
-            wdkUser.setProjectPreference(summaryKey, summaryChecksum);
+            wdkUser.applySummaryChecksum(questionName, summaryChecksum);
         } else summaryChecksum = null;
 
         // get sorting checksum, if have
@@ -86,7 +84,6 @@ public class ProcessSummaryAction extends Action {
         // get command
         String command = request.getParameter(CConstants.WDK_SUMMARY_COMMAND_KEY);
         if (command != null) {
-
             if (command.equalsIgnoreCase("sort")) { // sorting
                 String attributeName = request.getParameter(CConstants.WDK_SUMMARY_ATTRIBUTE_KEY);
                 String sortingOrder = request.getParameter(CConstants.WDK_SUMMARY_SORTING_ORDER_KEY);
@@ -99,89 +96,75 @@ public class ProcessSummaryAction extends Action {
                 queryString = queryString.replaceAll("\\b"
                         + CConstants.WDK_SORTING_KEY + "=[^&]*", "");
                 queryString += "&" + sortingParam;
-            } else { // summary modification
-                if (command.equalsIgnoreCase("reset")) {
-                    wdkUser.resetSummaryAttribute(questionName);
-                    // remove summary key from query string
-                    queryString = queryString.replaceAll("&"
-                            + CConstants.WDK_SUMMARY_KEY + "=[^&]*", "");
+            } else if (command.equalsIgnoreCase("reset")) {
+                wdkUser.resetSummaryAttribute(questionName);
+                // remove summary key from query string
+                queryString = queryString.replaceAll("&"
+                        + CConstants.WDK_SUMMARY_KEY + "=[^&]*", "");
+            } else {
+                String[] summary = wdkUser.getSummaryAttributes(questionName);
+                List<String> summaryList = new ArrayList<String>();
+                String[] attributeNames = request.getParameterValues(CConstants.WDK_SUMMARY_ATTRIBUTE_KEY);
+                if (attributeNames == null) attributeNames = new String[0];
+
+                if (command.equalsIgnoreCase("update")) {
+                    List<String> attributeNamesList = new ArrayList<String>(
+                            Arrays.asList(attributeNames));
+                    System.out.println("Summary list: " + summaryList);
+                    for (String summaryName : summary) {
+                        if (attributeNamesList.contains(summaryName)) {
+                            summaryList.add(summaryName);
+                            attributeNamesList.remove(summaryName);
+                        }
+                    }
+                    System.out.println("Summary list: " + summaryList);
+                    for (String attributeName : attributeNamesList) {
+                        summaryList.add(attributeName);
+                    }
+                    System.out.println("Summary list: " + summaryList);
                 } else {
-		    String[] summary = wdkUser.getSummaryAttributes(questionName);
-                    List<String> summaryList = new ArrayList<String>();
-                    String[] attributeNames = request.getParameterValues(CConstants.WDK_SUMMARY_ATTRIBUTE_KEY);
-                    if (attributeNames == null) attributeNames = new String[0];
+                    for (String attribute : summary) {
+                        summaryList.add(attribute);
+                    }
 
-		    if (command.equalsIgnoreCase("update")) {
-			boolean hasWeight = false;
-			boolean removeWeight = false;
-			List<String> attributeNamesList = new ArrayList<String>(Arrays.asList(attributeNames));
-			System.out.println("Summary list: " + summaryList);
-			for (String summaryName : summary) {
-			    if (attributeNamesList.contains(summaryName)) {
-				summaryList.add(summaryName);
-				attributeNamesList.remove(summaryName);
-			    }
-			    if (summaryName.equals(Utilities.COLUMN_WEIGHT))
-				hasWeight = true;
-			}
-			System.out.println("Summary list: " + summaryList);
-			for (String attributeName : attributeNamesList) {
-			    summaryList.add(attributeName);
-			    if (hasWeight && attributeName.equals(Utilities.COLUMN_WEIGHT))
-				removeWeight = true;
-			}
-			System.out.println("Summary list: " + summaryList);
-			// reset the used weight column.
-			if (removeWeight)wdkUser.setUsedWeight(false);
-		    } else {
-			for (String attribute : summary) {
-			    summaryList.add(attribute);
-			}
-
-			if (command.equalsIgnoreCase("add")) {
-			    for (String attributeName : attributeNames) {
-				if (!summaryList.contains(attributeName))
-				    summaryList.add(attributeName);
-			    }
-			} else if (command.equalsIgnoreCase("remove")) {
-			    boolean removeWeight = false;
-			    for (String attributeName : attributeNames) {
-				summaryList.remove(attributeName);
-				if (attributeName.equals(Utilities.COLUMN_WEIGHT))
-				    removeWeight = true;
-			    }
-			    // reset the used weight column.
-			    if (removeWeight)wdkUser.setUsedWeight(false);
-			} else if (command.equalsIgnoreCase("arrange")) {
-			// Get the attribute that will be to the left of
-			// attributeName after attributeName is moved
-			    String attributeToLeft = request.getParameter(CConstants.WDK_SUMMARY_ARRANGE_ORDER_KEY);
-			    // If attributeToLeft is null (or not in list), make
-			    // attributeName the first element.
-			    // Otherwise, make it the first element AFTER
-			    // attributeToLeft
-			    for (String attributeName : attributeNames) {
-				summaryList.remove(attributeName);
-				int toIndex = summaryList.indexOf(attributeToLeft) + 1;
-				summaryList.add(toIndex, attributeName);
-			    }
-			}  else {
-			    throw new WdkModelException("Unknown command: "
-							+ command);
-			}
-		    }
-                    summary = new String[summaryList.size()];
-                    summaryList.toArray(summary);
-                    String checksum = wdkUser.setSummaryAttributes(
-                            questionName, summary);
-
-                    // add/replace summary key
-                    String summaryParam = CConstants.WDK_SUMMARY_KEY + "="
-                            + checksum;
-                    queryString = queryString.replaceAll("\\b"
-                            + CConstants.WDK_SUMMARY_KEY + "=[^&]*", "");
-                    queryString += "&" + summaryParam;
+                    if (command.equalsIgnoreCase("add")) {
+                        for (String attributeName : attributeNames) {
+                            if (!summaryList.contains(attributeName))
+                                summaryList.add(attributeName);
+                        }
+                    } else if (command.equalsIgnoreCase("remove")) {
+                        for (String attributeName : attributeNames) {
+                            summaryList.remove(attributeName);
+                        }
+                    } else if (command.equalsIgnoreCase("arrange")) {
+                        // Get the attribute that will be to the left of
+                        // attributeName after attributeName is moved
+                        String attributeToLeft = request.getParameter(CConstants.WDK_SUMMARY_ARRANGE_ORDER_KEY);
+                        // If attributeToLeft is null (or not in list), make
+                        // attributeName the first element.
+                        // Otherwise, make it the first element AFTER
+                        // attributeToLeft
+                        for (String attributeName : attributeNames) {
+                            summaryList.remove(attributeName);
+                            int toIndex = summaryList.indexOf(attributeToLeft) + 1;
+                            summaryList.add(toIndex, attributeName);
+                        }
+                    } else {
+                        throw new WdkModelException("Unknown command: "
+                                + command);
+                    }
                 }
+                summary = new String[summaryList.size()];
+                summaryList.toArray(summary);
+                String checksum = wdkUser.setSummaryAttributes(questionName,
+                        summary);
+
+                // add/replace summary key
+                String summaryParam = CConstants.WDK_SUMMARY_KEY + "="
+                        + checksum;
+                queryString = queryString.replaceAll("\\b"
+                        + CConstants.WDK_SUMMARY_KEY + "=[^&]*", "");
+                queryString += "&" + summaryParam;
             }
 
             wdkUser.save();
