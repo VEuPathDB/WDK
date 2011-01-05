@@ -280,7 +280,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             // get the assigned weight
             String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
             boolean hasWeight = (strWeight != null && strWeight.length() > 0);
-            int weight = 0;
+            int weight = Utilities.DEFAULT_WEIGHT;
             if (hasWeight) {
                 if (!strWeight.matches("[\\-\\+]?\\d+"))
                     throw new WdkUserException("Invalid weight value: '"
@@ -408,7 +408,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
     private ActionForward showError(WdkModelBean wdkModel, UserBean wdkUser,
             ActionMapping mapping, HttpServletRequest request,
             HttpServletResponse response, Exception ex, boolean resultOnly) {
-        // TEST
         logger.info("Show the details of an invalid userAnswer/question");
 
         String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);

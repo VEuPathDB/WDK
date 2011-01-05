@@ -1275,10 +1275,6 @@ public class UserBean /* implements Serializable */{
         return total;
     }
 
-    public void setUsedWeight(boolean usedWeight) {
-        user.setUsedWeight(usedWeight);
-    }
-
     /**
      * @param recordClass
      * @param pkValues

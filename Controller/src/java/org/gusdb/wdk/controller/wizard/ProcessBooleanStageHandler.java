@@ -17,6 +17,7 @@ import org.gusdb.wdk.controller.action.ProcessBooleanAction;
 import org.gusdb.wdk.controller.action.ProcessQuestionAction;
 import org.gusdb.wdk.controller.action.QuestionForm;
 import org.gusdb.wdk.controller.action.WizardForm;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -87,7 +88,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
 
         // get the assigned weight
         String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
-        int weight = 0;
+        int weight = Utilities.DEFAULT_WEIGHT;
         if (strWeight != null && strWeight.length() > 0) {
             if (!strWeight.matches("[\\-\\+]?\\d+"))
                 throw new WdkUserException("Invalid weight value: '"

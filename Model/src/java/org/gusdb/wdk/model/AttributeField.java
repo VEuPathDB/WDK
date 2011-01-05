@@ -23,6 +23,24 @@ public abstract class AttributeField extends Field {
     private boolean sortable = true;
     private String align;
     private boolean nowrap = false;
+    private boolean removable = true;
+
+    /**
+     * by default, an attribute can be removed from the result page.
+     * @return
+     */
+    public boolean isRemovable() {
+        return removable;
+    }
+    
+
+    /**
+     * @param removable the removable to set
+     */
+    public void setRemovable(boolean removable) {
+        this.removable = removable;
+    }
+
 
     /**
      * @return the sortable
@@ -92,7 +110,8 @@ public abstract class AttributeField extends Field {
                     && !(field instanceof PrimaryKeyAttributeField))
                 throw new WdkModelException("Only columnAttribute or "
                         + "primaryKeyAttribute can be embedded into the text "
-                        + "content. " + fieldName + " is of type " + field.getClass().getSimpleName());
+                        + "content. " + fieldName + " is of type "
+                        + field.getClass().getSimpleName());
             if (!children.containsKey(fieldName))
                 children.put(fieldName, field);
         }
