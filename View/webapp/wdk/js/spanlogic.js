@@ -15,7 +15,6 @@
 	}
 	
 	function initWindow(){ 
-		$("input[type=radio][name^=region_][value=exact]").click();
 		prepCanvas();
 		attachHandlers();
 		//Should find a way to eliminate this call.
@@ -73,13 +72,16 @@
 			$("#span_a_type").val() + " from Step " + $("#span_a_num").text());
 		$("#span_output option[value='b']").text(
 			$("#span_b_type").val() + " from Step " + $("#span_b_num").text());
-		if ($("input[id^='span_'][id$='_default']").length > 0) {
-			$("input[id^='span_'][id$='_default']").each(function(){
+		if ($("input[id$='_default']").length > 0) {
+			$("input[id$='_default']").each(function(){
 				var target = $(this).attr("id");
 				target = target.substring(0,target.indexOf("_default"));
-				$("#" + target).val($(this).val());
+				if ($("input[type=radio]#" + target).length > 0)
+					$("#" + target + "[value='" + $(this).val() + "']").click();
+				else
+					$("#" + target).val($(this).val());
 			});
-			$("input[type=radio][name^=region_][value=custom]").click();
+			$("input[type=radio][name^=region_]:checked").click();
 		}
 		$("#span_output").change();
 		$("#span_operation").change();
@@ -119,7 +121,7 @@
 	function updateRegionParams(ele){
 		var button = $(ele);
 		var group = button.attr('name');
-		group = group.substring(group.indexOf("_")+1);
+		group = group.substring(group.indexOf("_")+1,group.indexOf(")"));
 		var offsetOptions = $("#set_" + group + "Fields .offsetOptions");
 		if (button.val() === 'exact') {
 			$("select, input", offsetOptions).attr("disabled","true");
@@ -164,9 +166,9 @@
 		updateRegionLabels();
 	}
 	function updateRegionLabels() {
-		var outputRegion = $("#outputGroup input[type=radio][name^='region_']:checked").val();
+		var outputRegion = $("#outputGroup input[type=radio][name^='value(region_']:checked").val();
 		$(".outputRegion").text(outputRegion + " region");
-		var comparisonRegion = $("#comparisonGroup input[type=radio][name^='region_']:checked").val();
+		var comparisonRegion = $("#comparisonGroup input[type=radio][name^='value(region_']:checked").val();
 		$(".comparisonRegion").text(comparisonRegion + " region");
 	}
 	function prepCanvas(){
