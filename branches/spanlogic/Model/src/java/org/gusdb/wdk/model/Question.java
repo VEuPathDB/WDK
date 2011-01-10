@@ -500,12 +500,13 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             // in the dynamicAttributeSet.
             this.recordClass = (RecordClass) model.resolveReference(recordClassRef);
 
-            // the id query is forced to be cache-able.
+            // the id query is always cloned to keep a reference to the question.
             query = (Query) model.resolveReference(idQueryRef);
+            query = query.clone();
+            query.setQuestion(this);
 
-            // check if we need to clone the query;
+            // check if we have customized params;
             if (paramRefs.size() > 0) {
-                query = query.clone();
                 String queryName = query.getFullName();
                 Map<String, Param> params = query.getParamMap();
                 for (ParamReference paramRef : paramRefs) {

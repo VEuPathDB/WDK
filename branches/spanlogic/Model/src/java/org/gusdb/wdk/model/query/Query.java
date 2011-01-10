@@ -12,12 +12,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
@@ -55,6 +57,19 @@ public abstract class Query extends WdkModelBase {
     private String[] indexColumns;
 
     private boolean hasWeight;
+
+    /**
+     * An id query will have a reference to the question; which means the id
+     * query will be cloned to keep a local copy for the question;
+     */
+    protected Question question;
+
+    /**
+     * A flat vocab query will have a reference to the flatVocab param; which
+     * means the flatVocab query will be cloned to keep a local copy for the
+     * param.
+     */
+    protected FlatVocabParam vocabParam;
 
     // =========================================================================
     // Abstract methods
@@ -406,7 +421,7 @@ public abstract class Query extends WdkModelBase {
     public boolean isTransform() {
         return (getAnswerParamCount() == 1);
     }
-    
+
     public int getAnswerParamCount() {
         int count = 0;
         for (Param param : paramMap.values()) {
@@ -496,4 +511,21 @@ public abstract class Query extends WdkModelBase {
     public boolean isHasWeight() {
         return hasWeight;
     }
+
+    /**
+     * @param question
+     *            the question to set
+     */
+    public void setQuestion(Question question) {
+        this.question = question;
+    }
+
+    /**
+     * @param vocabParam
+     *            the vocabParam to set
+     */
+    public void setVocabParam(FlatVocabParam vocabParam) {
+        this.vocabParam = vocabParam;
+    }
+
 }

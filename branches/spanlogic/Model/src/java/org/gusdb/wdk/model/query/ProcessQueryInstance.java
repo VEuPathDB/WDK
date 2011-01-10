@@ -20,6 +20,7 @@ import java.util.Map;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -28,6 +29,7 @@ import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
@@ -41,9 +43,6 @@ import org.json.JSONObject;
  * 
  */
 public class ProcessQueryInstance extends QueryInstance {
-
-    public static final String CTX_QUERY = "wdk-query";
-    public static final String CTX_USER = "wdk-user";
 
     private static final Logger logger = Logger.getLogger(ProcessQueryInstance.class);
 
@@ -206,8 +205,15 @@ public class ProcessQueryInstance extends QueryInstance {
 
         // prepage context info
         HashMap<String, String> context = new HashMap<String, String>();
-        context.put(CTX_QUERY, query.getFullName());
-        context.put(CTX_USER, user.getSignature());
+        context.put(Utilities.QUERY_CTX_QUERY, query.getFullName());
+        context.put(Utilities.QUERY_CTX_USER, user.getSignature());
+        Question question = query.question;
+        if (question != null)
+            context.put(Utilities.QUERY_CTX_QUESTION, question.getFullName());
+        FlatVocabParam vocabParam = query.vocabParam;
+        if (vocabParam != null)
+            context.put(Utilities.QUERY_CTX_PARAM, vocabParam.getFullName());
+
         request.setContext(context);
 
         StringBuffer resultMessage = new StringBuffer();
