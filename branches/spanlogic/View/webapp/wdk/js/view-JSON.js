@@ -307,7 +307,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 		var button = "<div style='text-align:center'><input type='submit' value='Revise' /></div>";
 		params_table = oform + stage_input + params_table + button + cform;
 	}else if(params != undefined && params.length != 0)
-		params_table = createParameters(params);
+		params_table = createParameters(params, modelstep.isSpan && jsonstep.id == modelstep.back_boolean_Id);
 	var hideOp = false;
 	var hideQu = false;
 	if(jsonstep.isCollapsed){                              /* substrategy */
@@ -418,10 +418,20 @@ var set_weight = "<div name='All_weighting' class='param-group' type='ShowHide'>
 }
 
 // HANDLE THE DISPLAY OF THE PARAMETERS IN THE STEP DETAILS BOX
-function createParameters(params){
+function createParameters(params, isSpan){
 	var table = document.createElement('table');
-	$(params).each(function(){
-        if (this.visible) {
+	if (isSpan) {
+		// TODO:  if span logic moves into WDK, the code
+		// for the span logic details box should move here.
+		try {
+			var contents = customSpanParameters(params);
+			$(table).append(contents);
+		}
+		catch(err) {}
+	}
+	else {
+		$(params).each(function(){
+        	if (this.visible) {
 			var tr = document.createElement('tr');
 			var prompt = document.createElement('td');
 			var space = document.createElement('td');
@@ -436,8 +446,9 @@ function createParameters(params){
 			$(tr).append(space);
 			$(tr).append(value);
 			$(table).append(tr);
-        }
-	});
+        	}
+		});
+	}
 	return table;
 }
 
