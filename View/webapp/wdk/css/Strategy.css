@@ -458,7 +458,7 @@ div.transform a.crumb_name img{
 }
 
 .crumb_details table {
-  margin: 7px 47px;
+  margin: 7px auto;
   line-height: 1;
   border-collapse: separate;
   border-spacing: 2px;
