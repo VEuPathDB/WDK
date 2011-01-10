@@ -91,6 +91,13 @@ public class Utilities {
     public static final String PARAM_USER_ID = COLUMN_USER_ID;
     
     public static final String MACRO_ID_SQL = "##WDK_ID_SQL##";
+    
+    public static final String QUERY_CTX_QUESTION = "wdk-question";
+    public static final String QUERY_CTX_PARAM = "wdk-param";
+    public static final String QUERY_CTX_QUERY = "wdk-query";
+    public static final String QUERY_CTX_USER = "wdk-user";
+
+
 
     public static String encrypt(String data) throws WdkModelException,
             NoSuchAlgorithmException {
