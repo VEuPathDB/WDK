@@ -26,10 +26,6 @@ function showDetails(det){
 			det2.addClass("jqDnR");
 			det2.find(".crumb_menu").addClass("dragHandle");
 			setDraggable(det2, ".dragHandle");
-		//	det2.draggable({
-		//		handle: '.dragHandle',
-		//		containment: 'parent'
-		//	});
 		l = 361;
 		t = 145;
 		det2.css({
