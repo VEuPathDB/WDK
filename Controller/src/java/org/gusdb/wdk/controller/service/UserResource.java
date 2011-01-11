@@ -11,6 +11,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
@@ -24,15 +25,14 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.sun.jersey.spi.container.servlet.PerSession;
-
 @Path("/user")
-@PerSession
 public class UserResource {
 
-    @Context
-    private ServletContext servletContext;
-
+    @Context private ServletContext servletContext;
+    @Context private HttpServletRequest request;
+    @Context private UriInfo ui;
+    
+    
     /**
      * Get the information of the current user
      * 
@@ -43,16 +43,30 @@ public class UserResource {
      * @throws WdkUserException
      */
     @GET
-    public String getUser(@Context HttpServletRequest request,
-            @Context UriInfo ui) throws JSONException, WdkUserException {
+    @Produces("application/json")
+    public String getUser() throws JSONException, WdkUserException {
         // get current user
         UserBean user = ActionUtility.getUser(servletContext, request);
         return outputUser(ui, user);
     }
 
+    /**
+     * Login the user, and get the information of the current user
+     * 
+     * @param request
+     * @param ui
+     * @param email
+     * @param password
+     * @return
+     * @throws WdkUserException
+     * @throws JSONException
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @throws SQLException
+     */
     @POST
-    public String login(@Context HttpServletRequest request,
-            @Context UriInfo ui, @FormParam("email") String email,
+    @Produces("application/json")
+    public String login(@FormParam("email") String email,
             @FormParam("password") String password) throws WdkUserException,
             JSONException, WdkModelException, NoSuchAlgorithmException,
             SQLException {
@@ -70,19 +84,43 @@ public class UserResource {
         return outputUser(ui, user);
     }
 
+    /**
+     * logout the current registered user, and get the information of the new
+     * guest.
+     * 
+     * @param request
+     * @param ui
+     * @param signature
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @throws SQLException
+     * @throws JSONException
+     */
     @Path("/{signature}/logout")
-    public void logout(@Context HttpServletRequest request,
-            @Context UriInfo ui, @PathParam("signature") String signature)
+    @Produces("application/json")
+    public String logout(@PathParam("signature") String signature)
             throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException {
+            NoSuchAlgorithmException, SQLException, JSONException {
         // get current user
         UserBean user = ActionUtility.getUser(servletContext, request);
-        if (user.isGuest()) return;
+        if (!user.isGuest()) {
+            // replace current user with a guest
+            WdkModelBean wdkModel = ActionUtility.getWdkModel(servletContext);
+            user = wdkModel.getUserFactory().getGuestUser();
+            request.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
+        }
 
-        // replace current user with a guest
-        WdkModelBean wdkModel = ActionUtility.getWdkModel(servletContext);
-        UserBean guest = wdkModel.getUserFactory().getGuestUser();
-        request.getSession().setAttribute(CConstants.WDK_USER_KEY, guest);
+        return outputUser(ui, user);
+    }
+    
+    @Path("/${signature}/strategy")
+    public StrategyResource getStrategyResource(@PathParam("signature") String signature) {
+        // get current user
+        UserBean user = ActionUtility.getUser(servletContext, request);
+
+        return new StrategyResource(user);
     }
 
     private String outputUser(@Context UriInfo ui, UserBean user)
