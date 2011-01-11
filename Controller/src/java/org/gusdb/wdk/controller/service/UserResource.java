@@ -19,8 +19,10 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-@Path("/user")
+@Path("/user/{signature}")
 public class UserResource {
+    
+    private static final String PATH_STRATEGIES = "strategy";
 
     @Context
     private ServletContext servletContext;
@@ -37,7 +39,6 @@ public class UserResource {
      * @throws WdkModelException
      */
     @GET
-    @Path("{signature}")
     @Produces("application/json")
     public String getUser(@PathParam("signature") String signature)
             throws JSONException, WdkUserException, WdkModelException {
@@ -46,16 +47,22 @@ public class UserResource {
 
         JSONObject jsUser = new JSONObject();
         jsUser.put("signature", user.getSignature());
-        jsUser.put("is_guest", user.isGuest());
+        jsUser.put("guest", user.isGuest());
 
         // build the uri to the user
         UriBuilder ub = ui.getAbsolutePathBuilder();
-        URI userUri = ub.path(user.getSignature()).build();
+        URI userUri = ub.build();
         jsUser.put("uri", userUri.toASCIIString());
+        
+        // builder the uri to the strategy list
+        ub = ui.getAbsolutePathBuilder();
+        URI strategyUri = ub.path(PATH_STRATEGIES).build();
+        jsUser.put("strategies", strategyUri.toASCIIString());
+        
         return jsUser.toString();
     }
 
-    @Path("{signature}/strategy")
+    @Path(PATH_STRATEGIES)
     public StrategyResource getStrategyResource(
             @PathParam("signature") String signature) throws WdkUserException,
             WdkModelException {

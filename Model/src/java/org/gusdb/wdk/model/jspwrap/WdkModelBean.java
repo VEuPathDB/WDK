@@ -14,8 +14,10 @@ import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
+import org.json.JSONException;
 
 /**
  * A wrapper on a {@link WdkModel} that provides simplified access for
@@ -238,5 +240,23 @@ public class WdkModelBean {
     public QuestionBean getQuestion(String questionFullName)
             throws WdkUserException, WdkModelException {
         return new QuestionBean(wdkModel.getQuestion(questionFullName));
+    }
+
+    /**
+     * @param strategySignature
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @throws SQLException
+     * @throws JSONException
+     * @see org.gusdb.wdk.model.WdkModel#getStrategy(java.lang.String)
+     */
+    public StrategyBean getStrategy(String strategySignature)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
+        Strategy strategy = wdkModel.getStrategy(strategySignature);
+        UserBean user = new UserBean(strategy.getUser());
+        return new StrategyBean(user, strategy);
     }
 }

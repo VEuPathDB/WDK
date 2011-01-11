@@ -1078,7 +1078,7 @@ public class StepFactory {
         }
     }
 
-    Strategy loadStrategy(String strategySignature) throws WdkUserException,
+    public Strategy loadStrategy(String strategySignature) throws WdkUserException,
             SQLException, WdkModelException, JSONException,
             NoSuchAlgorithmException {
         String userColumn = Utilities.COLUMN_USER_ID;

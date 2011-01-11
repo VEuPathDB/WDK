@@ -31,6 +31,7 @@ import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.user.FavoriteFactory;
 import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.StepFactory;
+import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
@@ -82,7 +83,7 @@ public class WdkModel {
 
         ModelXmlParser parser = new ModelXmlParser(gusHome);
         WdkModel wdkModel = parser.parseModel(projectId);
-        
+
         logger.debug("Model ready to use.");
         return wdkModel;
     }
@@ -160,7 +161,6 @@ public class WdkModel {
     private String secretKey;
 
     private User systemUser;
-
 
     /**
      * @param initRecordClassList
@@ -1085,7 +1085,7 @@ public class WdkModel {
     }
 
     public boolean getUseWeights() {
-	return modelConfig.getUseWeights();
+        return modelConfig.getUseWeights();
     }
 
     public User getSystemUser() throws NoSuchAlgorithmException,
@@ -1111,5 +1111,11 @@ public class WdkModel {
      */
     public QueryMonitor getQueryMonitor() {
         return modelConfig.getQueryMonitor();
+    }
+
+    public Strategy getStrategy(String strategySignature)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
+        return stepFactory.loadStrategy(strategySignature);
     }
 }
