@@ -26,10 +26,14 @@ public class ActionUtility {
 
     public static UserBean getUser(HttpServlet servlet,
             HttpServletRequest request) {
+        return getUser(servlet.getServletContext(), request);
+    }
+
+    public static UserBean getUser(ServletContext context,
+            HttpServletRequest request) {
         try {
             // get model
-            ServletContext context = servlet.getServletContext();
-            WdkModelBean wdkModel = (WdkModelBean) context.getAttribute(CConstants.WDK_MODEL_KEY);
+            WdkModelBean wdkModel = getWdkModel(context);
             HttpSession session = request.getSession();
             UserBean wdkUser = (UserBean) session.getAttribute(CConstants.WDK_USER_KEY);
             if (wdkUser == null) {
@@ -48,7 +52,11 @@ public class ActionUtility {
     }
 
     public static WdkModelBean getWdkModel(HttpServlet servlet) {
-        return (WdkModelBean) servlet.getServletContext().getAttribute(
+        return getWdkModel(servlet.getServletContext());
+    }
+    
+    public  static WdkModelBean getWdkModel(ServletContext context) {
+        return (WdkModelBean) context.getAttribute(
                 CConstants.WDK_MODEL_KEY);
     }
 
