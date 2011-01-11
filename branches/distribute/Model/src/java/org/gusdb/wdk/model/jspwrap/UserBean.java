@@ -1140,10 +1140,11 @@ public class UserBean /* implements Serializable */{
      *      org.gusdb.wdk.model.user.Step, org.gusdb.wdk.model.BooleanOperator,
      *      boolean, org.gusdb.wdk.model.AnswerFilterInstance)
      */
-    public StepBean createBooleanStep(StepBean previousStep, StepBean childStep,
-            String operator, boolean useBooleanFilter, String filterName)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
+    public StepBean createBooleanStep(StepBean previousStep,
+            StepBean childStep, String operator, boolean useBooleanFilter,
+            String filterName) throws WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, SQLException,
+            JSONException {
         Step step = user.createBooleanStep(previousStep.step, childStep.step,
                 operator, useBooleanFilter, filterName);
         latestStep = new StepBean(this, step);

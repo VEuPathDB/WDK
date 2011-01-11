@@ -200,7 +200,8 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
     public Iterator<AnswerValue> iterator() {
         try {
-            return new PageAnswerIterator(baseAnswer, startIndex, endIndex, maxPageSize);
+            return new PageAnswerIterator(baseAnswer, startIndex, endIndex,
+                    maxPageSize);
         } catch (WdkModelException ex) {
             throw new RuntimeException(ex);
         } catch (NoSuchAlgorithmException ex) {
