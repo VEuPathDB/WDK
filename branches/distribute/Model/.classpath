@@ -30,7 +30,7 @@
 	<classpathentry kind="lib" path="/WSF Service/lib/java/axis-1.4.jar"/>
 	<classpathentry kind="lib" path="lib/java/WSF-Client.jar"/>
 	<classpathentry kind="lib" path="C:/Develop/Java/Oracle/jdbc/ojdbc14.jar"/>
-	<classpathentry kind="lib" path="lib/java/jersey-client-1.4.jar"/>
-	<classpathentry kind="lib" path="lib/java/jersey-core-1.4.jar"/>
+	<classpathentry kind="lib" path="lib/java/jersey-client-1.1.5.1.jar"/>
+	<classpathentry kind="lib" path="lib/java/jersey-core-1.1.5.1.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
