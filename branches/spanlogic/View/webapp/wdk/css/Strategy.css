@@ -415,7 +415,6 @@ div.transform a.crumb_name img{
   border: solid black;
   position:absolute;
   z-index: 1000;
-  width: 680px;
   text-align: center;
   padding-bottom: 5px;
 }
@@ -874,6 +873,7 @@ div.bottom-close{
 }
 
 .crumb_details .param.value {
+  max-width: 400px;
   text-align: left;
 }
 
