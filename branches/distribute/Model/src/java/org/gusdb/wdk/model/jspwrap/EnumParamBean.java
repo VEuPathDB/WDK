@@ -30,22 +30,10 @@ public class EnumParamBean extends ParamBean {
         return ((AbstractEnumParam) param).getMultiPick();
     }
 
-    public String[] getVocabInternal() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        return ((AbstractEnumParam) param).getVocabInternal();
-    }
-
     public String[] getVocab() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         return ((AbstractEnumParam) param).getVocab();
-    }
-
-    public Map<String, String> getVocabMap() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        return ((AbstractEnumParam) param).getVocabMap();
     }
 
     public String[] getDisplays() throws WdkModelException,

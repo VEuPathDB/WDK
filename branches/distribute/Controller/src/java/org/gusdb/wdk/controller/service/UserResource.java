@@ -57,7 +57,7 @@ public class UserResource {
         // builder the uri to the strategy list
         ub = ui.getAbsolutePathBuilder();
         URI strategyUri = ub.path(PATH_STRATEGIES).build();
-        jsUser.put("strategies", strategyUri.toASCIIString());
+        jsUser.put("strategies-uri", strategyUri.toASCIIString());
         
         return jsUser.toString();
     }

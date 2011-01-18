@@ -25,21 +25,21 @@ import org.json.JSONException;
  */
 public class CacheFactory {
 
-    private static final String CACHE_TABLE_PREFIX = "QueryResult";
+    public static final String CACHE_TABLE_PREFIX = "QueryResult";
 
-    private static final String TABLE_QUERY = "Query";
+    public static final String TABLE_QUERY = "Query";
 
-    static final String COLUMN_QUERY_ID = "query_id";
-    private static final String COLUMN_QUERY_NAME = "query_name";
-    private static final String COLUMN_QUERY_CHECKSUM = "query_checksum";
-    private static final String COLUMN_TABLE_NAME = "table_name";
+    public static final String COLUMN_QUERY_ID = "query_id";
+    public static final String COLUMN_QUERY_NAME = "query_name";
+    public static final String COLUMN_QUERY_CHECKSUM = "query_checksum";
+    public static final String COLUMN_TABLE_NAME = "table_name";
 
-    static final String TABLE_INSTANCE = "QueryInstance";
+    public static final String TABLE_INSTANCE = "QueryInstance";
 
     public static final String COLUMN_INSTANCE_ID = "wdk_instance_id";
-    static final String COLUMN_INSTANCE_CHECKSUM = "instance_checksum";
-    static final String COLUMN_PARAMS = "params";
-    static final String COLUMN_RESULT_MESSAGE = "result_message";
+    public static final String COLUMN_INSTANCE_CHECKSUM = "instance_checksum";
+    public static final String COLUMN_PARAMS = "params";
+    public static final String COLUMN_RESULT_MESSAGE = "result_message";
 
     private static Logger logger = Logger.getLogger(CacheFactory.class);
 
@@ -272,7 +272,7 @@ public class CacheFactory {
 
             String sqlSize = "SELECT count(*) FROM " + cacheTable;
             Object objSize = SqlUtils.executeScalar(wdkModel, dataSource,
-                    sqlSize,  "wdk_cache_query_size");
+                    sqlSize, "wdk_cache_query_size");
             int size = Integer.parseInt(objSize.toString());
 
             System.err.println("CACHE [" + queryId + "] " + queryName + ": "
@@ -303,7 +303,8 @@ public class CacheFactory {
         sql.append(" UNIQUE (").append(COLUMN_QUERY_NAME).append(", ");
         sql.append(COLUMN_QUERY_CHECKSUM).append(") )");
         try {
-            SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),  "wdk_cache_create_table");
+            SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+                    "wdk_cache_create_table");
         } catch (Exception ex) {
             logger.error("Cannot create table [" + TABLE_QUERY + "]. "
                     + ex.getMessage());
@@ -342,7 +343,8 @@ public class CacheFactory {
         sql.append(" UNIQUE (").append(COLUMN_QUERY_ID).append(", ");
         sql.append(COLUMN_INSTANCE_CHECKSUM).append(") )");
         try {
-            SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(), "wdk_cache_create_table");
+            SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+                    "wdk_cache_create_table");
         } catch (Exception ex) {
             logger.error("Cannot create table [" + TABLE_INSTANCE + "]. "
                     + ex.getMessage());
@@ -358,7 +360,7 @@ public class CacheFactory {
         Set<String> cacheTables = new LinkedHashSet<String>();
         try {
             resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
-                    sql.toString(),  "wdk_cache_select_cache_table");
+                    sql.toString(), "wdk_cache_select_cache_table");
             while (resultSet.next()) {
                 cacheTables.add(resultSet.getString(COLUMN_TABLE_NAME));
             }
@@ -382,7 +384,7 @@ public class CacheFactory {
         // delete rows from cache index table
         try {
             SqlUtils.executeUpdate(wdkModel, dataSource, "DELETE FROM "
-                    + TABLE_INSTANCE,  "wdk_cache_create_table");
+                    + TABLE_INSTANCE, "wdk_cache_create_table");
         } catch (Exception ex) {
             logger.error("Cannot delete rows from [" + TABLE_INSTANCE + "]. "
                     + ex.getMessage());
@@ -423,15 +425,19 @@ public class CacheFactory {
             WdkModelException, WdkUserException {
         String checksum = query.getChecksum(true);
         String queryName = query.getFullName();
-        QueryInfo queryInfo = checkQueryInfo(queryName, checksum);
+        return getQueryInfo(queryName, checksum);
+    }
+
+    public synchronized QueryInfo getQueryInfo(String queryName,
+            String queryChecksum) throws SQLException,
+            NoSuchAlgorithmException, JSONException, WdkModelException,
+            WdkUserException {
+        QueryInfo queryInfo = checkQueryInfo(queryName, queryChecksum);
         if (queryInfo != null) return queryInfo;
 
         // cache table doesn't exist, create one
-        queryInfo = new QueryInfo();
-        queryInfo.setQueryId(platform.getNextId(null, TABLE_QUERY));
-        queryInfo.setCacheTable(CACHE_TABLE_PREFIX + queryInfo.getQueryId());
-        queryInfo.setQueryName(queryName);
-        queryInfo.setQueryChecksum(checksum);
+        int queryId = platform.getNextId(null, TABLE_QUERY);
+        String cacheTable = CACHE_TABLE_PREFIX + queryId;
 
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(TABLE_QUERY).append(" (");
@@ -445,16 +451,24 @@ public class CacheFactory {
         try {
             long start = System.currentTimeMillis();
             psInsert = SqlUtils.getPreparedStatement(dataSource, sql.toString());
-            psInsert.setInt(1, queryInfo.getQueryId());
-            psInsert.setString(2, queryInfo.getQueryName());
-            psInsert.setString(3, queryInfo.getQueryChecksum());
-            psInsert.setString(4, queryInfo.getCacheTable());
+            psInsert.setInt(1, queryId);
+            psInsert.setString(2, queryName);
+            psInsert.setString(3, queryChecksum);
+            psInsert.setString(4, cacheTable);
             psInsert.executeUpdate();
-            SqlUtils.verifyTime(wdkModel, sql.toString(),"wdk_cache_insert instance", start);
+            SqlUtils.verifyTime(wdkModel, sql.toString(),
+                    "wdk_cache_insert instance", start);
+
+            queryInfo = new QueryInfo();
+            queryInfo.setQueryId(queryId);
+            queryInfo.setCacheTable(cacheTable);
+            queryInfo.setQueryName(queryName);
+            queryInfo.setQueryChecksum(queryChecksum);
+
+            return queryInfo;
         } finally {
             SqlUtils.closeStatement(psInsert);
         }
-        return queryInfo;
     }
 
     private QueryInfo checkQueryInfo(String queryName, String checksum)
@@ -476,7 +490,8 @@ public class CacheFactory {
             ps.setString(1, queryName);
             ps.setString(2, checksum);
             resultSet = ps.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql.toString(), "wdk_cache_select_query_info", start);
+            SqlUtils.verifyTime(wdkModel, sql.toString(),
+                    "wdk_cache_select_query_info", start);
 
             if (resultSet.next()) {
                 queryInfo = new QueryInfo();

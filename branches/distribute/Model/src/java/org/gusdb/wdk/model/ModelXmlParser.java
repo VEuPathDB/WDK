@@ -52,6 +52,8 @@ import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamSuggestion;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.RecordClassReference;
+import org.gusdb.wdk.model.query.param.RemoteHandlerReference;
+import org.gusdb.wdk.model.query.param.RemoteListParam;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.param.TimestampParam;
 import org.gusdb.wdk.model.xml.XmlAttributeField;
@@ -331,8 +333,7 @@ public class ModelXmlParser extends XmlParser {
                 "setText", 0);
 
         // favorite references
-        configureNode(digester,
-                "wdkModel/recordClassSet/recordClass/favorite",
+        configureNode(digester, "wdkModel/recordClassSet/recordClass/favorite",
                 FavoriteReference.class, "addFavorite");
 
         configureNode(digester,
@@ -556,7 +557,7 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester, path, EnumParam.class, "addParam");
         configureParamContent(digester, path);
 
-        path = path + "/enumList";
+        path += "/enumList";
         configureNode(digester, path, EnumItemList.class, "addEnumItemList");
 
         configureNode(digester, path + "/enumValue", EnumItem.class,
@@ -574,6 +575,24 @@ public class ModelXmlParser extends XmlParser {
         path = "wdkModel/paramSet/timestampParam";
         configureNode(digester, path, TimestampParam.class, "addParam");
         configureParamContent(digester, path);
+
+        // remote list param
+        path = "wdkModel/paramSet/remoteListParam";
+        configureNode(digester, path, RemoteListParam.class, "addParam");
+        configureParamContent(digester, path);
+
+        configureNode(digester, path + "/listHandler",
+                RemoteHandlerReference.class, "addListHandler");
+        configureNode(digester, path + "/listHandler/property",
+                WdkModelText.class, "addProperty");
+        digester.addCallMethod(path + "/listHandler/property", "setText", 0);
+
+        configureNode(digester, path + "/internalHandler",
+                RemoteHandlerReference.class, "addInternalHandler");
+        configureNode(digester, path + "/internalHandler/property",
+                WdkModelText.class, "addProperty");
+        digester.addCallMethod(path + "/internalHandler/property", "setText", 0);
+
     }
 
     private void configureParamContent(Digester digester, String paramPath) {
@@ -641,7 +660,7 @@ public class ModelXmlParser extends XmlParser {
 
         configureLinkTextFields(digester,
                 "wdkModel/questionSet/question/dynamicAttributes/");
-        
+
         configureNode(digester, "wdkModel/questionSet/question/paramRef",
                 ParamReference.class, "addParamRef");
     }
