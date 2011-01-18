@@ -339,7 +339,7 @@ public class ProcessRESTAction extends Action {
                 else writer.println("<doc title='SingleValued'>Choose "
                         + "at most one value from the options</doc>");
                 if (ep.getDependedParam() == null) {
-                    for (String term : ep.getVocabMap().keySet()) {
+                    for (String term : ep.getDisplayMap().keySet()) {
                         // writer.println("<option>" + term + "</option>");
                         writer.println("<option value='" + htmlEncode(term)
                                 + "'><doc title='description'><![CDATA["
@@ -350,7 +350,7 @@ public class ProcessRESTAction extends Action {
                     Map<String, String> pMap = new HashMap<String, String>();
                     EnumParamBean depep = new EnumParamBean(
                             ep.getDependedParam());
-                    for (String depterm : depep.getVocabMap().keySet()) {
+                    for (String depterm : depep.getDisplayMap().keySet()) {
                         ep.setDependedValue(depterm);
                         try {
                             pMap.putAll(ep.getDisplayMap());

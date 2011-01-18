@@ -19,6 +19,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.query.BooleanQuery;
@@ -150,6 +151,7 @@ public class WdkModel {
     private QueryFactory queryFactory;
     private BasketFactory basketFactory;
     private FavoriteFactory favoriteFactory;
+    private CacheFactory cacheFactory;
 
     private List<PropertyList> defaultPropertyLists = new ArrayList<PropertyList>();
     private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<String, String[]>();
@@ -476,6 +478,7 @@ public class WdkModel {
         answerFactory = new AnswerFactory(this);
         basketFactory = new BasketFactory(this);
         favoriteFactory = new FavoriteFactory(this);
+        cacheFactory = new CacheFactory(this, platform);
 
         // set the exception header
         WdkModelException.modelName = getProjectId();
@@ -1100,6 +1103,10 @@ public class WdkModel {
 
     public FavoriteFactory getFavoriteFactory() {
         return favoriteFactory;
+    }
+    
+    public CacheFactory getCacheFactory() {
+        return cacheFactory;
     }
 
     public String getReleaseDate() {

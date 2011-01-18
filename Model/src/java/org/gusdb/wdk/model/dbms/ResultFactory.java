@@ -35,7 +35,7 @@ public class ResultFactory {
 
     public ResultFactory(WdkModel wdkModel) throws SQLException {
         this.platform = wdkModel.getQueryPlatform();
-        this.cacheFactory = new CacheFactory(wdkModel, platform);
+        this.cacheFactory = wdkModel.getCacheFactory();
         this.wdkModel = platform.getWdkModel();
     }
 
@@ -175,8 +175,8 @@ public class ResultFactory {
             if (newId == null) {
                 String checksum = instance.getChecksum();
                 try {
-                    addCacheInstance(connection, queryInfo, instance,
-                            instanceId, checksum);
+                    addCacheInstance(connection, queryInfo, instanceId,
+                            checksum, instance.getResultMessage());
                 } catch (SQLException ex) {
                     // the row must be inserted by other process at the moment.
                     // If so, retrieve it; otherwise, throw error.
@@ -242,19 +242,21 @@ public class ResultFactory {
             stmt = connection.createStatement();
 
             stmt.execute(sqlId.toString());
-            SqlUtils.verifyTime(wdkModel, sqlId.toString(), "wdk_create_cache_index01", start);
+            SqlUtils.verifyTime(wdkModel, sqlId.toString(),
+                    "wdk_create_cache_index01", start);
             if (indexColumns != null) {
                 start = System.currentTimeMillis();
                 stmt.execute(sqlOther.toString());
-                SqlUtils.verifyTime(wdkModel, sqlOther.toString(), "wdk_create_cache_index02", start);
+                SqlUtils.verifyTime(wdkModel, sqlOther.toString(),
+                        "wdk_create_cache_index02", start);
             }
         } finally {
             if (stmt != null) stmt.close();
         }
     }
 
-    private void addCacheInstance(Connection connection, QueryInfo queryInfo,
-            QueryInstance instance, int instanceId, String checksum)
+    public void addCacheInstance(Connection connection, QueryInfo queryInfo,
+            int instanceId, String checksum, String resultMessage)
             throws SQLException, NoSuchAlgorithmException, WdkModelException,
             JSONException, WdkUserException {
         StringBuffer sql = new StringBuffer("INSERT INTO ");
@@ -271,7 +273,7 @@ public class ResultFactory {
             ps.setInt(1, instanceId);
             ps.setInt(2, queryInfo.getQueryId());
             ps.setString(3, checksum);
-            platform.setClobData(ps, 4, instance.getResultMessage(), false);
+            platform.setClobData(ps, 4, resultMessage, false);
             ps.executeUpdate();
         } finally {
             // close the statement manually, since we cannot close the

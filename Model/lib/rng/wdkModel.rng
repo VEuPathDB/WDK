@@ -154,6 +154,7 @@
           <ref name="answerParam" />
           <ref name="datasetParam" />
           <ref name="timestampParam" />
+          <ref name="remoteListParam" />
         </choice>
       </oneOrMore>
     </element>
@@ -424,6 +425,41 @@
       </attribute>
   </define>
 
+  
+  <define name="remoteListParam">
+    <element name="remoteListParam">
+      <ref name="ParamBaseProperties" />
+      <!-- defines the type of the values of this remoteListParam -->
+      <zeroOrMore>
+        <choice>
+            <ref name="ParamBaseTags" />
+            <element name="suggest">
+              <ref name="SuggestContent" />
+            </element>
+            <element name="listHandler>
+              <ref name="remoteHandler" />
+            </element>
+            <element name="internalHandler>
+              <ref name="remoteHandler" />
+            </element>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="remoteHandler">
+      <attribute name="handler" />
+      <ref name="IncludeExclude" />
+      <zeroOrMore>
+        <element name="property">
+          <attribute name="name" />
+          <ref name="IncludeExclude" />
+          <text />
+        </element>
+      </zeroOrMore>
+  </define>
+
+  
 
   <!-- Schema grouping elements  -->
   <define name="queries">
