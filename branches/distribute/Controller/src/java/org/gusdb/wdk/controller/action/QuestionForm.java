@@ -65,12 +65,12 @@ public class QuestionForm extends MapActionForm {
             return errors;
         }
 
+        wdkQuestion.setUser(user);
         Map<String, ParamBean> params = wdkQuestion.getParamsMap();
         for (String paramName : params.keySet()) {
             String prompt = paramName;
             try {
                 ParamBean param = params.get(paramName);
-                param.setUser(user);
                 prompt = param.getPrompt();
                 String rawOrDependentValue = (String) getValue(paramName);
                 String dependentValue = param.rawOrDependentValueToDependentValue(

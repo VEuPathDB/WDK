@@ -118,7 +118,7 @@ public class CacheCLI extends BaseCLI {
             // read config info
             String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
             WdkModel wdkModel = WdkModel.construct(projectId, gusHome);
-            CacheFactory factory = wdkModel.getResultFactory().getCacheFactory();
+            CacheFactory factory = wdkModel.getCacheFactory();
 
             long start = System.currentTimeMillis();
             if (newCache) factory.createCache();

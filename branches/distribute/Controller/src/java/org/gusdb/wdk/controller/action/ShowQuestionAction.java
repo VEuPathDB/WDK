@@ -29,6 +29,7 @@ import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.RemoteListParamBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -119,7 +120,6 @@ public class ShowQuestionAction extends Action {
         ParamBean[] params = wdkQuestion.getParams();
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
         for (ParamBean param : params) {
-            param.setUser(user);
             String paramName = param.getName();
             String paramValue = (String) qForm.getValue(paramName);
 
@@ -133,6 +133,30 @@ public class ShowQuestionAction extends Action {
                 EnumParamBean enumParam = (EnumParamBean) param;
                 String[] terms = enumParam.getVocab();
                 String[] labels = getLengthBoundedLabels(enumParam.getDisplays());
+                qForm.setArray(paramName + LABELS_SUFFIX, labels);
+                qForm.setArray(paramName + TERMS_SUFFIX, terms);
+
+                // if no default is assigned, use the first enum item
+                if (paramValue == null) {
+                    String defaultValue = param.getDefault();
+                    if (defaultValue != null) paramValue = defaultValue;
+                } else {
+                    paramValue = param.dependentValueToRawValue(user,
+                            paramValue);
+                }
+                if (paramValue != null)
+                    qForm.setArray(paramName, paramValue.split(","));
+            } else if (param instanceof RemoteListParamBean) {
+                RemoteListParamBean remoteListParam = (RemoteListParamBean) param;
+                Map<String, String> displays = remoteListParam.getDisplayMap();
+                String[] terms = new String[displays.size()];
+                String[] labels = new String[displays.size()];
+
+                displays.keySet().toArray(terms);
+                for (int i = 0; i < terms.length; i++) {
+                    labels[i] = displays.get(terms[i]);
+                }
+
                 qForm.setArray(paramName + LABELS_SUFFIX, labels);
                 qForm.setArray(paramName + TERMS_SUFFIX, terms);
 

@@ -470,6 +470,7 @@ public class WdkModel {
         userPlatform = (DBPlatform) Class.forName(userDB.getPlatformClass()).newInstance();
         userPlatform.initialize(this, "USER", userDB);
 
+        cacheFactory = new CacheFactory(this, platform);
         resultFactory = new ResultFactory(this);
         userFactory = new UserFactory(this);
         stepFactory = new StepFactory(this);
@@ -478,7 +479,6 @@ public class WdkModel {
         answerFactory = new AnswerFactory(this);
         basketFactory = new BasketFactory(this);
         favoriteFactory = new FavoriteFactory(this);
-        cacheFactory = new CacheFactory(this, platform);
 
         // set the exception header
         WdkModelException.modelName = getProjectId();

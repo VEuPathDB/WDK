@@ -423,7 +423,6 @@ public class ShowStrategyAction extends ShowQuestionAction {
                     jsParam.put("visible", param.getIsVisible());
                     jsParam.put("className", param.getClass().getName());
                     param.setDependentValue(dependentValue);
-                    param.setUser(user);
                     param.setTruncateLength(TRUNCATE_LENGTH);
                     try {
                         String rawValue;
@@ -431,7 +430,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
                             rawValue = ((EnumParamBean) param).getRawDisplayValue();
                         } else rawValue = param.getBriefRawValue();
                         jsParam.put("value", rawValue);
-			jsParam.put("internal",param.getRawValue());
+                        jsParam.put("internal", param.getRawValue());
                     } catch (Exception ex) {
                         throw new WdkModelException(ex);
                     }

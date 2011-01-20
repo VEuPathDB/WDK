@@ -1,13 +1,11 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.net.URI;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
-import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.User;

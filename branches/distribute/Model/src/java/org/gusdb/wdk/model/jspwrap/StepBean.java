@@ -399,7 +399,9 @@ public class StepBean {
     }
 
     public QuestionBean getQuestion() throws WdkModelException {
-        return new QuestionBean(step.getQuestion());
+        QuestionBean question = new QuestionBean(step.getQuestion());
+        question.setUser(user);
+        return question;
     }
 
     public String getFilterName() {
@@ -528,6 +530,7 @@ public class StepBean {
     public boolean isRevisable() {
         return step.isRevisable();
     }
+
     /**
      * @return
      * @throws WdkUserException

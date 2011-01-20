@@ -349,7 +349,7 @@ public class ProcessRESTAction extends Action {
                 } else {
                     Map<String, String> pMap = new HashMap<String, String>();
                     EnumParamBean depep = new EnumParamBean(
-                            ep.getDependedParam());
+                            (EnumParamBean) ep.getDependedParam());
                     for (String depterm : depep.getDisplayMap().keySet()) {
                         ep.setDependedValue(depterm);
                         try {

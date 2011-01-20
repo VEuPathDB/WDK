@@ -14,7 +14,7 @@ public class TimestampParamBean extends ParamBean {
     /**
      * @param param
      */
-    public TimestampParamBean(TimestampParam param) {
-        super(param);
+    public TimestampParamBean(UserBean user, TimestampParam param) {
+        super(user, param);
     }
 }

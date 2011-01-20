@@ -52,9 +52,15 @@ public class RemoteListParam extends Param {
 
         this.listHandlerReference = param.listHandlerReference;
         this.listHandler = param.listHandler;
-        if (listHandlerReferences != null)
+        if (param.listHandlerReferences != null)
             this.listHandlerReferences = new ArrayList<RemoteHandlerReference>(
                     param.listHandlerReferences);
+
+        this.internalHandlerReference = param.internalHandlerReference;
+        this.internalHandler = param.internalHandler;
+        if (param.internalHandlerReferences != null)
+            this.internalHandlerReferences = new ArrayList<RemoteHandlerReference>(
+                    param.internalHandlerReferences);
     }
 
     @Override
@@ -190,7 +196,7 @@ public class RemoteListParam extends Param {
     // do nothing
     }
 
-    public Map<String, String> getList(User user) throws JSONException,
+    public Map<String, String> getDisplayMap(User user) throws JSONException,
             WdkModelException {
         Map<String, String> params = new LinkedHashMap<String, String>();
         String resource = listHandler.getResource(user, params);
@@ -204,11 +210,11 @@ public class RemoteListParam extends Param {
         }
         return list;
     }
-    
+
     public void addListHandler(RemoteHandlerReference reference) {
         this.listHandlerReferences.add(reference);
     }
-    
+
     public void addInternalHandler(RemoteHandlerReference reference) {
         this.internalHandlerReferences.add(reference);
     }
