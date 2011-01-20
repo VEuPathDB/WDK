@@ -23,12 +23,19 @@
 	}
 
 	function attachHandlers(){
-		$("#submitButton").click(function(){
-			// Enable params before the form action (callWizard()) is hit, so that
-			// they will be included in the serialization performed in parseInputs()
-			$(".offsetOptions input, .offsetOptions select").removeAttr("disabled");
-			// Make sure the sentence gets sent to the backend.
-			$("#span_sentence").val($("div.span-step-text.bottom").html());
+		$("#submitButton").unbind('click').click(function(){
+			if ($("#span_output").val() === 'a' || $("#span_output").val() === 'b') {
+				// Enable params before the form action (callWizard()) is hit, so that
+				// they will be included in the serialization performed in parseInputs()
+				$(".offsetOptions input, .offsetOptions select").removeAttr("disabled");
+				// Make sure the sentence gets sent to the backend.
+				$("#span_sentence").val($("div.span-step-text.bottom").html());
+				return true;
+			}
+			else {
+				alert("You must select an output type!");
+				return false;
+			}
 		});
 		$("select[name*='_a'], input[name*='_a']").change(function(){
 			redraw(true,"a");
@@ -37,7 +44,7 @@
 			redraw(true,"b");
 			$(this).keypress();
 		});
-		$("input[name='upstream_region_a'], input[name*='downstream_region_a'], input[name='upstream_region_b'], input[name*='downstream_region_b']").change(function(){
+		$("input[name='upstream_region_a'], input[name*='downstream_region_a'], input[name='upstream_region_b'], input[name*='downstream_region_b']").blur(function(){
 			var group = $(this).attr('name');
 			group = group.substring(group.indexOf("region_")+7);
 			if ($(this).attr("name").indexOf('upstream') >=0) {
@@ -92,7 +99,7 @@
 		var outputType = $("#span_" + output + "_type").val();
 		var outputNum = $("#span_" + output + "_num").text();
 		if (outputType) {
-			var comparison = $("#span_output option[value!='" + output + "']").val();
+			var comparison = $("#span_output option[value!='" + output + "'][value!='none']").val();
 			var comparisonType = $("#span_" + comparison + "_type").val();
 			var comparisonNum = $("#span_" + comparison + "_num").text();
 			$(".comparison_type").text(comparisonType);
@@ -115,7 +122,8 @@
 			}
 		}
 		else {
-			alert("There was an error updating the span logic form.  Please notify us using the 'Contact Us' form.");
+			// No longer an error, since there's a "Select output" option
+			//alert("There was an error updating the span logic form.  Please notify us using the 'Contact Us' form.");
 		}
 	}
 	function updateRegionParams(ele){
@@ -123,7 +131,8 @@
 		var group = button.attr('name');
 		group = group.substring(group.indexOf("_")+1,group.indexOf(")"));
 		var offsetOptions = $("#set_" + group + "Fields .offsetOptions");
-		if (button.val() === 'exact') {
+		switch (button.val()) {
+		case 'exact':
 			$("select, input", offsetOptions).attr("disabled","true");
 			$("input[name='upstream_region_" + group + "']").attr("disabled","true");
 			$("input[name='downstream_region_" + group + "']").attr("disabled","true");
@@ -131,9 +140,10 @@
 			$("#span_begin_offset_" + group).val("0");
 			$("#span_end_" + group).val("stop");
 			$("#span_end_offset_" + group).val("0").change();
-		}
-		else if (button.val() === 'upstream') {
-			$("select, input", offsetOptions).attr("disabled","true");
+			break;
+		case 'upstream':
+			$("#span_begin_offset_" + group, offsetOptions).removeAttr("disabled");
+			$("select, input[id!='span_begin_offset_" + group + "']", offsetOptions).attr("disabled","true");
 			$("input[name='upstream_region_" + group + "']").removeAttr("disabled");
 			$("input[name='downstream_region_" + group + "']").attr("disabled","true");
 			$("#span_begin_" + group).val("start");
@@ -141,10 +151,14 @@
 			$("#span_end_" + group).val("start");
 			$("#span_end_direction_" + group).val("-");
 			$("#span_end_offset_" + group).val("1");
-			$("input[name='upstream_region_" + group + "']").change();
-		}
-		else if (button.val() === 'downstream') {
-			$("select, input", offsetOptions).attr("disabled","true");
+			$("input[name='upstream_region_" + group + "']").blur();
+			$("#span_begin_offset_" + group, offsetOptions).blur(function() {
+				$("input[name='upstream_region_" + group + "']").val($(this).val());
+			});
+			break;
+		case 'downstream':
+			$("#span_end_offset_" + group, offsetOptions).removeAttr("disabled");
+			$("select, input[id!='span_end_offset_" + group + "']", offsetOptions).attr("disabled","true");
 			$("input[name='upstream_region_" + group + "']").attr("disabled","true");
 			$("input[name='downstream_region_" + group + "']").removeAttr("disabled");
 			$("#span_begin_" + group).val("stop");
@@ -152,16 +166,21 @@
 			$("#span_begin_offset_" + group).val("1");
 			$("#span_end_" + group).val("stop");
 			$("#span_end_direction_" + group).val("+");
-			$("input[name='downstream_region_" + group + "']").change();
-		}
-		else if (button.val() === 'custom') {
+			$("input[name='downstream_region_" + group + "']").blur();
+			$("#span_end_offset_" + group, offsetOptions).blur(function() {
+				$("input[name='downstream_region_" + group + "']").val($(this).val());
+			});
+			break;
+		case 'custom':
+			$("#span_begin_offset_" + group + ",#span_end_offset_" + group).unbind('blur');
 			$("select, input", offsetOptions).removeAttr("disabled");
 			$("input[name='upstream_region_" + group + "']").attr("disabled","true");
 			$("input[name='downstream_region_" + group + "']").attr("disabled","true");
 			$("#span_end_offset_" + group).change();
-		}
-		else {
+			break
+		default:
 			// TODO: Error case
+			break;
 		}
 		updateRegionLabels();
 	}
