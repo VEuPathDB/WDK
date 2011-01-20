@@ -13,7 +13,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
@@ -28,11 +27,11 @@ import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.report.JSONReporter;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+@Path("/user/{user-signature}/strategy")
 public class StrategyResource {
 
     public static final String PARAM_STRATEGY_TYPE = "type";
@@ -48,18 +47,15 @@ public class StrategyResource {
     @Context
     private UriInfo ui;
 
-    private UserBean user;
-
-    public StrategyResource(UserBean user) {
-        this.user = user;
-    }
-
     @GET
     @Produces("application/json")
-    public String getStrategies(@QueryParam(PARAM_STRATEGY_TYPE) String type)
-            throws Exception {
+    public String getStrategies(
+            @PathParam("user-signature") String userSignature,
+            @QueryParam(PARAM_STRATEGY_TYPE) String type) throws Exception {
         logger.debug("list strategies by type: " + type);
-        
+
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(servletContext);
+        UserBean user = wdkModel.getUserFactory().getUser(userSignature);
         Map<String, List<StrategyBean>> strategies = user.getStrategiesByCategory();
 
         List<StrategyBean> list = strategies.get(type);
@@ -91,16 +87,16 @@ public class StrategyResource {
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         logger.debug("Get strategy results of: " + strategySignature);
-        
+
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servletContext);
 
         StrategyBean strategy = wdkModel.getStrategy(strategySignature);
         AnswerValueBean answerValueBean = strategy.getLatestStep().getAnswerValue();
         AnswerValue baseAnswer = answerValueBean.getAnswerValue();
         int resultSize = baseAnswer.getResultSize();
-        
+
         JSONObject jsAnswer = new JSONObject();
-        
+
         jsAnswer.put("size", resultSize);
 
         // determine attribute names and their order
@@ -109,35 +105,36 @@ public class StrategyResource {
             // attribute list not specified, use summary attributes as default.
             AttributeFieldBean[] summary = answerValueBean.getSummaryAttributes();
             names = new String[summary.length];
-            for(int i = 0; i < summary.length; i++) {
+            for (int i = 0; i < summary.length; i++) {
                 names[i] = summary[i].getName();
             }
         } else {
             names = attributeNames.split(",\\s*");
         }
         JSONArray jsAttributes = new JSONArray();
-        for(String name : names) {
+        for (String name : names) {
             jsAttributes.put(name);
         }
         jsAnswer.put("attributes", jsAttributes);
-        
+
         // output the result by pages
         JSONArray jsRecords = new JSONArray();
-        for(int start = 1; start <= resultSize; start += PAGE_SIZE) {
+        for (int start = 1; start <= resultSize; start += PAGE_SIZE) {
             int end = Math.min(resultSize, start + PAGE_SIZE - 1);
             AnswerValue answerValue = new AnswerValue(baseAnswer, start, end);
-            for(RecordInstance instance : answerValue.getRecordInstances()) {
+            for (RecordInstance instance : answerValue.getRecordInstances()) {
                 JSONObject jsRecord = new JSONObject();
-                for(String attribute : names) {
+                for (String attribute : names) {
                     Object objValue = instance.getAttributeValue(attribute).getValue();
-                    String value = (objValue == null) ? "" : objValue.toString();
+                    String value = (objValue == null) ? ""
+                            : objValue.toString();
                     jsRecord.put(attribute, value);
                 }
                 jsRecords.put(jsRecord);
             }
         }
         jsAnswer.put("records", jsRecords);
-        
+
         return jsAnswer.toString();
     }
 }
