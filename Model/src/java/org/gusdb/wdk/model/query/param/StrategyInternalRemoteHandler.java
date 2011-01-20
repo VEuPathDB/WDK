@@ -32,7 +32,7 @@ import org.json.JSONObject;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 
-public class StrategyResultRemoteHandler implements RemoteHandler {
+public class StrategyInternalRemoteHandler implements RemoteHandler {
 
     private static final String PROP_ATTRIBUTES = "attributes";
 

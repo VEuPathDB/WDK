@@ -22,13 +22,10 @@ public class ParamBean {
     protected String dependentValue;
     protected int truncateLength;
 
-    public ParamBean(Param param) {
+    public ParamBean(UserBean user, Param param) {
+        this.user = user;
         this.param = param;
         truncateLength = Utilities.TRUNCATE_DEFAULT;
-    }
-
-    public void setUser(UserBean user) {
-        this.user = user;
     }
 
     public String getName() {

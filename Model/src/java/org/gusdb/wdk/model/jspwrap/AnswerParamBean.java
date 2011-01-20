@@ -23,8 +23,8 @@ public class AnswerParamBean extends ParamBean {
 
     private AnswerParam answerParam;
 
-    public AnswerParamBean(AnswerParam answerParam) {
-        super(answerParam);
+    public AnswerParamBean(UserBean user, AnswerParam answerParam) {
+        super(user, answerParam);
         this.answerParam = answerParam;
     }
 

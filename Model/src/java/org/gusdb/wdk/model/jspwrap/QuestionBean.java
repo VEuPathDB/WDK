@@ -23,6 +23,7 @@ import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.RemoteListParam;
 import org.gusdb.wdk.model.query.param.TimestampParam;
 import org.json.JSONException;
 
@@ -54,6 +55,10 @@ public class QuestionBean {
 
     public RecordClassBean getRecordClass() {
         return new RecordClassBean(question.getRecordClass());
+    }
+
+    public UserBean getUser() {
+        return user;
     }
 
     public ParamBean[] getParams() {
@@ -119,17 +124,18 @@ public class QuestionBean {
     private ParamBean getParam(Param param) {
         ParamBean bean;
         if (param instanceof AbstractEnumParam) {
-            bean = new EnumParamBean((AbstractEnumParam) param);
+            bean = new EnumParamBean(user, (AbstractEnumParam) param);
         } else if (param instanceof AnswerParam) {
-            bean = new AnswerParamBean((AnswerParam) param);
+            bean = new AnswerParamBean(user, (AnswerParam) param);
         } else if (param instanceof DatasetParam) {
-            bean = new DatasetParamBean((DatasetParam) param);
+            bean = new DatasetParamBean(user, (DatasetParam) param);
         } else if (param instanceof TimestampParam) {
-            bean = new TimestampParamBean((TimestampParam) param);
+            bean = new TimestampParamBean(user, (TimestampParam) param);
+        } else if (param instanceof RemoteListParam) {
+            bean = new RemoteListParamBean(user, (RemoteListParam) param);
         } else {
-            bean = new ParamBean(param);
+            bean = new ParamBean(user, param);
         }
-        bean.setUser(user);
         return bean;
     }
 
@@ -356,7 +362,7 @@ public class QuestionBean {
         List<AnswerParamBean> beans = new ArrayList<AnswerParamBean>();
         RecordClass input = question.getWdkModel().getRecordClass(inputType);
         for (AnswerParam answerParam : question.getTransformParams(input)) {
-            beans.add(new AnswerParamBean(answerParam));
+            beans.add(new AnswerParamBean(user, answerParam));
         }
         return beans;
     }

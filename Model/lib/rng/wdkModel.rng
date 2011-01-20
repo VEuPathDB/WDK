@@ -436,10 +436,10 @@
             <element name="suggest">
               <ref name="SuggestContent" />
             </element>
-            <element name="listHandler>
+            <element name="listHandler">
               <ref name="remoteHandler" />
             </element>
-            <element name="internalHandler>
+            <element name="internalHandler">
               <ref name="remoteHandler" />
             </element>
         </choice>

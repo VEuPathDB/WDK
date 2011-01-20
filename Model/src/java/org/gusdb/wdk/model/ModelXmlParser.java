@@ -541,10 +541,10 @@ public class ModelXmlParser extends XmlParser {
         configureParamContent(digester, path);
 
         // answer param
-        configureNode(digester, "wdkModel/paramSet/answerParam",
-                AnswerParam.class, "addParam");
-        configureParamContent(digester, "wdkModel/paramSet/answerParam");
-        configureNode(digester, "wdkModel/paramSet/answerParam/recordClass",
+        path = "wdkModel/paramSet/answerParam";
+        configureNode(digester, path, AnswerParam.class, "addParam");
+        configureParamContent(digester, path);
+        configureNode(digester, path + "/recordClass",
                 RecordClassReference.class, "addRecordClassRef");
 
         // dataset param
@@ -592,7 +592,6 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester, path + "/internalHandler/property",
                 WdkModelText.class, "addProperty");
         digester.addCallMethod(path + "/internalHandler/property", "setText", 0);
-
     }
 
     private void configureParamContent(Digester digester, String paramPath) {

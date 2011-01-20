@@ -19,8 +19,8 @@ public class DatasetParamBean extends ParamBean {
 
     private DatasetParam datasetParam;
 
-    public DatasetParamBean(DatasetParam datasetParam) {
-        super(datasetParam);
+    public DatasetParamBean(UserBean user, DatasetParam datasetParam) {
+        super(user, datasetParam);
         this.datasetParam = datasetParam;
     }
 

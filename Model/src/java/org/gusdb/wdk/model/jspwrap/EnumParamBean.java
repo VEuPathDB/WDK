@@ -18,13 +18,13 @@ import org.json.JSONException;
  */
 public class EnumParamBean extends ParamBean {
 
-    public EnumParamBean(AbstractEnumParam param) {
-        super(param);
+    public EnumParamBean(UserBean user, AbstractEnumParam param) {
+        super(user, param);
     }
 
-	public EnumParamBean(ParamBean parambean) {
-		super(parambean.param);
-	}
+    public EnumParamBean(EnumParamBean parambean) {
+        this(parambean.user, (AbstractEnumParam) parambean.param);
+    }
 
     public Boolean getMultiPick() {
         return ((AbstractEnumParam) param).getMultiPick();
@@ -61,7 +61,7 @@ public class EnumParamBean extends ParamBean {
     public ParamBean getDependedParam() {
         Param dependedParam = ((AbstractEnumParam) param).getDependedParam();
         if (dependedParam != null) {
-            return new ParamBean(dependedParam);
+            return new ParamBean(user, dependedParam);
         }
         return null;
     }
@@ -87,24 +87,23 @@ public class EnumParamBean extends ParamBean {
             WdkModelException, SQLException, JSONException, WdkUserException {
         return ((AbstractEnumParam) param).getTerms(termList);
     }
-    
+
     public String getRawDisplayValue() throws Exception {
         String rawValue = getRawValue();
         if (rawValue == null) rawValue = "";
-	if (!((AbstractEnumParam) param).isSkipValidation()) {
-	    String[] terms = rawValue.split(",");
-	    Map<String, String> displays = getDisplayMap();
-	    StringBuffer buffer = new StringBuffer();
-	    for(String term : terms) {
-		if (buffer.length() > 0) buffer.append(", ");
+        if (!((AbstractEnumParam) param).isSkipValidation()) {
+            String[] terms = rawValue.split(",");
+            Map<String, String> displays = getDisplayMap();
+            StringBuffer buffer = new StringBuffer();
+            for (String term : terms) {
+                if (buffer.length() > 0) buffer.append(", ");
                 String display = displays.get(term.trim());
                 if (display == null) display = term;
-		buffer.append(display);
-	    }
-	    return buffer.toString();
-	}
-	else {
-	    return rawValue;
-	}
+                buffer.append(display);
+            }
+            return buffer.toString();
+        } else {
+            return rawValue;
+        }
     }
 }
