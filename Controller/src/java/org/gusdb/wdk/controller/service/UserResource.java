@@ -22,8 +22,6 @@ import org.json.JSONObject;
 @Path("/user/{signature}")
 public class UserResource {
     
-    private static final String PATH_STRATEGIES = "strategy";
-
     @Context
     private ServletContext servletContext;
     @Context
@@ -56,19 +54,9 @@ public class UserResource {
         
         // builder the uri to the strategy list
         ub = ui.getAbsolutePathBuilder();
-        URI strategyUri = ub.path(PATH_STRATEGIES).build();
+        URI strategyUri = ub.path("strategy").build();
         jsUser.put("strategies-uri", strategyUri.toASCIIString());
         
         return jsUser.toString();
-    }
-
-    @Path(PATH_STRATEGIES)
-    public StrategyResource getStrategyResource(
-            @PathParam("signature") String signature) throws WdkUserException,
-            WdkModelException {
-        WdkModelBean wdkModel = ActionUtility.getWdkModel(servletContext);
-        UserBean user = wdkModel.getUserFactory().getUser(signature);
-
-        return new StrategyResource(user);
     }
 }
