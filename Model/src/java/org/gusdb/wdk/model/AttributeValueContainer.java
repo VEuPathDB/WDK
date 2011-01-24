@@ -60,9 +60,9 @@ public abstract class AttributeValueContainer {
             Query query = ((ColumnAttributeField) field).getColumn().getQuery();
 
             logger.debug("filling attribute values from query " + query.getFullName());
-            for (Column column : query.getColumns()) {
-                logger.debug("column: " + column.getName());
-            }
+            // for (Column column : query.getColumns()) {
+            //     logger.debug("column: " + column.getName());
+            // }
             if (query instanceof SqlQuery)
                 logger.debug("SQL: \n" + ((SqlQuery)query).getSql());
 

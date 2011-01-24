@@ -510,9 +510,9 @@ public class AnswerValue {
 
         logger.debug("filling attribute values from answer "
                 + attributeQuery.getFullName());
-        for (Column column : attributeQuery.getColumns()) {
-            logger.debug("column: '" + column.getName() + "'");
-        }
+        // for (Column column : attributeQuery.getColumns()) {
+        //     logger.debug("column: '" + column.getName() + "'");
+        // }
         if (attributeQuery instanceof SqlQuery)
             logger.debug("SQL: \n" + ((SqlQuery) attributeQuery).getSql());
 

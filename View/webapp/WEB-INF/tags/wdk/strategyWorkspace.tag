@@ -21,7 +21,7 @@
 <ul id="strategy_tabs">
 <%-- showPanel() is in addStepPopup.js --%>
 
-   <li><span id="stratTitle" class="h4left">My Strategies:</span></li> 
+   <li><span id="stratTitle" class="h4left">My Strategies:</span> (User ID: ${wdkUser.signature})</li> 
 
    <li><a id="tab_strategy_new" title="Start a new strategy. (Your opened strategies will remain untouched)"   
 	href="javascript:showPanel('strategy_new')" >New</a></li>
