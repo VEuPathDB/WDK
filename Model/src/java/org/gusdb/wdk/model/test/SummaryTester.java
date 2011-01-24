@@ -153,7 +153,7 @@ public class SummaryTester {
                 Reporter reporter = answerValue.createReport(format, config,
                         nextStartRow, nextEndRow);
 
-                reporter.write(System.out);
+                reporter.report(System.out);
                 System.out.println();
 
                 pageCount++;
