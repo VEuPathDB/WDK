@@ -32,7 +32,6 @@ public abstract class MapActionForm extends ActionForm {
     }
 
     public void setArray(String key, String[] array) {
-        logger.trace("set array: key=[" + key + "] length="+array.length+" array=[" + array[0] + "]");
         arrays.put(key, array);
     }
     

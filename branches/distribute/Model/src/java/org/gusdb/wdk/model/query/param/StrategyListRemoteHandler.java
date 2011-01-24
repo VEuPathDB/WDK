@@ -78,7 +78,7 @@ public class StrategyListRemoteHandler implements RemoteHandler {
 
             // put a timestamp in the term so that the cache will be used as
             // long as the term is not retrieved again
-            UriBuilder builder = UriBuilder.fromUri(strategiesUri);
+            UriBuilder builder = UriBuilder.fromUri(term);
             long timestamp = System.currentTimeMillis();
             URI termUri = builder.queryParam("timestamp", timestamp).build();
             term = termUri.toASCIIString();

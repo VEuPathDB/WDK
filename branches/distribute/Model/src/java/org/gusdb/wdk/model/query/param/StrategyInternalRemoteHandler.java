@@ -15,6 +15,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 import javax.ws.rs.core.MediaType;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -35,6 +36,8 @@ import com.sun.jersey.api.client.WebResource;
 public class StrategyInternalRemoteHandler implements RemoteHandler {
 
     private static final String PROP_ATTRIBUTES = "attributes";
+
+    private static final Logger logger = Logger.getLogger(StrategyInternalRemoteHandler.class);
 
     private WdkModel wdkModel;
     private String attributeList;
@@ -69,14 +72,18 @@ public class StrategyInternalRemoteHandler implements RemoteHandler {
                 String response = resource.queryParam("attributes",
                         attributeList).accept(MediaType.APPLICATION_JSON_TYPE).get(
                         String.class);
+
+                logger.debug("remote strategy: " + strategyUri);
+                logger.debug("remote response: \n" + response);
+
                 JSONObject jsAnswer = new JSONObject(response);
 
                 cacheIndex = cacheResults(jsAnswer, cacheInfo, indexChecksum);
             }
 
             // return a SQL that returns the cached results
-            return "SELECT * FROM " + cacheInfo.getCacheTable() + " WHERE "
-                    + CacheFactory.COLUMN_INSTANCE_ID + " = " + cacheIndex;
+            return "(SELECT * FROM " + cacheInfo.getCacheTable() + " WHERE "
+                    + CacheFactory.COLUMN_INSTANCE_ID + " = " + cacheIndex + ")";
         } catch (NoSuchAlgorithmException ex) {
             throw new WdkModelException(ex);
         } catch (SQLException ex) {
@@ -91,7 +98,8 @@ public class StrategyInternalRemoteHandler implements RemoteHandler {
             JSONException {
         // compose the insert sql
         StringBuilder sql = new StringBuilder("INSERT INTO ");
-        sql.append(queryInfo.getCacheTable() + CacheFactory.COLUMN_INSTANCE_ID);
+        sql.append(queryInfo.getCacheTable());
+        sql.append(" (" + CacheFactory.COLUMN_INSTANCE_ID);
         JSONArray jsAttributes = jsAnswer.getJSONArray("attributes");
         for (int i = 0; i < jsAttributes.length(); i++) {
             String attribute = jsAttributes.getString(i);
@@ -102,6 +110,7 @@ public class StrategyInternalRemoteHandler implements RemoteHandler {
             sql.append(", ?");
         }
         sql.append(")");
+        logger.debug("INSERT SQL:\n" + sql);
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         Connection connection = dataSource.getConnection();
@@ -130,6 +139,8 @@ public class StrategyInternalRemoteHandler implements RemoteHandler {
                 if (row % 1000 == 0) psInsert.executeBatch();
             }
             if (row > 0 && (row % 1000 != 0)) psInsert.executeBatch();
+
+            logger.debug(row + " records inserted.");
 
             connection.commit();
 
@@ -165,7 +176,7 @@ public class StrategyInternalRemoteHandler implements RemoteHandler {
         if (!platform.checkTableExists(null, cacheTable)) {
             // cache table doesn't exist, create it
             StringBuilder sql = new StringBuilder("CREATE TABLE ");
-            sql.append(cacheTable + " AS (");
+            sql.append(cacheTable + " (");
             sql.append(COLUMN_INSTANCE_ID + " "
                     + platform.getNumberDataType(12));
             for (String attribute : attributes) {
