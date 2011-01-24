@@ -98,7 +98,7 @@ ${Question_Header}
                     </c:otherwise>
                 </c:choose>
 
-        <table style="margin-left:auto; margin-right:auto;">
+        <table>
             <tr style="${opaque}" title="${explanation}">
 
             <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="INTERSECT" type="radio" stage="process_boolean" ${disabled}></td>
@@ -124,12 +124,10 @@ ${Question_Header}
             <td>&nbsp;<span class="new_step_num"></span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="current_step_num"></span></td>
 
                 </tr>
-            <tr style="${opaque}" title="${explanation}"><td colspan="15" style="text-align:center;font-size:120%;font-weight:bold;padding:10px;">Or</td></tr>
         </table>
 
-        
         <c:if test="${allowSpan}">
-            <table style="margin-left:auto; margin-right:auto;">
+            <table style="margin-top:10px;">
               <tr>	
                <td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
                
@@ -140,7 +138,7 @@ ${Question_Header}
                <td title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN b_contain_a"></td>
 
               </tr>
-            </table>
+        </table>
         </c:if>
 
 
