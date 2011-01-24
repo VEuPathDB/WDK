@@ -152,7 +152,7 @@ public class ProcessRESTAction extends ShowQuestionAction {
                                 + reporter.getDownloadFileName());
             }
             logger.info("ABOUT TO WRITE RESULTS");
-            reporter.write(out);
+            reporter.report(out);
             out.flush();
             out.close();
         } catch (Exception ex) {
