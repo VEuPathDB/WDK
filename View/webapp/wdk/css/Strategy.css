@@ -425,13 +425,18 @@ div.transform a.crumb_name img{
   white-space: nowrap;
   border-bottom: 2px solid #000000;
   padding: 6px 0px 5px 0px;
+  min-width: 460px;
   height: 12px;
-  margin-right:-6px;
   cursor:move;
 }
 
 .crumb_menu span, .crumb_menu a {
   font-size: 12px;
+}
+
+.crumb_menu span, .crumb_menu a.close_link {
+  position: absolute;
+  right: 6px;
 }
 
 #bread_crumb_div td {
@@ -457,7 +462,7 @@ div.transform a.crumb_name img{
 }
 
 .crumb_details table {
-  margin: 7px auto;
+  margin: 7px 10px;
   line-height: 1;
   border-collapse: separate;
   border-spacing: 2px;

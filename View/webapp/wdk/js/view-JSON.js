@@ -379,7 +379,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 		delete_step = "<a title='" + delete_popup + "' class='delete_step_link' href='javascript:void(0)' onclick='DeleteStep(" + sid + "," + modelstep.frontId + ");hideDetails(this)'>Delete</a>";
 	}
 
-	close_button = 	"<a class='close_link' href='javascript:void(0)' style='float: none; position: absolute; right: 6px;' onclick='hideDetails(this)'>[x]</a>";
+	close_button = 	"<a class='close_link' href='javascript:void(0)' onclick='hideDetails(this)'>[x]</a>";
 
 	inner = ""+	
 	    "		<div class='crumb_menu'>"+ rename_step + view_step + edit_step + expand_step + insert_step + customMenu + delete_step + close_button +
