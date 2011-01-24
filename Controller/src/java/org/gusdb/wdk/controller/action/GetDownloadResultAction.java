@@ -89,7 +89,7 @@ public class GetDownloadResultAction extends Action {
             logger.info( "content-type: " + reporter.getHttpContentType() );
             logger.info( "file-name: " + reporter.getDownloadFileName() );
             
-            reporter.write( out );
+            reporter.report( out );
             out.flush();
             out.close();
             
