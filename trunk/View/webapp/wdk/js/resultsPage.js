@@ -214,8 +214,8 @@ function openAttributeList(element){
     var popup = button.next(".attributesList");    
 
     // Position the popup.
-    var left = $(document).width()/2 - popup.width()/2
-    var top = $(document).scrollTop();
+    var left = $(window).width()/2 - popup.width()/2 + $(window).scrollLeft();
+    var top = $(window).scrollTop() - button.offset().top + 200;
     popup.css({'display' : 'block',
                'top' : top + 'px',
                'left' : left + 'px'});
