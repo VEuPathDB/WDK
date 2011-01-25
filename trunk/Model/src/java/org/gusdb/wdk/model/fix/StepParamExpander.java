@@ -172,7 +172,7 @@ public class StepParamExpander extends BaseCLI {
             if (value.startsWith(prefix)) {
                 String checksum = value.substring(prefix.length()).trim();
                 String decompressed = queryFactory.getClobValue(checksum);
-                if (decompressed == null) value = decompressed;
+                if (decompressed != null) value = decompressed;
             }
             String[] terms = value.split(",");
             for (String term : terms) {
