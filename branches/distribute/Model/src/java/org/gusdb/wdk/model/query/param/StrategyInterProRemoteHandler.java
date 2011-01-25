@@ -179,7 +179,7 @@ public class StrategyInterProRemoteHandler implements RemoteHandler {
             sql.append(cacheTable + " (");
             sql.append(COLUMN_INSTANCE_ID + " "
                     + platform.getNumberDataType(12));
-            sql.append(", " + ATTRIBUTE_SOURCE_ID + " VARCHAR(1999), ");
+            sql.append(", " + ATTRIBUTE_SOURCE_ID + " VARCHAR(1999) ");
             sql.append(", " + ATTRIBUTE_INTERPRO_ID + " VARCHAR(1999))");
 
             DataSource dataSource = platform.getDataSource();
