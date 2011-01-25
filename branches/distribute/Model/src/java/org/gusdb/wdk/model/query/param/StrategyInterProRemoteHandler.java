@@ -33,27 +33,22 @@ import org.json.JSONObject;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 
-public class StrategyInternalRemoteHandler implements RemoteHandler {
+public class StrategyInterProRemoteHandler implements RemoteHandler {
 
-    private static final String PROP_ATTRIBUTES = "attributes";
+    private static final String TABLE_INTERPRO = "InterPro";
+    private static final String ATTRIBUTE_SOURCE_ID = "source_id";
+    private static final String ATTRIBUTE_INTERPRO_ID = "interpro_primary_id";
 
-    private static final Logger logger = Logger.getLogger(StrategyInternalRemoteHandler.class);
+    private static final Logger logger = Logger.getLogger(StrategyInterProRemoteHandler.class);
 
     private WdkModel wdkModel;
-    private String attributeList;
 
     public void setModel(WdkModel wdkModel) {
         this.wdkModel = wdkModel;
     }
 
-    public void setProperties(Map<String, String> properties)
-            throws WdkModelException {
-        if (!properties.containsKey(PROP_ATTRIBUTES))
-            throw new WdkModelException("The required property '"
-                    + PROP_ATTRIBUTES + "' is not set for "
-                    + "StrategyResultRemoteHandler");
-
-        attributeList = properties.get(PROP_ATTRIBUTES);
+    public void setProperties(Map<String, String> properties) {
+    // do nothing
     }
 
     public String getResource(User user, Map<String, String> params)
@@ -70,11 +65,11 @@ public class StrategyInternalRemoteHandler implements RemoteHandler {
                 Client client = Client.create();
                 WebResource resource = client.resource(strategyUri);
                 String response = resource.queryParam("attributes",
-                        attributeList).accept(MediaType.APPLICATION_JSON_TYPE).get(
+                        ATTRIBUTE_SOURCE_ID).queryParam("tables",
+                        TABLE_INTERPRO).accept(MediaType.APPLICATION_JSON_TYPE).get(
                         String.class);
 
                 logger.debug("remote strategy: " + strategyUri);
-                logger.debug("remote response: \n" + response);
 
                 JSONObject jsAnswer = new JSONObject(response);
 
@@ -82,8 +77,8 @@ public class StrategyInternalRemoteHandler implements RemoteHandler {
             }
 
             // return a SQL that returns the cached results
-            return "(SELECT * FROM " + cacheInfo.getCacheTable() + " WHERE "
-                    + CacheFactory.COLUMN_INSTANCE_ID + " = " + cacheIndex + ")";
+            return "SELECT * FROM " + cacheInfo.getCacheTable() + " WHERE "
+                    + CacheFactory.COLUMN_INSTANCE_ID + " = " + cacheIndex;
         } catch (NoSuchAlgorithmException ex) {
             throw new WdkModelException(ex);
         } catch (SQLException ex) {
@@ -98,23 +93,25 @@ public class StrategyInternalRemoteHandler implements RemoteHandler {
             JSONException {
         // compose the insert sql
         StringBuilder sql = new StringBuilder("INSERT INTO ");
-        sql.append(queryInfo.getCacheTable());
-        sql.append(" (" + CacheFactory.COLUMN_INSTANCE_ID);
-        JSONArray jsAttributes = jsAnswer.getJSONArray("attributes");
-        for (int i = 0; i < jsAttributes.length(); i++) {
-            String attribute = jsAttributes.getString(i);
-            sql.append(", ").append(attribute);
-        }
-        sql.append(") VALUES (?");
-        for (int i = 0; i < jsAttributes.length(); i++) {
-            sql.append(", ?");
-        }
-        sql.append(")");
+        sql.append(queryInfo.getCacheTable() + CacheFactory.COLUMN_INSTANCE_ID);
+        sql.append(", " + ATTRIBUTE_SOURCE_ID + ", " + ATTRIBUTE_INTERPRO_ID
+                + ") VALUES (?, ?, ?)");
+
         logger.debug("INSERT SQL:\n" + sql);
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         Connection connection = dataSource.getConnection();
         connection.setAutoCommit(false);
+
+        // find the index for interpro id column
+        JSONObject jsTableNames = jsAnswer.getJSONObject("tables");
+        JSONArray jsTableName = jsTableNames.getJSONArray(TABLE_INTERPRO);
+        int interproColumn = -1;
+        for (int i = 0; i < jsTableName.length(); i++) {
+            String attributeName = jsTableName.getString(i);
+            if (attributeName.equalsIgnoreCase(ATTRIBUTE_INTERPRO_ID))
+                interproColumn = i;
+        }
 
         PreparedStatement psInsert = null;
         try {
@@ -129,14 +126,22 @@ public class StrategyInternalRemoteHandler implements RemoteHandler {
                 psInsert.setInt(1, index);
 
                 JSONObject jsRecord = jsRecords.getJSONObject(row);
-                for (int i = 0; i < jsAttributes.length(); i++) {
-                    String attribute = jsAttributes.getString(i);
-                    String value = jsRecord.getString(attribute);
-                    psInsert.setString(i + 2, value);
-                }
-                psInsert.addBatch();
 
-                if (row % 1000 == 0) psInsert.executeBatch();
+                // get source_id
+                JSONArray jsAttributes = jsRecord.getJSONArray("attributes");
+                String sourceId = jsAttributes.getString(0);
+                psInsert.setString(2, sourceId);
+
+                JSONObject jsTables = jsRecord.getJSONObject("tables");
+                JSONArray jsInterpro = jsTables.getJSONArray(TABLE_INTERPRO);
+                for (int i = 0; i < jsInterpro.length(); i++) {
+                    JSONArray jsRow = jsInterpro.getJSONArray(i);
+                    String value = jsRow.getString(interproColumn);
+
+                    psInsert.setString(3, value);
+                    psInsert.addBatch();
+                    if (row % 1000 == 0) psInsert.executeBatch();
+                }
             }
             if (row > 0 && (row % 1000 != 0)) psInsert.executeBatch();
 
@@ -156,14 +161,9 @@ public class StrategyInternalRemoteHandler implements RemoteHandler {
 
     private QueryInfo getCacheInfo() throws SQLException, JSONException,
             WdkModelException, NoSuchAlgorithmException, WdkUserException {
-        String[] attributes = attributeList.split(",\\s*");
-
         // compute checksum for finding the cache table
         StringBuilder builder = new StringBuilder();
         builder.append(this.getClass().getName());
-        for (String attribute : attributes) {
-            builder.append(",").append(attribute);
-        }
         String checksum = Utilities.encrypt(builder.toString());
         String queryName = this.getClass().getName();
 
@@ -179,10 +179,8 @@ public class StrategyInternalRemoteHandler implements RemoteHandler {
             sql.append(cacheTable + " (");
             sql.append(COLUMN_INSTANCE_ID + " "
                     + platform.getNumberDataType(12));
-            for (String attribute : attributes) {
-                sql.append(", " + attribute + " VARCHAR(1999)");
-            }
-            sql.append(")");
+            sql.append(", " + ATTRIBUTE_SOURCE_ID + " VARCHAR(1999), ");
+            sql.append(", " + ATTRIBUTE_INTERPRO_ID + " VARCHAR(1999))");
 
             DataSource dataSource = platform.getDataSource();
             SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
