@@ -443,7 +443,7 @@ public class RecordClass extends WdkModelBase implements
         return attributeField;
     }
 
-    TableField getTableField(String tableName) throws WdkModelException {
+    public TableField getTableField(String tableName) throws WdkModelException {
         TableField tableField = tableFieldsMap.get(tableName);
         if (tableField == null) {
             String message = "Record " + getName()

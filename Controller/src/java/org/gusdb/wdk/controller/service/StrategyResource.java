@@ -19,7 +19,13 @@ import javax.ws.rs.core.UriInfo;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.controller.action.ActionUtility;
 import org.gusdb.wdk.model.AnswerValue;
+import org.gusdb.wdk.model.AttributeField;
+import org.gusdb.wdk.model.AttributeValue;
+import org.gusdb.wdk.model.FieldScope;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
+import org.gusdb.wdk.model.TableField;
+import org.gusdb.wdk.model.TableValue;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
@@ -37,6 +43,7 @@ public class StrategyResource {
     public static final String PARAM_STRATEGY_TYPE = "type";
     public static final String PARAM_STRATEGY_SIGNATURE = "strategy";
     public static final String PARAM_ATTRIBUTES = "attributes";
+    public static final String PARAM_TABLES = "tables";
 
     private static final int PAGE_SIZE = 500;
 
@@ -83,10 +90,15 @@ public class StrategyResource {
     @Produces("application/json")
     public String getResult(
             @PathParam(PARAM_STRATEGY_SIGNATURE) String strategySignature,
-            @QueryParam(PARAM_ATTRIBUTES) String attributeNames)
+            @QueryParam(PARAM_ATTRIBUTES) String attributeNames,
+            @QueryParam(PARAM_TABLES) String tableNames)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         logger.debug("Get strategy results of: " + strategySignature);
+
+        if (attributeNames != null && attributeNames.length() == 0)
+            attributeNames = null;
+        if (tableNames != null && tableNames.length() == 0) tableNames = null;
 
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servletContext);
 
@@ -100,22 +112,48 @@ public class StrategyResource {
         jsAnswer.put("size", resultSize);
 
         // determine attribute names and their order
-        String[] names;
-        if (attributeNames == null || attributeNames.length() == 0) {
-            // attribute list not specified, use summary attributes as default.
-            AttributeFieldBean[] summary = answerValueBean.getSummaryAttributes();
-            names = new String[summary.length];
-            for (int i = 0; i < summary.length; i++) {
-                names[i] = summary[i].getName();
+        String[] aNames;
+        if (attributeNames == null) {
+            if (tableNames == null) {
+                // attribute list not specified, use summary attributes as
+                // default.
+                AttributeFieldBean[] summary = answerValueBean.getSummaryAttributes();
+                aNames = new String[summary.length];
+                for (int i = 0; i < summary.length; i++) {
+                    aNames[i] = summary[i].getName();
+                }
+            } else {
+                aNames = new String[0];
             }
         } else {
-            names = attributeNames.split(",\\s*");
+            aNames = attributeNames.split(",\\s*");
         }
-        JSONArray jsAttributes = new JSONArray();
-        for (String name : names) {
-            jsAttributes.put(name);
+
+        // determine table names and their order
+        String[] tNames = (tableNames == null) ? new String[0]
+                : tableNames.split(",\\s*");
+
+        // output attribute names
+        JSONArray jsAttributeNames = new JSONArray();
+        for (String aName : aNames) {
+            jsAttributeNames.put(aName);
         }
-        jsAnswer.put("attributes", jsAttributes);
+        jsAnswer.put("attributes", jsAttributeNames);
+
+        // output table names
+        JSONObject jsTableNames = new JSONObject();
+        RecordClass recordClass = baseAnswer.getQuestion().getRecordClass();
+        for (String tName : tNames) {
+            TableField table = recordClass.getTableField(tName);
+            Map<String, AttributeField> attributes = table.getAttributeFieldMap(FieldScope.REPORT_MAKER);
+
+            JSONArray jsTable = new JSONArray();
+            for (String aName : attributes.keySet()) {
+                jsTable.put(aName);
+            }
+            jsTableNames.put(tName, jsTable);
+        }
+        jsAnswer.put("tables", jsTableNames);
 
         // output the result by pages
         JSONArray jsRecords = new JSONArray();
@@ -124,12 +162,38 @@ public class StrategyResource {
             AnswerValue answerValue = new AnswerValue(baseAnswer, start, end);
             for (RecordInstance instance : answerValue.getRecordInstances()) {
                 JSONObject jsRecord = new JSONObject();
-                for (String attribute : names) {
+
+                // output attributes
+                JSONArray jsAttributes = new JSONArray();
+                for (String attribute : aNames) {
                     Object objValue = instance.getAttributeValue(attribute).getValue();
                     String value = (objValue == null) ? ""
                             : objValue.toString();
-                    jsRecord.put(attribute, value);
+                    jsAttributes.put(value);
                 }
+                jsRecord.put("attributes", jsAttributes);
+
+                JSONObject jsTables = new JSONObject();
+                for (String table : tNames) {
+                    TableValue tableValue = instance.getTableValue(table);
+                    Map<String, AttributeField> attributes = tableValue.getTableField().getAttributeFieldMap(
+                            FieldScope.REPORT_MAKER);
+
+                    JSONArray jsTable = new JSONArray();
+                    for (Map<String, AttributeValue> row : tableValue) {
+                        JSONArray jsRow = new JSONArray();
+                        for (String aName : attributes.keySet()) {
+                            Object objValue = row.get(aName).getValue();
+                            String value = (objValue == null) ? ""
+                                    : objValue.toString();
+                            jsRow.put(value);
+                        }
+                        jsTable.put(jsRow);
+                    }
+                    jsTables.put(table, jsTable);
+                }
+                jsRecord.put("tables", jsTables);
+
                 jsRecords.put(jsRecord);
             }
         }
