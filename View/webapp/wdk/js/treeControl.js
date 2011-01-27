@@ -11,12 +11,16 @@ $(document).ready(function(){
 
 function initTreeState(rootNode){
 	if (rootNode.length > 0) {
-		var topNodes = $(rootNode).children(".term-node");
-		for(var n = 0; n < topNodes.length; n++){
-			var subnodes = $(topNodes[n]).children(".term-children").children(".term-node").children("input[type='checkbox']");
-			for(var m = 0; m < subnodes.length; m++)
-				toggleChildrenCheck(subnodes[m]);
-		}
+		// Need to adjust parent nodes by the checked state of their children.
+		// Start from the leaf nodes
+		$(rootNode).find(".term-node input[type='checkbox']").each(function() {
+			// skip internal nodes, which has children div
+			if ($(this).parent().children(".term-children").length > 0) return;
+			
+			toggleChildrenCheck(this);
+		});
+
+		// expand the first branch then collapse it?? why do we want to do that?
 		var a = $("a", rootNode)[0];
 		expandCollapseAll(a, true);
 		expandCollapseAll(a, false);
