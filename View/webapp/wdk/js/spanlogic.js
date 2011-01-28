@@ -37,14 +37,17 @@
 				return false;
 			}
 		});
-		$("select[name*='_a'], input[name*='_a']").change(function(){
-			redraw(true,"a");
-		});
-		$("select[name*='_b'], input[name*='_b']").change(function(){
-			redraw(true,"b");
+		$(".offsetOptions select, .offsetOptions input").change(function(){
+			var id = $(this).attr('id');
+			var group = id.substring(id.lastIndexOf("_") + 1);
+			if (!(id === 'span_begin_offset_' + group && $("input[name='upstream_region_" + group + "']:checked").length == 0) &&
+				!(id === 'span_end_offset_' + group && $("input[name='downstream_region_" + group + "']:checked").length == 0)) {
+				$("input[name*='region_" + group + "'][value='custom']").click();
+			}
+			redraw(true,group);
 			$(this).keypress();
 		});
-		$("input[name='upstream_region_a'], input[name*='downstream_region_a'], input[name='upstream_region_b'], input[name*='downstream_region_b']").blur(function(){
+		$("input[name*='upstream_region_'], input[name*='downstream_region_']").blur(function(){
 			var group = $(this).attr('name');
 			group = group.substring(group.indexOf("region_")+7);
 			if ($(this).attr("name").indexOf('upstream') >=0) {
@@ -133,7 +136,6 @@
 		var offsetOptions = $("#set_" + group + "Fields .offsetOptions");
 		switch (button.val()) {
 		case 'exact':
-			$("select, input", offsetOptions).attr("disabled","true");
 			$("input[name='upstream_region_" + group + "']").attr("disabled","true");
 			$("input[name='downstream_region_" + group + "']").attr("disabled","true");
 			$("#span_begin_" + group).val("start");
@@ -142,8 +144,6 @@
 			$("#span_end_offset_" + group).val("0").change();
 			break;
 		case 'upstream':
-			$("#span_begin_offset_" + group, offsetOptions).removeAttr("disabled");
-			$("select, input[id!='span_begin_offset_" + group + "']", offsetOptions).attr("disabled","true");
 			$("input[name='upstream_region_" + group + "']").removeAttr("disabled");
 			$("input[name='downstream_region_" + group + "']").attr("disabled","true");
 			$("#span_begin_" + group).val("start");
@@ -152,13 +152,8 @@
 			$("#span_end_direction_" + group).val("-");
 			$("#span_end_offset_" + group).val("1");
 			$("input[name='upstream_region_" + group + "']").blur();
-			$("#span_begin_offset_" + group, offsetOptions).blur(function() {
-				$("input[name='upstream_region_" + group + "']").val($(this).val());
-			});
 			break;
 		case 'downstream':
-			$("#span_end_offset_" + group, offsetOptions).removeAttr("disabled");
-			$("select, input[id!='span_end_offset_" + group + "']", offsetOptions).attr("disabled","true");
 			$("input[name='upstream_region_" + group + "']").attr("disabled","true");
 			$("input[name='downstream_region_" + group + "']").removeAttr("disabled");
 			$("#span_begin_" + group).val("stop");
@@ -167,13 +162,9 @@
 			$("#span_end_" + group).val("stop");
 			$("#span_end_direction_" + group).val("+");
 			$("input[name='downstream_region_" + group + "']").blur();
-			$("#span_end_offset_" + group, offsetOptions).blur(function() {
-				$("input[name='downstream_region_" + group + "']").val($(this).val());
-			});
 			break;
 		case 'custom':
 			$("#span_begin_offset_" + group + ",#span_end_offset_" + group).unbind('blur');
-			$("select, input", offsetOptions).removeAttr("disabled");
 			$("input[name='upstream_region_" + group + "']").attr("disabled","true");
 			$("input[name='downstream_region_" + group + "']").attr("disabled","true");
 			$("#span_end_offset_" + group).change();
