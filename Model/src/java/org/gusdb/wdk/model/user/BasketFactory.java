@@ -7,6 +7,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +18,8 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeQueryReference;
 import org.gusdb.wdk.model.ColumnAttributeField;
+import org.gusdb.wdk.model.PrimaryKeyAttributeField;
+import org.gusdb.wdk.model.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.RecordClass;
@@ -134,7 +137,8 @@ public class BasketFactory {
                 try {
                     long start = System.currentTimeMillis();
                     resultSet = psCount.executeQuery();
-                    SqlUtils.verifyTime(wdkModel, sqlCount, "wdk-basket-factory-count", start);
+                    SqlUtils.verifyTime(wdkModel, sqlCount,
+                            "wdk-basket-factory-count", start);
                     if (resultSet.next()) {
                         int rsCount = resultSet.getInt(1);
                         hasRecord = (rsCount > 0);
@@ -152,13 +156,15 @@ public class BasketFactory {
                 if (count % 100 == 0) {
                     long start = System.currentTimeMillis();
                     psInsert.executeBatch();
-                    SqlUtils.verifyTime(wdkModel, sqlInsert, "wdk-basket-factory-insert", start);
+                    SqlUtils.verifyTime(wdkModel, sqlInsert,
+                            "wdk-basket-factory-insert", start);
                 }
             }
             if (count % 100 != 0) {
                 long start = System.currentTimeMillis();
                 psInsert.executeBatch();
-                SqlUtils.verifyTime(wdkModel, sqlInsert, "wdk-basket-factory-insert", start);
+                SqlUtils.verifyTime(wdkModel, sqlInsert,
+                        "wdk-basket-factory-insert", start);
             }
         } finally {
             SqlUtils.closeStatement(psInsert);
@@ -206,13 +212,15 @@ public class BasketFactory {
                 if (count % 100 == 0) {
                     long start = System.currentTimeMillis();
                     psDelete.executeBatch();
-                    SqlUtils.verifyTime(wdkModel, sqlDelete, "wdk-basket-factory-delete", start);
+                    SqlUtils.verifyTime(wdkModel, sqlDelete,
+                            "wdk-basket-factory-delete", start);
                 }
             }
             if (count % 100 != 0) {
                 long start = System.currentTimeMillis();
                 psDelete.executeBatch();
-                SqlUtils.verifyTime(wdkModel, sqlDelete, "wdk-basket-factory-delete", start);
+                SqlUtils.verifyTime(wdkModel, sqlDelete,
+                        "wdk-basket-factory-delete", start);
             }
         } finally {
             SqlUtils.closeStatement(psDelete);
@@ -237,7 +245,8 @@ public class BasketFactory {
             psDelete.setString(2, projectId);
             psDelete.setString(3, rcName);
             psDelete.executeUpdate();
-            SqlUtils.verifyTime(wdkModel, sqlDelete, "wdk-basket-factory-delete-all", start);
+            SqlUtils.verifyTime(wdkModel, sqlDelete,
+                    "wdk-basket-factory-delete-all", start);
         } finally {
             SqlUtils.closeStatement(psDelete);
         }
@@ -290,7 +299,8 @@ public class BasketFactory {
             ps.setInt(2, user.getUserId());
             ps.setString(3, recordClass.getFullName());
             rs = ps.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-basket-factory-select-all", start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-basket-factory-select-all",
+                    start);
 
             StringBuffer buffer = new StringBuffer();
             String[] columns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
@@ -308,6 +318,74 @@ public class BasketFactory {
         } finally {
             SqlUtils.closeResultSet(rs);
         }
+    }
+
+    /**
+     * get deprecated records by comparing stored ids with all id query
+     * 
+     * @param recordClass
+     * @return
+     * @throws WdkModelException
+     * @throws SQLException
+     */
+    public List<PrimaryKeyAttributeValue> getDeprecatedRecords(User user,
+            RecordClass recordClass) throws WdkModelException, SQLException {
+        List<PrimaryKeyAttributeValue> invalidRecords = new ArrayList<PrimaryKeyAttributeValue>();
+
+        // get all id query from record class
+        String queryRef = recordClass.getAllRecordsQueryRef();
+
+        // if no all records query is defined, then basket is disabled to that
+        // record class type, and no invalid record either.
+        if (queryRef == null) return invalidRecords;
+
+        SqlQuery idQuery = (SqlQuery) wdkModel.resolveReference(queryRef);
+        String allIdsSql = idQuery.getSql();
+        String dbLink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
+        PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
+        String[] pkColumns = pkField.getColumnRefs();
+
+        // use basket sql left join with all id query, and filter by the nulls
+        // from id query
+        StringBuilder sql = new StringBuilder("SELECT ");
+        for (int i = 0; i < pkColumns.length; i++) {
+            if (i > 0) sql.append(", ");
+            sql.append("bq." + Utilities.COLUMN_PK_PREFIX + i + " AS "
+                    + pkColumns[i]);
+        }
+        sql.append(" FROM " + schema + TABLE_BASKET + dbLink + " bq ");
+        sql.append(" LEFT JOIN  (" + allIdsSql + ") iq ON ");
+        for (int i = 0; i < pkColumns.length; i++) {
+            if (i > 0) sql.append(" AND ");
+            sql.append("bq." + pkColumns[i] + " = iq." + pkColumns[i]);
+        }
+        sql.append(" WHERE iq." + pkColumns[0] + " IS NULL ");
+        sql.append(" AND bq." + COLUMN_USER_ID + " = ? ");
+        sql.append(" AND bq." + COLUMN_PROJECT_ID + " = ? ");
+        sql.append(" AND bq." + COLUMN_RECORD_CLASS + " = ? ");
+
+        ResultSet resultSet = null;
+        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+        try {
+            PreparedStatement psSelect = SqlUtils.getPreparedStatement(
+                    dataSource, sql.toString());
+            psSelect.setInt(1, user.getUserId());
+            psSelect.setString(2, wdkModel.getProjectId());
+            psSelect.setString(3, recordClass.getFullName());
+            resultSet = psSelect.executeQuery();
+            while (resultSet.next()) {
+                Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+                for (String pkColumn : pkColumns) {
+                    pkValues.put(pkColumn, resultSet.getObject(pkColumn));
+                }
+                PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(
+                        pkField, pkValues);
+                invalidRecords.add(pkValue);
+            }
+        } finally {
+            SqlUtils.closeResultSet(resultSet);
+        }
+        return invalidRecords;
     }
 
     /**
