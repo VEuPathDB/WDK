@@ -129,15 +129,23 @@ ${Question_Header}
         <c:if test="${allowSpan}">
             <table style="margin-top:10px;">
               <tr>	
-               <td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
-               
-               <%--	<td  colspan="11" style="text-align:left;">&nbsp;Genomic regions for ${wdkStep.displayType}s in Step <span class="current_step_num"></span>&nbsp;&nbsp;<span style="font-size:120%;font-weight:bold">Overlap</span>&nbsp; Genomic regions for ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num"></span></td> --%>
+<%--           	<td  colspan="11" style="text-align:left;">&nbsp;Genomic regions for ${wdkStep.displayType}s in Step <span class="current_step_num"></span>&nbsp;&nbsp;<span style="font-size:120%;font-weight:bold">Overlap</span>&nbsp; Genomic regions for ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num"></span></td>
                <td style="text-align:left;padding-right:10px">&nbsp;<span style="font-size:120%;font-weight:bold">Use Genomic locations</span></td>
-               <td style="padding-right:10px" title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN overlap"></td>
-               <td style="padding-right:10px" title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN a_contain_b"></td>
-               <td title="Combine results (in your last step and the new step) using span and regional alignments" class="operation SPAN b_contain_a"></td>
-
+               <td style="padding-right:10px" class="operation SPAN overlap"></td>
+               <td style="padding-right:10px" class="operation SPAN a_contain_b"></td>
+               <td class="operation SPAN b_contain_a"></td>
+--%>
+  		<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
+		<td class="operation SPAN overlap"></td>
+		<td>&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Relative to</b>&nbsp;<span class="new_step_num"></span> <span style="font-size:120%">, using genomic locations</span></td>
               </tr>
+<%--
+	      <tr>
+		<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
+		<td class="operation SPAN overlap"></td>
+		<td>&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Overlap</b>&nbsp;<span class="new_step_num"></span> <b style="font-size:120%">using genomic locations</b></td>
+              </tr>
+--%>
         </table>
         </c:if>
 
