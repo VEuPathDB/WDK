@@ -27,7 +27,8 @@ $(document).ready(function(){
 						initDisplay();
 					}
 				}
-			}else if (msg === "error"){  // not timeout, backend throws errors
+			}else if(data.readyState != 0 && data.status != 0) {  // not timeout, backend throws errors
+				
 				try {
 					customShowError();
 				}
