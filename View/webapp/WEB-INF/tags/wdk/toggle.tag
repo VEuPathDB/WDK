@@ -110,6 +110,9 @@
             <a name="${anchorName}"></a>   
         </c:if>
 
+
+<c:set var="name" value="${fn:replace(name, '.', '')}"/>
+
         <%--  Safari/IE cannot handle this way of doing it  --%>
         <c:choose>
         <c:when test="${fn:contains(userAgent, 'Firefox') || fn:contains(userAgent, 'Red Hat') }">
@@ -121,7 +124,6 @@
 
         <%--  Netscape/Firefox cannot handle this way of doing it  --%>
         <c:otherwise>
-
            <div id="showToggle${name}" class="toggle" name="${name}" align="left"><b><font size="-1" face="Arial,Helvetica">${displayName}</font></b>
              <a href="javascript:${showOnClick}showLayer('${name}')&amp;&amp;showLayer('hideToggle${name}')&amp;&amp;hideLayer('showToggle${name}')&amp;&amp;storeIntelligentCookie('show${name}',1,365)" title="Show ${displayName}" onmouseover="status='Show ${displayName}';return true" onmouseout="status='';return true">Show</a>
            </div>
