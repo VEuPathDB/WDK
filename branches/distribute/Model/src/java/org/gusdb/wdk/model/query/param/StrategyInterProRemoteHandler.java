@@ -77,8 +77,8 @@ public class StrategyInterProRemoteHandler implements RemoteHandler {
             }
 
             // return a SQL that returns the cached results
-            return "SELECT * FROM " + cacheInfo.getCacheTable() + " WHERE "
-                    + CacheFactory.COLUMN_INSTANCE_ID + " = " + cacheIndex;
+            return "(SELECT * FROM " + cacheInfo.getCacheTable() + " WHERE "
+                    + CacheFactory.COLUMN_INSTANCE_ID + " = " + cacheIndexi + ")";
         } catch (NoSuchAlgorithmException ex) {
             throw new WdkModelException(ex);
         } catch (SQLException ex) {
@@ -93,7 +93,7 @@ public class StrategyInterProRemoteHandler implements RemoteHandler {
             JSONException {
         // compose the insert sql
         StringBuilder sql = new StringBuilder("INSERT INTO ");
-        sql.append(queryInfo.getCacheTable() + CacheFactory.COLUMN_INSTANCE_ID);
+        sql.append(queryInfo.getCacheTable() + " (" + CacheFactory.COLUMN_INSTANCE_ID);
         sql.append(", " + ATTRIBUTE_SOURCE_ID + ", " + ATTRIBUTE_INTERPRO_ID
                 + ") VALUES (?, ?, ?)");
 
