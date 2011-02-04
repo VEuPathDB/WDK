@@ -10,7 +10,11 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 import javax.ws.rs.core.MediaType;
@@ -26,20 +30,16 @@ import org.gusdb.wdk.model.dbms.QueryInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.WebResource;
 
-public class StrategyInterProRemoteHandler implements RemoteHandler {
+public class TDRTargetInternalRemoteHandler implements RemoteHandler {
 
-    private static final String TABLE_INTERPRO = "InterPro";
     private static final String ATTRIBUTE_SOURCE_ID = "source_id";
-    private static final String ATTRIBUTE_INTERPRO_ID = "interpro_primary_id";
 
-    private static final Logger logger = Logger.getLogger(StrategyInterProRemoteHandler.class);
+    private static final Logger logger = Logger.getLogger(TDRTargetInternalRemoteHandler.class);
 
     private WdkModel wdkModel;
 
@@ -64,16 +64,14 @@ public class StrategyInterProRemoteHandler implements RemoteHandler {
                 // cache doesn't exist, get data from remote and cache it
                 Client client = Client.create();
                 WebResource resource = client.resource(strategyUri);
-                String response = resource.queryParam("attributes",
-                        ATTRIBUTE_SOURCE_ID).queryParam("tables",
-                        TABLE_INTERPRO).accept(MediaType.APPLICATION_JSON_TYPE).get(
+                String response = resource.accept(MediaType.TEXT_HTML_TYPE).get(
                         String.class);
 
-                logger.debug("remote strategy: " + strategyUri);
+                logger.debug("TDR remote query: " + strategyUri);
 
-                JSONObject jsAnswer = new JSONObject(response);
+                List<String> genes = parseContent(response);
 
-                cacheIndex = cacheResults(jsAnswer, cacheInfo, indexChecksum);
+                cacheIndex = cacheResults(genes, cacheInfo, indexChecksum);
             }
 
             // return a SQL that returns the cached results
@@ -89,31 +87,47 @@ public class StrategyInterProRemoteHandler implements RemoteHandler {
         }
     }
 
-    private int cacheResults(JSONObject jsAnswer, QueryInfo queryInfo,
+    private List<String> parseContent(String response) {
+        // find the begin & end of the data section
+        int begin = response.indexOf("<table class=\"list\">");
+        int end = response.indexOf("</table>", begin);
+        response = response.substring(begin, end);
+
+        List<String> genes = new ArrayList<String>();
+
+        Pattern pattern = Pattern.compile("<a\\s+[^>]*>(.+)</a>");
+        begin = 0;
+        while (true) {
+            begin = response.indexOf("<tr>", begin);
+            if (begin < 0) break;
+
+            end = response.indexOf("</tr>", begin);
+            String content = response.substring(begin, end);
+            Matcher matcher = pattern.matcher(content);
+            if (matcher.find()) {
+                String sourceId = matcher.group(1);
+                genes.add(sourceId);
+            }
+
+            begin = end;
+        }
+        return genes;
+    }
+
+    private int cacheResults(List<String> genes, QueryInfo queryInfo,
             String indexChecksum) throws SQLException, WdkModelException,
             JSONException {
         // compose the insert sql
         StringBuilder sql = new StringBuilder("INSERT INTO ");
-        sql.append(queryInfo.getCacheTable() + " ("
-                + CacheFactory.COLUMN_INSTANCE_ID);
-        sql.append(", " + ATTRIBUTE_SOURCE_ID + ", " + ATTRIBUTE_INTERPRO_ID
-                + ") VALUES (?, ?, ?)");
+        sql.append(queryInfo.getCacheTable() + " (");
+        sql.append(CacheFactory.COLUMN_INSTANCE_ID + ", ");
+        sql.append(ATTRIBUTE_SOURCE_ID + ") VALUES (?, ?)");
 
         logger.debug("INSERT SQL:\n" + sql);
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         Connection connection = dataSource.getConnection();
         connection.setAutoCommit(false);
-
-        // find the index for interpro id column
-        JSONObject jsTableNames = jsAnswer.getJSONObject("tables");
-        JSONArray jsTableName = jsTableNames.getJSONArray(TABLE_INTERPRO);
-        int interproColumn = -1;
-        for (int i = 0; i < jsTableName.length(); i++) {
-            String attributeName = jsTableName.getString(i);
-            if (attributeName.equalsIgnoreCase(ATTRIBUTE_INTERPRO_ID))
-                interproColumn = i;
-        }
 
         PreparedStatement psInsert = null;
         try {
@@ -122,34 +136,17 @@ public class StrategyInterProRemoteHandler implements RemoteHandler {
 
             // then cache the result
             psInsert = connection.prepareStatement(sql.toString());
-            JSONArray jsRecords = jsAnswer.getJSONArray("records");
-            int count = 0;
-            for (int row = 0; row < jsRecords.length(); row++) {
+            int row = 0;
+            for (; row < genes.size(); row++) {
                 psInsert.setInt(1, index);
+                psInsert.setString(2, genes.get(row));
+                psInsert.addBatch();
 
-                JSONObject jsRecord = jsRecords.getJSONObject(row);
-
-                // get source_id
-                JSONArray jsAttributes = jsRecord.getJSONArray("attributes");
-                String sourceId = jsAttributes.getString(0);
-                psInsert.setString(2, sourceId);
-
-                JSONObject jsTables = jsRecord.getJSONObject("tables");
-                JSONArray jsInterpro = jsTables.getJSONArray(TABLE_INTERPRO);
-                for (int i = 0; i < jsInterpro.length(); i++) {
-                    JSONArray jsRow = jsInterpro.getJSONArray(i);
-                    String value = jsRow.getString(interproColumn);
-
-                    psInsert.setString(3, value);
-                    psInsert.addBatch();
-
-                    count++;
-                    if (count % 1000 == 0) psInsert.executeBatch();
-                }
+                if (row % 1000 == 0) psInsert.executeBatch();
             }
-            if (count > 0 && (count % 1000 != 0)) psInsert.executeBatch();
+            if (row > 0 && (row % 1000 != 0)) psInsert.executeBatch();
 
-            logger.debug(count + " rows inserted.");
+            logger.debug(row + " records inserted.");
 
             connection.commit();
 
@@ -183,8 +180,7 @@ public class StrategyInterProRemoteHandler implements RemoteHandler {
             sql.append(cacheTable + " (");
             sql.append(COLUMN_INSTANCE_ID + " "
                     + platform.getNumberDataType(12));
-            sql.append(", " + ATTRIBUTE_SOURCE_ID + " VARCHAR(1999) ");
-            sql.append(", " + ATTRIBUTE_INTERPRO_ID + " VARCHAR(1999))");
+            sql.append(", " + ATTRIBUTE_SOURCE_ID + " VARCHAR(1999))");
 
             DataSource dataSource = platform.getDataSource();
             SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
