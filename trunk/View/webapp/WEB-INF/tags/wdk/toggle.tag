@@ -110,8 +110,11 @@
             <a name="${anchorName}"></a>   
         </c:if>
 
-
+<%-- most CSS selector characters (., >, +, ~, #, :, etc) are not valid in id attributes or tag names --%>
+<%-- but some of the names used in gene page contain . or : .......  remove or escape them \\ --%>
 <c:set var="name" value="${fn:replace(name, '.', '')}"/>
+<c:set var="name" value="${fn:replace(name, ':', '')}"/>
+
 
         <%--  Safari/IE cannot handle this way of doing it  --%>
         <c:choose>
