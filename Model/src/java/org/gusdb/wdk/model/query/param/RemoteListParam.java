@@ -193,7 +193,12 @@ public class RemoteListParam extends Param {
     protected void validateValue(User user, String rawOrDependentValue)
             throws WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException, WdkUserException {
-    // do nothing
+        String rawValue = dependentValueToRawValue(user, rawOrDependentValue);
+        // do nothing
+        Map<String, String> displayMap = getDisplayMap(user);
+        if (!displayMap.containsKey(rawValue))
+            throw new WdkUserException("The input value is invalid: "
+                    + rawValue);
     }
 
     public Map<String, String> getDisplayMap(User user) throws JSONException,

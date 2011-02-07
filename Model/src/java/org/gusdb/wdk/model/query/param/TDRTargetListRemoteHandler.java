@@ -51,7 +51,8 @@ public class TDRTargetListRemoteHandler implements RemoteHandler {
         // go to the start marker
         int pos = response.indexOf("Queries in this set");
 
-        Pattern pattern = Pattern.compile("<a\\s+[^>]*href=\"([^\"]+)\"[^>]>(.+)</a>(.*)<a\\s+");
+        // <a\\s+[^>]*href=\"([^\"]+)\"[^>]>(.+)</a>(.*)<a\\s+
+        Pattern pattern = Pattern.compile("<a\\s+[^>]*href=\"([^\"]+)\"[^>]*>(.+)</a>(.*)<a\\s+");
         JSONArray jsTerms = new JSONArray();
         while (true) {
             // locate the checkbox
