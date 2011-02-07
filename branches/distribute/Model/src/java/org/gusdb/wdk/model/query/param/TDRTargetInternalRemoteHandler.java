@@ -95,7 +95,7 @@ public class TDRTargetInternalRemoteHandler implements RemoteHandler {
 
         List<String> genes = new ArrayList<String>();
 
-        Pattern pattern = Pattern.compile("<a\\s+[^>]*>(.+)</a>");
+        Pattern pattern = Pattern.compile("</td>.*?<a [^>]*>(.+?)</a>");
         begin = 0;
         while (true) {
             begin = response.indexOf("<tr>", begin);
@@ -103,9 +103,10 @@ public class TDRTargetInternalRemoteHandler implements RemoteHandler {
 
             end = response.indexOf("</tr>", begin);
             String content = response.substring(begin, end);
+            content = content.replaceAll("\\s+", " ");
             Matcher matcher = pattern.matcher(content);
             if (matcher.find()) {
-                String sourceId = matcher.group(1);
+                String sourceId = matcher.group(1).trim();
                 genes.add(sourceId);
             }
 
