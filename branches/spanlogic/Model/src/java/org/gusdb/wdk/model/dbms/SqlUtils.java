@@ -92,6 +92,7 @@ public final class SqlUtils {
         PreparedStatement ps = null;
         try {
             ps = connection.prepareStatement(sql);
+            ps.setFetchSize(2000);
             return ps;
         } catch (SQLException ex) {
             logger.error("Failed to prepare query:\n" + sql);
@@ -208,7 +209,7 @@ public final class SqlUtils {
             long start = System.currentTimeMillis();
             connection = dataSource.getConnection();
             Statement stmt = connection.createStatement();
-            stmt.setFetchSize(1000);
+            stmt.setFetchSize(2000);
             resultSet = stmt.executeQuery(sql);
             verifyTime(wdkModel, sql, name, start);
             return resultSet;

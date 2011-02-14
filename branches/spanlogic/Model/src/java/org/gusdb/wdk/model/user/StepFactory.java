@@ -960,8 +960,9 @@ public class StepFactory {
         // Need to create strategy & then load it so that all AnswerValues
         // are created properly
         // Jerric - the imported strategy should always be unsaved.
-        return createStrategy(user, latestStep, name, null, false,
+        Strategy strategy = createStrategy(user, latestStep, name, null, false,
                 oldStrategy.getDescription(), false);
+	return loadStrategy(user, strategy.getStrategyId(), false);
     }
 
     Step importStep(User newUser, Step oldStep, Map<Integer, Integer> stepIdsMap)
