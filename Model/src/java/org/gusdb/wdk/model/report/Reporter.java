@@ -37,11 +37,12 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         private AnswerValue baseAnswer;
         private int endIndex;
         private int startIndex;
-	private int maxPageSize;
+        private int maxPageSize;
 
-        public PageAnswerIterator(AnswerValue answerValue, int startIndex, int endIndex, int maxPageSize)
-                throws WdkModelException, NoSuchAlgorithmException,
-                SQLException, JSONException, WdkUserException {
+        public PageAnswerIterator(AnswerValue answerValue, int startIndex,
+                int endIndex, int maxPageSize) throws WdkModelException,
+                NoSuchAlgorithmException, SQLException, JSONException,
+                WdkUserException {
             this.baseAnswer = answerValue;
 
             // determine the end index, which should be no bigger result size,
@@ -49,7 +50,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
             int resultSize = baseAnswer.getResultSize();
             this.endIndex = Math.min(endIndex, resultSize);
             this.startIndex = startIndex;
-	    this.maxPageSize = maxPageSize;
+            this.maxPageSize = maxPageSize;
         }
 
         public boolean hasNext() {
@@ -59,13 +60,13 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
         public AnswerValue next() {
             // decide the new end index for the page answer
-            int pageEndIndex = Math.min(endIndex, startIndex + maxPageSize
-                    - 1);
+            int pageEndIndex = Math.min(endIndex, startIndex + maxPageSize - 1);
 
             logger.debug("Getting records #" + startIndex + " to #"
                     + pageEndIndex);
 
-            AnswerValue answerValue = new AnswerValue(baseAnswer, startIndex, pageEndIndex);
+            AnswerValue answerValue = new AnswerValue(baseAnswer, startIndex,
+                    pageEndIndex);
             // update the current index
             startIndex = pageEndIndex + 1;
             return answerValue;
@@ -78,25 +79,25 @@ public abstract class Reporter implements Iterable<AnswerValue> {
     }
 
     public String getDescription() {
-	return description;
+        return description;
     }
 
     public void setDescription(String description) {
-	this.description = description;
+        this.description = description;
     }
 
     public abstract String getConfigInfo();
 
     public String getPropertyInfo() {
-	StringBuffer propInfo = new StringBuffer();
-	for (String propName : properties.keySet()) {
-	    propInfo.append(propName + ": " + properties.get(propName));
-	    propInfo.append(System.getProperty("line.separator"));
-	}
-	return propInfo.toString();
+        StringBuffer propInfo = new StringBuffer();
+        for (String propName : properties.keySet()) {
+            propInfo.append(propName + ": " + properties.get(propName));
+            propInfo.append(System.getProperty("line.separator"));
+        }
+        return propInfo.toString();
     }
 
-    public abstract void write(OutputStream out) throws WdkModelException,
+    protected abstract void write(OutputStream out) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException;
 
@@ -124,21 +125,21 @@ public abstract class Reporter implements Iterable<AnswerValue> {
     public void setProperties(Map<String, String> properties)
             throws WdkModelException {
         this.properties = properties;
-	if (properties.containsKey(PROPERTY_PAGE_SIZE))
-	    maxPageSize = Integer.valueOf(properties.get(PROPERTY_PAGE_SIZE));
+        if (properties.containsKey(PROPERTY_PAGE_SIZE))
+            maxPageSize = Integer.valueOf(properties.get(PROPERTY_PAGE_SIZE));
     }
 
-	public int getResultSize() throws WdkModelException,
+    public int getResultSize() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException{
-		return this.baseAnswer.getResultSize();
-	}
+            WdkUserException {
+        return this.baseAnswer.getResultSize();
+    }
 
-	public AnswerValue getAnswerValue() throws WdkModelException,
+    public AnswerValue getAnswerValue() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException{
-		return this.baseAnswer;
-	}
+            WdkUserException {
+        return this.baseAnswer;
+    }
 
     public void configure(Map<String, String> config) {
         if (config != null) {
@@ -151,17 +152,16 @@ public abstract class Reporter implements Iterable<AnswerValue> {
     }
 
     /**
-     * Hook used to perform any setup needed before
-     * calling the write method.
+     * Hook used to perform any setup needed before calling the write method.
+     * 
+     * @throws SQLException
      */
-    void initialize() {}
-
+    protected abstract void initialize() throws SQLException;
 
     /**
-     * Hook used to perform any teardown needed after
-     * calling the write method.
+     * Hook used to perform any teardown needed after calling the write method.
      */
-    void complete() {}
+    protected abstract void complete();
 
     public void setWdkModel(WdkModel wdkModel) {
         this.wdkModel = wdkModel;
@@ -200,7 +200,8 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
     public Iterator<AnswerValue> iterator() {
         try {
-            return new PageAnswerIterator(baseAnswer, startIndex, endIndex, maxPageSize);
+            return new PageAnswerIterator(baseAnswer, startIndex, endIndex,
+                    maxPageSize);
         } catch (WdkModelException ex) {
             throw new RuntimeException(ex);
         } catch (NoSuchAlgorithmException ex) {
@@ -214,4 +215,15 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         }
     }
 
+    public void report(OutputStream out) throws SQLException,
+            WdkModelException, NoSuchAlgorithmException, WdkUserException,
+            JSONException {
+        initialize();
+        try {
+            // write header
+            write(out);
+        } finally {
+            complete();
+        }
+    }
 }

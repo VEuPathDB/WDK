@@ -117,7 +117,8 @@ public class TabularReporter extends Reporter {
      * @see
      * org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
      */
-    public void write(OutputStream out) throws WdkModelException,
+    @Override
+    protected void write(OutputStream out) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
@@ -320,5 +321,15 @@ public class TabularReporter extends Reporter {
         }
         writer.println("</table>");
         writer.flush();
+    }
+
+    @Override
+    protected void complete() {
+        // do nothing
+    }
+
+    @Override
+    protected void initialize() throws SQLException {
+        // do nothing
     }
 }

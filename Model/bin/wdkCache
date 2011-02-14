@@ -11,7 +11,6 @@ my $envJvmOpts = $ENV{GUSJVMOPTS};
 
 my $cmd = "java $sysProps $envJvmOpts -classpath $CLASSPATH org.gusdb.wdk.model.test.CacheCLI $args";
 
-system($cmd);
+$status = system($cmd);
 
-
-
+exit $status >> 8;

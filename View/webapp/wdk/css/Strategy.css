@@ -126,6 +126,8 @@ div.sub_diagram {
   font-weight: normal;
   line-height: 2;
   text-align:  center;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 /* Rows, columns, heights, widths, and sizes. */
