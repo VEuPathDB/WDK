@@ -434,10 +434,13 @@ public abstract class Param extends WdkModelBase {
             if (!allowEmpty)
                 throw new WdkModelException("The parameter '" + getPrompt()
                         + "' does not allow empty value");
+            // otherwise, got empty value and is allowd, no need for further
+            // validation.
+        } else {
+            // value is not empty, the sub classes will complete further
+            // validation
+            validateValue(user, dependentValue);
         }
-
-        // the sub classes will complete further validation
-        validateValue(user, dependentValue);
     }
 
     public void addNoTranslation(ParamConfiguration noTranslation) {

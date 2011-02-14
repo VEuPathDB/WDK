@@ -439,6 +439,7 @@ a.redbutton:active span {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 div.Workspace {
 	z-index: 50;
+	position: relative;
 }
 
 span.marker a:link, span.marker a:visited {

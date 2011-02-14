@@ -98,7 +98,7 @@ public class JSONReporter extends Reporter {
     }
 
     public String getConfigInfo() {
-	return "This reporter does not have config info yet.";
+        return "This reporter does not have config info yet.";
     }
 
     /*
@@ -141,8 +141,10 @@ public class JSONReporter extends Reporter {
      * @see
      * org.gusdb.wdk.model.report.IReporter#format(org.gusdb.wdk.model.Answer)
      */
-    public void write(OutputStream out) throws WdkModelException, SQLException,
-            NoSuchAlgorithmException, JSONException, WdkUserException {
+    @Override
+    protected void write(OutputStream out) throws WdkModelException,
+            SQLException, NoSuchAlgorithmException, JSONException,
+            WdkUserException {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
 
         // get the columns that will be in the report
@@ -397,5 +399,15 @@ public class JSONReporter extends Reporter {
             SqlUtils.verifyTime(wdkModel, sqlInsert, "wdk-report-json-insert",
                     start);
         }
+    }
+
+    @Override
+    protected void complete() {
+    // do nothing
+    }
+
+    @Override
+    protected void initialize() throws SQLException {
+    // do nothing
     }
 }

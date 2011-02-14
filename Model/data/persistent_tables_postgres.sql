@@ -308,6 +308,7 @@ CREATE TABLE wdkuser.user_baskets
 );
 
 CREATE INDEX wdkuser.user_baskets_idx01 ON wdkuser.user_baskets (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
+CREATE INDEX wdkuser.user_baskets_idx02 ON wdkuser.user_baskets (project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
 
 
 CREATE TABLE wdkuser.favorites

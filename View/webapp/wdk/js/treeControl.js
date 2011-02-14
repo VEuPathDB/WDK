@@ -11,12 +11,16 @@ $(document).ready(function(){
 
 function initTreeState(rootNode){
 	if (rootNode.length > 0) {
-		var topNodes = $(rootNode).children(".term-node");
-		for(var n = 0; n < topNodes.length; n++){
-			var subnodes = $(topNodes[n]).children(".term-children").children(".term-node").children("input[type='checkbox']");
-			for(var m = 0; m < subnodes.length; m++)
-				toggleChildrenCheck(subnodes[m]);
-		}
+		// Need to adjust parent nodes by the checked state of their children.
+		// Start from the leaf nodes
+		$(rootNode).find(".term-node input[type='checkbox']").each(function() {
+			// skip internal nodes, which has children div
+			if ($(this).parent().children(".term-children").length > 0) return;
+			
+			toggleChildrenCheck(this);
+		});
+
+		// expand the first branch then collapse it?? why do we want to do that?
 		var a = $("a", rootNode)[0];
 		expandCollapseAll(a, true);
 		expandCollapseAll(a, false);
@@ -48,26 +52,50 @@ function toggleChildrenCheck(ele){
 }
 
 function checkBranch(ele){
-	if($(ele).parent().parent().hasClass("param") || ele == undefined) return;
+	if(ele == undefined || $(ele).parent().parent().hasClass("param")) return;
 	var any = false;
 	var all = true;
+
+   // if a node is disabled, it is partial selected, that is, some of its children are
+   // selected, but not all are selected. The same state should apply to all its parents.
+   if (ele.disabled) {
+        any = true;
+        all = false;
+        // no need to check the siblings
+   } else {
+	// a node is not disabled, apply the check state
 	if(ele.checked) 
-		any = true;
+		any = true;  // at least one node (itself) is selectd
 	else
-		all = false;
+		all = false;  // at least one node (itself) is not selected
+
+        // check siblings
 	$(ele).parent().siblings("div.term-node").children("input").each(function(t){
+            // avoid further processing of siblings, since the state won't change any more.
+            if (any && !all) return;
+
+            if (this.disabled) {
+                // a sibling is partial selected, apply this state to the parent.
+                any = true;
+                all = false;
+            } else {
 		if(this.checked){
 			any = true;
 		}else{ 
 			all = false;
 		}
+            }
 	});
-	if(!any)
-		all = true;
-	$(ele).parent().parent().parent().children("input").attr("disabled",!all).attr("checked", any);
-//	else
-//	$(ele).parent().parent().parent().children("input").attr("disabled",true).attr("checked", true);
-	checkBranch($(ele).parent().parent().parent().children("input")[0]);
+
+    }
+    var checked = any;
+    var disabled = (any && !all);
+
+    // mark the state of the parent.
+    $(ele).parent().parent().parent().children("input").attr("disabled", disabled).attr("checked", checked);
+
+    // recursively check the parent
+    checkBranch($(ele).parent().parent().parent().children("input")[0]);
 }
 
 function uncheck(ele){
