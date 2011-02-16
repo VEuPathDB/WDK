@@ -3,10 +3,11 @@ use strict;
 use Getopt::Long;
 use Time::Local;
 
-my ($threshold, $genepage, $width_filter, $time_filter, $sort_column, $plotOutputFile);
+my ($threshold, $genepage, $notgenepage, $width_filter, $time_filter, $sort_column, $plotOutputFile);
 $sort_column=2;
 &GetOptions('s=s' => \$threshold,
             'g' => \$genepage,
+            'n' => \$notgenepage,
             't=s' => \$time_filter,
             'c=s' => \$sort_column,
             'p=s' => \$plotOutputFile,
@@ -42,6 +43,7 @@ while(<STDIN>) {
                    # the symptom is that the next log entry is mashed in
                    # these are delimited by ========, so dodge that
   next if ($genepage && !/GeneTables/);
+  next if ($notgenepage && /GeneTables/);
 
   my ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $seconds, $absoluteTime);
   if (/(\d+) \[WARN \] (.*):(\d+) - ([0-9.]*) - \[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d) (.+)\] .*SLOW SQL \[(.*)\]: ([0-9.]*) seconds/) {
@@ -98,13 +100,14 @@ Print a report summarizing the model slow query logs.
 
 Takes one or more logs on standard input.
 
-usage:  modelSlowQueryReport --s secs [--g] [--s starttime[,endtime]] [--c colnum]
+usage:  modelSlowQueryReport -s secs [-g] [-n] [-s starttime[,endtime]] [-c colnum]
 
 where:
-  --s:  slowness threshold in seconds.  run times over secs are reported in Slow columns
-  --g:  genepage only flag
-  --t:  time filter (use seconds since epoch, which is a column in model log)
-  --c:  column to sort on (default is 2, the total time)
+  -s:  slowness threshold in seconds.  run times over secs are reported in Slow columns
+  -g:  genepage only flag. includes only queries with \"GeneTables\" in the name
+  -n:  not genepage flag. complementary to -g option. excludes queries with \"GeneTables\" in the name
+  -t:  time filter (use seconds since epoch, which is a column in model log)
+  -c:  column to sort on (default is 2, the total time)
 
 ";
   exit(1);
