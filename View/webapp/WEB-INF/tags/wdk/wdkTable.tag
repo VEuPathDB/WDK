@@ -38,7 +38,21 @@
 <%-- display the description --%>
 <div class="table-description">${tbl.tableField.description}</div>
 
-<table>
+<<c:choose>
+<c:when test="${tblName == 'UserComments'}">
+<c:set value="${requestScope.wdkRecord}" var="wdkRecord"/>
+<c:set var="primaryKey" value="${wdkRecord.primaryKey}"/>
+<c:set var="pkValues" value="${primaryKey.values}" />
+<c:set var="projectId" value="${pkValues['project_id']}" />
+<c:set var="id" value="${pkValues['source_id']}" />
+
+	<table title="Click to go to the comments page"  style="cursor:pointer" onclick="window.location='<c:url value="/showComment.do?projectId=${projectId}&stableId=${id}&commentTargetId=gene"/>';">
+</c:when>
+<c:otherwise>
+	<table>
+</c:otherwise>
+</c:choose>
+
 <c:if test="${suppressColumnHeaders == null || !suppressColumnHeaders}">
     <c:set var="h" value="0"/>
     <tr class="headerRow">
