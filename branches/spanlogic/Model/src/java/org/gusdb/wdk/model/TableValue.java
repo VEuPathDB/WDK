@@ -272,6 +272,14 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
     public TableField getTableField() {
         return tableField;
     }
+    
+    public String getName() {
+        return tableField.getName();
+    }
+    
+    public String getDisplayName() {
+        return tableField.getDisplayName();
+    }
 
     public String toString() {
         String newline = System.getProperty("line.separator");
