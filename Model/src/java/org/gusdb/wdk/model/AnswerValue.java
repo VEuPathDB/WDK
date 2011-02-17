@@ -700,7 +700,9 @@ public class AnswerValue {
             else sql.append(" AND ");
             sql.append("tq.").append(column).append(" = pidq.").append(column);
         }
-        return sql.toString();
+
+        // replace the id_sql macro
+        return sql.toString().replace(Utilities.MACRO_ID_SQL, idSql);
     }
 
     private String getAttributeSql(Query attributeQuery)
