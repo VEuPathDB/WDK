@@ -38,7 +38,7 @@
 <%-- display the description --%>
 <div class="table-description">${tbl.tableField.description}</div>
 
-<<c:choose>
+<c:choose>
 <c:when test="${tblName == 'UserComments'}">
 <c:set value="${requestScope.wdkRecord}" var="wdkRecord"/>
 <c:set var="primaryKey" value="${wdkRecord.primaryKey}"/>
