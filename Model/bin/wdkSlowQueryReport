@@ -100,7 +100,7 @@ Print a report summarizing the model slow query logs.
 
 Takes one or more logs on standard input.
 
-usage:  modelSlowQueryReport -s secs [-g] [-n] [-s starttime[,endtime]] [-c colnum]
+usage:  modelSlowQueryReport -s secs [-g] [-n] [-s starttime[,endtime]] [-c colnum] [-p plotOutputFile]
 
 where:
   -s:  slowness threshold in seconds.  run times over secs are reported in Slow columns
@@ -108,6 +108,8 @@ where:
   -n:  not genepage flag. complementary to -g option. excludes queries with \"GeneTables\" in the name
   -t:  time filter (use seconds since epoch, which is a column in model log)
   -c:  column to sort on (default is 2, the total time)
+  -p:  optional output file: a tab delimited file to pass as input
+        to wdkSlowQueryPlot.  Used to visualize the query durations over time.
 
 ";
   exit(1);
