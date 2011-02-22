@@ -4,4 +4,4 @@
 <c:set var="stepNum"><%= request.getParameter("prevStepNum") %></c:set>
 <c:set var="add"><%= request.getParameter("isAdd") %></c:set>
 
-<wdk:addStepPopup model="${applicationScope.wdkModel}" rcName="${dType}" prevStepNum="${stepNum}" isAdd="${add}"/>
+<wdk:addStepPopup_new model="${applicationScope.wdkModel}" rcName="${dType}" prevStepNum="${stepNum}" isAdd="${add}"/>

@@ -56,30 +56,30 @@
                     <c:choose>
                       <c:when test="${qP.multiPick}">
                         <!-- multiPick is true, use scroll pane -->
-                        <html:select  property="myMultiProp(${leafPrefix}${pNam})" multiple="1">
+                        <html:select  property="array(${leafPrefix}${pNam})" multiple="1">
                           <c:set var="opt" value="${opt+1}"/>
                           <c:set var="sel" value=""/>
                           <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-                          <html:options property="values(${leafPrefix}${pNam})" labelProperty="labels(${leafPrefix}${pNam})"/>
+                          <html:options property="array(${leafPrefix}${pNam}-values)" labelProperty="array(${leafPrefix}${pNam}-labels)"/>
                         </html:select>
                       </c:when> 
                       <c:otherwise>
                         <!-- multiPick is false, use pull down menu -->
-                        <html:select  property="myProp(${leafPrefix}${pNam})">
+                        <html:select  property="value(${leafPrefix}${pNam})">
                           <c:set var="opt" value="${opt+1}"/>
                           <c:set var="sel" value=""/>
                           <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-                          <html:options property="values(${leafPrefix}${pNam})" labelProperty="labels(${leafPrefix}${pNam})"/>
+                          <html:options property="array(${leafPrefix}${pNam}-values)" labelProperty="array(${leafPrefix}${pNam}-labels)"/>
                         </html:select>
                       </c:otherwise>
                     </c:choose>
                   </c:when>
                   <c:otherwise>
-                      <html:text property="myProp(${leafPrefix}${pNam})"/>
+                      <html:text property="value(${leafPrefix}${pNam})"/>
                   </c:otherwise>
                 </c:choose>
 
-                <html:errors property="myProp(${leafPrefix}${pNam})"/>
+                <html:errors property="value(${leafPrefix}${pNam})"/>
                 
                 <c:set var="anchorQp" value="HELP_${fromAnchorQ}_${pNam}"/>
                 <c:set target="${helpQ}" property="${anchorQp}" value="${qP}"/>
@@ -95,14 +95,14 @@
             <tr>
                <!-- get boolean operations and display in select box -->
 	       <td align="right">
-	          <html:select property="myProp(${leafPrefix}_nextBooleanOperation)">
+	          <html:select property="value(${leafPrefix}_nextBooleanOperation)">
                      <c:set value="booleanOps" var="booleanName"/>
-                     <html:options property="values(${booleanName})" labelProperty="labels(${booleanName})"/>
+                     <html:options property="array(${booleanName}-values)" labelProperty="array(${booleanName}-labels)"/>
                   </html:select>
                </td>
                <!-- get possible questions to boolean with and display them -->
                <td>
-                  <html:select property="myProp(${leafPrefix}_nextQuestionOperand)">
+                  <html:select property="value(${leafPrefix}_nextQuestionOperand)">
                      <c:set var="recordClass" value="${wdkQ.recordClass}"/>
                      <c:set var="questions" value="${recordClass.questions}"/>
                      <c:forEach items="${questions}" var="q">

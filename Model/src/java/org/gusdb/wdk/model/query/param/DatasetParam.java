@@ -41,12 +41,19 @@ public class DatasetParam extends Param {
     private String recordClassRef;
     private RecordClass recordClass;
 
+    /**
+     * Only used by datasetParam, determines what input type to be selected as
+     * default.
+     */
+    private String defaultType;
+
     public DatasetParam() {}
 
     public DatasetParam(DatasetParam param) {
         super(param);
         this.recordClass = param.recordClass;
         this.recordClassRef = param.recordClassRef;
+        this.defaultType = param.defaultType;
     }
 
     /*
@@ -242,5 +249,10 @@ public class DatasetParam extends Param {
 
     public void setDefaultType(String defaultType) {
         this.defaultType = defaultType;
+    }
+
+    @Override
+    protected void applySuggection(ParamSuggestion suggest) {
+        defaultType = suggest.getDefaultType();
     }
 }

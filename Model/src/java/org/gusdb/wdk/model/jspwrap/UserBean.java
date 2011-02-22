@@ -53,7 +53,7 @@ public class UserBean /* implements Serializable */{
         this.user = user;
     }
 
-    User getUser() {
+    public User getUser() {
         return user;
     }
 
@@ -1126,8 +1126,8 @@ public class UserBean /* implements Serializable */{
     }
 
     /**
-     * @param leftStep
-     * @param rightStep
+     * @param previousStep
+     * @param childStep
      * @param operator
      * @param useBooleanFilter
      * @param filter
@@ -1141,11 +1141,11 @@ public class UserBean /* implements Serializable */{
      *      org.gusdb.wdk.model.user.Step, org.gusdb.wdk.model.BooleanOperator,
      *      boolean, org.gusdb.wdk.model.AnswerFilterInstance)
      */
-    public StepBean createBooleanStep(StepBean leftStep, StepBean rightStep,
+    public StepBean createBooleanStep(StepBean previousStep, StepBean childStep,
             String operator, boolean useBooleanFilter, String filterName)
             throws WdkModelException, NoSuchAlgorithmException,
             WdkUserException, SQLException, JSONException {
-        Step step = user.createBooleanStep(leftStep.step, rightStep.step,
+        Step step = user.createBooleanStep(previousStep.step, childStep.step,
                 operator, useBooleanFilter, filterName);
         latestStep = new StepBean(this, step);
         return latestStep;
@@ -1274,10 +1274,6 @@ public class UserBean /* implements Serializable */{
             total += baskets.get(key);
         }
         return total;
-    }
-
-    public void setUsedWeight(boolean usedWeight) {
-        user.setUsedWeight(usedWeight);
     }
 
     /**

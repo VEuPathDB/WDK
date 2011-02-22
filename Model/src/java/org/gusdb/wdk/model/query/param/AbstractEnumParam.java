@@ -51,6 +51,12 @@ public abstract class AbstractEnumParam extends Param {
     protected String dependedValue;
     protected boolean dependedValueChanged = false;
 
+    /**
+     * this property is only used by abstractEnumParams, but have to be
+     * initialized from suggest.
+     */
+    protected String selectMode;
+
     public AbstractEnumParam() {}
 
     public AbstractEnumParam(AbstractEnumParam param) {
@@ -74,6 +80,7 @@ public abstract class AbstractEnumParam extends Param {
         this.dependedParam = param.dependedParam;
         this.dependedParamRef = param.dependedParamRef;
         this.dependedValue = param.dependedValue;
+        this.selectMode = param.selectMode;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -385,6 +392,13 @@ public abstract class AbstractEnumParam extends Param {
     public void setSelectMode(String selectMode) {
         this.selectMode = selectMode;
     }
+    
+    /**
+     * @return the selectMode
+     */
+    public String getSelectMode() {
+        return selectMode;
+    }
 
     protected void applySelectMode() {
         logger.trace("select mode: '" + selectMode + "'");
@@ -418,5 +432,10 @@ public abstract class AbstractEnumParam extends Param {
         if (dependedParamRef != null && dependedParamRef.length() != 0) {
             dependedParam = (Param) wdkModel.resolveReference(dependedParamRef);
         }
+    }
+    
+    @Override
+    protected void applySuggection(ParamSuggestion suggest) {
+        selectMode = suggest.getSelectMode();
     }
 }

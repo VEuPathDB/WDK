@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ColumnType;
 import org.gusdb.wdk.model.query.Query;
@@ -23,7 +23,7 @@ import org.json.JSONException;
 public class RecordClass extends WdkModelBase implements
         AttributeFieldContainer {
 
-    private static final Logger logger = Logger.getLogger(RecordClass.class);
+    // private static final Logger logger = Logger.getLogger(RecordClass.class);
 
     public static Query prepareQuery(WdkModel wdkModel, Query query,
             String[] paramNames) throws WdkModelException,
@@ -66,17 +66,33 @@ public class RecordClass extends WdkModelBase implements
 
         // if the new query is SqlQuery, modify the sql
         if (newQuery instanceof SqlQuery && newParams.size() > 0) {
-            StringBuffer sql = new StringBuffer("SELECT f.* FROM (");
-            sql.append(((SqlQuery) newQuery).getSql());
-            sql.append(") f WHERE ");
+            StringBuilder builder = new StringBuilder("SELECT f.* FROM (");
+            builder.append(((SqlQuery) newQuery).getSql());
+            builder.append(") f WHERE ");
             boolean firstColumn = true;
             for (String columnName : newParams) {
                 if (firstColumn) firstColumn = false;
-                else sql.append(" AND ");
-                sql.append("f.").append(columnName);
-                sql.append(" = $$").append(columnName).append("$$");
+                else builder.append(" AND ");
+                builder.append("f.").append(columnName);
+                builder.append(" = $$").append(columnName).append("$$");
             }
-            ((SqlQuery) newQuery).setSql(sql.toString());
+
+            // replace the id_sql macro
+            StringBuilder idqBuilder = new StringBuilder();
+            for (String column : paramNames) {
+                if (idqBuilder.length() == 0) idqBuilder.append("(SELECT ");
+                else idqBuilder.append(", ");
+                idqBuilder.append("$$" + column + "$$ AS " + column);
+            }
+            DBPlatform platform = wdkModel.getQueryPlatform();
+            idqBuilder.append(platform.getDummyTable());
+            idqBuilder.append(")");
+
+            String idSql = idqBuilder.toString();
+            String sql = builder.toString();
+            sql = sql.replace(Utilities.MACRO_ID_SQL, idSql);
+
+            ((SqlQuery) newQuery).setSql(sql);
         }
         return newQuery;
     }
@@ -614,7 +630,7 @@ public class RecordClass extends WdkModelBase implements
             tableField.resolveReferences(wdkModel);
 
             Query query = tableField.getQuery();
-            query = (Query)wdkModel.resolveReference(query.getFullName());
+            query = (Query) wdkModel.resolveReference(query.getFullName());
 
             // add user param into the original table query, if needed
             if (!query.getParamMap().containsKey(Utilities.PARAM_USER_ID)) {

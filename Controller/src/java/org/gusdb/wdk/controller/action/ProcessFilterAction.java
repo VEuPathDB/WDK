@@ -14,6 +14,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
@@ -30,7 +31,6 @@ import org.json.JSONException;
  * completes the partial boolean expression that was passed in, if any 4)
  * adds/inserts/edits step in strategy 5) forwards to application page
  */
-
 public class ProcessFilterAction extends ProcessQuestionAction {
     private static final Logger logger = Logger.getLogger(ProcessFilterAction.class);
 
@@ -39,8 +39,10 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             throws Exception {
         logger.debug("Entering ProcessFilterAction...");
 
+        logger.debug("strategy: " + request.getParameter("strategy") + ", step: " + request.getParameter("step"));
+
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
-	WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         try {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
 
@@ -95,7 +97,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
             // get the assigned weight
             String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
             boolean hasWeight = (strWeight != null && strWeight.length() > 0);
-            int weight = 0;
+            int weight = Utilities.DEFAULT_WEIGHT;
             if (hasWeight) {
                 if (!strWeight.matches("[\\-\\+]?\\d+"))
                     throw new WdkUserException("Invalid weight value: '"
@@ -141,13 +143,14 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                         fForm);
 
                 if (isRevise) { // TODO need investigation of this code
-                    StepBean oldStep = strategy.getStepById(Integer.parseInt(reviseStep));
+                    /* StepBean oldStep = */ 
+                    strategy.getStepById(Integer.parseInt(reviseStep));
                 }
                 if (wdkQuestion == null) {
                     if (!hasQuestion)
                         throw new WdkUserException(
                                 "The required question name is not provided, cannot process operation.");
-                    wdkQuestion = getQuestionByFullName(qFullName);
+                    wdkQuestion = wdkModel.getQuestion(qFullName);
                 }
                 newStep = ShowSummaryAction.summaryPaging(request, wdkQuestion,
                         params, filterName, false, weight);
@@ -155,7 +158,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
                 // We only set isTransform = true if we're running a new query &
                 // it's a transform If we're inserting a strategy, it has to be
                 // a boolean (given current operations, at least)
-                isTransform = newStep.getIsTransform();
+                isTransform = newStep.getIsTransform() || (newStep.isCombined() && !newStep.getIsBoolean());
             } else { // revise, but just change filter or weight.
                 logger.debug("change filter: " + filterName);
                 // change the filter of an existing step, which can be a child

@@ -223,6 +223,31 @@ td.operation {
   height: 25px;
   background-position: -30px -119px;
 }
+	
+.rightarrow3 {
+	position: absolute;
+	left: 54px;
+	top: -3.2em;
+	z-index: 1;
+	height: 11px;
+	width: 54px;
+}
+		
+.downarrow {
+	position: absolute;
+	left: 3.2em;
+	top: -0.6em;
+	z-index: 1; 	
+}
+	
+.operation {
+        background-repeat: no-repeat;
+	height: 18px;
+	text-align: center;
+	margin-top: -4px;
+	margin-right: 2px;
+	padding: 5px 0 0 0;
+}
 
 a.operation img {
   height: 22px;
@@ -236,6 +261,17 @@ span.stepNumber {
   font-weight:bold;
   white-space:nowrap;
 }
+
+.operation[type="span"] {
+        background-image: url(../images/operationSpanIcons.gif);
+	background-position:0px -11px;
+}
+
+
+td.operation {
+	height: 18px;
+	width: 44px;
+}
   
 h6.resultCount {
   font-size:10px;
@@ -245,6 +281,29 @@ h6.resultCount {
   width:100%;
   position: absolute;
   bottom: 0;
+}
+
+.operation.SPAN {
+	background-image:url("../images/operationSpanIcons.gif");
+	height:24px;
+}
+
+.operation.SPAN.overlap {
+	background-position:-32px -6px;
+}
+
+.operation.SPAN.b_contain_a {
+	background-position:-26px -42px;
+}
+
+.operation.SPAN.a_contain_b {
+	background-position:-26px -85px;
+}
+
+.operation.MINUS {
+	border: 2px solid #FFFFFF;
+	height: 25px;
+	background-position: -30px -11px;
 }
 
 .diagram div.simple {
@@ -288,6 +347,18 @@ h6.resultCount {
   
 .diagram div.operation.RMINUS {
   background-position: 0px -119px;
+}
+	
+.diagram div.operation.SPAN.overlap {
+	background-position: -5px -10px;
+}
+	
+.diagram div.operation.SPAN.b_contain_a {
+	background-position: 0px -48px;
+}
+	
+.diagram div.operation.SPAN.a_contain_b {
+	background-position: 0px -88px;
 }
 
 .diagram div.transform {
@@ -346,7 +417,6 @@ div.transform a.crumb_name img{
   border: solid black;
   position:absolute;
   z-index: 1000;
-  width: 680px;
   text-align: center;
   padding-bottom: 5px;
 }
@@ -357,13 +427,18 @@ div.transform a.crumb_name img{
   white-space: nowrap;
   border-bottom: 2px solid #000000;
   padding: 6px 0px 5px 0px;
+  min-width: 460px;
   height: 12px;
-  margin-right:-6px;
   cursor:move;
 }
 
 .crumb_menu span, .crumb_menu a {
   font-size: 12px;
+}
+
+.crumb_menu span, .crumb_menu a.close_link {
+  position: absolute;
+  right: 6px;
 }
 
 #bread_crumb_div td {
@@ -389,7 +464,7 @@ div.transform a.crumb_name img{
 }
 
 .crumb_details table {
-  margin: 7px 47px;
+  margin: 7px 10px;
   line-height: 1;
   border-collapse: separate;
   border-spacing: 2px;
@@ -400,7 +475,7 @@ div.transform a.crumb_name img{
   position: absolute;
   padding: 0px 0px 0px 5px;   
   text-align: left;
-/*  font-color: #08438F; */
+  color: #08438F;
   font-weight:bold;
   text-decoration:none;
 }
@@ -555,11 +630,20 @@ b.strat_help_title > span {
 }
 
 #query_form {
-  left:140px;   /* Omar's request  150px; */  /*200px;*/ /*135px;*/
-  top:140px; /* -100px; */   /*   60px;  */    /*279px;*/
-  min-width: 800px;  /*  increase to accommodate gene basket 775px; */ /* increase to accommodate blast data type options   741px; */
-  max-width: 78%;   /* increase to accommodate the basket */
-  min-height: 140px;
+	/*display: none;*/
+	position: absolute;
+	left:140px;   /* Omar's request  150px; */  /*200px;*/ /*135px;*/
+	top:140px; /* -100px; */   /*   60px;  */    /*279px;*/
+/*	min-width: 700px; *//* decrease to remove the 5th column in Finder 885px;*/  /*  increase to accommodate gene basket 775px; */ /* increase to accommodate blast data type options   741px; */
+/*	max-width: 78%;  */ /* increase to accommodate the basket */
+	background-color: #FFFFFF;
+/*	background-image: url(../images/filter_top.gif);  */
+/*	background-image: url(../images/CryptoDB/footer.png);*/
+	background-repeat: repeat-x;
+	background-position: 0 26px;   /* was 36px, decreased to have Add Step title thiner */
+	border: 1px solid #888888;	
+	padding: 0 8px 8px 8px;
+	z-index: 1000;
 }
 
 #query_form form {
@@ -633,11 +717,14 @@ b.strat_help_title > span {
   top:0px;
 }
 
-#back_to_selection {
+.back {
   position: absolute;
   left: 0px;
   top:0px;
   z-index:1;
+}
+.back img, .close_window img{
+	width:25px;
 }
 
 #question_title {
@@ -678,7 +765,7 @@ b.strat_help_title > span {
 }
 
 #operations {
-  margin: 10px 20px 10px 40px; 
+	margin: 10px 20px 10px 10px; 
 }
 
 #operations ul li {
@@ -692,6 +779,8 @@ b.strat_help_title > span {
 
 #operations td {
   padding: 0;
+        vertical-align:middle;
+	text-align:left;
 }
 
 .filter {
@@ -714,7 +803,7 @@ b.strat_help_title > span {
 }
 
 .filter-button {
-        margin-top: 10px;
+        padding-top: 10px;
         text-align: center;
 }
 
@@ -791,6 +880,7 @@ div.bottom-close{
 }
 
 .crumb_details .param.value {
+  max-width: 400px;
   text-align: left;
 }
 
@@ -917,5 +1007,132 @@ table.history_controls {
 
 .diagram .stepBox div, .diagram .stepWrapper {
   position: relative;
+}
+
+div#step_type{
+	margin-left:-10px;
+}
+div#sections{
+	line-height:1.25;
+	padding-right:50px;
+}
+div#sections td{
+	vertical-align: top;
+}
+
+/**************************************************
+ ******* CSS for AddStep PopUp ********************
+ *************************************************/
+.menu_section {
+   text-indent:-5px; 
+   margin-left:3px;
+}
+.qf_section{
+	height:190px;
+	margin-bottom:-11px;
+	margin-top:22px;
+	overflow-y:scroll;
+	padding:10px 8px 0 5px;
+	text-align:left;
+	width:158px;
+	margin-left:-6px;
+}
+.qf_section ul ul li{
+	text-indent:3px;
+}
+.qf_section ul li:hover{
+	cursor:pointer;
+	font-weight:bold;
+}
+
+.qf_section ul li.category{
+	background:url("/assets/images/menu_arrow.png") no-repeat scroll 100% 0 transparent;
+}
+
+#process-crumbs{
+	border-style:solid;
+	border-width:0 0 1px;
+	margin-bottom:-20px;
+	margin-top:30px;
+	padding-bottom:5px;
+	text-align:center;
+}
+#process-crumbs > div{
+	display:inline-block;
+	text-align:center;
+	width:56px;
+	opacity:0.3;
+	vertical-align:top;
+}
+#process-crumbs > div.active{
+	opacity:1.0;
+}
+#process-crumbs > div > p{
+	font-size:8pt;
+	font-style:italic;
+}
+.step-image{
+	width:40px;
+}
+.transition{
+	height:15px;
+	margin-top:13px;
+	vertical-align:top;
+	width:108px;
+	opacity:0.3;
+}
+
+
+/*div.operations input[type='radio']{
+	float:right;
+}
+div#span_popup{
+	float:right;
+}
+div#span_popup>table{
+	border:1px solid #BBBBBB;
+}
+td#middle{
+	border-right:1px solid #BBBBBB;
+	border-left:1px solid #BBBBBB;
+}
+ul#directions{
+	border:1px solid #BBBBBB;
+	font-size:8pt;
+	line-height:1.5;
+	padding:10px;
+	width:185px;
+}
+img.step_img{
+	width:20px;
+	position:relative;
+}
+img#step_1{
+	left:-325px;
+	top:-161px;
+}
+img#step_2{
+	left:21px;
+	top:-161px;
+}
+img#step_3{
+	left:-71px;
+	top:-161px;
+}
+img#step_4{
+	left:-120px;
+	top:-86px;
+}
+img#step_5{
+	left:-385px;
+	top:-22px;
+}
+*/
+
+/*CSS for Span Logic Operations Section*/
+
+#query_form #errors {
+  position: relative;
+  top: 35px;
 }
 

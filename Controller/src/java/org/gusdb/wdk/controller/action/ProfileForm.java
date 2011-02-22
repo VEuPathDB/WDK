@@ -4,7 +4,6 @@
 package org.gusdb.wdk.controller.action;
 
 import org.apache.struts.action.ActionForm;
-import org.gusdb.wdk.model.jspwrap.UserBean;
 
 
 /**
@@ -47,7 +46,7 @@ public class ProfileForm extends ActionForm {
     }
 
     public void setConfirmEmail(String email) {
-        this.confirmEmail = confirmEmail;
+        this.confirmEmail = email;
     }
   
     /**
