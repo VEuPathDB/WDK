@@ -2,12 +2,6 @@
 <%@ taglib prefix="w" uri="http://www.servletsuite.com/servlets/wraptag" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-<%@ attribute name="desc"
-              required="false"
-              description="Value to appear at top of page"
-%>
-
-
 <c:set value="${requestScope.wdkRecord}" var="wdkRecord"/>
 <c:set value="${requestScope.action}" var="frontAction" />
 <c:set value="${wdkRecord.primaryKey.values}" var="vals"/>
@@ -24,11 +18,11 @@
     });
   </script>
 </c:if>
-
-${id} <br /> <span style="font-size:80%">${desc}</span> <br/>
 <style type="text/css">
 	img {vertical-align:bottom;}
 </style>
+
+
 <span class="wdk-record" recordClass="${wdkRecord.recordClass.fullName}">
     <c:choose>
         <c:when test="${wdkUser.guest}">
