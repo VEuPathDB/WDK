@@ -9,7 +9,6 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
 import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -21,22 +20,22 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
-
 /**
  * @author xingao
- *
+ * 
  */
 public class ProcessResetPasswordAction extends Action {
 
-    private static Logger logger = Logger.getLogger(ProcessResetPasswordAction.class);
-    
+    // private static Logger logger =
+    // Logger.getLogger(ProcessResetPasswordAction.class);
+
     /*
      * (non-Javadoc)
      * 
-     * @see org.apache.struts.action.Action#execute(org.apache.struts.action.ActionMapping,
-     *      org.apache.struts.action.ActionForm,
-     *      javax.servlet.http.HttpServletRequest,
-     *      javax.servlet.http.HttpServletResponse)
+     * @seeorg.apache.struts.action.Action#execute(org.apache.struts.action.
+     * ActionMapping, org.apache.struts.action.ActionForm,
+     * javax.servlet.http.HttpServletRequest,
+     * javax.servlet.http.HttpServletResponse)
      */
     @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
@@ -45,16 +44,17 @@ public class ProcessResetPasswordAction extends Action {
         ActionForward forward = null;
 
         // if the user is logged in, redirect him/her to change password page
-        UserBean user = (UserBean)request.getSession().getAttribute(CConstants.WDK_USER_KEY);
+        UserBean user = (UserBean) request.getSession().getAttribute(
+                CConstants.WDK_USER_KEY);
         if (user != null && !user.isGuest()) {
-            forward= mapping.findForward(CConstants.SHOW_PASSWORD_MAPKEY);
+            forward = mapping.findForward(CConstants.SHOW_PASSWORD_MAPKEY);
             return forward;
         }
-        
+
         // if a custom profile page exists, use it; otherwise, use default one
         ServletContext svltCtx = getServlet().getServletContext();
-        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
-	    + File.separator + CConstants.WDK_PAGES_DIR;
+        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator
+                + CConstants.WDK_PAGES_DIR;
         String customViewFile = customViewDir + File.separator
                 + CConstants.WDK_RESET_PASSWORD_PAGE;
         if (ApplicationInitListener.resourceExists(customViewFile, svltCtx)) {
@@ -66,7 +66,7 @@ public class ProcessResetPasswordAction extends Action {
 
         // get user's input
         String email = request.getParameter("email");
-        
+
         WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
         UserFactoryBean factory = wdkModel.getUserFactory();

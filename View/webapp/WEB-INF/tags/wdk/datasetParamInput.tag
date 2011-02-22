@@ -57,7 +57,6 @@ function chooseType(paramName, type) {
 <c:set var="dsName" value="${pNam}_dataset"/>
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="dataset" value="${requestScope[dsName]}" />  
-<c:set var="partial" value="${requestScope.partial}" />
 <c:set var="recordType" value="${qp.recordClass.type}" />
 <c:set var="defaultType" value="${qp.defaultType}" />
 <c:set var="dataChecked"><c:if test="${defaultType == 'data'}">checked</c:if></c:set>
@@ -113,7 +112,7 @@ function chooseType(paramName, type) {
         </tr>
     </c:if>
 
-    <c:if test="${partial == null || partial == false}">
+    <c:if test="${defaultType != 'basket'}">
         <!-- display an input box and upload file button -->
         <tr class="dataset-file">
             <td align="left" valign="top">
@@ -122,7 +121,7 @@ function chooseType(paramName, type) {
                Upload from a <i>text</i> file:&nbsp;
             </td>
             <td align="left">
-                <html:file styleId="${pNam}_file" styleClass="input" property="myPropObject(${pNam}_file)" disabled="true"/>
+                <html:file styleId="${pNam}_file" styleClass="input" property="value(${pNam}_file)" disabled="true"/>
             </td>
         </tr>
     </c:if>

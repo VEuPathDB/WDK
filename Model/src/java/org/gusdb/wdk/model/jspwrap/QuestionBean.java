@@ -3,7 +3,6 @@ package org.gusdb.wdk.model.jspwrap;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -118,17 +117,20 @@ public class QuestionBean {
     }
 
     private ParamBean getParam(Param param) {
+        ParamBean bean;
         if (param instanceof AbstractEnumParam) {
-            return new EnumParamBean((AbstractEnumParam) param);
+            bean = new EnumParamBean((AbstractEnumParam) param);
         } else if (param instanceof AnswerParam) {
-            return new AnswerParamBean((AnswerParam) param);
+            bean = new AnswerParamBean((AnswerParam) param);
         } else if (param instanceof DatasetParam) {
-            return new DatasetParamBean((DatasetParam) param);
+            bean = new DatasetParamBean((DatasetParam) param);
         } else if (param instanceof TimestampParam) {
-            return new TimestampParamBean((TimestampParam) param);
+            bean = new TimestampParamBean((TimestampParam) param);
         } else {
-            return new ParamBean(param);
+            bean = new ParamBean(param);
         }
+        bean.setUser(user);
+        return bean;
     }
 
     public Map<String, AttributeFieldBean> getSummaryAttributesMap() {

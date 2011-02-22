@@ -28,12 +28,11 @@ function initDependentParamHandlers(isEdit) {
 		if (!dependedParams[name]) {
 			dependedParams[name] = $(this).attr('dependson');
 		}
-		var dependedParam = $("td#" + dependedParams[name] + "aaa input[name='myMultiProp(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='myMultiProp(" + dependedParams[name] + ")']");
+		var dependedParam = $("td#" + dependedParams[name] + "aaa input[name='array(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='array(" + dependedParams[name] + ")']");
 		dependedParam.change(function() {
 			dependedValues = [];
-			var paramName = $(this).attr('name');
-			paramName = paramName.substring(paramName.indexOf("myMultiProp(") + 12, paramName.indexOf(")"));
-			var inputs = $("td#" + paramName + "aaa input[name='myMultiProp(" + paramName + ")']:checked, td#" + paramName + "aaa select[name='myMultiProp(" + paramName + ")']");
+			var paramName = getParamName($(this).attr('name'), true);
+			var inputs = $("td#" + paramName + "aaa input[name='array(" + paramName + ")']:checked, td#" + paramName + "aaa select[name='array(" + paramName + ")']");
 			inputs.each(function() {
 				dependedValues.push($(this).val());
 			});
@@ -44,7 +43,7 @@ function initDependentParamHandlers(isEdit) {
 	//If revising, store all of the old param values before triggering the depended param's change function.
 	if (isEdit) {
 		for (var name in dependedParams) {
-			var input = $("input.typeAhead[name='myProp(" + name + ")']");
+			var input = $("input.typeAhead[name='value(" + name + ")']");
 			if (input.length == 0) {
 				input = $("div.dependentParam[name='" + name + "']").find("select");
 				if (input.length > 0) {
@@ -67,8 +66,8 @@ function initDependentParamHandlers(isEdit) {
 	var triggeredParams = [];
 	for (var name in dependedParams) {
 		if (!triggeredParams[dependedParams[name]]) {
-			dependedParam =  $("td#" + dependedParams[name] + "aaa input[name='myMultiProp(" + dependedParams[name] + ")']:first," +
-                	                   "td#" + dependedParams[name] + "aaa select[name='myMultiProp(" + dependedParams[name] + ")']");
+			dependedParam =  $("td#" + dependedParams[name] + "aaa input[name='array(" + dependedParams[name] + ")']:first," +
+                	                   "td#" + dependedParams[name] + "aaa select[name='array(" + dependedParams[name] + ")']");
 			dependedParam.change();
 			triggeredParams[dependedParams[name]] = true;
 		}
@@ -77,9 +76,8 @@ function initDependentParamHandlers(isEdit) {
 
 function initTypeAhead(isEdit) {
 	$("input:hidden.typeAhead").each(function() {
-		var questionName = $(this).closest("form").children("input:hidden[name=questionFullName]").val();
-		var paramName = $(this).attr('name');
-		paramName = paramName.substring(paramName.indexOf("myProp(") + 7, paramName.indexOf(")"));
+		var questionName = $(this).closest("form").find("input:hidden[name=questionFullName]").val();
+		var paramName = getParamName($(this).attr('name'));
 		$("#" + paramName + "_display").attr('disabled',true);
 		if (isEdit) oldValues[paramName] = $(this).val();
 		if(!$(this).parent('div').hasClass('dependentParam')) {
@@ -127,7 +125,7 @@ function createAutoComplete(obj, name) {
 function updateDependentParam(paramName, dependedValue) {
 	if (dependedValue && dependedValue != 'Choose one:') {
 		var dependentParam = $("td#" + paramName + "aaa > div.dependentParam[name='" + paramName + "']");
-		var questionName = dependentParam.closest("form").children("input:hidden[name=questionFullName]").val();
+		var questionName = dependentParam.closest("form").find("input:hidden[name=questionFullName]").val();
 		var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&dependedValue=' + dependedValue;
 		if ($('input.typeAhead',dependentParam).length > 0) {
 			var sendReqUrl = sendReqUrl + '&xml=true';
@@ -171,9 +169,20 @@ function updateDependentParam(paramName, dependedValue) {
 function mapTypeAheads() {
 	$("input:hidden.typeAhead").each(function() {
 		var paramName = $(this).attr('name');
-		paramName = paramName.substring(paramName.indexOf("myProp(") + 7, paramName.indexOf(")"));
+		paramName = getParamName(paramName);
 		var newValue = displayTermMap[paramName][$("#" + paramName + "_display").val()];
 		if (!newValue) newValue = $("#" + paramName + "_display").val();
 		$(this).val(newValue);
 	});
+}
+
+function getParamName(inputName, multiValue) {
+	var paramName;
+	if (multiValue) {
+		paramName = inputName.match( /array\(([^\)]+)\)/ );
+	}
+	else {
+		paramName = inputName.match( /value\(([^\)]+)\)/ );
+	}
+	if (paramName) return paramName[1];
 }

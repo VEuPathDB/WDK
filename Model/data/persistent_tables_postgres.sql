@@ -5,6 +5,7 @@ DROP SEQUENCE IF EXISTS wdkengine.answers_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.favorites_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.user_baskets_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.user_datasets2_pkseq;
+DROP SEQUENCE IF EXISTS wdkuser.step_params_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.steps_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.strategies_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.users_pkseq;
@@ -49,6 +50,9 @@ CREATE SEQUENCE wdkuser.strategies_pkseq INCREMENT BY 1 START WITH 1;
 
 
 CREATE SEQUENCE wdkuser.steps_pkseq INCREMENT BY 1 START WITH 1;
+
+
+CREATE SEQUENCE wdkuser.step_params_pkseq INCREMENT BY 1 START WITH 1;
 
 
 CREATE SEQUENCE wdkuser.user_datasets2_pkseq INCREMENT BY 1 START WITH 1;
@@ -225,10 +229,12 @@ CREATE INDEX wdkuser.steps_idx08 ON wdkuser.steps (right_child_id, user_id);
 
 CREATE TABLE wdkuser.step_params
 (
+  step_param_id NUMERIC(12) NOT NULL,
   step_id NUMERIC(12) NOT NULL,
   param_name VARCHAR(200) NOT NULL,
   param_value VARCHAR(4000),
   migration NUMERIC(12),
+  CONSTRAINT "STEP_PARAMS_PK" PRIMARY KEY (step_param_id),
   CONSTRAINT "STEP_PARAMS_STEP_ID_FK" FOREIGN KEY (step_id)
       REFERENCES wdkuser.steps (step_id)
 );

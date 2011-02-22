@@ -45,14 +45,4 @@ public class WdkException extends Exception {
         }
         return buf.toString();
     }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see java.lang.Throwable#getMessage()
-     */
-    @Override
-    public String getMessage() {
-        return formatErrors();
-    }
 }

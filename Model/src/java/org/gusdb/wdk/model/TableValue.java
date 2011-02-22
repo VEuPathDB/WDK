@@ -241,7 +241,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         }
     }
 
-    private User user;
+    // private User user;
     private PrimaryKeyAttributeValue primaryKey;
     private TableField tableField;
     QueryInstance instance;
@@ -252,14 +252,14 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
             TableField tableField, boolean bulk) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        this.user = user;
+        // this.user = user;
         this.primaryKey = primaryKey;
         this.tableField = tableField;
 
         if (bulk) {
             // bulk model, no need to create query instance, the rows will be
             // initialized outside of TableValue.
-            rows = new ArrayList<Map<String,AttributeValue>>();
+            rows = new ArrayList<Map<String, AttributeValue>>();
         } else {
             // not bulk model, need to create query instance, and initialize
             // rows by the TableValue itself.
@@ -271,6 +271,14 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
 
     public TableField getTableField() {
         return tableField;
+    }
+    
+    public String getName() {
+        return tableField.getName();
+    }
+    
+    public String getDisplayName() {
+        return tableField.getDisplayName();
     }
 
     public String toString() {

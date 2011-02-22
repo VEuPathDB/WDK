@@ -7,9 +7,9 @@ import java.util.Vector;
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.apache.struts.action.ActionError;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
@@ -108,16 +108,16 @@ public class FilterForm extends BooleanExpressionForm {
                     }
                 }
                 if (errMsg != null) {
-                    errors.add(ActionErrors.GLOBAL_ERROR, new ActionError(
+                    errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
                             "mapped.properties", p.getPrompt(), errMsg));
-                    request.setAttribute(CConstants.QUESTIONSETFORM_KEY, this);
+                    request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
                 }
                 // System.out.println("===== Validated " + p.getName() + ": '" +
                 // errMsg + "'");
             } catch (WdkModelException exp) {
-                errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionError(
+                errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
                         "mapped.properties", p.getPrompt(), exp.getMessage()));
-                request.setAttribute(CConstants.QUESTIONSETFORM_KEY, this);
+                request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
             }
         }
         return errors;

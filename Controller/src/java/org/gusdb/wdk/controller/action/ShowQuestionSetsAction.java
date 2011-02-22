@@ -32,8 +32,8 @@ public class ShowQuestionSetsAction extends Action {
             throws Exception {
 
         ServletContext svltCtx = getServlet().getServletContext();
-        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR
-	    + File.separator + CConstants.WDK_PAGES_DIR;
+        String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator
+                + CConstants.WDK_PAGES_DIR;
         String customViewFile = customViewDir + File.separator
                 + CConstants.WDK_CUSTOM_QUESTIONSETS_PAGE;
 
@@ -49,8 +49,7 @@ public class ShowQuestionSetsAction extends Action {
         return forward;
     }
 
-    protected static void sessionStart(HttpServletRequest request,
-            HttpServlet servlet) {
+    protected void sessionStart(HttpServletRequest request, HttpServlet servlet) {
         WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
         Map<String, Map<String, Map<String, AttributeFieldBean>>> sumAttrsByQuestion = getSummaryAttributesByQuestionMap(wdkModel);
