@@ -1,0 +1,86 @@
+#!/usr/bin/perl
+
+use strict;
+
+use Cwd 'abs_path';
+
+my $tabFile = $ARGV[0];
+my $outputDir = $ARGV[1];
+
+usage() unless ($tabFile && $outputDir);
+
+
+open(F, $tabFile) || die "Can't open input file '$tabFile'\n";
+
+my $hash;
+while(<F>) {
+  my @a = split();
+  $hash->{$a[2]} = 1;
+}
+close(F);
+
+my $s;
+foreach my $queryName (keys(%$hash)) {
+  $queryName =~ s/\:/_/g;
+  $s .= "
+   $queryName
+   <img src=\"$queryName.png\"/>
+";
+}
+
+my $tabFileFull = abs_path($tabFile);
+chdir($outputDir);
+system("echo 'file = \"$tabFileFull\"' |cat - $ENV{GUS_HOME}/lib/R/Model/plotQueryTimes.r|R --no-save");
+
+my $html = <<HTML;
+<!DOCTYPE html PUBLIC "-//IETF//DTD HTML 2.0//EN">
+<html>
+ <head>
+  <title>
+   Plot of query times
+  </title>
+ </head>
+ <body>
+  <h1>
+   Plot of query times
+  </h1>
+$s
+ </body>
+</html>
+HTML
+
+open(H, ">plot.html");
+print H $html;
+
+sub usage {
+
+print "
+Usage:  wdkSlowQueryPlot tabfile outputDir
+
+Make a plot of query durations over time.  One plot per query name found input.
+
+Where:
+  tabfile:   a three column tab delimited file. Columns:
+               1: timestamp in seconds (smallest timestamp should be 0).
+               2: query duration in seconds
+               3: query name
+
+  outputDir: where to write output files
+
+
+Output: in specified directory, place these files:
+   - a .png file for each query found in input file
+   - a plot.html file that shows all .png images in one .html page
+
+To view the output, do one of these two (from the output directory):
+  % firefox plot.html
+  % firefox *.png
+
+The first option shows all the images in one scrollable page.  The second has
+them each in their own tab in firefox.
+
+";
+
+exit(1);
+
+}
