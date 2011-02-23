@@ -562,7 +562,7 @@ public class StepFactory {
 
         String dependentParamContent = userPlatform.getClobData(rsStep,
                 COLUMN_DISPLAY_PARAMS);
-        logger.debug("step #" + stepId);
+        logger.debug("step #" + displayId + " (" + stepId + ")");
         Map<String, String> dependentValues = parseParamContent(dependentParamContent);
 
         String answerChecksum = rsStep.getString(AnswerFactory.COLUMN_ANSWER_CHECKSUM);
@@ -589,12 +589,10 @@ public class StepFactory {
         Map<String, String> displayParams = step.getParamValues();
 
         Query query = question.getQuery();
-        boolean isBoolean = query.isBoolean();
-        boolean isTransform = query.isTransform();
         int leftStepId = 0;
         int rightStepId = 0;
         String customName;
-        if (isBoolean) {
+        if (query.isBoolean()) {
             // boolean result, set the left and right step ids accordingly, and
             // set the constructed boolean expression to custom name.
             BooleanQuery booleanQuery = (BooleanQuery) query;
@@ -613,32 +611,34 @@ public class StepFactory {
             String operator = displayParams.get(operatorParam.getName());
 
             customName = leftStepId + " " + operator + " " + rightKey;
-        } else if (isTransform) {
-            // transform result, set the left step id only, and combine the step
-            // id into custom name.
-            // ASSUMPTION: we can only handle one answerParam transforms.
-            AnswerParam answerParam = null;
+        } else if (query.isCombined()) {
+            // transform result, set the first two params
             for (Param param : question.getParams()) {
                 if (param instanceof AnswerParam) {
-                    answerParam = (AnswerParam) param;
-                    break;
+                    AnswerParam answerParam = (AnswerParam) param;
+                    String stepId = displayParams.get(answerParam.getName());
+                    // put the first child into left, the second into right
+                    if (leftStepId == 0) leftStepId = Integer.valueOf(stepId);
+                    else {
+                        rightStepId = Integer.valueOf(stepId);
+                        break;
+                    }
                 }
             }
-            String combinedKey = displayParams.get(answerParam.getName());
-            String stepKey = combinedKey.substring(combinedKey.indexOf(":") + 1);
-            leftStepId = Integer.parseInt(stepKey);
-
             customName = step.getBaseCustomName();
         } else customName = step.getBaseCustomName();
+
+        step.setPreviousStepId(leftStepId);
+        step.setChildStepId(rightStepId);
 
         // construct the update sql
         StringBuffer sql = new StringBuffer("UPDATE ");
         sql.append(userSchema).append(TABLE_STEP).append(" SET ");
         sql.append(COLUMN_CUSTOM_NAME).append(" = ? ");
-        if (isBoolean || isTransform) {
+        if (query.isCombined()) {
             sql.append(", ").append(COLUMN_LEFT_CHILD_ID);
             sql.append(" = ").append(leftStepId);
-            if (isBoolean) {
+            if (rightStepId != 0) {
                 sql.append(", ").append(COLUMN_RIGHT_CHILD_ID);
                 sql.append(" = ").append(rightStepId);
             }
@@ -676,7 +676,7 @@ public class StepFactory {
     void updateStep(User user, Step step, boolean updateTime)
             throws WdkUserException, SQLException, NoSuchAlgorithmException,
             WdkModelException, JSONException {
-        logger.debug("the new custom name: '" + step.getBaseCustomName() + "'");
+        logger.debug("step #" + step.getDisplayId() + " new custom name: '" + step.getBaseCustomName() + "'");
         // update custom name
         Date lastRunTime = (updateTime) ? new Date() : step.getLastRunTime();
         int estimateSize = step.getEstimateSize();
@@ -1024,9 +1024,9 @@ public class StepFactory {
         PreparedStatement psStrategy = null;
         ResultSet rsStrategy = null;
         try {
-            StringBuffer sql = new StringBuffer("SELECT sr.* ");
-            sql.append(", sr." + COLUMN_LAST_VIEWED_TIME + ", sp."
-                    + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", a."
+            StringBuffer sql = new StringBuffer("SELECT sr.*, ");
+            sql.append(" sp." + COLUMN_ESTIMATE_SIZE + ", sp."
+                    + COLUMN_IS_VALID + ", a."
                     + AnswerFactory.COLUMN_PROJECT_VERSION + ", a."
                     + AnswerFactory.COLUMN_QUESTION_NAME);
             sql.append(" FROM " + userSchema + TABLE_STRATEGY + " sr, "
@@ -1084,10 +1084,9 @@ public class StepFactory {
             NoSuchAlgorithmException {
         String userColumn = Utilities.COLUMN_USER_ID;
         String answerColumn = AnswerFactory.COLUMN_ANSWER_ID;
-        StringBuffer sql = new StringBuffer("SELECT sr.* ");
-        sql.append(", sr." + COLUMN_LAST_VIEWED_TIME + ", sp."
-                + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", a."
-                + AnswerFactory.COLUMN_PROJECT_VERSION + ", a."
+        StringBuffer sql = new StringBuffer("SELECT sr.*, ");
+        sql.append(" sp." + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID
+                + ", a." + AnswerFactory.COLUMN_PROJECT_VERSION + ", a."
                 + AnswerFactory.COLUMN_QUESTION_NAME);
         sql.append(" FROM " + userSchema + TABLE_STRATEGY + " sr, "
                 + userSchema + TABLE_STEP + " sp, " + wdkSchema

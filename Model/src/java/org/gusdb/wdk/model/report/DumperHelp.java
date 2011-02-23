@@ -22,7 +22,6 @@ import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
-import org.xml.sax.SAXException;
 
 /**
  * @author Charles Treatman

@@ -35,10 +35,8 @@ public class StepBean {
     }
 
     public StepBean getNextStep() {
-        if (step.getNextStep() != null) {
-            return new StepBean(user, step.getNextStep());
-        }
-        return null;
+        Step nextStep = step.getNextStep();
+        return (nextStep == null) ? null : new StepBean(user, nextStep);
     }
 
     public void setNextStep(StepBean next) throws WdkUserException {
@@ -50,10 +48,13 @@ public class StepBean {
     }
 
     public StepBean getParentStep() {
-        if (step.getParentStep() != null) {
-            return new StepBean(user, step.getParentStep());
-        }
-        return null;
+        Step parent = step.getParentStep();
+        return (parent == null) ? null : new StepBean(user, parent);
+    }
+
+    public StepBean getParentOrNextStep() {
+        Step nextStep = step.getParentOrNextStep();
+        return (nextStep == null) ? null : new StepBean(user, nextStep);
     }
 
     public StepBean getChildStep() throws WdkUserException, WdkModelException,
@@ -150,7 +151,7 @@ public class StepBean {
     public void setAnswerValue(AnswerValueBean answer)
             throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
-        step.setAnswer(answer.answerValue.getAnswer());
+        step.setAnswer(answer.getAnswerValue().getAnswer());
     }
 
     public int getEstimateSize() throws NoSuchAlgorithmException,
@@ -422,7 +423,7 @@ public class StepBean {
             }
 
             try {
-                paramName = URLEncoder.encode("myProp(" + paramName + ")",
+                paramName = URLEncoder.encode("value(" + paramName + ")",
                         "UTF-8");
                 paramValue = URLEncoder.encode(paramValue, "UTF-8");
                 sb.append("&" + paramName + "=" + paramValue);
@@ -526,5 +527,49 @@ public class StepBean {
      */
     public boolean isRevisable() {
         return step.isRevisable();
+    }
+    /**
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.user.Step#getChildrenCount()
+     */
+    public int getAnswerParamCount() throws WdkUserException, WdkModelException {
+        return step.getAnswerParamCount();
+    }
+
+    /**
+     * @return
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.user.Step#getChildStepParam()
+     */
+    public String getChildStepParam() throws WdkModelException {
+        return step.getChildStepParam();
+    }
+
+    /**
+     * @return
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.user.Step#getPreviousStepParam()
+     */
+    public String getPreviousStepParam() throws WdkModelException {
+        return step.getPreviousStepParam();
+    }
+
+    /**
+     * @return
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @throws SQLException
+     * @throws JSONException
+     * @see org.gusdb.wdk.model.user.Step#getFrontId()
+     */
+    public int getFrontId() throws WdkUserException, WdkModelException,
+            SQLException, JSONException {
+        return step.getFrontId();
+    }
+
+    public String toString() {
+        return step.toString();
     }
 }

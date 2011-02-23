@@ -30,13 +30,13 @@ function ErrorHandler(evt, data, strategy, qform, name, fromHist){
 					tr = document.createElement('tr');
 					tdPrompt = document.createElement('td');
 					tdMessage = document.createElement('td');
-					$(tdPrompt).html(params[p].prompt + ": ");
-					$(tdMessage).html(params[p].message);
+					$(tdPrompt).html(p + ": ");
+					$(tdMessage).html(params[p]);
 					$(tr).append(tdPrompt).append(tdMessage);
 					$(table).append(tr);
 				}
 			}
-			$("form",qform).prepend(table);
+			$(qform).prepend(table);
 			$(qform).show();
 		}else if(type == "out-of-sync"){ //Checksum sent did not match the back-end checksum
 			if(data.state.length == 0)
