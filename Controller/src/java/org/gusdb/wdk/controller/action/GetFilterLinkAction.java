@@ -26,7 +26,6 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 public class GetFilterLinkAction extends Action {
     private static Logger logger = Logger.getLogger(GetFilterLinkAction.class);
 
-    @SuppressWarnings("unchecked")
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -62,7 +61,8 @@ public class GetFilterLinkAction extends Action {
         // need to build link to summary page for specified filter
         ActionForward showSummary = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);
         StringBuffer url = new StringBuffer(showSummary.getPath());
-        url.append("?questionFullName=" + step.getQuestion().getFullName());
+        url.append("?questionFullName="
+                + step.getQuestion().getFullName());
         url.append(step.getSummaryUrlParams());
         url.append("&filter=" + filterName);
 

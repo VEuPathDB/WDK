@@ -6,10 +6,8 @@
 
 <link rel="stylesheet" href="<c:url value='/misc/Top_menu.css' />" type="text/css">
 
-
 <%-- get wdkQuestion; setup requestScope HashMap to collect help info for footer --%>
-<c:set var="wdkQuestion" value="${requestScope.question}"/>
-
+<c:set var="wdkQuestion" value="${requestScope.wdkQuestion}"/>
 <c:set var="qForm" value="${requestScope.questionForm}"/>
 <c:set var="wdkModel" value="${applicationScope.wdkModel}"/>
 
@@ -78,7 +76,7 @@
                 <wdk:timestampParamInput qp="${qP}" />
             </c:when>
             <c:when test="${isHidden}">
-               <html:hidden property="value(${pNam})"/>
+               <html:hidden property="myProp(${pNam})"/>
             </c:when>
             <c:otherwise> <%-- visible param --%>
                 <%-- an individual param (can not use fullName, w/ '.', for mapped props) --%>
@@ -112,8 +110,8 @@
                                     <td width="30%" align="right" valign="top">
 					<b id="help_${pNam}" class="help_link" rel="htmltooltip">${qP.prompt}</b></td>
                                     <td align="left" valign="top">
-                                        <bean:write name="qForm" property="value(${pNam})"/>
-                                        <html:hidden property="value(${pNam})"/>
+                                        <bean:write name="qForm" property="myProp(${pNam})"/>
+                                        <html:hidden property="myProp(${pNam})"/>
                                     </td>
                                 </c:when>
                                 <c:otherwise>
@@ -121,7 +119,7 @@
 					<b id="help_${pNam}" class="help_link" rel="htmltooltip">${qP.prompt}</b>
 				    </td>
                                     <td align="left" valign="top">
-                                        <html:text styleId="${pNam}" property="value(${pNam})" size="35" />
+                                        <html:text styleId="${pNam}" property="myProp(${pNam})" size="35" />
                                     </td>
                                 </c:otherwise>
                             </c:choose>
@@ -164,20 +162,3 @@
 </c:forEach> <%-- end of foreach on paramGroups --%>
 
 <wdk:weight wdkModel="${wdkModel}" wdkQuestion="${wdkQuestion}" />
-
-
-<%-- set the custom name --%>
-<div name="All_weighting" class="param-group" type="ShowHide">
-	  <c:set var="display" value="none"/>
-  <c:set var="image" value="plus.gif"/>
-  <div class="group-title">
-	 <img class="group-handle" src='<c:url value="wdk/images/${image}" />'/>
-   	 <span title="This name will be the name of the step.">Give this search a name</span>
-  </div>
-  <div class="group-detail" style="display:${display};text-align:center">
-    <div class="group-description">
-      <p><html:text property="customName" maxlength="15" value="${customName}" />  </p>
-    </div><br>
-  </div>
-</div>
-

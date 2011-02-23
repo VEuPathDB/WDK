@@ -1,5 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 

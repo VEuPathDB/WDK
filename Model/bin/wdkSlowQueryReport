@@ -100,7 +100,7 @@ Print a report summarizing the model slow query logs.
 
 Takes one or more logs on standard input.
 
-usage:  wdkSlowQueryReport -s secs [-g] [-n] [-s starttime[,endtime]] [-c colnum] [-p plotOutputFile]
+usage:  modelSlowQueryReport -s secs [-g] [-n] [-s starttime[,endtime]] [-c colnum] [-p plotOutputFile]
 
 where:
   -s:  slowness threshold in seconds.  run times over secs are reported in Slow columns

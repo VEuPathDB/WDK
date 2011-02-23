@@ -82,11 +82,9 @@ function createSteps(strat,div_strat){
 		cStp = strat.getStep(ind+1,true);
 		jsonStep = strat.JSON.steps[cStp.frontId];
 		prevJsonStep = (ind == 0) ? null : strat.JSON.steps[strat.getStep(ind,true).frontId];
-		if(cStp.isboolean || cStp.isSpan){	
-			//Create the two layered Boolean Steps
-			stepdiv = multiStep(cStp, prevJsonStep, jsonStep, strat.frontId);
+		if(cStp.isboolean){
+			stepdiv = booleanStep(cStp, prevJsonStep, jsonStep, strat.frontId);
 		}else{
-			//Create Single Layered Steps like First Step or Transforms
 			stepdiv = singleStep(cStp, prevJsonStep, jsonStep,strat.frontId);
 		}
 		$(stepdiv).css({'z-index' : zIndex});
@@ -96,15 +94,10 @@ function createSteps(strat,div_strat){
 }
 
 //Creates the boolean Step and the operand step displayed above it
-function multiStep(modelstep, prevjsonstep, jsonstep, sid){
+function booleanStep(modelstep, prevjsonstep, jsonstep, sid){
 	// Create the boolean venn diagram box
 	var filterImg = "";
 	var bool_link = "";
-	var details_link = "showDetails(this)";
-	if(modelstep.isSpan) {
-		details_link = "void(0)";
-		jsonstep.operation = "SPAN " + getSpanOperation(jsonstep.params);
-	}
 	if(jsonstep.isValid) bool_link = "NewResults(" + sid + "," + modelstep.frontId + ", true)";
 	if(jsonstep.filtered) filterImg = "<span class='filterImg'><img src='wdk/images/filter.gif' height='10px' width='10px'/></span>";
 	boolinner = ""+
@@ -126,7 +119,6 @@ function multiStep(modelstep, prevjsonstep, jsonstep, sid){
 		}
 	boolDiv = document.createElement('div');
 	$(boolDiv).attr("id","step_" + modelstep.frontId).addClass(booleanClasses + jsonstep.operation).html(boolinner);
-
 	$(".crumb_details", boolDiv).replaceWith(createDetails(modelstep, prevjsonstep, jsonstep, sid));
 	stepNumber = document.createElement('span');
 	$(stepNumber).addClass('stepNumber').text("Step " + modelstep.frontId);
@@ -299,15 +291,13 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 	var params_table = "";
 	if(jsonstep.isboolean && !jsonstep.isCollapsed){
 		var url = "processFilter.do?strategy=" + strat.backId + "&revise=" + modelstep.back_boolean_Id + "&checksum=" + strat.checksum;
-		//var oform = "<form id='form_question' class='clear' enctype='multipart/form-data' action='javascript:validateAndCall(\"edit\",\""+ url + "\", \"" + strat.backId + "\");' method='post' name='questionForm'>";
-		var oform = "<form id='form_question' class='clear' enctype='multipart/form-data' action='wizard.do/' method='post' name='questionForm' onsubmit='callWizard(\"wizard.do?action=revise&step="+modelstep.back_boolean_Id+"&\",this,null,null,\"submit\");hideDetails(this);'>";
+		var oform = "<form id='form_question' class='clear' enctype='multipart/form-data' action='javascript:validateAndCall(\"edit\",\""+ url + "\", \"" + strat.backId + "\");' method='post' name='questionForm'>";
 		var cform = "</form>";
-		var stage_input = "<input type='hidden' id='stage' value='process_boolean'/>";
-		var params_table = "<div class='filter operators'><span class='form_subtitle' style='padding-right:20px'>Revise Operation</span><div id='operations'><table style='margin-left:auto; margin-right:auto;'><tr><td class='opcheck' valign='middle'><input type='radio' name='boolean' value='INTERSECT' /></td><td class='operation INTERSECT'></td><td valign='middle'>&nbsp;" + (parseInt(modelstep.frontId)-1) + "&nbsp;<b>INTERSECT</b>&nbsp;" + (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='boolean' value='UNION'></td><td class='operation UNION'></td><td>&nbsp;" + (parseInt(modelstep.frontId)-1) + "&nbsp;<b>UNION</b>&nbsp;" + (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='boolean' value='MINUS'></td><td class='operation MINUS'></td><td>&nbsp;" + (parseInt(modelstep.frontId)-1) + "&nbsp;<b>MINUS</b>&nbsp;" + (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='boolean' value='RMINUS'></td><td class='operation RMINUS'></td><td>&nbsp;" + (modelstep.frontId) + "&nbsp;<b>MINUS</b>&nbsp;" + (parseInt(modelstep.frontId)-1) + "</td></tr></table></div></div>"
+		var params_table = "<div class='filter operators'><span class='form_subtitle' style='padding-right:20px'>Revise Operation</span><div id='operations'><table style='margin-left:auto; margin-right:auto;'><tr><td class='opcheck' valign='middle'><input type='radio' name='booleanExpression' value='INTERSECT' /></td><td class='operation INTERSECT'></td><td valign='middle'>&nbsp;" + (parseInt(modelstep.frontId)-1) + "&nbsp;<b>INTERSECT</b>&nbsp;" + (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='UNION'></td><td class='operation UNION'></td><td>&nbsp;" + (parseInt(modelstep.frontId)-1) + "&nbsp;<b>UNION</b>&nbsp;" + (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='MINUS'></td><td class='operation MINUS'></td><td>&nbsp;" + (parseInt(modelstep.frontId)-1) + "&nbsp;<b>MINUS</b>&nbsp;" + (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='RMINUS'></td><td class='operation RMINUS'></td><td>&nbsp;" + (modelstep.frontId) + "&nbsp;<b>MINUS</b>&nbsp;" + (parseInt(modelstep.frontId)-1) + "</td></tr></table></div></div>"
 		var button = "<div style='text-align:center'><input type='submit' value='Revise' /></div>";
-		params_table = oform + stage_input + params_table + button + cform;
+		params_table = oform + params_table + button + cform;
 	}else if(params != undefined && params.length != 0)
-		params_table = createParameters(params, modelstep.isSpan && jsonstep.id == modelstep.back_boolean_Id);
+		params_table = createParameters(params);
 	var hideOp = false;
 	var hideQu = false;
 	if(jsonstep.isCollapsed){                              /* substrategy */
@@ -379,7 +369,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 		delete_step = "<a title='" + delete_popup + "' class='delete_step_link' href='javascript:void(0)' onclick='DeleteStep(" + sid + "," + modelstep.frontId + ");hideDetails(this)'>Delete</a>";
 	}
 
-	close_button = 	"<a class='close_link' href='javascript:void(0)' onclick='hideDetails(this)'>[x]</a>";
+	close_button = 	"<a class='close_link' href='javascript:void(0)' style='float: none; position: absolute; right: 6px;' onclick='hideDetails(this)'>[x]</a>";
 
 	inner = ""+	
 	    "		<div class='crumb_menu'>"+ rename_step + view_step + edit_step + expand_step + insert_step + customMenu + delete_step + close_button +
@@ -403,7 +393,7 @@ if(!jsonstep.useweights || modelstep.isTransform || jsonstep.isboolean) return "
 var set_weight = "<div name='All_weighting' class='param-group' type='ShowHide'>"+
 					"<div class='group-title'> "+
 	    				"<img style='position:relative;top:5px;'  class='group-handle' src='wdk/images/plus.gif' onclick=''/>"+
-	    				"Give this search a weight"+
+	    				"Give this step a weight"+
 					"</div>"+
 					"<div class='group-detail' style='display:none;text-align:center'>"+
 	    				"<div class='group-description'>"+
@@ -418,20 +408,10 @@ var set_weight = "<div name='All_weighting' class='param-group' type='ShowHide'>
 }
 
 // HANDLE THE DISPLAY OF THE PARAMETERS IN THE STEP DETAILS BOX
-function createParameters(params, isSpan){
+function createParameters(params){
 	var table = document.createElement('table');
-	if (isSpan) {
-		// TODO:  if span logic moves into WDK, the code
-		// for the span logic details box should move here.
-		try {
-			var contents = customSpanParameters(params);
-			$(table).append(contents);
-		}
-		catch(err) {}
-	}
-	else {
-		$(params).each(function(){
-        	if (this.visible) {
+	$(params).each(function(){
+        if (this.visible) {
 			var tr = document.createElement('tr');
 			var prompt = document.createElement('td');
 			var space = document.createElement('td');
@@ -446,9 +426,8 @@ function createParameters(params, isSpan){
 			$(tr).append(space);
 			$(tr).append(value);
 			$(table).append(tr);
-        	}
-		});
-	}
+        }
+	});
 	return table;
 }
 
@@ -577,29 +556,6 @@ function removeStrategyDivs(stratId){
 	}
 }
 
-
-// DISPLAY UTILITY FUNCTIONS
-
-offset = function(modelstep){
-	if(modelstep == null){
-		return leftOffset + 123;
-	}
-	if((modelstep.isboolean || modelstep.isSpan) && (modelstep.prevStepType == "boolean" || modelstep.prevStepType == "span")){
-		leftOffset += b2b;
-	}else if((modelstep.isboolean || modelstep.isSpan) && modelstep.prevStepType == "transform"){
-		leftOffset += b2t;
-	}else if(modelstep.isTransform && (modelstep.prevStepType == "boolean" || modelstep.prevStepType == "span")){
-		leftOffset += t2b;
-	}else if(modelstep.isTransform && modelstep.prevStepType == "transform"){
-		leftOffset += t2t;
-	}else if(modelstep.isboolean || modelstep.isSpan){
-		leftOffset += f2b;
-	}else if(modelstep.isTransform){
-		leftOffset += f2t;
-	}
-	return leftOffset;
-}
-
 function createInvalidDiv(){
 	var inval = document.createElement('div');
 	has_invalid = true;
@@ -636,13 +592,4 @@ function reviseInvalidSteps(ele){
 	var iv_id = $(ele).parent().attr("id").split("_");
 	$("div#diagram_" + iv_id[0] + " div#step_" + iv_id[1] + "_sub h3 a#stepId_" + iv_id[1]).click();
 	$("div#diagram_" + iv_id[0] + " div#invalid-step-text").remove();
-}
-function getSpanOperation(params) {
-	var op = '';
-	$(params).each(function() {
-		if (this.name == 'span_operation') {
-			op = this.internal;
-		}
-	});
-	return op;
 }

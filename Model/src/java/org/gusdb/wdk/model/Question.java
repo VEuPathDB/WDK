@@ -382,7 +382,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
                 + getDescription() + "'" + newline + "  summaryAttributes='"
                 + saNames + "'" + newline + "  help='" + getHelp() + "'"
                 + newline);
-        buf.append(dynamicAttributeSet.toString());
+        if (dynamicAttributeSet != null) {
+            buf.append(dynamicAttributeSet.toString());
+        }
         return buf.toString();
     }
 
@@ -431,7 +433,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     // /////////////////////////////////////////////////////////////////////
 
     Map<String, AttributeField> getDynamicAttributeFields() {
-        return dynamicAttributeSet.getAttributeFieldMap();
+        return dynamicAttributeSet == null ? new LinkedHashMap<String, AttributeField>()
+                : dynamicAttributeSet.getAttributeFieldMap();
     }
 
     /**
@@ -481,7 +484,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
         attributeFields.putAll(recordClass.getAttributeFieldMap(scope));
 
-        attributeFields.putAll(dynamicAttributeSet.getAttributeFieldMap(scope));
+        if (dynamicAttributeSet != null)
+            attributeFields.putAll(dynamicAttributeSet.getAttributeFieldMap(scope));
 
         return attributeFields;
     }
@@ -500,13 +504,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             // in the dynamicAttributeSet.
             this.recordClass = (RecordClass) model.resolveReference(recordClassRef);
 
-            // the id query is always cloned to keep a reference to the question.
+            // the id query is forced to be cache-able.
             query = (Query) model.resolveReference(idQueryRef);
-            query = query.clone();
-            query.setQuestion(this);
 
-            // check if we have customized params;
+            // check if we need to clone the query;
             if (paramRefs.size() > 0) {
+                query = query.clone();
                 String queryName = query.getFullName();
                 Map<String, Param> params = query.getParamMap();
                 for (ParamReference paramRef : paramRefs) {
@@ -526,15 +529,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             query.setHasWeight(true);
 
             // dynamic attribute set need to be initialized after the id query.
-            this.dynamicAttributeQuery = createDynamicAttributeQuery(model);
-            dynamicAttributeQuery.resolveReferences(model);
-            dynamicAttributeSet.resolveReferences(model);
-
-            // make sure we always display weight for combined question
-            if (query.isCombined()) {
-                AttributeField weight = dynamicAttributeSet.getAttributeFieldMap().get(
-                        Utilities.COLUMN_WEIGHT);
-                weight.setRemovable(false);
+            if (dynamicAttributeSet != null) {
+                this.dynamicAttributeQuery = createDynamicAttributeQuery(model);
+                dynamicAttributeQuery.resolveReferences(model);
+                dynamicAttributeSet.resolveReferences(model);
             }
 
             // resolve default summary attributes
@@ -761,12 +759,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     public AnswerParam[] getTransformParams(RecordClass recordClass) {
         List<AnswerParam> list = new ArrayList<AnswerParam>();
-        String rcName = recordClass.getFullName();
         for (Param param : query.getParams()) {
             if (param instanceof AnswerParam) {
                 AnswerParam answerParam = (AnswerParam) param;
-                Map<String, RecordClass> recordClasses = answerParam.getRecordClasses();
-                if (recordClasses.containsKey(rcName)) list.add(answerParam);
+                if (answerParam.getRecordClassRef().equals(
+                        recordClass.getFullName())) list.add(answerParam);
             }
         }
         AnswerParam[] array = new AnswerParam[list.size()];

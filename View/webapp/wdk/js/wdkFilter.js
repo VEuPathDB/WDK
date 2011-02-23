@@ -1,4 +1,8 @@
 // WDK filter layout related scripts
+//$(document).ready(function() {
+//    var wdkFilter = new WdkFilter();
+//    wdkFilter.initialize();
+//});
 
 function WdkFilter() {
 
@@ -45,12 +49,15 @@ function WdkFilter() {
 	}
            $(this).hover(function() {
                           	var position = $(this).position();
+                       /*      	var top = position.top + $(this).height();   not needed */
                               	var left = position.left;
 				var winMinusLeft = winWidth - left;
 				if( winMinusLeft < (popupWidth + 40) ) {
 					left = left - (popupWidth - winMinusLeft + 40);	
 					detail.css("left", left + "px"); 
 				}
+                   	/*     	detail.css("left", left + "px"); 
+                             	detail.css("top", top + "px");    not needed    */
                               	detail.css("width", popupWidth + "px");
 				detail.css("display", "block");
 			      	detail.css("z-index", "10"); 

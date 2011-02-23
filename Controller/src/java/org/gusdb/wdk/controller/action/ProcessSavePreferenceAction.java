@@ -15,6 +15,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.user.User;
 
 /**
  * @author xingao
@@ -29,7 +30,7 @@ public class ProcessSavePreferenceAction extends Action {
             throws Exception {
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
-        Map<?, ?> params = request.getParameterMap();
+        Map params = request.getParameterMap();
         for (Object objKey : params.keySet()) {
             String key = objKey.toString();
             String value = request.getParameter(key);

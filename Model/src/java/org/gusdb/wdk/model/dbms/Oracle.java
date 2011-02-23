@@ -325,9 +325,4 @@ public class Oracle extends DBPlatform {
         }
     }
 
-    @Override
-    public String getDummyTable() {
-        return " FROM dual";
-    }
-
 }

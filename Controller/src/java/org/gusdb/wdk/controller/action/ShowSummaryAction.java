@@ -7,7 +7,6 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +25,6 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
-import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
@@ -34,7 +32,6 @@ import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked. It
@@ -48,7 +45,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
     private static final int MAX_SIZE_CACHE_MAP = 100;
 
     private static final String PARAM_HIDDEN_STEP = "hidden";
-    private static final String PARAM_CUSTOM_NAME = "customName";
 
     private static Logger logger = Logger.getLogger(ShowSummaryAction.class);
 
@@ -61,15 +57,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
 
         String roFlag = request.getParameter(CConstants.WDK_RESULT_SET_ONLY_KEY);
-        boolean resultOnly = false;
-        if (roFlag != null && Boolean.valueOf(roFlag))
-            resultOnly = Boolean.parseBoolean(roFlag);
-
-        String nsFlag = request.getParameter(CConstants.WDK_NO_STRATEGY_PARAM);
-        boolean noStrategy = false;
-        if (nsFlag != null && nsFlag.length() > 0)
-            noStrategy = Boolean.parseBoolean(nsFlag);
-
+        boolean resultOnly = (roFlag != null && Boolean.valueOf(roFlag));
         StrategyBean strategy = null;
         try {
             String state = request.getParameter(CConstants.WDK_STATE_KEY);
@@ -166,16 +154,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
                     }
                 }
                 forward = getForward(request, step, mapping);
-            } else if (noStrategy) {
-                // only runs the step and return the step info in json, does not
-                // create a strategy or add to existing strategy
-                JSONObject jsStep = ShowStrategyAction.outputStep(wdkModel, wdkUser,
-                        step, 0, false);
-
-                response.setContentType("text/json");
-                PrintWriter writer = response.getWriter();
-                writer.print(jsStep.toString());
-                return null;
             } else { // otherwise, forward to the show application page
                 // create new strategy before going to application page
                 if (strategy == null) {
@@ -239,10 +217,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
     private StepBean getStep(HttpServletRequest request, UserBean wdkUser,
             ActionForm form) throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         QuestionForm qForm = (QuestionForm) form;
         StepBean step;
         boolean updated;
+        Map<String, String> params;
         String strStepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
         if (strStepId == null || strStepId.length() == 0) {
             logger.debug("create new steps");
@@ -256,7 +234,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
             if (wdkQuestion == null) {
                 if (qFullName != null)
-                    wdkQuestion = wdkModel.getQuestion(qFullName);
+                    wdkQuestion = getQuestionByFullName(qFullName);
             }
             if (wdkQuestion == null)
                 throw new WdkUserException("The question '" + qFullName
@@ -266,12 +244,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
             updated = updateSortingSummary(request, wdkUser, questionName);
 
-            Map<String, String> params = new HashMap<String, String>();
-            for (ParamBean param : wdkQuestion.getParams()) {
-                String paramName = param.getName();
-                Object value = qForm.getValue(paramName);
-                params.put(paramName, (String) value);
-            }
+            params = qForm.getMyProps();
 
             // get the hidden flag
             String strHidden = request.getParameter(PARAM_HIDDEN_STEP);
@@ -280,7 +253,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             // get the assigned weight
             String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
             boolean hasWeight = (strWeight != null && strWeight.length() > 0);
-            int weight = Utilities.DEFAULT_WEIGHT;
+            int weight = 0;
             if (hasWeight) {
                 if (!strWeight.matches("[\\-\\+]?\\d+"))
                     throw new WdkUserException("Invalid weight value: '"
@@ -382,12 +355,6 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
         StepBean step = wdkUser.createStep(question, params, filterName,
                 deleted, true, assignedWeight);
-        String customName = request.getParameter(PARAM_CUSTOM_NAME);
-        if (customName != null && customName.trim().length() > 0) {
-            step.setCustomName(customName);
-            step.update(false);
-        }
-
         AnswerValueBean answerValue = step.getAnswerValue();
         int totalSize = answerValue.getResultSize();
         if (end > totalSize) end = totalSize;
@@ -408,6 +375,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     private ActionForward showError(WdkModelBean wdkModel, UserBean wdkUser,
             ActionMapping mapping, HttpServletRequest request,
             HttpServletResponse response, Exception ex, boolean resultOnly) {
+        // TEST
         logger.info("Show the details of an invalid userAnswer/question");
 
         String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
@@ -427,9 +395,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             } else {
                 params = new LinkedHashMap<String, String>();
                 paramNames = new LinkedHashMap<String, String>();
-                customName = request.getParameter("customName");
-                if (customName == null || customName.length() == 0)
-                    customName = qFullName;
+                customName = qFullName;
 
                 // get params from request
                 Map<?, ?> parameters = request.getParameterMap();
@@ -451,8 +417,8 @@ public class ShowSummaryAction extends ShowQuestionAction {
                         }
                         pValue = URLDecoder.decode(pValue, "utf-8");
                     }
-                    if (pName.startsWith("value(")) {
-                        pName = pName.substring(6, pName.length() - 1).trim();
+                    if (pName.startsWith("myProp(")) {
+                        pName = pName.substring(7, pName.length() - 1).trim();
                         params.put(pName, pValue);
 
                         String displayName = wdkModel.queryParamDisplayName(pName);
@@ -569,7 +535,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
         ServletContext application = servlet.getServletContext();
         Object cache = application.getAttribute(KEY_SIZE_CACHE_MAP);
         Map<String, Integer> sizeCache;
-        if (cache == null || !(cache instanceof Map<?, ?>)) {
+        if (cache == null || !(cache instanceof Map)) {
             sizeCache = new LinkedHashMap<String, Integer>();
             application.setAttribute(KEY_SIZE_CACHE_MAP, sizeCache);
         } else sizeCache = (Map<String, Integer>) cache;

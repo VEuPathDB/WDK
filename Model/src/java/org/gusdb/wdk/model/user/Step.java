@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.Question;
@@ -31,8 +30,6 @@ public class Step {
     public static final String INTERNAL_AND = "INTERSECT";
     public static final String INTERNAL_OR = "UNION";
     public static final String INTERNAL_NOT = "MINUS";
-
-    private static final Logger logger = Logger.getLogger(Step.class);
 
     private StepFactory stepFactory;
     private User user;
@@ -93,21 +90,11 @@ public class Step {
         return parentStep;
     }
 
-    public Step getParentOrNextStep() {
-        return (nextStep != null) ? nextStep : parentStep;
-    }
-
     public Step getChildStep() throws WdkUserException, WdkModelException,
             SQLException, JSONException {
         if (childStep == null && childStepId != 0)
             setChildStep(stepFactory.loadStep(user, childStepId));
         return childStep;
-    }
-
-    public int getAnswerParamCount() throws WdkUserException, WdkModelException {
-        String questionName = this.answer.getQuestionName();
-        Question question = this.user.getWdkModel().getQuestion(questionName);
-        return question.getQuery().getAnswerParamCount();
     }
 
     public int getResultSize() {
@@ -226,16 +213,18 @@ public class Step {
      * @throws NoSuchAlgorithmException
      */
     public String getShortDisplayName() throws WdkModelException {
-        /*
-         * String name = customName;
-         * 
-         * if (name == null) name = getQuestion().getShortDisplayName(); if
-         * (name != null) { // remove script injections name =
-         * name.replaceAll("<.+?>", " "); name = name.replaceAll("['\"]", " ");
-         * name = name.trim().replaceAll("\\s+", " "); if (name.length() > 4000)
-         * name = name.substring(0, 4000); } return name;
-         */
-        return getQuestion().getShortDisplayName();
+        /*String name = customName;
+
+        if (name == null) name = getQuestion().getShortDisplayName();
+        if (name != null) {
+            // remove script injections
+            name = name.replaceAll("<.+?>", " ");
+            name = name.replaceAll("['\"]", " ");
+            name = name.trim().replaceAll("\\s+", " ");
+            if (name.length() > 4000) name = name.substring(0, 4000);
+        }
+        return name;*/
+		return getQuestion().getShortDisplayName();
     }
 
     public String getDisplayName() throws WdkModelException {
@@ -416,13 +405,12 @@ public class Step {
 
     /**
      * @return the isValid
-     * @throws JSONException
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
+     * @throws JSONException 
+     * @throws SQLException 
+     * @throws WdkModelException 
+     * @throws WdkUserException 
      */
-    public boolean isValid() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public boolean isValid() throws WdkUserException, WdkModelException, SQLException, JSONException {
         if (!valid) return false;
         Step prevStep = getPreviousStep();
         if (prevStep != null) {
@@ -492,8 +480,7 @@ public class Step {
         this.setNextStep(step);
     }
 
-    public Step getStepByDisplayId(int displayId) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+    public Step getStepByDisplayId(int displayId) throws WdkUserException, WdkModelException, SQLException, JSONException {
         Step target;
         if (this.displayId == displayId) {
             return this;
@@ -508,56 +495,6 @@ public class Step {
         Step prevStep = getPreviousStep();
         if (prevStep != null) {
             target = prevStep.getStepByDisplayId(displayId);
-            if (target != null) {
-                return target;
-            }
-        }
-        return null;
-    }
-
-    public Step getStepByChildId(int childId) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
-        logger.debug("gettting step by child id. current=" + this + ", input="
-                + childId);
-        Step target;
-        if (this.childStepId == childId) {
-            return this;
-        }
-        Step childStep = getChildStep();
-        if (childStep != null) {
-            target = childStep.getStepByChildId(childId);
-            if (target != null) {
-                return target;
-            }
-        }
-        Step prevStep = getPreviousStep();
-        if (prevStep != null) {
-            target = prevStep.getStepByChildId(childId);
-            if (target != null) {
-                return target;
-            }
-        }
-        return null;
-    }
-
-    public Step getStepByPreviousId(int previousId) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
-        logger.debug("gettting step by prev id. current=" + this + ", input="
-                + previousId);
-        Step target;
-        if (this.previousStepId == previousId) {
-            return this;
-        }
-        Step childStep = getChildStep();
-        if (childStep != null) {
-            target = childStep.getStepByPreviousId(previousId);
-            if (target != null) {
-                return target;
-            }
-        }
-        Step prevStep = getPreviousStep();
-        if (prevStep != null) {
-            target = prevStep.getStepByPreviousId(previousId);
             if (target != null) {
                 return target;
             }
@@ -719,8 +656,7 @@ public class Step {
         return getQuestion().getQuery().isBoolean();
     }
 
-    public JSONObject getJSONContent(int strategyId) throws JSONException,
-            WdkUserException, WdkModelException, SQLException {
+    public JSONObject getJSONContent(int strategyId) throws JSONException, WdkUserException, WdkModelException, SQLException {
         JSONObject jsStep = new JSONObject();
         jsStep.put("id", this.displayId);
         jsStep.put("customName", this.customName);
@@ -829,7 +765,7 @@ public class Step {
      * @throws SQLException
      * @throws WdkModelException
      * @throws WdkUserException
-     * @throws JSONException
+     * @throws JSONException 
      */
     public boolean validate() throws SQLException, WdkUserException,
             WdkModelException, JSONException {
@@ -919,55 +855,5 @@ public class Step {
     
     public boolean isRevisable() {
         return revisable;
-    }
-
-    /**
-     * The previous step param is always the first answerParam.
-     * 
-     * @return
-     * @throws WdkModelException
-     */
-    public String getPreviousStepParam() throws WdkModelException {
-        Param[] params = getQuestion().getParams();
-        for (Param param : params) {
-            if (param instanceof AnswerParam) {
-                return param.getName();
-            }
-        }
-        return null;
-    }
-
-    /**
-     * the child step param is always the second answerParam
-     * 
-     * @return
-     * @throws WdkModelException
-     */
-    public String getChildStepParam() throws WdkModelException {
-        Param[] params = getQuestion().getParams();
-        int index = 0;
-        for (Param param : params) {
-            if (param instanceof AnswerParam) {
-                index++;
-                if (index == 2) return param.getName();
-            }
-        }
-        return null;
-    }
-
-    public int getFrontId() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
-        int frontId;
-        Step previousStep = getPreviousStep();
-        if (previousStep == null) frontId = 1;
-        else {
-            frontId = previousStep.getFrontId();
-            frontId++;
-        }
-        return frontId;
-    }
-
-    public String toString() {
-        return displayId + " (" + previousStepId + ", " + childStepId + ")";
     }
 }

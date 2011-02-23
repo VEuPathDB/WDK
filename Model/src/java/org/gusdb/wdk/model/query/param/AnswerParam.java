@@ -2,12 +2,6 @@ package org.gusdb.wdk.model.query.param;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.RecordClass;
@@ -34,22 +28,15 @@ import org.json.JSONObject;
  */
 public class AnswerParam extends Param {
 
-    private List<RecordClassReference> recordClassRefs;
-    private Map<String, RecordClass> recordClasses;
+    private String recordClassRef;
+    private RecordClass recordClass;
 
-    public AnswerParam() {
-        recordClassRefs = new ArrayList<RecordClassReference>();
-        recordClasses = new LinkedHashMap<String, RecordClass>();
-    }
+    public AnswerParam() {}
 
     private AnswerParam(AnswerParam param) {
         super(param);
-        if (param.recordClassRefs != null)
-            this.recordClassRefs = new ArrayList<RecordClassReference>(
-                    param.recordClassRefs);
-        if (param.recordClasses != null)
-            this.recordClasses = new LinkedHashMap<String, RecordClass>(
-                    param.recordClasses);
+        this.recordClassRef = param.recordClassRef;
+        this.recordClass = param.recordClass;
     }
 
     // ///////////////////////////////////////////////////////////////
@@ -57,18 +44,25 @@ public class AnswerParam extends Param {
     // ///////////////////////////////////////////////////////////////
 
     /**
+     * @return the recordClassRef
+     */
+    public String getRecordClassRef() {
+        return recordClassRef;
+    }
+
+    /**
      * @param recordClassRef
      *            the recordClassRef to set
      */
-    public void addRecordClassRef(RecordClassReference recordClassRef) {
-        this.recordClassRefs.add(recordClassRef);
+    public void setRecordClassRef(String recordClassRef) {
+        this.recordClassRef = recordClassRef;
     }
 
     /**
      * @return the recordClass
      */
-    public Map<String, RecordClass> getRecordClasses() {
-        return new LinkedHashMap<String, RecordClass>(recordClasses);
+    public RecordClass getRecordClass() {
+        return recordClass;
     }
 
     /*
@@ -89,39 +83,9 @@ public class AnswerParam extends Param {
      */
     @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
-        if (resolved) return;
-
-        this.wdkModel = model;
-
         // resolve recordClass ref
-        for (RecordClassReference reference : recordClassRefs) {
-            String rcName = reference.getRef();
-            RecordClass recordClass = model.getRecordClass(rcName);
-            this.recordClasses.put(rcName, recordClass);
-        }
-        this.recordClassRefs = null;
-
-        // make sure all record classes has the same primary key definition
-        RecordClass recordClass = recordClasses.values().iterator().next();
-        String[] columns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
-        Set<String> set = new HashSet<String>();
-        for (String column : columns) {
-            set.add(column);
-        }
-        for (RecordClass rc : recordClasses.values()) {
-            String message = "The recordClasses referred in answerParam "
-                    + getFullName()
-                    + " doesn't have same primary key definitions.";
-            columns = rc.getPrimaryKeyAttributeField().getColumnRefs();
-            if (columns.length != set.size())
-                throw new WdkModelException(message);
-            for (String column : columns) {
-                if (!set.contains(column))
-                    throw new WdkModelException(message);
-            }
-        }
-
-        this.resolved = true;
+        this.recordClass = (RecordClass) model.resolveReference(recordClassRef);
+        this.wdkModel = model;
     }
 
     /*
@@ -132,8 +96,8 @@ public class AnswerParam extends Param {
     @Override
     protected void appendJSONContent(JSONObject jsParam, boolean extra)
             throws JSONException {
-    // add recordClass ref
-    // jsParam.put("recordClass", recordClassRef);
+        // add recordClass ref
+        jsParam.put("recordClass", recordClassRef);
     }
 
     public AnswerValue getAnswerValue(User user, String dependentValue)
@@ -223,41 +187,7 @@ public class AnswerParam extends Param {
             JSONException, WdkUserException {
         int stepId = Integer.parseInt(dependentValue);
         Step step = user.getStep(stepId);
-
-        // make sure the input step is of the acceptable type
-        String rcName = step.getAnswerValue().getQuestion().getRecordClass().getFullName();
-        if (!recordClasses.containsKey(rcName))
-            throw new WdkUserException("The step of record type '" + rcName
-                    + "' is not allowed in the answerParam "
-                    + this.getFullName());
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.gusdb.wdk.model.query.param.Param#excludeResources(java.lang.String)
-     */
-    @Override
-    public void excludeResources(String projectId) throws WdkModelException {
-        super.excludeResources(projectId);
-
-        for (int i = recordClassRefs.size() - 1; i >= 0; i--) {
-            RecordClassReference reference = recordClassRefs.get(i);
-            if (!reference.include(projectId)) recordClassRefs.remove(i);
-        }
-        if (recordClassRefs.size() == 0)
-            throw new WdkModelException("No recordClass ref is defined in "
-                    + "answerParam " + getFullName() + " for project "
-                    + projectId);
-    }
-    
-    public boolean allowRecordClass(String recordClassName) {
-        return recordClasses.containsKey(recordClassName);
-    }
-
-    @Override
-    protected void applySuggection(ParamSuggestion suggest) {
-        // do nothing
+        // try to get the answer value
+        step.getAnswerValue();
     }
 }

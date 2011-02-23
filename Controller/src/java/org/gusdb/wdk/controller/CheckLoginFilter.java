@@ -1,8 +1,9 @@
 package org.gusdb.wdk.controller;
 
 import java.io.IOException;
-import java.net.URLDecoder;
+import java.security.MessageDigest;
 
+import java.net.URLDecoder;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -19,6 +20,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.user.UserFactory;
 
 public class CheckLoginFilter implements Filter {
     private FilterConfig config = null;
@@ -56,7 +58,7 @@ public class CheckLoginFilter implements Filter {
 	try {
 	    UserFactoryBean factory = wdkModel.getUserFactory();
 	    if (loginCookie != null) {
-		if (wdkUser == null || ! URLDecoder.decode(loginCookie.getValue(), "utf-8").contains(wdkUser.getEmail())) {
+		if (wdkUser == null || ! URLDecoder.decode(loginCookie.getValue()).contains(wdkUser.getEmail())) {
 		    // Check if cookie has been modified since it was set.
                     String secretValue = wdkModel.getSecretKey();
                             
@@ -66,7 +68,7 @@ public class CheckLoginFilter implements Filter {
                     String cookieHash = loginCookie.getValue().substring(
                             loginCookie.getValue().lastIndexOf("-") + 1);
 		    
-                    secretValue = UserFactoryBean.md5(secretValue);
+                    secretValue = factory.md5(secretValue);
 
                     if (!secretValue.equals(cookieHash)) {
                         logger.debug("Secret Value: " + secretValue);
@@ -77,7 +79,7 @@ public class CheckLoginFilter implements Filter {
                     String email;
                     String[] cookieParts = loginCookie.getValue().split("-");
 		    
-                    email = URLDecoder.decode(cookieParts[0], "utf-8");
+                    email = URLDecoder.decode(cookieParts[0]);
 
                     UserBean user = factory.getUserByEmail(email);
                     if (loginCookie.getValue().contains("remember")) {

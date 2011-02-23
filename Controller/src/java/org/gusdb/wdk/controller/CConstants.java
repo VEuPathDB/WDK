@@ -7,8 +7,6 @@ public class CConstants {
     //key for objects in cache, used in Action/ActionForm classes and maybe jsp pages
     public static final String WDK_RESULTFACTORY_KEY = "wdkResultFactory";
     public static final String WDK_MODEL_KEY = "wdkModel";
-    public static final String WDK_WIZARD_KEY = "wdkWizard";
-    public static final String GUS_HOME_KEY = "GUS_HOME";
     public static final String WDK_ALWAYSGOTOSUMMARY_KEY = "wdkAlwaysGoToSummary";
     public static final String WDK_DEFAULT_VIEW_DIR = "/wdk";
     public static final String WDK_CUSTOM_VIEW_DIR = "/wdkCustomization";
@@ -64,6 +62,7 @@ public class CConstants {
     public static final String DOWNLOAD_RESULT_KEY = "downloadResult";
     public static final String WDK_XMLQUESTIONSETS_KEY = "wdkXmlQuestionSets";
     public static final String WDK_XMLANSWER_KEY = "wdkXmlAnswer";
+    public static final String QUESTIONSETFORM_KEY = "questionSetForm"; 
     public static final String WDK_SUMMARY_ATTRS_KEY = "wdkSummaryAttributesByQuestion"; 
     public static final String WDK_LOGIN_URL_KEY = "wdkLoginUrl";
     public static final String WDK_PAGE_SIZE_KEY = "pageSize";
@@ -82,7 +81,6 @@ public class CConstants {
     public static final String WDK_STEP_ID_PARAM = "step";
     public static final String WDK_SKIPTO_DOWNLOAD_PARAM = "skip_to_download";
     public static final String WDK_HISTORY_TYPE_PARAM = "type";
-    public static final String WDK_NO_STRATEGY_PARAM = "no_strategy";
 
     // constants for remote logins
     public static final String WDK_REMOTE_URL_KEY = "remoteUrl";

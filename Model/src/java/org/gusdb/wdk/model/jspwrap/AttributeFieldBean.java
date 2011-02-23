@@ -41,11 +41,4 @@ public class AttributeFieldBean extends FieldBean {
         return attributeField.getHelp();
     }
 
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.AttributeField#isRemovable()
-     */
-    public boolean isRemovable() {
-        return attributeField.isRemovable();
-    }
 }

@@ -94,7 +94,6 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
         return array;
     }
 
-    @Deprecated
     public Map<String, Question[]> getQuestionsByCategory() {
         Map<String, List<Question>> questionsByCategory = new LinkedHashMap<String, List<Question>>();
         for (Question question : questionMap.values()) {

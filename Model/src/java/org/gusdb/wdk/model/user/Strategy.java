@@ -7,10 +7,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.Question;
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -327,61 +330,136 @@ public class Strategy {
     private Map<Integer, Integer> updateStepTree(int targetStepId, Step newStep)
             throws WdkModelException, WdkUserException, JSONException,
             NoSuchAlgorithmException, SQLException {
-        logger.debug("update step tree - target=" + targetStepId + ", newStep="
-                + newStep.getDisplayId());
         Map<Integer, Integer> stepIdsMap = new HashMap<Integer, Integer>();
-        Step root = getLatestStep();
-        Step targetStep = root.getStepByDisplayId(targetStepId);
+        Step targetStep = getLatestStep().getStepByDisplayId(targetStepId);
 
-        int newStepId = newStep.getDisplayId();
-        stepIdsMap.put(targetStepId, newStepId);
+        stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(
+                newStep.getDisplayId()));
 
+        while (targetStep.getNextStep() != null) {
+            targetStep = targetStep.getNextStep();
+            if (targetStep.isTransform()) {
+                newStep = updateTransform(targetStep,
+                        newStep.getQuestion().getRecordClass(),
+                        newStep.getDisplayId());
+            } else {
+                Step rightStep = targetStep.getChildStep();
+                newStep = user.createBooleanStep(newStep, rightStep,
+                        targetStep.getOperation(), false,
+                        targetStep.getFilterName());
+            }
+            stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(
+                    newStep.getDisplayId()));
+        }
+
+        newStep.setParentStep(targetStep.getParentStep());
         newStep.setCollapsible(targetStep.isCollapsible());
         newStep.setCollapsedName(targetStep.getCollapsedName());
         newStep.update(false);
 
-        // update the parents/nexts
-        while (targetStep.getInternalId() != root.getInternalId()) {
-            Step parentStep = root.getStepByChildId(targetStepId);
-            Step nextStep = root.getStepByPreviousId(targetStepId);
-
-            logger.debug("target: " + targetStep.getDisplayId() + ", parent: "
-                    + parentStep + ", next: " + nextStep);
-            if (parentStep == null && nextStep == null) break;
-
-            targetStep = (parentStep != null) ? parentStep : nextStep;
-
-            // create a new step by replacing only the target step id in the
-            // params.
-            Question question = targetStep.getQuestion();
-            Map<String, String> values = targetStep.getParamValues();
-            String paramName;
-            if (parentStep != null) {
-                paramName = targetStep.getChildStepParam();
-            } else {
-                paramName = targetStep.getPreviousStepParam();
+        if (targetStep.isCollapsible()
+                && newStep.getPreviousStep() != null
+                && newStep.getPreviousStep().getDisplayId() == targetStep.getDisplayId()) {
+            if (getIsSaved()) {
+                // If the strategy is saved, clone the target step so we don't
+                // wipe out
+                // collapsed name for the saved strategy
+                targetStep = targetStep.deepClone();
+                Step parent = newStep.getParentStep();
+                if (newStep.isTransform()) {
+                    newStep = updateTransform(newStep,
+                            targetStep.getQuestion().getRecordClass(),
+                            targetStep.getDisplayId());
+                } else {
+                    Step rightStep = newStep.getChildStep();
+                    newStep = user.createBooleanStep(targetStep, rightStep,
+                            newStep.getOperation(), false,
+                            newStep.getFilterName());
+                }
+                newStep.setParentStep(parent);
+                newStep.setCollapsible(targetStep.isCollapsible());
+                newStep.setCollapsedName(targetStep.getCollapsedName());
+                newStep.update(false);
             }
-            values.put(paramName, Integer.toString(newStepId));
-            
-            // replace newStep with new pnStep, and iterate to the parent/next
-            // node
-            newStep = user.createStep(question, values, targetStep.getFilter(),
-                    false, true, targetStep.getAssignedWeight());
+            // Make sure target step is made uncollapsible so that
+            // we don't have incorrect references in the step tree
+            targetStep.setParentStep(null);
+            targetStep.setCollapsible(false);
+            targetStep.setCollapsedName(null);
+            targetStep.update(false);
+        }
+
+        // if step has a parent step, need to continue
+        // updating the rest of the strategy.
+        while (newStep.getParentStep() != null) {
+            // go to parent, update subsequent steps
+            targetStep = newStep.getParentStep();
+
+            Step leftStep = targetStep.getPreviousStep();
+            // update parent, then update subsequent
+            newStep = user.createBooleanStep(leftStep, newStep,
+                    targetStep.getOperation(), false,
+                    targetStep.getFilterName());
+            stepIdsMap.put(new Integer(targetStep.getDisplayId()), new Integer(
+                    newStep.getDisplayId()));
+            while (targetStep.getNextStep() != null) {
+                targetStep = targetStep.getNextStep();
+                // need to check if step is a transform (in which case there's
+                // no boolean expression; we need to update history param
+                if (targetStep.isTransform()) {
+                    newStep = updateTransform(targetStep,
+                            newStep.getQuestion().getRecordClass(),
+                            newStep.getDisplayId());
+                } else {
+                    Step rightStep = targetStep.getChildStep();
+                    newStep = user.createBooleanStep(newStep, rightStep,
+                            targetStep.getOperation(), false,
+                            targetStep.getFilterName());
+                }
+                stepIdsMap.put(new Integer(targetStep.getDisplayId()),
+                        new Integer(newStep.getDisplayId()));
+            }
+            newStep.setParentStep(targetStep.getParentStep());
             newStep.setCollapsible(targetStep.isCollapsible());
             newStep.setCollapsedName(targetStep.getCollapsedName());
             newStep.update(false);
 
-            newStepId = newStep.getDisplayId();
-            targetStepId = targetStep.getDisplayId();
-            stepIdsMap.put(targetStepId, newStepId);
+            // Make sure target step is made uncollapsible so that
+            // we don't have incorrect references in the step tree
+            /*
+             * targetStep.setParentStep(null); targetStep.setCollapsible(false);
+             * targetStep.setCollapsedName(null); targetStep.update(false);
+             */
         }
-        // done with iteration, the target will be the original root, while the
-        // newStep will be the new root.
 
         this.setLatestStep(newStep);
         this.update(false);
 
         return stepIdsMap;
+    }
+
+    private Step updateTransform(Step step, RecordClass recordClass,
+            int newStepId) throws WdkModelException, WdkUserException,
+            NoSuchAlgorithmException, SQLException, JSONException {
+        // Get question
+        Question wdkQuestion = step.getQuestion();
+        // Get internal params
+        Map<String, String> paramValues = step.getParamValues();
+        // Change AnswerParam
+        AnswerParam[] answerParams = wdkQuestion.getTransformParams(recordClass);
+        for (AnswerParam p : answerParams) {
+            paramValues.put(p.getName(), Integer.toString(newStepId));
+        }
+        AnswerFilterInstance filter = step.getFilter();
+        String filterName = (filter == null) ? null : filter.getName();
+
+        // the assigned weight for transform is 0, since the weight of
+        // individual ones are determined by the input
+        Step newStep = user.createStep(wdkQuestion, paramValues, filterName,
+                step.isDeleted(), false, 0);
+        newStep.setCustomName(step.getBaseCustomName());
+        newStep.update(false);
+        return newStep;
     }
 
     public Step getFirstStep() throws WdkUserException, WdkModelException,
@@ -420,8 +498,7 @@ public class Strategy {
         jsStrategy.put("resultSize", getEstimateSize());
         jsStrategy.put("version", getVersion());
         jsStrategy.put("type", getType());
-        jsStrategy.put("latestStep", getLatestStep().getJSONContent(
-                this.displayId));
+        jsStrategy.put("latestStep", getLatestStep().getJSONContent(this.displayId));
 
         return jsStrategy;
     }

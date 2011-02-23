@@ -1,22 +1,21 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.File;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
-import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.param.WdkEmptyEnumListException;
 
-public class GetVocabAction extends Action {
+public class GetVocabAction extends ShowQuestionAction {
 
     private static final Logger logger = Logger.getLogger(GetVocabAction.class);
 
@@ -32,13 +31,12 @@ public class GetVocabAction extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         try {
             String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
             String paramName = request.getParameter("name");
             String dependedValue = request.getParameter("dependedValue");
             boolean getXml = Boolean.valueOf(request.getParameter("xml"));
-            QuestionBean wdkQuestion = wdkModel.getQuestion(qFullName);
+            QuestionBean wdkQuestion = getQuestionByFullName(qFullName);
             EnumParamBean param = (EnumParamBean) wdkQuestion.getParamsMap().get(
                     paramName);
 
@@ -51,28 +49,28 @@ public class GetVocabAction extends Action {
             } catch (WdkEmptyEnumListException ex) {
                 // do nothing.
                 logger.debug("the choice of the depended param cause this: "
-                        + ex);
+			     + ex);
             }
-
+	    
             request.setAttribute("vocabParam", param);
+	    
+	    String xmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR
+		+ File.separator + CConstants.WDK_PAGES_DIR
+	    + File.separator + "vocabXml.jsp";
 
-            String xmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR
-                    + File.separator + CConstants.WDK_PAGES_DIR
-                    + File.separator + "vocabXml.jsp";
-
-            String htmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR
-                    + File.separator + CConstants.WDK_PAGES_DIR
-                    + File.separator + "vocabHtml.jsp";
+	    String htmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR
+	    + File.separator + CConstants.WDK_PAGES_DIR
+	    + File.separator + "vocabHtml.jsp";
 
             ActionForward forward;
 
-            if (getXml) {
-                forward = new ActionForward(xmlVocabFile);
-            } else {
-                ShowQuestionAction.prepareQuestionForm(wdkQuestion,
-                        getServlet(), request, (QuestionForm) form);
-                forward = new ActionForward(htmlVocabFile);
-            }
+	    if (getXml) {
+		forward = new ActionForward(xmlVocabFile);
+	    }
+	    else {
+                prepareQuestionForm(wdkQuestion, request, (QuestionForm) form);
+		forward = new ActionForward(htmlVocabFile);
+	    }
 
             return forward;
         } catch (Exception ex) {

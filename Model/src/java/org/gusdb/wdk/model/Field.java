@@ -3,6 +3,10 @@
  */
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
+
+import org.json.JSONException;
 
 /**
  * @author Jerric

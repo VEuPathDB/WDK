@@ -1,11 +1,8 @@
 var _action = "";
-var global_isAdd; 
 var original_Query_Form_Text;
 var original_Query_Form_CSS = new Object();
 var current_Front_Strategy_Id = null;
-var isSpan = false;
-var pop_up_state = new Array();
-// var stage = null;
+
 function showExportLink(stratId){
  	closeModal();
  	var exportLink = $("div#export_link_div_" + stratId);
@@ -289,8 +286,60 @@ function validateAndCall(type, url, proto, rs){
 	return;
 }
 
+function getQueryForm(url,hideOp,isOrtholog, loadingParent){
+    // retrieve the question form, but leave out all params
+    	var questionName = parseUrlUtil("questionFullName", url)[0];
+		var questionUrl = url + "&showParams=false&isInsert=" + isInsert;
+		var paramsUrl = url + "&showParams=true&isInsert=" + isInsert;
+	    original_Query_Form_Text = $("#query_form").html();
+		if(loadingParent == undefined) loadingParent = "query_form";
+		$.ajax({
+			url: questionUrl,
+			dataType:"html",
+			beforeSend: function(){
+				showLoading(loadingParent);
+			},
+			success: function(data){
+				$.ajax({
+					url:paramsUrl,
+					dataType: "html",
+					success: function(params){
+						formatFilterForm(params,data,0,isInsert,false,hideOp,isOrtholog);
+						try {
+							customGetQueryForm();
+						}
+						catch(err) {
+							// Do nothing?  If user hasn't defined 
+							// customQueryForm, that's OK.
+						}
+						removeLoading(loadingParent);
+					}
+				});
+			},
+			error: function(data, msg, e){
+				alert("ERROR \n "+ msg + "\n" + e + ". \nPlease double check your parameters, and try again." + 
+                                      + "\nReloading this page might also solve the problem. \nOtherwise, please contact site support.");
+			}
+		});
+}
+
+function OpenOperationBox(stratId, insertId) {
+	var selectedStrat = $("#query_form select#selected_strategy").val();
+	var selectedName = null;//$("#query_form select#selected_strategy option[selected]").text();
+	$("#query_form select#selected_strategy option").each(function(){
+		if(this.selected) selectedName = $(this).text().replace(/^\s*/, ""); return;
+	});
+        if (insertId == undefined) insertId = "";
+	var url = "processFilter.do?strategy=" + getStrategy(stratId).backId + "&insert=" + insertId + "&insertStrategy=" + selectedStrat +"&checksum=" + getStrategy(stratId).checksum;
+	var oform = "<form id='form_question' enctype='multipart/form-data' action='javascript:validateAndCall(\"add\",\""+ url + "\", \"" + getStrategy(stratId).backId + "\")' method='post' name='questionForm'>";
+	var cform = "</form>";
+	var ops = "<div class='filter operators'><span class='form_subtitle' style='padding:0 20px'>Combine <b><i>" + getStrategy(stratId).name + "</i></b> with <b><i>" + selectedName + "</i></b></span><div id='operations'><table style='margin-left:auto; margin-right:auto;'><tr><td class='opcheck' valign='middle'><input type='radio' name='booleanExpression' value='INTERSECT' /></td><td class='operation INTERSECT'></td><td valign='middle'>&nbsp;" + (stp.frontId) + "&nbsp;<b>INTERSECT</b>&nbsp;" + (parseInt(stp.frontId)+1) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='UNION'></td><td class='operation UNION'></td><td>&nbsp;" + (stp.frontId) + "&nbsp;<b>UNION</b>&nbsp;" + (parseInt(stp.frontId)+1) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='NOT'></td><td class='operation MINUS'></td><td>&nbsp;" + (stp.frontId) + "&nbsp;<b>MINUS</b>&nbsp;" + (parseInt(stp.frontId)+1) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='booleanExpression' value='RMINUS'></td><td class='operation RMINUS'></td><td>&nbsp;" + (parseInt(stp.frontId)+1) + "&nbsp;<b>MINUS</b>&nbsp;" + (stp.frontId) + "</td></tr></table></div></div>"
+	var button = "<div style='text-align:center'><input type='submit' value='Add Strategy' /></div>";
+	ops = oform + ops + button + cform;
+	$("#query_form div#query_selection").replaceWith(ops);
+}
+
 function openFilter(dtype,strat_id,step_id,isAdd){
-	global_isAdd = isAdd;
 	if(openDetail != null) hideDetails();
 	$("#strategy_results div.attributesList").hide();
 	var isFirst = false;
@@ -302,160 +351,73 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 		if(stp != null && stp.frontId == 1 && !isAdd) isFirst = true;
 	}
 	current_Front_Strategy_Id = strat_id;
-	currStrat = getStrategy(strat_id);
-	current_Front_Strategy_Id = strat_id;
-
-        var currentStepId = stp.back_boolean_Id;
-        if (currentStepId == '') currentStepId = stp.back_step_Id;
-	var url = "wizard.do?strategy="+currStrat.backId+"&stage=list&step=" + currentStepId;
-
-        // add insert flag
-        var action = isAdd ? "add" : "insert";
-        url += "&action=" + action;
-
+	var url = "wdk/jsp/addStepPopup.jsp?dataType=" + dtype + "&prevStepNum=" + step_id + "&isAdd=" + isAdd;
 	$.ajax({
 		url: url,
 		dataType: "html",
 		beforeSend: function(){
 			$("#query_form").remove();
-			disableAddStepButtons();
+			$("#Strategies div a#filter_link span").css({opacity: 1.0});
+			$("#Strategies div#diagram_" + current_Front_Strategy_Id + " a#filter_link span").css({opacity: 0.4});
 		},
 		success: function(data){
 			dykClose();
 			$("body").append(data);
+			original_Query_Form_CSS.maxW = $("#query_form").css("max-width");
+			original_Query_Form_CSS.minW = $("#query_form").css("min-width");
+			$("#query_form select#selected_strategy option[value='" + getStrategy(strat_id).backId + "']").remove();
 			if(isAdd)
 				$("#query_form h1#query_form_title").html("Add&nbsp;Step");
 			else
 				$("#query_form h1#query_form_title").html("Insert&nbsp;Step");
-			setDraggable($("#query_form"), ".dragHandle");
+			if(isFirst){
+				$("#query_form #selected_strategy,#continue_button").attr("disabled","disabled");
+				$("#query_form #transforms a").attr('href',"javascript:void(0);").addClass("disabled");
+			}else{
+				$("#query_form #continue_button").click(function(){
+				original_Query_Form_Text = $("#query_form").html();
+				if($("#query_form select#selected_strategy").val() == "--")
+						alert("Please select a strategy from the list.");
+					else
+						OpenOperationBox(strat_id, (isAdd ? undefined : step_id));
+					return false;
+				});
+		
+				$("#query_form #continue_button_transforms").click(function(){
+					original_Query_Form_Text = $("#query_form").html();
+					getQueryForm($("#query_form select#transforms").val(),true);
+				});
+			}
+			if(!isAdd){
+			$("#query_form ul#transforms a").each(function(){
+				stp = getStrategy(strat_id).getStep(step_id,false);
+				fid = parseInt(stp.frontId);
+				if(fid > 1){
+					var value = $(this).attr('href');
+					var transformParams = value.match(/\w+_result=/gi);
+					for (var i in transformParams) {
+						value = value.split(transformParams[i]);
+						var stpId = value[1].split("&");
+						prevStp = getStrategy(strat_id).getStep(fid-1,true);
+						if(prevStp.back_boolean_Id != null && prevStp.back_boolean_Id != "")
+							stpId[0] = prevStp.back_boolean_Id;
+						else
+							stpId[0] = prevStp.back_step_Id;
+						value[1] = stpId.join("&");
+						value = value.join(transformParams[i]);
+					}
+					$(this).attr('href',value);
+				}
+			});
+			}
+			setDraggable($("#query_form"), ".handle");
 		},
 		error: function(){
 			alert("Error getting the needed information from the server \n Please contact the system administrator");
-			enableAddStepButtons();
 		}
 	});
 }
 
-var buttonText = null;
-function WizardLoading(boo){
-	if(boo){
-		i = $("img#wizard-busy-image").clone();
-        buttonText = $("div.filter-button").html();
-		$("div.filter-button").html(i.show());
-	} else {
-        $("div.filter-button").html(buttonText);
-        buttonText = null;
-    }
-}
-
-function callWizard(url, ele, id, sec, action){
-    var strategy = getStrategy(current_Front_Strategy_Id);
-	$("div#errors").html("");
-	switch (action){
-			case "submit":
-                                var stage = $(ele).find("#stage").val();
-				url = url + "stage="+stage+"&strategy="+getStrategy(current_Front_Strategy_Id).backId;
-				$(ele).attr("action", "javascript:void(0)");
-				$.ajax({
-					url: url,
-					type: "get",
-					dataType: "html",
-					data: parseInputs()+"&state="+p_state,
-					beforeSend: function(){
-						WizardLoading(true);
-					},
-					success: function(data){
-						if(data.indexOf("{") == 0){
-							data = eval("("+data+")");
-                            // before close, check if json is success or error, if error, display 
-                            // it in the current qf_content
-                            if (ErrorHandler("Wizard", data, strategy, $("#errors"))) {
-                                closeAll();
-                                updateStrategies(data);
-                            } else {
-                                WizardLoading(false);
-                            }
-						}else{
-							WizardLoading(false);
-							pop_up_state.push($("#qf_content").html());
-							setPopupContent(data);
-						}
-					}	
-				});
-				break;
-			case "next":
-				d = "strategy="+getStrategy(current_Front_Strategy_Id).backId;
-				$.ajax({
-					url: url,
-					type: "get",
-					dataType: "html",
-					data: d,
-					success: function(data){
-						if(data.indexOf("{") == 0){
-							updateStrategies(data);
-						}else{
-							if($("#qf_content").length == 0){
-								urlparts = url.split("/");
-								$.ajax({
-									async: false,
-									url:"wdk/jsp/wizard/context.jsp",
-									type:"get",
-									success:function(data){
-										$("body").append(data);
-										setDraggable($("#query_form"), ".dragHandle");
-									} 
-								});
-							}else{
-								pop_up_state.push($("#qf_content").html());
-							}
-							setPopupContent(data);
-							
-							if(ele != undefined){
-								showNewSection(ele,id,sec);
-							}
-						}
-					}	
-				});
-				break;
-			default:
-				showNewSection(ele,id,sec);
-				break;
-	}
-	
-	return false;
-}
-
-function backStage(){
-	var h = pop_up_state.pop()
-	if(h == undefined)
-		closeAll();
-	else {
-		setPopupContent(h);
-        }
-}
-
-function setPopupContent(data) {
-    $("#qf_content").html(data);
-    updateStepNumberReferences();
-}
-
-function updateStepNumberReferences() {
-    var stratBackId = $("#strategyId").text();
-    var stepBackId = $("#stepId").text();
-    var step = getStepFromBackId(stratBackId, stepBackId);
-    var stepNumber = parseInt(step.frontId);
-    $("span.current_step_num").text(stepNumber);
-    $("span.new_step_num").text((stepNumber + 1));
-}
-
-// deprecated
-function openAddStrategy(strat_id){
-	original_Query_Form_Text = $("#query_form").html();
-	OpenOperationBox(strat_id, (global_isAdd ? undefined : step_id));
-	return false;
-}
-
-// deprecated -- to close the old question form
 function close(ele){
 	cd = $("#query_form");
 	$(cd).html(original_Query_Form_Text);
@@ -476,82 +438,11 @@ function close(ele){
 }
 
 function closeAll(hide,as){
-	if(hide){
+	if(hide)
 		$("#query_form").hide();
-	}else{
-		isSpan = false;
+	else
 		$("#query_form").remove();
-		$(".original").remove();
-		pop_up_state = new Array();
-	}
 	isInsert = "";
-	enableAddStepButtons();
+	$("#Strategies div a#filter_link span").css({opacity: 1.0});
 }
 
-function enableAddStepButtons() {
-	$("#Strategies div a#filter_link span").css({opacity: 1.0}).each(function() {
-		var button = $(this).parent("a");
-		var oldHref = button.attr("oldHref");
-		if (oldHref) {
-			button.attr("href",oldHref);
-			button.removeAttr("oldHref");
-		}
-	});
-}
-
-function disableAddStepButtons() {
-	$("#Strategies div a#filter_link span").css({opacity: 0.4}).each(function() {
-		var button = $(this).parent("a");
-		button.attr("oldHref",button.attr("href"));
-		button.attr("href","javascript:void(0);");
-	});
-}
-
-function setDraggable(e, handle){
-	var rlimit = $("div#contentwrapper").width() - e.width() - 18;
-	if(rlimit < 0) rlimit = 525;
-	var blimit = $("body").height();
-	$(e).draggable({
-		handle: handle,
-		containment: [0,0,rlimit,blimit]
-	});
-}
-
-function showNewSection(ele,sectionName,sectionNumber){
-	isSpan = (sectionName == 'span_logic' || sectionName.split("_")[0] == 'sl'); 
-	var sec = document.createElement('td');
-	var s = $("div#" + sectionName + ".original").clone();
-	$(sec).html($(s)
-		.addClass("qf_section")
-		.removeClass("original")
-		.css({
-			"display":"block",
-			"background-color":"#EEEEEE"
-			}))
-		.attr("id","section-"+sectionNumber);
-	for(i=sectionNumber; i<=5; i++){
-		$("td#section-"+i+" div.qf_section").html("");
-	}
-	$(ele).parent().find("li").css({
-		"background":"",
-		"font-weight":""
-	});
-	$(ele).css({
-		"background-color":"#DDDDDD"
-	});
-	$("#query_form table#sections-layout td#section-" + (sectionNumber-1) + " div").css("background-color","#FFFFFF");
-	$("#query_form table#sections-layout td#section-" + sectionNumber).replaceWith(sec);
-}
-
-function changeButtonText(ele){
-	var val = "";
- 	var stage = $(ele).attr("stage");
-        $(ele).parents("form").find("#stage").val(stage);
-	if($(ele).val() != "SPAN"){
-		v = "Run Step";
-	}else{
-		v = "Continue....";
-	}
-	//$("form#form_question").attr("action",stage);
-	$(".filter-button input[name='questionSubmit']").attr("value",v);
-}

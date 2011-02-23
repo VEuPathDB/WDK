@@ -495,7 +495,7 @@ public class StressTester {
                 String value = values[rand.nextInt(values.length)];
                 try {
                     url.append("&"
-                            + URLEncoder.encode("value(" + param + ")",
+                            + URLEncoder.encode("myProp(" + param + ")",
                                     "utf-8"));
                     url.append("=" + URLEncoder.encode(value, "utf-8"));
                 } catch (UnsupportedEncodingException ex) {
