@@ -4,6 +4,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
@@ -19,16 +20,20 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  * form bean for showing a wdk question from a question set
  */
 
-public class QuestionForm extends QuestionSetForm {
+public class QuestionForm extends MapActionForm {
 
     /**
      * 
      */
     private static final long serialVersionUID = -7848685794514383434L;
-    private QuestionBean question = null;
+    private static final Logger logger = Logger.getLogger(QuestionForm.class);
+
+    private String questionFullName;
+    private QuestionBean question;
     private boolean validating = true;
     private boolean paramsFilled = false;
-    private String weight = null;
+    private String weight;
+    private String customName;
 
     /**
      * validate the properties that have been sent from the HTTP request, and
@@ -36,16 +41,18 @@ public class QuestionForm extends QuestionSetForm {
      */
     public ActionErrors validate(ActionMapping mapping,
             HttpServletRequest request) {
+        logger.debug("start form validation...");
+        ActionErrors errors = super.validate(mapping, request);
+        if (errors == null) errors = new ActionErrors();
+
         UserBean user = ActionUtility.getUser(servlet, request);
 
         // set the question name into request
-        request.setAttribute(CConstants.QUESTIONSETFORM_KEY, this);
-        request.setAttribute(CConstants.QUESTION_FULLNAME_PARAM, qFullName);
+        request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
+        request.setAttribute(CConstants.QUESTION_FULLNAME_PARAM,
+                questionFullName);
 
-        ActionErrors errors = new ActionErrors();
-        if (!validating) {
-            return errors;
-        }
+        if (!validating) return errors;
 
         String clicked = request.getParameter(CConstants.PQ_SUBMIT_KEY);
         if (clicked != null
@@ -59,14 +66,13 @@ public class QuestionForm extends QuestionSetForm {
         }
 
         Map<String, ParamBean> params = wdkQuestion.getParamsMap();
-        Map<String, String> paramValues = getMyProps();
         for (String paramName : params.keySet()) {
             String prompt = paramName;
             try {
                 ParamBean param = params.get(paramName);
                 param.setUser(user);
                 prompt = param.getPrompt();
-                String rawOrDependentValue = paramValues.get(paramName);
+                String rawOrDependentValue = (String) getValue(paramName);
                 String dependentValue = param.rawOrDependentValueToDependentValue(
                         user, rawOrDependentValue);
 
@@ -75,7 +81,8 @@ public class QuestionForm extends QuestionSetForm {
                     param.validate(user, dependentValue);
             } catch (Exception ex) {
                 ex.printStackTrace();
-                ActionMessage message = new ActionMessage("mapped.properties", prompt, ex.getMessage());
+                ActionMessage message = new ActionMessage("mapped.properties",
+                        prompt, ex.getMessage());
                 errors.add(ActionErrors.GLOBAL_MESSAGE, message);
             }
         }
@@ -97,19 +104,30 @@ public class QuestionForm extends QuestionSetForm {
             }
         }
 
+        logger.debug("finish validation...");
         return errors;
+    }
+
+    public void setQuestionFullName(String questionFullName) {
+        this.questionFullName = questionFullName;
+    }
+
+    public String getQuestionFullName() {
+        return this.questionFullName;
     }
 
     public void setQuestion(QuestionBean question) {
         this.question = question;
+        this.questionFullName = question.getFullName();
     }
 
     public QuestionBean getQuestion() {
         if (question == null) {
-            if (qFullName == null) return null;
-            int dotI = qFullName.indexOf('.');
-            String qSetName = qFullName.substring(0, dotI);
-            String qName = qFullName.substring(dotI + 1, qFullName.length());
+            if (questionFullName == null) return null;
+            int dotI = questionFullName.indexOf('.');
+            String qSetName = questionFullName.substring(0, dotI);
+            String qName = questionFullName.substring(dotI + 1,
+                    questionFullName.length());
 
             WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
                     CConstants.WDK_MODEL_KEY);
@@ -142,4 +160,24 @@ public class QuestionForm extends QuestionSetForm {
     public String getWeight() {
         return weight;
     }
+
+    @Override
+    public Object getValue(String key) {
+        return getValueOrArray(key);
+    }
+
+    /**
+     * @return the customName
+     */
+    public String getCustomName() {
+        return customName;
+    }
+
+    /**
+     * @param customName the customName to set
+     */
+    public void setCustomName(String customName) {
+        this.customName = customName;
+    }
+
 }

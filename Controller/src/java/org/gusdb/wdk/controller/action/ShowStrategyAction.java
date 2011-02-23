@@ -51,6 +51,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
             throws Exception {
         logger.debug("Entering ShowStrategyAction...");
 
+        response.setContentType("application/json");
+
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         try {
@@ -151,11 +153,12 @@ public class ShowStrategyAction extends ShowQuestionAction {
         return strategies;
     }
 
-    public static void outputErrorJSON(UserBean user, HttpServletResponse response,
-            Exception ex) throws JSONException, IOException,
-            NoSuchAlgorithmException, WdkUserException, WdkModelException,
-            SQLException {
+    public static void outputErrorJSON(UserBean user,
+            HttpServletResponse response, Exception ex) throws JSONException,
+            IOException, NoSuchAlgorithmException, WdkUserException,
+            WdkModelException, SQLException {
         logger.debug("output JSON error message: " + ex);
+
         JSONObject jsMessage = new JSONObject();
         outputCommon(user, jsMessage);
 
@@ -211,10 +214,10 @@ public class ShowStrategyAction extends ShowQuestionAction {
         writer.print(jsMessage.toString());
     }
 
-   public  static void outputDuplcicateNameJSON(WdkModelBean model, UserBean user,
-            HttpServletResponse response, String state) throws JSONException,
-            NoSuchAlgorithmException, WdkUserException, WdkModelException,
-            SQLException, IOException {
+    public static void outputDuplcicateNameJSON(WdkModelBean model,
+            UserBean user, HttpServletResponse response, String state)
+            throws JSONException, NoSuchAlgorithmException, WdkUserException,
+            WdkModelException, SQLException, IOException {
         logger.debug("output JSON dup-name-error message...");
 
         Map<Integer, StrategyBean> strategies = getModifiedStrategies(user,
@@ -267,8 +270,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
             JSONObject jsStrategy = new JSONObject();
             jsStrategy.put("id", stratId);
             jsStrategy.put("checksum", strat.getChecksum());
-	    //System.out.println("ID: " + stratId);
-	    //System.out.println("Checksum: " + strat.getChecksum());
+            // System.out.println("ID: " + stratId);
+            // System.out.println("Checksum: " + strat.getChecksum());
             jsState.put(Integer.toString(order + 1), jsStrategy);
         }
         jsState.put("length", openedStrategies.length);
@@ -286,25 +289,25 @@ public class ShowStrategyAction extends ShowQuestionAction {
             if (viewStep != 0) jsView.put("step", viewStep);
             jsView.put("pagerOffset", user.getViewPagerOffset());
         }
-	String frontAction = user.getFrontAction();
-	if (frontAction != null) {
-	    jsView.put("action", frontAction);
-	    jsView.put("actionStrat", user.getFrontStrategy());
-	    jsView.put("actionStep", user.getFrontStep());
-	}
-	user.resetFrontAction();
+        String frontAction = user.getFrontAction();
+        if (frontAction != null) {
+            jsView.put("action", frontAction);
+            jsView.put("actionStrat", user.getFrontStrategy());
+            jsView.put("actionStep", user.getFrontStep());
+        }
+        user.resetFrontAction();
         jsMessage.put("currentView", jsView);
     }
 
-    static private void outputStrategies(WdkModelBean model, UserBean user, JSONObject jsMessage,
-            Map<Integer, StrategyBean> strategies) throws JSONException,
-            NoSuchAlgorithmException, WdkModelException, WdkUserException,
-            SQLException {
+    static private void outputStrategies(WdkModelBean model, UserBean user,
+            JSONObject jsMessage, Map<Integer, StrategyBean> strategies)
+            throws JSONException, NoSuchAlgorithmException, WdkModelException,
+            WdkUserException, SQLException {
         JSONObject jsStrategies = new JSONObject();
         for (StrategyBean strategy : strategies.values()) {
             JSONObject jsStrategy = outputStrategy(model, user, strategy);
-	    System.out.println("ID: " + strategy.getStrategyId());
-	    System.out.println("Checksum: " + strategy.getChecksum());
+            System.out.println("ID: " + strategy.getStrategyId());
+            System.out.println("Checksum: " + strategy.getChecksum());
             jsStrategies.put(strategy.getChecksum(), jsStrategy);
         }
         jsStrategies.put("length", strategies.size());
@@ -341,10 +344,10 @@ public class ShowStrategyAction extends ShowQuestionAction {
         return jsStrategy;
     }
 
-    static private JSONObject outputStep(WdkModelBean model, UserBean user, StepBean step,
-            int strategyId, boolean showSubStrategy) throws JSONException,
-            NoSuchAlgorithmException, WdkModelException, WdkUserException,
-            SQLException {
+    static JSONObject outputStep(WdkModelBean model, UserBean user,
+            StepBean step, int strategyId, boolean showSubStrategy)
+            throws JSONException, NoSuchAlgorithmException, WdkModelException,
+            WdkUserException, SQLException {
         JSONObject jsStep = new JSONObject();
         jsStep.put("name", step.getDisplayName());
         jsStep.put("customName", step.getCustomName());
@@ -370,28 +373,36 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("useweights", model.getUseWeights());
         jsStep.put("revisable", step.isRevisable());
 
+        jsStep.put("frontId", step.getFrontId());
+
+        outputParams(user, step, jsStep);
+
         // determine the types of the step
         if (showSubStrategy && step.getIsCollapsible()) {
             outputSubStrategy(model, user, step, jsStep, strategyId);
-        } else if (step.getIsBoolean()) {
-            outputBooleanStep(model, user, step, jsStep, strategyId);
-        } else { // both transform and normal steps
-            outputNormalStep(user, step, jsStep);
+        } else if (step.isCombined()) {
+            outputCombinedStep(model, user, step, jsStep, strategyId);
         }
 
         return jsStep;
     }
 
-    static private void outputBooleanStep(WdkModelBean model, UserBean user, StepBean step,
-            JSONObject jsStep, int strategyId) throws NoSuchAlgorithmException,
-            JSONException, WdkModelException, WdkUserException, SQLException {
-        jsStep.put("operation", step.getOperation());
+    static private void outputCombinedStep(WdkModelBean wdkModel,
+            UserBean user, StepBean step, JSONObject jsStep, int strategyId)
+            throws NoSuchAlgorithmException, JSONException, WdkModelException,
+            WdkUserException, SQLException {
+        int childrenCount = step.getAnswerParamCount();
+        jsStep.put("childrenCount", childrenCount);
+        if (step.getIsBoolean()) jsStep.put("operation", step.getOperation());
 
-        StepBean childStep = step.getChildStep();
-        jsStep.put("step", outputStep(model, user, childStep, strategyId, true));
+        if (childrenCount > 1) {
+            StepBean childStep = step.getChildStep();
+            jsStep.put("step", outputStep(wdkModel, user, childStep,
+                    strategyId, true));
+        }
     }
 
-    static private void outputNormalStep(UserBean user, StepBean step,
+    static private void outputParams(UserBean user, StepBean step,
             JSONObject jsStep) throws NoSuchAlgorithmException, JSONException,
             WdkModelException, WdkUserException, SQLException {
 
@@ -420,6 +431,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
                             rawValue = ((EnumParamBean) param).getRawDisplayValue();
                         } else rawValue = param.getBriefRawValue();
                         jsParam.put("value", rawValue);
+			jsParam.put("internal",param.getRawValue());
                     } catch (Exception ex) {
                         throw new WdkModelException(ex);
                     }
@@ -432,9 +444,10 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("params", jsParams);
     }
 
-    static private void outputSubStrategy(WdkModelBean model, UserBean user, StepBean step,
-            JSONObject jsStep, int strategyId) throws NoSuchAlgorithmException,
-            JSONException, WdkModelException, WdkUserException, SQLException {
+    static private void outputSubStrategy(WdkModelBean model, UserBean user,
+            StepBean step, JSONObject jsStep, int strategyId)
+            throws NoSuchAlgorithmException, JSONException, WdkModelException,
+            WdkUserException, SQLException {
         JSONObject jsStrategy = new JSONObject();
         String subStratId = strategyId + "_" + step.getStepId();
         Integer order = user.getStrategyOrder(subStratId);
@@ -454,7 +467,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
         int nonTransformLength = 0;
         while (subStep != null) {
             if (!subStep.getIsTransform()) nonTransformLength++;
-            JSONObject jsSubStep = outputStep(model, user, subStep, strategyId, false);
+            JSONObject jsSubStep = outputStep(model, user, subStep, strategyId,
+                    false);
             jsSteps.put(Integer.toString(frontId), jsSubStep);
             subStep = subStep.getNextStep();
             frontId++;

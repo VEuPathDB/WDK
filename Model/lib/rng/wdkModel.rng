@@ -225,6 +225,7 @@
             <choice>
                 <ref name="ParamBaseTags" />
                 <element name="regex">
+                    <ref name="IncludeExclude" />
                     <text />
                 </element>
                 <element name="suggest">
@@ -244,7 +245,7 @@
   <define name="timestampParam">
     <element name="timestampParam">
       <ref name="ParamBaseProperties" />
-      <!-- defines the type of the values of this answerParam -->
+      <!-- defines the type of the values of this timestampParam -->
       <zeroOrMore>
         <choice>
             <ref name="ParamBaseTags" />
@@ -260,10 +261,13 @@
     <element name="answerParam">
       <ref name="ParamBaseProperties" />
       <!-- defines the type of the values of this answerParam -->
-      <attribute name="recordClassRef" />
       <zeroOrMore>
         <choice>
             <ref name="ParamBaseTags" />
+            <element name="recordClass">
+              <ref name="IncludeExclude" />
+              <attribute name="ref" />
+            </element>
             <element name="suggest">
               <ref name="SuggestContent" />
             </element>
@@ -1024,6 +1028,11 @@
     </optional>
     <optional>
       <attribute name="sortable">
+        <data type="boolean" />
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="removable">
         <data type="boolean" />
       </attribute>
     </optional>

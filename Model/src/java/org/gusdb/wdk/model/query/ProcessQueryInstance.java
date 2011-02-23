@@ -13,12 +13,14 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.xml.rpc.ServiceException;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -27,10 +29,12 @@ import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
-import org.gusdb.wsf.plugin.WsfResult;
+import org.gusdb.wsf.plugin.WsfRequest;
+import org.gusdb.wsf.plugin.WsfResponse;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -170,15 +174,19 @@ public class ProcessQueryInstance extends QueryInstance {
     protected ResultList getUncachedResults() throws WdkModelException,
             SQLException, NoSuchAlgorithmException, JSONException,
             WdkUserException {
-        // prepare parameters and columns
-        Map<String, String> paramValues = getInternalParamValues();
-        String[] params = new String[paramValues.size()];
-        int idx = 0;
-        for (String param : paramValues.keySet()) {
-            String value = paramValues.get(param);
-            params[idx++] = param + "=" + value;
-        }
+        WsfRequest request = new WsfRequest();
+        request.setPluginClass(query.getProcessName());
+        request.setProjectId(wdkModel.getProjectId());
 
+        // prepare parameters
+        Map<String, String> paramValues = getInternalParamValues();
+        HashMap<String, String> params = new HashMap<String, String>();
+        for (String name : paramValues.keySet()) {
+            params.put(name, paramValues.get(name));
+        }
+        request.setParams(params);
+
+        // prepare columns
         Map<String, Column> columns = query.getColumnMap();
         String[] columnNames = new String[columns.size()];
         Map<String, Integer> indices = new LinkedHashMap<String, Integer>();
@@ -192,17 +200,28 @@ public class ProcessQueryInstance extends QueryInstance {
             indices.put(column.getName(), i);
             temp += columnNames[i] + ", ";
         }
+        request.setOrderedColumns(columnNames);
         logger.debug("process query columns: " + temp);
 
-        String invokeKey = query.getFullName();
+        // prepage context info
+        HashMap<String, String> context = new HashMap<String, String>();
+        context.put(Utilities.QUERY_CTX_QUERY, query.getFullName());
+        context.put(Utilities.QUERY_CTX_USER, user.getSignature());
+        Question question = query.question;
+        if (question != null)
+            context.put(Utilities.QUERY_CTX_QUESTION, question.getFullName());
+        FlatVocabParam vocabParam = query.vocabParam;
+        if (vocabParam != null)
+            context.put(Utilities.QUERY_CTX_PARAM, vocabParam.getFullName());
+
+        request.setContext(context);
 
         StringBuffer resultMessage = new StringBuffer();
         try {
-            WsfResult result = getResult(query.getProcessName(), invokeKey,
-                    params, columnNames, query.isLocal());
-            this.resultMessage = result.getMessage();
-            this.signal = result.getSignal();
-            String[][] content = result.getResult();
+            WsfResponse response = getResponse(request, query.isLocal());
+            this.resultMessage = response.getMessage();
+            this.signal = response.getSignal();
+            String[][] content = response.getResult();
 
             logger.debug("WSQI Result Message:" + resultMessage);
             logger.info("Result Array size = " + content.length);
@@ -231,27 +250,29 @@ public class ProcessQueryInstance extends QueryInstance {
         }
     }
 
-    private WsfResult getResult(String processName, String invokeKey,
-            String[] params, String[] columnNames, boolean local)
+    private WsfResponse getResponse(WsfRequest request, boolean local)
             throws ServiceException, WdkModelException, RemoteException,
             MalformedURLException, JSONException {
         String serviceUrl = query.getWebServiceUrl();
 
         // DEBUG
-        logger.info("Invoking " + processName + " at " + serviceUrl);
+        logger.info("Invoking " + request.getPluginClass() + " at "
+                + serviceUrl);
         long start = System.currentTimeMillis();
 
-        WsfResult result;
+        String jsonRequest = request.toString();
+
+        WsfResponse response;
         if (local) { // invoke the process query locally
             org.gusdb.wsf.service.WsfService service = new org.gusdb.wsf.service.WsfService();
 
             // get the response from the local service
-            result = service.invokeEx(processName, invokeKey, params,
-                    columnNames);
-            int packets = result.getTotalPackets();
+            response = service.invoke(jsonRequest);
+            int packets = response.getTotalPackets();
             if (packets > 1) {
-                StringBuffer buffer = new StringBuffer(result.getResult()[0][0]);
-                String requestId = result.getRequestId();
+                StringBuffer buffer = new StringBuffer(
+                        response.getResult()[0][0]);
+                String requestId = response.getRequestId();
                 for (int i = 1; i < packets; i++) {
                     logger.debug("getting message " + requestId + " pieces: "
                             + i + "/" + packets);
@@ -259,7 +280,7 @@ public class ProcessQueryInstance extends QueryInstance {
                     buffer.append(more);
                 }
                 String[][] content = Utilities.convertContent(buffer.toString());
-                result.setResult(content);
+                response.setResult(content);
             }
         } else { // invoke the process query via web service
             // get a WSF Service client stub
@@ -267,12 +288,12 @@ public class ProcessQueryInstance extends QueryInstance {
             WsfService client = locator.getWsfService(new URL(serviceUrl));
 
             // get the response from the web service
-            result = client.invokeEx(processName, invokeKey, params,
-                    columnNames);
-            int packets = result.getTotalPackets();
+            response = client.invoke(jsonRequest);
+            int packets = response.getTotalPackets();
             if (packets > 1) {
-                StringBuffer buffer = new StringBuffer(result.getResult()[0][0]);
-                String requestId = result.getRequestId();
+                StringBuffer buffer = new StringBuffer(
+                        response.getResult()[0][0]);
+                String requestId = response.getRequestId();
                 for (int i = 1; i < packets; i++) {
                     logger.debug("getting message " + requestId + " pieces: "
                             + i + "/" + packets);
@@ -280,13 +301,13 @@ public class ProcessQueryInstance extends QueryInstance {
                     buffer.append(more);
                 }
                 String[][] content = Utilities.convertContent(buffer.toString());
-                result.setResult(content);
+                response.setResult(content);
             }
         }
         long end = System.currentTimeMillis();
         logger.debug("Client took " + ((end - start) / 1000.0) + " seconds.");
 
-        return result;
+        return response;
     }
 
     /*
@@ -329,6 +350,10 @@ public class ProcessQueryInstance extends QueryInstance {
 
         // define the rest of the columns
         for (Column column : columns) {
+            // weight column is already added to the sql.
+            if (column.getName().equals(Utilities.COLUMN_WEIGHT)
+                    && query.isHasWeight()) continue;
+
             int width = column.getWidth();
             ColumnType type = column.getType();
 

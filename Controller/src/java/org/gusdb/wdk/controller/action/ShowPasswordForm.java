@@ -12,4 +12,9 @@ import org.apache.struts.action.ActionForm;
  */
 public class ShowPasswordForm extends ActionForm {
 
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -4323637468638840519L;
+
 }

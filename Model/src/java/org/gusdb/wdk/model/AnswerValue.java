@@ -145,16 +145,7 @@ public class AnswerValue {
         this.endIndex = endIndex;
 
         // get sorting columns
-        if (sortingMap == null) {
-            sortingMap = question.getSortingAttributeMap();
-            if (question.getQuery().isCombined()
-                    && !sortingMap.containsKey(Utilities.COLUMN_WEIGHT)) {
-                Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
-                map.put(Utilities.COLUMN_WEIGHT, false);
-                map.putAll(sortingMap);
-                sortingMap = map;
-            }
-        }
+        if (sortingMap == null) sortingMap = question.getSortingAttributeMap();
         this.sortingMap = sortingMap;
         this.summaryFieldMap = new LinkedHashMap<String, AttributeField>();
 
@@ -231,6 +222,8 @@ public class AnswerValue {
     public int getResultSize() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
+        logger.debug("getting result size: cache=" + resultSize + ", isCached="
+                + idsQueryInstance.isCached());
         if (resultSize == null || !idsQueryInstance.isCached()) {
             if (filter == null) {
                 resultSize = idsQueryInstance.getResultSize();
@@ -515,12 +508,13 @@ public class AnswerValue {
         // appended
         attributeQuery = (Query) wdkModel.resolveReference(attributeQuery.getFullName());
 
-            logger.debug("filling attribute values from answer " + attributeQuery.getFullName());
-            for (Column column : attributeQuery.getColumns()) {
-                logger.debug("column: '" + column.getName() + "'");
-            }
-            if (attributeQuery instanceof SqlQuery)
-                logger.debug("SQL: \n" + ((SqlQuery)attributeQuery).getSql());
+        logger.debug("filling attribute values from answer "
+                + attributeQuery.getFullName());
+        for (Column column : attributeQuery.getColumns()) {
+            logger.debug("column: '" + column.getName() + "'");
+        }
+        if (attributeQuery instanceof SqlQuery)
+            logger.debug("SQL: \n" + ((SqlQuery) attributeQuery).getSql());
 
         // get and run the paged attribute query sql
         String sql = getPagedAttributeSql(attributeQuery);
@@ -574,9 +568,10 @@ public class AnswerValue {
             count++;
         }
         if (count != pageRecordInstances.size()) {
-            throw new WdkModelException("the integrated attribute query "
-                + "doesn't return the same number of records in the current "
-                + "page. Paged attribute sql:\n" + sql);
+            throw new WdkModelException(
+                    "the integrated attribute query "
+                            + "doesn't return the same number of records in the current "
+                            + "page. Paged attribute sql:\n" + sql);
         }
         logger.debug("Attribute query [" + attributeQuery.getFullName()
                 + "] integrated.");
@@ -620,7 +615,8 @@ public class AnswerValue {
         Query tableQuery = tableField.getQuery();
         tableQuery = (Query) wdkModel.resolveReference(tableQuery.getFullName());
 
-        logger.debug("integrate table query from answer: " + tableQuery.getFullName());
+        logger.debug("integrate table query from answer: "
+                + tableQuery.getFullName());
         for (Param param : tableQuery.getParams()) {
             logger.debug("param: " + param.getName());
         }
@@ -632,14 +628,15 @@ public class AnswerValue {
         ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
                 tableQuery.getFullName() + "-paged");
         ResultList resultList = new SqlResultList(resultSet);
-        
+
         // initialize table values
         for (RecordInstance record : pageRecordInstances.values()) {
             PrimaryKeyAttributeValue primaryKey = record.getPrimaryKey();
-            TableValue tableValue = new TableValue(user, primaryKey, tableField, true);
+            TableValue tableValue = new TableValue(user, primaryKey,
+                    tableField, true);
             record.addTableValue(tableValue);
         }
-        
+
         // make table values
         PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
         while (resultList.next()) {
@@ -666,7 +663,7 @@ public class AnswerValue {
                 throw new WdkModelException(error.toString());
             }
 
-            TableValue tableValue= record.getTableValue(tableField.getName());
+            TableValue tableValue = record.getTableValue(tableField.getName());
             // initialize a row in table value
             tableValue.initializeRow(resultList);
         }
@@ -703,7 +700,9 @@ public class AnswerValue {
             else sql.append(" AND ");
             sql.append("tq.").append(column).append(" = pidq.").append(column);
         }
-        return sql.toString();
+
+        // replace the id_sql macro
+        return sql.toString().replace(Utilities.MACRO_ID_SQL, idSql);
     }
 
     private String getAttributeSql(Query attributeQuery)
@@ -711,10 +710,12 @@ public class AnswerValue {
             JSONException, WdkUserException {
         String queryName = attributeQuery.getFullName();
         Query dynaQuery = question.getDynamicAttributeQuery();
+        String idSql = idsQueryInstance.getSql();
+        String sql;
         if (dynaQuery != null && queryName.equals(dynaQuery.getFullName())) {
             // the dynamic query doesn't have sql defined, the sql will be
             // constructed from the id query cache table.
-            return idsQueryInstance.getSql();
+            sql = idSql;
         } else {
             // make an instance from the original attribute query, and attribute
             // query has only one param, user_id. Note that the original
@@ -725,8 +726,12 @@ public class AnswerValue {
             params.put(Utilities.PARAM_USER_ID, userId);
             QueryInstance queryInstance = attributeQuery.makeInstance(user,
                     params, true, 0);
-            return queryInstance.getSql();
+            sql = queryInstance.getSql();
+
+            // replace the id_sql macro
+            sql = sql.replace(Utilities.MACRO_ID_SQL, idSql);
         }
+        return sql;
     }
 
     private String getPagedIdSql() throws NoSuchAlgorithmException,
@@ -997,12 +1002,13 @@ public class AnswerValue {
     public Map<String, AttributeField> getDisplayableAttributeMap() {
         Map<String, AttributeField> displayAttributes = new LinkedHashMap<String, AttributeField>();
         Map<String, AttributeField> attributes = question.getAttributeFieldMap(FieldScope.NON_INTERNAL);
-        //Map<String, AttributeField> summaryAttributes = this.getSummaryAttributeFieldMap();
+        // Map<String, AttributeField> summaryAttributes =
+        // this.getSummaryAttributeFieldMap();
         for (String attriName : attributes.keySet()) {
             AttributeField attribute = attributes.get(attriName);
 
             // skip the attributes that are already displayed
-            //if (summaryAttributes.containsKey(attriName)) continue;
+            // if (summaryAttributes.containsKey(attriName)) continue;
 
             displayAttributes.put(attriName, attribute);
         }
