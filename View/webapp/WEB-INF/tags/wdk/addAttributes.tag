@@ -40,7 +40,7 @@
           <c:forEach items="${wdkAnswer.summaryAttributes}" var="summary">
             <c:if test="${attribute.name eq summary.name}">
               <c:set var="inputProps" value="checked" />
-              <c:if test="${attribute.removable == false}">
+              <c:if test="${j == 0}">
                 <c:set var="inputProps" value="${inputProps} disabled" />
               </c:if>
             </c:if>

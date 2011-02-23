@@ -72,8 +72,6 @@ public class Utilities {
 
     public static final int DEFAULT_SUMMARY_ATTRIBUTE_SIZE = 6;
     
-    public static final int DEFAULT_WEIGHT = 10;
-    
     public static final int MAX_PK_COLUMN_COUNT = 3;
     
     public static final int MAX_PK_COLUMN_VALUE_SIZE = 1999;
@@ -90,14 +88,6 @@ public class Utilities {
     public static final String PARAM_PROJECT_ID = COLUMN_PROJECT_ID;
     public static final String PARAM_USER_ID = COLUMN_USER_ID;
     
-    public static final String MACRO_ID_SQL = "##WDK_ID_SQL##";
-    
-    public static final String QUERY_CTX_QUESTION = "wdk-question";
-    public static final String QUERY_CTX_PARAM = "wdk-param";
-    public static final String QUERY_CTX_QUERY = "wdk-query";
-    public static final String QUERY_CTX_USER = "wdk-user";
-
-
 
     public static String encrypt(String data) throws WdkModelException,
             NoSuchAlgorithmException {

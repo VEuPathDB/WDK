@@ -487,7 +487,6 @@ public class BasketFactory {
         param.setRecordClass(recordClass);
         param.setPrompt(recordClass.getType() + "s from");
         param.setDefaultType(DatasetParam.TYPE_BASKET);
-        param.setAllowEmpty(false);
         paramSet.addParam(param);
         param.excludeResources(wdkModel.getProjectId());
         return param;

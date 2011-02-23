@@ -82,6 +82,10 @@ public class User /* implements Serializable */{
     private Map<String, String> globalPreferences;
     private Map<String, String> projectPreferences;
 
+    // cache the history count in memory
+    private Integer stepCount;
+    private Integer strategyCount;
+
     // keep track in session , but don't serialize:
     // currently open strategies
     private transient ActiveStrategyFactory activeStrategyFactory;
@@ -95,6 +99,8 @@ public class User /* implements Serializable */{
      * cache the last step. This data may have impact on the memory usage.
      */
     private Step cachedStep;
+
+    private boolean usedWeight = false;
 
     User(WdkModel model, int userId, String email, String signature)
             throws WdkUserException {
@@ -414,9 +420,10 @@ public class User /* implements Serializable */{
      * @throws WdkUserException
      * @throws NoSuchAlgorithmException
      */
-    synchronized Step createStep(AnswerValue answerValue, boolean deleted,
-            int assignedWeight) throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException, JSONException {
+    public synchronized Step createStep(AnswerValue answerValue,
+            boolean deleted, int assignedWeight)
+            throws NoSuchAlgorithmException, WdkUserException,
+            WdkModelException, SQLException, JSONException {
         Question question = answerValue.getQuestion();
         Map<String, String> paramValues = answerValue.getIdsQueryInstance().getValues();
         AnswerFilterInstance filter = answerValue.getFilter();
@@ -456,8 +463,13 @@ public class User /* implements Serializable */{
             int pageStart, int pageEnd, boolean deleted, boolean validate,
             int assignedWeight) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
+        if (assignedWeight != 0) usedWeight = true;
+        logger.debug("assigne weight: " + assignedWeight + ", used weight: "
+                + usedWeight);
+
         Step step = stepFactory.createStep(this, question, paramValues, filter,
                 pageStart, pageEnd, deleted, validate, assignedWeight);
+        if (stepCount != null) stepCount++;
         return step;
     }
 
@@ -487,6 +499,7 @@ public class User /* implements Serializable */{
             JSONException, NoSuchAlgorithmException {
         Strategy strategy = stepFactory.createStrategy(this, step, name,
                 savedName, saved, description, hidden);
+        if (strategyCount != null) strategyCount++;
 
         // set the view to this one
         String strategyKey = Integer.toString(strategy.getStrategyId());
@@ -580,6 +593,7 @@ public class User /* implements Serializable */{
         Map<Integer, Strategy> strategies = stepFactory.loadStrategies(this,
                 invalidStrategies);
 
+        strategyCount = strategies.size();
         return strategies;
     }
 
@@ -793,6 +807,7 @@ public class User /* implements Serializable */{
             SQLException, WdkModelException {
         stepFactory.deleteSteps(this, allProjects);
         cachedStep = null;
+        stepCount = null;
     }
 
     public void deleteInvalidSteps() throws WdkUserException,
@@ -813,6 +828,7 @@ public class User /* implements Serializable */{
         // decrement the history count
         if (cachedStep != null && cachedStep.getDisplayId() == displayId)
             cachedStep = null;
+        if (stepCount != null) stepCount--;
     }
 
     public void deleteStrategy(int strategyId) throws WdkUserException,
@@ -821,6 +837,7 @@ public class User /* implements Serializable */{
         int order = activeStrategyFactory.getOrder(strategyKey);
         if (order > 0) activeStrategyFactory.closeActiveStrategy(strategyKey);
         stepFactory.deleteStrategy(this, strategyId);
+        if (strategyCount != null) strategyCount--;
     }
 
     public void deleteStrategies() throws SQLException, WdkUserException,
@@ -833,15 +850,25 @@ public class User /* implements Serializable */{
             WdkUserException, WdkModelException {
         activeStrategyFactory.clear();
         stepFactory.deleteStrategies(this, allProjects);
+        strategyCount = 0;
     }
 
     public int getStepCount() throws WdkUserException, WdkModelException {
-        return stepFactory.getStepCount(this);
+        if (stepCount == null) {
+            stepCount = stepFactory.getStepCount(this);
+        }
+        return stepCount;
     }
 
     public int getStrategyCount() throws WdkUserException, SQLException,
             WdkModelException {
-        return stepFactory.getStrategyCount(this);
+        if (strategyCount == null)
+            strategyCount = stepFactory.getStrategyCount(this);
+        return strategyCount;
+    }
+
+    public void setStrategyCount(int strategyCount) {
+        this.strategyCount = strategyCount;
     }
 
     public void setProjectPreference(String prefName, String prefValue) {
@@ -1052,32 +1079,29 @@ public class User /* implements Serializable */{
             if (summary != null && summary.length > 0) savedSummary = true;
         }
 
-        // if user does't have preference, use the default of the question
-        Question question = wdkModel.getQuestion(questionFullName);
         if (!savedSummary) {
+            // user does't have preference, use the default of the question
+            Question question = wdkModel.getQuestion(questionFullName);
             Map<String, AttributeField> attributes = question.getSummaryAttributeFieldMap();
             summary = new String[attributes.size()];
             attributes.keySet().toArray(summary);
         }
-        
-        // always display weight for combined questions
-        if (question.getQuery().isCombined()) {
-            // check if weight already exists
+
+        // if user has assigned non-zero weight, display the weight column
+        logger.debug("used weight: " + usedWeight);
+        if (usedWeight) {
             boolean hasWeight = false;
-            for(String name : summary) {
-                if (name.equals(Utilities.COLUMN_WEIGHT)) {
+            for (String attribute : summary) {
+                if (attribute.equals(Utilities.COLUMN_WEIGHT)) {
                     hasWeight = true;
                     break;
                 }
             }
-            
-            // add weight to the last item if it's not included
             if (!hasWeight) {
                 String[] array = new String[summary.length + 1];
                 System.arraycopy(summary, 0, array, 0, summary.length);
                 array[summary.length] = Utilities.COLUMN_WEIGHT;
                 summary = array;
-                summaryChecksum = null;
             }
         }
 
@@ -1089,6 +1113,8 @@ public class User /* implements Serializable */{
     public void resetSummaryAttributes(String questionFullName) {
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
         projectPreferences.remove(summaryKey);
+        // also reset the usedWeight flag
+        usedWeight = false;
         logger.debug("reset used weight to false");
     }
 
@@ -1215,6 +1241,7 @@ public class User /* implements Serializable */{
         int rootStepId = newStrategy.getLatestStepId();
         String strategyKey = Integer.toString(newStrategy.getStrategyId());
         if (newStrategy.isValid()) setViewResults(strategyKey, rootStepId, 0);
+        if (strategyCount != null) strategyCount++;
         return newStrategy;
     }
 
@@ -1402,6 +1429,7 @@ public class User /* implements Serializable */{
             throws NoSuchAlgorithmException, SQLException, WdkUserException,
             WdkModelException, JSONException {
         Strategy copy = stepFactory.copyStrategy(strategy);
+        if (strategyCount != null) strategyCount++;
         return copy;
     }
 
@@ -1409,7 +1437,13 @@ public class User /* implements Serializable */{
             throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
         Strategy copy = stepFactory.copyStrategy(strategy, stepId);
+        if (strategyCount != null) strategyCount++;
         return copy;
+    }
+
+    public void setUsedWeight(boolean usedWeight) {
+        logger.debug("set used weight: " + usedWeight);
+        this.usedWeight = usedWeight;
     }
 
     public void addToFavorite(RecordClass recordClass,

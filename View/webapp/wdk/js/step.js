@@ -26,6 +26,10 @@ function showDetails(det){
 			det2.addClass("jqDnR");
 			det2.find(".crumb_menu").addClass("dragHandle");
 			setDraggable(det2, ".dragHandle");
+		//	det2.draggable({
+		//		handle: '.dragHandle',
+		//		containment: 'parent'
+		//	});
 		l = 361;
 		t = 145;
 		det2.css({
@@ -62,27 +66,63 @@ function hideDetails(det){
 }
 
 function Edit_Step(ele, questionName, url, hideQuery, hideOp, assignedWeight){
+	//	hideDetails();
+		url = "showQuestion.do?questionFullName=" + questionName + url + "&partial=true";
 		closeAll(false);
+	//	var link = $(".filter_link");
+	//	$(link).css({opacity:0.2});
+	//	$(link).attr("href","javascript:void(0)");
 		var revisestep = $(ele).attr("id");
 		var parts = revisestep.split("|");
-		var strat = getStrategy(parts[0]);
+		var strat = parts[0];
 		current_Front_Strategy_Id = parts[0];
 		revisestep = parseInt(parts[1]);
-		url = "wizard.do?action=revise&questionFullName=" + questionName + url;
-		var step = strat.getStep(revisestep);
-		if(!step.isSpan)
-			url = url + "&stage=question&booleanExpression="+parts[2]+"&step="+revisestep;
-		else
-			url = url + "&stage=revise_span";
-		if($("#qf_content").length == 0)
-	            if (assignedWeight)  {
-    				url += "&weight=" + assignedWeight;
+		var operation = parts[2];
+		var reviseStepNumber = strat + ":" + revisestep + ":0:0:" + operation;
+        var questionUrl = url + "&showParams=false";
+		var paramsUrl = url + "&showParams=true";
+                if (assignedWeight)  {
+                    questionUrl += "&weight=" + assignedWeight;
+                    paramsUrl += "&weight=" + assignedWeight;
                 }
-		callWizard(url,null,null,null,'next')
+		$.ajax({
+			url: questionUrl,
+			dataType: "html",
+			beforeSend: function(){
+				showLoading(current_Front_Strategy_Id);
+			},
+			success: function(data){
+				d = document.createElement('div');
+				qf = document.createElement('div');
+				$(qf).attr("id","query_form").addClass("formPopup");
+				$(d).append(qf);
+				$("body").append($(d).html());
+				$.ajax({
+					url:paramsUrl,
+					dataType: "html",
+					success: function(params){
+						formatFilterForm(params,data,1,reviseStepNumber,false,hideOp,true);
+						try {
+							customEditStep(questionName, url);
+						}
+						catch(err) {
+							// Do nothing?  The customEditStep method
+							// is optional so user can hook into existing code
+						}
+						removeLoading(current_Front_Strategy_Id);
+					}
+				});
+			},
+			error: function(data, msg, e){
+				alert("ERROR \n "+ msg + "\n" + e
+                                      + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
+			}
+		});
 		$(this).parent().parent().hide();
 }
 
 function Insert_Step(ele,dt){
+	//$(ele).parent().parent().hide();
 	var sNumber = $(ele).attr("id");
 	sNumber = sNumber.split("|");
 	isInsert = sNumber[1];

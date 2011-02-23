@@ -77,4 +77,14 @@ public class WdkModelException extends WdkException {
         }
         return buf.toString();
     }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see java.lang.Throwable#getMessage()
+     */
+    @Override
+    public String getMessage() {
+        return formatErrors();
+    }
 }

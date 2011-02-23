@@ -16,7 +16,7 @@ Provides form input element for a given term tree node of EnumParam.
 <%-- set left margin for node (instead of using spacer gif
      for the leaves) --%>
 <c:if test="${fn:length(children) == 0}">
-    <c:set var="nodeMargin" value="margin-left:19px;" />
+    <c:set var="nodeMargin" value="margin-left:22px;" />
 </c:if>
 
 <%-- display param term --%>
@@ -32,7 +32,7 @@ Provides form input element for a given term tree node of EnumParam.
     </c:choose>
 
     <%-- hide parent nodes if it has children. --%>
-    <html:multibox property="array(${pNam})" value="${nodeValue}" styleId="${pNam}" onclick="toggleChildrenCheck(this)" />   
+    <html:multibox property="myMultiProp(${pNam})" value="${nodeValue}" styleId="${pNam}" onclick="toggleChildrenCheck(this)" />   
     <span>
     <c:choose>
     <%-- test for param labels to italicize --%>

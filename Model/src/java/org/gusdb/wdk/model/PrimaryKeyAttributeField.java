@@ -137,14 +137,4 @@ public class PrimaryKeyAttributeField extends AttributeField {
     public Collection<AttributeField> getDependents() throws WdkModelException {
         return parseFields(text).values();
     }
-    
-    /**
-     * primary key cannot be removed
-     *  (non-Javadoc)
-     * @see org.gusdb.wdk.model.AttributeField#isRemovable()
-     */
-    @Override
-    public boolean isRemovable() {
-        return false;
-    }
 }

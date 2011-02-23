@@ -190,7 +190,6 @@ public class ResultFactory {
             connection.commit();
             return instanceId;
         } catch (SQLException ex) {
-            ex.printStackTrace();
             logger.error("Failed to create cache for query ["
                     + instance.getQuery().getFullName() + "]");
             connection.rollback();

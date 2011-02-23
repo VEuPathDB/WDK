@@ -71,17 +71,13 @@ public class AnswerValueBean {
 
     private static Logger logger = Logger.getLogger(AnswerValueBean.class);
 
-    private AnswerValue answerValue;
+    AnswerValue answerValue;
     Map<?, ?> downloadConfigMap = null;
 
     String customName = null;
 
     public AnswerValueBean(AnswerValue answerValue) {
         this.answerValue = answerValue;
-    }
-    
-    public AnswerValue getAnswerValue() {
-        return answerValue;
     }
 
     /**

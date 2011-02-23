@@ -1,9 +1,9 @@
 package org.gusdb.wdk.model;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
@@ -82,7 +82,6 @@ public class WdkModel {
 
         ModelXmlParser parser = new ModelXmlParser(gusHome);
         WdkModel wdkModel = parser.parseModel(projectId);
-        
         logger.debug("Model ready to use.");
         return wdkModel;
     }
@@ -160,7 +159,6 @@ public class WdkModel {
     private String secretKey;
 
     private User systemUser;
-
 
     /**
      * @param initRecordClassList

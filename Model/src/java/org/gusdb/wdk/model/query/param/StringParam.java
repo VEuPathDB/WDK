@@ -245,9 +245,4 @@ public class StringParam extends Param {
         regexes = null;
     }
 
-    @Override
-    protected void applySuggection(ParamSuggestion suggest) {
-        // do nothing
-    }
-
 }

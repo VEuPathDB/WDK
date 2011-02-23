@@ -23,14 +23,14 @@ import org.gusdb.wdk.model.xml.XmlRecordClassSet;
  */
 public class WdkModelBean {
 
-    WdkModel wdkModel;
+    WdkModel model;
 
-    public WdkModelBean(WdkModel wdkModel) {
-        this.wdkModel = wdkModel;
+    public WdkModelBean(WdkModel model) {
+        this.model = model;
     }
 
     public Map<String, String> getProperties() {
-        return wdkModel.getProperties();
+        return model.getProperties();
     }
 
     /*
@@ -39,20 +39,20 @@ public class WdkModelBean {
      * @see org.gusdb.wdk.model.WdkModel#getVersion()
      */
     public String getVersion() {
-        return wdkModel.getVersion();
+        return model.getVersion();
     }
 
     public String getDisplayName() {
-        return wdkModel.getDisplayName();
+        return model.getDisplayName();
     }
 
     public String getIntroduction() {
-        return wdkModel.getIntroduction();
+        return model.getIntroduction();
     }
 
     // to do: figure out how to do this without using getModel()
     public WdkModel getModel() {
-        return this.wdkModel;
+        return this.model;
     }
 
     /**
@@ -60,12 +60,12 @@ public class WdkModelBean {
      */
     public RecordClassBean findRecordClass(String recClassRef)
             throws WdkUserException, WdkModelException {
-        return new RecordClassBean(wdkModel.getRecordClass(recClassRef));
+        return new RecordClassBean(model.getRecordClass(recClassRef));
     }
 
     public Map<String, CategoryBean> getWebsiteRootCategories() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        Map<String, Category> roots = wdkModel.getRooCategories(Category.USED_BY_WEBSITE);
+        Map<String, Category> roots = model.getRooCategories(Category.USED_BY_WEBSITE);
         for (Category category : roots.values()) {
             CategoryBean bean = new CategoryBean(category);
             beans.put(category.getName(), bean);
@@ -75,7 +75,7 @@ public class WdkModelBean {
 
     public Map<String, CategoryBean> getWebserviceRootCategories() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        Map<String, Category> roots = wdkModel.getRooCategories(Category.USED_BY_WEBSERVICE);
+        Map<String, Category> roots = model.getRooCategories(Category.USED_BY_WEBSERVICE);
         for (Category category : roots.values()) {
             CategoryBean bean = new CategoryBean(category);
             beans.put(category.getName(), bean);
@@ -87,7 +87,7 @@ public class WdkModelBean {
      * @return Map of questionSetName --> {@link QuestionSetBean}
      */
     public Map<String, QuestionSetBean> getQuestionSetsMap() {
-        Map<String, QuestionSet> qSets = wdkModel.getQuestionSets();
+        Map<String, QuestionSet> qSets = model.getQuestionSets();
         Map<String, QuestionSetBean> qSetBeans = new LinkedHashMap<String, QuestionSetBean>();
         for (String qSetKey : qSets.keySet()) {
             QuestionSetBean qSetBean = new QuestionSetBean(qSets.get(qSetKey));
@@ -106,7 +106,7 @@ public class WdkModelBean {
     public RecordClassBean[] getRecordClasses() {
 
         Vector<RecordClassBean> recordClassBeans = new Vector<RecordClassBean>();
-        RecordClassSet sets[] = wdkModel.getAllRecordClassSets();
+        RecordClassSet sets[] = model.getAllRecordClassSets();
         for (int i = 0; i < sets.length; i++) {
             RecordClassSet nextSet = sets[i];
             RecordClass recordClasses[] = nextSet.getRecordClasses();
@@ -127,7 +127,7 @@ public class WdkModelBean {
 
     public Map<String, RecordClassBean> getRecordClassMap() {
         Map<String, RecordClassBean> recordClassMap = new LinkedHashMap<String, RecordClassBean>();
-        RecordClassSet[] rcsets = wdkModel.getAllRecordClassSets();
+        RecordClassSet[] rcsets = model.getAllRecordClassSets();
         for (RecordClassSet rcset : rcsets) {
             RecordClass[] rcs = rcset.getRecordClasses();
             for (RecordClass rc : rcs) {
@@ -147,7 +147,7 @@ public class WdkModelBean {
     }
 
     public XmlQuestionSetBean[] getXmlQuestionSets() {
-        XmlQuestionSet[] qsets = wdkModel.getXmlQuestionSets();
+        XmlQuestionSet[] qsets = model.getXmlQuestionSets();
         XmlQuestionSetBean[] qsetBeans = new XmlQuestionSetBean[qsets.length];
         for (int i = 0; i < qsets.length; i++) {
             qsetBeans[i] = new XmlQuestionSetBean(qsets[i]);
@@ -168,7 +168,7 @@ public class WdkModelBean {
     }
 
     public XmlRecordClassSetBean[] getXmlRecordClassSets() {
-        XmlRecordClassSet[] rcs = wdkModel.getXmlRecordClassSets();
+        XmlRecordClassSet[] rcs = model.getXmlRecordClassSets();
         XmlRecordClassSetBean[] rcBeans = new XmlRecordClassSetBean[rcs.length];
         for (int i = 0; i < rcs.length; i++) {
             rcBeans[i] = new XmlRecordClassSetBean(rcs[i]);
@@ -177,7 +177,7 @@ public class WdkModelBean {
     }
 
     public UserFactoryBean getUserFactory() throws WdkUserException {
-        return new UserFactoryBean(wdkModel.getUserFactory());
+        return new UserFactoryBean(model.getUserFactory());
     }
 
     /**
@@ -186,15 +186,15 @@ public class WdkModelBean {
      * @see org.gusdb.wdk.model.WdkModel#getQuestionDisplayName(java.lang.String)
      */
     public String getQuestionDisplayName(String questionFullName) {
-        return wdkModel.getQuestionDisplayName(questionFullName);
+        return model.getQuestionDisplayName(questionFullName);
     }
 
     public String getProjectId() {
-        return wdkModel.getProjectId();
+        return model.getProjectId();
     }
 
     public String getName() {
-        return wdkModel.getProjectId();
+        return model.getProjectId();
     }
 
     /**
@@ -203,7 +203,7 @@ public class WdkModelBean {
      * @see org.gusdb.wdk.model.WdkModel#queryParamDisplayName(java.lang.String)
      */
     public String queryParamDisplayName(String paramName) {
-        return wdkModel.queryParamDisplayName(paramName);
+        return model.queryParamDisplayName(paramName);
     }
 
     /**
@@ -215,16 +215,16 @@ public class WdkModelBean {
      */
     public String getSecretKey() throws NoSuchAlgorithmException,
             WdkModelException, IOException {
-        return wdkModel.getSecretKey();
+        return model.getSecretKey();
     }
 
     public boolean getUseWeights() {
-	return wdkModel.getUseWeights();
+	return model.getUseWeights();
     }
 
     public UserBean getSystemUser() throws NoSuchAlgorithmException,
             WdkUserException, WdkModelException, SQLException {
-        return new UserBean(wdkModel.getSystemUser());
+        return new UserBean(model.getSystemUser());
     }
 
     /**
@@ -232,11 +232,11 @@ public class WdkModelBean {
      * @see org.gusdb.wdk.model.WdkModel#getReleaseDate()
      */
     public String getReleaseDate() {
-        return wdkModel.getReleaseDate();
+        return model.getReleaseDate();
     }
 
     public QuestionBean getQuestion(String questionFullName)
-            throws WdkUserException, WdkModelException {
-        return new QuestionBean(wdkModel.getQuestion(questionFullName));
+           throws WdkUserException, WdkModelException {
+        return new QuestionBean(model.getQuestion(questionFullName));
     }
 }

@@ -15,7 +15,6 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
@@ -55,7 +54,7 @@ public class ShowBasketAction extends Action {
 		params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
 		
 		StepBean step = user.createStep(question, params, null, true,
-						false, Utilities.DEFAULT_WEIGHT);
+						false, 0);
 		
 		ActionForward forward = mapping.findForward(MAPKEY_SHOW_BASKET);
 		path = forward.getPath() + "?"
@@ -72,7 +71,7 @@ public class ShowBasketAction extends Action {
 			params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
 			
 			baskets.add(user.createStep(question, params, null, true,
-						    false, Utilities.DEFAULT_WEIGHT));
+						    false, 0));
 		    }
 		}
 	

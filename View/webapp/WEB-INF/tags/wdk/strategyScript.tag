@@ -11,7 +11,7 @@
 
 <!-- filter menu javascript -->
 <script type="text/javascript" src="<c:url value='wdk/js/addStepPopup.js'/>"></script>
-<script type="text/javascript" src="<c:url value='wdk/js/spanlogic.js'/>"></script>
+
 <!-- history page code -->
 <script type="text/javascript" src="<c:url value='wdk/js/history.js'/>"></script>
 

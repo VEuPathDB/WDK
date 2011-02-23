@@ -82,9 +82,9 @@ function removeLoading(divId){
 
 // parses the inputs of the question form to be sent via ajax call
 function parseInputs(){
-	var quesForm = $("form#form_question[name='wizardForm']");
-	if(quesForm.length == 0) 
-		quesForm = $("form#form_question[name='questionForm']");
+	var quesForm = $("form[name=questionForm]");
+	var inputs = $("input, textarea", quesForm);
+	var selects = $("select", quesForm);
 
         // Jerric - use ajax to serialize the form data
 	var d = quesForm.serialize();
@@ -127,7 +127,7 @@ function initShowHide(details){
         // register the click event
         var name = $(this).attr("name") + "_details";
         var expire = 365;   // in days
-        $(this).find(".group-handle").unbind('click').click(function() {
+        $(this).find(".group-handle").click(function() {
             var handle = this;
             var path = handle.src.substr(0, handle.src.lastIndexOf("/"));
             var detail = $(this).parents(".param-group").children(".group-detail");

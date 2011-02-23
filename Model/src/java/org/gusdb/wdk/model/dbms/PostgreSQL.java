@@ -275,8 +275,4 @@ public class PostgreSQL extends DBPlatform {
         }
     }
 
-    @Override
-    public String getDummyTable() {
-        return " ";
-    }
 }

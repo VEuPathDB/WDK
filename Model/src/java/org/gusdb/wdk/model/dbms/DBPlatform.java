@@ -172,8 +172,6 @@ public abstract class DBPlatform {
      */
     public abstract String[] queryTableNames(String schema, String pattern)
             throws SQLException, WdkUserException, WdkModelException;
-    
-    public abstract String getDummyTable();
 
     // #########################################################################
     // Common methods are platform independent

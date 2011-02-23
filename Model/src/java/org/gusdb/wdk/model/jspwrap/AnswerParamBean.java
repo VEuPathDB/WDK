@@ -5,7 +5,6 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.Map;
 
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.RecordClass;
@@ -31,9 +30,7 @@ public class AnswerParamBean extends ParamBean {
     public StepBean[] getSteps(UserBean user) throws WdkUserException,
             WdkModelException, SQLException, JSONException,
             NoSuchAlgorithmException {
-        // only get the steps for the first record class
-        Map<String, RecordClass> recordClasses = answerParam.getRecordClasses();
-        RecordClass recordClass = recordClasses.values().iterator().next();
+        RecordClass recordClass = answerParam.getRecordClass();
         return user.getSteps(recordClass.getFullName());
     }
 
@@ -47,14 +44,5 @@ public class AnswerParamBean extends ParamBean {
             ex.printStackTrace();
             throw ex;
         }
-    }
-
-    /**
-     * @param recordClassName
-     * @return
-     * @see org.gusdb.wdk.model.query.param.AnswerParam#allowRecordClass(java.lang.String)
-     */
-    public boolean allowRecordClass(String recordClassName) {
-        return answerParam.allowRecordClass(recordClassName);
     }
 }

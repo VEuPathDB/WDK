@@ -5,7 +5,7 @@ var sidIndex = 0;
 var recordType= new Array();   //stratid, recordType which is the type of the last step
 var state = null;
 var p_state = null;
-var ajaxTimeout = 180000;
+var ajaxTimeout = 60000;
 $(document).ready(function(){
 	// Make the strategies window resizable
 	$(".resizable-wrapper").resizable({handles: 's', minHeight: 150, stop: function(event, ui) {setCurrentTabCookie('strategyWindow',$(".resizable-wrapper").height())}});
@@ -472,50 +472,7 @@ function AddStepToStrategy(url, proto, stpId){
 	closeAll(true);
 }
 
-function callSpanLogic(){
-	var cstrt = getStrategy(current_Front_Strategy_Id);
-	var f_strategyId = cstrt.frontId;
-	var b_strategyId = cstrt.backId;
-	var d = parseInputs();
-	var quesName = "";
-	var outputType = "";
-	$("#form_question input[name='value(span_output)']").each(function(){
-		if(this.checked) outputType = $(this).val();
-	});
-	outputType = (outputType.indexOf("A") != -1) ? "a" : "b";
-	outputType = $("#form_question input#type"+outputType.toUpperCase()).val();
-	if(outputType == "GeneRecordClasses.GeneRecordClass") quesName = "SpanQuestions.GenesBySpanLogic";
-	if(outputType == "OrfRecordClasses.OrfRecordClass") quesName = "SpanQuestions.OrfsBySpanLogic";
-	if(outputType == "IsolateRecordClasses.IsolateRecordClass") quesName = "SpanQuestions.IsolatesBySpanLogic";
-	if(outputType == "EstRecordClasses.EstRecordClass") quesName = "SpanQuestions.EstsBySpanLogic";
-	if(outputType == "SnpRecordClasses.SnpRecordClass") quesName = "SpanQuestions.SnpsBySpanLogic";
-	if(outputType == "AssemblyRecordClasses.AssemblyRecordClass") quesName = "SpanQuestions.AssemblyBySpanLogic";
-	if(outputType == "SequenceRecordClasses.SequenceRecordClass") quesName = "SpanQuestions.SequenceBySpanLogic";
-	if(outputType == "SageTagRecordClasses.SageTagRecordClass") quesName = "SpanQuestions.SageTagsBySpanLogic";
-	if(outputType == "DynSpanRecordClasses.DynSpanRecordClass") quesName = "SpanQuestions.DynSpansBySpanLogic";
-	if(outputType == "") return null;
-	$.ajax({
-		url:"processFilter.do?questionFullName="+quesName+"&strategy="+cstrt.backId+"&strategy_checksum="+cstrt.checksum,
-		data: d+"&state="+p_state,
-		type: "post",
-		dataType: "json",
-		beforeSend: function(){
-			showLoading(f_strategyId);
-		},
-		success: function(data){
-			if(ErrorHandler("AddStep", data, cstrt, $("div#query_form"))){
-				if($("div#query_form").css("display") == "none") $("div#query_form").remove();
-				updateStrategies(data);
-			}else{
-				removeLoading(f_strategyId);
-			}
-		}
-	});
-	isSpan = false;
-	isInsert = "";
-	closeAll(true);
-}
-
+// will be replaced by wizard
 function EditStep(url, proto, step_number){
 	var ss = getStrategyFromBackId(proto);
 	var sss = ss.getStep(step_number, false);
