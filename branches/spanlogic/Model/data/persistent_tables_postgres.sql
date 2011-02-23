@@ -310,6 +310,20 @@ CREATE TABLE wdkuser.user_baskets
 CREATE INDEX wdkuser.user_baskets_idx01 ON wdkuser.user_baskets (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
 CREATE INDEX wdkuser.user_baskets_idx02 ON wdkuser.user_baskets (project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
 
+CREATE TABLE wdkuser.favorites
+(
+  user_id NUMERIC(12) NOT NULL,
+  project_id VARCHAR(50) NOT NULL,
+  record_class VARCHAR(100) NOT NULL,
+  pk_column_1 VARCHAR(1999) NOT NULL,
+  pk_column_2 VARCHAR(1999),
+  pk_column_3 VARCHAR(1999),
+  record_note VARCHAR(200),
+  record_group VARCHAR(50),
+  CONSTRAINT "FAVORITES_PK" PRIMARY KEY (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3),
+  CONSTRAINT "FAVORITES_USER_ID_FK" FOREIGN KEY (user_id)
+      REFERENCES wdkuser.users (user_id)
+);
 
 CREATE TABLE wdkuser.favorites
 (
