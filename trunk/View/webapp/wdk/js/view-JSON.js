@@ -381,7 +381,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 
 	$(detail_div).html(inner);
 	if (!jsonstep.isValid)
-	    $(".crumb_menu a:not(.edit_step_link, .close_link)", detail_div).removeAttr('onclick').addClass('disabled');
+	    $(".crumb_menu a:not(.edit_step_link,.delete_step_link,.close_link)", detail_div).removeAttr('onclick').addClass('disabled');
 	$("table", detail_div).replaceWith(params_table);
 	return detail_div;       
 }
