@@ -1097,10 +1097,6 @@ public class WdkModel {
     public BasketFactory getBasketFactory() {
         return basketFactory;
     }
-    
-    public FavoriteFactory getFavoriteFactory() {
-        return favoriteFactory;
-    }
 
     public FavoriteFactory getFavoriteFactory() {
         return favoriteFactory;
