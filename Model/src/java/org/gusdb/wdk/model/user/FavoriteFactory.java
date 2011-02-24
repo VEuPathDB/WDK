@@ -246,7 +246,7 @@ public class FavoriteFactory {
         try {
             long start = System.currentTimeMillis();
             PreparedStatement ps = SqlUtils.getPreparedStatement(ds, sql);
-            ps.setFetchSize(1000);
+            ps.setFetchSize(100);
             ps.setString(1, wdkModel.getProjectId());
             ps.setInt(2, user.getUserId());
             rs = ps.executeQuery();
