@@ -447,16 +447,8 @@ public abstract class Param extends WdkModelBase {
         this.noTranslations.add(noTranslation);
     }
 
-    public void addNoTranslation(ParamConfiguration noTranslation) {
-        this.noTranslations.add(noTranslation);
-    }
-
     public boolean isNoTranslation() {
-        return (noTranslation == null) ? false : noTranslation;
-    }
-
-    public boolean isNoTranslationSet() {
-        return (noTranslation != null);
+        return noTranslation;
     }
 
     public void setNoTranslation(boolean noTranslation) {
