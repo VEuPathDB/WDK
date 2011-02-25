@@ -1,4 +1,4 @@
-package org.gusdb.wdk.model.test;
+package org.gusdb.wdk.model.fix;
 
 import java.sql.SQLException;
 
@@ -213,7 +213,9 @@ public class BackupUser extends BaseCLI {
         String sql = "INSERT INTO " + backupSchema + "answers (" + builder
                 + ") SELECT " + builder + " FROM " + wdkSchema + "answers "
                 + "  WHERE answer_id NOT IN ("
-                + "        SELECT answer_id FROM " + userSchema + "steps)";
+                + "        SELECT answer_id FROM " + userSchema + "steps"
+                + "        UNION                        "
+                + "        SELECT answer_id FROM " + backupSchema + "answers)";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         SqlUtils.executeUpdate(wdkModel, dataSource, sql,
                 "wdk-backup-delete-answers");
@@ -236,7 +238,10 @@ public class BackupUser extends BaseCLI {
                 + " SELECT                                " + builder
                 + " FROM " + wdkSchema + "dataset_indices "
                 + " WHERE dataset_id NOT IN (   "
-                + "   SELECT dataset_id FROM " + userSchema + "user_datasets2)";
+                + "   SELECT dataset_id FROM " + userSchema + "user_datasets2"
+                + "   UNION                      "
+                + "   SELECT dataset_id FROM " + backupSchema
+                + "dataset_indices)";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         SqlUtils.executeUpdate(wdkModel, dataSource, sql,
                 "wdk-backup-delete-dataset-indices");
@@ -259,7 +264,10 @@ public class BackupUser extends BaseCLI {
                 + " SELECT DISTINCT                       " + builder
                 + " FROM " + wdkSchema + "dataset_values "
                 + " WHERE dataset_id NOT IN (   "
-                + "   SELECT dataset_id FROM " + userSchema + "user_datasets2)";
+                + "   SELECT dataset_id FROM " + userSchema + "user_datasets2"
+                + "   UNION                      "
+                + "   SELECT dataset_id FROM " + backupSchema
+                + "dataset_indices)";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         SqlUtils.executeUpdate(wdkModel, dataSource, sql,
                 "wdk-backup-delete-dataset-values");
@@ -280,7 +288,9 @@ public class BackupUser extends BaseCLI {
 
         String sql = "DELETE FROM " + wdkSchema + "answers "
                 + "   WHERE answer_id NOT IN ("
-                + "         SELECT answer_id FROM " + userSchema + "steps)";
+                + "         SELECT answer_id FROM " + userSchema + "steps "
+                + "         UNION                        "
+                + "         SELECT answer_id FROM wdkuser.steps)";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         SqlUtils.executeUpdate(wdkModel, dataSource, sql,
                 "wdk-backup-delete-answers");
@@ -300,7 +310,9 @@ public class BackupUser extends BaseCLI {
 
         String sql = "DELETE FROM " + wdkSchema + "dataset_indices "
                 + "   WHERE dataset_id NOT IN ( "
-                + "   SELECT dataset_id FROM " + userSchema + "user_datasets2)";
+                + "   SELECT dataset_id FROM " + userSchema + "user_datasets2 "
+                + "   UNION                           "
+                + "   SELECT dataset_id FROM wdkuser.user_datasets)";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         SqlUtils.executeUpdate(wdkModel, dataSource, sql,
                 "wdk-backup-delete-dataset-indices");
@@ -320,7 +332,9 @@ public class BackupUser extends BaseCLI {
 
         String sql = "DELETE FROM " + wdkSchema + "dataset_values "
                 + "   WHERE dataset_id NOT IN ( "
-                + "   SELECT dataset_id FROM " + userSchema + "user_datasets2)";
+                + "   SELECT dataset_id FROM " + userSchema + "user_datasets2 "
+                + "   UNION                           "
+                + "   SELECT dataset_id FROM wdkuser.user_datasets)";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         SqlUtils.executeUpdate(wdkModel, dataSource, sql,
                 "wdk-backup-delete-dataset-values");
