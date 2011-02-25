@@ -203,13 +203,19 @@ public final class SqlUtils {
     public static ResultSet executeQuery(WdkModel wdkModel,
             DataSource dataSource, String sql, String name)
             throws SQLException, WdkUserException, WdkModelException {
+        return executeQuery(wdkModel, dataSource, sql, name, 100);
+    }
+    
+        public static ResultSet executeQuery(WdkModel wdkModel,
+            DataSource dataSource, String sql, String name, int fetchSize)
+            throws SQLException, WdkUserException, WdkModelException {
         ResultSet resultSet = null;
         Connection connection = null;
         try {
             long start = System.currentTimeMillis();
             connection = dataSource.getConnection();
             Statement stmt = connection.createStatement();
-            stmt.setFetchSize(100);
+            stmt.setFetchSize(fetchSize);
             resultSet = stmt.executeQuery(sql);
             verifyTime(wdkModel, sql, name, start);
             return resultSet;
