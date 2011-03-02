@@ -312,7 +312,7 @@ td.subheaderrow {
 	height: 30px;
 	font-size: 13px;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
-	color: #474747;
+	color: #474747;  
 	background-repeat: repeat-x;
 	background-position: top;
 	font-weight: bold;
@@ -323,7 +323,7 @@ tr.subheaderrow {
 	height:30px;
 	font-size: 12px;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
-	color: #474747;
+/*	color: #474747; */
 	font-weight: bold;
 	padding: 4px; 
 }

@@ -475,7 +475,7 @@ div.transform a.crumb_name img{
   position: absolute;
   padding: 0px 0px 0px 5px;   
   text-align: left;
-  color: #08438F;
+/*  color: #08438F; */
   font-weight:bold;
   text-decoration:none;
 }
