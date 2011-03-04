@@ -20,11 +20,22 @@
 	<c:set var="spanOnly" value="true"/>
 </c:if>
 
+<c:set var="webProps" value="${wdkQuestion.propertyLists['websiteProperties']}" />
+<c:set var="hideOperation" value="${false}" />
+<c:forEach var="prop" items="${webProps}">
+  <c:choose>
+    <c:when test="${prop == 'hideOperation'}"><c:set var="hideOperation" value="${true}" /></c:when>
+  </c:choose>
+</c:forEach>
+
 <c:set var="wizard" value="${requestScope.wizard}"/>
 <c:set var="stage" value="${requestScope.stage}"/>
 
 
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
+
+<html:hidden property="stage" styleId="stage" value="${nextStage}" />
+
 <span style="display:none" id="strategyId">${wdkStrategy.strategyId}</span>
 <c:choose>
     <c:when test="${wdkStep.previousStep == null || action != 'revise'}">
@@ -47,6 +58,7 @@
 
 ${Question_Header}
 
+<c:if test="${hideOperation == false}">
 
 <%-- display question param section --%>
 <div class="filter params">
@@ -67,7 +79,6 @@ ${Question_Header}
 
   <wdk:questionForm />
 </div>
-
 
 <%-- display operators section --%>
 <c:set var="type" value="${wdkStep.shortDisplayType}" />
@@ -155,11 +166,12 @@ ${Question_Header}
   </c:choose>
 </div>
 
-<html:hidden property="stage" styleId="stage" value="${nextStage}" />
 
 <div id="boolean_button" class="filter-button">
-	<html:submit property="questionSubmit" value="${buttonVal}"/>
+    <html:submit property="questionSubmit" value="${buttonVal}"/>
 </div>
+
+</c:if> <%-- End of hideOperation --%>
 
 </html:form>
 
