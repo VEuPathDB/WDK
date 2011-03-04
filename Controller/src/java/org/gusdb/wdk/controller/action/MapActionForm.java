@@ -32,15 +32,17 @@ public abstract class MapActionForm extends ActionForm {
     }
 
     public void setArray(String key, String[] array) {
-        logger.trace("set array: key=[" + key + "] length="+array.length+" array=[" + array[0] + "]");
+        logger.trace("set array: key=[" + key + "] length=" + array.length
+                + " array=" + Utilities.fromArray(array) + "");
         arrays.put(key, array);
     }
-    
+
     public Object getValueOrArray(String key) {
         // in the case some params set value into array, we need to get it from
         // array too.
         Object value = values.get(key);
-        logger.trace("key=" + key + ", value=" + value + ", isNull=" + (value == null));
+        logger.trace("key=" + key + ", value=" + value + ", isNull="
+                + (value == null));
         if (value == null) {
             String[] array = arrays.get(key);
             value = Utilities.fromArray(array);
@@ -60,7 +62,7 @@ public abstract class MapActionForm extends ActionForm {
             arrays.put(key, form.arrays.get(key));
         }
     }
-    
+
     /**
      * The method is required by struts html tag-lib
      */
@@ -80,7 +82,8 @@ public abstract class MapActionForm extends ActionForm {
         builder.append("Arrays:\n");
         for (String key : arrays.keySet()) {
             String[] array = arrays.get(key);
-            builder.append("\t" + key + "=[" + Utilities.fromArray(array) + "]\n");
+            builder.append("\t" + key + "=[" + Utilities.fromArray(array)
+                    + "]\n");
         }
         return builder.toString();
     }
