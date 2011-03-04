@@ -58,8 +58,6 @@
 
 ${Question_Header}
 
-<c:if test="${hideOperation == false}">
-
 <%-- display question param section --%>
 <div class="filter params">
   <span class="form_subtitle">
@@ -79,6 +77,10 @@ ${Question_Header}
 
   <wdk:questionForm />
 </div>
+
+
+<c:if test="${hideOperation == false}">
+
 
 <%-- display operators section --%>
 <c:set var="type" value="${wdkStep.shortDisplayType}" />
