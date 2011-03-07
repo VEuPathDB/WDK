@@ -31,6 +31,18 @@
 <c:set var="wizard" value="${requestScope.wizard}"/>
 <c:set var="stage" value="${requestScope.stage}"/>
 
+<%-- determine the next stage --%>
+<c:choose>
+  <c:when test="${(wdkStep.isTransform || wdkStep.previousStep == null) && action == 'revise'}">
+    <c:set var="nextStage" value="process_question" />
+  </c:when>
+  <c:when test="${allowBoolean == false}">
+    <c:set var="nextStage" value="span_from_question" />
+  </c:when>
+  <c:otherwise>
+    <c:set var="nextStage" value="process_boolean" />
+  </c:otherwise>
+</c:choose>
 
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
 
@@ -87,29 +99,18 @@ ${Question_Header}
 <c:set var="allowSpan" value="${type eq 'Gene' || type eq 'Orf' || type eq 'SNP' || type eq 'Isolate'}" />
 
 <div class="filter operators">
-  <c:choose>
-    <c:when test="${(wdkStep.isTransform || wdkStep.previousStep == null) && action == 'revise'}">
-       <c:set var="nextStage" value="process_question" />
-    </c:when>
-
-    <c:otherwise>
+  <c:if test="${(wdkStep.isTransform == false && wdkStep.previousStep != null) || action != 'revise'}">
       <c:if test="${wdkStep.previousStep != null && action == 'revise'}">
         <c:set var="wdkStep" value="${wdkStep.previousStep}" />
       </c:if>
       <h1>Combine ${wdkStep.displayType}s in Step <span class="current_step_num"></span> with ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num"></span>:</h1>
       <div style="text-align:center" id="operations">
-                <c:choose>
-                    <c:when test="${allowBoolean == false}">
-                        <c:set var="nextStage" value="span_from_question" />
+        <c:if test="${allowBoolean == false}">
                         <c:set var="disabled" value="DISABLED"/>
                 <c:set var="opaque" value="opacity:0.3;filters:alpha(opacity=30);"/>
                     <%--    <p><i>Set operations are not available because Step <span class="current_step_num"></span> is a set of ${wdkStep.displayType}s while Step <span class="new_step_num"></span> is a set of ${wdkQuestion.recordClass.displayName}s; these are disjoint sets</i></p> --%>
                 <c:set var="explanation" value="Set operations are not available because your steps are of different types, and do not have IDs in common." />
-                    </c:when>
-                    <c:otherwise>
-                        <c:set var="nextStage" value="process_boolean" />
-                    </c:otherwise>
-                </c:choose>
+        </c:if>
 
         <table>
             <tr style="${opaque}" title="${explanation}">
@@ -164,9 +165,8 @@ ${Question_Header}
 
 
     </div>
-    </c:otherwise>
-  </c:choose>
-</div>
+  </c:if>
+</div><%-- end of filter operators --%>
 
 
 <div id="boolean_button" class="filter-button">
