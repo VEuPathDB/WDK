@@ -72,3 +72,5 @@ ${Question_Header}
 
 <div id="transform_button" class="filter-button"><html:submit property="questionSubmit" value="${buttonVal}"/></div>
 </html:form>
+
+${Question_Footer}
