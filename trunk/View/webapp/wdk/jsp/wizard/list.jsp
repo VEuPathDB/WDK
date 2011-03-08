@@ -76,9 +76,8 @@
                         <c:set var="rcName" value="${item.key}" />
                         <c:set var="recordClass" value="${recordClasses[rcName]}" />
                         <c:set var="rcDisplay" value="${recordClass.displayName}" />
-                        <li>
-                            <a href="javascript:void(0)" onclick="callWizard('${partialUrl}&stage=basket&recordClass=${rcName}',null,null,null,'next')">
-${rcDisplay} basket</a>
+                        <li onclick="callWizard('${partialUrl}&stage=basket&recordClass=${rcName}',null,null,null,'next')">
+${rcDisplay} basket
                         </li>
                     </c:if>
                 </c:forEach>
