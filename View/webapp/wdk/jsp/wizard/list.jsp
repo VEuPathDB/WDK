@@ -36,7 +36,19 @@
                         <li class="category" onclick="callWizard(null,this,'sl_baskets',2)">Add the Basket</li>
                         <%-- only allow transform if the step has previous step --%>
                         <c:if test="${step.previousStep != null || action != 'insert'}">
-                        <li class="category" onclick="callWizard(null,this,'sl_transforms',2)">Convert results</li>
+<%--                        <li class="category" onclick="callWizard(null,this,'sl_transforms',2)">Convert results</li>  --%>
+
+		<c:set var="transforms" value="${recordClass.transformQuestions}" />
+                <c:forEach items="${transforms}" var="transform">
+                  <li onclick="callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',null,null,null,'next')">
+                      ${transform.displayName}
+                  </li>
+                </c:forEach>
+                <c:if test="${fn:length(transforms) == 0}">
+                    <li>No transform is available.</li>
+                </c:if>
+
+
                         </c:if>
                     </ul>
                 </div>
@@ -190,14 +202,12 @@ ${rcDisplay} basket</a>
             <c:forEach var="rcs" items="${model.websiteRootCategories}">
                 <c:set var="classId" value="${fn:replace(rcs.value.name,'.','_')}"/>
                 <c:if test="${fn:containsIgnoreCase(rcs.value.displayName, type) ||
-                                 ((type eq 'Gene' || type eq 'Orf' || 
-                                   type eq 'SNP' || type eq 'Isolate' || type eq 'UsrRegion')
+                                 ((type eq 'Gene' || type eq 'Orf' || type eq 'GenSegm')
                                   &&
                                   (fn:containsIgnoreCase(rcs.value.displayName, 'gene') || 
                                    fn:containsIgnoreCase(rcs.value.displayName, 'orf') || 
-                                   fn:containsIgnoreCase(rcs.value.displayName, 'snp') ||
-				   fn:containsIgnoreCase(rcs.value.displayName, 'region') ||
-                                   fn:containsIgnoreCase(rcs.value.displayName, 'isolate')))}">
+				   fn:containsIgnoreCase(rcs.value.displayName, 'seg')  ))}">
+
                     <li class="category" onclick="callWizard(null,this,'sl_${classId}',3)">${rcs.value.displayName}</li>
                 </c:if>
             </c:forEach>
