@@ -289,7 +289,13 @@ function validateAndCall(type, url, proto, rs){
 	return;
 }
 
+// the dtype is never used, ignored.
 function openFilter(dtype,strat_id,step_id,isAdd){
+	// open the default stage
+	openStage(strat_id, step_id, isAdd, '');
+}
+
+function openStage(strat_id,step_id,isAdd, stage){
 	global_isAdd = isAdd;
 	if(openDetail != null) hideDetails();
 	$("#strategy_results div.attributesList").hide();
@@ -305,13 +311,15 @@ function openFilter(dtype,strat_id,step_id,isAdd){
 	currStrat = getStrategy(strat_id);
 	current_Front_Strategy_Id = strat_id;
 
-        var currentStepId = stp.back_boolean_Id;
-        if (currentStepId == '') currentStepId = stp.back_step_Id;
-	var url = "wizard.do?strategy="+currStrat.backId+"&stage=list&step=" + currentStepId;
+    var currentStepId = stp.back_boolean_Id;
+    if (currentStepId == '') currentStepId = stp.back_step_Id;
+	
+	var url = "wizard.do?strategy="+currStrat.backId + "&step=" + currentStepId;
+	if (stage != '') yurl += "&stage=" + stage;
 
-        // add insert flag
-        var action = isAdd ? "add" : "insert";
-        url += "&action=" + action;
+    // add insert flag
+    var action = isAdd ? "add" : "insert";
+    url += "&action=" + action;
 
 	$.ajax({
 		url: url,
