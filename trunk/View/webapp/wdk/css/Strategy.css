@@ -427,7 +427,7 @@ div.transform a.crumb_name img{
   white-space: nowrap;
   border-bottom: 2px solid #000000;
   padding: 6px 0px 5px 0px;
-  min-width: 460px;
+  min-width: 510px;
   height: 12px;
   cursor:move;
 }
