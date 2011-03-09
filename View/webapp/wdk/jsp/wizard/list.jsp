@@ -31,26 +31,45 @@
             <td id="section-1">
                 <div id="span_logic" class="qf_section">
                     <ul class="menu_section">
-                        <li class="category" onclick="callWizard(null,this,'sl_recordclasses',2)">Run a new Search</li>
-                        <li class="category" onclick="callWizard(null,this,'sl_strategies',2)">Add existing Strategy</li>
-                        <li class="category" onclick="callWizard(null,this,'sl_baskets',2)">Add the Basket</li>
-                        <%-- only allow transform if the step has previous step --%>
-                        <c:if test="${step.previousStep != null || action != 'insert'}">
-<%--                        <li class="category" onclick="callWizard(null,this,'sl_transforms',2)">Convert results</li>  --%>
+
+	<li class="category" onclick="callWizard(null,this,'sl_recordclasses',2)">Run a new Search</li>
+                       
+	<%-- only allow transform if the step has previous step --%>
+	<c:if test="${step.previousStep != null || action != 'insert'}">
+	 <%--   <li class="category" onclick="callWizard(null,this,'sl_transforms',2)">Convert results</li>    --%>
 
 		<c:set var="transforms" value="${recordClass.transformQuestions}" />
                 <c:forEach items="${transforms}" var="transform">
+			  <c:if test="${ fn:containsIgnoreCase(transform.displayName, 'ortholog')}">
                   <li onclick="callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',null,null,null,'next')">
                       ${transform.displayName}
                   </li>
+			 </c:if>
                 </c:forEach>
+
                 <c:if test="${fn:length(transforms) == 0}">
                     <li>No transform is available.</li>
                 </c:if>
 
+	</c:if>
 
-                        </c:if>
-                    </ul>
+	<li class="category" onclick="callWizard(null,this,'sl_baskets',2)">Add the Basket</li>
+ 	<li class="category" onclick="callWizard(null,this,'sl_strategies',2)">Add existing Strategy</li>
+
+	<%-- add rest of transforms --%>
+
+	<c:if test="${step.previousStep != null || action != 'insert'}">
+                <c:forEach items="${transforms}" var="transform">
+			  <c:if test="${! fn:containsIgnoreCase(transform.displayName, 'ortholog')}">
+                  <li onclick="callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',null,null,null,'next')">
+                      ${transform.displayName}
+                  </li>
+			 </c:if>
+                </c:forEach>
+	</c:if>
+
+
+                    </ul>  <%-- class menu_section --%>
                 </div>
             </td>
             <td id="section-2"><div class="qf_section"></div></td>
@@ -59,10 +78,11 @@
             <!--<td id="section-5"><div class="qf_section"></div></td>-->    
         </tr></table>
         </div> <!--End Section Div-->
-        <div id="sections_data">
-        </div>
 
-    <wdk:addStepFooter/>
+	<div id="sections_data"></div>
+
+<wdk:addStepFooter/>
+
 
 <%-- insert/add basket section --%>
         <div class="original" id="sl_baskets" style="display:none">
@@ -88,6 +108,8 @@ ${rcDisplay} basket
         </div>
 
 
+
+<%-- this was used when we had "convert results" in first panel, then in second panel we had transforms and filter by weight --%>
 <%-- insert/add transform section --%>
         <div class="original" id="sl_transforms" style="display:none">
             <ul class="menu_section">
@@ -206,7 +228,6 @@ ${rcDisplay} basket
                                   (fn:containsIgnoreCase(rcs.value.displayName, 'gene') || 
                                    fn:containsIgnoreCase(rcs.value.displayName, 'orf') || 
 				   fn:containsIgnoreCase(rcs.value.displayName, 'seg')  ))}">
-
                     <li class="category" onclick="callWizard(null,this,'sl_${classId}',3)">${rcs.value.displayName}</li>
                 </c:if>
             </c:forEach>
@@ -253,17 +274,20 @@ ${rcDisplay} basket
         </c:forEach>
 
  
+<%-- Initialize Add Step panel --%>
 <script type="text/javascript">
    rclass = "${rClass.fullName}";
    sdName = "${rClass.shortDisplayName}";
-  // alert(rclass);
-  // alert(sdName);
+   //alert(rclass);
+   //alert(sdName);
 
    ele = $("li[onclick*='sl_recordclasses']")[0];
+
    callWizard(null,ele,'sl_recordclasses',2);
    // $("td#section-1 ul.menu_section:first > li:first").click();
 
-   ele = $('li[onclick*= "' + sdName + '" ]')[0];	
+   ele = $('li.category[onclick*= "' + sdName + '" ]')[0];
+	
    callWizard(null,ele,'sl_'+ sdName + 'RecordClasses_' + sdName + 'RecordClass' ,3);
    // $("td#section-2 ul.menu_section:first > li:first").click();
 </script>
