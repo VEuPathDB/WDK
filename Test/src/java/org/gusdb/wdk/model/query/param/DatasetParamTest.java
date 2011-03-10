@@ -14,6 +14,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.Dataset;
 import org.gusdb.wdk.model.user.User;
+import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -44,7 +45,7 @@ public class DatasetParamTest {
 
     @Test
     public void testRawToDependentValue() throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException {
+            WdkUserException, WdkModelException, SQLException, JSONException {
         String values = generateRandomValues();
         Dataset dataset = user.createDataset(recordClass, null, values);
 
@@ -71,7 +72,7 @@ public class DatasetParamTest {
     @Test
     public void testRawOrDependentToDependentValue()
             throws NoSuchAlgorithmException, WdkUserException,
-            WdkModelException, SQLException {
+            WdkModelException, SQLException, JSONException {
         String values = generateRandomValues();
         Dataset dataset = user.createDataset(recordClass, null, values);
         String expected = Integer.toString(dataset.getUserDatasetId());

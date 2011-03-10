@@ -44,7 +44,8 @@ public class UserBean /* implements Serializable */{
 
     private int stepId;
 
-    public UserBean() {}
+    public UserBean() {
+    }
 
     /**
      * 
@@ -751,7 +752,8 @@ public class UserBean /* implements Serializable */{
     public Map<String, List<StrategyBean>> getStrategiesByCategory()
             throws Exception {
         try {
-            Map<String, List<Strategy>> strategies = user.getStrategiesByCategory();
+            Map<String, List<Strategy>> strategies = user
+                    .getStrategiesByCategory();
             return convertMap(strategies);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1074,7 +1076,8 @@ public class UserBean /* implements Serializable */{
             throws Exception, NoSuchAlgorithmException, JSONException,
             SQLException {
         try {
-            Map<String, List<Strategy>> strategies = user.getSavedStrategiesByCategory();
+            Map<String, List<Strategy>> strategies = user
+                    .getSavedStrategiesByCategory();
             return convertMap(strategies);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1085,7 +1088,8 @@ public class UserBean /* implements Serializable */{
     public Map<String, List<StrategyBean>> getUnsavedStrategiesByCategory()
             throws Exception {
         try {
-            Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
+            Map<String, List<Strategy>> strategies = user
+                    .getUnsavedStrategiesByCategory();
             return convertMap(strategies);
         } catch (Exception ex) {
             logger.error(ex);
@@ -1097,7 +1101,8 @@ public class UserBean /* implements Serializable */{
     public Map<String, List<StrategyBean>> getRecentStrategiesByCategory()
             throws Exception {
         try {
-            Map<String, List<Strategy>> strategies = user.getRecentStrategiesByCategory();
+            Map<String, List<Strategy>> strategies = user
+                    .getRecentStrategiesByCategory();
             return convertMap(strategies);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1141,10 +1146,11 @@ public class UserBean /* implements Serializable */{
      *      org.gusdb.wdk.model.user.Step, org.gusdb.wdk.model.BooleanOperator,
      *      boolean, org.gusdb.wdk.model.AnswerFilterInstance)
      */
-    public StepBean createBooleanStep(StepBean previousStep, StepBean childStep,
-            String operator, boolean useBooleanFilter, String filterName)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
+    public StepBean createBooleanStep(StepBean previousStep,
+            StepBean childStep, String operator, boolean useBooleanFilter,
+            String filterName) throws WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, SQLException,
+            JSONException {
         Step step = user.createBooleanStep(previousStep.step, childStep.step,
                 operator, useBooleanFilter, filterName);
         latestStep = new StepBean(this, step);
@@ -1257,7 +1263,8 @@ public class UserBean /* implements Serializable */{
     }
 
     public String getBasket(RecordClassBean recordClass)
-            throws WdkUserException, WdkModelException, SQLException {
+            throws WdkUserException, WdkModelException, SQLException,
+            NoSuchAlgorithmException, JSONException {
         BasketFactory basketFactory = user.getWdkModel().getBasketFactory();
         return basketFactory.getBasket(user, recordClass.recordClass);
     }
