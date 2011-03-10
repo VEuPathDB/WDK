@@ -161,7 +161,7 @@ public class Dataset {
         StringBuffer sb = new StringBuffer();
         for (String value : values) {
             if (sb.length() > 0) sb.append(DatasetFactory.RECORD_DIVIDER);
-            sb.append(value);
+            sb.append(value + " ");
         }
         return sb.toString();
     }
