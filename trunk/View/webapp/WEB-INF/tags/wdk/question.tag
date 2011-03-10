@@ -48,11 +48,6 @@
 
 <c:set target="${helps}" property="${fromAnchorQ}" value="${helpQ}"/>
 
-<%-- give the new search a name --%>
-<div align=center">
-    Name this search: <html:text property="customName" maxlength="15" />
-</div>
-
 </td>
 </tr>
 </table>

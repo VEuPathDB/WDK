@@ -93,8 +93,6 @@ ${Question_Header}
 
 <c:if test="${hideOperation == false}">
 
-==${requestScope.operation}++
-
 <%-- display operators section --%>
 <c:set var="type" value="${wdkStep.shortDisplayType}" />
 <c:set var="allowSpan" value="${type eq 'Gene' || type eq 'Orf' || type eq 'SNP' || type eq 'Isolate'}" />
