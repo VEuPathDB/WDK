@@ -73,7 +73,7 @@ public class DatasetBean {
      * @throws Exception
      * @see org.gusdb.wdk.model.user.Dataset#getValues()
      */
-    public List<String[]> getValues() throws Exception {
+    public List<String> getValues() throws Exception {
         try {
             return dataset.getValues();
         } catch (Exception ex) {
