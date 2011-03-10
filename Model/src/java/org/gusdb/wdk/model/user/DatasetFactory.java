@@ -15,13 +15,17 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.ModelConfigUserDB;
+import org.gusdb.wdk.model.PrimaryKeyAttributeField;
+import org.gusdb.wdk.model.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -30,6 +34,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.json.JSONArray;
+import org.json.JSONException;
 
 /**
  * @author xingao
@@ -179,7 +184,8 @@ public class DatasetFactory {
             loadDatasetIndex(connection, dataset);
             loadUserDataset(connection, dataset);
         } finally {
-            if (connection != null) connection.close();
+            if (connection != null)
+                connection.close();
         }
         return dataset;
     }
@@ -201,10 +207,10 @@ public class DatasetFactory {
         // get dataset id
         StringBuffer sqlDatasetId = new StringBuffer("SELECT ");
         sqlDatasetId.append(COLUMN_DATASET_ID);
-        sqlDatasetId.append(" FROM ").append(wdkSchema).append(
-                TABLE_DATASET_INDEX);
-        sqlDatasetId.append(" WHERE ").append(COLUMN_DATASET_CHECKSUM).append(
-                " = ?");
+        sqlDatasetId.append(" FROM ").append(wdkSchema)
+                .append(TABLE_DATASET_INDEX);
+        sqlDatasetId.append(" WHERE ").append(COLUMN_DATASET_CHECKSUM)
+                .append(" = ?");
         int datasetId;
         ResultSet resultSet = null;
         try {
@@ -252,14 +258,17 @@ public class DatasetFactory {
         }
     }
 
-    List<String[]> getDatasetValues(Dataset dataset) throws SQLException,
-            WdkUserException, WdkModelException {
+    List<String> getDatasetValues(Dataset dataset) throws SQLException,
+            WdkUserException, WdkModelException, NoSuchAlgorithmException,
+            JSONException {
         String columnPrefx = Utilities.COLUMN_PK_PREFIX;
         int columnCount = Utilities.MAX_PK_COLUMN_COUNT;
         StringBuffer sql = new StringBuffer();
         for (int i = 1; i <= columnCount; i++) {
-            if (sql.length() == 0) sql.append("SELECT ");
-            else sql.append(", ");
+            if (sql.length() == 0)
+                sql.append("SELECT ");
+            else
+                sql.append(", ");
             sql.append(columnPrefx + i);
         }
         sql.append(" FROM ").append(wdkSchema).append(TABLE_DATASET_VALUE);
@@ -271,13 +280,24 @@ public class DatasetFactory {
         try {
             resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
                     sql.toString(), "wdk-dataset-factory-dataset-by-id");
-            List<String[]> values = new ArrayList<String[]>();
+
+            RecordClass recordClass = dataset.getRecordClass();
+            PrimaryKeyAttributeField pkField = recordClass
+                    .getPrimaryKeyAttributeField();
+            String[] pkColumns = pkField.getColumnRefs();
+
+            List<String> values = new ArrayList<String>();
             while (resultSet.next()) {
-                String[] columns = new String[columnCount];
-                for (int i = 1; i <= columnCount; i++) {
-                    columns[i - 1] = resultSet.getString(columnPrefx + i);
+                Map<String, Object> columnValues = new LinkedHashMap<String, Object>();
+                for (int i = 1; i <= pkColumns.length; i++) {
+                    String column = pkColumns[i - 1];
+                    Object columnValue = resultSet.getObject(i);
+                    columnValues.put(column, columnValue);
                 }
-                values.add(columns);
+                // create primary key value stub to format the primary key
+                PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(
+                        pkField, columnValues);
+                values.add(pkValue.getValue().toString());
             }
             return values;
         } finally {
@@ -324,10 +344,10 @@ public class DatasetFactory {
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(COLUMN_USER_DATASET_ID);
         sql.append(" FROM ").append(userSchema).append(TABLE_USER_DATASET);
-        sql.append(" WHERE ").append(COLUMN_DATASET_ID).append(" = ").append(
-                datasetId);
-        sql.append(" AND ").append(Utilities.COLUMN_USER_ID).append(" = ").append(
-                user.getUserId());
+        sql.append(" WHERE ").append(COLUMN_DATASET_ID).append(" = ")
+                .append(datasetId);
+        sql.append(" AND ").append(Utilities.COLUMN_USER_ID).append(" = ")
+                .append(user.getUserId());
 
         Object result = SqlUtils.executeScalar(wdkModel, dataSource,
                 sql.toString(), "wdk-dataset-factory-user-dataset-id");
@@ -353,7 +373,8 @@ public class DatasetFactory {
         sql.append(COLUMN_DATASET_SIZE).append(", ");
         sql.append(COLUMN_RECORD_CLASS).append(", ");
         sql.append(COLUMN_SUMMARY).append(") VALUES (?, ?, ?, ?, ?)");
-        PreparedStatement psInsert = connection.prepareStatement(sql.toString());
+        PreparedStatement psInsert = connection
+                .prepareStatement(sql.toString());
         try {
             psInsert.setInt(1, datasetId);
             psInsert.setString(2, checksum);
@@ -362,7 +383,8 @@ public class DatasetFactory {
             psInsert.setString(5, dataset.getSummary());
             psInsert.execute();
         } finally {
-            if (psInsert != null) psInsert.close();
+            if (psInsert != null)
+                psInsert.close();
         }
         return dataset;
     }
@@ -370,7 +392,8 @@ public class DatasetFactory {
     private void insertDatasetValues(RecordClass recordClass,
             Connection connection, Dataset dataset, List<String[]> values)
             throws SQLException {
-        int columnCount = recordClass.getPrimaryKeyAttributeField().getColumnRefs().length;
+        int columnCount = recordClass.getPrimaryKeyAttributeField()
+                .getColumnRefs().length;
 
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(wdkSchema).append(TABLE_DATASET_VALUE);
@@ -384,7 +407,8 @@ public class DatasetFactory {
         }
         sql.append(")");
 
-        PreparedStatement psInsert = connection.prepareStatement(sql.toString());
+        PreparedStatement psInsert = connection
+                .prepareStatement(sql.toString());
         try {
             for (int i = 0; i < values.size(); i++) {
                 String[] value = values.get(i);
@@ -395,11 +419,14 @@ public class DatasetFactory {
                 }
                 psInsert.addBatch();
 
-                if ((i + 1) % 1000 == 0) psInsert.executeBatch();
+                if ((i + 1) % 1000 == 0)
+                    psInsert.executeBatch();
             }
-            if (values.size() % 1000 != 0) psInsert.executeBatch();
+            if (values.size() % 1000 != 0)
+                psInsert.executeBatch();
         } finally {
-            if (psInsert != null) psInsert.close();
+            if (psInsert != null)
+                psInsert.close();
         }
     }
 
@@ -421,17 +448,19 @@ public class DatasetFactory {
         sql.append(COLUMN_CREATE_TIME).append(", ");
         sql.append(COLUMN_UPLOAD_FILE).append(") VALUES (?, ?, ?, ?, ?)");
 
-        PreparedStatement psInsert = connection.prepareStatement(sql.toString());
+        PreparedStatement psInsert = connection
+                .prepareStatement(sql.toString());
         try {
             psInsert.setInt(1, userDatasetId);
             psInsert.setInt(2, dataset.getDatasetId());
             psInsert.setInt(3, dataset.getUser().getUserId());
-            psInsert.setTimestamp(4, new Timestamp(
-                    dataset.getCreateTime().getTime()));
+            psInsert.setTimestamp(4, new Timestamp(dataset.getCreateTime()
+                    .getTime()));
             psInsert.setString(5, dataset.getUploadFile());
             psInsert.executeUpdate();
         } finally {
-            if (psInsert != null) psInsert.close();
+            if (psInsert != null)
+                psInsert.close();
         }
     }
 
@@ -455,13 +484,16 @@ public class DatasetFactory {
             String rcName = resultSet.getString(COLUMN_RECORD_CLASS);
             // the recordClass might be determined by the datasetParam later
             if (dataset.getRecordClass() == null) {
-                dataset.setRecordClass((RecordClass) wdkModel.resolveReference(rcName));
+                dataset.setRecordClass((RecordClass) wdkModel
+                        .resolveReference(rcName));
             }
         } finally {
             try {
-                if (resultSet != null) resultSet.close();
+                if (resultSet != null)
+                    resultSet.close();
             } finally {
-                if (stmt != null) stmt.close();
+                if (stmt != null)
+                    stmt.close();
             }
         }
     }
@@ -484,9 +516,11 @@ public class DatasetFactory {
             dataset.setUploadFile(resultSet.getString(COLUMN_UPLOAD_FILE));
         } finally {
             try {
-                if (resultSet != null) resultSet.close();
+                if (resultSet != null)
+                    resultSet.close();
             } finally {
-                if (stmt != null) stmt.close();
+                if (stmt != null)
+                    stmt.close();
             }
         }
     }
@@ -498,9 +532,11 @@ public class DatasetFactory {
             public int compare(String[] o1, String[] o2) {
                 int limit = Math.min(o1.length, o2.length);
                 for (int i = 0; i < limit; i++) {
-                    if (o1[i] == null || o2[i] == null) break;
+                    if (o1[i] == null || o2[i] == null)
+                        break;
                     int result = o1[i].compareTo(o2[i]);
-                    if (result != 0) return result;
+                    if (result != 0)
+                        return result;
                 }
                 return 0;
             }
@@ -523,7 +559,8 @@ public class DatasetFactory {
         int length = recordClass.getPrimaryKeyAttributeField().getColumnRefs().length;
         for (String row : rows) {
             row = row.trim();
-            if (row.length() == 0) continue;
+            if (row.length() == 0)
+                continue;
             String[] columns = row.split(REGEX_COLUMN_DIVIDER);
             if (columns.length > length)
                 throw new WdkDatasetException("The dataset raw "
@@ -545,8 +582,10 @@ public class DatasetFactory {
                 builder.append(val).append("!!!{WDK_DIVIDER}!!!");
             }
             String key = builder.toString();
-            if (set.contains(key)) values.remove(i);
-            else set.add(key);
+            if (set.contains(key))
+                values.remove(i);
+            else
+                set.add(key);
         }
     }
 }

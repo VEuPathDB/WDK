@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.user;
 
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -89,7 +91,8 @@ public class DatasetTest {
     }
 
     private void compareDatasets(Dataset expected, Dataset actual)
-            throws WdkUserException, SQLException, WdkModelException {
+            throws WdkUserException, SQLException, WdkModelException,
+            NoSuchAlgorithmException, JSONException {
         Assert.assertEquals(expected.getChecksum(), actual.getChecksum());
         Assert.assertEquals(expected.getSummary(), actual.getSummary());
         Assert.assertEquals(expected.getUploadFile(), actual.getUploadFile());
@@ -97,8 +100,8 @@ public class DatasetTest {
         Assert.assertEquals(expected.getCreateTime(), actual.getCreateTime());
         Assert.assertEquals(expected.getDatasetId(), actual.getDatasetId());
         Assert.assertEquals(expected.getSize(), actual.getSize());
-        Assert.assertEquals(expected.getUser().getUserId(),
-                actual.getUser().getUserId());
+        Assert.assertEquals(expected.getUser().getUserId(), actual.getUser()
+                .getUserId());
         Assert.assertEquals(expected.getUserDatasetId(),
                 actual.getUserDatasetId());
         Assert.assertEquals(expected.getValue(), actual.getValue());
@@ -112,8 +115,10 @@ public class DatasetTest {
         for (Map<String, Object> id : ids) {
             boolean first = true;
             for (Object value : id.values()) {
-                if (first) first = false;
-                else builder.append(":");
+                if (first)
+                    first = false;
+                else
+                    builder.append(":");
                 builder.append(value);
             }
             builder.append('\n');
