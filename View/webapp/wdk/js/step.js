@@ -67,13 +67,31 @@ function Edit_Step(ele, questionName, url, hideQuery, hideOp, assignedWeight){
 		var parts = revisestep.split("|");
 		var strat = getStrategy(parts[0]);
 		current_Front_Strategy_Id = parts[0];
-		revisestep = parseInt(parts[1]);
+
+                // the input id is the back id of the step that is current revised.
+		var inputId = parseInt(parts[1]);
+                var step = strat.getStep(inputId);
+                operation = parts[2];
+
+                // the revise id is the back id of the bottom node step.
+                var reviseId = inputId;
+
 		url = "wizard.do?action=revise&questionFullName=" + questionName + url;
-		var step = strat.getStep(revisestep);
-		if(!step.isSpan)
-			url = url + "&stage=question&booleanExpression="+parts[2]+"&step="+revisestep;
-		else
-			url = url + "&stage=revise_span";
+		if(step.isboolean) { // revise id is the boolean step id
+                        reviseId = step.back_boolean_Id;
+			url += "&stage=question&booleanExpression="+ operation;
+                } else if (step.isTransform) { // revise id is the same as input id
+                        url += "&stage=transform";
+		} else if (step.isSpan) { // revise id is the span step id
+                        reviseId = step.back_boolean_Id;
+                        var stage = (inputId == reviseId) ? "revise_span" : "question";
+			url += "&stage=" + stage;
+                } else { // revise the the first step, the revise id is the same as input id
+                        url += "&stage=question";
+                }
+                // assign the revise id and operation
+                url += "&step=" + reviseId + "&operation=" + operation;
+
 		if($("#qf_content").length == 0)
 	            if (assignedWeight)  {
     				url += "&weight=" + assignedWeight;

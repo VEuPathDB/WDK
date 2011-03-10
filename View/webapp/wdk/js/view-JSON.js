@@ -354,7 +354,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 
 		edit_step =	"<a title='" + ss_edit_popup + "'  class='edit_step_link " + disab 
                     + "' href='javascript:void(0)' onclick='Edit_Step(this,\"" + questionName 
-                    + "\",\"" + parms + "\"," + hideQu + "," + hideOp + "," + jsonstep.assignedWeight + ");hideDetails(this)' id='" + sid + "|" + parentid + "|" + modelstep.operation + "'>Revise</a>&nbsp;|&nbsp;";
+                    + "\",\"" + parms + "\"," + hideQu + "," + hideOp + "," + jsonstep.assignedWeight + ");hideDetails(this)' id='" + sid + "|" + jsonstep.id + "|" + modelstep.operation + "'>Revise</a>&nbsp;|&nbsp;";
 
 		if(modelstep.frontId == 1 || modelstep.isTransform || jsonstep.isboolean){
 			expand_step = 	"<a title='" + ss_expand_popup + "' class='expand_step_link disabled' href='javascript:void(0)'>Make Nested Strategy</a>&nbsp;|&nbsp;";
