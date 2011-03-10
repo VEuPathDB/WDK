@@ -33,7 +33,7 @@
 
 <%-- determine the next stage --%>
 <c:choose>
-  <c:when test="${(wdkStep.isTransform || wdkStep.previousStep == null) && action == 'revise'}">
+  <c:when test="${wdkStep.previousStep == null && action == 'revise'}">
     <c:set var="nextStage" value="process_question" />
   </c:when>
   <c:when test="${allowBoolean == false}">
@@ -81,7 +81,7 @@ ${Question_Header}
         Insert Step ${wdkStep.frontId + 1}
       </c:when>
       <c:otherwise>
-        Revise Step ${wdkStep.frontId}
+        Revise Step ${wdkStep.frontId + 1}
       </c:otherwise>
     </c:choose>
     : ${wdkQuestion.displayName}
@@ -93,13 +93,14 @@ ${Question_Header}
 
 <c:if test="${hideOperation == false}">
 
+==${requestScope.operation}++
 
 <%-- display operators section --%>
 <c:set var="type" value="${wdkStep.shortDisplayType}" />
 <c:set var="allowSpan" value="${type eq 'Gene' || type eq 'Orf' || type eq 'SNP' || type eq 'Isolate'}" />
 
 <div class="filter operators">
-  <c:if test="${(wdkStep.isTransform == false && wdkStep.previousStep != null) || action != 'revise'}">
+  <c:if test="${wdkStep.previousStep != null || action != 'revise'}">
       <c:if test="${wdkStep.previousStep != null && action == 'revise'}">
         <c:set var="wdkStep" value="${wdkStep.previousStep}" />
       </c:if>
@@ -115,25 +116,29 @@ ${Question_Header}
         <table>
             <tr style="${opaque}" title="${explanation}">
 
-            <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="INTERSECT" type="radio" stage="process_boolean" ${disabled}></td>
+            <c:set var="checked"><c:if test="${requestScope.operation == 'INSERTSECT'}">checked="checked"</c:if></c:set>
+            <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="INTERSECT" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
             <td class="operation INTERSECT"></td>
             <td >&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Intersect</b>&nbsp;<span class="new_step_num"></span></td>
 
                 <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
-                <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="UNION" type="radio" stage="process_boolean" ${disabled}></td>
+            <c:set var="checked"><c:if test="${requestScope.operation == 'UNION'}">checked="checked"</c:if></c:set>
+                <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="UNION" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
                 <td class="operation UNION"></td>
             <td>&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Union</b>&nbsp;<span class="new_step_num"></span></td>
 
                 <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
-                <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="NOT" type="radio" stage="process_boolean" ${disabled}></td>
+            <c:set var="checked"><c:if test="${requestScope.operation == 'NOT'}">checked="checked"</c:if></c:set>
+                <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="NOT" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
                 <td class="operation MINUS"></td>
             <td>&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="new_step_num"></span></td>
 
                 <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
-                <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="RMINUS" type="radio" stage="process_boolean" ${disabled}></td>
+            <c:set var="checked"><c:if test="${requestScope.operation == 'RMINUS'}">checked="checked"</c:if></c:set>
+                <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="RMINUS" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
                 <td class="operation RMINUS"></td>
             <td>&nbsp;<span class="new_step_num"></span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="current_step_num"></span></td>
 

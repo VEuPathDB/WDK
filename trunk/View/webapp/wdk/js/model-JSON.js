@@ -104,6 +104,7 @@ Strategy.prototype.initSteps = function(steps, ord){
 				}else{
 					st.isSpan = true;
 					st.isboolean = false;
+                                        st.operation = "SPAN";
 				}
 				if(steps[i].step.isCollapsed && steps[i].step.strategy.order > 0){
 					this.subStratOrder[steps[i].step.strategy.order] = sidIndex;
