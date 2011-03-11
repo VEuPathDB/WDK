@@ -73,7 +73,8 @@ public class RecordBean {
     public Map<String, RecordBean> getNestedRecords() throws WdkModelException,
             WdkUserException, NoSuchAlgorithmException, SQLException,
             JSONException {
-        Map<String, RecordInstance> nri = recordInstance.getNestedRecordInstances();
+        Map<String, RecordInstance> nri = recordInstance
+                .getNestedRecordInstances();
         Map<String, RecordBean> nriBeans = new LinkedHashMap<String, RecordBean>();
         for (String recordName : nri.keySet()) {
             RecordBean nextNrBean = new RecordBean(user, nri.get(recordName));
@@ -85,7 +86,8 @@ public class RecordBean {
     public Map<String, RecordBean[]> getNestedRecordLists()
             throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        Map<String, RecordInstance[]> nrl = recordInstance.getNestedRecordInstanceLists();
+        Map<String, RecordInstance[]> nrl = recordInstance
+                .getNestedRecordInstanceLists();
         Map<String, RecordBean[]> nrlBeans = new LinkedHashMap<String, RecordBean[]>();
         for (String recordName : nrl.keySet()) {
             RecordInstance nextNrl[] = nrl.get(recordName);
@@ -141,20 +143,26 @@ public class RecordBean {
         return new TableValueMap(recordInstance, FieldScope.ALL);
     }
 
-    public boolean isInBasket() throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
+    public boolean isInBasket() {
+        try {
         if (!recordInstance.getRecordClass().hasBasket()) return false;
         if (!recordInstance.isValidRecord()) return false;
         AttributeValue value = recordInstance.getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
         return "1".equals(value.getValue());
+        } catch(Exception ex) {
+            logger.warn("something wrong when check the inBasket state, need " +
+            		"further investigation:\n" + ex);
+            ex.printStackTrace();
+            return false;
+        }
     }
 
     public boolean isInFavorite() throws SQLException, WdkUserException,
             WdkModelException {
         try {
             RecordClass recordClass = recordInstance.getRecordClass();
-            Map<String, String> pkValues = recordInstance.getPrimaryKey().getValues();
+            Map<String, String> pkValues = recordInstance.getPrimaryKey()
+                    .getValues();
             Map<String, Object> values = new LinkedHashMap<String, Object>();
             for (String column : pkValues.keySet()) {
                 values.put(column, pkValues.get(column));
