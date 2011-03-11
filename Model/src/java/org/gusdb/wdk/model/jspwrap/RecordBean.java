@@ -141,13 +141,18 @@ public class RecordBean {
         return new TableValueMap(recordInstance, FieldScope.ALL);
     }
 
-    public boolean isInBasket() throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
-        if (!recordInstance.getRecordClass().hasBasket()) return false;
-        if (!recordInstance.isValidRecord()) return false;
-        AttributeValue value = recordInstance.getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
-        return "1".equals(value.getValue());
+    public boolean isInBasket() {
+        try {
+            if (!recordInstance.getRecordClass().hasBasket()) return false;
+            if (!recordInstance.isValidRecord()) return false;
+            AttributeValue value = recordInstance.getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
+            return "1".equals(value.getValue());
+        } catch(Exception ex) {
+            logger.warn("something wrong when check the inBasket state, need " +
+            		"further investigation:\n" + ex);
+            ex.printStackTrace();
+            return false;
+        }
     }
 
     public boolean isInFavorite() throws SQLException, WdkUserException,
