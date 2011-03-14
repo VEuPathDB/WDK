@@ -45,12 +45,15 @@ public class ShowQuestionAction extends Action {
     public static final String LABELS_SUFFIX = "-labels";
     public static final String TERMS_SUFFIX = "-values";
 
+    public static final String PARAM_INPUT_STEP = "inputStep";
+
     private static final int MAX_PARAM_LABEL_LEN = 200;
     /**
      * 
      */
     private static final long serialVersionUID = 606366686398482133L;
-    private static final Logger logger = Logger.getLogger(ShowQuestionAction.class);
+    private static final Logger logger = Logger
+            .getLogger(ShowQuestionAction.class);
 
     static String[] getLengthBoundedLabels(String[] labels) {
         return getLengthBoundedLabels(labels, MAX_PARAM_LABEL_LEN);
@@ -60,7 +63,8 @@ public class ShowQuestionAction extends Action {
         Vector<String> v = new Vector<String>();
         int halfLen = maxLength / 2;
         for (String l : labels) {
-            if (l == null) continue;
+            if (l == null)
+                continue;
             int len = l.length();
             if (len > maxLength) {
                 l = l.substring(0, halfLen) + "..."
@@ -124,7 +128,8 @@ public class ShowQuestionAction extends Action {
             String paramValue = (String) qForm.getValue(paramName);
 
             if (paramValue == null || paramValue.length() == 0)
-                paramValue = Utilities.fromArray(request.getParameterValues(paramName));
+                paramValue = Utilities.fromArray(request
+                        .getParameterValues(paramName));
             if (paramValue == null || paramValue.length() == 0)
                 paramValue = null;
 
@@ -132,14 +137,16 @@ public class ShowQuestionAction extends Action {
             if (param instanceof EnumParamBean) {
                 EnumParamBean enumParam = (EnumParamBean) param;
                 String[] terms = enumParam.getVocab();
-                String[] labels = getLengthBoundedLabels(enumParam.getDisplays());
+                String[] labels = getLengthBoundedLabels(enumParam
+                        .getDisplays());
                 qForm.setArray(paramName + LABELS_SUFFIX, labels);
                 qForm.setArray(paramName + TERMS_SUFFIX, terms);
 
                 // if no default is assigned, use the first enum item
                 if (paramValue == null) {
                     String defaultValue = param.getDefault();
-                    if (defaultValue != null) paramValue = defaultValue;
+                    if (defaultValue != null)
+                        paramValue = defaultValue;
                 } else {
                     paramValue = param.dependentValueToRawValue(user,
                             paramValue);
@@ -148,15 +155,19 @@ public class ShowQuestionAction extends Action {
                     qForm.setArray(paramName, paramValue.split(","));
             } else if (param instanceof AnswerParamBean) {
                 if (paramValue == null) {
-                    String stepId = (String) request.getAttribute("step");
-                    if (stepId == null) stepId = request.getParameter("step");
+                    String stepId = (String) request
+                            .getAttribute(PARAM_INPUT_STEP);
+                    if (stepId == null)
+                        stepId = request.getParameter(PARAM_INPUT_STEP);
                     if (stepId == null) {
                         String strategyKey = request.getParameter("strategy");
                         int pos = strategyKey.indexOf("_");
                         if (pos < 0) {
                             int strategyId = Integer.parseInt(strategyKey);
-                            StrategyBean strategy = user.getStrategy(strategyId);
-                            stepId = Integer.toString(strategy.getLatestStepId());
+                            StrategyBean strategy = user
+                                    .getStrategy(strategyId);
+                            stepId = Integer.toString(strategy
+                                    .getLatestStepId());
                         } else {
                             stepId = strategyKey.substring(pos + 1);
                         }
@@ -175,20 +186,24 @@ public class ShowQuestionAction extends Action {
                     request.setAttribute(paramName + "_dataset", dataset);
                 } else {
                     String defaultValue = param.getDefault();
-                    if (defaultValue != null) paramValue = defaultValue;
+                    if (defaultValue != null)
+                        paramValue = defaultValue;
                 }
             } else {
                 paramValue = param.dependentValueToRawValue(user, paramValue);
                 if (paramValue == null) {
                     String defaultValue = param.getDefault();
-                    if (defaultValue != null) paramValue = defaultValue;
+                    if (defaultValue != null)
+                        paramValue = defaultValue;
                 } else {
                     paramValue = param.dependentValueToRawValue(user,
                             paramValue);
                 }
             }
-            if (paramValue == null) hasAllParams = false;
-            else qForm.setValue(paramName, paramValue);
+            if (paramValue == null)
+                hasAllParams = false;
+            else
+                qForm.setValue(paramName, paramValue);
             paramValues.put(paramName, paramValue);
             logger.debug("param: " + paramName + "='" + paramValue + "'");
         }
@@ -217,10 +232,12 @@ public class ShowQuestionAction extends Action {
             QuestionForm qForm = (QuestionForm) form;
             String qFullName = qForm.getQuestionFullName();
             if (qFullName == null) {
-                qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+                qFullName = request
+                        .getParameter(CConstants.QUESTION_FULLNAME_PARAM);
             }
             if (qFullName == null) {
-                qFullName = (String) request.getAttribute(CConstants.QUESTION_FULLNAME_PARAM);
+                qFullName = (String) request
+                        .getAttribute(CConstants.QUESTION_FULLNAME_PARAM);
             }
             QuestionBean wdkQuestion = wdkModel.getQuestion(qFullName);
             if (wdkQuestion == null)
@@ -258,7 +275,8 @@ public class ShowQuestionAction extends Action {
                 request.setAttribute(paramName, value);
             }
 
-            String gotoSum = request.getParameter(CConstants.GOTO_SUMMARY_PARAM);
+            String gotoSum = request
+                    .getParameter(CConstants.GOTO_SUMMARY_PARAM);
             if (qForm.getParamsFilled() && "1".equals(gotoSum)) {
                 forward = mapping.findForward(CConstants.SKIPTO_SUMMARY_MAPKEY);
                 // System.out.println("SQA: form has all param vals, go to
