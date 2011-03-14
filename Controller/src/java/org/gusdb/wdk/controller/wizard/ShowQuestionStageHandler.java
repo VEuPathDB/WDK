@@ -72,6 +72,9 @@ public class ShowQuestionStageHandler implements StageHandler {
             }
         }
         if (paramName != null) {
+            // if the question is changed from a normal question to a transform,
+            // and it's the first step, then revise will use the current
+            // question as input of the new transform.
             StepBean inputStep = previousStep;
             if (inputStep == null)
                 inputStep = StageHandlerUtility.getCurrentStep(request);
@@ -79,7 +82,8 @@ public class ShowQuestionStageHandler implements StageHandler {
             int inputStepId = inputStep.getStepId();
             // the name here is hard-coded, it will be used by
             // ShowQuestionAction.
-            request.setAttribute("step", Integer.toString(inputStepId));
+            request.setAttribute(ShowQuestionAction.PARAM_INPUT_STEP,
+                    Integer.toString(inputStepId));
         }
 
         // prepare question form
