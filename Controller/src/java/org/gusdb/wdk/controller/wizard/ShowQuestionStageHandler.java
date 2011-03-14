@@ -26,7 +26,8 @@ public class ShowQuestionStageHandler implements StageHandler {
     private static final String ATTR_QUESTION = "question";
     private static final String ATTR_ALLOW_BOOLEAN = "allowBoolean";
 
-    private static final Logger logger = Logger.getLogger(ShowQuestionStageHandler.class);
+    private static final Logger logger = Logger
+            .getLogger(ShowQuestionStageHandler.class);
 
     public Map<String, Object> execute(ActionServlet servlet,
             HttpServletRequest request, HttpServletResponse response,
@@ -44,17 +45,15 @@ public class ShowQuestionStageHandler implements StageHandler {
         Map<String, Object> attributes = new HashMap<String, Object>();
         attributes.put(ATTR_QUESTION, question);
 
-        
         if (wizardForm.getAction().equals(WizardForm.ACTION_REVISE)) {
             StepBean currentStep = StageHandlerUtility.getCurrentStep(request);
-	    if (currentStep.getChildStep() != null) {
-		attributes.put("customName", currentStep.getChildStep().getBaseCustomName());
-	    }
-	    else {
-		attributes.put("customName", currentStep.getBaseCustomName());
-	    }
-	}
-
+            if (currentStep.getChildStep() != null) {
+                attributes.put("customName", currentStep.getChildStep()
+                        .getBaseCustomName());
+            } else {
+                attributes.put("customName", currentStep.getBaseCustomName());
+            }
+        }
 
         // get previous step
         StepBean previousStep = StageHandlerUtility.getPreviousStep(servlet,
@@ -73,10 +72,14 @@ public class ShowQuestionStageHandler implements StageHandler {
             }
         }
         if (paramName != null) {
-            int previousStepId = previousStep.getStepId();
+            StepBean inputStep = previousStep;
+            if (inputStep == null)
+                inputStep = StageHandlerUtility.getCurrentStep(request);
+
+            int inputStepId = inputStep.getStepId();
             // the name here is hard-coded, it will be used by
             // ShowQuestionAction.
-            request.setAttribute("step", Integer.toString(previousStepId));
+            request.setAttribute("step", Integer.toString(inputStepId));
         }
 
         // prepare question form
