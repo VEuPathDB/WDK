@@ -30,12 +30,16 @@
 			  <c:set var="idTag" value="${fn:split(recordClass.type, ' ')[0]}" /> 
               <div id="favorites_${idTag}" class="favorites_panel">
                 <c:set var="favorites" value="${fav_item.value}" /> <%-- a list of favorites of a record type --%>
+
+
                 <table class="favorite-list mytableStyle" width="93%">
                     <tr>
 			<th title="Click on the star to remove an ID from Favorites. It will not be removed from this page until you hit 'Refresh' or reload the page." class="mythStyle">${recordClass.type}s</th>
 			<th title="Use this column to add notes (click Edit to change this field). Initially it contains the product name associated with the ID."  class="mythStyle">Notes</th>
 			<th title="Organize your favorites by project names. Click Edit to add/change it; IDs with the same project name will be sorted together once the page is refreshed."  class="mythStyle">Project</th>
 		    </tr>
+
+
                     <c:forEach var="favorite" items="${favorites}">
                         <c:set var="record" value="${favorite.recordInstance}" />
                         <c:set var="basketColor" value="gray"/>
@@ -65,11 +69,11 @@
                                      onClick="updateBasket(this,'recordPage', '${id}', '${pid}', '${recordClass.fullName}')" value="${basketValue}"/>&nbsp;
 
                             <%--</td>
-                            <td>--%>
-                                <c:set var="url" value="/showRecord.do?name=${recordClass.fullName}" />
-                                <c:forEach var="pk_item" items="${pkValues}">
+                            <td>--%>   <%--     <c:set var="url" value="/showRecord.do?name=${recordClass.fullName}" />  --%>
+				    <c:set var="url" value="/processQuestion.do?questionFullName=GeneQuestions.GeneBySingleLocusTag&questionSubmit=Get+Answer&value%28single_gene_id%29=${id}" />  
+                          <%--      <c:forEach var="pk_item" items="${pkValues}">
                                     <c:set var="url" value="${url}&${pk_item.key}=${pk_item.value}" />
-                                </c:forEach>
+                                </c:forEach>  --%>
                                 <a title="Click to access this ID's page" href="<c:url value='${url}' />">${primaryKey.value}</a>
                             </td>
                             <td width="60%"  class="mytdStyle" >
