@@ -34,7 +34,7 @@ public class ShowResultSizeAction extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        logger.debug("entering showResultSize");
+        logger.trace("entering showResultSize");
 
         String answerChecksum = request.getParameter("answer");
         String filterName = request.getParameter("filter");

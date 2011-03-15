@@ -72,14 +72,11 @@ public class ShowQuestionStageHandler implements StageHandler {
             }
         }
         if (paramName != null) {
-            // if the question is changed from a normal question to a transform,
-            // and it's the first step, then revise will use the current
-            // question as input of the new transform.
-            StepBean inputStep = previousStep;
-            if (inputStep == null)
-                inputStep = StageHandlerUtility.getCurrentStep(request);
+            // if it's a combined step, there has to be a previousStep
+            if (previousStep == null) 
+                throw new WdkUserException("Cannot change from a single step into a combined step.");
 
-            int inputStepId = inputStep.getStepId();
+            int inputStepId = previousStep.getStepId();
             // the name here is hard-coded, it will be used by
             // ShowQuestionAction.
             request.setAttribute(ShowQuestionAction.PARAM_INPUT_STEP,
