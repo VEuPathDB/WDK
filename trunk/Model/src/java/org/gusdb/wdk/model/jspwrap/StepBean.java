@@ -241,7 +241,7 @@ public class StepBean {
         step.setCollapsible(isCollapsible);
     }
 
-    public String getCollapsedName() {
+    public String getCollapsedName() throws WdkModelException {
         return step.getCollapsedName();
     }
 

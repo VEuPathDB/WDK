@@ -42,8 +42,8 @@ public class Step {
     private Date lastRunTime;
     private String customName;
     private Answer answer = null;
-    private boolean isDeleted;
-    private boolean isCollapsible = false;
+    private boolean deleted = false;
+    private boolean collapsible = false;
     private String collapsedName = null;
 
     private Step nextStep = null;
@@ -74,7 +74,7 @@ public class Step {
         this.user = user;
         this.displayId = displayId;
         this.internalId = internalId;
-        isDeleted = false;
+        deleted = false;
         assignedWeight = 0;
     }
 
@@ -385,7 +385,7 @@ public class Step {
      * @return Returns the isDeleted.
      */
     public boolean isDeleted() {
-        return isDeleted;
+        return deleted;
     }
 
     /**
@@ -393,20 +393,21 @@ public class Step {
      *            The isDeleted to set.
      */
     public void setDeleted(boolean isDeleted) {
-        this.isDeleted = isDeleted;
+        this.deleted = isDeleted;
     }
 
     public boolean isCollapsible() throws WdkModelException {
-        if (isCollapsible) return true;
+        if (collapsible) return true;
         // it is true if the step is a branch
         return (getParentStep() != null && isCombined());
     }
 
     public void setCollapsible(boolean isCollapsible) {
-        this.isCollapsible = isCollapsible;
+        this.collapsible = isCollapsible;
     }
 
-    public String getCollapsedName() {
+    public String getCollapsedName() throws WdkModelException {
+        if (collapsedName == null && isCollapsible()) return getCustomName();
         return collapsedName;
     }
 
@@ -636,10 +637,10 @@ public class Step {
         int startIndex = getAnswerValue().getStartIndex();
         int endIndex = getAnswerValue().getEndIndex();
         Step step = user.createStep(question, params, filter, startIndex,
-                endIndex, isDeleted, false, assignedWeight);
+                endIndex, deleted, false, assignedWeight);
         step.collapsedName = collapsedName;
         step.customName = customName;
-        step.isCollapsible = isCollapsible;
+        step.collapsible = collapsible;
         step.update(false);
         return step;
     }
@@ -660,7 +661,7 @@ public class Step {
         Step step;
         AnswerValue answerValue = getAnswerValue();
         if (!isCombined()) {
-            step = user.createStep(answerValue, isDeleted, assignedWeight);
+            step = user.createStep(answerValue, deleted, assignedWeight);
         } else {
             Question question = getQuestion();
             Map<String, String> paramValues = new LinkedHashMap<String, String>();
@@ -679,11 +680,11 @@ public class Step {
             int pageStart = answerValue.getStartIndex();
             int pageEnd = answerValue.getEndIndex();
             step = user.createStep(question, paramValues, filter, pageStart,
-                    pageEnd, isDeleted, false, assignedWeight);
+                    pageEnd, deleted, false, assignedWeight);
         }
         step.collapsedName = collapsedName;
         step.customName = customName;
-        step.isCollapsible = isCollapsible;
+        step.collapsible = collapsible;
         step.update(false);
         return step;
     }
@@ -725,9 +726,9 @@ public class Step {
         jsStep.put("id", this.displayId);
         jsStep.put("customName", this.customName);
         jsStep.put("answer", this.answer.getAnswerChecksum());
-        jsStep.put("collapsed", this.isCollapsible);
+        jsStep.put("collapsed", this.collapsible);
         jsStep.put("collapsedName", this.collapsedName);
-        jsStep.put("deleted", isDeleted);
+        jsStep.put("deleted", deleted);
         jsStep.put("size", this.estimateSize);
         Step prevStep = getPreviousStep();
         if (prevStep != null) {
@@ -737,7 +738,7 @@ public class Step {
         if (childStep != null) {
             jsStep.put("child", childStep.getJSONContent(strategyId));
         }
-        if (this.isCollapsible) { // a sub-strategy, needs to get order number
+        if (this.collapsible) { // a sub-strategy, needs to get order number
             String subStratId = strategyId + "_" + this.displayId;
             Integer order = user.getStrategyOrder(subStratId);
             if (order == null) order = 0; // the sub-strategy is not displayed
