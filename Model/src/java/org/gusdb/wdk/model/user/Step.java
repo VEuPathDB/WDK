@@ -726,8 +726,8 @@ public class Step {
         jsStep.put("id", this.displayId);
         jsStep.put("customName", this.customName);
         jsStep.put("answer", this.answer.getAnswerChecksum());
-        jsStep.put("collapsed", this.collapsible);
-        jsStep.put("collapsedName", this.collapsedName);
+        jsStep.put("collapsed", this.isCollapsible());
+        jsStep.put("collapsedName", this.getCollapsedName());
         jsStep.put("deleted", deleted);
         jsStep.put("size", this.estimateSize);
         Step prevStep = getPreviousStep();
@@ -738,7 +738,7 @@ public class Step {
         if (childStep != null) {
             jsStep.put("child", childStep.getJSONContent(strategyId));
         }
-        if (this.collapsible) { // a sub-strategy, needs to get order number
+        if (this.isCollapsible()) { // a sub-strategy, needs to get order number
             String subStratId = strategyId + "_" + this.displayId;
             Integer order = user.getStrategyOrder(subStratId);
             if (order == null) order = 0; // the sub-strategy is not displayed
