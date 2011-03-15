@@ -1,3 +1,30 @@
+------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 1.29  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+
+Summary:
+
+=========================== Model Features ===========================
+
+* URL hanged: instead of "myProp" using "value" (Jerric please provide example)
+ApiCommon projects affected:
+it might affect ApiCommonWebsite, and ApiCommonShared, wherever a URL has been hardcoded, from a results page, or a record page.
+
+
+*
+
+=========================== View Features ===========================
+
+*
+
+
+
+
+
+
+
+
+
 
 ------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.25  ooooooooooooooooooooooooooooooo
