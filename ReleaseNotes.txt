@@ -1,8 +1,15 @@
 ------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.29  ooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
+corresponds to EuPathDB build 10
 
-Summary:
+Summary:  major release adding:
+
+- span logic infrastructure including the wizard which is a controler to handle strategy manipulation;  
+- support for genomci segment record type (explain), 
+- some weights development (default 10....)
+- portal: (this falls in WSF really) able to handle questions that share queries
+- new way to handle data sources information in the web. support for a new record type: datasources (explain)
 
 =========================== Model Features ===========================
 
