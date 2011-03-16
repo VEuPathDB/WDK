@@ -72,25 +72,25 @@
                             <td>--%>   <%--     <c:set var="url" value="/showRecord.do?name=${recordClass.fullName}" />  --%>
 <c:choose>
 <c:when test="${recordClass.type == 'Gene'}" >     <%-- genes --%>
-	<c:set var="url" value="/processQuestion.do?questionFullName=GeneQuestions.GeneBySingleLocusTag&questionSubmit=Get+Answer&value%28single_gene_id%29=${id}" />  
+	<c:set var="url" value="/processQuestion.do?questionFullName=GeneQuestions.GeneBySingleLocusTag&questionSubmit=Get+Answer&myProp%28single_gene_id%29=${id}" />  
 </c:when>
 <c:when test="${recordClass.type == 'Isolate'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=IsolateQuestions.IsolateByIsolateId&questionSubmit=Get+Answer&value%28isolate_id%29=${id}" />  
+	<c:set var="url" value="/processQuestion.do?questionFullName=IsolateQuestions.IsolateByIsolateId&questionSubmit=Get+Answer&myProp%28isolate_id%29=${id}" />  
 </c:when>
 <c:when test="${recordClass.type == 'Genomic Sequence'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=GenomicSequenceQuestions.SequenceBySourceId&questionSubmit=Get+Answer&value%28sequenceId%29=${id}" />  
+	<c:set var="url" value="/processQuestion.do?questionFullName=GenomicSequenceQuestions.SequenceBySourceId&questionSubmit=Get+Answer&myProp%28sequenceId%29=${id}" />  
 </c:when>
 <c:when test="${recordClass.type == 'SNP'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=SnpQuestions.SnpBySourceId&questionSubmit=Get+Answer&value%28snp_id%29=${id}" />  
+	<c:set var="url" value="/processQuestion.do?questionFullName=SnpQuestions.SnpBySourceId&questionSubmit=Get+Answer&myProp%28snp_id%29=${id}" />  
 </c:when>
 <c:when test="${recordClass.type == 'EST'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=EstQuestions.EstBySourceId&questionSubmit=Get+Answer&value%28est_id%29=${id}" />  
+	<c:set var="url" value="/processQuestion.do?questionFullName=EstQuestions.EstBySourceId&questionSubmit=Get+Answer&myProp%28est_id%29=${id}" />  
 </c:when>
 <c:when test="${recordClass.type == 'ORF'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=OrfQuestions.OrfByOrfId&questionSubmit=Get+Answer&value%28orf_id%29=${id}" />  
+	<c:set var="url" value="/processQuestion.do?questionFullName=OrfQuestions.OrfByOrfId&questionSubmit=Get+Answer&myProp%28orf_id%29=${id}" />  
 </c:when>
 <c:when test="${recordClass.type == 'SAGE Tag Alignment'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=SageTagQuestions.SageTagByRadSourceId&questionSubmit=Get+Answer&value%28rad_source_id%29=${id}" />  
+	<c:set var="url" value="/processQuestion.do?questionFullName=SageTagQuestions.SageTagByRadSourceId&questionSubmit=Get+Answer&myProp%28rad_source_id%29=${id}" />  
 </c:when>
 </c:choose>
                           <%--      <c:forEach var="pk_item" items="${pkValues}">
