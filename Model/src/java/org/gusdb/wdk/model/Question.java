@@ -96,7 +96,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     /**
      * default constructor used by model parser
      */
-    public Question() {}
+    public Question() {
+    }
 
     /**
      * copy constructor
@@ -122,7 +123,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         this.recordClassRef = question.recordClassRef;
         this.defaultSortingMap.putAll(question.defaultSortingMap);
         this.summary = question.summary;
-        this.defaultSummaryAttributeFields.putAll(question.defaultSummaryAttributeFields);
+        this.defaultSummaryAttributeFields
+                .putAll(question.defaultSummaryAttributeFields);
         this.wdkModel = question.wdkModel;
 
         this.noSummaryOnSingleRecord = question.noSummaryOnSingleRecord;
@@ -329,7 +331,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     }
 
     public String getDisplayName() {
-        if (displayName == null) displayName = getFullName();
+        if (displayName == null)
+            displayName = getFullName();
         return displayName;
     }
 
@@ -358,8 +361,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     }
 
     public String getFullName() {
-        if (questionSet == null) return name;
-        else return questionSet.getName() + "." + name;
+        if (questionSet == null)
+            return name;
+        else
+            return questionSet.getName() + "." + name;
     }
 
     public String getQuestionSetName() {
@@ -490,7 +495,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     public void resolveReferences(WdkModel model) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        if (resolved) return;
+        if (resolved)
+            return;
         super.resolveReferences(model);
         this.wdkModel = model;
 
@@ -498,9 +504,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             // it must happen before dynamicAttributeSet, because it is
             // referenced
             // in the dynamicAttributeSet.
-            this.recordClass = (RecordClass) model.resolveReference(recordClassRef);
+            this.recordClass = (RecordClass) model
+                    .resolveReference(recordClassRef);
 
-            // the id query is always cloned to keep a reference to the question.
+            // the id query is always cloned to keep a reference to the
+            // question.
             query = (Query) model.resolveReference(idQueryRef);
             query = query.clone();
             query.setQuestion(this);
@@ -532,8 +540,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
             // make sure we always display weight for combined question
             if (query.isCombined()) {
-                AttributeField weight = dynamicAttributeSet.getAttributeFieldMap().get(
-                        Utilities.COLUMN_WEIGHT);
+                AttributeField weight = dynamicAttributeSet
+                        .getAttributeFieldMap().get(Utilities.COLUMN_WEIGHT);
                 weight.setRemovable(false);
             }
 
@@ -552,7 +560,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             defaultSummaryAttributeNames = null;
 
             // make sure we create index on primary keys
-            String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+            String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
+                    .getColumnRefs();
             query.setIndexColumns(pkColumns);
         } catch (WdkModelException ex) {
             logger.error("resolving question '" + getFullName() + " failed. "
@@ -583,11 +592,13 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
         for (String attrName : defaultSortingMap.keySet()) {
             map.put(attrName, defaultSortingMap.get(attrName));
-            if (map.size() >= User.SORTING_LEVEL) break;
+            if (map.size() >= User.SORTING_LEVEL)
+                break;
         }
 
         // no sorting map defined, use the definition in recordClass
-        if (map.size() == 0) map = recordClass.getSortingAttributeMap();
+        if (map.size() == 0)
+            map = recordClass.getSortingAttributeMap();
 
         return map;
     }
@@ -673,8 +684,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
                             + " has more than one <attributesList> for "
                             + "project " + projectId);
                 } else {
-                    this.defaultSummaryAttributeNames = attributeList.getSummaryAttributeNames();
-                    this.defaultSortingMap = attributeList.getSortingAttributeMap();
+                    this.defaultSummaryAttributeNames = attributeList
+                            .getSummaryAttributeNames();
+                    this.defaultSortingMap = attributeList
+                            .getSortingAttributeMap();
                     hasAttributeList = true;
                 }
             }
@@ -765,8 +778,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         for (Param param : query.getParams()) {
             if (param instanceof AnswerParam) {
                 AnswerParam answerParam = (AnswerParam) param;
-                Map<String, RecordClass> recordClasses = answerParam.getRecordClasses();
-                if (recordClasses.containsKey(rcName)) list.add(answerParam);
+                Map<String, RecordClass> recordClasses = answerParam
+                        .getRecordClasses();
+                if (recordClasses.containsKey(rcName))
+                    list.add(answerParam);
             }
         }
         AnswerParam[] array = new AnswerParam[list.size()];
