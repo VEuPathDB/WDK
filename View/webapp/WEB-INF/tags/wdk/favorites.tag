@@ -8,7 +8,7 @@
 
 <c:choose>
     <c:when test="${fn:length(allFavorites) == 0}">
-        <p>You don't have any favorite IDs. You can add IDs to Favorites from the ID record page.</p>
+        <p>Your favorites page is currently empty.  To add items to your favorites simply click on the favorites icon in record pages (ie. gene or isolate pages)</p>
     </c:when>
     <c:otherwise> <%-- has favorites --%>
 
