@@ -160,8 +160,8 @@ public class Dataset {
         List<String> values =factory.getDatasetValues(this);
         StringBuffer sb = new StringBuffer();
         for (String value : values) {
-            if (sb.length() > 0) sb.append(DatasetFactory.RECORD_DIVIDER);
-            sb.append(value + " ");
+            if (sb.length() > 0) sb.append(DatasetFactory.RECORD_DIVIDER + " ");
+            sb.append(value);
         }
         return sb.toString();
     }

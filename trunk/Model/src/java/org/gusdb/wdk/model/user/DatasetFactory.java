@@ -291,7 +291,8 @@ public class DatasetFactory {
                 Map<String, Object> columnValues = new LinkedHashMap<String, Object>();
                 for (int i = 1; i <= pkColumns.length; i++) {
                     String column = pkColumns[i - 1];
-                    Object columnValue = resultSet.getObject(i);
+                    Object columnValue = resultSet
+                            .getObject(Utilities.COLUMN_PK_PREFIX + i);
                     columnValues.put(column, columnValue);
                 }
                 // create primary key value stub to format the primary key
