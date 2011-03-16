@@ -75,22 +75,22 @@
 	<c:set var="url" value="/processQuestion.do?questionFullName=GeneQuestions.GeneBySingleLocusTag&questionSubmit=Get+Answer&myProp%28single_gene_id%29=${id}" />  
 </c:when>
 <c:when test="${recordClass.type == 'Isolate'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=IsolateQuestions.IsolateByIsolateId&questionSubmit=Get+Answer&myProp%28isolate_id%29=${id}" />  
+	<c:set var="url" value="/processQuestion.do?questionFullName=IsolateQuestions.IsolateByIsolateId&questionSubmit=Get+Answer&isolate_id_type=data&isolate_id_data=${id}" />  
 </c:when>
 <c:when test="${recordClass.type == 'Genomic Sequence'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=GenomicSequenceQuestions.SequenceBySourceId&questionSubmit=Get+Answer&myProp%28sequenceId%29=${id}" />  
+	<c:set var="url" value="/processQuestion.do?questionFullName=GenomicSequenceQuestions.SequenceBySourceId&questionSubmit=Get+Answer&sequenceId_type=data&sequenceId_data=${id}" />  
 </c:when>
 <c:when test="${recordClass.type == 'SNP'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=SnpQuestions.SnpBySourceId&questionSubmit=Get+Answer&myProp%28snp_id%29=${id}" />  
+	<c:set var="url" value="/processQuestion.do?questionFullName=SnpQuestions.SnpBySourceId&questionSubmit=Get+Answer&snp_id_type=data&snp_id_data=${id}" />  
 </c:when>
 <c:when test="${recordClass.type == 'EST'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=EstQuestions.EstBySourceId&questionSubmit=Get+Answer&myProp%28est_id%29=${id}" />  
+	<c:set var="url" value="/processQuestion.do?questionFullName=EstQuestions.EstBySourceId&questionSubmit=Get+Answer&est_id_type=data&est_id_data=${id}" />  
 </c:when>
 <c:when test="${recordClass.type == 'ORF'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=OrfQuestions.OrfByOrfId&questionSubmit=Get+Answer&myProp%28orf_id%29=${id}" />  
+	<c:set var="url" value="/processQuestion.do?questionFullName=OrfQuestions.OrfByOrfId&questionSubmit=Get+Answer&orf_id_type=data&orf_id_data=${id}" />  
 </c:when>
 <c:when test="${recordClass.type == 'SAGE Tag Alignment'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=SageTagQuestions.SageTagByRadSourceId&questionSubmit=Get+Answer&myProp%28rad_source_id%29=${id}" />  
+	<c:set var="url" value="/processQuestion.do?questionFullName=SageTagQuestions.SageTagByRadSourceId&questionSubmit=Get+Answer&rad_source_id_type=data&rad_source_id_data=${id}" />  
 </c:when>
 </c:choose>
                           <%--      <c:forEach var="pk_item" items="${pkValues}">
@@ -117,6 +117,10 @@
                         </tr>
                     </c:forEach>
                 </table>
+
+<p style="font-style:italic;margin-top:10px;"><b>Note on invalid IDs:</b> For any data type (genes, isolates, etc), changes that occur between database releases might invalidate some of the IDs in your Favorites. 
+<br>You will still see your old ID. When clicking, if the old ID can be mapped to a new ID, you will get the new one; otherwise you will not get a result.</p>
+
                </div>
              </c:forEach>
     </c:otherwise> <%-- END has favorites --%>
