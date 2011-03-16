@@ -203,7 +203,7 @@ public class Step {
     public String getCustomName() throws WdkModelException {
         String name = customName;
         if (name == null || name.length() == 0) {
-            name = getQuestion().getDisplayName();
+            name = getQuestion().getShortDisplayName();
         }
         if (name == null) name = getQuestionName();
         if (name != null) {

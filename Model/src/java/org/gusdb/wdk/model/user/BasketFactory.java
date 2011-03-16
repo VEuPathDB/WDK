@@ -317,7 +317,8 @@ public class BasketFactory {
 
                 Map<String, Object> columnValues = new LinkedHashMap<String, Object>();
                 for (int i = 1; i <= columns.length; i++) {
-                    Object columnValue = rs.getObject(i);
+                    Object columnValue = rs
+                            .getObject(Utilities.COLUMN_PK_PREFIX + i);
                     columnValues.put(columns[i - 1], columnValue);
                 }
 
