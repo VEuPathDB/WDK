@@ -39,8 +39,6 @@ import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.json.JSONException;
 
-import com.sun.istack.internal.Builder;
-
 /**
  * @author xingao
  * 
