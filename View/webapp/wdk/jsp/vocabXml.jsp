@@ -3,8 +3,7 @@
 XML for Ajax typeahead params
 
 JSTL below is formatted to prevent blank lines
---%>
-<%@ 
+--%><%@ 
     page contentType="text/xml"
 %><%@
     taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" 
@@ -16,7 +15,8 @@ JSTL below is formatted to prevent blank lines
 /><c:set 
     value="${requestScope.vocabParam.vocabMap}" 
     var="vocabMap"
-/><data><terms>
+/><?xml version="1.0"?>
+<data><terms>
 <c:forEach 
     var="row" items="${displayMap}"
 ><term id="${row.key}" internal="${vocabMap[row.key]}">${fn:replace(fn:replace(fn:replace(row.value,"<","&lt;"),">","&gt;"),"&","&amp;")}</term>
