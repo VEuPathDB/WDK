@@ -39,6 +39,8 @@ import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.json.JSONException;
 
+import com.sun.istack.internal.Builder;
+
 /**
  * @author xingao
  * 
@@ -320,12 +322,20 @@ public class BasketFactory {
                     Object columnValue = rs
                             .getObject(Utilities.COLUMN_PK_PREFIX + i);
                     columnValues.put(columns[i - 1], columnValue);
+
+                    // cannot use primary key value to format the output,
+                    // otherwise we might loose information
+                    if (i > 1)
+                        buffer.append(DatasetFactory.COLUMN_DIVIDER);
+                    buffer.append(columnValue);
                 }
 
                 // format the basket with a primary key value stub
-                PrimaryKeyAttributeValue pkValue = new PrimaryKeyAttributeValue(
-                        pkField, columnValues);
-                buffer.append(pkValue.getValue());
+
+                // PrimaryKeyAttributeValue pkValue = new
+                // PrimaryKeyAttributeValue(
+                // pkField, columnValues);
+                // buffer.append(pkValue.getValue());
             }
             return buffer.toString();
         } finally {
