@@ -178,10 +178,14 @@ public class FlatVocabParam extends AbstractEnumParam {
             termInternalMap.put(term, value);
             termDisplayMap.put(term, display);
         }
-        if (termInternalMap.isEmpty())
+        if (termInternalMap.isEmpty()) {
+            if (query instanceof SqlQuery)
+                logger.debug("vocab query returns 0 rows:" 
+                        + ((SqlQuery)query).getSql());
             throw new WdkModelException("No item returned by the query [" 
                     + query.getFullName() + "] of FlatVocabParam [" + getFullName()
-                    +"].\n" + ((SqlQuery)query).getSql());
+                    +"].");
+        }
         initTreeMap();
         applySelectMode();
 
