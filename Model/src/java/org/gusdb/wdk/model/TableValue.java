@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -265,7 +266,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
             // rows by the TableValue itself.
             Query query = tableField.getQuery();
             this.instance = query.makeInstance(user, primaryKey.getValues(),
-                    true, 0);
+                    true, 0, new LinkedHashMap<String, String>());
         }
     }
 

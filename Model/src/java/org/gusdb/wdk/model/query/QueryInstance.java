@@ -66,15 +66,21 @@ public abstract class QueryInstance {
     private String checksum;
     protected int assignedWeight;
 
+    protected Map<String, String> context;
+
     protected QueryInstance(User user, Query query, Map<String, String> values,
-            boolean validate, int assignedWeight) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+            boolean validate, int assignedWeight, Map<String, String> context)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         this.user = user;
         this.query = query;
         this.wdkModel = query.getWdkModel();
         this.cached = query.isCached();
         this.assignedWeight = assignedWeight;
+        this.context = context;
+
+        this.context.put(Utilities.QUERY_CTX_QUERY, query.getFullName());
+        this.context.put(Utilities.QUERY_CTX_USER, user.getSignature());
 
         setValues(values, validate);
     }
@@ -134,7 +140,8 @@ public abstract class QueryInstance {
             }
         }
 
-        if (validate) validateValues(user, values);
+        if (validate)
+            validateValues(user, values);
         // passed, assign the value
         this.values = new LinkedHashMap<String, String>(values);
         checksum = null;
@@ -196,8 +203,8 @@ public abstract class QueryInstance {
             WdkModelException, SQLException {
         // the values are dependent values. need to convert it into independent
         // values
-        Map<String, String> independentValues = query.dependentValuesToIndependentValues(
-                user, values);
+        Map<String, String> independentValues = query
+                .dependentValuesToIndependentValues(user, values);
 
         // construct param-value map; param is sorted by name
         String[] paramNames = new String[independentValues.size()];
@@ -252,7 +259,8 @@ public abstract class QueryInstance {
 
     protected String getCachedSql() throws NoSuchAlgorithmException,
             SQLException, WdkModelException, JSONException, WdkUserException {
-        CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
+        CacheFactory cacheFactory = wdkModel.getResultFactory()
+                .getCacheFactory();
         QueryInfo queryInfo = cacheFactory.getQueryInfo(getQuery());
 
         String cacheTable = queryInfo.getCacheTable();
@@ -288,7 +296,8 @@ public abstract class QueryInstance {
                 // check for dependent param
                 if (param instanceof AbstractEnumParam
                         && ((AbstractEnumParam) param).getDependedParam() != null) {
-                    String dependedParam = ((AbstractEnumParam) param).getDependedParam().getName();
+                    String dependedParam = ((AbstractEnumParam) param)
+                            .getDependedParam().getName();
                     String dependedValue = values.get(dependedParam);
                     ((AbstractEnumParam) param).setDependedValue(dependedValue);
                 }
@@ -298,7 +307,8 @@ public abstract class QueryInstance {
             } catch (Exception ex) {
                 ex.printStackTrace();
                 errMsg = ex.getMessage();
-                if (errMsg == null) errMsg = ex.getClass().getName();
+                if (errMsg == null)
+                    errMsg = ex.getClass().getName();
             }
             if (errMsg != null) {
                 if (errors == null)
@@ -307,7 +317,8 @@ public abstract class QueryInstance {
             }
         }
         if (errors != null) {
-            WdkModelException ex = new WdkModelException("Some of the input parameters are invalid.", errors);
+            WdkModelException ex = new WdkModelException(
+                    "Some of the input parameters are invalid.", errors);
             logger.debug(ex.formatErrors());
             throw ex;
         }

@@ -31,7 +31,8 @@ public class FlatVocabParam extends AbstractEnumParam {
     private String queryTwoPartName;
     private String servedQueryName = "unknown";
 
-    public FlatVocabParam() {}
+    public FlatVocabParam() {
+    }
 
     public FlatVocabParam(FlatVocabParam param) {
         super(param);
@@ -75,12 +76,11 @@ public class FlatVocabParam extends AbstractEnumParam {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         this.wdkModel = model;
-        
+
         // the vocab query is always cloned to keep a reference to the param
         Query query = (Query) model.resolveReference(queryTwoPartName);
         query.resolveReferences(model);
         query = query.clone();
-        query.setVocabParam(this);
 
         // add a served query param into flatVocabQuery, if it doesn't exist
         ParamSet paramSet = model.getParamSet(Utilities.INTERNAL_PARAM_SET);
@@ -122,11 +122,13 @@ public class FlatVocabParam extends AbstractEnumParam {
         termInternalMap = new LinkedHashMap<String, String>();
         termDisplayMap = new LinkedHashMap<String, String>();
 
-        if (dependedParam != null && dependedValue == null) return;
+        if (dependedParam != null && dependedValue == null)
+            return;
 
         // check if the query has "display" column
         boolean hasDisplay = query.getColumnMap().containsKey(COLUMN_DISPLAY);
-        boolean hasParent = query.getColumnMap().containsKey(COLUMN_PARENT_TERM);
+        boolean hasParent = query.getColumnMap()
+                .containsKey(COLUMN_PARENT_TERM);
 
         termParentMap = new LinkedHashMap<String, String>();
 
@@ -137,7 +139,15 @@ public class FlatVocabParam extends AbstractEnumParam {
             values.put(dependedParam.getName(), dependedValue);
 
         User user = wdkModel.getSystemUser();
-        QueryInstance instance = query.makeInstance(user, values, true, 0);
+
+        Map<String, String> context = new LinkedHashMap<String, String>();
+        context.put(Utilities.QUERY_CTX_PARAM, getFullName());
+        if (contextQuestion != null)
+            context.put(Utilities.QUERY_CTX_QUESTION,
+                    contextQuestion.getFullName());
+        QueryInstance instance = query.makeInstance(user, values, true, 0,
+                context);
+
         ResultList result = instance.getResults();
         while (result.next()) {
             Object objTerm = result.get(COLUMN_TERM);
@@ -153,12 +163,13 @@ public class FlatVocabParam extends AbstractEnumParam {
 
             String term = objTerm.toString().trim();
             String value = objInternal.toString().trim();
-            String display = hasDisplay ? result.get(COLUMN_DISPLAY).toString().trim()
-                    : term;
+            String display = hasDisplay ? result.get(COLUMN_DISPLAY).toString()
+                    .trim() : term;
             String parentTerm = null;
             if (hasParent) {
                 Object parent = result.get(COLUMN_PARENT_TERM);
-                if (parent != null) parentTerm = parent.toString().trim();
+                if (parent != null)
+                    parentTerm = parent.toString().trim();
             }
 
             // escape the term & parentTerm
@@ -180,11 +191,11 @@ public class FlatVocabParam extends AbstractEnumParam {
         }
         if (termInternalMap.isEmpty()) {
             if (query instanceof SqlQuery)
-                logger.debug("vocab query returns 0 rows:" 
-                        + ((SqlQuery)query).getSql());
-            throw new WdkModelException("No item returned by the query [" 
-                    + query.getFullName() + "] of FlatVocabParam [" + getFullName()
-                    +"].");
+                logger.debug("vocab query returns 0 rows:"
+                        + ((SqlQuery) query).getSql());
+            throw new WdkModelException("No item returned by the query ["
+                    + query.getFullName() + "] of FlatVocabParam ["
+                    + getFullName() + "].");
         }
         initTreeMap();
         applySelectMode();

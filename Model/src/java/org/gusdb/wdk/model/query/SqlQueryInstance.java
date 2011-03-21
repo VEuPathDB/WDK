@@ -51,10 +51,11 @@ public class SqlQueryInstance extends QueryInstance {
      * @throws NoSuchAlgorithmException
      */
     protected SqlQueryInstance(User user, SqlQuery query,
-            Map<String, String> values, boolean validate, int assignedWeight)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
-        super(user, query, values, validate, assignedWeight);
+            Map<String, String> values, boolean validate, int assignedWeight,
+            Map<String, String> context) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        super(user, query, values, validate, assignedWeight, context);
         this.query = query;
     }
 
@@ -67,7 +68,7 @@ public class SqlQueryInstance extends QueryInstance {
      */
     @Override
     protected void appendSJONContent(JSONObject jsInstance) {
-    // nothing to add to;
+        // nothing to add to;
     }
 
     /*
@@ -136,7 +137,8 @@ public class SqlQueryInstance extends QueryInstance {
             logger.error("Fail to run SQL:\n" + buffer);
             throw ex;
         } finally {
-            if (stmt != null) stmt.close();
+            if (stmt != null)
+                stmt.close();
         }
     }
 
@@ -161,9 +163,12 @@ public class SqlQueryInstance extends QueryInstance {
             } else { // has weight column defined, add assigned weight to it
                 StringBuilder builder = new StringBuilder();
                 for (String column : columns.keySet()) {
-                    if (column.equals(weightColumn)) continue;
-                    if (builder.length() == 0) builder.append("SELECT ");
-                    else builder.append(", o.");
+                    if (column.equals(weightColumn))
+                        continue;
+                    if (builder.length() == 0)
+                        builder.append("SELECT ");
+                    else
+                        builder.append(", o.");
                     builder.append(column);
                 }
                 builder.append(", (o." + weightColumn + " + " + assignedWeight);
@@ -183,8 +188,10 @@ public class SqlQueryInstance extends QueryInstance {
     @Override
     public String getSql() throws WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException, WdkUserException {
-        if (isCached()) return getCachedSql();
-        else return getUncachedSql();
+        if (isCached())
+            return getCachedSql();
+        else
+            return getUncachedSql();
     }
 
     /*
@@ -223,7 +230,8 @@ public class SqlQueryInstance extends QueryInstance {
             logger.error("Fail to run SQL:\n" + buffer);
             throw ex;
         } finally {
-            if (stmt != null) stmt.close();
+            if (stmt != null)
+                stmt.close();
         }
     }
 }

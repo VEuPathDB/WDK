@@ -264,8 +264,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             AnswerFilterInstance filter, boolean validate, int assignedWeight)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
+        Map<String, String> context = new LinkedHashMap<String, String>();
+        context.put(Utilities.QUERY_CTX_QUESTION, getFullName());
+
         QueryInstance qi = query.makeInstance(user, dependentValues, validate,
-                assignedWeight);
+                assignedWeight, context);
         AnswerValue answerValue = new AnswerValue(user, this, qi, pageStart,
                 pageEnd, sortingAttributes, filter);
         String[] summaryAttributes = user.getSummaryAttributes(getFullName());
@@ -511,7 +514,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             // question.
             query = (Query) model.resolveReference(idQueryRef);
             query = query.clone();
-            query.setQuestion(this);
 
             // check if we have customized params;
             if (paramRefs.size() > 0) {
@@ -528,6 +530,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
                             paramRef, queryName);
                     query.addParam(param);
                 }
+            }
+            // set question to the param context; all params are cloned along
+            // with the cloning of the query.
+            for (Param param : query.getParams()) {
+                param.setContextQuestion(this);
             }
 
             // all the id queries should has a weight column

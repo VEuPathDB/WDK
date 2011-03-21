@@ -84,9 +84,9 @@ public class ProcessQuery extends Query {
      * .WdkModel)
      */
     @Override
-    public void resolveQueryReferences(WdkModel wdkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveQueryReferences(WdkModel wdkModel)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         if (webServiceUrl == null)
             webServiceUrl = wdkModel.getModelConfig().getWebServiceUrl();
     }
@@ -98,11 +98,11 @@ public class ProcessQuery extends Query {
      */
     @Override
     public QueryInstance makeInstance(User user, Map<String, String> values,
-            boolean validate, int assignedWeight) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+            boolean validate, int assignedWeight, Map<String, String> context)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         return new ProcessQueryInstance(user, this, values, validate,
-                assignedWeight);
+                assignedWeight, context);
     }
 
     /*
@@ -116,7 +116,8 @@ public class ProcessQuery extends Query {
             throws JSONException {
         if (extra) {
             jsQuery.put("process", this.processName);
-            if (!local) jsQuery.put("url", this.webServiceUrl);
+            if (!local)
+                jsQuery.put("url", this.webServiceUrl);
         }
     }
 
