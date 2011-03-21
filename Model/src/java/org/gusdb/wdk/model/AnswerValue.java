@@ -688,7 +688,7 @@ public class AnswerValue {
         String userId = Integer.toString(user.getUserId());
         params.put(Utilities.PARAM_USER_ID, userId);
         QueryInstance queryInstance = tableQuery.makeInstance(user, params,
-                true, 0);
+                true, 0, new LinkedHashMap<String, String>());
         String tableSql = queryInstance.getSql();
         StringBuffer sql = new StringBuffer("SELECT tq.* FROM (");
         sql.append(idSql);
@@ -725,7 +725,7 @@ public class AnswerValue {
             String userId = Integer.toString(user.getUserId());
             params.put(Utilities.PARAM_USER_ID, userId);
             QueryInstance queryInstance = attributeQuery.makeInstance(user,
-                    params, true, 0);
+                    params, true, 0, new LinkedHashMap<String, String>());
             sql = queryInstance.getSql();
 
             // replace the id_sql macro
