@@ -139,7 +139,7 @@ public class RecordInstance extends AttributeValueContainer {
         // put user id in the attribute query
         String userId = Integer.toString(user.getUserId());
         paramValues.put(Utilities.PARAM_USER_ID, userId);
-        QueryInstance instance = query.makeInstance(user, paramValues, true, 0);
+        QueryInstance instance = query.makeInstance(user, paramValues, true, 0, new LinkedHashMap<String, String>());
 
         ResultList resultList = null;
         try {
@@ -563,7 +563,7 @@ public class RecordInstance extends AttributeValueContainer {
         }
 
         QueryInstance instance = aliasQuery.makeInstance(user, oldValues, true,
-                0);
+                0, new LinkedHashMap<String, String>());
         ResultList resultList = instance.getResults();
         if (resultList.next()) {
             for (String param : pkValues.keySet()) {

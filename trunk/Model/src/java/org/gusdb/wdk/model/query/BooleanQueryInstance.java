@@ -32,7 +32,8 @@ import org.json.JSONException;
 
 public class BooleanQueryInstance extends SqlQueryInstance {
 
-    private static final Logger logger = Logger.getLogger(BooleanQueryInstance.class);
+    private static final Logger logger = Logger
+            .getLogger(BooleanQueryInstance.class);
 
     private BooleanQuery booleanQuery;
 
@@ -50,11 +51,12 @@ public class BooleanQueryInstance extends SqlQueryInstance {
      * @throws NoSuchAlgorithmException
      */
     protected BooleanQueryInstance(User user, BooleanQuery query,
-            Map<String, String> values, boolean validate, int assignedWeight)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            Map<String, String> values, boolean validate, int assignedWeight,
+            Map<String, String> context) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
         // boolean query doesn't use assigned weight
-        super(user, query, values, validate, assignedWeight);
+        super(user, query, values, validate, assignedWeight, context);
         this.booleanQuery = query;
     }
 
@@ -76,7 +78,8 @@ public class BooleanQueryInstance extends SqlQueryInstance {
         Map<String, String> InternalValues = getInternalParamValues();
 
         // parse operator
-        String operator = InternalValues.get(booleanQuery.getOperatorParam().getName());
+        String operator = InternalValues.get(booleanQuery.getOperatorParam()
+                .getName());
         BooleanOperator op = BooleanOperator.parse(operator);
         DBPlatform platform = wdkModel.getQueryPlatform();
         operator = op.getOperator(platform);
@@ -95,9 +98,11 @@ public class BooleanQueryInstance extends SqlQueryInstance {
             sql = getUnionSql(leftSql, rightSql, operator);
         } else if (op == BooleanOperator.INTERSECT) {
             // the union query is reused, and having count(*) > 1 is appended to
-            // last group by to get intersect results. the unioned sql has to have
+            // last group by to get intersect results. the unioned sql has to
+            // have
             // group by as the last clause.
-            sql = getIntersectSql(leftSql, rightSql, BooleanOperator.UNION.getOperator(platform));
+            sql = getIntersectSql(leftSql, rightSql,
+                    BooleanOperator.UNION.getOperator(platform));
         } else {
             // swap sqls if it is right_minus
             if (op == BooleanOperator.RIGHT_MINUS) {
@@ -169,8 +174,8 @@ public class BooleanQueryInstance extends SqlQueryInstance {
         return sql.toString();
     }
 
-
-    private String getIntersectSql(String leftSql, String rightSql, String operator) {
+    private String getIntersectSql(String leftSql, String rightSql,
+            String operator) {
         // just sum the weight from original sql
         StringBuffer sql = new StringBuffer();
         sql.append("SELECT ");
@@ -193,7 +198,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
             sql.append((i == 0) ? "" : ",");
             sql.append(pkColumns[i]);
         }
-        sql.append(" HAVING count(*) > 1"); 
+        sql.append(" HAVING count(*) > 1");
         return sql.toString();
     }
 
@@ -222,7 +227,8 @@ public class BooleanQueryInstance extends SqlQueryInstance {
         sql.append("(" + leftPiece + ") " + operator + "(" + rightPiece + ")");
         sql.append(") b WHERE ");
         for (int i = 0; i < pkColumns.length; i++) {
-            if (i > 0) sql.append(" AND ");
+            if (i > 0)
+                sql.append(" AND ");
             sql.append("o." + pkColumns[i] + " = b." + pkColumns[i]);
         }
         return sql.toString();

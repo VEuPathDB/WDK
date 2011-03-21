@@ -20,7 +20,6 @@ import java.util.Map;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -29,7 +28,6 @@ import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
@@ -44,7 +42,8 @@ import org.json.JSONObject;
  */
 public class ProcessQueryInstance extends QueryInstance {
 
-    private static final Logger logger = Logger.getLogger(ProcessQueryInstance.class);
+    private static final Logger logger = Logger
+            .getLogger(ProcessQueryInstance.class);
 
     private ProcessQuery query;
     private int signal;
@@ -59,10 +58,11 @@ public class ProcessQueryInstance extends QueryInstance {
      * @throws NoSuchAlgorithmException
      */
     public ProcessQueryInstance(User user, ProcessQuery query,
-            Map<String, String> values, boolean validate, int assignedWeight)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
-        super(user, query, values, validate, assignedWeight);
+            Map<String, String> values, boolean validate, int assignedWeight,
+            Map<String, String> context) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        super(user, query, values, validate, assignedWeight, context);
         this.query = query;
     }
 
@@ -132,8 +132,8 @@ public class ProcessQueryInstance extends QueryInstance {
                     } else if (type == ColumnType.CLOB) {
                         platform.setClobData(ps, columnId, value, false);
                     } else if (type == ColumnType.DATE) {
-                        ps.setTimestamp(columnId, new Timestamp(Date.valueOf(
-                                value).getTime()));
+                        ps.setTimestamp(columnId,
+                                new Timestamp(Date.valueOf(value).getTime()));
                     } else if (type == ColumnType.FLOAT) {
                         ps.setFloat(columnId, Float.parseFloat(value));
                     } else if (type == ColumnType.NUMBER) {
@@ -152,13 +152,16 @@ public class ProcessQueryInstance extends QueryInstance {
                 ps.addBatch();
 
                 rowId++;
-                if (rowId % 1000 == 0) ps.executeBatch();
+                if (rowId % 1000 == 0)
+                    ps.executeBatch();
             }
-            if (rowId % 1000 != 0) ps.executeBatch();
+            if (rowId % 1000 != 0)
+                ps.executeBatch();
         } finally {
             // close the statement manually, since we need to keep the
             // connection open to finish the transaction.
-            if (ps != null) ps.close();
+            if (ps != null)
+                ps.close();
         }
         logger.debug("process query cache insertion finished.");
     }
@@ -202,17 +205,6 @@ public class ProcessQueryInstance extends QueryInstance {
         }
         request.setOrderedColumns(columnNames);
         logger.debug("process query columns: " + temp);
-
-        // prepage context info
-        HashMap<String, String> context = new HashMap<String, String>();
-        context.put(Utilities.QUERY_CTX_QUERY, query.getFullName());
-        context.put(Utilities.QUERY_CTX_USER, user.getSignature());
-        Question question = query.question;
-        if (question != null)
-            context.put(Utilities.QUERY_CTX_QUESTION, question.getFullName());
-        FlatVocabParam vocabParam = query.vocabParam;
-        if (vocabParam != null)
-            context.put(Utilities.QUERY_CTX_PARAM, vocabParam.getFullName());
 
         request.setContext(context);
 
@@ -279,7 +271,8 @@ public class ProcessQueryInstance extends QueryInstance {
                     String more = service.requestResult(requestId, i);
                     buffer.append(more);
                 }
-                String[][] content = Utilities.convertContent(buffer.toString());
+                String[][] content = Utilities
+                        .convertContent(buffer.toString());
                 response.setResult(content);
             }
         } else { // invoke the process query via web service
@@ -300,7 +293,8 @@ public class ProcessQueryInstance extends QueryInstance {
                     String more = client.requestResult(requestId, i);
                     buffer.append(more);
                 }
-                String[][] content = Utilities.convertContent(buffer.toString());
+                String[][] content = Utilities
+                        .convertContent(buffer.toString());
                 response.setResult(content);
             }
         }
@@ -352,7 +346,8 @@ public class ProcessQueryInstance extends QueryInstance {
         for (Column column : columns) {
             // weight column is already added to the sql.
             if (column.getName().equals(Utilities.COLUMN_WEIGHT)
-                    && query.isHasWeight()) continue;
+                    && query.isHasWeight())
+                continue;
 
             int width = column.getWidth();
             ColumnType type = column.getType();
@@ -391,7 +386,8 @@ public class ProcessQueryInstance extends QueryInstance {
             // also insert the result into the cache
             insertToCache(connection, tableName, instanceId);
         } finally {
-            if (stmt != null) stmt.close();
+            if (stmt != null)
+                stmt.close();
         }
     }
 
@@ -410,7 +406,8 @@ public class ProcessQueryInstance extends QueryInstance {
                 count++;
             }
             return count;
-        } else return super.getResultSize();
+        } else
+            return super.getResultSize();
     }
 
 }

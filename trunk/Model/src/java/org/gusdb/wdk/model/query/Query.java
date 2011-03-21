@@ -12,14 +12,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
@@ -58,19 +56,6 @@ public abstract class Query extends WdkModelBase {
 
     private boolean hasWeight;
 
-    /**
-     * An id query will have a reference to the question; which means the id
-     * query will be cloned to keep a local copy for the question;
-     */
-    protected Question question;
-
-    /**
-     * A flat vocab query will have a reference to the flatVocab param; which
-     * means the flatVocab query will be cloned to keep a local copy for the
-     * param.
-     */
-    protected FlatVocabParam vocabParam;
-
     // =========================================================================
     // Abstract methods
     // =========================================================================
@@ -79,9 +64,10 @@ public abstract class Query extends WdkModelBase {
             throws JSONException;
 
     public abstract QueryInstance makeInstance(User user,
-            Map<String, String> values, boolean validate, int assignedWeight)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException;
+            Map<String, String> values, boolean validate, int assignedWeight,
+            Map<String, String> context) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException;
 
     public abstract Query clone();
 
@@ -215,8 +201,10 @@ public abstract class Query extends WdkModelBase {
 
     public void addColumn(Column column) {
         column.setQuery(this);
-        if (columnList != null) this.columnList.add(column);
-        else columnMap.put(column.getName(), column);
+        if (columnList != null)
+            this.columnList.add(column);
+        else
+            columnMap.put(column.getName(), column);
     }
 
     public Map<String, Column> getColumnMap() {
@@ -329,7 +317,8 @@ public abstract class Query extends WdkModelBase {
                 if (columnMap.containsKey(columnName)) {
                     throw new WdkModelException("The column '" + columnName
                             + "' is duplicated in query " + getFullName());
-                } else columnMap.put(columnName, column);
+                } else
+                    columnMap.put(columnName, column);
             }
         }
         columnList = null;
@@ -348,7 +337,8 @@ public abstract class Query extends WdkModelBase {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         // logger.debug("Resolving " + getFullName() + " - " + resolved);
-        if (resolved) return;
+        if (resolved)
+            return;
 
         this.wdkModel = wdkModel;
 
@@ -360,14 +350,16 @@ public abstract class Query extends WdkModelBase {
             if (paramMap.containsKey(paramName)) {
                 throw new WdkModelException("The param '" + paramName
                         + "' is duplicated in query " + getFullName());
-            } else paramMap.put(paramName, param);
+            } else
+                paramMap.put(paramName, param);
         }
         paramRefList = null;
 
         // resolve columns
         for (Column column : columnMap.values()) {
             String sortingColumn = column.getSortingColumn();
-            if (sortingColumn == null) continue;
+            if (sortingColumn == null)
+                continue;
             if (!columnMap.containsKey(sortingColumn))
                 throw new WdkModelException("Query [" + getFullName()
                         + "] has a column [" + column.getName()
@@ -425,7 +417,8 @@ public abstract class Query extends WdkModelBase {
     public int getAnswerParamCount() {
         int count = 0;
         for (Param param : paramMap.values()) {
-            if (param instanceof AnswerParam) count++;
+            if (param instanceof AnswerParam)
+                count++;
         }
         return count;
     }
@@ -441,16 +434,20 @@ public abstract class Query extends WdkModelBase {
         buffer.append(": params{");
         boolean firstParam = true;
         for (Param param : paramMap.values()) {
-            if (firstParam) firstParam = false;
-            else buffer.append(", ");
+            if (firstParam)
+                firstParam = false;
+            else
+                buffer.append(", ");
             buffer.append(param.getName()).append("[");
             buffer.append(param.getClass().getSimpleName()).append("]");
         }
         buffer.append("} columns{");
         boolean firstColumn = true;
         for (Column column : columnMap.values()) {
-            if (firstColumn) firstColumn = false;
-            else buffer.append(", ");
+            if (firstColumn)
+                firstColumn = false;
+            else
+                buffer.append(", ");
             buffer.append(column.getName());
         }
         buffer.append("}");
@@ -511,21 +508,4 @@ public abstract class Query extends WdkModelBase {
     public boolean isHasWeight() {
         return hasWeight;
     }
-
-    /**
-     * @param question
-     *            the question to set
-     */
-    public void setQuestion(Question question) {
-        this.question = question;
-    }
-
-    /**
-     * @param vocabParam
-     *            the vocabParam to set
-     */
-    public void setVocabParam(FlatVocabParam vocabParam) {
-        this.vocabParam = vocabParam;
-    }
-
 }

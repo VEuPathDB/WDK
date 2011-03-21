@@ -8,6 +8,7 @@ import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Group;
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -75,7 +76,7 @@ public abstract class Param extends WdkModelBase {
             WdkUserException;
 
     protected abstract void applySuggection(ParamSuggestion suggest);
-    
+
     /**
      * The input the method can be either raw data or dependent data
      * 
@@ -125,6 +126,8 @@ public abstract class Param extends WdkModelBase {
      * other sites to process using ProcessQuery.
      */
     private boolean noTranslation = false;
+
+    protected Question contextQuestion;
 
     public Param() {
         visible = true;
@@ -192,7 +195,8 @@ public abstract class Param extends WdkModelBase {
     }
 
     public String getPrompt() {
-        if (prompt == null) return name;
+        if (prompt == null)
+            return name;
         return prompt;
     }
 
@@ -201,12 +205,14 @@ public abstract class Param extends WdkModelBase {
     }
 
     public String getHelp() {
-        if (help == null) return getPrompt();
+        if (help == null)
+            return getPrompt();
         return help;
     }
 
     public void setDefault(String defaultValue) {
-        if (defaultValue == null) return; // use the current one
+        if (defaultValue == null)
+            return; // use the current one
         this.defaultValue = defaultValue;
     }
 
@@ -278,7 +284,8 @@ public abstract class Param extends WdkModelBase {
      *            the emptyValue to set
      */
     public void setEmptyValue(String emptyValue) {
-        if (emptyValue != null && emptyValue.length() == 0) emptyValue = "";
+        if (emptyValue != null && emptyValue.length() == 0)
+            emptyValue = "";
         this.emptyValue = emptyValue;
     }
 
@@ -310,7 +317,8 @@ public abstract class Param extends WdkModelBase {
                 + newline + "  readonly=" + readonly + newline + "  visible="
                 + visible + newline + "  noTranslation=" + noTranslation
                 + newline);
-        if (group != null) buf.append("  group=" + group.getName() + newline);
+        if (group != null)
+            buf.append("  group=" + group.getName() + newline);
 
         return buf.toString();
     }
@@ -353,7 +361,7 @@ public abstract class Param extends WdkModelBase {
                 emptyValue = suggest.getEmptyValue();
 
                 applySuggection(suggest);
-                
+
                 hasSuggest = true;
 
             }
@@ -378,9 +386,11 @@ public abstract class Param extends WdkModelBase {
     public String compressValue(String value) throws WdkModelException,
             NoSuchAlgorithmException, WdkUserException {
         // check if the value is already been compressed
-        if (value == null || value.length() == 0) return null;
+        if (value == null || value.length() == 0)
+            return null;
 
-        if (value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX)) return value;
+        if (value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX))
+            return value;
 
         // check if the value needs to be compressed
         if (value.length() >= Utilities.MAX_PARAM_VALUE_SIZE) {
@@ -392,17 +402,20 @@ public abstract class Param extends WdkModelBase {
 
     public String decompressValue(String value) throws WdkModelException,
             WdkUserException {
-        if (value == null || value.length() == 0) return null;
+        if (value == null || value.length() == 0)
+            return null;
 
         // check if the value is compressed; that is, if it has a compression
         // prefix
-        if (!value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX)) return value;
+        if (!value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX))
+            return value;
 
         // decompress the value
         String checksum = value.substring(
                 Utilities.PARAM_COMPRESSE_PREFIX.length()).trim();
         String decompressed = queryFactory.getClobValue(checksum);
-        if (decompressed != null) value = decompressed;
+        if (decompressed != null)
+            value = decompressed;
         return value;
     }
 
@@ -453,5 +466,16 @@ public abstract class Param extends WdkModelBase {
 
     public void setNoTranslation(boolean noTranslation) {
         this.noTranslation = noTranslation;
+    }
+
+    /**
+     * Set the question where the param is used. The params in a question are
+     * always cloned when question is initialized, therefore, each param object
+     * will refer to one question uniquely.
+     * 
+     * @param question
+     */
+    public void setContextQuestion(Question question) {
+        this.contextQuestion = question;
     }
 }
