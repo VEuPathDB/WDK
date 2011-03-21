@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model.query;
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -55,7 +56,8 @@ public class QueryTest {
         for (QuerySet querySet : wdkModel.getAllQuerySets()) {
             for (Query query : querySet.getQueries()) {
                 for (Param param : query.getParams()) {
-                    if (!(param instanceof FlatVocabParam)) continue;
+                    if (!(param instanceof FlatVocabParam))
+                        continue;
                     Query flatQuery = ((FlatVocabParam) param).getQuery();
                     String queryName = flatQuery.getFullName();
                     if (!testedQueries.contains(queryName)) {
@@ -77,7 +79,8 @@ public class QueryTest {
 
                 // skip any combined queries and process queries
                 if (query.isCombined() || query.getDoNotTest()
-                        || (query instanceof ProcessQuery)) continue;
+                        || (query instanceof ProcessQuery))
+                    continue;
 
                 String queryName = query.getFullName();
                 if (!testedQueries.contains(queryName)) {
@@ -98,12 +101,12 @@ public class QueryTest {
             int minRows = valueSet.getMinRows();
             int maxRows = valueSet.getMaxRows();
             Map<String, String> rawValues = valueSet.getParamValues();
-            Map<String, String> dependentValues = query.rawOrDependentValuesToDependentValues(
-                    user, rawValues);
+            Map<String, String> dependentValues = query
+                    .rawOrDependentValuesToDependentValues(user, rawValues);
 
             // try to make a query instance
             QueryInstance instance = query.makeInstance(user, dependentValues,
-                    true, 0);
+                    true, 0, new LinkedHashMap<String, String>());
             int rows = instance.getResultSize();
 
             String qName = query.getFullName();

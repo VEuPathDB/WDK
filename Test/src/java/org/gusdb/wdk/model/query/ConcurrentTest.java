@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model.query;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,7 +45,7 @@ public class ConcurrentTest {
             System.out.println("start test thread: #" + id);
             try {
                 QueryInstance instance = query.makeInstance(user, values, true,
-                        0);
+                        0, new LinkedHashMap<String, String>());
                 ResultList resultList = instance.getResults();
                 resultList.next();
                 resultList.close();

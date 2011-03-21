@@ -5,6 +5,7 @@ package org.gusdb.wdk.model.query;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.RecordClass;
@@ -40,14 +41,17 @@ public class TableQueryTest {
             for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
                 for (TableField table : recordClass.getTableFields()) {
                     Query query = table.getQuery();
-                    if (query.getDoNotTest()) continue;
+                    if (query.getDoNotTest())
+                        continue;
                     for (ParamValuesSet valueSet : query.getParamValuesSets()) {
                         Map<String, String> values = valueSet.getParamValues();
-                        if (values.size() == 0) continue;
+                        if (values.size() == 0)
+                            continue;
                         int min = valueSet.getMinRows();
                         int max = valueSet.getMaxRows();
                         QueryInstance instance = query.makeInstance(user,
-                                values, true, 0);
+                                values, true, 0,
+                                new LinkedHashMap<String, String>());
                         int result = instance.getResultSize();
                         // Assert.assertTrue(result + " >= " + min, result >=
                         // min);

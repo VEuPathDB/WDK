@@ -5,6 +5,7 @@ package org.gusdb.wdk.model.user;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -48,7 +49,8 @@ public class BasketTest {
                     break;
                 }
             }
-            if (this.recordClass != null) break;
+            if (this.recordClass != null)
+                break;
         }
     }
 
@@ -83,7 +85,8 @@ public class BasketTest {
         // check each records
         for (RecordInstance instance : answerValue.getRecordInstances()) {
             String pkValue = (String) instance.getPrimaryKey().getValue();
-            AttributeValue attribute = instance.getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
+            AttributeValue attribute = instance
+                    .getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
             int value = Integer.parseInt(attribute.getValue().toString());
             Assert.assertEquals("record basket: " + pkValue, 1, value);
         }
@@ -95,7 +98,8 @@ public class BasketTest {
         Map<String, Integer> counts = user.getBasketCounts();
         for (RecordClassSet rcSet : wdkModel.getAllRecordClassSets()) {
             for (RecordClass rc : rcSet.getRecordClasses()) {
-                if (!rc.hasBasket()) continue;
+                if (!rc.hasBasket())
+                    continue;
                 String rcName = rc.getFullName();
                 Assert.assertTrue(counts.containsKey(rcName));
                 Assert.assertTrue(counts.get(rcName) >= 0);
@@ -123,8 +127,10 @@ public class BasketTest {
         List<String[]> ids = new ArrayList<String[]>();
         Query query = recordClass.getAllRecordsQuery();
         Map<String, String> params = new HashMap<String, String>();
-        QueryInstance instance = query.makeInstance(user, params, true, 0);
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+        QueryInstance instance = query.makeInstance(user, params, true, 0,
+                new LinkedHashMap<String, String>());
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
+                .getColumnRefs();
         ResultList results = instance.getResults();
         int count = 0;
         while (results.next()) {
@@ -135,7 +141,8 @@ public class BasketTest {
             }
             ids.add(values);
             count++;
-            if (count >= limit) break;
+            if (count >= limit)
+                break;
         }
         results.close();
         return ids;
