@@ -96,6 +96,10 @@ function Edit_Step(ele, questionName, url, hideQuery, hideOp, assignedWeight){
 	            if (assignedWeight)  {
     				url += "&weight=" + assignedWeight;
                 }
+
+    // set isEdit flag, it will be used by the param initialization process
+    window.isEdit = true;
+
 		callWizard(url,null,null,null,'next')
 		$(this).parent().parent().hide();
 }
