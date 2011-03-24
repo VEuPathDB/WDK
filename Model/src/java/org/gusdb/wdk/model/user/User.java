@@ -418,7 +418,8 @@ public class User /* implements Serializable */{
             int assignedWeight) throws NoSuchAlgorithmException,
             WdkUserException, WdkModelException, SQLException, JSONException {
         Question question = answerValue.getQuestion();
-        Map<String, String> paramValues = answerValue.getIdsQueryInstance().getValues();
+        Map<String, String> paramValues = answerValue.getIdsQueryInstance()
+                .getValues();
         AnswerFilterInstance filter = answerValue.getFilter();
         int startIndex = answerValue.getStartIndex();
         int endIndex = answerValue.getEndIndex();
@@ -436,7 +437,8 @@ public class User /* implements Serializable */{
         RecordClass recordClass = question.getRecordClass();
         if (filterName != null) {
             filter = recordClass.getFilter(filterName);
-        } else filter = recordClass.getDefaultFilter();
+        } else
+            filter = recordClass.getDefaultFilter();
         return createStep(question, paramValues, filter, deleted, validate,
                 assignedWeight);
     }
@@ -534,10 +536,12 @@ public class User /* implements Serializable */{
 
         // the current implementation can only keep the root level of the
         // imported strategies open;
-        int[] oldActiveStrategies = user.activeStrategyFactory.getRootStrategies();
+        int[] oldActiveStrategies = user.activeStrategyFactory
+                .getRootStrategies();
         for (int oldStrategyId : oldActiveStrategies) {
             int newStrategyId = strategiesMap.get(oldStrategyId);
-            activeStrategyFactory.openActiveStrategy(Integer.toString(newStrategyId));
+            activeStrategyFactory.openActiveStrategy(Integer
+                    .toString(newStrategyId));
         }
 
         // then import the steps that do not belong to any strategies; that is,
@@ -545,7 +549,8 @@ public class User /* implements Serializable */{
         for (Step step : user.getSteps()) {
             if (stepFactory.isStepDepended(user, step.getDisplayId()))
                 continue;
-            if (importedSteps.contains(step.getDisplayId())) continue;
+            if (importedSteps.contains(step.getDisplayId()))
+                continue;
 
             stepFactory.importStep(this, step, stepsMap);
         }
@@ -590,7 +595,8 @@ public class User /* implements Serializable */{
         Map<String, List<Step>> category = new LinkedHashMap<String, List<Step>>();
         for (Step step : steps.values()) {
             // not include the histories marked as 'deleted'
-            if (step.isDeleted()) continue;
+            if (step.isDeleted())
+                continue;
 
             String type = step.getType();
             List<Step> list;
@@ -819,7 +825,8 @@ public class User /* implements Serializable */{
             WdkModelException, SQLException {
         String strategyKey = Integer.toString(strategyId);
         int order = activeStrategyFactory.getOrder(strategyKey);
-        if (order > 0) activeStrategyFactory.closeActiveStrategy(strategyKey);
+        if (order > 0)
+            activeStrategyFactory.closeActiveStrategy(strategyKey);
         stepFactory.deleteStrategy(this, strategyId);
     }
 
@@ -845,7 +852,8 @@ public class User /* implements Serializable */{
     }
 
     public void setProjectPreference(String prefName, String prefValue) {
-        if (prefValue == null) prefValue = prefName;
+        if (prefValue == null)
+            prefValue = prefName;
         projectPreferences.put(prefName, prefValue);
     }
 
@@ -862,7 +870,8 @@ public class User /* implements Serializable */{
     }
 
     public void setGlobalPreference(String prefName, String prefValue) {
-        if (prefValue == null) prefValue = prefName;
+        if (prefValue == null)
+            prefValue = prefName;
         globalPreferences.put(prefName, prefValue);
     }
 
@@ -922,15 +931,17 @@ public class User /* implements Serializable */{
 
     public int getItemsPerPage() {
         String prefValue = getGlobalPreference(User.PREF_ITEMS_PER_PAGE);
-        int itemsPerPage = (prefValue == null) ? 20
-                : Integer.parseInt(prefValue);
+        int itemsPerPage = (prefValue == null) ? 20 : Integer
+                .parseInt(prefValue);
         return itemsPerPage;
     }
 
     public void setItemsPerPage(int itemsPerPage) throws WdkUserException,
             WdkModelException {
-        if (itemsPerPage <= 0) itemsPerPage = 20;
-        else if (itemsPerPage > 1000) itemsPerPage = 1000;
+        if (itemsPerPage <= 0)
+            itemsPerPage = 20;
+        else if (itemsPerPage > 1000)
+            itemsPerPage = 1000;
         setGlobalPreference(User.PREF_ITEMS_PER_PAGE,
                 Integer.toString(itemsPerPage));
         save();
@@ -968,10 +979,12 @@ public class User /* implements Serializable */{
         String summaryKey = answerValue.getQuestion().getFullName()
                 + SUMMARY_ATTRIBUTES_SUFFIX;
         if (!projectPreferences.containsKey(summaryKey)) {
-            Map<String, AttributeField> summary = answerValue.getSummaryAttributeFieldMap();
+            Map<String, AttributeField> summary = answerValue
+                    .getSummaryAttributeFieldMap();
             StringBuffer sb = new StringBuffer();
             for (String attrName : summary.keySet()) {
-                if (sb.length() != 0) sb.append(",");
+                if (sb.length() != 0)
+                    sb.append(",");
                 sb.append(attrName);
             }
             projectPreferences.put(summaryKey, sb.toString());
@@ -991,22 +1004,38 @@ public class User /* implements Serializable */{
 
     public Map<String, Boolean> getSortingAttributes(String questionFullName)
             throws WdkUserException, WdkModelException {
+        Question question = wdkModel.getQuestion(questionFullName);
+
         String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX;
         String sortingChecksum = projectPreferences.get(sortKey);
-        if (sortingChecksum == null) return null;
+        if (sortingChecksum == null)
+            return null;
 
         QueryFactory queryFactory = wdkModel.getQueryFactory();
-        Map<String, Boolean> sortingAttributes = queryFactory.getSortingAttributes(sortingChecksum);
-        if (sortingAttributes != null) return sortingAttributes;
+        Map<String, Boolean> sortingAttributes = queryFactory
+                .getSortingAttributes(sortingChecksum);
+        if (sortingAttributes != null) {
+            // remove invalid columns
+            Map<String, AttributeField> attributes = question
+                    .getAttributeFieldMap();
+            String[] names = new String[sortingAttributes.size()];
+            sortingAttributes.keySet().toArray(names);
+            for (String name : names) {
+                if (!attributes.containsKey(name))
+                    sortingAttributes.remove(name);
+            }
+
+            return sortingAttributes;
+        }
 
         // user doesn't have preference, use the default one of the question
-        Question question = wdkModel.getQuestion(questionFullName);
         return question.getSortingAttributeMap();
     }
 
     public Map<String, Boolean> getSortingAttributesByChecksum(
             String sortingChecksum) throws WdkUserException, WdkModelException {
-        if (sortingChecksum == null) return null;
+        if (sortingChecksum == null)
+            return null;
         QueryFactory queryFactory = wdkModel.getQueryFactory();
         return queryFactory.getSortingAttributes(sortingChecksum);
     }
@@ -1041,6 +1070,8 @@ public class User /* implements Serializable */{
     public String[] getSummaryAttributes(String questionFullName)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException {
+        Question question = wdkModel.getQuestion(questionFullName);
+
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
         String summaryChecksum = projectPreferences.get(summaryKey);
         String[] summary = null;
@@ -1049,28 +1080,41 @@ public class User /* implements Serializable */{
             // get summary list
             QueryFactory queryFactory = wdkModel.getQueryFactory();
             summary = queryFactory.getSummaryAttributes(summaryChecksum);
-            if (summary != null && summary.length > 0) savedSummary = true;
+            if (summary != null && summary.length > 0) {
+                savedSummary = true;
+
+                // ignore invalid attribute names
+                Map<String, AttributeField> attributes = question
+                        .getAttributeFieldMap();
+                List<String> list = new ArrayList<String>();
+                for (String attribute : summary) {
+                    if (attributes.containsKey(attribute))
+                        list.add(attribute);
+                }
+                summary = new String[list.size()];
+                list.toArray(summary);
+            }
         }
 
         // if user does't have preference, use the default of the question
-        Question question = wdkModel.getQuestion(questionFullName);
         if (!savedSummary) {
-            Map<String, AttributeField> attributes = question.getSummaryAttributeFieldMap();
+            Map<String, AttributeField> attributes = question
+                    .getSummaryAttributeFieldMap();
             summary = new String[attributes.size()];
             attributes.keySet().toArray(summary);
         }
-        
+
         // always display weight for combined questions
         if (question.getQuery().isCombined()) {
             // check if weight already exists
             boolean hasWeight = false;
-            for(String name : summary) {
+            for (String name : summary) {
                 if (name.equals(Utilities.COLUMN_WEIGHT)) {
                     hasWeight = true;
                     break;
                 }
             }
-            
+
             // add weight to the last item if it's not included
             if (!hasWeight) {
                 String[] array = new String[summary.length + 1];
@@ -1096,8 +1140,10 @@ public class User /* implements Serializable */{
             String[] summaryNames) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException {
         // make sure all the attribute names exist
-        Question question = (Question) wdkModel.resolveReference(questionFullName);
-        Map<String, AttributeField> attributes = question.getAttributeFieldMap();
+        Question question = (Question) wdkModel
+                .resolveReference(questionFullName);
+        Map<String, AttributeField> attributes = question
+                .getAttributeFieldMap();
 
         // instead throwing out an error, just ignore the invalid columns
         // for (String summaryName : summaryNames) {
@@ -1109,7 +1155,8 @@ public class User /* implements Serializable */{
 
         List<String> validNames = new ArrayList<String>();
         for (String name : summaryNames) {
-            if (attributes.containsKey(name)) validNames.add(name);
+            if (attributes.containsKey(name))
+                validNames.add(name);
         }
         summaryNames = new String[validNames.size()];
         validNames.toArray(summaryNames);
@@ -1214,7 +1261,8 @@ public class User /* implements Serializable */{
         // highlight the imported strategy
         int rootStepId = newStrategy.getLatestStepId();
         String strategyKey = Integer.toString(newStrategy.getStrategyId());
-        if (newStrategy.isValid()) setViewResults(strategyKey, rootStepId, 0);
+        if (newStrategy.isValid())
+            setViewResults(strategyKey, rootStepId, 0);
         return newStrategy;
     }
 
@@ -1245,7 +1293,8 @@ public class User /* implements Serializable */{
             JSONException, SQLException, NoSuchAlgorithmException {
         activeStrategyFactory.openActiveStrategy(strategyKey);
         int pos = strategyKey.indexOf('_');
-        if (pos >= 0) strategyKey = strategyKey.substring(0, pos);
+        if (pos >= 0)
+            strategyKey = strategyKey.substring(0, pos);
         int strategyId = Integer.parseInt(strategyKey);
         stepFactory.updateStrategyViewTime(this, strategyId);
     }
@@ -1301,12 +1350,16 @@ public class User /* implements Serializable */{
     public boolean equals(Object obj) {
         if (obj instanceof User) {
             User user = (User) obj;
-            if (user.userId != userId) return false;
-            if (!email.equals(user.email)) return false;
-            if (!signature.equals(user.signature)) return false;
+            if (user.userId != userId)
+                return false;
+            if (!email.equals(user.email))
+                return false;
+            if (!signature.equals(user.signature))
+                return false;
 
             return true;
-        } else return false;
+        } else
+            return false;
     }
 
     /*
