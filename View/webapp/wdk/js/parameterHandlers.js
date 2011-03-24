@@ -4,7 +4,17 @@ var displayTermMap;
 var oldValues
 var termDisplayMap;
 
-function initParamHandlers(isPopup, isEdit) {
+function initParamHandlers() {
+    var isPopup = window.isPopup;
+    var isEdit = window.isEdit;
+    if(isEdit == undefined) isEdit = false;
+    if(isPopup == undefined) isPopup = false;
+
+    // unset the flags
+    delete window.isPopup;
+    delete window.isEdit;
+
+
 	dependedParams = new Array();
 	displayTermMap = new Array();
 	termDisplayMap = new Array();

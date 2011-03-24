@@ -357,6 +357,8 @@ function WizardLoading(boo){
 }
 
 function callWizard(url, ele, id, sec, action){
+    // set isPopup flag, which will be used by param initialization process
+    window.isPopup = true;
     var strategy = getStrategy(current_Front_Strategy_Id);
 	$("div#errors").html("");
 	switch (action){
