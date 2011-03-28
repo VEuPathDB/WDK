@@ -22,10 +22,10 @@ public class FlatVocabParam extends AbstractEnumParam {
     public static final String PARAM_SERVED_QUERY = "ServedQuery";
     public static final String DEPENDED_VALUE = "depended_value";
 
-    private static final String COLUMN_TERM = "term";
-    private static final String COLUMN_INTERNAL = "internal";
-    private static final String COLUMN_DISPLAY = "display";
-    private static final String COLUMN_PARENT_TERM = "parentTerm";
+    public static final String COLUMN_TERM = "term";
+    public static final String COLUMN_INTERNAL = "internal";
+    public static final String COLUMN_DISPLAY = "display";
+    public static final String COLUMN_PARENT_TERM = "parentTerm";
 
     private Query query;
     private String queryTwoPartName;
