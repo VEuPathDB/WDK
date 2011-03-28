@@ -62,6 +62,10 @@ public class SqlQuery extends Query {
     public void addSqlParamValue(WdkModelText sqlMacro) {
         this.sqlMacroList.add(sqlMacro);
     }
+    
+    public void addSqlParamValue(String macro, String value) {
+        this.sqlMacroMap.put(macro, value);
+    }
 
     public String getSql() {
         return sql;

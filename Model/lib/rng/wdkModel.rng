@@ -669,6 +669,13 @@
     </element>
   </define>
 
+  <define name="sqlParamValue">
+    <element name="sqlParamValue">
+		<ref name="IncludeExclude"/>
+		<attribute name="name" />
+		<text />
+    </element>
+  </define>
 
   <!-- Queries -->
   <define name="sqlQuery">
@@ -683,11 +690,7 @@
         <choice>
           <ref name="sqlColumns" />
 
-          <element name="sqlParamValue">
-            <ref name="IncludeExclude"/>
-            <attribute name="name" />
-            <text />
-          </element>
+		  <ref name="sqlParamValue" />
           
           <element name="dependentTable">
             <ref name="IncludeExclude"/>
@@ -976,6 +979,9 @@
           </element>
           
           <ref name="paramRef" />
+		  
+		  <ref name="sqlParamValue" />
+
         </choice>
       </zeroOrMore>
 

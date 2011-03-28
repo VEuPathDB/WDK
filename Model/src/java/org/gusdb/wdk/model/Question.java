@@ -89,6 +89,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     private List<ParamReference> paramRefs = new ArrayList<ParamReference>();
 
+    private List<WdkModelText> sqlMacroList = new ArrayList<WdkModelText>();
+    private Map<String, String> sqlMacroMap = new LinkedHashMap<String, String>();
+
     // /////////////////////////////////////////////////////////////////////
     // setters called at initialization
     // /////////////////////////////////////////////////////////////////////
@@ -129,6 +132,14 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
         this.noSummaryOnSingleRecord = question.noSummaryOnSingleRecord;
         this.shortDisplayName = question.shortDisplayName;
+
+        this.paramRefs = new ArrayList<ParamReference>(question.paramRefs);
+
+        if (sqlMacroList != null)
+            this.sqlMacroList = new ArrayList<WdkModelText>(
+                    question.sqlMacroList);
+        this.sqlMacroMap = new LinkedHashMap<String, String>(
+                question.sqlMacroMap);
     }
 
     /**
@@ -515,6 +526,14 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             query = (Query) model.resolveReference(idQueryRef);
             query = query.clone();
 
+            // check if we have customized sqlMacros
+            if (query instanceof SqlQuery) {
+                SqlQuery sqlQuery = (SqlQuery) query;
+                for (String macro : sqlMacroMap.keySet()) {
+                    sqlQuery.addSqlParamValue(macro, sqlMacroMap.get(macro));
+                }
+            }
+
             // check if we have customized params;
             if (paramRefs.size() > 0) {
                 String queryName = query.getFullName();
@@ -735,6 +754,20 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
                 paramRefs.remove(i);
             }
         }
+
+        // exclude sql macros
+        for (WdkModelText macro : sqlMacroList) {
+            if (macro.include(projectId)) {
+                macro.excludeResources(projectId);
+                String name = macro.getName();
+                if (sqlMacroMap.containsKey(name))
+                    throw new WdkModelException("The macro " + name
+                            + " is duplicated in question " + getFullName());
+
+                sqlMacroMap.put(macro.getName(), macro.getText());
+            }
+        }
+        sqlMacroList = null;
     }
 
     private Query createDynamicAttributeQuery(WdkModel wdkModel)
@@ -798,5 +831,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     public void addParamRef(ParamReference paramRef) {
         this.paramRefs.add(paramRef);
+    }
+
+    public void addSqlParamValue(WdkModelText sqlMacro) {
+        this.sqlMacroList.add(sqlMacro);
     }
 }
