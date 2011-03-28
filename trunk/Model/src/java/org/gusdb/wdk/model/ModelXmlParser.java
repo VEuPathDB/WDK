@@ -644,6 +644,12 @@ public class ModelXmlParser extends XmlParser {
         
         configureNode(digester, "wdkModel/questionSet/question/paramRef",
                 ParamReference.class, "addParamRef");
+        
+        configureNode(digester, "wdkModel/questionSet/question/sqlParamValue",
+                WdkModelText.class, "addSqlParamValue");
+        digester.addCallMethod("wdkModel/questionSet/question/sqlParamValue",
+                "setText", 0);
+
     }
 
     private void configureXmlQuestionSet(Digester digester) {
