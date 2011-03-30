@@ -1148,7 +1148,7 @@ public class UserBean /* implements Serializable */{
         for (String rcName : savedStrats.keySet()) {
             RecordClass recordClass = wdkModel.getRecordClass(rcName);
             String category = recordClass.getDisplayName();
-            List<StrategyBean> strategies = activeStrats.get(rcName);
+            List<StrategyBean> strategies = savedStrats.get(rcName);
             if (strategies.size() == 0) continue;
             
             Map<String, List<StrategyBean>> activities = categories
@@ -1163,7 +1163,7 @@ public class UserBean /* implements Serializable */{
         for (String rcName : recentStrats.keySet()) {
             RecordClass recordClass = wdkModel.getRecordClass(rcName);
             String category = recordClass.getDisplayName();
-            List<StrategyBean> strategies = activeStrats.get(rcName);
+            List<StrategyBean> strategies = recentStrats.get(rcName);
             if (strategies.size() == 0) continue;
             
             Map<String, List<StrategyBean>> activities = categories
