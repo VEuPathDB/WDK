@@ -1110,7 +1110,7 @@ public class UserBean /* implements Serializable */{
         }
     }
 
-    public Map<String, List<StrategyBean>> getActiveStragiesByCategory()
+    public Map<String, List<StrategyBean>> getActiveStrategiesByCategory()
             throws Exception {
         try {
             Map<String, List<Strategy>> strategies = user
@@ -1128,7 +1128,7 @@ public class UserBean /* implements Serializable */{
      */
     public Map<String, Map<String, List<StrategyBean>>> getStrategiesByCategoryActivity()
             throws Exception {
-        Map<String, List<StrategyBean>> activeStrats = getActiveStragiesByCategory();
+        Map<String, List<StrategyBean>> activeStrats = getActiveStrategiesByCategory();
         Map<String, List<StrategyBean>> savedStrats = getSavedStrategiesByCategory();
         Map<String, List<StrategyBean>> recentStrats = getRecentStrategiesByCategory();
         Map<String, Map<String, List<StrategyBean>>> categories = new LinkedHashMap<String, Map<String, List<StrategyBean>>>();
@@ -1138,6 +1138,8 @@ public class UserBean /* implements Serializable */{
             RecordClass recordClass = wdkModel.getRecordClass(rcName);
             String category = recordClass.getDisplayName();
             List<StrategyBean> strategies = activeStrats.get(rcName);
+            if (strategies.size() == 0) continue;
+            
             Map<String, List<StrategyBean>> activities = new LinkedHashMap<String, List<StrategyBean>>();
             activities.put("Opened", strategies);
             categories.put(category, activities);
@@ -1147,6 +1149,8 @@ public class UserBean /* implements Serializable */{
             RecordClass recordClass = wdkModel.getRecordClass(rcName);
             String category = recordClass.getDisplayName();
             List<StrategyBean> strategies = activeStrats.get(rcName);
+            if (strategies.size() == 0) continue;
+            
             Map<String, List<StrategyBean>> activities = categories
                     .get(category);
             if (activities == null) {
@@ -1160,6 +1164,8 @@ public class UserBean /* implements Serializable */{
             RecordClass recordClass = wdkModel.getRecordClass(rcName);
             String category = recordClass.getDisplayName();
             List<StrategyBean> strategies = activeStrats.get(rcName);
+            if (strategies.size() == 0) continue;
+            
             Map<String, List<StrategyBean>> activities = categories
                     .get(category);
             if (activities == null) {
