@@ -1109,6 +1109,18 @@ public class UserBean /* implements Serializable */{
         }
     }
 
+    public Map<String, List<StrategyBean>> getActiveStragiesByCategory()
+            throws Exception {
+        try {
+            Map<String, List<Strategy>> strategies = user
+                    .getActiveStrategiesByCategory();
+            return convertMap(strategies);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
+    }
+
     /**
      * @param displayId
      * @return
