@@ -678,6 +678,15 @@ public class User /* implements Serializable */{
         return formatStrategiesByRecordClass(strategies);
     }
 
+    public Map<String, List<Strategy>> getActiveStrategiesByCategory()
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, JSONException, SQLException {
+        Strategy[] strategies = getActiveStrategies();
+        List<Strategy> list = new ArrayList<Strategy>();
+        for(Strategy strategy : strategies) list.add(strategy);
+        return formatStrategiesByRecordClass(list);
+    }
+
     private Map<String, List<Strategy>> formatStrategiesByRecordClass(
             Collection<Strategy> strategies) throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
