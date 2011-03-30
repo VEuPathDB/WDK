@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.RecordClass;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.BasketFactory;
@@ -1119,6 +1120,55 @@ public class UserBean /* implements Serializable */{
             ex.printStackTrace();
             throw ex;
         }
+    }
+
+    /**
+     * @return { category/(type name)->{ activity->strategyBean } }
+     * @throws Exception
+     */
+    public Map<String, Map<String, List<StrategyBean>>> getStrategiesByCategoryActivity()
+            throws Exception {
+        Map<String, List<StrategyBean>> activeStrats = getActiveStragiesByCategory();
+        Map<String, List<StrategyBean>> savedStrats = getSavedStrategiesByCategory();
+        Map<String, List<StrategyBean>> recentStrats = getRecentStrategiesByCategory();
+        Map<String, Map<String, List<StrategyBean>>> categories = new LinkedHashMap<String, Map<String, List<StrategyBean>>>();
+        WdkModel wdkModel = user.getWdkModel();
+
+        for (String rcName : activeStrats.keySet()) {
+            RecordClass recordClass = wdkModel.getRecordClass(rcName);
+            String category = recordClass.getDisplayName();
+            List<StrategyBean> strategies = activeStrats.get(rcName);
+            Map<String, List<StrategyBean>> activities = new LinkedHashMap<String, List<StrategyBean>>();
+            activities.put("Opened", strategies);
+            categories.put(category, activities);
+        }
+
+        for (String rcName : savedStrats.keySet()) {
+            RecordClass recordClass = wdkModel.getRecordClass(rcName);
+            String category = recordClass.getDisplayName();
+            List<StrategyBean> strategies = activeStrats.get(rcName);
+            Map<String, List<StrategyBean>> activities = categories
+                    .get(category);
+            if (activities == null) {
+                activities = new LinkedHashMap<String, List<StrategyBean>>();
+                categories.put(category, activities);
+            }
+            activities.put("Saved", strategies);
+        }
+
+        for (String rcName : recentStrats.keySet()) {
+            RecordClass recordClass = wdkModel.getRecordClass(rcName);
+            String category = recordClass.getDisplayName();
+            List<StrategyBean> strategies = activeStrats.get(rcName);
+            Map<String, List<StrategyBean>> activities = categories
+                    .get(category);
+            if (activities == null) {
+                activities = new LinkedHashMap<String, List<StrategyBean>>();
+                categories.put(category, activities);
+            }
+            activities.put("Recent", strategies);
+        }
+        return categories;
     }
 
     /**
