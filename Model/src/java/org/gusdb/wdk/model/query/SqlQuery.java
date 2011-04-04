@@ -28,7 +28,7 @@ import org.json.JSONObject;
 public class SqlQuery extends Query {
 
     private List<WdkModelText> sqlList;
-    protected String sql;
+    private String sql;
     private List<WdkModelText> sqlMacroList;
     private Map<String, String> sqlMacroMap;
     private boolean clobRow;
@@ -62,13 +62,13 @@ public class SqlQuery extends Query {
     public void addSqlParamValue(WdkModelText sqlMacro) {
         this.sqlMacroList.add(sqlMacro);
     }
-    
+
     public void addSqlParamValue(String macro, String value) {
         this.sqlMacroMap.put(macro, value);
     }
 
     public String getSql() {
-        return sql;
+        return replaceMacros(sql);
     }
 
     /**
@@ -78,7 +78,8 @@ public class SqlQuery extends Query {
      * @param sql
      */
     public void setSql(String sql) {
-        // append new line to the end, in case the last line is a comment; otherwise, all modified sql will fail.
+        // append new line to the end, in case the last line is a comment;
+        // otherwise, all modified sql will fail.
         this.sql = sql + "\n";
     }
 
@@ -89,9 +90,9 @@ public class SqlQuery extends Query {
      */
     @Override
     public QueryInstance makeInstance(User user, Map<String, String> values,
-            boolean validate, int assignedWeight, Map<String, String> context) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+            boolean validate, int assignedWeight, Map<String, String> context)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         return new SqlQueryInstance(user, this, values, validate,
                 assignedWeight, context);
     }
@@ -117,7 +118,7 @@ public class SqlQuery extends Query {
             jsQuery.put("macros", jsMacros);
 
             // add sql
-            String sql = this.sql.replaceAll("\\s+", " ");
+            String sql = getSql().replaceAll("\\s+", " ");
             jsQuery.put("sql", sql);
         }
     }
@@ -174,25 +175,34 @@ public class SqlQuery extends Query {
      * .WdkModel)
      */
     @Override
-    public void resolveQueryReferences(WdkModel wdkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveQueryReferences(WdkModel wdkModel)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         // apply the sql macros into sql
-        if (sql == null)
+        if (this.sql == null)
             throw new WdkModelException("null sql in "
                     + getQuerySet().getName() + "." + getName());
-        for (String paramName : sqlMacroMap.keySet()) {
-            String pattern = "&&" + paramName + "&&";
-            String value = sqlMacroMap.get(paramName);
-            // escape the & $ \ chars in the value
-            sql = sql.replaceAll(pattern, Matcher.quoteReplacement(value));
-        }
+
+        // don't replace the sql here. the macros have to be replaced on the fly
+        // in order to inject overridden macros from question.
+        String sql = replaceMacros(this.sql);
+        
         // verify the all param macros have been replaced
         Matcher matcher = Pattern.compile("&&([^&]+)&&").matcher(sql);
         if (matcher.find())
             throw new WdkModelException("SqlParamValue macro "
                     + matcher.group(1) + " found in <sql> of query "
                     + getFullName() + ", but it's not defined.");
+    }
+    
+    private String replaceMacros(String sql) {
+        for (String paramName : sqlMacroMap.keySet()) {
+            String pattern = "&&" + paramName + "&&";
+            String value = sqlMacroMap.get(paramName);
+            // escape the & $ \ chars in the value
+            sql = sql.replaceAll(pattern, Matcher.quoteReplacement(value));
+        }
+        return sql;
     }
 
     /*
