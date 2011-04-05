@@ -78,10 +78,10 @@ ${Question_Header}
         Add Step ${wdkStep.frontId + 1}
       </c:when>
       <c:when test="${action == 'insert'}">
-        Insert Step ${wdkStep.frontId + 1}
+        Insert Step ${wdkStep.frontId}
       </c:when>
       <c:otherwise>
-        Revise Step ${wdkStep.frontId + 1}
+        Revise Step ${wdkStep.frontId}
       </c:otherwise>
     </c:choose>
     : ${wdkQuestion.displayName}
