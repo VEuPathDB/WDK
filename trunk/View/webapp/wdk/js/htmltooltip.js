@@ -1,6 +1,7 @@
 //Inline HTML Tooltip script: By JavaScript Kit: http://www.javascriptkit.com
 //Created: July 10th, 08'
 
+// modified by Jerric - always render the tooltip in a specific div, which is put at the top level of the body.
 var htmltooltip={
 	tipclass: 'htmltooltip',
 	anchors: [],
@@ -19,17 +20,20 @@ var htmltooltip={
 		var tipy=anchor.dimensions.offsety+anchor.dimensions.h
 		tipx=(tipx+tooltip.dimensions.w-scrollLeft>docwidth)? tipx-tooltip.dimensions.w : tipx //account for right edge
 		tipy=(tipy+tooltip.dimensions.h-scrollTop>docheight)? tipy-tooltip.dimensions.h-anchor.dimensions.h : tipy //account for bottom edge
-		$(tooltip).css({left: tipx, top: tipy})
+		// $(tooltip).css({left: tipx, top: tipy})
+                 $("#wdk_tooltip").css({left: tipx, top: tipy, width: tooltip.dimensions.w, height: tooltip.dimensions.h});
 	},
 
 	showtip:function($, tipindex, e){
 		var tooltip=this.tooltips[tipindex];
-		$(tooltip).show();
+                // $(tooltip).show();
+                $("#wdk_tooltip").html($(tooltip).html()).show();
 	},
 
 	hidetip:function($, tipindex, e){
-		var tooltip=this.tooltips[tipindex];
-		$(tooltip).hide();	
+		// var tooltip=this.tooltips[tipindex];
+		// $(tooltip).hide();	
+                $("#wdk_tooltip").hide();
 	},
 
 	updateanchordimensions:function($){
