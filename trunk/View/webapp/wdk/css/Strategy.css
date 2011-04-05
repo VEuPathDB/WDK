@@ -635,6 +635,7 @@ b.strat_help_title > span {
 	left:140px; 
 	top:140px;
 	min-width: 700px;
+	max-width: 78%;
 /*	min-width: 700px; *//* decrease to remove the 5th column in Finder 885px;*/  /*  increase to accommodate gene basket 775px; */ /* increase to accommodate blast data type options   741px; */
 /*	max-width: 78%;  */ /* increase to accommodate the basket */
 	background-color: #FFFFFF;
