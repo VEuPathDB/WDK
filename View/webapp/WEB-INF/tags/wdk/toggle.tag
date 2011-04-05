@@ -81,6 +81,9 @@
 <c:url value="${displayName}"/>
 </c:set>
 
+<c:set var="ds_ref_table" value="${requestScope.ds_ref_tables[name]}" />
+
+
 <table width="100%" class="paneltoggle"
        cellpadding="3"        
        bgcolor="#DDDDDD"
@@ -147,13 +150,24 @@
          </font>
       </td>
     </c:if>
-    <c:if test='${attribution != null && attribution != ""}'>
-      <td align="right">
-         <font size="-1" face="Arial,Helvetica">
-         [<a href="showXmlDataContent.do?name=XmlQuestions.DataSources&datasets=${attribution}&title=${displayNameParam}">Data Sources</a>]
-         </font>
-      </td>
-    </c:if>
+
+    <c:choose>
+      <c:when test='${attribution != null && attribution != ""}'>
+        <td align="right">
+           <font size="-1" face="Arial,Helvetica">
+           [<a href="showXmlDataContent.do?name=XmlQuestions.DataSources&datasets=${attribution}&title=${displayNameParam}">Data Sources</a>]
+           </font>
+        </td>
+      </c:when>
+      <c:when test="${name != null && name !='' && ds_ref_table != null && ds_ref_table != ''}">
+        <td align="right">
+          <font size="-2" face="Arial,Helvetica">
+          [<a href="<c:url value='/getDataSource.do?recordClass=${wdkRecord.recordClass.fullName}&display=detail&target=${name}' />">Data Sources</a>]
+          </font>
+        </td>
+      </c:when>
+    </c:choose>
+
   </tr>
 </table>
 
