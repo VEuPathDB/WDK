@@ -385,11 +385,12 @@ function callWizard(url, ele, id, sec, action){
                             } else {
                                 WizardLoading(false);
                             }
-						}else{
-							WizardLoading(false);
-							pop_up_state.push($("#qf_content").html());
-							setPopupContent(data);
-						}
+                    }else{
+                        WizardLoading(false);
+			pop_up_state.push($("#qf_content").html());
+			setPopupContent(data);
+                    }
+						htmltooltip.render();
 					}	
 				});
 				break;
@@ -424,6 +425,7 @@ function callWizard(url, ele, id, sec, action){
 								showNewSection(ele,id,sec);
 							}
 						}
+						htmltooltip.render();
 					}	
 				});
 				break;
@@ -431,6 +433,7 @@ function callWizard(url, ele, id, sec, action){
 				showNewSection(ele,id,sec);
 				break;
 	}
+        // htmltooltip.render();
 	
 	return false;
 }
