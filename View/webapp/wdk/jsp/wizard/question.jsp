@@ -95,7 +95,7 @@ ${Question_Header}
 
 <%-- display operators section --%>
 <c:set var="type" value="${wdkStep.shortDisplayType}" />
-<c:set var="allowSpan" value="${type eq 'Gene' || type eq 'Orf' || type eq 'SNP' || type eq 'Isolate'}" />
+<c:set var="allowSpan" value="${type eq 'Gene' || type eq 'ORF' || type eq 'SNP' || type eq 'GenSegm' || type eq 'Sage Tag'}" />
 
 <div class="filter operators">
   <c:if test="${wdkStep.previousStep != null || action != 'revise'}">
