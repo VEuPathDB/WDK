@@ -22,13 +22,6 @@
 <c:set value="Help for question: ${wdkQuestion.displayName}" var="fromAnchorQ"/>
 <jsp:useBean id="helpQ" class="java.util.LinkedHashMap"/>
 
-<table width=100%> 
-<tr>
-<td bgcolor=white valign=top>
-
-<%-- put an anchor here for linking back from help sections --%>
-<A name="${fromAnchorQ}"></A>
-
 <input type="hidden" name="questionFullName" value="${wdkQuestion.fullName}"/>
 
 <!-- show error messages, if any -->
@@ -36,25 +29,20 @@
 
 <%-- the js has to be included here in order to appear in the step form --%>
 <script type="text/javascript" src='<c:url value="/wdk/js/wdkQuestion.js"/>'></script>
+
 <c:if test="${showParams == null}">
-            <script type="text/javascript">
-              $(document).ready(function() { initParamHandlers(); });
-            </script>
+	<script type="text/javascript">
+		$(document).ready(function() { initParamHandlers(); });
+	</script>
 </c:if>
 
 <div class="params">
     <wdk:questionParams />
-</div> <%-- end of params div --%>
+</div> <!-- end of params div -->
 
-<c:set target="${helps}" property="${fromAnchorQ}" value="${helpQ}"/>
 
-</td>
-</tr>
-</table>
-
-<hr>
-
+<%-- this is used by basket when being added as a step
+     do not display description for wdkQuestion because question.jsp provides for it
 <c:set var="descripId" value="query-description-section"/>
-
-<%-- display description for wdkQuestion --%>
 <div id="${descripId}"><b>Query description: </b>${wdkQuestion.description}</div>
+--%>

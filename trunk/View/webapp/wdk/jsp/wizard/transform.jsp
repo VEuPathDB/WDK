@@ -50,7 +50,7 @@ ${Question_Header}
 
 <%-- display question param section --%>
 <div class="filter params">
-  <span class="form_subtitle">
+  <span class="h2center">
     <c:choose>
       <c:when test="${action == 'add'}">
         Add Step ${wdkStep.frontId + 1}
@@ -64,6 +64,7 @@ ${Question_Header}
     </c:choose>
     : ${wdkQuestion.displayName}
   </span>
+   <br><br>
 
   <wdk:questionForm />
 </div>
