@@ -220,7 +220,7 @@ ${rcDisplay} basket
             <ul class="menu_section">
             <c:forEach var="rcs" items="${model.websiteRootCategories}">
                 <c:set var="classId" value="${fn:replace(rcs.value.name,'.','_')}"/>
-                <c:if test="${(rcs.value.name eq rcName) 
+                <c:if test="${(rcs.value.name eq stepRcName) 
                               || (allowSpan
                                   &&
                                   (rcs.value.name eq 'GeneRecordClasses.GeneRecordClass' 
