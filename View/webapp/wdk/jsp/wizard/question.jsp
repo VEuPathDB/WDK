@@ -3,7 +3,7 @@
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
-
+<%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
 
 <c:set var="wdkQuestion" value="${requestScope.question}"/>
 <c:set var="spanOnly" value="false"/>
@@ -60,19 +60,21 @@
 <span style="display:none" id="stepId">${stepId}</span>
 
 <c:set var="Question_Header" scope="request">
-<%-- has nothing --%>
+	<%-- has nothing --%>
 </c:set>
 
+<c:if test="${param.stage ne 'basket'}">
 <c:set var="Question_Footer" scope="request">
-<%-- displays question description, can be overridden by the custom question form --%>
-<wdk:questionDescription />
+	<%-- displays question description, use site tag until we know how to override a wdk tag by the custom one --%>
+   	<site:questionDescription />
 </c:set>
+</c:if>
 
 ${Question_Header}
 
 <%-- display question param section --%>
 <div class="filter params">
-  <span class="form_subtitle">
+  <span class="h2center">
     <c:choose>
       <c:when test="${action == 'add'}">
         Add Step ${wdkStep.frontId + 1}
@@ -86,6 +88,7 @@ ${Question_Header}
     </c:choose>
     : ${wdkQuestion.displayName}
   </span>
+  <br><br>
 
   <wdk:questionForm />
 </div>
@@ -99,65 +102,22 @@ ${Question_Header}
 
 <div class="filter operators">
   <c:if test="${wdkStep.previousStep != null || action != 'revise'}">
+
       <c:if test="${wdkStep.previousStep != null && action == 'revise'}">
         <c:set var="wdkStep" value="${wdkStep.previousStep}" />
       </c:if>
-      <h1>Combine ${wdkStep.displayType}s in Step <span class="current_step_num"></span> with ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num"></span>:</h1>
+      <span class="h2center">Combine ${wdkStep.displayType}s in Step <span class="current_step_num"></span> with ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num"></span>:</span>
+
       <div style="text-align:center" id="operations">
-        <c:if test="${allowBoolean == false}">
-                        <c:set var="disabled" value="DISABLED"/>
-                <c:set var="opaque" value="opacity:0.3;filters:alpha(opacity=30);"/>
-                    <%--    <p><i>Set operations are not available because Step <span class="current_step_num"></span> is a set of ${wdkStep.displayType}s while Step <span class="new_step_num"></span> is a set of ${wdkQuestion.recordClass.displayName}s; these are disjoint sets</i></p> --%>
-                <c:set var="explanation" value="Set operations are not available because your steps are of different types, and do not have IDs in common." />
-        </c:if>
 
-        <table>
-<tr style="${opaque}" title="${explanation}">
+<%-- operators table --%>
+<wdk:operators  allowSpan="${allowSpan}"
+		operation="${param.operation}"
+/>
 
-            <c:set var="checked"><c:if test="${param.operation == 'INTERSECT'}">checked="checked"</c:if></c:set>
-
-            <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="INTERSECT" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
-            <td class="operation INTERSECT"></td>
-            <td >&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Intersect</b>&nbsp;<span class="new_step_num"></span></td>
-
-                <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-
-            <c:set var="checked"><c:if test="${param.operation == 'UNION'}">checked="checked"</c:if></c:set>
-            <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="UNION" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
-            <td class="operation UNION"></td>
-            <td>&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Union</b>&nbsp;<span class="new_step_num"></span></td>
-</tr>
-<tr style="${opaque}" title="${explanation}">
-
-            <c:set var="checked"><c:if test="${param.operation == 'NOT'}">checked="checked"</c:if></c:set>
-            <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="NOT" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
-            <td class="operation MINUS"></td>
-            <td>&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="new_step_num"></span></td>
-
-                <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-
-            <c:set var="checked"><c:if test="${param.operation == 'RMINUS'}">checked="checked"</c:if></c:set>
-            <td class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="RMINUS" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
-            <td class="operation RMINUS"></td>
-            <td>&nbsp;<span class="new_step_num"></span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="current_step_num"></span></td>
-
-</tr>
-        <c:if test="${allowSpan}">
-<tr>	
-        <c:set var="checked"><c:if test="${param.operation == 'SPAN'}">checked="checked"</c:if></c:set>
-  	<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
-	<td class="operation SPAN overlap"></td>
-	<td>&nbsp;<span class="current_step_num"></span>&nbsp;<b style="font-size:120%">Relative to</b>&nbsp;<span class="new_step_num"></span> <span style="font-size:120%">, using genomic locations</span></td>
-</tr>
-
-        </table>
-        </c:if>
-
-
-    </div>
-  </c:if>
+      </div>   
+   </c:if>       <%--     <c:if test="${wdkStep.previousStep != null || action != 'revise'}">    --%>
 </div><%-- end of filter operators --%>
-
 
 <div id="boolean_button" class="filter-button">
     <html:submit property="questionSubmit" value="${buttonVal}"/>
