@@ -44,6 +44,15 @@
   </c:otherwise>
 </c:choose>
 
+<c:set var="newStepId">
+  <c:choose>
+    <c:when test="${action == 'add'}">${wdkStep.frontId + 1}</c:when>
+    <c:otherwise>${wdkStep.frontId}</c:otherwise>
+  </c:choose>
+</c:set>
+<c:set var="currentStepId" value="${newStepId - 1}" />
+
+
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
 
 <html:hidden property="stage" styleId="stage" value="${nextStage}" />
@@ -77,13 +86,13 @@ ${Question_Header}
   <span class="h2center">
     <c:choose>
       <c:when test="${action == 'add'}">
-        Add Step ${wdkStep.frontId + 1}
+        Add Step ${newStepId}
       </c:when>
       <c:when test="${action == 'insert'}">
-        Insert Step ${wdkStep.frontId}
+        Insert Step ${newStepId}
       </c:when>
       <c:otherwise>
-        Revise Step ${wdkStep.frontId}
+        Revise Step ${newStepId}
       </c:otherwise>
     </c:choose>
     : ${wdkQuestion.displayName}
@@ -106,7 +115,7 @@ ${Question_Header}
       <c:if test="${wdkStep.previousStep != null && action == 'revise'}">
         <c:set var="wdkStep" value="${wdkStep.previousStep}" />
       </c:if>
-      <span class="h2center">Combine ${wdkStep.displayType}s in Step <span class="current_step_num"></span> with ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num"></span>:</span>
+      <span class="h2center">Combine ${wdkStep.displayType}s in Step <span class="current_step_num">${currentStepId}</span> with ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num">${newStepId}</span>:</span>
 
       <div style="text-align:center" id="operations">
 

@@ -449,9 +449,10 @@ function backStage(){
 
 function setPopupContent(data) {
     $("#qf_content").html(data);
-    updateStepNumberReferences();
+    // updateStepNumberReferences();
 }
 
+// deprecated
 function updateStepNumberReferences() {
     var stratBackId = $("#strategyId").text();
     var stepBackId = $("#stepId").text();
