@@ -12,17 +12,18 @@
 <c:set var="user" value="${sessionScope.wdkUser}"/>
 <c:set var="step" value="${requestScope.wdkStep}" />
 <c:set var="recordClass" value="${step.question.recordClass}" />
-<c:set var="rClass" value="${step.question.recordClass}" />   <%-- used in script below --%>
 <c:set var="strategyId" value="${requestScope.strategy}" />
 <c:set var="action" value="${requestScope.action}" />
 <c:set var="wdkStrategy" value="${requestScope.wdkStrategy}"/>
-<c:set var="stepRcName" value="${step.question.recordClass.fullName}" />
+<c:set var="stepRcName" value="${recordClass.fullName}" />
+<c:set var="stepDisplayName" value="${recordClass.displayName}" />
 
 <%-- determine if the current step allows span operation --%>
 <c:set var="allowSpan" value="${stepRcName eq 'GeneRecordClasses.GeneRecordClass' 
                                 || stepRcName eq 'OrfRecordClasses.OrfRecordClass'
                                 || stepRcName eq 'DynSpanRecordClasses.DynSpanRecordClass'
-                                || stepRcName eq 'SnpRecordClasses.SnpRecordClass'}" />
+                                || stepRcName eq 'SnpRecordClasses.SnpRecordClass'
+                                || stepRcName eq 'SageTagRecordClasses.SageTagRecordClass'}" />
 
 <c:set var="partialUrl" value="wizard.do?strategy=${strategyId}&step=${step.stepId}&action=${action}" />
 
@@ -104,7 +105,8 @@
                                       || ((rcName eq 'GeneRecordClasses.GeneRecordClass' 
                                            || rcName eq 'OrfRecordClasses.OrfRecordClass' 
                                            || rcName eq 'DynSpanRecordClasses.DynSpanRecordClass' 
-                                           || rcName eq 'SnpRecordClasses.SnpRecordClass')
+                                           || rcName eq 'SnpRecordClasses.SnpRecordClass'
+                                           || rcName eq 'SageTagRecordClasses.SageTagRecordClass')
                                           && allowSpan
                                          )
                                      )}">
@@ -149,11 +151,12 @@ ${rcDisplay} basket
             <ul class="menu_section">
               <c:set var="catId" value="${0}" />
               <c:forEach items="${allStrats}" var="category">
-                <c:if test="${(stepRcName eq rcName) 
+                <c:if test="${(stepDisplayName eq category.key) 
                               || ((category.key eq 'Gene' 
                                    || category.key eq 'ORF' 
                                    || category.key eq 'Genomic Segment' 
-                                   || category.key eq 'SNP')
+                                   || category.key eq 'SNP'
+                                   || category.key eq 'SAGE Tag Alignment')
                                   && allowSpan
                                  )}">
                   <c:set var="catId" value="${catId + 1}" />
@@ -166,11 +169,12 @@ ${rcDisplay} basket
         <%-- create strategy sections by category --%>
         <c:set var="catId" value="${0}" />
         <c:forEach items="${allStrats}" var="category">
-          <c:if test="${(stepRcName eq rcName) 
+          <c:if test="${(stepDisplayName eq category.key) 
                         || ((category.key eq 'Gene' 
                              || category.key eq 'ORF' 
                              || category.key eq 'Genomic Segment' 
-                             || category.key eq 'SNP')
+                             || category.key eq 'SNP'
+                             || category.key eq 'SAGE Tag Alignment')
                             && allowSpan
                            )}">
           <c:set var="catId" value="${catId + 1}" />
@@ -226,7 +230,8 @@ ${rcDisplay} basket
                                   (rcs.value.name eq 'GeneRecordClasses.GeneRecordClass' 
                                    || rcs.value.name eq 'OrfRecordClasses.OrfRecordClass'
 				   || rcs.value.name eq 'DynSpanRecordClasses.DynSpanRecordClass'
-                                   || rcs.value.name eq 'SnpRecordClasses.SnpRecordClass')
+                                   || rcs.value.name eq 'SnpRecordClasses.SnpRecordClass'
+                                   || rcs.value.name eq 'SageTagRecordClasses.SageTagRecordClass')
                                  )}">
                     <li class="category" onclick="callWizard(null,this,'sl_${classId}',3)">${rcs.value.displayName}</li>
                 </c:if>
@@ -276,8 +281,8 @@ ${rcDisplay} basket
  
 <%-- Initialize Add Step panel --%>
 <script type="text/javascript">
-   rclass = "${rClass.fullName}";
-   sdName = "${rClass.shortDisplayName}";
+   rclass = "${recordClass.fullName}";
+   sdName = "${recordClass.shortDisplayName}";
    //alert(rclass);
    //alert(sdName);
 
