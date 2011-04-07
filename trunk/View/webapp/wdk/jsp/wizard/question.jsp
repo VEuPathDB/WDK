@@ -106,8 +106,12 @@ ${Question_Header}
 <c:if test="${hideOperation == false}">
 
 <%-- display operators section --%>
-<c:set var="type" value="${wdkStep.shortDisplayType}" />
-<c:set var="allowSpan" value="${type eq 'Gene' || type eq 'ORF' || type eq 'SNP' || type eq 'GenSegm' || type eq 'Sage Tag'}" />
+<c:set var="rcName" value="${wdkStep.question.recordClass.fullName}" />
+<c:set var="allowSpan" value="${rcName eq 'GeneRecordClasses.GeneRecordClass' 
+                                || rcName eq 'OrfRecordClasses.OrfRecordClass'
+                                || rcName eq 'DynSpanRecordClasses.DynSpanRecordClass'
+                                || rcName eq 'SnpRecordClasses.SnpRecordClass'
+                                || rcName eq 'SageTagRecordClasses.SageTagRecordClass'}" />
 
 <div class="filter operators">
   <c:if test="${wdkStep.previousStep != null || action != 'revise'}">
