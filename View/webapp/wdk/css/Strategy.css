@@ -419,6 +419,7 @@ div.transform a.crumb_name img{
   z-index: 1000;
   text-align: center;
   padding-bottom: 5px;
+  min-width: 550px;   //this allows for some space between Delete and X
 }
 
 .crumb_details div.crumb_menu {
