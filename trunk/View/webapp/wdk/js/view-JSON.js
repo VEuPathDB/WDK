@@ -7,6 +7,7 @@ var operandClasses = "box row1 arrowgrey simple";
 //Popup messages
 var insert_popup = "Insert a new step to the left of this one, by either running a new query or choosing an existing strategy";
 var delete_popup = "Delete this step from the strategy; if this step is the only step in this strategy, this will delete the strategy also";
+var x_popup = "Close this popup";
 
 	//Simple Steps
 var ss_rename_popup = "Rename this search";
@@ -379,7 +380,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 		delete_step = "<a title='" + delete_popup + "' class='delete_step_link' href='javascript:void(0)' onclick='DeleteStep(" + sid + "," + modelstep.frontId + ");hideDetails(this)'>Delete</a>";
 	}
 
-	close_button = 	"<a class='close_link' href='javascript:void(0)' onclick='hideDetails(this)'>[x]</a>";
+	close_button = 	"<a title='" + x_popup + "' class='close_link' href='javascript:void(0)' onclick='hideDetails(this)'>[x]</a>";
 
 	inner = ""+	
 	    "		<div class='crumb_menu'>"+ rename_step + view_step + edit_step + expand_step + insert_step + customMenu + delete_step + close_button +
@@ -423,7 +424,7 @@ function createParameters(params, isSpan){
 	if (isSpan) {
 		// TODO:  if span logic moves into WDK, the code
 		// for the span logic details box should move here.
-		try {
+		try {	//params includes the sentence with formatting and all
 			var contents = customSpanParameters(params);
 			$(table).append(contents);
 		}

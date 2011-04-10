@@ -33,7 +33,7 @@
 				return true;
 			}
 			else {
-				alert("You must select an output type!");
+				alert("You must select what to return: IDs from which step?");
 				return false;
 			}
 		});
