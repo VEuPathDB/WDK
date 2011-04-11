@@ -28,15 +28,14 @@
 <c:set var="stage" value="${requestScope.stage}"/>
 
 <%-- determine current & next front step id --%>
-<c:choose>
-  <c:when test="${action eq 'add'}">
-    <c:set var="rightFrontId" value="${wdkStep.frontId + 1}" />
-  </c:when>
-  <c:otherwise>
-    <c:set var="rightFrontId" value="${wdkStep.frontId}" />
-  </c:otherwise>
-</c:choose>  
-<c:set var="leftFrontId" value="${rightFrontId - 1}" />
+<c:set var="newStepId">
+  <c:choose>
+    <c:when test="${action == 'add'}">${wdkStep.frontId + 1}</c:when>
+    <c:otherwise>${wdkStep.frontId}</c:otherwise>
+  </c:choose>
+</c:set>
+<c:set var="currentStepId" value="${newStepId - 1}" />
+
 
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do"  onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
 
@@ -47,8 +46,20 @@
   <input type="hidden" name="importStrategy" value="${importStrategy.strategyId}"/>
 
   <div class="h2center">
-    Add Step ${wdkStep.frontId + 1} from existing strategy: 
+    <c:choose>
+      <c:when test="${action == 'add'}">
+        Add Step ${newStepId}
+      </c:when>
+      <c:when test="${action == 'insert'}">
+        Insert Step ${newStepId}
+      </c:when>
+      <c:otherwise>
+        Revise Step ${newStepId}
+      </c:otherwise>
+    </c:choose>
+   from existing strategy:
   </div>
+  <br><br>
   <div style="text-align:center;font-weight:bold;font-size:120%">${importStrategy.name}</div>
   <br>
 </div>
@@ -65,7 +76,7 @@
     </c:when>
 
     <c:otherwise>
-      <span class="h2center">Combine ${wdkStep.displayType}s in Step ${leftFrontId} with ${importStrategy.displayType}s in Step ${rightFrontId}:</span>
+      <span class="h2center">Combine ${wdkStep.displayType}s in Step <span class="current_step_num">${currentStepId}</span> with ${importStrategy.displayType}s in Step <span class="new_step_num">${newStepId}</span>:</span>
       <div style="text-align:center" id="operations">
                 <c:choose>
                     <c:when test="${allowBoolean == false}">
