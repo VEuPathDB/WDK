@@ -291,12 +291,9 @@ public class RecordBean {
          * @see java.util.Map#get(java.lang.Object)
          */
         public AttributeValue get(Object key) {
-            if (!fields.containsKey(key))
-                throw new RuntimeException("The attribute [" + key
-                        + "] doesn't exist in record instance.");
-            AttributeValue value = values.get(key);
+            String fieldName = (String) key;
+            AttributeValue value = values.get(fieldName);
             if (value == null) {
-                String fieldName = (String) key;
                 try {
                     value = recordInstance.getAttributeValue(fieldName);
                 } catch (Exception ex) {
