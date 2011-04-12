@@ -45,7 +45,7 @@
         </c:otherwise>
       </c:choose>
       <c:set var="recDispName" value="${strat.displayType}"/>
-      <c:set var="recTabName" value="${fn:substring(recDispName, 0, fn:indexOf(recDispName, ' '))}"/>
+      <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
 
       <c:set var="typeC" value="${typeC+1}"/>
       <c:if test="${typeC != 1}">
@@ -89,7 +89,7 @@
   <c:set var="type" value="${strategyEntry.key}"/>
   <c:set var="strategies" value="${strategyEntry.value}"/>
   <c:set var="recDispName" value="${strategies[0].displayType}"/>
-  <c:set var="recTabName" value="${fn:substring(recDispName, 0, fn:indexOf(recDispName, ' '))}"/>
+  <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
 
   <c:if test="${fn:length(strategies) > 0}">
     <div class="panel_${recTabName} history_panel unsaved-strategies">
@@ -104,7 +104,7 @@
   <c:set var="type" value="${strategyEntry.key}"/>
   <c:set var="strategies" value="${strategyEntry.value}"/>
   <c:set var="recDispName" value="${strategies[0].displayType}"/>
-  <c:set var="recTabName" value="${fn:substring(recDispName, 0, fn:indexOf(recDispName, ' '))}"/>
+  <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
 
   <c:if test="${fn:length(strategies) > 0}">
     <div class="panel_${recTabName} history_panel saved-strategies">
