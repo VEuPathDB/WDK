@@ -248,7 +248,7 @@ public class ProcessBooleanAction extends Action {
                     + PARAM_IMPORT_STEP + " is missing.");
 
         if (operator == null)
-            throw new WdkUserException("The required operator is missing.");
+            throw new WdkUserException("You must specify how to combine your searches.");
 				       //  + PARAM_BOOLEAN_OPERATOR + " is missing.");
 
         StepBean previousStep = rootStep;
