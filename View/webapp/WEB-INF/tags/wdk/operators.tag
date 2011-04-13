@@ -12,6 +12,11 @@
               required="true"
               description=""
 %>
+<%@ attribute name="spanStage"
+              required="true"
+              description=""
+%>
+
 
 <c:set var="action" value="${requestScope.action}"/>
 <c:set var="newStepId">
@@ -85,7 +90,7 @@ Set operations (intersect, union and minus) are not available (grayed out) becau
        <c:if test="${allowSpan}">
       <tr title="${relativeToHelp}" >	
         <c:set var="checked"><c:if test="${param.operation == 'SPAN'}">checked="checked"</c:if></c:set>
-  	<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="span_from_question"></td>
+  	<td class="opcheck" valign="middle"><input ${checked} onclick="changeButtonText(this)" name="boolean" value="SPAN" type="radio" stage="${spanStage}"></td>
 	<td class="operation SPAN overlap"></td>
 	<td colspan="5">&nbsp;<span class="current_step_num">${currentStepId}</span>&nbsp;<b style="font-size:120%">Relative to</b>&nbsp;<span class="new_step_num">${newStepId}</span> <span style="font-size:120%">, using genomic locations</span></td>
       </tr>

@@ -126,6 +126,7 @@ ${Question_Header}
 <%-- operators table --%>
 <wdk:operators  allowSpan="${allowSpan}"
 		operation="${param.operation}"
+                spanStage="span_from_question"
 />
 
       </div>   
