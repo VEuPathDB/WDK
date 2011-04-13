@@ -18,7 +18,7 @@
 		prepCanvas();
 		attachHandlers();
 		//Should find a way to eliminate this call.
-		updateStepNumberReferences(); //This gets called again later, by the wizard mechanism
+		// updateStepNumberReferences(); //This gets called again later, by the wizard mechanism
 		initOutputOptions();
 	}
 

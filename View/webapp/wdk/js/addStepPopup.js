@@ -454,16 +454,6 @@ function setPopupContent(data) {
 }
 
 // deprecated
-function updateStepNumberReferences() {
-    var stratBackId = $("#strategyId").text();
-    var stepBackId = $("#stepId").text();
-    var step = getStepFromBackId(stratBackId, stepBackId);
-    var stepNumber = parseInt(step.frontId);
-    $("span.current_step_num").text(stepNumber);
-    $("span.new_step_num").text((stepNumber + 1));
-}
-
-// deprecated
 function openAddStrategy(strat_id){
 	original_Query_Form_Text = $("#query_form").html();
 	OpenOperationBox(strat_id, (global_isAdd ? undefined : step_id));
