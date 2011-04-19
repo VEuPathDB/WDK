@@ -39,7 +39,7 @@
                 <div id="span_logic" class="qf_section">
                     <ul class="menu_section">
 
-	<li class="category" onclick="callWizard(null,this,'sl_recordclasses',2)">Run a new Search</li>
+	<li class="category" onclick="callWizard(null,this,'sl_recordclasses',2)">Run a new Search for</li>
                        
 	<%-- only allow transform if the step has previous step --%>
 	<c:if test="${step.previousStep != null || action != 'insert'}">
@@ -60,7 +60,7 @@
 
 	</c:if>
 
-	<li class="category" onclick="callWizard(null,this,'sl_baskets',2)">Add the Basket</li>
+	<li class="category" onclick="callWizard(null,this,'sl_baskets',2)">Add contents of Basket</li>
  	<li class="category" onclick="callWizard(null,this,'sl_strategies',2)">Add existing Strategy</li>
 
 	<%-- add rest of transforms --%>
