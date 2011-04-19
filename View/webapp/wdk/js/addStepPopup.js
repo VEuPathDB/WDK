@@ -369,7 +369,7 @@ function callWizard(url, ele, id, sec, action){
 				$(ele).attr("action", "javascript:void(0)");
 				$.ajax({
 					url: url,
-					type: "get",
+					type: "post",
 					dataType: "html",
 					data: parseInputs()+"&state="+p_state,
 					beforeSend: function(){
