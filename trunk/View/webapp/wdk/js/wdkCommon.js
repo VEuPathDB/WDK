@@ -7,6 +7,9 @@ jQuery(document).ready(function() {
 	var testCookieName = 'wdkTestCookie';
 	var testCookieValue = 'test';
 	var wdk = new WDK();
+
+        window.wdk = wdk;
+
 	wdk.createCookie(testCookieName,testCookieValue,1);
 	var test = wdk.readCookie(testCookieName);
 	if (test == 'test') {
@@ -48,6 +51,33 @@ function WDK() {
     	this.createCookie(name,"",-1);
     }
 
+    // ------------------------------------------------------------------------
+    // Event registration & handling code. The proper event will be invoked 
+    // during the page loading of the assign type. For example, question events
+    // will be invoked on the loading of stand-alone question page, and the
+    // loading of question page in the add/revise step popup box.
+    // ------------------------------------------------------------------------
+    this.questionEvents = new Array();
+    this.resultEvents = new Array();
+    this.recordEvents = new Array();
+
+    this.registerQuestionEvent = function(handler) {
+        this.questionEvents.push(handler);
+    }
+
+    this.registerResultEvent = function(handler) {
+        this.resultEvents.push(handler);
+    }
+
+    this.registerRecordEvent = function(handler) {
+        this.recordEvents.push(handler);
+    }
+
+    this.onloadQuestion = function() {
+        for (var handler in this.questionEvents) {
+            handler();
+        }
+    }
 }
 
 
