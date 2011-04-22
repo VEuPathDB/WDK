@@ -4,24 +4,24 @@
 
 // On all pages, check that cookies are enabled.
 jQuery(document).ready(function() {
-	var testCookieName = 'wdkTestCookie';
-	var testCookieValue = 'test';
-	var wdk = new WDK();
-
-        window.wdk = wdk;
-
-	wdk.createCookie(testCookieName,testCookieValue,1);
-	var test = wdk.readCookie(testCookieName);
-	if (test == 'test') {
-		wdk.eraseCookie(testCookieName);
-	}
-	else {
-		jQuery.blockUI({message: "<div><h2>Cookies are disabled</h2><p>This site requires cookies.  Please enable them in your browser preferences.</p><input type='submit' value='OK' onclick='jQuery.unblockUI();' /></div>", css: {position : 'absolute', backgroundImage : 'none'}});
-	}
+    if (window.wdk == undefined) window.wdk = new WDK();
 });
 
 
 function WDK() {
+
+    this.initialize = function() {
+        var testCookieName = 'wdkTestCookie';
+        var testCookieValue = 'test';
+
+        this.createCookie(testCookieName,testCookieValue,1);
+        var test = this.readCookie(testCookieName);
+        if (test == 'test') {
+            this.eraseCookie(testCookieName);
+        } else {
+            jQuery.blockUI({message: "<div><h2>Cookies are disabled</h2><p>This site requires cookies.  Please enable them in your browser preferences.</p><input type='submit' value='OK' onclick='jQuery.unblockUI();' /></div>", css: {position : 'absolute', backgroundImage : 'none'}});
+        }
+    }
 
     // -------------------------------------------------------------------------
     // cookie handling methods
@@ -74,10 +74,27 @@ function WDK() {
     }
 
     this.onloadQuestion = function() {
-        for (var handler in this.questionEvents) {
+        for (var i= 0; i < this.questionEvents.length; i++) {
+            var handler = this.questionEvents[i];
             handler();
         }
     }
+
+    this.onloadResult = function() {
+        for (var i= 0; i < this.resultEvents.length; i++) {
+            var handler = this.resultEvents[i];
+            handler();
+        }
+    }
+
+    this.onloadRecord = function() {
+        for (var i= 0; i < this.recordEvents.length; i++) {
+            var handler = this.recordEvents[i];
+            handler();
+        }
+    }
+
+    this.initialize();
 }
 
 
