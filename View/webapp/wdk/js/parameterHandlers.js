@@ -11,8 +11,8 @@ function initParamHandlers() {
     if(isPopup == undefined) isPopup = false;
 
     // unset the flags
-    delete window.isPopup;
-    delete window.isEdit;
+    if (window.isPopup != undefined) delete window.isPopup;
+    if (window.isEdit != undefined) delete window.isEdit;
 
 
 	dependedParams = new Array();
