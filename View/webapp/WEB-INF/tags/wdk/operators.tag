@@ -17,6 +17,9 @@
               description=""
 %>
 
+<%--
+I think we do not really need operation, it can be read from param.operation
+--%>
 
 <c:set var="action" value="${requestScope.action}"/>
 <c:set var="newStepId">
@@ -31,10 +34,20 @@
 <c:choose>
 <c:when test="${allowBoolean == false}">
                 <c:set var="disabled" value="DISABLED"/>
-                <c:set var="opaque" value="opacity:0.3;filters:alpha(opacity=30);"/>
+                <c:set var="opaque" value="opacity:0.3;filter:alpha(opacity=30);"/> 
                 <c:set var="explanation" value="
 Set operations (intersect, union and minus) are not available (grayed out) because your most recent search returns IDs that are not the same type as those in  your previous result.  Set operations only work between sets of IDs that have the same type (e.g., a set of Genes with a set of Genes). You may still combine your new search with your previous results by using -Relative to-, which uses relative locations on the genome. Relative operations work on mixed results such as Genes and SNPs.
 "/>
+	<c:set var="intersectHelp" value="
+		${explanation}
+	"/>
+	<c:set var="unionHelp" value="
+		${explanation}
+	"/>
+	<c:set var="minusHelp" value="
+		${explanation}
+	"/>
+
 </c:when>
 <c:otherwise>
 	<c:set var="intersectHelp" value="
@@ -54,34 +67,33 @@ Set operations (intersect, union and minus) are not available (grayed out) becau
 "/>
 
       <center><table>
-
-       <tr style="${opaque}" title="${explanation}">
+	   <tr title="${explanation}"> 
 
             <c:set var="checked"><c:if test="${param.operation == 'INTERSECT'}">checked="checked"</c:if></c:set>
-            <td title="${intersectHelp}" class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="INTERSECT" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
-            <td title="${intersectHelp}" class="operation INTERSECT"></td>
-            <td title="${intersectHelp}" >&nbsp;<span class="current_step_num">${currentStepId}</span>&nbsp;<b style="font-size:120%">Intersect</b>&nbsp;<span class="new_step_num">${newStepId}</span></td>
+            <td style="${opaque}" title="${intersectHelp}" class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="INTERSECT" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
+            <td style="${opaque}"  title="${intersectHelp}" class="operation INTERSECT"></td>
+            <td style="${opaque}" title="${intersectHelp}" >&nbsp;<span class="current_step_num">${currentStepId}</span>&nbsp;<b style="font-size:120%">Intersect</b>&nbsp;<span class="new_step_num">${newStepId}</span></td>
 
                 <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
             <c:set var="checked"><c:if test="${param.operation == 'NOT'}">checked="checked"</c:if></c:set>
-            <td title="${minusHelp}" class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="NOT" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
-            <td title="${minusHelp}" class="operation MINUS"></td>
-            <td title="${minusHelp}" >&nbsp;<span class="current_step_num">${currentStepId}</span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="new_step_num">${newStepId}</span></td>
+            <td style="${opaque}"  title="${minusHelp}" class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="NOT" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
+            <td style="${opaque}" title="${minusHelp}" class="operation MINUS"></td>
+            <td style="${opaque}" title="${minusHelp}" >&nbsp;<span class="current_step_num">${currentStepId}</span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="new_step_num">${newStepId}</span></td>
       </tr>
-      <tr style="${opaque}" title="${explanation}">
+      <tr title="${explanation}">
 
  	    <c:set var="checked"><c:if test="${param.operation == 'UNION'}">checked="checked"</c:if></c:set>
-            <td title="${unionHelp}" class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="UNION" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
-            <td title="${unionHelp}" class="operation UNION"></td>
-            <td title="${unionHelp}" >&nbsp;<span class="current_step_num">${currentStepId}</span>&nbsp;<b style="font-size:120%">Union</b>&nbsp;<span class="new_step_num">${newStepId}</span></td>
+            <td style="${opaque}" title="${unionHelp}" class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="UNION" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
+            <td style="${opaque}" title="${unionHelp}" class="operation UNION"></td>
+            <td style="${opaque}" title="${unionHelp}" >&nbsp;<span class="current_step_num">${currentStepId}</span>&nbsp;<b style="font-size:120%">Union</b>&nbsp;<span class="new_step_num">${newStepId}</span></td>
 
                 <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
 
             <c:set var="checked"><c:if test="${param.operation == 'RMINUS'}">checked="checked"</c:if></c:set>
-            <td title="${minusHelp}" class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="RMINUS" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
-            <td title="${minusHelp}" class="operation RMINUS"></td>
-            <td title="${minusHelp}" >&nbsp;<span class="new_step_num">${newStepId}</span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="current_step_num">${currentStepId}</span></td>
+            <td style="${opaque}" title="${minusHelp}" class="opcheck"><input onclick="changeButtonText(this)" name="boolean" value="RMINUS" type="radio" stage="process_boolean" ${disabled} ${checked}></td>
+            <td style="${opaque}" title="${minusHelp}" class="operation RMINUS"></td>
+            <td style="${opaque}" title="${minusHelp}" >&nbsp;<span class="new_step_num">${newStepId}</span>&nbsp;<b style="font-size:120%">Minus</b>&nbsp;<span class="current_step_num">${currentStepId}</span></td>
 
       </tr>
 
