@@ -2,6 +2,7 @@ DROP SEQUENCE IF EXISTS wdkengine.migration_pkseq;
 DROP SEQUENCE IF EXISTS wdkengine.dataset_indices_pkseq;
 DROP SEQUENCE IF EXISTS wdkengine.answers_pkseq;
 
+DROP SEQUENCE IF EXISTS wdkuser.migration_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.favorites_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.user_baskets_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.user_datasets2_pkseq;
@@ -152,7 +153,7 @@ CREATE TABLE wdkuser.users
   city VARCHAR(255),
   state VARCHAR(255),
   zip_code VARCHAR(20),
-  phone_number VARCHAR(50),
+  phone_NUMERIC VARCHAR(50),
   country VARCHAR(255),
   PREV_USER_ID NUMERIC(12),
   migration NUMERIC(12),
@@ -217,14 +218,14 @@ CREATE TABLE wdkuser.steps
       REFERENCES wdkengine.answers (answer_id)
 );
 
-CREATE INDEX wdkuser.steps_idx01 ON wdkuser.steps (answer_id, user_id, left_child_id);
-CREATE INDEX wdkuser.steps_idx02 ON wdkuser.steps (user_id, answer_id, right_child_id);
-CREATE INDEX wdkuser.steps_idx03 ON wdkuser.steps (user_id, display_id, last_run_time);
-CREATE INDEX wdkuser.steps_idx04 ON wdkuser.steps (user_id, answer_id, is_deleted);
-CREATE INDEX wdkuser.steps_idx05 ON wdkuser.steps (display_id, user_id, answer_id);
-CREATE INDEX wdkuser.steps_idx06 ON wdkuser.steps (is_valid, user_id);
-CREATE INDEX wdkuser.steps_idx07 ON wdkuser.steps (left_child_id, user_id);
-CREATE INDEX wdkuser.steps_idx08 ON wdkuser.steps (right_child_id, user_id);
+CREATE INDEX steps_idx01 ON wdkuser.steps (answer_id, user_id, left_child_id);
+CREATE INDEX steps_idx02 ON wdkuser.steps (user_id, answer_id, right_child_id);
+CREATE INDEX steps_idx03 ON wdkuser.steps (user_id, display_id, last_run_time);
+CREATE INDEX steps_idx04 ON wdkuser.steps (user_id, answer_id, is_deleted);
+CREATE INDEX steps_idx05 ON wdkuser.steps (display_id, user_id, answer_id);
+CREATE INDEX steps_idx06 ON wdkuser.steps (is_valid, user_id);
+CREATE INDEX steps_idx07 ON wdkuser.steps (left_child_id, user_id);
+CREATE INDEX steps_idx08 ON wdkuser.steps (right_child_id, user_id);
 
 
 CREATE TABLE wdkuser.step_params
@@ -269,13 +270,13 @@ CREATE TABLE wdkuser.strategies
 );
 
 
-CREATE INDEX wdkuser.strategies_idx01 ON wdkuser.strategies (signature, project_id);
-CREATE INDEX wdkuser.strategies_idx02 ON wdkuser.strategies (project_id, user_id, display_id, is_deleted);
-CREATE INDEX wdkuser.strategies_idx03 ON wdkuser.strategies (user_id, project_id, root_step_id, is_deleted, is_saved);
-CREATE INDEX wdkuser.strategies_idx04 ON wdkuser.strategies (project_id, user_id, is_deleted, is_saved, name);
+CREATE INDEX strategies_idx01 ON wdkuser.strategies (signature, project_id);
+CREATE INDEX strategies_idx02 ON wdkuser.strategies (project_id, user_id, display_id, is_deleted);
+CREATE INDEX strategies_idx03 ON wdkuser.strategies (user_id, project_id, root_step_id, is_deleted, is_saved);
+CREATE INDEX strategies_idx04 ON wdkuser.strategies (project_id, user_id, is_deleted, is_saved, name);
 
 
-CREATE TABLE wdkuser.user_datasets2
+CREATE TABLE wdkuser.user_datasets
 (
   user_dataset_id NUMERIC(12) NOT NULL,
   dataset_id NUMERIC(12) NOT NULL,
@@ -295,7 +296,7 @@ CREATE TABLE wdkuser.user_datasets2
 
 CREATE TABLE wdkuser.user_baskets
 (
-  basket_id NUMBER(12) NOT NULL,
+  basket_id NUMERIC(12) NOT NULL,
   user_id NUMERIC(12) NOT NULL,
   project_id VARCHAR(50) NOT NULL,
   record_class VARCHAR(100) NOT NULL,
@@ -307,13 +308,13 @@ CREATE TABLE wdkuser.user_baskets
       REFERENCES wdkuser.users (user_id)
 );
 
-CREATE INDEX wdkuser.user_baskets_idx01 ON wdkuser.user_baskets (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
-CREATE INDEX wdkuser.user_baskets_idx02 ON wdkuser.user_baskets (project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
+CREATE INDEX user_baskets_idx01 ON wdkuser.user_baskets (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
+CREATE INDEX user_baskets_idx02 ON wdkuser.user_baskets (project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
 
 
 CREATE TABLE wdkuser.favorites
 (
-  favorite_id NUMBER(12) NOT NULL,
+  favorite_id NUMERIC(12) NOT NULL,
   user_id NUMERIC(12) NOT NULL,
   project_id VARCHAR(50) NOT NULL,
   record_class VARCHAR(100) NOT NULL,
@@ -327,5 +328,5 @@ CREATE TABLE wdkuser.favorites
       REFERENCES wdkuser.users (user_id)
 );
 
-CREATE INDEX wdkuser.favorites_idx01 ON wdkuser.favorites (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
-CREATE INDEX wdkuser.favorites_idx02 ON wdkuser.favorites (record_group, user_id, project_id);
+CREATE INDEX favorites_idx01 ON wdkuser.favorites (user_id, project_id, record_class, pk_column_1, pk_column_2, pk_column_3);
+CREATE INDEX favorites_idx02 ON wdkuser.favorites (record_group, user_id, project_id);
