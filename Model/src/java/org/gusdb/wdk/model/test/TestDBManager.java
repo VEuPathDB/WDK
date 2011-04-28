@@ -112,12 +112,14 @@ public class TestDBManager extends BaseCLI {
             throws Exception {
         for (int t = 0; t < tables.length; t++) {
             File nextTable = new File(tables[t]);
-            if ("CVS".equals(nextTable.getName())) continue;
+            if (!nextTable.isFile()) continue;
+            
+            String tableName = nextTable.getName();
+            if ("CVS".equals(tableName) || tableName.startsWith(".")) continue;
 
             BufferedReader reader = new BufferedReader(
                     new FileReader(nextTable));
             String firstLine = reader.readLine();
-            String tableName = nextTable.getName();
 
             try {
                 Map<String, String> columnTypes = createTable(tableName,
