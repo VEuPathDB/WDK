@@ -283,7 +283,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         AnswerValue answerValue = new AnswerValue(user, this, qi, pageStart,
                 pageEnd, sortingAttributes, filter);
         String[] summaryAttributes = user.getSummaryAttributes(getFullName());
-        answerValue.setSumaryAttributes(summaryAttributes);
+        answerValue.setSummaryAttributes(summaryAttributes);
 
         return answerValue;
     }

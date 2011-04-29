@@ -120,7 +120,7 @@ public class StepFactory {
                 dependentValues, pageStart, pageEnd, sortingAttributes, filter,
                 validate, assignedWeight);
         if (summaryAttributes != null) {
-            answerValue.setSumaryAttributes(summaryAttributes);
+            answerValue.setSummaryAttributes(summaryAttributes);
         }
         Answer answer = answerValue.getAnswer();
 
