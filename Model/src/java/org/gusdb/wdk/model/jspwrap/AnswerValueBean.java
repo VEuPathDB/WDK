@@ -426,7 +426,7 @@ public class AnswerValueBean {
      * @see org.gusdb.wdk.model.AnswerValue#addSumaryAttribute(java.lang.String)
      */
     public void setSumaryAttribute(String[] attributeNames) {
-        answerValue.setSumaryAttributes(attributeNames);
+        answerValue.setSummaryAttributes(attributeNames);
     }
 
     public void setFilter(String filterName) throws WdkModelException {

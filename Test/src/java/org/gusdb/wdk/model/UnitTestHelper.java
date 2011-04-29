@@ -32,7 +32,7 @@ public class UnitTestHelper {
     private static final Logger logger = Logger.getLogger(UnitTestHelper.class);
 
     // use a fixed random number generator in order to use cache.
-    private static Random random = new Random();
+    private static Random random = new Random(1);
 
     private static WdkModel wdkModel;
     private static User guest;

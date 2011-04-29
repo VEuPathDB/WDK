@@ -153,7 +153,7 @@ CREATE TABLE wdkuser.users
   city VARCHAR(255),
   state VARCHAR(255),
   zip_code VARCHAR(20),
-  phone_NUMERIC VARCHAR(50),
+  phone_number VARCHAR(50),
   country VARCHAR(255),
   PREV_USER_ID NUMERIC(12),
   migration NUMERIC(12),
