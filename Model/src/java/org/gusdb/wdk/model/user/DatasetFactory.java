@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model.user;
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -425,6 +426,10 @@ public class DatasetFactory {
             }
             if (values.size() % 1000 != 0)
                 psInsert.executeBatch();
+        } catch (BatchUpdateException ex) {
+            logger.error(ex);
+            ex.getNextException().printStackTrace();
+            throw ex;
         } finally {
             if (psInsert != null)
                 psInsert.close();

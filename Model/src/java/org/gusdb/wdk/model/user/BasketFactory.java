@@ -269,7 +269,7 @@ public class BasketFactory {
                 + ", count(*) AS record_size "
                 + " FROM (SELECT DISTINCT * FROM " + schema + TABLE_BASKET
                 + " WHERE " + COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID
-                + " = ?) " + " GROUP BY " + COLUMN_RECORD_CLASS;
+                + " = ?) AS t " + " GROUP BY " + COLUMN_RECORD_CLASS;
         DataSource ds = wdkModel.getUserPlatform().getDataSource();
         ResultSet rs = null;
         try {
@@ -609,9 +609,11 @@ public class BasketFactory {
                 + UserFactory.COLUMN_SIGNATURE + " = $$" + PARAM_USER_SIGNATURE
                 + "$$ AND b." + COLUMN_PROJECT_ID + " = '" + projectId
                 + "' AND b." + COLUMN_RECORD_CLASS + " = '" + rcName + "'";
+        // force the primary key column to be string, so that it can join with
+        // string columns in basket.
         for (int i = 1; i <= pkColumns.length; i++) {
-            sql += " AND b." + Utilities.COLUMN_PK_PREFIX + i + " = i."
-                    + pkColumns[i - 1];
+            sql += " AND b." + Utilities.COLUMN_PK_PREFIX + i;
+            sql += "     = i." + pkColumns[i - 1];
         }
         query.setSql(sql);
         querySet.addQuery(query);
