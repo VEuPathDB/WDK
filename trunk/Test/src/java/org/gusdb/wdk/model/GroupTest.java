@@ -92,7 +92,10 @@ public class GroupTest {
     @Test(expected = WdkModelException.class)
     public void testGetInvalidGroup() throws WdkModelException {
         String gName = "NonexistGroup";
-        for (GroupSet groupSet : wdkModel.getAllGroupSets()) {
+        GroupSet[] groupSets = wdkModel.getAllGroupSets();
+        if (groupSets.length == 0)
+            throw new WdkModelException("Exception is expected.");
+        for (GroupSet groupSet : groupSets) {
             groupSet.getGroup(gName);
         }
     }
