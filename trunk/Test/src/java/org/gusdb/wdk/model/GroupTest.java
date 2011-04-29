@@ -3,6 +3,15 @@
  */
 package org.gusdb.wdk.model;
 
+import java.util.Map;
+
+import org.gusdb.wdk.model.jspwrap.GroupBean;
+import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.param.Param;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -96,4 +105,21 @@ public class GroupTest {
         String fullName = "NonexistGroupSet.NonexistGroup";
         wdkModel.resolveReference(fullName);
     }
+    
+    
+    @Test
+    public void testGetParamGroups() throws Exception {
+        WdkModel wdkModel = UnitTestHelper.getModel();
+        WdkModelBean wdkModelBean = new WdkModelBean(wdkModel);
+        for (QuestionSetBean questionSet : wdkModelBean.getQuestionSets()) {
+            for(QuestionBean question : questionSet.getQuestions()) {
+                Map<String, ParamBean> params = question.getParamsMap();
+                if (params.size() == 0) continue;
+                
+                Map<GroupBean, Map<String, ParamBean>> groups = question.getParamMapByGroups();
+                Assert.assertTrue(groups.size() > 0); 
+            }
+        }
+    }
+
 }
