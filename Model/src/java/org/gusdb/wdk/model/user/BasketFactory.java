@@ -269,7 +269,7 @@ public class BasketFactory {
                 + ", count(*) AS record_size "
                 + " FROM (SELECT DISTINCT * FROM " + schema + TABLE_BASKET
                 + " WHERE " + COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID
-                + " = ?) AS t " + " GROUP BY " + COLUMN_RECORD_CLASS;
+                + " = ?) t " + " GROUP BY " + COLUMN_RECORD_CLASS;
         DataSource ds = wdkModel.getUserPlatform().getDataSource();
         ResultSet rs = null;
         try {
