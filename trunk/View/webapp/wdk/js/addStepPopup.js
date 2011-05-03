@@ -157,8 +157,8 @@ function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isO
 	}
 	var quesDescription = $("#query-description-section",qf);//data);
 	var dataSources = $("#attributions-section",qf);
-	$("input[value=Get Answer]",quesForm).val("Run Step");
-	$("input[value=Run Step]",quesForm).attr("id","executeStepButton");
+	$("input[value='Get Answer']",quesForm).val("Run Step");
+	$("input[value='Run Step']",quesForm).attr("id","executeStepButton");
 	$(".params", quesForm).wrap("<div class='filter params'></div>");
 	$(".params", quesForm).attr("style", "margin-top:15px;");
 
