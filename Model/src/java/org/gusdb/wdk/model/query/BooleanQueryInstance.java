@@ -166,7 +166,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
         sql.append("(SELECT 1 AS wdk_t, l.* FROM (" + leftSql + ") l) ");
         sql.append(operator);
         sql.append(" (SELECT 2 AS wdk_t, r.* FROM (" + rightSql + ") r)");
-        sql.append(") GROUP BY ");
+        sql.append(") t GROUP BY ");
         for (int i = 0; i < pkColumns.length; i++) {
             sql.append((i == 0) ? "" : ",");
             sql.append(pkColumns[i]);
@@ -193,7 +193,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
         sql.append("(SELECT 1 AS wdk_t, l.* FROM (" + leftSql + ") l) ");
         sql.append(operator);
         sql.append(" (SELECT 2 AS wdk_t, r.* FROM (" + rightSql + ") r)");
-        sql.append(") GROUP BY ");
+        sql.append(") t GROUP BY ");
         for (int i = 0; i < pkColumns.length; i++) {
             sql.append((i == 0) ? "" : ",");
             sql.append(pkColumns[i]);
@@ -218,8 +218,8 @@ public class BooleanQueryInstance extends SqlQueryInstance {
             rightPiece.append(column);
             sql.append("o." + column + ", ");
         }
-        leftPiece.append(" FROM (" + leftSql + ")");
-        rightPiece.append(" FROM (" + rightSql + ")");
+        leftPiece.append(" FROM (" + leftSql + ") ls ");
+        rightPiece.append(" FROM (" + rightSql + ") rs ");
         // get extra columns from the left sql; the column weight has to be the
         // last column to ensure the data are correctly inserted.
         sql.append("o." + Utilities.COLUMN_WEIGHT + " FROM ");

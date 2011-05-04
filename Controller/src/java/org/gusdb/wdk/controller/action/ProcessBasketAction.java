@@ -88,6 +88,7 @@ public class ProcessBasketAction extends Action {
             throws Exception {
         logger.debug("Entering ProcessBasketAction...");
 
+        try {
         UserBean user = ActionUtility.getUser(servlet, request);
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         String action = request.getParameter(PARAM_ACTION);
@@ -127,6 +128,11 @@ public class ProcessBasketAction extends Action {
 
         logger.debug("Leaving ProcessBasketAction...");
         return null;
+        } catch (Exception ex) {
+            logger.error(ex);
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 
     private RecordClassBean getRecordClass(HttpServletRequest request,
