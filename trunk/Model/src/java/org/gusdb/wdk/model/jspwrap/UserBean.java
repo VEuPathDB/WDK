@@ -1342,12 +1342,17 @@ public class UserBean /* implements Serializable */{
     }
 
     public int getBasketCount() throws SQLException {
-        Map<String, Integer> baskets = getBasketCounts();
-        int total = 0;
-        for (String key : baskets.keySet()) {
-            total += baskets.get(key);
-        }
+        try {
+            Map<String, Integer> baskets = getBasketCounts();
+            int total = 0;
+            for (String key : baskets.keySet()) {
+                total += baskets.get(key);
+            }
         return total;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 
     /**
