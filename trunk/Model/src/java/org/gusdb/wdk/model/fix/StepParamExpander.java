@@ -94,12 +94,9 @@ public class StepParamExpander extends BaseCLI {
                     String paramName = pair[0].trim();
                     String paramValue = pair[1].trim();
 
-                    int stepParamId = platform.getNextId(schema, "step_params");
-
-                    psInsert.setInt(1, stepParamId);
-                    psInsert.setInt(2, stepId);
-                    psInsert.setString(3, paramName);
-                    psInsert.setString(4, paramValue);
+                    psInsert.setInt(1, stepId);
+                    psInsert.setString(2, paramName);
+                    psInsert.setString(3, paramValue);
                     psInsert.addBatch();
                 }
                 psInsert.executeBatch();
@@ -166,8 +163,8 @@ public class StepParamExpander extends BaseCLI {
         String schema = "";
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(schema + "step_params ");
-        sql.append(" (step_param_id, step_id, param_name, param_value) "
-                + "  VALUES (?, ?, ?, ?)");
+        sql.append(" (step_id, param_name, param_value) "
+                + "  VALUES (?, ?, ?)");
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         return SqlUtils.getPreparedStatement(dataSource, sql.toString());
