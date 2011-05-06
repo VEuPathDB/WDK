@@ -35,7 +35,8 @@ import org.json.JSONException;
  */
 public class StepParamExpander extends BaseCLI {
 
-    private static final Logger logger = Logger.getLogger(StepParamExpander.class);
+    private static final Logger logger = Logger
+            .getLogger(StepParamExpander.class);
 
     public static void main(String[] args) throws Exception {
         String cmdName = System.getProperty("cmdName");
@@ -67,9 +68,12 @@ public class StepParamExpander extends BaseCLI {
         ResultSet resultSet = null;
         PreparedStatement psInsert = null;
         try {
-            String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
+            createParamTable(wdkModel);
+
+            String schema = wdkModel.getModelConfig().getUserDB()
+                    .getUserSchema();
             resultSet = prepareSelect(wdkModel, schema);
-            psInsert = prepareInsert(wdkModel, schema);
+            psInsert = prepareInsert(wdkModel);
             DBPlatform platform = wdkModel.getUserPlatform();
 
             int count = 0;
@@ -77,9 +81,11 @@ public class StepParamExpander extends BaseCLI {
                 int stepId = resultSet.getInt("step_id");
                 String clob = platform.getClobData(resultSet, "display_params");
 
-                if (clob == null) continue;
+                if (clob == null)
+                    continue;
                 clob = clob.trim();
-                if (!clob.startsWith("{")) continue;
+                if (!clob.startsWith("{"))
+                    continue;
 
                 List<String[]> values = parseClob(wdkModel, clob);
 
@@ -88,12 +94,9 @@ public class StepParamExpander extends BaseCLI {
                     String paramName = pair[0].trim();
                     String paramValue = pair[1].trim();
 
-                    int stepParamId = platform.getNextId(schema, "step_params");
-
-                    psInsert.setInt(1, stepParamId);
-                    psInsert.setInt(2, stepId);
-                    psInsert.setString(3, paramName);
-                    psInsert.setString(4, paramValue);
+                    psInsert.setInt(1, stepId);
+                    psInsert.setString(2, paramName);
+                    psInsert.setString(3, paramValue);
                     psInsert.addBatch();
                 }
                 psInsert.executeBatch();
@@ -109,26 +112,28 @@ public class StepParamExpander extends BaseCLI {
         }
     }
 
-    // private void createParamTable(WdkModel wdkModel, String schema)
-    // throws SQLException, WdkModelException, WdkUserException {
-    // DBPlatform platform = wdkModel.getUserPlatform();
-    // DataSource dataSource = platform.getDataSource();
-    //
-    // // check if table exists
-    // int length = schema.length();
-    // String s = (length == 0) ? null : schema.substring(0, length - 1);
-    // if (platform.checkTableExists(s, "step_params")) return;
-    //
-    // SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE TABLE " + schema
-    // + " step_params ( step_id NUMBER(12) NOT NULL, "
-    // + " param_name VARCHAR(200) NOT NULL, "
-    // + " param_value VARCHAR(4000), migration NUMBER(12))",
-    // "wdk-create-table");
-    //
-    // SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX " + schema
-    // + "step_params_idx02 ON step_params (step_id, param_name)",
-    // "wdk-create-indx");
-    // }
+    private void createParamTable(WdkModel wdkModel) throws SQLException,
+            WdkModelException, WdkUserException {
+        DBPlatform platform = wdkModel.getUserPlatform();
+        DataSource dataSource = platform.getDataSource();
+
+        // check if table exists
+        String schema = "";
+        int length = schema.length();
+        String s = (length == 0) ? null : schema.substring(0, length - 1);
+        if (platform.checkTableExists(s, "step_params"))
+            return;
+
+        SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE TABLE " + schema
+                + "step_params ( step_id NUMBER(12) NOT NULL, "
+                + " param_name VARCHAR(200) NOT NULL, "
+                + " param_value VARCHAR(4000), migration NUMBER(12))",
+                "wdk-create-table");
+
+        SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX " + schema
+                + "step_params_idx02 ON step_params (step_id, param_name)",
+                "wdk-create-indx");
+    }
 
     private ResultSet prepareSelect(WdkModel wdkModel, String schema)
             throws SQLException, WdkUserException, WdkModelException {
@@ -153,11 +158,13 @@ public class StepParamExpander extends BaseCLI {
                 "wdk-select-step-params");
     }
 
-    private PreparedStatement prepareInsert(WdkModel wdkModel, String schema)
+    private PreparedStatement prepareInsert(WdkModel wdkModel)
             throws SQLException {
+        String schema = "";
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(schema + "step_params ");
-        sql.append(" (step_param_id, step_id, param_name, param_value) VALUES (?, ?, ?, ?)");
+        sql.append(" (step_id, param_name, param_value) "
+                + "  VALUES (?, ?, ?)");
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         return SqlUtils.getPreparedStatement(dataSource, sql.toString());
@@ -176,11 +183,13 @@ public class StepParamExpander extends BaseCLI {
             if (value.startsWith(prefix)) {
                 String checksum = value.substring(prefix.length()).trim();
                 String decompressed = queryFactory.getClobValue(checksum);
-                if (decompressed != null) value = decompressed;
+                if (decompressed != null)
+                    value = decompressed;
             }
             String[] terms = value.split(",");
             for (String term : terms) {
-                if (term.length() > 4000) term = term.substring(0, 4000);
+                if (term.length() > 4000)
+                    term = term.substring(0, 4000);
                 newValues.add(new String[] { paramName, term });
             }
         }
