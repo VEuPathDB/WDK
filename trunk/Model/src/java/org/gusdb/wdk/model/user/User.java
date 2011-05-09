@@ -363,6 +363,15 @@ public class User /* implements Serializable */{
         userRoles.remove(userRole);
     }
 
+    public boolean containsUserRole(String userRole) {
+        return userRoles.contains(userRole);
+    }
+
+    void setUserRole(Set<String> roles) {
+        this.userRoles.clear();
+        this.userRoles.addAll(roles);
+    }
+
     public String getFrontAction() {
         return frontAction;
     }
@@ -683,7 +692,8 @@ public class User /* implements Serializable */{
             NoSuchAlgorithmException, JSONException, SQLException {
         Strategy[] strategies = getActiveStrategies();
         List<Strategy> list = new ArrayList<Strategy>();
-        for(Strategy strategy : strategies) list.add(strategy);
+        for (Strategy strategy : strategies)
+            list.add(strategy);
         return formatStrategiesByRecordClass(list);
     }
 
@@ -877,13 +887,13 @@ public class User /* implements Serializable */{
     public String getProjectPreference(String key) {
         return projectPreferences.get(key);
     }
-
+    
     public void setGlobalPreference(String prefName, String prefValue) {
         if (prefValue == null)
             prefValue = prefName;
         globalPreferences.put(prefName, prefValue);
     }
-
+    
     public String getGlobalPreference(String key) {
         return globalPreferences.get(key);
     }
@@ -900,7 +910,13 @@ public class User /* implements Serializable */{
         globalPreferences.clear();
         projectPreferences.clear();
     }
-
+    
+    void setPreferences(List<Map<String, String>> preferences) {
+        clearPreferences();
+        globalPreferences.putAll(preferences.get(0));
+        projectPreferences.putAll(preferences.get(1));
+    }
+    
     public void changePassword(String oldPassword, String newPassword,
             String confirmPassword) throws WdkUserException, WdkModelException {
         userFactory.changePassword(email, oldPassword, newPassword,

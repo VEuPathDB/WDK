@@ -105,4 +105,18 @@ public class UserTest {
             // expected, user, doesn't exist
         }
     }
+    
+    @Test
+    public void testGlobalPreference() {
+        
+        
+        
+        Assert.assertTrue(false);
+    }
+    
+    @Test
+    public void testProjectPreference() {
+        
+        Assert.assertTrue(false);
+    }
 }
