@@ -13,9 +13,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.regex.Matcher;
 
 import javax.sql.DataSource;
@@ -78,8 +80,8 @@ public class UserFactory {
         byte[] encrypted = digest.digest(str.getBytes());
         StringBuffer buffer = new StringBuffer();
         for (byte code : encrypted) {
-            buffer.append(Integer.toString((code & 0xff) + 0x100, 16).substring(
-                    1));
+            buffer.append(Integer.toString((code & 0xff) + 0x100, 16)
+                    .substring(1));
         }
         return buffer.toString();
     }
@@ -226,7 +228,8 @@ public class UserFactory {
             savePreferences(user);
 
             // generate a random password, and send to the user via email
-            if (resetPwd) resetPassword(user);
+            if (resetPwd)
+                resetPassword(user);
 
             return user;
         } catch (SQLException ex) {
@@ -440,10 +443,10 @@ public class UserFactory {
             user.setCountry(rsUser.getString("country"));
 
             // load the user's roles
-            loadUserRoles(user);
+            user.setUserRole(getUserRoles(user));
 
             // load user's preferences
-            loadPreferences(user);
+            user.setPreferences(getPreferences(user));
 
             return user;
         } finally {
@@ -527,8 +530,9 @@ public class UserFactory {
         }
     }
 
-    private void loadUserRoles(User user) throws WdkUserException,
+    private Set<String> getUserRoles(User user) throws WdkUserException,
             WdkModelException {
+        Set<String> roles = new LinkedHashSet<String>();
         ResultSet rsRole = null;
         String sql = "SELECT user_role from " + userSchema + "user_roles "
                 + "WHERE user_id = ?";
@@ -541,44 +545,68 @@ public class UserFactory {
             rsRole = psRole.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql, "wdk-user-get-roles", start);
             while (rsRole.next()) {
-                user.addUserRole(rsRole.getString("user_role"));
+                roles.add(rsRole.getString("user_role"));
             }
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
             SqlUtils.closeResultSet(rsRole);
         }
+        return roles;
     }
 
     private void saveUserRoles(User user) throws WdkUserException,
             WdkModelException {
-        int userId = user.getUserId();
-        PreparedStatement psRoleDelete = null;
-        PreparedStatement psRoleInsert = null;
-        try {
-            // before that, remove the records first
-            SqlUtils.executeUpdate(wdkModel, dataSource, "DELETE FROM "
-                    + userSchema + "user_roles WHERE user_id = " + userId,
-                    "wdk-user-delete-roles");
+        // get a list of original roles, and find the roles to be deleted and
+        // added
+        Set<String> oldRoles = getUserRoles(user);
+        List<String> toDelete = new ArrayList<String>();
+        List<String> toInsert = new ArrayList<String>();
+        for (String role : user.getUserRoles()) {
+            if (!oldRoles.contains(role))
+                toInsert.add(role);
+        }
+        for (String role : oldRoles) {
+            if (user.containsUserRole(role))
+                toDelete.add(role);
+        }
 
-            // Then get a prepared statement to do the insertion
-            String sql = "INSERT " + "INTO " + userSchema
+        int userId = user.getUserId();
+        PreparedStatement psDelete = null, psInsert = null;
+        try {
+            String sqlDelete = "DELETE FROM " + userSchema + "user_roles "
+                    + " WHERE user_id = ? AND user_role = ?";
+            psDelete = SqlUtils.getPreparedStatement(dataSource, sqlDelete);
+            String sqlInsert = "INSERT INTO " + userSchema
                     + "user_roles (user_id, user_role)" + " VALUES (?, ?)";
-            psRoleInsert = SqlUtils.getPreparedStatement(dataSource, sql);
-            String[] roles = user.getUserRoles();
-            for (String role : roles) {
-                long start = System.currentTimeMillis();
-                psRoleInsert.setInt(1, userId);
-                psRoleInsert.setString(2, role);
-                psRoleInsert.executeUpdate();
-                SqlUtils.verifyTime(wdkModel, sql, "wdk-user-insert-roles",
-                        start);
+            psInsert = SqlUtils.getPreparedStatement(dataSource, sqlInsert);
+
+            // delete roles
+            long start = System.currentTimeMillis();
+            for (String role : toDelete) {
+                psDelete.setInt(1, userId);
+                psDelete.setString(2, role);
+                psDelete.addBatch();
             }
+            psDelete.executeBatch();
+            SqlUtils.verifyTime(wdkModel, sqlDelete, "wdk-user-delete-roles",
+                    start);
+
+            // insert roles
+            start = System.currentTimeMillis();
+            for (String role : toInsert) {
+                psInsert.setInt(1, userId);
+                psInsert.setString(2, role);
+                psInsert.addBatch();
+            }
+            psInsert.executeBatch();
+            SqlUtils.verifyTime(wdkModel, sqlInsert, "wdk-user-insert-roles",
+                    start);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
-            SqlUtils.closeStatement(psRoleDelete);
-            SqlUtils.closeStatement(psRoleInsert);
+            SqlUtils.closeStatement(psDelete);
+            SqlUtils.closeStatement(psInsert);
         }
     }
 
@@ -702,109 +730,144 @@ public class UserFactory {
     }
 
     private void savePreferences(User user) throws WdkUserException,
-            WdkModelException {
+            WdkModelException, SQLException {
+        // get old preferences and determine what to delete, update, insert
         int userId = user.getUserId();
-        PreparedStatement psDelete = null;
-        PreparedStatement psInsert = null;
+        List<Map<String, String>> oldPreferences = getPreferences(user);
+        Map<String, String> oldGlobal = oldPreferences.get(0);
+        Map<String, String> newGlobal = user.getGlobalPreferences();
+        updatePreferences(userId, GLOBAL_PREFERENCE_KEY, oldGlobal, newGlobal);
+
+        Map<String, String> oldSpecific = oldPreferences.get(1);
+        Map<String, String> newSpecific = user.getProjectPreferences();
+        updatePreferences(userId, projectId, oldSpecific, newSpecific);
+    }
+
+    private void updatePreferences(int userId, String projectId,
+            Map<String, String> oldPreferences,
+            Map<String, String> newPreferences) throws WdkUserException,
+            WdkModelException, SQLException {
+        // determine whether to delete, insert or update
+        Set<String> toDelete = new LinkedHashSet<String>();
+        Map<String, String> toUpdate = new LinkedHashMap<String, String>();
+        Map<String, String> toInsert = new LinkedHashMap<String, String>();
+        for (String key : oldPreferences.keySet()) {
+            if (!newPreferences.containsKey(key))
+                toDelete.add(key);
+
+            // key exist, check if need to update
+            String newValue = newPreferences.get(key);
+            if (!oldPreferences.get(key).equals(newValue))
+                toUpdate.put(key, newValue);
+        }
+        for (String key : newPreferences.keySet()) {
+            if (!oldPreferences.containsKey(key))
+                toInsert.put(key, newPreferences.get(key));
+        }
+
+        PreparedStatement psDelete = null, psInsert = null, psUpdate = null;
         try {
             // delete preferences
-            String sqlDelete = "DELETE FROM " + userSchema
-                    + "preferences WHERE user_id = ? " + "AND project_id = ?";
-            long start = System.currentTimeMillis();
+            String sqlDelete = "DELETE FROM " + userSchema + "preferences "
+                    + " WHERE user_id = ? AND project_id = ? "
+                    + " AND preference_name = ?";
             psDelete = SqlUtils.getPreparedStatement(dataSource, sqlDelete);
-            psDelete.setInt(1, userId);
-            psDelete.setString(2, GLOBAL_PREFERENCE_KEY);
-            psDelete.execute();
-            psDelete.setInt(1, userId);
-            psDelete.setString(2, projectId);
-            psDelete.executeUpdate();
+            long start = System.currentTimeMillis();
+            for (String key : toDelete) {
+                psDelete.setInt(1, userId);
+                psDelete.setString(2, projectId);
+                psDelete.setString(3, key);
+                psDelete.addBatch();
+            }
+            psDelete.executeBatch();
             SqlUtils.verifyTime(wdkModel, sqlDelete,
                     "wdk-user-delete-preference", start);
 
             // insert preferences
-            String sqlInsert = "INSERT INTO " + userSchema
-                    + "preferences (user_id, project_id, "
-                    + "preference_name, preference_value) "
-                    + "VALUES (?, ?, ?, ?)";
+            String sqlInsert = "INSERT INTO " + userSchema + "preferences "
+                    + " (user_id, project_id, preference_name, "
+                    + " preference_value)" + " VALUES (?, ?, ?, ?)";
             psInsert = SqlUtils.getPreparedStatement(dataSource, sqlInsert);
-            Map<String, String> global = user.getGlobalPreferences();
-            for (String prefName : global.keySet()) {
-                String prefValue = global.get(prefName);
-                start = System.currentTimeMillis();
-                psInsert.setInt(1, userId);
-                psInsert.setString(2, GLOBAL_PREFERENCE_KEY);
-                psInsert.setString(3, prefName);
-                psInsert.setString(4, prefValue);
-                psInsert.execute();
-                SqlUtils.verifyTime(wdkModel, sqlInsert,
-                        "wdk-user-insert-preference", start);
-            }
-            Map<String, String> project = user.getProjectPreferences();
-            for (String prefName : project.keySet()) {
-                String prefValue = project.get(prefName);
+            start = System.currentTimeMillis();
+            for (String key : toInsert.keySet()) {
                 start = System.currentTimeMillis();
                 psInsert.setInt(1, userId);
                 psInsert.setString(2, projectId);
-                psInsert.setString(3, prefName);
-                psInsert.setString(4, prefValue);
-                psInsert.execute();
-                SqlUtils.verifyTime(wdkModel, sqlInsert,
-                        "wdk-user-insert-preference", start);
+                psInsert.setString(3, key);
+                psInsert.setString(4, toInsert.get(key));
+                psInsert.addBatch();
             }
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
+            psInsert.executeBatch();
+            SqlUtils.verifyTime(wdkModel, sqlInsert,
+                    "wdk-user-insert-preference", start);
+
+            // update preferences
+            String sqlUpdate = "UPDATE " + userSchema + "preferences "
+                    + " SET preference_value = ? WHERE user_id = ? "
+                    + " AND project_id = ? AND preference_name = ?";
+            psUpdate = SqlUtils.getPreparedStatement(dataSource, sqlUpdate);
+            start = System.currentTimeMillis();
+            for (String key : toUpdate.keySet()) {
+                start = System.currentTimeMillis();
+                psUpdate.setString(1, toUpdate.get(key));
+                psUpdate.setInt(2, userId);
+                psUpdate.setString(3, projectId);
+                psUpdate.setString(4, key);
+                psUpdate.addBatch();
+            }
+            psUpdate.executeBatch();
+            SqlUtils.verifyTime(wdkModel, sqlUpdate,
+                    "wdk-user-update-preference", start);
         } finally {
             SqlUtils.closeStatement(psDelete);
             SqlUtils.closeStatement(psInsert);
+            SqlUtils.closeStatement(psUpdate);
         }
     }
 
-    private void loadPreferences(User user) throws WdkUserException,
-            WdkModelException {
+    /**
+     * @param user
+     * @return a list of 2 elements, the first is a map of global preferences,
+     *         the second is a map of project-specific preferences.
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @throws SQLException
+     */
+    private List<Map<String, String>> getPreferences(User user)
+            throws WdkUserException, WdkModelException, SQLException {
+        Map<String, String> global = new LinkedHashMap<String, String>();
+        Map<String, String> specific = new LinkedHashMap<String, String>();
         int userId = user.getUserId();
-        PreparedStatement psGlobal = null, psProject = null;
-        ResultSet rsGlobal = null, rsProject = null;
-        String sqlGlobal = "SELECT "
-                + "preference_name, preference_value FROM " + userSchema
-                + "preferences WHERE user_id = ? AND project_id = '"
-                + GLOBAL_PREFERENCE_KEY + "'";
-        String sqlProject = "SELECT "
-                + "preference_name, preference_value FROM " + userSchema
-                + "preferences WHERE user_id = ? AND project_id = ?";
+        PreparedStatement psSelect = null;
+        ResultSet resultSet = null;
+        String sql = "SELECT * FROM " + userSchema + "preferences "
+                + " WHERE user_id = ?";
         try {
-            // load global preferences
+            // load preferences
             long start = System.currentTimeMillis();
-            psGlobal = SqlUtils.getPreparedStatement(dataSource, sqlGlobal);
-            psGlobal.setInt(1, userId);
-            rsGlobal = psGlobal.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sqlGlobal,
-                    "wdk-user-select-global-preference", start);
-            while (rsGlobal.next()) {
-                String prefName = rsGlobal.getString("preference_name");
-                String prefValue = rsGlobal.getString("preference_value");
-                user.setGlobalPreference(prefName, prefValue);
+            psSelect = SqlUtils.getPreparedStatement(dataSource, sql);
+            psSelect.setInt(1, userId);
+            resultSet = psSelect.executeQuery();
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-user-select-preference",
+                    start);
+            while (resultSet.next()) {
+                String projectId = resultSet.getString("project_id");
+                String prefName = resultSet.getString("preference_name");
+                String prefValue = resultSet.getString("preference_value");
+                if (projectId.equals(GLOBAL_PREFERENCE_KEY))
+                    global.put(prefName, prefValue);
+                else
+                    specific.put(prefName, prefValue);
             }
-
-            // load project specific preferences
-            start = System.currentTimeMillis();
-            psProject = SqlUtils.getPreparedStatement(dataSource, sqlProject);
-            psProject.setInt(1, userId);
-            psProject.setString(2, projectId);
-            rsProject = psProject.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sqlProject,
-                    "wdk-user-select-project-preference", start);
-            while (rsProject.next()) {
-                String prefName = rsProject.getString("preference_name");
-                String prefValue = rsProject.getString("preference_value");
-                user.setProjectPreference(prefName, prefValue);
-
-            }
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
         } finally {
-            SqlUtils.closeResultSet(rsGlobal);
-            SqlUtils.closeResultSet(rsProject);
+            SqlUtils.closeResultSet(resultSet);
+            if (resultSet == null)
+                SqlUtils.closeStatement(psSelect);
         }
+        List<Map<String, String>> preferences = new ArrayList<Map<String, String>>();
+        preferences.add(global);
+        preferences.add(specific);
+        return preferences;
     }
 
     public void resetPassword(String email) throws WdkUserException,
