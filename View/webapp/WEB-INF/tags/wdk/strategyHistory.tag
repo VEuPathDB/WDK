@@ -124,7 +124,7 @@
 <!-- popups for save/rename forms -->
 
     <div class='modal_div save_strat' id="hist_save_rename">
-      <div class='dragHandle' style='height:4px'>
+      <div class='dragHandle'>
         <div class="modal_name">
           <span id='popup-title' class='h3left'></span>
         </div>
