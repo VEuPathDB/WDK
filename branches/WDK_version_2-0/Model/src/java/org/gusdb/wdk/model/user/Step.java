@@ -767,9 +767,10 @@ public class Step {
 
     public AnswerValue getAnswerValue() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
-        if (!valid)
-            throw new WdkUserException("Step #" + internalId
-                    + "(i) is invalid, cannot create answerValue.");
+        // even if a step is invalid, still allow user to create answerValue
+        // if (!valid)
+        //    throw new WdkUserException("Step #" + internalId
+        //            + "(i) is invalid, cannot create answerValue.");
         if (answerValue == null) {
             Question question = getQuestion();
             Map<String, Boolean> sortingMap = user.getSortingAttributes(question.getFullName());
