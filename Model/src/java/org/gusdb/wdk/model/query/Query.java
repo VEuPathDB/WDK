@@ -462,9 +462,13 @@ public abstract class Query extends WdkModelBase {
         Map<String, String> dependentValues = new LinkedHashMap<String, String>();
         for (String paramName : rawValues.keySet()) {
             Param param = paramMap.get(paramName);
-            if (param == null)
-                throw new WdkModelException("Invalid param name '" + paramName
-                        + "' in query " + getFullName());
+            if (param == null) {
+                // instead of throwing an error, wdk will silently ignore it
+                // throw new WdkModelException("Invalid param name '" + paramName
+                //         + "' in query " + getFullName());
+                logger.warn("Param " + paramName + " does not exist in query " + getFullName());
+                continue;
+            }
             String rawValue = rawValues.get(paramName);
             String dependentValue = param.rawOrDependentValueToDependentValue(
                     user, rawValue);
@@ -485,9 +489,13 @@ public abstract class Query extends WdkModelBase {
         Map<String, String> independentValues = new LinkedHashMap<String, String>();
         for (String paramName : dependentValues.keySet()) {
             Param param = paramMap.get(paramName);
-            if (param == null)
-                throw new WdkModelException("The param '" + paramName
-                        + "' doesn't exist in query '" + getFullName() + "'");
+            if (param == null) {
+                // instead of throwing an error, wdk will silently ignore it
+                // throw new WdkModelException("Invalid param name '" + paramName
+                //         + "' in query " + getFullName());
+                logger.warn("Param " + paramName + " does not exist in query " + getFullName());
+                continue;
+            }
             String dependentValue = dependentValues.get(paramName);
             String independentValue = param.dependentValueToIndependentValue(
                     user, dependentValue);
