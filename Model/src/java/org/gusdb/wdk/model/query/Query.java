@@ -94,7 +94,7 @@ public abstract class Query extends WdkModelBase {
      */
     protected Query(Query query) {
         super(query);
-        
+
         // logger.debug("clone query: " + query.getFullName());
         this.name = query.name;
         this.cached = query.cached;
@@ -464,9 +464,11 @@ public abstract class Query extends WdkModelBase {
             Param param = paramMap.get(paramName);
             if (param == null) {
                 // instead of throwing an error, wdk will silently ignore it
-                // throw new WdkModelException("Invalid param name '" + paramName
-                //         + "' in query " + getFullName());
-                logger.warn("Param " + paramName + " does not exist in query " + getFullName());
+                // throw new WdkModelException("Invalid param name '" +
+                // paramName
+                // + "' in query " + getFullName());
+                logger.warn("Param " + paramName + " does not exist in query "
+                        + getFullName());
                 continue;
             }
             String rawValue = rawValues.get(paramName);
@@ -491,9 +493,11 @@ public abstract class Query extends WdkModelBase {
             Param param = paramMap.get(paramName);
             if (param == null) {
                 // instead of throwing an error, wdk will silently ignore it
-                // throw new WdkModelException("Invalid param name '" + paramName
-                //         + "' in query " + getFullName());
-                logger.warn("Param " + paramName + " does not exist in query " + getFullName());
+                // throw new WdkModelException("Invalid param name '" +
+                // paramName
+                // + "' in query " + getFullName());
+                logger.warn("Param " + paramName + " does not exist in query "
+                        + getFullName());
                 continue;
             }
             String dependentValue = dependentValues.get(paramName);
