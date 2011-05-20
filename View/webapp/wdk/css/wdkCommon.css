@@ -438,7 +438,7 @@ a.redbutton:active span {
 	 =MISC 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 div.Workspace {
-	z-index: 50;
+	z-index: 160;    //50;   moved up so the "Select columns" popup coves the steps in the strategy but still is under DYK
 	position: relative;
 }
 
