@@ -224,7 +224,9 @@
                  </tr>
                </table>
              </td>
-        <td style="white-space:nowrap;"><span title="${sumAttrib.help}">${sumAttrib.displayName}</span></td>
+ <%--       <td style="white-space:nowrap;"><span title="${sumAttrib.help}">${sumAttrib.displayName}</span></td>  --%>
+       <td><span title="${sumAttrib.help}">${sumAttrib.displayName}</span></td>
+
         <%-- <c:if test="${j != 0}">
           <div style="float:left;">
             <a href="javascript:void(0)">
@@ -234,6 +236,8 @@
         <c:if test="${sumAttrib.removable}">
           <td style="width:20px;">
             <%-- display remove attribute button --%>
+
+
               <c:choose>
                 <c:when test="${strategy != null}">
                   <c:set var="resultsAction" value="javascript:GetResultsPage('${commandUrl}&command=remove&attribute=${attrName}', true, true)" />
