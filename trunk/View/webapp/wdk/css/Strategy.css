@@ -416,7 +416,7 @@ div.transform a.crumb_name img{
   color: #000000;
   border: solid black;
   position:absolute;
-  z-index: 1000;
+  z-index: 495;  //1000; so menubar menus appear on top
   text-align: center;
   padding-bottom: 5px;
   min-width: 550px;   /* this allows for some space between Delete and X */
@@ -648,7 +648,7 @@ b.strat_help_title > span {
 	background-position: 0 26px;   /* was 36px, decreased to have Add Step title thiner */
 	border: 1px solid #888888;	
 	padding: 0 8px 8px 8px;
-	z-index: 999;   /* 1000 is used by the htmltooltip */
+	z-index: 490;  //  999; ; so menubar menus appear on top, but under Details box
 }
 
 #query_form form {
