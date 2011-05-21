@@ -261,7 +261,7 @@ function singleStep(modelstep, prevjsonstep, jsonstep, sid){
 	return stepbox;	
 }
 
-//HANDLE THE CREATION OF TEH STEP DETAILS BOX
+//HANDLE THE CREATION OF THE STEP DETAILS BOX
 function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 	strat = getStrategy(sid);
 	var detail_div = document.createElement('div');
@@ -365,14 +365,16 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 	}
 	insertRecName = (prevjsonstep == null) ? jsonstep.dataType : prevjsonstep.dataType;			
 	insert_step = 	"<a title='" + insert_popup + "'  class='insert_step_link' id='" + sid + "|" + parentid + "' href='javascript:void(0)' onclick='Insert_Step(this,\"" + insertRecName + "\");hideDetails(this)'>Insert Step Before</a>&nbsp;|&nbsp;";
-
 	var customMenu = "";
+
+// this code (function in html/assets/js/customStrategy.js)  adds the ortholog link 
 	try {
 		customMenu = customCreateDetails(jsonstep, modelstep);
 	}
 	catch(err) {
 		// Do nothing?
 	}
+
 	var delete_strat = '';
 	if(modelstep.frontId == 1 && strat.nonTransformLength == 1){
 		delete_step = "<a title='" + delete_popup + "' class='delete_step_link' href='javascript:void(0)' onclick=\"deleteStrategy('" + strat.backId + "',false);hideDetails(this)\">Delete</a>";

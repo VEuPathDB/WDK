@@ -716,7 +716,7 @@ b.strat_help_title > span {
   top: -4px;
 }
 
-.close_window {
+.close_window, .close_selcolwindow {
   position: absolute;
   right: 0px;
   top:0px;
@@ -728,7 +728,7 @@ b.strat_help_title > span {
   top:0px;
   z-index:1;
 }
-.back img, .close_window img{
+.back img, .close_window img  {
 	width:25px;
 }
 

@@ -15,21 +15,31 @@
 %>
 
 <input type="button" onclick="openAttributeList(this);" class="addAttributesButton" value="Select Columns" />
+
 <div class="attributesList formPopup">
-  <span class="dragHandle"><div class="modal_name"><h1 style="font-size:130%;margin-top:4px;" id="query_form_title">Select Columns</h1></div><a class='close_window' href='javascript:void(0);' onclick='closeAttributeList(this);'><img src="<c:url value='/wdk/images/Close-X-box.png'/>" alt='Close'/></a></span>
+  <span class="dragHandle">
+  	<div class="modal_name">
+		<h1 style="font-size:130%;margin-top:4px;" id="query_form_title">Select Columns</h1>
+  	</div>
+  	<a class='close_selcolwindow' href='javascript:void(0);' onclick='closeAttributeList(this);'>
+		<img src="<c:url value='/wdk/images/Close-X-box.png'/>" alt='Close'/>
+  	</a>
+  </span>
+
   <c:set var="allAttributes" value="${wdkAnswer.displayableAttributes}" />
+
   <div class="attributesFormWrapper">
   <form action="javascript:void(0);" onSubmit="updateAttrs(this,'${commandUrl}')">
-    <div class="formButtonPanel">
-      <input type="submit" value="Update Columns"/>
-    </div>
-    <div class="formButtonPanel">
-      <wdk:selectClearAll groupName="selectedFields" />
-    </div>
-    <c:set var="i" value="0"/>
-    <fmt:formatNumber var="columnSize" value="${(fn:length(allAttributes) + 1)/3}" pattern="0"/>
-    <table>
-      <tr>
+    	<div class="formButtonPanel">
+      		<input type="submit" value="Update Columns"/>
+    	</div>
+    	<div class="formButtonPanel">
+      		<wdk:selectClearAll groupName="selectedFields" />
+    	</div>
+    	<c:set var="i" value="0"/>
+    	<fmt:formatNumber var="columnSize" value="${(fn:length(allAttributes) + 1)/3}" pattern="0"/>
+    	<table>
+        <tr>
         <c:forEach items="${allAttributes}" var="attribute">
           <c:if test="${i == 0}">
             <td>
@@ -57,14 +67,15 @@
             <c:set var="i" value="0"/>
           </c:if>
         </c:forEach>
-      </tr>
-    </table>
-    <div class="formButtonPanel">
-      <wdk:selectClearAll groupName="selectedFields" />
-    </div>
-    <div class="formButtonPanel">
-      <input type="submit" value="Update Columns"/>
-    </div>
+        </tr>
+        </table>
+        <div class="formButtonPanel">
+      		<wdk:selectClearAll groupName="selectedFields" />
+   	</div>
+    	<div class="formButtonPanel">
+      		<input type="submit" value="Update Columns"/>
+    	</div>
   </form>
   </div>
-</div>
+
+</div>  <%--   class="attributesList formPopup"  --%>
