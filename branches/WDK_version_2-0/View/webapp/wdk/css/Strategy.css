@@ -712,7 +712,7 @@ b.strat_help_title > span {
   top: -4px;
 }
 
-.close_window {
+.close_window,.close_selcolwindow {
   position: absolute;
   right: 0px;
   top:0px;
