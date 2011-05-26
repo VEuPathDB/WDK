@@ -30,6 +30,8 @@
   <c:set var="typeC" value="0"/>
   <!-- begin creating tabs for history sections -->
   <ul class="menubar">
+
+<!-- the order of tabs is determined in apicommonmodel.xml -->
   <c:forEach items="${unsavedStrategiesMap}" var="strategyEntry">
     <c:set var="type" value="${strategyEntry.key}"/>
     <c:set var="unsavedStratList" value="${strategyEntry.value}"/>
