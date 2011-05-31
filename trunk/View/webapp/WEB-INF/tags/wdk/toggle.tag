@@ -10,6 +10,10 @@
               required="true"
               description="Value to appear at top of page"
 %>
+<%@ attribute name="dsLink"
+              required="false"
+              description="data sources link for the genomic context, links to GBrowse file that includes help and track descriptions"
+%>
 
 <%@ attribute name="displayLink"
               required="false"
@@ -78,7 +82,7 @@
 
 <%-- <c:set var="displayNameParam" value="This%20Data%20Set"/> --%>
 <c:set var="displayNameParam">
-<c:url value="${displayName}"/>
+	<c:url value="${displayName}"/>
 </c:set>
 
 <c:set var="ds_ref_table" value="${requestScope.ds_ref_tables[name]}" />
@@ -152,6 +156,15 @@
     </c:if>
 
     <c:choose>
+	 <c:when  test='${dsLink != null && dsLink != ""}'>
+	 <td align="right">
+           <font size="-1" face="Arial,Helvetica">
+           [<a href="${dsLink}">Data Sources</a>]
+           </font>
+        </td>	
+	</c:when>
+	<c:otherwise>
+	<c:choose>
       <c:when test='${attribution != null && attribution != ""}'>
         <td align="right">
            <font size="-1" face="Arial,Helvetica">
@@ -166,6 +179,8 @@
           </font>
         </td>
       </c:when>
+	</c:choose>
+	</c:otherwise>
     </c:choose>
 
   </tr>
