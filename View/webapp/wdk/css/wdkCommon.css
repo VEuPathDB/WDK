@@ -547,6 +547,11 @@ tr.headerRow > td,th {
 	padding: 5px;
 }
 
+.extraOption {
+    text-align: left;
+    padding-left: 30px;
+}
+
 .clear {
    clear:both;
 }
