@@ -227,3 +227,18 @@ function closeAttributeList(element){
     var popup = button.parents(".attributesList");
     popup.hide();
 }
+
+function toggleAttributes(from) {
+   var strList = $("#" + from + "-list").text();
+   var list = strList.split(',');
+   var state = $("#toggle-" + from).attr('checked');
+   for(var i = 0; i < list.length; i++) {
+      var name = list[i];
+      if (name == '') continue;
+
+      // look for the checkboxes with the attribute name, and toggle them
+      var attribute = $(".Results_Pane .attributesList input#" + name);
+      if (attribute.attr("disabled") == false)
+         attribute.attr('checked', state);
+   }
+}
