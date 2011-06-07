@@ -62,6 +62,8 @@ public class DatasetFactory {
     public static final String RECORD_DIVIDER = ";";
     public static final String COLUMN_DIVIDER = "|";
 
+    private static final int MAX_VALUE_LENGTH = 1000;
+
     private static Logger logger = Logger.getLogger(DatasetFactory.class);
 
     private WdkModel wdkModel;
@@ -559,7 +561,7 @@ public class DatasetFactory {
     }
 
     public List<String[]> parseValues(RecordClass recordClass, String strValue)
-            throws WdkDatasetException {
+            throws WdkUserException {
         String[] rows = strValue.split(REGEX_RECORD_DIVIDER);
         List<String[]> records = new ArrayList<String[]>();
         int length = recordClass.getPrimaryKeyAttributeField().getColumnRefs().length;
@@ -569,9 +571,18 @@ public class DatasetFactory {
                 continue;
             String[] columns = row.split(REGEX_COLUMN_DIVIDER);
             if (columns.length > length)
-                throw new WdkDatasetException("The dataset raw "
-                        + "value of recordClass '" + recordClass.getFullName()
+                throw new WdkDatasetException("The dataset raw value of "
+                        + "recordClass '" + recordClass.getFullName()
                         + "' has more columns than expected: '" + row + "'");
+
+            // check if the value is too long, throw an exception if it is.
+            for (String column : columns) {
+                if (column.length() > MAX_VALUE_LENGTH)
+                    throw new WdkUserException("The dataset raw value is too "
+                            + " big to be an id for the recordClass "
+                            + recordClass.getFullName() + ": " + column);
+            }
+
             String[] record = new String[length];
             System.arraycopy(columns, 0, record, 0, columns.length);
             records.add(record);
@@ -585,7 +596,7 @@ public class DatasetFactory {
             String[] value = values.get(i);
             StringBuilder builder = new StringBuilder();
             for (String val : value) {
-                builder.append(val).append("!!!{WDK_DIVIDER}!!!");
+                builder.append(val).append(COLUMN_DIVIDER);
             }
             String key = builder.toString();
             if (set.contains(key))
