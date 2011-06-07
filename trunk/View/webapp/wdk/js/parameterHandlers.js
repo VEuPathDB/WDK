@@ -165,7 +165,7 @@ function updateDependentParam(paramName, dependedValue) {
 						else {
 							var allVals = oldValues[paramName];
 							jQuery.each(allVals, function() {
-								$("input[value=" + this + "]", dependentParam).attr('checked',true);
+								$("input[value='" + this + "']", dependentParam).attr('checked',true);
 							});
 						}
 						oldValues[name] = null;
