@@ -102,6 +102,11 @@ function updateBasket(ele, type, pk, pid,recordType) {
 	var i = jQuery(ele);
 	if(ele.tagName != "IMG")
 		i = jQuery("img",ele);
+
+    // show processing icon, will remove it when the process is completed.
+    var oldImage = i.attr("src");
+    i.attr("src","wdk/images/loading.gif");
+
 	var a = new Array();
 	var action = null;
 	var da = null;
@@ -178,6 +183,8 @@ function updateBasket(ele, type, pk, pid,recordType) {
 						else
 							i.parent().prev().html("Add to Basket");
 					}
+                                        // the image has been updated, no need to restore it again.
+                                        oldImage = null;
 				}else if(type == "clear"){
 					showBasket();
 				}else{
@@ -194,15 +201,19 @@ function updateBasket(ele, type, pk, pid,recordType) {
 					updateBasketCount(data.count);
 				if(type != 'recordPage'){
 					checkPageBasket();
+                                        // the image has been updated, no need to restore it again.
+                                        oldImage = null;
 				}
 				if (currentDiv.match(/basket/)) {
 					//Using cookie to determine that the results need to be updated when the 'Opened' tab is selected
 					jQuery.cookie("refresh_results", "true", { path : '/' });
 				}
+                                if (oldImage != null) i.attr("src", oldImage);
 			},
 			error: function(){
 				//jQuery("body").unblock();
 				alert("Error adding item to basket!");
+                                i.attr("src", oldImage);
 			}
 		});
 }
