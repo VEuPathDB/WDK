@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -680,6 +682,16 @@ public class SanityTester {
         SanityTester sanityTester = new SanityTester(modelName, verbose,
                 testFilterString, failuresOnly, indexOnly, skipWebSvcQueries);
 
+        String dbConnectionUrl = sanityTester.wdkModel
+                .getQueryPlatform().getDbConfig().getConnectionUrl();                
+
+        System.out.println("Sanity Test: ");
+        System.out.println(" [Database] " + dbConnectionUrl);
+        SimpleDateFormat sdFormat =
+            new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
+        System.out.println(" [Time] " + sdFormat.format(new Date()));
+        System.out.println();
+        
         sanityTester.testQuerySets(QuerySet.TYPE_VOCAB);
         sanityTester.testQuerySets(QuerySet.TYPE_ATTRIBUTE);
         sanityTester.testQuerySets(QuerySet.TYPE_TABLE);
