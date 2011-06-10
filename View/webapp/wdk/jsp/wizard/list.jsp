@@ -53,10 +53,11 @@
                   </li>
 			 </c:if>
                 </c:forEach>
-
+<%-- don't display anything if there is not transform for the record type
                 <c:if test="${fn:length(transforms) == 0}">
                     <li>No transform is available.</li>
                 </c:if>
+--%>
 
 	</c:if>
 

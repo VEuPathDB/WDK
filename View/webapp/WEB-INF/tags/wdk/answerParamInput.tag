@@ -38,7 +38,7 @@ Otherwise a standard select menu is used.
         <c:set var="opt" value="${opt+1}"/>
         <c:set var="sel" value=""/>
         <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-        <html:options property="values(${pNam})" labelProperty="labels(${pNam})"/>
+        <html:options property="value(${pNam})" labelProperty="labels(${pNam})"/>
     </html:select>
   </c:otherwise>
 </c:choose>
