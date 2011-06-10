@@ -52,9 +52,13 @@ public class AnswerParam extends Param {
                     param.recordClasses);
     }
 
-    // ///////////////////////////////////////////////////////////////
-    // protected methods
-    // ///////////////////////////////////////////////////////////////
+    /**
+     * answerParam should be always invisible
+     */
+    @Override
+    public boolean isVisible() {
+        return false;
+    }
 
     /**
      * @param recordClassRef
