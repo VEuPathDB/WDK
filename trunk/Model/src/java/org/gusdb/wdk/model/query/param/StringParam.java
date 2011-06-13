@@ -209,10 +209,15 @@ public class StringParam extends Param {
                         + rawValue + "' is invalid number format.");
             }
         }
-        if (regex != null && !rawValue.matches(regex))
-            throw new WdkUserException("stringParam " + getFullName()
-                    + " value '" + rawValue + "' does not match regular "
-                    + "expression '" + regex + "'");
+        if (regex != null && !rawValue.matches(regex)) {
+	    if ( rawValue.equals("*") )
+		throw new WdkUserException("stringParam " + getFullName()
+					   + ": value '" + rawValue + "' cannot be used on its own, it needs to be part of a word.");
+	    else
+		throw new WdkUserException("stringParam " + getFullName()
+					   + " value '" + rawValue + "' does not match regular "
+					   + "expression '" + regex + "'");
+	}
         if (length != 0 && rawValue.length() > length)
             throw new WdkModelException("stringParam " + getFullName()
                     + " value cannot be longer than " + length + " characters."
