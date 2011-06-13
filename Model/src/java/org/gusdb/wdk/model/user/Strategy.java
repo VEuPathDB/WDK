@@ -367,6 +367,7 @@ public class Strategy {
             // node
             newStep = user.createStep(question, values, targetStep.getFilter(),
                     false, true, targetStep.getAssignedWeight());
+            newStep.setCustomName(targetStep.getBaseCustomName());
             newStep.setCollapsible(targetStep.isCollapsible());
             newStep.setCollapsedName(targetStep.getCollapsedName());
             newStep.update(false);
