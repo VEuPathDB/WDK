@@ -58,7 +58,7 @@ public class ProcessQuestionAction extends Action {
             ParamBean param = params.get(paramName);
 
             String rawValue = (String) qform.getValue(paramName);
-            logger.debug("Param raw: " + paramName + " = " + rawValue);
+            // logger.debug("Param raw: " + paramName + " = " + rawValue);
             // logger.debug("param: " + paramName + "='" +
             // paramErrors.get(paramName) + "'");
             String dependentValue = null;
