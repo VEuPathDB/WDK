@@ -1177,14 +1177,14 @@ public class RecordClass extends WdkModelBase implements
         return (Question) wdkModel.resolveReference(questionName);
     }
 
-    public Question[] getTransformQuestions(boolean changeType) {
+    public Question[] getTransformQuestions(boolean allowTypeChange) {
         List<Question> list = new ArrayList<Question>();
         for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
             for (Question question : questionSet.getQuestions()) {
                 if (!question.getQuery().isTransform()) continue;
                 if (question.getTransformParams(this).length == 0) continue;
                 String outType = question.getRecordClass().getFullName();
-                if (changeType || this.getFullName().equals(outType))
+                if (allowTypeChange || this.getFullName().equals(outType))
                     list.add(question);
             }
         }
