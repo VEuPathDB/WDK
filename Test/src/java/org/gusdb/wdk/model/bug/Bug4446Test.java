@@ -1,8 +1,7 @@
-package org.gusdb.wdk.model.user;
+package org.gusdb.wdk.model.bug;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -21,6 +20,9 @@ import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.user.Step;
+import org.gusdb.wdk.model.user.Strategy;
+import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.junit.Test;
 
@@ -37,7 +39,7 @@ public class Bug4446Test {
 
     private static final String CUSTOM_NAME = "My Custom Transform Step";
     private static final Logger logger = Logger.getLogger(Bug4446Test.class);
-    
+
     private WdkModel wdkModel;
     private DBPlatform platform;
     private User user;
@@ -63,7 +65,8 @@ public class Bug4446Test {
         transformStep.setCustomName(CUSTOM_NAME);
         transformStep.update(false);
         Strategy strategy = user.createStrategy(transformStep, false);
-        logger.debug("name before revising: " + strategy.getLatestStep().getCustomName());
+        logger.debug("name before revising: "
+                + strategy.getLatestStep().getCustomName());
 
         // now revise the previous step of the boolean
         Step newStep = UnitTestHelper.createNormalStep(user);
