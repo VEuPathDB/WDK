@@ -47,9 +47,13 @@ function updateHistory(){
 function initDisplayType() {
 	var currentPanel = getCurrentTabCookie('browse');
 	if($("#search_history .menubar").length > 0){
-		if ($("#search_history .menubar #tab_" + currentPanel).length == 0) {
-			var type = $("#search_history .menubar a:first").attr("id").substr(4);
+		if (currentPanel == undefined 
+                    || $("#search_history .menubar #tab_" + currentPanel).length == 0) {
+                    var typeTab = $("#search_history .menubar a:first");
+                    if (typeTab.length > 0) {
+			var type = typeTab.attr("id").substr(4);
 			displayHist(type);
+                    }
 		} else
 			displayHist(currentPanel);
 	}
