@@ -1186,6 +1186,7 @@ public class User /* implements Serializable */{
         summaryNames = new String[validNames.size()];
         validNames.toArray(summaryNames);
 
+        logger.debug("Saving Valid summary names: " + validNames);
         // create checksum
         QueryFactory queryFactory = wdkModel.getQueryFactory();
         String summaryChecksum = queryFactory.makeSummaryChecksum(summaryNames);

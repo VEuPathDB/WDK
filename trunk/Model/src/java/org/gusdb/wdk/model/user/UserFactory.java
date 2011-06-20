@@ -740,6 +740,8 @@ public class UserFactory {
 
         Map<String, String> oldSpecific = oldPreferences.get(1);
         Map<String, String> newSpecific = user.getProjectPreferences();
+        logger.debug("old pref: " + oldSpecific);
+        logger.debug("new pref: " + newSpecific);
         updatePreferences(userId, projectId, oldSpecific, newSpecific);
     }
 
@@ -752,18 +754,21 @@ public class UserFactory {
         Map<String, String> toUpdate = new LinkedHashMap<String, String>();
         Map<String, String> toInsert = new LinkedHashMap<String, String>();
         for (String key : oldPreferences.keySet()) {
-            if (!newPreferences.containsKey(key))
+            if (!newPreferences.containsKey(key)) {
                 toDelete.add(key);
-
-            // key exist, check if need to update
-            String newValue = newPreferences.get(key);
-            if (!oldPreferences.get(key).equals(newValue))
-                toUpdate.put(key, newValue);
+            } else { // key exist, check if need to update
+                String newValue = newPreferences.get(key);
+                if (!oldPreferences.get(key).equals(newValue))
+                    toUpdate.put(key, newValue);
+            }
         }
         for (String key : newPreferences.keySet()) {
             if (!oldPreferences.containsKey(key))
                 toInsert.put(key, newPreferences.get(key));
         }
+        logger.debug("to insert: " + toInsert);
+        logger.debug("to update: " + toUpdate);
+        logger.debug("to delete: " + toDelete);
 
         PreparedStatement psDelete = null, psInsert = null, psUpdate = null;
         try {
@@ -856,7 +861,7 @@ public class UserFactory {
                 String prefValue = resultSet.getString("preference_value");
                 if (projectId.equals(GLOBAL_PREFERENCE_KEY))
                     global.put(prefName, prefValue);
-                else
+                else if (projectId.equals(this.projectId))
                     specific.put(prefName, prefValue);
             }
         } finally {
