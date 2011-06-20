@@ -121,6 +121,7 @@ public class FlatVocabParam extends AbstractEnumParam {
 
         termInternalMap = new LinkedHashMap<String, String>();
         termDisplayMap = new LinkedHashMap<String, String>();
+        termParentMap = new LinkedHashMap<String, String>();
 
         if (dependedParam != null && dependedValue == null)
             return;
@@ -129,8 +130,6 @@ public class FlatVocabParam extends AbstractEnumParam {
         boolean hasDisplay = query.getColumnMap().containsKey(COLUMN_DISPLAY);
         boolean hasParent = query.getColumnMap()
                 .containsKey(COLUMN_PARENT_TERM);
-
-        termParentMap = new LinkedHashMap<String, String>();
 
         // prepare param values
         Map<String, String> values = new LinkedHashMap<String, String>();
