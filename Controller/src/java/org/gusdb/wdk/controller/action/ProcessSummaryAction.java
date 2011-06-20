@@ -117,11 +117,10 @@ public class ProcessSummaryAction extends Action {
                             attributeNamesList.remove(summaryName);
                         }
                     }
-                    System.out.println("Summary list: " + summaryList);
+                    logger.debug("Old Summary list: " + summaryList);
                     for (String attributeName : attributeNamesList) {
                         summaryList.add(attributeName);
                     }
-                    System.out.println("Summary list: " + summaryList);
                 } else {
                     for (String attribute : summary) {
                         summaryList.add(attribute);
@@ -154,6 +153,8 @@ public class ProcessSummaryAction extends Action {
                                 + command);
                     }
                 }
+                logger.debug("New Summary list: " + summaryList);
+
                 summary = new String[summaryList.size()];
                 summaryList.toArray(summary);
                 String checksum = wdkUser.setSummaryAttributes(questionName,
@@ -179,6 +180,8 @@ public class ProcessSummaryAction extends Action {
                 + CConstants.WDK_SUMMARY_ARRANGE_ORDER_KEY + "=[^&]*", "");
         queryString = queryString.replaceAll("&"
                 + CConstants.WDK_SUMMARY_SORTING_ORDER_KEY + "=[^&]*", "");
+        queryString = queryString.replaceAll("&"
+                + CConstants.WDK_SUMMARY_KEY + "=[^&]*", "");
 
         String strBasket = request.getParameter("from_basket");
         boolean fromBasket = (strBasket != null && strBasket.equals("true"));
