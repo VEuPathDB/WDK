@@ -84,6 +84,22 @@
 			$("#span_a_type").val() + " from Step " + $("#span_a_num").text());
 		$("#span_output option[value='b']").text(
 			$("#span_b_type").val() + " from Step " + $("#span_b_num").text());
+
+                // if the previous selection is upstream/downstream, need to 
+                // set the length before restoring the radio button.
+                var regions = ['a', 'b'];
+                for(var i = 0; i < regions.length; i ++) {
+                    var selection = $("input[id='region_"+ regions[i] + "_default']").val();
+                    if (selection == 'upstream') {
+                        var length = $("input#span_begin_offset_" + regions[i] + "_default").val();
+                        $("input[name='upstream_region_" + regions[i] + "']").val(length);
+                    } else if (selection == 'downstream') {
+                        var length = $("input#span_end_offset_" + regions[i] + "_default").val();
+                        $("input[name='downstream_region_" + regions[i] + "']").val(length);
+                    }
+                }
+
+
 		$("input[id$='_default']").each(function(){
 			var target = $(this).attr("id");
 			target = target.substring(0,target.indexOf("_default"));

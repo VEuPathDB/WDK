@@ -29,6 +29,9 @@ function initParamHandlers() {
 			return true;
 		});
 	}
+
+    // need to trigger the click event so that the stage is set correctly on revise.
+    $("#form_question #operations input[type='radio']:checked").click();
 }
 
 function initDependentParamHandlers(isEdit) {
