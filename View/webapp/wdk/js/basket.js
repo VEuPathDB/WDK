@@ -2,6 +2,7 @@
 function showBasket(recordClass, type){	
 	var url = "showBasket.do";
 	var d = new Object();
+        if (type != undefined) type = type.replace(/\s+/gi, '_')
 	if (recordClass) {
 		 d.recordClass = recordClass;
 		$("#basket .menubar .selected_type").removeClass("selected_type");
