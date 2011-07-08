@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
 <!-- NOTE: We need to have all of the baskets here so counts can
@@ -14,7 +15,8 @@
     <wdk:basketControls />
 
     <c:forEach items="${baskets}" var="basket">
-      <div id="basket_${basket.shortDisplayType}" class="basket_panel" recordClass="${basket.type}" displayName="${basket.displayType}">
+      <c:set var="type" value="${fn:replace(basket.shortDisplayType, ' ', '_')}" />
+      <div id="basket_${type}" class="basket_panel" recordClass="${basket.type}" displayName="${basket.displayType}">
         <div class="Workspace">
         </div>
       </div>
