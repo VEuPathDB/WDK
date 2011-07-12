@@ -105,6 +105,7 @@ public class DynamicAttributeSet extends WdkModelBase {
             attribute.setInternal(false);
             attribute.setInReportMaker(true);
             attribute.setSortable(true);
+            attribute.setHelp("User-defined integer value; in a search strategy, unions and intersects will sum the weights, giving higher scores to items found in multiple searches. ");
             attributeFieldMap.put(Utilities.COLUMN_WEIGHT, attribute);
         }
     }
