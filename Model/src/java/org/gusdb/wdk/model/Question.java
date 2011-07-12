@@ -565,11 +565,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             dynamicAttributeSet.resolveReferences(model);
 
             // make sure we always display weight for combined question
-            if (query.isCombined()) {
-                AttributeField weight = dynamicAttributeSet
-                        .getAttributeFieldMap().get(Utilities.COLUMN_WEIGHT);
-                weight.setRemovable(false);
-            }
+            //if (query.isCombined()) {
+            //    AttributeField weight = dynamicAttributeSet
+            //            .getAttributeFieldMap().get(Utilities.COLUMN_WEIGHT);
+            //    weight.setRemovable(false);
+            //}
 
             // resolve default summary attributes
             if (defaultSummaryAttributeNames != null) {
