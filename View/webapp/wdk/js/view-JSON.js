@@ -266,6 +266,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 	strat = getStrategy(sid);
 	var detail_div = document.createElement('div');
 	$(detail_div).addClass("crumb_details").attr("disp","0");
+	$(detail_div).attr("style","text-align:center");
 	if (jsonstep.isboolean && !jsonstep.isCollapsed) $(detail_div).addClass("operation_details");
 	var name = jsonstep.displayName;
 	var questionName = jsonstep.questionName;
