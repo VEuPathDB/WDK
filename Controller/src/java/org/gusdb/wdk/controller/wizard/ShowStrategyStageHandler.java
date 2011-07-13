@@ -48,6 +48,12 @@ public class ShowStrategyStageHandler implements StageHandler {
         StepBean previousStep = StageHandlerUtility.getPreviousStep(servlet,
                 request, wizardForm);
 
+        // insert strategy before first step. use current step (the first step
+        // as childStep, and the root step of the imported strategy as previous
+        // step
+        if (previousStep == null)
+            previousStep = StageHandlerUtility.getCurrentStep(request);
+
         // check if boolean is allowed
         String childType = childStep.getType();
         boolean allowBoolean = childType.equals(previousStep.getType());
