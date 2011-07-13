@@ -1130,25 +1130,25 @@ public class User /* implements Serializable */{
         }
 
         // always display weight for combined questions
-        if (question.getQuery().isCombined()) {
-            // check if weight already exists
-            boolean hasWeight = false;
-            for (String name : summary) {
-                if (name.equals(Utilities.COLUMN_WEIGHT)) {
-                    hasWeight = true;
-                    break;
-                }
-            }
-
-            // add weight to the last item if it's not included
-            if (!hasWeight) {
-                String[] array = new String[summary.length + 1];
-                System.arraycopy(summary, 0, array, 0, summary.length);
-                array[summary.length] = Utilities.COLUMN_WEIGHT;
-                summary = array;
-                summaryChecksum = null;
-            }
-        }
+        // if (question.getQuery().isCombined()) {
+        //    // check if weight already exists
+        //    boolean hasWeight = false;
+        //    for (String name : summary) {
+        //        if (name.equals(Utilities.COLUMN_WEIGHT)) {
+        //            hasWeight = true;
+        //            break;
+        //        }
+        //    }
+        //
+        //    // add weight to the last item if it's not included
+        //    if (!hasWeight) {
+        //        String[] array = new String[summary.length + 1];
+        //        System.arraycopy(summary, 0, array, 0, summary.length);
+        //        array[summary.length] = Utilities.COLUMN_WEIGHT;
+        //        summary = array;
+        //        summaryChecksum = null;
+        //    }
+        // }
 
         if (summaryChecksum == null || summaryChecksum.length() == 0)
             setSummaryAttributes(questionFullName, summary);
