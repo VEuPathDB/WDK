@@ -11,6 +11,11 @@
               type="org.gusdb.wdk.model.jspwrap.QuestionBean"
 %>
 
+<c:set var="weight" value="${param.weight}" />
+<c:if test="${weight == null || weight == ''}">
+  <c:set var="weight" value="${10}" />
+</c:if>
+
 <%-- set the weight --%>
 <c:if test="${wdkModel.useWeights && !wdkQuestion.isTransform}">
   <div name="All_weighting" class="param-group" type="ShowHide">
@@ -22,7 +27,7 @@
     </div>
     <div class="group-detail" style="display:${display};text-align:center">
       <div class="group-description">
-        <p><input type="text" name="weight" maxlength="9" value="${param.weight}" />  </p>
+        <p><input type="text" name="weight" maxlength="9" value="${weight}" />  </p>
         <p>Optionally give this search a "weight" (for example 10, 200, -50, integer only).<br>In a search strategy, unions and intersects will sum the weights, giving higher scores to items found in multiple searches.</p>
         
       </div>
