@@ -308,8 +308,11 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 		var params_table = "<div class='filter operators'><span class='form_subtitle' style='padding-right:20px'><b>Revise Operation</b></span><div id='operations'><table style='margin-left:auto; margin-right:auto;'><tr><td class='opcheck' valign='middle'><input type='radio' name='boolean' value='INTERSECT' /></td><td class='operation INTERSECT'></td><td valign='middle'>&nbsp;" + (parseInt(modelstep.frontId)-1) + "&nbsp;<b>INTERSECT</b>&nbsp;" + (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='boolean' value='UNION'></td><td class='operation UNION'></td><td>&nbsp;" + (parseInt(modelstep.frontId)-1) + "&nbsp;<b>UNION</b>&nbsp;" + (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='boolean' value='MINUS'></td><td class='operation MINUS'></td><td>&nbsp;" + (parseInt(modelstep.frontId)-1) + "&nbsp;<b>MINUS</b>&nbsp;" + (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='boolean' value='RMINUS'></td><td class='operation RMINUS'></td><td>&nbsp;" + (modelstep.frontId) + "&nbsp;<b>MINUS</b>&nbsp;" + (parseInt(modelstep.frontId)-1) + "</td></tr></table></div></div>"
 		var button = "<div style='text-align:center'><input type='submit' value='Revise' /></div>";
 		params_table = oform + stage_input + params_table + button + cform;
-	}else if(params != undefined && params.length != 0)
+        } else if (jsonstep.isCollapsed) {
+                params_table = "<div>The nested strategy is opened below.</div>";
+	}else if(params != undefined && params.length != 0) {
 		params_table = createParameters(params, modelstep.isSpan && jsonstep.id == modelstep.back_boolean_Id);
+        }
 	var hideOp = false;
 	var hideQu = false;
 	if(jsonstep.isCollapsed){                              /* substrategy */
