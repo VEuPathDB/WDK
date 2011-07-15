@@ -1,0 +1,40 @@
+#!/usr/bin/perl
+
+use strict;
+use Getopt::Long;
+
+my ($siteSet, $build);
+
+&GetOptions('siteSet=s' => \$siteSet,
+	    'build=s' => \$build,
+	   );
+
+usage() if $siteSet ne "q" && $siteSet ne "w";
+usage() if !$build;
+
+my @componentList = ` find /var/www  -maxdepth 1 -type d -name '*DB' -printf "%f\n"|grep -v ApiDB`;
+my @campusList = (1, 2);
+
+foreach my $campus (@campusList) {
+  foreach my $component (@componentList) {
+    chomp($component);
+    my $lcComponent = lc($component);
+    my $site = "$siteSet$campus.$lcComponent.org";
+    print "$site\t/usr/local/tomcat_instances/$component/logs/*.b$build/wdk.log4j*\t/var/log/httpd/$site/access_log\n";
+
+  }
+}
+
+sub usage {
+  print STDERR "
+
+Generate the tab-delimited input file that wdkSlowQueryReport reads from its standard in to specify what log files to report on
+
+usage:  specWdkReport -siteSet [ q | w ] -build <build>
+
+where:
+  [q | w] determines whether to specify a report on [w]ww or [q]a sites, and
+  <build> is the build number (e.g. \"-build 12\"
+";
+  exit(1);
+}
