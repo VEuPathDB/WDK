@@ -24,6 +24,14 @@ function initTreeState(rootNode){
 		var a = $("a", rootNode)[0];
 		expandCollapseAll(a, true);
 		expandCollapseAll(a, false);
+
+                // if there is only 1 top node, expand it by default
+                var topNodes = $(rootNode).children(".term-node");
+                if (topNodes.length == 1) {
+                    topNodes.each(function () {
+                        $(this).children("img.plus-minus").click();
+                    });
+                }
 	}
 }
 
