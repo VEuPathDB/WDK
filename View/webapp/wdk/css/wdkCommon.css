@@ -660,3 +660,9 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
 .favorite-refresh-button {
     clear: both;
 }
+.type-ahead-help {
+    color: #666666;
+    font-size: smaller;
+}
+
+

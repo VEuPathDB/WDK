@@ -136,8 +136,9 @@ Otherwise a standard select menu is used.
     
       <%-- use a type ahead --%>
       <c:when test="${displayType eq 'typeAhead'}">
-        <input type="text" id="${pNam}_display" size="50"/>
+        <input type="text" id="${pNam}_display" size="50" value=""/>
         <html:hidden styleClass="typeAhead" property="value(${pNam})" />
+        <div class="type-ahead-help">Type three or more characters in the above textbox to get inline suggestions.</div>
       </c:when>
 
       <c:otherwise>
