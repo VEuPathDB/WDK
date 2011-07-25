@@ -364,9 +364,9 @@ public class Strategy {
             values.put(paramName, Integer.toString(newStepId));
             
             // replace newStep with new pnStep, and iterate to the parent/next
-            // node
+            // node; don't validate step, since a strategy may have 1+ invalid ones.
             newStep = user.createStep(question, values, targetStep.getFilter(),
-                    false, true, targetStep.getAssignedWeight());
+                    false, false, targetStep.getAssignedWeight());
             newStep.setCollapsible(targetStep.isCollapsible());
             newStep.setCollapsedName(targetStep.getCollapsedName());
             newStep.update(false);
