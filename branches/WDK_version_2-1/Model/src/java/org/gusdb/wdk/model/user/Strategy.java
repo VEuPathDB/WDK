@@ -366,7 +366,7 @@ public class Strategy {
             // replace newStep with new pnStep, and iterate to the parent/next
             // node
             newStep = user.createStep(question, values, targetStep.getFilter(),
-                    false, true, targetStep.getAssignedWeight());
+                    false, false, targetStep.getAssignedWeight());
             newStep.setCustomName(targetStep.getBaseCustomName());
             newStep.setCollapsible(targetStep.isCollapsible());
             newStep.setCollapsedName(targetStep.getCollapsedName());

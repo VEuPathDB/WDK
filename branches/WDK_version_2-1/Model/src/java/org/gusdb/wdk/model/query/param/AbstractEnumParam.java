@@ -277,11 +277,11 @@ public abstract class AbstractEnumParam extends Param {
 
         if (!isSkipValidation()) {
             initVocabMap();
-            for (String term : terms) {
-                if (!termInternalMap.containsKey(term))
-                    throw new WdkModelException(" - Invalid term '" + term
-                            + "' for parameter '" + name + "'");
-            }
+            //for (String term : terms) {
+            //    if (!termInternalMap.containsKey(term))
+            //        throw new WdkModelException(" - Invalid term '" + term
+            //                + "' for parameter '" + name + "'");
+            //}
         }
         return terms;
     }
