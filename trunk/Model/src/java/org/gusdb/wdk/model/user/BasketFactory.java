@@ -104,8 +104,7 @@ public class BasketFactory {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
-                .getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
         String sqlInsert = "INSERT INTO " + schema + TABLE_BASKET + " ("
                 + COLUMN_USER_ID + ", " + COLUMN_PROJECT_ID + ", "
                 + COLUMN_RECORD_CLASS;
@@ -190,8 +189,7 @@ public class BasketFactory {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
-                .getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
         String sqlDelete = "DELETE FROM " + schema + TABLE_BASKET + " WHERE "
                 + COLUMN_USER_ID + "= ? AND " + COLUMN_PROJECT_ID + " = ? AND "
                 + COLUMN_RECORD_CLASS + " = ?";
@@ -308,8 +306,7 @@ public class BasketFactory {
                     start);
 
             StringBuffer buffer = new StringBuffer();
-            PrimaryKeyAttributeField pkField = recordClass
-                    .getPrimaryKeyAttributeField();
+            PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
             String[] columns = pkField.getColumnRefs();
             while (rs.next()) {
                 if (buffer.length() > 0)
@@ -317,8 +314,8 @@ public class BasketFactory {
 
                 Map<String, Object> columnValues = new LinkedHashMap<String, Object>();
                 for (int i = 1; i <= columns.length; i++) {
-                    Object columnValue = rs
-                            .getObject(Utilities.COLUMN_PK_PREFIX + i);
+                    Object columnValue = rs.getObject(Utilities.COLUMN_PK_PREFIX
+                            + i);
                     columnValues.put(columns[i - 1], columnValue);
 
                     // cannot use primary key value to format the output,
@@ -364,8 +361,7 @@ public class BasketFactory {
         SqlQuery idQuery = (SqlQuery) wdkModel.resolveReference(queryRef);
         String allIdsSql = idQuery.getSql();
         String dbLink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
-        PrimaryKeyAttributeField pkField = recordClass
-                .getPrimaryKeyAttributeField();
+        PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
         String[] pkColumns = pkField.getColumnRefs();
 
         // use basket sql left join with all id query, and filter by the nulls
@@ -429,8 +425,7 @@ public class BasketFactory {
         // check if the basket question already exists
         String qname = recordClass.getFullName().replace('.', '_')
                 + SNAPSHOT_BASKET_QUESTION_SUFFIX;
-        QuestionSet questionSet = wdkModel
-                .getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
+        QuestionSet questionSet = wdkModel.getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
         if (questionSet.contains(qname))
             return;
 
@@ -452,8 +447,7 @@ public class BasketFactory {
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
 
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
-                .getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
 
         // check if the boolean query already exists
         String queryName = rcName.replace('.', '_')
@@ -539,8 +533,7 @@ public class BasketFactory {
         // check if the basket question already exists
         String qname = recordClass.getFullName().replace('.', '_')
                 + REALTIME_BASKET_QUESTION_SUFFIX;
-        QuestionSet questionSet = wdkModel
-                .getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
+        QuestionSet questionSet = wdkModel.getQuestionSet(Utilities.INTERNAL_QUESTION_SET);
         if (questionSet.contains(qname))
             return;
 
@@ -563,8 +556,7 @@ public class BasketFactory {
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
 
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
-                .getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
 
         // check if the boolean query already exists
         String queryName = rcName.replace('.', '_')
@@ -655,8 +647,7 @@ public class BasketFactory {
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
 
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
-                .getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
 
         // check if the boolean query already exists
         String queryName = rcName.replace('.', '_')
@@ -743,5 +734,51 @@ public class BasketFactory {
         for (int i = 0; i < pkValue.length; i++) {
             ps.setString(i + 4, pkValue[i]);
         }
+    }
+
+    public int exportBasket(User user, String targetProject, String rcName)
+            throws SQLException, WdkUserException, WdkModelException {
+        String table = schema + TABLE_BASKET;
+        String prefix = Utilities.COLUMN_PK_PREFIX;
+        String pkColumns = prefix + "1, " + prefix + "2, " + prefix + "3 ";
+        String projectId = wdkModel.getProjectId();
+        int userId = user.getUserId();
+
+        String selectClause = "SELECT " + COLUMN_USER_ID + ", "
+                + COLUMN_RECORD_CLASS + ", " + pkColumns + " FROM " + table
+                + " WHERE " + COLUMN_USER_ID + " = ? AND "
+                + COLUMN_RECORD_CLASS + " = ? AND " + COLUMN_PROJECT_ID
+                + " = ? ";
+
+        StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
+        sql.append(COLUMN_USER_ID + ", " + COLUMN_RECORD_CLASS + ", ");
+        sql.append(COLUMN_PROJECT_ID + ", " + pkColumns + ") ");
+        sql.append(" SELECT " + COLUMN_USER_ID + ", " + COLUMN_RECORD_CLASS);
+        sql.append(", ? AS " + COLUMN_PROJECT_ID + ", " + pkColumns);
+        sql.append(" FROM (" + selectClause + " MINUS " + selectClause + ")");
+        
+        logger.debug(sql);
+
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        PreparedStatement psInsert = null;
+        int count = 0;
+        try {
+            psInsert = SqlUtils.getPreparedStatement(dataSource, sql.toString());
+            psInsert.setString(1, targetProject);
+            psInsert.setInt(2, userId);
+            psInsert.setString(3, rcName);
+            psInsert.setString(4, projectId);
+            psInsert.setInt(5, userId);
+            psInsert.setString(6, rcName);
+            psInsert.setString(7, targetProject);
+
+            long start = System.currentTimeMillis();
+            count = psInsert.executeUpdate();
+            SqlUtils.verifyTime(wdkModel, sql.toString(), "wdk-export-basket",
+                    start);
+        } finally {
+            SqlUtils.closeStatement(psInsert);
+        }
+        return count;
     }
 }
