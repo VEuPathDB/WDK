@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
 
 <c:set var="url" value="<c:url value='/processQuestion.do?questionFullName=InternalQuestions.GeneRecordClasses_GeneRecordClassBySnapshotBasket&GeneRecordClasses_GeneRecordClassDataset_type=basket&questionSubmit=Run+Step'/>" />
 
@@ -11,6 +12,9 @@
       <input id="empty-basket-button" type="button" value="Empty Basket" onClick="emptyBasket();"/></td>
     <td>
       <input id="make-strategy-from-basket-button" type="button" value="Save" onClick="saveBasket();"/>
+    </td>
+    <td>
+      <site:customBasketControl />
     </td>
   </tr>
 </table>
