@@ -22,7 +22,6 @@ import org.gusdb.wdk.model.BooleanOperator;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -427,8 +426,7 @@ public class User /* implements Serializable */{
             int assignedWeight) throws NoSuchAlgorithmException,
             WdkUserException, WdkModelException, SQLException, JSONException {
         Question question = answerValue.getQuestion();
-        Map<String, String> paramValues = answerValue.getIdsQueryInstance()
-                .getValues();
+        Map<String, String> paramValues = answerValue.getIdsQueryInstance().getValues();
         AnswerFilterInstance filter = answerValue.getFilter();
         int startIndex = answerValue.getStartIndex();
         int endIndex = answerValue.getEndIndex();
@@ -545,12 +543,10 @@ public class User /* implements Serializable */{
 
         // the current implementation can only keep the root level of the
         // imported strategies open;
-        int[] oldActiveStrategies = user.activeStrategyFactory
-                .getRootStrategies();
+        int[] oldActiveStrategies = user.activeStrategyFactory.getRootStrategies();
         for (int oldStrategyId : oldActiveStrategies) {
             int newStrategyId = strategiesMap.get(oldStrategyId);
-            activeStrategyFactory.openActiveStrategy(Integer
-                    .toString(newStrategyId));
+            activeStrategyFactory.openActiveStrategy(Integer.toString(newStrategyId));
         }
 
         // then import the steps that do not belong to any strategies; that is,
@@ -887,13 +883,13 @@ public class User /* implements Serializable */{
     public String getProjectPreference(String key) {
         return projectPreferences.get(key);
     }
-    
+
     public void setGlobalPreference(String prefName, String prefValue) {
         if (prefValue == null)
             prefValue = prefName;
         globalPreferences.put(prefName, prefValue);
     }
-    
+
     public String getGlobalPreference(String key) {
         return globalPreferences.get(key);
     }
@@ -910,13 +906,13 @@ public class User /* implements Serializable */{
         globalPreferences.clear();
         projectPreferences.clear();
     }
-    
+
     void setPreferences(List<Map<String, String>> preferences) {
         clearPreferences();
         globalPreferences.putAll(preferences.get(0));
         projectPreferences.putAll(preferences.get(1));
     }
-    
+
     public void changePassword(String oldPassword, String newPassword,
             String confirmPassword) throws WdkUserException, WdkModelException {
         userFactory.changePassword(email, oldPassword, newPassword,
@@ -956,8 +952,8 @@ public class User /* implements Serializable */{
 
     public int getItemsPerPage() {
         String prefValue = getGlobalPreference(User.PREF_ITEMS_PER_PAGE);
-        int itemsPerPage = (prefValue == null) ? 20 : Integer
-                .parseInt(prefValue);
+        int itemsPerPage = (prefValue == null) ? 20
+                : Integer.parseInt(prefValue);
         return itemsPerPage;
     }
 
@@ -1004,8 +1000,7 @@ public class User /* implements Serializable */{
         String summaryKey = answerValue.getQuestion().getFullName()
                 + SUMMARY_ATTRIBUTES_SUFFIX;
         if (!projectPreferences.containsKey(summaryKey)) {
-            Map<String, AttributeField> summary = answerValue
-                    .getSummaryAttributeFieldMap();
+            Map<String, AttributeField> summary = answerValue.getSummaryAttributeFieldMap();
             StringBuffer sb = new StringBuffer();
             for (String attrName : summary.keySet()) {
                 if (sb.length() != 0)
@@ -1037,12 +1032,10 @@ public class User /* implements Serializable */{
             return null;
 
         QueryFactory queryFactory = wdkModel.getQueryFactory();
-        Map<String, Boolean> sortingAttributes = queryFactory
-                .getSortingAttributes(sortingChecksum);
+        Map<String, Boolean> sortingAttributes = queryFactory.getSortingAttributes(sortingChecksum);
         if (sortingAttributes != null) {
             // remove invalid columns
-            Map<String, AttributeField> attributes = question
-                    .getAttributeFieldMap();
+            Map<String, AttributeField> attributes = question.getAttributeFieldMap();
             String[] names = new String[sortingAttributes.size()];
             sortingAttributes.keySet().toArray(names);
             for (String name : names) {
@@ -1109,8 +1102,7 @@ public class User /* implements Serializable */{
                 savedSummary = true;
 
                 // ignore invalid attribute names
-                Map<String, AttributeField> attributes = question
-                        .getAttributeFieldMap();
+                Map<String, AttributeField> attributes = question.getAttributeFieldMap();
                 List<String> list = new ArrayList<String>();
                 for (String attribute : summary) {
                     if (attributes.containsKey(attribute))
@@ -1123,31 +1115,30 @@ public class User /* implements Serializable */{
 
         // if user does't have preference, use the default of the question
         if (!savedSummary) {
-            Map<String, AttributeField> attributes = question
-                    .getSummaryAttributeFieldMap();
+            Map<String, AttributeField> attributes = question.getSummaryAttributeFieldMap();
             summary = new String[attributes.size()];
             attributes.keySet().toArray(summary);
         }
 
         // always display weight for combined questions
         // if (question.getQuery().isCombined()) {
-        //    // check if weight already exists
-        //    boolean hasWeight = false;
-        //    for (String name : summary) {
-        //        if (name.equals(Utilities.COLUMN_WEIGHT)) {
-        //            hasWeight = true;
-        //            break;
-        //        }
-        //    }
+        // // check if weight already exists
+        // boolean hasWeight = false;
+        // for (String name : summary) {
+        // if (name.equals(Utilities.COLUMN_WEIGHT)) {
+        // hasWeight = true;
+        // break;
+        // }
+        // }
         //
-        //    // add weight to the last item if it's not included
-        //    if (!hasWeight) {
-        //        String[] array = new String[summary.length + 1];
-        //        System.arraycopy(summary, 0, array, 0, summary.length);
-        //        array[summary.length] = Utilities.COLUMN_WEIGHT;
-        //        summary = array;
-        //        summaryChecksum = null;
-        //    }
+        // // add weight to the last item if it's not included
+        // if (!hasWeight) {
+        // String[] array = new String[summary.length + 1];
+        // System.arraycopy(summary, 0, array, 0, summary.length);
+        // array[summary.length] = Utilities.COLUMN_WEIGHT;
+        // summary = array;
+        // summaryChecksum = null;
+        // }
         // }
 
         if (summaryChecksum == null || summaryChecksum.length() == 0)
@@ -1165,10 +1156,8 @@ public class User /* implements Serializable */{
             String[] summaryNames) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException {
         // make sure all the attribute names exist
-        Question question = (Question) wdkModel
-                .resolveReference(questionFullName);
-        Map<String, AttributeField> attributes = question
-                .getAttributeFieldMap();
+        Question question = (Question) wdkModel.resolveReference(questionFullName);
+        Map<String, AttributeField> attributes = question.getAttributeFieldMap();
 
         // instead throwing out an error, just ignore the invalid columns
         // for (String summaryName : summaryNames) {
@@ -1547,5 +1536,23 @@ public class User /* implements Serializable */{
             WdkModelException, SQLException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         return favoriteFactory.getGroups(this);
+    }
+
+    public int exportBasket(String targetProject, String rcName)
+            throws SQLException, WdkUserException, WdkModelException {
+        // check target project id
+        if (targetProject == null || targetProject.length() == 0)
+            throw new WdkUserException("The require target project is not " +
+                    "specified");
+        
+
+        // check the existance of the record class, and basket is enabled on it.
+        RecordClass recordClass = wdkModel.getRecordClass(rcName);
+        if (!recordClass.hasBasket())
+            throw new WdkUserException("The basket is not allowed on "
+                    + "recordClass " + rcName);
+
+        BasketFactory basketFactory = wdkModel.getBasketFactory();
+        return basketFactory.exportBasket(this, targetProject, rcName);
     }
 }
