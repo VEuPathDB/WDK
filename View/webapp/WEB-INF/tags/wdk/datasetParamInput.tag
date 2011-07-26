@@ -95,8 +95,11 @@ function chooseType(paramName, type) {
     <!-- display option to use basket snapshot -->
     <tr>
         <c:set var="basketCount" value="${wdkUser.basketCounts[qp.recordClass.fullName]}" />
+        <c:set var="disabled">
+            <c:if test="${basketCount == 0}">disabled</c:if>
+        </c:set>
         <td colspan="2" align="left" valign="top" nowrap>
-            <input type="radio" name="${pNam}_radio" ${basketChecked}
+            <input type="radio" name="${pNam}_radio" ${basketChecked} ${disabled}
                    onclick="chooseType('${pNam}', 'basket');" />
             Copy ${recordType}s from My Basket (${basketCount} ${recordType}s)&nbsp;
         </td>
