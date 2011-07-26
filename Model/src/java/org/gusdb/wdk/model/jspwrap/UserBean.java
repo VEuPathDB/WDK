@@ -752,8 +752,7 @@ public class UserBean /* implements Serializable */{
     public Map<String, List<StrategyBean>> getStrategiesByCategory()
             throws Exception {
         try {
-            Map<String, List<Strategy>> strategies = user
-                    .getStrategiesByCategory();
+            Map<String, List<Strategy>> strategies = user.getStrategiesByCategory();
             return convertMap(strategies);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1076,8 +1075,7 @@ public class UserBean /* implements Serializable */{
             throws Exception, NoSuchAlgorithmException, JSONException,
             SQLException {
         try {
-            Map<String, List<Strategy>> strategies = user
-                    .getSavedStrategiesByCategory();
+            Map<String, List<Strategy>> strategies = user.getSavedStrategiesByCategory();
             return convertMap(strategies);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1088,8 +1086,7 @@ public class UserBean /* implements Serializable */{
     public Map<String, List<StrategyBean>> getUnsavedStrategiesByCategory()
             throws Exception {
         try {
-            Map<String, List<Strategy>> strategies = user
-                    .getUnsavedStrategiesByCategory();
+            Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
             return convertMap(strategies);
         } catch (Exception ex) {
             logger.error(ex);
@@ -1101,8 +1098,7 @@ public class UserBean /* implements Serializable */{
     public Map<String, List<StrategyBean>> getRecentStrategiesByCategory()
             throws Exception {
         try {
-            Map<String, List<Strategy>> strategies = user
-                    .getRecentStrategiesByCategory();
+            Map<String, List<Strategy>> strategies = user.getRecentStrategiesByCategory();
             return convertMap(strategies);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1113,8 +1109,7 @@ public class UserBean /* implements Serializable */{
     public Map<String, List<StrategyBean>> getActiveStrategiesByCategory()
             throws Exception {
         try {
-            Map<String, List<Strategy>> strategies = user
-                    .getActiveStrategiesByCategory();
+            Map<String, List<Strategy>> strategies = user.getActiveStrategiesByCategory();
             return convertMap(strategies);
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -1138,8 +1133,9 @@ public class UserBean /* implements Serializable */{
             RecordClass recordClass = wdkModel.getRecordClass(rcName);
             String category = recordClass.getDisplayName();
             List<StrategyBean> strategies = activeStrats.get(rcName);
-            if (strategies.size() == 0) continue;
-            
+            if (strategies.size() == 0)
+                continue;
+
             Map<String, List<StrategyBean>> activities = new LinkedHashMap<String, List<StrategyBean>>();
             activities.put("Opened", strategies);
             categories.put(category, activities);
@@ -1149,10 +1145,10 @@ public class UserBean /* implements Serializable */{
             RecordClass recordClass = wdkModel.getRecordClass(rcName);
             String category = recordClass.getDisplayName();
             List<StrategyBean> strategies = savedStrats.get(rcName);
-            if (strategies.size() == 0) continue;
-            
-            Map<String, List<StrategyBean>> activities = categories
-                    .get(category);
+            if (strategies.size() == 0)
+                continue;
+
+            Map<String, List<StrategyBean>> activities = categories.get(category);
             if (activities == null) {
                 activities = new LinkedHashMap<String, List<StrategyBean>>();
                 categories.put(category, activities);
@@ -1164,10 +1160,10 @@ public class UserBean /* implements Serializable */{
             RecordClass recordClass = wdkModel.getRecordClass(rcName);
             String category = recordClass.getDisplayName();
             List<StrategyBean> strategies = recentStrats.get(rcName);
-            if (strategies.size() == 0) continue;
-            
-            Map<String, List<StrategyBean>> activities = categories
-                    .get(category);
+            if (strategies.size() == 0)
+                continue;
+
+            Map<String, List<StrategyBean>> activities = categories.get(category);
             if (activities == null) {
                 activities = new LinkedHashMap<String, List<StrategyBean>>();
                 categories.put(category, activities);
@@ -1348,7 +1344,7 @@ public class UserBean /* implements Serializable */{
             for (String key : baskets.keySet()) {
                 total += baskets.get(key);
             }
-        return total;
+            return total;
         } catch (SQLException ex) {
             ex.printStackTrace();
             throw ex;
@@ -1483,5 +1479,20 @@ public class UserBean /* implements Serializable */{
 
     public BasketBean getBasket() {
         return new BasketBean(this.user);
+    }
+
+    /**
+     * @param targetProject
+     * @param rcName
+     * @return
+     * @throws SQLException
+     * @throws WdkUserException
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.user.User#exportBasket(java.lang.String,
+     *      java.lang.String)
+     */
+    public int exportBasket(String targetProject, String rcName)
+            throws SQLException, WdkUserException, WdkModelException {
+        return user.exportBasket(targetProject, rcName);
     }
 }

@@ -33,6 +33,7 @@ public class BasketTest {
 
     private static final int POOL_SIZE = 5;
     private static final int OPEARTION_SIZE = 5;
+    private static final String TARGET_PROJECT = "EuPathDB";
 
     private WdkModel wdkModel;
     private BasketFactory basketFactory;
@@ -85,8 +86,7 @@ public class BasketTest {
         // check each records
         for (RecordInstance instance : answerValue.getRecordInstances()) {
             String pkValue = (String) instance.getPrimaryKey().getValue();
-            AttributeValue attribute = instance
-                    .getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
+            AttributeValue attribute = instance.getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
             int value = Integer.parseInt(attribute.getValue().toString());
             Assert.assertEquals("record basket: " + pkValue, 1, value);
         }
@@ -129,8 +129,7 @@ public class BasketTest {
         Map<String, String> params = new HashMap<String, String>();
         QueryInstance instance = query.makeInstance(user, params, true, 0,
                 new LinkedHashMap<String, String>());
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
-                .getColumnRefs();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
         ResultList results = instance.getResults();
         int count = 0;
         while (results.next()) {
@@ -146,5 +145,13 @@ public class BasketTest {
         }
         results.close();
         return ids;
+    }
+
+    @Test
+    public void testExportBasket() throws Exception {
+        User user = UnitTestHelper.getRegisteredUser();
+        List<String[]> records = addSomeRecords(user);
+        int count = user.exportBasket(TARGET_PROJECT, recordClass.getFullName());
+        Assert.assertTrue(count > 0 && count <= records.size());
     }
 }
