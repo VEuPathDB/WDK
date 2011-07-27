@@ -1480,19 +1480,4 @@ public class UserBean /* implements Serializable */{
     public BasketBean getBasket() {
         return new BasketBean(this.user);
     }
-
-    /**
-     * @param targetProject
-     * @param rcName
-     * @return
-     * @throws SQLException
-     * @throws WdkUserException
-     * @throws WdkModelException
-     * @see org.gusdb.wdk.model.user.User#exportBasket(java.lang.String,
-     *      java.lang.String)
-     */
-    public int exportBasket(String targetProject, String rcName)
-            throws SQLException, WdkUserException, WdkModelException {
-        return user.exportBasket(targetProject, rcName);
-    }
 }
