@@ -2,7 +2,6 @@
      supporting strategy page functionality  --%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<script type="text/javascript" src="<c:url value='wdk/js/lib/jquery-ui-1.8.12.custom.min.js'/>"></script>
 <script type="text/javascript" src="<c:url value='wdk/js/dyk.js'/>"></script>
 
 <!-- JQuery Drag And Drop Plugin -->

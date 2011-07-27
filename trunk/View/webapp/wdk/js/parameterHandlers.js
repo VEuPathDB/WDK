@@ -124,9 +124,42 @@ function createAutoComplete(obj, name) {
 			termDisplayMap[name][term] = display;
 		});		
 	}
-	$("#" + name + "_display").unautocomplete().autocomplete(def,{
-		matchContains: true
-	});
+
+        var odd = true;
+        var noMatch = "No item found";
+	$("#" + name + "_display").autocomplete(
+               {source: function( request, response ) {
+                    var result = $.ui.autocomplete.filter(def, request.term);
+                    if (result.length == 0) {
+                        result.push(noMatch);
+                    } else {
+                        var matcher = new RegExp("("+$.ui.autocomplete.escapeRegex(request.term)+")", "ig" );
+                        result = $.map(result, function(item) {
+                            var display = item.replace(matcher, "<strong>$1</strong>");
+                            return { label: display,    value: item};
+                        });
+                    }
+                    odd = true;
+	            response(result);
+		},
+		minLength: 3,
+                focus: function(event, ui) {
+                    if($(ui.item).val() == noMatch) $(ui.item).disable();
+                },
+                select: function(event, ui){
+                    if($(ui.item).val() == noMatch) return false;
+                },
+	}).data( "autocomplete" )._renderItem = function( ul, item ) {
+                // only change here was to replace .text() with .html()
+                var content = $( "<li></li>" )
+                       .data( "item.autocomplete", item )
+                       .append( $( "<a></a>" ).html(item.label) )
+                       .appendTo( ul );
+                if (!odd) content.addClass("even");
+                odd = !odd;
+                return content;
+        };
+
 	if (oldValues[name]) {
 		value = termDisplayMap[name][oldValues[name]]; // Look up the display for the old value
 		if (!value) value = oldValues[name]; // For typeaheads allowing arbitrary input
