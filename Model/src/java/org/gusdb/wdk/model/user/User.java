@@ -1537,22 +1537,4 @@ public class User /* implements Serializable */{
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         return favoriteFactory.getGroups(this);
     }
-
-    public int exportBasket(String targetProject, String rcName)
-            throws SQLException, WdkUserException, WdkModelException {
-        // check target project id
-        if (targetProject == null || targetProject.length() == 0)
-            throw new WdkUserException("The require target project is not " +
-                    "specified");
-        
-
-        // check the existance of the record class, and basket is enabled on it.
-        RecordClass recordClass = wdkModel.getRecordClass(rcName);
-        if (!recordClass.hasBasket())
-            throw new WdkUserException("The basket is not allowed on "
-                    + "recordClass " + rcName);
-
-        BasketFactory basketFactory = wdkModel.getBasketFactory();
-        return basketFactory.exportBasket(this, targetProject, rcName);
-    }
 }

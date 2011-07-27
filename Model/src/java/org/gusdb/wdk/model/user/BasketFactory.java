@@ -55,10 +55,10 @@ public class BasketFactory {
     public static final String PARAM_USER_SIGNATURE = "user_signature";
     public static final String PARAM_DATASET_SUFFIX = "Dataset";
 
-    static final String TABLE_BASKET = "user_baskets";
-    static final String COLUMN_USER_ID = "user_id";
-    static final String COLUMN_PROJECT_ID = "project_id";
-    static final String COLUMN_RECORD_CLASS = "record_class";
+    public static final String TABLE_BASKET = "user_baskets";
+    public static final String COLUMN_USER_ID = "user_id";
+    public static final String COLUMN_PROJECT_ID = "project_id";
+    public static final String COLUMN_RECORD_CLASS = "record_class";
 
     private static final Logger logger = Logger.getLogger(BasketFactory.class);
 
@@ -734,51 +734,5 @@ public class BasketFactory {
         for (int i = 0; i < pkValue.length; i++) {
             ps.setString(i + 4, pkValue[i]);
         }
-    }
-
-    public int exportBasket(User user, String targetProject, String rcName)
-            throws SQLException, WdkUserException, WdkModelException {
-        String table = schema + TABLE_BASKET;
-        String prefix = Utilities.COLUMN_PK_PREFIX;
-        String pkColumns = prefix + "1, " + prefix + "2, " + prefix + "3 ";
-        String projectId = wdkModel.getProjectId();
-        int userId = user.getUserId();
-
-        String selectClause = "SELECT " + COLUMN_USER_ID + ", "
-                + COLUMN_RECORD_CLASS + ", " + pkColumns + " FROM " + table
-                + " WHERE " + COLUMN_USER_ID + " = ? AND "
-                + COLUMN_RECORD_CLASS + " = ? AND " + COLUMN_PROJECT_ID
-                + " = ? ";
-
-        StringBuilder sql = new StringBuilder("INSERT INTO " + table + " (");
-        sql.append(COLUMN_USER_ID + ", " + COLUMN_RECORD_CLASS + ", ");
-        sql.append(COLUMN_PROJECT_ID + ", " + pkColumns + ") ");
-        sql.append(" SELECT " + COLUMN_USER_ID + ", " + COLUMN_RECORD_CLASS);
-        sql.append(", ? AS " + COLUMN_PROJECT_ID + ", " + pkColumns);
-        sql.append(" FROM (" + selectClause + " MINUS " + selectClause + ")");
-        
-        logger.debug(sql);
-
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
-        PreparedStatement psInsert = null;
-        int count = 0;
-        try {
-            psInsert = SqlUtils.getPreparedStatement(dataSource, sql.toString());
-            psInsert.setString(1, targetProject);
-            psInsert.setInt(2, userId);
-            psInsert.setString(3, rcName);
-            psInsert.setString(4, projectId);
-            psInsert.setInt(5, userId);
-            psInsert.setString(6, rcName);
-            psInsert.setString(7, targetProject);
-
-            long start = System.currentTimeMillis();
-            count = psInsert.executeUpdate();
-            SqlUtils.verifyTime(wdkModel, sql.toString(), "wdk-export-basket",
-                    start);
-        } finally {
-            SqlUtils.closeStatement(psInsert);
-        }
-        return count;
     }
 }
