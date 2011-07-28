@@ -60,7 +60,9 @@ public class ParamReference extends Reference {
         String displayType = paramRef.getDisplayType();
         String selectMode = paramRef.getSelectMode();
         String queryRef = paramRef.getQueryRef();
+        Boolean suppressNode = paramRef.getSuppressNode();
         if (param instanceof AbstractEnumParam) {
+            AbstractEnumParam enumParam = (FlatVocabParam) param;
             // check those invalid properties
             if (number != null)
                 throw new WdkModelException("The 'number' property is not "
@@ -70,8 +72,7 @@ public class ParamReference extends Reference {
                 ((FlatVocabParam) param).setServedQueryName(servedQueryName);
 
             // if the param has customized multi pick
-            if (multiPick != null)
-                ((AbstractEnumParam) param).setMultiPick(multiPick);
+            if (multiPick != null) enumParam.setMultiPick(multiPick);
 
             // if the queryRef is set for FlatVocabParam
             if (queryRef != null) {
@@ -84,14 +85,15 @@ public class ParamReference extends Reference {
             }
 
             // if quote is set, it overrides the value of the param
-            if (quote != null) ((AbstractEnumParam) param).setQuote(quote);
+            if (quote != null) enumParam.setQuote(quote);
 
             // if displayType is set, overrides the value in param
-            if (displayType != null)
-                ((AbstractEnumParam) param).setDisplayType(displayType);
+            if (displayType != null) enumParam.setDisplayType(displayType);
 
-            if (selectMode != null)
-                ((AbstractEnumParam) param).setSelectMode(selectMode);
+            if (selectMode != null) enumParam.setSelectMode(selectMode);
+
+            if (suppressNode != null) enumParam.setSuppressNode(suppressNode);
+
         } else { // or other param types
             if (multiPick != null || quote != null || displayType != null
                     || selectMode != null || queryRef != null)
@@ -133,6 +135,7 @@ public class ParamReference extends Reference {
     private Boolean visible;
     private String selectMode;
     private Boolean noTranslation;
+    private Boolean suppressNode;
 
     public ParamReference() {}
 
@@ -302,4 +305,20 @@ public class ParamReference extends Reference {
     public void setNumber(Boolean number) {
         this.number = number;
     }
+
+    /**
+     * @return the suppressNode
+     */
+    public Boolean getSuppressNode() {
+        return suppressNode;
+    }
+
+    /**
+     * @param suppressNode
+     *            the suppressNode to set
+     */
+    public void setSuppressNode(Boolean suppressNode) {
+        this.suppressNode = suppressNode;
+    }
+
 }
