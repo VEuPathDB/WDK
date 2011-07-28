@@ -62,7 +62,7 @@ public class ParamReference extends Reference {
         String queryRef = paramRef.getQueryRef();
         Boolean suppressNode = paramRef.getSuppressNode();
         if (param instanceof AbstractEnumParam) {
-            AbstractEnumParam enumParam = (FlatVocabParam) param;
+            AbstractEnumParam enumParam = (AbstractEnumParam) param;
             // check those invalid properties
             if (number != null)
                 throw new WdkModelException("The 'number' property is not "
