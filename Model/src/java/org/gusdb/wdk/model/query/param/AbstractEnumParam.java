@@ -56,6 +56,11 @@ public abstract class AbstractEnumParam extends Param {
      * initialized from suggest.
      */
     protected String selectMode;
+    
+    /**
+     * collapse single-child branches if set to true
+     */
+    private boolean suppressNode = false;
 
     public AbstractEnumParam() {
     }
@@ -265,6 +270,25 @@ public abstract class AbstractEnumParam extends Param {
             EnumParamTermNode parent = indexMap.get(parentTerm);
             parent.addChild(node);
         }
+        
+        if (suppressNode) suppressChildren(termTreeList);
+    }
+    
+    private void suppressChildren(List<EnumParamTermNode> children) {
+        if (children.size() == 1) {
+            // has only on child, suppress it in the tree if it has grand children
+            EnumParamTermNode child = children.get(0);
+            EnumParamTermNode[] grandChildren = child.getChildren();
+            if (grandChildren.length > 0) {
+                children.remove(0);
+                for(EnumParamTermNode grandChild : grandChildren) {
+                    children.add(grandChild);
+                }
+            }
+        }
+        for(EnumParamTermNode child : children) {
+            suppressChildren(child.getChildrenList());
+        }
     }
 
     public String[] getTerms(String termList) throws NoSuchAlgorithmException,
@@ -455,4 +479,20 @@ public abstract class AbstractEnumParam extends Param {
     protected void applySuggection(ParamSuggestion suggest) {
         selectMode = suggest.getSelectMode();
     }
+
+    /**
+     * @return the suppressNode
+     */
+    public boolean isSuppressNode() {
+        return suppressNode;
+    }
+
+    /**
+     * @param suppressNode the suppressNode to set
+     */
+    public void setSuppressNode(boolean suppressNode) {
+        this.suppressNode = suppressNode;
+    }
+    
+    
 }
