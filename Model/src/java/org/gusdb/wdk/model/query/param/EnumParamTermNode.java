@@ -46,6 +46,10 @@ public class EnumParamTermNode {
         children.toArray(array);
         return array;
     }
+    
+    List<EnumParamTermNode> getChildrenList() {
+        return children;
+    }
 
     /**
      * @return the display

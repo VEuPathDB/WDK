@@ -33,7 +33,6 @@ public class BasketTest {
 
     private static final int POOL_SIZE = 5;
     private static final int OPEARTION_SIZE = 5;
-    private static final String TARGET_PROJECT = "EuPathDB";
 
     private WdkModel wdkModel;
     private BasketFactory basketFactory;
@@ -145,13 +144,5 @@ public class BasketTest {
         }
         results.close();
         return ids;
-    }
-
-    @Test
-    public void testExportBasket() throws Exception {
-        User user = UnitTestHelper.getRegisteredUser();
-        List<String[]> records = addSomeRecords(user);
-        int count = user.exportBasket(TARGET_PROJECT, recordClass.getFullName());
-        Assert.assertTrue(count > 0 && count <= records.size());
     }
 }

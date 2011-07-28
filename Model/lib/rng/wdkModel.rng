@@ -412,6 +412,11 @@
         </choice>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="suppressNode">
+        <data type="boolean" />
+      </attribute>
+    </optional>
   </define>
 
   <define name="SelectModeContents">
