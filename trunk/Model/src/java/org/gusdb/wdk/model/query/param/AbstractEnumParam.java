@@ -87,6 +87,7 @@ public abstract class AbstractEnumParam extends Param {
         this.dependedParamRef = param.dependedParamRef;
         this.dependedValue = param.dependedValue;
         this.selectMode = param.selectMode;
+        this.suppressNode = param.suppressNode;
     }
 
     // ///////////////////////////////////////////////////////////////////
