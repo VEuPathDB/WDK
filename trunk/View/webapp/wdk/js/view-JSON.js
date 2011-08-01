@@ -268,7 +268,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 	$(detail_div).addClass("crumb_details").attr("disp","0");
 	$(detail_div).attr("style","text-align:center");
 	if (jsonstep.isboolean && !jsonstep.isCollapsed) $(detail_div).addClass("operation_details");
-	var name = jsonstep.displayName;
+	var name = jsonstep.customName;
 	var questionName = jsonstep.questionName;
 	
 	var filteredName = "";
@@ -284,7 +284,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 			name = jsonstep.step.customName;
 		}
 	}
-	var collapsedName = name;//"Nested " + name;
+	var collapsedName = escape(name);//"Nested " + name;
 
 	if (jsonstep.isboolean && !jsonstep.isCollapsed){
 		name = "<ul class='question_name'><li>STEP " + modelstep.frontId + " : Step " + (modelstep.frontId - 1) + "</li><li class='operation " + jsonstep.operation + "'></li><li>" + name + "</li></ul>";
