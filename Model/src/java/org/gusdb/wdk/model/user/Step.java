@@ -212,7 +212,7 @@ public class Step {
         if (name != null) {
             // remove script injections
             name = name.replaceAll("<.+?>", " ");
-            name = name.replaceAll("['\"]", " ");
+            name = name.replaceAll("[']", " ");
             name = name.trim().replaceAll("\\s+", " ");
             if (name.length() > 4000)
                 name = name.substring(0, 4000);
