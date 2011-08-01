@@ -996,4 +996,14 @@ public class Step {
     public String toString() {
         return displayId + " (" + previousStepId + ", " + childStepId + ")";
     }
+    
+    public boolean isUncollapsible() throws WdkModelException {
+        // if the step hasn't been collapsed, it cannot be uncollapsed.
+        if (!collapsible) return false;
+        
+        // if the step is a combined step, it cannot be uncollapsed
+        if (isCombined()) return false;
+        
+        return true;
+    }
 }
