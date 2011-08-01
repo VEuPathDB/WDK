@@ -355,6 +355,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("answerId", step.getAnswerId());
         // the root of the sub-strategy should not be collapsed
         jsStep.put("isCollapsed", step.getIsCollapsible() && showSubStrategy);
+        jsStep.put("isUncollapsible", step.isUncollapsible());
         jsStep.put("dataType", step.getDataType());
         jsStep.put("displayType", step.getDisplayType());
         jsStep.put("shortDisplayType", step.getShortDisplayType());

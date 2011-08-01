@@ -23,6 +23,9 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  * not set already) and returning the expanded step to strategy.jsp.
  **/
 public class ExpandStepAction extends Action {
+    
+    private static final String PARAM_UNCOLLAPSE = "uncollapse";
+    
     private static final Logger logger = Logger.getLogger(ExpandStepAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
@@ -73,8 +76,19 @@ public class ExpandStepAction extends Action {
                 throw new WdkModelException(
                         "Only top-row steps can be expanded!");
             }
+            
+            String strUncollapse = request.getParameter(PARAM_UNCOLLAPSE);
+            boolean uncollapse = false;
+            if (strUncollapse != null && strUncollapse.equalsIgnoreCase("true"))
+                uncollapse = true;
 
-            if (!step.getIsCollapsible()) {
+            if (uncollapse && step.isUncollapsible()) {
+                // uncollapse a single-step nested strategy
+                step.setCollapsedName(null);
+                step.setIsCollapsible(false);
+                step.update(false);
+            } else if (!step.getIsCollapsible()) {
+                // collapse a step into a single-step nested strategy
                 String branch = request.getParameter("collapsedName");
                 if (branch == null || branch.length() == 0) {
                     throw new WdkModelException(

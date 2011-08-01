@@ -20,6 +20,7 @@ var sub_rename_popup = "Rename this nested strategy";
 var sub_view_popup = "View the results of this nested strategy in the Results area below";
 var sub_edit_popup = "Open this nested step to revise";
 var sub_expand_popup = "Open into a new panel to add or edit nested steps";
+var sub_collapse_popup = "Convert a single-step nested strategy back to a normal step";
 
 //Variables
 var has_invalid = false;
@@ -334,9 +335,19 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 			moEdit = sub_edit_expand_openned;
 		}
 		
+		
+		collapseDisabled = "";
+		ocCol = "onclick='ExpandStep(this," + sid + "," + modelstep.frontId + ",\"" + collapsedName + "\", true);hideDetails(this)'";
+		if (jsonstep.isUncollapsible) {
+		    collapseDisabled = "disabled";
+			ocCol = "";
+		}
+		
 		edit_step = 	"<a title='" + moEdit + "' class='edit_step_link " + disab + "' href='javascript:void(0)' " + ocExp + ">Revise</a>&nbsp;|&nbsp;";
 		
-		expand_step = 	"<a title='" + moExp + "' class='expand_step_link " + disab + "' href='javascript:void(0)' " + ocExp + ">" + oM + "</a>&nbsp;|&nbsp;";
+		expand_step = 	"<a title='" + sub_collapse_popup + "' class='expand_step_link " + collapseDisabled + "' href='javascript:void(0)' " + ocExp + ">" + oM + "</a>&nbsp;|&nbsp;";
+		
+		collapse_step = "<a title='" + moExp + "' class='expand_step_link " + disab + "' href='javascript:void(0)' " + ocCol + ">Unnest Strategy</a>&nbsp;|&nbsp;";
 
 	}else{   							/* simple step */
 		disab = "";
@@ -366,6 +377,8 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 		}else{
 			expand_step = 	"<a title='" + ss_expand_popup + "' class='expand_step_link' href='javascript:void(0)' onclick='ExpandStep(this," + sid + "," + modelstep.frontId + ",\"" + collapsedName + "\");hideDetails(this)'>Make Nested Strategy</a>&nbsp;|&nbsp;";
 		}
+		
+		collapse_step = "";
 	}
 	insertRecName = (prevjsonstep == null) ? jsonstep.dataType : prevjsonstep.dataType;			
 	insert_step = 	"<a title='" + insert_popup + "'  class='insert_step_link' id='" + sid + "|" + parentid + "' href='javascript:void(0)' onclick='Insert_Step(this,\"" + insertRecName + "\");hideDetails(this)'>Insert Step Before</a>&nbsp;|&nbsp;";
@@ -389,7 +402,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 	close_button = 	"<a title='" + x_popup + "' class='close_link' href='javascript:void(0)' onclick='hideDetails(this)'>[x]</a>";
 
 	inner = ""+	
-	    "		<div class='crumb_menu'>"+ rename_step + view_step + edit_step + expand_step + insert_step + customMenu + delete_step + close_button +
+	    "		<div class='crumb_menu'>"+ rename_step + view_step + edit_step + expand_step + collapse_step + insert_step + customMenu + delete_step + close_button +
 		"		</div>"+ name +
 		"		<table></table><hr class='clear' />" + filteredName +
 		"		<p><b>Results:&nbsp;</b>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.shortDisplayType,jsonstep.results);// + "&nbsp;&nbsp;|&nbsp;&nbsp;<a href='downloadStep.do?step_id=" + modelstep.back_step_Id + "'>Download</a>";

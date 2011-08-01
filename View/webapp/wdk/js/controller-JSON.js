@@ -576,13 +576,15 @@ function DeleteStep(f_strategyId,f_stepId){
 	});
 }
 
-function ExpandStep(e, f_strategyId, f_stepId, collapsedName){
+function ExpandStep(e, f_strategyId, f_stepId, collapsedName, uncollapse){
 	var strategy = getStrategy(f_strategyId);
 	var step = strategy.getStep(f_stepId, true);
 	var cs = strategy.checksum;
 	if(strategy.subStratOf != null)
 		cs = getStrategy(strategy.subStratOf).checksum;
 	url = "expandStep.do?strategy=" + strategy.backId + "&step=" + step.back_step_Id + "&collapsedName=" + collapsedName+"&strategy_checksum="+cs;
+	if (uncollapse) url += "&uncollapse=true";
+	
 	$.ajax({
 		url: url,
 		type: "post",
