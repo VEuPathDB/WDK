@@ -572,4 +572,15 @@ public class StepBean {
     public String toString() {
         return step.toString();
     }
+
+    /**
+     * @return
+     * @throws WdkModelException
+     * @see org.gusdb.wdk.model.user.Step#isUncollapsible()
+     */
+    public boolean isUncollapsible() throws WdkModelException {
+        return step.isUncollapsible();
+    }
+    
+    
 }
