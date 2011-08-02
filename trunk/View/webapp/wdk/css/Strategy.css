@@ -438,8 +438,11 @@ div.transform a.crumb_name img{
 }
 
 .crumb_menu span, .crumb_menu a.close_link {
-  position: absolute;
-  right: 6px;
+  float: right;
+  position: relative;
+  top: -3px;
+  right: 3px;
+  padding-left: 10px;
 }
 
 #bread_crumb_div td {

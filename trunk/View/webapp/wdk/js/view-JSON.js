@@ -338,16 +338,16 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 		
 		collapseDisabled = "";
 		ocCol = "onclick='ExpandStep(this," + sid + "," + modelstep.frontId + ",\"" + collapsedName + "\", true);hideDetails(this)'";
-		if (jsonstep.isUncollapsible) {
+		if (!jsonstep.isUncollapsible) {
 		    collapseDisabled = "disabled";
-			ocCol = "";
+		    ocCol = "";
 		}
 		
 		edit_step = 	"<a title='" + moEdit + "' class='edit_step_link " + disab + "' href='javascript:void(0)' " + ocExp + ">Revise</a>&nbsp;|&nbsp;";
 		
-		expand_step = 	"<a title='" + sub_collapse_popup + "' class='expand_step_link " + collapseDisabled + "' href='javascript:void(0)' " + ocExp + ">" + oM + "</a>&nbsp;|&nbsp;";
+		collapse_step = "<a title='" + sub_collapse_popup + "' class='collapse_step_link " + collapseDisabled + "' href='javascript:void(0)' " + ocCol + ">Unnest Strategy</a>&nbsp;|&nbsp;";
 		
-		collapse_step = "<a title='" + moExp + "' class='expand_step_link " + disab + "' href='javascript:void(0)' " + ocCol + ">Unnest Strategy</a>&nbsp;|&nbsp;";
+		expand_step = "<a title='" + moExp + "' class='expand_step_link " + disab + "' href='javascript:void(0)' " + ocExp + ">" + oM + "</a>&nbsp;|&nbsp;";
 
 	}else{   							/* simple step */
 		disab = "";
@@ -399,10 +399,10 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 		delete_step = "<a title='" + delete_popup + "' class='delete_step_link' href='javascript:void(0)' onclick='DeleteStep(" + sid + "," + modelstep.frontId + ");hideDetails(this)'>Delete</a>";
 	}
 
-	close_button = 	"<a title='" + x_popup + "' class='close_link' href='javascript:void(0)' onclick='hideDetails(this)'>[x]</a>";
+	close_button = 	"<a title='" + x_popup + "' class='close_link' href='javascript:void(0)' onclick='hideDetails(this)'><img src=\"wdk/images/close.gif\" /></a>";
 
 	inner = ""+	
-	    "		<div class='crumb_menu'>"+ rename_step + view_step + edit_step + expand_step + collapse_step + insert_step + customMenu + delete_step + close_button +
+	    "		<div class='crumb_menu'>" + close_button + rename_step + view_step + edit_step + expand_step + collapse_step + insert_step + customMenu + delete_step +
 		"		</div>"+ name +
 		"		<table></table><hr class='clear' />" + filteredName +
 		"		<p><b>Results:&nbsp;</b>" + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.shortDisplayType,jsonstep.results);// + "&nbsp;&nbsp;|&nbsp;&nbsp;<a href='downloadStep.do?step_id=" + modelstep.back_step_Id + "'>Download</a>";
