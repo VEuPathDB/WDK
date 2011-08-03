@@ -8,6 +8,9 @@
 
 <script type="text/javascript" src='<c:url value="/wdk/js/wdkCommon.js"/>'></script>
 
+<%-- JQuery Tree Plugin --%>
+<script type="text/javascript" src="<c:url value='/wdk/js/lib/jstree/jquery.jstree.js'/>"></script>
+
 <%-- JQuery BlockUI Plugin --%>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.blockUI.js'/>"></script>
 

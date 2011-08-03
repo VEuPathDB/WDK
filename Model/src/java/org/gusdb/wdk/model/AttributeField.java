@@ -24,6 +24,7 @@ public abstract class AttributeField extends Field {
     private String align;
     private boolean nowrap = false;
     private boolean removable = true;
+    private String categoryName;
 
     /**
      * by default, an attribute can be removed from the result page.
@@ -88,13 +89,27 @@ public abstract class AttributeField extends Field {
     }
 
     /**
+     * @return attribute category name
+     */
+    public String getAttributeCategory() {
+    	return categoryName;
+    }
+    
+    /**
+     * @param categoryName attribute category name
+     */
+    public void setAttributeCategory(String categoryName) {
+    	this.categoryName = categoryName;
+    }
+    
+    /**
      * @param container
      *            the container to set
      */
     public void setContainer(AttributeFieldContainer container) {
         this.container = container;
     }
-
+    
     protected Map<String, AttributeField> parseFields(String text)
             throws WdkModelException {
         Map<String, AttributeField> children = new LinkedHashMap<String, AttributeField>();

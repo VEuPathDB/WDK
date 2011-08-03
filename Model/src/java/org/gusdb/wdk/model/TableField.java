@@ -76,10 +76,9 @@ public class TableField extends Field implements AttributeFieldContainer {
     public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
         Map<String, AttributeField> map = new LinkedHashMap<String, AttributeField>();
         for (AttributeField field : attributeFieldMap.values()) {
-            if ((scope == FieldScope.ALL)
-                    || (scope == FieldScope.NON_INTERNAL && !field.isInternal())
-                    || (scope == FieldScope.REPORT_MAKER && field.isInReportMaker()))
+        	if (scope.isFieldInScope(field)) {
                 map.put(field.getName(), field);
+        	}
         }
         return map;
     }

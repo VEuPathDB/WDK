@@ -7,25 +7,25 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-public class Category extends WdkModelBase {
+public class SearchCategory extends WdkModelBase {
 
     public static final String USED_BY_WEBSITE = "website";
     public static final String USED_BY_WEBSERVICE = "webservice";
 
-    private static final Logger logger = Logger.getLogger(Category.class);
+    private static final Logger logger = Logger.getLogger(SearchCategory.class);
 
     private WdkModel wdkModel;
     private String name;
     private String displayName;
     private String parentRef;
-    private Category parent;
+    private SearchCategory parent;
     private String usedBy;
-    private Map<String, Category> children;
+    private Map<String, SearchCategory> children;
     private List<CategoryQuestionRef> questionRefs;
 
-    public Category() {
+    public SearchCategory() {
         questionRefs = new ArrayList<CategoryQuestionRef>();
-        children = new LinkedHashMap<String, Category>();
+        children = new LinkedHashMap<String, SearchCategory>();
     }
 
     public String getName() {
@@ -76,21 +76,21 @@ public class Category extends WdkModelBase {
         this.parentRef = parentRef;
     }
 
-    public Category getParent() {
+    public SearchCategory getParent() {
         return parent;
     }
 
-    public Map<String, Category> getWebsiteChildren() {
+    public Map<String, SearchCategory> getWebsiteChildren() {
         return getChildren(USED_BY_WEBSITE);
     }
     
-    public Map<String, Category> getWebserviceChildren() {
+    public Map<String, SearchCategory> getWebserviceChildren() {
         return getChildren(USED_BY_WEBSERVICE);
     }
     
-    private Map<String, Category> getChildren(String usedBy) {
-        Map<String, Category> categories = new LinkedHashMap<String, Category>();
-        for(Category child : children.values()) {
+    private Map<String, SearchCategory> getChildren(String usedBy) {
+        Map<String, SearchCategory> categories = new LinkedHashMap<String, SearchCategory>();
+        for(SearchCategory child : children.values()) {
             String cusedBy = child.getUsedBy();
             if (usedBy == null || cusedBy == null || cusedBy.equalsIgnoreCase(usedBy)){
                 categories.put(child.getName(), child);
@@ -99,8 +99,8 @@ public class Category extends WdkModelBase {
         return categories;
     }
 
-    public boolean isAncesterOf(Category category) {
-        Category parent = category.parent;
+    public boolean isAncesterOf(SearchCategory category) {
+        SearchCategory parent = category.parent;
         while (parent != null) {
             if (parent.equals(this)) return true;
             parent = parent.parent;
@@ -139,7 +139,7 @@ public class Category extends WdkModelBase {
         }
 
         // resolve the parent
-        Category parent = wdkModel.getCategories().get(parentRef);
+        SearchCategory parent = wdkModel.getCategories().get(parentRef);
         if (parent != null) {
             // parent cannot be the same node as this one, or a child of it
             if (parent.equals(this) || this.isAncesterOf(parent))
@@ -157,8 +157,8 @@ public class Category extends WdkModelBase {
      */
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof Category)) return false;
-        Category category = (Category) obj;
+        if (obj == null || !(obj instanceof SearchCategory)) return false;
+        SearchCategory category = (SearchCategory) obj;
         return this.name.equalsIgnoreCase(category.name);
     }
 

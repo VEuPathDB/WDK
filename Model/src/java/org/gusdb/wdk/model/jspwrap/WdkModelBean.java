@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Vector;
 
-import org.gusdb.wdk.model.Category;
+import org.gusdb.wdk.model.SearchCategory;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
@@ -65,8 +65,8 @@ public class WdkModelBean {
 
     public Map<String, CategoryBean> getWebsiteRootCategories() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        Map<String, Category> roots = wdkModel.getRooCategories(Category.USED_BY_WEBSITE);
-        for (Category category : roots.values()) {
+        Map<String, SearchCategory> roots = wdkModel.getRooCategories(SearchCategory.USED_BY_WEBSITE);
+        for (SearchCategory category : roots.values()) {
             CategoryBean bean = new CategoryBean(category);
             beans.put(category.getName(), bean);
         }
@@ -75,8 +75,8 @@ public class WdkModelBean {
 
     public Map<String, CategoryBean> getWebserviceRootCategories() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        Map<String, Category> roots = wdkModel.getRooCategories(Category.USED_BY_WEBSERVICE);
-        for (Category category : roots.values()) {
+        Map<String, SearchCategory> roots = wdkModel.getRooCategories(SearchCategory.USED_BY_WEBSERVICE);
+        for (SearchCategory category : roots.values()) {
             CategoryBean bean = new CategoryBean(category);
             beans.put(category.getName(), bean);
         }
