@@ -10,6 +10,7 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
+import org.gusdb.wdk.model.AttributeCategoryTree;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.Question;
@@ -324,7 +325,7 @@ public class AnswerValueBean {
         v.copyInto(downloadAttribNames);
         return downloadAttribNames;
     }
-
+    
     public void setCustomName(String name) {
         customName = name;
     }
@@ -421,6 +422,14 @@ public class AnswerValueBean {
         return fieldBeans;
     }
 
+    public AttributeCategoryTree getDisplayableAttributeTree() {
+    	return answerValue.getDisplayableAttributeTree();
+    }
+
+    public AttributeCategoryTree getReportMakerAttributeTree() {
+    	return answerValue.getReportMakerAttributeTree();
+    }
+    
     /**
      * @param attributeName
      * @see org.gusdb.wdk.model.AnswerValue#addSumaryAttribute(java.lang.String)
@@ -504,5 +513,16 @@ public class AnswerValueBean {
      */
     public void setPageIndex(int startIndex, int endIndex) {
         answerValue.setPageIndex(startIndex, endIndex);
+    }
+    
+    /**
+     * Temporary method to allow easy on/off of attribute tree
+     * for attribute selection in both results page and report
+     * config pages.
+     * 
+     * @return whether attribute tree should be used (columns otherwise)
+     */
+    public boolean getUseAttributeTree() {
+    	return true;
     }
 }

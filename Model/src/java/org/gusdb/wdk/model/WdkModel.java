@@ -153,9 +153,9 @@ public class WdkModel {
     private List<PropertyList> defaultPropertyLists = new ArrayList<PropertyList>();
     private Map<String, String[]> defaultPropertyListMap = new LinkedHashMap<String, String[]>();
 
-    private List<Category> categoryList = new ArrayList<Category>();
-    private Map<String, Category> categoryMap = new LinkedHashMap<String, Category>();
-    private Map<String, Category> rootCategoryMap = new LinkedHashMap<String, Category>();
+    private List<SearchCategory> categoryList = new ArrayList<SearchCategory>();
+    private Map<String, SearchCategory> categoryMap = new LinkedHashMap<String, SearchCategory>();
+    private Map<String, SearchCategory> rootCategoryMap = new LinkedHashMap<String, SearchCategory>();
 
     private String secretKey;
 
@@ -606,7 +606,7 @@ public class WdkModel {
         for (XmlQuestionSet qSet : xmlQuestionSets.values()) {
             qSet.resolveReferences(this);
         }
-        for (Category category : this.categoryMap.values()) {
+        for (SearchCategory category : this.categoryMap.values()) {
             category.resolveReferences(this);
             if (category.getParent() == null)
                 rootCategoryMap.put(category.getName(), category);
@@ -726,7 +726,7 @@ public class WdkModel {
         xmlRecordClassSetList = null;
 
         // exclude categories
-        for (Category category : this.categoryList) {
+        for (SearchCategory category : this.categoryList) {
             if (category.include(projectId)) {
                 String name = category.getName();
                 if (categoryMap.containsKey(name))
@@ -1018,17 +1018,17 @@ public class WdkModel {
         return propLists;
     }
 
-    public void addCategory(Category category) {
+    public void addCategory(SearchCategory category) {
         this.categoryList.add(category);
     }
 
-    public Map<String, Category> getCategories() {
-        return new LinkedHashMap<String, Category>(categoryMap);
+    public Map<String, SearchCategory> getCategories() {
+        return new LinkedHashMap<String, SearchCategory>(categoryMap);
     }
 
-    public Map<String, Category> getRooCategories(String usedBy) {
-        Map<String, Category> roots = new LinkedHashMap<String, Category>();
-        for (Category root : rootCategoryMap.values()) {
+    public Map<String, SearchCategory> getRooCategories(String usedBy) {
+        Map<String, SearchCategory> roots = new LinkedHashMap<String, SearchCategory>();
+        for (SearchCategory root : rootCategoryMap.values()) {
             String cusedBy = root.getUsedBy();
             if (cusedBy == null || usedBy == null
                     || cusedBy.equalsIgnoreCase(usedBy))

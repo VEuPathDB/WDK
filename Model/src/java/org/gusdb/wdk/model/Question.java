@@ -505,6 +505,31 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         return attributeFields;
     }
 
+	public AttributeCategoryTree getAttributeCategoryTree(FieldScope scope) {
+		
+		// get trimmed copy of category tree
+		AttributeCategoryTree tree = recordClass.getAttributeCategoryTree(scope);
+		
+		// integrate dynamic attributes into tree as first root node
+		AttributeCategory dynamic = new AttributeCategory();
+		dynamic.setName("dynamic");
+		dynamic.setDisplayName("Search-Specific");
+		for (AttributeField field : dynamicAttributeSet.getAttributeFieldMap(scope).values()) {
+			dynamic.addField(field);
+		}
+		if (!dynamic.getFields().isEmpty()) {
+			tree.prependAttributeCategory(dynamic);
+		}
+		
+		// integrate uncategorized fields into tree as last root node
+		AttributeCategory uncategorized = tree.getNodeForUncategorized();
+		if (!uncategorized.getFields().isEmpty()) {
+			tree.addAttributeCategory(uncategorized);
+		}
+		
+		return tree;
+	}
+
     @Override
     public void resolveReferences(WdkModel model) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,

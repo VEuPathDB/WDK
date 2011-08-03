@@ -268,12 +268,12 @@ public class ModelXmlParser extends XmlParser {
                 0);
 
         // categories
-        configureNode(digester, "wdkModel/category", Category.class,
+        configureNode(digester, "wdkModel/searchCategory", SearchCategory.class,
                 "addCategory");
 
-        configureNode(digester, "wdkModel/category/questionRef",
+        configureNode(digester, "wdkModel/searchCategory/questionRef",
                 CategoryQuestionRef.class, "addQuestionRef");
-        digester.addCallMethod("wdkModel/category/questionRef", "setText", 0);
+        digester.addCallMethod("wdkModel/searchCategory/questionRef", "setText", 0);
 
         // configure property macros
         configureNode(digester, "wdkModel/declaredMacro",
@@ -330,6 +330,14 @@ public class ModelXmlParser extends XmlParser {
                 "wdkModel/recordClassSet/recordClass/primaryKeyAttribute/text",
                 "setText", 0);
 
+        // attribute categories
+        configureNode(digester,
+        		"wdkModel/recordClassSet/recordClass/attributeCategories",
+        		AttributeCategoryTree.class, "setAttributeCategoryTree");
+        configureNode(digester,
+        		"*/attributeCategory",
+        		AttributeCategory.class, "addAttributeCategory");
+        
         // favorite references
         configureNode(digester,
                 "wdkModel/recordClassSet/recordClass/favorite",

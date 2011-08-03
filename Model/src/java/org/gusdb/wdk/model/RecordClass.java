@@ -127,6 +127,8 @@ public class RecordClass extends WdkModelBase implements
     private List<NestedRecordList> nestedRecordListQuestionRefList = new ArrayList<NestedRecordList>();
     private Map<String, NestedRecordList> nestedRecordListQuestionRefs = new LinkedHashMap<String, NestedRecordList>();
 
+    private AttributeCategoryTree attributeCategoryTree;
+    
     // for sanity testing
     private boolean doNotTest = false;
     private List<ParamValuesSet> unexcludedParamValuesSets = new ArrayList<ParamValuesSet>();
@@ -278,6 +280,10 @@ public class RecordClass extends WdkModelBase implements
         return paramValuesSet == null ? new ParamValuesSet() : paramValuesSet;
     }
 
+    public void setAttributeCategoryTree(AttributeCategoryTree tree) {
+    	attributeCategoryTree = tree;
+    }
+    
     // ////////////////////////////////////////////////////////////
     // public getters
     // ////////////////////////////////////////////////////////////
@@ -297,10 +303,9 @@ public class RecordClass extends WdkModelBase implements
     public Map<String, TableField> getTableFieldMap(FieldScope scope) {
         Map<String, TableField> fields = new LinkedHashMap<String, TableField>();
         for (TableField field : tableFieldsMap.values()) {
-            if (scope == FieldScope.ALL
-                    || (scope == FieldScope.NON_INTERNAL && !field.isInternal())
-                    || (scope == FieldScope.REPORT_MAKER && field.isInReportMaker()))
-                fields.put(field.getName(), field);
+        	if (scope.isFieldInScope(field)) {
+        		fields.put(field.getName(), field);
+        	}
         }
         return fields;
     }
@@ -323,10 +328,9 @@ public class RecordClass extends WdkModelBase implements
         fields.put(primaryKeyField.getName(), primaryKeyField);
 
         for (AttributeField field : attributeFieldsMap.values()) {
-            if (scope == FieldScope.ALL
-                    || (scope == FieldScope.NON_INTERNAL && !field.isInternal())
-                    || (scope == FieldScope.REPORT_MAKER && field.isInReportMaker()))
+        	if (scope.isFieldInScope(field)) {
                 fields.put(field.getName(), field);
+        	}
         }
         return fields;
     }
@@ -376,10 +380,17 @@ public class RecordClass extends WdkModelBase implements
         return new LinkedHashMap<String, ReporterRef>(reporterMap);
     }
 
+    public AttributeCategoryTree getAttributeCategoryTree(FieldScope scope) {
+    	return attributeCategoryTree.getTrimmedCopy(scope);
+    }
+    
     public String toString() {
         String newline = System.getProperty("line.separator");
         StringBuffer buf = new StringBuffer("Record: name='" + name + "'").append(newline);
 
+        buf.append("--- Attribute Category Tree (with attribute count per category) ---").append(newline);
+        buf.append(attributeCategoryTree.toString());
+        
         buf.append("--- Attributes ---").append(newline);
         for (AttributeField attribute : attributeFieldsMap.values()) {
             buf.append(attribute.getName()).append(newline);
@@ -539,10 +550,41 @@ public class RecordClass extends WdkModelBase implements
                         + "' is invalid.");
         }
 
+        // resolve references in the attribute category tree
+        resolveCategoryTreeReferences(model);
+        
         resolved = true;
     }
+    
+    private void resolveCategoryTreeReferences(WdkModel model) throws WdkModelException,
+    		NoSuchAlgorithmException, WdkUserException, SQLException, JSONException {
+        // ensure attribute categories are unique, then add attribute
+        //  references to appropriate places on category tree
+        if (attributeCategoryTree == null) {
+        	// no categories were specified for this record class
+        	// must still create tree to hold all (uncategorized) attributes
+        	attributeCategoryTree = new AttributeCategoryTree();
+        }
+        
+        // this must be called before the attributes are added....
+        attributeCategoryTree.resolveReferences(model);
+        
+        // add primary key attribute first, then skip later (ensures PK at top of category)
+        attributeCategoryTree.addAttributeToCategories(getPrimaryKeyAttributeField());
+        
+        for (AttributeQueryReference queryRef : attributesQueryRefList) {
+        	for (AttributeField attribute : queryRef.getAttributeFields()) {
+        		attributeCategoryTree.addAttributeToCategories(attribute);
+        	}
+        }
+    	for (AttributeField attribute : attributeFieldList) {
+    		if (attribute != getPrimaryKeyAttributeField()) {
+    			attributeCategoryTree.addAttributeToCategories(attribute);
+    		}
+    	}
+	}
 
-    private void resolveAttributeQueryReferences(WdkModel wdkModel)
+	private void resolveAttributeQueryReferences(WdkModel wdkModel)
             throws WdkModelException, NoSuchAlgorithmException,
             WdkUserException, SQLException, JSONException {
         String[] paramNames = primaryKeyField.getColumnRefs();
@@ -842,6 +884,7 @@ public class RecordClass extends WdkModelBase implements
         reporterList = null;
 
         // exclude attributes
+        List<AttributeField> newFieldList = new ArrayList<AttributeField>();
         for (AttributeField field : attributeFieldList) {
             if (field.include(projectId)) {
                 field.excludeResources(projectId);
@@ -858,9 +901,10 @@ public class RecordClass extends WdkModelBase implements
                                 + getFullName());
                 }
                 attributeFieldsMap.put(fieldName, field);
+                newFieldList.add(field);
             }
         }
-        attributeFieldList = null;
+        attributeFieldList = newFieldList;
 
         // make sure there is a primary key
         if (primaryKeyField == null)
@@ -985,7 +1029,7 @@ public class RecordClass extends WdkModelBase implements
         }
         attributeLists = null;
 
-        // exlcude favorite references
+        // exclude favorite references
         for (FavoriteReference favorite : favorites) {
             if (favorite.include(projectId)) {
                 if (favoriteNoteFieldName != null)

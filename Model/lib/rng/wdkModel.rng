@@ -42,7 +42,7 @@
 
           <ref name="xmlRecordClassSet" />
 
-          <ref name="category" />
+          <ref name="searchCategory" />
 
           <ref name="declaredMacro" />
           
@@ -92,9 +92,9 @@
     </element>
   </define>
 
-  <!-- define category list -->
-  <define name="category">
-    <element name="category">
+  <!-- define search category list -->
+  <define name="searchCategory">
+    <element name="searchCategory">
       <attribute name="name"/>
       <attribute name="displayName"/>
       <optional>
@@ -104,28 +104,39 @@
         <attribute name="usedBy">
           <choice>
             <value>website</value>
-			<value>webservice</value>
-		  </choice>
-	    </attribute>
-      </optional>
-      <ref name="IncludeExclude"/>
-      <zeroOrMore>
-        <element name="questionRef">
-          <ref name="IncludeExclude"/>
-		  <optional>
-			<attribute name="usedBy">
-			  <choice>
-				<value>website</value>
-				<value>webservice</value>
-			  </choice>
-			</attribute>
-		  </optional>
-		  <text />
+						<value>webservice</value>
+					</choice>
+			  </attribute>
+	    </optional>
+	    <ref name="IncludeExclude"/>
+	    <zeroOrMore>
+	      <element name="questionRef">
+	        <ref name="IncludeExclude"/>
+			    <optional>
+				    <attribute name="usedBy">
+				      <choice>
+					      <value>website</value>
+					      <value>webservice</value>
+				      </choice>
+				    </attribute>
+			    </optional>
+			    <text/>
         </element>
       </zeroOrMore>
     </element>
   </define>
-
+  
+  <!-- define attribute category list -->
+  <define name="attributeCategory">
+    <element name="attributeCategory">
+      <attribute name="name"/>
+      <attribute name="displayName"/>
+      <zeroOrMore>
+        <ref name="attributeCategory"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  
   <!-- Attribute List -->
   <define name="attributesList">
     <element name="attributesList">
@@ -770,7 +781,13 @@
       <optional>
         <attribute name="summaryAttributesList" />
       </optional>
-
+      <optional>
+        <element name="attributeCategories">
+          <zeroOrMore>
+            <ref name="attributeCategory"/>
+          </zeroOrMore>
+        </element>
+      </optional>
       <zeroOrMore>
         <choice>
 
@@ -935,7 +952,7 @@
       <attribute name="queryRef" />
       <ref name="IncludeExclude" />
       <optional>
-        <attribute name="category" />
+        <attribute name="searchCategory" />
       </optional>
       <optional>
         <attribute name="shortDisplayName" />
@@ -1021,7 +1038,7 @@
     </optional>
   </define>
 
-  <define name="AttributeFieldCotent">
+  <define name="AttributeFieldContent">
     <ref name="FieldBaseContents" />
     <optional>
       <attribute name="align">
@@ -1047,11 +1064,14 @@
         <data type="boolean" />
       </attribute>
     </optional>
+    <optional>
+      <attribute name="attributeCategory"/>
+    </optional>
   </define>
 
   <define name="primaryKeyAttribute">
     <element name="primaryKeyAttribute">
-      <ref name="AttributeFieldCotent" />
+      <ref name="AttributeFieldContent" />
       <optional>
         <attribute name="aliasQueryRef" />
       </optional>
@@ -1072,13 +1092,13 @@
 
   <define name="columnAttribute">
     <element name="columnAttribute">
-      <ref name="AttributeFieldCotent" />
+      <ref name="AttributeFieldContent" />
     </element>
   </define>
 
   <define name ="textAttribute">
     <element name="textAttribute">
-      <ref name="AttributeFieldCotent" />
+      <ref name="AttributeFieldContent" />
       <zeroOrMore>
 	    <choice>
 			<element name="display">
@@ -1096,7 +1116,7 @@
 
   <define name ="linkAttribute">
     <element name="linkAttribute">
-      <ref name="AttributeFieldCotent" />
+      <ref name="AttributeFieldContent" />
       <oneOrMore>
         <choice>
           <element name="displayText">
