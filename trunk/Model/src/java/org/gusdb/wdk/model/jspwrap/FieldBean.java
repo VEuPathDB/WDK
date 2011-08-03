@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Field;
 
 

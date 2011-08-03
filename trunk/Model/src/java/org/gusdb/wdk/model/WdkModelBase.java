@@ -165,4 +165,8 @@ public abstract class WdkModelBase {
             WdkUserException {
         this.wdkModel = wdkModel;
     }
+    
+    protected WdkModel getWdkModel() {
+    	return wdkModel;
+    }
 }

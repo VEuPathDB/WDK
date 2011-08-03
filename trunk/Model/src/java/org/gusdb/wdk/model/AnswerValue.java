@@ -1055,6 +1055,14 @@ public class AnswerValue {
         return displayAttributes;
     }
 
+	public AttributeCategoryTree getDisplayableAttributeTree() {
+		return question.getAttributeCategoryTree(FieldScope.NON_INTERNAL);
+	}
+
+    public AttributeCategoryTree getReportMakerAttributeTree() {
+    	return question.getAttributeCategoryTree(FieldScope.REPORT_MAKER);
+    }
+	
     public Map<String, AttributeField> getSummaryAttributeFieldMap() {
         Map<String, AttributeField> fields;
         if (summaryFieldMap.size() > 0) {
