@@ -242,3 +242,29 @@ function toggleAttributes(from) {
          attribute.attr('checked', state);
    }
 }
+
+function showAttributePlugins(ele) {
+	$(ele}.parents(".attribute-plugins").children(".plugins").show("slide");
+}
+
+function hideAttributePlugins(ele) {
+	$(ele}.parents(".attribute-plugins").children(".plugins").show("hide");
+}
+
+function invokeAttributePlugin(stepId, attributeName, pluginName) {
+	var url = "invokeAttributePlugin.do?step=" + stepId + "&attribute=" + attributeName + "&plugin=" + pluginName;	
+	$.ajax({
+		url: url,
+		dataType: "html",
+		beforeSend: function(){
+			$("body").block();
+		},
+		success: function(data){
+			// create a place holder for the result
+			if ($("#attribute-plugin-result").length == 0)
+				$("body").append("<div id=\"attribute-plugin-result\"> </div>");
+			$("#attribute-plugin-result").html(data).dialog();
+		}
+	});
+
+}

@@ -3,7 +3,12 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.gusdb.wdk.model.AttributeField;
+import org.gusdb.wdk.model.ColumnAttributeField;
+import org.gusdb.wdk.model.attribute.plugin.AttributePlugin;
 
 public class AttributeFieldBean extends FieldBean {
 
@@ -47,5 +52,13 @@ public class AttributeFieldBean extends FieldBean {
      */
     public boolean isRemovable() {
         return attributeField.isRemovable();
+    }
+
+    public Map<String, AttributePlugin> getAttributePlugins() {
+        if (attributeField instanceof ColumnAttributeField) {
+            return ((ColumnAttributeField) attributeField).getAttributePlugins();
+        } else {
+            return new LinkedHashMap<String, AttributePlugin>();
+        }
     }
 }
