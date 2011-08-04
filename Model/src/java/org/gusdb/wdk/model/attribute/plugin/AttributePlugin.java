@@ -12,19 +12,24 @@ import org.json.JSONException;
 
 public interface AttributePlugin {
 
-     String getName();
-     void setName(String name);
-     
-     String getDisplay();
-     void setDisplay(String display);
-     
-     String getView();
-     void setView(String view);
-     
-     void setProperties(Map<String, String> properties);
-     
-     void setAttribute(ColumnAttributeField attribute);
-     
-     Map<String, Object> process(AnswerValue answerValue) throws WdkModelException, NoSuchAlgorithmException, WdkUserException, SQLException, JSONException;
-     
+    String getName();
+
+    void setName(String name);
+
+    String getDisplay();
+
+    void setDisplay(String display);
+
+    String getView();
+
+    void setView(String view);
+
+    void setProperties(Map<String, String> properties);
+
+    void setAttribute(ColumnAttributeField attribute);
+
+    Map<String, Object> process(AnswerValue answerValue)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException;
+
 }
