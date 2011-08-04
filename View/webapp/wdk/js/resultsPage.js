@@ -243,6 +243,7 @@ function toggleAttributes(from) {
    }
 }
 
+/*
 function showAttributePlugins(ele) {
 	$(ele}.parents(".attribute-plugins").children(".plugins").show("slide");
 }
@@ -268,3 +269,4 @@ function invokeAttributePlugin(stepId, attributeName, pluginName) {
 	});
 
 }
+*/
