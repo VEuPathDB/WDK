@@ -12,32 +12,26 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
     protected Map<String, String> properties;
     protected ColumnAttributeField attribute;
 
-    @Override
     public String getName() {
         return name;
     }
 
-    @Override
     public void setName(String name) {
         this.name = name;
     }
 
-    @Override
     public String getDisplay() {
         return (display == null) ? name : display;
     }
 
-    @Override
     public void setDisplay(String display) {
         this.display = display;
     }
 
-    @Override
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
 
-    @Override
     public void setAttribute(ColumnAttributeField attribute) {
         this.attribute = attribute;
     }

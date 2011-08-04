@@ -39,7 +39,6 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
      * org.gusdb.wdk.model.AttributePlugin#process(org.gusdb.wdk.model.AnswerValue
      * )
      */
-    @Override
     public Map<String, Object> process(AnswerValue answerValue)
             throws NoSuchAlgorithmException, WdkModelException,
             WdkUserException, SQLException, JSONException {
