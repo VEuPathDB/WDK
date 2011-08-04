@@ -15,11 +15,11 @@
       <image src="wdk/images/dropdown_active.gif" />
     </div>
   </c:if>
-  <div class="plugins>
+  <div class="plugins">
     <div class="close-handle" onclick="hideAttributePlugins(this)">
       <image src="wdk/images/close.gif" />
     </div>
-    <c:forEach items=${plugins} var="item">
+    <c:forEach items=${plugins}" var="item">
       <c:set var="plugin" value="${item.value}" />
        <div class="plugin" onclick="invokeAttributePlugin('${step.stepId}', '${attribute.name}', '${plugin.name}')">
         ${plugin.display}
