@@ -1093,6 +1093,24 @@
   <define name="columnAttribute">
     <element name="columnAttribute">
       <ref name="AttributeFieldContent" />
+      <zeroOrMore>
+        <element name="plugin">
+          <ref name="IncludeExclude" />
+          <attribute name="name" />
+          <attribute name="implementation" />
+          <attribute name="view" />
+          <optional>
+            <attribute name="display" />
+          </optional>
+          <zeroOrMore>
+            <element name="property">
+              <ref name="IncludeExclude" />
+              <attribute name="name" />
+              <text />
+            </element>
+          </zeroOrMore>
+        </element>
+      </zeroOrMore>
     </element>
   </define>
 

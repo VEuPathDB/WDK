@@ -221,6 +221,9 @@
             </c:otherwise>
           </c:choose>
                    </td>
+				   <td>
+				     <wdk:attributePlugin attribute="${sumAttrib}" />
+				   </td>
                  </tr>
                </table>
              </td>

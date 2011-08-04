@@ -1,10 +1,17 @@
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.gusdb.wdk.model.attribute.plugin.AttributePlugin;
+import org.gusdb.wdk.model.attribute.plugin.AttributePluginReference;
 import org.gusdb.wdk.model.query.Column;
+import org.json.JSONException;
 
 public class ColumnAttributeField extends AttributeField {
 
@@ -13,6 +20,8 @@ public class ColumnAttributeField extends AttributeField {
     // Logger.getLogger(ColumnAttributeField.class);
 
     private Column column;
+    private List<AttributePluginReference> pluginReferences = new ArrayList<AttributePluginReference>();
+    private Map<String, AttributePlugin> plugins;
 
     public ColumnAttributeField() {
         super();
@@ -22,7 +31,7 @@ public class ColumnAttributeField extends AttributeField {
     /**
      * @return Returns the column.
      */
-    Column getColumn() {
+    public Column getColumn() {
         return this.column;
     }
 
@@ -34,6 +43,14 @@ public class ColumnAttributeField extends AttributeField {
     void setColumn(Column column) {
         this.column = column;
     }
+    
+    public void addAttributePluginReference(AttributePluginReference reference) {
+        pluginReferences.add(reference);
+    }
+    
+    public Map<String, AttributePlugin> getAttributePlugins() {
+        return new LinkedHashMap<String, AttributePlugin>();
+    }
 
     /*
      * (non-Javadoc)
@@ -41,8 +58,16 @@ public class ColumnAttributeField extends AttributeField {
      * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
      */
     @Override
-    public void excludeResources(String projectId) {
-    // nothing to be exclude, do nothing
+    public void excludeResources(String projectId) throws WdkModelException {
+        // exclude attribute plugin references
+        for (int i = pluginReferences.size() - 1; i >=0; i--) {
+            AttributePluginReference reference = pluginReferences.get(i);
+            if (reference.include(projectId)) {
+                reference.excludeResources(projectId);
+            } else {
+                pluginReferences.remove(i);
+            }
+        }
     }
 
     /*
@@ -51,12 +76,25 @@ public class ColumnAttributeField extends AttributeField {
      * @see org.gusdb.wdk.model.Field#presolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException, NoSuchAlgorithmException, WdkUserException, SQLException, JSONException {
         // verify the name
         if (!name.equals(column.getName()))
             throw new WdkModelException("The name of the ColumnAttributeField"
                     + " '" + name + "' does not match the column name '"
                     + column.getName() + "'");
+        
+        // resolve the attribute plugins
+        plugins = new LinkedHashMap<String, AttributePlugin>();
+        for(AttributePluginReference reference : pluginReferences) {
+            String name = reference.getName();
+            if (plugins.containsKey(name))
+                throw new WdkModelException("The plugin '" + name + "' is duplicated in attribute " + this.name);
+            
+            reference.resolveReferences(wdkModel);
+            AttributePlugin plugin = reference.getPlugin();
+            plugin.setAttribute(this);
+            plugins.put(name, plugin);
+        }
     }
 
     /*
