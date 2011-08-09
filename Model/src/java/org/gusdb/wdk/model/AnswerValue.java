@@ -26,6 +26,7 @@ import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.report.Reporter;
+import org.gusdb.wdk.model.report.TabularReporter;
 import org.gusdb.wdk.model.user.Answer;
 import org.gusdb.wdk.model.user.AnswerFactory;
 import org.gusdb.wdk.model.user.User;
@@ -121,10 +122,10 @@ public class AnswerValue {
      *            The <co de>QueryInstance</code> that provides a handle on the
      *            ResultList containing all primary keys that are the result for
      *            the question (not just one page worth).
-     * @param startRecordInstanceI
+     * @param startIndex
      *            The index of the first <code>RecordInstance</code> in the
      *            page. (>=1)
-     * @param endRecordInstanceI
+     * @param endIndex
      *            The index of the last <code>RecordInstance</code> in the page,
      *            inclusive.
      * @throws JSONException
@@ -243,8 +244,7 @@ public class AnswerValue {
             resultSizesByProject = new LinkedHashMap<String, Integer>();
 
             // make sure the project_id is defined in the record
-            PrimaryKeyAttributeField primaryKey = question.getRecordClass()
-                    .getPrimaryKeyAttributeField();
+            PrimaryKeyAttributeField primaryKey = question.getRecordClass().getPrimaryKeyAttributeField();
             if (!primaryKey.hasColumn(Utilities.COLUMN_PROJECT_ID)) {
                 String projectId = question.getWdkModel().getProjectId();
                 // no project_id defined in the record, use the full size
@@ -287,8 +287,7 @@ public class AnswerValue {
                                         Utilities.COLUMN_PROJECT_ID).toString();
                                 int subCounter = 0;
                                 if (resultSizesByProject.containsKey(project))
-                                    subCounter = resultSizesByProject
-                                            .get(project);
+                                    subCounter = resultSizesByProject.get(project);
                                 // if subContent < 0, it is an error code. don't
                                 // change it.
                                 if (subCounter >= 0)
@@ -426,8 +425,7 @@ public class AnswerValue {
             // only print
             for (String nextAttName : attributes.keySet()) {
                 // make data row
-                AttributeValue value = recordInstance
-                        .getAttributeValue(nextAttName);
+                AttributeValue value = recordInstance.getAttributeValue(nextAttName);
                 // only print part of the string
                 String str = value.getBriefDisplay();
                 buf.append(str + "\t");
@@ -449,8 +447,7 @@ public class AnswerValue {
             Map<String, String> config, int startI, int endI)
             throws WdkModelException {
         // get Reporter
-        Map<String, ReporterRef> rptMap = question.getRecordClass()
-                .getReporterMap();
+        Map<String, ReporterRef> rptMap = question.getRecordClass().getReporterMap();
         ReporterRef rptRef = rptMap.get(reporterName);
         if (rptRef == null)
             throw new WdkModelException("The reporter " + reporterName + " is "
@@ -490,6 +487,15 @@ public class AnswerValue {
         }
     }
 
+    public Iterable<AnswerValue> getFullAnswers() throws WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, SQLException,
+            JSONException {
+        // user tabular reporter as answer iterator
+        int resultSize = this.getResultSize();
+        TabularReporter reporter = new TabularReporter(this, 1, resultSize);
+        return reporter;
+    }
+
     // ------------------------------------------------------------------
     // Package Methods
     // ------------------------------------------------------------------
@@ -515,8 +521,7 @@ public class AnswerValue {
         WdkModel wdkModel = question.getWdkModel();
         // has to get a clean copy of the attribute query, without pk params
         // appended
-        attributeQuery = (Query) wdkModel.resolveReference(attributeQuery
-                .getFullName());
+        attributeQuery = (Query) wdkModel.resolveReference(attributeQuery.getFullName());
 
         logger.debug("filling attribute values from answer "
                 + attributeQuery.getFullName());
@@ -535,8 +540,7 @@ public class AnswerValue {
         ResultList resultList = new SqlResultList(resultSet);
 
         // fill in the column attributes
-        PrimaryKeyAttributeField pkField = question.getRecordClass()
-                .getPrimaryKeyAttributeField();
+        PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
         Map<String, AttributeField> fields = question.getAttributeFieldMap();
         int count = 0;
         while (resultList.next()) {
@@ -560,8 +564,8 @@ public class AnswerValue {
                     error.append(pkValues.get(pkName)).append(", ");
                 }
                 error.append(").\nPaged Attribute SQL:\n").append(sql);
-                error.append("\n").append("Paged ID SQL:\n")
-                        .append(getPagedIdSql());
+                error.append("\n").append("Paged ID SQL:\n").append(
+                        getPagedIdSql());
                 throw new WdkModelException(error.toString());
             }
 
@@ -598,8 +602,7 @@ public class AnswerValue {
         // get the paged SQL of id query
         String idSql = getPagedIdSql();
 
-        PrimaryKeyAttributeField pkField = question.getRecordClass()
-                .getPrimaryKeyAttributeField();
+        PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
 
         // combine the id query with attribute query
         String attributeSql = getAttributeSql(attributeQuery);
@@ -627,8 +630,7 @@ public class AnswerValue {
         // has to get a clean copy of the attribute query, without pk params
         // appended
         Query tableQuery = tableField.getQuery();
-        tableQuery = (Query) wdkModel
-                .resolveReference(tableQuery.getFullName());
+        tableQuery = (Query) wdkModel.resolveReference(tableQuery.getFullName());
 
         logger.debug("integrate table query from answer: "
                 + tableQuery.getFullName());
@@ -653,8 +655,7 @@ public class AnswerValue {
         }
 
         // make table values
-        PrimaryKeyAttributeField pkField = question.getRecordClass()
-                .getPrimaryKeyAttributeField();
+        PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
         while (resultList.next()) {
             // get primary key
             Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
@@ -693,8 +694,7 @@ public class AnswerValue {
         // get the paged SQL of id query
         String idSql = getPagedIdSql();
 
-        PrimaryKeyAttributeField pkField = question.getRecordClass()
-                .getPrimaryKeyAttributeField();
+        PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
 
         // combine the id query with attribute query
         // make an instance from the original attribute query, and attribute
@@ -775,8 +775,7 @@ public class AnswerValue {
         }
 
         // add primary key join conditions
-        String[] pkColumns = question.getRecordClass()
-                .getPrimaryKeyAttributeField().getColumnRefs();
+        String[] pkColumns = question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
         boolean firstClause = true;
         for (String shortName : attributeSqls.keySet()) {
             for (String column : pkColumns) {
@@ -934,8 +933,7 @@ public class AnswerValue {
                 idsQueryInstance.getQuery().getFullName() + "-paged");
         ResultList resultList = new SqlResultList(resultSet);
         RecordClass recordClass = question.getRecordClass();
-        PrimaryKeyAttributeField pkField = recordClass
-                .getPrimaryKeyAttributeField();
+        PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
         while (resultList.next()) {
             // get primary key. the primary key is supposed to be translated to
             // the current ones from the id query, and no more translation
@@ -1012,8 +1010,7 @@ public class AnswerValue {
             sortingMap = question.getSortingAttributeMap();
         }
         // make sure all sorting columns exist
-        Map<String, AttributeField> attributes = question
-                .getAttributeFieldMap();
+        Map<String, AttributeField> attributes = question.getAttributeFieldMap();
         for (String attributeName : sortingMap.keySet()) {
             if (!attributes.containsKey(attributeName))
                 throw new WdkModelException("the assigned sorting attribute ["
@@ -1040,8 +1037,7 @@ public class AnswerValue {
      */
     public Map<String, AttributeField> getDisplayableAttributeMap() {
         Map<String, AttributeField> displayAttributes = new LinkedHashMap<String, AttributeField>();
-        Map<String, AttributeField> attributes = question
-                .getAttributeFieldMap(FieldScope.NON_INTERNAL);
+        Map<String, AttributeField> attributes = question.getAttributeFieldMap(FieldScope.NON_INTERNAL);
         // Map<String, AttributeField> summaryAttributes =
         // this.getSummaryAttributeFieldMap();
         for (String attriName : attributes.keySet()) {
@@ -1079,8 +1075,7 @@ public class AnswerValue {
         }
         Map<String, AttributeField> summaryFields = new LinkedHashMap<String, AttributeField>();
         // always put the primary key as the first attribute
-        PrimaryKeyAttributeField pkField = question.getRecordClass()
-                .getPrimaryKeyAttributeField();
+        PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
         summaryFields.put(pkField.getName(), pkField);
         Map<String, AttributeField> fields = question.getAttributeFieldMap();
         for (String attributeName : attributeNames) {
@@ -1103,8 +1098,7 @@ public class AnswerValue {
     public Object[][] getPrimaryKeyValues() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        String[] columns = question.getRecordClass()
-                .getPrimaryKeyAttributeField().getColumnRefs();
+        String[] columns = question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
         List<Object[]> buffer = new ArrayList<Object[]>();
 
         ResultList resultList;
@@ -1128,8 +1122,7 @@ public class AnswerValue {
     public Answer getAnswer() throws NoSuchAlgorithmException, SQLException,
             WdkModelException, JSONException, WdkUserException {
         if (answer == null) {
-            AnswerFactory answerFactory = question.getWdkModel()
-                    .getAnswerFactory();
+            AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
             String questionName = question.getFullName();
             answer = answerFactory.getAnswer(questionName, getChecksum());
             if (answer == null)
@@ -1205,8 +1198,7 @@ public class AnswerValue {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         String idSql = getIdSql();
-        PrimaryKeyAttributeField pkField = question.getRecordClass()
-                .getPrimaryKeyAttributeField();
+        PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
         String[] pkColumns = pkField.getColumnRefs();
         List<String[]> pkValues = new ArrayList<String[]>();
         WdkModel wdkModel = question.getWdkModel();
@@ -1231,8 +1223,7 @@ public class AnswerValue {
 
     public boolean isUseBooleanFilter() {
         if (idsQueryInstance instanceof BooleanQueryInstance) {
-            return ((BooleanQueryInstance) idsQueryInstance)
-                    .isUseBooleanFilter();
+            return ((BooleanQueryInstance) idsQueryInstance).isUseBooleanFilter();
         } else
             return false;
     }

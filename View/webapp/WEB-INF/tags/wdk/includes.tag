@@ -2,6 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-1.5.1.min.js"/>'></script>
+<script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-ui-1.8.12.custom.min.js"/>'></script>
 
 <script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-ui-1.8.14.custom.min.js"/>'></script>
 <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/ui-lightness/jquery-ui-1.8.14.custom.css' />"/>
@@ -19,6 +20,7 @@
 <script type="text/javascript" src="<c:url value='/wdk/js/stratTabCookie.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/htmltooltip.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/js-utils.js'/>"></script>
+<script type="text/javascript" src="<c:url value='/wdk/js/api.js'/>"></script>
 
 <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkCommon.css' />">
 <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkFilter.css' />">

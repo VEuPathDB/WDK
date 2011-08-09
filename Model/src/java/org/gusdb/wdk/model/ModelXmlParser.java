@@ -227,7 +227,8 @@ public class ModelXmlParser extends XmlParser {
             String propName = matcher.group(1);
 
             // check if the property macro is defined
-            if (!properties.containsKey(propName)) continue;
+            if (!properties.containsKey(propName))
+                continue;
 
             String propValue = properties.get(propName);
             buffer.append(content.subSequence(prevPos, matcher.start()));
@@ -339,8 +340,7 @@ public class ModelXmlParser extends XmlParser {
         		AttributeCategory.class, "addAttributeCategory");
         
         // favorite references
-        configureNode(digester,
-                "wdkModel/recordClassSet/recordClass/favorite",
+        configureNode(digester, "wdkModel/recordClassSet/recordClass/favorite",
                 FavoriteReference.class, "addFavorite");
 
         configureNode(digester,
@@ -472,6 +472,14 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester,
                 "wdkModel/recordClassSet/recordClass/nestedRecordList",
                 NestedRecordList.class, "addNestedRecordListQuestionRef");
+
+        configureNode(digester,
+                "wdkModel/recordClassSet/recordClass/summaryView",
+                SummaryView.class, "addSummaryView");
+
+        configureNode(digester,
+                "wdkModel/recordClassSet/recordClass/recordView",
+                SummaryView.class, "addRecordView");
     }
 
     private void configureQuerySet(Digester digester) {
@@ -649,15 +657,17 @@ public class ModelXmlParser extends XmlParser {
 
         configureLinkTextFields(digester,
                 "wdkModel/questionSet/question/dynamicAttributes/");
-        
+
         configureNode(digester, "wdkModel/questionSet/question/paramRef",
                 ParamReference.class, "addParamRef");
-        
+
         configureNode(digester, "wdkModel/questionSet/question/sqlParamValue",
                 WdkModelText.class, "addSqlParamValue");
         digester.addCallMethod("wdkModel/questionSet/question/sqlParamValue",
                 "setText", 0);
 
+        configureNode(digester, "wdkModel/questionSet/question/summaryView",
+                SummaryView.class, "addSummaryView");
     }
 
     private void configureXmlQuestionSet(Digester digester) {

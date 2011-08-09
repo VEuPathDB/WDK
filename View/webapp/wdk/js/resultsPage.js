@@ -81,7 +81,9 @@ function GetResultsPage(url, update, ignoreFilters){
         },
         success: function(data){
             if (update && ErrorHandler("Results", data, strat, null)) {
-                ResultsToGrid(data, ignoreFilters, currentDiv);
+                var resultOnly = (url.indexOf('showResult.do') >= 0);
+               
+                ResultsToGrid(data, ignoreFilters, currentDiv, resultOnly);
                 updateResultLabels(currentDiv, strat, step);
             }
             if(strat != false) removeLoading(strat.frontId);
@@ -100,7 +102,7 @@ function updateResultLabels(currentDiv, strat, step) {
     }
 }
 
-function ResultsToGrid(data, ignoreFilters, div) {
+function ResultsToGrid(data, ignoreFilters, div, resultOnly) {
     var oldFilters;
     var currentDiv = div;
     if(currentDiv == undefined) currentDiv = getCurrentBasketWrapper();
@@ -108,7 +110,9 @@ function ResultsToGrid(data, ignoreFilters, div) {
         oldFilters = $("#strategy_results > div.Workspace div.layout-detail div.filter-instance .link-url");
     }
 
-    $("#" + currentDiv + " > div.Workspace").html(data);
+    var resultHolder= "#" + currentDiv + " > div.Workspace";
+    if (resultOnly) resultHolder += " #Results_Pane";
+    $(resultHolder).html(data);
 
     try {
         customResultsPage();

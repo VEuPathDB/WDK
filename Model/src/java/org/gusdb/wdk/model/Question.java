@@ -92,6 +92,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     private List<WdkModelText> sqlMacroList = new ArrayList<WdkModelText>();
     private Map<String, String> sqlMacroMap = new LinkedHashMap<String, String>();
 
+    private List<SummaryView> summaryViewList = new ArrayList<SummaryView>();
+    private Map<String, SummaryView> summaryViewMap = new LinkedHashMap<String, SummaryView>();
+
     // /////////////////////////////////////////////////////////////////////
     // setters called at initialization
     // /////////////////////////////////////////////////////////////////////
@@ -126,8 +129,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         this.recordClassRef = question.recordClassRef;
         this.defaultSortingMap.putAll(question.defaultSortingMap);
         this.summary = question.summary;
-        this.defaultSummaryAttributeFields
-                .putAll(question.defaultSummaryAttributeFields);
+        this.defaultSummaryAttributeFields.putAll(question.defaultSummaryAttributeFields);
         this.wdkModel = question.wdkModel;
 
         this.noSummaryOnSingleRecord = question.noSummaryOnSingleRecord;
@@ -543,8 +545,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             // it must happen before dynamicAttributeSet, because it is
             // referenced
             // in the dynamicAttributeSet.
-            this.recordClass = (RecordClass) model
-                    .resolveReference(recordClassRef);
+            this.recordClass = (RecordClass) model.resolveReference(recordClassRef);
 
             // the id query is always cloned to keep a reference to the
             // question.
@@ -611,8 +612,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             defaultSummaryAttributeNames = null;
 
             // make sure we create index on primary keys
-            String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
-                    .getColumnRefs();
+            String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
             query.setIndexColumns(pkColumns);
         } catch (WdkModelException ex) {
             logger.error("resolving question '" + getFullName() + " failed. "
@@ -735,10 +735,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
                             + " has more than one <attributesList> for "
                             + "project " + projectId);
                 } else {
-                    this.defaultSummaryAttributeNames = attributeList
-                            .getSummaryAttributeNames();
-                    this.defaultSortingMap = attributeList
-                            .getSortingAttributeMap();
+                    this.defaultSummaryAttributeNames = attributeList.getSummaryAttributeNames();
+                    this.defaultSortingMap = attributeList.getSortingAttributeMap();
                     hasAttributeList = true;
                 }
             }
@@ -793,6 +791,20 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             }
         }
         sqlMacroList = null;
+
+        // exclude the summary views
+        for (SummaryView view : summaryViewList) {
+            if (view.include(projectId)) {
+                view.excludeResources(projectId);
+                String name = view.getName();
+                if (summaryViewMap.containsKey(name))
+                    throw new WdkModelException("The summary view '" + name
+                            + "' is duplicated in question " + getFullName());
+
+                summaryViewMap.put(name, view);
+            }
+        }
+        summaryViewList = null;
     }
 
     private Query createDynamicAttributeQuery(WdkModel wdkModel)
@@ -843,8 +855,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         for (Param param : query.getParams()) {
             if (param instanceof AnswerParam) {
                 AnswerParam answerParam = (AnswerParam) param;
-                Map<String, RecordClass> recordClasses = answerParam
-                        .getRecordClasses();
+                Map<String, RecordClass> recordClasses = answerParam.getRecordClasses();
                 if (recordClasses.containsKey(rcName))
                     list.add(answerParam);
             }
@@ -860,5 +871,51 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     public void addSqlParamValue(WdkModelText sqlMacro) {
         this.sqlMacroList.add(sqlMacro);
+    }
+
+    public Map<String, SummaryView> getSummaryViews() {
+        Map<String, SummaryView> map = new LinkedHashMap<String, SummaryView>();
+
+        // get views from record
+        SummaryView[] viewsFromRecord = recordClass.getSummaryViews();
+        for (SummaryView view : viewsFromRecord) {
+            map.put(view.getName(), view);
+        }
+
+        // override the views defined in the question
+        for (SummaryView view : summaryViewMap.values()) {
+            map.put(view.getName(), view);
+        }
+
+        return map;
+    }
+
+    public SummaryView getDefaultSummaryView() throws WdkModelException {
+        // first look for default in the views defined in question
+        for (SummaryView view : summaryViewMap.values()) {
+            if (view.isDefault())
+                return view;
+        }
+        // then look for the default in the views from record
+        SummaryView[] viewsFromRecord = recordClass.getSummaryViews();
+        for (SummaryView view : viewsFromRecord) {
+            if (view.isDefault())
+                return view;
+        }
+        // return the first view from question
+        if (summaryViewMap.size() > 0)
+            return summaryViewMap.values().iterator().next();
+        // return the first view from record
+        if (viewsFromRecord.length > 0)
+            return viewsFromRecord[0];
+
+        return null;
+    }
+
+    public void addSummaryView(SummaryView view) {
+        if (summaryViewList == null)
+            summaryViewMap.put(view.getName(), view);
+        else
+            summaryViewList.add(view);
     }
 }
