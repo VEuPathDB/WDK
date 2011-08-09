@@ -56,7 +56,7 @@ public class InvokeAttributePluginAction extends Action {
         // get the view
         String view = plugin.getView();
         
-        logger.debug("Leaving InvokeAttributePluginAction.");
+        logger.debug("Leaving InvokeAttributePluginAction. view: " + view);
         return new ActionForward(view, false);
     }
 }
