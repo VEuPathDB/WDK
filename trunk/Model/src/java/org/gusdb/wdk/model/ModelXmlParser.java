@@ -36,6 +36,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.attribute.plugin.AttributePluginReference;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.QuerySet;
@@ -426,6 +427,17 @@ public class ModelXmlParser extends XmlParser {
                 digester,
                 "wdkModel/recordClassSet/recordClass/attributeQueryRef/columnAttribute",
                 ColumnAttributeField.class, "addAttributeField");
+
+
+        // configure attribute plugins
+        configureNode(digester,
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef/columnAttribute/plugin",
+                AttributePluginReference.class, "addAttributePluginReference");
+        configureNode(digester,
+                "wdkModel/recordClassSet/recordClass/attributeQueryRef/columnAttribute/plugin/properrty",
+                WdkModelText.class, "addProperty");
+        digester.addCallMethod("wdkModel/recordClassSet/recordClass/attributeQueryRef/columnAttribute/plugin/properrty", "setText",
+                0);
 
         configureLinkTextFields(digester,
                 "wdkModel/recordClassSet/recordClass/attributeQueryRef/");
