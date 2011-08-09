@@ -9,6 +9,7 @@ import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.ReporterRef;
+import org.gusdb.wdk.model.SummaryView;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -185,5 +186,12 @@ public class RecordClassBean {
     public String getShortDisplayName() {
         return recordClass.getShortDisplayName();
     }
-    
+
+    public SummaryView getDefaultRecordView() {
+        return recordClass.getDefaultRecordView();
+    }   
+
+    public Map<String, SummaryView> getRecordViews() {
+        return recordClass.getRecordViews();
+    } 
 }

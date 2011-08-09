@@ -135,9 +135,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         return this.baseAnswer.getResultSize();
     }
 
-    public AnswerValue getAnswerValue() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public AnswerValue getAnswerValue() {
         return this.baseAnswer;
     }
 
