@@ -243,30 +243,48 @@ function toggleAttributes(from) {
    }
 }
 
-/*
-function showAttributePlugins(ele) {
-	$(ele}.parents(".attribute-plugins").children(".plugins").show("slide");
+
+function openAttributePlugins(ele) {
+    var plugins = $(ele).parents(".attribute-plugins").children(".plugins");
+    // attach hover events on the plugin entry
+    plugins.find(".plugin").hover(
+        function() { $(this).addClass("highlight"); },
+        function() { $(this).removeClass("highlight"); }
+    );
+    plugins.show();
 }
 
-function hideAttributePlugins(ele) {
-	$(ele}.parents(".attribute-plugins").children(".plugins").show("hide");
+function closeAttributePlugins(ele) {
+    var plugins = $(ele).parents(".attribute-plugins").children(".plugins");
+    plugins.hide();
 }
 
-function invokeAttributePlugin(stepId, attributeName, pluginName) {
+
+function invokeAttributePlugin(ele, stepId, attributeName) {
+        var pluginName = $(ele).attr("plugin");
+        var title = $(ele).html();
+        var plugins = $(ele).parents(".plugins");
 	var url = "invokeAttributePlugin.do?step=" + stepId + "&attribute=" + attributeName + "&plugin=" + pluginName;	
 	$.ajax({
 		url: url,
 		dataType: "html",
 		beforeSend: function(){
+                        plugins.hide();
 			$("body").block();
 		},
 		success: function(data){
 			// create a place holder for the result
 			if ($("#attribute-plugin-result").length == 0)
 				$("body").append("<div id=\"attribute-plugin-result\"> </div>");
-			$("#attribute-plugin-result").html(data).dialog();
-		}
+			$("#attribute-plugin-result").html(data)
+                            .dialog({ width : 700,
+                                      title : title,
+                                      modal : true });
+                        $("body").unblock();
+		},
+                error: function() {
+                        $("body").unblock();
+                }
 	});
 
 }
-*/

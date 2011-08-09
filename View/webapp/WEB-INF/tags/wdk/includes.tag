@@ -20,9 +20,11 @@
 <script type="text/javascript" src="<c:url value='/wdk/js/htmltooltip.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/js-utils.js'/>"></script>
 
+<link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/jquery.multiSelect.css' />"/>
+<link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/jquery-ui-custom.css' />">
+
 <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkCommon.css' />">
 <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkFilter.css' />">
-<link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/jquery.multiSelect.css' />"/>
 
 <link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/dyk.css"/>'/>
 <link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/Strategy.css"/>'/>

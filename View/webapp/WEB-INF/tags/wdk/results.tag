@@ -221,11 +221,6 @@
             </c:otherwise>
           </c:choose>
                    </td>
-<%--
-				   <td>
-				     <wdk:attributePlugin attribute="${sumAttrib}" />
-				   </td>
---%>
                  </tr>
                </table>
              </td>
@@ -256,6 +251,9 @@
               <img src="<c:url value='/wdk/images/results_x.png'/>" alt="Remove" border="0" /></a>
           </td>
         </c:if>
+          <td>
+              <wdk:attributePlugin attribute="${sumAttrib}" />
+          </td>
          </tr>
       </table>
     </th>

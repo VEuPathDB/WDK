@@ -11,19 +11,21 @@
 <c:set var="plugins" value="${attribute.attributePlugins}" />
 <div class="attribute-plugins">
   <c:if test="${fn:length(plugins) > 0}">
-    <div class="open-handle" onclick="showAttributePlugins(this)">
-      <image src="wdk/images/dropdown_active.gif" />
-    </div>
+    <image class="handle" onclick="openAttributePlugins(this)" src="wdk/images/plugin.gif" />
   </c:if>
   <div class="plugins">
-    <div class="close-handle" onclick="hideAttributePlugins(this)">
-      <image src="wdk/images/close.gif" />
+    <div class="title">
+      <image class="handle close" onclick="closeAttributePlugins(this)" src="wdk/images/close.gif" />
+      <h3>Additional Info</h3>
     </div>
-    <c:forEach items=${plugins}" var="item">
-      <c:set var="plugin" value="${item.value}" />
-       <div class="plugin" onclick="invokeAttributePlugin('${step.stepId}', '${attribute.name}', '${plugin.name}')">
-        ${plugin.display}
-      </div>
-    </c:forEach>
+    <ul>
+      <c:forEach items="${plugins}" var="item">
+        <c:set var="plugin" value="${item.value}" />
+        <li class="plugin" plugin="${plugin.name}" 
+            onclick="invokeAttributePlugin(this, '${step.stepId}', '${attribute.name}')">
+          ${plugin.display}
+        </li>
+      </c:forEach>
+    </ul>
   </div>
 </div>

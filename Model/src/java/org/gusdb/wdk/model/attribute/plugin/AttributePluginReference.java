@@ -19,6 +19,7 @@ public class AttributePluginReference extends WdkModelBase {
     private String name;
     private String display;
     private String implementation;
+    private String view;
     private AttributePlugin plugin;
     private List<WdkModelText> propertyList = new ArrayList<WdkModelText>();
     private Map<String, String> propertyMap;
@@ -61,6 +62,10 @@ public class AttributePluginReference extends WdkModelBase {
         this.implementation = implementation;
     }
 
+    public void setView(String view) {
+        this.view = view;
+    }
+
     public AttributePlugin getPlugin() {
         return plugin;
     }
@@ -101,6 +106,7 @@ public class AttributePluginReference extends WdkModelBase {
             plugin = pluginClass.newInstance();
             plugin.setName(name);
             plugin.setDisplay(display);
+            plugin.setView(view);
             plugin.setProperties(propertyMap);
         } catch (Exception ex) {
             throw new WdkModelException(ex);
