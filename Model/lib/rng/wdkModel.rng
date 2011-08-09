@@ -796,6 +796,9 @@
           <ref name="linkAttribute" />
           <ref name="table" />
           <ref name="attributesList" />
+          <ref name="summaryView" />
+          <ref name="recordView" />
+
 
           <!-- define the default note field for the recordClass -->
           <element name="favorite">
@@ -1003,6 +1006,8 @@
           <ref name="paramRef" />
 		  
 		  <ref name="sqlParamValue" />
+          
+          <ref name="summaryView" />
 
         </choice>
       </zeroOrMore>
@@ -1297,6 +1302,31 @@
         </element>
       </zeroOrMore>
     </element>
+  </define>
+
+
+  <define name="summaryView">
+    <element name="summaryView">
+      <ref name="ViewBaseContent" />
+    </element>
+  </define>
+
+  <define name="recordView">
+    <element name="recordView">
+      <ref name="ViewBaseContent" />
+    </element>
+  </define>
+
+  <define name="ViewBaseContent">
+      <attribute name="name" />
+      <attribute name="display" />
+      <attribute name="jsp" />
+      <ref name="IncludeExclude" />
+      <optional>
+          <attribute name="default">
+            <data type="boolean" />
+          </attribute>
+      </optional>
   </define>
 
 </grammar>

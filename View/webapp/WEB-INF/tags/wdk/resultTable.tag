@@ -3,6 +3,13 @@
 <%@ taglib prefix="pg" uri="http://jsptags.com/tags/navigation/pager" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
+<%@ attribute name="wdkStep"
+              type="org.gusdb.wdk.model.jspwrap.StepBean"
+              required="true"
+              description="Step bean we are looking at"
+%>
+
+<c:set var="wdkUser" value="${sessionScope.wdkUser}" />
 <c:set var="wdkAnswer" value="${wdkStep.answerValue}"/>
 <c:set var="qName" value="${wdkAnswer.question.fullName}" />
 <c:set var="modelName" value="${applicationScope.wdkModel.name}" />
@@ -11,11 +18,6 @@
 <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
 <c:set var="answerRecords" value="${wdkAnswer.records}" />
 
-<%@ attribute name="strategy"
-			  type="org.gusdb.wdk.model.jspwrap.StrategyBean"
-              required="true"
-              description="Strategy bean we are looking at"
-%>
 
 <jsp:useBean id="typeMap" class="java.util.HashMap"/>
 <c:set target="${typeMap}" property="singular" value="${wdkStep.displayType}"/>
@@ -55,7 +57,7 @@
 </c:if>
 
 <!-- handle empty result set situation -->
-<c:choose>
+<c:choose> <%-- HANDLE EMPTY RESULT --%>
   <c:when test='${strategy != null && wdkAnswer.resultSize == 0}'>
 	No results are retrieved
   </c:when>
@@ -67,57 +69,6 @@
   </c:when>
   <c:otherwise>
 
-<table width="100%"><tr>
-<td class="h4left" style="vertical-align:middle;padding-bottom:7px;">
-    <c:if test="${strategy != null}">
-        <span id="text_strategy_number">${strategy.name}</span> 
-        - step <span id="text_step_number">${strategy.length}</span> - 
-    </c:if>
-    <span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${type}</span>
-</td>
-
-<td  style="vertical-align:middle;text-align:right;white-space:nowrap;">
-  <div style="float:right">
-   <c:set var="r_count" value="${wdkAnswer.resultSize} ${type}" />
-   <c:if test="${strategy != null}">
-    <c:choose>
-      <c:when test="${wdkUser.guest}">
-        <c:set var="basketClick" value="popLogin();setFrontAction('basketStep');" />
-      </c:when>
-      <c:otherwise>
-        <c:set var="basketClick" value="updateBasket(this, '${wdkStep.stepId}', '0', '${modelName}', '${recordName}');" />
-      </c:otherwise>
-    </c:choose>
-    <c:if test="${recHasBasket}"><a id="basketStep" style="font-size:120%" href="javascript:void(0)" onClick="${basketClick}"><b>Add ${r_count} to Basket</b></a>&nbsp;|&nbsp;</c:if>
-   </c:if>
-    <a style="font-size:120%" href="downloadStep.do?step_id=${wdkStep.stepId}"><b>Download ${r_count}</b></a>
-  <c:if test="${!empty sessionScope.GALAXY_URL}">
-    &nbsp;|&nbsp;<a href="downloadStep.do?step_id=${wdkStep.stepId}&wdkReportFormat=tabular"><b>SEND TO GALAXY</b></a>
-  </c:if>
-  </div>
-</td>
-</tr></table>
-
-<%-- display view list --%>
-<div id="Summary_Views" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
-  <c:set var="question" value="${wdkStep.question}" />
-  <c:set var="currentView" value="${question.defaultSummaryView.name}" />
-  <c:set var="views" value="${question.summaryViews}" />
-  <c:set var="index" value="${0}" />
-
-  <ul id="summary_views" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
-    <c:forEach items="${views}" var="item">
-      <c:set var="view" value="${item.value}" />
-      <c:if test="${view.name == currentView}">
-        <c:set var="selectedTab" value="${index}" />
-      </c:if>
-      <li class="ui-state-default ui-corner-top">
-        <a title="Results_Pane" 
-           href="<c:url value='/showResult.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}&view=${view.name}' />"
-        >${view.display}</a>
-      </li>
-      <c:set var="index" value="${index + 1}" />
-<div class='Results_Pane'>
 <!-- pager -->
 <pg:pager isOffset="true"
           scope="request"
@@ -239,11 +190,6 @@
             </c:otherwise>
           </c:choose>
                    </td>
-<%--
-				   <td>
-				     <wdk:attributePlugin attribute="${sumAttrib}" />
-				   </td>
---%>
                  </tr>
                </table>
              </td>
@@ -337,16 +283,73 @@
     <c:forEach items="${pkValues}" var="pkValue">
       <c:set var="recordLinkKeys" value="${recordLinkKeys}&${pkValue.key}=${pkValue.value}" />
     </c:forEach>
-  </ul>
 
-</div> <!-- END OF Summary_Views -->
+    <td ${align} style="${nowrap}padding:3px 2px"><div>
+      
+      <c:set var="fieldVal" value="${recAttr.briefDisplay}"/>
+      
+      <c:choose>
+        <c:when test="${j == 0}">
+	  <%-- display a link to record page --%>
+	<!-- store the primary key pairs here -->
+      <div class="primaryKey" fvalue="${fieldVal}" style="display:none;">
+        <c:forEach items="${pkValues}" var="pkValue">
+          <span key="${pkValue.key}">${pkValue.value}</span>
+        </c:forEach>
+      </div>
+          <a href="showRecord.do?name=${recNam}${recordLinkKeys}">${fieldVal}</a>
+        </c:when>   <%-- when j=0 --%>
 
-<script>
-  $(function() {
-    $( "#Summary_Views" ).tabs({ selected : ${selectedTab} });
-  });
-</script>
-<h1>current view: ${currentView}, index: ${selectedTab}</h1>
+        <c:otherwise>
+
+          <!-- need to know if fieldVal should be hot linked -->
+          <c:choose>
+			<c:when test="${fieldVal == null || fn:length(fieldVal) == 0}">
+               <span style="color:gray;">N/A</span>
+            </c:when>
+            <c:when test="${recAttr.class.name eq 'org.gusdb.wdk.model.LinkAttributeValue'}">
+		 <a href="${recAttr.url}">${recAttr.displayText}</a>
+            </c:when>
+            <c:otherwise>
+              ${fieldVal}
+            </c:otherwise>
+          </c:choose>
+
+        </c:otherwise>
+      </c:choose>
+    </div></td>
+    <c:set var="j" value="${j+1}"/>
+
+  </c:forEach>
+</tr>
+<c:set var="i" value="${i+1}"/>
+</c:forEach>
+
+</tr>
+
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<%--------- END OF RESULTS  ----------%>
+
+<%--------- PAGING BOTTOM BAR ----------%>
+<table width="100%" border="0" cellpadding="3" cellspacing="0">
+	<tr class="subheaderrow">
+	<th style="text-align:left;white-space:nowrap;"> 
+	       <wdk:pager wdkAnswer="${wdkAnswer}" pager_id="bottom"/> 
+	</th>
+	<th style="text-align:right;white-space:nowrap;">
+		&nbsp;
+	</th>
+	<th style="text-align:right;white-space:nowrap;width:5%;">
+	    &nbsp;
+	</th>
+	</tr>
+</table>
+<%--------- END OF PAGING BOTTOM BAR ----------%>
+</pg:pager>
 
   </c:otherwise>
-</c:choose>
+</c:choose> <%-- END OF HANDLE EMPTY RESULT --%>

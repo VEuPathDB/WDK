@@ -682,6 +682,13 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
 .favorite-refresh-button {
     clear: both;
 }
+
+#Feature_Pane .label {
+    width: 100px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
 .type-ahead-help {
     color: #666666;
     font-size: smaller;
