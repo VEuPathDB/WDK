@@ -1,9 +1,15 @@
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import org.json.JSONException;
 
 public class LinkAttributeField extends AttributeField {
 
@@ -50,6 +56,8 @@ public class LinkAttributeField extends AttributeField {
      */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
+        super.excludeResources(projectId);
+        
         String rcName = (recordClass == null) ? ""
                 : (recordClass.getFullName() + ".");
 
@@ -98,22 +106,10 @@ public class LinkAttributeField extends AttributeField {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
-     */
-    @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-        // try parse the url & displayText
-        parseFields(url);
-        parseFields(displayText);
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.gusdb.wdk.model.AttributeField#getDependents()
      */
     @Override
-    public Collection<AttributeField> getDependents()
+    protected Collection<AttributeField> getDependents()
             throws WdkModelException {
         Map<String, AttributeField> dependents = parseFields(url);
         dependents.putAll(parseFields(displayText));
