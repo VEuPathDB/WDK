@@ -1,15 +1,16 @@
 package org.gusdb.wdk.model.attribute.plugin;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.Map;
 
-import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.ColumnAttributeField;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
+import org.gusdb.wdk.model.AttributeField;
+import org.gusdb.wdk.model.user.Step;
 
+/**
+ * @author jerric
+ * 
+ *         The plugin is created per request, therefore request-scoped objects
+ *         can be set into it.
+ */
 public interface AttributePlugin {
 
     String getName();
@@ -20,16 +21,11 @@ public interface AttributePlugin {
 
     void setDisplay(String display);
 
-    String getView();
-
-    void setView(String view);
-
     void setProperties(Map<String, String> properties);
 
-    void setAttribute(ColumnAttributeField attribute);
+    void setAttributeField(AttributeField attribute);
 
-    Map<String, Object> process(AnswerValue answerValue)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException;
+    void setStep(Step step);
 
+    Map<String, Object> process();
 }

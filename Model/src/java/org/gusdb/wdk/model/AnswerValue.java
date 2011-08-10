@@ -857,11 +857,9 @@ public class AnswerValue {
             if (field == null)
                 continue;
             boolean ascend = sortingMap.get(fieldName);
-            for (AttributeField dependent : field.getDependents()) {
-                if (!(dependent instanceof ColumnAttributeField))
-                    continue;
-
-                Column column = ((ColumnAttributeField) dependent).getColumn();
+            Map<String, ColumnAttributeField> dependents = field.getColumnAttributeFields();
+            for (ColumnAttributeField dependent :dependents.values()) {
+                Column column = dependent.getColumn();
                 Query query = column.getQuery();
                 String queryName = query.getFullName();
                 // cannot use the attribute query from record, need to get it

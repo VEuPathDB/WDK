@@ -46,7 +46,7 @@ import org.xml.sax.SAXException;
  */
 public class WdkModel {
 
-    public static final String WDK_VERSION = "1.19";
+    public static final String WDK_VERSION = "2.2.0";
 
     private static final Logger logger = Logger.getLogger(WdkModel.class);
 
