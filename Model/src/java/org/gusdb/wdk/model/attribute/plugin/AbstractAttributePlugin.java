@@ -209,7 +209,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
 
             if (matcher.start() > pos)
                 builder.append(content.substring(pos, matcher.start()));
-            builder.append(fieldContent);
+            builder.append("' || " + fieldContent + " || '");
             pos = matcher.end();
         }
         if (pos < content.length() - 1) builder.append(content.substring(pos));
