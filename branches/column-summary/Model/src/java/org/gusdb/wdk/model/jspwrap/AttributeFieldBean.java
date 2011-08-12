@@ -6,7 +6,6 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.ColumnAttributeField;
 import org.gusdb.wdk.model.attribute.plugin.AttributePluginReference;
 
 public class AttributeFieldBean extends FieldBean {
@@ -54,6 +53,6 @@ public class AttributeFieldBean extends FieldBean {
     }
 
     public Map<String, AttributePluginReference> getAttributePlugins() {
-        return ((ColumnAttributeField) attributeField).getAttributePlugins();
+        return attributeField.getAttributePlugins();
     }
 }
