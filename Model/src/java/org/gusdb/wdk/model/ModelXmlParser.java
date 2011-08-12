@@ -250,6 +250,36 @@ public class ModelXmlParser extends XmlParser {
         Digester digester = new Digester();
         digester.setValidating(false);
 
+        configureModel(digester);
+
+        // configure all sub nodes of recordClassSet
+        configureRecordClassSet(digester);
+
+        // configure all sub nodes of querySet
+        configureQuerySet(digester);
+
+        // configure all sub nodes of paramSet
+        configureParamSet(digester);
+
+        // configure all sub nodes of questionSet
+        configureQuestionSet(digester);
+
+        // configure all sub nodes of xmlQuestionSet
+        configureXmlQuestionSet(digester);
+
+        // configure all sub nodes of xmlRecordSet
+        configureXmlRecordClassSet(digester);
+
+        // configure all sub nodes of xmlRecordSet
+        configureGroupSet(digester);
+
+        // configure the attributes
+        configureAttributeFields(digester);
+
+        return digester;
+    }
+
+    private void configureModel(Digester digester) {
         // Root -- WDK Model
         digester.addObjectCreate("wdkModel", WdkModel.class);
         digester.addSetProperties("wdkModel");
@@ -282,29 +312,6 @@ public class ModelXmlParser extends XmlParser {
         // configure property macros
         configureNode(digester, "wdkModel/declaredMacro",
                 MacroDeclaration.class, "addMacroDeclaration");
-
-        // configure all sub nodes of recordClassSet
-        configureRecordClassSet(digester);
-
-        // configure all sub nodes of querySet
-        configureQuerySet(digester);
-
-        // configure all sub nodes of paramSet
-        configureParamSet(digester);
-
-        // configure all sub nodes of questionSet
-        configureQuestionSet(digester);
-
-        // configure all sub nodes of xmlQuestionSet
-        configureXmlQuestionSet(digester);
-
-        // configure all sub nodes of xmlRecordSet
-        configureXmlRecordClassSet(digester);
-
-        // configure all sub nodes of xmlRecordSet
-        configureGroupSet(digester);
-
-        return digester;
     }
 
     private void configureRecordClassSet(Digester digester) {
@@ -315,24 +322,6 @@ public class ModelXmlParser extends XmlParser {
         // record class
         configureNode(digester, "wdkModel/recordClassSet/recordClass",
                 RecordClass.class, "addRecordClass");
-
-        // primary key attribute
-        configureNode(digester,
-                "wdkModel/recordClassSet/recordClass/primaryKeyAttribute",
-                PrimaryKeyAttributeField.class, "addAttributeField");
-        configureNode(
-                digester,
-                "wdkModel/recordClassSet/recordClass/primaryKeyAttribute/columnRef",
-                WdkModelText.class, "addColumnRef");
-        digester.addCallMethod(
-                "wdkModel/recordClassSet/recordClass/primaryKeyAttribute/columnRef",
-                "setText", 0);
-        configureNode(digester,
-                "wdkModel/recordClassSet/recordClass/primaryKeyAttribute/text",
-                WdkModelText.class, "addText");
-        digester.addCallMethod(
-                "wdkModel/recordClassSet/recordClass/primaryKeyAttribute/text",
-                "setText", 0);
 
         // attribute categories
         configureNode(digester,
@@ -424,22 +413,6 @@ public class ModelXmlParser extends XmlParser {
                 "wdkModel/recordClassSet/recordClass/attributeQueryRef",
                 AttributeQueryReference.class, "addAttributesQueryRef");
 
-        configureNode(
-                digester,
-                "wdkModel/recordClassSet/recordClass/attributeQueryRef/columnAttribute",
-                ColumnAttributeField.class, "addAttributeField");
-
-        // configure attribute plugins
-        configureNode(digester, "wdkModel/*Attribute/plugin",
-                AttributePluginReference.class, "addAttributePluginReference");
-        configureNode(digester, "wdkModel/*Attribute/plugin/property",
-                WdkModelText.class, "addProperty");
-        digester.addCallMethod("wdkModel/*Attribute/plugin/property",
-                "setText", 0);
-
-        configureLinkTextFields(digester,
-                "wdkModel/recordClassSet/recordClass/attributeQueryRef/");
-
         // tables
         configureNode(digester, "wdkModel/recordClassSet/recordClass/table",
                 TableField.class, "addTableField");
@@ -466,13 +439,6 @@ public class ModelXmlParser extends XmlParser {
         configureNode(digester,
                 "wdkModel/recordClassSet/recordClass/table/columnAttribute",
                 ColumnAttributeField.class, "addAttributeField");
-
-        configureLinkTextFields(digester,
-                "wdkModel/recordClassSet/recordClass/table/");
-
-        // direct attribute fields in teh record class
-        configureLinkTextFields(digester,
-                "wdkModel/recordClassSet/recordClass/");
 
         // nested record and record list
         configureNode(digester,
@@ -657,9 +623,6 @@ public class ModelXmlParser extends XmlParser {
                 "wdkModel/questionSet/question/dynamicAttributes/columnAttribute",
                 ColumnAttributeField.class, "addAttributeField");
 
-        configureLinkTextFields(digester,
-                "wdkModel/questionSet/question/dynamicAttributes/");
-
         configureNode(digester, "wdkModel/questionSet/question/paramRef",
                 ParamReference.class, "addParamRef");
 
@@ -747,29 +710,57 @@ public class ModelXmlParser extends XmlParser {
                 "setText", 0);
     }
 
-    private void configureLinkTextFields(Digester digester, String prefix) {
+    private void configureAttributeFields(Digester digester) {
+        // primary key attribute
+        String prefixPK = "wdkModel/recordClassSet/recordClass/primaryKeyAttribute";
+        configureNode(digester, prefixPK, PrimaryKeyAttributeField.class,
+                "addAttributeField");
+        configureNode(digester, prefixPK + "/columnRef", WdkModelText.class,
+                "addColumnRef");
+        digester.addCallMethod(prefixPK + "/columnRef", "setText", 0);
+        configureNode(digester, prefixPK + "/text", WdkModelText.class,
+                "addText");
+        digester.addCallMethod(prefixPK + "/text", "setText", 0);
+        configureAttributePlugins(digester, "primaryKeyAttribute");
+
+        configureNode(digester, "*/columnAttribute",
+                ColumnAttributeField.class, "addAttributeField");
+        configureAttributePlugins(digester, "columnAttribute");
+
         // link attribute
-        configureNode(digester, prefix + "linkAttribute",
-                LinkAttributeField.class, "addAttributeField");
-        configureNode(digester, prefix + "linkAttribute/url",
-                WdkModelText.class, "addUrl");
-        digester.addCallMethod(prefix + "linkAttribute/url", "setText", 0);
-        configureNode(digester, prefix + "linkAttribute/displayText",
+        configureNode(digester, "*/linkAttribute", LinkAttributeField.class,
+                "addAttributeField");
+        configureNode(digester, "*/linkAttribute/url", WdkModelText.class,
+                "addUrl");
+        digester.addCallMethod("*/linkAttribute/url", "setText", 0);
+        configureNode(digester, "*/linkAttribute/displayText",
                 WdkModelText.class, "addDisplayText");
-        digester.addCallMethod(prefix + "linkAttribute/displayText", "setText",
-                0);
+        digester.addCallMethod("*/linkAttribute/displayText", "setText", 0);
+        configureAttributePlugins(digester, "linkAttribute");
 
         // text attribute
-        configureNode(digester, prefix + "textAttribute",
-                TextAttributeField.class, "addAttributeField");
+        configureNode(digester, "*/textAttribute", TextAttributeField.class,
+                "addAttributeField");
 
-        configureNode(digester, prefix + "textAttribute/text",
-                WdkModelText.class, "addText");
-        digester.addCallMethod(prefix + "textAttribute/text", "setText", 0);
+        configureNode(digester, "*/textAttribute/text", WdkModelText.class,
+                "addText");
+        digester.addCallMethod("*/textAttribute/text", "setText", 0);
 
-        configureNode(digester, prefix + "textAttribute/display",
-                WdkModelText.class, "addDisplay");
-        digester.addCallMethod(prefix + "textAttribute/display", "setText", 0);
+        configureNode(digester, "*/textAttribute/display", WdkModelText.class,
+                "addDisplay");
+        digester.addCallMethod("*/textAttribute/display", "setText", 0);
+        configureAttributePlugins(digester, "textAttribute");
+    }
+
+    private void configureAttributePlugins(Digester digester, String attribute) {
+        String prefix = "*/" + attribute + "/plugin";
+        // configure plugins for
+        configureNode(digester, prefix, AttributePluginReference.class,
+                "addAttributePluginReference");
+        configureNode(digester, prefix + "/property", WdkModelText.class,
+                "addProperty");
+        digester.addCallMethod(prefix + "/property", "setText", 0);
+
     }
 
     public static void main(String[] args) throws SAXException, IOException,
