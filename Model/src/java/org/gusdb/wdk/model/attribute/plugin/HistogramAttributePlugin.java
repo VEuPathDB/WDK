@@ -9,6 +9,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 
 /**
@@ -25,6 +26,8 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
     private static final String ATTR_HISTOGRAM = "histogram";
 
     private static final float DEFAULT_MAX_BAR_LENGTH = 600;
+    
+    private static final Logger logger = Logger.getLogger(HistogramAttributePlugin.class);
 
     /*
      * (non-Javadoc)
@@ -48,6 +51,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
             }
         }
         catch (Exception ex) {
+            logger.error(ex);
             throw new RuntimeException(ex);
         }
         finally {
