@@ -3,13 +3,15 @@
  */
 package org.gusdb.wdk.model.attribute.plugin;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.PrimaryKeyAttributeValue;
@@ -21,41 +23,32 @@ import org.gusdb.wdk.model.PrimaryKeyAttributeValue;
 public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
         AttributePlugin {
 
+    private static final String PROP_SPLIT_PATTERN = "split-pattern";
+    private static final String PROP_MIN_WEIGHT = "min-weight";
+    private static final String PROP_MAX_WEIGHT = "max-weight";
+    private static final String PROP_MIN_WORD_LENGTH = "min-word-length";
+    private static final String PROP_EXCLUDE_NUMBERS = "exclude-numbers";
+    private static final String PROP_COMMON_WORDS = "common-words";
+
     private static final String ATTR_PLUGIN = "plugin";
     private static final String ATTR_CONTENT = "content";
-    private static final String ATTR_FREQUENCY = "frequency";
+    private static final String ATTR_TAGS = "tags";
+    private static final String ATTR_WORD_ORDER = "wordOrder";
+    private static final String ATTR_COUNT_ORDER = "countOrder";
 
-    private static final int RARE_THRESHOLD = 100;
-    private static final int MIN_WORD_LENGTH = 3;
-    private static final String SEPARATOR = "[^a-z0-9\\-_]+";
-    private static final int MIN_FONT = 6 * 255;
-    private static final int MAX_FONT = 50 * 255;
-
-    private static final Set<String> COMMON_WORDS = new HashSet<String>();
-    static {
-        String[] words = { "and", "off", "are", "was", "were" };
-        for (String word : words) {
-            COMMON_WORDS.add(word);
-        }
-    }
+    private static final String NUMBER_PATTERN = "^(\\-)?[\\d\\.]+";
+    private static final String[] COMMON_WORDS = { "and", "off", "are", "was",
+            "were", "the", "that" };
 
     private static final Logger logger = Logger
             .getLogger(WordCloudAttributePlugin.class);
 
-    private static class ValueComparator implements Comparator<String> {
-
-        private Map<String, Integer> counts;
-
-        public ValueComparator(Map<String, Integer> counts) {
-            this.counts = counts;
-        }
-
-        public int compare(String word1, String word2) {
-            int diff = counts.get(word2) - counts.get(word1);
-            if (diff != 0) return diff;
-            return word1.compareTo(word2);
-        }
-    }
+    private String splitPattern = "[^a-z0-9_]+";
+    private int minWeight = 7;
+    private int maxWeight = 50;
+    private int minWordLength = 3;
+    private boolean excludeNumbers = true;
+    private Set<String> commonWords;
 
     /*
      * (non-Javadoc)
@@ -63,17 +56,18 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
      * @see org.gusdb.wdk.model.AttributePlugin#process()
      */
     public Map<String, Object> process() {
+        resolveProperties();
+
         StringBuilder content = new StringBuilder();
-        Map<String, Integer> counts = new HashMap<String, Integer>();
+        Map<String, WordTag> tags = new HashMap<String, WordTag>();
         try {
             Map<PrimaryKeyAttributeValue, Object> values = getAttributeValues();
             for (Object value : values.values()) {
                 if (value == null) continue;
                 content.append(" ").append(value);
-                splitWords(value.toString(), counts);
+                splitWords(value.toString(), tags);
             }
-            counts = consolidate(counts);
-            scale(counts);
+            processTags(tags);
         }
         catch (Exception ex) {
             logger.error(ex);
@@ -83,74 +77,143 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
         // compose the result
         Map<String, Object> result = new LinkedHashMap<String, Object>();
         result.put(ATTR_CONTENT, content.toString().trim());
-        result.put(ATTR_FREQUENCY, counts);
+        result.put(ATTR_TAGS, tags);
+        result.put(ATTR_WORD_ORDER,
+                sortTags(tags, new WordTag.WordComparator()));
+        result.put(ATTR_COUNT_ORDER,
+                sortTags(tags, new WordTag.CountComparator()));
         result.put(ATTR_PLUGIN, this);
         return result;
     }
 
-    private void splitWords(String content, Map<String, Integer> counts) {
-        // logger.debug("content: '" + content + "'");
-        // break the words
-        String[] words = content.trim().toLowerCase().split(SEPARATOR);
+    private void resolveProperties() {
+        // get common words
+        String[] words = COMMON_WORDS;
+        if (properties.containsKey(PROP_COMMON_WORDS))
+            words = properties.get(PROP_COMMON_WORDS).split(",");
+        commonWords = new HashSet<String>();
         for (String word : words) {
-            // logger.debug("word: '" + word + "'");
-            if (word.length() < MIN_WORD_LENGTH) continue;
-            if (COMMON_WORDS.contains(word)) continue;
+            commonWords.add(word);
+        }
 
-            int count = 1;
-            if (counts.containsKey(word)) count = counts.get(word) + 1;
-            counts.put(word, count);
+        // check if exclude numbers
+        if (properties.containsKey(PROP_EXCLUDE_NUMBERS))
+            excludeNumbers = Boolean.valueOf(properties
+                    .get(PROP_EXCLUDE_NUMBERS));
+
+        if (properties.containsKey(PROP_MAX_WEIGHT))
+            maxWeight = Integer.valueOf(properties.get(PROP_MAX_WEIGHT));
+
+        if (properties.containsKey(PROP_MIN_WEIGHT))
+            minWeight = Integer.valueOf(properties.get(PROP_MIN_WEIGHT));
+
+        if (properties.containsKey(PROP_MIN_WORD_LENGTH))
+            minWordLength = Integer.valueOf(properties
+                    .get(PROP_MIN_WORD_LENGTH));
+
+        if (properties.containsKey(PROP_SPLIT_PATTERN))
+            splitPattern = properties.get(PROP_SPLIT_PATTERN);
+    }
+
+    private void splitWords(String content, Map<String, WordTag> tags) {
+        // break the words
+        String[] words = content.trim().toLowerCase().split(splitPattern);
+        for (String word : words) {
+            // exclude small words
+            if (word.length() < minWordLength) continue;
+            // exclude common words
+            if (commonWords.contains(word)) continue;
+            // exclude numbers
+            if (excludeNumbers && word.matches(NUMBER_PATTERN)) continue;
+
+            WordTag tag = tags.get(word);
+            if (tag == null) tag = new WordTag(word);
+            else tag.increment();
+            tags.put(word, tag);
             // logger.debug("word count: '" + word + "' = " + count);
         }
     }
 
-    private Map<String, Integer> consolidate(Map<String, Integer> counts) {
-        String[] words = new String[counts.size()];
-        words = counts.keySet().toArray(words);
-        for (String word : words) {
+    private void processTags(Map<String, WordTag> tags) {
+        // remove the plurals
+        List<WordTag> list = new ArrayList<WordTag>();
+        for (WordTag tag : tags.values()) {
+            boolean isPlural = false;
             // look for plural words
+            String word = tag.getWord();
             if (word.endsWith("s")) {
                 String part = word.substring(0, word.length() - 1);
-                if (!counts.containsKey(part) && word.endsWith("es")) {
+                if (!tags.containsKey(part) && word.endsWith("es")) {
                     part = word.substring(0, word.length() - 2);
-                    if (!counts.containsValue(part) && word.endsWith("ies"))
+                    if (!tags.containsValue(part) && word.endsWith("ies"))
                         part = word.substring(0, word.length() - 3) + "y";
                 }
 
-                if (counts.containsKey(part)) {
-                    int count = counts.get(word) + counts.get(part);
-                    counts.put(part, count);
-                    counts.remove(word);
+                if (tags.containsKey(part)) {
+                    WordTag partTag = tags.get(part);
+                    int count = tag.getCount() + partTag.getCount();
+                    partTag.setCount(count);
+                    isPlural = true;
                 }
             }
+            // only keep the tags that are not plural
+            if (!isPlural) list.add(tag);
         }
 
-        // Map<String, Integer> sorted = new TreeMap<String, Integer>(
-        //         new ValueComparator(counts));
-        // sorted.putAll(counts);
-        // return sorted;
-        return counts;
+        if (list.size() > 1) {
+            // sort the tags by count, so that the follow-up computation of
+            // weights
+            // and scores are easier.
+            Collections.sort(list, new WordTag.CountComparator());
+            // compute weights
+            computeWeight(list);
+            // compute scores
+            computeScore(list);
+        } else if (list.size() == 1) {
+            WordTag tag = list.get(0);
+            tag.setWeight(maxWeight);
+            tag.setScore(1);
+        }
     }
 
-    private void scale(Map<String, Integer> counts) {
-        String[] words = new String[counts.size()];
-        counts.keySet().toArray(words);
-        int threshold = (int)Math.round(Math.log10(counts.size()));
-        int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
-        for (String word : words) {
-            int count = counts.get(word);
-            if (count <= threshold) {
-                counts.remove(word);
-                continue;
-            }
-            if (count > max) max = count;
-            if (count < min) min = count;
+    private String[] sortTags(Map<String, WordTag> tags,
+            Comparator<WordTag> comparator) {
+        List<WordTag> list = new ArrayList<WordTag>(tags.values());
+        Collections.sort(list, comparator);
+        String[] words = new String[list.size()];
+        for (int i = 0; i < words.length; i++) {
+            words[i] = list.get(i).getWord();
         }
-        float scale = (MAX_FONT - MIN_FONT + 1F) / (max - min);
-        for (String word : words) {
-            if (!counts.containsKey(word)) continue;
-            int font = Math.round(scale * counts.get(word)) + MIN_FONT - 1;
-            counts.put(word, font);
+        return words;
+    }
+
+    /**
+     * @param tags
+     *            The tags have been sorted by the count.
+     */
+    private void computeWeight(List<WordTag> tags) {
+        int maxCount = tags.get(0).getCount();
+        int minCount = tags.get(tags.size() - 1).getCount();
+        float scale = (float) (maxWeight - minWeight) / (maxCount - minCount);
+        for (WordTag tag : tags) {
+            float weight = (tag.getCount() - minCount) * scale + minWeight;
+            tag.setWeight(weight);
+        }
+    }
+
+    /**
+     * the scores are scaled into [0, 100];
+     * 
+     * @param tags
+     */
+    private void computeScore(List<WordTag> tags) {
+        double maxValue = Math.log(tags.get(0).getCount());
+        double minValue = Math.log(tags.get(tags.size() - 1).getCount());
+        double scale = 100 / (maxValue - minValue);
+        for (WordTag tag : tags) {
+            double value = Math.log(tag.getCount());
+            int score = (int) Math.round((value - minValue) * scale);
+            tag.setScore(score);
         }
     }
 }
