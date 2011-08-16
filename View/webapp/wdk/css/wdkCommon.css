@@ -706,3 +706,6 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
     background-image: url(../images/blue_bar.gif);
 }
 
+#word-cloud .word {
+  clear: none;
+}

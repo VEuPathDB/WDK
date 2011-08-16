@@ -22,13 +22,14 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
         AttributePlugin {
 
     private static final String ATTR_PLUGIN = "plugin";
-    // private static final String ATTR_CONTENT = "content";
+    private static final String ATTR_CONTENT = "content";
     private static final String ATTR_FREQUENCY = "frequency";
 
+    private static final int RARE_THRESHOLD = 100;
     private static final int MIN_WORD_LENGTH = 3;
     private static final String SEPARATOR = "[^a-z0-9\\-_]+";
-    private static final int MIN_FONT = 6;
-    private static final int MAX_FONT = 40;
+    private static final int MIN_FONT = 6 * 255;
+    private static final int MAX_FONT = 50 * 255;
 
     private static final Set<String> COMMON_WORDS = new HashSet<String>();
     static {
@@ -50,7 +51,9 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
         }
 
         public int compare(String word1, String word2) {
-            return counts.get(word1) - counts.get(word2);
+            int diff = counts.get(word2) - counts.get(word1);
+            if (diff != 0) return diff;
+            return word1.compareTo(word2);
         }
     }
 
@@ -60,13 +63,13 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
      * @see org.gusdb.wdk.model.AttributePlugin#process()
      */
     public Map<String, Object> process() {
-        // StringBuilder content = new StringBuilder();
+        StringBuilder content = new StringBuilder();
         Map<String, Integer> counts = new HashMap<String, Integer>();
         try {
             Map<PrimaryKeyAttributeValue, Object> values = getAttributeValues();
             for (Object value : values.values()) {
                 if (value == null) continue;
-                // content.append(" ").append(value);
+                content.append(" ").append(value);
                 splitWords(value.toString(), counts);
             }
             counts = consolidate(counts);
@@ -79,22 +82,25 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
 
         // compose the result
         Map<String, Object> result = new LinkedHashMap<String, Object>();
-        // result.put(ATTR_CONTENT, content.toString().trim());
+        result.put(ATTR_CONTENT, content.toString().trim());
         result.put(ATTR_FREQUENCY, counts);
         result.put(ATTR_PLUGIN, this);
         return result;
     }
 
     private void splitWords(String content, Map<String, Integer> counts) {
+        // logger.debug("content: '" + content + "'");
         // break the words
         String[] words = content.trim().toLowerCase().split(SEPARATOR);
         for (String word : words) {
+            // logger.debug("word: '" + word + "'");
             if (word.length() < MIN_WORD_LENGTH) continue;
             if (COMMON_WORDS.contains(word)) continue;
 
             int count = 1;
             if (counts.containsKey(word)) count = counts.get(word) + 1;
             counts.put(word, count);
+            // logger.debug("word count: '" + word + "' = " + count);
         }
     }
 
@@ -119,22 +125,30 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
             }
         }
 
-        Map<String, Integer> sorted = new TreeMap<String, Integer>(
-                new ValueComparator(counts));
-        sorted.putAll(counts);
-        return sorted;
+        // Map<String, Integer> sorted = new TreeMap<String, Integer>(
+        //         new ValueComparator(counts));
+        // sorted.putAll(counts);
+        // return sorted;
+        return counts;
     }
 
     private void scale(Map<String, Integer> counts) {
+        String[] words = new String[counts.size()];
+        counts.keySet().toArray(words);
+        int threshold = (int)Math.round(Math.log10(counts.size()));
         int min = Integer.MAX_VALUE, max = Integer.MIN_VALUE;
-        for (int count : counts.values()) {
+        for (String word : words) {
+            int count = counts.get(word);
+            if (count <= threshold) {
+                counts.remove(word);
+                continue;
+            }
             if (count > max) max = count;
             if (count < min) min = count;
         }
         float scale = (MAX_FONT - MIN_FONT + 1F) / (max - min);
-        String[] words = new String[counts.size()];
-        counts.keySet().toArray(words);
         for (String word : words) {
+            if (!counts.containsKey(word)) continue;
             int font = Math.round(scale * counts.get(word)) + MIN_FONT - 1;
             counts.put(word, font);
         }
