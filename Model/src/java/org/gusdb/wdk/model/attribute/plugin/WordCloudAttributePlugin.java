@@ -5,7 +5,6 @@ package org.gusdb.wdk.model.attribute.plugin;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -33,8 +32,6 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
     private static final String ATTR_PLUGIN = "plugin";
     private static final String ATTR_CONTENT = "content";
     private static final String ATTR_TAGS = "tags";
-    private static final String ATTR_WORD_ORDER = "wordOrder";
-    private static final String ATTR_COUNT_ORDER = "countOrder";
 
     private static final String NUMBER_PATTERN = "^(\\-)?[\\d\\.]+";
     private static final String[] COMMON_WORDS = { "and", "off", "are", "was",
@@ -59,15 +56,17 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
         resolveProperties();
 
         StringBuilder content = new StringBuilder();
-        Map<String, WordTag> tags = new HashMap<String, WordTag>();
+        List<WordTag> tags = new ArrayList<WordTag>();
         try {
+            Map<String, WordTag> tagMap = new HashMap<String, WordTag>();
             Map<PrimaryKeyAttributeValue, Object> values = getAttributeValues();
             for (Object value : values.values()) {
                 if (value == null) continue;
                 content.append(" ").append(value);
-                splitWords(value.toString(), tags);
+                splitWords(value.toString(), tagMap);
             }
-            processTags(tags);
+            // the tags are sorted by count
+            tags = processTags(tagMap);
         }
         catch (Exception ex) {
             logger.error(ex);
@@ -78,10 +77,6 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
         Map<String, Object> result = new LinkedHashMap<String, Object>();
         result.put(ATTR_CONTENT, content.toString().trim());
         result.put(ATTR_TAGS, tags);
-        result.put(ATTR_WORD_ORDER,
-                sortTags(tags, new WordTag.WordComparator()));
-        result.put(ATTR_COUNT_ORDER,
-                sortTags(tags, new WordTag.CountComparator()));
         result.put(ATTR_PLUGIN, this);
         return result;
     }
@@ -134,7 +129,7 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
         }
     }
 
-    private void processTags(Map<String, WordTag> tags) {
+    private List<WordTag> processTags(Map<String, WordTag> tags) {
         // remove the plurals
         List<WordTag> list = new ArrayList<WordTag>();
         for (WordTag tag : tags.values()) {
@@ -159,12 +154,11 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
             // only keep the tags that are not plural
             if (!isPlural) list.add(tag);
         }
-
+        
         if (list.size() > 1) {
             // sort the tags by count, so that the follow-up computation of
-            // weights
-            // and scores are easier.
-            Collections.sort(list, new WordTag.CountComparator());
+            // weights and scores are easier.
+            Collections.sort(list);
             // compute weights
             computeWeight(list);
             // compute scores
@@ -174,17 +168,7 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
             tag.setWeight(maxWeight);
             tag.setScore(1);
         }
-    }
-
-    private String[] sortTags(Map<String, WordTag> tags,
-            Comparator<WordTag> comparator) {
-        List<WordTag> list = new ArrayList<WordTag>(tags.values());
-        Collections.sort(list, comparator);
-        String[] words = new String[list.size()];
-        for (int i = 0; i < words.length; i++) {
-            words[i] = list.get(i).getWord();
-        }
-        return words;
+        return list;
     }
 
     /**
