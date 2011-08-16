@@ -1,22 +1,7 @@
 package org.gusdb.wdk.model.attribute.plugin;
 
-import java.util.Comparator;
 
-public class WordTag {
-
-    static class WordComparator implements Comparator<WordTag> {
-        public int compare(WordTag tag1, WordTag tag2) {
-            return tag1.word.compareTo(tag2.word);
-        }
-    }
-
-    static class CountComparator implements Comparator<WordTag> {
-
-        public int compare(WordTag tag1, WordTag tag2) {
-            int diff = tag2.count - tag1.count;
-            return (diff != 0) ? diff : (tag1.word.compareTo(tag2.word));
-        }
-    }
+public class WordTag implements Comparable<WordTag> {
 
     private final String word;
     private int count;
@@ -58,6 +43,11 @@ public class WordTag {
 
     public void setScore(int score) {
         this.score = score;
+    }
+
+    public int compareTo(WordTag tag) {
+        int diff = tag.count - count;
+        return (diff != 0) ? diff : (word.compareTo(tag.word));
     }
 
 }
