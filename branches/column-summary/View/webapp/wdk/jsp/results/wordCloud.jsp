@@ -5,14 +5,34 @@
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
 <c:set var="plugin" value="${requestScope.plugin}" />
-<c:set var="frequency" value="${requestScope.frequency}" />
+<c:set var="tags" value="${requestScope.tags}" />
+<c:set var="wordOrder" value="${requestScope.wordOrder}" />
+<c:set var="countOrder" value="${requestScope.countOrder}" />
 
+<script type="text/javascript" src="<c:url value='/wdk/js/wordCloud.js' />"></script>
 <div id="word-cloud">
-  <c:forEach items="${frequency}" var="item">
-    <c:set var="word" value="${item.key}" />
-    <c:set var="fontSize" value="${item.value / 255}" />
-    <c:set var="fontColor" value="${item.value % 255}" />
-    <c:if test="${fontColor < 10}"><c:set var="fontColor" value="0${fontColor}" /></c:if>
-    <span class="word" style="font-size: ${fontSize}pt; color: #0000${fontColor}">${word}</span> 
-  </c:forEach>
+  <div id="tags">
+    <c:forEach items="${tags}" var="tag">
+      <span word="${tag.word}" count="${tag.count}" weight="${tag.weight}" score="${tag.score}">${tag.word}</span>
+    </c:forEach>
+  </div>
+  <div id="word-order">
+    <c:forEach items="${wordOrder}" var="word">
+	  <span>${word}</span>
+	</c:forEach>
+  </div>
+  <div id="count-order">
+    <c:forEach items="${countOrder}" var="word">
+	  <span>${word}</span>
+	</c:forEach>
+  </div>
+  <div>
+    # of words: <b>more</b> <span id="amount"> </span> <b>less</b>
+  </div>
+  <div>
+    Sort by:
+    <input type="radio" id="sort" value="word-order" />Alphabetic
+    <input type="radio" id="sort" value="count-order" />Weight
+  </div>
+  <div id="layout"> </div>
 </div>
