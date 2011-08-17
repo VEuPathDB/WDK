@@ -131,6 +131,7 @@ public class AttributePluginReference extends WdkModelBase {
         AttributePlugin plugin = pluginClass.newInstance();
         plugin.setName(name);
         plugin.setDisplay(display);
+        plugin.setView(view);
         plugin.setProperties(propertyMap);
         plugin.setAttributeField(attributeField);
 
