@@ -29,13 +29,41 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
     
     private static final Logger logger = Logger.getLogger(HistogramAttributePlugin.class);
 
+    private Map<String, Integer> summaries;
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.AttributePlugin#process()
      */
     public Map<String, Object> process() {
-        Map<String, Integer> summaries = new LinkedHashMap<String, Integer>();
+        loadSummaries();
+        
+        Map<String, Integer> histogram = scaleHistogram(summaries);
+
+        // compose the result
+        Map<String, Object> result = new LinkedHashMap<String, Object>();
+        result.put(ATTR_SUMMARY, summaries);
+        result.put(ATTR_HISTOGRAM, histogram);
+        result.put(ATTR_PLUGIN, this);
+        return result;
+    }
+
+    public String getDownloadContent() {
+        loadSummaries();
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append(attributeField.getDisplayName() + "\tRecord Count\n");
+        for(String attribute : summaries.keySet()) {
+            int count = summaries.get(attribute);
+            builder.append(attribute + "\t" + count + "\n");
+        }
+        return builder.toString();
+    }
+
+    private void loadSummaries() {
+        if (summaries != null) return;
+        
+        summaries = new LinkedHashMap<String, Integer>();
         ResultSet resultSet = null;
         try {
             String attributeColumn = AbstractAttributePlugin.ATTRIBUTE_COLUMN;
@@ -57,14 +85,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
         finally {
             SqlUtils.closeResultSet(resultSet);
         }
-        Map<String, Integer> histogram = scaleHistogram(summaries);
 
-        // compose the result
-        Map<String, Object> result = new LinkedHashMap<String, Object>();
-        result.put(ATTR_SUMMARY, summaries);
-        result.put(ATTR_HISTOGRAM, histogram);
-        result.put(ATTR_PLUGIN, this);
-        return result;
     }
 
     private String composeSql(String attributeColumn, String sql) {

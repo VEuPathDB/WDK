@@ -47,16 +47,30 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
     private boolean excludeNumbers = true;
     private Set<String> commonWords;
 
+    private List<WordTag> tags;
+    private String content;
+
     /*
      * (non-Javadoc)
      * 
      * @see org.gusdb.wdk.model.AttributePlugin#process()
      */
     public Map<String, Object> process() {
-        resolveProperties();
+        loadTags();
 
+        // compose the result
+        Map<String, Object> result = new LinkedHashMap<String, Object>();
+        result.put(ATTR_CONTENT, content.trim());
+        result.put(ATTR_TAGS, tags);
+        result.put(ATTR_PLUGIN, this);
+        return result;
+    }
+
+    private void loadTags() {
+        if (tags != null) return;
+
+        resolveProperties();
         StringBuilder content = new StringBuilder();
-        List<WordTag> tags = new ArrayList<WordTag>();
         try {
             Map<String, WordTag> tagMap = new HashMap<String, WordTag>();
             Map<PrimaryKeyAttributeValue, Object> values = getAttributeValues();
@@ -65,6 +79,7 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
                 content.append(" ").append(value);
                 splitWords(value.toString(), tagMap);
             }
+            this.content = content.toString();
             // the tags are sorted by count
             tags = processTags(tagMap);
         }
@@ -72,13 +87,6 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
             logger.error(ex);
             throw new RuntimeException(ex);
         }
-
-        // compose the result
-        Map<String, Object> result = new LinkedHashMap<String, Object>();
-        result.put(ATTR_CONTENT, content.toString().trim());
-        result.put(ATTR_TAGS, tags);
-        result.put(ATTR_PLUGIN, this);
-        return result;
     }
 
     private void resolveProperties() {
@@ -154,7 +162,7 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
             // only keep the tags that are not plural
             if (!isPlural) list.add(tag);
         }
-        
+
         if (list.size() > 1) {
             // sort the tags by count, so that the follow-up computation of
             // weights and scores are easier.
@@ -199,5 +207,16 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
             int score = (int) Math.round((value - minValue) * scale);
             tag.setScore(score);
         }
+    }
+
+    public String getDownloadContent() {
+        loadTags();
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("Keyword\tOccurrence\n");
+        for (WordTag tag : tags) {
+            builder.append(tag.getWord() + "\t" + tag.getCount() + "\n");
+        }
+        return builder.toString();
     }
 }
