@@ -28,4 +28,6 @@ public interface AttributePlugin {
     void setStep(Step step);
 
     Map<String, Object> process();
+    
+    String getDownloadContent();
 }
