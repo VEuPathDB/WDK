@@ -31,6 +31,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
 
     private String name;
     private String display;
+    private String view;
 
     protected WdkModel wdkModel;
     protected Map<String, String> properties;
@@ -51,6 +52,20 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
 
     public void setDisplay(String display) {
         this.display = display;
+    }
+
+    /**
+     * @return the view
+     */
+    public String getView() {
+        return this.view;
+    }
+
+    /**
+     * @param view the view to set
+     */
+    public void setView(String view) {
+        this.view = view;
     }
 
     public void setProperties(Map<String, String> properties) {
