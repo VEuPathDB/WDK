@@ -52,11 +52,13 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
         loadSummaries();
         
         StringBuilder builder = new StringBuilder();
-        builder.append(attributeField.getDisplayName() + "\tRecord Count\n");
+        builder.append("<table>");
+        builder.append("<tr><th>" + attributeField.getDisplayName() + "</th><th>Record Count</th></tr>");
         for(String attribute : summaries.keySet()) {
             int count = summaries.get(attribute);
-            builder.append(attribute + "\t" + count + "\n");
+            builder.append("<tr><td>" + attribute + "</td><td>" + count + "</td></tr>");
         }
+        builder.append("</table>");
         return builder.toString();
     }
 

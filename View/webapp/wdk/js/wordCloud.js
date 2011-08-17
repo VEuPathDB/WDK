@@ -4,39 +4,63 @@ Basket Button
 */
 
 $(document).ready(function(){
-	var cloud = new WordCloud();
-	cloud.init();
-	cloud.layout();
+    var cloud = new WordCloud();
+    cloud.init(cloud);
 });
 
 function WordCloud() {
-	
-	this.init = function(){
-	    var cloud = this;
-		// register events
-		$("#word-cloud #amount").slider({
-		    slide: function(event, ui) { cloud.layout(); }
-		});
-		$("#word-cloud input#sort").change( cloud.layout );
-	};
-	
-	this.layout = function() {
-		// get parameters
-		var amount = $("#word-cloud #amount").slider("value");
-		var sortBy = $("#word-cloud input#sort").val();
-		
-		var layout = $("#word-cloud #layout");
-		layout.html("");
-		
-		// get the sorted list
-		$("#word-cloud #" + sortBy + " span").each(function() {
-		    var word = $(this).text();
-			var tag = $("#word-cloud #tags span[word=" + word + "]");
-			if (tag.val("score") >= amount) {
-			    var span = "<span class='word' style='font-size: "
-				           + tag.val("weight") + "'>" + word + "</span>";
-				layout.append(span);
-			}
-		});
-	};
+    
+    this.init = function(cloud){
+        var tags = $("#word-cloud #tags");
+        if (tags.length == 0) return;
+
+        var total = tags.attr("total");
+        var value = (total > 50) ? 50 : total;
+        // register events
+        $("#word-cloud #amount").slider({
+            min: 1,
+            max: total,
+            value: value,
+            slide: function(event, ui) {
+               var amount = $("#word-cloud #amount").slider("value");
+               $("#word-cloud #amount-display").text(amount);
+            },
+            stop: function(event, ui) { cloud.layout(cloud); }
+        });
+        $("#word-cloud input[name=sort]").change( function() {
+                    cloud.layout(cloud); 
+        });
+        cloud.layout(cloud);
+    };
+    
+    this.layout = function(cloud) {
+        // get parameters
+        var amount = $("#word-cloud #amount").slider("value");
+        var sortBy = $("#word-cloud input[name=sort]:checked").val();
+
+        $("#word-cloud #amount-display").text(amount);
+
+        var layout = $("#word-cloud #layout");
+        layout.html("");
+
+        var words = new Array();
+        var tags = new Array();
+        var count = 0;
+        $("#word-cloud #tags span").each(function() {
+            if (count >= amount) return;
+
+            var word = $(this).text();
+            words[count++] = word;
+            tags[word] = $(this).clone();
+        });
+
+        // sort word alphabetically if needed
+        if (sortBy == "word") words.sort();
+
+        for (var i = 0; i < count; i++) {
+            var word = words[i];
+            var tag = tags[word];
+            layout.append(tag).append(" ");
+        }
+    };
 }
