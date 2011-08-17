@@ -701,11 +701,29 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
   background-color: #FFFFFF;
 }
 
+#attribute-plugin #tab-view, #attribute-plugin #tab-download { overflow: auto; }
+
 .histogram .bar {
     height: 12px;
     background-image: url(../images/blue_bar.gif);
 }
 
-#word-cloud .word {
-  clear: none;
+#word-cloud #tags, #word-cloud #word-order, #word-cloud #count-order {
+  display: none;
+}
+
+#word-cloud th {
+  border-width: 0px;
+  text-align: right;
+}
+#word-cloud #amount {
+  width: 400px;
+}
+#word-cloud #layout {
+  border: 1px solid #666666;
+  background-color: #FFFFFF;
+  padding: 5px;
+}
+#word-cloud #layout .word {
+  padding: 0px 2px 0px 2px;
 }
