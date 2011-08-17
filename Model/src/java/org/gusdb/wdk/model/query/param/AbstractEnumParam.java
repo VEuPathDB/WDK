@@ -276,19 +276,26 @@ public abstract class AbstractEnumParam extends Param {
     }
     
     private void suppressChildren(List<EnumParamTermNode> children) {
+        boolean suppressed = false;
         if (children.size() == 1) {
             // has only on child, suppress it in the tree if it has grand children
             EnumParamTermNode child = children.get(0);
             EnumParamTermNode[] grandChildren = child.getChildren();
             if (grandChildren.length > 0) {
+                logger.debug(child.getTerm() + " suppressed.");
                 children.remove(0);
                 for(EnumParamTermNode grandChild : grandChildren) {
                     children.add(grandChild);
                 }
+                // need to suppress children
+                suppressChildren(children);
+                suppressed = true;
             }
         }
-        for(EnumParamTermNode child : children) {
-            suppressChildren(child.getChildrenList());
+        if (!suppressed) {
+            for(EnumParamTermNode child : children) {
+                suppressChildren(child.getChildrenList());
+            }
         }
     }
 
