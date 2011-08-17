@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.attribute.plugin.AttributePlugin;
 import org.gusdb.wdk.model.attribute.plugin.AttributePluginReference;
 import org.gusdb.wdk.model.query.Column;
@@ -16,8 +17,7 @@ import org.json.JSONException;
 public class ColumnAttributeField extends AttributeField {
 
     private static final long serialVersionUID = 6599899173932240144L;
-    // private static Logger logger =
-    // Logger.getLogger(ColumnAttributeField.class);
+    private static Logger logger = Logger.getLogger(ColumnAttributeField.class);
 
     private Column column;
     private List<AttributePluginReference> pluginReferences = new ArrayList<AttributePluginReference>();
@@ -49,7 +49,12 @@ public class ColumnAttributeField extends AttributeField {
     }
     
     public Map<String, AttributePlugin> getAttributePlugins() {
-        return new LinkedHashMap<String, AttributePlugin>();
+        return new LinkedHashMap<String, AttributePlugin>(plugins);
+    }
+
+    public void addAttributePlugin(AttributePlugin plugin) {
+        plugin.setAttribute(this);
+        plugins.put(plugin.getName(), plugin);
     }
 
     /*
@@ -95,6 +100,8 @@ public class ColumnAttributeField extends AttributeField {
             plugin.setAttribute(this);
             plugins.put(name, plugin);
         }
+        if (name.equals("exon_count"))
+            logger.debug("plugin count: " + plugins.size());
     }
 
     /*
