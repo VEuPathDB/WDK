@@ -23,6 +23,8 @@ public class InvokeAttributePluginAction extends Action {
     private static final String PARAM_ATTRIBUTE = "attribute";
     private static final String PARAM_PLUGIN = "plugin";
     
+    private static final String FORWARD_DISPLAY = "display";
+    
     private Logger logger = Logger.getLogger(InvokeAttributePluginAction.class);
     
     @Override
@@ -54,10 +56,7 @@ public class InvokeAttributePluginAction extends Action {
             request.setAttribute(key, results.get(key));
         }
         
-        // get the view
-        String view = reference.getView();
-        
-        logger.debug("Leaving InvokeAttributePluginAction. view: " + view);
-        return new ActionForward(view, false);
+        logger.debug("Leaving InvokeAttributePluginAction. ");
+        return mapping.findForward(FORWARD_DISPLAY);
     }
 }
