@@ -20,6 +20,10 @@ public interface AttributePlugin {
     String getDisplay();
 
     void setDisplay(String display);
+    
+    String getView();
+    
+    void setView(String view);
 
     void setProperties(Map<String, String> properties);
 
