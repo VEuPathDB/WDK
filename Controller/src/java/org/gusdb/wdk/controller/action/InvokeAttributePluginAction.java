@@ -56,7 +56,8 @@ public class InvokeAttributePluginAction extends Action {
             request.setAttribute(key, results.get(key));
         }
         
-        logger.debug("Leaving InvokeAttributePluginAction. ");
-        return mapping.findForward(FORWARD_DISPLAY);
+        ActionForward forward = mapping.findForward(FORWARD_DISPLAY);
+        logger.debug("Leaving InvokeAttributePluginAction. to: " + forward);
+        return forward;
     }
 }

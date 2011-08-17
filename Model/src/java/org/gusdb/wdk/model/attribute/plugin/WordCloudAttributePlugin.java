@@ -213,10 +213,12 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
         loadTags();
 
         StringBuilder builder = new StringBuilder();
-        builder.append("Keyword\tOccurrence\n");
+        builder.append("<table>");
+        builder.append("<tr><th>Keyword</th><th>Occurrence</th><tr>");
         for (WordTag tag : tags) {
-            builder.append(tag.getWord() + "\t" + tag.getCount() + "\n");
+            builder.append("<tr><td>" + tag.getWord() + "</td><td>" + tag.getCount() + "</td></tr>");
         }
+        builder.append("</table>");
         return builder.toString();
     }
 }
