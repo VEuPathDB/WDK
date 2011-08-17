@@ -29,8 +29,13 @@ import org.json.JSONException;
 public class HistogramAttributePlugin extends AbstractAttributePlugin implements
         AttributePlugin {
 
+    private static final String PROP_MAX_BAR_LENGTH = "max-bar-length";
     private static final String COLUMN_SUMMARY = "summary";
+    private static final String ATTR_PLUGIN = "plugin";
+    private static final String ATTR_SUMMARY = "summary";
     private static final String ATTR_HISTOGRAM = "histogram";
+
+    private static final float DEFAULT_MAX_BAR_LENGTH = 600;
 
     /*
      * (non-Javadoc)
@@ -42,7 +47,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
     public Map<String, Object> process(AnswerValue answerValue)
             throws NoSuchAlgorithmException, WdkModelException,
             WdkUserException, SQLException, JSONException {
-        Map<String, Integer> histogram = new LinkedHashMap<String, Integer>();
+        Map<String, Integer> summaries = new LinkedHashMap<String, Integer>();
         WdkModel wdkModel = answerValue.getQuestion().getWdkModel();
         String columnName = attribute.getColumn().getName();
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
@@ -54,15 +59,18 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
             while (resultSet.next()) {
                 String column = resultSet.getString(columnName);
                 int summary = resultSet.getInt(COLUMN_SUMMARY);
-                histogram.put(column, summary);
+                summaries.put(column, summary);
             }
         } finally {
             SqlUtils.closeResultSet(resultSet);
         }
+        Map<String, Integer> histogram = scaleHistogram(summaries);
 
         // compose the result
         Map<String, Object> result = new LinkedHashMap<String, Object>();
+        result.put(ATTR_SUMMARY, summaries);
         result.put(ATTR_HISTOGRAM, histogram);
+        result.put(ATTR_PLUGIN, this);
         return result;
     }
 
@@ -91,5 +99,27 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
         sql.append(" GROUP BY " + columnName);
         sql.append(" ORDER BY " + columnName + " ASC");
         return sql.toString();
+    }
+
+    private Map<String, Integer> scaleHistogram(Map<String, Integer> histogram) {
+        // get the max bar length
+        float maxBarLength = DEFAULT_MAX_BAR_LENGTH;
+        String strMax = properties.get(PROP_MAX_BAR_LENGTH);
+        if (strMax != null && strMax.length() != 0)
+            maxBarLength = Float.valueOf(strMax);
+
+        // find the max length
+        int maxLength = 0;
+        for (int length : histogram.values()) {
+            if (maxLength < length) maxLength = length;
+        }
+
+        float scale = maxBarLength / maxLength;
+        Map<String, Integer> scaled = new LinkedHashMap<String, Integer>();
+        for(String column : histogram.keySet()) {
+            int length = Math.max(1, Math.round(histogram.get(column) * scale));
+            scaled.put(column, length);
+        }
+        return scaled;
     }
 }
