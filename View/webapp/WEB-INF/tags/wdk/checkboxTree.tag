@@ -80,7 +80,7 @@
   }
 </script>    
 
-<div class="formButtonPanel param-controls">
+<div class="formButtonPanel">
   <a class="small" href="javascript:void(0)" onclick="expandAll();">Expand All</a> | 
   <a class="small" href="javascript:void(0)" onclick="collapseAll();">Collapse All</a> |
   <c:if test="${showSelectAll}">
@@ -93,7 +93,7 @@
   <c:set var="recurse_term_node" value="${rootNode}" scope="request"/>
   <c:import url="/WEB-INF/includes/checkboxTreeNode.jsp" />
 </div>
-<div class="formButtonPanel param-controls">
+<div class="formButtonPanel">
   <a class="small" href="javascript:void(0)" onclick="expandAll();">Expand All</a> | 
   <a class="small" href="javascript:void(0)" onclick="collapseAll();">Collapse All</a> |
   <c:if test="${showSelectAll}">
