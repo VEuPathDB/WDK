@@ -12,6 +12,7 @@ Otherwise a standard select menu is used.
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
+<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
 <%@ attribute name="qp"
               type="org.gusdb.wdk.model.jspwrap.EnumParamBean"
@@ -78,32 +79,43 @@ Otherwise a standard select menu is used.
       </td>
       </tr>
       </table>
+    </div>
     </c:when>
     
     <%-- use a tree list --%>
     <c:when test="${displayType eq 'treeBox'}">
-		<div class="param-tree ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
-
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <div class="param-controls">
-            <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
-            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, true);">expand all</a>
-            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, false);">collapse all</a>
-            </div>
-        <c:set var="recurse_enum_param" value="${qP}" scope="request"/>
-        <c:forEach items="${qP.vocabTreeRoots}" var="root">
-            <c:set var="recurse_term_node" value="${root}" scope="request"/>
-            <c:import url="/WEB-INF/includes/enumParamInputNode.jsp"/>
-        </c:forEach>
-        <c:remove var="recurse_term_node" scope="request"/>
-        <c:remove var="recurse_enum_param" scope="request"/>
-
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            <div class="param-controls">
-            <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
-            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, true);">expand all</a>
-            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, false);">collapse all</a>
-            </div><br><br>
+    
+      <c:if test="${qp.useAttributeTree}">
+        <div class="param-tree">
+          <wdk:checkboxTree rootNode="${qp.paramTree}" checkboxName="${pNam}"/>
+        </div>
+      </c:if>
+      
+      <c:if test="${not qp.useAttributeTree}">
+				<div class="param-tree ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		            <div class="param-controls">
+		            <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
+		            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, true);">expand all</a>
+		            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, false);">collapse all</a>
+		            </div>
+		        <c:set var="recurse_enum_param" value="${qP}" scope="request"/>
+		        <c:forEach items="${qP.vocabTreeRoots}" var="root">
+		            <c:set var="recurse_term_node" value="${root}" scope="request"/>
+		            <c:import url="/WEB-INF/includes/enumParamInputNode.jsp"/>
+		        </c:forEach>
+		        <c:remove var="recurse_term_node" scope="request"/>
+		        <c:remove var="recurse_enum_param" scope="request"/>
+		
+				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		            <div class="param-controls">
+		            <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
+		            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, true);">expand all</a>
+		            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, false);">collapse all</a>
+		            </div><br><br>
+		       </div>
+		   </c:if>
+		   
     </c:when>
 
     <c:otherwise>
@@ -116,10 +128,9 @@ Otherwise a standard select menu is used.
       </html:select>
   
       <br><%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
-  
+      </div>
     </c:otherwise>
 </c:choose>
-</div>
 </c:when> <%-- end of multipick --%>
 <c:otherwise> <%-- pick single item --%>
   <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">

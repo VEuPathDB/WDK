@@ -4,6 +4,8 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Map;
 
+import org.gusdb.wdk.model.TreeLeaf;
+import org.gusdb.wdk.model.TreeNode;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
@@ -103,20 +105,44 @@ public class EnumParamBean extends ParamBean {
     public String getRawDisplayValue() throws Exception {
         String rawValue = getRawValue();
         if (rawValue == null) rawValue = "";
-	if (!((AbstractEnumParam) param).isSkipValidation()) {
-	    String[] terms = rawValue.split(",");
-	    Map<String, String> displays = getDisplayMap();
-	    StringBuffer buffer = new StringBuffer();
-	    for(String term : terms) {
-		if (buffer.length() > 0) buffer.append(", ");
-                String display = displays.get(term.trim());
-                if (display == null) display = term;
-		buffer.append(display);
-	    }
-	    return buffer.toString();
-	}
-	else {
-	    return rawValue;
-	}
+		if (!((AbstractEnumParam) param).isSkipValidation()) {
+		    String[] terms = rawValue.split(",");
+		    Map<String, String> displays = getDisplayMap();
+		    StringBuffer buffer = new StringBuffer();
+		    for(String term : terms) {
+			if (buffer.length() > 0) buffer.append(", ");
+	                String display = displays.get(term.trim());
+	                if (display == null) display = term;
+			buffer.append(display);
+		    }
+		    return buffer.toString();
+		}
+		else {
+		    return rawValue;
+		}
+    }
+    
+    public TreeNode getParamTree() throws Exception {
+    	TreeNode root = new TreeNode(getName(), "top");
+    	for (EnumParamTermNode paramNode : getVocabTreeRoots()) {
+    		if (paramNode.getChildren().length == 0) {
+    			root.addLeafNode(new TreeLeaf(paramNode.getTerm(), paramNode.getDisplay(), paramNode.getDisplay()));
+    		}
+    		else {
+    			root.addChildNode(paramNode.toTreeNode());
+    		}
+    	}
+    	return root;
+    }
+    
+    /**
+     * Temporary method to allow easy on/off of attribute tree
+     * for attribute selection in both results page and report
+     * config pages.
+     * 
+     * @return whether attribute tree should be used (columns otherwise)
+     */
+    public boolean getUseAttributeTree() {
+    	return false;
     }
 }

@@ -1055,14 +1055,24 @@ public class AnswerValue {
         return displayAttributes;
     }
 
-	public AttributeCategoryTree getDisplayableAttributeTree() {
-		return question.getAttributeCategoryTree(FieldScope.NON_INTERNAL);
+	public TreeNode getDisplayableAttributeTree() {
+		return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.NON_INTERNAL));
 	}
 
-    public AttributeCategoryTree getReportMakerAttributeTree() {
-    	return question.getAttributeCategoryTree(FieldScope.REPORT_MAKER);
+    public TreeNode getReportMakerAttributeTree() {
+    	return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.REPORT_MAKER));
     }
 	
+    private TreeNode convertAttributeTree(AttributeCategoryTree rawAttributeTree) {
+		TreeNode root = rawAttributeTree.toTreeNode("category root", "Attribute Categories");
+		List<String> currentlySelectedFields = new ArrayList<String>();
+		for (AttributeField field : getSummaryAttributeFieldMap().values()) {
+            currentlySelectedFields.add(field.getName());
+        }
+		root.turnOnSelectedLeaves(currentlySelectedFields);
+		return root;
+    }
+    
     public Map<String, AttributeField> getSummaryAttributeFieldMap() {
         Map<String, AttributeField> fields;
         if (summaryFieldMap.size() > 0) {

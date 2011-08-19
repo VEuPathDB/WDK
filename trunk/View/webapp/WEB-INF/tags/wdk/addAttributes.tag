@@ -32,7 +32,7 @@
       <input type="submit" value="Update Columns"/>
     </div>
     <c:if test="${wdkAnswer.useAttributeTree}">
-      <wdk:attributeTree treeObject="${wdkAnswer.displayableAttributeTree}" wdkAnswer="${wdkAnswer}" checkboxName="selectedFields"/>
+      <wdk:checkboxTree rootNode="${wdkAnswer.displayableAttributeTree}" checkboxName="selectedFields" showSelectAll="false"/>
     </c:if>
     <c:if test="${not wdkAnswer.useAttributeTree}">
 	    <div class="formButtonPanel">

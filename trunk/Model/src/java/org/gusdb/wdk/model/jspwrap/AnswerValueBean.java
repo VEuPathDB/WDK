@@ -10,13 +10,13 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.AttributeCategoryTree;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.TableField;
+import org.gusdb.wdk.model.TreeNode;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
@@ -422,11 +422,11 @@ public class AnswerValueBean {
         return fieldBeans;
     }
 
-    public AttributeCategoryTree getDisplayableAttributeTree() {
+    public TreeNode getDisplayableAttributeTree() {
     	return answerValue.getDisplayableAttributeTree();
     }
 
-    public AttributeCategoryTree getReportMakerAttributeTree() {
+    public TreeNode getReportMakerAttributeTree() {
     	return answerValue.getReportMakerAttributeTree();
     }
     
@@ -523,6 +523,6 @@ public class AnswerValueBean {
      * @return whether attribute tree should be used (columns otherwise)
      */
     public boolean getUseAttributeTree() {
-    	return true;
+    	return false;
     }
 }
