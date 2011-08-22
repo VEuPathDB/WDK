@@ -32,6 +32,7 @@
       <input type="submit" value="Update Columns"/>
     </div>
     <c:if test="${wdkAnswer.useAttributeTree}">
+      <input type="checkbox" name="selectedFields" value="${wdkAnswer.recordClass.primaryKeyAttribute.name}" checked="checked" style="display:none;"/>
       <wdk:checkboxTree rootNode="${wdkAnswer.displayableAttributeTree}" checkboxName="selectedFields" showSelectAll="false"/>
     </c:if>
     <c:if test="${not wdkAnswer.useAttributeTree}">
