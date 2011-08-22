@@ -55,11 +55,20 @@ public class TreeNode {
 		}
 	}
 	
+	public void turnOnAllLeaves() {
+		for (TreeNode node : _childNodes) {
+			node.turnOnAllLeaves();
+		}
+		for (TreeLeaf leaf : _leafNodes) {
+			leaf.setSelected(true);
+		}
+	}
+	
 	public String getSelectedAsList() {
 		StringBuilder str = new StringBuilder();
 		for (TreeLeaf leaf : _leafNodes) {
 			if (leaf.getSelected()) {
-				str.append(",'").append(leaf.getName()).append("'");
+				str.append(",'").append(leaf.getName().replace("'", "\\'")).append("'");
 			}
 		}
 		for (TreeNode node : _childNodes) {

@@ -24,7 +24,7 @@
               type="java.lang.Boolean"
               description="whether or not to display icons as part of the tree structure" %>
               
-<c:if test="${empty useIcons}" >
+<c:if test="${empty useIcons}">
   <c:set var="useIcons" value="false"/>
 </c:if>
 
@@ -50,7 +50,7 @@
       .jstree({
         "plugins" : [ "html_data", "themes", "types", "checkbox" ],
         "core" : { "initially_open" : [ "root" ] },
-        "themes" : { "theme" : "classic", "icons" : "false" },
+        "themes" : { "theme" : "classic", "icons" : ${useIcons} },
         "types" : { "types" : { "leaf" : { "icon" : { "image" : "<c:url value='${leafImage}'/>" }}}},
         "checkbox" : {
           "real_checkboxes" : true,
