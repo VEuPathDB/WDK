@@ -86,8 +86,8 @@ Otherwise a standard select menu is used.
     <c:when test="${displayType eq 'treeBox'}">
     
       <c:if test="${qp.useAttributeTree}">
-        <div class="param-tree">
-          <wdk:checkboxTree rootNode="${qp.paramTree}" checkboxName="${pNam}"/>
+        <div class="param-tree ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+          <wdk:checkboxTree rootNode="${qp.paramTree}" checkboxName="array(${pNam})"/>
         </div>
       </c:if>
       
