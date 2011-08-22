@@ -132,6 +132,8 @@ public class EnumParamBean extends ParamBean {
     			root.addChildNode(paramNode.toTreeNode());
     		}
     	}
+    	// FIXME: This is currently broken, since many enum names are illegal node IDs (e.g. containing parens, etc.)
+    	//root.turnOnAllLeaves();
     	return root;
     }
     
@@ -143,6 +145,6 @@ public class EnumParamBean extends ParamBean {
      * @return whether attribute tree should be used (columns otherwise)
      */
     public boolean getUseAttributeTree() {
-    	return false;
+    	return true;
     }
 }
