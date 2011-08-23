@@ -521,12 +521,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 			tree.prependAttributeCategory(dynamic);
 		}
 		
-		// integrate uncategorized fields into tree as last root node
-		AttributeCategory uncategorized = tree.getNodeForUncategorized();
-		if (!uncategorized.getFields().isEmpty()) {
-			tree.addAttributeCategory(uncategorized);
-		}
-		
 		return tree;
 	}
 

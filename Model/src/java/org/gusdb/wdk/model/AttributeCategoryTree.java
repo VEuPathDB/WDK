@@ -86,14 +86,6 @@ public class AttributeCategoryTree extends WdkModelBase {
 		return topLevelCategories;
 	}
 	
-	public AttributeCategory getNodeForUncategorized() {
-		AttributeCategory category = new AttributeCategory();
-		category.setName("uncategorized");
-		category.setDisplayName("Uncategorized");
-		category.setFields(topLevelAttributes);
-		return category;
-	}
-	
 	/**
 	 * Builds out a map from category name to category
 	 * @throws WdkModelException 
@@ -135,5 +127,16 @@ public class AttributeCategoryTree extends WdkModelBase {
 			cat.appendToStringBuffer("", str);
 		}
 		return str.toString();
+	}
+
+	public TreeNode toTreeNode(String rootName, String rootDisplayName) {
+		TreeNode root = new TreeNode(rootName, rootDisplayName);
+		for (AttributeCategory cat : topLevelCategories) {
+			root.addChildNode(cat.toTreeNode());
+		}
+		for (AttributeField attrib : topLevelAttributes) {
+			root.addLeafNode(new TreeLeaf(attrib.getName(), attrib.getDisplayName(), attrib.getHelp()));
+		}
+		return root;
 	}
 }
