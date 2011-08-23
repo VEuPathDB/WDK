@@ -24,6 +24,10 @@ public interface AttributePlugin {
     String getView();
     
     void setView(String view);
+    
+    String getDescription();
+    
+    void setDescription(String description);
 
     void setProperties(Map<String, String> properties);
 
