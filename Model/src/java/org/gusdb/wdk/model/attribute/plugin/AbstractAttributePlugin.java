@@ -31,6 +31,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
 
     private String name;
     private String display;
+    private String description;
     private String view;
 
     protected WdkModel wdkModel;
@@ -52,6 +53,20 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
 
     public void setDisplay(String display) {
         this.display = display;
+    }
+
+    /**
+     * @return the description
+     */
+    public String getDescription() {
+        return this.description;
+    }
+
+    /**
+     * @param description the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     /**

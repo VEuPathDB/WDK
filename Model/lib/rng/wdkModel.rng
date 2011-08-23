@@ -1016,9 +1016,12 @@
 	  <attribute name="name" />
 	  <attribute name="implementation" />
 	  <attribute name="view" />
-	  <optional>
-		<attribute name="display" />
-	  </optional>
+      <optional>
+        <attribute name="display" />
+      </optional>
+      <optional>
+        <attribute name="description" />
+      </optional>
 	  <zeroOrMore>
 		<element name="property">
 		  <ref name="IncludeExclude" />
