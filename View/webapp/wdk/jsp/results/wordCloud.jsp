@@ -18,13 +18,17 @@
   <div id="tags" total="${fn:length(tags)}">
     <%-- the tags are sorted by count --%>
     <c:forEach items="${tags}" var="tag">
-      <span class="word" count="${tag.count}">${tag.word}</span>
+      <span class="word" count="${tag.count}" title="Occurrence: ${tag.count}">${tag.word}</span>
     </c:forEach>
   </div>
   <table>
     <tr>
       <th>Display words by rank: </th>
-      <td id="amount-display"></td><td><div id="amount"> </div></td>
+      <td>
+        <input type="text" name="from" size="4" /> -
+        <input type="text" name="to" size="4" />
+      </td>
+      <td><div id="amount"> </div></td>
     </tr>
     <tr>
       <th>Sort displayed words by: </th>
