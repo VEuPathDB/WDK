@@ -15,33 +15,43 @@ function WordCloud() {
         if (tags.length == 0) return;
 
         var total = tags.attr("total");
-        var value = (total > 50) ? 50 : total;
+        var from = 1;
+        var to = (total > 50) ? 50 : total;
+        $("#word-cloud input[name=from]").val(from);
+        $("#word-cloud input[name=to]").val(to);
         // register events
         $("#word-cloud #amount").slider({
             range: true,
             min: 1,
             max: total,
-            values: [1, value],
+            values: [from, to],
             slide: function(event, ui) {
-               var from = $("#word-cloud #amount").slider("values", 0);
-               var to = $("#word-cloud #amount").slider("values", 1);
-               $("#word-cloud #amount-display").text(from + " - " + to);
+                cloud.assignRange();
             },
-            stop: function(event, ui) { cloud.layout(cloud); }
+            stop: function(event, ui) { 
+                cloud.assignRange();
+                cloud.layout(cloud); 
+            }
         });
-        $("#word-cloud input[name=sort]").change( function() {
+        $("#word-cloud input[name=sort], #word-cloud input[name=from], #word-cloud input[name=to]").change( function() {
                     cloud.layout(cloud); 
         });
+        
         cloud.layout(cloud);
     };
     
-    this.layout = function(cloud) {
-        // get parameters
+    this.assignRange = function() {
         var from = $("#word-cloud #amount").slider("values", 0);
         var to = $("#word-cloud #amount").slider("values", 1);
+        $("#word-cloud input[name=from]").val(from);
+        $("#word-cloud input[name=to]").val(to);
+    }
+    
+    this.layout = function(cloud) {
+        // get parameters
+        var from = $("#word-cloud input[name=from]").val();
+        var to = $("#word-cloud input[name=to]").val();
         var sortBy = $("#word-cloud input[name=sort]:checked").val();
-
-        $("#word-cloud #amount-display").text(from + " - " + to);
 
         var layout = $("#word-cloud #layout");
         layout.html("");

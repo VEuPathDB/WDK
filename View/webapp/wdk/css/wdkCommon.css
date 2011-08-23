@@ -720,6 +720,9 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
   border-width: 0px;
   text-align: right;
 }
+#word-cloud input[name=from], #word-cloud input[name=to] {
+  text-align: right;
+}
 #word-cloud #amount {
   width: 400px;
 }
