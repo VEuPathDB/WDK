@@ -31,11 +31,11 @@
     <div class="formButtonPanel">
       <input type="submit" value="Update Columns"/>
     </div>
-    <c:if test="${wdkAnswer.useAttributeTree}">
+    <c:if test="${wdkAnswer.useCheckboxTree}">
       <input type="checkbox" name="selectedFields" value="${wdkAnswer.recordClass.primaryKeyAttribute.name}" checked="checked" style="display:none;"/>
-      <wdk:checkboxTree rootNode="${wdkAnswer.displayableAttributeTree}" checkboxName="selectedFields" showSelectAll="false"/>
+      <wdk:checkboxTree rootNode="${wdkAnswer.displayableAttributeTree}" checkboxName="selectedFields" showSelectAll="false" showResetCurrent="true"/>
     </c:if>
-    <c:if test="${not wdkAnswer.useAttributeTree}">
+    <c:if test="${not wdkAnswer.useCheckboxTree}">
 	    <div class="formButtonPanel">
 	      <wdk:selectClearAll groupName="selectedFields" />
 	    </div>
