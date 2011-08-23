@@ -18,12 +18,14 @@ function WordCloud() {
         var value = (total > 50) ? 50 : total;
         // register events
         $("#word-cloud #amount").slider({
+            range: true,
             min: 1,
             max: total,
-            value: value,
+            values: [1, value],
             slide: function(event, ui) {
-               var amount = $("#word-cloud #amount").slider("value");
-               $("#word-cloud #amount-display").text(amount);
+               var from = $("#word-cloud #amount").slider("values", 0);
+               var to = $("#word-cloud #amount").slider("values", 1);
+               $("#word-cloud #amount-display").text(from + " - " + to);
             },
             stop: function(event, ui) { cloud.layout(cloud); }
         });
@@ -35,32 +37,57 @@ function WordCloud() {
     
     this.layout = function(cloud) {
         // get parameters
-        var amount = $("#word-cloud #amount").slider("value");
+        var from = $("#word-cloud #amount").slider("values", 0);
+        var to = $("#word-cloud #amount").slider("values", 1);
         var sortBy = $("#word-cloud input[name=sort]:checked").val();
 
-        $("#word-cloud #amount-display").text(amount);
+        $("#word-cloud #amount-display").text(from + " - " + to);
 
         var layout = $("#word-cloud #layout");
         layout.html("");
 
-        var words = new Array();
         var tags = new Array();
-        var count = 0;
+        var maxCount = Number.MIN_VALUE;
+        var minCount = Number.MAX_VALUE;
+        var rank = 0;
         $("#word-cloud #tags span").each(function() {
-            if (count >= amount) return;
+            rank++;
+            if (rank < from) return;
+            if (rank > to) return;
 
-            var word = $(this).text();
-            words[count++] = word;
-            tags[word] = $(this).clone();
+            var count = parseInt($(this).attr("count"));
+            if (count > maxCount) maxCount = count;
+            if (count < minCount) minCount = count;
+            tags.push($(this).clone());
         });
+        // compute the font size
+        cloud.computeSize(tags, minCount, maxCount);
 
         // sort word alphabetically if needed
-        if (sortBy == "word") words.sort();
+        if (sortBy == "word") tags.sort(cloud.sortTags);
 
-        for (var i = 0; i < count; i++) {
-            var word = words[i];
-            var tag = tags[word];
+        $.each(tags, function (index, tag) {
             layout.append(tag).append(" ");
-        }
+        });
+    };
+
+    this.computeSize = function(tags, minCount, maxCount) {
+        // words are sorted by occurence.
+        var MAX_FONT = 50.0;
+        var MIN_FONT = 6.0;
+        var scale = (MAX_FONT - MIN_FONT) / (maxCount - minCount);
+        $.each(tags, function (index, tag) {
+            var count = parseInt($(tag).attr("count"));
+            var fontSize = (count - minCount) * scale + MIN_FONT;
+            $(tag).css("font-size", fontSize + "pt");
+        });
+    };
+
+    this.sortTags = function(left, right) {
+        var leftWord = $(left).text();
+        var rightWord = $(right).text();
+        if (leftWord > rightWord) return 1;
+        else if (leftWord < rightWord) return -1;
+        else return 0;
     };
 }
