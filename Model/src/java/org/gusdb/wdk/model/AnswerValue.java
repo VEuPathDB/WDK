@@ -1056,7 +1056,13 @@ public class AnswerValue {
     }
 
 	public TreeNode getDisplayableAttributeTree() {
-		return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.NON_INTERNAL));
+		try {
+			return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.NON_INTERNAL));
+		}
+		catch (Exception e) {
+			logger.error("Error while getting displayable attribute tree", e);
+			return new TreeNode("blah", "blah blah");
+		}
 	}
 
     public TreeNode getReportMakerAttributeTree() {
@@ -1070,6 +1076,7 @@ public class AnswerValue {
             currentlySelectedFields.add(field.getName());
         }
 		root.turnOnSelectedLeaves(currentlySelectedFields);
+		root.setDefaultLeaves(new ArrayList<String>(question.getSummaryAttributeFieldMap().keySet()));
 		return root;
     }
     

@@ -45,36 +45,56 @@ public class TreeNode {
 	}
 
 	public void turnOnSelectedLeaves(List<String> selectedList) {
+		setBooleansToTrue(TreeLeaf.BoolField.SELECTED, selectedList);
+	}
+	public void turnOnAllLeaves() {
+		setAllBooleansToTrue(TreeLeaf.BoolField.SELECTED);
+	}
+	public String getSelectedAsList() {
+		return getNamesOfLeavesWithBoolean(TreeLeaf.BoolField.SELECTED, true);
+	}
+	
+	public void setDefaultLeaves(List<String> defaultList) {
+		setBooleansToTrue(TreeLeaf.BoolField.DEFAULT, defaultList);
+	}
+	public void setAllOnAsDefault() {
+		setAllBooleansToTrue(TreeLeaf.BoolField.DEFAULT);
+	}
+	public String getDefaultAsList() {
+		return getNamesOfLeavesWithBoolean(TreeLeaf.BoolField.DEFAULT, true);
+	}
+	
+	private void setBooleansToTrue(TreeLeaf.BoolField fieldId, List<String> names) {
 		for (TreeNode node : _childNodes) {
-			node.turnOnSelectedLeaves(selectedList);
+			node.setBooleansToTrue(fieldId, names);
 		}
 		for (TreeLeaf leaf : _leafNodes) {
-			if (selectedList.contains(leaf.getName())) {
-				leaf.setSelected(true);
+			if (names.contains(leaf.getName())) {
+				leaf.setBoolField(fieldId, true);
 			}
 		}
 	}
 	
-	public void turnOnAllLeaves() {
+	private void setAllBooleansToTrue(TreeLeaf.BoolField fieldId) {
 		for (TreeNode node : _childNodes) {
-			node.turnOnAllLeaves();
+			node.setAllBooleansToTrue(fieldId);
 		}
 		for (TreeLeaf leaf : _leafNodes) {
-			leaf.setSelected(true);
+			leaf.setBoolField(fieldId, true);
 		}
 	}
 	
-	public String getSelectedAsList() {
+	private String getNamesOfLeavesWithBoolean(TreeLeaf.BoolField fieldId, boolean value) {
 		StringBuilder str = new StringBuilder();
 		for (TreeLeaf leaf : _leafNodes) {
-			if (leaf.getSelected()) {
+			if (leaf.getBoolField(fieldId) == value) {
 				str.append(",'").append(leaf.getName().replace("'", "\\'")).append("'");
 			}
 		}
 		for (TreeNode node : _childNodes) {
-			String selectedInNode = node.getSelectedAsList();
-			if (selectedInNode.length() > 0) {
-				str.append(",").append(selectedInNode);
+			String namesFromChild = node.getNamesOfLeavesWithBoolean(fieldId, value);
+			if (namesFromChild.length() > 0) {
+				str.append(",").append(namesFromChild);
 			}
 		}
 		String all = str.toString();

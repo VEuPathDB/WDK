@@ -516,13 +516,12 @@ public class AnswerValueBean {
     }
     
     /**
-     * Temporary method to allow easy on/off of attribute tree
-     * for attribute selection in both results page and report
-     * config pages.
+     * Temporary method to allow easy on/off of checkbox tree
+     * for value selection.
      * 
-     * @return whether attribute tree should be used (columns otherwise)
+     * @return whether checkbox tree should be used (columns layout otherwise)
      */
-    public boolean getUseAttributeTree() {
+    public boolean getUseCheckboxTree() {
     	return false;
     }
 }
