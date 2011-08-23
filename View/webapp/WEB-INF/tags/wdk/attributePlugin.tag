@@ -11,12 +11,13 @@
 <c:set var="plugins" value="${attribute.attributePlugins}" />
 <div class="attribute-plugins">
   <c:if test="${fn:length(plugins) > 0}">
-    <image class="handle" onclick="openAttributePlugins(this)" src="wdk/images/plugin.gif" />
+    <image class="handle" onclick="openAttributePlugins(this)" 
+           src="wdk/images/plugin.png" title="Graph this column" />
   </c:if>
   <div class="plugins">
     <div class="title">
       <image class="handle close" onclick="closeAttributePlugins(this)" src="wdk/images/close.gif" />
-      <h3>Additional Info</h3>
+      <h3>Graph this Column</h3>
     </div>
     <ul>
       <c:forEach items="${plugins}" var="item">
