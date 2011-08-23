@@ -18,17 +18,16 @@
   <div id="tags" total="${fn:length(tags)}">
     <%-- the tags are sorted by count --%>
     <c:forEach items="${tags}" var="tag">
-      <span class="word" count="${tag.count}" weight="${tag.weight}" score="${tag.score}"
-            style="font-size: ${tag.weight}pt;">${tag.word}</span>
+      <span class="word" count="${tag.count}" weight="${tag.weight}" score="${tag.score}">${tag.word}</span>
     </c:forEach>
   </div>
   <table>
     <tr>
-      <th># of words: </th>
+      <th>Display words by rank: </th>
       <td id="amount-display"></td><td><div id="amount"> </div></td>
     </tr>
     <tr>
-      <th>Sort by: </th>
+      <th>Sort displayed words by: </th>
       <td colspan="2">
         <input type="radio" name="sort" value="word" checked />Alphabetic
         <input type="radio" name="sort" value="count" />Weight
