@@ -440,7 +440,10 @@ a.redbutton:active span {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 div.Workspace {
    position: relative;
-   z-index: 160;    //50; moved up so the "Select columns" popup covers the steps in the strategy but still is under DYK 180
+   /* z-index was 50 originally, then moved to 16 so "Select columns" popup covered the
+      steps in the strategy but still is under DYK at 180.  Changed to 185 so Columns pop-up
+      appeared over DYK. */
+   z-index: 185;
 }
 
 span.marker a:link, span.marker a:visited {
@@ -531,12 +534,13 @@ tr.headerRow > td,th {
 	background-position: 0 26px;   /* was 36px, decreased to have Add Step title thiner */
 	border: 1px solid #888888;	
 	padding: 0 8px 8px 8px;
-	z-index: 1;   //as good as 1000; used by select columns popup to cover results
+	z-index: 190;   //as good as 1000; used by select columns popup to cover results
 }
 
 .attributesList {
 	display: none;
 	text-align: left;
+	min-width: 300px;
 }
 
 .attributesFormWrapper {
