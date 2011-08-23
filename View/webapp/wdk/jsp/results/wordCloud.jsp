@@ -18,7 +18,7 @@
   <div id="tags" total="${fn:length(tags)}">
     <%-- the tags are sorted by count --%>
     <c:forEach items="${tags}" var="tag">
-      <span class="word" count="${tag.count}" weight="${tag.weight}" score="${tag.score}">${tag.word}</span>
+      <span class="word" count="${tag.count}">${tag.word}</span>
     </c:forEach>
   </div>
   <table>

@@ -22,7 +22,7 @@
     <ul>
       <c:forEach items="${plugins}" var="item">
         <c:set var="plugin" value="${item.value}" />
-        <li class="plugin" plugin="${plugin.name}" 
+        <li class="plugin" plugin="${plugin.name}" title="${plugin.description}"
             onclick="invokeAttributePlugin(this, '${step.stepId}', '${attribute.name}')">
           ${plugin.display}
         </li>

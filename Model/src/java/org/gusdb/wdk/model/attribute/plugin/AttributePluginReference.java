@@ -17,13 +17,14 @@ import org.json.JSONException;
 
 /**
  * @author jerric
- *
- * the reference is stored in the model, thus in application-scope.
+ * 
+ *         the reference is stored in the model, thus in application-scope.
  */
 public class AttributePluginReference extends WdkModelBase {
 
     private String name;
     private String display;
+    private String description;
     private String implementation;
     private String view;
     private AttributeField attributeField;
@@ -61,13 +62,28 @@ public class AttributePluginReference extends WdkModelBase {
     }
 
     /**
+     * @return the description
+     */
+    public String getDescription() {
+        return this.description;
+    }
+
+    /**
+     * @param description
+     *            the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
      * @param implementation
      *            the implementation to set
      */
     public void setImplementation(String implementation) {
         this.implementation = implementation;
     }
-    
+
     public String getView() {
         return view;
     }
@@ -75,7 +91,7 @@ public class AttributePluginReference extends WdkModelBase {
     public void setView(String view) {
         this.view = view;
     }
-    
+
     public void setAttributeField(AttributeField attributeField) {
         this.attributeField = attributeField;
     }
@@ -131,6 +147,7 @@ public class AttributePluginReference extends WdkModelBase {
         AttributePlugin plugin = pluginClass.newInstance();
         plugin.setName(name);
         plugin.setDisplay(display);
+        plugin.setDescription(description);
         plugin.setView(view);
         plugin.setProperties(propertyMap);
         plugin.setAttributeField(attributeField);
