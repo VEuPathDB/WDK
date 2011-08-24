@@ -1009,6 +1009,28 @@
 
     </element>
   </define>
+  
+  <define name="plugin">
+	<element name="plugin">
+	  <ref name="IncludeExclude" />
+	  <attribute name="name" />
+	  <attribute name="implementation" />
+	  <attribute name="view" />
+      <optional>
+        <attribute name="display" />
+      </optional>
+      <optional>
+        <attribute name="description" />
+      </optional>
+	  <zeroOrMore>
+		<element name="property">
+		  <ref name="IncludeExclude" />
+		  <attribute name="name" />
+		  <text />
+		</element>
+	  </zeroOrMore>
+	</element>
+  </define>
 
   <!-- Schema subtype shared elements -->
   <define name="FieldBaseContents">
@@ -1067,6 +1089,9 @@
     <optional>
       <attribute name="attributeCategory"/>
     </optional>
+    <zeroOrMore>
+      <ref name="plugin" />
+    </zeroOrMore>
   </define>
 
   <define name="primaryKeyAttribute">
@@ -1093,24 +1118,6 @@
   <define name="columnAttribute">
     <element name="columnAttribute">
       <ref name="AttributeFieldContent" />
-      <zeroOrMore>
-        <element name="plugin">
-          <ref name="IncludeExclude" />
-          <attribute name="name" />
-          <attribute name="implementation" />
-          <attribute name="view" />
-          <optional>
-            <attribute name="display" />
-          </optional>
-          <zeroOrMore>
-            <element name="property">
-              <ref name="IncludeExclude" />
-              <attribute name="name" />
-              <text />
-            </element>
-          </zeroOrMore>
-        </element>
-      </zeroOrMore>
     </element>
   </define>
 
@@ -1123,7 +1130,7 @@
 			  <ref name="IncludeExclude" />
 			  <text />
 			</element>
-			 <element name="text">
+			<element name="text">
 			  <ref name="IncludeExclude" />
 			  <text />
 			</element>
