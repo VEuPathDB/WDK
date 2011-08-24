@@ -4,4 +4,24 @@
 <c:set var="wdkModel" value="${applicationScope.wdkModel}" />
 <c:set var="wdkUser" value="${sessionScope.wdkUser}" />
 
+<script type="text/javascript">
+$(document).ready(function() {
+    $("#search_history table.datatables").dataTable( {
+        "bJQueryUI": true,
+        "bScrollCollapse": true,
+        "aoColumns": [ { "bSortable": false }, 
+                       null, 
+                       { "bSortable": false },
+                       { "bSortable": false },
+                       { "bSortable": false },
+                       null, 
+                       null, 
+                       null, 
+                       null, 
+                       { "bSortable": false } ],
+        "aaSorting": [[ 1, "asc" ]],
+    } );
+} );
+</script>
+
 <wdk:strategyHistory model="${wdkModel}" user="${wdkUser}" />
