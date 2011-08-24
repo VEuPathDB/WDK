@@ -158,7 +158,7 @@ public abstract class AttributeField extends Field {
         while (matcher.find()) {
             String fieldName = matcher.group(1);
             if (!fields.containsKey(fieldName))
-                throw new WdkModelException("Invalid field macro in attribute"
+                logger.warn("Invalid field macro in attribute"
                         + " [" + name + "] of [" + recordClass.getFullName() + "]: " + fieldName);
 
             AttributeField field = fields.get(fieldName);
