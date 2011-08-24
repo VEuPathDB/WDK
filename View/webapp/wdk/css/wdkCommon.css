@@ -707,7 +707,7 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
 
 #attribute-plugin #tab-view, #attribute-plugin #tab-download { overflow: auto; }
 
-.histogram .bar {
+#histogram .bar {
     height: 12px;
     background-image: url(../images/blue_bar.gif);
 }
