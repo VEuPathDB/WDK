@@ -1,10 +1,14 @@
 package org.gusdb.wdk.model;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+
+import org.json.JSONException;
 
 public class PrimaryKeyAttributeField extends AttributeField {
 
@@ -19,9 +23,9 @@ public class PrimaryKeyAttributeField extends AttributeField {
     private String aliasQueryRef = null;
 
     public PrimaryKeyAttributeField() {
-    // this step should be deprecated
-    // add project id into the column list
-    // columnRefSet.add(Utilities.COLUMN_PROJECT_ID);
+        // this step should be deprecated
+        // add project id into the column list
+        // columnRefSet.add(Utilities.COLUMN_PROJECT_ID);
     }
 
     public void addColumnRef(WdkModelText columnRef) {
@@ -80,6 +84,8 @@ public class PrimaryKeyAttributeField extends AttributeField {
      */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
+        super.excludeResources(projectId);
+
         // exclude columnRefs
         for (WdkModelText columnRef : columnRefList) {
             if (columnRef.include(projectId)) {
@@ -90,8 +96,7 @@ public class PrimaryKeyAttributeField extends AttributeField {
                     throw new WdkModelException("The columnRef " + columnRef
                             + " is duplicated in primaryKetAttribute in "
                             + "recordClass " + recordClass.getFullName());
-                } else
-                    columnRefSet.add(columnName);
+                } else columnRefSet.add(columnName);
             }
         }
         columnRefList = null;
@@ -120,27 +125,16 @@ public class PrimaryKeyAttributeField extends AttributeField {
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * org.gusdb.wdk.model.Field#resolveReferences(org.gusdb.wdk.model.WdkModel)
-     */
-    @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    // do nothing. the columns will be verified by each attribute query
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see org.gusdb.wdk.model.AttributeField#getDependents()
      */
     @Override
     public Collection<AttributeField> getDependents() throws WdkModelException {
         return parseFields(text).values();
     }
-    
+
     /**
-     * primary key cannot be removed
-     *  (non-Javadoc)
+     * primary key cannot be removed (non-Javadoc)
+     * 
      * @see org.gusdb.wdk.model.AttributeField#isRemovable()
      */
     @Override
