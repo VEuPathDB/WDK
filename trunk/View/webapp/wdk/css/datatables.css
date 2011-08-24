@@ -1,9 +1,21 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
  DataTables sorting 
 */
+.dataTables_length, .dataTables_filter, .dataTables_info, .dataTables_paginate {
+    display: inline;
+}
+.dataTables_filter, .dataTables_paginate {
+    border-left: 2px solid #FFFFFF;
+    margin-left: 10px;
+    padding-left: 10px;
+}
+
 table.datatables th, table.datatables td {
   border-left: 1px dotted #CCCCCC;
   border-right: 1px dotted #CCCCCC;
+}
+table.datatables thead th.sortable {
+  cursor: pointer;
 }
 table.datatables thead th div.DataTables_sort_wrapper {
   position: relative;
