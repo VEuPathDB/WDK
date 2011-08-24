@@ -11,7 +11,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.model.attribute.plugin.AttributePlugin;
-import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
+import org.gusdb.wdk.model.attribute.plugin.AttributePluginReference;
 import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
@@ -22,6 +22,8 @@ public class InvokeAttributePluginAction extends Action {
     private static final String PARAM_STEP = "step";
     private static final String PARAM_ATTRIBUTE = "attribute";
     private static final String PARAM_PLUGIN = "plugin";
+    
+    private static final String FORWARD_DISPLAY = "display";
     
     private Logger logger = Logger.getLogger(InvokeAttributePluginAction.class);
     
@@ -44,19 +46,18 @@ public class InvokeAttributePluginAction extends Action {
         
         // get the plugin
         String pluginName = request.getParameter(PARAM_PLUGIN);
-        AttributePlugin plugin = attribute.getAttributePlugins().get(pluginName);
+        AttributePluginReference reference = attribute.getAttributePlugins().get(pluginName);
+        AttributePlugin plugin = reference.getPlugin();
         
-        AnswerValueBean answerValue = step.getAnswerValue();
         logger.debug("Processing attribute plugin: " + pluginName);
-        Map<String, Object> results = plugin.process(answerValue.getAnswerValue());
+        plugin.setStep(step.getStep());
+        Map<String, Object> results = plugin.process();
         for (String key : results.keySet()) {
             request.setAttribute(key, results.get(key));
         }
         
-        // get the view
-        String view = plugin.getView();
-        
-        logger.debug("Leaving InvokeAttributePluginAction. view: " + view);
-        return new ActionForward(view, false);
+        ActionForward forward = mapping.findForward(FORWARD_DISPLAY);
+        logger.debug("Leaving InvokeAttributePluginAction. to: " + forward);
+        return forward;
     }
 }

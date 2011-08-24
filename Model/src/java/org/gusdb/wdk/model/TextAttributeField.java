@@ -7,9 +7,16 @@ import java.util.List;
 public class TextAttributeField extends AttributeField {
 
     private List<WdkModelText> texts;
+    /**
+     * The text are used in the download, and should not include any html tags.
+     */
     private String text;
 
     private List<WdkModelText> displays;
+    /**
+     * the display are used on the website, and html tags are allowed. display
+     * is optional, and if not set, text will be used instead.
+     */
     private String display;
 
     public TextAttributeField() {
@@ -30,7 +37,7 @@ public class TextAttributeField extends AttributeField {
     }
 
     public String getDisplay() {
-        return display;
+        return (display != null) ? display : text;
     }
 
     /*
@@ -40,6 +47,8 @@ public class TextAttributeField extends AttributeField {
      */
     @Override
     public void excludeResources(String projectId) throws WdkModelException {
+        super.excludeResources(projectId);
+
         String rcName = (recordClass == null) ? ""
                 : (recordClass.getFullName() + ".");
 
@@ -64,7 +73,7 @@ public class TextAttributeField extends AttributeField {
                     + projectId);
         texts = null;
 
-        // exclude display
+        // exclude display, display is optional
         boolean hasDisplay = false;
         for (WdkModelText display : displays) {
             if (display.include(projectId)) {
@@ -78,22 +87,7 @@ public class TextAttributeField extends AttributeField {
                 }
             }
         }
-        if (this.display == null) display = text;
         displays = null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.gusdb.wdk.model.Field#presolveReferences(org.gusdb.wdk.model.WdkModel
-     * )
-     */
-    @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-        // try the parse out the embedded column fields
-        parseFields(text);
-        if (!display.equals(text)) parseFields(display);
     }
 
     /*
@@ -103,6 +97,8 @@ public class TextAttributeField extends AttributeField {
      */
     @Override
     public Collection<AttributeField> getDependents() throws WdkModelException {
-        return parseFields(text + "\n" + display).values();
+        String content = text;
+        if (display != null) content += "\n" + display;
+        return parseFields(content).values();
     }
 }
