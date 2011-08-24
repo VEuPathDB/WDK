@@ -14,6 +14,7 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.attribute.plugin.AttributePluginReference;
 import org.json.JSONException;
 
@@ -26,6 +27,8 @@ public abstract class AttributeField extends Field {
     public static final Pattern MACRO_PATTERN = Pattern.compile(
             "\\$\\$([^\\$]+?)\\$\\$", Pattern.MULTILINE);
 
+    private static Logger logger = Logger.getLogger(AttributeField.class);
+    
     protected abstract Collection<AttributeField> getDependents()
             throws WdkModelException;
 
