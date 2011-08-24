@@ -1,14 +1,10 @@
 package org.gusdb.wdk.model;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.json.JSONException;
 
 public class PrimaryKeyAttributeField extends AttributeField {
 
