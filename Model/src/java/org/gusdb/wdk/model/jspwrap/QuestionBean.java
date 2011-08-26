@@ -32,11 +32,6 @@ import org.json.JSONException;
  */
 public class QuestionBean {
 
-    /**
-     * Added by Jerric - to make QuestionBean serializable
-     */
-    private static final long serialVersionUID = 6353373897551871273L;
-
     Question question;
 
     private Map<String, String> params = new LinkedHashMap<String, String>();
@@ -193,6 +188,16 @@ public class QuestionBean {
             }
         }
         return rmfMap;
+    }
+    
+    public Map<String, AttributeFieldBean> getAttributeFields() {
+        Map<String, AttributeField> fields = question.getAttributeFieldMap();
+        Map<String, AttributeFieldBean> beans = new LinkedHashMap<String, AttributeFieldBean>();
+        for (AttributeField field : fields.values()) {
+            AttributeFieldBean bean = new AttributeFieldBean(field);
+            beans.put(field.getName(), bean);
+        }
+        return beans;
     }
 
     public Map<String, AttributeFieldBean> getAdditionalSummaryAttributesMap() {

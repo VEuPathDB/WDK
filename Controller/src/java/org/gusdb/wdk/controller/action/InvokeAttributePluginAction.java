@@ -13,6 +13,7 @@ import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.model.attribute.plugin.AttributePlugin;
 import org.gusdb.wdk.model.attribute.plugin.AttributePluginReference;
 import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
+import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -41,8 +42,8 @@ public class InvokeAttributePluginAction extends Action {
         
         // get the attribute
         String attributeName = request.getParameter(PARAM_ATTRIBUTE);
-        RecordClassBean recordClass = step.getQuestion().getRecordClass();
-        AttributeFieldBean attribute = recordClass.getAttributeFields().get(attributeName);
+        QuestionBean questions = step.getQuestion();
+        AttributeFieldBean attribute = questions.getAttributeFields().get(attributeName);
         
         // get the plugin
         String pluginName = request.getParameter(PARAM_PLUGIN);
