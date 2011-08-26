@@ -724,7 +724,7 @@ public class AnswerValue {
         return sql.toString().replace(Utilities.MACRO_ID_SQL, idSql);
     }
 
-    private String getAttributeSql(Query attributeQuery)
+    public String getAttributeSql(Query attributeQuery)
             throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
         String queryName = attributeQuery.getFullName();

@@ -9,6 +9,7 @@ import java.util.regex.Matcher;
 
 import javax.sql.DataSource;
 
+import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.ColumnAttributeField;
 import org.gusdb.wdk.model.LinkAttributeField;
@@ -125,7 +126,8 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
         RecordClass recordClass = step.getQuestion().getRecordClass();
         String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
                 .getColumnRefs();
-        String idSql = step.getAnswerValue().getIdSql();
+        AnswerValue answerValue = step.getAnswerValue();
+        String idSql = answerValue.getIdSql();
 
         // construct the select clause
         StringBuilder sql = new StringBuilder("SELECT ");
@@ -139,7 +141,8 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
         for (String queryName : queries.keySet()) {
             String sqlId = queries.get(queryName);
             SqlQuery query = (SqlQuery) wdkModel.resolveReference(queryName);
-            sql.append(", (" + query.getSql() + ") " + sqlId);
+            String attrSql = answerValue.getAttributeSql(query);
+            sql.append(", (" + attrSql + ") " + sqlId);
         }
 
         // construct the where clause
