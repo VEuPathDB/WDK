@@ -28,7 +28,7 @@ public abstract class AttributeField extends Field {
             "\\$\\$([^\\$]+?)\\$\\$", Pattern.MULTILINE);
 
     private static Logger logger = Logger.getLogger(AttributeField.class);
-    
+
     protected abstract Collection<AttributeField> getDependents()
             throws WdkModelException;
 
@@ -160,9 +160,12 @@ public abstract class AttributeField extends Field {
         Matcher matcher = AttributeField.MACRO_PATTERN.matcher(text);
         while (matcher.find()) {
             String fieldName = matcher.group(1);
-            if (!fields.containsKey(fieldName))
-                logger.warn("Invalid field macro in attribute"
-                        + " [" + name + "] of [" + recordClass.getFullName() + "]: " + fieldName);
+            if (!fields.containsKey(fieldName)) {
+                logger.warn("Invalid field macro in attribute" + " [" + name
+                        + "] of [" + recordClass.getFullName() + "]: "
+                        + fieldName);
+                continue;
+            }
 
             AttributeField field = fields.get(fieldName);
             children.put(fieldName, field);
