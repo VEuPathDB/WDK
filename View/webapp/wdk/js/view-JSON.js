@@ -418,7 +418,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 
 function createWeightSection(jsonstep,modelstep,sid){
 	// display & assign weight
-if(!jsonstep.useweights || modelstep.isTransform || jsonstep.isboolean) return "";
+if(!jsonstep.useweights || modelstep.isTransform || jsonstep.isboolean || modelstep.isSpan) return "";
 	
 var set_weight = "<div name='All_weighting' class='param-group' type='ShowHide'>"+
 					"<div class='group-title'> "+
