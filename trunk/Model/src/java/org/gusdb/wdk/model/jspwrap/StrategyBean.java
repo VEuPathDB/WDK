@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.jspwrap;
 import java.sql.SQLException;
 import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
@@ -200,8 +201,8 @@ public class StrategyBean {
     }
 
     private String formatDate(Date date) {
-        int style = DateFormat.SHORT;
-        return DateFormat.getDateTimeInstance(style, style).format(date);
+        DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return formatter.format(date);
     }
 
     /**
