@@ -4,9 +4,9 @@ import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
-import java.sql.PreparedStatement;	// <MOD-AG 042111>
-import java.sql.ResultSet;		// <MOD-AG 042111>
-import java.sql.Connection;		// <MOD-AG 042111>
+import java.sql.PreparedStatement; // <MOD-AG 042111>
+import java.sql.ResultSet; // <MOD-AG 042111>
+import java.sql.Connection; // <MOD-AG 042111>
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
@@ -33,10 +33,12 @@ public class BackupUser extends BaseCLI {
         BackupUser backup = new BackupUser(cmdName);
         try {
             backup.invoke(args);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
-        } finally {
+        }
+        finally {
             logger.info("WDK User Backup done.");
             System.exit(0);
         }
@@ -81,7 +83,7 @@ public class BackupUser extends BaseCLI {
     private String backupSchema;
 
     public BackupUser(String command) {
-        super((command == null) ? command : "wdkBackupUser", "This command "
+        super((command != null) ? command : "wdkBackupUser", "This command "
                 + "backs up expired guest user data to a given schema.");
     }
 
@@ -124,31 +126,32 @@ public class BackupUser extends BaseCLI {
     public void backupGuestUsers(String userSchema, String wdkSchema,
             String backupSchema, String cutoffDate) throws WdkUserException,
             WdkModelException, SQLException {
+        String copyClause = "user_id IN (SELECT user_id FROM " + userSchema
+                + "users MINUS SELECT user_id FROM " +backupSchema + "users)";
 
-        String filterClause = "user_id IN (SELECT user_id FROM " + userSchema
+        String deleteClause = "user_id IN (SELECT user_id FROM " + userSchema
                 + "users WHERE is_guest = 1 AND register_time < to_date('"
-                + cutoffDate + "', 'yyyy/mm/dd')"
-                + " MINUS SELECT user_id FROM " + backupSchema + "users)";
+                + cutoffDate + "', 'yyyy/mm/dd'))";
 
         // copy tables from user schema
-        copyUserRows(filterClause, "users", userColumns);
-        copyUserRows(filterClause, "user_roles", roleColumns);
-        copyUserRows(filterClause, "preferences", preferenceColumns);
-        copyUserRows(filterClause, "user_baskets", basketColumns);
-        copyUserRows(filterClause, "favorites", favoriteColumns);
-        copyUserRows(filterClause, "user_datasets2", datasetColumns);
-        copyUserRows(filterClause, "steps", stepColumns);
-        copyUserRows(filterClause, "strategies", strategyColumns);
+        copyUserRows(copyClause, "users", userColumns);
+        copyUserRows(copyClause, "user_roles", roleColumns);
+        copyUserRows(copyClause, "preferences", preferenceColumns);
+        copyUserRows(copyClause, "user_baskets", basketColumns);
+        copyUserRows(copyClause, "favorites", favoriteColumns);
+        copyUserRows(copyClause, "user_datasets2", datasetColumns);
+        copyUserRows(copyClause, "steps", stepColumns);
+        copyUserRows(copyClause, "strategies", strategyColumns);
 
         // delete rows from user schema
-        deleteRows(filterClause, "strategies");
-        deleteRows(filterClause, "steps");
-        deleteRows(filterClause, "user_datasets2");
-        deleteRows(filterClause, "favorites");
-        deleteRows(filterClause, "user_baskets");
-        deleteRows(filterClause, "preferences");
-        deleteRows(filterClause, "user_roles");
-        deleteRows(filterClause, "users");
+        deleteRows(deleteClause, "strategies");
+        deleteRows(deleteClause, "steps");
+        deleteRows(deleteClause, "user_datasets2");
+        deleteRows(deleteClause, "favorites");
+        deleteRows(deleteClause, "user_baskets");
+        deleteRows(deleteClause, "preferences");
+        deleteRows(deleteClause, "user_roles");
+        deleteRows(deleteClause, "users");
 
         // copy other data
         copyAnswerRows();
@@ -160,55 +163,61 @@ public class BackupUser extends BaseCLI {
         deleteDatasetIndexRows();
     }
 
-// <ADD-AG 042111> -----------------------------------------------------------
+    // <ADD-AG 042111>
+    // -----------------------------------------------------------
 
-    private void executeByBatch(WdkModel wdkModel, DataSource dataSource, String sql, String name, 
-	String dmlSql, String selectSql) throws SQLException, WdkUserException, WdkModelException {
+    private void executeByBatch(WdkModel wdkModel, DataSource dataSource,
+            String sql, String name, String dmlSql, String selectSql)
+            throws SQLException, WdkUserException, WdkModelException {
 
-	if ((dmlSql == null) || (selectSql == null)) {
-		dmlSql = sql.substring(0, sql.indexOf("IN ", 0)) + " = ?";
-		selectSql = sql.substring(sql.indexOf("IN ", 0) + 4);
-		selectSql = selectSql.substring(0, selectSql.length() - 1);
-		
-		// logger.info("dmlSql= " + dmlSql);
-		// logger.info("selectSql= " + selectSql);
-	}
-	
-	Connection connection = null;
-	PreparedStatement psInsert = null;
-	ResultSet resultSet = null;
-	
-	try {
-        	resultSet = SqlUtils.executeQuery(wdkModel, dataSource, selectSql,
-				"wdk-backup-" + name);
+        if ((dmlSql == null) || (selectSql == null)) {
+            dmlSql = sql.substring(0, sql.indexOf("IN ", 0)) + " = ?";
+            selectSql = sql.substring(sql.indexOf("IN ", 0) + 4);
+            selectSql = selectSql.substring(0, selectSql.length() - 1);
 
-		connection = dataSource.getConnection();
-            	psInsert = connection.prepareStatement(dmlSql);
-		
-		int count = 0;
+            // logger.info("dmlSql= " + dmlSql);
+            // logger.info("selectSql= " + selectSql);
+        }
 
-		while (resultSet.next()) {
-			int userId = resultSet.getInt(1);
+        Connection connection = null;
+        PreparedStatement psInsert = null;
+        ResultSet resultSet = null;
 
-			psInsert.setInt(1, userId);
-			psInsert.addBatch();
+        try {
+            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, selectSql,
+                    "wdk-backup-" + name);
 
-			count++;
-			if (count % 1000 == 0) {
-				psInsert.executeBatch();
-				logger.info("Rows processed for " + name  + " = " + count + ".");
-			}
-		}
+            connection = dataSource.getConnection();
+            psInsert = connection.prepareStatement(dmlSql);
 
-		psInsert.executeBatch();
-		logger.info("Total rows processed for " + name  + " = " + count + ".");
-	} finally {
-		SqlUtils.closeResultSet(resultSet);
-		SqlUtils.closeStatement(psInsert);
-	}
+            int count = 0;
+
+            while (resultSet.next()) {
+                int userId = resultSet.getInt(1);
+
+                psInsert.setInt(1, userId);
+                psInsert.addBatch();
+
+                count++;
+                if (count % 1000 == 0) {
+                    psInsert.executeBatch();
+                    logger.info("Rows processed for " + name + " = " + count
+                            + ".");
+                }
+            }
+
+            psInsert.executeBatch();
+            logger.info("Total rows processed for " + name + " = " + count
+                    + ".");
+        }
+        finally {
+            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeStatement(psInsert);
+        }
     }
 
-// </ADD-AG 042111> ----------------------------------------------------------
+    // </ADD-AG 042111>
+    // ----------------------------------------------------------
 
     private void copyUserRows(String filterClause, String tableName,
             String[] columns) throws WdkUserException, WdkModelException,
@@ -229,10 +238,12 @@ public class BackupUser extends BaseCLI {
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
 
-	executeByBatch(wdkModel, dataSource, sql, tableName, null, null);		// <ADD-AG 042111>
+        executeByBatch(wdkModel, dataSource, sql, tableName, null, null); // <ADD-AG
+                                                                          // 042111>
 
-        // SqlUtils.executeUpdate(wdkModel, dataSource, sql, "wdk-backup-insert-"
-        //        + tableName);
+        // SqlUtils.executeUpdate(wdkModel, dataSource, sql,
+        // "wdk-backup-insert-"
+        // + tableName);
     }
 
     private void deleteRows(String filterClause, String tableName)
@@ -245,10 +256,12 @@ public class BackupUser extends BaseCLI {
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
 
-	executeByBatch(wdkModel, dataSource, sql, tableName, null, null);		// <ADD-AG 042311>
+        executeByBatch(wdkModel, dataSource, sql, tableName, null, null); // <ADD-AG
+                                                                          // 042311>
 
-        // SqlUtils.executeUpdate(wdkModel, dataSource, sql, "wdk-backup-delete-"
-        //        + tableName);
+        // SqlUtils.executeUpdate(wdkModel, dataSource, sql,
+        // "wdk-backup-delete-"
+        // + tableName);
     }
 
     /**
@@ -273,33 +286,32 @@ public class BackupUser extends BaseCLI {
         String sql = "INSERT INTO " + backupSchema + "answers (" + builder
                 + ") SELECT " + builder + " FROM " + wdkSchema + "answers "
                 + "  WHERE answer_id NOT IN ("
-                + "        SELECT answer_id FROM " + userSchema + "steps"
+                + "        SELECT answer_id FROM " + wdkSchema + "answers"
                 + "        UNION                        "
                 + "        SELECT answer_id FROM " + backupSchema + "answers)";
-                
+
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
 
-	  // <ADD-AG 042211> -----------------------------------------------------------
+        // <ADD-AG 042211>
+        // -----------------------------------------------------------
 
-	  String dmlSql = "INSERT INTO " + backupSchema + "answers (" + builder
-                	 + ") SELECT " + builder + " FROM " + wdkSchema + "answers "
-                	 + "  WHERE answer_id  = ?";
+        String dmlSql = "INSERT INTO " + backupSchema + "answers (" + builder
+                + ") SELECT " + builder + " FROM " + wdkSchema + "answers "
+                + "  WHERE answer_id  = ?";
 
-	  String selectSql = "SELECT answer_id FROM "
-                         + "("
-                         + "(SELECT answer_id FROM " + wdkSchema + "answers)"
-        		    + " MINUS "
-                         + " (SELECT answer_id FROM " + userSchema + "steps"
-                         + "  UNION "
-                         + "  SELECT answer_id FROM " + backupSchema + "answers)"
-                         + ")";
+        String selectSql = "SELECT answer_id FROM " + "("
+                + "(SELECT answer_id FROM " + wdkSchema + "answers)"
+                + " MINUS " + " (SELECT answer_id FROM " + userSchema + "steps"
+                + "  UNION " + "  SELECT answer_id FROM " + backupSchema
+                + "answers)" + ")";
 
-	  executeByBatch(wdkModel, dataSource, null, "ANSWERS", dmlSql, selectSql);
+        executeByBatch(wdkModel, dataSource, null, "ANSWERS", dmlSql, selectSql);
 
-	  // </ADD-AG 042211> ----------------------------------------------------------
+        // </ADD-AG 042211>
+        // ----------------------------------------------------------
 
         // SqlUtils.executeUpdate(wdkModel, dataSource, sql,
-        //        "wdk-backup-delete-answers");
+        // "wdk-backup-delete-answers");
     }
 
     private void copyDatasetIndexRows() throws WdkUserException,
@@ -326,30 +338,28 @@ public class BackupUser extends BaseCLI {
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
 
-	// <ADD-AG 042311> -----------------------------------------------------------
+        // <ADD-AG 042311>
+        // -----------------------------------------------------------
 
-	String dmlSql = "INSERT INTO " + backupSchema + "dataset_indices  "
-                	+ "  (" + builder + ")                              "
-                	+ " SELECT " + builder
-                	+ " FROM " + wdkSchema + "dataset_indices "
-                	+ " WHERE dataset_id  = ?";
+        String dmlSql = "INSERT INTO " + backupSchema + "dataset_indices  "
+                + "  (" + builder + ")                              "
+                + " SELECT " + builder + " FROM " + wdkSchema
+                + "dataset_indices " + " WHERE dataset_id  = ?";
 
-	String selectSql = "SELECT dataset_id FROM "
-                         + "("
-                         + "(SELECT dataset_id FROM " + wdkSchema + "dataset_indices)"
-        		 + " MINUS "
-                         + " (SELECT dataset_id FROM " + userSchema + "user_datasets2"
-                         + "  UNION "
-                         + "  SELECT dataset_id FROM " + backupSchema + "dataset_indices)"
-                         + ")";
+        String selectSql = "SELECT dataset_id FROM " + "("
+                + "(SELECT dataset_id FROM " + wdkSchema + "dataset_indices)"
+                + " MINUS " + " (SELECT dataset_id FROM " + userSchema
+                + "user_datasets2" + "  UNION " + "  SELECT dataset_id FROM "
+                + backupSchema + "dataset_indices)" + ")";
 
-	executeByBatch(wdkModel, dataSource, null, "DATASET_INDICES", dmlSql, selectSql);
+        executeByBatch(wdkModel, dataSource, null, "DATASET_INDICES", dmlSql,
+                selectSql);
 
-	// </ADD-AG 042311> ----------------------------------------------------------
-
+        // </ADD-AG 042311>
+        // ----------------------------------------------------------
 
         // SqlUtils.executeUpdate(wdkModel, dataSource, sql,
-        //        "wdk-backup-delete-dataset-indices");
+        // "wdk-backup-delete-dataset-indices");
     }
 
     private void copyDatasetValueRows() throws WdkUserException,
@@ -375,29 +385,29 @@ public class BackupUser extends BaseCLI {
                 + "dataset_indices)";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
 
-	// <ADD-AG 042511> -----------------------------------------------------------
+        // <ADD-AG 042511>
+        // -----------------------------------------------------------
 
-	String dmlSql = "INSERT INTO " + backupSchema + "dataset_values  " 
-			+ "  (" + builder + ")"
-                	+ " SELECT DISTINCT " + builder
-                	+ " FROM " + wdkSchema + "dataset_values "
-                	+ " WHERE dataset_id  = ?";
+        String dmlSql = "INSERT INTO " + backupSchema + "dataset_values  "
+                + "  (" + builder + ")" + " SELECT DISTINCT " + builder
+                + " FROM " + wdkSchema + "dataset_values "
+                + " WHERE dataset_id  = ?";
 
-	String selectSql = "SELECT dataset_id FROM "
-                         	+ "("
-                         	+ "(SELECT distinct dataset_id FROM " + wdkSchema + "dataset_values)"
-        			+ " MINUS "
-                         	+ " (SELECT dataset_id FROM " + userSchema + "user_datasets2"
-                         	+ "  UNION "
-                         	+ "  SELECT dataset_id FROM " + backupSchema + "dataset_indices)"
-                         	+ ")";
+        String selectSql = "SELECT dataset_id FROM " + "("
+                + "(SELECT distinct dataset_id FROM " + wdkSchema
+                + "dataset_values)" + " MINUS " + " (SELECT dataset_id FROM "
+                + userSchema + "user_datasets2" + "  UNION "
+                + "  SELECT dataset_id FROM " + backupSchema
+                + "dataset_indices)" + ")";
 
-	executeByBatch(wdkModel, dataSource, null, "DATASET_VALUES", dmlSql, selectSql);
+        executeByBatch(wdkModel, dataSource, null, "DATASET_VALUES", dmlSql,
+                selectSql);
 
-	// </ADD-AG 042511> ----------------------------------------------------------
+        // </ADD-AG 042511>
+        // ----------------------------------------------------------
 
         // SqlUtils.executeUpdate(wdkModel, dataSource, sql,
-        //        "wdk-backup-delete-dataset-values");
+        // "wdk-backup-delete-dataset-values");
 
     }
 
@@ -420,26 +430,24 @@ public class BackupUser extends BaseCLI {
                 + "         SELECT answer_id FROM wdkuser.steps)";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
 
-	  // <ADD-AG 042311> -----------------------------------------------------------
+        // <ADD-AG 042311>
+        // -----------------------------------------------------------
 
-	  String dmlSql = "DELETE FROM " + wdkSchema + "answers "
-                	 + "  WHERE answer_id  = ?";
+        String dmlSql = "DELETE FROM " + wdkSchema + "answers "
+                + "  WHERE answer_id  = ?";
 
-	  String selectSql = "SELECT answer_id FROM "
-                         + "("
-                         + "(SELECT answer_id FROM " + wdkSchema + "answers)"
-        		    + " MINUS "
-                         + " (SELECT answer_id FROM " + userSchema + "steps"
-                         + "  UNION "
-                         + "  SELECT answer_id FROM wdkuser.steps)"
-                         + ")";
+        String selectSql = "SELECT answer_id FROM " + "("
+                + "(SELECT answer_id FROM " + wdkSchema + "answers)"
+                + " MINUS " + " (SELECT answer_id FROM " + userSchema + "steps"
+                + "  UNION " + "  SELECT answer_id FROM wdkuser.steps)" + ")";
 
-	  executeByBatch(wdkModel, dataSource, null, "ANSWERS", dmlSql, selectSql);
+        executeByBatch(wdkModel, dataSource, null, "ANSWERS", dmlSql, selectSql);
 
-	  // </ADD-AG 042311> ----------------------------------------------------------
+        // </ADD-AG 042311>
+        // ----------------------------------------------------------
 
         // SqlUtils.executeUpdate(wdkModel, dataSource, sql,
-        //        "wdk-backup-delete-answers");
+        // "wdk-backup-delete-answers");
     }
 
     private void deleteDatasetIndexRows() throws WdkUserException,
@@ -462,26 +470,26 @@ public class BackupUser extends BaseCLI {
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
 
-	// <ADD-AG 042311> -----------------------------------------------------------
+        // <ADD-AG 042311>
+        // -----------------------------------------------------------
 
-	String dmlSql = "DELETE FROM " + wdkSchema + "dataset_indices "
-                	+ "   WHERE dataset_id  = ?";
+        String dmlSql = "DELETE FROM " + wdkSchema + "dataset_indices "
+                + "   WHERE dataset_id  = ?";
 
-	String selectSql = "SELECT dataset_id FROM "
-                         + "("
-                         + "(SELECT dataset_id FROM " + wdkSchema + "dataset_indices)"
-        		 + " MINUS "
-                         + " (SELECT dataset_id FROM " + userSchema + "user_datasets2"
-                         + "  UNION "
-                         + "  SELECT dataset_id FROM wdkuser.user_datasets)"
-                         + ")";
+        String selectSql = "SELECT dataset_id FROM " + "("
+                + "(SELECT dataset_id FROM " + wdkSchema + "dataset_indices)"
+                + " MINUS " + " (SELECT dataset_id FROM " + userSchema
+                + "user_datasets2" + "  UNION "
+                + "  SELECT dataset_id FROM wdkuser.user_datasets)" + ")";
 
-	executeByBatch(wdkModel, dataSource, null, "DATASET_INDICES", dmlSql, selectSql);
+        executeByBatch(wdkModel, dataSource, null, "DATASET_INDICES", dmlSql,
+                selectSql);
 
-	// </ADD-AG 042311> ----------------------------------------------------------
+        // </ADD-AG 042311>
+        // ----------------------------------------------------------
 
-        //SqlUtils.executeUpdate(wdkModel, dataSource, sql,
-        //        "wdk-backup-delete-dataset-indices");
+        // SqlUtils.executeUpdate(wdkModel, dataSource, sql,
+        // "wdk-backup-delete-dataset-indices");
     }
 
     private void deleteDatasetValueRows() throws WdkUserException,
@@ -504,27 +512,26 @@ public class BackupUser extends BaseCLI {
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
 
-	// <ADD-AG 042511> -----------------------------------------------------------
+        // <ADD-AG 042511>
+        // -----------------------------------------------------------
 
-	String dmlSql = "DELETE FROM " + wdkSchema + "dataset_values "
-                	+ " WHERE dataset_id  = ?";
+        String dmlSql = "DELETE FROM " + wdkSchema + "dataset_values "
+                + " WHERE dataset_id  = ?";
 
-	String selectSql = "SELECT dataset_id FROM "
-                         	+ "("
-                         	+ "(SELECT distinct dataset_id FROM " + wdkSchema + "dataset_values)"
-        			+ " MINUS "
-                         	+ " (SELECT dataset_id FROM " + userSchema + "user_datasets2"
-                         	+ "  UNION "
-                         	+ "  SELECT dataset_id FROM wdkuser.user_datasets)"
-                         	+ ")";
+        String selectSql = "SELECT dataset_id FROM " + "("
+                + "(SELECT distinct dataset_id FROM " + wdkSchema
+                + "dataset_values)" + " MINUS " + " (SELECT dataset_id FROM "
+                + userSchema + "user_datasets2" + "  UNION "
+                + "  SELECT dataset_id FROM wdkuser.user_datasets)" + ")";
 
-	executeByBatch(wdkModel, dataSource, null, "DATASET_VALUES", dmlSql, selectSql);
+        executeByBatch(wdkModel, dataSource, null, "DATASET_VALUES", dmlSql,
+                selectSql);
 
-	// </ADD-AG 042511> ----------------------------------------------------------
-
+        // </ADD-AG 042511>
+        // ----------------------------------------------------------
 
         // SqlUtils.executeUpdate(wdkModel, dataSource, sql,
-        //        "wdk-backup-delete-dataset-values");
+        // "wdk-backup-delete-dataset-values");
 
     }
 }
