@@ -11,7 +11,7 @@
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jstree/jquery.jstree.js'/>"></script>
 
 <%-- styles for JS libraries --%>
-<link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/ui-lightness/jquery-ui-1.8.14.custom.css' />"/>
+<link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/ui-custom/smoothness/jquery-ui-1.8.16.custom.css' />"/>
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/jquery.multiSelect.css' />"/>
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/datatables.css' />"/>
 
