@@ -503,7 +503,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         return attributeFields;
     }
 
-	public AttributeCategoryTree getAttributeCategoryTree(FieldScope scope) {
+	public AttributeCategoryTree getAttributeCategoryTree(FieldScope scope) throws WdkModelException {
 		
 		// get trimmed copy of category tree
 		AttributeCategoryTree tree = recordClass.getAttributeCategoryTree(scope);
@@ -513,7 +513,12 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 		dynamic.setName("dynamic");
 		dynamic.setDisplayName("Search-Specific");
 		for (AttributeField field : dynamicAttributeSet.getAttributeFieldMap(scope).values()) {
-			dynamic.addField(field);
+			if (field.getName().equals(Utilities.COLUMN_WEIGHT)) {
+				tree.addAttributeToCategories(field);
+			}
+			else {
+				dynamic.addField(field);
+			}
 		}
 		if (!dynamic.getFields().isEmpty()) {
 			tree.prependAttributeCategory(dynamic);

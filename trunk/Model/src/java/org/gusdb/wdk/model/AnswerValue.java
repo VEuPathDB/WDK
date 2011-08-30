@@ -1053,17 +1053,11 @@ public class AnswerValue {
         return displayAttributes;
     }
 
-	public TreeNode getDisplayableAttributeTree() {
-		try {
-			return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.NON_INTERNAL));
-		}
-		catch (Exception e) {
-			logger.error("Error while getting displayable attribute tree", e);
-			return new TreeNode("blah", "blah blah");
-		}
+	public TreeNode getDisplayableAttributeTree() throws WdkModelException {
+		return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.NON_INTERNAL));
 	}
 
-    public TreeNode getReportMakerAttributeTree() {
+    public TreeNode getReportMakerAttributeTree() throws WdkModelException {
     	return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.REPORT_MAKER));
     }
 	
