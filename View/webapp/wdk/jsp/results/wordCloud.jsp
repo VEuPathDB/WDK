@@ -28,7 +28,7 @@
         <input type="text" name="from" size="4" /> -
         <input type="text" name="to" size="4" />
       </td>
-      <td><div id="amount"> </div></td>
+      <td style="padding-left:20px;"><div id="amount"> </div></td>
     </tr>
     <tr>
       <th>Sort displayed words by: </th>
