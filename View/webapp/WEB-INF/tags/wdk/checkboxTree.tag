@@ -69,7 +69,7 @@
   // configure the tree
   $(function() {
 	  configureCheckboxTree();
-  }
+  });
   function configureCheckboxTree() {
     $('.checkboxTree')
       .bind("loaded.jstree", function (event, data) {
@@ -86,7 +86,7 @@
           "real_checkboxes_names" : function(node) { return ["${checkboxName}", (node[0].id || "")]; }
         }
       });
-  });
+  }
   function selectCurrentNodes() {
     var currentNodes = [${rootNode.selectedAsList}];
     selectListOfNodes(currentNodes);
