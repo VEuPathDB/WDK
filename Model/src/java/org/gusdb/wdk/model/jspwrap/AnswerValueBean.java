@@ -422,11 +422,11 @@ public class AnswerValueBean {
         return fieldBeans;
     }
 
-    public TreeNode getDisplayableAttributeTree() {
+    public TreeNode getDisplayableAttributeTree() throws WdkModelException {
     	return answerValue.getDisplayableAttributeTree();
     }
 
-    public TreeNode getReportMakerAttributeTree() {
+    public TreeNode getReportMakerAttributeTree() throws WdkModelException {
     	return answerValue.getReportMakerAttributeTree();
     }
     
@@ -522,6 +522,6 @@ public class AnswerValueBean {
      * @return whether checkbox tree should be used (columns layout otherwise)
      */
     public boolean getUseCheckboxTree() {
-    	return false;
+    	return true;
     }
 }

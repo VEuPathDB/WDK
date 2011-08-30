@@ -36,6 +36,15 @@
   <c:set var="initialSetMethod" value="selectDefaultNodes"/>
 </c:if>
 
+<%@ attribute name="buttonAlignment"
+              required="false"
+              type="java.lang.String"
+              description="tells how manipulation buttons should be aligned" %>
+     
+<c:if test="${empty buttonAlignment}">
+  <c:set var="buttonAlignment" value="center"/>
+</c:if>
+
 <%@ attribute name="useIcons"
               required="false"
               type="java.lang.Boolean"
@@ -59,6 +68,9 @@
 <script type="text/javascript">
   // configure the tree
   $(function() {
+	  configureCheckboxTree();
+  }
+  function configureCheckboxTree() {
     $('.checkboxTree')
       .bind("loaded.jstree", function (event, data) {
         // need to check all selected nodes, but wait to ensure page is ready
@@ -104,7 +116,7 @@
   }
 </script>    
 
-<div class="formButtonPanel">
+<div class="formButtonPanel" style="text-align:${buttonAlignment}">
   <a class="small" href="javascript:void(0)" onclick="expandAll();">Expand All</a>
   | <a class="small" href="javascript:void(0)" onclick="collapseAll();">Collapse All</a>
   <c:if test="${showSelectAll}">
@@ -120,7 +132,7 @@
   <c:set var="recurse_term_node" value="${rootNode}" scope="request"/>
   <c:import url="/WEB-INF/includes/checkboxTreeNode.jsp" />
 </div>
-<div class="formButtonPanel">
+<div class="formButtonPanel" style="text-align:${buttonAlignment}">
   <a class="small" href="javascript:void(0)" onclick="expandAll();">Expand All</a>
   | <a class="small" href="javascript:void(0)" onclick="collapseAll();">Collapse All</a>
   <c:if test="${showSelectAll}">
