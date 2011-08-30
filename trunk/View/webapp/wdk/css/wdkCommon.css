@@ -718,7 +718,7 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
 
 #word-cloud th {
   border-width: 0px;
-  text-align: right;
+//  text-align: right;
 }
 #word-cloud input[name=from], #word-cloud input[name=to] {
   text-align: right;
