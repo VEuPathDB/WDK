@@ -164,8 +164,7 @@ public class ModelXmlParser extends XmlParser {
         for (int i = 0; i < importNodes.getLength(); i++) {
             // get url to the first import
             Node importNode = importNodes.item(i);
-            String href = importNode.getAttributes().getNamedItem("file")
-                    .getNodeValue();
+            String href = importNode.getAttributes().getNamedItem("file").getNodeValue();
             URL importURL = makeURL(gusHome, "lib/wdk/" + href);
 
             // validate the sub-model
@@ -214,8 +213,7 @@ public class ModelXmlParser extends XmlParser {
         // transform the DOM doc to a string
         Source source = new DOMSource(masterDoc);
         Result result = new StreamResult(out);
-        Transformer transformer = TransformerFactory.newInstance()
-                .newTransformer();
+        Transformer transformer = TransformerFactory.newInstance().newTransformer();
         transformer.transform(source, result);
         String content = new String(out.toByteArray());
 
@@ -276,6 +274,8 @@ public class ModelXmlParser extends XmlParser {
         // configure the attributes
         configureAttributeFields(digester);
 
+        configureCommonNodes(digester);
+
         return digester;
     }
 
@@ -294,11 +294,6 @@ public class ModelXmlParser extends XmlParser {
         // default property list
         configureNode(digester, "wdkModel/defaultPropertyList",
                 PropertyList.class, "addDefaultPropertyList");
-
-        configureNode(digester, "wdkModel/defaultPropertyList/value",
-                WdkModelText.class, "addValue");
-        digester.addCallMethod("wdkModel/defaultPropertyList/value", "setText",
-                0);
 
         // categories
         configureNode(digester, "wdkModel/searchCategory",
@@ -430,13 +425,6 @@ public class ModelXmlParser extends XmlParser {
                 PropertyList.class, "addPropertyList");
 
         configureNode(digester,
-                "wdkModel/recordClassSet/recordClass/table/propertyList/value",
-                WdkModelText.class, "addValue");
-        digester.addCallMethod(
-                "wdkModel/recordClassSet/recordClass/table/propertyList/value",
-                "setText", 0);
-
-        configureNode(digester,
                 "wdkModel/recordClassSet/recordClass/table/columnAttribute",
                 ColumnAttributeField.class, "addAttributeField");
 
@@ -561,10 +549,6 @@ public class ModelXmlParser extends XmlParser {
     }
 
     private void configureParamContent(Digester digester, String paramPath) {
-        configureNode(digester, paramPath + "/help", WdkModelText.class,
-                "addHelp");
-        digester.addCallMethod(paramPath + "/help", "setText", 0);
-
         configureNode(digester, paramPath + "/suggest", ParamSuggestion.class,
                 "addSuggest");
         configureNode(digester, paramPath + "/noTranslation",
@@ -594,21 +578,9 @@ public class ModelXmlParser extends XmlParser {
         digester.addCallMethod("wdkModel/questionSet/question/summary",
                 "setText", 0);
 
-        configureNode(digester, "wdkModel/questionSet/question/help",
-                WdkModelText.class, "addHelp");
-        digester.addCallMethod("wdkModel/questionSet/question/help", "setText",
-                0);
-
         // question's property list
         configureNode(digester, "wdkModel/questionSet/question/propertyList",
                 PropertyList.class, "addPropertyList");
-
-        configureNode(digester,
-                "wdkModel/questionSet/question/propertyList/value",
-                WdkModelText.class, "addValue");
-        digester.addCallMethod(
-                "wdkModel/questionSet/question/propertyList/value", "setText",
-                0);
 
         configureNode(digester, "wdkModel/questionSet/question/attributesList",
                 AttributeList.class, "addAttributeList");
@@ -652,11 +624,6 @@ public class ModelXmlParser extends XmlParser {
                 WdkModelText.class, "addDescription");
         digester.addCallMethod(
                 "wdkModel/xmlQuestionSet/xmlQuestion/description", "setText", 0);
-
-        configureNode(digester, "wdkModel/xmlQuestionSet/xmlQuestion/help",
-                WdkModelText.class, "addHelp");
-        digester.addCallMethod("wdkModel/xmlQuestionSet/xmlQuestion/help",
-                "setText", 0);
     }
 
     private void configureParamValuesSet(Digester digester, String path,
@@ -763,6 +730,14 @@ public class ModelXmlParser extends XmlParser {
 
     }
 
+    private void configureCommonNodes(Digester digester) {
+        configureNode(digester, "*/help", WdkModelText.class, "addHelp");
+        digester.addCallMethod("*/help", "setText", 0);
+
+        configureNode(digester, "*/value", WdkModelText.class, "addValue");
+        digester.addCallMethod("*/value", "setText", 0);
+    }
+
     public static void main(String[] args) throws SAXException, IOException,
             ParserConfigurationException, TransformerFactoryConfigurationError,
             TransformerException, WdkModelException, NoSuchAlgorithmException,
@@ -774,8 +749,7 @@ public class ModelXmlParser extends XmlParser {
         // process args
         Options options = declareOptions();
         CommandLine cmdLine = parseOptions(cmdName, options, args);
-        String projectId = cmdLine
-                .getOptionValue(Utilities.ARGUMENT_PROJECT_ID);
+        String projectId = cmdLine.getOptionValue(Utilities.ARGUMENT_PROJECT_ID);
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
 
         // create a parser, and parse the model file

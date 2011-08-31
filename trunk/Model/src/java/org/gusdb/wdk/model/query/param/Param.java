@@ -209,6 +209,10 @@ public abstract class Param extends WdkModelBase {
             return getPrompt();
         return help;
     }
+    
+    void setHelp(String help) {
+        this.help = help;
+    }
 
     public void setDefault(String defaultValue) {
         if (defaultValue == null)
