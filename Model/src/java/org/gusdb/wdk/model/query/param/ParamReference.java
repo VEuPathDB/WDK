@@ -5,11 +5,14 @@ package org.gusdb.wdk.model.query.param;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
 
@@ -18,11 +21,6 @@ import org.json.JSONException;
  * @created Feb 16, 2006
  */
 public class ParamReference extends Reference {
-
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -7829729638618781482L;
 
     public static Param resolveReference(WdkModel wdkModel,
             ParamReference paramRef, String servedQueryName)
@@ -52,6 +50,10 @@ public class ParamReference extends Reference {
         // if the visible is set
         Boolean visible = paramRef.getVisible();
         if (visible != null) param.setVisible(visible);
+
+        // set help if exists
+        String help = paramRef.getHelp();
+        if (help != null) param.setHelp(help);
 
         Boolean number = paramRef.getNumber();
 
@@ -136,6 +138,9 @@ public class ParamReference extends Reference {
     private String selectMode;
     private Boolean noTranslation;
     private Boolean suppressNode;
+
+    private List<WdkModelText> helps = new ArrayList<WdkModelText>();
+    private String help;
 
     public ParamReference() {}
 
@@ -321,4 +326,29 @@ public class ParamReference extends Reference {
         this.suppressNode = suppressNode;
     }
 
+    public void addHelp(WdkModelText help) {
+        this.helps.add(help);
+    }
+
+    public String getHelp() {
+        return help;
+    }
+
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        super.excludeResources(projectId);
+
+        for (WdkModelText help : helps) {
+            if (help.include(projectId)) {
+                if (this.help != null)
+                    throw new WdkModelException("More than one <help> are "
+                            + "defined in the paramRef '"
+                            + this.getTwoPartName());
+
+                help.excludeResources(projectId);
+                this.help = help.getText();
+            }
+        }
+        helps = null;
+    }
 }
