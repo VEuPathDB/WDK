@@ -724,7 +724,7 @@ public class AnswerValue {
         return sql.toString().replace(Utilities.MACRO_ID_SQL, idSql);
     }
 
-    private String getAttributeSql(Query attributeQuery)
+    public String getAttributeSql(Query attributeQuery)
             throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
         String queryName = attributeQuery.getFullName();
@@ -856,11 +856,9 @@ public class AnswerValue {
             if (field == null)
                 continue;
             boolean ascend = sortingMap.get(fieldName);
-            for (AttributeField dependent : field.getDependents()) {
-                if (!(dependent instanceof ColumnAttributeField))
-                    continue;
-
-                Column column = ((ColumnAttributeField) dependent).getColumn();
+            Map<String, ColumnAttributeField> dependents = field.getColumnAttributeFields();
+            for (ColumnAttributeField dependent :dependents.values()) {
+                Column column = dependent.getColumn();
                 Query query = column.getQuery();
                 String queryName = query.getFullName();
                 // cannot use the attribute query from record, need to get it
@@ -1051,14 +1049,25 @@ public class AnswerValue {
         return displayAttributes;
     }
 
-	public AttributeCategoryTree getDisplayableAttributeTree() {
-		return question.getAttributeCategoryTree(FieldScope.NON_INTERNAL);
+	public TreeNode getDisplayableAttributeTree() throws WdkModelException {
+		return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.NON_INTERNAL));
 	}
 
-    public AttributeCategoryTree getReportMakerAttributeTree() {
-    	return question.getAttributeCategoryTree(FieldScope.REPORT_MAKER);
+    public TreeNode getReportMakerAttributeTree() throws WdkModelException {
+    	return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.REPORT_MAKER));
     }
 	
+    private TreeNode convertAttributeTree(AttributeCategoryTree rawAttributeTree) {
+		TreeNode root = rawAttributeTree.toTreeNode("category root", "Attribute Categories");
+		List<String> currentlySelectedFields = new ArrayList<String>();
+		for (AttributeField field : getSummaryAttributeFieldMap().values()) {
+            currentlySelectedFields.add(field.getName());
+        }
+		root.turnOnSelectedLeaves(currentlySelectedFields);
+		root.setDefaultLeaves(new ArrayList<String>(question.getSummaryAttributeFieldMap().keySet()));
+		return root;
+    }
+    
     public Map<String, AttributeField> getSummaryAttributeFieldMap() {
         Map<String, AttributeField> fields;
         if (summaryFieldMap.size() > 0) {

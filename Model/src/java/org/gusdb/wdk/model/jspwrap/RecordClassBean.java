@@ -82,6 +82,10 @@ public class RecordClassBean {
         return reporters;
     }
 
+    public AttributeFieldBean getPrimaryKeyAttribute() {
+    	return new AttributeFieldBean(recordClass.getPrimaryKeyAttributeField());
+    }
+    
     public String[] getPrimaryKeyColumns() {
         return recordClass.getPrimaryKeyAttributeField().getColumnRefs();
     }

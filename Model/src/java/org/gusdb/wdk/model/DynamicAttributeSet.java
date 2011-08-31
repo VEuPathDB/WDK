@@ -7,16 +7,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.wdk.model.attribute.plugin.AttributePluginReference;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.json.JSONException;
 
 public class DynamicAttributeSet extends WdkModelBase {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -1373806354317917813L;
     // private static Logger logger =
     // Logger.getLogger(DynamicAttributeSet.class);
 
@@ -61,9 +58,9 @@ public class DynamicAttributeSet extends WdkModelBase {
     public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
         Map<String, AttributeField> map = new LinkedHashMap<String, AttributeField>();
         for (AttributeField field : attributeFieldMap.values()) {
-        	if (scope.isFieldInScope(field)) {
-        		map.put(field.getName(), field);
-        	}
+            if (scope.isFieldInScope(field)) {
+                map.put(field.getName(), field);
+            }
         }
         return map;
     }
@@ -104,13 +101,25 @@ public class DynamicAttributeSet extends WdkModelBase {
             attribute.setInternal(false);
             attribute.setInReportMaker(true);
             attribute.setSortable(true);
-           //  attribute.setHelp("User-defined integer value; in a search strategy, unions and intersects will sum the weights, giving higher scores to items found in multiple searches. ");
-           attribute.setHelp("The *search result weight*. This is the sum of "
-                   + "the weights you specified for individual searches that "
-                   + "found this record.   The more searches that found this "
-                   + "record the higher will be its weight.  To give a search "
-                   + "a weight, click \"Use Weights\" on the search page, and "
-                   + "provide the desired weight.");
+            // attribute.setHelp("User-defined integer value; in a search strategy, unions and intersects will sum the weights, giving higher scores to items found in multiple searches. ");
+            attribute.setHelp("The *search result weight*. This is the sum of "
+                    + "the weights you specified for individual searches that "
+                    + "found this record.   The more searches that found this "
+                    + "record the higher will be its weight.  To give a search "
+                    + "a weight, click \"Use Weights\" on the search page, and "
+                    + "provide the desired weight.");
+
+            // add an histogram plugin to the weight
+            AttributePluginReference reference = new AttributePluginReference();
+            reference.setName("histogram");
+            reference.setDisplay("Histogram");
+            reference.setDescription("Display a histogram of weigh distribution");
+            reference.setImplementation("org.gusdb.wdk.model.attribute.plugin.HistogramAttributePlugin");
+            reference.setView("/wdk/jsp/results/histogram.jsp");
+            attribute.addAttributePluginReference(reference);
+
+            attribute.excludeResources(projectId);
+
             attributeFieldMap.put(Utilities.COLUMN_WEIGHT, attribute);
         }
     }
