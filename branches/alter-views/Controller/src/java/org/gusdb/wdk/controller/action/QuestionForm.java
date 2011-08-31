@@ -21,10 +21,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  */
 
 public class QuestionForm extends MapActionForm {
-
-    /**
-     * 
-     */
+	
     private static final long serialVersionUID = -7848685794514383434L;
     private static final Logger logger = Logger.getLogger(QuestionForm.class);
 

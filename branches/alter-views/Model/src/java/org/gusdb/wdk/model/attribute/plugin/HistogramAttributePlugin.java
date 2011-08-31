@@ -3,24 +3,14 @@
  */
 package org.gusdb.wdk.model.attribute.plugin;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.gusdb.wdk.model.AbstractAttributePlugin;
-import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.dbms.SqlUtils;
-import org.gusdb.wdk.model.query.Column;
-import org.gusdb.wdk.model.query.SqlQuery;
-import org.json.JSONException;
 
 /**
  * @author jerric
@@ -36,34 +26,18 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
     private static final String ATTR_HISTOGRAM = "histogram";
 
     private static final float DEFAULT_MAX_BAR_LENGTH = 600;
+    
+    private static final Logger logger = Logger.getLogger(HistogramAttributePlugin.class);
 
+    private Map<String, Integer> summaries;
     /*
      * (non-Javadoc)
      * 
-     * @see
-     * org.gusdb.wdk.model.AttributePlugin#process(org.gusdb.wdk.model.AnswerValue
-     * )
+     * @see org.gusdb.wdk.model.AttributePlugin#process()
      */
-    public Map<String, Object> process(AnswerValue answerValue)
-            throws NoSuchAlgorithmException, WdkModelException,
-            WdkUserException, SQLException, JSONException {
-        Map<String, Integer> summaries = new LinkedHashMap<String, Integer>();
-        WdkModel wdkModel = answerValue.getQuestion().getWdkModel();
-        String columnName = attribute.getColumn().getName();
-        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        String sql = composeSql(answerValue);
-        ResultSet resultSet = null;
-        try {
-            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-                    "wdk-attribute-histogram-" + attribute.getName());
-            while (resultSet.next()) {
-                String column = resultSet.getString(columnName);
-                int summary = resultSet.getInt(COLUMN_SUMMARY);
-                summaries.put(column, summary);
-            }
-        } finally {
-            SqlUtils.closeResultSet(resultSet);
-        }
+    public Map<String, Object> process() {
+        loadSummaries();
+        
         Map<String, Integer> histogram = scaleHistogram(summaries);
 
         // compose the result
@@ -74,31 +48,54 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
         return result;
     }
 
-    private String composeSql(AnswerValue answerValue)
-            throws NoSuchAlgorithmException, WdkModelException,
-            WdkUserException, SQLException, JSONException {
-        WdkModel wdkModel = answerValue.getQuestion().getWdkModel();
-        Column column = attribute.getColumn();
-        String columnName = column.getName();
-        String queryName = column.getQuery().getFullName();
-        SqlQuery query = (SqlQuery) wdkModel.resolveReference(queryName);
-        RecordClass recordClass = answerValue.getQuestion().getRecordClass();
-
-        // compose the sql to get data
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
-        String idSql = answerValue.getIdSql();
-        String attrSql = query.getSql();
-
-        StringBuilder sql = new StringBuilder();
-        sql.append("SELECT " + columnName + ", count(*) AS " + COLUMN_SUMMARY);
-        sql.append(" FROM (" + idSql + ") idq, (" + attrSql + ") aq ");
-        for (int i = 0; i < pkColumns.length; i++) {
-            sql.append((i == 0) ? " WHERE " : " AND ");
-            sql.append("idq." + pkColumns[i] + " = aq." + pkColumns[i]);
+    public String getDownloadContent() {
+        loadSummaries();
+        
+        StringBuilder builder = new StringBuilder();
+        builder.append("<table>");
+        builder.append("<tr><th>" + attributeField.getDisplayName() + "</th><th>Record Count</th></tr>");
+        for(String attribute : summaries.keySet()) {
+            int count = summaries.get(attribute);
+            builder.append("<tr><td>" + attribute + "</td><td>" + count + "</td></tr>");
         }
-        sql.append(" GROUP BY " + columnName);
-        sql.append(" ORDER BY " + columnName + " ASC");
-        return sql.toString();
+        builder.append("</table>");
+        return builder.toString();
+    }
+
+    private void loadSummaries() {
+        if (summaries != null) return;
+        
+        summaries = new LinkedHashMap<String, Integer>();
+        ResultSet resultSet = null;
+        try {
+            String attributeColumn = AbstractAttributePlugin.ATTRIBUTE_COLUMN;
+            String attributeSql = getAttributeSql();
+            String summarySql = composeSql(attributeColumn, attributeSql);
+            DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, summarySql,
+                    "wdk-attribute-histogram-" + attributeField.getName());
+            while (resultSet.next()) {
+                String column = resultSet.getString(attributeColumn);
+                int summary = resultSet.getInt(COLUMN_SUMMARY);
+                summaries.put(column, summary);
+            }
+        }
+        catch (Exception ex) {
+            logger.error(ex);
+            throw new RuntimeException(ex);
+        }
+        finally {
+            SqlUtils.closeResultSet(resultSet);
+        }
+
+    }
+
+    private String composeSql(String attributeColumn, String sql) {
+        StringBuilder groupSql = new StringBuilder("SELECT ");
+        groupSql.append(attributeColumn + ", count(*) AS " + COLUMN_SUMMARY);
+        groupSql.append(" FROM (" + sql + ")  GROUP BY " + attributeColumn);
+        groupSql.append(" ORDER BY " + attributeColumn + " ASC");
+        return groupSql.toString();
     }
 
     private Map<String, Integer> scaleHistogram(Map<String, Integer> histogram) {
@@ -116,7 +113,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
 
         float scale = maxBarLength / maxLength;
         Map<String, Integer> scaled = new LinkedHashMap<String, Integer>();
-        for(String column : histogram.keySet()) {
+        for (String column : histogram.keySet()) {
             int length = Math.max(1, Math.round(histogram.get(column) * scale));
             scaled.put(column, length);
         }

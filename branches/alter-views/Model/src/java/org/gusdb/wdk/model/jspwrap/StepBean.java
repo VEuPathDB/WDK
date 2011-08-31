@@ -25,6 +25,10 @@ public class StepBean {
         this.user = user;
         this.step = step;
     }
+    
+    public Step getStep() {
+        return step;
+    }
 
     public StepBean getPreviousStep() throws WdkUserException,
             WdkModelException, SQLException, JSONException {
@@ -33,7 +37,7 @@ public class StepBean {
         }
         return null;
     }
-
+    
     public StepBean getNextStep() {
         Step nextStep = step.getNextStep();
         return (nextStep == null) ? null : new StepBean(user, nextStep);

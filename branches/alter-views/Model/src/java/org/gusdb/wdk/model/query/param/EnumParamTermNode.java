@@ -6,6 +6,9 @@ package org.gusdb.wdk.model.query.param;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.gusdb.wdk.model.TreeLeaf;
+import org.gusdb.wdk.model.TreeNode;
+
 /**
  * @author xingao
  * 
@@ -65,4 +68,20 @@ public class EnumParamTermNode {
     public void setDisplay(String display) {
         this.display = display;
     }
+
+    /**
+     * @return this term node as a tree node for rendering as a checkboxTree
+     */
+	public TreeNode toTreeNode() {
+		TreeNode node = new TreeNode(getTerm(), getDisplay());
+		for (EnumParamTermNode paramNode : getChildrenList()) {
+			if (paramNode.getChildren().length == 0) {
+				node.addLeafNode(new TreeLeaf(paramNode.getTerm(), paramNode.getDisplay(), paramNode.getDisplay()));
+			}
+			else {
+				node.addChildNode(paramNode.toTreeNode());
+			}
+		}
+		return node;
+	}
 }

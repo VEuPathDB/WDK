@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -14,13 +15,19 @@ import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
 
+/**
+ * @author jerric
+ * 
+ *         the reference is stored in the model, thus in application-scope.
+ */
 public class AttributePluginReference extends WdkModelBase {
 
     private String name;
     private String display;
+    private String description;
     private String implementation;
     private String view;
-    private AttributePlugin plugin;
+    private AttributeField attributeField;
     private List<WdkModelText> propertyList = new ArrayList<WdkModelText>();
     private Map<String, String> propertyMap;
 
@@ -55,6 +62,21 @@ public class AttributePluginReference extends WdkModelBase {
     }
 
     /**
+     * @return the description
+     */
+    public String getDescription() {
+        return this.description;
+    }
+
+    /**
+     * @param description
+     *            the description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
      * @param implementation
      *            the implementation to set
      */
@@ -62,14 +84,18 @@ public class AttributePluginReference extends WdkModelBase {
         this.implementation = implementation;
     }
 
+    public String getView() {
+        return view;
+    }
+
     public void setView(String view) {
         this.view = view;
     }
 
-    public AttributePlugin getPlugin() {
-        return plugin;
+    public void setAttributeField(AttributeField attributeField) {
+        this.attributeField = attributeField;
     }
-    
+
     public void addProperty(WdkModelText property) {
         this.propertyList.add(property);
     }
@@ -99,17 +125,33 @@ public class AttributePluginReference extends WdkModelBase {
             WdkUserException {
         super.resolveReferences(wdkModel);
 
-        // resolve the plugin
+        // make sure the implementation does implement AttributePlugin interface
         try {
-            Class<? extends AttributePlugin> pluginClass = Class.forName(
-                    implementation).asSubclass(AttributePlugin.class);
-            plugin = pluginClass.newInstance();
-            plugin.setName(name);
-            plugin.setDisplay(display);
-            plugin.setView(view);
-            plugin.setProperties(propertyMap);
-        } catch (Exception ex) {
+            Class<?> pluginClass = Class.forName(implementation);
+            Object plugin = pluginClass.newInstance();
+            if (!(plugin instanceof AttributePlugin))
+                throw new WdkModelException("The implementation '"
+                        + implementation + "' of attribute plugin '" + name
+                        + "' must implement interface "
+                        + AttributePlugin.class.getCanonicalName());
+        }
+        catch (Exception ex) {
             throw new WdkModelException(ex);
         }
+    }
+
+    public AttributePlugin getPlugin() throws InstantiationException,
+            IllegalAccessException, ClassNotFoundException {
+        Class<? extends AttributePlugin> pluginClass = Class.forName(
+                implementation).asSubclass(AttributePlugin.class);
+        AttributePlugin plugin = pluginClass.newInstance();
+        plugin.setName(name);
+        plugin.setDisplay(display);
+        plugin.setDescription(description);
+        plugin.setView(view);
+        plugin.setProperties(propertyMap);
+        plugin.setAttributeField(attributeField);
+
+        return plugin;
     }
 }

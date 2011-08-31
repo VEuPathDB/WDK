@@ -281,9 +281,10 @@ function invokeAttributePlugin(ele, stepId, attributeName) {
 			if ($("#attribute-plugin-result").length == 0)
 				$("body").append("<div id=\"attribute-plugin-result\"> </div>");
 			$("#attribute-plugin-result").html(data)
-                            .dialog({ width : 700,
-                                      title : title,
-                                      modal : true });
+                            .dialog({ width : 825,
+                                      maxHeight: 800,
+                                      title : title
+                                    });
                         $("body").unblock();
 		},
                 error: function() {
