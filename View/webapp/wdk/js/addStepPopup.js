@@ -356,16 +356,17 @@ function WizardLoading(boo){
     }
 }
 
-function callWizard(url, ele, id, sec, action){
+function callWizard(url, ele, id, sec, action, stratFrontId){
     // set isPopup flag, which will be used by param initialization process
     window.isPopup = true;
     mapTypeAheads();
-    var strategy = getStrategy(current_Front_Strategy_Id);
+    if (stratFrontId == undefined) stratFrontId = current_Front_Strategy_Id; 
+    var strategy = getStrategy(stratFrontId);
 	$("div#errors").html("");
 	switch (action){
 			case "submit":
                                 var stage = $(ele).find("#stage").val();
-				url = url + "stage="+stage+"&strategy="+getStrategy(current_Front_Strategy_Id).backId;
+				url = url + "stage="+stage+"&strategy="+strategy.backId;
 				$(ele).attr("action", "javascript:void(0)");
 				$.ajax({
 					url: url,
@@ -396,7 +397,7 @@ function callWizard(url, ele, id, sec, action){
 				});
 				break;
 			case "next":
-				d = "strategy="+getStrategy(current_Front_Strategy_Id).backId;
+				d = "strategy="+strategy.backId;
 				$.ajax({
 					url: url,
 					type: "get",

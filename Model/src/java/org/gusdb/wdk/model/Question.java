@@ -38,8 +38,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     private static final String DYNAMIC_QUERY_SUFFIX = "_dynamic";
 
-    private static final long serialVersionUID = -446811404645317117L;
-
     protected static final Logger logger = Logger.getLogger(Question.class);
 
     private String recordClassRef;
@@ -507,7 +505,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         return attributeFields;
     }
 
-	public AttributeCategoryTree getAttributeCategoryTree(FieldScope scope) {
+	public AttributeCategoryTree getAttributeCategoryTree(FieldScope scope) throws WdkModelException {
 		
 		// get trimmed copy of category tree
 		AttributeCategoryTree tree = recordClass.getAttributeCategoryTree(scope);
@@ -517,16 +515,15 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 		dynamic.setName("dynamic");
 		dynamic.setDisplayName("Search-Specific");
 		for (AttributeField field : dynamicAttributeSet.getAttributeFieldMap(scope).values()) {
-			dynamic.addField(field);
+			if (field.getName().equals(Utilities.COLUMN_WEIGHT)) {
+				tree.addAttributeToCategories(field);
+			}
+			else {
+				dynamic.addField(field);
+			}
 		}
 		if (!dynamic.getFields().isEmpty()) {
 			tree.prependAttributeCategory(dynamic);
-		}
-		
-		// integrate uncategorized fields into tree as last root node
-		AttributeCategory uncategorized = tree.getNodeForUncategorized();
-		if (!uncategorized.getFields().isEmpty()) {
-			tree.addAttributeCategory(uncategorized);
 		}
 		
 		return tree;

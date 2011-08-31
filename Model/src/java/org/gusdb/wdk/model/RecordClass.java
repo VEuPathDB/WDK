@@ -582,9 +582,6 @@ public class RecordClass extends WdkModelBase implements
         // this must be called before the attributes are added....
         attributeCategoryTree.resolveReferences(model);
         
-        // add primary key attribute first, then skip later (ensures PK at top of category)
-        attributeCategoryTree.addAttributeToCategories(getPrimaryKeyAttributeField());
-        
         for (AttributeQueryReference queryRef : attributesQueryRefList) {
         	for (AttributeField attribute : queryRef.getAttributeFields()) {
         		attributeCategoryTree.addAttributeToCategories(attribute);

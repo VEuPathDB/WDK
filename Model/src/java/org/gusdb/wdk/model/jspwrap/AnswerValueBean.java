@@ -10,13 +10,13 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.AttributeCategoryTree;
 import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.TableField;
+import org.gusdb.wdk.model.TreeNode;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
@@ -422,11 +422,11 @@ public class AnswerValueBean {
         return fieldBeans;
     }
 
-    public AttributeCategoryTree getDisplayableAttributeTree() {
+    public TreeNode getDisplayableAttributeTree() throws WdkModelException {
     	return answerValue.getDisplayableAttributeTree();
     }
 
-    public AttributeCategoryTree getReportMakerAttributeTree() {
+    public TreeNode getReportMakerAttributeTree() throws WdkModelException {
     	return answerValue.getReportMakerAttributeTree();
     }
     
@@ -516,13 +516,12 @@ public class AnswerValueBean {
     }
     
     /**
-     * Temporary method to allow easy on/off of attribute tree
-     * for attribute selection in both results page and report
-     * config pages.
+     * Temporary method to allow easy on/off of checkbox tree
+     * for value selection.
      * 
-     * @return whether attribute tree should be used (columns otherwise)
+     * @return whether checkbox tree should be used (columns layout otherwise)
      */
-    public boolean getUseAttributeTree() {
+    public boolean getUseCheckboxTree() {
     	return true;
     }
 }
