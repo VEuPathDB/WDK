@@ -598,6 +598,12 @@
             </choice>
           </attribute>
         </optional>
+        <zeroOrMore>
+          <element name="help">
+            <ref name="IncludeExclude" />
+            <text />
+          </element>
+        </zeroOrMore>
       </element>
   </define>
 
