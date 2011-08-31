@@ -30,10 +30,10 @@
 
 <%-- if 'show current' link is activated, then check current nodes on init; else check default --%>
 <c:if test="${showResetCurrent}">
-  <c:set var="initialSetMethod" value="selectCurrentNodes"/>
+  <c:set var="initialSetMethod" value="cbt_selectCurrentNodes"/>
 </c:if>
 <c:if test="${not showResetCurrent}">
-  <c:set var="initialSetMethod" value="selectDefaultNodes"/>
+  <c:set var="initialSetMethod" value="cbt_selectDefaultNodes"/>
 </c:if>
 
 <%@ attribute name="buttonAlignment"
@@ -87,62 +87,62 @@
         }
       });
   }
-  function selectCurrentNodes() {
+  function cbt_selectCurrentNodes() {
     var currentNodes = [${rootNode.selectedAsList}];
-    selectListOfNodes(currentNodes);
+    cbt_selectListOfNodes(currentNodes);
   }
-  function selectDefaultNodes() {
+  function cbt_selectDefaultNodes() {
 	  var defaultNodes = [${rootNode.defaultAsList}];
-	  selectListOfNodes(defaultNodes);
+	  cbt_selectListOfNodes(defaultNodes);
   }
-  function selectListOfNodes(checkedArray) {
-    uncheckAll();
+  function cbt_selectListOfNodes(checkedArray) {
+    cbt_uncheckAll();
     for (i = 0; i < checkedArray.length; i++) {
       var nodeId = '#' + checkedArray[i];
       $('.checkboxTree').jstree("check_node", nodeId);
     }
   }
-  function checkAll() {
+  function cbt_checkAll() {
 	  $('.checkboxTree').jstree("check_all");
 	}
-  function uncheckAll() {
+  function cbt_uncheckAll() {
 	  $('.checkboxTree').jstree("uncheck_all");
 	}
-  function expandAll() {
+  function cbt_expandAll() {
   	$('.checkboxTree').jstree("open_all", -1, true);
   }
-  function collapseAll() {
+  function cbt_collapseAll() {
   	$('.checkboxTree').jstree("close_all", -1, true);
   }
 </script>    
 
 <div class="formButtonPanel" style="text-align:${buttonAlignment}">
-  <a class="small" href="javascript:void(0)" onclick="expandAll();">Expand All</a>
-  | <a class="small" href="javascript:void(0)" onclick="collapseAll();">Collapse All</a>
+  <a class="small" href="javascript:void(0)" onclick="cbt_expandAll();">Expand All</a>
+  | <a class="small" href="javascript:void(0)" onclick="cbt_collapseAll();">Collapse All</a>
   <c:if test="${showSelectAll}">
-    | <a class="small" href="javascript:void(0)" onclick="checkAll();">Select All</a>
+    | <a class="small" href="javascript:void(0)" onclick="cbt_checkAll();">Select All</a>
   </c:if>
-  | <a class="small" href="javascript:void(0)" onclick="uncheckAll();">Clear All</a>
+  | <a class="small" href="javascript:void(0)" onclick="cbt_uncheckAll();">Clear All</a>
   <c:if test="${showResetCurrent}">
-    <br/><a class="small" href="javascript:void(0)" onclick="selectCurrentNodes();">Reset to Current</a>
+    <br/><a class="small" href="javascript:void(0)" onclick="cbt_selectCurrentNodes();">Reset to Current</a>
   </c:if>
-  | <a class="small" href="javascript:void(0)" onclick="selectDefaultNodes();">Reset to Default</a>
+  | <a class="small" href="javascript:void(0)" onclick="cbt_selectDefaultNodes();">Reset to Default</a>
 </div>
 <div class="checkboxTree">
   <c:set var="recurse_term_node" value="${rootNode}" scope="request"/>
   <c:import url="/WEB-INF/includes/checkboxTreeNode.jsp" />
 </div>
 <div class="formButtonPanel" style="text-align:${buttonAlignment}">
-  <a class="small" href="javascript:void(0)" onclick="expandAll();">Expand All</a>
-  | <a class="small" href="javascript:void(0)" onclick="collapseAll();">Collapse All</a>
+  <a class="small" href="javascript:void(0)" onclick="cbt_expandAll();">Expand All</a>
+  | <a class="small" href="javascript:void(0)" onclick="cbt_collapseAll();">Collapse All</a>
   <c:if test="${showSelectAll}">
-    | <a class="small" href="javascript:void(0)" onclick="checkAll();">Select All</a>
+    | <a class="small" href="javascript:void(0)" onclick="cbt_checkAll();">Select All</a>
   </c:if>
-  | <a class="small" href="javascript:void(0)" onclick="uncheckAll();">Clear All</a>
+  | <a class="small" href="javascript:void(0)" onclick="cbt_uncheckAll();">Clear All</a>
   <c:if test="${showResetCurrent}">
-    <br/><a class="small" href="javascript:void(0)" onclick="selectCurrentNodes();">Reset to Current</a>
+    <br/><a class="small" href="javascript:void(0)" onclick="cbt_selectCurrentNodes();">Reset to Current</a>
   </c:if>
-  | <a class="small" href="javascript:void(0)" onclick="selectDefaultNodes();">Reset to Default</a>
+  | <a class="small" href="javascript:void(0)" onclick="cbt_selectDefaultNodes();">Reset to Default</a>
 </div>
 
 <c:remove var="recurse_term_node"/>
