@@ -212,7 +212,7 @@ img.plus-minus {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 .h2center {
-	font-size: 14px;
+	font-size: 130%;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	color:  black; 
@@ -222,7 +222,7 @@ img.plus-minus {
 }
 
 .h3center {
-	font-size: 12px;
+	font-size: 120%;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	color:  black;    
@@ -231,7 +231,7 @@ img.plus-minus {
 }
 
 .h3left {
-	font-size: 12px;
+	font-size: 120%;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	color:  black;    
@@ -241,7 +241,7 @@ img.plus-minus {
 }
 
 .h4left {
-	font-size: 14px;
+	font-size: 130%;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	color:  black;    
@@ -261,7 +261,7 @@ img.plus-minus {
 }
 
 .small {
-	font-size: 11px;	
+	font-size: 95%px;	
 }
 
 .detail_link {
