@@ -1,6 +1,11 @@
 <%-- this tag file is only used to import static resources --%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
+<%@ attribute name="refer"
+              required="false"
+              description="Page calling this tag"
+%>
+
 <%-- JS libraries --%>
 <script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-1.5.1.min.js"/>'></script>
 <script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-ui-1.8.14.custom.min.js"/>'></script>
