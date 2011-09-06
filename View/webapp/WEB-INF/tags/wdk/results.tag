@@ -68,7 +68,7 @@
   <c:otherwise>
 
 <table width="100%"><tr>
-<td class="h4left" style="vertical-align:middle;padding-bottom:7px;">
+<td class="h3left" style="vertical-align:middle;padding-bottom:7px;">
     <c:if test="${strategy != null}">
         <span id="text_strategy_number">${strategy.name}</span> 
         - step <span id="text_step_number">${strategy.length}</span> - 
