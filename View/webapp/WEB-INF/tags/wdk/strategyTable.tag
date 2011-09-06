@@ -45,7 +45,7 @@
       </c:choose>
     </th>
 <%--     <th scope="col" style="width: 5em;text-align:center">Last Opened</th> --%>
-    <th class="sortable" scope="col" style="width: 4em">Version</th>
+    <th class="sortable" scope="col" style="width: 4em" title="It refers to the Website Version. See the Version number of this current release on the top left side of the header, on the right of the site name">Version</th>
     <th class="sortable" scope="col" style="width: 4em;text-align:right">Size</th>
     <th>&nbsp;&nbsp;</th>
   </tr>
