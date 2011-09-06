@@ -72,7 +72,7 @@ div.htmltooltip{
     float: left;
     clear: left;
 }
-
+/*
 .param-controls > a:link, 
 .param-controls > a:visited,
 .param-controls > a:hover,
@@ -83,7 +83,7 @@ div.htmltooltip{
 .param-multiPick  a:active{
 	font-size:  8pt;
 }
-
+*/
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =TABLES 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -241,7 +241,7 @@ img.plus-minus {
 }
 
 .h4left {
-	font-size: 130%;
+//	font-size: 130%;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	color:  black;    
@@ -261,7 +261,7 @@ img.plus-minus {
 }
 
 .small {
-	font-size: 95%px;	
+	font-size: 95%;	
 }
 
 .detail_link {
