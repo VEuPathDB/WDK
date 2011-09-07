@@ -61,7 +61,8 @@ $.blockUI.defaults = {
         color:          '#000', 
         //border:         '3px solid #aaa',
         backgroundColor:'#fff',
-        cursor:         'wait'
+        cursor:         'wait',
+	 opacity:        '0.8' 
     },
     
     // styles for the overlay
