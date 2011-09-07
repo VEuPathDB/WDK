@@ -545,6 +545,8 @@ tr.headerRow > td,th {
 
 .attributesFormWrapper {
 	margin-top: 30px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-weight: normal;
 }
 
 .formButtonPanel {
