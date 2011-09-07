@@ -98,25 +98,7 @@
 </td>
 </tr></table>
 
-<%-- display view list --%>
-<div id="Summary_Views" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
-  <c:set var="question" value="${wdkStep.question}" />
-  <c:set var="currentView" value="${question.defaultSummaryView.name}" />
-  <c:set var="views" value="${question.summaryViews}" />
-  <c:set var="index" value="${0}" />
 
-  <ul id="summary_views" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
-    <c:forEach items="${views}" var="item">
-      <c:set var="view" value="${item.value}" />
-      <c:if test="${view.name == currentView}">
-        <c:set var="selectedTab" value="${index}" />
-      </c:if>
-      <li class="ui-state-default ui-corner-top">
-        <a title="Results_Pane" 
-           href="<c:url value='/showResult.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}&view=${view.name}' />"
-        >${view.display}</a>
-      </li>
-      <c:set var="index" value="${index + 1}" />
 <div class='Results_Pane'>
 <!-- pager -->
 <pg:pager isOffset="true"
@@ -338,16 +320,74 @@
     <c:forEach items="${pkValues}" var="pkValue">
       <c:set var="recordLinkKeys" value="${recordLinkKeys}&${pkValue.key}=${pkValue.value}" />
     </c:forEach>
-  </ul>
 
-</div> <!-- END OF Summary_Views -->
+    <td ${align} style="${nowrap}padding:3px 2px"><div>
+      
+      <c:set var="fieldVal" value="${recAttr.briefDisplay}"/>
+      
+      <c:choose>
+        <c:when test="${j == 0}">
+	  <%-- display a link to record page --%>
+	<!-- store the primary key pairs here -->
+      <div class="primaryKey" fvalue="${fieldVal}" style="display:none;">
+        <c:forEach items="${pkValues}" var="pkValue">
+          <span key="${pkValue.key}">${pkValue.value}</span>
+        </c:forEach>
+      </div>
+          <a href="showRecord.do?name=${recNam}${recordLinkKeys}">${fieldVal}</a>
+        </c:when>   <%-- when j=0 --%>
 
-<script>
-  $(function() {
-    $( "#Summary_Views" ).tabs({ selected : ${selectedTab} });
-  });
-</script>
-<h1>current view: ${currentView}, index: ${selectedTab}</h1>
+        <c:otherwise>
+
+          <!-- need to know if fieldVal should be hot linked -->
+          <c:choose>
+			<c:when test="${fieldVal == null || fn:length(fieldVal) == 0}">
+               <span style="color:gray;">N/A</span>
+            </c:when>
+            <c:when test="${recAttr.class.name eq 'org.gusdb.wdk.model.LinkAttributeValue'}">
+		 <a href="${recAttr.url}">${recAttr.displayText}</a>
+            </c:when>
+            <c:otherwise>
+              ${fieldVal}
+            </c:otherwise>
+          </c:choose>
+
+        </c:otherwise>
+      </c:choose>
+    </div></td>
+    <c:set var="j" value="${j+1}"/>
+
+  </c:forEach>
+</tr>
+<c:set var="i" value="${i+1}"/>
+</c:forEach>
+
+</tr>
+
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<%--------- END OF RESULTS  ----------%>
+
+<%--------- PAGING BOTTOM BAR ----------%>
+<table width="100%" border="0" cellpadding="3" cellspacing="0">
+	<tr class="subheaderrow">
+	<th style="text-align:left;white-space:nowrap;"> 
+	       <wdk:pager wdkAnswer="${wdkAnswer}" pager_id="bottom"/> 
+	</th>
+	<th style="text-align:right;white-space:nowrap;">
+		&nbsp;
+	</th>
+	<th style="text-align:right;white-space:nowrap;width:5%;">
+	    &nbsp;
+	</th>
+	</tr>
+</table>
+<%--------- END OF PAGING BOTTOM BAR ----------%>
+</pg:pager>
+</div> <!-- END OF RESULTS PANE -->
 
   </c:otherwise>
 </c:choose>

@@ -3,8 +3,12 @@
 
 <%@ attribute name="refer"
               required="false"
-              description="Page calling this tag"
+              description="Page calling this tag. The list of WDK recognized refer values are: home, question, summary, record"
 %>
+
+<%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
+<%-- Scripts and styles that are used on the whole site                    --%>
+<%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
 
 <%-- JS libraries --%>
 <script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-1.5.1.min.js"/>'></script>
@@ -30,7 +34,81 @@
 
 <%-- WDL based styles --%>
 <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkCommon.css' />">
-<link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkFilter.css' />">
-<link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/dyk.css"/>'/>
-<link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/Strategy.css"/>'/>
 <link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/flexigrid.css"/>'/>
+
+
+<%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
+<%-- scripts and styles used on the home page only                         --%>
+<%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
+<c:if test="${refer == 'home'}">
+
+</c:if>
+
+
+<%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
+<%-- scripts and styles used on the question page. all question content are 
+     also included in summary page to support the addStep popup            --%>
+<%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
+<c:if test="${refer == 'question' || refer == 'summary'}">
+  <script type="text/javascript" src="<c:url value='/wdk/js/treeControl.js'/>"></script>
+  <script type="text/javascript" src="<c:url value='/wdk/js/parameterHandlers.js'/>"></script>
+</c:if>
+
+
+<%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
+<%-- scripts and styles used on the summary page only                      --%>
+<%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
+<c:if test="${refer == 'summary'}">
+  <script type="text/javascript" src="<c:url value='wdk/js/dyk.js'/>"></script>
+
+  <!-- JQuery Drag And Drop Plugin -->
+  <script type="text/javascript" src="<c:url value='wdk/js/lib/json.js'/>"></script>
+  <script type="text/javascript" src="<c:url value='wdk/js/lib/jquery.multiSelect.js'/>"></script>
+
+  <!-- filter menu javascript -->
+  <script type="text/javascript" src="<c:url value='wdk/js/addStepPopup.js'/>"></script>
+  <script type="text/javascript" src="<c:url value='wdk/js/spanlogic.js'/>"></script>
+  <!-- history page code -->
+  <script type="text/javascript" src="<c:url value='wdk/js/history.js'/>"></script>
+
+  <!-- Strategy Interaction javascript -->
+  <script type="text/javascript" src="<c:url value='wdk/js/model-JSON.js'/>"></script>
+  <script type="text/javascript" src="<c:url value='wdk/js/view-JSON.js'/>"></script>
+  <script type="text/javascript" src="<c:url value='wdk/js/controller-JSON.js'/>"></script>
+  <script type="text/javascript" src="<c:url value='wdk/js/error-JSON.js'/>"></script>
+  <script type="text/javascript" src="<c:url value='wdk/js/step.js'/>"></script>
+  <script type="text/javascript" src="<c:url value='wdk/js/lib/flexigrid.js'/>"></script>
+
+  <!-- Results Page AJAX Javascript code -->
+  <script type="text/javascript" src="<c:url value='wdk/js/resultsPage.js'/>"></script>
+  <script type="text/javascript" src="<c:url value='wdk/js/basket.js'/>"></script>
+  
+  <script type="text/javascript" src="<c:url value='wdk/js/wdkFilter.js'/>"></script>
+  <script type="text/javascript" src="<c:url value='wdk/js/favorite.js'/>"></script>
+
+  <!--[if lt IE 7]>
+  <script type="text/javascript">
+        $(document).ready(function(){
+                $("#Strategies").prepend("<div style='height:124px;'>&nbsp;</div>");
+        });
+  </script>
+  <![endif]-->
+
+
+
+  <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkFilter.css' />">
+  <link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/dyk.css"/>'/>
+  <link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/Strategy.css"/>'/>
+</c:if>
+
+
+<%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
+<%-- scripts and styles used on the record page only                       --%>
+<%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
+<c:if test="${refer == 'record'}">
+  <script type="text/javascript" src="<c:url value='wdk/js/lib/json.js'/>"></script>
+  <script type="text/javascript" src="<c:url value='wdk/js/basket.js'/>"></script>
+  <script type="text/javascript" src="<c:url value='wdk/js/favorite.js'/>"></script>
+</c:if>
+
+
