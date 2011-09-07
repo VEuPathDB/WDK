@@ -147,7 +147,7 @@ function multiStep(modelstep, prevjsonstep, jsonstep, sid){
 	if(childStp.filtered)
 		childfilterImg = "<span class='filterImg'><img src='wdk/images/filter.gif' height='10px' width='10px'/></span>";
 	childinner = ""+
-		"		<h3>"+
+		"		<h4>"+
 		"			<a style='text-decoration:underline' title='CLICK to make changes to this step and/or how it is combined with the previous step' id='stepId_" + modelstep.frontId + "' class='crumb_name' onclick='showDetails(this)' href='javascript:void(0)'>"+
 		"				<span id='name'>"+uname+"</span>"+
 		"				<img src='wdk/images/plus.gif' width='13' height='13'/>"+
@@ -155,7 +155,7 @@ function multiStep(modelstep, prevjsonstep, jsonstep, sid){
 		"			</a>"+
 		"			<span id='fullStepName' style='display: none;'>" + fullName + "</span>"+
 		"			<div class='crumb_details'></div>"+
-		"		</h3>"+
+		"		</h4>"+
 		"		<h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + childStp.results + "&nbsp;" + getDisplayType(childStp.shortDisplayType, childStp.results) + "</a></h6>"+
 		childfilterImg +
 		"<img class='arrow down' src='wdk/images/arrow_chain_down2.png' alt='equals'>";
@@ -211,7 +211,7 @@ function singleStep(modelstep, prevjsonstep, jsonstep, sid){
 	if(jsonstep.filtered)
 		filterImg = "<span class='filterImg'><img src='wdk/images/filter.gif' height='10px' width='10px'/></span>";
 	inner = ""+
-		"		<h3>"+
+		"		<h4>"+
 		"			<a style='text-decoration:underline' title='CLICK to make changes to this step.' id='stepId_" + modelstep.frontId + "' class='crumb_name' onclick='showDetails(this)' href='javascript:void(0)'>"+
 		"				<span id='name'>"+uname+"</span>"+
 		"				<img src='wdk/images/plus.gif' width='13' height='13'/>"+
@@ -219,7 +219,7 @@ function singleStep(modelstep, prevjsonstep, jsonstep, sid){
 		"			</a>"+ 
 		"			<span id='fullStepName' style='display: none;'>" + fullName + "</span>"+
 		"			<div class='crumb_details'></div>"+
-		"		</h3>"+
+		"		</h4>"+
 		"		<h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + jsonstep.results + "&nbsp;" + getDisplayType(jsonstep.shortDisplayType,jsonstep.results) + "</a></h6>"+
 		 filterImg;
 	if(!modelstep.isLast){
@@ -657,7 +657,7 @@ function closeInvalidText(ele){
 
 function reviseInvalidSteps(ele){
 	var iv_id = $(ele).parent().attr("id").split("_");
-	$("div#diagram_" + iv_id[0] + " div#step_" + iv_id[1] + "_sub h3 a#stepId_" + iv_id[1]).click();
+	$("div#diagram_" + iv_id[0] + " div#step_" + iv_id[1] + "_sub h4 a#stepId_" + iv_id[1]).click();
 	$("div#diagram_" + iv_id[0] + " div#invalid-step-text").remove();
 }
 function getSpanOperation(params) {
