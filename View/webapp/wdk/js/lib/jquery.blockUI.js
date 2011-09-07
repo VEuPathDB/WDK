@@ -46,14 +46,14 @@ $.blockUI.version = 2.09; // 2nd generation blocking at no extra cost!
 // override these in your code to change the default behavior and style
 $.blockUI.defaults = {
     // message displayed when blocking (use null for no message)
-    message:  '<h1>Please wait...</h1>',
+    message:  '<span class="h2center">Please wait...</span>',
     
     // styles for the message when blocking; if you wish to disable
     // these and use an external stylesheet then do this in your code:
     // $.blockUI.defaults.css = {};
     css: { 
-        padding:        0,
-        margin:         0,
+        padding:        '10px',
+        margin:         '10px',
         width:          '30%', 
         top:            '40%', 
         left:           '35%', 
@@ -149,6 +149,10 @@ function install(el, opts) {
     var lyr3 = full ? $('<div class="blockUI blockMsg blockPage" style="z-index:'+z+';position:fixed"></div>')
                     : $('<div class="blockUI blockMsg blockElement" style="z-index:'+z+';display:none;position:absolute"></div>');
 
+//as instructured above, so we use css defined in AllSites.css
+//$.blockUI.defaults.css = {};
+
+// or we could comment out this
     // if we have a message, style it
     if (msg) 
         lyr3.css(css);
@@ -197,6 +201,8 @@ function install(el, opts) {
         });
     }
     
+
+
     // show the message
     lyr3.append(msg).show();
     if (msg && (msg.jquery || msg.nodeType))
