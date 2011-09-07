@@ -22,6 +22,9 @@ public class InvokeAttributePluginAction extends Action {
     private static final String PARAM_STEP = "step";
     private static final String PARAM_ATTRIBUTE = "attribute";
     private static final String PARAM_PLUGIN = "plugin";
+
+    private static final String ATTR_PLUGIN = "plugin";
+    private static final String ATTR_ATTRIBUTE = "attribute";
     
     private static final String FORWARD_DISPLAY = "display";
     
@@ -55,6 +58,8 @@ public class InvokeAttributePluginAction extends Action {
         for (String key : results.keySet()) {
             request.setAttribute(key, results.get(key));
         }
+        request.setAttribute(ATTR_PLUGIN, plugin);
+        request.setAttribute(ATTR_ATTRIBUTE, attribute);
         
         ActionForward forward = mapping.findForward(FORWARD_DISPLAY);
         logger.debug("Leaving InvokeAttributePluginAction. to: " + forward);
