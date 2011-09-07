@@ -13,8 +13,8 @@ $(function() {
 </script>
 <div id="attribute-plugin">
     <ul>
-        <li><a href="#tab-view">View</a></li>
-        <li><a href="#tab-download">Download</a></li>
+        <li><a href="#tab-view">Graph</a></li>
+        <li><a href="#tab-download">Data (Text)</a></li>
 	</ul>
 	<div id="tab-view">
 		<c:import url="${plugin.view}"/>
