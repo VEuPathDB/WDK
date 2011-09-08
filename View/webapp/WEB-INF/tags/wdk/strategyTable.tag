@@ -34,7 +34,7 @@
     <th class="sortable" scope="col">
       <c:if test="${prefix != null}">${prefix}&nbsp;</c:if>Strategies&nbsp;(${fn:length(strategies)})
     </th>
-    <th scope="col" style="width: 3em;">&nbsp;</th>
+    <th scope="sortable" style="width: 3em;">&nbsp;</th>
     <th scope="col" style="width: 4em">&nbsp;</th>
     <th scope="col" style="width: 9em">&nbsp;</th>
     <th class="sortable" scope="col" style="width: 5em;text-align:center">Created</th>
@@ -96,9 +96,11 @@
         <div id="activate_${strategyId}">
           <c:choose>
             <c:when test="${!active}">
+              <span style="display:none">Open</span>
               <input type='button' value='Open' onclick="openStrategy('${strategyId}')" />
             </c:when>
             <c:otherwise>
+              <span style="display:none">Close</span>
               <input type='button' value='Close' onclick="closeStrategy('${strategyId}', true)" />
             </c:otherwise>
           </c:choose>

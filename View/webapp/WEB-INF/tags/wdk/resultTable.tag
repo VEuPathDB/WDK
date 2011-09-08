@@ -3,14 +3,16 @@
 <%@ taglib prefix="pg" uri="http://jsptags.com/tags/navigation/pager" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
-<%@ attribute name="wdkStep"
+
+<%@ attribute name="step"
               type="org.gusdb.wdk.model.jspwrap.StepBean"
               required="true"
               description="Step bean we are looking at"
 %>
 
-<c:set var="wdkUser" value="${sessionScope.wdkUser}" />
-<c:set var="wdkAnswer" value="${wdkStep.answerValue}"/>
+
+
+<c:set var="wdkAnswer" value="${step.answerValue}"/>
 <c:set var="qName" value="${wdkAnswer.question.fullName}" />
 <c:set var="modelName" value="${applicationScope.wdkModel.name}" />
 <c:set var="recordName" value="${wdkAnswer.question.recordClass.fullName}" />
@@ -20,54 +22,10 @@
 
 
 <jsp:useBean id="typeMap" class="java.util.HashMap"/>
-<c:set target="${typeMap}" property="singular" value="${wdkStep.displayType}"/>
+<c:set target="${typeMap}" property="singular" value="${step.displayType}"/>
 <wdk:getPlural pluralMap="${typeMap}"/>
 <c:set var="type" value="${typeMap['plural']}"/>
 
-<c:set var="qsp" value="${fn:split(wdk_query_string,'&')}" />
-<c:set var="commandUrl" value="" />
-<c:forEach items="${qsp}" var="prm">
-  <c:if test="${fn:split(prm, '=')[0] eq 'strategy'}">
-    <c:set var="commandUrl" value="${commandUrl}${prm}&" />
-  </c:if>
-  <c:if test="${fn:split(prm, '=')[0] eq 'step'}">
-    <c:set var="commandUrl" value="${commandUrl}${prm}&" />
-  </c:if>
-  <c:if test="${fn:split(prm, '=')[0] eq 'subquery'}">
-    <c:set var="commandUrl" value="${commandUrl}${prm}&" />
-  </c:if>
-  <c:if test="${fn:split(prm, '=')[0] eq 'summary'}">
-    <c:set var="commandUrl" value="${commandUrl}${prm}&" />
-  </c:if>
-</c:forEach>
-<c:choose>
-  <c:when test="${strategy != null}"> <%-- this is on the run page --%>
-    <c:set var="commandUrl" value="${commandUrl}strategy_checksum=${strategy.checksum}" />
-  </c:when>
-  <c:otherwise> <%-- this is on the basket page --%>
-    <c:set var="commandUrl" value="${commandUrl}from_basket=true" />
-  </c:otherwise>
-</c:choose>
-<c:set var="commandUrl"><c:url value="/processSummary.do?${commandUrl}" /></c:set>
-
-<c:if test="${strategy != null}">
-    <wdk:filterLayouts strategyId="${strategy.strategyId}" 
-                       stepId="${wdkStep.stepId}"
-                       answerValue="${wdkAnswer}" />
-</c:if>
-
-<!-- handle empty result set situation -->
-<c:choose> <%-- HANDLE EMPTY RESULT --%>
-  <c:when test='${strategy != null && wdkAnswer.resultSize == 0}'>
-	No results are retrieved
-  </c:when>
-  <c:when test='${strategy == null && wdkUser.guest && wdkAnswer.resultSize == 0}'>
-    Please login to use the basket
-  </c:when>
-  <c:when test='${strategy == null && wdkAnswer.resultSize == 0}'>
-    Basket Empty
-  </c:when>
-  <c:otherwise>
 
 <!-- pager -->
 <pg:pager isOffset="true"
@@ -96,10 +54,13 @@
 	<th style="text-align: right;white-space:nowrap;">
                <wdk:addAttributes wdkAnswer="${wdkAnswer}" commandUrl="${commandUrl}"/>
 	</th>
-	<th style="text-align: right;white-space:nowrap;width:5%;">
+  <%-- remove Reset button when new tree structure is activated --%>
+  <c:if test="${not wdkAnswer.useCheckboxTree}">
+  	<th style="text-align: right;white-space:nowrap;width:5%;">
 	    &nbsp;
-	   <input type="button" value="Reset Columns" onClick="resetAttr('${commandUrl}', this)" />
-	</th>
+	    <input type="button" value="Reset Columns" onClick="resetAttr('${commandUrl}', this)" />
+	  </th>
+	</c:if>
 	</tr>
 </table>
 <%--------- END OF PAGING TOP BAR ----------%>
@@ -112,7 +73,7 @@
 <div class="Results_Div flexigrid">
 <div class="bDiv">
 <div class="bDivBox">
-<table class="Results_Table" width="100%" border="0" cellpadding="3" cellspacing="0" step="${wdkStep.stepId}">
+<table class="Results_Table" width="100%" border="0" cellpadding="3" cellspacing="0" step="${step.stepId}">
 <thead>
 <tr class="headerrow">
             <c:if test="${recHasBasket}">
@@ -151,14 +112,7 @@
             </c:when>
             <c:otherwise>
               <%-- display sorting buttons --%>
-              <c:choose>
-                <c:when test="${strategy != null}">
-                  <c:set var="resultsAction" value="javascript:GetResultsPage('${commandUrl}&command=sort&attribute=${attrName}&sortOrder=asc', true, true)" />
-                </c:when>
-                <c:otherwise>
-                  <c:set var="resultsAction" value="javascript:ChangeBasket('${commandUrl}&command=sort&attribute=${attrName}&sortOrder=asc')" />
-                </c:otherwise>
-              </c:choose>
+              <c:set var="resultsAction" value="javascript:sortResult('${attrName}', 'asc')" />
               <a href="${resultsAction}" title="Sort by ${sumAttrib}">
                   <img src="<c:url value='/wdk/images/results_arrw_up.png'/>" alt="Sort up" border="0" /></a>
             </c:otherwise>
@@ -177,14 +131,7 @@
             </c:when>
             <c:otherwise>
               <%-- display sorting buttons --%>
-              <c:choose>
-                <c:when test="${strategy != null}">
-                  <c:set var="resultsAction" value="javascript:GetResultsPage('${commandUrl}&command=sort&attribute=${attrName}&sortOrder=desc', true, true)" />
-                </c:when>
-                <c:otherwise>
-                  <c:set var="resultsAction" value="javascript:ChangeBasket('${commandUrl}&command=sort&attribute=${attrName}&sortOrder=desc')" />
-                </c:otherwise>
-              </c:choose>
+              <c:set var="resultsAction" value="javascript:sortResult('${attrName}', 'desc')" />
               <a href="${resultsAction}" title="Sort by ${sumAttrib}">
               <img src="<c:url value='/wdk/images/results_arrw_dwn.png'/>" alt="Sort down" border="0" /></a>
             </c:otherwise>
@@ -205,21 +152,15 @@
         <c:if test="${sumAttrib.removable}">
           <td style="width:20px;">
             <%-- display remove attribute button --%>
-
-
-              <c:choose>
-                <c:when test="${strategy != null}">
-                  <c:set var="resultsAction" value="javascript:GetResultsPage('${commandUrl}&command=remove&attribute=${attrName}', true, true)" />
-                </c:when>
-                <c:otherwise>
-                  <c:set var="resultsAction" value="javascript:ChangeBasket('${commandUrl}&command=remove&attribute=${attrName}')" />
-                </c:otherwise>
-              </c:choose>
+            <c:set var="resultsAction" value="javascript:removeAttribute('${attrName}')" />
             <a href="${resultsAction}"
                         title="Remove ${sumAttrib} column">
               <img src="<c:url value='/wdk/images/results_x.png'/>" alt="Remove" border="0" /></a>
           </td>
         </c:if>
+          <td>
+              <wdk:attributePlugin attribute="${sumAttrib}" />
+          </td>
          </tr>
       </table>
     </th>
@@ -351,5 +292,3 @@
 <%--------- END OF PAGING BOTTOM BAR ----------%>
 </pg:pager>
 
-  </c:otherwise>
-</c:choose> <%-- END OF HANDLE EMPTY RESULT --%>

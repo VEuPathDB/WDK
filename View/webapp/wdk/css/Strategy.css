@@ -3,6 +3,7 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       = Strategy Styles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+#stage-stack { display: none; }
 
 #strategy_workspace {
   margin-top:-27px;
@@ -119,7 +120,7 @@ div.sub_diagram {
 }
 
 /* State names will be centered within their boxes. */
-.diagram h3 {
+.diagram h4 {
   margin:      0;
   padding:     0;
   font-size:   1em;
