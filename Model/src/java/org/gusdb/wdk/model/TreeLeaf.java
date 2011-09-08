@@ -50,4 +50,20 @@ public class TreeLeaf {
 	public boolean getBoolField(BoolField fieldId) {
 		return _booleanFields[fieldId.ordinal()];
 	}
+	
+	@Override
+	public String toString() {
+		StringBuilder str = new StringBuilder()
+			.append("Leaf { name: \"").append(_name)
+			.append("\", displayName: \"").append(_displayName)
+			.append("\", help: ").append(_help == null ? "null" : _help.length() + " chars")
+			.append(", bools: ");
+		boolean first = true;
+		for (BoolField field : BoolField.values()) {
+			str.append(first ? "{ " : ", "); first = false;
+			str.append(field.name().toLowerCase()).append(": ").append(_booleanFields[field.ordinal()]);
+		}
+		str.append(" } }");
+		return str.toString();
+	}
 }
