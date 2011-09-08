@@ -10,6 +10,8 @@
 <c:set var="openCount" value="${fn:length(wdkUser.activeStrategies)}"/>
 <c:set var="basketCounts" value="${wdkUser.basketCounts}"/>
 
+<div id="stage-stack"> </div>
+
   <div id="contentwrapper">
     <div id="contentcolumn2">
       <div class="innertube">

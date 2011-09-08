@@ -2,5 +2,5 @@
 
 <c:set var="wdkStep" value="${requestScope.wdkStep}" />
 
-<wdk:resultTable wdkStep="${wdkStep}" />
+<wdk:resultTable step="${wdkStep}" />
 

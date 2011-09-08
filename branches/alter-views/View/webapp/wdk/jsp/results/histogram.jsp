@@ -5,6 +5,7 @@
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
+<c:set var="attribute" value="${requestScope.attribute}" />
 <c:set var="plugin" value="${requestScope.plugin}" />
 <c:set var="summary" value="${requestScope.summary}" />
 <c:set var="histogram" value="${requestScope.histogram}" />
@@ -25,7 +26,7 @@ $(document).ready(function() {
 <table id="histogram" class="datatables">
   <thead>
     <tr>
-      <th>#Exons</th>
+      <th>${attribute.displayName}</th>
       <th>#Records</th>
       <th>histogram</th>
     </tr>
@@ -42,7 +43,7 @@ $(document).ready(function() {
 <c:if test="${fn:length(histogram) > 10}">
   <tfoot>
     <tr>
-      <th>#Exons</th>
+      <th>${attribute.displayName}</th>
       <th>#Records</th>
       <th>histogram</th>
     </tr>
