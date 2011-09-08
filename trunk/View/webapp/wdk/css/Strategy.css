@@ -3,6 +3,7 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       = Strategy Styles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+#stage-stack { display: none; }
 
 #strategy_workspace {
   margin-top:-27px;

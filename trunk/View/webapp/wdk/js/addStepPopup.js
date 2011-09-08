@@ -4,7 +4,6 @@ var original_Query_Form_Text;
 var original_Query_Form_CSS = new Object();
 var current_Front_Strategy_Id = null;
 var isSpan = false;
-var pop_up_state = new Array();
 // var stage = null;
 function showExportLink(stratId){
  	closeModal();
@@ -389,7 +388,8 @@ function callWizard(url, ele, id, sec, action, stratFrontId){
                             }
                     }else{
                         WizardLoading(false);
-			pop_up_state.push($("#qf_content").html());
+                        $("#qf_content").children().wrapAll('<div class="stage" />');
+                        $("#qf_content > div.stage").appendTo("#stage-stack");
 			setPopupContent(data);
                     }
 						htmltooltip.render();
@@ -419,7 +419,8 @@ function callWizard(url, ele, id, sec, action, stratFrontId){
 									} 
 								});
 							}else{
-								pop_up_state.push($("#qf_content").html());
+                                                                $("#qf_content").children().wrapAll('<div class="stage" />');
+                                                                $("#qf_content > .stage").appendTo("#stage-stack");
 							}
 							setPopupContent(data);
 							
@@ -441,12 +442,14 @@ function callWizard(url, ele, id, sec, action, stratFrontId){
 }
 
 function backStage(){
-	var h = pop_up_state.pop()
-	if(h == undefined)
-		closeAll();
-	else {
-		setPopupContent(h);
-        }
+    var lastStage = $("#stage-stack > .stage:last").detach();
+    if(lastStage.length == 0)
+        closeAll();
+    else {
+        $("#qf_content").html("");
+        $("#qf_content").append(lastStage);
+        $("#qf_content > .stage").children().unwrap();
+    }
 }
 
 function setPopupContent(data) {
@@ -488,7 +491,7 @@ function closeAll(hide,as){
 		isSpan = false;
 		$("#query_form").remove();
 		$(".original").remove();
-		pop_up_state = new Array();
+		$("#stage-stack").html("");
 	}
 	isInsert = "";
 	enableAddStepButtons();
