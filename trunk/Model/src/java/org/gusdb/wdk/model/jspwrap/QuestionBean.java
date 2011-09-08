@@ -37,6 +37,7 @@ public class QuestionBean {
     private Map<String, String> params = new LinkedHashMap<String, String>();
     private UserBean user;
     private int weight;
+    private Map<String, ParamBean> _paramBeanMap;
 
     /**
      * the recordClass full name for the answerParams input type.
@@ -45,29 +46,27 @@ public class QuestionBean {
 
     public QuestionBean(Question question) {
         this.question = question;
+        initializeParamBeans();   
     }
 
+    private void initializeParamBeans() {
+        Param[] params = question.getParams();
+        _paramBeanMap = new LinkedHashMap<String, ParamBean>();
+        for (int i = 0; i < params.length; i++) {
+            _paramBeanMap.put(params[i].getName(), createBeanFromParam(params[i]));
+        }
+    }
+    
     public RecordClassBean getRecordClass() {
         return new RecordClassBean(question.getRecordClass());
     }
 
     public ParamBean[] getParams() {
-        Param[] params = question.getParams();
-        ParamBean[] paramBeans = new ParamBean[params.length];
-        for (int i = 0; i < params.length; i++) {
-            paramBeans[i] = getParam(params[i]);
-        }
-        return paramBeans;
+        return _paramBeanMap.values().toArray(new ParamBean[0]);
     }
 
     public Map<String, ParamBean> getParamsMap() {
-        ParamBean[] paramBeans = getParams();
-        Map<String, ParamBean> pMap = new LinkedHashMap<String, ParamBean>();
-        for (int i = 0; i < paramBeans.length; i++) {
-            ParamBean p = paramBeans[i];
-            pMap.put(p.getName(), p);
-        }
-        return pMap;
+    	return _paramBeanMap;
     }
 
     /**
@@ -82,8 +81,7 @@ public class QuestionBean {
             Map<String, Param> paramGroup = paramGroups.get(group);
             Map<String, ParamBean> paramGroupBean = new LinkedHashMap<String, ParamBean>();
             for (String paramName : paramGroup.keySet()) {
-                Param param = paramGroup.get(paramName);
-                paramGroupBean.put(paramName, getParam(param));
+                paramGroupBean.put(paramName, _paramBeanMap.get(paramName));
             }
             paramGroupBeans.put(groupBean, paramGroupBean);
         }
@@ -104,14 +102,13 @@ public class QuestionBean {
             Map<String, Param> paramGroup = paramGroups.get(groupBean);
             Map<String, ParamBean> paramGroupBean = new LinkedHashMap<String, ParamBean>();
             for (String paramName : paramGroup.keySet()) {
-                Param param = paramGroup.get(paramName);
-                paramGroupBean.put(paramName, getParam(param));
+                paramGroupBean.put(paramName, _paramBeanMap.get(paramName));
             }
         }
         return paramGroupBeans;
     }
 
-    private ParamBean getParam(Param param) {
+    private ParamBean createBeanFromParam(Param param) {
         ParamBean bean;
         if (param instanceof AbstractEnumParam) {
             bean = new EnumParamBean((AbstractEnumParam) param);

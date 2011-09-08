@@ -151,8 +151,11 @@ public class ShowQuestionAction extends Action {
                     paramValue = param.dependentValueToRawValue(user,
                             paramValue);
                 }
-                if (paramValue != null)
-                    qForm.setArray(paramName, paramValue.split(","));
+                if (paramValue != null) {
+                    String[] currentValues = paramValue.split(",");
+                    qForm.setArray(paramName, currentValues);
+                    enumParam.setCurrentValues(currentValues);
+                }
             } else if (param instanceof AnswerParamBean) {
                 if (paramValue == null) {
                     String stepId = (String) request
