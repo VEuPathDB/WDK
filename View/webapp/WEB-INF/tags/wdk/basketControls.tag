@@ -18,7 +18,7 @@
 </table>
 <div id="basketConfirmation" style="display:none">
   <form action="javascript:void(0);">
-    <h2>Are you sure you want to empty the <span id="basketName"></span> basket?</h2>
+    <h3>Are you sure you want to empty the <span id="basketName"></span> basket?</h3>
     <input type="submit" value="Yes" onclick="jQuery.unblockUI();return true;" />
     <input type="submit" value="No" onclick="jQuery.unblockUI();return false;" />
   </form>

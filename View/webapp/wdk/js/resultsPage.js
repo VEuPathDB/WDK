@@ -56,7 +56,32 @@ function updateResultsPage(element, url, update) {
     }
 }
 
-function GetResultsPage(url, update, ignoreFilters){
+function sortResult(attribute, order) {
+    var command = "command=sort&attribute=" + attribute + "&sortOrder=" + order;
+    updateSummary(command);
+}
+
+function removeAttribute(attribute) {
+    var command = "command=remove&attribute=" + attribute;
+    updateSummary(command);
+}
+
+function updateSummary(command) {
+    var info = $("#Summary_Views");
+    var url = info.attr("updateUrl");
+    var strategyId = info.attr("strategy");
+    var stepId = info.attr("step");
+    var strategy = getStrategyFromBackId(strategyId);
+    var view = $("#Summary_Views > ul > li.ui-tabs-selected").attr("id");
+    url += "?strategy=" + strategyId + "&strategy_checksum=" + strategy.checksum + "&step=" 
+        + stepId + "&view=" + view + "&" + command;
+
+    GetResultsPage(url, true, true, true);
+}
+
+
+
+function GetResultsPage(url, update, ignoreFilters, resultOnly){
     var s = parseUrlUtil("strategy", url);
     var st = parseUrlUtil("step", url);
     var strat = getStrategyFromBackId(s[0]);
@@ -81,7 +106,8 @@ function GetResultsPage(url, update, ignoreFilters){
         },
         success: function(data){
             if (update && ErrorHandler("Results", data, strat, null)) {
-                var resultOnly = (url.indexOf('showResult.do') >= 0);
+                if (resultOnly == undefined)
+                    resultOnly = (url.indexOf('showResult.do') >= 0);
                
                 ResultsToGrid(data, ignoreFilters, currentDiv, resultOnly);
                 updateResultLabels(currentDiv, strat, step);
