@@ -104,4 +104,29 @@ public class TreeNode {
 		return all;
 	}
 	
+	@Override
+	public String toString() {
+		return toString("");
+	}
+	
+	public String toString(String indentation) {
+		String IND = indentation;
+		String NL = System.getProperty("line.separator");
+		StringBuilder str = new StringBuilder()
+			.append(IND).append("TreeNode {").append(NL)
+			.append(IND).append("  Name: ").append(_name).append(NL)
+			.append(IND).append("  DisplayName: ").append(_displayName).append(NL)
+			.append(IND).append("  LeafNodes:").append(NL);
+		for (TreeLeaf leaf : _leafNodes) {
+			str.append(IND).append("    ").append(leaf).append(NL);
+		}
+		str.append(IND).append("  Children {").append(NL);
+		for (TreeNode child : _childNodes) {
+			str.append(child.toString(IND + "    "));
+		}
+		str.append(IND).append("  }").append(NL)
+		   .append(IND).append("}").append(NL);
+		return str.toString();
+	}
+	
 }

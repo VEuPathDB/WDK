@@ -2,6 +2,8 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.TreeLeaf;
@@ -19,7 +21,9 @@ import org.json.JSONException;
  * consumption by a view
  */
 public class EnumParamBean extends ParamBean {
-
+	
+	private String[] _currentValues;
+	
     public EnumParamBean(AbstractEnumParam param) {
         super(param);
     }
@@ -121,7 +125,16 @@ public class EnumParamBean extends ParamBean {
 		    return rawValue;
 		}
     }
-    
+
+
+	public void setCurrentValues(String[] currentValues) {
+		StringBuilder sb = new StringBuilder("[ ");
+		for (String s : currentValues)
+			sb.append(s).append(", ");
+		sb.append(" ]");
+		_currentValues = currentValues;
+	}
+	
     public TreeNode getParamTree() throws Exception {
     	TreeNode root = new TreeNode(getName(), "top");
     	for (EnumParamTermNode paramNode : getVocabTreeRoots()) {
@@ -132,9 +145,12 @@ public class EnumParamBean extends ParamBean {
     			root.addChildNode(paramNode.toTreeNode());
     		}
     	}
-    	// FIXME: This is currently broken, since many enum names are illegal node IDs (e.g. containing parens, etc.)
-    	//root.turnOnAllLeaves();
-    	//root.setAllOnAsDefault();
+    	
+    	if (_currentValues != null && _currentValues.length > 0) {
+    		List<String> currentValueList = Arrays.asList(_currentValues);
+    		root.turnOnSelectedLeaves(currentValueList);
+    		root.setDefaultLeaves(currentValueList);
+    	}
     	return root;
     }
     

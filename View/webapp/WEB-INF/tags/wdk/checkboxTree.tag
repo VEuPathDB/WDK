@@ -97,9 +97,15 @@
   }
   function cbt_selectListOfNodes(checkedArray) {
     cbt_uncheckAll();
-    for (i = 0; i < checkedArray.length; i++) {
-      var nodeId = '#' + checkedArray[i];
-      $('.checkboxTree').jstree("check_node", nodeId);
+    // Have to manually select nodes and compare IDs since our ID names are not jquery-selection friendly
+    // Ideally would be able to do the following for each item in the checked array:
+    //   $('.checkboxTree').jstree("check_node", '#'+checkedArray[i];);
+    for (i=0; i < checkedArray.length; i++) {
+      $('.jstree-leaf').each(function(index) {
+    	  if (this.id == checkedArray[i]) {
+    		  $('.checkboxTree').jstree("check_node", $(this));
+    	  }
+      })
     }
   }
   function cbt_checkAll() {
