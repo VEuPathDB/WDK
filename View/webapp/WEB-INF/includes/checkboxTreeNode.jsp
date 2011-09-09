@@ -4,7 +4,7 @@
 <%-- Take recursive variable and set locally to maintain call stack state --%>
 <c:set var="node" value="${recurse_term_node}"/>
 
-<a href="#">${node.displayName}</a>
+<a href="#" style="cursor:default"><span style="cursor:text">${node.displayName}</span></a>
 <ul>
   <c:forEach var="childNode" items="${node.childNodes}">
     <li>
@@ -14,7 +14,7 @@
   </c:forEach>
   <c:forEach var="leaf" items="${node.leafNodes}">
     <li class="jstree-leaf" rel="leaf" id="${leaf.name}">
-      <a href="#"><label for="${leaf.name}" title="${leaf.help}">${leaf.displayName}</label></a>
+      <a href="#" style="cursor:default"><label for="${leaf.name}" title="${leaf.help}"><span style="cursor:text">${leaf.displayName}</span></label></a>
     </li>
   </c:forEach>
 </ul>
