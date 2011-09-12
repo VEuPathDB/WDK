@@ -73,7 +73,7 @@
 <script type="text/javascript">
   // configure the tree
   $(function() {
-	  addTreeToPage("${id}", "${checkboxName}", ${useIcons}, "<c:url value='${leafImage}'/>", [${rootNode.selectedAsList}], [${rootNode.defaultAsList}], [${initiallySetList}]);
+	  addTreeToPage("${id}", "${checkboxName}", ${useIcons}, ${rootNode.isAllSelected}, "<c:url value='${leafImage}'/>", [${rootNode.selectedAsList}], [${rootNode.defaultAsList}], [${initiallySetList}]);
 	  configureCheckboxTree("${id}");
   });
 </script>    

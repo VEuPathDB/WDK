@@ -104,6 +104,20 @@ public class TreeNode {
 		return all;
 	}
 	
+	public boolean getIsAllSelected() {
+		for (TreeLeaf leaf : _leafNodes) {
+			if (!leaf.getSelected()) {
+				return false;
+			}
+		}
+		for (TreeNode node : _childNodes) {
+			if (!node.getIsAllSelected()) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	@Override
 	public String toString() {
 		return toString("");
