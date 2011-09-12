@@ -5,6 +5,11 @@
               type="org.gusdb.wdk.model.TreeNode"
               description="the root of the tree to render" %>
 
+<%@ attribute name="id"
+              required="true"
+              type="java.lang.String"
+              description="unique name of this checkbox tree within the page" %>
+              
 <%@ attribute name="checkboxName"
               required="true"
               type="java.lang.String"
@@ -30,10 +35,10 @@
 
 <%-- if 'show current' link is activated, then check current nodes on init; else check default --%>
 <c:if test="${showResetCurrent}">
-  <c:set var="initialSetMethod" value="cbt_selectCurrentNodes"/>
+  <c:set var="initiallySetList" value="${rootNode.selectedAsList}"/>
 </c:if>
 <c:if test="${not showResetCurrent}">
-  <c:set var="initialSetMethod" value="cbt_selectDefaultNodes"/>
+  <c:set var="initiallySetList" value="${rootNode.defaultAsList}"/>
 </c:if>
 
 <%@ attribute name="buttonAlignment"
@@ -68,87 +73,38 @@
 <script type="text/javascript">
   // configure the tree
   $(function() {
-	  configureCheckboxTree();
+	  addTreeToPage("${id}", "${checkboxName}", ${useIcons}, "<c:url value='${leafImage}'/>", [${rootNode.selectedAsList}], [${rootNode.defaultAsList}], [${initiallySetList}]);
+	  configureCheckboxTree("${id}");
   });
-  function configureCheckboxTree() {
-    $('.checkboxTree')
-      .bind("loaded.jstree", function (event, data) {
-        // need to check all selected nodes, but wait to ensure page is ready
-        ${initialSetMethod}();
-      })
-      .jstree({
-        "plugins" : [ "html_data", "themes", "types", "checkbox" ],
-        "core" : { "initially_open" : [ "root" ] },
-        "themes" : { "theme" : "classic", "icons" : ${useIcons} },
-        "types" : { "types" : { "leaf" : { "icon" : { "image" : "<c:url value='${leafImage}'/>" }}}},
-        "checkbox" : {
-          "real_checkboxes" : true,
-          "real_checkboxes_names" : function(node) { return ["${checkboxName}", (node[0].id || "")]; }
-        }
-      });
-  }
-  function cbt_selectCurrentNodes() {
-    var currentNodes = [${rootNode.selectedAsList}];
-    cbt_selectListOfNodes(currentNodes);
-  }
-  function cbt_selectDefaultNodes() {
-	  var defaultNodes = [${rootNode.defaultAsList}];
-	  cbt_selectListOfNodes(defaultNodes);
-  }
-  function cbt_selectListOfNodes(checkedArray) {
-    cbt_uncheckAll();
-    // Have to manually select nodes and compare IDs since our ID names are not jquery-selection friendly
-    // Ideally would be able to do the following for each item in the checked array:
-    //   $('.checkboxTree').jstree("check_node", '#'+checkedArray[i];);
-    for (i=0; i < checkedArray.length; i++) {
-      $('.jstree-leaf').each(function(index) {
-    	  if (this.id == checkedArray[i]) {
-    		  $('.checkboxTree').jstree("check_node", $(this));
-    	  }
-      })
-    }
-  }
-  function cbt_checkAll() {
-	  $('.checkboxTree').jstree("check_all");
-	}
-  function cbt_uncheckAll() {
-	  $('.checkboxTree').jstree("uncheck_all");
-	}
-  function cbt_expandAll() {
-  	$('.checkboxTree').jstree("open_all", -1, true);
-  }
-  function cbt_collapseAll() {
-  	$('.checkboxTree').jstree("close_all", -1, true);
-  }
 </script>    
 
 <div class="formButtonPanel" style="text-align:${buttonAlignment}">
-  <a class="small" href="javascript:void(0)" onclick="cbt_expandAll();">expand all</a>
-  | <a class="small" href="javascript:void(0)" onclick="cbt_collapseAll();">collapse all</a>
+  <a class="small" href="javascript:void(0)" onclick="cbt_expandAll('${id}');">expand all</a>
+  | <a class="small" href="javascript:void(0)" onclick="cbt_collapseAll('${id}');">collapse all</a>
   <c:if test="${showSelectAll}">
-    | <a class="small" href="javascript:void(0)" onclick="cbt_checkAll();">select all</a>
+    | <a class="small" href="javascript:void(0)" onclick="cbt_checkAll('${id}');">select all</a>
   </c:if>
-  | <a class="small" href="javascript:void(0)" onclick="cbt_uncheckAll();">clear all</a>
+  | <a class="small" href="javascript:void(0)" onclick="cbt_uncheckAll('${id}');">clear all</a>
   <c:if test="${showResetCurrent}">
-    <br/><a class="small" href="javascript:void(0)" onclick="cbt_selectCurrentNodes();">reset to current</a>
+    <br/><a class="small" href="javascript:void(0)" onclick="cbt_selectCurrentNodes('${id}');">reset to current</a>
   </c:if>
-  | <a class="small" href="javascript:void(0)" onclick="cbt_selectDefaultNodes();">reset to default</a>
+  | <a class="small" href="javascript:void(0)" onclick="cbt_selectDefaultNodes('${id}');">reset to default</a>
 </div>
-<div class="checkboxTree">
+<div id="${id}">
   <c:set var="recurse_term_node" value="${rootNode}" scope="request"/>
   <c:import url="/WEB-INF/includes/checkboxTreeNode.jsp" />
 </div>
 <div class="formButtonPanel" style="text-align:${buttonAlignment}">
-  <a class="small" href="javascript:void(0)" onclick="cbt_expandAll();">expand all</a>
-  | <a class="small" href="javascript:void(0)" onclick="cbt_collapseAll();">collapse all</a>
+  <a class="small" href="javascript:void(0)" onclick="cbt_expandAll('${id}');">expand all</a>
+  | <a class="small" href="javascript:void(0)" onclick="cbt_collapseAll('${id}');">collapse all</a>
   <c:if test="${showSelectAll}">
-    | <a class="small" href="javascript:void(0)" onclick="cbt_checkAll();">select all</a>
+    | <a class="small" href="javascript:void(0)" onclick="cbt_checkAll('${id}');">select all</a>
   </c:if>
-  | <a class="small" href="javascript:void(0)" onclick="cbt_uncheckAll();">clear all</a>
+  | <a class="small" href="javascript:void(0)" onclick="cbt_uncheckAll('${id}');">clear all</a>
   <c:if test="${showResetCurrent}">
-    <br/><a class="small" href="javascript:void(0)" onclick="cbt_selectCurrentNodes();">reset to current</a>
+    <br/><a class="small" href="javascript:void(0)" onclick="cbt_selectCurrentNodes('${id}');">reset to current</a>
   </c:if>
-  | <a class="small" href="javascript:void(0)" onclick="cbt_selectDefaultNodes();">reset to default</a>
+  | <a class="small" href="javascript:void(0)" onclick="cbt_selectDefaultNodes('${id}');">reset to default</a>
 </div>
 
 <c:remove var="recurse_term_node"/>
