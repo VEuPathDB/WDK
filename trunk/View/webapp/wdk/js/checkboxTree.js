@@ -5,7 +5,7 @@ if (typeof checkboxTreeConfig == 'undefined') {
 }
 
 // takes string, boolean, url, "current" array, "default" array, "initially set" array
-function addTreeToPage(id, checkboxName, useIcons, leafImgUrl, currentList, defaultList, initiallySetList) {
+function addTreeToPage(id, checkboxName, useIcons, collapseOnLoad, leafImgUrl, currentList, defaultList, initiallySetList) {
 	var checkboxTree = checkboxTreeConfig[id];
 	if (typeof checkboxTree == 'undefined') {
 		checkboxTree = new Object();
@@ -14,6 +14,7 @@ function addTreeToPage(id, checkboxName, useIcons, leafImgUrl, currentList, defa
 	checkboxTree.id = id;
 	checkboxTree.checkboxName = checkboxName;
 	checkboxTree.useIcons = useIcons;
+	checkboxTree.collapseOnLoad = collapseOnLoad;
 	checkboxTree.leafImgUrl = leafImgUrl;
 	checkboxTree.currentList = currentList;
 	checkboxTree.defaultList = defaultList;
@@ -26,6 +27,9 @@ function configureCheckboxTree(treeId) {
 		.bind("loaded.jstree", function (event, data) {
 			// need to check all selected nodes, but wait to ensure page is ready
 			cbt_selectListOfNodes(treeId, checkboxTree.initiallySetList);
+			if (checkboxTree.collapseOnLoad) {
+				cbt_collapseAll(treeId);
+			}
 		})
 		.jstree({
 			"plugins" : [ "html_data", "themes", "types", "checkbox" ],
