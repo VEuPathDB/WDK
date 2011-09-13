@@ -193,7 +193,7 @@
       <attribute name="default" />
     </optional>
     <optional>
-      <attribute name="handler" />
+      <attribute name="handlerClass" />
     </optional>
   </define>
 
