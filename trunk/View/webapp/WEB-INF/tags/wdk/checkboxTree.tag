@@ -90,7 +90,7 @@
   </c:if>
   | <a class="small" href="javascript:void(0)" onclick="cbt_selectDefaultNodes('${id}');">reset to default</a>
 </div>
-<div id="${id}">
+<div id="${id}" style="display:none">
   <c:set var="recurse_term_node" value="${rootNode}" scope="request"/>
   <c:import url="/WEB-INF/includes/checkboxTreeNode.jsp" />
 </div>

@@ -30,6 +30,7 @@ function configureCheckboxTree(treeId) {
 			if (checkboxTree.collapseOnLoad) {
 				cbt_collapseAll(treeId);
 			}
+			$('#'+treeId).show();
 		})
 		.jstree({
 			"plugins" : [ "html_data", "themes", "types", "checkbox" ],
