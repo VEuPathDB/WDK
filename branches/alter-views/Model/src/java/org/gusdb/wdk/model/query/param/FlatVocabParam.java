@@ -75,7 +75,7 @@ public class FlatVocabParam extends AbstractEnumParam {
     public void resolveReferences(WdkModel model) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        this.wdkModel = model;
+        super.resolveReferences(model);
 
         // the vocab query is always cloned to keep a reference to the param
         Query query = (Query) model.resolveReference(queryTwoPartName);
