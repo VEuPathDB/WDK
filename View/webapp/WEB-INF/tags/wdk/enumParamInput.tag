@@ -87,7 +87,7 @@ Otherwise a standard select menu is used.
     
       <c:if test="${qp.useCheckboxTree}">
         <div class="param-tree ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
-          <wdk:checkboxTree rootNode="${qp.paramTree}" checkboxName="array(${pNam})" buttonAlignment="left"/>
+          <wdk:checkboxTree id="${pNam}CBT" rootNode="${qP.paramTree}" checkboxName="array(${pNam})" buttonAlignment="left"/>
         </div>
       </c:if>
       

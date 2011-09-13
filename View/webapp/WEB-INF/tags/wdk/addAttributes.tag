@@ -33,7 +33,7 @@
     </div>
     <c:if test="${wdkAnswer.useCheckboxTree}">
       <input type="checkbox" name="selectedFields" value="${wdkAnswer.recordClass.primaryKeyAttribute.name}" checked="checked" style="display:none;"/>
-      <wdk:checkboxTree rootNode="${wdkAnswer.displayableAttributeTree}" checkboxName="selectedFields" showSelectAll="false" showResetCurrent="true"/>
+      <wdk:checkboxTree id="selectedFieldsCBT" rootNode="${wdkAnswer.displayableAttributeTree}" checkboxName="selectedFields" showSelectAll="false" showResetCurrent="true"/>
     </c:if>
     <c:if test="${not wdkAnswer.useCheckboxTree}">
 	    <div class="formButtonPanel">
