@@ -747,3 +747,5 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
 #word-cloud #layout .word {
   padding: 0px 2px 0px 2px;
 }
+
+#form_question .filter-button { text-align: center; }
