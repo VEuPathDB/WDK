@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,7 +107,9 @@ public class StringParam extends Param {
     // protected methods
     // ///////////////////////////////////////////////////////////////
 
-    public void resolveReferences(WdkModel model) throws WdkModelException {
+    public void resolveReferences(WdkModel model) throws WdkModelException, NoSuchAlgorithmException, WdkUserException, SQLException, JSONException {
+        super.resolveReferences(model);
+
         if (regex == null) regex = model.getModelConfig().getParamRegex();
     }
 

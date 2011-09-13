@@ -40,7 +40,8 @@ public class AnswerFilterInstance extends WdkModelBase {
     private String description;
 
     private List<WdkModelText> paramValueList = new ArrayList<WdkModelText>();
-    private Map<String, String> paramValueMap = new LinkedHashMap<String, String>();
+    private Map<String, String> paramValueMap =
+            new LinkedHashMap<String, String>();
 
     private RecordClass recordClass;
     private SqlQuery filterQuery;
@@ -282,11 +283,13 @@ public class AnswerFilterInstance extends WdkModelBase {
         int assignedWeight = idInstance.getAssignedWeight();
         sql = applyFilter(answerValue.getUser(), sql, assignedWeight);
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-                idInstance.getQuery().getFullName() + "-" + name + "-filtered");
+        ResultSet resultSet =
+                SqlUtils.executeQuery(wdkModel, dataSource, sql, idInstance
+                        .getQuery().getFullName() + "-" + name + "-filtered");
         try {
             return new SqlResultList(resultSet);
-        } catch (SQLException ex) {
+        }
+        catch (SQLException ex) {
             resultSet.close();
             throw ex;
         }
@@ -300,8 +303,9 @@ public class AnswerFilterInstance extends WdkModelBase {
         String filterSql = filterQuery.getSql();
         // replace the answer param
         String answerName = answerParam.getName();
-        filterSql = filterSql.replaceAll("\\$\\$" + answerName + "\\$\\$", "("
-                + sql + ")");
+        filterSql =
+                filterSql.replaceAll("\\$\\$" + answerName + "\\$\\$", "("
+                        + sql + ")");
 
         // replace the rest of the params; the answer param has been replaced
         // and will be ignored here.
@@ -310,15 +314,16 @@ public class AnswerFilterInstance extends WdkModelBase {
                 continue;
 
             String dependentValue = paramValueMap.get(param.getName());
-            String internal = param.dependentValueToInternalValue(user,
-                    dependentValue);
+            String internal = param.getInternalValue(user, dependentValue);
             filterSql = param.replaceSql(filterSql, internal);
         }
 
         // if the filter doesn't return weight, assigned weight will be used
         if (!filterQuery.getColumnMap().containsKey(Utilities.COLUMN_WEIGHT)) {
-            filterSql = "SELECT f.*, " + assignedWeight + " AS "
-                    + Utilities.COLUMN_WEIGHT + " FROM (" + filterSql + ") f";
+            filterSql =
+                    "SELECT f.*, " + assignedWeight + " AS "
+                            + Utilities.COLUMN_WEIGHT + " FROM (" + filterSql
+                            + ") f";
         }
 
         return filterSql;

@@ -44,7 +44,7 @@ public class TimestampParam extends Param {
     @Override
     protected void appendJSONContent(JSONObject jsParam, boolean extra)
             throws JSONException {
-    // nothing to add
+        // nothing to add
     }
 
     /*
@@ -79,10 +79,9 @@ public class TimestampParam extends Param {
      * .gusdb.wdk.model.user.User, java.lang.String)
      */
     @Override
-    public String dependentValueToInternalValue(User user,
-            String dependentValue) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public String dependentValueToInternalValue(User user, String dependentValue)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         return dependentValue;
     }
 
@@ -128,28 +127,14 @@ public class TimestampParam extends Param {
         // the value of timestamp can be any string
         // make sure the value is in valid time format
         // try {
-        //    Date date = DateFormat.getDateTimeInstance().parse(
-        //            rawOrDependentValue);
-        //    if (date == null)
-        //        throw new WdkModelException("Invalid timestampParam value; '"
-        //                + rawOrDependentValue + "'");
-        //} catch (ParseException ex) {
-        //    throw new WdkModelException(ex);
-        //}
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
-     * .WdkModel)
-     */
-    @Override
-    public void resolveReferences(WdkModel wodkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-    // do nothing.
+        // Date date = DateFormat.getDateTimeInstance().parse(
+        // rawOrDependentValue);
+        // if (date == null)
+        // throw new WdkModelException("Invalid timestampParam value; '"
+        // + rawOrDependentValue + "'");
+        // } catch (ParseException ex) {
+        // throw new WdkModelException(ex);
+        // }
     }
 
     /**

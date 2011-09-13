@@ -37,7 +37,6 @@ public class DatasetParam extends Param {
     public static final String TYPE_FILE = "file";
     public static final String TYPE_BASKET = "basket";
 
-
     private String recordClassRef;
     private RecordClass recordClass;
 
@@ -63,8 +62,10 @@ public class DatasetParam extends Param {
      * org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel model) throws WdkModelException {
-        this.wdkModel = model;
+    public void resolveReferences(WdkModel model) throws WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, SQLException,
+            JSONException {
+        super.resolveReferences(model);
         recordClass = (RecordClass) wdkModel.resolveReference(recordClassRef);
     }
 
@@ -121,19 +122,22 @@ public class DatasetParam extends Param {
             JSONException, WdkUserException {
         // the input has to be a user-dataset-id
         int userDatasetId = Integer.parseInt(dependentValue);
-        
+
         if (isNoTranslation()) return Integer.toString(userDatasetId);
 
         ModelConfig config = wdkModel.getModelConfig();
         String dbLink = config.getAppDB().getUserDbLink();
         String wdkSchema = config.getUserDB().getWdkEngineSchema();
         String userSchema = config.getUserDB().getUserSchema();
-        String dvTable = wdkSchema + DatasetFactory.TABLE_DATASET_VALUE + dbLink;
-        String udTable = userSchema + DatasetFactory.TABLE_USER_DATASET + dbLink;
+        String dvTable =
+                wdkSchema + DatasetFactory.TABLE_DATASET_VALUE + dbLink;
+        String udTable =
+                userSchema + DatasetFactory.TABLE_USER_DATASET + dbLink;
         String colDatasetId = DatasetFactory.COLUMN_DATASET_ID;
         String colUserDatasetId = DatasetFactory.COLUMN_USER_DATASET_ID;
         StringBuffer sql = new StringBuffer("SELECT ");
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+        String[] pkColumns =
+                recordClass.getPrimaryKeyAttributeField().getColumnRefs();
         for (int i = 1; i <= pkColumns.length; i++) {
             if (i > 1) sql.append(", ");
             sql.append("dv." + Utilities.COLUMN_PK_PREFIX + i);
@@ -182,7 +186,8 @@ public class DatasetParam extends Param {
             try {
                 user.getDataset(userDatasetId);
                 return rawValue;
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 // dataset doesn't exist, create one
                 logger.info("user dataset id doesn't exist: " + userDatasetId);
             }
@@ -238,7 +243,7 @@ public class DatasetParam extends Param {
     public void setRecordClassRef(String recordClassRef) {
         this.recordClassRef = recordClassRef;
     }
-    
+
     public void setRecordClass(RecordClass recordClass) {
         this.recordClass = recordClass;
     }
