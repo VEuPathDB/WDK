@@ -6,6 +6,10 @@
     top:6px;
 }
 
+.filter-layout .layout-detail {
+    overflow-x:auto;
+}
+
 .filter-layout .layout-detail .description {
     color: #333333;
 }
