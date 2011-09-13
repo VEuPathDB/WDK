@@ -73,25 +73,30 @@ public class BooleanQuery extends SqlQuery {
     private StringParam useBooleanFilter;
     private RecordClass recordClass;
 
-    public BooleanQuery(RecordClass recordClass) throws WdkModelException {
+    public BooleanQuery(RecordClass recordClass) throws WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, SQLException,
+            JSONException {
         this.recordClass = recordClass;
         this.wdkModel = recordClass.getWdkModel();
         String rcName = recordClass.getFullName().replace('.', '_');
 
         // create or get the historyParam for the query
-        ParamSet internalParamSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
-        leftOperand = prepareOperand(internalParamSet, recordClass,
-                LEFT_OPERAND_PARAM_PREFIX + rcName);
+        ParamSet internalParamSet =
+                wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
+        leftOperand =
+                prepareOperand(internalParamSet, recordClass,
+                        LEFT_OPERAND_PARAM_PREFIX + rcName);
         leftOperand.setPrompt("Left Operand");
-        rightOperand = prepareOperand(internalParamSet, recordClass,
-                RIGHT_OPERAND_PARAM_PREFIX + rcName);
+        rightOperand =
+                prepareOperand(internalParamSet, recordClass,
+                        RIGHT_OPERAND_PARAM_PREFIX + rcName);
         rightOperand.setPrompt("Right Operand");
 
         // create the stringParam for the others
         operator = prepareStringParam(internalParamSet, OPERATOR_PARAM);
         operator.setPrompt("Operator");
-        useBooleanFilter = prepareStringParam(internalParamSet,
-                USE_BOOLEAN_FILTER_PARAM);
+        useBooleanFilter =
+                prepareStringParam(internalParamSet, USE_BOOLEAN_FILTER_PARAM);
         useBooleanFilter.setPrompt("Use Expand Filter");
 
         // create the query
@@ -110,10 +115,13 @@ public class BooleanQuery extends SqlQuery {
         super(query);
 
         this.recordClass = query.recordClass;
-        this.leftOperand = (AnswerParam) paramMap.get(query.leftOperand.getName());
+        this.leftOperand =
+                (AnswerParam) paramMap.get(query.leftOperand.getName());
         this.operator = (StringParam) paramMap.get(query.operator.getName());
-        this.rightOperand = (AnswerParam) paramMap.get(query.rightOperand.getName());
-        this.useBooleanFilter = (StringParam) paramMap.get(query.useBooleanFilter.getName());
+        this.rightOperand =
+                (AnswerParam) paramMap.get(query.rightOperand.getName());
+        this.useBooleanFilter =
+                (StringParam) paramMap.get(query.useBooleanFilter.getName());
     }
 
     /**
@@ -152,7 +160,9 @@ public class BooleanQuery extends SqlQuery {
     }
 
     private AnswerParam prepareOperand(ParamSet paramSet,
-            RecordClass recordClass, String paramName) throws WdkModelException {
+            RecordClass recordClass, String paramName)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
         AnswerParam operand;
         if (paramSet.contains(paramName)) {
             operand = (AnswerParam) paramSet.getParam(paramName);
@@ -169,7 +179,8 @@ public class BooleanQuery extends SqlQuery {
     }
 
     private StringParam prepareStringParam(ParamSet paramSet, String paramName)
-            throws WdkModelException {
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
         StringParam param;
         if (paramSet.contains(paramName)) {
             param = (StringParam) paramSet.getParam(paramName);
@@ -186,7 +197,8 @@ public class BooleanQuery extends SqlQuery {
     }
 
     private void prepareColumns(RecordClass recordClass) {
-        PrimaryKeyAttributeField primaryKey = recordClass.getPrimaryKeyAttributeField();
+        PrimaryKeyAttributeField primaryKey =
+                recordClass.getPrimaryKeyAttributeField();
 
         for (String columnName : primaryKey.getColumnRefs()) {
             Column column = new Column();
@@ -226,9 +238,9 @@ public class BooleanQuery extends SqlQuery {
      */
     @Override
     public QueryInstance makeInstance(User user, Map<String, String> values,
-            boolean validate, int assignedWeight, Map<String, String> context) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+            boolean validate, int assignedWeight, Map<String, String> context)
+            throws WdkModelException, NoSuchAlgorithmException, SQLException,
+            JSONException, WdkUserException {
         return new BooleanQueryInstance(user, this, values, validate,
                 assignedWeight, context);
     }

@@ -1,11 +1,15 @@
 package org.gusdb.wdk.model.query.param;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class EnumParam extends AbstractEnumParam {
@@ -128,8 +132,11 @@ public class EnumParam extends AbstractEnumParam {
      * org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel model) throws WdkModelException {
-        this.wdkModel = model;
+    public void resolveReferences(WdkModel model) throws WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, SQLException,
+            JSONException {
+        super.resolveReferences(model);
+
         enumItemList.resolveReferences(model);
 
         StringBuffer sb = new StringBuffer();
@@ -164,8 +171,10 @@ public class EnumParam extends AbstractEnumParam {
      */
     @Override
     protected void appendJSONContent(JSONObject jsParam, boolean extra) {
-    // do nothing. do not add the enum list into the content, since they may be
-    // changed between versions, but we don't want to invalidate a query because
-    // of it.
+        // do nothing. do not add the enum list into the content, since they may
+        // be
+        // changed between versions, but we don't want to invalidate a query
+        // because
+        // of it.
     }
 }
