@@ -192,6 +192,9 @@
     <optional>
       <attribute name="default" />
     </optional>
+    <optional>
+      <attribute name="handler" />
+    </optional>
   </define>
 
   <define name="ParamBaseTags">
