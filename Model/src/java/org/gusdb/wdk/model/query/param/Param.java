@@ -160,6 +160,8 @@ public abstract class Param extends WdkModelBase {
         this.wdkModel = param.wdkModel;
         this.noTranslation = param.noTranslation;
         this.resolved = param.resolved;
+        this.handlerClass = param.handlerClass;
+        this.handler = param.handler;
     }
 
     /**
@@ -478,7 +480,7 @@ public abstract class Param extends WdkModelBase {
         this.contextQuestion = question;
     }
 
-    public void setHandler(String handlerClass) {
+    public void setHandlerClass(String handlerClass) {
         this.handlerClass = handlerClass;
     }
 
