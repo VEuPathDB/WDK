@@ -104,4 +104,43 @@ public class TreeNode {
 		return all;
 	}
 	
+	public boolean getIsAllSelected() {
+		for (TreeLeaf leaf : _leafNodes) {
+			if (!leaf.getSelected()) {
+				return false;
+			}
+		}
+		for (TreeNode node : _childNodes) {
+			if (!node.getIsAllSelected()) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	@Override
+	public String toString() {
+		return toString("");
+	}
+	
+	public String toString(String indentation) {
+		String IND = indentation;
+		String NL = System.getProperty("line.separator");
+		StringBuilder str = new StringBuilder()
+			.append(IND).append("TreeNode {").append(NL)
+			.append(IND).append("  Name: ").append(_name).append(NL)
+			.append(IND).append("  DisplayName: ").append(_displayName).append(NL)
+			.append(IND).append("  LeafNodes:").append(NL);
+		for (TreeLeaf leaf : _leafNodes) {
+			str.append(IND).append("    ").append(leaf).append(NL);
+		}
+		str.append(IND).append("  Children {").append(NL);
+		for (TreeNode child : _childNodes) {
+			str.append(child.toString(IND + "    "));
+		}
+		str.append(IND).append("  }").append(NL)
+		   .append(IND).append("}").append(NL);
+		return str.toString();
+	}
+	
 }
