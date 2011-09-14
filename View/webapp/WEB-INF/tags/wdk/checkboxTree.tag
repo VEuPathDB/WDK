@@ -72,8 +72,8 @@
 <!-- JSTree/Checkbox configuration -->
 <script type="text/javascript">
   // configure the tree
+  addTreeToPage("${id}", "${checkboxName}", ${useIcons}, ${rootNode.isAllSelected}, "<c:url value='${leafImage}'/>", [${rootNode.selectedAsList}], [${rootNode.defaultAsList}], [${initiallySetList}]);
   $(function() {
-	  addTreeToPage("${id}", "${checkboxName}", ${useIcons}, ${rootNode.isAllSelected}, "<c:url value='${leafImage}'/>", [${rootNode.selectedAsList}], [${rootNode.defaultAsList}], [${initiallySetList}]);
 	  configureCheckboxTree("${id}");
   });
 </script>    
@@ -90,7 +90,7 @@
   </c:if>
   | <a class="small" href="javascript:void(0)" onclick="cbt_selectDefaultNodes('${id}');">reset to default</a>
 </div>
-<div id="${id}" style="display:none">
+<div class="checkbox-tree" id="${id}" style="display:none">
   <c:set var="recurse_term_node" value="${rootNode}" scope="request"/>
   <c:import url="/WEB-INF/includes/checkboxTreeNode.jsp" />
 </div>
