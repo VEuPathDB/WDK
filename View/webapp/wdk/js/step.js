@@ -113,11 +113,11 @@ function Insert_Step(ele,dt){
 }
 var a_link;
 function Rename_Step(ele, strat, stpId){
-	a_link = $("#diagram_" + strat + " div#step_" + stpId + "_sub h3 a#stepId_" + stpId, $(ele).parent().parent().parent());
+	a_link = $("#diagram_" + strat + " div#step_" + stpId + "_sub h4 a#stepId_" + stpId, $(ele).parent().parent().parent());
 	old_name = $(a_link).parent().find("#fullStepName").text();
 	var input = document.createElement('input');
 	$(input).attr("id","new_name_box").attr("value",old_name).blur(function(){RenameStep(this,strat,stpId)}).focus(function(){this.select();}).keypress(function(event){checkEnter(this,event)}).attr("size","10");
-	$("#diagram_" + strat + " div#step_" + stpId + "_sub h3 a#stepId_" + stpId, $(ele).parent().parent().parent()).replaceWith(input);
+	$("#diagram_" + strat + " div#step_" + stpId + "_sub h4 a#stepId_" + stpId, $(ele).parent().parent().parent()).replaceWith(input);
 	$("#new_name_box").focus();
 }
 
