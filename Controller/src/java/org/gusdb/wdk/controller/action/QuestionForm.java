@@ -1,5 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -9,6 +10,8 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -63,6 +66,7 @@ public class QuestionForm extends MapActionForm {
         }
 
         Map<String, ParamBean> params = wdkQuestion.getParamsMap();
+        Map<String, String> paramValues = new LinkedHashMap<String, String>();
         for (String paramName : params.keySet()) {
             String prompt = paramName;
             try {
@@ -76,6 +80,7 @@ public class QuestionForm extends MapActionForm {
                 // cannot validate datasetParam here
                 if (!(param instanceof DatasetParamBean))
                     param.validate(user, dependentValue);
+                paramValues.put(paramName, dependentValue);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 ActionMessage message = new ActionMessage("mapped.properties",
@@ -86,6 +91,7 @@ public class QuestionForm extends MapActionForm {
 
         // validate weight
         boolean hasWeight = (weight != null && weight.length() > 0);
+        int weightValue = Utilities.DEFAULT_WEIGHT;
         if (hasWeight) {
             String message = null;
             if (!weight.matches("[\\-\\+]?\\d+")) {
@@ -99,6 +105,16 @@ public class QuestionForm extends MapActionForm {
                         "Assigned weight", message);
                 errors.add(ActionErrors.GLOBAL_MESSAGE, am);
             }
+        }
+
+        try {
+            AnswerValueBean answerValue = wdkQuestion.makeAnswerValue(user, paramValues, weightValue);
+            logger.debug("Test run search [" + questionFullName+ "] and get # of results: " + answerValue.getResultSize());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            ActionMessage message = new ActionMessage("mapped.properties",
+                    "Failed to run search", ex.getMessage());
+            errors.add(ActionErrors.GLOBAL_MESSAGE, message);
         }
 
         logger.debug("finish validation...");
