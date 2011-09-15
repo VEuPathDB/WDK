@@ -56,14 +56,13 @@ public abstract class AbstractEnumParam extends Param {
      * initialized from suggest.
      */
     protected String selectMode;
-    
+
     /**
      * collapse single-child branches if set to true
      */
     private boolean suppressNode = false;
 
-    public AbstractEnumParam() {
-    }
+    public AbstractEnumParam() {}
 
     public AbstractEnumParam(AbstractEnumParam param) {
         super(param);
@@ -137,10 +136,8 @@ public abstract class AbstractEnumParam extends Param {
             WdkUserException {
         initVocabMap();
         String[] array = new String[termInternalMap.size()];
-        if (isNoTranslation())
-            termInternalMap.keySet().toArray(array);
-        else
-            termInternalMap.values().toArray(array);
+        if (isNoTranslation()) termInternalMap.keySet().toArray(array);
+        else termInternalMap.values().toArray(array);
         return array;
     }
 
@@ -264,27 +261,27 @@ public abstract class AbstractEnumParam extends Param {
         for (String term : termParentMap.keySet()) {
             String parentTerm = termParentMap.get(term);
             // skip if parent doesn't exist
-            if (parentTerm == null)
-                continue;
+            if (parentTerm == null) continue;
 
             EnumParamTermNode node = indexMap.get(term);
             EnumParamTermNode parent = indexMap.get(parentTerm);
             parent.addChild(node);
         }
-        
+
         if (suppressNode) suppressChildren(termTreeList);
     }
-    
+
     private void suppressChildren(List<EnumParamTermNode> children) {
         boolean suppressed = false;
         if (children.size() == 1) {
-            // has only on child, suppress it in the tree if it has grand children
+            // has only on child, suppress it in the tree if it has grand
+            // children
             EnumParamTermNode child = children.get(0);
             EnumParamTermNode[] grandChildren = child.getChildren();
             if (grandChildren.length > 0) {
                 logger.debug(child.getTerm() + " suppressed.");
                 children.remove(0);
-                for(EnumParamTermNode grandChild : grandChildren) {
+                for (EnumParamTermNode grandChild : grandChildren) {
                     children.add(grandChild);
                 }
                 // need to suppress children
@@ -293,7 +290,7 @@ public abstract class AbstractEnumParam extends Param {
             }
         }
         if (!suppressed) {
-            for(EnumParamTermNode child : children) {
+            for (EnumParamTermNode child : children) {
                 suppressChildren(child.getChildrenList());
             }
         }
@@ -302,16 +299,14 @@ public abstract class AbstractEnumParam extends Param {
     public String[] getTerms(String termList) throws NoSuchAlgorithmException,
             WdkModelException, SQLException, JSONException, WdkUserException {
         // the input is a list of terms
-        if (termList == null)
-            return new String[0];
+        if (termList == null) return new String[0];
 
         String[] terms;
         if (multiPick) {
             terms = termList.split("[,]+");
             for (int i = 0; i < terms.length; i++)
                 terms[i] = terms[i].trim();
-        } else
-            terms = new String[] { termList.trim() };
+        } else terms = new String[] { termList.trim() };
 
         if (!isSkipValidation()) {
             initVocabMap();
@@ -355,26 +350,22 @@ public abstract class AbstractEnumParam extends Param {
         initVocabMap();
 
         String rawValue = decompressValue(dependentValue);
-        if (rawValue == null || rawValue.length() == 0)
-            rawValue = emptyValue;
+        if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
 
         String[] terms = getTerms(rawValue);
         StringBuffer buf = new StringBuffer();
         for (String term : terms) {
             String internal = (isNoTranslation()) ? term
                     : termInternalMap.get(term);
-            if (internal == null) {
-                // If skipping validation, and the term is not found
-                // in the map, just use the term as the internal value
-                if (isSkipValidation()) {
-                    internal = term;
-                } else
-                    continue;
+            if (!termInternalMap.containsKey(term)) {
+                // term doesn't exists need to correct it later
+                logger.warn("param " + getFullName() + " encountered an "
+                        + "invalid term from user #" + user.getUserId() + ": "
+                        + term);
+                internal = term;
             }
-            if (quote)
-                internal = "'" + internal.replaceAll("'", "''") + "'";
-            if (buf.length() != 0)
-                buf.append(", ");
+            if (quote) internal = "'" + internal.replaceAll("'", "''") + "'";
+            if (buf.length() != 0) buf.append(", ");
             buf.append(internal);
         }
         return buf.toString();
@@ -446,28 +437,23 @@ public abstract class AbstractEnumParam extends Param {
 
     protected void applySelectMode() {
         logger.trace("select mode: '" + selectMode + "'");
-        if (defaultValue != null && defaultValue.length() > 0)
-            return;
+        if (defaultValue != null && defaultValue.length() > 0) return;
 
-        if (selectMode == null)
-            selectMode = SELECT_MODE_FIRST;
+        if (selectMode == null) selectMode = SELECT_MODE_FIRST;
         if (selectMode.equalsIgnoreCase(SELECT_MODE_ALL)) {
             StringBuilder builder = new StringBuilder();
             for (String term : termInternalMap.keySet()) {
-                if (builder.length() > 0)
-                    builder.append(",");
+                if (builder.length() > 0) builder.append(",");
                 builder.append(term);
             }
             this.defaultValue = builder.toString();
         } else if (selectMode.equalsIgnoreCase(SELECT_MODE_FIRST)) {
             StringBuilder builder = new StringBuilder();
             Stack<EnumParamTermNode> stack = new Stack<EnumParamTermNode>();
-            if (termTreeList.size() > 0)
-                stack.push(termTreeList.get(0));
+            if (termTreeList.size() > 0) stack.push(termTreeList.get(0));
             while (!stack.empty()) {
                 EnumParamTermNode node = stack.pop();
-                if (builder.length() > 0)
-                    builder.append(",");
+                if (builder.length() > 0) builder.append(",");
                 builder.append(node.getTerm());
                 for (EnumParamTermNode child : node.getChildren()) {
                     stack.push(child);
@@ -496,11 +482,11 @@ public abstract class AbstractEnumParam extends Param {
     }
 
     /**
-     * @param suppressNode the suppressNode to set
+     * @param suppressNode
+     *            the suppressNode to set
      */
     public void setSuppressNode(boolean suppressNode) {
         this.suppressNode = suppressNode;
     }
-    
-    
+
 }
