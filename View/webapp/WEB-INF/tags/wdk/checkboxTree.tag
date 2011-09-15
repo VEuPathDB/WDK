@@ -79,12 +79,12 @@
 </script>    
 
 <div class="formButtonPanel" style="text-align:${buttonAlignment}">
-  <a class="small" href="javascript:void(0)" onclick="cbt_expandAll('${id}');">expand all</a>
-  | <a class="small" href="javascript:void(0)" onclick="cbt_collapseAll('${id}');">collapse all</a>
   <c:if test="${showSelectAll}">
-    | <a class="small" href="javascript:void(0)" onclick="cbt_checkAll('${id}');">select all</a>
+    <a class="small" href="javascript:void(0)" onclick="cbt_checkAll('${id}');">select all</a> |
   </c:if>
-  | <a class="small" href="javascript:void(0)" onclick="cbt_uncheckAll('${id}');">clear all</a>
+  <a class="small" href="javascript:void(0)" onclick="cbt_uncheckAll('${id}');">clear all</a> |
+  <a class="small" href="javascript:void(0)" onclick="cbt_expandAll('${id}');">expand all</a> |
+  <a class="small" href="javascript:void(0)" onclick="cbt_collapseAll('${id}');">collapse all</a>
   <c:if test="${showResetCurrent}">
     <br/><a class="small" href="javascript:void(0)" onclick="cbt_selectCurrentNodes('${id}');">reset to current</a>
   </c:if>
@@ -95,12 +95,12 @@
   <c:import url="/WEB-INF/includes/checkboxTreeNode.jsp" />
 </div>
 <div class="formButtonPanel" style="text-align:${buttonAlignment}">
-  <a class="small" href="javascript:void(0)" onclick="cbt_expandAll('${id}');">expand all</a>
-  | <a class="small" href="javascript:void(0)" onclick="cbt_collapseAll('${id}');">collapse all</a>
   <c:if test="${showSelectAll}">
-    | <a class="small" href="javascript:void(0)" onclick="cbt_checkAll('${id}');">select all</a>
+    <a class="small" href="javascript:void(0)" onclick="cbt_checkAll('${id}');">select all</a> |
   </c:if>
-  | <a class="small" href="javascript:void(0)" onclick="cbt_uncheckAll('${id}');">clear all</a>
+  <a class="small" href="javascript:void(0)" onclick="cbt_uncheckAll('${id}');">clear all</a> |
+  <a class="small" href="javascript:void(0)" onclick="cbt_expandAll('${id}');">expand all</a> |
+  <a class="small" href="javascript:void(0)" onclick="cbt_collapseAll('${id}');">collapse all</a>
   <c:if test="${showResetCurrent}">
     <br/><a class="small" href="javascript:void(0)" onclick="cbt_selectCurrentNodes('${id}');">reset to current</a>
   </c:if>
