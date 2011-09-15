@@ -16,18 +16,12 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.apache.struts.upload.FormFile;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.DatasetBean;
-import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
-import org.gusdb.wdk.model.jspwrap.RecordClassBean;
-import org.gusdb.wdk.model.jspwrap.StepBean;
-import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.json.JSONException;
 
@@ -62,41 +56,7 @@ public class ProcessQuestionAction extends Action {
             // logger.debug("param: " + paramName + "='" +
             // paramErrors.get(paramName) + "'");
             String dependentValue = null;
-            if (param instanceof DatasetParamBean) {
-                // get the input type
-                String type = request.getParameter(paramName + "_type");
-                if (type == null)
-                    throw new WdkUserException("Missing input parameter: "
-                            + paramName + "_type.");
-
-                RecordClassBean recordClass = ((DatasetParamBean) param).getRecordClass();
-                String data = null;
-                String uploadFile = "";
-                if (type.equalsIgnoreCase("data")) {
-                    data = request.getParameter(paramName + "_data");
-                } else if (type.equalsIgnoreCase("file")) {
-                    FormFile file = (FormFile) qform.getValue(paramName
-                            + "_file");
-                    uploadFile = file.getFileName();
-                    logger.debug("upload file: " + uploadFile);
-                    data = new String(file.getFileData());
-                } else if (type.equalsIgnoreCase("basket")) {
-                    data = user.getBasket(recordClass);
-                } else if (type.equals("strategy")) {
-                    String strId = request.getParameter(paramName + "_strategy");
-                    int displayId = Integer.parseInt(strId);
-                    StrategyBean strategy = user.getStrategy(displayId);
-                    StepBean step = strategy.getLatestStep();
-                    data = step.getAnswerValue().getAllIdList();
-                }
-
-                logger.debug("dataset data: '" + data + "'");
-                if (data != null && data.trim().length() > 0) {
-                    DatasetBean dataset = user.createDataset(recordClass,
-                            uploadFile, data);
-                    dependentValue = Integer.toString(dataset.getUserDatasetId());
-                }
-            } else if (rawValue != null && rawValue.length() > 0) {
+            if (rawValue != null && rawValue.length() > 0) {
                 dependentValue = param.rawOrDependentValueToDependentValue(
                         user, rawValue);
             }
