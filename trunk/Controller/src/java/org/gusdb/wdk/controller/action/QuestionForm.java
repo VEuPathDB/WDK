@@ -1,9 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,23 +8,13 @@ import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
-import org.apache.struts.upload.FormFile;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.Utilities;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
-import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
-import org.gusdb.wdk.model.jspwrap.RecordClassBean;
-import org.gusdb.wdk.model.jspwrap.StepBean;
-import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.json.JSONException;
 
 /**
  * form bean for showing a wdk question from a question set
@@ -77,17 +63,11 @@ public class QuestionForm extends MapActionForm {
         }
 
         Map<String, ParamBean> params = wdkQuestion.getParamsMap();
-        Map<String, String> paramValues = new LinkedHashMap<String, String>();
         for (String paramName : params.keySet()) {
             String prompt = paramName;
             try {
                 ParamBean param = params.get(paramName);
                 param.setUser(user);
-                
-                if (param instanceof DatasetParamBean) {
-                    DatasetParamBean datasetParam = (DatasetParamBean)param;
-                    processDatasetValue(request, user, datasetParam);
-                }
                 prompt = param.getPrompt();
                 String rawOrDependentValue = (String) getValue(paramName);
                 String dependentValue = param.rawOrDependentValueToDependentValue(
@@ -96,7 +76,6 @@ public class QuestionForm extends MapActionForm {
                 // cannot validate datasetParam here
                 if (!(param instanceof DatasetParamBean))
                     param.validate(user, dependentValue);
-                paramValues.put(paramName, dependentValue);
             }
             catch (Exception ex) {
                 ex.printStackTrace();
@@ -108,7 +87,6 @@ public class QuestionForm extends MapActionForm {
 
         // validate weight
         boolean hasWeight = (weight != null && weight.length() > 0);
-        int weightValue = Utilities.DEFAULT_WEIGHT;
         if (hasWeight) {
             String message = null;
             if (!weight.matches("[\\-\\+]?\\d+")) {
@@ -122,19 +100,6 @@ public class QuestionForm extends MapActionForm {
                         "Assigned weight", message);
                 errors.add(ActionErrors.GLOBAL_MESSAGE, am);
             }
-        }
-
-        try {
-            AnswerValueBean answerValue = wdkQuestion.makeAnswerValue(user,
-                    paramValues, weightValue);
-            logger.debug("Test run search [" + questionFullName
-                    + "] and get # of results: " + answerValue.getResultSize());
-        }
-        catch (Exception ex) {
-            ex.printStackTrace();
-            ActionMessage message = new ActionMessage("mapped.properties",
-                    "Failed to run search", ex.getMessage());
-            errors.add(ActionErrors.GLOBAL_MESSAGE, message);
         }
 
         logger.debug("finish validation...");
@@ -212,47 +177,5 @@ public class QuestionForm extends MapActionForm {
      */
     public void setCustomName(String customName) {
         this.customName = customName;
-    }
-
-    private void processDatasetValue(HttpServletRequest request,
-            UserBean user, DatasetParamBean param) throws WdkUserException,
-            IOException, WdkModelException, NoSuchAlgorithmException,
-            SQLException, JSONException {
-        String paramName = param.getName();
-        // get the input type
-        String type = request.getParameter(paramName + "_type");
-        if (type == null)
-            throw new WdkUserException("Missing input parameter: " + paramName
-                    + "_type.");
-
-        RecordClassBean recordClass = ((DatasetParamBean) param).getRecordClass();
-        String data = null;
-        String uploadFile = "";
-        if (type.equalsIgnoreCase("data")) {
-            data = request.getParameter(paramName + "_data");
-        } else if (type.equalsIgnoreCase("file")) {
-            FormFile file = (FormFile) getValue(paramName + "_file");
-            uploadFile = file.getFileName();
-            logger.debug("upload file: " + uploadFile);
-            data = new String(file.getFileData());
-        } else if (type.equalsIgnoreCase("basket")) {
-            data = user.getBasket(recordClass);
-        } else if (type.equals("strategy")) {
-            String strId = request.getParameter(paramName + "_strategy");
-            int displayId = Integer.parseInt(strId);
-            StrategyBean strategy = user.getStrategy(displayId);
-            StepBean step = strategy.getLatestStep();
-            data = step.getAnswerValue().getAllIdList();
-        }
-
-        logger.debug("dataset data: '" + data + "'");
-        if (data != null && data.trim().length() > 0) {
-            // if data exists, creates a dataset, and store the id into value
-            // field.
-            DatasetBean dataset = user.createDataset(recordClass, uploadFile,
-                    data);
-            String dsId = Integer.toString(dataset.getUserDatasetId());
-            setValue(paramName, dsId);
-        }
     }
 }
