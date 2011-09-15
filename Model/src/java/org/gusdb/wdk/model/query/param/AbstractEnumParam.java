@@ -364,7 +364,8 @@ public abstract class AbstractEnumParam extends Param {
                         + term);
                 internal = term;
             }
-            if (quote) internal = "'" + internal.replaceAll("'", "''") + "'";
+            if (quote && !(internal.startsWith("'") && internal.endsWith("'")))
+                internal = "'" + internal.replaceAll("'", "''") + "'";
             if (buf.length() != 0) buf.append(", ");
             buf.append(internal);
         }
