@@ -16,6 +16,10 @@ table.datatables th, table.datatables td {
 //  border-left: 1px dotted #CCCCCC;
 //  border-right: 1px dotted #CCCCCC;
 }
+table.datatables th {
+	font-weight:bold;
+}
+
 table.datatables thead th.sortable {
   cursor: pointer;
 }
@@ -38,5 +42,6 @@ table.datatables tr.even { background-color: #FFFFFF; }
 
 .ui-widget-header {
     padding:3px;
+    font-weight:normal;
 }
 
