@@ -68,6 +68,7 @@ public class Step {
     private int childStepId;
 
     private boolean revisable = true;
+    private Exception exception;
 
     Step(StepFactory stepFactory, User user, int displayId, int internalId) {
         this.stepFactory = stepFactory;
@@ -1005,5 +1006,13 @@ public class Step {
         if (isCombined()) return false;
         
         return true;
+    }
+
+    public Exception getException() {
+        return exception;
+    }
+
+    public void setException(Exception ex) {
+        this.exception = ex;
     }
 }

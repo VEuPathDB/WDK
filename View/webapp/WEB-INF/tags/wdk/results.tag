@@ -4,7 +4,6 @@
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
 
-
 <%@ attribute name="strategy"
               type="org.gusdb.wdk.model.jspwrap.StrategyBean"
               required="true"

@@ -136,15 +136,17 @@ public class StepFactory {
 
         String filterName = null;
         int estimateSize;
-        try {
+        Exception exception = null;
+        //try {
             if (filter != null) {
                 filterName = filter.getName();
                 estimateSize = answerValue.getFilterSize(filterName);
             } else estimateSize = answerValue.getResultSize();
-        } catch (Exception ex) {
-            estimateSize = 0;
-            ex.printStackTrace();
-        }
+        //} catch (Exception ex) {
+        //    estimateSize = 0;
+        //    logger.error(ex);
+        //    exception = ex;
+        //}
 
         String displayParamContent = getParamContent(dependentValues);
 
@@ -232,6 +234,7 @@ public class StepFactory {
         step.setAnswerValue(answerValue);
         step.setEstimateSize(estimateSize);
         step.setAssignedWeight(assignedWeight);
+        step.setException(exception);
 
         // update step dependencies
         updateStepTree(user, step);

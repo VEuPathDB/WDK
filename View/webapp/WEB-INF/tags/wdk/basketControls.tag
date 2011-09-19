@@ -7,9 +7,9 @@
       <input id="refresh-basket-button" type="button" value="Refresh" onClick="showBasket();"/>
     </td>
     <td>
-      <input id="empty-basket-button" type="button" value="Empty Basket" onClick="emptyBasket();"/></td>
+      <input id="empty-basket-button" type="button" value="Empty basket" onClick="emptyBasket();"/></td>
     <td>
-      <input id="make-strategy-from-basket-button" type="button" value="Save" onClick="saveBasket();"/>
+      <input id="make-strategy-from-basket-button" type="button" value="Save basket to a strategy" onClick="saveBasket();"/>
     </td>
     <td>
       <site:customBasketControl />

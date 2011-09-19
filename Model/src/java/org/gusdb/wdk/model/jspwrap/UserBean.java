@@ -32,11 +32,6 @@ import org.json.JSONException;
  */
 public class UserBean /* implements Serializable */{
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -4296379954371247236L;
-
     private static Logger logger = Logger.getLogger(UserBean.class);
 
     private User user;
@@ -1475,9 +1470,5 @@ public class UserBean /* implements Serializable */{
     public String[] getFavoriteGroups() throws WdkUserException,
             WdkModelException, SQLException {
         return user.getFavoriteGroups();
-    }
-
-    public BasketBean getBasket() {
-        return new BasketBean(this.user);
     }
 }

@@ -19,28 +19,39 @@ function addTreeToPage(id, checkboxName, useIcons, collapseOnLoad, leafImgUrl, c
 	checkboxTree.currentList = currentList;
 	checkboxTree.defaultList = defaultList;
 	checkboxTree.initiallySetList = initiallySetList;
+	checkboxTree.configured = false;
+}
+
+function configureCheckboxTrees() {
+	$(".checkbox-tree").each(function () {
+		configureCheckboxTree(this.id);
+	});
 }
 
 function configureCheckboxTree(treeId) {
 	var checkboxTree = checkboxTreeConfig[treeId];
-	$('#'+treeId)
-		.bind("loaded.jstree", function (event, data) {
-			// need to check all selected nodes, but wait to ensure page is ready
-			cbt_selectListOfNodes(treeId, checkboxTree.initiallySetList);
-			if (checkboxTree.collapseOnLoad) {
-				cbt_collapseAll(treeId);
-			}
-		})
-		.jstree({
-			"plugins" : [ "html_data", "themes", "types", "checkbox" ],
-			"core" : { "initially_open" : [ "root" ] },
-			"themes" : { "theme" : "classic", "icons" : checkboxTree.useIcons },
-			"types" : { "types" : { "leaf" : { "icon" : { "image" : checkboxTree.leafImgUrl }}}},
-			"checkbox" : {
-				"real_checkboxes" : true,
-				"real_checkboxes_names" : function(node) { return [checkboxTree.checkboxName, (node[0].id || "")]; }
-			}
-		});
+	if (!checkboxTree.configured) {
+		$('#'+treeId)
+			.bind("loaded.jstree", function (event, data) {
+				// need to check all selected nodes, but wait to ensure page is ready
+				cbt_selectListOfNodes(treeId, checkboxTree.initiallySetList);
+				if (checkboxTree.collapseOnLoad) {
+					cbt_collapseAll(treeId);
+				}
+				$('#'+treeId).show();
+				checkboxTree.configured = true;
+			})
+			.jstree({
+				"plugins" : [ "html_data", "themes", "types", "checkbox" ],
+				"core" : { "initially_open" : [ "root" ] },
+				"themes" : { "theme" : "classic", "icons" : checkboxTree.useIcons },
+				"types" : { "types" : { "leaf" : { "icon" : { "image" : checkboxTree.leafImgUrl }}}},
+				"checkbox" : {
+					"real_checkboxes" : true,
+					"real_checkboxes_names" : function(node) { return [checkboxTree.checkboxName, (node[0].id || "")]; }
+				}
+			});
+	}
 }
 
 function cbt_selectCurrentNodes(treeId) {
