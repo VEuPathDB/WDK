@@ -145,7 +145,7 @@ public class RecordBean {
 
     public boolean isInBasket() {
         try {
-        if (!recordInstance.getRecordClass().hasBasket()) return false;
+        if (!recordInstance.getRecordClass().isUseBasket()) return false;
         if (!recordInstance.isValidRecord()) return false;
         AttributeValue value = recordInstance.getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
         return "1".equals(value.getValue());

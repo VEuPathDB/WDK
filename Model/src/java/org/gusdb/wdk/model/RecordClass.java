@@ -173,8 +173,7 @@ public class RecordClass extends WdkModelBase implements
     private Map<String, AttributeField> defaultSummaryAttributeFields = new LinkedHashMap<String, AttributeField>();
     private Map<String, Boolean> defaultSortingMap = new LinkedHashMap<String, Boolean>();
 
-    private String allRecordsQueryRef;
-    private Query allRecordsQuery;
+    private boolean useBasket = true;
 
     private List<FavoriteReference> favorites = new ArrayList<FavoriteReference>();
     private String favoriteNoteFieldName;
@@ -527,18 +526,6 @@ public class RecordClass extends WdkModelBase implements
 
         // create column attribute fields for primary keys if needed.
         createPrimaryKeySubFields();
-
-        // resolve the reference to the all records query
-        if (allRecordsQueryRef != null) {
-            Query query = (Query) model.resolveReference(allRecordsQueryRef);
-            // the query should return all pk columns
-            validateQuery(query);
-            // and it shouldn't have any params
-            if (query.getParams().length > 0)
-                throw new WdkModelException("All records query "
-                        + query.getFullName() + " should not have any params.");
-            this.allRecordsQuery = query;
-        }
 
         // resolve the favorite note reference to attribute field
         if (favoriteNoteFieldName != null) {
@@ -1187,21 +1174,13 @@ public class RecordClass extends WdkModelBase implements
     public String getChecksum() {
         return null;
     }
-
-    public void setAllRecordsQueryRef(String queryRef) {
-        this.allRecordsQueryRef = queryRef;
+    
+    public void setUseBasket(boolean useBasket) {
+        this.useBasket = useBasket;
     }
 
-    public String getAllRecordsQueryRef() {
-        return allRecordsQueryRef;
-    }
-
-    public Query getAllRecordsQuery() {
-        return allRecordsQuery;
-    }
-
-    public boolean hasBasket() {
-        return (allRecordsQuery != null || allRecordsQueryRef != null);
+    public boolean isUseBasket() {
+        return useBasket;
     }
 
     public Question getRealtimeBasketQuestion() throws WdkModelException {
