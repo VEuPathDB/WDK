@@ -15,9 +15,12 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.Action;
+import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
+import org.apache.struts.action.ActionMessages;
 import org.apache.struts.upload.FormFile;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.Utilities;
@@ -118,12 +121,12 @@ public class ProcessQuestionAction extends Action {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         logger.debug("Entering ProcessQuestionAction..");
+        QuestionForm qForm = (QuestionForm) form;
         try {
             UserBean wdkUser = ActionUtility.getUser(servlet, request);
 
             // get question
             String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-            QuestionForm qForm = (QuestionForm) form;
 
             // the params has been validated, and now is parsed, and if the size
             // of the value is too long, ti will be replaced is checksum
@@ -165,10 +168,13 @@ public class ProcessQuestionAction extends Action {
         }
         catch (Exception ex) {
             logger.error(ex);
-            ActionForward forward = getErrorForward(request, mapping, ex);
-            logger.debug("Leaving ProcessQuestionAction failed, forward to "
-                    + forward.getPath());
 
+            ActionMessages messages = new ActionErrors();
+            ActionMessage message = new ActionMessage("mapped.properties",
+                    qForm.getQuestion().getDisplayName(), ex.getMessage());
+            messages.add(ActionErrors.GLOBAL_MESSAGE, message);
+            saveErrors(request, messages);
+            ActionForward forward = mapping.getInputForward();
             return forward;
         }
     }
@@ -225,28 +231,6 @@ public class ProcessQuestionAction extends Action {
         String customName = request.getParameter("customName");
         if (customName != null && customName.length() > 0) {
             url.append("&customName=" + customName);
-        }
-
-        // construct the forward to show_summary action
-        ActionForward forward = new ActionForward(url.toString());
-        forward.setRedirect(true);
-        return forward;
-    }
-
-    private ActionForward getErrorForward(HttpServletRequest request,
-            ActionMapping mapping, Exception ex) {
-        // construct the url to summary page
-        ActionForward errorForward = mapping.findForward(FORWARD_ERROR);
-        StringBuilder url = new StringBuilder(errorForward.getPath());
-
-        Enumeration<?> names = request.getParameterNames();
-        while (names.hasMoreElements()) {
-            String paramName = (String) names.nextElement();
-            String[] values = request.getParameterValues(paramName);
-            for (String value : values) {
-                url.append(url.length() == 0 ? "?" : "&");
-                url.append(paramName + "=" + value);
-            }
         }
 
         // construct the forward to show_summary action
