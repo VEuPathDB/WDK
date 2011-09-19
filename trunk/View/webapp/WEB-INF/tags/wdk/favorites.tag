@@ -68,34 +68,12 @@
 				     height="16px"  style="vertical-align:text-bottom"
                                      onClick="updateBasket(this,'recordPage', '${id}', '${pid}', '${recordClass.fullName}')" value="${basketValue}"/>&nbsp;
 
-                            <%--</td>
-                            <td>--%>   <%--     <c:set var="url" value="/showRecord.do?name=${recordClass.fullName}" />  --%>
-<c:choose>
-<c:when test="${recordClass.type == 'Gene'}" >     <%-- genes --%>
-	<c:set var="url" value="/processQuestion.do?questionFullName=GeneQuestions.GeneBySingleLocusTag&questionSubmit=Get+Answer&value%28single_gene_id%29=${id}" />  
-</c:when>
-<c:when test="${recordClass.type == 'Isolate'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=IsolateQuestions.IsolateByIsolateId&questionSubmit=Get+Answer&isolate_id_type=data&isolate_id_data=${id}" />  
-</c:when>
-<c:when test="${recordClass.type == 'Genomic Sequence'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=GenomicSequenceQuestions.SequenceBySourceId&questionSubmit=Get+Answer&sequenceId_type=data&sequenceId_data=${id}" />  
-</c:when>
-<c:when test="${recordClass.type == 'SNP'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=SnpQuestions.SnpBySourceId&questionSubmit=Get+Answer&snp_id_type=data&snp_id_data=${id}" />  
-</c:when>
-<c:when test="${recordClass.type == 'EST'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=EstQuestions.EstBySourceId&questionSubmit=Get+Answer&est_id_type=data&est_id_data=${id}" />  
-</c:when>
-<c:when test="${recordClass.type == 'ORF'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=OrfQuestions.OrfByOrfId&questionSubmit=Get+Answer&orf_id_type=data&orf_id_data=${id}" />  
-</c:when>
-<c:when test="${recordClass.type == 'SAGE Tag Alignment'}">
-	<c:set var="url" value="/processQuestion.do?questionFullName=SageTagQuestions.SageTagByRadSourceId&questionSubmit=Get+Answer&rad_source_id_type=data&rad_source_id_data=${id}" />  
-</c:when>
-</c:choose>
-                          <%--      <c:forEach var="pk_item" items="${pkValues}">
+                            </td>
+                            <td>
+                                <c:set var="url" value="/showRecord.do?name=${recordClass.fullName}" />
+                                <c:forEach var="pk_item" items="${pkValues}">
                                     <c:set var="url" value="${url}&${pk_item.key}=${pk_item.value}" />
-                                </c:forEach>  --%>
+                                </c:forEach> 
 
                                 <a title="Click to access this ID's page" href="<c:url value='${url}' />">${primaryKey.value}</a>
                             </td>

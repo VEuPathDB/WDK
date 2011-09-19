@@ -502,7 +502,7 @@ public class BasketFactory {
         StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
         for (int i = 0; i < pkColumns.length; i++) {
             if (i > 0) sql.append(", ");
-            sql.append("b." + Utilities.COLUMN_PK_PREFIX + i);
+            sql.append("b." + Utilities.COLUMN_PK_PREFIX + (i+1));
             sql.append(" AS " + pkColumns[i]);
         }
         sql.append(" FROM " + schema + TABLE_BASKET + dbLink + " b, ");
@@ -583,13 +583,18 @@ public class BasketFactory {
         // construct the sql
         StringBuilder sql = new StringBuilder("SELECT ");
         for (int i = 0; i < pkColumns.length; i++) {
-            sql.append("b." + prefix + i + " AS " + pkColumns[i] + ", ");
+            sql.append("i." + pkColumns[i] + ", ");
         }
         // case clause works for both Oracle & PostreSQL
         sql.append("(CASE WHEN b." + prefix + "1 IS NULL THEN 0 ELSE 1 END) ");
         sql.append(" AS " + BASKET_ATTRIBUTE);
-        sql.append(" FROM " + schema + TABLE_BASKET + dbLink + " b ");
-        sql.append(" WHERE b." + COLUMN_USER_ID + " = $$"
+        sql.append(" FROM (##WDK_ID_SQL##) i ");
+        sql.append(" LEFT JOIN " + schema + TABLE_BASKET + dbLink + " b ");
+        for (int i = 0; i < pkColumns.length; i++) {
+            sql.append((i == 0) ? " ON " : " AND ");
+            sql.append(" i." + pkColumns[i] + " = b." + prefix + (i+1));
+        }
+        sql.append(" AND b." + COLUMN_USER_ID + " = $$"
                 + Utilities.PARAM_USER_ID + "$$ ");
         sql.append(" AND b." + COLUMN_PROJECT_ID + " = '" + projectId + "'");
         sql.append(" AND b." + COLUMN_RECORD_CLASS + " = '" + rcName + "'");
