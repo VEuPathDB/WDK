@@ -363,7 +363,7 @@ tr.headerrow th {
 	font-size: 12px;
 	vertical-align:	middle;
 	padding: 1px 2px;
-	border-width: 2px 0 2px 0;
+	border-width: 2px 1px 2px 1px; // 2px 0 2px 0; results headers side borders
 	border-style: solid;
 }
 
@@ -390,6 +390,15 @@ tr.linesalt {
 tr.lines td, tr.linesalt td {
 	padding: 0px 2px;
 }
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 Strategy history panel
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+table.datatables tr.headerrow th {
+	border-width:0px 0px 2px;
+}
+
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     =RED BUTTON

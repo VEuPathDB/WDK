@@ -21,7 +21,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  */
 
 public class QuestionForm extends MapActionForm {
-	
+
     private static final long serialVersionUID = -7848685794514383434L;
     private static final Logger logger = Logger.getLogger(QuestionForm.class);
 
@@ -76,7 +76,8 @@ public class QuestionForm extends MapActionForm {
                 // cannot validate datasetParam here
                 if (!(param instanceof DatasetParamBean))
                     param.validate(user, dependentValue);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 ex.printStackTrace();
                 ActionMessage message = new ActionMessage("mapped.properties",
                         prompt, ex.getMessage());
@@ -171,10 +172,10 @@ public class QuestionForm extends MapActionForm {
     }
 
     /**
-     * @param customName the customName to set
+     * @param customName
+     *            the customName to set
      */
     public void setCustomName(String customName) {
         this.customName = customName;
     }
-
 }

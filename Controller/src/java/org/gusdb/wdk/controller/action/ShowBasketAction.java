@@ -66,7 +66,7 @@ public class ShowBasketAction extends Action {
 		// No RecordClass was specified, so load all baskets in order to make the menubar
 		List<StepBean> baskets = new ArrayList<StepBean>();
 		for (RecordClassBean recordClass : wdkModel.getRecordClasses()) {
-		    if (recordClass.getHasBasket()) {
+		    if (recordClass.isUseBasket()) {
 			QuestionBean question = recordClass.getRealtimeBasketQuestion();
 			Map<String, String> params = new LinkedHashMap<String, String>();
 			params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());

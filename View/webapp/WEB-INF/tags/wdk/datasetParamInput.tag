@@ -91,7 +91,7 @@ function chooseType(paramName, type) {
     </tr>
   </c:if>
 
-    <c:if test="${qp.recordClass.hasBasket}">	
+    <c:if test="${qp.recordClass.useBasket}">	
     <!-- display option to use basket snapshot -->
     <tr>
         <c:set var="basketCount" value="${wdkUser.basketCounts[qp.recordClass.fullName]}" />

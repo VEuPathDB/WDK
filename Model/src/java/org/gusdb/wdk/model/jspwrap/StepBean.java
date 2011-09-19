@@ -586,5 +586,7 @@ public class StepBean {
         return step.isUncollapsible();
     }
     
-    
+    public Exception getException() {
+        return step.getException();
+    } 
 }

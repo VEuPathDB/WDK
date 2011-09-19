@@ -40,7 +40,7 @@ public abstract class AttributeValueContainer {
         AttributeField field = fields.get(fieldName);
         if (field == null)
             throw new WdkModelException("The attribute field [" + fieldName
-                    + "]cannot be found");
+                    + "] cannot be found");
 
         if (attributeValueCache.containsKey(fieldName))
             return attributeValueCache.get(fieldName);

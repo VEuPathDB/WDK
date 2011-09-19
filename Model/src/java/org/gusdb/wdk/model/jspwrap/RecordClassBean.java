@@ -158,8 +158,8 @@ public class RecordClassBean {
         return new QuestionBean(recordClass.getSnapshotBasketQuestion());
     }
 
-    public boolean getHasBasket() {
-        return recordClass.hasBasket();
+    public boolean isUseBasket() {
+        return recordClass.isUseBasket();
     }
 
     public QuestionBean[] getTransformQuestions() {
