@@ -34,11 +34,6 @@ import org.json.JSONException;
  */
 public class User /* implements Serializable */{
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 6276406938881110742L;
-
     public final static String PREF_ITEMS_PER_PAGE = "preference_global_items_per_page";
     public final static String PREF_REMOTE_KEY = "preference_remote_key";
 
