@@ -22,7 +22,7 @@ public class WdkException extends Exception {
     }
 
     public WdkException(Throwable cause) {
-        super(cause);
+        super(cause.getMessage(), cause);
     }
 
     /**

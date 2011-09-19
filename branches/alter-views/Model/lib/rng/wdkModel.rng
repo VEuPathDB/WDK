@@ -781,7 +781,9 @@
         </attribute>
       </optional>
       <optional>
-        <attribute name="allRecordsQueryRef" />
+        <attribute name="useBasket">
+          <data type="boolean" />
+        </attribute>
       </optional>
       <ref name="IncludeExclude" />
       <optional>

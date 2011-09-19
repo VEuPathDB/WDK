@@ -100,25 +100,22 @@ public class DatasetTest {
         Assert.assertEquals(expected.getCreateTime(), actual.getCreateTime());
         Assert.assertEquals(expected.getDatasetId(), actual.getDatasetId());
         Assert.assertEquals(expected.getSize(), actual.getSize());
-        Assert.assertEquals(expected.getUser().getUserId(), actual.getUser()
-                .getUserId());
+        Assert.assertEquals(expected.getUser().getUserId(),
+                actual.getUser().getUserId());
         Assert.assertEquals(expected.getUserDatasetId(),
                 actual.getUserDatasetId());
         Assert.assertEquals(expected.getValue(), actual.getValue());
     }
 
     private String generateRandomValues() throws Exception {
-        List<Map<String, Object>> ids = FavoriteTest.getIds(recordClass,
-                FavoriteTest.OPEARTION_SIZE);
+        List<Map<String, Object>> ids = FavoriteTest.getIds(FavoriteTest.OPEARTION_SIZE);
 
         StringBuilder builder = new StringBuilder();
         for (Map<String, Object> id : ids) {
             boolean first = true;
             for (Object value : id.values()) {
-                if (first)
-                    first = false;
-                else
-                    builder.append(":");
+                if (first) first = false;
+                else builder.append(":");
                 builder.append(value);
             }
             builder.append('\n');

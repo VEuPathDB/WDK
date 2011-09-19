@@ -2,9 +2,11 @@ package org.gusdb.wdk.controller.action;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,14 +15,18 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.Action;
+import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.apache.struts.action.ActionMessage;
+import org.apache.struts.action.ActionMessages;
 import org.apache.struts.upload.FormFile;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.DatasetBean;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -38,6 +44,8 @@ import org.json.JSONException;
  */
 
 public class ProcessQuestionAction extends Action {
+
+    private static final String FORWARD_ERROR = "error";
 
     private static final Logger logger = Logger.getLogger(ProcessQuestionAction.class);
 
@@ -113,50 +121,16 @@ public class ProcessQuestionAction extends Action {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         logger.debug("Entering ProcessQuestionAction..");
-        // logger.debug("+++++query string" + request.getQueryString());
-
+        QuestionForm qForm = (QuestionForm) form;
         try {
             UserBean wdkUser = ActionUtility.getUser(servlet, request);
 
             // get question
             String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-            // QuestionForm qForm = prepareQuestionForm(wdkQuestion, request,
-            // (QuestionForm) form);
-            QuestionForm qForm = (QuestionForm) form;
 
             // the params has been validated, and now is parsed, and if the size
-            // of
-            // the value is too long, ti will be replaced is checksum
+            // of the value is too long, ti will be replaced is checksum
             Map<String, String> params = prepareParams(wdkUser, request, qForm);
-
-            // construct the url to summary page
-            ActionForward showSummary = mapping.findForward(CConstants.PQ_SHOW_SUMMARY_MAPKEY);
-            StringBuffer url = new StringBuffer(showSummary.getPath());
-            url.append("?" + CConstants.QUESTION_FULLNAME_PARAM + "="
-                    + qFullName);
-            for (String paramName : params.keySet()) {
-                String paramValue = params.get(paramName);
-                url.append("&"
-                        + URLEncoder.encode("value(" + paramName + ")", "utf-8"));
-                url.append("=");
-                if (paramValue != null)
-                    url.append(URLEncoder.encode(paramValue, "utf-8"));
-            }
-
-            // check if user want to define the output size for the answer
-            String altPageSizeKey = request.getParameter(CConstants.WDK_ALT_PAGE_SIZE_KEY);
-            if (altPageSizeKey != null && altPageSizeKey.length() > 0) {
-                url.append("&" + CConstants.WDK_ALT_PAGE_SIZE_KEY);
-                url.append("=" + altPageSizeKey);
-            }
-
-            // pass along the skip param
-            String skipToDownloadKey = request.getParameter(CConstants.WDK_SKIPTO_DOWNLOAD_PARAM);
-            logger.debug("skipto download: " + skipToDownloadKey);
-            if (skipToDownloadKey != null && skipToDownloadKey.length() > 0) {
-                url.append("&" + CConstants.WDK_SKIPTO_DOWNLOAD_PARAM);
-                url.append("=" + skipToDownloadKey);
-            }
 
             // get the assigned weight
             String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
@@ -172,26 +146,12 @@ public class ProcessQuestionAction extends Action {
                             + strWeight);
                 weight = Integer.parseInt(strWeight);
             }
-            url.append("&" + CConstants.WDK_ASSIGNED_WEIGHT_KEY + "=" + weight);
 
-            // pass the noStrategy flag to showSummary
-            String noStrategy = request.getParameter(CConstants.WDK_NO_STRATEGY_PARAM);
-            if (noStrategy != null && noStrategy.length() > 0) {
-                url.append("&" + CConstants.WDK_NO_STRATEGY_PARAM + "="
-                        + noStrategy);
-            }
-
-            // pass no_skip to showSummary
-            String noSkip = request.getParameter("noskip");
-            if (noSkip != null && noSkip.length() > 0) {
-                url.append("&noskip=" + noSkip);
-            }
-
-            // pass custom name to showSummary
-            String customName = request.getParameter("customName");
-            if (customName != null && customName.length() > 0) {
-                url.append("&customName=" + customName);
-            }
+            QuestionBean wdkQuestion = qForm.getQuestion();
+            AnswerValueBean answerValue = wdkQuestion.makeAnswerValue(wdkUser,
+                    params, weight);
+            logger.debug("Test run search [" + qFullName
+                    + "] and get # of results: " + answerValue.getResultSize());
 
             /*
              * Charles Treatman 4/23/09 Add code here to set the
@@ -200,16 +160,82 @@ public class ProcessQuestionAction extends Action {
              */
             ShowApplicationAction.setWdkTabStateCookie(request, response);
 
-            // construct the forward to show_summary action
-            ActionForward forward = new ActionForward(url.toString());
-            forward.setRedirect(true);
-
-            logger.debug("Leaving ProcessQuestionAction, forward to " + url);
-
+            ActionForward forward = getSuccessForward(request, mapping,
+                    qFullName, params, weight);
+            logger.debug("Leaving ProcessQuestionAction successfully, forward to "
+                    + forward.getPath());
             return forward;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw ex;
         }
+        catch (Exception ex) {
+            logger.error(ex);
+
+            ActionMessages messages = new ActionErrors();
+            ActionMessage message = new ActionMessage("mapped.properties",
+                    qForm.getQuestion().getDisplayName(), ex.getMessage());
+            messages.add(ActionErrors.GLOBAL_MESSAGE, message);
+            saveErrors(request, messages);
+            ActionForward forward = mapping.getInputForward();
+            return forward;
+        }
+    }
+
+    private ActionForward getSuccessForward(HttpServletRequest request,
+            ActionMapping mapping, String qFullName,
+            Map<String, String> params, int weight)
+            throws UnsupportedEncodingException {
+
+        // construct the url to summary page
+        ActionForward showSummary = mapping.findForward(CConstants.PQ_SHOW_SUMMARY_MAPKEY);
+        StringBuffer url = new StringBuffer(showSummary.getPath());
+        url.append("?" + CConstants.QUESTION_FULLNAME_PARAM + "=" + qFullName);
+        for (String paramName : params.keySet()) {
+            String paramValue = params.get(paramName);
+            url.append("&"
+                    + URLEncoder.encode("value(" + paramName + ")", "utf-8"));
+            url.append("=");
+            if (paramValue != null)
+                url.append(URLEncoder.encode(paramValue, "utf-8"));
+        }
+
+        // check if user want to define the output size for the answer
+        String altPageSizeKey = request.getParameter(CConstants.WDK_ALT_PAGE_SIZE_KEY);
+        if (altPageSizeKey != null && altPageSizeKey.length() > 0) {
+            url.append("&" + CConstants.WDK_ALT_PAGE_SIZE_KEY);
+            url.append("=" + altPageSizeKey);
+        }
+
+        // pass along the skip param
+        String skipToDownloadKey = request.getParameter(CConstants.WDK_SKIPTO_DOWNLOAD_PARAM);
+        logger.debug("skipto download: " + skipToDownloadKey);
+        if (skipToDownloadKey != null && skipToDownloadKey.length() > 0) {
+            url.append("&" + CConstants.WDK_SKIPTO_DOWNLOAD_PARAM);
+            url.append("=" + skipToDownloadKey);
+        }
+
+        url.append("&" + CConstants.WDK_ASSIGNED_WEIGHT_KEY + "=" + weight);
+
+        // pass the noStrategy flag to showSummary
+        String noStrategy = request.getParameter(CConstants.WDK_NO_STRATEGY_PARAM);
+        if (noStrategy != null && noStrategy.length() > 0) {
+            url.append("&" + CConstants.WDK_NO_STRATEGY_PARAM + "="
+                    + noStrategy);
+        }
+
+        // pass no_skip to showSummary
+        String noSkip = request.getParameter("noskip");
+        if (noSkip != null && noSkip.length() > 0) {
+            url.append("&noskip=" + noSkip);
+        }
+
+        // pass custom name to showSummary
+        String customName = request.getParameter("customName");
+        if (customName != null && customName.length() > 0) {
+            url.append("&customName=" + customName);
+        }
+
+        // construct the forward to show_summary action
+        ActionForward forward = new ActionForward(url.toString());
+        forward.setRedirect(true);
+        return forward;
     }
 }
