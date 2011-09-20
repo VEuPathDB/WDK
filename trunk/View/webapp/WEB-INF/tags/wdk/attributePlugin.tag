@@ -12,7 +12,7 @@
 <div class="attribute-plugins">
   <c:if test="${fn:length(plugins) > 0}">
     <image class="handle" onclick="openAttributePlugins(this)" 
-           src="wdk/images/plugin.png" title="Analyze/Graph the contents of this column" />
+           src="wdk/images/plugin.png" title="Analyze/graph the contents of this column" />
   </c:if>
   <div class="plugins">
     <div class="title">
