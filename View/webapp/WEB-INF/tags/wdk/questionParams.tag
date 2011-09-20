@@ -118,15 +118,6 @@
                             </c:choose>
                         </c:otherwise>
                     </c:choose>
-
-                   <td width="10%">&nbsp;&nbsp;&nbsp;&nbsp;</td>
-                   <td valign="top" width="50" nowrap>
-                     <c:set var="anchorQp" value="HELP_${fromAnchorQ}_${pNam}"/>
-                     <c:set target="${helpQ}" property="${anchorQp}" value="${qP}"/>
-                     <a id="help_${pNam}" class="help_link" href="#" rel="htmltooltip">
-                       <img src="<c:url value='/wdk/images/help.png'/>" border="0" alt="Help">
-                     </a>
-                   </td>
                 </tr>
             </c:otherwise> <%-- end visible param --%>
         </c:choose>
