@@ -724,13 +724,13 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
 }
 
 #word-cloud #tags, #word-cloud #word-order, #word-cloud #count-order { display: none; }
-#word-cloud .help { font-size: smaller; font-style:italic; text-align: center; vertical-align: top; }
+#word-cloud .help { color: #666666; font-size: smaller; font-style:italic; text-align: center; vertical-align: top; }
 #word-cloud th { border-width: 0px; }
 #word-cloud input[name=from], #word-cloud input[name=to] { text-align: right; height: 15px; }
 #word-cloud #amount { width: 400px; }
 #word-cloud #layout {
   border: 1px solid #666666;
   background-color: #FFFFFF;
-  padding: 5px;
+  margin: 2px; padding: 5px;
 }
 #word-cloud #layout .word { padding: 2px; }
