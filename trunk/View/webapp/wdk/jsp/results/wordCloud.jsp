@@ -23,21 +23,24 @@
   </div>
   <table>
     <tr>
-      <th>Display words by rank: </th>
+      <th>Filter words by rank: </th>
       <td>
-        <input type="text" name="from" size="4" /> -
+        <input type="text" name="from" size="4" /> to
         <input type="text" name="to" size="4" />
       </td>
       <td style="padding-left:20px;"><div id="amount"> </div></td>
     </tr>
     <tr>
-      <th>Sort displayed words by: </th>
       <td colspan="2">
-        <input type="radio" name="sort" value="word" checked />Alphabetic
-        <input type="radio" name="sort" value="count" />Weight
+        <b>Sort by: </b>
+        <input type="radio" name="sort" value="count" checked="checked" />Rank
+        <input type="radio" name="sort" value="word" />A-Z
       </td>
+      <td class="help" style="top:-2px;"><i>Use slider or enter numbers to adjust filter</i></td></tr>
     </tr>
   </table>
+  <br />
+  <div class="help"><i>Mouse over a word to see its occurence in the column</i></div>
   <div id="layout"> </div>
   </c:otherwise>
 </c:choose>
