@@ -14,7 +14,7 @@ $(function() {
 <div id="attribute-plugin">
     <ul>
         <li><a href="#tab-view">Graph</a></li>
-        <li><a href="#tab-download">Data (Text)</a></li>
+        <li><a href="#tab-download">Data (text)</a></li>
 	</ul>
 	<div id="tab-view">
 		<c:import url="${plugin.view}"/>

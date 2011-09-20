@@ -723,25 +723,14 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
     background-image: url(../images/blue_bar.gif);
 }
 
-#word-cloud #tags, #word-cloud #word-order, #word-cloud #count-order {
-  display: none;
-}
-
-#word-cloud th {
-  border-width: 0px;
-//  text-align: right;
-}
-#word-cloud input[name=from], #word-cloud input[name=to] {
-  text-align: right;
-}
-#word-cloud #amount {
-  width: 400px;
-}
+#word-cloud #tags, #word-cloud #word-order, #word-cloud #count-order { display: none; }
+#word-cloud .help { font-size: smaller; font-style:italic; text-align: center; vertical-align: top; }
+#word-cloud th { border-width: 0px; }
+#word-cloud input[name=from], #word-cloud input[name=to] { text-align: right; height: 15px; }
+#word-cloud #amount { width: 400px; }
 #word-cloud #layout {
   border: 1px solid #666666;
   background-color: #FFFFFF;
   padding: 5px;
 }
-#word-cloud #layout .word {
-  padding: 0px 2px 0px 2px;
-}
+#word-cloud #layout .word { padding: 2px; }
