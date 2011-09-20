@@ -425,6 +425,7 @@ public class ProcessRESTAction extends Action {
             throws Exception {
         boolean isTreeBox = param.getDisplayType().equals(
                 AbstractEnumParam.DISPLAY_TREE_BOX);
+        logger.debug(param.getFullName() + " as tree: " + isTreeBox);
         if (!isTreeBox) return param.getDisplayMap();
 
         Stack<EnumParamTermNode> stack = new Stack<EnumParamTermNode>();
