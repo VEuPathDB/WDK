@@ -6,7 +6,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,8 +43,6 @@ import org.json.JSONException;
  */
 
 public class ProcessQuestionAction extends Action {
-
-    private static final String FORWARD_ERROR = "error";
 
     private static final Logger logger = Logger.getLogger(ProcessQuestionAction.class);
 
