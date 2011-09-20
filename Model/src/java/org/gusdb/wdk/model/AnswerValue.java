@@ -852,6 +852,7 @@ public class AnswerValue {
         Map<String, String> queryNames = new LinkedHashMap<String, String>();
         Map<String, String> orderClauses = new LinkedHashMap<String, String>();
         WdkModel wdkModel = question.getWdkModel();
+        logger.debug("sorting map: " + sortingMap);
         for (String fieldName : sortingMap.keySet()) {
             AttributeField field = fields.get(fieldName);
             if (field == null)
@@ -860,6 +861,7 @@ public class AnswerValue {
             Map<String, ColumnAttributeField> dependents = field.getColumnAttributeFields();
             for (ColumnAttributeField dependent :dependents.values()) {
                 Column column = dependent.getColumn();
+                logger.debug("field [" + fieldName + "] depends on column [" + column.getName() + "]");
                 Query query = column.getQuery();
                 String queryName = query.getFullName();
                 // cannot use the attribute query from record, need to get it
