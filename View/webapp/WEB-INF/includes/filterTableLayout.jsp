@@ -38,7 +38,12 @@
     <c:otherwise> <%-- horizontally aligned table --%>
       <tr>
         <c:forEach items="${layout.instances}" var="instance">
-		${th}${instance.displayName}</th>
+	<!--	${th}${instance.displayName}</th>   -->
+	   <td>
+            <wdk:filterInstance title="true" strategyId="${strategyId}" stepId="${stepId}" answerValue="${answerValue}" instanceName="${instance.name}" />
+          </td>
+
+
         </c:forEach>
       </tr>
       <tr>
