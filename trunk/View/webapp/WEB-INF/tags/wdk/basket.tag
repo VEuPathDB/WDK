@@ -2,27 +2,49 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
-<!-- NOTE: We need to have all of the baskets here so counts can
-     be displayed in the menu bar, but we don't want to load the
-     results b/c there may be a custom results display for any
-     record type -->
-
 <c:set var="wdkUser" value="${sessionScope.wdkUser}" />
+<c:set var="baskets" value="${requestScope.baskets}" />
+<c:set var="total" value= "${0}" />
+<c:forEach items="${baskets}" var="item">
+  <c:set var="total" value="${total + item.value}" />
+</c:forEach>
+   
+<script>
+$(function() {
+    $( "#basket-menu.tabs" ).tabs({
+			ajaxOptions: {
+                success(data, textStatus, jqXHR) {
+                    $("#basket .Workspace").html(data);
+                },
+				error: function( xhr, status, index, anchor ) {
+					$("#basket .Workspace").html( "Couldn't load this tab. Please try later" );
+				}
+			}
+		});
+});
+</script>
 
+<div="basekt">
 <c:choose>
-  <c:when test="${wdkUser.basketCount > 0}">
-    <wdk:basketMenu />
+  <c:when test="${total > 0}">
+    <div id="basket-menu" class="tabs">
+      <ul>
+        <c:forEach items="${basket}" var="item">
+          <c:set var="recordClass" value="${item.key}" />
+          <li>
+            <a href="<c:url value='/showBasket.do?recordClass=${recordClass.fullName}'/>">${recordClass.displayName} (${item.value})</a>
+          </li>
+        </c:forEach>
+      <ul>	  
+    </div>
+
     <wdk:basketControls />
 
-    <c:forEach items="${baskets}" var="basket">
-      <c:set var="type" value="${fn:replace(basket.shortDisplayType, ' ', '_')}" />
-      <div id="basket_${type}" class="basket_panel" recordClass="${basket.type}" displayName="${basket.displayType}">
-        <div class="Workspace">
-        </div>
-      </div>
-    </c:forEach>
+    <div id="Workspace"> </div>
+ 
   </c:when>
   <c:otherwise>
     <div style="font-size:120%;line-height:1.2em;text-indent:10em;padding:0.5em">You have no items in any of your baskets.</div>
   </c:otherwise>
 </c:choose>
+</div>
