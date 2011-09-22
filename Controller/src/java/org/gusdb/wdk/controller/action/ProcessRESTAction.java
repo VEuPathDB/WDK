@@ -63,7 +63,7 @@ public class ProcessRESTAction extends Action {
                 createWADL(request, response, qFullName);
                 return null;
             }
-            //if (outputType == null) outputType = "xml";
+            // if (outputType == null) outputType = "xml";
 
             logger.debug(qFullName);
 
@@ -312,17 +312,18 @@ public class ProcessRESTAction extends Action {
         Map<String, ParamBean> params = wdkQuestion.getParamsMap();
         for (String key : params.keySet()) {
             ParamBean param = params.get(key);
-            def_value = new String();
+            def_value = param.getDefault();
             repeating = "";
-            if (param.getDefault() != null && param.getDefault().length() > 0) {
-                def_value = param.getDefault();
-                def_value = htmlEncode(def_value);
-            }
             if (param instanceof EnumParamBean) {
                 EnumParamBean ep = (EnumParamBean) param;
+                def_value = filterDefaultValue(ep, def_value);
                 if (ep.getMultiPick()) repeating = "repeating='true'";
                 else repeating = "repeating='false'";
             }
+            if (def_value != null && def_value.length() > 0) {
+                def_value = htmlEncode(def_value);
+            } else if (def_value == null) def_value = "";
+
             writer.println("<param name='" + key
                     + "' type='xsd:string' required='"
                     + !param.getIsAllowEmpty() + "' default='" + def_value
@@ -419,6 +420,22 @@ public class ProcessRESTAction extends Action {
 
         // construct the forward to show_summary action
         return;
+    }
+
+    private String filterDefaultValue(EnumParamBean param, String defaultValue)
+            throws Exception {
+        if (defaultValue == null || defaultValue.length() == 0)
+            return defaultValue;
+
+        String[] terms = defaultValue.split(",");
+        Map<String, String> displayMap = getDisplayMap(param);
+        StringBuilder values = new StringBuilder();
+        for (String term : terms) {
+            if (!displayMap.containsKey(term)) continue;
+            if (values.length() > 0) values.append(",");
+            values.append(term);
+        }
+        return values.toString();
     }
 
     private Map<String, String> getDisplayMap(EnumParamBean param)

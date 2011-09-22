@@ -19,7 +19,7 @@ $(document).ready(function() {
                        null, 
                        null, 
                        { "bSortable": false } ],
-        "aaSorting": [[ 1, "asc" ]],
+        "aaSorting": [[ 5, "desc" ]],
     } );
 } );
 </script>
