@@ -3,7 +3,10 @@
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 <%@ taglib prefix="nested" uri="http://jakarta.apache.org/struts/tags-nested" %>
 
-
+<%@ attribute name="title"
+              required="false"
+              description="true or false (we are in the title row)"
+%>
 <%@ attribute name="strategyId"
               required="true"
               description="The current strategy id"
@@ -36,6 +39,26 @@
     </c:choose>
 </c:set>
 
+
+<c:choose>
+<c:when test="${title eq 'true'}">
+
+<div style="height:100%" class="filter-instance">
+    <c:choose>
+      <c:when test="${current}"><div class="current"></c:when>
+      <c:otherwise><div></c:otherwise>
+    </c:choose>
+	${instance.displayName}
+        <div class="instance-detail" style="display: none;">
+            <div class="display">${instance.displayName}</div>
+            <div class="description">${instance.description}</div>
+        </div>
+    </div>
+</div>
+
+</c:when>
+<c:otherwise>
+
 <div class="filter-instance">
     <c:choose>
       <c:when test="${current}"><div class="current"></c:when>
@@ -44,7 +67,12 @@
         <c:url var="linkUrl" value="/processFilter.do?strategy=${strategyId}&revise=${stepId}&filter=${instance.name}" />
         <c:url var="countUrl" value="/showResultSize.do?step=${stepId}&answer=${answerValue.checksum}&filter=${instance.name}" />
         <a id="link-${instance.name}" class="link-url" href="javascript:void(0)" countref="${countUrl}" 
-           strId="${strategyId}" stpId="${stpId}" linkUrl="${linkUrl}"><c:choose><c:when test="${current}">${answerValue.resultSize}</c:when><c:otherwise><img class="loading" src="<c:url value="/wdk/images/filterLoading.gif" />" /></c:otherwise></c:choose></a>
+           strId="${strategyId}" stpId="${stpId}" linkUrl="${linkUrl}">
+		<c:choose>
+		<c:when test="${current}">${answerValue.resultSize}</c:when>
+		<c:otherwise><img class="loading" src="<c:url value="/wdk/images/filterLoading.gif" />" /></c:otherwise>
+		</c:choose>
+	</a>
         <div class="instance-detail" style="display: none;">
             <div class="display">${instance.displayName}</div>
             <div class="description">${instance.description}</div>
@@ -52,3 +80,5 @@
     </div>
 </div>
 
+</c:otherwise>
+</c:choose>
