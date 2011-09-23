@@ -611,7 +611,9 @@ tr.headerRow > td,th {
       = Basket Tab Styles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-table.basket {
+#basket #basket-control-panel { display: none; }
+
+#basket table#basket-control {
 	margin-top: 3px;
 	margin-left:2px;
 	clear: both;
