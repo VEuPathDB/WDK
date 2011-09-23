@@ -60,7 +60,7 @@ function GetResultsPage(url, update, ignoreFilters){
     var s = parseUrlUtil("strategy", url);
     var st = parseUrlUtil("step", url);
     var strat = getStrategyFromBackId(s[0]);
-    var currentDiv = getCurrentBasketWrapper();
+    var currentDiv = getCurrentBasketRegion();
     var step = null;
     if(strat == false){
         strat = new Object();
@@ -71,8 +71,8 @@ function GetResultsPage(url, update, ignoreFilters){
     }else
         step = strat.getStep(st[0], false);
     url = url + "&resultsOnly=true";
-    $("#" + currentDiv + " div.attributesList").hide();
-    if (update){$("#" + currentDiv + " > div.Workspace").block();}
+    currentDiv.find("div.attributesList").hide();
+    if (update){currentDiv.block();}
     $.ajax({
         url: url,
         dataType: "html",
@@ -94,21 +94,21 @@ function GetResultsPage(url, update, ignoreFilters){
 }
 
 function updateResultLabels(currentDiv, strat, step) {
-    if (currentDiv == 'strategy_results') {
-        $("#" + currentDiv + "span#text_strategy_number").html(strat.JSON.name);
-        $("#" + currentDiv + "span#text_step_number").html(step.frontId);
+    if (currentDiv.hasClass('Workspace')) {
+        currentDiv.find("span#text_strategy_number").html(strat.JSON.name);
+        currentDiv.find("span#text_step_number").html(step.frontId);
     }
 }
 
 function ResultsToGrid(data, ignoreFilters, div) {
     var oldFilters;
     var currentDiv = div;
-    if(currentDiv == undefined) currentDiv = getCurrentBasketWrapper();
+    if (currentDiv == undefined) currentDiv = getCurrentBasketRegion();
     if (ignoreFilters) {
         oldFilters = $("#strategy_results > div.Workspace div.layout-detail div.filter-instance .link-url");
     }
 
-    $("#" + currentDiv + " > div.Workspace").html(data);
+    currentDiv.html(data);
 
     try {
         customResultsPage();
@@ -138,16 +138,14 @@ function ResultsToGrid(data, ignoreFilters, div) {
     }
 
     // convert results table to drag-and-drop flex grid
-    createFlexigridFromTable($("#" + currentDiv + " .Results_Table"));
+    createFlexigridFromTable(currentDiv.find(" .Results_Table"));
 
     // check the basket for the page if needed
     checkPageBasket();
 
-    setDraggable($("#" + currentDiv + " > div.Workspace div.attributesList"), ".dragHandle");
+    setDraggable(currentDiv.find("div.attributesList"), ".dragHandle");
 
-    $("#" + currentDiv + " > div.Workspace").unblock();
-
-	$("#" + currentDiv + " > div.Workspace").unblock();
+    currentDiv.unblock();
 }
 
 function createFlexigridFromTable(table) {
