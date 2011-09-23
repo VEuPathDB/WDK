@@ -142,7 +142,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 		da = jQuery.json.serialize(a);
 		action = (i.attr("value") == '0') ? "add" : "remove";
 	}else if(type == "page"){
-		currentDiv.find("div.primaryKey").each(function(){
+		currentDiv.find(".Results_Pane div.primaryKey").each(function(){
 			var o = new Object();
 			jQuery("span",this).each(function(){;
 				o[jQuery(this).attr("key")] = jQuery(this).text();
@@ -196,7 +196,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 				}else if(type == "clear"){
 					showBasket();
 				}else{
-					var image = currentDiv.find("img.basket");
+					var image = currentDiv.find(".Results_Pane img.basket");
 					if(action == "add-all" || action == "add") {
 						image.attr("src","wdk/images/basket_color.png");
 						image.attr("title","Click to remove this item from the basket.");
@@ -236,14 +236,14 @@ function updateBasketCount(c){
 
 function checkPageBasket(){
 	var currentDiv = getCurrentBasketRegion();
-        var headImage = currentDiv.find("img.head.basket");
+        var headImage = currentDiv.find(".Results_Pane img.head.basket");
 	if (guestUser == 'true') {
 		headImage.attr("src","wdk/images/basket_gray.png");
 		headImage.attr("title","Please log in to use the basket.");
 	}
 	else {
 		allIn = true;
-		currentDiv.find("img.basket").each(function(){
+		currentDiv.find(".Results_Pane img.basket").each(function(){
 			if(!(jQuery(this).hasClass("head"))){
 				if(jQuery(this).attr("value") == 0){
 					allIn = false;
@@ -267,7 +267,7 @@ function getCurrentBasketRegion() {
     var regionId = ".Workspace";
     if (section == "tab_basket")
         regionId = "#basket-menu " + getCurrentBasketTab().children("a").attr("href");
-    return jQuery(regionId + " .Results_Pane");
+    return jQuery(regionId);
 }
 
 function getCurrentBasketTab() {
