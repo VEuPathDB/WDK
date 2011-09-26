@@ -440,8 +440,9 @@ public class ProcessRESTAction extends Action {
 
     private Map<String, String> getDisplayMap(EnumParamBean param)
             throws Exception {
-        boolean isTreeBox = param.getDisplayType().equals(
-                AbstractEnumParam.DISPLAY_TREE_BOX);
+        String displayType =  param.getDisplayType();
+        boolean isTreeBox = (displayType != null && displayType.equals(
+                AbstractEnumParam.DISPLAY_TREE_BOX));
         logger.debug(param.getFullName() + " as tree: " + isTreeBox);
         if (!isTreeBox) return param.getDisplayMap();
 
