@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.junit.Assert;
 import org.junit.Test;
@@ -80,7 +81,12 @@ public class BasketTest {
     @Test
     public void testGetCounts() throws Exception {
         UserBean user = new UserBean(UnitTestHelper.getRegisteredUser());
-        Map<String, Integer> counts = user.getBasketCounts();
+        Map<RecordClassBean, Integer> beanCounts = user.getBasketCounts();
+        Map<String, Integer> counts = new HashMap<String, Integer>();
+        for (RecordClassBean rcBean : beanCounts.keySet()) {
+        	String rcName = rcBean.getFullName();
+        	counts.put(rcName, beanCounts.get(rcName));
+        }
         for (RecordClassSet rcSet : wdkModel.getAllRecordClassSets()) {
             for (RecordClass rc : rcSet.getRecordClasses()) {
                 if (!rc.isUseBasket()) continue;
