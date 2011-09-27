@@ -30,6 +30,10 @@ public class RecordClassBean {
         return recordClass.getFullName();
     }
 
+    public String getName() {
+        return recordClass.getName();
+    }
+
     public String getType() {
         return recordClass.getType();
     }
