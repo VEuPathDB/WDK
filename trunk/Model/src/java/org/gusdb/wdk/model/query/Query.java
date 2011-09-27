@@ -118,6 +118,7 @@ public abstract class Query extends WdkModelBase {
         // clone params
         for (String paramName : query.paramMap.keySet()) {
             Param param = query.paramMap.get(paramName).clone();
+            param.setContextQuery(this);
             paramMap.put(paramName, param);
         }
     }
@@ -188,6 +189,7 @@ public abstract class Query extends WdkModelBase {
      * @param param
      */
     public void addParam(Param param) {
+        param.setContextQuery(this);
         paramMap.put(param.getName(), param);
     }
 
@@ -352,8 +354,10 @@ public abstract class Query extends WdkModelBase {
             if (paramMap.containsKey(paramName)) {
                 throw new WdkModelException("The param '" + paramName
                         + "' is duplicated in query " + getFullName());
-            } else
+            } else {
+                param.setContextQuery(this);
                 paramMap.put(paramName, param);
+            }
         }
         paramRefList = null;
 

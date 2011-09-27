@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -128,6 +129,7 @@ public abstract class Param extends WdkModelBase {
     private boolean noTranslation = false;
 
     protected Question contextQuestion;
+    protected Query contextQuery;
 
     public Param() {
         visible = true;
@@ -157,6 +159,8 @@ public abstract class Param extends WdkModelBase {
         this.wdkModel = param.wdkModel;
         this.noTranslation = param.noTranslation;
         this.resolved = param.resolved;
+        this.contextQuestion = param.contextQuestion;
+        this.contextQuery = param.contextQuery;
     }
 
     /**
@@ -481,5 +485,9 @@ public abstract class Param extends WdkModelBase {
      */
     public void setContextQuestion(Question question) {
         this.contextQuestion = question;
+    }
+    
+    public void setContextQuery(Query query) {
+        this.contextQuery = query;
     }
 }
