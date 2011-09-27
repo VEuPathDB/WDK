@@ -945,7 +945,8 @@ public class AnswerValue {
             // into the paged id query as well.
             Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
             for (String column : pkField.getColumnRefs()) {
-                pkValues.put(column, resultList.get(column));
+                Object value = resultList.get(column);
+                pkValues.put(column, value);
             }
             RecordInstance record = new RecordInstance(this, pkValues);
             pageRecordInstances.put(record.getPrimaryKey(), record);
@@ -971,7 +972,7 @@ public class AnswerValue {
                     + " from the actual size. Please check the id query "
                     + idsQueryInstance.getQuery().getFullName() + " and the "
                     + "attribute queries that return the attributes (" + buffer
-                    + ")");
+                    + "). expected size: " + expected + ", actual size: " + pageRecordInstances.size());
         }
 
         logger.debug("Paged records initialized.");
