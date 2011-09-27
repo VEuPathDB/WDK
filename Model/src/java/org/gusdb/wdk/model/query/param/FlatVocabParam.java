@@ -93,8 +93,6 @@ public class FlatVocabParam extends AbstractEnumParam {
         paramSet.addParam(param);
         query.addParam(param);
         this.query = query;
-
-        loadDependedParam();
     }
 
     /*
@@ -115,6 +113,7 @@ public class FlatVocabParam extends AbstractEnumParam {
     protected synchronized void initVocabMap() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
+        Param dependedParam = getDependedParam();
         if (termInternalMap != null
                 && (dependedParam == null || !isDependedValueChanged()))
             return;
