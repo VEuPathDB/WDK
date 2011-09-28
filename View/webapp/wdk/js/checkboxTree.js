@@ -1,13 +1,13 @@
 
 var checkboxTreeConfig;
-if (typeof checkboxTreeConfig == 'undefined') {
+if ((typeof checkboxTreeConfig) == 'undefined') {
 	checkboxTreeConfig = new Object();
 }
 
 // takes string, boolean, url, "current" array, "default" array, "initially set" array
 function addTreeToPage(id, checkboxName, useIcons, collapseOnLoad, leafImgUrl, currentList, defaultList, initiallySetList) {
 	var checkboxTree = checkboxTreeConfig[id];
-	if (typeof checkboxTree == 'undefined') {
+	if ((typeof checkboxTree) == 'undefined') {
 		checkboxTree = new Object();
 		checkboxTreeConfig[id] = checkboxTree;
 	}
@@ -38,8 +38,8 @@ function configureCheckboxTree(treeId) {
 				if (checkboxTree.collapseOnLoad) {
 					cbt_collapseAll(treeId);
 				}
-				$('#'+treeId).show();
 				checkboxTree.configured = true;
+				$('#'+treeId).show();
 			})
 			.jstree({
 				"plugins" : [ "html_data", "themes", "types", "checkbox" ],
