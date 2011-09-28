@@ -3,6 +3,8 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
+<jsp:useBean id="idgen" class="org.gusdb.wdk.model.jspwrap.NumberUtilBean" scope="application" />
+
 <%@ attribute name="wdkAnswer"
               required="true"
               type="org.gusdb.wdk.model.jspwrap.AnswerValueBean"
@@ -32,8 +34,9 @@
       <input type="submit" value="Update Columns"/>
     </div>
     <c:if test="${wdkAnswer.useCheckboxTree}">
+      <c:set var="checkboxTreeId" value="sfcbt-${wdkAnswer.recordClass.name}-${idgen.nextId}"/>
       <input type="checkbox" name="selectedFields" value="${wdkAnswer.recordClass.primaryKeyAttribute.name}" checked="checked" style="display:none;"/>
-      <wdk:checkboxTree id="selectedFieldsCBT" rootNode="${wdkAnswer.displayableAttributeTree}" checkboxName="selectedFields" showSelectAll="false" showResetCurrent="true"/>
+      <wdk:checkboxTree id="${checkboxTreeId}" rootNode="${wdkAnswer.displayableAttributeTree}" checkboxName="selectedFields" showSelectAll="false" showResetCurrent="true"/>
     </c:if>
     <c:if test="${not wdkAnswer.useCheckboxTree}">
 	    <div class="formButtonPanel">
