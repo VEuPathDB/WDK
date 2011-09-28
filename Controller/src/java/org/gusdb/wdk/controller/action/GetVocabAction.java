@@ -32,6 +32,7 @@ public class GetVocabAction extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+        logger.debug("Entering GetVocabAction...");
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         try {
             String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
@@ -74,6 +75,7 @@ public class GetVocabAction extends Action {
                 forward = new ActionForward(htmlVocabFile);
             }
 
+        logger.debug("Leaving GetVocabAction...");
             return forward;
         } catch (Exception ex) {
             ex.printStackTrace();

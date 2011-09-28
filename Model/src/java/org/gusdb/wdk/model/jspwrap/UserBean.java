@@ -1349,6 +1349,7 @@ public class UserBean /* implements Serializable */{
             return total;
         }
         catch (SQLException ex) {
+            logger.error(ex);
             ex.printStackTrace();
             throw ex;
         }
