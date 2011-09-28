@@ -87,6 +87,7 @@ public abstract class AbstractEnumParam extends Param {
         this.dependedValue = param.dependedValue;
         this.selectMode = param.selectMode;
         this.suppressNode = param.suppressNode;
+        this.dependedValueChanged = dependedValueChanged;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -205,8 +206,10 @@ public abstract class AbstractEnumParam extends Param {
 
     public Param getDependedParam() throws WdkModelException {
         if (dependedParamRef == null) return null;
-        if (contextQuery != null)
-            return contextQuery.getParamMap().get(dependedParamRef);
+        if (contextQuery != null) {
+            String paramName = dependedParamRef.split("\\.")[1];
+            return contextQuery.getParamMap().get(paramName);
+        }
         return (Param) wdkModel.resolveReference(dependedParamRef);
     }
 
