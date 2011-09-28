@@ -393,4 +393,13 @@ public class QuestionBean {
 
         return new AnswerValueBean(answerValue);
     }
+    
+    public boolean getContainsWildcardTextParam() {
+    	for (ParamBean param : _paramBeanMap.values()) {
+    		if (param.getName().equals("text_expression")) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
 }
