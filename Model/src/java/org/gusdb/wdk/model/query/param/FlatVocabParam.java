@@ -133,8 +133,14 @@ public class FlatVocabParam extends AbstractEnumParam {
         // prepare param values
         Map<String, String> values = new LinkedHashMap<String, String>();
         values.put(PARAM_SERVED_QUERY, servedQueryName);
-        if (dependedParam != null)
+        if (dependedParam != null) {
+            // use the depended param as the input param for the vocab query, 
+            // since the depended param might be overriden by question or 
+            // query, while the original input param in the vocab query
+            // does not know about it.
+            query.addParam(dependedParam.clone());
             values.put(dependedParam.getName(), dependedValue);
+        }
 
         User user = wdkModel.getSystemUser();
 
@@ -143,6 +149,9 @@ public class FlatVocabParam extends AbstractEnumParam {
         if (contextQuestion != null)
             context.put(Utilities.QUERY_CTX_QUESTION,
                     contextQuestion.getFullName());
+        logger.debug("PARAM [" + getFullName() + "] context Question: " +
+            ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName()) +
+            ", context Query: " + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
         QueryInstance instance = query.makeInstance(user, values, true, 0,
                 context);
 
