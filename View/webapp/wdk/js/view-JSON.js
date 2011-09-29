@@ -224,8 +224,14 @@ function singleStep(modelstep, prevjsonstep, jsonstep, sid){
 		 filterImg;
 	if(!modelstep.isLast){
 		if(modelstep.isTransform){
-			inner = inner + 
-				"<div class='arrow right size4'></div>";
+			if(modelstep.nextStepType == "transform"){
+				inner = inner + 
+					"<div class='arrow right size5'></div>";
+			} else {
+				inner = inner + 
+					"<div class='arrow right size4'></div>";
+			}
+
 		}
 		else{
 			if(modelstep.nextStepType == "transform"){
