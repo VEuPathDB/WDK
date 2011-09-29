@@ -4,8 +4,6 @@
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-<link rel="stylesheet" href="<c:url value='/misc/Top_menu.css' />" type="text/css">
-
 
 <%-- get wdkQuestion; setup requestScope HashMap to collect help info for footer --%>
 <c:set var="wdkQuestion" value="${requestScope.wdkQuestion}"/>
@@ -120,15 +118,6 @@
                             </c:choose>
                         </c:otherwise>
                     </c:choose>
-
-                   <td width="10%">&nbsp;&nbsp;&nbsp;&nbsp;</td>
-                   <td valign="top" width="50" nowrap>
-                     <c:set var="anchorQp" value="HELP_${fromAnchorQ}_${pNam}"/>
-                     <c:set target="${helpQ}" property="${anchorQp}" value="${qP}"/>
-                     <a id="help_${pNam}" class="help_link" href="#" rel="htmltooltip">
-                       <img src="<c:url value='/wdk/images/help.png'/>" border="0" alt="Help">
-                     </a>
-                   </td>
                 </tr>
             </c:otherwise> <%-- end visible param --%>
         </c:choose>

@@ -7,7 +7,7 @@
 <a href="#" style="cursor:default"><span style="cursor:text">${node.displayName}</span></a>
 <ul>
   <c:forEach var="childNode" items="${node.childNodes}">
-    <li>
+    <li id="${childNode.name}">
       <c:set var="recurse_term_node" value="${childNode}" scope="request"/>
       <c:import url="/WEB-INF/includes/checkboxTreeNode.jsp"/>
     </li>

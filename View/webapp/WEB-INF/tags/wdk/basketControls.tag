@@ -1,10 +1,10 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
 
-<table class="basket">
+<table id="basket-control">
   <tr>
     <td>
-      <input id="refresh-basket-button" type="button" value="Refresh" onClick="showBasket();"/>
+      <input id="refresh-basket-button" type="button" value="Refresh" onClick="refreshBasket();"/>
     </td>
     <td>
       <input id="empty-basket-button" type="button" value="Empty basket" onClick="emptyBasket();"/></td>

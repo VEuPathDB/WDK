@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Stack;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -30,6 +31,8 @@ import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.gusdb.wdk.model.report.Reporter;
 
 /**
@@ -60,7 +63,7 @@ public class ProcessRESTAction extends Action {
                 createWADL(request, response, qFullName);
                 return null;
             }
-            if (outputType == null) outputType = "xml";
+            // if (outputType == null) outputType = "xml";
 
             logger.debug(qFullName);
 
@@ -149,7 +152,8 @@ public class ProcessRESTAction extends Action {
 
             String fileName = reporter.getDownloadFileName();
             if (fileName != null) {
-                response.setHeader("Content-disposition",
+                response.setHeader(
+                        "Content-disposition",
                         "attachment; filename="
                                 + reporter.getDownloadFileName());
             }
@@ -157,7 +161,8 @@ public class ProcessRESTAction extends Action {
             reporter.report(out);
             out.flush();
             out.close();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             ex.printStackTrace();
             if (ex instanceof WdkModelException && outputType != null) {
                 logger.info("WdkModelException");
@@ -270,9 +275,11 @@ public class ProcessRESTAction extends Action {
             }
             writer.println("</resources>");
             writer.println("</application>");
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw e;
-        } finally {
+        }
+        finally {
             writer.flush();
             out.flush();
             out.close();
@@ -302,59 +309,54 @@ public class ProcessRESTAction extends Action {
         writer.println("<doc title='description'><![CDATA["
                 + wdkQuestion.getDescription() + "]]></doc>");
         writer.println("<request>");
-        for (String key : wdkQuestion.getParamsMap().keySet()) {
-            // def_attr = new String();
-            def_value = new String();
+        Map<String, ParamBean> params = wdkQuestion.getParamsMap();
+        for (String key : params.keySet()) {
+            ParamBean param = params.get(key);
+            def_value = param.getDefault();
             repeating = "";
-            if (wdkQuestion.getParamsMap().get(key).getDefault() != null
-                    && wdkQuestion.getParamsMap().get(key).getDefault().length() > 0) {
-                def_value = wdkQuestion.getParamsMap().get(key).getDefault();
-                def_value = htmlEncode(def_value);
-            }
-            ParamBean p = wdkQuestion.getParamsMap().get(key);
-            if (p instanceof EnumParamBean) {
-                EnumParamBean ep = (EnumParamBean) p;
+            if (param instanceof EnumParamBean) {
+                EnumParamBean ep = (EnumParamBean) param;
+                def_value = filterDefaultValue(ep, def_value);
                 if (ep.getMultiPick()) repeating = "repeating='true'";
                 else repeating = "repeating='false'";
             }
+            if (def_value != null && def_value.length() > 0) {
+                def_value = htmlEncode(def_value);
+            } else if (def_value == null) def_value = "";
+
             writer.println("<param name='" + key
                     + "' type='xsd:string' required='"
-                    + !wdkQuestion.getParamsMap().get(key).getIsAllowEmpty()
-                    + "' default='" + def_value + "' " + repeating + ">");
-            writer.println("<doc title='prompt'><![CDATA["
-                    + wdkQuestion.getParamsMap().get(key).getPrompt()
+                    + !param.getIsAllowEmpty() + "' default='" + def_value
+                    + "' " + repeating + ">");
+            writer.println("<doc title='prompt'><![CDATA[" + param.getPrompt()
                     + "]]></doc>");
-            writer.println("<doc title='help'><![CDATA["
-                    + wdkQuestion.getParamsMap().get(key).getHelp()
+            writer.println("<doc title='help'><![CDATA[" + param.getHelp()
                     + "]]></doc>");
             writer.println("<doc title='default'><![CDATA["
-                    + wdkQuestion.getParamsMap().get(key).getDefault()
-                    + "]]></doc>");
+                    + param.getDefault() + "]]></doc>");
 
-            if (p instanceof EnumParamBean) {
-                EnumParamBean ep = (EnumParamBean) p;
+            if (param instanceof EnumParamBean) {
+                EnumParamBean ep = (EnumParamBean) param;
                 if (ep.getMultiPick()) writer.println("<doc title='MultiValued'>"
                         + "Provide one or more values. "
                         + "Use comma as a delimter.</doc>");
                 else writer.println("<doc title='SingleValued'>Choose "
                         + "at most one value from the options</doc>");
+                Map<String, String> displayMap;
                 if (ep.getDependedParam() == null) {
-                    for (String term : ep.getVocabMap().keySet()) {
-                        // writer.println("<option>" + term + "</option>");
-                        writer.println("<option value='" + htmlEncode(term)
-                                + "'><doc title='description'><![CDATA["
-                                + ep.getDisplayMap().get(term)
-                                + "]]></doc></option>");
-                    }
+                    displayMap = getDisplayMap(ep);
                 } else {
-                    Map<String, String> pMap = new HashMap<String, String>();
+                    displayMap = new HashMap<String, String>();
+                    // TODO - assumed the depended param is an abstract enum
+                    // param, which might not be true.
                     EnumParamBean depep = new EnumParamBean(
                             ep.getDependedParam());
                     for (String depterm : depep.getVocabMap().keySet()) {
                         ep.setDependedValue(depterm);
                         try {
-                            pMap.putAll(ep.getDisplayMap());
-                        } catch (Exception e) {
+                            displayMap.putAll(getDisplayMap(ep));
+                        }
+                        catch (Exception e) {
                             if (e instanceof WdkModelException) {
                                 logger.info("expected Empty result set for dependent parameter.");
                                 continue;
@@ -364,13 +366,13 @@ public class ProcessRESTAction extends Action {
                             }
                         }
                     }
-                    for (String term : pMap.keySet()) {
-                        String display = pMap.get(term);
-                        // writer.println("<option>" + term + "</option>");
-                        writer.println("<option value='" + htmlEncode(term)
-                                + "'><doc title='description'><![CDATA["
-                                + display + "]]></doc></option>");
-                    }
+                }
+                for (String term : displayMap.keySet()) {
+                    String display = displayMap.get(term);
+                    // writer.println("<option>" + term + "</option>");
+                    writer.println("<option value='" + htmlEncode(term)
+                            + "'><doc title='description'><![CDATA[" + display
+                            + "]]></doc></option>");
                 }
             }
             writer.println("</param>");
@@ -418,6 +420,48 @@ public class ProcessRESTAction extends Action {
 
         // construct the forward to show_summary action
         return;
+    }
+
+    private String filterDefaultValue(EnumParamBean param, String defaultValue)
+            throws Exception {
+        if (defaultValue == null || defaultValue.length() == 0)
+            return defaultValue;
+
+        String[] terms = defaultValue.split(",");
+        Map<String, String> displayMap = getDisplayMap(param);
+        StringBuilder values = new StringBuilder();
+        for (String term : terms) {
+            if (!displayMap.containsKey(term)) continue;
+            if (values.length() > 0) values.append(",");
+            values.append(term);
+        }
+        return values.toString();
+    }
+
+    private Map<String, String> getDisplayMap(EnumParamBean param)
+            throws Exception {
+        String displayType =  param.getDisplayType();
+        boolean isTreeBox = (displayType != null && displayType.equals(
+                AbstractEnumParam.DISPLAY_TREE_BOX));
+        logger.debug(param.getFullName() + " as tree: " + isTreeBox);
+        if (!isTreeBox) return param.getDisplayMap();
+
+        Stack<EnumParamTermNode> stack = new Stack<EnumParamTermNode>();
+        for (EnumParamTermNode root : param.getVocabTreeRoots())
+            stack.push(root);
+
+        Map<String, String> displayMap = new LinkedHashMap<String, String>();
+        while (!stack.isEmpty()) {
+            EnumParamTermNode node = stack.pop();
+            EnumParamTermNode[] children = node.getChildren();
+            if (children.length == 0) { // find a leaf, output its term/display
+                displayMap.put(node.getTerm(), node.getDisplay());
+            } else { // internal node, skip and process its children
+                for (EnumParamTermNode child : children)
+                    stack.push(child);
+            }
+        }
+        return displayMap;
     }
 
     private String htmlEncode(String x) {

@@ -76,7 +76,7 @@ public class EnumParamBean extends ParamBean {
         return ((AbstractEnumParam) param).getDisplayType();
     }
 
-    public ParamBean getDependedParam() {
+    public ParamBean getDependedParam() throws WdkModelException {
         Param dependedParam = ((AbstractEnumParam) param).getDependedParam();
         if (dependedParam != null) {
             return new ParamBean(dependedParam);
