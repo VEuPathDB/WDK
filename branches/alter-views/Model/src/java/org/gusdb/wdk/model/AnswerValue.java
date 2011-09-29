@@ -851,6 +851,7 @@ public class AnswerValue {
         Map<String, String> queryNames = new LinkedHashMap<String, String>();
         Map<String, String> orderClauses = new LinkedHashMap<String, String>();
         WdkModel wdkModel = question.getWdkModel();
+        logger.debug("sorting map: " + sortingMap);
         for (String fieldName : sortingMap.keySet()) {
             AttributeField field = fields.get(fieldName);
             if (field == null)
@@ -859,6 +860,7 @@ public class AnswerValue {
             Map<String, ColumnAttributeField> dependents = field.getColumnAttributeFields();
             for (ColumnAttributeField dependent :dependents.values()) {
                 Column column = dependent.getColumn();
+                logger.debug("field [" + fieldName + "] depends on column [" + column.getName() + "]");
                 Query query = column.getQuery();
                 String queryName = query.getFullName();
                 // cannot use the attribute query from record, need to get it
@@ -941,7 +943,8 @@ public class AnswerValue {
             // into the paged id query as well.
             Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
             for (String column : pkField.getColumnRefs()) {
-                pkValues.put(column, resultList.get(column));
+                Object value = resultList.get(column);
+                pkValues.put(column, value);
             }
             RecordInstance record = new RecordInstance(this, pkValues);
             pageRecordInstances.put(record.getPrimaryKey(), record);
@@ -967,7 +970,7 @@ public class AnswerValue {
                     + " from the actual size. Please check the id query "
                     + idsQueryInstance.getQuery().getFullName() + " and the "
                     + "attribute queries that return the attributes (" + buffer
-                    + ")");
+                    + "). expected size: " + expected + ", actual size: " + pageRecordInstances.size());
         }
 
         logger.debug("Paged records initialized.");

@@ -45,49 +45,43 @@ public class ShowBasketAction extends Action {
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         try {
             String rcName = request.getParameter(PARAM_RECORD_CLASS);
-	    String path;
+            String path;
 
-	    if (rcName != null && rcName.trim().length() > 0) {
-		// A RecordClass was specified, so load that basket to be displayed as a result page
-		RecordClassBean recordClass = wdkModel.findRecordClass(rcName);
-		QuestionBean question = recordClass.getRealtimeBasketQuestion();
-		Map<String, String> params = new LinkedHashMap<String, String>();
-		params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
-		
-		StepBean step = user.createStep(question, params, null, true,
-						false, Utilities.DEFAULT_WEIGHT);
-		
-		ActionForward forward = mapping.findForward(MAPKEY_SHOW_BASKET);
-		path = forward.getPath() + "?"
-                    + CConstants.WDK_RESULT_SET_ONLY_KEY + "=true&"
-                    + CConstants.WDK_STEP_ID_PARAM + "=" + step.getStepId();
-	    }
-	    else {
-		// No RecordClass was specified, so load all baskets in order to make the menubar
-		List<StepBean> baskets = new ArrayList<StepBean>();
-		for (RecordClassBean recordClass : wdkModel.getRecordClasses()) {
-		    if (recordClass.isUseBasket()) {
-			QuestionBean question = recordClass.getRealtimeBasketQuestion();
-			Map<String, String> params = new LinkedHashMap<String, String>();
-			params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
-			
-			baskets.add(user.createStep(question, params, null, true,
-						    false, Utilities.DEFAULT_WEIGHT));
-		    }
-		}
-	
-		path = CConstants.WDK_DEFAULT_VIEW_DIR
-                    + File.separator + CConstants.WDK_PAGES_DIR
-                    + File.separator + BASKET_MENUBAR_PAGE;
+            if (rcName != null && rcName.trim().length() > 0) {
+                // A RecordClass was specified, so load that basket to be
+                // displayed as a result page
+                RecordClassBean recordClass = wdkModel.findRecordClass(rcName);
+                QuestionBean question = recordClass.getRealtimeBasketQuestion();
+                Map<String, String> params = new LinkedHashMap<String, String>();
+                params.put(BasketFactory.PARAM_USER_SIGNATURE,
+                        user.getSignature());
 
-		request.setAttribute("baskets", baskets);
-	    }
-	    return new ActionForward(path, false);
-        } catch (Exception ex) {
+                StepBean step = user.createStep(question, params, null, true,
+                        false, Utilities.DEFAULT_WEIGHT);
+
+                ActionForward forward = mapping.findForward(MAPKEY_SHOW_BASKET);
+                path = forward.getPath() + "?"
+                        + CConstants.WDK_RESULT_SET_ONLY_KEY + "=true&"
+                        + CConstants.WDK_STEP_ID_PARAM + "=" + step.getStepId();
+            } else {
+                // No RecordClass was specified, load the basket count only for
+                // all records
+                Map<RecordClassBean, Integer> baskets = user.getBasketCounts();
+
+                path = CConstants.WDK_DEFAULT_VIEW_DIR + File.separator
+                        + CConstants.WDK_PAGES_DIR + File.separator
+                        + BASKET_MENUBAR_PAGE;
+
+                request.setAttribute("baskets", baskets);
+            }
+            return new ActionForward(path, false);
+        }
+        catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
             throw ex;
-        } finally {
+        }
+        finally {
             logger.debug("Leaving ShowBasketAction...");
         }
     }

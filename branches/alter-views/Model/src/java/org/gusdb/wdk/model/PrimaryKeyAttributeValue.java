@@ -8,12 +8,15 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.json.JSONException;
 
 /**
  * @author Jerric
  */
 public class PrimaryKeyAttributeValue extends AttributeValue {
+
+    private static final Logger logger = Logger.getLogger(PrimaryKeyAttributeValue.class);
 
     private PrimaryKeyAttributeField field;
     private Map<String, Object> pkValues;
@@ -52,7 +55,7 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
 
             for (String columnName : pkValues.keySet()) {
                 if (!pk.pkValues.containsKey(columnName)) return false;
-                Object value = pkValues.get(columnName);
+                Object value = pk.pkValues.get(columnName);
                 if (!pkValues.get(columnName).equals(value)) return false;
             }
             return true;

@@ -254,12 +254,16 @@ public class BasketFactory {
         }
     }
 
-    public Map<String, Integer> getBasketCounts(User user) throws SQLException {
-        Map<String, Integer> counts = new LinkedHashMap<String, Integer>();
+    public Map<RecordClass, Integer> getBasketCounts(User user)
+            throws SQLException {
+        Map<RecordClass, Integer> counts = new LinkedHashMap<RecordClass, Integer>();
+        Map<String, RecordClass> recordClasses = new LinkedHashMap<String, RecordClass>();
         for (RecordClassSet rcSet : wdkModel.getAllRecordClassSets()) {
             for (RecordClass recordClass : rcSet.getRecordClasses()) {
-                if (recordClass.isUseBasket())
-                    counts.put(recordClass.getFullName(), 0);
+                if (recordClass.isUseBasket()) {
+                    counts.put(recordClass, 0);
+                    recordClasses.put(recordClass.getFullName(), recordClass);
+                }
             }
         }
         // load the unique counts
@@ -276,9 +280,17 @@ public class BasketFactory {
             ps.setString(2, wdkModel.getProjectId());
             rs = ps.executeQuery();
             while (rs.next()) {
-                String recordClass = rs.getString(COLUMN_RECORD_CLASS);
+                String rcName = rs.getString(COLUMN_RECORD_CLASS);
                 int size = rs.getInt("record_size");
-                counts.put(recordClass, size);
+
+                RecordClass recordClass = recordClasses.get(rcName);
+                if (recordClass != null) {
+                    counts.put(recordClass, size);
+                } else {
+                    logger.info("Basket is disabled on record class [" + rcName
+                            + "], but user #" + user.getUserId()
+                            + " has basket entries on it.");
+                }
             }
         }
         finally {
@@ -502,7 +514,7 @@ public class BasketFactory {
         StringBuilder sql = new StringBuilder("SELECT DISTINCT ");
         for (int i = 0; i < pkColumns.length; i++) {
             if (i > 0) sql.append(", ");
-            sql.append("b." + Utilities.COLUMN_PK_PREFIX + (i+1));
+            sql.append("b." + Utilities.COLUMN_PK_PREFIX + (i + 1));
             sql.append(" AS " + pkColumns[i]);
         }
         sql.append(" FROM " + schema + TABLE_BASKET + dbLink + " b, ");
@@ -592,7 +604,7 @@ public class BasketFactory {
         sql.append(" LEFT JOIN " + schema + TABLE_BASKET + dbLink + " b ");
         for (int i = 0; i < pkColumns.length; i++) {
             sql.append((i == 0) ? " ON " : " AND ");
-            sql.append(" i." + pkColumns[i] + " = b." + prefix + (i+1));
+            sql.append(" i." + pkColumns[i] + " = b." + prefix + (i + 1));
         }
         sql.append(" AND b." + COLUMN_USER_ID + " = $$"
                 + Utilities.PARAM_USER_ID + "$$ ");

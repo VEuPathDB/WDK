@@ -411,4 +411,13 @@ public class QuestionBean {
     public SummaryView getDefaultSummaryView() throws WdkModelException {
         return question.getDefaultSummaryView();
     }
+    
+    public boolean getContainsWildcardTextParam() {
+    	for (ParamBean param : _paramBeanMap.values()) {
+    		if (param.getName().equals("text_expression")) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
 }
