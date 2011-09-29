@@ -39,8 +39,7 @@ public class UserBean /* implements Serializable */{
 
     private int stepId;
 
-    public UserBean() {
-    }
+    public UserBean() {}
 
     /**
      * 
@@ -749,7 +748,8 @@ public class UserBean /* implements Serializable */{
         try {
             Map<String, List<Strategy>> strategies = user.getStrategiesByCategory();
             return convertMap(strategies);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
         }
@@ -1072,7 +1072,8 @@ public class UserBean /* implements Serializable */{
         try {
             Map<String, List<Strategy>> strategies = user.getSavedStrategiesByCategory();
             return convertMap(strategies);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
         }
@@ -1083,7 +1084,8 @@ public class UserBean /* implements Serializable */{
         try {
             Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
             return convertMap(strategies);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             logger.error(ex);
             ex.printStackTrace();
             throw ex;
@@ -1095,7 +1097,8 @@ public class UserBean /* implements Serializable */{
         try {
             Map<String, List<Strategy>> strategies = user.getRecentStrategiesByCategory();
             return convertMap(strategies);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
         }
@@ -1106,7 +1109,8 @@ public class UserBean /* implements Serializable */{
         try {
             Map<String, List<Strategy>> strategies = user.getActiveStrategiesByCategory();
             return convertMap(strategies);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
         }
@@ -1128,8 +1132,7 @@ public class UserBean /* implements Serializable */{
             RecordClass recordClass = wdkModel.getRecordClass(rcName);
             String category = recordClass.getDisplayName();
             List<StrategyBean> strategies = activeStrats.get(rcName);
-            if (strategies.size() == 0)
-                continue;
+            if (strategies.size() == 0) continue;
 
             Map<String, List<StrategyBean>> activities = new LinkedHashMap<String, List<StrategyBean>>();
             activities.put("Opened", strategies);
@@ -1140,8 +1143,7 @@ public class UserBean /* implements Serializable */{
             RecordClass recordClass = wdkModel.getRecordClass(rcName);
             String category = recordClass.getDisplayName();
             List<StrategyBean> strategies = savedStrats.get(rcName);
-            if (strategies.size() == 0)
-                continue;
+            if (strategies.size() == 0) continue;
 
             Map<String, List<StrategyBean>> activities = categories.get(category);
             if (activities == null) {
@@ -1155,8 +1157,7 @@ public class UserBean /* implements Serializable */{
             RecordClass recordClass = wdkModel.getRecordClass(rcName);
             String category = recordClass.getDisplayName();
             List<StrategyBean> strategies = recentStrats.get(rcName);
-            if (strategies.size() == 0)
-                continue;
+            if (strategies.size() == 0) continue;
 
             Map<String, List<StrategyBean>> activities = categories.get(category);
             if (activities == null) {
@@ -1327,20 +1328,28 @@ public class UserBean /* implements Serializable */{
         return basketFactory.getBasket(user, recordClass.recordClass);
     }
 
-    public Map<String, Integer> getBasketCounts() throws SQLException {
-        BasketFactory basketFactory = user.getWdkModel().getBasketFactory();
-        return basketFactory.getBasketCounts(user);
+    public Map<RecordClassBean, Integer> getBasketCounts() throws SQLException {
+        Map<RecordClass, Integer> counts = user.getBasketCounts();
+        Map<RecordClassBean, Integer> beans = new LinkedHashMap<RecordClassBean, Integer>();
+        for (RecordClass recordClass : counts.keySet()) {
+            RecordClassBean bean = new RecordClassBean(recordClass);
+            int count = counts.get(recordClass);
+            beans.put(bean, count);
+        }
+        return beans;
     }
 
     public int getBasketCount() throws SQLException {
         try {
-            Map<String, Integer> baskets = getBasketCounts();
+            Map<RecordClass, Integer> baskets = user.getBasketCounts();
             int total = 0;
-            for (String key : baskets.keySet()) {
-                total += baskets.get(key);
+            for (int count : baskets.values()) {
+                total += count;
             }
             return total;
-        } catch (SQLException ex) {
+        }
+        catch (SQLException ex) {
+            logger.error(ex);
             ex.printStackTrace();
             throw ex;
         }

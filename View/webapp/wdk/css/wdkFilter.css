@@ -51,7 +51,7 @@
     display: none;
     overflow: visible;
     position: absolute;
-    border: 3px double #997733;
+    border: 1px solid grey;
     background-color: #DEEEFF;
     padding: 3px;
     min-width: 200px;

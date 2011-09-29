@@ -138,10 +138,9 @@ public abstract class AttributeField extends Field {
         return new LinkedHashMap<String, AttributePluginReference>(pluginMap);
     }
 
-    public Map<String, ColumnAttributeField> getColumnAttributeFields() {
+    public Map<String, ColumnAttributeField> getColumnAttributeFields() throws WdkModelException {
         Map<String, ColumnAttributeField> leaves = new LinkedHashMap<String, ColumnAttributeField>();
-        Map<String, AttributeField> dependents = new LinkedHashMap<String, AttributeField>();
-        for (AttributeField dependent : dependents.values()) {
+        for (AttributeField dependent : getDependents()) {
             if (dependent instanceof ColumnAttributeField) {
                 leaves.put(dependent.getName(),
                         (ColumnAttributeField) dependent);

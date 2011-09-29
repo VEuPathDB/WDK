@@ -1,65 +1,72 @@
+function configureBasket() {
+    // determine the default tab
+    var current = getCurrentTabCookie('basket');
+    var tab = jQuery("#basket-menu > ul > li#" + current);
+    var index = (tab.length > 0) ? parseInt(tab.attr("tab-index")) : 0;
+    jQuery("#basket-menu").tabs({
+        selected: index,
+        load: function(event, ui) {
+            var currentTab = getCurrentBasketTab();
 
-function showBasket(recordClass, type){	
+            var currentDiv = getCurrentBasketRegion();
+            currentDiv.prepend(jQuery("#basket-control-panel #basket-control").clone());
+
+            // store the selection cookie
+            var currentId = currentTab.attr("id");
+            setCurrentTabCookie('basket', currentId);
+            var control = jQuery("#basket-menu #basket-control");
+            if (currentDiv.find("table").length > 0) {
+                control.find("input#empty-basket-button").attr("disabled",false);
+                control.find("input#make-strategy-from-basket-button").attr("disabled",false);
+                control.find("input#export-basket-button").attr("disabled",false);
+                // create multi select control for adding columns
+                checkPageBasket();
+                createFlexigridFromTable(jQuery("#basket-menu #Results_Table"));
+                try {
+                    customBasketPage();
+                } catch(err) {
+                    //Do nothing
+                }
+            } else {
+                control.find("input#empty-basket-button").attr("disabled",true);
+                control.find("input#make-strategy-from-basket-button").attr("disabled",true);
+                control.find("input#export-basket-button").attr("disabled",true);
+            }
+        },
+        ajaxOptions: {
+            error: function( xhr, status, index, anchor ) {
+                alert( "Couldn't load this tab. Please try again later." + status );
+            }
+        }
+    });
+}
+
+function showBasket(){	
 	var url = "showBasket.do";
 	var d = new Object();
-        if (type != undefined) type = type.replace(/\s+/gi, '_')
-	if (recordClass) {
-		 d.recordClass = recordClass;
-		$("#basket .menubar .selected_type").removeClass("selected_type");
-		$(".basket_panel").hide();
-		$("#basket .menubar li").each(function() {
-			var id = $("a", this).attr("id");
-			if (id == 'tab_' + type) {
-				$(this).addClass("selected_type");
-			}
-		});
-		$("div#basket_" + type).show();
-	}
 	$.ajax({
 		url: url,
 		data: d,
 		type: "post",
 		dataType: "html",
 		beforeSend:function(){
-			$("body").block();
+			jQuery("body").block();
 		},
 		success: function(data){
-			if (recordClass) {
-				setCurrentTabCookie('basket', type);
-				$("div#basket_" + type + " > div.Workspace").html(data);
-				if ($("div#basket_" + type).find("table").length > 0) {
-					$("input#empty-basket-button").attr("disabled",false);
-					$("input#make-strategy-from-basket-button").attr("disabled",false);
-					// create multi select control for adding columns
-					checkPageBasket();
-					createFlexigridFromTable($("#basket_" + type).find("#Results_Table"));
-					try {
-						customBasketPage();
-					}
-					catch(err) {
-						//Do nothing
-					}
-				}else{
-					$("input#empty-basket-button").attr("disabled",true);
-					$("input#make-strategy-from-basket-button").attr("disabled",true);
-				}
-			}
-			else {
-				$("div#basket").html(data);
-				var current = getCurrentTabCookie('basket');
-				if (current && $("div#basket ul.menubar a#tab_" + current).length > 0) {
-					$("div#basket ul.menubar a#tab_" + current).click();
-				} else {
-					$("div#basket ul.menubar a:first").click();
-				}
-			}
-			$("body").unblock();
+			jQuery("div#basket").html(data);
+			jQuery("body").unblock();
 		},
 		error: function(data,msg,e){
 			alert("Error occured in showBasket() function!!");
-			$("body").unblock();
+			jQuery("body").unblock();
 		}
 	});
+}
+
+function refreshBasket() {
+    var tabs = $("#basket #basket-menu");
+    var index = tabs.tabs("option", "selected");
+    tabs.tabs("load", index);
 }
 
 function ChangeBasket(url, noUpdate) {
@@ -81,18 +88,19 @@ function ChangeBasket(url, noUpdate) {
 }
 
 function emptyBasket() {
-	var recordClass = jQuery("div#" + getCurrentBasketWrapper()).attr("recordClass");
-	var display = jQuery("div#" + getCurrentBasketWrapper()).attr("displayName");
+        var currentTab = getCurrentBasketTab();
+	var recordClass = currentTab.attr("recordclass");
+	var display = currentTab.text();
 	var message = jQuery("#basketConfirmation");
-	$("#basketName", message).text(display);
-	$("form", message).submit(function() {
+	jQuery("#basketName", message).text(display);
+	jQuery("form", message).submit(function() {
 		updateBasket(this,'clear',0,0,recordClass);
 	});		
 	jQuery.blockUI({message : message});
 }
 
 function saveBasket() {
-	var recordClass = jQuery("div#" + getCurrentBasketWrapper()).attr("recordClass");
+	var recordClass = getCurrentBasketTab().attr("recordclass");
 	recordClass = recordClass.replace('.', '_');	
 	window.location='processQuestion.do?questionFullName=InternalQuestions.' + recordClass +
 		'BySnapshotBasket&' + recordClass + 'Dataset_type=basket&questionSubmit=Run+Step';
@@ -111,7 +119,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 	var a = new Array();
 	var action = null;
 	var da = null;
-	if(type != 'recordPage') var currentDiv = getCurrentBasketWrapper();
+	if(type != 'recordPage') var currentDiv = getCurrentBasketRegion();
 	var count = 0;
 	if(type == "recordPage"){
 		var o = new Object();
@@ -125,7 +133,6 @@ function updateBasket(ele, type, pk, pid,recordType) {
 	}else if(type == "single"){
 		var o = new Object();
 
-		//var pkDiv = jQuery("#" + currentDiv + " .Results_Pane div.primaryKey[fvalue='" + pk + "']");
 		var pkDiv = jQuery(ele).parents("tr").find("div.primaryKey");
 
 		jQuery("span", pkDiv).each(function(){
@@ -135,7 +142,7 @@ function updateBasket(ele, type, pk, pid,recordType) {
 		da = jQuery.json.serialize(a);
 		action = (i.attr("value") == '0') ? "add" : "remove";
 	}else if(type == "page"){
-		jQuery("#" + currentDiv + " .Results_Pane div.primaryKey").each(function(){
+		currentDiv.find(".Results_Pane div.primaryKey").each(function(){
 			var o = new Object();
 			jQuery("span",this).each(function(){;
 				o[jQuery(this).attr("key")] = jQuery(this).text();
@@ -159,14 +166,14 @@ function updateBasket(ele, type, pk, pid,recordType) {
 			dataType: "json",
 			beforeSend: function(){
 				if (action == 'add-all' || type == 'page') {
-					$("#" + currentDiv + " .Results_Pane").block();
+					currentDiv.block();
 				}
 				//jQuery("body").block();
 			},
 			success: function(data){
 				//jQuery("body").unblock();
 				if (action == 'add-all' || type == 'page') {
-					$("#" + currentDiv + " .Results_Pane").unblock();
+					currentDiv.unblock();
 				}
 				if(type == "single" || type == "recordPage"){
 					if(action == "add") {
@@ -189,14 +196,15 @@ function updateBasket(ele, type, pk, pid,recordType) {
 				}else if(type == "clear"){
 					showBasket();
 				}else{
+					var image = currentDiv.find(".Results_Pane img.basket");
 					if(action == "add-all" || action == "add") {
-						jQuery("div#" + currentDiv + " div.Results_Div img.basket").attr("src","wdk/images/basket_color.png");
-						jQuery("div#" + currentDiv + " div.Results_Div img.basket").attr("title","Click to remove this item from the basket.");
-						jQuery("div#" + currentDiv + " div.Results_Div img.basket").attr("value", "1");
+						image.attr("src","wdk/images/basket_color.png");
+						image.attr("title","Click to remove this item from the basket.");
+						image.attr("value", "1");
 					}else{
-						jQuery("div#" + currentDiv + " div.Results_Div img.basket").attr("src","wdk/images/basket_gray.png");
-						jQuery("div#" + currentDiv + " div.Results_Div img.basket").attr("title","Click to add this item to the basket.");
-						jQuery("div#" + currentDiv + " div.Results_Div img.basket").attr("value", "0");
+						image.attr("src","wdk/images/basket_gray.png");
+						image.attr("title","Click to add this item to the basket.");
+						image.attr("value", "0");
 					}
 				}
 					updateBasketCount(data.count);
@@ -205,7 +213,9 @@ function updateBasket(ele, type, pk, pid,recordType) {
                                         // the image has been updated, no need to restore it again.
                                         oldImage = null;
 				}
-				if (currentDiv.match(/basket/)) {
+
+                                var section = jQuery("#strategy_tabs > #selected > a").attr("id");
+				if (section == "tab_basket") {
 					//Using cookie to determine that the results need to be updated when the 'Opened' tab is selected
 					jQuery.cookie("refresh_results", "true", { path : '/' });
 				}
@@ -225,14 +235,15 @@ function updateBasketCount(c){
 }
 
 function checkPageBasket(){
-	var current = getCurrentBasketWrapper();
+	var currentDiv = getCurrentBasketRegion();
+        var headImage = currentDiv.find(".Results_Pane img.head.basket");
 	if (guestUser == 'true') {
-		jQuery("div#" + current + " div.Results_Div img.head.basket").attr("src","wdk/images/basket_gray.png");
-		jQuery("div#" + current + " div.Results_Div img.head.basket").attr("title","Please log in to use the basket.");
+		headImage.attr("src","wdk/images/basket_gray.png");
+		headImage.attr("title","Please log in to use the basket.");
 	}
 	else {
 		allIn = true;
-		jQuery("div#" + current + " div.Results_Div img.basket").each(function(){
+		currentDiv.find(".Results_Pane img.basket").each(function(){
 			if(!(jQuery(this).hasClass("head"))){
 				if(jQuery(this).attr("value") == 0){
 					allIn = false;
@@ -240,20 +251,26 @@ function checkPageBasket(){
 			}
 		});
 		if(allIn){
-			jQuery("div#" + current + " div.Results_Div img.head.basket").attr("src","wdk/images/basket_color.png");
-			jQuery("div#" + current + " div.Results_Div img.head.basket").attr("title","Click to remove the items in this page from the basket.");
-			jQuery("div#" + current + " div.Results_Div img.head.basket").attr("value", "1");
+			headImage.attr("src","wdk/images/basket_color.png");
+			headImage.attr("title","Click to remove the items in this page from the basket.");
+			headImage.attr("value", "1");
 		}else{
-			jQuery("div#" + current + " div.Results_Div img.head.basket").attr("src","wdk/images/basket_gray.png");
-			jQuery("div#" + current + " div.Results_Div img.head.basket").attr("title","Click to add the items in this page to the basket.");
-			jQuery("div#" + current + " div.Results_Div img.head.basket").attr("value", "0");
+			headImage.attr("src","wdk/images/basket_gray.png");
+			headImage.attr("title","Click to add the items in this page to the basket.");
+			headImage.attr("value", "0");
 		}
 	}
 }
 
-function getCurrentBasketWrapper() {
-	if (jQuery("#strategy_results").css('display') == 'none') {
-		return "basket_" + getCurrentTabCookie('basket');
-	}
-	return "strategy_results";
+function getCurrentBasketRegion() {
+    var section = jQuery("#strategy_tabs > #selected > a").attr("id");
+    var regionId = ".Workspace";
+    if (section == "tab_basket")
+        regionId = "#basket-menu " + getCurrentBasketTab().children("a").attr("href");
+    return jQuery(regionId);
+}
+
+function getCurrentBasketTab() {
+    var index = jQuery("#basket #basket-menu").tabs("option", "selected");
+    return jQuery("#basket-menu > ul > li[tab-index=" + index + "]");
 }

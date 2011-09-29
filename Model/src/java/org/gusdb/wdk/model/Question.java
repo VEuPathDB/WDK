@@ -579,7 +579,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
                 param.setContextQuestion(this);
             }
 
-            // all the id queries should has a weight column
+            // all the id queries should have weight column
             query.setHasWeight(true);
 
             // dynamic attribute set need to be initialized after the id query.

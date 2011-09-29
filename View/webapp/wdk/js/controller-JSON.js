@@ -402,8 +402,8 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters, ac
 					$("#Strategies div#diagram_" + strategy.frontId + " div[id='step_" + step.frontId + "_sub']").addClass("selected");
 					init_view_step = step.back_step_Id;
 				}
-				ResultsToGrid(data, ignoreFilters, "strategy_results");
-                                updateResultLabels("strategy_results", strat, step);
+				ResultsToGrid(data, ignoreFilters, $("#strategy_results .Workspace"));
+                                updateResultLabels($("#strategy_results .Workspace"), strat, step);
                                 
                 // remember user's action, if user is not logged in, and tries to save, this place 
                 // holds the previous action the user was doing.

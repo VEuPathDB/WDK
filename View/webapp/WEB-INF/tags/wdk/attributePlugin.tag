@@ -9,10 +9,15 @@
 
 <c:set var="step" value="${requestScope.wdkStep}" />
 <c:set var="plugins" value="${attribute.attributePlugins}" />
+<script type="text/javascript">
+  $(function() {
+	  $('.jqbutton').button();
+  });
+</script>
 <div class="attribute-plugins">
   <c:if test="${fn:length(plugins) > 0}">
-    <image class="handle" onclick="openAttributePlugins(this)" 
-           src="wdk/images/plugin.png" title="Analyze/Graph the contents of this column" />
+    <image class="handle jqbutton" onclick="openAttributePlugins(this)"
+           src="wdk/images/plugin.png" title="Analyze/graph the contents of this column"/>
   </c:if>
   <div class="plugins">
     <div class="title">

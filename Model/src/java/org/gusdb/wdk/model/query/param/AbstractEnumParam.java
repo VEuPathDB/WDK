@@ -32,7 +32,9 @@ public abstract class AbstractEnumParam extends Param {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException;
 
-    private static final String TYPE_AHEAD_DISPLAY = "typeAhead";
+    public static final String DISPLAY_TYPE_AHEAD = "typeAhead";
+    public static final String DISPLAY_TREE_BOX = "treeBox";
+
     static final String SELECT_MODE_NONE = "none";
     static final String SELECT_MODE_ALL = "all";
     static final String SELECT_MODE_FIRST = "first";
@@ -46,7 +48,6 @@ public abstract class AbstractEnumParam extends Param {
     protected boolean quote = true;
 
     private String displayType;
-    protected Param dependedParam;
     protected String dependedParamRef;
     protected String dependedValue;
     protected boolean dependedValueChanged = false;
@@ -82,11 +83,11 @@ public abstract class AbstractEnumParam extends Param {
         }
         this.quote = param.quote;
         this.displayType = param.displayType;
-        this.dependedParam = param.dependedParam;
         this.dependedParamRef = param.dependedParamRef;
         this.dependedValue = param.dependedValue;
         this.selectMode = param.selectMode;
         this.suppressNode = param.suppressNode;
+        this.dependedValueChanged = dependedValueChanged;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -102,7 +103,7 @@ public abstract class AbstractEnumParam extends Param {
     }
 
     public boolean isSkipValidation() {
-        return (displayType != null && displayType.compareTo(TYPE_AHEAD_DISPLAY) == 0);
+        return (displayType != null && displayType.compareTo(DISPLAY_TYPE_AHEAD) == 0);
     }
 
     public void setQuote(boolean quote) {
@@ -154,34 +155,29 @@ public abstract class AbstractEnumParam extends Param {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         initVocabMap();
-        Map<String, String> newVocabMap = new LinkedHashMap<String, String>();
-        for (String term : termInternalMap.keySet()) {
-            newVocabMap.put(term,
-                    isNoTranslation() ? term : termInternalMap.get(term));
-        }
-        return newVocabMap;
+        return new LinkedHashMap<String, String>(termInternalMap);
     }
 
+    /**
+     * @return
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @throws SQLException
+     * @throws JSONException
+     * @throws WdkUserException
+     */
     public Map<String, String> getDisplayMap() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         initVocabMap();
-        Map<String, String> newDisplayMap = new LinkedHashMap<String, String>();
-        for (String term : termDisplayMap.keySet()) {
-            newDisplayMap.put(term, termDisplayMap.get(term));
-        }
-        return newDisplayMap;
+        return new LinkedHashMap<String, String>(termDisplayMap);
     }
 
     public Map<String, String> getParentMap() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         initVocabMap();
-        Map<String, String> newParentMap = new LinkedHashMap<String, String>();
-        for (String term : termParentMap.keySet()) {
-            newParentMap.put(term, termParentMap.get(term));
-        }
-        return newParentMap;
+        return new LinkedHashMap<String, String>(termParentMap);
     }
 
     @Override
@@ -208,8 +204,13 @@ public abstract class AbstractEnumParam extends Param {
         this.displayType = displayType;
     }
 
-    public Param getDependedParam() {
-        return dependedParam;
+    public Param getDependedParam() throws WdkModelException {
+        if (dependedParamRef == null) return null;
+        if (contextQuery != null) {
+            String paramName = dependedParamRef.split("\\.")[1];
+            return contextQuery.getParamMap().get(paramName);
+        }
+        return (Param) wdkModel.resolveReference(dependedParamRef);
     }
 
     public void setDependedParamRef(String dependedParamRef) {
@@ -461,12 +462,6 @@ public abstract class AbstractEnumParam extends Param {
                 }
             }
             this.defaultValue = builder.toString();
-        }
-    }
-
-    protected void loadDependedParam() throws WdkModelException {
-        if (dependedParamRef != null && dependedParamRef.length() != 0) {
-            dependedParam = (Param) wdkModel.resolveReference(dependedParamRef);
         }
     }
 
