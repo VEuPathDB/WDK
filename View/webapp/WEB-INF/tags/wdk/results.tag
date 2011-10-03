@@ -23,7 +23,7 @@
 <c:set var="wdkAnswer" value="${step.answerValue}"/>
 <c:set var="recordClass" value="${wdkAnswer.question.recordClass}" />
 <c:set var="recordName" value="${recordClass.fullName}" />
-<c:set var="recHasBasket" value="${recordClass.hasBasket}" />
+<c:set var="recHasBasket" value="${recordClass.useBasket}" />
 
 
 <jsp:useBean id="typeMap" class="java.util.HashMap"/>
