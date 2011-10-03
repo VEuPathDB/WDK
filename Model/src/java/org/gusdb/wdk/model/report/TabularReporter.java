@@ -151,15 +151,9 @@ public class TabularReporter extends Reporter {
             String[] fields = fieldsList.split(",");
             for (String column : fields) {
                 column = column.trim();
-                if (column.equalsIgnoreCase("default")) {
-                    columns.clear();
-                    columns.addAll(summary.values());
-                    break;
+                if (attributes.containsKey(column)) {
+                	columns.add(attributes.get(column));
                 }
-                if (!attributes.containsKey(column))
-                    throw new WdkModelException("The column '" + column
-                            + "' cannot included in the report");
-                columns.add(attributes.get(column));
             }
         }
         return columns;
