@@ -38,7 +38,7 @@ public class UpdateResultAction extends Action {
      
     private static final String FORWARD_SHOW_RESULT = "show-result";
 
-    private static Logger logger = Logger.getLogger(ProcessSummaryAction.class);
+    private static Logger logger = Logger.getLogger(UpdateResultAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
