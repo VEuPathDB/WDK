@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wsf.service.WsfService;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
 
@@ -30,50 +31,54 @@ import org.xml.sax.SAXException;
  */
 public class ApplicationInitListener implements ServletContextListener {
 
+    public static boolean resourceExists(String path,
+            ServletContext servletContext) {
+        try {
+            URL url = servletContext.getResource(path);
+            return url != null;
+        }
+        catch (MalformedURLException exp) {
+            RuntimeException e = new RuntimeException(exp);
+            throw e;
+        }
+    }
+
     public void contextDestroyed(ServletContextEvent sce) {
         try {
             DBPlatform.closeAllPlatforms();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
     public void contextInitialized(ServletContextEvent sce) {
 
-        ServletContext application = sce.getServletContext();
+        ServletContext servletContext = sce.getServletContext();
 
-        String projectId = application.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
-        String gusHome = application.getRealPath(application.getInitParameter(Utilities.SYSTEM_PROPERTY_GUS_HOME));
+        String projectId = servletContext.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
+        String gusHome = servletContext.getRealPath(servletContext.getInitParameter(Utilities.SYSTEM_PROPERTY_GUS_HOME));
 
-        String alwaysGoToSummary = application.getInitParameter(CConstants.WDK_ALWAYSGOTOSUMMARY_PARAM);
-        String loginUrl = application.getInitParameter(CConstants.WDK_LOGIN_URL_PARAM);
+        String alwaysGoToSummary = servletContext.getInitParameter(CConstants.WDK_ALWAYSGOTOSUMMARY_PARAM);
+        String loginUrl = servletContext.getInitParameter(CConstants.WDK_LOGIN_URL_PARAM);
 
         try {
-            initMemberVars(application, projectId, gusHome, alwaysGoToSummary,
-                    loginUrl);
-        } catch (Exception ex) {
+            initMemberVars(servletContext, projectId, gusHome,
+                    alwaysGoToSummary, loginUrl);
+        }
+        catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    public static boolean resourceExists(String path,
-            ServletContext servletContext) {
-        try {
-            URL url = servletContext.getResource(path);
-            return url != null;
-        } catch (MalformedURLException exp) {
-            RuntimeException e = new RuntimeException(exp);
-            throw e;
-        }
-    }
-
-    private void initMemberVars(ServletContext application, String projectId,
-            String gusHome, String alwaysGoToSummary, String loginUrl)
-            throws WdkModelException, NoSuchAlgorithmException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException, IOException, SAXException, SQLException,
-            JSONException, WdkUserException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+    private void initMemberVars(ServletContext servletContext,
+            String projectId, String gusHome, String alwaysGoToSummary,
+            String loginUrl) throws WdkModelException,
+            NoSuchAlgorithmException, ParserConfigurationException,
+            TransformerFactoryConfigurationError, TransformerException,
+            IOException, SAXException, SQLException, JSONException,
+            WdkUserException, InstantiationException, IllegalAccessException,
+            ClassNotFoundException {
         WdkModel wdkModelRaw = WdkModel.construct(projectId, gusHome);
 
         WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
@@ -83,11 +88,15 @@ public class ApplicationInitListener implements ServletContextListener {
         wizard.excludeResources(projectId);
         wizard.resolveReferences(wdkModelRaw);
 
-        application.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
-        application.setAttribute(CConstants.WDK_WIZARD_KEY, wizard);
-        application.setAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY,
+        servletContext.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
+        servletContext.setAttribute(CConstants.WDK_WIZARD_KEY, wizard);
+        servletContext.setAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY,
                 alwaysGoToSummary);
-        application.setAttribute(CConstants.WDK_LOGIN_URL_KEY, loginUrl);
-        application.setAttribute(CConstants.GUS_HOME_KEY, gusHome);
+        servletContext.setAttribute(CConstants.WDK_LOGIN_URL_KEY, loginUrl);
+        servletContext.setAttribute(CConstants.GUS_HOME_KEY, gusHome);
+
+        // set the context to WsfService so that it can be accessed in the local
+        // mode.
+        WsfService.SERVLET_CONTEXT = servletContext;
     }
 }
