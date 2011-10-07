@@ -6,6 +6,8 @@ var recordType= new Array();   //stratid, recordType which is the type of the la
 var state = null;
 var p_state = null;
 var ajaxTimeout = 180000;
+var allCount;
+var openCount;
 $(document).ready(function(){
 	// Make the strategies window resizable
 	$(".resizable-wrapper").resizable({handles: 's', minHeight: 150, stop: function(event, ui) {setCurrentTabCookie('strategyWindow',$(".resizable-wrapper").height())}});
@@ -45,12 +47,22 @@ $(document).ready(function(){
 	});
 	initStrategyPanels();
 	var current = getCurrentTabCookie('application');
-	if (!current || current == null)
-		showPanel('strategy_results');
-	else
+	if (!current || current == null) {
+		if (!openCount || openCount == null || openCount == 0) {
+			showPanel('search_history');
+		} else {
+			showPanel('strategy_results');
+		}
+	} else {
 		showPanel(current);
+	}
 	initDisplay();
 });
+
+function setStrategyStatusCounts(myAllCount, myOpenCount) {
+	allCount = myAllCount;
+	openCount = myOpenCount;
+}
 
 function initStrategyPanels() {
 	// Fetch sample, new strat, and help tab contents
