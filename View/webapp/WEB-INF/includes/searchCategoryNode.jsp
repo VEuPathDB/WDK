@@ -6,12 +6,11 @@
 <c:set var="category" value="${requestScope.searchCategoryNode}"/>
 
 
-<li><a class="parent"><span>${category.displayName}</span></a>
+<li><a class="category">${category.displayName}</a>
  
   <c:set var="categories" value="${category.websiteChildren}" />
   <c:set var="questions" value="${category.websiteQuestions}" />
   <c:if test="${fn:length(categories) != 0 || fn:length(questions) != 0}">
-    <div>
       <ul>
         <%-- display sub categories --%>
         <c:forEach items="${categories}" var="item">
@@ -22,11 +21,10 @@
         <%-- display sub questions --%>
         <c:forEach items="${questions}" var="question">
           <li>
-            <a href="<c:url value='/showQuestion.do?questionFullName=${question.fullName}' />"
-              ><span>${question.displayName}</span></a>
+            <c:url var="questionUrl" value="/showQuestion.do?questionFullName=${question.fullName}"/>
+            <a href="${questionUrl}">${question.displayName}</a>
           </li>
         </c:forEach>
       </ul>
-    </div>
   </c:if>
 </li>

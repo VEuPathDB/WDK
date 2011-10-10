@@ -10,10 +10,9 @@
 
 
 <c:set var="model" value="${applicationScope.wdkModel}" />
-<ul>
+
   <c:forEach items="${model.websiteRootCategories}" var="item">
     <c:set var="searchCategoryNode" value="${item.value}" scope="request" />
     <c:import url="/WEB-INF/includes/searchCategoryNode.jsp"/>
   </c:forEach>
-</ul>
 
