@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.QuestionSet;
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * A wrapper on a {@link QuestionSet} that provides simplified access for
@@ -20,7 +21,7 @@ public class QuestionSetBean {
         this.questionSet = questionSet;
     }
 
-    public QuestionBean[] getQuestions() {
+    public QuestionBean[] getQuestions() throws WdkModelException {
         Question[] questions = questionSet.getQuestions();
         QuestionBean[] questionBeans = new QuestionBean[questions.length];
         for (int i = 0; i < questions.length; i++) {
@@ -29,7 +30,7 @@ public class QuestionSetBean {
         return questionBeans;
     }
 
-    public Map<String, QuestionBean> getQuestionsMap() {
+    public Map<String, QuestionBean> getQuestionsMap() throws WdkModelException {
         LinkedHashMap<String, QuestionBean> map = new LinkedHashMap<String, QuestionBean>();
         QuestionBean[] questions = getQuestions();
         for (int i = 0; i < questions.length; i++) {
@@ -55,7 +56,8 @@ public class QuestionSetBean {
     }
 
     @Deprecated
-    public Map<String, Set<QuestionBean>> getQuestionsByCategory() {
+    public Map<String, Set<QuestionBean>> getQuestionsByCategory()
+            throws WdkModelException {
         Map<String, Set<QuestionBean>> questions = new LinkedHashMap<String, Set<QuestionBean>>();
         Question[] qs = questionSet.getQuestions();
         for (Question q : qs) {

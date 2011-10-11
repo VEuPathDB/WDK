@@ -13,14 +13,14 @@ import org.json.JSONException;
  * A wrapper on a {@link Param} that provides simplified access for consumption
  * by a view
  */
-public class ParamBean {
+public abstract class ParamBean {
 
     // private static Logger logger = Logger.getLogger( ParamBean.class );
 
     protected UserBean user;
-    protected Param param;
     protected String dependentValue;
     protected int truncateLength;
+    private Param param;
 
     public ParamBean(Param param) {
         this.param = param;

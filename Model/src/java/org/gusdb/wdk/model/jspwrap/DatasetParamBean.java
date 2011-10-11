@@ -17,11 +17,11 @@ import org.json.JSONException;
  */
 public class DatasetParamBean extends ParamBean {
 
-    private DatasetParam datasetParam;
+    private DatasetParam param;
 
     public DatasetParamBean(DatasetParam datasetParam) {
         super(datasetParam);
-        this.datasetParam = datasetParam;
+        this.param = datasetParam;
     }
 
     public DatasetBean getDataset() throws WdkModelException, WdkUserException,
@@ -48,15 +48,15 @@ public class DatasetParamBean extends ParamBean {
     public String rawValueToDependentValue(UserBean user, String uploadFile,
             String rawValue) throws NoSuchAlgorithmException, WdkUserException,
             WdkModelException, SQLException {
-        return datasetParam.rawValueToDependentValue(user.getUser(),
-                uploadFile, rawValue);
+        return param.rawValueToDependentValue(user.getUser(), uploadFile,
+                rawValue);
     }
 
     public RecordClassBean getRecordClass() {
-        return new RecordClassBean(datasetParam.getRecordClass());
+        return new RecordClassBean(param.getRecordClass());
     }
 
     public String getDefaultType() {
-        return datasetParam.getDefaultType();
+        return param.getDefaultType();
     }
 }
