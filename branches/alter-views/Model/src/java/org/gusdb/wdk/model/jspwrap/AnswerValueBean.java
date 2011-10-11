@@ -215,7 +215,7 @@ public class AnswerValueBean {
         return new RecordClassBean(answerValue.getQuestion().getRecordClass());
     }
 
-    public QuestionBean getQuestion() {
+    public QuestionBean getQuestion() throws WdkModelException {
         return new QuestionBean(answerValue.getQuestion());
     }
 

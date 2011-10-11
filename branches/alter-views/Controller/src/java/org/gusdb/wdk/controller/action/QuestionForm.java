@@ -9,6 +9,7 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -57,10 +58,16 @@ public class QuestionForm extends MapActionForm {
             return errors;
         }
 
-        QuestionBean wdkQuestion = getQuestion();
-        if (wdkQuestion == null) {
+        QuestionBean wdkQuestion;
+        try {
+            wdkQuestion = getQuestion();
+        } catch (WdkModelException ex) {
+            ActionMessage message = new ActionMessage("mapped.properties",
+                    ex.getMessage());
+            errors.add(ActionErrors.GLOBAL_MESSAGE, message);
             return errors;
         }
+        if (wdkQuestion == null) return errors;
 
         Map<String, ParamBean> params = wdkQuestion.getParamsMap();
         for (String paramName : params.keySet()) {
@@ -119,7 +126,7 @@ public class QuestionForm extends MapActionForm {
         this.questionFullName = question.getFullName();
     }
 
-    public QuestionBean getQuestion() {
+    public QuestionBean getQuestion() throws WdkModelException {
         if (question == null) {
             if (questionFullName == null) return null;
             int dotI = questionFullName.indexOf('.');

@@ -65,7 +65,7 @@ public class RecordClassBean {
         return fieldBeans;
     }
 
-    public QuestionBean[] getQuestions() {
+    public QuestionBean[] getQuestions() throws WdkModelException {
         WdkModel wdkModel = recordClass.getWdkModel();
         Question questions[] = wdkModel.getQuestions(recordClass);
         QuestionBean[] questionBeans = new QuestionBean[questions.length];
@@ -166,7 +166,7 @@ public class RecordClassBean {
         return recordClass.isUseBasket();
     }
 
-    public QuestionBean[] getTransformQuestions() {
+    public QuestionBean[] getTransformQuestions() throws WdkModelException {
         Question[] questions = recordClass.getTransformQuestions(changeType);
         QuestionBean[] beans = new QuestionBean[questions.length];
         for (int i = 0; i < questions.length; i++) {

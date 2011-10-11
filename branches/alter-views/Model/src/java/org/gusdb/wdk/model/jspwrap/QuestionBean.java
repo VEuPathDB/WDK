@@ -24,6 +24,7 @@ import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.param.TimestampParam;
 import org.json.JSONException;
 
@@ -32,6 +33,25 @@ import org.json.JSONException;
  * consumption by a view
  */
 public class QuestionBean {
+
+    public static ParamBean createBeanFromParam(UserBean user, Param param) throws WdkModelException {
+        ParamBean bean;
+        if (param instanceof AbstractEnumParam) {
+            bean = new EnumParamBean((AbstractEnumParam) param);
+        } else if (param instanceof AnswerParam) {
+            bean = new AnswerParamBean((AnswerParam) param);
+        } else if (param instanceof DatasetParam) {
+            bean = new DatasetParamBean((DatasetParam) param);
+        } else if (param instanceof TimestampParam) {
+            bean = new TimestampParamBean((TimestampParam) param);
+        } else if (param instanceof StringParam) {
+            bean = new StringParamBean((StringParam)param);
+        } else {
+            throw new WdkModelException("Unknown param type: " + param.getClass().getCanonicalName());
+        }
+        bean.setUser(user);
+        return bean;
+    }
 
     Question question;
 
@@ -45,16 +65,16 @@ public class QuestionBean {
      */
     private String inputType;
 
-    public QuestionBean(Question question) {
+    public QuestionBean(Question question) throws WdkModelException {
         this.question = question;
         initializeParamBeans();   
     }
 
-    private void initializeParamBeans() {
+    private void initializeParamBeans() throws WdkModelException {
         Param[] params = question.getParams();
         _paramBeanMap = new LinkedHashMap<String, ParamBean>();
         for (int i = 0; i < params.length; i++) {
-            _paramBeanMap.put(params[i].getName(), createBeanFromParam(params[i]));
+            _paramBeanMap.put(params[i].getName(), createBeanFromParam(user, params[i]));
         }
     }
     
@@ -107,23 +127,6 @@ public class QuestionBean {
             }
         }
         return paramGroupBeans;
-    }
-
-    private ParamBean createBeanFromParam(Param param) {
-        ParamBean bean;
-        if (param instanceof AbstractEnumParam) {
-            bean = new EnumParamBean((AbstractEnumParam) param);
-        } else if (param instanceof AnswerParam) {
-            bean = new AnswerParamBean((AnswerParam) param);
-        } else if (param instanceof DatasetParam) {
-            bean = new DatasetParamBean((DatasetParam) param);
-        } else if (param instanceof TimestampParam) {
-            bean = new TimestampParamBean((TimestampParam) param);
-        } else {
-            bean = new ParamBean(param);
-        }
-        bean.setUser(user);
-        return bean;
     }
 
     public Map<String, AttributeFieldBean> getSummaryAttributesMap() {
