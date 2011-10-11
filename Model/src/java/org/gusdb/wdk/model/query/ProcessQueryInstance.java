@@ -257,7 +257,6 @@ public class ProcessQueryInstance extends QueryInstance {
         WsfResponse response;
         if (local) { // invoke the process query locally
             org.gusdb.wsf.service.WsfService service = new org.gusdb.wsf.service.WsfService();
-            logger.debug("Invoking locally... context is null: " + (service.SERVLET_CONTEXT == null));
             // get the response from the local service
             response = service.invoke(jsonRequest);
             int packets = response.getTotalPackets();
