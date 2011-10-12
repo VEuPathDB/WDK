@@ -388,7 +388,7 @@ public class ModelCacher extends BaseCLI {
         // need to handle dependent params
         Set<String> dependedValues = new HashSet<String>();
         Param dependedParam = param.getDependedParam();
-        if (dependedParam == null) {    // null means no depended value
+        if (dependedParam == null) { // null means no depended value
             dependedValues.add(null);
         } else if (dependedParam instanceof AbstractEnumParam) {
             AbstractEnumParam enumParam = (AbstractEnumParam) dependedParam;
@@ -398,10 +398,17 @@ public class ModelCacher extends BaseCLI {
         }
         for (String dependedValue : dependedValues) {
             param.setDependedValue(dependedValue);
-            for (String term : param.getVocab()) {
-                psEnum.setInt(1, paramId);
-                psEnum.setString(2, term);
-                psEnum.addBatch();
+            try {
+                for (String term : param.getVocab()) {
+                    psEnum.setInt(1, paramId);
+                    psEnum.setString(2, term);
+                    psEnum.addBatch();
+                }
+            } catch (WdkModelException ex) {
+                if (ex.getMessage().startsWith("No item returned by")) {
+                    // the enum param doeesn't return any row, ignore it.
+                    continue;
+                } else throw ex;
             }
         }
         psEnum.executeBatch();
