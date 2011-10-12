@@ -26,8 +26,6 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wsf.util.BaseCLI;
 import org.json.JSONException;
 
-import com.sun.tracing.dtrace.DependencyClass;
-
 /**
  * @author xingao
  * 
