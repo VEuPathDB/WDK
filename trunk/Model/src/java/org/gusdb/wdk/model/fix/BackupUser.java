@@ -22,6 +22,8 @@ public class BackupUser extends BaseCLI {
     private static final String ARG_BACKUP_SCHEMA = "backupSchema";
     private static final String ARG_CUTOFF_DATE = "cutoffDate";
 
+    private static final String TABLE_TEMP_USER = "TempUsers";
+
     private static final Logger logger = Logger.getLogger(BackupUser.class);
 
     /**
@@ -126,8 +128,9 @@ public class BackupUser extends BaseCLI {
     public void backupGuestUsers(String userSchema, String wdkSchema,
             String backupSchema, String cutoffDate) throws WdkUserException,
             WdkModelException, SQLException {
-        String copyClause = "user_id IN (SELECT user_id FROM " + userSchema
-                + "users MINUS SELECT user_id FROM " +backupSchema + "users)";
+        createTempUsers(userSchema, wdkSchema);
+        String copyClause = "user_id IN (SELECT user_id FROM "
+                + TABLE_TEMP_USER + ")";
 
         String deleteClause = "user_id IN (SELECT user_id FROM " + userSchema
                 + "users WHERE is_guest = 1 AND register_time < to_date('"
@@ -161,6 +164,21 @@ public class BackupUser extends BaseCLI {
         copyDatasetValueRows();
         deleteDatasetValueRows();
         deleteDatasetIndexRows();
+    }
+
+    private void createTempUsers(String userSchema, String wdkSchema)
+            throws WdkModelException, WdkUserException, SQLException {
+        DBPlatform platform = wdkModel.getUserPlatform();
+        DataSource dataSource = platform.getDataSource();
+        if (platform.checkTableExists(null, TABLE_TEMP_USER)) {
+            String sql = "DROP TABLE " + TABLE_TEMP_USER;
+            SqlUtils.executeUpdate(wdkModel, dataSource, sql, "drop-temp-users");
+        }
+
+        String sql = "CREATE TABLE " + TABLE_TEMP_USER + " AS "
+                + " SELECT user_id FROM " + userSchema + "users "
+                + " MINUS SELECT user_id FROM " + backupSchema + "users";
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql, "cache-temp-users");
     }
 
     // <ADD-AG 042111>
