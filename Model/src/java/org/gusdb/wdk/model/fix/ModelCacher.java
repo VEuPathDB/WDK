@@ -6,6 +6,8 @@ package org.gusdb.wdk.model.fix;
 import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -23,6 +25,8 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wsf.util.BaseCLI;
 import org.json.JSONException;
+
+import com.sun.tracing.dtrace.DependencyClass;
 
 /**
  * @author xingao
@@ -43,10 +47,12 @@ public class ModelCacher extends BaseCLI {
         ModelCacher cacher = new ModelCacher(cmdName);
         try {
             cacher.invoke(args);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
-        } finally {
+        }
+        finally {
             logger.info("model cacher done.");
             System.exit(0);
         }
@@ -160,7 +166,8 @@ public class ModelCacher extends BaseCLI {
                     saveQuestion(question, psQuestion, psParam, psEnum, s);
                 }
             }
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(psQuestion);
             SqlUtils.closeStatement(psParam);
             SqlUtils.closeStatement(psEnum);
@@ -175,7 +182,8 @@ public class ModelCacher extends BaseCLI {
             try {
                 SqlUtils.executeUpdate(wdkModel, dataSource, "DROP SEQUENCE "
                         + schema + sequence, "wdk-drop-sequence");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
@@ -185,7 +193,8 @@ public class ModelCacher extends BaseCLI {
             try {
                 SqlUtils.executeUpdate(wdkModel, dataSource, "DROP TABLE "
                         + schema + table, "wdk-drop-table");
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 ex.printStackTrace();
             }
         }
@@ -309,7 +318,8 @@ public class ModelCacher extends BaseCLI {
             psQuestions = SqlUtils.getPreparedStatement(dataSource, sql);
             psQuestions.setString(1, projectId);
             psQuestions.executeUpdate();
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(psEnums);
             SqlUtils.closeStatement(psParams);
             SqlUtils.closeStatement(psQuestions);
@@ -335,15 +345,16 @@ public class ModelCacher extends BaseCLI {
 
         // save the params
         for (Param param : question.getParams()) {
-            saveParam(wdkModel, param, questionId, psParam, psEnum,
+            saveParam(wdkModel, question, param, questionId, psParam, psEnum,
                     schemaWithoutDot);
         }
     }
 
-    private void saveParam(WdkModel wdkModel, Param param, int questionId,
-            PreparedStatement psParam, PreparedStatement psEnum,
-            String schemaWithoutDot) throws SQLException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, WdkUserException {
+    private void saveParam(WdkModel wdkModel, Question question, Param param,
+            int questionId, PreparedStatement psParam,
+            PreparedStatement psEnum, String schemaWithoutDot)
+            throws SQLException, WdkModelException, NoSuchAlgorithmException,
+            JSONException, WdkUserException {
         DBPlatform platform = wdkModel.getUserPlatform();
 
         String recordClass = null;
@@ -368,17 +379,32 @@ public class ModelCacher extends BaseCLI {
         psParam.executeUpdate();
 
         if (param instanceof AbstractEnumParam && !type.endsWith("-TypeAhead")) {
-            saveEnums((AbstractEnumParam) param, paramId, psEnum);
+            saveEnums(question, (AbstractEnumParam) param, paramId, psEnum);
         }
     }
 
-    private void saveEnums(AbstractEnumParam param, int paramId,
-            PreparedStatement psEnum) throws NoSuchAlgorithmException,
-            WdkModelException, SQLException, JSONException, WdkUserException {
-        for (String term : param.getVocab()) {
-            psEnum.setInt(1, paramId);
-            psEnum.setString(2, term);
-            psEnum.addBatch();
+    private void saveEnums(Question question, AbstractEnumParam param,
+            int paramId, PreparedStatement psEnum)
+            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+            JSONException, WdkUserException {
+        // need to handle dependent params
+        Set<String> dependedValues = new HashSet<String>();
+        Param dependedParam = param.getDependedParam();
+        if (dependedParam == null) {    // null means no depended value
+            dependedValues.add(null);
+        } else if (dependedParam instanceof AbstractEnumParam) {
+            AbstractEnumParam enumParam = (AbstractEnumParam) dependedParam;
+            dependedValues.addAll(enumParam.getVocabMap().keySet());
+        } else {
+            dependedValues.add(dependedParam.getDefault());
+        }
+        for (String dependedValue : dependedValues) {
+            param.setDependedValue(dependedValue);
+            for (String term : param.getVocab()) {
+                psEnum.setInt(1, paramId);
+                psEnum.setString(2, term);
+                psEnum.addBatch();
+            }
         }
         psEnum.executeBatch();
     }
