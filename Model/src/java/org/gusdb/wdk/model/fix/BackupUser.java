@@ -60,7 +60,7 @@ public class BackupUser extends BaseCLI {
             + "user_id, root_step_id, project_id, is_saved, create_time, "
             + "last_view_time, last_modify_time, description, signature, name, "
             + "saved_name, is_deleted, prev_strategy_id";
-    private static final String datasetColumns = "user_dataset_id, dataset_id, "
+    private static final String userDatasetColumns = "user_dataset_id, dataset_id, "
             + "user_id, create_time, upload_file, prev_user_dataset_id";
     private static final String basketColumns = "user_id, project_id, "
             + "record_class, pk_column_1, pk_column_2, pk_column_3";
@@ -131,7 +131,7 @@ public class BackupUser extends BaseCLI {
         copyRows(prefColumns, "preferences");
         copyRows(basketColumns, "user_baskets");
         copyRows(favoriteColumns, "favorites");
-        copyRows(datasetColumns, "user_datasets2");
+        copyUserDatasetRows();
         copyStepRows();
         copyStrategyRows();
 
@@ -250,6 +250,24 @@ public class BackupUser extends BaseCLI {
 
         // <ADD-AG 042111>
         executeByBatch(wdkModel, table, dmSql, selectSql);
+    }
+
+    private void copyUserDatasetRows() throws WdkUserException,
+            WdkModelException, SQLException {
+        logger.debug("Copying from user_datasets2...");
+
+        String fromTable = userSchema + "user_datasets2";
+        String toTable = backupSchema + "user_datasets2";
+        String dmSql = "INSERT INTO " + toTable + " (" + userDatasetColumns
+                + ") SELECT " + userDatasetColumns + " FROM " + fromTable
+                + " WHERE user_dataset_id = ? ";
+        String selectSql = "SELECT d.user_dataset_id                        "
+                + "    FROM " + fromTable + " d, " + backupSchema + "users u"
+                + "    WHERE d.user_id = u.user_id "
+                + "  MINUS SELECT user_dataset_id FROM " + toTable;
+
+        // <ADD-AG 042111>
+        executeByBatch(wdkModel, "user_datasets2", dmSql, selectSql);
     }
 
     private void copyStepRows() throws WdkUserException, WdkModelException,
