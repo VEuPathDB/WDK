@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wsf.util.BaseCLI;
 
@@ -375,22 +376,38 @@ public class StepValidator extends BaseCLI {
             WdkModelException, SQLException {
         logger.info("drop dangling steps table and related resources...");
 
-        String danglingTable = "wdk_dangle_steps";
+        String stepTable = "wdk_dangle_steps";
         String parentTable = "wdk_parent_steps";
+        String strategyTable = "wdk_dangle_strategies";
+
+        // drop the temp tables if exist
+        DBPlatform platform = wdkModel.getUserPlatform();
+        if (platform.checkTableExists(null, stepTable))
+            platform.dropTable(null, stepTable, true);
+        if (platform.checkTableExists(null, parentTable))
+            platform.dropTable(null, parentTable, true);
+        if (platform.checkTableExists(null, strategyTable))
+            platform.dropTable(null, strategyTable, true);
 
         String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
         if (schema.length() > 0 && !schema.endsWith(".")) schema += ".";
 
-        selectDanglingSteps(wdkModel, schema, danglingTable);
-        selectParentSteps(wdkModel, schema, danglingTable, parentTable);
-        deleteDanglingStrategies(wdkModel, schema, parentTable);
+        selectDanglingSteps(wdkModel, schema, stepTable);
+        selectParentSteps(wdkModel, schema, stepTable, parentTable);
+        selectDanglingStrategies(wdkModel, schema, strategyTable, parentTable);
+        deleteDanglingStrategies(wdkModel, schema, strategyTable);
         deleteDanglingSteps(wdkModel, schema, parentTable);
 
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
-        SqlUtils.executeUpdate(wdkModel, dataSource, "DROP TABLE "
-                + danglingTable + " PURGE", "wdk_drop_dangle_steps");
-        SqlUtils.executeUpdate(wdkModel, dataSource, "DROP TABLE "
-                + parentTable + " PURGE", "wdk_drop_parent_steps");
+        // do not drop the temp tables immediately, need to investigate those
+        // steps and strategies, and notify user.
+
+        // DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        // SqlUtils.executeUpdate(wdkModel, dataSource, "DROP TABLE "
+        // + parentTable + " PURGE", "wdk_drop_dangle_strategies");
+        // SqlUtils.executeUpdate(wdkModel, dataSource, "DROP TABLE "
+        // + stepTable + " PURGE", "wdk_drop_dangle_steps");
+        // SqlUtils.executeUpdate(wdkModel, dataSource, "DROP TABLE "
+        // + parentTable + " PURGE", "wdk_drop_parent_steps");
     }
 
     private void selectDanglingSteps(WdkModel wdkModel, String schema,
@@ -447,17 +464,16 @@ public class StepValidator extends BaseCLI {
                 "wdk-create-parent-step");
     }
 
-    private void deleteDanglingStrategies(WdkModel wdkModel, String schema,
-            String parentTable) throws WdkUserException, WdkModelException,
-            SQLException {
-        logger.debug("Deleting dangling strategies...");
+    private void selectDanglingStrategies(WdkModel wdkModel, String schema,
+            String strategyTable, String parentTable) throws WdkUserException,
+            WdkModelException, SQLException {
+        logger.debug("Selecting dangling strategies...");
 
         String stratTable = schema + "strategies";
         String stepTable = schema + "steps";
 
-        StringBuilder sql = new StringBuilder("DELETE FROM " + stratTable);
-        sql.append(" WHERE strategy_id IN ");
-        sql.append("(SELECT sr.strategy_id  ");
+        StringBuilder sql = new StringBuilder("CREATE TABLE " + strategyTable);
+        sql.append(" AS (SELECT sr.strategy_id  ");
         sql.append("     FROM " + stratTable + " sr, wdk_parent_steps ps ");
         sql.append("     WHERE sr.user_id = ps.user_id ");
         sql.append("     AND sr.root_step_id = ps.display_id ");
@@ -471,13 +487,26 @@ public class StepValidator extends BaseCLI {
         sql.append("  )"); // <MOD-AG 050511>
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+                "wdk-create-dangling-strategies");
+    }
 
+    private void deleteDanglingStrategies(WdkModel wdkModel, String schema,
+            String strategyTable) throws WdkUserException, WdkModelException,
+            SQLException {
+        logger.debug("Deleting dangling strategies...");
+
+        String stratTable = schema + "strategies";
+
+        StringBuilder sql = new StringBuilder("DELETE FROM " + stratTable);
+        sql.append(" WHERE strategy_id IN ");
+        sql.append("(SELECT strategy_id FROM " + strategyTable + ")");
+
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+
+        // <ADD-AG 050511>
         executeByBatch(wdkModel, dataSource, sql.toString(),
-                "STRATEGIES:wdk-delete-dangling-strategy", null, null); // <ADD-AG
-                                                                        // 050511>
-
-        // SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
-        // "wdk-delete-dangling-strategy");
+                "STRATEGIES:wdk-delete-dangling-strategy", null, null);
     }
 
     private void deleteDanglingSteps(WdkModel wdkModel, String schema,
