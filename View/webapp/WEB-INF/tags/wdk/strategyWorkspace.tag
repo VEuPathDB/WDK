@@ -20,6 +20,10 @@
   <wdk:dyk />
 </c:if>
 
+<script type="text/javascript">
+  setStrategyStatusCounts('${allCount}','${openCount}');
+</script>
+
 <ul id="strategy_tabs">
 <%-- showPanel() is in addStepPopup.js --%>
 
