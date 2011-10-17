@@ -197,4 +197,8 @@ public abstract class ParamBean {
     public UserBean getUser() {
         return this.user;
     }
+
+    public String getType() {
+        return param.getClass().getSimpleName();
+    }
 }
