@@ -1,7 +1,9 @@
 package org.gusdb.wdk.controller.action;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
@@ -15,8 +17,8 @@ public abstract class MapActionForm extends ActionForm {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = Logger.getLogger(MapActionForm.class);
 
-    private Map<String, Object> values = new HashMap<String, Object>();
-    private Map<String, String[]> arrays = new HashMap<String, String[]>();
+    private Map<String, Object> values = new LinkedHashMap<String, Object>();
+    private Map<String, String[]> arrays = new LinkedHashMap<String, String[]>();
 
     public Object getValue(String key) {
         return values.get(key);
@@ -34,7 +36,11 @@ public abstract class MapActionForm extends ActionForm {
     public void setArray(String key, String[] array) {
         logger.trace("set array: key=[" + key + "] length=" + array.length
                 + " array=" + Utilities.fromArray(array) + "");
-        arrays.put(key, array);
+        Set<String> values = new LinkedHashSet<String>();
+        for (String value : array) {
+            values.add(value);
+        }
+        arrays.put(key, values.toArray(new String[0]));
     }
 
     public Object getValueOrArray(String key) {
