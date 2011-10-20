@@ -49,6 +49,7 @@ function initDependentParamHandlers(isEdit) {
 			inputs.each(function() {
 				dependedValues.push($(this).val());
 			});
+                        jQuery.unique(dependedValues);
 			updateDependentParam(name, dependedValues.join(","));
 		});
 	});
