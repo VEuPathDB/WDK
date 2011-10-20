@@ -84,7 +84,9 @@ function removeLoading(divId){
 function parseInputs(){
 	var quesForm = $("#query_form form#form_question[name='wizardForm']");
 	if(quesForm.length == 0) 
-		quesForm = $("form#form_question[name='questionForm']");
+		quesForm = $("#query_form form#form_question[name='questionForm']");
+        if(quesForm.length == 0)
+                quesForm = $("form#form_question[name='questionForm']");
 
         // Jerric - use ajax to serialize the form data
 	var d = quesForm.serialize();
