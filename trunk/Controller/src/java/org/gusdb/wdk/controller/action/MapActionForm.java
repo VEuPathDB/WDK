@@ -18,7 +18,7 @@ public abstract class MapActionForm extends ActionForm {
     private static final Logger logger = Logger.getLogger(MapActionForm.class);
 
     private Map<String, Object> values = new LinkedHashMap<String, Object>();
-    private Map<String, Set<String>> arrays = new LinkedHashMap<String, Set<String>>();
+    private Map<String, String[]> arrays = new LinkedHashMap<String, String[]>();
 
     public Object getValue(String key) {
         return values.get(key);
@@ -30,7 +30,7 @@ public abstract class MapActionForm extends ActionForm {
     }
 
     public String[] getArray(String key) {
-        return arrays.get(key).toArray(new String[0]);
+        return arrays.get(key);
     }
 
     public void setArray(String key, String[] array) {
@@ -40,7 +40,7 @@ public abstract class MapActionForm extends ActionForm {
         for (String value : array) {
             values.add(value);
         }
-        arrays.put(key, values);
+        arrays.put(key, values.toArray(new String[0]));
     }
 
     public Object getValueOrArray(String key) {
@@ -50,7 +50,7 @@ public abstract class MapActionForm extends ActionForm {
         logger.trace("key=" + key + ", value=" + value + ", isNull="
                 + (value == null));
         if (value == null) {
-            String[] array = arrays.get(key).toArray(new String[0]);
+            String[] array = arrays.get(key);
             value = Utilities.fromArray(array);
             logger.trace("array_value=" + value + ", isNull=" + (value == null));
         }
@@ -65,7 +65,7 @@ public abstract class MapActionForm extends ActionForm {
 
         arrays.clear();
         for (String key : form.arrays.keySet()) {
-            arrays.put(key, new LinkedHashSet<String>(form.arrays.get(key)));
+            arrays.put(key, form.arrays.get(key));
         }
     }
 
@@ -87,7 +87,7 @@ public abstract class MapActionForm extends ActionForm {
         }
         builder.append("Arrays:\n");
         for (String key : arrays.keySet()) {
-            String[] array = arrays.get(key).toArray(new String[0]);
+            String[] array = arrays.get(key);
             builder.append("\t" + key + "=[" + Utilities.fromArray(array)
                     + "]\n");
         }
