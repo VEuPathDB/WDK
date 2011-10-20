@@ -20,6 +20,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wsf.service.WsfService;
 import org.json.JSONException;
 import org.xml.sax.SAXException;
 
@@ -67,7 +68,7 @@ public class ApplicationInitListener implements ServletContextListener {
         }
     }
 
-    private void initMemberVars(ServletContext application, String projectId,
+    private void initMemberVars(ServletContext servletContext, String projectId,
             String gusHome, String alwaysGoToSummary, String loginUrl)
             throws WdkModelException, NoSuchAlgorithmException,
             ParserConfigurationException, TransformerFactoryConfigurationError,
@@ -83,11 +84,15 @@ public class ApplicationInitListener implements ServletContextListener {
         wizard.excludeResources(projectId);
         wizard.resolveReferences(wdkModelRaw);
 
-        application.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
-        application.setAttribute(CConstants.WDK_WIZARD_KEY, wizard);
-        application.setAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY,
+        servletContext.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
+        servletContext.setAttribute(CConstants.WDK_WIZARD_KEY, wizard);
+        servletContext.setAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY,
                 alwaysGoToSummary);
-        application.setAttribute(CConstants.WDK_LOGIN_URL_KEY, loginUrl);
-        application.setAttribute(CConstants.GUS_HOME_KEY, gusHome);
+        servletContext.setAttribute(CConstants.WDK_LOGIN_URL_KEY, loginUrl);
+        servletContext.setAttribute(CConstants.GUS_HOME_KEY, gusHome);
+
+        // set the context to WsfService so that it can be accessed in the local
+        // mode.
+        WsfService.SERVLET_CONTEXT = servletContext;
     }
 }
