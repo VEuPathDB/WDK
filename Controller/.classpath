@@ -13,5 +13,6 @@
 	<classpathentry kind="lib" path="/WDK Model/lib/java/commons-digester-1.7.jar"/>
 	<classpathentry kind="lib" path="/WDK Model/lib/java/jing-20081028.jar"/>
 	<classpathentry kind="lib" path="/WDK Model/lib/java/xsltc.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/WSF Service"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
