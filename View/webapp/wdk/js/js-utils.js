@@ -82,7 +82,7 @@ function removeLoading(divId){
 
 // parses the inputs of the question form to be sent via ajax call
 function parseInputs(){
-	var quesForm = $("form#form_question[name='wizardForm']");
+	var quesForm = $("#query_form form#form_question[name='wizardForm']");
 	if(quesForm.length == 0) 
 		quesForm = $("form#form_question[name='questionForm']");
 

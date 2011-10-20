@@ -1,7 +1,9 @@
 package org.gusdb.wdk.controller.action;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
@@ -15,8 +17,8 @@ public abstract class MapActionForm extends ActionForm {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = Logger.getLogger(MapActionForm.class);
 
-    private Map<String, Object> values = new HashMap<String, Object>();
-    private Map<String, String[]> arrays = new HashMap<String, String[]>();
+    private Map<String, Object> values = new LinkedHashMap<String, Object>();
+    private Map<String, Set<String>> arrays = new LinkedHashMap<String, Set<String>>();
 
     public Object getValue(String key) {
         return values.get(key);
@@ -28,13 +30,17 @@ public abstract class MapActionForm extends ActionForm {
     }
 
     public String[] getArray(String key) {
-        return arrays.get(key);
+        return arrays.get(key).toArray(new String[0]);
     }
 
     public void setArray(String key, String[] array) {
         logger.trace("set array: key=[" + key + "] length=" + array.length
                 + " array=" + Utilities.fromArray(array) + "");
-        arrays.put(key, array);
+        Set<String> values = new LinkedHashSet<String>();
+        for (String value : array) {
+            values.add(value);
+        }
+        arrays.put(key, values);
     }
 
     public Object getValueOrArray(String key) {
@@ -44,7 +50,7 @@ public abstract class MapActionForm extends ActionForm {
         logger.trace("key=" + key + ", value=" + value + ", isNull="
                 + (value == null));
         if (value == null) {
-            String[] array = arrays.get(key);
+            String[] array = arrays.get(key).toArray(new String[0]);
             value = Utilities.fromArray(array);
             logger.trace("array_value=" + value + ", isNull=" + (value == null));
         }
@@ -59,7 +65,7 @@ public abstract class MapActionForm extends ActionForm {
 
         arrays.clear();
         for (String key : form.arrays.keySet()) {
-            arrays.put(key, form.arrays.get(key));
+            arrays.put(key, new LinkedHashSet<String>(form.arrays.get(key)));
         }
     }
 
@@ -81,7 +87,7 @@ public abstract class MapActionForm extends ActionForm {
         }
         builder.append("Arrays:\n");
         for (String key : arrays.keySet()) {
-            String[] array = arrays.get(key);
+            String[] array = arrays.get(key).toArray(new String[0]);
             builder.append("\t" + key + "=[" + Utilities.fromArray(array)
                     + "]\n");
         }
