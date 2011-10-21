@@ -129,7 +129,7 @@ function createAutoComplete(obj, name) {
         var odd = true;
         var noMatch = "No item found";
 	$("#" + name + "_display").autocomplete(
-               {source: function( request, response ) {
+             {  source: function( request, response ) {
                     var result = $.ui.autocomplete.filter(def, request.term);
                     if (result.length == 0) {
                         result.push(noMatch);
@@ -149,8 +149,9 @@ function createAutoComplete(obj, name) {
                 },
                 select: function(event, ui){
                     if($(ui.item).val() == noMatch) return false;
-                },
-	}).data( "autocomplete" )._renderItem = function( ul, item ) {
+                }
+	     }
+        ).data( "autocomplete" )._renderItem = function( ul, item ) {
                 // only change here was to replace .text() with .html()
                 var content = $( "<li></li>" )
                        .data( "item.autocomplete", item )
