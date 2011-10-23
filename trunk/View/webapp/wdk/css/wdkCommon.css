@@ -264,21 +264,7 @@ img.plus-minus {
 	font-size: 95%;	
 }
 
-.detail_link {
-	border: 2px solid #d8d8d8;
-	display: inline;
-	left: -9999px;
-	position: absolute;
-}
 
-.detail_link:link, .detail_link:visited{
-	color: #808080;
-}
-
-a.heading:hover + a.detail_link, a.detail_link:hover {
-	left: -2px;
-	position: relative;
-}
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =TABLES    
