@@ -6,10 +6,13 @@
 <c:set var="wdkModel" value="${applicationScope.wdkModel}" />
 
 <style TYPE="text/css"> 
-
-#search-lookup-panel { margin:20px 5px 10px 220px; background-color:#EEDEFF; }
+.ui-state-default, .ui-widget-content .ui-state-default,.ui-widget-header .ui-state-default 
+	{  background: url("images/none.png") repeat-x scroll 50% 50% #eeeeee;}
+.ui-widget { font-size:100%; font-family:Arial,Helvetica,sans-serif;}
+input.ui-button{padding:0em 1em;}
+//#search-lookup-panel { margin:20px 5px 10px 220px; }
 #search-lookup_wrapper #type-filter { display:inline; }
-#search-lookup td { border: 1px dotted #CCCCCC; }
+#search-lookup td { border: 1px dotted #eeeeee; padding:1px}
 #search-lookup td.type { font-weight: bold; text-align: right; padding-right: 5px; }
 #search-lookup td > div.content { display: none; }
 .content ul { padding: 3px 3px 3px 15px; list-style: disc outside none; }
@@ -81,18 +84,18 @@ $(document).ready(function() {
         "aaSorting": [ [ 3, 'desc'] ],
         "sDom": '<"H"f<"#type-filter">lr>t<"F"ip>',
         "oLanguage": {
-            "sSearch": "Keyword:",
+            "sSearch": "<b style='font-size:120%'>Find a search, provide a keyword:</>",
             "sLengthMenu": "Show _MENU_ rows"
         },
     } );
 
     // get the type info, and create a dropdown list
     var aData = searchTable.fnGetColumnData(0);
-    var select=' &nbsp;Limit to <select><option value=""><b>All</b></option>'; 
+    var select=' <span style="padding:0 20px">  Limit to <select><option value=""><b>All</b></option>'; 
     for (var i=0 ; i<aData.length ; i++ ) {
         select += '<option value="'+aData[i]+'">'+aData[i]+'</option>';
     }
-    select += '</select> searches. &nbsp;';
+    select += '</select> results</span>';
     var typeFilter = $('#search-lookup_wrapper #type-filter');
     typeFilter.html(select);
     typeFilter.children("select").change( function () {
@@ -107,15 +110,16 @@ function toggleContent(ele) {
 </script>
 
 <div id="search-lookup-panel">
-<h2 align="center">Find a search</h2>
+<!--  <h2 align="center">Find a search</h2>  -->
+
 <table id="search-lookup" class="datatables" width="100%">
   <thead>
     <tr>
-      <th class="type" align="right">Type</th>
-      <th class="display">Search Name</th>
-      <th class="category">Category</th>
-      <th class="popularity">Popularity</th>
-      <th class="description">Description</th>
+      <th class="type" align="right">To obtain...</th>
+      <th class="display">You provide...</th>
+    <!--  <th class="category">Category</th> -->
+  <!--    <th class="popularity">Popularity</th> -->
+      <th class="description"></th>
     </tr>
   </thead>
   <tbody>
@@ -129,8 +133,8 @@ function toggleContent(ele) {
       <td><a href="<c:url value='/showQuestion.do?questionFullName=${question.fullName}'/>"
           >${question.displayName}</a>
       </td>
-      <td>${category.displayName}</td>
-      <td>${popularMap[question.fullName]}</td>
+ <!--     <td>${category.displayName}</td>
+      <td>${popularMap[question.fullName]}</td> -->
       <td>
         <input type="button" onclick="toggleContent(this)" value="Description" />
         <div class="content" title="${question.displayName}">
@@ -148,7 +152,7 @@ function toggleContent(ele) {
             </ul>
           </div>
 
-          <h3>Detail</h3>
+          <h3>Description</h3>
           <div>${question.description}</div>
         </div>
       </td>
@@ -157,11 +161,11 @@ function toggleContent(ele) {
   </tbody>
   <tfoot>
     <tr>
-      <th>Type</th>
-      <th>Search Name</th>
-      <th>Category</th>
-      <th>Popularity</th>
-      <th>Description</th>
+      <th  align="right">To obtain...</th>
+      <th>You provide...</th>
+   <!--   <th>Category</th>
+      <th>Popularity</th>  -->
+      <th></th>
     </tr>
   </tfoot>
 </table>
