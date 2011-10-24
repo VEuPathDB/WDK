@@ -47,6 +47,7 @@ function configureCheckboxTree(treeId) {
 				"themes" : { "theme" : "classic", "icons" : checkboxTree.useIcons },
 				"types" : { "types" : { "leaf" : { "icon" : { "image" : checkboxTree.leafImgUrl }}}},
 				"checkbox" : {
+					"two_state" : false,
 					"real_checkboxes" : true,
 					"real_checkboxes_names" : function(node) { return [checkboxTree.checkboxName, (node[0].id || "")]; }
 				}
