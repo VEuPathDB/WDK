@@ -16,7 +16,7 @@ var htmltooltip={
 		var scrollTop=window.pageYOffset? window.pageYOffset : this.iebody.scrollTop
 		var docwidth=(window.innerWidth)? window.innerWidth-15 : htmltooltip.iebody.clientWidth-15
 		var docheight=(window.innerHeight)? window.innerHeight-18 : htmltooltip.iebody.clientHeight-15
-		var tipx=anchor.dimensions.offsetx-240
+		var tipx=anchor.dimensions.offsetx-270
 		var tipy=anchor.dimensions.offsety+anchor.dimensions.h+10
 		tipx=(tipx+tooltip.dimensions.w-scrollLeft>docwidth)? tipx-tooltip.dimensions.w : tipx //account for right edge
 		tipx=(tipx<=10)?10:tipx  //account for left edge
