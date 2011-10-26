@@ -1524,4 +1524,51 @@ public class User /* implements Serializable */{
         return basketFactory.getBasketCounts(this);
     }
 
+	public int getBasketCounts(List<String[]> records, RecordClass recordClass)
+			throws WdkUserException, WdkModelException, SQLException {
+		int count = wdkModel.getBasketFactory().getBasketCounts(this, records, recordClass);
+		if (logger.isDebugEnabled()) {
+			logger.debug("How many of " + convert(records) + " in basket? " + count);
+		}
+		return count;
+	}
+
+	private String convert(List<String[]> records) {
+		StringBuilder sb = new StringBuilder("List { ");
+		for (String[] item : records) {
+			sb.append("[ ");
+			for (String s : item) {
+				sb.append(s).append(", ");
+			}
+			sb.append(" ],");
+		}
+		sb.append(" }");
+		return sb.toString();
+	}
+
+	public int getFavoriteCount(List<Map<String, Object>> records,
+			RecordClass recordClass) throws WdkUserException, WdkModelException, SQLException {
+        FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
+        int count = 0;
+        for (Map<String, Object> item : records) {
+        	boolean inFavs = favoriteFactory.isInFavorite(this, recordClass, item);
+        	if (logger.isDebugEnabled()) {
+        		logger.debug("Is " + convert(item) + " in favorites? " + inFavs);
+        	}
+        	if (inFavs) {
+        		count++;
+        	}
+        }
+        return count;
+	}
+
+	private String convert(Map<String, Object> item) {
+		StringBuilder sb = new StringBuilder("Map { ");
+		for (String s : item.keySet()) {
+			sb.append("{ ").append(s).append(", ").append(item.get(s)).append(" },");
+		}
+		sb.append(" }");
+		return sb.toString();
+	}
+
 }

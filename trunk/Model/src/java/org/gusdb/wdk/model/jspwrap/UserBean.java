@@ -1480,4 +1480,30 @@ public class UserBean /* implements Serializable */{
             WdkModelException, SQLException {
         return user.getFavoriteGroups();
     }
+
+    /**
+     * @param records
+     * @param recordClass 
+     * @return
+     * @throws SQLException 
+     * @throws WdkModelException 
+     * @throws WdkUserException 
+     */
+	public int getBasketCount(List<String[]> records, RecordClassBean recordClass)
+			throws WdkUserException, WdkModelException, SQLException {
+		return user.getBasketCounts(records, recordClass.recordClass);
+	}
+
+	/**
+	 * @param records
+	 * @param recordClass
+	 * @return
+	 * @throws SQLException 
+	 * @throws WdkModelException 
+	 * @throws WdkUserException 
+	 */
+	public int getFavoriteCount(List<Map<String, Object>> records,
+			RecordClassBean recordClass) throws WdkUserException, WdkModelException, SQLException {
+		return user.getFavoriteCount(records, recordClass.recordClass);
+	}
 }

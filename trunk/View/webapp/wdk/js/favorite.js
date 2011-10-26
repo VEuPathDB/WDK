@@ -187,4 +187,43 @@ function getRecord(holder) {
 		pkArray.push(pkValues);
     });
     return jQuery.json.serialize(pkArray);
-} 
+}
+
+/***************** Favorite functions to support favorites manipulation from GBrowse ********************/
+
+function performIfItemIsFavorite(projectId, primaryKey, recordType, yesFunction, noFunction) {
+	var stop = (primaryKey == 'PFIT_PFE0020c');
+	doAjaxFavoritesRequest('check', projectId, primaryKey, recordType,
+	    function(result) {
+		    if (stop) {
+		    	var stoppingPoint = true;
+		    }
+		    if (result.countProcessed > 0) {
+	  			yesFunction();
+	  		} else {
+	  			noFunction();
+	  		}
+	  	});
+}
+
+function addToFavorites(projectId, primaryKey, recordType, successFunction) {
+	doAjaxFavoritesRequest('add', projectId, primaryKey, recordType, successFunction);
+}
+
+function removeFromFavorites(projectId, primaryKey, recordType, successFunction) {
+	doAjaxFavoritesRequest('remove', projectId, primaryKey, recordType, successFunction);
+}
+
+function doAjaxFavoritesRequest(action, projectId, primaryKey, recordType, successFunction) {
+	var data = "[{\"source_id\":\"" + primaryKey + "\",\"project_id\":\"" + projectId + "\"}]";
+	var requestParams = "action=" + action + "&type=" + recordType + "&data=" + data; // single id data string
+	jQuery.ajax({
+		url: getWebAppUrl() + "processFavorite.do",
+		type: "post",
+		data: requestParams,
+		dataType: "json",
+		beforeSend: function(){ /* do nothing here */ },
+		success: successFunction,
+		error: function(msg){ alert("Error occurred while executing this operation!"); }
+	});
+}
