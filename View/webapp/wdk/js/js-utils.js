@@ -82,11 +82,8 @@ function removeLoading(divId){
 
 // parses the inputs of the question form to be sent via ajax call
 function parseInputs(){
-	var quesForm = $("#query_form form#form_question[name='wizardForm']");
-	if(quesForm.length == 0) 
-		quesForm = $("#query_form form#form_question[name='questionForm']");
-        if(quesForm.length == 0)
-                quesForm = $("form#form_question[name='questionForm']");
+        // has to use find in two steps, IE7 cannot find the form using $("#query_form form#form_question")
+	var quesForm = $("#query_form").find("form#form_question");
 
         // Jerric - use ajax to serialize the form data
 	var d = quesForm.serialize();

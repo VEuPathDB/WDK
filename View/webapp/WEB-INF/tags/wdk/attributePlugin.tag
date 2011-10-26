@@ -11,14 +11,15 @@
 <c:set var="plugins" value="${attribute.attributePlugins}" />
 <script type="text/javascript">
   $(function() {
-	  $('.jqbutton').button();
+	  $(".jqbutton").button();
   });
 </script>
 <div class="attribute-plugins">
   <c:if test="${fn:length(plugins) > 0}">
-    <image class="handle jqbutton" onclick="openAttributePlugins(this)"
-           src="wdk/images/plugin.png" title="Analyze/graph the contents of this column"/>
-  </c:if>
+    <div>
+      <input type="image" class="handle jqbutton" onclick="openAttributePlugins(this)"
+             src="wdk/images/plugin.png" title="Analyze/graph the contents of this column"/>
+    </div>
   <div class="plugins">
     <div class="title">
       <image class="handle close" onclick="closeAttributePlugins(this)" src="wdk/images/close.gif" />
@@ -34,4 +35,5 @@
       </c:forEach>
     </ul>
   </div>
+  </c:if>
 </div>
