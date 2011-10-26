@@ -1,6 +1,8 @@
 // =============================================================================
 // The js related to the display on question page
-$(document).ready(function() {
+$(document).ready(initializeQuestion);
+
+function initializeQuestion() {
     var question = new WdkQuestion();
     question.registerGroups();
 
@@ -8,8 +10,7 @@ $(document).ready(function() {
     if (window.wdk != undefined) {
         window.wdk.onloadQuestion();
     }
-});
-
+}
 
 function WdkQuestion() {
 
