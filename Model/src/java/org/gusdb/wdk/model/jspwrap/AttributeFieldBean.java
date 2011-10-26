@@ -10,7 +10,7 @@ import org.gusdb.wdk.model.attribute.plugin.AttributePluginReference;
 
 public class AttributeFieldBean extends FieldBean {
 
-    private AttributeField attributeField;
+    protected AttributeField attributeField;
 
     /**
      * 
