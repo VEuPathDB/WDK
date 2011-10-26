@@ -683,6 +683,7 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
     font-size: smaller;
 }
 
+.jqbutton.ui-button {padding:0px;}
 .attribute-plugins .handle {
   cursor: pointer;
 }
@@ -694,6 +695,8 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
   margin-left: -100px;
   border: 3px ridge #666666;
   cursor: auto;
+  width: 400px;
+  overflow: auto;
 }
 .attribute-plugins .plugins .title {
   background-image: url("../images/crumbMenu.png");
