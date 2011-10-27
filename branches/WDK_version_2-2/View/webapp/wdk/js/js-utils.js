@@ -85,6 +85,10 @@ function parseInputs(){
         // has to use find in two steps, IE7 cannot find the form using $("#query_form form#form_question")
 	var quesForm = $("#query_form").find("form#form_question");
 
+        // if the questionForm is popupped by other ways, get it from the opened popup under body.
+        if (quesForm.length == 0)
+            quesForm = $("body > div.crumb_details form#form_question");
+
         // Jerric - use ajax to serialize the form data
 	var d = quesForm.serialize();
         return d;
