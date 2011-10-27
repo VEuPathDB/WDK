@@ -385,6 +385,7 @@ public class QuestionBean {
     public AnswerValueBean getAnswerValue() throws WdkUserException,
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException {
+        try {
         if (user == null)
             throw new WdkUserException("User is not set. Please set user to "
                     + "the questionBean before calling to create answerValue.");
@@ -396,6 +397,10 @@ public class QuestionBean {
         params.clear();
 
         return new AnswerValueBean(answerValue);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new WdkModelException(ex);
+        }
     }
 
     /**

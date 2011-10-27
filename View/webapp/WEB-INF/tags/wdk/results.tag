@@ -85,7 +85,7 @@
 <%-- display view list --%>
 <script>
 $(function() {
-  $( "#Summary_Views" ).tabs();
+  configureSummaryViews(this);
 });
 </script>
 
@@ -103,10 +103,9 @@ $(function() {
       <c:if test="${view.name == currentView}">
         <c:set var="selectedTab" value="${index}" />
       </c:if>
-      <li id="${view.name}" class="ui-state-default ui-corner-top">
-        <a title="Results_Pane" 
-           href="<c:url value='/showResult.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}&view=${view.name}' />"
-        >${view.display}</a>
+      <li id="${view.name}">
+        <a href="<c:url value='/showResult.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}&view=${view.name}' />"
+        >${view.display} <span> </span></a>
       </li>
       <c:set var="index" value="${index + 1}" />
     </c:forEach>

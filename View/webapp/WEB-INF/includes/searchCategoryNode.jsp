@@ -6,7 +6,7 @@
 <c:set var="category" value="${requestScope.searchCategoryNode}"/>
 
 
-<li><a class="category">${category.displayName}</a>
+<li><a class="parent"><span>${category.displayName}</span></a>
  
   <c:set var="categories" value="${category.websiteChildren}" />
   <c:set var="questions" value="${category.websiteQuestions}" />
@@ -22,7 +22,7 @@
         <c:forEach items="${questions}" var="question">
           <li>
             <c:url var="questionUrl" value="/showQuestion.do?questionFullName=${question.fullName}"/>
-            <a href="${questionUrl}">${question.displayName}</a>
+            <a href="${questionUrl}"><span>${question.displayName}</span></a>
           </li>
         </c:forEach>
       </ul>

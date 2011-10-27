@@ -5,7 +5,16 @@ function configureBasket() {
     var index = (tab.length > 0) ? parseInt(tab.attr("tab-index")) : 0;
     jQuery("#basket-menu").tabs({
         selected: index,
-        load: function(event, ui) {
+        load: basketTabSelected,
+        ajaxOptions: {
+            error: function( xhr, status, index, anchor ) {
+                alert( "Couldn't load this tab. Please try again later." + status );
+            }
+        }
+    });
+}
+
+function basketTabSelected(event, ui) {
             var currentTab = getCurrentBasketTab();
 
             var currentDiv = getCurrentBasketRegion();
@@ -32,13 +41,6 @@ function configureBasket() {
                 control.find("input#make-strategy-from-basket-button").attr("disabled",true);
                 control.find("input#export-basket-button").attr("disabled",true);
             }
-        },
-        ajaxOptions: {
-            error: function( xhr, status, index, anchor ) {
-                alert( "Couldn't load this tab. Please try again later." + status );
-            }
-        }
-    });
 }
 
 function showBasket(){	
