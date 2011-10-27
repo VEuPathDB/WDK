@@ -87,7 +87,7 @@ function parseInputs(){
         
         // if the questionForm is popupped by other ways, get it from the opened popup under body.
         if (quesForm.length == 0)
-            quesForm = $("body > div.crumb_details form#form_question");
+            quesForm = $("body").children("div.crumb_details").find("form#form_question");
 
         // Jerric - use ajax to serialize the form data
 	var d = quesForm.serialize();
