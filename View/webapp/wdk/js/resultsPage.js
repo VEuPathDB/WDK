@@ -4,6 +4,67 @@ resultsPage.js
 
 Provides functions to support results table
 */
+
+function findActiveWorkspace() {
+    // determine the default top level tab
+    var section = jQuery("#strategy_tabs > #selected > a").attr("id");
+    if (section == "tab_basket") {
+       section = jQuery("#basket #basket-menu > ul > li.ui-tabs-active > a").attr("aria-controls");
+       section = "#basket #basket-menu > #" + section;
+    } else {
+       section = "#" + section.substring(4) + " .Workspace";
+    }
+    return jQuery(section);
+}
+
+function findActiveSummaryView() {
+    var workspace = findActiveWorkspace();
+    var section = workspace.find("#Summary_Views > ul > li.ui-tabs-active > a").attr("aria-controls");
+    return workspace.find("#Summary_Views #" + section);
+}
+
+function configureSummaryViews(ele) {
+    var workspace = findActiveWorkspace();    
+    workspace.find("#Summary_Views").tabs({
+        ajaxOptions: {
+            error: function( xhr, status, index, anchor ) {
+                alert( "Couldn't load this tab. Please try again later." + status );
+            }
+        }
+    });
+}
+
+function summaryViewTabSelected(event, ui) {
+            var currentTab = getCurrentBasketTab();
+
+            var currentDiv = getCurrentBasketRegion();
+            currentDiv.prepend(jQuery("#basket-control-panel #basket-control").clone());
+
+            // store the selection cookie
+            var currentId = currentTab.attr("id");
+            setCurrentTabCookie('basket', currentId);
+            var control = jQuery("#basket-menu #basket-control");
+            if (currentDiv.find("table").length > 0) {
+                control.find("input#empty-basket-button").attr("disabled",false);
+                control.find("input#make-strategy-from-basket-button").attr("disabled",false);
+                control.find("input#export-basket-button").attr("disabled",false);
+                // create multi select control for adding columns
+                checkPageBasket();
+                createFlexigridFromTable(jQuery("#basket-menu #Results_Table"));
+                try {
+                    customBasketPage();
+                } catch(err) {
+                    //Do nothing
+                }
+            } else {
+                control.find("input#empty-basket-button").attr("disabled",true);
+                control.find("input#make-strategy-from-basket-button").attr("disabled",true);
+                control.find("input#export-basket-button").attr("disabled",true);
+            }
+}
+
+
+
 function moveAttr(col_ix, table) {
     // Get name of target attribute & attribute to left (if any)
     // NOTE:  Have to convert these from frontId to backId!!!
