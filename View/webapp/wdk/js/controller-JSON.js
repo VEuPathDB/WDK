@@ -6,8 +6,8 @@ var recordType= new Array();   //stratid, recordType which is the type of the la
 var state = null;
 var p_state = null;
 var ajaxTimeout = 180000;
-var allCount;
-var openCount;
+var allCount = 0;
+var openCount = 0;
 $(document).ready(function(){
 	// Make the strategies window resizable
 	$(".resizable-wrapper").resizable({handles: 's', minHeight: 150, stop: function(event, ui) {setCurrentTabCookie('strategyWindow',$(".resizable-wrapper").height())}});
@@ -45,23 +45,39 @@ $(document).ready(function(){
 			}
 		}
 	});
+
 	initStrategyPanels();
-	var current = getCurrentTabCookie('application');
-	if (!current || current == null) {
-		if (!openCount || openCount == null || openCount == 0) {
-			showPanel('search_history');
-		} else {
-			showPanel('strategy_results');
-		}
-	} else {
-		showPanel(current);
-	}
+	showPanel(chooseStrategyTab());
 	initDisplay();
 });
 
 function setStrategyStatusCounts(myAllCount, myOpenCount) {
 	allCount = myAllCount;
 	openCount = myOpenCount;
+}
+
+// constants for the next two functions
+var openTabName = 'strategy_results';
+var allTabName = 'search_history';
+
+function chooseStrategyTab() {
+	var current = getCurrentTabCookie('application');
+	if (!current || current == null) {
+		// no cookie set
+		return (openCount > 0 || allCount == 0 ? openTabName : allTabName);
+	}
+	else {
+		// cookie set
+		if (current == allTabName) {
+			return (allCount > 0 ? allTabName : openTabName);
+		}
+		else if (current == openTabName) {
+			return (openCount > 0 || allCount == 0 ? openTabName : allTabName);
+		}
+		else {
+			return current;
+		}
+	}
 }
 
 function initStrategyPanels() {

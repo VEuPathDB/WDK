@@ -59,6 +59,17 @@
   <c:set var="useIcons" value="false"/>
 </c:if>
 
+<%@ attribute name="useHelp"
+              required="false"
+              type="java.lang.Boolean"
+              description="whether or not to display node.help as a tooltip on tree leaves" %>
+              
+<c:if test="${empty useHelp}">
+  <c:set var="useHelp" value="false"/>
+</c:if>
+<%-- must set as a request scope var so included jsp has access --%>
+<c:set var="useHelpParam" value="${useHelp}" scope="request"/>
+
 <%@ attribute name="leafImage"
               required="false"
               type="java.lang.String"
