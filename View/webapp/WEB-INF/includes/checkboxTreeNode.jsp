@@ -14,7 +14,7 @@
   </c:forEach>
   <c:forEach var="leaf" items="${node.leafNodes}">
     <li class="jstree-leaf" rel="leaf" id="${leaf.name}">
-      <a href="#" style="cursor:default"><label for="${leaf.name}" title="${leaf.help}"><span style="cursor:text">${leaf.displayName}</span></label></a>
+      <a href="#" style="cursor:default"><c:if test="${useHelpParam}"><label for="${leaf.name}" title="${leaf.help}"></c:if><span style="cursor:text">${leaf.displayName}</span><c:if test="${useHelpParam}"></label></c:if></a>
     </li>
   </c:forEach>
 </ul>

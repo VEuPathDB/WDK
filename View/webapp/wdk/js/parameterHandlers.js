@@ -11,9 +11,14 @@ function initParamHandlers() {
     if(isPopup == undefined) isPopup = false;
 
     // unset the flags
-    if (window.isPopup != undefined) delete window.isPopup;
-    if (window.isEdit != undefined) delete window.isEdit;
-
+    if (window.isPopup != undefined) {
+        window.isPopup = undefined;
+        // delete window.isPopup;
+    }
+    if (window.isEdit != undefined) {
+        window.isEdit = undefined;
+        // delete window.isEdit;
+    }
 
 	dependedParams = new Array();
 	displayTermMap = new Array();
@@ -49,6 +54,7 @@ function initDependentParamHandlers(isEdit) {
 			inputs.each(function() {
 				dependedValues.push($(this).val());
 			});
+                        jQuery.unique(dependedValues);
 			updateDependentParam(name, dependedValues.join(","));
 		});
 	});
@@ -128,7 +134,7 @@ function createAutoComplete(obj, name) {
         var odd = true;
         var noMatch = "No item found";
 	$("#" + name + "_display").autocomplete(
-               {source: function( request, response ) {
+             {  source: function( request, response ) {
                     var result = $.ui.autocomplete.filter(def, request.term);
                     if (result.length == 0) {
                         result.push(noMatch);
@@ -144,16 +150,17 @@ function createAutoComplete(obj, name) {
 		},
 		minLength: 3,
                 focus: function(event, ui) {
-                    if($(ui.item).val() == noMatch) $(ui.item).disable();
+                    if(ui.item.value == noMatch) return false;
                 },
                 select: function(event, ui){
-                    if($(ui.item).val() == noMatch) return false;
-                },
-	}).data( "autocomplete" )._renderItem = function( ul, item ) {
+                    if(ui.item.value == noMatch) return false;
+                }
+	     }
+        ).data( "autocomplete" )._renderItem = function( ul, item ) {
                 // only change here was to replace .text() with .html()
                 var content = $( "<li></li>" )
                        .data( "item.autocomplete", item )
-                       .append( $( "<a></a>" ).html(item.label) )
+                       .append("<a>" + item.label + "</a>")
                        .appendTo( ul );
                 if (!odd) content.addClass("even");
                 odd = !odd;

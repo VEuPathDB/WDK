@@ -71,14 +71,24 @@ public class ApplicationInitListener implements ServletContextListener {
         }
     }
 
-    private void initMemberVars(ServletContext servletContext,
-            String projectId, String gusHome, String alwaysGoToSummary,
-            String loginUrl) throws WdkModelException,
-            NoSuchAlgorithmException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException,
-            IOException, SAXException, SQLException, JSONException,
-            WdkUserException, InstantiationException, IllegalAccessException,
-            ClassNotFoundException {
+    public static boolean resourceExists(String path,
+            ServletContext servletContext) {
+        try {
+            URL url = servletContext.getResource(path);
+            return url != null;
+        } catch (MalformedURLException exp) {
+            RuntimeException e = new RuntimeException(exp);
+            throw e;
+        }
+    }
+
+    private void initMemberVars(ServletContext servletContext, String projectId,
+            String gusHome, String alwaysGoToSummary, String loginUrl)
+            throws WdkModelException, NoSuchAlgorithmException,
+            ParserConfigurationException, TransformerFactoryConfigurationError,
+            TransformerException, IOException, SAXException, SQLException,
+            JSONException, WdkUserException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException {
         WdkModel wdkModelRaw = WdkModel.construct(projectId, gusHome);
 
         WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);

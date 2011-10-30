@@ -149,7 +149,7 @@ div.sub_diagram {
   background: url(../images/rightarrow92.png) no-repeat scroll 100% 0;
   border: none;
   height: 11px;
-  top: -1.6em
+  top: -2.3em
 }
 
 .arrow.right.size1 {
@@ -179,7 +179,7 @@ div.sub_diagram {
 }
     
 .arrow.down {
-  top: 1.2em;
+  top: 0.35em;
   left: 4em;  
 }
   
@@ -280,7 +280,6 @@ h6.resultCount {
   font-weight: bold;
   text-align:center;
   width:100%;
-  position: absolute;
   bottom: 0;
 }
 

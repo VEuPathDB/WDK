@@ -24,6 +24,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.json.JSONException;
 
 public class FavoriteFactory {

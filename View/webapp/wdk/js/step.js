@@ -7,11 +7,13 @@ $("#diagram").ready(function(){
 
 function showDetails(det){
 	openDetail = $(det).parent().find("div.crumb_details");
+/*
 	var parent = openDetail.parent(); // for boolean details, parent is step div
 	if (!parent.is("div")) parent = parent.parent(); // for non-boolean details, grandparent is step div
 	var diagram = parent.parent();
 	var dId = $(diagram).attr("id").substring(8);
 	dId = parseInt(dId);
+*/
 	var disp = openDetail.attr("disp");
 	$("body").children("div.crumb_details").each(function(){
 		$(this).remove();	

@@ -299,6 +299,57 @@ public class BasketFactory {
         return counts;
     }
 
+	public int getBasketCounts(User user, List<String[]> records, RecordClass recordClass)
+			throws SQLException, WdkUserException, WdkModelException {
+        int userId = user.getUserId();
+        String projectId = wdkModel.getProjectId();
+        String rcName = recordClass.getFullName();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();                
+        String sqlCount = "SELECT count(*) FROM " + schema + TABLE_BASKET
+        		+ " WHERE " + COLUMN_USER_ID + "= ? AND " + COLUMN_PROJECT_ID
+                + " = ? AND " + COLUMN_RECORD_CLASS + " = ?";
+        for (int i = 1; i <= pkColumns.length; i++) {
+            sqlCount += " AND " + Utilities.COLUMN_PK_PREFIX + i + " = ?";
+        }
+        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        PreparedStatement psCount = null;
+        try {
+            psCount = SqlUtils.getPreparedStatement(dataSource, sqlCount);
+            int basketCount = 0;
+            for (String[] row : records) {
+                // fill or truncate the pk columns
+                String[] pkValue = new String[pkColumns.length];
+                int length = Math.min(row.length, pkValue.length);
+                System.arraycopy(row, 0, pkValue, 0, length);
+
+                // check if the record already exists.
+                setParams(psCount, userId, projectId, rcName, pkValue);
+                boolean hasRecord = false;
+                ResultSet resultSet = null;
+                try {
+                    long start = System.currentTimeMillis();
+                    resultSet = psCount.executeQuery();
+                    SqlUtils.verifyTime(wdkModel, sqlCount,
+                            "wdk-basket-factory-count", start);
+                    if (resultSet.next()) {
+                        int rsCount = resultSet.getInt(1);
+                        hasRecord = (rsCount > 0);
+                    }
+                }
+                finally {
+                    if (resultSet != null) resultSet.close();
+                }
+                if (hasRecord) {
+                	basketCount++;
+                }
+            }
+            return basketCount;
+        }
+        finally {
+            SqlUtils.closeStatement(psCount);
+        }
+	}
+    
     public String getBasket(User user, RecordClass recordClass)
             throws WdkUserException, WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException {
