@@ -11,19 +11,18 @@
 <%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
 
 <%-- JS libraries --%>
-<script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-1.5.1.min.js"/>'></script>
-<script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-ui-1.8.14.custom.min.js"/>'></script>
+<script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-1.6.4.min.js"/>'></script>
+<script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-ui-1.9pre.min.js"/>'></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.blockUI.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.cookie.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.dataTables-1.8.1.min.js'/>"></script>
-<script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.dimensions-1.1.2.min.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.tooltip-1.3.min.js'/>"></script>
 
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jstree/jquery.jstree.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/checkboxTree.js'/>"></script>
 
 <%-- styles for JS libraries --%>
-<link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/ui-custom/custom-theme/jquery-ui-1.8.16.custom.css' />"/>
+<link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/jquery-ui-1.9pre/jquery-ui.min.css' />"/>
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/jquery.multiSelect.css' />"/>
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/datatables.css' />"/>
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/jquery.tooltip-1.3.css' />"/>
