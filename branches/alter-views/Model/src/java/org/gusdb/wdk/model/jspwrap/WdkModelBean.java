@@ -3,12 +3,16 @@ package org.gusdb.wdk.model.jspwrap;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.Vector;
 
 import org.gusdb.wdk.model.SearchCategory;
 import org.gusdb.wdk.model.QuestionSet;
+import org.gusdb.wdk.model.query.param.*;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.WdkModel;
@@ -81,6 +85,28 @@ public class WdkModelBean {
             beans.put(category.getName(), bean);
         }
         return beans;
+    }
+
+    public Map<QuestionBean, CategoryBean> getWebsiteQuestions()
+            throws WdkModelException {
+        Map<QuestionBean, CategoryBean> questions = new LinkedHashMap<QuestionBean, CategoryBean>();
+        Map<String, CategoryBean> categories = getWebsiteRootCategories();
+        Stack<CategoryBean> stack = new Stack<CategoryBean>();
+        stack.addAll(categories.values());
+        while (!stack.isEmpty()) {
+            CategoryBean category = stack.pop();
+            for (QuestionBean question : category.getWebsiteQuestions()) {
+                questions.put(question, category);
+            }
+            // add the children in reversed order to make sure they have the
+            // correct order when popping out from stack.
+            List<CategoryBean> children = new ArrayList<CategoryBean>(
+                    category.getWebsiteChildren().values());
+            for (int i = children.size() - 1; i >= 0; i--) {
+                stack.push(children.get(i));
+            }
+        }
+        return questions;
     }
 
     /**
@@ -238,5 +264,27 @@ public class WdkModelBean {
     public QuestionBean getQuestion(String questionFullName)
             throws WdkUserException, WdkModelException {
         return new QuestionBean(wdkModel.getQuestion(questionFullName));
+    }
+
+    public Map<String, ParamBean> getParams() {
+        Map<String, ParamBean> params = new LinkedHashMap<String, ParamBean>();
+        for(ParamSet paramSet : wdkModel.getAllParamSets()) {
+            for(Param param : paramSet.getParams()) {
+                ParamBean bean;
+                if (param instanceof AbstractEnumParam) {
+                    bean = new EnumParamBean((AbstractEnumParam) param);
+                } else if (param instanceof AnswerParam) {
+                    bean = new AnswerParamBean((AnswerParam) param);
+                } else if (param instanceof DatasetParam) {
+                    bean = new DatasetParamBean((DatasetParam) param);
+                } else if (param instanceof TimestampParam) {
+                    bean = new TimestampParamBean((TimestampParam) param);
+                } else {
+                    bean = new ParamBean(param);
+                }
+                params.put(param.getFullName(), bean);
+            }
+        }
+        return params;
     }
 }

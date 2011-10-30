@@ -109,7 +109,7 @@ function saveBasket() {
 }
 
 //Shopping basket on clickFunction
-function updateBasket(ele, type, pk, pid,recordType) {
+function updateBasket(ele, type, pk, pid, recordType) {
 	var i = jQuery(ele);
 	if(ele.tagName != "IMG")
 		i = jQuery("img",ele);
@@ -231,7 +231,6 @@ function updateBasket(ele, type, pk, pid,recordType) {
 		});
 }
 
-
 function updateBasketCount(c){
 		jQuery("#menu a#mybasket span.subscriptCount").text("(" + c + ")");
 }
@@ -275,4 +274,39 @@ function getCurrentBasketRegion() {
 function getCurrentBasketTab() {
     var index = jQuery("#basket #basket-menu").tabs("option", "selected");
     return jQuery("#basket-menu > ul > li[tab-index=" + index + "]");
+}
+
+/***************** Basket functions to support basket manipulation from GBrowse ********************/
+
+function performIfItemInBasket(projectId, primaryKey, recordType, yesFunction, noFunction) {
+	doAjaxBasketRequest('check', projectId, primaryKey, recordType,
+	    function(result) {
+		    if (result.countProcessed > 0) {
+	  			yesFunction();
+	  		} else {
+	  			noFunction();
+	  		}
+	  	});
+}
+
+function addToBasket(projectId, primaryKey, recordType, successFunction) {
+	doAjaxBasketRequest('add', projectId, primaryKey, recordType, successFunction);
+}
+
+function removeFromBasket(projectId, primaryKey, recordType, successFunction) {
+	doAjaxBasketRequest('remove', projectId, primaryKey, recordType, successFunction);
+}
+
+function doAjaxBasketRequest(action, projectId, primaryKey, recordType, successFunction) {
+	var data = "[{\"source_id\":\"" + primaryKey + "\",\"project_id\":\"" + projectId + "\"}]";
+	var requestParams = "action=" + action + "&type=" + recordType + "&data=" + data; // single id data string
+	jQuery.ajax({
+		url: getWebAppUrl() + "processBasket.do",
+		type: "post",
+		data: requestParams,
+		dataType: "json",
+		beforeSend: function(){ /* do nothing here */ },
+		success: successFunction,
+		error: function(msg){ alert("Error occurred while executing this operation!"); }
+	});
 }

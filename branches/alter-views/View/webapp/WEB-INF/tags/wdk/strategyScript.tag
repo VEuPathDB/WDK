@@ -24,10 +24,8 @@
 
 <!-- Results Page AJAX Javascript code -->
 <script type="text/javascript" src="<c:url value='wdk/js/resultsPage.js'/>"></script>
-<script type="text/javascript" src="<c:url value='wdk/js/basket.js'/>"></script>
 
 <script type="text/javascript" src="<c:url value='wdk/js/wdkFilter.js'/>"></script>
-<script type="text/javascript" src="<c:url value='wdk/js/favorite.js'/>"></script>
 
 <!--[if lt IE 7]>
 <script type="text/javascript">

@@ -7,7 +7,6 @@ jQuery(document).ready(function() {
     if (window.wdk == undefined) window.wdk = new WDK();
 });
 
-
 function WDK() {
 
     this.initialize = function() {
@@ -22,7 +21,7 @@ function WDK() {
             jQuery.blockUI({message: "<div><h2>Cookies are disabled</h2><p>This site requires cookies.  Please enable them in your browser preferences.</p><input type='submit' value='OK' onclick='jQuery.unblockUI();' /></div>", css: {position : 'absolute', backgroundImage : 'none'}});
         }
     }
-
+    
     // -------------------------------------------------------------------------
     // cookie handling methods
     // -------------------------------------------------------------------------
@@ -60,7 +59,7 @@ function WDK() {
     this.questionEvents = new Array();
     this.resultEvents = new Array();
     this.recordEvents = new Array();
-
+    
     this.registerQuestionEvent = function(handler) {
         this.questionEvents.push(handler);
     }
@@ -93,7 +92,7 @@ function WDK() {
             handler();
         }
     }
-
+    
     this.initialize();
 }
 
@@ -137,4 +136,26 @@ function checkAll(bool, form, node) {
 	 if(bool && cb[i].checked == false) cb[i].click();
          if(!bool && cb[i].checked == true) cb[i].click();
     }
+}
+
+// returns whether or not user is logged in
+function isUserLoggedIn() {
+	return (jQuery('#loginStatus').attr('loggedIn') == "true");
+}
+
+function getWebAppUrl() {
+	var scripts = document.getElementsByTagName('script');
+	var scriptPath;
+	for (var i = 0; i < scripts.length; i++) {
+    	var script = scripts[i];
+    	scriptPath =
+    		((script.getAttribute.length !== undefined) ?
+    				script.src : script.getAttribute('src', -1));
+    	if (scriptPath.indexOf("wdkCommon.js") != -1) {
+    		break;
+    	}
+	}
+	var suffixLen = new String("wdk/js/wdkCommon.js").length;
+	scriptPath = scriptPath.substring(0, scriptPath.length - suffixLen);
+	return scriptPath;
 }

@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.controller.action;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -70,7 +71,10 @@ public class ProcessFavoriteAction extends Action {
      * clear the favorite. it doesn't require any param.
      */
     private static final String ACTION_CLEAR = "clear";
-
+    /**
+     * clear the favorite. it doesn't require any param.
+     */
+    private static final String ACTION_CHECK = "check";
     /**
      * set the note for a given gene
      */
@@ -87,6 +91,7 @@ public class ProcessFavoriteAction extends Action {
         UserBean user = ActionUtility.getUser(servlet, request);
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         String action = request.getParameter(PARAM_ACTION);
+        int numProcessed = 0;
         if (action.equalsIgnoreCase(ACTION_ADD)) {
             // need type & data params, where data is a JSON list of record ids
             RecordClassBean recordClass = getRecordClass(request, wdkModel);
@@ -112,11 +117,20 @@ public class ProcessFavoriteAction extends Action {
             List<Map<String, Object>> records = getRecords(request, recordClass);
             String group = request.getParameter(PARAM_GROUP);
             user.setFavoriteGroups(recordClass, records, group);
+        } else if (action.equalsIgnoreCase(ACTION_CHECK)) {
+        	RecordClassBean recordClass = getRecordClass(request, wdkModel);
+        	List<Map<String, Object>> records = getRecords(request, recordClass);
+        	numProcessed = user.getFavoriteCount(records, recordClass);
         } else {
             throw new WdkUserException("Unknown Favorite operation: '" + action
                     + "'.");
         }
-
+        
+        JSONObject jsMessage = new JSONObject();
+        jsMessage.put("countProcessed", numProcessed);
+        PrintWriter writer = response.getWriter();
+        writer.print(jsMessage.toString());
+        
         logger.debug("Leaving ProcessFavoriteAction...");
         return null;
     }
