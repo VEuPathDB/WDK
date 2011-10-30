@@ -16,7 +16,7 @@
 <script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-1.6.4.min.js"/>'></script>
 -->
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.6.4.js"></script>
-<script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-ui-1.8.14.custom.min.js"/>'></script>
+<script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-ui-1.8.16.custom.min.js"/>'></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.blockUI.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.cookie.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.dataTables-1.8.1.min.js'/>"></script>
@@ -25,7 +25,6 @@
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jstree/jquery.jstree.js'/>"></script>
 
 <%-- styles for JS libraries --%>
-<link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/jquery-ui-1.9pre/jquery-ui.min.css' />"/>
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/jquery.multiSelect.css' />"/>
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/datatables.css' />"/>
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/jquery.tooltip-1.3.css' />"/>
