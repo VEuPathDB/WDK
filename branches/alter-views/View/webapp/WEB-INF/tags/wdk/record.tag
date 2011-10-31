@@ -17,8 +17,9 @@
   <c:set var="pkUrl" value="${pkUrl}&${item.key}=${item.value}" />
 </c:forEach>
 
-<div class="h2center">${recordClass.type}: ${primaryKey}</div>
+<div class="Workspace">
 
+<div class="h2center">${recordClass.type}: ${primaryKey}</div>
 
 <%-- display view list --%>
 <div id="Record_Views" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
@@ -51,3 +52,4 @@
   });
 </script>
 
+</div> <!-- END of .Workspace -->

@@ -5,26 +5,8 @@ resultsPage.js
 Provides functions to support results table
 */
 
-function findActiveWorkspace() {
-    // determine the default top level tab
-    var section = jQuery("#strategy_tabs > #selected > a").attr("id");
-    if (section == "tab_basket") {
-       section = jQuery("#basket #basket-menu > ul > li.ui-tabs-active > a").attr("aria-controls");
-       section = "#basket #basket-menu > #" + section;
-    } else {
-       section = "#" + section.substring(4) + " .Workspace";
-    }
-    return jQuery(section);
-}
-
-function findActiveSummaryView() {
-    var workspace = findActiveWorkspace();
-    var section = workspace.find("#Summary_Views > ul > li.ui-tabs-selected > a").attr("href");
-    return workspace.find("#Summary_Views " + section);
-}
-
 function configureSummaryViews(ele) {
-    var workspace = findActiveWorkspace();    
+    var workspace = window.wdk.findActiveWorkspace();    
     workspace.find("#Summary_Views").tabs({
         ajaxOptions: {
             error: function( xhr, status, index, anchor ) {

@@ -30,6 +30,7 @@
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/jquery.tooltip-1.3.css' />"/>
 
 <%-- WDK based js files --%>
+<script type="text/javascript" src='<c:url value="/wdk/js/api.js"/>'></script>
 <script type="text/javascript" src='<c:url value="/wdk/js/wdkCommon.js"/>'></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/stratTabCookie.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/htmltooltip.js'/>"></script>
