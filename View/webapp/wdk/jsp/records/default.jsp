@@ -21,10 +21,11 @@
   </c:forEach>
 
   <c:forEach items="${wdkRecord.attributes}" var="attr">
-    <tr>
-      <td class="label">${attr.value.displayName}</td>
-      <td><c:set var="fieldVal" value="${attr.value}"/>
-        <c:if test="${fieldVal.attributeField.internal == false}">
+    <c:set var="fieldVal" value="${attr.value}"/>
+    <c:if test="${fieldVal.attributeField.internal == false}">
+      <tr>
+        <td class="label">${fieldVal.displayName}: </td>
+        <td>
           <!-- need to know if fieldVal should be hot linked -->
           <c:choose>
             <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.LinkAttributeValue'}">
@@ -34,9 +35,9 @@
               <font class="fixed"><w:wrap size="60">${fieldVal}</w:wrap></font>
             </c:otherwise>
           </c:choose>
-        </c:if>
-      </td>
-    </tr>
+        </td>
+      </tr>
+    </c:if>
   </c:forEach>
 </table>
 
