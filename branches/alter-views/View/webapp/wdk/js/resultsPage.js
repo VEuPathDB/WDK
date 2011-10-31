@@ -19,8 +19,8 @@ function findActiveWorkspace() {
 
 function findActiveSummaryView() {
     var workspace = findActiveWorkspace();
-    var section = workspace.find("#Summary_Views > ul > li.ui-tabs-active > a").attr("aria-controls");
-    return workspace.find("#Summary_Views #" + section);
+    var section = workspace.find("#Summary_Views > ul > li.ui-tabs-selected > a").attr("href");
+    return workspace.find("#Summary_Views " + section);
 }
 
 function configureSummaryViews(ele) {
