@@ -202,4 +202,8 @@ public class RecordClassBean {
     public Map<String, SummaryView> getRecordViews() {
         return recordClass.getRecordViews();
     } 
+
+    public AttributeFieldBean getFavoriteNoteField() {
+        return new AttributeFieldBean(recordClass.getFavoriteNoteField());
+    }
 }
