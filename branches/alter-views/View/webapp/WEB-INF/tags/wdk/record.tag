@@ -21,6 +21,10 @@
 
 <div class="h2center">${recordClass.type}: ${primaryKey}</div>
 
+<div id="basket-control">
+  <wdk:recordPageBasketIcon />
+</div>
+
 <%-- display view list --%>
 <div id="Record_Views" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
   <c:set var="currentView" value="${recordClass.defaultRecordView.name}" />
