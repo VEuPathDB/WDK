@@ -264,11 +264,7 @@ function checkPageBasket(){
 }
 
 function getCurrentBasketRegion() {
-    var section = jQuery("#strategy_tabs > #selected > a").attr("id");
-    var regionId = ".Workspace";
-    if (section == "tab_basket")
-        regionId = "#basket-menu " + getCurrentBasketTab().children("a").attr("href");
-    return jQuery(regionId);
+    return window.wdk.findActiveView();
 }
 
 function getCurrentBasketTab() {
