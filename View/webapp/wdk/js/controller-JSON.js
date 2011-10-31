@@ -164,7 +164,7 @@ function updateStrategies(data, ignoreFilters){
 	removeClosedStrategies();
 	for(st in state){
           if(st == "count")
-                $("#mysearch span").text('('+state[st]+')');
+                $("#mysearch span").text('My Strategies ('+state[st]+')');
 	  else if(st != "length"){
 		var str = state[st].id;
 		if(isLoaded(str)){
