@@ -193,12 +193,6 @@ public class RecordInstance extends AttributeValueContainer {
     public TableValue getTableValue(String tableName)
             throws NoSuchAlgorithmException, WdkModelException, SQLException,
             JSONException, WdkUserException {
-        return getTableValue(tableName, FieldScope.ALL);
-    }
-
-    public TableValue getTableValue(String tableName, FieldScope scope)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
         TableField tableField = recordClass.getTableField(tableName);
 
         // check if the table value has been cached
@@ -231,25 +225,10 @@ public class RecordInstance extends AttributeValueContainer {
      */
     public Map<String, TableValue> getTables() throws NoSuchAlgorithmException,
             WdkModelException, SQLException, JSONException, WdkUserException {
-        return getTables(FieldScope.ALL);
-    }
-
-    /**
-     * @param scope
-     * @return
-     * @throws NoSuchAlgorithmException
-     * @throws WdkModelException
-     * @throws SQLException
-     * @throws JSONException
-     * @throws WdkUserException
-     */
-    public Map<String, TableValue> getTables(FieldScope scope)
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
-            JSONException, WdkUserException {
         Map<String, TableValue> values = new LinkedHashMap<String, TableValue>();
         for (TableField field : recordClass.getTableFields()) {
             String name = field.getName();
-            TableValue value = getTableValue(name, scope);
+            TableValue value = getTableValue(name);
             values.put(name, value);
         }
         return values;
