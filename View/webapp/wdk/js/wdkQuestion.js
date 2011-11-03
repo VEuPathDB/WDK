@@ -1,6 +1,6 @@
 // =============================================================================
 // The js related to the display on question page
-$(document).ready(initializeQuestion);
+// $(document).ready(initializeQuestion);
 
 function initializeQuestion() {
     var question = new WdkQuestion();
@@ -20,7 +20,10 @@ function WdkQuestion() {
             // register the click event
             var name = $(this).attr("name");
             var expire = 365;   // in days
-            $(this).find(".group-handle").click(function() {
+            $(this).find(".group-handle").click(function(event) {
+                // only call once
+                event.stopImmediatePropagation();
+
                 var handle = this;
                 var path = handle.src.substr(0, handle.src.lastIndexOf("/"));
                 var detail = $(this).parents(".param-group").children(".group-detail");
