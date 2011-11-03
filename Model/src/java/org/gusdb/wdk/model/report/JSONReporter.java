@@ -233,7 +233,8 @@ public class JSONReporter extends Reporter {
             writer.print("}}");
             writer.flush();
             logger.info("Totally " + recordCount + " records dumped");
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(psQuery);
             SqlUtils.closeStatement(psInsert);
         }
@@ -269,7 +270,7 @@ public class JSONReporter extends Reporter {
                 for (String column : fields) {
                     column = column.trim();
                     if (fieldMap.containsKey(column)) {
-                    	columns.add(fieldMap.get(column));
+                        columns.add(fieldMap.get(column));
                     }
                 }
             }
@@ -331,8 +332,7 @@ public class JSONReporter extends Reporter {
             if (c > 0) writer.print(",");
             TableValue tableValue = record.getTableValue(table.getName());
 
-            // AttributeField[] fields =
-            // table.getAttributeFields(FieldScope.REPORT_MAKER);
+            AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
 
             // output table header
             StringBuffer sb = new StringBuffer();
@@ -342,7 +342,8 @@ public class JSONReporter extends Reporter {
                 if (tableSize > 0) sb.append(",");
                 sb.append("{\"fields\":[");
                 int f = 0;
-                for (String fieldName : row.keySet()) {
+                for (AttributeField field : fields) {
+                    String fieldName = field.getName();
                     if (f > 0) sb.append(",");
                     AttributeValue value = row.get(fieldName);
                     sb.append("{\"name\":\"" + fieldName + "\", \"value\":\""
@@ -402,11 +403,11 @@ public class JSONReporter extends Reporter {
 
     @Override
     protected void complete() {
-    // do nothing
+        // do nothing
     }
 
     @Override
     protected void initialize() throws SQLException {
-    // do nothing
+        // do nothing
     }
 }

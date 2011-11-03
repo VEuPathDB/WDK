@@ -316,8 +316,8 @@ public class FullRecordReporter extends Reporter {
             int tableSize = 0;
             for (Map<String, AttributeValue> row : tableValue) {
                 tableSize++;
-                for (String fieldName : row.keySet()) {
-                    AttributeValue value = row.get(fieldName);
+                for (AttributeField field : fields) {
+                    AttributeValue value = row.get(field.getName());
                     sb.append(value.getValue()).append("\t");
                 }
                 sb.append(NEW_LINE);
