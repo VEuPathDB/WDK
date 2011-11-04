@@ -127,9 +127,11 @@ public abstract class AbstractEnumParam extends Param {
             throws NoSuchAlgorithmException, WdkModelException, SQLException,
             JSONException, WdkUserException {
         initVocabMap();
-        EnumParamTermNode[] array = new EnumParamTermNode[termTreeList.size()];
-        termTreeList.toArray(array);
-        return array;
+        if (termTreeList != null) {
+            EnumParamTermNode[] array = new EnumParamTermNode[termTreeList.size()];
+            termTreeList.toArray(array);
+            return array;
+        } else return new EnumParamTermNode[0];
     }
 
     public String[] getVocabInternal() throws WdkModelException,
