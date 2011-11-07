@@ -199,7 +199,11 @@ function updateDependentParam(paramName, dependedValue) {
 				dataType: "html",
 				success: function(data){
 					var newContent = $("div.param, div.param-multiPick",data);
-					dependentParam.html(newContent.html());
+					if (newContent.length > 0) {
+						dependentParam.html(newContent.html());
+					} else { // div.param-tree, but calling .html() on it erases javascript
+						dependentParam.html(data);
+					}
 					if (oldValues[paramName]) {
 						var input = $("select",dependentParam);
 						if (input.length > 0) {
