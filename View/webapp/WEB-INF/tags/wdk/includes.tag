@@ -71,6 +71,8 @@
   <!-- JQuery Drag And Drop Plugin -->
   <script type="text/javascript" src="<c:url value='wdk/js/lib/json.js'/>"></script>
   <script type="text/javascript" src="<c:url value='wdk/js/lib/jquery.multiSelect.js'/>"></script>
+  <script type="text/javascript" src="<c:url value='wdk/js/lib/jquery.form.js'/>"></script>
+
 
   <!-- filter menu javascript -->
   <script type="text/javascript" src="<c:url value='wdk/js/addStepPopup.js'/>"></script>
