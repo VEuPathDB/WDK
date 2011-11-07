@@ -11,7 +11,4 @@ HTML for Ajax dependent params
 
 <c:set var="qP" value="${requestScope.vocabParam}" />
 
-<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processQuestion.do">
-  <wdk:enumParamInput qp="${qP}" />
-</html:form>
-
+<wdk:enumParamInput qp="${qP}" />
