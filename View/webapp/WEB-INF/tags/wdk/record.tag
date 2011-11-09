@@ -40,15 +40,13 @@
       <li class="ui-state-default ui-corner-top">
         <a title="Feature_Pane" 
            href="<c:url value='/showRecordFeature.do?name=${recordClass.fullName}&view=${view.name}${pkUrl}' />"
-        >${view.display}</a>
+        >${view.display} <span> </span></a>
       </li>
       <c:set var="index" value="${index + 1}" />
     </c:forEach>
   </ul>
 
 </div> <!-- END OF Record_Views -->
-
-<div id="Feature_Pane"> </div>
 
 <script>
   $(function() {
