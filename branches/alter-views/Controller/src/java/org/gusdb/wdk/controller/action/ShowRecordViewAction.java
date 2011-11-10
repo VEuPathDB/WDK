@@ -1,16 +1,8 @@
 package org.gusdb.wdk.controller.action;
 
-import java.io.File;
-import java.net.URLEncoder;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -19,21 +11,14 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.gusdb.wdk.controller.ApplicationInitListener;
-import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.SummaryView;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
-import org.gusdb.wdk.model.jspwrap.QuestionBean;
+import org.gusdb.wdk.model.WdkView;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
-import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.json.JSONException;
 
-public class ShowRecordFeatureAction extends Action {
+public class ShowRecordViewAction extends Action {
 
     public static final String PARAM_NAME = "name";
     public static final String PARAM_PRIMARY = "primaryKey";
@@ -41,7 +26,7 @@ public class ShowRecordFeatureAction extends Action {
 
     public static final String ATTR_RECORD = "wdkRecord";
 
-    private static final Logger logger = Logger.getLogger(ShowRecordFeatureAction.class);
+    private static final Logger logger = Logger.getLogger(ShowRecordViewAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
@@ -61,7 +46,6 @@ public class ShowRecordFeatureAction extends Action {
         String[] pkColumns = recordClass.getPrimaryKeyColumns();
 
         Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
-        StringBuffer urlParams = new StringBuffer();
         for (String column : pkColumns) {
             String value = request.getParameter(column);
             pkValues.put(column, value);
@@ -72,13 +56,14 @@ public class ShowRecordFeatureAction extends Action {
         request.setAttribute(ATTR_RECORD, wdkRecord);
 
         String viewName = request.getParameter(PARAM_VIEW);
-        SummaryView view;
+        WdkView view;
         if (viewName == null || viewName.length() == 0) {
             view = recordClass.getDefaultRecordView();
         } else {
-            Map<String, SummaryView> views = recordClass.getRecordViews();
+            Map<String, WdkView> views = recordClass.getRecordViews();
             view = views.get(viewName);
         }
+        wdkUser.setCurrentRecordView(recordClass, view);
 
         ActionForward forward;
 

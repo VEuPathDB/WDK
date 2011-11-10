@@ -3,24 +3,24 @@ package org.gusdb.wdk.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SummaryView extends WdkModelBase {
+public class WdkView extends WdkModelBase {
 
     private String name;
     private String display;
     private String jsp;
     private boolean _default;
 
-    public static SummaryView[] createSupportedSummaryViews() {
-        List<SummaryView> views = new ArrayList<SummaryView>();
+    public static WdkView[] createSupportedSummaryViews() {
+        List<WdkView> views = new ArrayList<WdkView>();
         views.add(createDefaultSummaryView());
 
-        SummaryView[] array = new SummaryView[views.size()];
+        WdkView[] array = new WdkView[views.size()];
         views.toArray(array);
         return array;
     }
 
-    private static SummaryView createDefaultSummaryView() {
-        SummaryView view = new SummaryView();
+    private static WdkView createDefaultSummaryView() {
+        WdkView view = new WdkView();
         view.setName("_default");
         view.setDisplay("Default");
         view.setDefault(true);
@@ -28,17 +28,17 @@ public class SummaryView extends WdkModelBase {
         return view;
     }
 
-    public static SummaryView[] createSupportedRecordViews() {
-        List<SummaryView> views = new ArrayList<SummaryView>();
+    public static WdkView[] createSupportedRecordViews() {
+        List<WdkView> views = new ArrayList<WdkView>();
         views.add(createDefaultRecordView());
 
-        SummaryView[] array = new SummaryView[views.size()];
+        WdkView[] array = new WdkView[views.size()];
         views.toArray(array);
         return array;
     }
 
-    private static SummaryView createDefaultRecordView() {
-        SummaryView view = new SummaryView();
+    private static WdkView createDefaultRecordView() {
+        WdkView view = new WdkView();
         view.setName("_default");
         view.setDisplay("Default");
         view.setDefault(true);

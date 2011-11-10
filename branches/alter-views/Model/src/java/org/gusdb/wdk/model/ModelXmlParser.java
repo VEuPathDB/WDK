@@ -440,11 +440,11 @@ public class ModelXmlParser extends XmlParser {
 
         configureNode(digester,
                 "wdkModel/recordClassSet/recordClass/summaryView",
-                SummaryView.class, "addSummaryView");
+                WdkView.class, "addSummaryView");
 
         configureNode(digester,
                 "wdkModel/recordClassSet/recordClass/recordView",
-                SummaryView.class, "addRecordView");
+                WdkView.class, "addRecordView");
     }
 
     private void configureQuerySet(Digester digester) {
@@ -613,7 +613,7 @@ public class ModelXmlParser extends XmlParser {
                 "setText", 0);
 
         configureNode(digester, "wdkModel/questionSet/question/summaryView",
-                SummaryView.class, "addSummaryView");
+                WdkView.class, "addSummaryView");
     }
 
     private void configureXmlQuestionSet(Digester digester) {

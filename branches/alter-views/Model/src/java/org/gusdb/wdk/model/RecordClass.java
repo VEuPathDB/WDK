@@ -101,24 +101,18 @@ public class RecordClass extends WdkModelBase implements
 
     private RecordClassSet recordClassSet;
 
-    private List<AttributeQueryReference> attributesQueryRefList =
-            new ArrayList<AttributeQueryReference>();
+    private List<AttributeQueryReference> attributesQueryRefList = new ArrayList<AttributeQueryReference>();
 
-    private Map<String, Query> attributeQueries =
-            new LinkedHashMap<String, Query>();
-    private Map<String, Query> tableQueries =
-            new LinkedHashMap<String, Query>();
+    private Map<String, Query> attributeQueries = new LinkedHashMap<String, Query>();
+    private Map<String, Query> tableQueries = new LinkedHashMap<String, Query>();
 
-    private List<AttributeField> attributeFieldList =
-            new ArrayList<AttributeField>();
-    private Map<String, AttributeField> attributeFieldsMap =
-            new LinkedHashMap<String, AttributeField>();
+    private List<AttributeField> attributeFieldList = new ArrayList<AttributeField>();
+    private Map<String, AttributeField> attributeFieldsMap = new LinkedHashMap<String, AttributeField>();
 
     private PrimaryKeyAttributeField primaryKeyField;
 
     private List<TableField> tableFieldList = new ArrayList<TableField>();
-    private Map<String, TableField> tableFieldsMap =
-            new LinkedHashMap<String, TableField>();
+    private Map<String, TableField> tableFieldsMap = new LinkedHashMap<String, TableField>();
 
     private String name;
     private String fullName;
@@ -127,22 +121,17 @@ public class RecordClass extends WdkModelBase implements
     private String attributeOrdering;
     private String type;
 
-    private List<NestedRecord> nestedRecordQuestionRefList =
-            new ArrayList<NestedRecord>();
-    private Map<String, NestedRecord> nestedRecordQuestionRefs =
-            new LinkedHashMap<String, NestedRecord>();
+    private List<NestedRecord> nestedRecordQuestionRefList = new ArrayList<NestedRecord>();
+    private Map<String, NestedRecord> nestedRecordQuestionRefs = new LinkedHashMap<String, NestedRecord>();
 
-    private List<NestedRecordList> nestedRecordListQuestionRefList =
-            new ArrayList<NestedRecordList>();
-    private Map<String, NestedRecordList> nestedRecordListQuestionRefs =
-            new LinkedHashMap<String, NestedRecordList>();
+    private List<NestedRecordList> nestedRecordListQuestionRefList = new ArrayList<NestedRecordList>();
+    private Map<String, NestedRecordList> nestedRecordListQuestionRefs = new LinkedHashMap<String, NestedRecordList>();
 
     private AttributeCategoryTree attributeCategoryTree;
 
     // for sanity testing
     private boolean doNotTest = false;
-    private List<ParamValuesSet> unexcludedParamValuesSets =
-            new ArrayList<ParamValuesSet>();
+    private List<ParamValuesSet> unexcludedParamValuesSets = new ArrayList<ParamValuesSet>();
     private ParamValuesSet paramValuesSet;
 
     /**
@@ -167,17 +156,13 @@ public class RecordClass extends WdkModelBase implements
     private Query aliasQuery = null;
 
     private List<ReporterRef> reporterList = new ArrayList<ReporterRef>();
-    private Map<String, ReporterRef> reporterMap =
-            new LinkedHashMap<String, ReporterRef>();
+    private Map<String, ReporterRef> reporterMap = new LinkedHashMap<String, ReporterRef>();
 
     private List<AnswerFilter> filterList = new ArrayList<AnswerFilter>();
-    private Map<String, AnswerFilterInstance> filterMap =
-            new LinkedHashMap<String, AnswerFilterInstance>();
+    private Map<String, AnswerFilterInstance> filterMap = new LinkedHashMap<String, AnswerFilterInstance>();
 
-    private List<AnswerFilterLayout> filterLayoutList =
-            new ArrayList<AnswerFilterLayout>();
-    private Map<String, AnswerFilterLayout> filterLayoutMap =
-            new LinkedHashMap<String, AnswerFilterLayout>();
+    private List<AnswerFilterLayout> filterLayoutList = new ArrayList<AnswerFilterLayout>();
+    private Map<String, AnswerFilterLayout> filterLayoutMap = new LinkedHashMap<String, AnswerFilterLayout>();
 
     private AnswerFilterInstance defaultFilter;
     private AnswerFilterInstance booleanExpansionFilter;
@@ -185,25 +170,20 @@ public class RecordClass extends WdkModelBase implements
     private List<AttributeList> attributeLists = new ArrayList<AttributeList>();
 
     private String[] defaultSummaryAttributeNames;
-    private Map<String, AttributeField> defaultSummaryAttributeFields =
-            new LinkedHashMap<String, AttributeField>();
-    private Map<String, Boolean> defaultSortingMap =
-            new LinkedHashMap<String, Boolean>();
+    private Map<String, AttributeField> defaultSummaryAttributeFields = new LinkedHashMap<String, AttributeField>();
+    private Map<String, Boolean> defaultSortingMap = new LinkedHashMap<String, Boolean>();
 
     private boolean useBasket = true;
 
-    private List<FavoriteReference> favorites =
-            new ArrayList<FavoriteReference>();
+    private List<FavoriteReference> favorites = new ArrayList<FavoriteReference>();
     private String favoriteNoteFieldName;
     private AttributeField favoriteNoteField;
 
-    private List<SummaryView> summaryViewList = new ArrayList<SummaryView>();
-    private Map<String, SummaryView> summaryViewMap =
-            new LinkedHashMap<String, SummaryView>();
+    private List<WdkView> summaryViewList = new ArrayList<WdkView>();
+    private Map<String, WdkView> summaryViewMap = new LinkedHashMap<String, WdkView>();
 
-    private List<SummaryView> recordViewList = new ArrayList<SummaryView>();
-    private Map<String, SummaryView> recordViewMap =
-            new LinkedHashMap<String, SummaryView>();
+    private List<WdkView> recordViewList = new ArrayList<WdkView>();
+    private Map<String, WdkView> recordViewMap = new LinkedHashMap<String, WdkView>();
 
     // ////////////////////////////////////////////////////////////////////
     // Called at model creation time
@@ -326,8 +306,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public Map<String, TableField> getTableFieldMap(FieldScope scope) {
-        Map<String, TableField> fields =
-                new LinkedHashMap<String, TableField>();
+        Map<String, TableField> fields = new LinkedHashMap<String, TableField>();
         for (TableField field : tableFieldsMap.values()) {
             if (scope.isFieldInScope(field)) {
                 fields.put(field.getName(), field);
@@ -348,8 +327,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public Map<String, AttributeField> getAttributeFieldMap(FieldScope scope) {
-        Map<String, AttributeField> fields =
-                new LinkedHashMap<String, AttributeField>();
+        Map<String, AttributeField> fields = new LinkedHashMap<String, AttributeField>();
 
         // always put primary key field as the first one
         fields.put(primaryKeyField.getName(), primaryKeyField);
@@ -413,12 +391,11 @@ public class RecordClass extends WdkModelBase implements
 
     public String toString() {
         String newline = System.getProperty("line.separator");
-        StringBuffer buf =
-                new StringBuffer("Record: name='" + name + "'").append(newline);
+        StringBuffer buf = new StringBuffer("Record: name='" + name + "'").append(newline);
 
         buf.append(
-                "--- Attribute Category Tree (with attribute count per category) ---")
-                .append(newline);
+                "--- Attribute Category Tree (with attribute count per category) ---").append(
+                newline);
         buf.append(attributeCategoryTree.toString());
 
         buf.append("--- Attributes ---").append(newline);
@@ -440,11 +417,9 @@ public class RecordClass extends WdkModelBase implements
     public String getSanityTestSuggestion() throws WdkModelException {
         String indent = "    ";
         String newline = System.getProperty("line.separator");
-        StringBuffer buf =
-                new StringBuffer(newline + newline + indent
-                        + "<sanityRecord ref=\"" + getFullName() + "\""
-                        + newline + indent + indent + indent
-                        + "primaryKey=\"FIX_pk\">" + newline);
+        StringBuffer buf = new StringBuffer(newline + newline + indent
+                + "<sanityRecord ref=\"" + getFullName() + "\"" + newline
+                + indent + indent + indent + "primaryKey=\"FIX_pk\">" + newline);
         buf.append(indent + "</sanityRecord>");
         return buf.toString();
     }
@@ -478,10 +453,9 @@ public class RecordClass extends WdkModelBase implements
             throws WdkModelException {
         AttributeField attributeField = attributeFieldsMap.get(attributeName);
         if (attributeField == null) {
-            String message =
-                    "RecordClass " + getName()
-                            + " doesn't have an attribute field with name '"
-                            + attributeName + "'.";
+            String message = "RecordClass " + getName()
+                    + " doesn't have an attribute field with name '"
+                    + attributeName + "'.";
             throw new WdkModelException(message);
         }
         return attributeField;
@@ -490,10 +464,9 @@ public class RecordClass extends WdkModelBase implements
     TableField getTableField(String tableName) throws WdkModelException {
         TableField tableField = tableFieldsMap.get(tableName);
         if (tableField == null) {
-            String message =
-                    "Record " + getName()
-                            + " does not have a table field with name '"
-                            + tableName + "'.";
+            String message = "Record " + getName()
+                    + " does not have a table field with name '" + tableName
+                    + "'.";
             throw new WdkModelException(message);
         }
         return tableField;
@@ -535,8 +508,7 @@ public class RecordClass extends WdkModelBase implements
             nestedRecord.resolveReferences(model);
         }
 
-        for (NestedRecordList nestedRecordList : nestedRecordListQuestionRefs
-                .values()) {
+        for (NestedRecordList nestedRecordList : nestedRecordListQuestionRefs.values()) {
             nestedRecordList.setParentRecordClass(this);
             nestedRecordList.resolveReferences(model);
         }
@@ -548,8 +520,7 @@ public class RecordClass extends WdkModelBase implements
 
         // resolve default summary attributes
         if (defaultSummaryAttributeNames != null) {
-            Map<String, AttributeField> attributeFields =
-                    getAttributeFieldMap();
+            Map<String, AttributeField> attributeFields = getAttributeFieldMap();
             for (String fieldName : defaultSummaryAttributeNames) {
                 AttributeField field = attributeFields.get(fieldName);
                 if (field == null)
@@ -612,14 +583,11 @@ public class RecordClass extends WdkModelBase implements
         String[] paramNames = primaryKeyField.getColumnRefs();
         for (AttributeQueryReference reference : attributesQueryRefList) {
             // validate attribute query
-            Query query =
-                    (Query) wdkModel.resolveReference(reference
-                            .getTwoPartName());
+            Query query = (Query) wdkModel.resolveReference(reference.getTwoPartName());
             validateBulkQuery(query);
 
             // add fields into record level, and associate columns
-            Map<String, AttributeField> fields =
-                    reference.getAttributeFieldMap();
+            Map<String, AttributeField> fields = reference.getAttributeFieldMap();
             Map<String, Column> columns = query.getColumnMap();
             for (AttributeField field : fields.values()) {
                 field.setRecordClass(this);
@@ -647,8 +615,8 @@ public class RecordClass extends WdkModelBase implements
                 query.addParam(getUserParam());
             }
 
-            Query attributeQuery =
-                    RecordClass.prepareQuery(wdkModel, query, paramNames);
+            Query attributeQuery = RecordClass.prepareQuery(wdkModel, query,
+                    paramNames);
             attributeQueries.put(query.getFullName(), attributeQuery);
         }
     }
@@ -678,12 +646,12 @@ public class RecordClass extends WdkModelBase implements
             String[] pkColumns = primaryKeyField.getColumnRefs();
             String[] paramNames = new String[pkColumns.length];
             for (int i = 0; i < pkColumns.length; i++) {
-                paramNames[i] =
-                        Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + pkColumns[i];
+                paramNames[i] = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX
+                        + pkColumns[i];
             }
 
-            this.aliasQuery =
-                    RecordClass.prepareQuery(wdkModel, query, paramNames);
+            this.aliasQuery = RecordClass.prepareQuery(wdkModel, query,
+                    paramNames);
         }
     }
 
@@ -703,8 +671,8 @@ public class RecordClass extends WdkModelBase implements
             if (!query.getParamMap().containsKey(Utilities.PARAM_USER_ID)) {
                 query.addParam(getUserParam());
             }
-            Query tableQuery =
-                    RecordClass.prepareQuery(wdkModel, query, paramNames);
+            Query tableQuery = RecordClass.prepareQuery(wdkModel, query,
+                    paramNames);
             tableQueries.put(query.getFullName(), tableQuery);
         }
 
@@ -778,10 +746,9 @@ public class RecordClass extends WdkModelBase implements
 
         // Further limit the attribute/table query to have only user_id param
         // (optional). This is required to enable bulk query rewriting.
-        String message =
-                "Bulk query '" + query.getFullName() + "' can have only a '"
-                        + Utilities.PARAM_USER_ID
-                        + "' param, and it is optional.";
+        String message = "Bulk query '" + query.getFullName()
+                + "' can have only a '" + Utilities.PARAM_USER_ID
+                + "' param, and it is optional.";
         Param[] params = query.getParams();
         if (params.length > 1) throw new WdkModelException(message);
         else if (params.length == 1
@@ -860,8 +827,7 @@ public class RecordClass extends WdkModelBase implements
     private Map<String, AttributeField> sortAllAttributes()
             throws WdkModelException {
         String orderedAtts[] = attributeOrdering.split(",");
-        Map<String, AttributeField> orderedAttsMap =
-                new LinkedHashMap<String, AttributeField>();
+        Map<String, AttributeField> orderedAttsMap = new LinkedHashMap<String, AttributeField>();
 
         // primaryKey first
         orderedAttsMap.put(primaryKeyField.getName(), primaryKeyField);
@@ -872,14 +838,10 @@ public class RecordClass extends WdkModelBase implements
                 AttributeField nextAttField = attributeFieldsMap.get(nextAtt);
 
                 if (nextAttField == null) {
-                    String message =
-                            "RecordClass "
-                                    + getFullName()
-                                    + " defined attribute "
-                                    + nextAtt
-                                    + " in its "
-                                    + "attribute ordering, but that is not a valid "
-                                    + "attribute for this RecordClass";
+                    String message = "RecordClass " + getFullName()
+                            + " defined attribute " + nextAtt + " in its "
+                            + "attribute ordering, but that is not a valid "
+                            + "attribute for this RecordClass";
                     throw new WdkModelException(message);
                 }
                 orderedAttsMap.put(nextAtt, nextAttField);
@@ -960,8 +922,7 @@ public class RecordClass extends WdkModelBase implements
         tableFieldList = null;
 
         // exclude query refs
-        Map<String, AttributeQueryReference> attributesQueryRefs =
-                new LinkedHashMap<String, AttributeQueryReference>();
+        Map<String, AttributeQueryReference> attributesQueryRefs = new LinkedHashMap<String, AttributeQueryReference>();
         for (AttributeQueryReference queryRef : attributesQueryRefList) {
             if (queryRef.include(projectId)) {
                 String refName = queryRef.getTwoPartName();
@@ -1055,10 +1016,8 @@ public class RecordClass extends WdkModelBase implements
                             + " has more than one <attributesList> for "
                             + "project " + projectId);
                 } else {
-                    this.defaultSummaryAttributeNames =
-                            attributeList.getSummaryAttributeNames();
-                    this.defaultSortingMap =
-                            attributeList.getSortingAttributeMap();
+                    this.defaultSummaryAttributeNames = attributeList.getSummaryAttributeNames();
+                    this.defaultSortingMap = attributeList.getSortingAttributeMap();
                     hasAttributeList = true;
                 }
             }
@@ -1077,7 +1036,7 @@ public class RecordClass extends WdkModelBase implements
         favorites = null;
 
         // exclude the summary views
-        for (SummaryView view : summaryViewList) {
+        for (WdkView view : summaryViewList) {
             if (view.include(projectId)) {
                 view.excludeResources(projectId);
                 String name = view.getName();
@@ -1091,9 +1050,8 @@ public class RecordClass extends WdkModelBase implements
         summaryViewList = null;
 
         // add WDK supported views to all record classes
-        SummaryView[] supportedViews =
-                SummaryView.createSupportedSummaryViews();
-        for (SummaryView view : supportedViews) {
+        WdkView[] supportedViews = WdkView.createSupportedSummaryViews();
+        for (WdkView view : supportedViews) {
             String name = view.getName();
             // only add the view if it hasn't been defined by the user. that is,
             // user can custom the views supported by WDK by default.
@@ -1104,7 +1062,7 @@ public class RecordClass extends WdkModelBase implements
         }
 
         // exclude the summary views
-        for (SummaryView view : recordViewList) {
+        for (WdkView view : recordViewList) {
             if (view.include(projectId)) {
                 view.excludeResources(projectId);
                 String name = view.getName();
@@ -1118,8 +1076,8 @@ public class RecordClass extends WdkModelBase implements
         recordViewList = null;
 
         // add WDK supported views to all record classes
-        supportedViews = SummaryView.createSupportedRecordViews();
-        for (SummaryView view : supportedViews) {
+        supportedViews = WdkView.createSupportedRecordViews();
+        for (WdkView view : supportedViews) {
             String name = view.getName();
             // only add the view if it hasn't been defined by the user. that is,
             // user can custom the views supported by WDK by default.
@@ -1140,8 +1098,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public AnswerFilterInstance[] getFilters() {
-        AnswerFilterInstance[] instances =
-                new AnswerFilterInstance[filterMap.size()];
+        AnswerFilterInstance[] instances = new AnswerFilterInstance[filterMap.size()];
         filterMap.values().toArray(instances);
         return instances;
     }
@@ -1167,8 +1124,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public AnswerFilterLayout[] getFilterLayouts() {
-        AnswerFilterLayout[] layouts =
-                new AnswerFilterLayout[filterLayoutMap.size()];
+        AnswerFilterLayout[] layouts = new AnswerFilterLayout[filterLayoutMap.size()];
         filterLayoutMap.values().toArray(layouts);
         return layouts;
     }
@@ -1238,8 +1194,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public Map<String, AttributeField> getSummaryAttributeFieldMap() {
-        Map<String, AttributeField> attributeFields =
-                new LinkedHashMap<String, AttributeField>();
+        Map<String, AttributeField> attributeFields = new LinkedHashMap<String, AttributeField>();
 
         // always put primary key as the first field
         attributeFields.put(primaryKeyField.getName(), primaryKeyField);
@@ -1247,11 +1202,9 @@ public class RecordClass extends WdkModelBase implements
         if (defaultSummaryAttributeFields.size() > 0) {
             attributeFields.putAll(defaultSummaryAttributeFields);
         } else {
-            Map<String, AttributeField> nonInternalFields =
-                    getAttributeFieldMap(FieldScope.NON_INTERNAL);
+            Map<String, AttributeField> nonInternalFields = getAttributeFieldMap(FieldScope.NON_INTERNAL);
             for (String fieldName : nonInternalFields.keySet()) {
-                attributeFields
-                        .put(fieldName, nonInternalFields.get(fieldName));
+                attributeFields.put(fieldName, nonInternalFields.get(fieldName));
                 if (attributeFields.size() >= Utilities.DEFAULT_SUMMARY_ATTRIBUTE_SIZE)
                     break;
             }
@@ -1284,7 +1237,7 @@ public class RecordClass extends WdkModelBase implements
     public String getChecksum() {
         return null;
     }
-    
+
     public void setUseBasket(boolean useBasket) {
         this.useBasket = useBasket;
     }
@@ -1346,23 +1299,41 @@ public class RecordClass extends WdkModelBase implements
         return favoriteNoteField;
     }
 
-    public SummaryView[] getSummaryViews() {
-        SummaryView[] array = new SummaryView[summaryViewMap.size()];
+    public WdkView[] getSummaryViews() {
+        WdkView[] array = new WdkView[summaryViewMap.size()];
         summaryViewMap.values().toArray(array);
         return array;
     }
 
-    public void addSummaryView(SummaryView view) {
+    public WdkView getSummaryView(String viewName) throws WdkUserException {
+        if (summaryViewMap.containsKey(viewName)) {
+            return summaryViewMap.get(viewName);
+        } else {
+            throw new WdkUserException("Unknown summary view for record class "
+                    + "[" + getFullName() + "]: " + viewName);
+        }
+    }
+
+    public void addSummaryView(WdkView view) {
         if (summaryViewList == null) summaryViewMap.put(view.getName(), view);
         else summaryViewList.add(view);
     }
 
-    public Map<String, SummaryView> getRecordViews() {
-        return new LinkedHashMap(recordViewMap);
+    public Map<String, WdkView> getRecordViews() {
+        return new LinkedHashMap<String, WdkView>(recordViewMap);
     }
 
-    public SummaryView getDefaultRecordView() {
-        for (SummaryView view : recordViewMap.values()) {
+    public WdkView getRecordView(String viewName) throws WdkUserException {
+        if (recordViewMap.containsKey(viewName)) {
+            return recordViewMap.get(viewName);
+        } else {
+            throw new WdkUserException("Unknown record view for record class "
+                    + "[" + getFullName() + "]: " + viewName);
+        }
+    }
+
+    public WdkView getDefaultRecordView() {
+        for (WdkView view : recordViewMap.values()) {
             if (view.isDefault()) return view;
         }
 
@@ -1372,7 +1343,7 @@ public class RecordClass extends WdkModelBase implements
         return null;
     }
 
-    public void addRecordView(SummaryView view) {
+    public void addRecordView(WdkView view) {
         if (recordViewList == null) recordViewMap.put(view.getName(), view);
         else recordViewList.add(view);
     }
