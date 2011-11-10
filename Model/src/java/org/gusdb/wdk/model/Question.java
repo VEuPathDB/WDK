@@ -90,8 +90,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     private List<WdkModelText> sqlMacroList = new ArrayList<WdkModelText>();
     private Map<String, String> sqlMacroMap = new LinkedHashMap<String, String>();
 
-    private List<SummaryView> summaryViewList = new ArrayList<SummaryView>();
-    private Map<String, SummaryView> summaryViewMap = new LinkedHashMap<String, SummaryView>();
+    private List<WdkView> summaryViewList = new ArrayList<WdkView>();
+    private Map<String, WdkView> summaryViewMap = new LinkedHashMap<String, WdkView>();
 
     // /////////////////////////////////////////////////////////////////////
     // setters called at initialization
@@ -790,7 +790,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         sqlMacroList = null;
 
         // exclude the summary views
-        for (SummaryView view : summaryViewList) {
+        for (WdkView view : summaryViewList) {
             if (view.include(projectId)) {
                 view.excludeResources(projectId);
                 String name = view.getName();
@@ -870,32 +870,39 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         this.sqlMacroList.add(sqlMacro);
     }
 
-    public Map<String, SummaryView> getSummaryViews() {
-        Map<String, SummaryView> map = new LinkedHashMap<String, SummaryView>();
+    public Map<String, WdkView> getSummaryViews() {
+        Map<String, WdkView> map = new LinkedHashMap<String, WdkView>();
 
         // get views from record
-        SummaryView[] viewsFromRecord = recordClass.getSummaryViews();
-        for (SummaryView view : viewsFromRecord) {
+        WdkView[] viewsFromRecord = recordClass.getSummaryViews();
+        for (WdkView view : viewsFromRecord) {
             map.put(view.getName(), view);
         }
 
         // override the views defined in the question
-        for (SummaryView view : summaryViewMap.values()) {
+        for (WdkView view : summaryViewMap.values()) {
             map.put(view.getName(), view);
         }
 
         return map;
     }
+    
+    public WdkView getSummaryView(String viewName) throws WdkUserException {
+        WdkView view = summaryViewMap.get(viewName);
+        if (view != null) return view;
+        
+        return recordClass.getSummaryView(viewName);
+    }
 
-    public SummaryView getDefaultSummaryView() throws WdkModelException {
+    public WdkView getDefaultSummaryView() throws WdkModelException {
         // first look for default in the views defined in question
-        for (SummaryView view : summaryViewMap.values()) {
+        for (WdkView view : summaryViewMap.values()) {
             if (view.isDefault())
                 return view;
         }
         // then look for the default in the views from record
-        SummaryView[] viewsFromRecord = recordClass.getSummaryViews();
-        for (SummaryView view : viewsFromRecord) {
+        WdkView[] viewsFromRecord = recordClass.getSummaryViews();
+        for (WdkView view : viewsFromRecord) {
             if (view.isDefault())
                 return view;
         }
@@ -909,7 +916,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         return null;
     }
 
-    public void addSummaryView(SummaryView view) {
+    public void addSummaryView(WdkView view) {
         if (summaryViewList == null)
             summaryViewMap.put(view.getName(), view);
         else

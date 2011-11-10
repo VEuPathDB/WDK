@@ -16,7 +16,7 @@ import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.SummaryView;
+import org.gusdb.wdk.model.WdkView;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -407,7 +407,7 @@ public class QuestionBean {
      * @return
      * @see org.gusdb.wdk.model.Question#getSummaryViews()
      */
-    public Map<String, SummaryView> getSummaryViews() {
+    public Map<String, WdkView> getSummaryViews() {
         return question.getSummaryViews();
     }
 
@@ -416,7 +416,7 @@ public class QuestionBean {
      * @throws WdkModelException
      * @see org.gusdb.wdk.model.Question#getDefaultSummaryView()
      */
-    public SummaryView getDefaultSummaryView() throws WdkModelException {
+    public WdkView getDefaultSummaryView() throws WdkModelException {
         return question.getDefaultSummaryView();
     }
     
