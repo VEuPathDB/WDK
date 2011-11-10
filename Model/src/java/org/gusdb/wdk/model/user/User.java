@@ -1613,7 +1613,7 @@ public class User /* implements Serializable */{
         if (viewName == null) { // no record view set, use the default one
             view = recordClass.getDefaultRecordView();
         } else {
-            view = recordClass.getSummaryView(viewName);
+            view = recordClass.getRecordView(viewName);
         }
         return view;
     }

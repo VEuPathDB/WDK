@@ -1517,9 +1517,13 @@ public class UserBean /* implements Serializable */{
         this.currentQuestion = question.question;
     }
 
-    public WdkView getCurrentSummaryView() throws WdkModelException,
-            WdkUserException {
-        return user.getCurrentSummaryView(currentQuestion);
+    public WdkView getCurrentSummaryView() throws Exception {
+        try {
+            return user.getCurrentSummaryView(currentQuestion);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }   
     }
 
     public void setCurrentSummaryView(QuestionBean question, WdkView summaryView)
@@ -1533,8 +1537,13 @@ public class UserBean /* implements Serializable */{
         this.currentRecordClass = recordClass.recordClass;
     }
 
-    public WdkView getCurrentRecordView() throws WdkUserException {
-        return user.getCurrentRecordView(currentRecordClass);
+    public WdkView getCurrentRecordView() throws Exception {
+        try {
+            return user.getCurrentRecordView(currentRecordClass);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
+        }
     }
 
     public void setCurrentRecordView(RecordClassBean recordClass,

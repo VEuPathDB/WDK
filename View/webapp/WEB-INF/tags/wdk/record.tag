@@ -57,7 +57,7 @@
 
 <script>
   $(function() {
-    var currentTab = jQuery("#Record_Views > ul").attr("currentTab");
+    var currentTab = parseInt(jQuery("#Record_Views > ul").attr("currentTab"));
     jQuery( "#Record_Views" ).tabs({ selected : currentTab });
   });
 </script>
