@@ -19,7 +19,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.SummaryView;
+import org.gusdb.wdk.model.WdkView;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
@@ -28,14 +28,14 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.json.JSONException;
 
-public class ShowResultAction extends Action {
+public class ShowSummaryViewAction extends Action {
 
     public static final String PARAM_STEP = "step";
     public static final String PARAM_VIEW = "view";
     
     public static final String ATTR_STEP = "wdkStep";
 
-    private static final Logger logger = Logger.getLogger(ShowResultAction.class);
+    private static final Logger logger = Logger.getLogger(ShowSummaryViewAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
@@ -55,13 +55,14 @@ public class ShowResultAction extends Action {
 
         QuestionBean question = step.getQuestion();
         String viewName = request.getParameter(PARAM_VIEW);
-        SummaryView view;
+        WdkView view;
         if (viewName == null || viewName.length() == 0) {
             view = question.getDefaultSummaryView();
         } else {
-            Map<String, SummaryView> views = question.getSummaryViews();
+            Map<String, WdkView> views = question.getSummaryViews();
             view = views.get(viewName);
         }
+        wdkUser.setCurrentSummaryView(question, view);
 
         ProcessPaging(request, step);
 

@@ -11,10 +11,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.WdkView;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.Dataset;
 import org.gusdb.wdk.model.user.Favorite;
@@ -1483,27 +1485,61 @@ public class UserBean /* implements Serializable */{
 
     /**
      * @param records
-     * @param recordClass 
+     * @param recordClass
      * @return
-     * @throws SQLException 
-     * @throws WdkModelException 
-     * @throws WdkUserException 
+     * @throws SQLException
+     * @throws WdkModelException
+     * @throws WdkUserException
      */
-	public int getBasketCount(List<String[]> records, RecordClassBean recordClass)
-			throws WdkUserException, WdkModelException, SQLException {
-		return user.getBasketCounts(records, recordClass.recordClass);
-	}
+    public int getBasketCount(List<String[]> records,
+            RecordClassBean recordClass) throws WdkUserException,
+            WdkModelException, SQLException {
+        return user.getBasketCounts(records, recordClass.recordClass);
+    }
 
-	/**
-	 * @param records
-	 * @param recordClass
-	 * @return
-	 * @throws SQLException 
-	 * @throws WdkModelException 
-	 * @throws WdkUserException 
-	 */
-	public int getFavoriteCount(List<Map<String, Object>> records,
-			RecordClassBean recordClass) throws WdkUserException, WdkModelException, SQLException {
-		return user.getFavoriteCount(records, recordClass.recordClass);
-	}
+    /**
+     * @param records
+     * @param recordClass
+     * @return
+     * @throws SQLException
+     * @throws WdkModelException
+     * @throws WdkUserException
+     */
+    public int getFavoriteCount(List<Map<String, Object>> records,
+            RecordClassBean recordClass) throws WdkUserException,
+            WdkModelException, SQLException {
+        return user.getFavoriteCount(records, recordClass.recordClass);
+    }
+
+    private Question currentQuestion;
+
+    public void setCurrentQuestion(QuestionBean question) {
+        this.currentQuestion = question.question;
+    }
+
+    public WdkView getCurrentSummaryView() throws WdkModelException,
+            WdkUserException {
+        return user.getCurrentSummaryView(currentQuestion);
+    }
+
+    public void setCurrentSummaryView(QuestionBean question, WdkView summaryView)
+            throws WdkUserException, WdkModelException {
+        user.setCurrentSummaryView(question.question, summaryView);
+    }
+
+    private RecordClass currentRecordClass;
+
+    public void setCurrentRecordClass(RecordClassBean recordClass) {
+        this.currentRecordClass = recordClass.recordClass;
+    }
+
+    public WdkView getCurrentRecordView() throws WdkUserException {
+        return user.getCurrentRecordView(currentRecordClass);
+    }
+
+    public void setCurrentRecordView(RecordClassBean recordClass,
+            WdkView recordView) throws WdkUserException, WdkModelException {
+        user.setCurrentRecordView(recordClass.recordClass, recordView);
+    }
+
 }

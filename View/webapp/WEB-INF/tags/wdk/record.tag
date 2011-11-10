@@ -10,6 +10,7 @@
               description="The record instance"
 %>
 
+<c:set var="wdkUser" value="${sessionScope.wdkUser}" />
 <c:set var="recordClass" value="${record.recordClass}" />
 <c:set var="primaryKey" value="${record.primaryKey}" />
 <c:set var="pkUrl" value="" />
@@ -27,22 +28,28 @@
 
 <%-- display view list --%>
 <div id="Record_Views" class="ui-tabs ui-widget ui-widget-content ui-corner-all">
-  <c:set var="currentView" value="${recordClass.defaultRecordView.name}" />
   <c:set var="views" value="${recordClass.recordViews}" />
-  <c:set var="index" value="${0}" />
+  <jsp:setProperty name="wdkUser" property="currentRecordClass" value="${recordClass}" />
+  <c:set var="currentView" value="${wdkUser.currentRecordView.name}" />
 
-  <ul id="record_views" class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
-    <c:forEach items="${views}" var="item">
-      <c:set var="view" value="${item.value}" />
-      <c:if test="${view.name == currentView}">
+  <%-- get the index of the current view --%>
+  <c:set var="selectedTab" value="${0}" />
+  <c:set var="index" value="${0}" />
+  <c:forEach items="${views}" var="item">
+      <c:if test="${item.key == currentView}">
         <c:set var="selectedTab" value="${index}" />
       </c:if>
-      <li class="ui-state-default ui-corner-top">
+      <c:set var="index" value="${index + 1}" />
+  </c:forEach>
+
+  <ul selected="${selectedTab}">
+    <c:forEach items="${views}" var="item">
+      <c:set var="view" value="${item.value}" />
+      <li>
         <a title="Feature_Pane" 
            href="<c:url value='/showRecordFeature.do?name=${recordClass.fullName}&view=${view.name}${pkUrl}' />"
         >${view.display} <span> </span></a>
       </li>
-      <c:set var="index" value="${index + 1}" />
     </c:forEach>
   </ul>
 
@@ -50,7 +57,8 @@
 
 <script>
   $(function() {
-    $( "#Record_Views" ).tabs({ selected : ${selectedTab} });
+    var selected = jQuery("#Record_Views > ul").attr("selected");
+    jQuery( "#Record_Views" ).tabs({ selected : selected });
   });
 </script>
 

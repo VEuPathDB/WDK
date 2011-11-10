@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.BooleanOperator;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
+import org.gusdb.wdk.model.WdkView;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -39,6 +40,9 @@ public class User /* implements Serializable */{
 
     public final static String SORTING_ATTRIBUTES_SUFFIX = "_sort";
     public final static String SUMMARY_ATTRIBUTES_SUFFIX = "_summary";
+
+    private final static String SUMMARY_VIEW_PREFIX = "summary_view_";
+    private final static String RECORD_VIEW_PREFIX = "record_view_";
 
     public static final int SORTING_LEVEL = 3;
 
@@ -1524,51 +1528,105 @@ public class User /* implements Serializable */{
         return basketFactory.getBasketCounts(this);
     }
 
-	public int getBasketCounts(List<String[]> records, RecordClass recordClass)
-			throws WdkUserException, WdkModelException, SQLException {
-		int count = wdkModel.getBasketFactory().getBasketCounts(this, records, recordClass);
-		if (logger.isDebugEnabled()) {
-			logger.debug("How many of " + convert(records) + " in basket? " + count);
-		}
-		return count;
-	}
+    public int getBasketCounts(List<String[]> records, RecordClass recordClass)
+            throws WdkUserException, WdkModelException, SQLException {
+        int count = wdkModel.getBasketFactory().getBasketCounts(this, records,
+                recordClass);
+        if (logger.isDebugEnabled()) {
+            logger.debug("How many of " + convert(records) + " in basket? "
+                    + count);
+        }
+        return count;
+    }
 
-	private String convert(List<String[]> records) {
-		StringBuilder sb = new StringBuilder("List { ");
-		for (String[] item : records) {
-			sb.append("[ ");
-			for (String s : item) {
-				sb.append(s).append(", ");
-			}
-			sb.append(" ],");
-		}
-		sb.append(" }");
-		return sb.toString();
-	}
+    private String convert(List<String[]> records) {
+        StringBuilder sb = new StringBuilder("List { ");
+        for (String[] item : records) {
+            sb.append("[ ");
+            for (String s : item) {
+                sb.append(s).append(", ");
+            }
+            sb.append(" ],");
+        }
+        sb.append(" }");
+        return sb.toString();
+    }
 
-	public int getFavoriteCount(List<Map<String, Object>> records,
-			RecordClass recordClass) throws WdkUserException, WdkModelException, SQLException {
+    public int getFavoriteCount(List<Map<String, Object>> records,
+            RecordClass recordClass) throws WdkUserException,
+            WdkModelException, SQLException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         int count = 0;
         for (Map<String, Object> item : records) {
-        	boolean inFavs = favoriteFactory.isInFavorite(this, recordClass, item);
-        	if (logger.isDebugEnabled()) {
-        		logger.debug("Is " + convert(item) + " in favorites? " + inFavs);
-        	}
-        	if (inFavs) {
-        		count++;
-        	}
+            boolean inFavs = favoriteFactory.isInFavorite(this, recordClass,
+                    item);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Is " + convert(item) + " in favorites? " + inFavs);
+            }
+            if (inFavs) {
+                count++;
+            }
         }
         return count;
-	}
+    }
 
-	private String convert(Map<String, Object> item) {
-		StringBuilder sb = new StringBuilder("Map { ");
-		for (String s : item.keySet()) {
-			sb.append("{ ").append(s).append(", ").append(item.get(s)).append(" },");
-		}
-		sb.append(" }");
-		return sb.toString();
-	}
+    private String convert(Map<String, Object> item) {
+        StringBuilder sb = new StringBuilder("Map { ");
+        for (String s : item.keySet()) {
+            sb.append("{ ").append(s).append(", ").append(item.get(s)).append(
+                    " },");
+        }
+        sb.append(" }");
+        return sb.toString();
+    }
 
+    public WdkView getCurrentSummaryView(Question question)
+            throws WdkModelException, WdkUserException {
+        String key = SUMMARY_VIEW_PREFIX + question.getFullName();
+        String viewName = projectPreferences.get(key);
+        WdkView view;
+        if (viewName == null) { // no summary view set, use the default one
+            view = question.getDefaultSummaryView();
+        } else {
+            view = question.getSummaryView(viewName);
+        }
+        return view;
+    }
+
+    public void setCurrentSummaryView(Question question, WdkView summaryView)
+            throws WdkUserException, WdkModelException {
+        String key = SUMMARY_VIEW_PREFIX + question.getFullName();
+        if (summaryView == null) { // remove the current summary view
+            projectPreferences.remove(key);
+        } else { // store the current summary view
+            String viewName = summaryView.getName();
+            projectPreferences.put(key, viewName);
+        }
+        save();
+    }
+
+    public WdkView getCurrentRecordView(RecordClass recordClass)
+            throws WdkUserException {
+        String key = RECORD_VIEW_PREFIX + recordClass.getFullName();
+        String viewName = projectPreferences.get(key);
+        WdkView view;
+        if (viewName == null) { // no record view set, use the default one
+            view = recordClass.getDefaultRecordView();
+        } else {
+            view = recordClass.getSummaryView(viewName);
+        }
+        return view;
+    }
+
+    public void setCurrentRecordView(RecordClass recordClass, WdkView recordView)
+            throws WdkUserException, WdkModelException {
+        String key = RECORD_VIEW_PREFIX + recordClass.getFullName();
+        if (recordView == null) { // remove the current record view
+            projectPreferences.remove(key);
+        } else { // store the current record view
+            String viewName = recordView.getName();
+            projectPreferences.put(key, viewName);
+        }
+        save();
+    }
 }

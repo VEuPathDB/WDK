@@ -18,8 +18,10 @@
 %>
 
 
-<c:set var="projectId" value="${applicationScope.wdkModel.projectId}" />
-<c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
+<c:set var="wdkModel" value="${applicationScope.wdkModel}" />
+<c:set var="wdkUser" value="${sessionScope.wdkUser}" />
+<c:set var="projectId" value="${wdkModel.projectId}" />
+<c:set var="dispModelName" value="${wdkModel.displayName}" />
 <c:set var="wdkAnswer" value="${step.answerValue}"/>
 <c:set var="recordClass" value="${wdkAnswer.question.recordClass}" />
 <c:set var="recordName" value="${recordClass.fullName}" />
@@ -93,21 +95,27 @@ $(function() {
 <div id="Summary_Views" strategy="${strategy.strategyId}" step="${step.stepId}"
      updateUrl="<c:url value='/updateResult.do' />">
   <c:set var="question" value="${wdkStep.question}" />
-  <c:set var="currentView" value="${question.defaultSummaryView.name}" />
   <c:set var="views" value="${question.summaryViews}" />
+  <jsp:setProperty name="wdkUser" property="currentQuestion" value="${question}" />
+  <c:set var="currentView" value="${wdkUser.currentSummaryView.name}" />
+  
+  <%-- get the index of the current view --%>
+  <c:set var="selectedTab" value="${0}" />
   <c:set var="index" value="${0}" />
-
-  <ul>
-    <c:forEach items="${views}" var="item">
-      <c:set var="view" value="${item.value}" />
-      <c:if test="${view.name == currentView}">
+  <c:forEach items="${views}" var="item">
+      <c:if test="${item.key == currentView}">
         <c:set var="selectedTab" value="${index}" />
       </c:if>
+      <c:set var="index" value="${index + 1}" />
+  </c:forEach>
+
+  <ul selected="${selectedTab}">
+    <c:forEach items="${views}" var="item">
+      <c:set var="view" value="${item.value}" />
       <li id="${view.name}">
         <a href="<c:url value='/showResult.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}&view=${view.name}' />"
         >${view.display} <span> </span></a>
       </li>
-      <c:set var="index" value="${index + 1}" />
     </c:forEach>
   </ul>
 </div>
