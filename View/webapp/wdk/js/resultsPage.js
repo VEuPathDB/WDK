@@ -8,9 +8,9 @@ Provides functions to support results table
 function configureSummaryViews(ele) {
     var workspace = window.wdk.findActiveWorkspace(); 
     var summaryViews = workspace.find("#Summary_Views");
-    var selected = summaryViews.children("ul").attr("selected");    
+    var currentTab = summaryViews.children("ul").attr("currentTab");    
     workspace.find("#Summary_Views").tabs({
-        selected : selected,
+        selected : currentTab,
         ajaxOptions: {
             error: function( xhr, status, index, anchor ) {
                 alert( "Couldn't load this tab. Please try again later." + status );
