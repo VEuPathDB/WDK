@@ -234,7 +234,8 @@ public class XMLReporter extends Reporter {
             writer.println("</response>");
             writer.flush();
             logger.info("Totally " + recordCount + " records dumped");
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(psQuery);
             SqlUtils.closeStatement(psInsert);
         }
@@ -269,7 +270,7 @@ public class XMLReporter extends Reporter {
                 for (String column : fields) {
                     column = column.trim();
                     if (fieldMap.containsKey(column)) {
-                    	columns.add(fieldMap.get(column));
+                        columns.add(fieldMap.get(column));
                     }
                 }
             }
@@ -323,8 +324,7 @@ public class XMLReporter extends Reporter {
         for (TableField table : tables) {
             TableValue tableValue = record.getTableValue(table.getName());
 
-            // AttributeField[] fields =
-            // table.getAttributeFields(FieldScope.REPORT_MAKER);
+            AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
 
             // output table header
             StringBuffer sb = new StringBuffer();
@@ -334,7 +334,8 @@ public class XMLReporter extends Reporter {
             for (Map<String, AttributeValue> row : tableValue) {
                 tableSize++;
                 sb.append("<row>" + NEW_LINE);
-                for (String fieldName : row.keySet()) {
+                for (AttributeField field : fields) {
+                    String fieldName = field.getName();
                     AttributeValue value = row.get(fieldName);
                     sb.append("<field name='" + fieldName + "'><![CDATA["
                             + value.getValue() + "]]></field>" + NEW_LINE);
@@ -389,11 +390,11 @@ public class XMLReporter extends Reporter {
 
     @Override
     protected void complete() {
-    // do nothing
+        // do nothing
     }
 
     @Override
     protected void initialize() throws SQLException {
-    // do nothing
+        // do nothing
     }
 }
