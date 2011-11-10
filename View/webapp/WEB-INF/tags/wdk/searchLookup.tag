@@ -84,7 +84,7 @@ $(document).ready(function() {
         "aaSorting": [ [ 3, 'desc'] ],
         "sDom": '<"H"f<"#type-filter">lr>t<"F"ip>',
         "oLanguage": {
-            "sSearch": "<b style='font-size:120%'>Find a search, provide a keyword:</>",
+            "sSearch": "<b style='font-size:120%'>To find a search, provide a keyword:</>",
             "sLengthMenu": "Show _MENU_ rows"
         },
     } );
