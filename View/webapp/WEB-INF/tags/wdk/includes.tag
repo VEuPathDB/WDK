@@ -13,9 +13,9 @@
 <%-- JS libraries --%>
 <%-- comment out the production code. need to revert this on check in --%>
 <!--
-<script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-1.6.4.min.js"/>'></script>
+<script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-1.7.min.js"/>'></script>
 -->
-<script type="text/javascript" src="http://code.jquery.com/jquery-1.6.4.js"></script>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.js"></script>
 <script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-ui-1.8.16.custom.min.js"/>'></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.blockUI.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.cookie.js'/>"></script>
