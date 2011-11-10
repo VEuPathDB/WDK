@@ -42,12 +42,12 @@
       <c:set var="index" value="${index + 1}" />
   </c:forEach>
 
-  <ul selected="${selectedTab}">
+  <ul currentTab="${selectedTab}">
     <c:forEach items="${views}" var="item">
       <c:set var="view" value="${item.value}" />
       <li>
         <a title="Feature_Pane" 
-           href="<c:url value='/showRecordFeature.do?name=${recordClass.fullName}&view=${view.name}${pkUrl}' />"
+           href="<c:url value='/showRecordView.do?name=${recordClass.fullName}&view=${view.name}${pkUrl}' />"
         >${view.display} <span> </span></a>
       </li>
     </c:forEach>
@@ -57,8 +57,8 @@
 
 <script>
   $(function() {
-    var selected = jQuery("#Record_Views > ul").attr("selected");
-    jQuery( "#Record_Views" ).tabs({ selected : selected });
+    var currentTab = jQuery("#Record_Views > ul").attr("currentTab");
+    jQuery( "#Record_Views" ).tabs({ selected : currentTab });
   });
 </script>
 
