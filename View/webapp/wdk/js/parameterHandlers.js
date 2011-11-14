@@ -177,7 +177,8 @@ function createAutoComplete(obj, name) {
 
 function updateDependentParam(paramName, dependedValue) {
 	if (dependedValue && dependedValue != 'Choose one:') {
-		var dependentParam = $("td#" + paramName + "aaa > div.dependentParam[name='" + paramName + "']");
+		var dependentParamSelector = "td#" + paramName + "aaa > div.dependentParam[name='" + paramName + "']";
+		var dependentParam = $(dependentParamSelector);
 		var questionName = dependentParam.closest("form").find("input:hidden[name=questionFullName]").val();
 		var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&dependedValue=' + dependedValue;
 		if ($('input.typeAhead',dependentParam).length > 0) {
@@ -201,9 +202,10 @@ function updateDependentParam(paramName, dependedValue) {
 					var newContent = $("div.param, div.param-multiPick",data);
 					if (newContent.length > 0) {
 						dependentParam.html(newContent.html());
-					} else { // div.param-tree, but calling .html() on it erases javascript
+					} else { // div.param-tree, but calling .html() on response erases javascript
 						dependentParam.html(data);
 					}
+					
 					if (oldValues[paramName]) {
 						var input = $("select",dependentParam);
 						if (input.length > 0) {
