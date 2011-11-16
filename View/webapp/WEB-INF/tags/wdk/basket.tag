@@ -26,7 +26,8 @@
           <c:if test="${count > 0}">
             <li id="${fn:replace(recordClass.fullName, '.', '_')}" 
                 tab-index="${index}" recordClass="${recordClass.fullName}">
-              <a href="<c:url value='/showBasket.do?recordClass=${recordClass.fullName}'/>"
+              <a title="Basket_View" 
+                 href="<c:url value='/showBasket.do?recordClass=${recordClass.fullName}'/>"
                 >${recordClass.displayName} (<span class="count">${item.value}</span>)</a>
             </li>
             <c:set var="index" value="${index + 1}" />

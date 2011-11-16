@@ -113,7 +113,8 @@ $(function() {
     <c:forEach items="${views}" var="item">
       <c:set var="view" value="${item.value}" />
       <li id="${view.name}">
-        <a href="<c:url value='/showSummaryView.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}&view=${view.name}' />"
+        <a title="Summary_View" 
+           href="<c:url value='/showSummaryView.do?strategy=${wdkStrategy.strategyId}&step=${wdkStep.stepId}&view=${view.name}' />"
         >${view.display} <span> </span></a>
       </li>
     </c:forEach>
