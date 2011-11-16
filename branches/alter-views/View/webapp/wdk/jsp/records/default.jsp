@@ -27,12 +27,13 @@
         <td class="label">${fieldVal.displayName}: </td>
         <td>
           <!-- need to know if fieldVal should be hot linked -->
+
           <c:choose>
             <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.LinkAttributeValue'}">
               <a href="${fieldVal.url}">${fieldVal.displayText}</a>
             </c:when>
             <c:otherwise>
-              <font class="fixed"><w:wrap size="60">${fieldVal}</w:wrap></font>
+              <font class="fixed"><w:wrap size="60">${fieldVal.value}</w:wrap></font>
             </c:otherwise>
           </c:choose>
         </td>
@@ -59,6 +60,7 @@
           <c:set var="fieldVal" value="${recAttr.briefDisplay}"/>
           <td>
             <!-- need to know if fieldVal should be hot linked -->
+
             <c:choose>
               <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.LinkValue'}">
                  <a href="${fieldVal.url}">${fieldVal.visible}</a>
@@ -103,7 +105,7 @@
 	  <c:when test="${i % 2 == 0}"><tr class="rowLight"></c:when>
           <c:otherwise><tr class="rowDark"></c:otherwise>
       </c:choose>
-       
+      
       <c:set var="j" value="0"/>
       <c:forEach items="${nextRecord.summaryAttributeNames}" var="recAttrName">
         <c:set value="${nextRecord.attributes[recAttrName]}" var="recAttr"/>
@@ -114,12 +116,10 @@
             <c:choose>
                <c:when test="${j == 0}">
                   <!-- Added by Jerric - Display primary key content -->
-                  <!-- <a href="showRecord.do?name=${recNam}&id=${nextRecord.primaryKey}">${fieldVal}</a> -->
   		  	<c:set value="${nextRecord.primaryKey}" var="nextPK"/>
                   <a href="showRecord.do?name=${recNam}&project_id=${nextPK.projectId}&primary_key=${nextPK.recordId}">${fieldVal}</a>
                </c:when>
                <c:otherwise>
- 
                  <!-- need to know if fieldVal should be hot linked -->
                  <c:choose>
                     <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.LinkValue'}">
@@ -129,12 +129,15 @@
                      ${fieldVal}
                     </c:otherwise>
                  </c:choose>
+
                </c:otherwise>
             </c:choose>
           </td>
           <c:set var="j" value="${j+1}"/>
         </c:if>
       </c:forEach>
+
+
       </tr>
  
  
