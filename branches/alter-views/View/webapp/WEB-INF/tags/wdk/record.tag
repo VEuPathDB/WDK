@@ -46,7 +46,7 @@
     <c:forEach items="${views}" var="item">
       <c:set var="view" value="${item.value}" />
       <li>
-        <a title="Feature_Pane" 
+        <a title="Record_View" 
            href="<c:url value='/showRecordView.do?name=${recordClass.fullName}&view=${view.name}${pkUrl}' />"
         >${view.display} <span> </span></a>
       </li>
