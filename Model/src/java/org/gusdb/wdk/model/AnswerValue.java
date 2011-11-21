@@ -146,8 +146,7 @@ public class AnswerValue {
         this.endIndex = endIndex;
 
         // get sorting columns
-        if (sortingMap == null)
-            sortingMap = question.getSortingAttributeMap();
+        if (sortingMap == null) sortingMap = question.getSortingAttributeMap();
         this.sortingMap = sortingMap;
         this.summaryFieldMap = new LinkedHashMap<String, AttributeField>();
 
@@ -254,10 +253,8 @@ public class AnswerValue {
                 ResultList resultList;
                 // for portal
                 String message = idsQueryInstance.getResultMessage();
-                if (filter == null)
-                    resultList = idsQueryInstance.getResults();
-                else
-                    resultList = filter.getResults(this);
+                if (filter == null) resultList = idsQueryInstance.getResults();
+                else resultList = filter.getResults(this);
 
                 try {
                     boolean hasMessage = (message != null && message.length() > 0);
@@ -296,7 +293,8 @@ public class AnswerValue {
                             }
                         }
                     }
-                } finally {
+                }
+                finally {
                     resultList.close();
                 }
             }
@@ -351,8 +349,7 @@ public class AnswerValue {
     public String getAnswerKey() throws NoSuchAlgorithmException,
             WdkModelException, JSONException, WdkUserException, SQLException {
         String key = getChecksum();
-        if (filter != null)
-            key += ":" + filter.getName();
+        if (filter != null) key += ":" + filter.getName();
         return key;
     }
 
@@ -413,8 +410,7 @@ public class AnswerValue {
                 + getPageCount() + ",\t# Records per Page: " + getPageSize()
                 + newline);
 
-        if (pageRecordInstances.size() == 0)
-            return buf.toString();
+        if (pageRecordInstances.size() == 0) return buf.toString();
 
         Map<String, AttributeField> attributes = getSummaryAttributeFieldMap();
         for (String nextAttName : attributes.keySet()) {
@@ -470,19 +466,26 @@ public class AnswerValue {
             reporter.configure(config);
             reporter.setWdkModel(rptRef.getWdkModel());
             return reporter;
-        } catch (ClassNotFoundException ex) {
+        }
+        catch (ClassNotFoundException ex) {
             throw new WdkModelException(ex);
-        } catch (InstantiationException ex) {
+        }
+        catch (InstantiationException ex) {
             throw new WdkModelException(ex);
-        } catch (IllegalAccessException ex) {
+        }
+        catch (IllegalAccessException ex) {
             throw new WdkModelException(ex);
-        } catch (SecurityException ex) {
+        }
+        catch (SecurityException ex) {
             throw new WdkModelException(ex);
-        } catch (NoSuchMethodException ex) {
+        }
+        catch (NoSuchMethodException ex) {
             throw new WdkModelException(ex);
-        } catch (IllegalArgumentException ex) {
+        }
+        catch (IllegalArgumentException ex) {
             throw new WdkModelException(ex);
-        } catch (InvocationTargetException ex) {
+        }
+        catch (InvocationTargetException ex) {
             throw new WdkModelException(ex);
         }
     }
@@ -612,10 +615,8 @@ public class AnswerValue {
 
         boolean firstColumn = true;
         for (String column : pkField.getColumnRefs()) {
-            if (firstColumn)
-                firstColumn = false;
-            else
-                sql.append(" AND ");
+            if (firstColumn) firstColumn = false;
+            else sql.append(" AND ");
             sql.append("aq.").append(column).append(" = pidq.").append(column);
         }
         return sql.toString();
@@ -713,10 +714,8 @@ public class AnswerValue {
 
         boolean firstColumn = true;
         for (String column : pkField.getColumnRefs()) {
-            if (firstColumn)
-                firstColumn = false;
-            else
-                sql.append(" AND ");
+            if (firstColumn) firstColumn = false;
+            else sql.append(" AND ");
             sql.append("tq.").append(column).append(" = pidq.").append(column);
         }
 
@@ -755,8 +754,7 @@ public class AnswerValue {
 
     private String getPagedIdSql() throws NoSuchAlgorithmException,
             SQLException, WdkModelException, JSONException, WdkUserException {
-        if (pagedIdSql != null)
-            return pagedIdSql;
+        if (pagedIdSql != null) return pagedIdSql;
 
         // get id sql
         String idSql = getIdSql();
@@ -782,8 +780,7 @@ public class AnswerValue {
                 if (firstClause) {
                     sql.append(" WHERE ");
                     firstClause = false;
-                } else
-                    sql.append(" AND ");
+                } else sql.append(" AND ");
 
                 sql.append("idq.").append(column);
                 sql.append(" = ");
@@ -801,10 +798,8 @@ public class AnswerValue {
         }
         firstClause = true;
         for (String column : pkColumns) {
-            if (firstClause)
-                firstClause = false;
-            else
-                sql.append(", ");
+            if (firstClause) firstClause = false;
+            else sql.append(", ");
             sql.append("idq.").append(column);
         }
 
@@ -851,16 +846,18 @@ public class AnswerValue {
         Map<String, String> queryNames = new LinkedHashMap<String, String>();
         Map<String, String> orderClauses = new LinkedHashMap<String, String>();
         WdkModel wdkModel = question.getWdkModel();
+        String questionName = question.getFullName();
+        Map<String, Boolean> sortingMap = user.getSortingAttributes(questionName);
         logger.debug("sorting map: " + sortingMap);
         for (String fieldName : sortingMap.keySet()) {
             AttributeField field = fields.get(fieldName);
-            if (field == null)
-                continue;
+            if (field == null) continue;
             boolean ascend = sortingMap.get(fieldName);
             Map<String, ColumnAttributeField> dependents = field.getColumnAttributeFields();
-            for (ColumnAttributeField dependent :dependents.values()) {
+            for (ColumnAttributeField dependent : dependents.values()) {
                 Column column = dependent.getColumn();
-                logger.debug("field [" + fieldName + "] depends on column [" + column.getName() + "]");
+                logger.debug("field [" + fieldName + "] depends on column ["
+                        + column.getName() + "]");
                 Query query = column.getQuery();
                 String queryName = query.getFullName();
                 // cannot use the attribute query from record, need to get it
@@ -878,19 +875,16 @@ public class AnswerValue {
 
                 // handle column
                 String sortingColumn = column.getSortingColumn();
-                if (sortingColumn == null)
-                    sortingColumn = column.getName();
+                if (sortingColumn == null) sortingColumn = column.getName();
                 boolean ignoreCase = column.isIgnoreCase();
                 if (!orderClauses.containsKey(sortingColumn)) {
                     // dependent not processed, process it
                     StringBuffer clause = new StringBuffer();
-                    if (ignoreCase)
-                        clause.append("lower(");
+                    if (ignoreCase) clause.append("lower(");
                     clause.append(queryNames.get(queryName));
                     clause.append(".");
                     clause.append(sortingColumn);
-                    if (ignoreCase)
-                        clause.append(")");
+                    if (ignoreCase) clause.append(")");
                     clause.append(ascend ? " ASC" : " DESC");
                     orderClauses.put(sortingColumn, clause.toString());
                 }
@@ -919,8 +913,7 @@ public class AnswerValue {
      */
     private void initPageRecordInstances() throws NoSuchAlgorithmException,
             SQLException, JSONException, WdkModelException, WdkUserException {
-        if (pageRecordInstances != null)
-            return;
+        if (pageRecordInstances != null) return;
 
         logger.debug("Initializing paged records......");
         this.pageRecordInstances = new LinkedHashMap<PrimaryKeyAttributeValue, RecordInstance>();
@@ -957,8 +950,7 @@ public class AnswerValue {
         if (expected != pageRecordInstances.size()) {
             StringBuffer buffer = new StringBuffer();
             for (String name : summaryFieldMap.keySet()) {
-                if (buffer.length() > 0)
-                    buffer.append(", ");
+                if (buffer.length() > 0) buffer.append(", ");
                 buffer.append(name);
             }
             logger.debug("resultSize: " + resultSize + ", start: " + startIndex
@@ -970,7 +962,8 @@ public class AnswerValue {
                     + " from the actual size. Please check the id query "
                     + idsQueryInstance.getQuery().getFullName() + " and the "
                     + "attribute queries that return the attributes (" + buffer
-                    + "). expected size: " + expected + ", actual size: " + pageRecordInstances.size());
+                    + "). expected size: " + expected + ", actual size: "
+                    + pageRecordInstances.size());
         }
 
         logger.debug("Paged records initialized.");
@@ -995,34 +988,13 @@ public class AnswerValue {
         return idsQueryInstance.getResultMessage();
     }
 
-    public Map<String, Boolean> getSortingMap() {
-        return new LinkedHashMap<String, Boolean>(sortingMap);
-    }
-
-    /**
-     * Set a new sorting map
-     * 
-     * @param sortingMap
-     * @throws WdkModelException
-     */
-    public void setSortingMap(Map<String, Boolean> sortingMap)
-            throws WdkModelException {
+    public Map<String, Boolean> getSortingMap() throws WdkUserException,
+            WdkModelException {
         if (sortingMap == null) {
-            sortingMap = question.getSortingAttributeMap();
+            sortingMap = (user == null) ? question.getSortingAttributeMap()
+                    : user.getSortingAttributes(question.getFullName());
         }
-        // make sure all sorting columns exist
-        Map<String, AttributeField> attributes = question.getAttributeFieldMap();
-        for (String attributeName : sortingMap.keySet()) {
-            if (!attributes.containsKey(attributeName))
-                throw new WdkModelException("the assigned sorting attribute ["
-                        + attributeName + "] doesn't exist in the answer of "
-                        + "question " + question.getFullName());
-        }
-        this.sortingMap.clear();
-        this.sortingMap.putAll(sortingMap);
-
-        this.pagedIdSql = null;
-        this.pageRecordInstances = null;
+        return new LinkedHashMap<String, Boolean>(sortingMap);
     }
 
     public List<AttributeField> getDisplayableAttributes() {
@@ -1052,31 +1024,32 @@ public class AnswerValue {
         return displayAttributes;
     }
 
-	public TreeNode getDisplayableAttributeTree() throws WdkModelException {
-		return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.NON_INTERNAL));
-	}
+    public TreeNode getDisplayableAttributeTree() throws WdkModelException {
+        return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.NON_INTERNAL));
+    }
 
     public TreeNode getReportMakerAttributeTree() throws WdkModelException {
-    	return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.REPORT_MAKER));
+        return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.REPORT_MAKER));
     }
-	
+
     private TreeNode convertAttributeTree(AttributeCategoryTree rawAttributeTree) {
-		TreeNode root = rawAttributeTree.toTreeNode("category root", "Attribute Categories");
-		List<String> currentlySelectedFields = new ArrayList<String>();
-		for (AttributeField field : getSummaryAttributeFieldMap().values()) {
+        TreeNode root = rawAttributeTree.toTreeNode("category root",
+                "Attribute Categories");
+        List<String> currentlySelectedFields = new ArrayList<String>();
+        for (AttributeField field : getSummaryAttributeFieldMap().values()) {
             currentlySelectedFields.add(field.getName());
         }
-		root.turnOnSelectedLeaves(currentlySelectedFields);
-		root.setDefaultLeaves(new ArrayList<String>(question.getSummaryAttributeFieldMap().keySet()));
-		return root;
+        root.turnOnSelectedLeaves(currentlySelectedFields);
+        root.setDefaultLeaves(new ArrayList<String>(
+                question.getSummaryAttributeFieldMap().keySet()));
+        return root;
     }
-    
+
     public Map<String, AttributeField> getSummaryAttributeFieldMap() {
         Map<String, AttributeField> fields;
         if (summaryFieldMap.size() > 0) {
             fields = new LinkedHashMap<String, AttributeField>(summaryFieldMap);
-        } else
-            fields = question.getSummaryAttributeFieldMap();
+        } else fields = question.getSummaryAttributeFieldMap();
         return fields;
     }
 
@@ -1092,8 +1065,7 @@ public class AnswerValue {
         Map<String, AttributeField> fields = question.getAttributeFieldMap();
         for (String attributeName : attributeNames) {
             AttributeField field = fields.get(attributeName);
-            if (field != null)
-                summaryFields.put(attributeName, field);
+            if (field != null) summaryFields.put(attributeName, field);
         }
         summaryFieldMap.clear();
         summaryFieldMap.putAll(summaryFields);
@@ -1114,10 +1086,8 @@ public class AnswerValue {
         List<Object[]> buffer = new ArrayList<Object[]>();
 
         ResultList resultList;
-        if (filter == null)
-            resultList = idsQueryInstance.getResults();
-        else
-            resultList = filter.getResults(this);
+        if (filter == null) resultList = idsQueryInstance.getResults();
+        else resultList = filter.getResults(this);
 
         while (resultList.next()) {
             Object[] pkValues = new String[columns.length];
@@ -1137,8 +1107,7 @@ public class AnswerValue {
             AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
             String questionName = question.getFullName();
             answer = answerFactory.getAnswer(questionName, getChecksum());
-            if (answer == null)
-                answer = answerFactory.saveAnswerValue(this);
+            if (answer == null) answer = answerFactory.saveAnswerValue(this);
         }
         return answer;
     }
@@ -1181,8 +1150,7 @@ public class AnswerValue {
         if (filterName != null) {
             RecordClass recordClass = question.getRecordClass();
             setFilter(recordClass.getFilter(filterName));
-        } else
-            this.filter = null;
+        } else this.filter = null;
     }
 
     /**
@@ -1227,7 +1195,8 @@ public class AnswerValue {
                 }
                 pkValues.add(values);
             }
-        } finally {
+        }
+        finally {
             SqlUtils.closeResultSet(resultSet);
         }
         return pkValues;
@@ -1236,8 +1205,7 @@ public class AnswerValue {
     public boolean isUseBooleanFilter() {
         if (idsQueryInstance instanceof BooleanQueryInstance) {
             return ((BooleanQueryInstance) idsQueryInstance).isUseBooleanFilter();
-        } else
-            return false;
+        } else return false;
     }
 
     public void setPageIndex(int startIndex, int endIndex) {
