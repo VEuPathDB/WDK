@@ -388,9 +388,11 @@ public class AnswerValueBean {
 
     /**
      * @return
+     * @throws WdkModelException 
+     * @throws WdkUserException 
      * @see org.gusdb.wdk.model.AnswerValue#getSortingAttributeNames()
      */
-    public String[] getSortingAttributeNames() {
+    public String[] getSortingAttributeNames() throws WdkUserException, WdkModelException {
         Map<String, Boolean> sortingFields = answerValue.getSortingMap();
         String[] array = new String[sortingFields.size()];
         sortingFields.keySet().toArray(array);
@@ -399,9 +401,11 @@ public class AnswerValueBean {
 
     /**
      * @return
+     * @throws WdkModelException 
+     * @throws WdkUserException 
      * @see org.gusdb.wdk.model.AnswerValue#getSortingAttributeOrders()
      */
-    public boolean[] getSortingAttributeOrders() {
+    public boolean[] getSortingAttributeOrders() throws WdkUserException, WdkModelException {
         Map<String, Boolean> sortingFields = answerValue.getSortingMap();
         boolean[] array = new boolean[sortingFields.size()];
         int index = 0;
