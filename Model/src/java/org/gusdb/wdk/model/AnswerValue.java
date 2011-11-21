@@ -105,7 +105,6 @@ public class AnswerValue {
     private Map<String, Integer> resultSizesByFilter = new LinkedHashMap<String, Integer>();
     private Map<String, Integer> resultSizesByProject;
 
-    private Map<String, Boolean> sortingMap;
     private Map<String, AttributeField> summaryFieldMap;
 
     private AnswerFilterInstance filter;
@@ -115,6 +114,8 @@ public class AnswerValue {
     // ------------------------------------------------------------------
 
     /**
+     * FIXME - sortingMap is deprecated, it will be retrieved on the fly.
+     * 
      * @param question
      *            The <code>Question</code> to which this is the
      *            <code>Answer</code>.
@@ -146,8 +147,6 @@ public class AnswerValue {
         this.endIndex = endIndex;
 
         // get sorting columns
-        if (sortingMap == null) sortingMap = question.getSortingAttributeMap();
-        this.sortingMap = sortingMap;
         this.summaryFieldMap = new LinkedHashMap<String, AttributeField>();
 
         // get the view
@@ -180,8 +179,6 @@ public class AnswerValue {
             this.resultSizesByProject = new LinkedHashMap<String, Integer>(
                     answerValue.resultSizesByProject);
 
-        this.sortingMap = new LinkedHashMap<String, Boolean>(
-                answerValue.sortingMap);
         this.summaryFieldMap = new LinkedHashMap<String, AttributeField>(
                 answerValue.summaryFieldMap);
         this.filter = answerValue.filter;
@@ -846,8 +843,7 @@ public class AnswerValue {
         Map<String, String> queryNames = new LinkedHashMap<String, String>();
         Map<String, String> orderClauses = new LinkedHashMap<String, String>();
         WdkModel wdkModel = question.getWdkModel();
-        String questionName = question.getFullName();
-        Map<String, Boolean> sortingMap = user.getSortingAttributes(questionName);
+        Map<String, Boolean> sortingMap = getSortingMap();
         logger.debug("sorting map: " + sortingMap);
         for (String fieldName : sortingMap.keySet()) {
             AttributeField field = fields.get(fieldName);
@@ -990,11 +986,12 @@ public class AnswerValue {
 
     public Map<String, Boolean> getSortingMap() throws WdkUserException,
             WdkModelException {
-        if (sortingMap == null) {
-            sortingMap = (user == null) ? question.getSortingAttributeMap()
-                    : user.getSortingAttributes(question.getFullName());
-        }
-        return new LinkedHashMap<String, Boolean>(sortingMap);
+        Map<String, Boolean> sortingMap;
+        if (user == null) sortingMap = question.getSortingAttributeMap();
+        else sortingMap = user.getSortingAttributes(question.getFullName());
+        if (sortingMap == null)
+            sortingMap = new LinkedHashMap<String, Boolean>();
+        return sortingMap;
     }
 
     public List<AttributeField> getDisplayableAttributes() {
