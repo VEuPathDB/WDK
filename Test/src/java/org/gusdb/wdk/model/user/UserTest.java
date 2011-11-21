@@ -5,13 +5,21 @@ package org.gusdb.wdk.model.user;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Random;
 
+import org.gusdb.wdk.model.AttributeField;
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.UnitTestHelper;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
 
 /**
  * @author xingao
@@ -53,7 +61,8 @@ public class UserTest {
             User user = userFactory.getUserByEmail(email);
             // user exists, delete first
             userFactory.deleteUser(user.getEmail());
-        } catch (WdkUserException ex) {
+        }
+        catch (WdkUserException ex) {
             // user doesn't exist do nothing
         }
 
@@ -89,7 +98,8 @@ public class UserTest {
         User user;
         try {
             user = userFactory.getUserByEmail(email);
-        } catch (WdkUserException ex) {
+        }
+        catch (WdkUserException ex) {
             // user doesn't exist, create it
             user = userFactory.createUser(email, "Test", "User", null, null,
                     null, null, null, null, null, null, null, null, null, null);
@@ -101,22 +111,40 @@ public class UserTest {
         try {
             userFactory.getUserByEmail(email);
             Assert.assertFalse("User still exists", true);
-        } catch (WdkUserException ex) {
+        }
+        catch (WdkUserException ex) {
             // expected, user, doesn't exist
         }
     }
-    
+
     @Test
-    public void testGlobalPreference() {
+    public void testAddSortingAttributes() throws Exception {
+        User user = UnitTestHelper.getRegisteredUser();
+        Question question = UnitTestHelper.getNormalQuestion();
+        String questionName = question.getFullName();
+        AttributeField[] attributes = question.getRecordClass().getAttributeFields();
+        Map<String, Boolean> columns = user.getSortingAttributes(questionName);
         
-        
-        
-        Assert.assertTrue(false);
-    }
-    
-    @Test
-    public void testProjectPreference() {
-        
-        Assert.assertTrue(false);
+        int length = Math.min(Utilities.SORTING_LEVEL, attributes.length);
+        Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            String attrName = attributes[i].getName();
+            boolean order = random.nextBoolean();
+            user.addSortingAttribute(questionName, attrName, order);
+            columns = user.getSortingAttributes(questionName);
+            Assert.assertTrue(columns.size() > i);
+            Assert.assertEquals(attrName, columns.keySet().iterator().next());
+            Assert.assertEquals(order, columns.get(attrName));
+        }
+
+        for (int i = length -1 ; i >=0; i--) {
+            String attrName = attributes[i].getName();
+            boolean order = random.nextBoolean();
+            user.addSortingAttribute(questionName, attrName, order);
+            columns = user.getSortingAttributes(questionName);
+            Assert.assertEquals(length, columns.size());
+            Assert.assertEquals(attrName, columns.keySet().iterator().next());
+            Assert.assertEquals(order, columns.get(attrName));
+        }
     }
 }
