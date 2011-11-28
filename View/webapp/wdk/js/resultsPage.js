@@ -286,11 +286,17 @@ function openAdvancedPaging(element){
 }
 
 function openAttributeList(element){
-    var button = $(element);
-
-    // TODO - need to have jstree survive on clone()
-    button.next(".attributesList").dialog();
-
+    var list = $(element).next(".attributesList");
+    if (list.length > 0) {
+        var id = "dialog" + Math.floor(Math.random() * 1000000000);
+        $(element).attr("dialog", id);
+        list.attr("id", id).dialog({
+            autoOpen: false
+        });
+    }
+    var id = $(element).attr("dialog");
+    list = $("#" + id);
+    list.dialog("open");
 }
 
 function closeAttributeList(element){
