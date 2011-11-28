@@ -1,0 +1,24 @@
+digraph g {
+
+node [shape=box, style=filled ];
+q1 [fillcolor="lightblue1", label="Query" ];
+q2 [fillcolor="pink1", label="Query" ];
+qi1 [fillcolor="lightblue1", label="QueryInstance" ];
+qi2 [fillcolor="pink1", label="QueryInstance" ];
+q3 [fillcolor="yellow1", label="Query" ];
+qi3 [fillcolor="yellow1", label="QueryInstance" ];
+
+
+b1  [label="BooleanQueryInstance type=\"OR\"" , fillcolor="palegreen3"];
+b2  [label="BooleanQueryInstance type=\"AND\"" , fillcolor="palegreen1"];
+
+qi1 -> q1;
+qi2 -> q2;
+qi3 -> q3;
+b1 -> qi1 [label="operand1"];
+b1 -> qi2  [label="operand2"];
+
+b2-> b1  [label="operand1"];
+b2 -> qi3  [label="operand2"];
+
+}
