@@ -1050,7 +1050,7 @@ public class User /* implements Serializable */{
 
     public String addSortingAttribute(String questionFullName, String attrName,
             boolean ascending) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException {
+            NoSuchAlgorithmException, JSONException, SQLException {
         Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>();
         sortingMap.put(attrName, ascending);
         Map<String, Boolean> previousMap = getSortingAttributes(questionFullName);
@@ -1066,6 +1066,13 @@ public class User /* implements Serializable */{
         String sortingChecksum = queryFactory.makeSortingChecksum(sortingMap);
 
         applySortingChecksum(questionFullName, sortingChecksum);
+
+        // update cached step if needed
+        if (cachedStep != null
+                && cachedStep.getQuestionName().equals(questionFullName)) {
+            cachedStep.getAnswerValue().setSortingMap(sortingMap);
+        }
+
         return sortingChecksum;
     }
 
@@ -1130,8 +1137,6 @@ public class User /* implements Serializable */{
         // }
         // }
 
-        if (summaryChecksum == null || summaryChecksum.length() == 0)
-            setSummaryAttributes(questionFullName, summary);
         return summary;
     }
 
@@ -1143,25 +1148,17 @@ public class User /* implements Serializable */{
 
     public String setSummaryAttributes(String questionFullName,
             String[] summaryNames) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException {
+            NoSuchAlgorithmException, JSONException, SQLException {
         // make sure all the attribute names exist
         Question question = (Question) wdkModel.resolveReference(questionFullName);
         Map<String, AttributeField> attributes = question.getAttributeFieldMap();
 
         // instead throwing out an error, just ignore the invalid columns
-        // for (String summaryName : summaryNames) {
-        // if (!attributes.containsKey(summaryName))
-        // throw new WdkModelException("Invalid summary attribute ["
-        // + summaryName + "] for question [" + questionFullName
-        // + "]");
-        // }
-
         List<String> validNames = new ArrayList<String>();
         for (String name : summaryNames) {
             if (attributes.containsKey(name)) validNames.add(name);
         }
-        summaryNames = new String[validNames.size()];
-        validNames.toArray(summaryNames);
+        summaryNames = validNames.toArray(new String[0]);
 
         logger.debug("Saving Valid summary names: " + validNames);
         // create checksum
@@ -1169,6 +1166,12 @@ public class User /* implements Serializable */{
         String summaryChecksum = queryFactory.makeSummaryChecksum(summaryNames);
 
         applySummaryChecksum(questionFullName, summaryChecksum);
+
+        // update cached step if needed
+        if (cachedStep != null
+                && cachedStep.getQuestionName().equals(questionFullName)) {
+            cachedStep.getAnswerValue().setSummaryAttributes(summaryNames);
+        }
 
         return summaryChecksum;
     }

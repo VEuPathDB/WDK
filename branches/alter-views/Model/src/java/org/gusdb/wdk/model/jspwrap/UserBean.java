@@ -845,12 +845,14 @@ public class UserBean /* implements Serializable */{
      * @throws WdkUserException
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
+     * @throws SQLException 
+     * @throws JSONException 
      * @see org.gusdb.wdk.model.user.User#addSortingAttribute(java.lang.String,
      *      java.lang.String, boolean)
      */
     public String addSortingAttribute(String questionFullName, String attrName,
             boolean ascending) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException {
+            NoSuchAlgorithmException, JSONException, SQLException {
         return user.addSortingAttribute(questionFullName, attrName, ascending);
     }
 
@@ -1053,12 +1055,14 @@ public class UserBean /* implements Serializable */{
      * @throws WdkUserException
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
+     * @throws SQLException 
+     * @throws JSONException 
      * @see org.gusdb.wdk.model.user.User#setSummaryAttribute(java.lang.String,
      *      java.lang.String[])
      */
     public String setSummaryAttributes(String questionFullName,
             String[] summaryNames) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException {
+            NoSuchAlgorithmException, JSONException, SQLException {
         return user.setSummaryAttributes(questionFullName, summaryNames);
     }
 
