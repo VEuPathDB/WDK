@@ -1,0 +1,75 @@
+#!/usr/bin/perl
+
+use strict;
+use Getopt::Long;
+use Time::Local;
+use FgpUtil::Log::SlowQueryReport;
+
+my ($threshold, $genepage, $notgenepage, $time_filter, $sort_column, $plotOutputFile, $logTailSize, $logDeathImmunity, $debug);
+
+$sort_column=2;
+&GetOptions('s=s' => \$threshold,
+	    'g' => \$genepage,
+	    'n' => \$notgenepage,
+	    't=s' => \$time_filter,
+	    'c=s' => \$sort_column,
+	    'p=s' => \$plotOutputFile,
+	    'l=s' => \$logTailSize,
+	    'i' => \$logDeathImmunity,
+            'd' => \$debug,
+	   );
+
+
+my $parseLogRecord = sub {
+  my ($logRecord) = @_;
+
+  my $reject = 0;
+
+# 89468376 [WARN ] org.gusdb.wdk.model.dbms.SqlUtils:324 - 130.91.178.191 - [27/Sep/2010:11:24:05 -0400] SLOW SQL [GeneVQ.DomainDatabase-uncached-result]: 11.295 seconds.
+
+  $reject = 1 unless $logRecord =~ /SLOW SQL/;
+  $reject = 1 if $logRecord =~ /\=\=/;  # some lines in the log are mangled, with missing newlines
+                                        # the symptom is that the next log entry is mashed in
+                                        # these are delimited by ========, so dodge that
+  $reject = 1 if ($genepage && !$logRecord =~ /GeneTables/);
+  $reject = 1 if ($notgenepage && $logRecord =~ /GeneTables/);
+  chomp($logRecord);
+
+  my ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $seconds, $timestamp);
+  if (/(\d+) \[WARN \] (.*):(\d+) - ([0-9.]*) - \[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d) (.+)\] .*SLOW SQL \[(.*)\]: ([0-9.]*) seconds/) {
+    ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $seconds) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
+
+    my $monthNumber = index("JanFebMarAprMayJunJulAugSepOctNovDec", $mon) / 3;
+    $timestamp = timegm($sec, $min, $hour, $day, $monthNumber, $year - 1900);
+  } else {
+    $reject = 1;
+  }
+
+  return ($reject, $timestamp, $seconds, $name);
+};
+
+FgpUtil::Log::SlowQueryReport::makeReport($parseLogRecord, $time_filter, $plotOutputFile, $sort_column, $logTailSize, $logDeathImmunity, $threshold, $debug);
+
+sub usage {
+  print STDERR "
+
+Print a report summarizing the gbrowse slow query logs.
+
+Takes one or more logs on standard input.
+
+usage:  gbrowseSlowQueryReport [-s secs] [-g] [-n] [-t starttime[,endtime]] [-c colnum] [-p plotOutputFile] -d
+
+where:
+  -s:  slowness threshold in seconds.  run times over secs are reported in Slow columns
+  -g:  genepage only flag. only include queries logged with \"GENEPAGE\"
+  -n:  not-genepage flag. complementary to -g flag (only non-genepage queries)
+  -t:  time filter (use seconds since epoch, which is a column in gbrowse log)
+  -c:  column to sort on (default is 2, the total time)
+  -p:  optional output file: a tab delimited file to pass as input
+        to wdkSlowQueryPlot.  Used to visualize the query durations over time.
+  -l:  log tail size -- number of records of access log to analyze for
+  -d:  print debugging info
+
+";
+  exit(1);
+}
