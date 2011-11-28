@@ -1011,15 +1011,27 @@ public class AnswerValue {
             sortingMap = question.getSortingAttributeMap();
         }
         // make sure all sorting columns exist
+        StringBuilder buffer = new StringBuilder("set sorting: ");
         Map<String, AttributeField> attributes = question.getAttributeFieldMap();
+        Map<String, Boolean> validMap = new LinkedHashMap<String, Boolean>();
         for (String attributeName : sortingMap.keySet()) {
-            if (!attributes.containsKey(attributeName))
-                throw new WdkModelException("the assigned sorting attribute ["
-                        + attributeName + "] doesn't exist in the answer of "
-                        + "question " + question.getFullName());
+            buffer.append(attributeName + "=" + sortingMap.get(attributeName) + ", ");
+            // if a sorting attribute is invalid, instead of throwing out an
+            // exception, ignore it.
+            if (!attributes.containsKey(attributeName)) {
+                // throw new WdkModelException("the assigned sorting attribute ["
+                //          + attributeName + "] doesn't exist in the answer of "
+                //          + "question " + question.getFullName());
+                logger.debug("Invalid sorting attribute: User #" + user.getUserId() 
+                    + ", question: '" + question.getFullName() + "', attribute: '"
+                    + attributeName + "'");
+            } else {
+                validMap.put(attributeName, sortingMap.get(attributeName));
+            }
         }
+        logger.debug(buffer);
         this.sortingMap.clear();
-        this.sortingMap.putAll(sortingMap);
+        this.sortingMap.putAll(validMap);
 
         this.pagedIdSql = null;
         this.pageRecordInstances = null;

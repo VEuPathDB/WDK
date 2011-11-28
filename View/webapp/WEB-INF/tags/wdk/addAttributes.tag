@@ -18,15 +18,7 @@
 
 <input type="button" onclick="openAttributeList(this);" class="addAttributesButton" value="Select Columns" />
 
-<div class="attributesList formPopup">
-  <span class="dragHandle">
-  	<div class="modal_name">
-		<h1 style="font-size:130%;margin-top:4px;" id="query_form_title">Select Columns</h1>
-  	</div>
-  	<a class='close_selcolwindow' href='javascript:void(0);' onclick='closeAttributeList(this);'>
-		<img src="<c:url value='/wdk/images/Close-X-box.png'/>" alt='Close'/>
-  	</a>
-  </span>
+<div class="attributesList formPopup" title="Select Columns">
 
   <div class="attributesFormWrapper">
   <form action="javascript:void(0);" onSubmit="updateAttrs(this,'${commandUrl}')">

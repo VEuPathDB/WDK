@@ -4,12 +4,12 @@
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
 
+
 <%@ attribute name="step"
               type="org.gusdb.wdk.model.jspwrap.StepBean"
               required="true"
               description="Step bean we are looking at"
 %>
-
 
 
 <c:set var="wdkAnswer" value="${step.answerValue}"/>
@@ -19,6 +19,7 @@
 <c:set var="recHasBasket" value="${wdkAnswer.question.recordClass.useBasket}" />
 <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
 <c:set var="answerRecords" value="${wdkAnswer.records}" />
+<c:set var="wdkView" value="${requestScope.wdkView}" />
 
 
 <jsp:useBean id="typeMap" class="java.util.HashMap"/>
@@ -46,6 +47,7 @@
   </c:if>
 
 <%--------- PAGING TOP BAR ----------%>
+<c:url var="commandUrl" value="/processSummaryView.do?step=${step.stepId}&view=${wdkView.name}" />
 <table width="100%" border="0" cellpadding="3" cellspacing="0">
 	<tr class="subheaderrow">
 	<th style="text-align: left;white-space:nowrap;"> 
