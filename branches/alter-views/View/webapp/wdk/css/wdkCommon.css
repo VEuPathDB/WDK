@@ -448,7 +448,7 @@ div.Workspace {
    /* z-index was 50 originally, then moved to 16 so "Select columns" popup covered the
       steps in the strategy but still is under DYK at 180.  Changed to 185 so Columns pop-up
       appeared over DYK. */
-   z-index: 185;
+   /*z-index: 185; */
 }
 
 span.marker a:link, span.marker a:visited {

@@ -34,13 +34,14 @@ public class ShowSummaryViewAction extends Action {
     public static final String PARAM_VIEW = "view";
     
     public static final String ATTR_STEP = "wdkStep";
+    public static final String ATTR_VIEW = "wdkView";
 
     private static final Logger logger = Logger.getLogger(ShowSummaryViewAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        logger.debug("Entering ShowResultAction");
+        logger.debug("Entering ShowSummaryViewAction");
 
         // get step
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
@@ -57,12 +58,18 @@ public class ShowSummaryViewAction extends Action {
         String viewName = request.getParameter(PARAM_VIEW);
         WdkView view;
         if (viewName == null || viewName.length() == 0) {
-            view = question.getDefaultSummaryView();
+            view = wdkUser.getCurrentSummaryView();
+            if (view == null) view = question.getDefaultSummaryView();
         } else {
             Map<String, WdkView> views = question.getSummaryViews();
             view = views.get(viewName);
+            if (view == null)
+                throw new WdkUserException("Invalid view name: '" + view + "'");
+
+            wdkUser.setCurrentSummaryView(question, view);
         }
-        wdkUser.setCurrentSummaryView(question, view);
+        logger.debug("summary view: " + view.getName());
+        request.setAttribute(ATTR_VIEW, view);
 
         ProcessPaging(request, step);
 
@@ -93,7 +100,7 @@ public class ShowSummaryViewAction extends Action {
             forward = new ActionForward(view.getJsp());
         }
 
-        logger.debug("Leaving ShowResultAction");
+        logger.debug("Leaving ShowSummaryViewAction");
         return forward;
     }
 
