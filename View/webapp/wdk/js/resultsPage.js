@@ -83,6 +83,10 @@ function updateAttrs(attrSelector, commandUrl) {
         attributes.push(this.value);
     });
     var url = commandUrl + "&command=update&attribute=" + attributes.join("&attribute=");
+    
+    // close the dialog
+    form.parents(".attributesList").dialog("close");
+
     updateResultsPage(form, url, true);
 }
 
@@ -94,10 +98,11 @@ function resetAttr(url, button) {
 }
 
 function updateResultsPage(element, url, update) {
-    if (element.parents("#strategy_results").length > 0) {
-            GetResultsPage(url, update, true);
-    }
-    else {
+    // determine whether to refresh strategy result or basket result
+    var tab = $("#strategy_tabs > li#selected > a").attr("id");
+    if (tab == "tab_strategy_results") {
+        GetResultsPage(url, update, true);
+    } else if (tab == "tab_basket") {
         ChangeBasket(url + "&results_only=true");
     }
 }
@@ -283,14 +288,9 @@ function openAdvancedPaging(element){
 function openAttributeList(element){
     var button = $(element);
 
-    var popup = button.next(".attributesList");    
+    // TODO - need to have jstree survive on clone()
+    button.next(".attributesList").dialog();
 
-    // Position the popup.
-    var left = $(window).width()/2 - popup.width()/2 + $(window).scrollLeft();
-    var top = $(window).scrollTop() - button.offset().top + 200;
-    popup.css({'display' : 'block',
-               'top' : top + 'px',
-               'left' : left + 'px'});
 }
 
 function closeAttributeList(element){

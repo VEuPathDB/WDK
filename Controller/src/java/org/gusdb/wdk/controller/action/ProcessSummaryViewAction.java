@@ -27,28 +27,26 @@ import org.gusdb.wdk.model.user.User;
  * @author Jerric
  * 
  */
-public class UpdateResultAction extends Action {
+public class ProcessSummaryViewAction extends Action {
 
     private static final String PARAM_STEP = "step";
-    private static final String PARAM_STRATEGY = "strategy";
     private static final String PARAM_VIEW = "view";
     private static final String PARAM_COMMAND = "command";
     private static final String PARAM_ATTRIBUTE = "attribute";
     private static final String PARAM_SORT_ORDER = "sortOrder";
      
-    private static final String FORWARD_SHOW_RESULT = "show-result";
+    private static final String FORWARD_SHOW_SUMMARY_VIEW = "show-summary-view";
 
-    private static Logger logger = Logger.getLogger(UpdateResultAction.class);
+    private static Logger logger = Logger.getLogger(ProcessSummaryViewAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        logger.debug("Entering UpdateResultAction...");
+        logger.debug("Entering ProcessSummaryViewAction...");
 
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
 
-        String strategyId = request.getParameter(PARAM_STRATEGY);
         String stepId = request.getParameter(PARAM_STEP);
         String view = request.getParameter(PARAM_VIEW);
         String command = request.getParameter(PARAM_COMMAND);
@@ -189,10 +187,10 @@ public class UpdateResultAction extends Action {
         StringBuffer url = new StringBuffer();
         if (!fromBasket) {
             // construct url to show summary action
-            ActionForward showSummary = mapping.findForward(FORWARD_SHOW_RESULT);
-            url.append(showSummary.getPath());
-            url.append("?strategy=").append(strategyId);
-            url.append("&step=").append(stepId);
+            ActionForward showSummaryView = mapping.findForward(FORWARD_SHOW_SUMMARY_VIEW);
+            logger.debug("forward: " + showSummaryView);
+            url.append(showSummaryView.getPath());
+            url.append("?step=").append(stepId);
             url.append("&view=").append(view);
         } else {
             ActionForward showBasket = mapping.findForward(CConstants.PQ_SHOW_BASKET_MAPKEY);

@@ -93,7 +93,7 @@ $(function() {
 
 
 <div id="Summary_Views" strategy="${strategy.strategyId}" step="${step.stepId}"
-     updateUrl="<c:url value='/updateResult.do' />">
+     updateUrl="<c:url value='/processSummaryView.do' />">
   <c:set var="question" value="${wdkStep.question}" />
   <c:set var="views" value="${question.summaryViews}" />
   <jsp:setProperty name="wdkUser" property="currentQuestion" value="${question}" />
