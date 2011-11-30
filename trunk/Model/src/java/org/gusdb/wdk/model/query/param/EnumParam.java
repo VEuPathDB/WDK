@@ -36,7 +36,8 @@ public class EnumParam extends AbstractEnumParam {
 
     protected synchronized void initVocabMap() throws WdkModelException {
         Param dependedParam = getDependedParam();
-        if (termInternalMap != null && dependedParam == null) return;
+        if (termInternalMap != null && termInternalMap.size() > 0
+                && (dependedParam == null || !isDependedValueChanged())) return;
 
         termInternalMap = new LinkedHashMap<String, String>();
         termDisplayMap = new LinkedHashMap<String, String>();
@@ -163,8 +164,10 @@ public class EnumParam extends AbstractEnumParam {
      */
     @Override
     protected void appendJSONContent(JSONObject jsParam, boolean extra) {
-    // do nothing. do not add the enum list into the content, since they may be
-    // changed between versions, but we don't want to invalidate a query because
-    // of it.
+        // do nothing. do not add the enum list into the content, since they may
+        // be
+        // changed between versions, but we don't want to invalidate a query
+        // because
+        // of it.
     }
 }

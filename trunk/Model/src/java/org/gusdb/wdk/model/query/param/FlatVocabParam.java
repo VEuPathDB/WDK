@@ -114,7 +114,7 @@ public class FlatVocabParam extends AbstractEnumParam {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         Param dependedParam = getDependedParam();
-        if (termInternalMap != null
+        if (termInternalMap != null && termInternalMap.size() > 0
                 && (dependedParam == null || !isDependedValueChanged()))
             return;
 
