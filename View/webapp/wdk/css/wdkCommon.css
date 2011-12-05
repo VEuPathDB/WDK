@@ -365,7 +365,7 @@ tr.lines {
 	background-color: #FFFFFF;
 }
 
-tr.linesalt {
+tr.linesalt > td {
 	background-color: #DDDDDD;
 }
 
