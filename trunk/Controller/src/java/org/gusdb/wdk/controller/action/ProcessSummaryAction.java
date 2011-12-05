@@ -194,6 +194,8 @@ public class ProcessSummaryAction extends Action {
             url.append(showSummary.getPath());
             url.append("?");
             url.append(queryString);
+            // don't skip to the record page
+            url.append("&noskip=1&resultsOnly=true");
         } else {
             ActionForward showBasket = mapping.findForward(CConstants.PQ_SHOW_BASKET_MAPKEY);
             url.append(showBasket.getPath());
