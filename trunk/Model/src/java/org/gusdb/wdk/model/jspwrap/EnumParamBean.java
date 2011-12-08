@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.wdk.model.TreeLeaf;
 import org.gusdb.wdk.model.TreeNode;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -139,7 +138,7 @@ public class EnumParamBean extends ParamBean {
     	TreeNode root = new TreeNode(getName(), "top");
     	for (EnumParamTermNode paramNode : getVocabTreeRoots()) {
     		if (paramNode.getChildren().length == 0) {
-    			root.addLeafNode(new TreeLeaf(paramNode.getTerm(), paramNode.getDisplay(), paramNode.getDisplay()));
+    			root.addChildNode(new TreeNode(paramNode.getTerm(), paramNode.getDisplay(), paramNode.getDisplay()));
     		}
     		else {
     			root.addChildNode(paramNode.toTreeNode());

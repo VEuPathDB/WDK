@@ -4,16 +4,29 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class TreeNode {
-
+	
+	enum BoolField {
+		SELECTED, DEFAULT;
+	}
+	
 	private boolean _openByDefault = false;
 	private String _name;
 	private String _displayName;
+	private String _help;
+	private boolean[] _booleanFields = new boolean[BoolField.values().length];
 	private List<TreeNode> _childNodes = new ArrayList<TreeNode>();
-	private List<TreeLeaf> _leafNodes = new ArrayList<TreeLeaf>();
 	
 	public TreeNode(String name, String displayName) {
+		this(name, displayName, "");
+	}
+
+	public TreeNode(String name, String displayName, String help) {
 		_name = name;
 		_displayName = displayName;
+		_help = help;
+		for (int i = 0; i < _booleanFields.length; i++) {
+			_booleanFields[i] = false;
+		}
 	}
 	
 	public void setOpenByDefault(boolean openByDefault) {
@@ -29,6 +42,12 @@ public class TreeNode {
 	public String getDisplayName() {
 		return _displayName;
 	}
+	public String getHelp() {
+		return _help;
+	}
+	public boolean getIsLeaf() {
+		return _childNodes.isEmpty();
+	}
 	
 	public void addChildNode(TreeNode child) {
 		_childNodes.add(child);
@@ -37,64 +56,102 @@ public class TreeNode {
 		return _childNodes;
 	}
 	
-	public void addLeafNode(TreeLeaf leaf) {
-		_leafNodes.add(leaf);
-	}
-	public List<TreeLeaf> getLeafNodes() {
-		return _leafNodes;
+	public List<TreeNode> getNonLeafNodes() {
+		return getByIfLeaf(false);
 	}
 
+	public List<TreeNode> getLeafNodes() {
+		return getByIfLeaf(true);
+	}
+	
+	private List<TreeNode> getByIfLeaf(boolean ifLeaf) {
+		List<TreeNode> nodes = new ArrayList<TreeNode>();
+		for (TreeNode node : _childNodes) {
+			if (node.getIsLeaf() == ifLeaf) {
+				nodes.add(node);
+			}
+		}
+		return nodes;
+	}
+
+	public void setSelected(boolean isSelected) {
+		_booleanFields[BoolField.SELECTED.ordinal()] = isSelected;
+	}
+	public boolean getSelected() {
+		return _booleanFields[BoolField.SELECTED.ordinal()];
+	}
+
+	public void setIsDefault(boolean isDefault) {
+		_booleanFields[BoolField.DEFAULT.ordinal()] = isDefault;
+	}
+	public boolean getIsDefault() {
+		return _booleanFields[BoolField.DEFAULT.ordinal()];
+	}
+	
+	public void setBoolField(BoolField fieldId, boolean value) {
+		_booleanFields[fieldId.ordinal()] = value;
+	}
+	public boolean getBoolField(BoolField fieldId) {
+		return _booleanFields[fieldId.ordinal()];
+	}
+	
 	public void turnOnSelectedLeaves(List<String> selectedList) {
-		setBooleansToTrue(TreeLeaf.BoolField.SELECTED, selectedList);
+		setBooleansToTrue(BoolField.SELECTED, selectedList);
 	}
 	public void turnOnAllLeaves() {
-		setAllBooleansToTrue(TreeLeaf.BoolField.SELECTED);
+		setAllBooleansToTrue(BoolField.SELECTED);
 	}
 	public String getSelectedAsList() {
-		return getNamesOfLeavesWithBoolean(TreeLeaf.BoolField.SELECTED, true);
+		return getNamesOfLeavesWithBoolean(BoolField.SELECTED, true);
 	}
 	
 	public void setDefaultLeaves(List<String> defaultList) {
-		setBooleansToTrue(TreeLeaf.BoolField.DEFAULT, defaultList);
+		setBooleansToTrue(BoolField.DEFAULT, defaultList);
 	}
 	public void setAllOnAsDefault() {
-		setAllBooleansToTrue(TreeLeaf.BoolField.DEFAULT);
+		setAllBooleansToTrue(BoolField.DEFAULT);
 	}
 	public String getDefaultAsList() {
-		return getNamesOfLeavesWithBoolean(TreeLeaf.BoolField.DEFAULT, true);
+		return getNamesOfLeavesWithBoolean(BoolField.DEFAULT, true);
 	}
 	
-	private void setBooleansToTrue(TreeLeaf.BoolField fieldId, List<String> names) {
+	private void setBooleansToTrue(BoolField fieldId, List<String> names) {
 		for (TreeNode node : _childNodes) {
-			node.setBooleansToTrue(fieldId, names);
-		}
-		for (TreeLeaf leaf : _leafNodes) {
-			if (names.contains(leaf.getName())) {
-				leaf.setBoolField(fieldId, true);
+			if (node.getIsLeaf()) {
+				if (names.contains(node.getName())) {
+					node.setBoolField(fieldId, true);
+				}
+			}
+			else {
+				node.setBooleansToTrue(fieldId, names);
 			}
 		}
 	}
 	
-	private void setAllBooleansToTrue(TreeLeaf.BoolField fieldId) {
+	private void setAllBooleansToTrue(BoolField fieldId) {
 		for (TreeNode node : _childNodes) {
-			node.setAllBooleansToTrue(fieldId);
-		}
-		for (TreeLeaf leaf : _leafNodes) {
-			leaf.setBoolField(fieldId, true);
+			if (node.getIsLeaf()) {
+				node.setBoolField(fieldId, true);
+			}
+			else {
+				node.setAllBooleansToTrue(fieldId);
+			}
 		}
 	}
 	
-	private String getNamesOfLeavesWithBoolean(TreeLeaf.BoolField fieldId, boolean value) {
+	private String getNamesOfLeavesWithBoolean(BoolField fieldId, boolean value) {
 		StringBuilder str = new StringBuilder();
-		for (TreeLeaf leaf : _leafNodes) {
-			if (leaf.getBoolField(fieldId) == value) {
-				str.append(",'").append(leaf.getName().replace("'", "\\'")).append("'");
-			}
-		}
 		for (TreeNode node : _childNodes) {
-			String namesFromChild = node.getNamesOfLeavesWithBoolean(fieldId, value);
-			if (namesFromChild.length() > 0) {
-				str.append(",").append(namesFromChild);
+			if (node.getIsLeaf()) {
+				if (node.getBoolField(fieldId) == value) {
+					str.append(",'").append(node.getName().replace("'", "\\'")).append("'");
+				}
+			}
+			else {
+				String namesFromChild = node.getNamesOfLeavesWithBoolean(fieldId, value);
+				if (namesFromChild.length() > 0) {
+					str.append(",").append(namesFromChild);
+				}
 			}
 		}
 		String all = str.toString();
@@ -105,14 +162,16 @@ public class TreeNode {
 	}
 	
 	public boolean getIsAllSelected() {
-		for (TreeLeaf leaf : _leafNodes) {
-			if (!leaf.getSelected()) {
-				return false;
-			}
-		}
 		for (TreeNode node : _childNodes) {
-			if (!node.getIsAllSelected()) {
-				return false;
+			if (node.getIsLeaf()) {
+				if (!node.getSelected()) {
+					return false;
+				}
+			}
+			else {
+				if (!node.getIsAllSelected()) {
+					return false;
+				}
 			}
 		}
 		return true;
@@ -120,6 +179,9 @@ public class TreeNode {
 	
 	@Override
 	public String toString() {
+		if (getIsLeaf()) {
+			return leafToString();
+		}
 		return toString("");
 	}
 	
@@ -130,17 +192,35 @@ public class TreeNode {
 			.append(IND).append("TreeNode {").append(NL)
 			.append(IND).append("  Name: ").append(_name).append(NL)
 			.append(IND).append("  DisplayName: ").append(_displayName).append(NL)
-			.append(IND).append("  LeafNodes:").append(NL);
-		for (TreeLeaf leaf : _leafNodes) {
-			str.append(IND).append("    ").append(leaf).append(NL);
+			.append(IND).append("  Leaves:").append(NL);
+		for (TreeNode node : _childNodes) {
+			if (node.getIsLeaf()) {
+				str.append(IND).append("    ").append(node).append(NL);
+			}
 		}
 		str.append(IND).append("  Children {").append(NL);
 		for (TreeNode child : _childNodes) {
-			str.append(child.toString(IND + "    "));
+			if (!child.getIsLeaf()) {
+				str.append(child.toString(IND + "    "));
+			}
 		}
 		str.append(IND).append("  }").append(NL)
 		   .append(IND).append("}").append(NL);
 		return str.toString();
 	}
 	
+	public String leafToString() {
+		StringBuilder str = new StringBuilder()
+			.append("Leaf { name: \"").append(_name)
+			.append("\", displayName: \"").append(_displayName)
+			.append("\", help: ").append(_help == null ? "null" : _help.length() + " chars")
+			.append(", bools: ");
+		boolean first = true;
+		for (BoolField field : BoolField.values()) {
+			str.append(first ? "{ " : ", "); first = false;
+			str.append(field.name().toLowerCase()).append(": ").append(_booleanFields[field.ordinal()]);
+		}
+		str.append(" } }");
+		return str.toString();
+	}
 }
