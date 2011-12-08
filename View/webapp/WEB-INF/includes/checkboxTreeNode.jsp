@@ -2,19 +2,40 @@
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
 <%-- Take recursive variable and set locally to maintain call stack state --%>
-<c:set var="node" value="${recurse_term_node}"/>
+<c:set var="node" value="${recurseTermNode}"/>
 
 <a href="#" style="cursor:default"><span style="cursor:text">${node.displayName}</span></a>
 <ul>
-  <c:forEach var="childNode" items="${node.childNodes}">
-    <li id="${childNode.name}">
-      <c:set var="recurse_term_node" value="${childNode}" scope="request"/>
-      <c:import url="/WEB-INF/includes/checkboxTreeNode.jsp"/>
-    </li>
-  </c:forEach>
-  <c:forEach var="leaf" items="${node.leafNodes}">
-    <li class="jstree-leaf" rel="leaf" id="${leaf.name}">
-      <a href="#" style="cursor:default"><c:if test="${useHelpParam}"><label for="${leaf.name}" title="${leaf.help}"></c:if><span style="cursor:text">${leaf.displayName}</span><c:if test="${useHelpParam}"></label></c:if></a>
-    </li>
-  </c:forEach>
+  
+  <!-- Pushes leaves to the 'bottom' at each level of the tree -->
+  <c:if test="${segregateLeavesParam}">
+	  <c:forEach var="nonLeafNode" items="${node.nonLeafNodes}">
+	    <li id="${nonLeafNode.name}">
+	      <c:set var="recurseTermNode" value="${nonLeafNode}" scope="request"/>
+	      <c:import url="/WEB-INF/includes/checkboxTreeNode.jsp"/>
+	    </li>
+	  </c:forEach>
+	  <c:forEach var="leafNode" items="${node.leafNodes}">
+	    <li class="jstree-leaf" rel="leaf" id="${leafNode.name}">
+	      <a href="#" style="cursor:default"><c:if test="${useHelpParam}"><label for="${leafNode.name}" title="${leafNode.help}"></c:if><span style="cursor:text">${leafNode.displayName}</span><c:if test="${useHelpParam}"></label></c:if></a>
+	    </li>
+	  </c:forEach>
+	</c:if>
+	
+	<!-- Uses straight ordering of nodes (potentially mixing leaf and non-leaf nodes together) -->
+	<c:if test="${not segregateLeavesParam}">
+    <c:forEach var="childNode" items="${node.childNodes}">
+      <c:if test="${childNode.isLeaf}">
+        <li class="jstree-leaf" rel="leaf" id="${childNode.name}">
+          <a href="#" style="cursor:default"><c:if test="${useHelpParam}"><label for="${childNode.name}" title="${childNode.help}"></c:if><span style="cursor:text">${childNode.displayName}</span><c:if test="${useHelpParam}"></label></c:if></a>
+        </li>
+      </c:if>
+      <c:if test="${not childNode.isLeaf}">
+        <li id="${childNode.name}">
+          <c:set var="recurseTermNode" value="${childNode}" scope="request"/>
+          <c:import url="/WEB-INF/includes/checkboxTreeNode.jsp"/>
+        </li>
+      </c:if>
+    </c:forEach>
+	</c:if>
 </ul>
