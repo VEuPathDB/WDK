@@ -970,7 +970,7 @@ ul.menubar {
 }
 
 table.history_controls {
-  display:inline-block;
+//  display:inline-block;
  font-size:130%;
    font-weight:bold;
    padding:3px 0px;
@@ -984,11 +984,7 @@ table.history_controls {
   width:200px;
 }
 #invalid-legend{
-  position:relative;
-  float:right;
-  right:13px;
-  top:4px;
-  display:inline;
+    font-weight:normal;
 }
 #strategy_messages {
   min-height:100px;
