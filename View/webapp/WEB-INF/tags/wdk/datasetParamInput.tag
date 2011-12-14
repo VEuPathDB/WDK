@@ -94,7 +94,12 @@ function chooseType(paramName, type) {
     <c:if test="${qp.recordClass.useBasket}">	
     <!-- display option to use basket snapshot -->
     <tr>
-        <c:set var="basketCount" value="${wdkUser.basketCounts[qp.recordClass.fullName]}" />
+        <c:set var="basketCount" value="${0}" />
+        <c:forEach items="${wdkUser.basketCounts}" var="item">
+          <c:if test="${item.key.fullName eq qp.recordClass.fullName}">
+            <c:set var="basketCount" value="${item.value}" />
+          </c:if>
+        </c:forEach>
         <c:set var="disabled">
             <c:if test="${basketCount == 0}">disabled</c:if>
         </c:set>
