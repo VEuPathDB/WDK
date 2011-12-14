@@ -15,7 +15,7 @@ function moveAttr(col_ix, table) {
     if ($(table).parents("#strategy_results").length > 0) {
         var step = $("div.selected");
         var stepfId = step.attr("id").split('_')[1];
-        var stratfId = step.parent().parent().attr("id");
+        var stratfId = step.parents(".diagram").attr("id");
         stratfId = stratfId.substring(stratfId.indexOf('_') + 1);
         strat = getStrategy(stratfId).backId;
         step = getStep(stratfId, stepfId).back_step_Id;
