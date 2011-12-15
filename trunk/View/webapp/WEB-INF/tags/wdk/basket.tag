@@ -17,7 +17,7 @@
 
 <c:choose>
   <c:when test="${total > 0}">
-    <div id="basket-menu" class="tabs">
+    <div style="border:none" id="basket-menu" class="tabs">
       <ul>
         <c:set var="index" value="${0}" />
         <c:forEach items="${baskets}" var="item">
