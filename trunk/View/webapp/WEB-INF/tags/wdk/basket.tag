@@ -15,9 +15,14 @@
   <wdk:basketControls />
 </div>
 
+<!-- the order of tabs is determined in apicommonmodel.xml -->
 <c:choose>
   <c:when test="${total > 0}">
     <div style="border:none" id="basket-menu" class="tabs">
+
+<p style="font-size:80%;font-style:italic;margin-bottom:7px"><b>Note on invalid IDs:</b> Changes that occur between database releases might invalidate some of the IDs in your Baskets. 
+<br>We will map your old IDs to new IDs. Those IDs that could not be mapped to a new ID will not be included in your basket.</p>
+
       <ul>
         <c:set var="index" value="${0}" />
         <c:forEach items="${baskets}" var="item">

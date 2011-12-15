@@ -597,6 +597,11 @@ tr.headerRow > td,th {
       = Basket Tab Styles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+#basket-menu .ui-tabs-panel{
+	border-width:1px;
+	padding:0;
+}
+
 #basket #basket-control-panel { display: none; }
 
 #basket table#basket-control {
