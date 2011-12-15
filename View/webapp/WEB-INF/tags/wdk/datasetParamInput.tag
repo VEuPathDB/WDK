@@ -62,6 +62,7 @@ function chooseType(paramName, type) {
 <c:set var="dataChecked"><c:if test="${defaultType == 'data'}">checked</c:if></c:set>
 <c:set var="fileChecked"><c:if test="${defaultType == 'file'}">checked</c:if></c:set>
 <c:set var="basketChecked"><c:if test="${defaultType == 'basket'}">checked</c:if></c:set>
+<c:set var="noAction" value="${requestScope.action == null || requestScope.action == ''}" />
 
 <input type="hidden" id="${pNam}_type" name="${pNam}_type" value="${defaultType}" />
 
@@ -120,7 +121,7 @@ function chooseType(paramName, type) {
         </tr>
     </c:if>
 
-    <c:if test="${defaultType != 'basket'}">
+    <c:if test="${defaultType != 'basket' && noAction}">
         <!-- display an input box and upload file button -->
         <tr class="dataset-file">
             <td align="left" valign="top">
