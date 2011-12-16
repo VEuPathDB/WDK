@@ -30,11 +30,10 @@
   <thead>
   <tr class="headerrow">
     <th scope="col" style="width: 25px;">&nbsp;</th>
-    <%-- th scope="col" style="width: 20px;">&nbsp;</th --%>
     <th class="sortable" scope="col">
       <c:if test="${prefix != null}">${prefix}&nbsp;</c:if>Strategies&nbsp;(${fn:length(strategies)})
     </th>
-    <th scope="sortable" style="width: 3em;">&nbsp;</th>
+    <th scope="col" style="width: 3em;">&nbsp;</th>
     <th scope="col" style="width: 4em">&nbsp;</th>
     <th scope="col" style="width: 9em">&nbsp;</th>
     <th class="sortable" scope="col" style="width: 5em;text-align:center">Created</th>
@@ -44,7 +43,6 @@
         <c:otherwise>Last Modified</c:otherwise>
       </c:choose>
     </th>
-<%--     <th scope="col" style="width: 5em;text-align:center">Last Opened</th> --%>
     <th class="sortable" scope="col" style="width: 4em" title="It refers to the Website Version. See the Version number of this current release on the top left side of the header, on the right of the site name">Version</th>
     <th class="sortable" scope="col" style="width: 4em;text-align:right">Size</th>
     <th>&nbsp;&nbsp;</th>
