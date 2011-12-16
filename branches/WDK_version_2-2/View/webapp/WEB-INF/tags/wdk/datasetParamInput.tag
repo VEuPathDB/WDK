@@ -116,7 +116,7 @@ function chooseType(paramName, type) {
         </tr>
     </c:if>
 
-    <c:if test="${defaultType != 'basket'i && noAction}">
+    <c:if test="${defaultType != 'basket' && noAction}">
         <!-- display an input box and upload file button -->
         <tr class="dataset-file">
             <td align="left" valign="top">
