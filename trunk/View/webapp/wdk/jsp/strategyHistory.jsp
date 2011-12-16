@@ -11,7 +11,7 @@ $(document).ready(function() {
         "bScrollCollapse": true,
         "aoColumns": [ { "bSortable": false }, 
                        null, 
-                       null,
+                       { "bSortable": false },
                        { "bSortable": false },
                        { "bSortable": false },
                        null, 

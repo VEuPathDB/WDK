@@ -24,9 +24,17 @@
 <span style="display:none" id="totalStrategyCount">${user.strategyCount}</span>
 <c:choose>
   <c:when test="${user == null || user.strategyCount == 0}">
-  <div style="font-size:120%;line-height:1.2em;text-indent:10em;padding:0.5em">You have no search strategies in your history. <p style="text-indent:10em;">Please run a search to start a strategy.</p></div>
+  <div style="font-size:120%;line-height:1.2em;text-indent:10em;padding:0.5em">You have no search strategies in your history. <p style="text-indent:10em;">Maybe you need to login? Otherwise please run a search to start a strategy.</p></div>
   </c:when>
   <c:otherwise>
+
+<!--
+<ul style="font-style:italic;margin-bottom:7px;border:1px solid black"><b>Note on new releases:</b> Changes might affect your steps in two ways:
+<li>- <b>Steps results may vary</b> (different set of IDs returned) because all steps are rerun with the new data,
+<li>- A step will become invalid if <b>we modify the search form</b>, either by adding a new parameter, or changing the parameter values: <b>you will need to revise the step</b>
+</ul>
+-->
+
   <c:set var="typeC" value="0"/>
   <!-- begin creating tabs for history sections -->
   <ul class="menubar">
