@@ -598,7 +598,7 @@ tr.headerRow > td,th {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #basket-menu .ui-tabs-panel{
-	border-width:1px;
+	border-width:0 1px 1px;
 	padding:0;
 }
 
