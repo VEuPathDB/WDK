@@ -55,12 +55,7 @@
   <%-- begin of forEach strategy in the category --%>
   <c:forEach items="${strategies}" var="strategy">
     <c:set var="strategyId" value="${strategy.strategyId}"/>
-    <c:choose>
-      <c:when test="${i % 2 == 0}">
-		<tr class="lines"></c:when>
-      <c:otherwise>
-		<tr class="linesalt"></c:otherwise> 
-    </c:choose>
+   <tr>
       <td scope="row"><input type=checkbox id="${strategyId}" onclick="updateSelectedList()"/></td>
       <%-- need to see if this strategy id is in the session. --%>
       <c:set var="active" value=""/>
