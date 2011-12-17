@@ -31,7 +31,7 @@
 <!--
 <ul style="font-style:italic;margin-bottom:7px;border:1px solid black"><b>Note on new releases:</b> Changes might affect your steps in two ways:
 <li>- <b>Steps results may vary</b> (different set of IDs returned) because all steps are rerun with the new data,
-<li>- A step will become invalid if <b>we modify the search form</b>, either by adding a new parameter, or changing the parameter values: <b>you will need to revise the step</b>
+<li>- A step will become invalid if <b>we modify the search form</b>, either by adding a new parameter, or changing parameter values: <b>you will need to revise the step</b>
 </ul>
 -->
 
@@ -90,7 +90,8 @@
          <input type="button" value="Delete" onclick="handleBulkStrategies('delete')"/>
       </td>
 <td width="50%" style="text-align:right">
-<div id="invalid-legend"><img src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/> = strategy contains outdated steps, open to revise</div>
+<div title="Upon a new release, a step will become invalid if we modify the search form, either by adding a new parameter, or changing parameter values; you need to revise the step!"
+	id="invalid-legend"><img src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/> = strategy contains outdated steps, open to revise</div>
 </td>
 
    </tr>
