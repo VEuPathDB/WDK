@@ -156,7 +156,7 @@
 	 <img class="group-handle" src='<c:url value="wdk/images/${image}" />'/>
    	 <span title="This name will be the name of the step.">Give this search a name</span>
   </div>
-  <c:set var="customName" value="${wdkStep.baseCustomName}" />
+ 
   <div class="group-detail" style="display:${display};text-align:center">
     <div class="group-description">
       <p><html:text property="customName" maxlength="15" value="${customName}" />  </p>
