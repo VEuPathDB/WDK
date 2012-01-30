@@ -20,9 +20,7 @@
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.blockUI.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.cookie.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.dataTables-1.8.1.min.js'/>"></script>
-<script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.tooltip-1.3.min.js'/>"></script>
-
-<script type="text/javascript" src="<c:url value='/wdk/js/lib/jstree/jquery.jstree.js'/>"></script>
+<script type="text/javascript" src="wdk/js/lib/jstree/jquery.jstree.js"></script>
 
 <%-- styles for JS libraries --%>
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/jquery.multiSelect.css' />"/>
