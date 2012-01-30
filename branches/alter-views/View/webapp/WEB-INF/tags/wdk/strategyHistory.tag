@@ -24,9 +24,17 @@
 <span style="display:none" id="totalStrategyCount">${user.strategyCount}</span>
 <c:choose>
   <c:when test="${user == null || user.strategyCount == 0}">
-  <div style="font-size:120%;line-height:1.2em;text-indent:10em;padding:0.5em">You have no search strategies in your history. <p style="text-indent:10em;">Please run a search to start a strategy.</p></div>
+  <div style="font-size:120%;line-height:1.2em;text-indent:10em;padding:0.5em">You have no search strategies in your history. <p style="text-indent:10em;">Maybe you need to login? Otherwise please run a search to start a strategy.</p></div>
   </c:when>
   <c:otherwise>
+
+<!--
+<ul style="font-style:italic;margin-bottom:7px;border:1px solid black"><b>Note on new releases:</b> Changes might affect your steps in two ways:
+<li>- <b>Steps results may vary</b> (different set of IDs returned) because all steps are rerun with the new data,
+<li>- A step will become invalid if <b>we modify the search form</b>, either by adding a new parameter, or changing parameter values: <b>you will need to revise the step</b>
+</ul>
+-->
+
   <c:set var="typeC" value="0"/>
   <!-- begin creating tabs for history sections -->
   <ul class="menubar">
@@ -70,21 +78,26 @@
   </li> --%>
   </ul>
 
-<table class="history_controls clear">
+<table class="history_controls clear" width="100%">
    <tr>
-      <td>Select:&nbsp;<a class="check_toggle" onclick="selectAllHist()" href="javascript:void(0)">All</a>&nbsp|&nbsp;
+      <td width="30%">Select:&nbsp;<a class="check_toggle" onclick="selectAllHist()" href="javascript:void(0)">All</a>&nbsp|&nbsp;
                   <a class="check_toggle" onclick="selectAllHist('saved')" href="javascript:void(0)">Saved</a>&nbsp|&nbsp;
                   <a class="check_toggle" onclick="selectAllHist('unsaved')" href="javascript:void(0)">Unsaved</a>&nbsp|&nbsp;
                   <a class="check_toggle" onclick="selectNoneHist()" href="javascript:void(0)">None</a></td>
-      <td class="medium">
+      <td width="20%" class="medium">
          <input type="button" value="Open" onclick="handleBulkStrategies('open')"/>
          <input type="button" value="Close" onclick="handleBulkStrategies('close')"/>
          <input type="button" value="Delete" onclick="handleBulkStrategies('delete')"/>
       </td>
+<td width="50%" style="text-align:right">
+<div title="Upon a new release, a step will become invalid if we modify the search form, either by adding a new parameter, or changing parameter values; you need to revise the step!"
+	id="invalid-legend"><img src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/> = strategy contains outdated steps, open to revise (<a style="" href="<c:url value="/whyInvalid.jsp"/>" target="_blank" onClick="poptastic(this.href); return false;">why?</a>)</div>
+</td>
+
    </tr>
 </table>
 
-<div id="invalid-legend"><img src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/> = strategy contains outdated steps, open to revise</div>
+
 
 <!-- begin creating history sections to display strategies -->
 <c:forEach items="${unsavedStrategiesMap}" var="strategyEntry">

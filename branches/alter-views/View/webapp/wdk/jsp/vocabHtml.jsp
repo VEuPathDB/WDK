@@ -10,5 +10,13 @@ HTML for Ajax dependent params
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
 <c:set var="qP" value="${requestScope.vocabParam}" />
+<c:set var="useHtmlFormWrapper" value="${qP.displayType ne 'treeBox'}"/>
 
-<wdk:enumParamInput qp="${qP}" />
+<c:if test="${useHtmlFormWrapper}">
+  <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processQuestion.do">
+    <wdk:enumParamInput qp="${qP}" />
+  </html:form>
+</c:if>
+<c:if test="${not useHtmlFormWrapper}">
+  <wdk:enumParamInput qp="${qP}" />
+</c:if>

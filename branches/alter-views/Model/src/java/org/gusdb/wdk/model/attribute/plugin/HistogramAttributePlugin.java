@@ -76,6 +76,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
                     "wdk-attribute-histogram-" + attributeField.getName());
             while (resultSet.next()) {
                 String column = resultSet.getString(attributeColumn);
+                if (column == null) column = "";
                 int summary = resultSet.getInt(COLUMN_SUMMARY);
                 summaries.put(column, summary);
             }

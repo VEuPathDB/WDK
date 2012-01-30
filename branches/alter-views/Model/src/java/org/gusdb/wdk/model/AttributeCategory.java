@@ -81,7 +81,7 @@ public class AttributeCategory extends WdkModelBase {
 			node.addChildNode(cat.toTreeNode());
 		}
 		for (AttributeField attrib : fields) {
-			node.addLeafNode(new TreeLeaf(attrib.getName(), attrib.getDisplayName(), attrib.getHelp()));
+			node.addChildNode(new TreeNode(attrib.getName(), attrib.getDisplayName(), attrib.getHelp()));
 		}
 		return node;
 	}

@@ -40,7 +40,8 @@ public class EnumParam extends AbstractEnumParam {
 
     protected synchronized void initVocabMap() throws WdkModelException {
         Param dependedParam = getDependedParam();
-        if (termInternalMap != null && dependedParam == null) return;
+        if (termInternalMap != null && termInternalMap.size() > 0
+                && (dependedParam == null || !isDependedValueChanged())) return;
 
         termInternalMap = new LinkedHashMap<String, String>();
         termDisplayMap = new LinkedHashMap<String, String>();
