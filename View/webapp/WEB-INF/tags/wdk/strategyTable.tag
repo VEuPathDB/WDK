@@ -30,11 +30,10 @@
   <thead>
   <tr class="headerrow">
     <th scope="col" style="width: 25px;">&nbsp;</th>
-    <%-- th scope="col" style="width: 20px;">&nbsp;</th --%>
     <th class="sortable" scope="col">
       <c:if test="${prefix != null}">${prefix}&nbsp;</c:if>Strategies&nbsp;(${fn:length(strategies)})
     </th>
-    <th scope="sortable" style="width: 3em;">&nbsp;</th>
+    <th scope="col" style="width: 3em;">&nbsp;</th>
     <th scope="col" style="width: 4em">&nbsp;</th>
     <th scope="col" style="width: 9em">&nbsp;</th>
     <th class="sortable" scope="col" style="width: 5em;text-align:center">Created</th>
@@ -44,7 +43,6 @@
         <c:otherwise>Last Modified</c:otherwise>
       </c:choose>
     </th>
-<%--     <th scope="col" style="width: 5em;text-align:center">Last Opened</th> --%>
     <th class="sortable" scope="col" style="width: 4em" title="It refers to the Website Version. See the Version number of this current release on the top left side of the header, on the right of the site name">Version</th>
     <th class="sortable" scope="col" style="width: 4em;text-align:right">Size</th>
     <th>&nbsp;&nbsp;</th>
@@ -57,12 +55,7 @@
   <%-- begin of forEach strategy in the category --%>
   <c:forEach items="${strategies}" var="strategy">
     <c:set var="strategyId" value="${strategy.strategyId}"/>
-    <c:choose>
-      <c:when test="${i % 2 == 0}">
-		<tr class="lines"></c:when>
-      <c:otherwise>
-		<tr class="linesalt"></c:otherwise> 
-    </c:choose>
+   <tr>
       <td scope="row"><input type=checkbox id="${strategyId}" onclick="updateSelectedList()"/></td>
       <%-- need to see if this strategy id is in the session. --%>
       <c:set var="active" value=""/>

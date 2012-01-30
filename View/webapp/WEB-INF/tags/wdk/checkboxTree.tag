@@ -67,8 +67,6 @@
 <c:if test="${empty useHelp}">
   <c:set var="useHelp" value="false"/>
 </c:if>
-<%-- must set as a request scope var so included jsp has access --%>
-<c:set var="useHelpParam" value="${useHelp}" scope="request"/>
 
 <%@ attribute name="leafImage"
               required="false"
@@ -79,6 +77,21 @@
   <c:set var="leafImage" value="/wdk/js/lib/jstree/graphFileIcon-16x16.gif"/>
   <%--<c:set var="leafImage" value="/wdk/js/lib/jstree/clear2x16.gif"/>--%>
 </c:if>
+
+<%@ attribute name="segregateLeaves"
+              required="false"
+              type="java.lang.Boolean"
+              description="if true, push leaf nodes to the 'bottom' at each level of the tree; else (default) maintain TreeNode ordering"%>
+    
+<c:if test="${empty segregateLeaves}">
+  <c:set var="segregateLeaves" value="false"/>
+</c:if>
+
+<%-- Must set the following as request scope vars so included jsp has access (unset at bottom) --%>
+
+<c:set var="recurseTermNode" value="${rootNode}" scope="request"/>
+<c:set var="useHelpParam" value="${useHelp}" scope="request"/>
+<c:set var="segregateLeavesParam" value="${segregateLeaves}" scope="request"/>
 
 <!-- JSTree/Checkbox configuration -->
 <script type="text/javascript">
@@ -102,7 +115,6 @@
   | <a class="small" href="javascript:void(0)" onclick="cbt_selectDefaultNodes('${id}');">reset to default</a>
 </div>
 <div class="checkbox-tree" id="${id}" style="display:none">
-  <c:set var="recurse_term_node" value="${rootNode}" scope="request"/>
   <c:import url="/WEB-INF/includes/checkboxTreeNode.jsp" />
 </div>
 <div class="formButtonPanel" style="text-align:${buttonAlignment}">
@@ -118,4 +130,6 @@
   | <a class="small" href="javascript:void(0)" onclick="cbt_selectDefaultNodes('${id}');">reset to default</a>
 </div>
 
-<c:remove var="recurse_term_node"/>
+<c:remove var="recurseTermNode"/>
+<c:remove var="useHelpParam"/>
+<c:remove var="segregateLeavesParam"/>

@@ -39,3 +39,14 @@ table.datatables tr.odd { background-color: #EEEEFF; }
 table.datatables tr.even { background-color: #FFFFFF; }
 
 
+
+.ui-widget-header {
+    padding:3px;
+    font-weight:normal;
+}
+
+.ui-widget {
+    font-family: Arial,Helvetica,sans-serif;
+}
+
+

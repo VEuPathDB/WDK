@@ -99,8 +99,7 @@
                 <c:set var="hasBasket" value="${false}" />
                 <c:forEach items="${user.basketCounts}" var="item">
                     <c:set var="count" value="${item.value}" />
-                    <c:set var="rcName" value="${item.key}" />
-
+                    <c:set var="rcName" value="${item.key.fullName}" />
                     <c:if test="${count > 0 
                                   && ((stepRcName eq rcName) 
                                       || ((rcName eq 'GeneRecordClasses.GeneRecordClass' 

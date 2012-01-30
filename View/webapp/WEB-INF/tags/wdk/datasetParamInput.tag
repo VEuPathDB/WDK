@@ -62,6 +62,7 @@ function chooseType(paramName, type) {
 <c:set var="dataChecked"><c:if test="${defaultType == 'data'}">checked</c:if></c:set>
 <c:set var="fileChecked"><c:if test="${defaultType == 'file'}">checked</c:if></c:set>
 <c:set var="basketChecked"><c:if test="${defaultType == 'basket'}">checked</c:if></c:set>
+<c:set var="noAction" value="${requestScope.action == null || requestScope.action == ''}" />
 
 <input type="hidden" id="${pNam}_type" name="${pNam}_type" value="${defaultType}" />
 
@@ -94,7 +95,12 @@ function chooseType(paramName, type) {
     <c:if test="${qp.recordClass.useBasket}">	
     <!-- display option to use basket snapshot -->
     <tr>
-        <c:set var="basketCount" value="${wdkUser.basketCounts[qp.recordClass.fullName]}" />
+        <c:set var="basketCount" value="${0}" />
+        <c:forEach items="${wdkUser.basketCounts}" var="item">
+          <c:if test="${item.key.fullName eq qp.recordClass.fullName}">
+            <c:set var="basketCount" value="${item.value}" />
+          </c:if>
+        </c:forEach>
         <c:set var="disabled">
             <c:if test="${basketCount == 0}">disabled</c:if>
         </c:set>
@@ -115,7 +121,7 @@ function chooseType(paramName, type) {
         </tr>
     </c:if>
 
-    <c:if test="${defaultType != 'basket'}">
+    <c:if test="${defaultType != 'basket' && noAction}">
         <!-- display an input box and upload file button -->
         <tr class="dataset-file">
             <td align="left" valign="top">

@@ -110,6 +110,42 @@ table.paneltoggle {
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 =favorites.tag
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+table.mytableStyle {
+	empty-cells:show;
+	border-width:1px;
+	border-style:solid;	  
+	border-color:black;
+	border-collapse:collapse; 
+	table-layout: auto;      
+}
+tr.mytdStyle {
+	text-align:center;
+
+}
+tr.mythStyle {
+	background-color:lightgrey;
+	text-align:center;
+	font-weight:bold;
+}
+td.mythStyle,td.mytdStyle,th.mythStyle {
+	vertical-align:middle;
+	border-width:1px;
+	border-style:inset;
+	border-color:gray;
+	-moz-border-radius:0px;
+	padding:3px;
+}
+th.mythStyle {
+	font-weight:bold;
+	background-color:lightgrey;
+	border-bottom: 3px solid grey;
+}
+
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      = jquery validation plugin messages
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 label.error {
@@ -375,7 +411,7 @@ tr.lines {
 	background-color: #FFFFFF;
 }
 
-tr.linesalt {
+tr.linesalt > td {
 	background-color: #DDDDDD;
 }
 
@@ -606,6 +642,11 @@ tr.headerRow > td,th {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       = Basket Tab Styles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+#basket-menu .ui-tabs-panel{
+	border-width:0 1px 1px;
+	padding:0;
+}
 
 #basket #basket-control-panel { display: none; }
 
