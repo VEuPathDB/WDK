@@ -42,7 +42,7 @@
     <c:set var="title" value="Group IDs together to work with them. You can add IDs from a result, or from a details page." />
     <c:set var="href" value="javascript:void(0)" />
   </c:when>
-  <c:when test="${refer == 'customSummary'}">
+  <c:when test="${refer == 'summary'}">
     <c:set var="clickEvent" value="showPanel('basket');" />
     <c:set var="title" value="Group IDs together to later make a step in a strategy." />
     <c:set var="href" value="javascript:void(0)" />
