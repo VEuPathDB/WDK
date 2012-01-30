@@ -135,7 +135,7 @@ public class EnumParamBean extends ParamBean {
         TreeNode root = new TreeNode(getName(), "top");
         for (EnumParamTermNode paramNode : getVocabTreeRoots()) {
             if (paramNode.getChildren().length == 0) {
-                root.addLeafNode(new TreeLeaf(paramNode.getTerm(),
+                root.addChildNode(new TreeNode(paramNode.getTerm(),
                         paramNode.getDisplay(), paramNode.getDisplay()));
             } else {
                 root.addChildNode(paramNode.toTreeNode());
