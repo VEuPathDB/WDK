@@ -23,6 +23,7 @@
 <script type="text/javascript" src="wdk/js/lib/jstree/jquery.jstree.js"></script>
 
 <%-- styles for JS libraries --%>
+<link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/ui-custom/custom-theme/jquery-ui-1.8.16.custom.css' />"/>
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/jquery.multiSelect.css' />"/>
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/datatables.css' />"/>
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/jquery.tooltip-1.3.css' />"/>
