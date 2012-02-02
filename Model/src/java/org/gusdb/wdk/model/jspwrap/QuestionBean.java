@@ -272,6 +272,10 @@ public class QuestionBean {
         return question.getSummary();
     }
 
+    public String getCustomJavascript() {
+    	return question.getCustomJavascript();
+    }
+    
     /*
      * (non-Javadoc)
      * 

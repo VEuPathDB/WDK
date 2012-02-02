@@ -67,6 +67,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     private boolean fullAnswer = false;
 
+    private String customJavascriptFile;
+    
     private List<AttributeList> attributeLists = new ArrayList<AttributeList>();
 
     private String[] defaultSummaryAttributeNames;
@@ -130,6 +132,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
         this.noSummaryOnSingleRecord = question.noSummaryOnSingleRecord;
         this.shortDisplayName = question.shortDisplayName;
+        this.customJavascriptFile = question.customJavascriptFile;
 
         this.paramRefs = new ArrayList<ParamReference>(question.paramRefs);
 
@@ -188,6 +191,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         this.category = category;
     }
 
+    public void setCustomJavascript(String customJavascript) {
+    	this.customJavascriptFile = customJavascript;
+    }
+    
     public void addAttributeList(AttributeList attributeList) {
         this.attributeLists.add(attributeList);
     }
@@ -348,6 +355,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         return displayName;
     }
 
+    public String getCustomJavascript() {
+    	return customJavascriptFile;
+    }
+    
     /**
      * @deprecated
      */
