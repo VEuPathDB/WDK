@@ -1,4 +1,4 @@
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
@@ -55,7 +55,7 @@
                             <tr>
                                 <td>
                                     <%-- simple question --%>
-                                    <wdk:showParams step="${step}" />
+                                    <imp:showParams step="${step}" />
                                 </td>
                             </tr>
                  </table>

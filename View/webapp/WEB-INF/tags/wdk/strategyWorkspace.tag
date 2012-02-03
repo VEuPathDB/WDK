@@ -1,5 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <%@ attribute name="includeDYK"
@@ -17,7 +17,7 @@
       <div class="innertube">
 
 <c:if test="${includeDYK}">
-  <wdk:dyk />
+  <imp:dyk />
 </c:if>
 
 <script type="text/javascript">

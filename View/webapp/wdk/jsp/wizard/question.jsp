@@ -2,8 +2,7 @@
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
-<%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <c:set var="wdkQuestion" value="${requestScope.question}"/>
 <c:set var="spanOnly" value="false"/>
@@ -53,7 +52,7 @@
 <c:set var="currentStepId" value="${newStepId - 1}" />
 
 
-<wdk:parameterScript />
+<imp:parameterScript />
 
 
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
@@ -77,8 +76,7 @@
 
 <c:if test="${param.stage ne 'basket'}">
 <c:set var="Question_Footer" scope="request">
-	<%-- displays question description, use site tag until we know how to override a wdk tag by the custom one --%>
-   	<site:questionDescription />
+    <imp:questionDescription />
 </c:set>
 </c:if>
 
@@ -102,7 +100,7 @@ ${Question_Header}
   </span>
   <br><br>
 
-  <wdk:questionForm />
+  <imp:questionForm />
 </div>
 
 
@@ -127,7 +125,7 @@ ${Question_Header}
       <div style="text-align:center" id="operations">
 
 <%-- operators table --%>
-<wdk:operators  allowSpan="${allowSpan}"
+<imp:operators  allowSpan="${allowSpan}"
 		operation="${param.operation}"
                 spanStage="span_from_question"
 />
