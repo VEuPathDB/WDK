@@ -12,7 +12,7 @@ Otherwise a standard select menu is used.
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <%@ attribute name="qp"
               type="org.gusdb.wdk.model.jspwrap.EnumParamBean"
@@ -87,7 +87,7 @@ Otherwise a standard select menu is used.
     
       <c:if test="${qp.useCheckboxTree}">
         <div class="param-tree ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
-          <wdk:checkboxTree id="${pNam}CBT" rootNode="${qP.paramTree}" checkboxName="array(${pNam})" buttonAlignment="left"/>
+          <imp:checkboxTree id="${pNam}CBT" rootNode="${qP.paramTree}" checkboxName="array(${pNam})" buttonAlignment="left"/>
         </div>
       </c:if>
       

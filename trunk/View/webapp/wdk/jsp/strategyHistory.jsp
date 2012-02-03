@@ -1,4 +1,4 @@
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <c:set var="wdkModel" value="${applicationScope.wdkModel}" />
@@ -24,4 +24,4 @@ $(document).ready(function() {
 } );
 </script>
 
-<wdk:strategyHistory model="${wdkModel}" user="${wdkUser}" />
+<imp:strategyHistory model="${wdkModel}" user="${wdkUser}" />
