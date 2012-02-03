@@ -1,7 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <jsp:useBean id="idgen" class="org.gusdb.wdk.model.jspwrap.NumberUtilBean" scope="application" />
 
@@ -36,11 +36,11 @@
     <c:if test="${wdkAnswer.useCheckboxTree}">
       <c:set var="checkboxTreeId" value="sfcbt-${wdkAnswer.recordClass.name}-${idgen.nextId}"/>
       <input type="checkbox" name="selectedFields" value="${wdkAnswer.recordClass.primaryKeyAttribute.name}" checked="checked" style="display:none;"/>
-      <wdk:checkboxTree id="${checkboxTreeId}" rootNode="${wdkAnswer.displayableAttributeTree}" checkboxName="selectedFields" showSelectAll="false" showResetCurrent="true" useHelp="true"/>
+      <imp:checkboxTree id="${checkboxTreeId}" rootNode="${wdkAnswer.displayableAttributeTree}" checkboxName="selectedFields" showSelectAll="false" showResetCurrent="true" useHelp="true"/>
     </c:if>
     <c:if test="${not wdkAnswer.useCheckboxTree}">
 	    <div class="formButtonPanel">
-	      <wdk:selectClearAll groupName="selectedFields" />
+	      <imp:selectClearAll groupName="selectedFields" />
 	    </div>
 		  <c:set var="allAttributes" value="${wdkAnswer.displayableAttributes}" />
     	<c:set var="i" value="0"/>
@@ -77,7 +77,7 @@
         </tr>
       </table>
       <div class="formButtonPanel">
-        <wdk:selectClearAll groupName="selectedFields" />
+        <imp:selectClearAll groupName="selectedFields" />
       </div>
     </c:if>
     <div class="formButtonPanel">

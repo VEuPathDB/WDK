@@ -1,7 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="pg" uri="http://jsptags.com/tags/navigation/pager" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <c:set var="wdkAnswer" value="${wdkStep.answerValue}"/>
 <c:set var="qName" value="${wdkAnswer.question.fullName}" />
@@ -19,7 +19,7 @@
 
 <jsp:useBean id="typeMap" class="java.util.HashMap"/>
 <c:set target="${typeMap}" property="singular" value="${wdkStep.displayType}"/>
-<wdk:getPlural pluralMap="${typeMap}"/>
+<imp:getPlural pluralMap="${typeMap}"/>
 <c:set var="type" value="${typeMap['plural']}"/>
 
 <c:set var="qsp" value="${fn:split(wdk_query_string,'&')}" />
@@ -49,7 +49,7 @@
 <c:set var="commandUrl"><c:url value="/processSummary.do?${commandUrl}" /></c:set>
 
 <c:if test="${strategy != null}">
-    <wdk:filterLayouts strategyId="${strategy.strategyId}" 
+    <imp:filterLayouts strategyId="${strategy.strategyId}" 
                        stepId="${wdkStep.stepId}"
                        answerValue="${wdkAnswer}" />
 </c:if>
@@ -122,10 +122,10 @@
 <table width="100%" border="0" cellpadding="3" cellspacing="0">
 	<tr class="subheaderrow">
 	<th style="text-align: left;white-space:nowrap;"> 
-	       <wdk:pager wdkAnswer="${wdkAnswer}" pager_id="top"/> 
+	       <imp:pager wdkAnswer="${wdkAnswer}" pager_id="top"/> 
 	</th>
 	<th style="text-align: right;white-space:nowrap;">
-               <wdk:addAttributes wdkAnswer="${wdkAnswer}" commandUrl="${commandUrl}"/>
+               <imp:addAttributes wdkAnswer="${wdkAnswer}" commandUrl="${commandUrl}"/>
 	</th>
   <%-- remove Reset button when new tree structure is activated --%>
   <c:if test="${not wdkAnswer.useCheckboxTree}">
@@ -255,7 +255,7 @@
           </td>
         </c:if>
           <td>
-              <wdk:attributePlugin attribute="${sumAttrib}" />
+              <imp:attributePlugin attribute="${sumAttrib}" />
           </td>
          </tr>
       </table>
@@ -375,7 +375,7 @@
 <table width="100%" border="0" cellpadding="3" cellspacing="0">
 	<tr class="subheaderrow">
 	<th style="text-align:left;white-space:nowrap;"> 
-	       <wdk:pager wdkAnswer="${wdkAnswer}" pager_id="bottom"/> 
+	       <imp:pager wdkAnswer="${wdkAnswer}" pager_id="bottom"/> 
 	</th>
 	<th style="text-align:right;white-space:nowrap;">
 		&nbsp;

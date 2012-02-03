@@ -1,3 +1,3 @@
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
-<wdk:questionForm />
+<imp:questionForm />

@@ -1,6 +1,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <c:set var="wdkUser" value="${sessionScope.wdkUser}" />
 <c:set var="baskets" value="${requestScope.baskets}" />
@@ -12,7 +12,7 @@
 <script> $(configureBasket); </script>
 
 <div id="basket-control-panel">
-  <wdk:basketControls />
+  <imp:basketControls />
 </div>
 
 <!-- the order of tabs is determined in apicommonmodel.xml -->

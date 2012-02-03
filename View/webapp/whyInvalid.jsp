@@ -1,8 +1,8 @@
-<%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 
 <%-- we need the header only for the css and js --%>
-<site:header title="${site}.org :: Support"
+<imp:header title="${site}.org :: Support"
                  banner="Support"
                  parentDivision="${site}"
                  parentUrl="/home.jsp"
@@ -33,6 +33,6 @@ About every 2 months we release new data in our databases and this might affect 
 
 
 
-<site:footer/>
+<imp:footer/>
 
 
