@@ -979,9 +979,10 @@ table.history_controls {
   background-color:#FFFFFF;
   padding:5px;
   position:absolute;
-  right:200px;
-  top:28px;
-  width:200px;
+  right:95px;
+  top:25px;
+  width:260px;
+border-color:grey;
 }
 #invalid-legend{
     font-weight:normal;
