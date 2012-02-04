@@ -646,7 +646,7 @@ function createInvalidText(){
 	var t = document.createElement('div');
 	$(t).attr("id","invalid-step-text").attr('class','simple');
 	$.ajax({
-		url:"wdk/jsp/InvalidText.html",
+		url:"wdk/jsp/invalidText.jsp",
 		dataType: "html",
 		type:"get",
 		async:false,
