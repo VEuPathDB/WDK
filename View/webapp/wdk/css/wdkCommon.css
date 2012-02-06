@@ -654,6 +654,7 @@ tr.headerRow > td,th {
 	margin-top: 3px;
 	margin-left:2px;
 	clear: both;
+	font-size:85%;
 }
 
 #strategy_tabs li span#stratTitle {
