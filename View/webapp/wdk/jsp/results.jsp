@@ -1,6 +1,6 @@
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <c:set var="wdkStrategy" value="${requestScope.wdkStrategy}" />
 <c:set var="wdkStep" value="${requestScope.wdkStep}" />
-<wdk:results strategy="${wdkStrategy}" step="${wdkStep}"/>
+<imp:results strategy="${wdkStrategy}" step="${wdkStep}"/>
 

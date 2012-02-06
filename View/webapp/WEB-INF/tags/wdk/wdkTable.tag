@@ -1,5 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <%@ attribute name="tblName"
               description="name of table attribute"
@@ -118,6 +118,6 @@ ${postscript}
     <c:set var="tblContent" value="<i>Error. Data is temporarily unavailable</i>"/>
 </c:if>
 
-<wdk:toggle name="${tblName}" displayName="${tableDisplayName}"
+<imp:toggle name="${tblName}" displayName="${tableDisplayName}"
              content="${tblContent}" isOpen="${isOpen}" noData="${noData}"
              attribution="${attribution}"/>

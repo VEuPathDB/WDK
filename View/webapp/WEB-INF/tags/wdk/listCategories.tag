@@ -1,5 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <%@ attribute name="category"
               required="false"
@@ -12,13 +12,13 @@
 <ul class="top_nav">
   <c:choose>
     <c:when test="${category != null}">
-      <wdk:listCategoryQuestions category="${categories[category]}" />
+      <imp:listCategoryQuestions category="${categories[category]}" />
     </c:when>
     <c:otherwise>
       <c:forEach items="${categories}" var="category">
         <li>${category.value.displayName}
           <ul>
-           <wdk:listCategoryQuestions category="${category.value}" />
+           <imp:listCategoryQuestions category="${category.value}" />
           </ul>
         </li>
       </c:forEach>

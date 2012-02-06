@@ -972,6 +972,9 @@
         <attribute name="shortDisplayName" />
       </optional>
       <optional>
+        <attribute name="customJavascript" />
+      </optional>
+      <optional>
         <attribute name="fullAnswer">
           <data type="boolean" />
         </attribute>
