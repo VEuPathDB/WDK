@@ -1,4 +1,4 @@
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
@@ -74,7 +74,7 @@
         <%-- hide invisible params --%>
         <c:choose>
             <c:when test="${paramType eq 'TimestampParam'}">
-                <wdk:timestampParamInput qp="${qP}" />
+                <imp:timestampParamInput qp="${qP}" />
             </c:when>
             <c:when test="${isHidden}">
                <html:hidden property="value(${pNam})"/>
@@ -90,17 +90,17 @@
                     <c:choose>
                         <c:when test="${paramType eq 'EnumParam' || paramType eq 'FlatVocabParam'}">
                             <td align="left" style="vertical-align:bottom" id="${qP.name}aaa">
-                                <wdk:enumParamInput qp="${qP}" />
+                                <imp:enumParamInput qp="${qP}" />
                             </td>
                         </c:when>
                         <c:when test="${paramType eq 'AnswerParam'}">
                             <td align="left" valign="top">
-                                <wdk:answerParamInput qp="${qP}" />
+                                <imp:answerParamInput qp="${qP}" />
                             </td>
                         </c:when>
                         <c:when test="${paramType eq 'DatasetParam'}">
                             <td align="left" valign="top">
-                                <wdk:datasetParamInput qp="${qP}" />
+                                <imp:datasetParamInput qp="${qP}" />
                             </td>
                         </c:when>
                         <c:when test="${paramType eq 'StringParam'}">
@@ -153,7 +153,7 @@
 
 </c:forEach> <%-- end of foreach on paramGroups --%>
 
-<wdk:weight wdkModel="${wdkModel}" wdkQuestion="${wdkQuestion}" />
+<imp:weight wdkModel="${wdkModel}" wdkQuestion="${wdkQuestion}" />
 
 
 <%-- set the custom name --%>

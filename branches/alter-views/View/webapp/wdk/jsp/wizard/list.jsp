@@ -1,7 +1,7 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 
 <c:set var="model" value="${applicationScope.wdkModel}" />
@@ -32,7 +32,7 @@
     <jsp:setProperty name="recordClass" property="changeType" value="false" />
 </c:if>
 
-    <wdk:addStepHeader title="Add Step"/>
+    <imp:addStepHeader title="Add Step"/>
     <div id="sections">
         <table id="sections-layout"><tr>
             <td id="section-1">
@@ -89,7 +89,7 @@
 
 	<div id="sections_data"></div>
 
-<wdk:addStepFooter/>
+<imp:addStepFooter/>
 
 
 <%-- insert/add basket section --%>

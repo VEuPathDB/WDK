@@ -1,5 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <table width="100%" id="basket-control">
   <tr>
@@ -12,10 +12,10 @@
       <input id="make-strategy-from-basket-button" type="button" value="Save basket to a strategy" onClick="saveBasket();"/>
     </td>
     <td>
-      <site:customBasketControl />
+      <imp:customBasketControl />
     </td>
     <td style="text-align:right;padding:3px 0 0;vertical-align:top">
-	<span style="font-size:80%;font-style:italic;margin-bottom:7px"><b>Note on invalid IDs:</b> Changes that occur between database releases might invalidate some of the IDs in your Baskets. <br>We will map your old IDs to new IDs. Unmapped old IDs will not be included in your basket.</span>
+	<span style="font-style:italic;margin-bottom:7px;margin-right:5px;position:relative;right:5px;"><b>Note on invalid IDs:</b> Changes that occur between database releases might invalidate some of the IDs in your Baskets. <br>We will map your old IDs to new IDs. Unmapped old IDs will not be included in your basket.</span>
     </td>
   </tr>
 </table>

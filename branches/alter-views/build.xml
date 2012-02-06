@@ -63,11 +63,11 @@
   <!-- oooooooooooooooooooooooooo  Installation  oooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
 
-  <target name="WDK-Installation" depends="WSF-Installation,
+  <target name="WDK-Installation" depends="FgpUtil-Installation,
+                                           WSF-Installation,
                                            WDK/Model-Installation,
                                            WDK/Controller-Installation,
-                                           WDK/View-Installation,
-                                           FgpUtil-Installation">
+                                           WDK/View-Installation">
 
     <ant target="defaultProjectInstall"/>
     
