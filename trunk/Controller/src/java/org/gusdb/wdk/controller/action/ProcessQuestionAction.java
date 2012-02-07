@@ -63,9 +63,7 @@ public class ProcessQuestionAction extends Action {
             ParamBean param = params.get(paramName);
 
             String rawValue = (String) qform.getValue(paramName);
-            // logger.debug("Param raw: " + paramName + " = " + rawValue);
-            // logger.debug("param: " + paramName + "='" +
-            // paramErrors.get(paramName) + "'");
+            logger.debug("Param raw: " + paramName + " = " + rawValue);
             String dependentValue = null;
             if (param instanceof DatasetParamBean) {
                 // get the input type
@@ -165,6 +163,7 @@ public class ProcessQuestionAction extends Action {
         }
         catch (Exception ex) {
             logger.error(ex);
+            ex.printStackTrace();
 
             ActionMessages messages = new ActionErrors();
             ActionMessage message = new ActionMessage("mapped.properties",
