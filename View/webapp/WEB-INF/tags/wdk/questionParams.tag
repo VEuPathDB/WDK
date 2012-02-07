@@ -17,6 +17,10 @@
 
 <c:set value="${wdkQuestion.paramMapByGroups}" var="paramGroups"/>
 
+<c:if test="${not empty wdkQuestion.customJavascript}">
+  <script type="text/javascript" src="/assets/js/${wdkQuestion.customJavascript}"></script>
+</c:if>
+
 <c:forEach items="${paramGroups}" var="paramGroupItem">
     <c:set var="group" value="${paramGroupItem.key}" />
     <c:set var="paramGroup" value="${paramGroupItem.value}" />
@@ -82,9 +86,7 @@
                 <%-- an individual param (can not use fullName, w/ '.', for mapped props) --%>
                 <tr>
                     <td width="30%" align="right" style="vertical-align:top">
-                        <b>
-                            ${qP.prompt} <img id="help_${pNam}" class="help_link" rel="htmltooltip" src="wdk/images/question.png" />
-                        </b>
+                        <span style="font-weight:bold">${qP.prompt}</span> <img id="help_${pNam}" class="help_link" rel="htmltooltip" src="wdk/images/question.png" />
                     </td>
                     <c:choose>
                         <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.EnumParamBean'}">

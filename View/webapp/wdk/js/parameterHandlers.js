@@ -54,9 +54,10 @@ function initDependentParamHandlers(isEdit) {
 			inputs.each(function() {
 				dependedValues.push($(this).val());
 			});
-                        jQuery.unique(dependedValues);
+            jQuery.unique(dependedValues);
 			updateDependentParam(name, dependedValues.join(","));
 		});
+		$('input, select', this).attr('disabled',false);
 	});
 
 	//If revising, store all of the old param values before triggering the depended param's change function.
@@ -82,15 +83,17 @@ function initDependentParamHandlers(isEdit) {
 	}
 
 	// trigger the change function once for each depended param.
+    /* RRD 02/2012 No longer need to do this since dependent param values are loaded along with regular params
 	var triggeredParams = [];
 	for (var name in dependedParams) {
 		if (!triggeredParams[dependedParams[name]]) {
 			dependedParam =  $("td#" + dependedParams[name] + "aaa input[name='array(" + dependedParams[name] + ")']:first," +
-                	                   "td#" + dependedParams[name] + "aaa select[name='array(" + dependedParams[name] + ")']");
+                	           "td#" + dependedParams[name] + "aaa select[name='array(" + dependedParams[name] + ")']");
 			dependedParam.change();
 			triggeredParams[dependedParams[name]] = true;
 		}
 	}
+	*/
 }
 
 function initTypeAhead(isEdit) {
