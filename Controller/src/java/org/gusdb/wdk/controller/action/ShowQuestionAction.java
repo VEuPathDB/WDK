@@ -32,7 +32,10 @@ import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.param.WdkEmptyEnumListException;
 import org.json.JSONException;
+
+import org.gusdb.fgputil.FormatUtil;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is requested.
@@ -134,15 +137,20 @@ public class ShowQuestionAction extends Action {
                 paramValue = null;
 
             // handle the additional information
+            logger.debug("ShowQuestion: processing " + paramName);
             if (param instanceof EnumParamBean) {
                 EnumParamBean enumParam = (EnumParamBean) param;
+                
                 String[] terms = enumParam.getVocab();
                 String[] labels = getLengthBoundedLabels(enumParam
                         .getDisplays());
                 qForm.setArray(paramName + LABELS_SUFFIX, labels);
                 qForm.setArray(paramName + TERMS_SUFFIX, terms);
 
+                logger.debug("terms: " + FormatUtil.arrayToString(terms));
+                
                 // if no default is assigned, use the first enum item
+                logger.debug("ShowQuestion: is enumParam with current value (before): " + paramValue);
                 if (paramValue == null) {
                     String defaultValue = param.getDefault();
                     if (defaultValue != null)
@@ -151,6 +159,7 @@ public class ShowQuestionAction extends Action {
                     paramValue = param.dependentValueToRawValue(user,
                             paramValue);
                 }
+                logger.debug("ShowQuestion: is enumParam with default value (after): " + paramValue);
                 if (paramValue != null) {
                     String[] currentValues = paramValue.split(",");
                     qForm.setArray(paramName, currentValues);
@@ -247,26 +256,17 @@ public class ShowQuestionAction extends Action {
                 throw new WdkUserException("The question '" + qFullName
                         + "' doesn't exist.");
 
+            setUpDependentParams(request, wdkQuestion);
+            
             ShowQuestionAction.prepareQuestionForm(wdkQuestion, servlet,
                     request, qForm);
 
             // check and set custom form
             ShowQuestionAction.checkCustomForm(servlet, request, wdkQuestion);
 
-            // boolean partial =
-            // Boolean.valueOf(request.getParameter("partial"));
-
-            String defaultViewFile;
-            // partial page is no longer used. it is replaced by wizard
-            // if (partial) {
-            // defaultViewFile = CConstants.WDK_DEFAULT_VIEW_DIR
-            // + File.separator + CConstants.WDK_PAGES_DIR
-            // + File.separator + "question.form.jsp";
-            // } else {
-            defaultViewFile = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator
+            String defaultViewFile = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator
                     + CConstants.WDK_PAGES_DIR + File.separator
                     + CConstants.WDK_QUESTION_PAGE;
-            // }
 
             ActionForward forward = new ActionForward(defaultViewFile);
 
@@ -282,14 +282,80 @@ public class ShowQuestionAction extends Action {
                     .getParameter(CConstants.GOTO_SUMMARY_PARAM);
             if (qForm.getParamsFilled() && "1".equals(gotoSum)) {
                 forward = mapping.findForward(CConstants.SKIPTO_SUMMARY_MAPKEY);
-                // System.out.println("SQA: form has all param vals, go to
-                // summary page " + forward.getPath() + " directly");
+                logger.debug("SQA: form has all param vals, going to summary page " + forward.getPath() + " directly");
             }
 
             return forward;
         } catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
+        }
+    }
+    
+    
+    /**
+     * Assigns values to dependent params based on the default values OR current values of
+     * the param each depends on.  This enables the page to load the full question without making
+     * an ajax call to retrieve the initial value of dependent params.
+     * 
+     * @param request associated request
+     * @param question question containing the params
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @throws WdkUserException
+     * @throws SQLException
+     * @throws JSONException
+     */
+    private void setUpDependentParams(HttpServletRequest request, QuestionBean question)
+    		throws WdkModelException, NoSuchAlgorithmException, WdkUserException, SQLException, JSONException {
+        
+        // find the dependent param
+        Map<String, ParamBean> enumParams = question.getParamsMap();
+        for (ParamBean paramBean : enumParams.values()) {
+        	if (paramBean instanceof EnumParamBean) {
+        		EnumParamBean enumParamBean = (EnumParamBean)paramBean;
+        		if (enumParamBean.getDependedParam() != null) {
+        			// then this is a dependent param; need to do the following:
+        			// 1. find depended param and get its default value
+        			// 2. set value on dependent param
+        			// 3. test result
+        			// 4. set attribute on request
+        			
+        			ParamBean dependedParam = enumParamBean.getDependedParam();
+        			String defaultValue = dependedParam.getDefault();
+        			logger.debug("Original default value is: " + defaultValue);
+        			if (defaultValue == null && dependedParam instanceof EnumParamBean) {
+                        String[] terms = ((EnumParamBean)dependedParam).getVocab();
+                        defaultValue = terms[0];
+        			}
+        			else {
+        				UserBean user = ActionUtility.getUser(servlet, request);
+        				defaultValue = dependedParam.dependentValueToRawValue(user, defaultValue);
+        				logger.debug("Changed to converted dependent value: " + defaultValue);
+        				// this is apparently not enough; if list, then get last item in list
+        				if (defaultValue.contains(",")) {
+        					String[] vals = defaultValue.split(",");
+        					defaultValue = vals[vals.length-1];
+        					logger.debug("Extracted last value in list: " + defaultValue);
+        				}
+        			}
+        			logger.debug("Will set depended value to " + defaultValue);
+                    enumParamBean.setDependedValue(defaultValue);
+
+                    // try the dependent value, and ignore empty list exception, since
+                    // it may be caused by the choices on the depended param
+                    try {
+                    	enumParamBean.getDisplayMap();
+                    }
+                    catch (WdkEmptyEnumListException ex) {
+                    	// do nothing
+                    }
+                    
+        			// get default value here..., then:
+        			//enumParamBean.setDependedValue(defaultValue);
+        			request.setAttribute("vocabParam", enumParamBean);
+        		}
+        	}
         }
     }
 }
