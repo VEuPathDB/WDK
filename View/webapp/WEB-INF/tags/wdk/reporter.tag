@@ -20,7 +20,12 @@ function changeFormat(e)
 
 <c:set var="type" value="${step.question.recordClass.type}" />
 
-<div class="h2center">Download ${step.estimateSize} ${type}s from the search:</div>
+<jsp:useBean id="typeMap" class="java.util.HashMap"/>
+<c:set target="${typeMap}" property="singular" value="${step.question.recordClass.type}"/>
+<imp:getPlural pluralMap="${typeMap}"/>
+<c:set var="type" value="${typeMap['plural']}"/>
+<div class="h2center">Download ${step.estimateSize} ${type} from the search:</div>
+
 <i><div class="h3center">${step.displayName}</div></i>
 
 <br><br>
