@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+
+<digester-rules>
+
+  <!-- RecordSets -->
+  <pattern value="wdkModel/recordSet">
+    <object-create-rule classname="RecordSet" />
+    <set-properties-rule />
+    
+    <pattern value="record">
+        <object-create-rule classname="Record" />
+        <set-properties-rule />
+        
+        <pattern value="fieldsQuery">
+          <object-create-rule classname="Reference" />
+          <set-properties-rule />
+          <set-next-rule methodname="addFieldsQueryRef" />
+        </pattern>
+      
+        <pattern value="tableQuery">
+          <object-create-rule classname="Reference" />
+          <set-properties-rule />
+          <set-next-rule methodname="addTableQueryRef" />
+        </pattern>
+        
+        <pattern value="textField">
+          <object-create-rule classname="TextField" />
+          <set-properties-rule />
+          <pattern vale="text" >
+            <set-bean-properties-rule>
+          </pattern>
+          <set-next-rule methodname="addTextField" />
+        </pattern>
+        <set-next-rule methodname="addRecord" />
+    </pattern>
+    <set-next-rule methodname="addRecordSet" />
+  </pattern>
+
+<!--                digester.push(model);
+        digester.addSetProperties("wdkModel");
+...
+
+        //QuerySet
+-->
+
+  <!-- QuerySets -->
+  <pattern value="wdkModel/querySet">
+    <object-create-rule classname="QuerySet" />
+    <set-properties-rule />
+    
+    <pattern value="sqlQuery">
+        <object-create-rule classname="SqlQuery" />
+        <set-properties-rule />
+        
+        <pattern value="sql">
+          <set-bean-properties-rule />
+        </pattern>
+        
+        <pattern value="flatCVParam">
+          <object-create-rule classname="FlatCVParam" />
+          <set-properties-rule />
+          <pattern value="sqlQuery">
+            <object-create-rule classname="SqlQuery" />
+            <pattern value="sql">
+              <set-bean-properties-rule />
+            </pattern>
+            <pattern value="column">
+              <object-create-rule classname="Column" />
+              <set-properties-rule />
+              <set-next-rule methodname="addColumn" />
+            </pattern>
+            <set-next-rule methodname="setSqlQuery" />
+          </pattern>
+		  <set-next-rule methodname="addParam" />
+		</pattern>
+
+        
+        <pattern value="stringParam">
+          <object-create-rule classname="StringParam" />
+          <set-properties-rule />
+		  <set-next-rule methodname="addParam" />
+		</pattern>
+		
+        <pattern value="column">
+          <object-create-rule classname="Column" />
+          <set-next-rule methodname="addColumn" />
+        </pattern>
+          		  
+          <set-properties-rule />
+          <pattern value="sqlQuery">
+            <object-create-rule classname="SqlQuery" />
+            <pattern value="sql">
+              <set-bean-properties-rule />
+            </pattern>
+            
+            <pattern value="column">
+              <object-create-rule classname="Column" />
+              <set-properties-rule />
+              <set-next-rule methodname="addColumn" />
+            </pattern>
+            
+             <pattern value="textColumn">
+              <object-create-rule classname="TextColumn" />
+              <set-properties-rule />
+              <set-next-rule methodname="addColumn" />
+            </pattern>           
+            
+            <set-next-rule methodname="addQuery" />
+          </pattern>
+		  <set-next-rule methodname="addQuerySet" />
+		</pattern>
+
+<!--  ReferenceList -->
+  <pattern value="wdkModel/referenceList">
+    <object-create-rule classname="ReferenceList" />
+    <set-properties-rule />
+    
+    <pattern value="twoPartname">
+        <object-create-rule classname="Reference" />
+        <set-properties-rule />
+        <set-next-rule methodname="addReference" />
+    </pattern>
+  </pattern>
+
+<!--  SummarySet -->
+  <pattern value="wdkModel/summarySet">
+    <object-create-rule classname="SummarySet" />
+    <set-properties-rule />
+    
+    <pattern value="summary">
+        <object-create-rule classname="Summary" />
+        <set-properties-rule />
+        <set-next-rule methodname="addSummary" />
+    </pattern>
+    <set-next-rule methodname="addSummarySet" />
+  </pattern>
+
+<!--        return digester; -->
+
+</digester-rules>
+
+
