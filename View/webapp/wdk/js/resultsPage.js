@@ -315,7 +315,7 @@ function toggleAttributes(from) {
       if (name == '') continue;
 
       // look for the checkboxes with the attribute name, and toggle them
-      var attribute = $(".Results_Pane .attributesList input#" + name);
+      var attribute = $(".Results_Div .attributesList input#" + name);
       if (attribute.attr("disabled") == false)
          attribute.attr('checked', state);
    }
