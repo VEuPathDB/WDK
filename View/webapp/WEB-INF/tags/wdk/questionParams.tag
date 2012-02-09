@@ -112,6 +112,11 @@
                                         <html:hidden property="value(${pNam})"/>
                                     </td>
                                 </c:when>
+                                <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.StringParamBean' and qP.multiLine}">
+                                    <td align="left" valing="top">
+                                        <html:textarea styleId="${pNam}" property="value(${pNam})" rows="4" cols="50"/>
+                                    </td>
+                                </c:when>
                                 <c:otherwise>
                                     <td align="left" valign="top">
                                         <html:text styleId="${pNam}" property="value(${pNam})" size="35" />
