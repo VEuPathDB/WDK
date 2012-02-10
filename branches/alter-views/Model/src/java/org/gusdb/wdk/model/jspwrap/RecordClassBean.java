@@ -9,10 +9,10 @@ import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.ReporterRef;
-import org.gusdb.wdk.model.WdkView;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.view.RecordView;
 
 /**
  * A wrapper on a {@link RecordClass} that provides simplified access for
@@ -195,11 +195,11 @@ public class RecordClassBean {
         return recordClass.getShortDisplayName();
     }
 
-    public WdkView getDefaultRecordView() {
+    public RecordView getDefaultRecordView() {
         return recordClass.getDefaultRecordView();
     }   
 
-    public Map<String, WdkView> getRecordViews() {
+    public Map<String, RecordView> getRecordViews() {
         return recordClass.getRecordViews();
     } 
 

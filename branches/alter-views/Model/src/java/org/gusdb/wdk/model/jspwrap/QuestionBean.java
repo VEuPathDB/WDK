@@ -16,7 +16,6 @@ import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.Group;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.WdkView;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -26,6 +25,8 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.param.TimestampParam;
+import org.gusdb.wdk.view.SummaryView;
+import org.gusdb.wdk.view.WdkView;
 import org.json.JSONException;
 
 /**
@@ -411,7 +412,7 @@ public class QuestionBean {
      * @return
      * @see org.gusdb.wdk.model.Question#getSummaryViews()
      */
-    public Map<String, WdkView> getSummaryViews() {
+    public Map<String, SummaryView> getSummaryViews() {
         return question.getSummaryViews();
     }
 
@@ -420,7 +421,7 @@ public class QuestionBean {
      * @throws WdkModelException
      * @see org.gusdb.wdk.model.Question#getDefaultSummaryView()
      */
-    public WdkView getDefaultSummaryView() throws WdkModelException {
+    public SummaryView getDefaultSummaryView() throws WdkModelException {
         return question.getDefaultSummaryView();
     }
     

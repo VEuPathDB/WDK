@@ -61,6 +61,9 @@ import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClass;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 import org.gusdb.wdk.model.xml.XmlTableField;
+import org.gusdb.wdk.view.RecordView;
+import org.gusdb.wdk.view.SummaryView;
+import org.gusdb.wdk.view.WdkView;
 import org.json.JSONException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -440,11 +443,11 @@ public class ModelXmlParser extends XmlParser {
 
         configureNode(digester,
                 "wdkModel/recordClassSet/recordClass/summaryView",
-                WdkView.class, "addSummaryView");
+                SummaryView.class, "addSummaryView");
 
         configureNode(digester,
                 "wdkModel/recordClassSet/recordClass/recordView",
-                WdkView.class, "addRecordView");
+                RecordView.class, "addRecordView");
     }
 
     private void configureQuerySet(Digester digester) {
@@ -613,7 +616,7 @@ public class ModelXmlParser extends XmlParser {
                 "setText", 0);
 
         configureNode(digester, "wdkModel/questionSet/question/summaryView",
-                WdkView.class, "addSummaryView");
+                SummaryView.class, "addSummaryView");
     }
 
     private void configureXmlQuestionSet(Digester digester) {

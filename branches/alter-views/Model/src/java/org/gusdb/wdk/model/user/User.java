@@ -22,11 +22,12 @@ import org.gusdb.wdk.model.BooleanOperator;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
-import org.gusdb.wdk.model.WdkView;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
+import org.gusdb.wdk.view.RecordView;
+import org.gusdb.wdk.view.SummaryView;
 import org.json.JSONException;
 
 /**
@@ -622,12 +623,10 @@ public class User /* implements Serializable */{
             Strategy[] array = new Strategy[strategies.size()];
             strategies.values().toArray(array);
             return array;
-        }
-        catch (WdkUserException ex) {
+        } catch (WdkUserException ex) {
             System.out.println(ex);
             throw ex;
-        }
-        catch (WdkModelException ex) {
+        } catch (WdkModelException ex) {
             System.out.println(ex);
             throw ex;
         }
@@ -1203,8 +1202,7 @@ public class User /* implements Serializable */{
                 + Integer.toString(userId);
         try {
             key = UserFactory.encrypt(key);
-        }
-        catch (NoSuchAlgorithmException ex) {
+        } catch (NoSuchAlgorithmException ex) {
             throw new WdkUserException(ex);
         }
         // save the remote key
@@ -1280,8 +1278,7 @@ public class User /* implements Serializable */{
             try {
                 Strategy strategy = getStrategy(id);
                 strategies.add(strategy);
-            }
-            catch (WdkUserException ex) {
+            } catch (WdkUserException ex) {
                 // something wrong with loading a strat, probably the strategy
                 // doesn't exist anymore
                 logger.warn("something wrong with loading a strat, probably "
@@ -1382,8 +1379,7 @@ public class User /* implements Serializable */{
         Question question = null;
         try {
             question = leftStep.getQuestion();
-        }
-        catch (WdkModelException ex) {
+        } catch (WdkModelException ex) {
             // in case the left step has an invalid question, try the right
             question = rightStep.getQuestion();
         }
@@ -1583,11 +1579,11 @@ public class User /* implements Serializable */{
         return sb.toString();
     }
 
-    public WdkView getCurrentSummaryView(Question question)
+    public SummaryView getCurrentSummaryView(Question question)
             throws WdkModelException, WdkUserException {
         String key = SUMMARY_VIEW_PREFIX + question.getFullName();
         String viewName = projectPreferences.get(key);
-        WdkView view;
+        SummaryView view;
         if (viewName == null) { // no summary view set, use the default one
             view = question.getDefaultSummaryView();
         } else {
@@ -1596,7 +1592,7 @@ public class User /* implements Serializable */{
         return view;
     }
 
-    public void setCurrentSummaryView(Question question, WdkView summaryView)
+    public void setCurrentSummaryView(Question question, SummaryView summaryView)
             throws WdkUserException, WdkModelException {
         String key = SUMMARY_VIEW_PREFIX + question.getFullName();
         if (summaryView == null) { // remove the current summary view
@@ -1608,11 +1604,11 @@ public class User /* implements Serializable */{
         save();
     }
 
-    public WdkView getCurrentRecordView(RecordClass recordClass)
+    public RecordView getCurrentRecordView(RecordClass recordClass)
             throws WdkUserException {
         String key = RECORD_VIEW_PREFIX + recordClass.getFullName();
         String viewName = projectPreferences.get(key);
-        WdkView view;
+        RecordView view;
         if (viewName == null) { // no record view set, use the default one
             view = recordClass.getDefaultRecordView();
         } else {
@@ -1621,8 +1617,8 @@ public class User /* implements Serializable */{
         return view;
     }
 
-    public void setCurrentRecordView(RecordClass recordClass, WdkView recordView)
-            throws WdkUserException, WdkModelException {
+    public void setCurrentRecordView(RecordClass recordClass,
+            RecordView recordView) throws WdkUserException, WdkModelException {
         String key = RECORD_VIEW_PREFIX + recordClass.getFullName();
         if (recordView == null) { // remove the current record view
             projectPreferences.remove(key);
