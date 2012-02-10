@@ -19,20 +19,21 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.model.WdkView;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.view.SummaryView;
+import org.gusdb.wdk.view.SummaryViewHandler;
 import org.json.JSONException;
 
 public class ShowSummaryViewAction extends Action {
 
     public static final String PARAM_STEP = "step";
     public static final String PARAM_VIEW = "view";
-    
+
     public static final String ATTR_STEP = "wdkStep";
     public static final String ATTR_VIEW = "wdkView";
 
@@ -51,23 +52,33 @@ public class ShowSummaryViewAction extends Action {
             throw new WdkUserException("Required step parameter is missing.");
         int stepId = Integer.valueOf(strStep);
         StepBean step = wdkUser.getStep(stepId);
-        
+
         request.setAttribute(ATTR_STEP, step);
 
         QuestionBean question = step.getQuestion();
         String viewName = request.getParameter(PARAM_VIEW);
-        WdkView view;
+        SummaryView view;
         if (viewName == null || viewName.length() == 0) {
             view = wdkUser.getCurrentSummaryView();
             if (view == null) view = question.getDefaultSummaryView();
         } else {
-            Map<String, WdkView> views = question.getSummaryViews();
+            Map<String, SummaryView> views = question.getSummaryViews();
             view = views.get(viewName);
             if (view == null)
                 throw new WdkUserException("Invalid view name: '" + view + "'");
 
             wdkUser.setCurrentSummaryView(question, view);
         }
+
+        // process the view handler
+        SummaryViewHandler handler = view.getHandler();
+        if (handler != null) {
+            Map<String, Object> result = handler.process(step.getStep());
+            for (String key : result.keySet()) {
+                request.setAttribute(key, result.get(key));
+            }
+        }
+
         logger.debug("summary view: " + view.getName());
         request.setAttribute(ATTR_VIEW, view);
 
@@ -75,6 +86,8 @@ public class ShowSummaryViewAction extends Action {
 
         ActionForward forward;
         if (view == null) { // no view is defined, fall back to the old ways
+            // this part of the code is deprecated, consider removal in the
+            // future.
             ServletContext context = getServlet().getServletContext();
             String baseFilePath = CConstants.WDK_CUSTOM_VIEW_DIR
                     + File.separator + CConstants.WDK_PAGES_DIR

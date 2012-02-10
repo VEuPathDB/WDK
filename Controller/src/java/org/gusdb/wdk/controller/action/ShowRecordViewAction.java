@@ -12,11 +12,13 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.WdkView;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.view.RecordView;
+import org.gusdb.wdk.view.RecordViewHandler;
+import org.gusdb.wdk.view.WdkView;
 
 public class ShowRecordViewAction extends Action {
 
@@ -56,13 +58,23 @@ public class ShowRecordViewAction extends Action {
         request.setAttribute(ATTR_RECORD, wdkRecord);
 
         String viewName = request.getParameter(PARAM_VIEW);
-        WdkView view;
+        RecordView view;
         if (viewName == null || viewName.length() == 0) {
             view = recordClass.getDefaultRecordView();
         } else {
-            Map<String, WdkView> views = recordClass.getRecordViews();
+            Map<String, RecordView> views = recordClass.getRecordViews();
             view = views.get(viewName);
         }
+
+        // process the view handler
+        RecordViewHandler handler = view.getHandler();
+        if (handler != null) {
+            Map<String, Object> result = handler.process(wdkRecord.getRecordInstance());
+            for (String key : result.keySet()) {
+                request.setAttribute(key, result.get(key));
+            }
+        }
+
         wdkUser.setCurrentRecordView(recordClass, view);
 
         ActionForward forward;

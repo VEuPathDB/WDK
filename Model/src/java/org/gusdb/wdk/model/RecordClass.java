@@ -18,6 +18,8 @@ import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.view.RecordView;
+import org.gusdb.wdk.view.SummaryView;
 import org.json.JSONException;
 
 public class RecordClass extends WdkModelBase implements
@@ -179,11 +181,11 @@ public class RecordClass extends WdkModelBase implements
     private String favoriteNoteFieldName;
     private AttributeField favoriteNoteField;
 
-    private List<WdkView> summaryViewList = new ArrayList<WdkView>();
-    private Map<String, WdkView> summaryViewMap = new LinkedHashMap<String, WdkView>();
+    private List<SummaryView> summaryViewList = new ArrayList<SummaryView>();
+    private Map<String, SummaryView> summaryViewMap = new LinkedHashMap<String, SummaryView>();
 
-    private List<WdkView> recordViewList = new ArrayList<WdkView>();
-    private Map<String, WdkView> recordViewMap = new LinkedHashMap<String, WdkView>();
+    private List<RecordView> recordViewList = new ArrayList<RecordView>();
+    private Map<String, RecordView> recordViewMap = new LinkedHashMap<String, RecordView>();
 
     // ////////////////////////////////////////////////////////////////////
     // Called at model creation time
@@ -477,7 +479,7 @@ public class RecordClass extends WdkModelBase implements
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         if (resolved) return;
-
+        super.resolveReferences(model);
         this.wdkModel = model;
 
         if (name.length() == 0 || name.indexOf('\'') >= 0)
@@ -547,6 +549,14 @@ public class RecordClass extends WdkModelBase implements
 
         // resolve references in the attribute category tree
         resolveCategoryTreeReferences(model);
+        
+        // resolve references for views
+        for (SummaryView summaryView : summaryViewMap.values()) {
+            summaryView.resolveReferences(model);
+        }
+        for (RecordView recordView : recordViewMap.values()) {
+            recordView.resolveReferences(model);
+        }
 
         resolved = true;
     }
@@ -1036,7 +1046,7 @@ public class RecordClass extends WdkModelBase implements
         favorites = null;
 
         // exclude the summary views
-        for (WdkView view : summaryViewList) {
+        for (SummaryView view : summaryViewList) {
             if (view.include(projectId)) {
                 view.excludeResources(projectId);
                 String name = view.getName();
@@ -1050,8 +1060,7 @@ public class RecordClass extends WdkModelBase implements
         summaryViewList = null;
 
         // add WDK supported views to all record classes
-        WdkView[] supportedViews = WdkView.createSupportedSummaryViews();
-        for (WdkView view : supportedViews) {
+        for (SummaryView view : SummaryView.createSupportedSummaryViews()) {
             String name = view.getName();
             // only add the view if it hasn't been defined by the user. that is,
             // user can custom the views supported by WDK by default.
@@ -1062,7 +1071,7 @@ public class RecordClass extends WdkModelBase implements
         }
 
         // exclude the summary views
-        for (WdkView view : recordViewList) {
+        for (RecordView view : recordViewList) {
             if (view.include(projectId)) {
                 view.excludeResources(projectId);
                 String name = view.getName();
@@ -1076,8 +1085,7 @@ public class RecordClass extends WdkModelBase implements
         recordViewList = null;
 
         // add WDK supported views to all record classes
-        supportedViews = WdkView.createSupportedRecordViews();
-        for (WdkView view : supportedViews) {
+        for (RecordView view : RecordView.createSupportedRecordViews()) {
             String name = view.getName();
             // only add the view if it hasn't been defined by the user. that is,
             // user can custom the views supported by WDK by default.
@@ -1299,13 +1307,11 @@ public class RecordClass extends WdkModelBase implements
         return favoriteNoteField;
     }
 
-    public WdkView[] getSummaryViews() {
-        WdkView[] array = new WdkView[summaryViewMap.size()];
-        summaryViewMap.values().toArray(array);
-        return array;
+    public Map<String, SummaryView> getSummaryViews() {
+        return  new LinkedHashMap<String, SummaryView>(summaryViewMap);
     }
 
-    public WdkView getSummaryView(String viewName) throws WdkUserException {
+    public SummaryView getSummaryView(String viewName) throws WdkUserException {
         if (summaryViewMap.containsKey(viewName)) {
             return summaryViewMap.get(viewName);
         } else {
@@ -1314,16 +1320,16 @@ public class RecordClass extends WdkModelBase implements
         }
     }
 
-    public void addSummaryView(WdkView view) {
+    public void addSummaryView(SummaryView view) {
         if (summaryViewList == null) summaryViewMap.put(view.getName(), view);
         else summaryViewList.add(view);
     }
 
-    public Map<String, WdkView> getRecordViews() {
-        return new LinkedHashMap<String, WdkView>(recordViewMap);
+    public Map<String, RecordView> getRecordViews() {
+        return new LinkedHashMap<String, RecordView>(recordViewMap);
     }
 
-    public WdkView getRecordView(String viewName) throws WdkUserException {
+    public RecordView getRecordView(String viewName) throws WdkUserException {
         if (recordViewMap.containsKey(viewName)) {
             return recordViewMap.get(viewName);
         } else {
@@ -1332,8 +1338,8 @@ public class RecordClass extends WdkModelBase implements
         }
     }
 
-    public WdkView getDefaultRecordView() {
-        for (WdkView view : recordViewMap.values()) {
+    public RecordView getDefaultRecordView() {
+        for (RecordView view : recordViewMap.values()) {
             if (view.isDefault()) return view;
         }
 
@@ -1343,7 +1349,7 @@ public class RecordClass extends WdkModelBase implements
         return null;
     }
 
-    public void addRecordView(WdkView view) {
+    public void addRecordView(RecordView view) {
         if (recordViewList == null) recordViewMap.put(view.getName(), view);
         else recordViewList.add(view);
     }

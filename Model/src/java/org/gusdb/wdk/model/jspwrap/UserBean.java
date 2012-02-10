@@ -16,13 +16,15 @@ import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.WdkView;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.Dataset;
 import org.gusdb.wdk.model.user.Favorite;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.view.RecordView;
+import org.gusdb.wdk.view.SummaryView;
+import org.gusdb.wdk.view.WdkView;
 import org.json.JSONException;
 
 /**
@@ -1521,7 +1523,7 @@ public class UserBean /* implements Serializable */{
         this.currentQuestion = question.question;
     }
 
-    public WdkView getCurrentSummaryView() throws Exception {
+    public SummaryView getCurrentSummaryView() throws Exception {
         try {
             return user.getCurrentSummaryView(currentQuestion);
         } catch (Exception ex) {
@@ -1530,7 +1532,7 @@ public class UserBean /* implements Serializable */{
         }   
     }
 
-    public void setCurrentSummaryView(QuestionBean question, WdkView summaryView)
+    public void setCurrentSummaryView(QuestionBean question, SummaryView summaryView)
             throws WdkUserException, WdkModelException {
         user.setCurrentSummaryView(question.question, summaryView);
     }
@@ -1541,7 +1543,7 @@ public class UserBean /* implements Serializable */{
         this.currentRecordClass = recordClass.recordClass;
     }
 
-    public WdkView getCurrentRecordView() throws Exception {
+    public RecordView getCurrentRecordView() throws Exception {
         try {
             return user.getCurrentRecordView(currentRecordClass);
         } catch (Exception ex) {
@@ -1551,7 +1553,7 @@ public class UserBean /* implements Serializable */{
     }
 
     public void setCurrentRecordView(RecordClassBean recordClass,
-            WdkView recordView) throws WdkUserException, WdkModelException {
+            RecordView recordView) throws WdkUserException, WdkModelException {
         user.setCurrentRecordView(recordClass.recordClass, recordView);
     }
 
