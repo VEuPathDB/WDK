@@ -1348,6 +1348,9 @@
             <data type="boolean" />
           </attribute>
       </optional>
+      <optional>
+          <attribute name="handler" />
+      </optional>
   </define>
 
 </grammar>

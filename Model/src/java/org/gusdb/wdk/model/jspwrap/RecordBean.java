@@ -33,8 +33,8 @@ public class RecordBean {
 
     private static final Logger logger = Logger.getLogger(RecordBean.class);
 
-    private User user;
-    private RecordInstance recordInstance;
+    private final User user;
+    private final RecordInstance recordInstance;
 
     public RecordBean(User user, RecordInstance recordInstance) {
         this.user = user;
@@ -47,6 +47,10 @@ public class RecordBean {
         this.user = user.getUser();
         recordInstance = new RecordInstance(user.getUser(),
                 recordClass.recordClass, pkValues);
+    }
+    
+    public RecordInstance getRecordInstance() {
+        return recordInstance;
     }
 
     public boolean isValidRecord() {

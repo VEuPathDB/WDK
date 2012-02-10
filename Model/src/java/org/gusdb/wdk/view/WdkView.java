@@ -1,50 +1,16 @@
-package org.gusdb.wdk.model;
+package org.gusdb.wdk.view;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class WdkView extends WdkModelBase {
+import org.gusdb.wdk.model.WdkModelBase;
+
+public abstract class WdkView extends WdkModelBase {
 
     private String name;
     private String display;
     private String jsp;
     private boolean _default;
-
-    public static WdkView[] createSupportedSummaryViews() {
-        List<WdkView> views = new ArrayList<WdkView>();
-        views.add(createDefaultSummaryView());
-
-        WdkView[] array = new WdkView[views.size()];
-        views.toArray(array);
-        return array;
-    }
-
-    private static WdkView createDefaultSummaryView() {
-        WdkView view = new WdkView();
-        view.setName("_default");
-        view.setDisplay("Default");
-        view.setDefault(true);
-        view.setJsp("/wdk/jsp/results/table.jsp");
-        return view;
-    }
-
-    public static WdkView[] createSupportedRecordViews() {
-        List<WdkView> views = new ArrayList<WdkView>();
-        views.add(createDefaultRecordView());
-
-        WdkView[] array = new WdkView[views.size()];
-        views.toArray(array);
-        return array;
-    }
-
-    private static WdkView createDefaultRecordView() {
-        WdkView view = new WdkView();
-        view.setName("_default");
-        view.setDisplay("Default");
-        view.setDefault(true);
-        view.setJsp("/wdk/jsp/records/default.jsp");
-        return view;
-    }
 
 
     /**
