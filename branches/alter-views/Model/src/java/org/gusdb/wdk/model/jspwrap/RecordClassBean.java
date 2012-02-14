@@ -12,7 +12,7 @@ import org.gusdb.wdk.model.ReporterRef;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.view.RecordView;
+import org.gusdb.wdk.model.view.RecordView;
 
 /**
  * A wrapper on a {@link RecordClass} that provides simplified access for

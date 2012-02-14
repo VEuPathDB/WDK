@@ -25,8 +25,8 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.param.TimestampParam;
-import org.gusdb.wdk.view.SummaryView;
-import org.gusdb.wdk.view.WdkView;
+import org.gusdb.wdk.model.view.SummaryView;
+import org.gusdb.wdk.model.view.WdkView;
 import org.json.JSONException;
 
 /**

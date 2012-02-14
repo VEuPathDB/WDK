@@ -1,4 +1,4 @@
-package org.gusdb.wdk.view;
+package org.gusdb.wdk.model.view;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
@@ -10,27 +10,27 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
 
-public class RecordView extends WdkView {
+public class SummaryView extends WdkView {
 
-    public static RecordView[] createSupportedRecordViews() {
-        List<RecordView> views = new ArrayList<RecordView>();
-        views.add(createDefaultRecordView());
-        return views.toArray(new RecordView[0]);
+    public static SummaryView[] createSupportedSummaryViews() {
+        List<SummaryView> views = new ArrayList<SummaryView>();
+        views.add(createDefaultSummaryView());
+        return views.toArray(new SummaryView[0]);
     }
 
-    private static RecordView createDefaultRecordView() {
-        RecordView view = new RecordView();
+    private static SummaryView createDefaultSummaryView() {
+        SummaryView view = new SummaryView();
         view.setName("_default");
         view.setDisplay("Default");
         view.setDefault(true);
-        view.setJsp("/wdk/jsp/records/default.jsp");
+        view.setJsp("/wdk/jsp/results/table.jsp");
         return view;
     }
 
     private String handlerClass;
-    private RecordViewHandler handler;
+    private SummaryViewHandler handler;
 
-    public RecordViewHandler getHandler() {
+    public SummaryViewHandler getHandler() {
         return handler;
     }
 
@@ -44,10 +44,10 @@ public class RecordView extends WdkView {
             WdkUserException {
         super.resolveReferences(wdkModel);
 
-        if (handlerClass != null) { // resolve the handler class
+        if (handlerClass != null) {  // resolve the handler class
             try {
-                Class<? extends RecordViewHandler> hClass = Class.forName(
-                        handlerClass).asSubclass(RecordViewHandler.class);
+                Class<? extends SummaryViewHandler> hClass = Class.forName(
+                        handlerClass).asSubclass(SummaryViewHandler.class);
                 handler = hClass.newInstance();
             } catch (ClassNotFoundException ex) {
                 throw new WdkModelException(ex);
@@ -58,4 +58,5 @@ public class RecordView extends WdkView {
             }
         }
     }
+
 }

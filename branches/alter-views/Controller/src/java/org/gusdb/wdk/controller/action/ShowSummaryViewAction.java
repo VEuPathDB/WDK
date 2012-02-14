@@ -25,8 +25,8 @@ import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.view.SummaryView;
-import org.gusdb.wdk.view.SummaryViewHandler;
+import org.gusdb.wdk.model.view.SummaryView;
+import org.gusdb.wdk.model.view.SummaryViewHandler;
 import org.json.JSONException;
 
 public class ShowSummaryViewAction extends Action {

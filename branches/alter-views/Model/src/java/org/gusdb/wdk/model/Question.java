@@ -18,7 +18,7 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.view.SummaryView;
+import org.gusdb.wdk.model.view.SummaryView;
 import org.json.JSONException;
 
 /**
