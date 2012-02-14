@@ -1,4 +1,4 @@
-package org.gusdb.wdk.view;
+package org.gusdb.wdk.model.view;
 
 import java.util.ArrayList;
 import java.util.List;

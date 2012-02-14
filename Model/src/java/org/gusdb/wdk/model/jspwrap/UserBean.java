@@ -22,9 +22,9 @@ import org.gusdb.wdk.model.user.Favorite;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.view.RecordView;
-import org.gusdb.wdk.view.SummaryView;
-import org.gusdb.wdk.view.WdkView;
+import org.gusdb.wdk.model.view.RecordView;
+import org.gusdb.wdk.model.view.SummaryView;
+import org.gusdb.wdk.model.view.WdkView;
 import org.json.JSONException;
 
 /**

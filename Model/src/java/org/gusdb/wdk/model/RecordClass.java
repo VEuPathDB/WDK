@@ -18,8 +18,8 @@ import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wdk.view.RecordView;
-import org.gusdb.wdk.view.SummaryView;
+import org.gusdb.wdk.model.view.RecordView;
+import org.gusdb.wdk.model.view.SummaryView;
 import org.json.JSONException;
 
 public class RecordClass extends WdkModelBase implements
