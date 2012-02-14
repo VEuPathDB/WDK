@@ -5,12 +5,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
 
 public class SummaryView extends WdkView {
+
+    private static final Logger logger = Logger.getLogger(SummaryView.class);
 
     public static SummaryView[] createSupportedSummaryViews() {
         List<SummaryView> views = new ArrayList<SummaryView>();
@@ -34,7 +37,8 @@ public class SummaryView extends WdkView {
         return handler;
     }
 
-    public void setHandler(String handlerClass) {
+    public void setHandlerClass(String handlerClass) {
+        logger.debug("setting handler: " + handlerClass);
         this.handlerClass = handlerClass;
     }
 
@@ -44,6 +48,7 @@ public class SummaryView extends WdkView {
             WdkUserException {
         super.resolveReferences(wdkModel);
 
+        logger.debug("handler: " + handlerClass);
         if (handlerClass != null) {  // resolve the handler class
             try {
                 Class<? extends SummaryViewHandler> hClass = Class.forName(
