@@ -235,6 +235,11 @@
             <data type="positiveInteger" />
           </attribute>
         </optional>
+        <optional>
+          <attribute name="multiLine">
+            <data type="boolean"/>
+          </attribute>
+        </optional>
         <zeroOrMore>
             <choice>
                 <ref name="ParamBaseTags" />

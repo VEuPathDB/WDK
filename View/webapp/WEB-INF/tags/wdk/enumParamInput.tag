@@ -14,6 +14,8 @@ Otherwise a standard select menu is used.
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
+<jsp:useBean id="idgen" class="org.gusdb.wdk.model.jspwrap.NumberUtilBean" scope="application" />
+
 <%@ attribute name="qp"
               type="org.gusdb.wdk.model.jspwrap.EnumParamBean"
               required="true"
@@ -87,7 +89,7 @@ Otherwise a standard select menu is used.
     
       <c:if test="${qp.useCheckboxTree}">
         <div class="param-tree ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
-          <imp:checkboxTree id="${pNam}CBT" rootNode="${qP.paramTree}" checkboxName="array(${pNam})" buttonAlignment="left"/>
+          <imp:checkboxTree id="${pNam}CBT${idgen.nextId}" rootNode="${qP.paramTree}" checkboxName="array(${pNam})" buttonAlignment="left"/>
         </div>
       </c:if>
       
@@ -139,7 +141,7 @@ Otherwise a standard select menu is used.
          <ul>
          <c:forEach items="${qP.displayMap}" var="entity">
            <div ${v}>
-             <html:radio property="array(${pNam})" value="${entity.key}" /> ${entity.value}
+             <html:radio property="array(${pNam})" value="${entity.key}" /> <span>${entity.value}</span>
            </li>
          </c:forEach>
          </ul>
