@@ -24,5 +24,8 @@ public class StringParamBean extends ParamBean {
     public int getLength() {
         return param.getLength();
     }
-
+    
+    public boolean getMultiLine() {
+        return param.getMultiLine();
+    }
 }

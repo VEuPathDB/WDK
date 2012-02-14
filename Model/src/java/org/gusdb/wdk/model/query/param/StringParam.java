@@ -28,15 +28,13 @@ import org.json.JSONObject;
  */
 public class StringParam extends Param {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 7561711069245980824L;
-
+    
     private List<WdkModelText> regexes = new ArrayList<WdkModelText>();
     private String regex;
     private int length = 0;
     private boolean number = false;
+    private boolean multiLine = false;
 
     public StringParam() {}
 
@@ -47,6 +45,7 @@ public class StringParam extends Param {
         this.regex = param.regex;
         this.length = param.length;
         this.number = param.number;
+        this.multiLine = param.multiLine;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -95,11 +94,22 @@ public class StringParam extends Param {
         this.number = isNumber;
     }
 
-    public String toString() {
+    /**
+     * Whether this param will render as a textarea instead of a textbox
+     * @param multiLine set to true if textarea is desired (default false)
+     */
+    public void setMultiLine(boolean multiLine) {
+		this.multiLine = multiLine;
+	}
+	public boolean getMultiLine() {
+		return multiLine;
+	}
+
+	public String toString() {
         String newline = System.getProperty("line.separator");
         StringBuffer buf = new StringBuffer(super.toString() + "  sample='"
                 + sample + "'" + newline + "  regex='" + regex + "'" + newline
-                + "  length='" + length + "'");
+                + "  length='" + length + "'" + newline + "  multiLine='" + multiLine + "'");
         return buf.toString();
     }
 

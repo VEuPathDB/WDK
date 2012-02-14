@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
+import org.gusdb.fgputil.FormatUtil;
 
 /**
  * @author xingao
@@ -119,6 +120,7 @@ public abstract class AbstractEnumParam extends Param {
         initVocabMap();
         String[] array = new String[termInternalMap.size()];
         termInternalMap.keySet().toArray(array);
+        logger.debug("getting vocab: " + FormatUtil.arrayToString(array));
         return array;
     }
 

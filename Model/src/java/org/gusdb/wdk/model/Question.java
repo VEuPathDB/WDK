@@ -68,7 +68,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     private boolean fullAnswer = false;
 
-    private String customJavascriptFile;
+    private String customJavascriptFile = "";
 
     private List<AttributeList> attributeLists = new ArrayList<AttributeList>();
 
@@ -404,7 +404,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         StringBuffer buf = new StringBuffer("Question: name='" + name + "'"
                 + newline + "  recordClass='" + recordClassRef + "'" + newline
                 + "  query='" + idQueryRef + "'" + newline + "  displayName='"
-                + getDisplayName() + "'" + newline + "  summary='"
+                + getDisplayName() + "'" + newline + "  customJavascript='"
+                + getCustomJavascript() + "'" + newline + "  summary='"
                 + getSummary() + "'" + newline + "  description='"
                 + getDescription() + "'" + newline + "  summaryAttributes='"
                 + saNames + "'" + newline + "  help='" + getHelp() + "'"
