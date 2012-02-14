@@ -34,7 +34,7 @@ public class RecordView extends WdkView {
         return handler;
     }
 
-    public void setHandler(String handlerClass) {
+    public void setHandlerClass(String handlerClass) {
         this.handlerClass = handlerClass;
     }
 

@@ -1349,7 +1349,7 @@
           </attribute>
       </optional>
       <optional>
-          <attribute name="handler" />
+          <attribute name="handlerClass" />
       </optional>
   </define>
 
