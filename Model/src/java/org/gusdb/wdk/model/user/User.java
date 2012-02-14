@@ -26,8 +26,8 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
-import org.gusdb.wdk.view.RecordView;
-import org.gusdb.wdk.view.SummaryView;
+import org.gusdb.wdk.model.view.RecordView;
+import org.gusdb.wdk.model.view.SummaryView;
 import org.json.JSONException;
 
 /**
