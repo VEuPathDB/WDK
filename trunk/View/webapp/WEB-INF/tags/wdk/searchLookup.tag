@@ -99,7 +99,7 @@ var searchTable = $('#search-lookup').dataTable( {
         "sDom": '<"H"f<"#type-filter">lr>t<"F"ip>',
         "oLanguage": {
             // "sSearch": "<b style='font-size:120%'>To find a search, provide a keyword:</>",
-	    "sSearch": "<b style='font-size:120%'>Do you need help finding a search?</>",
+	    "sSearch": "<b style='font-size:120%'>Do you need help finding a feature search?</>",
             //  "sLengthMenu": "<span style='padding-left:50px'>Show _MENU_ searches</>",
 //	   "sInfo":"Showing _START_ to _END_ of _TOTAL_ searches",
 	   "sInfo":"Found _TOTAL_ searches",

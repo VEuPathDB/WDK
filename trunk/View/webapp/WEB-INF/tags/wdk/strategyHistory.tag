@@ -91,7 +91,7 @@
       </td>
 <td width="50%" style="text-align:right">
 <div title="Upon a new release, a step will become invalid if we modify the search form, either by adding a new parameter, or changing parameter values; you need to revise the step!"
-	id="invalid-legend"><img src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/> = strategy contains outdated steps, open to revise (<a style="" href="<c:url value="/whyInvalid.jsp"/>" target="_blank" onClick="poptastic(this.href); return false;">why?</a>)</div>
+	id="invalid-legend"><img src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/> = strategy contains outdated steps, open to revise (<a style="" href="<c:url value="/wdk/jsp/whyInvalid.jsp"/>" target="_blank" onClick="poptastic(this.href); return false;">why?</a>)</div>
 </td>
 
    </tr>
