@@ -28,8 +28,6 @@ import org.json.JSONObject;
  */
 public class StringParam extends Param {
 
-    private static final long serialVersionUID = 7561711069245980824L;
-    
     private List<WdkModelText> regexes = new ArrayList<WdkModelText>();
     private String regex;
     private int length = 0;

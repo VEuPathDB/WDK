@@ -45,6 +45,8 @@
           <ref name="searchCategory" />
 
           <ref name="declaredMacro" />
+
+          <ref name="constant" />
           
         </choice>
       </oneOrMore>
@@ -59,6 +61,15 @@
     <optional>
       <attribute name="excludeProjects" />
     </optional>
+  </define>
+
+  <!-- define constants -->
+  <define name="constant">
+    <element name="constant">
+      <attribute name="name" />
+      <ref name="IncludeExclude"/>
+      <text />
+    </element>
   </define>
 
   <!-- define base property list content -->
