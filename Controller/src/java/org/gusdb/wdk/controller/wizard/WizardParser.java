@@ -54,9 +54,7 @@ public class WizardParser extends XmlParser {
         }
 
         // validate the process model file
-        if (!validate(file.toURI().toURL()))
-            throw new WdkModelException("XML syntax validation failed on "
-                    + resource);
+        validate(file.toURI().toURL());
 
         Wizard wizard = (Wizard) digester.parse(new FileInputStream(file));
         return wizard;

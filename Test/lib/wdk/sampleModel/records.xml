@@ -42,7 +42,7 @@
     <recordClassSet name="SampleRecords" includeProjects="SampleDB">
 
         <recordClass name="SampleRecord" 
-          idPrefix="" type="Infrastructure"
+          type="Infrastructure"
           attributeOrdering="query_instance_id"
           excludeProjects="ToyDB">
 
@@ -73,8 +73,8 @@
 
                 <linkAttribute name="sample_query_link"
                                displayName="Sample Link in Query Ref" 
-                               visible="$$source_id$$"
-                               includeProjects="SampleDB">
+                                includeProjects="SampleDB">
+                    <displayText>$$source_id$$</displayText>
                     <url excludeProjects="ToyDB">
                         <![CDATA[@SAMPLE_URL@]]>
                     </url>
@@ -101,17 +101,17 @@
 
             <linkAttribute name="sample_link"
                            displayName="Sample Link in Record Class" 
-                           visible="$$source_id$$"
                            includeProjects="SampleDB">
-                <url>
+                     <displayText>$$source_id$$</displayText>
+               <url>
                     <![CDATA[@SAMPLE_URL@]]>
                 </url>
             </linkAttribute>
 
             <linkAttribute name="sample_link"
                            displayName="Sample Link in Record Class" 
-                           visible="$$source_id$$"
                            excludeProjects="SampleDB">
+                           <displayText>$$source_id$$</displayText>
                 <url>
                     <![CDATA[@SAMPLE_URL@]]>
                 </url>
@@ -133,8 +133,8 @@
                 <columnAttribute displayName="Query Name" name="query_name" includeProjects="ToyDB"/>
                 
                 <linkAttribute name="sample_table_link"
-                               displayName="Sample Link in Record Class" 
-                               visible="$$source_id$$">
+                               displayName="Sample Link in Record Class" >
+                           <displayText>$$source_id$$</displayText>
                     <url>
                         <![CDATA[@SAMPLE_URL@]]>
                     </url>
@@ -166,12 +166,11 @@
         </recordClass>
 
         <recordClass name="SampleRecord"  
-                     idPrefix="" 
                      type="Infrastructure" 
                      includeProjects="ToyDB" />
 
         <recordClass name="NestedRecord" 
-          idPrefix="" type="Infrastructure"
+          type="Infrastructure"
           attributeOrdering="query_instance_id"
           excludeProjects="ToyDB">
 
@@ -197,7 +196,6 @@
 
     <recordClassSet name="SampleRecords" excludeProjects="SampleDB">
         <recordClass name="SampleRecord"  
-                     idPrefix="" 
                      type="Infrastructure" 
                      includeProjects="ToyDB" />
     </recordClassSet>

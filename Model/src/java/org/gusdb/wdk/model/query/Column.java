@@ -8,11 +8,6 @@ import org.json.JSONObject;
 
 public class Column extends WdkModelBase {
 
-    /**
-     * 
-     */
-    private static final long serialVersionUID = -1895749085919850028L;
-
     // private static Logger logger = Logger.getLogger( Column.class );
 
     private String name;

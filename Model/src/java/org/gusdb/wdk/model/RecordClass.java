@@ -549,7 +549,7 @@ public class RecordClass extends WdkModelBase implements
 
         // resolve references in the attribute category tree
         resolveCategoryTreeReferences(model);
-        
+
         // resolve references for views
         for (SummaryView summaryView : summaryViewMap.values()) {
             summaryView.resolveReferences(model);
@@ -1115,10 +1115,12 @@ public class RecordClass extends WdkModelBase implements
             throws WdkModelException {
         if (filterName == null) return null;
         AnswerFilterInstance instance = filterMap.get(filterName);
-        if (instance == null)
-            throw new WdkModelException("The name [" + filterName
-                    + "] does not " + "match any filter instance of type "
-                    + getFullName());
+
+        // ignore the invalid filter name
+        // if (instance == null)
+        // throw new WdkModelException("The name [" + filterName
+        // + "] does not " + "match any filter instance of type "
+        // + getFullName());
         return instance;
     }
 
@@ -1308,7 +1310,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public Map<String, SummaryView> getSummaryViews() {
-        return  new LinkedHashMap<String, SummaryView>(summaryViewMap);
+        return new LinkedHashMap<String, SummaryView>(summaryViewMap);
     }
 
     public SummaryView getSummaryView(String viewName) throws WdkUserException {

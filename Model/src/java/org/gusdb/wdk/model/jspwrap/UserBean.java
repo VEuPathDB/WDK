@@ -24,7 +24,6 @@ import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.view.RecordView;
 import org.gusdb.wdk.model.view.SummaryView;
-import org.gusdb.wdk.model.view.WdkView;
 import org.json.JSONException;
 
 /**
