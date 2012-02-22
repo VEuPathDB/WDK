@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <wdkModel>
-    <modelName includeProjects="SampleDB" name="SampleDB" displayName="Sample DB" 
-               version="1.0"/>
-    <modelName includeProjects="ToyDB" name="ToyDB" displayName="Wdk Toy DB"
-               version="1.13"/>
+
+    <constant name="CONST01"><![CDATA[Master Const01]]></constant>
+    <constant name="CONST02" includeProjects="SampleDB"><![CDATA[Master Const02 includes SamppleDB]]></constant>
+    <constant name="CONST02" includeProjects="ToyDB"><![CDATA[Master Const02 includes ToyDB]]></constant>
+    <constant name="CONST03" excludeProjects="SampleDB"><![CDATA[Master Const02 excludes SamppleDB]]></constant>
+    <constant name="CONST03" excludeProjects="ToyDB"><![CDATA[Master Const02 excludes ToyDB]]></constant>
+
+    <modelName includeProjects="SampleDB" displayName="Sample DB" version="1.0" releaseDate="" />
+    <modelName includeProjects="ToyDB" displayName="Wdk Toy DB" version="1.13"/>
 
 
     <!-- ******************* -->
@@ -41,6 +46,11 @@
     <defaultPropertyList includeProjects="SampleDB, ToyDB" name="species">
         <value>T. gondii</value>
     </defaultPropertyList>
+
+    
+    <defaultPropertyList name="SUB_CONST01"><value>%%CONST01%%</value></defaultPropertyList>
+    <defaultPropertyList name="SUB_CONST02"><value>%%CONST02%%</value></defaultPropertyList>
+    <defaultPropertyList name="SUB_CONST03"><value>%%CONST03%%</value></defaultPropertyList>
 
 
     <import file="sampleModel/questions.xml" />

@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
@@ -57,7 +58,6 @@ import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.query.param.TimestampParam;
 import org.gusdb.wdk.model.view.RecordView;
 import org.gusdb.wdk.model.view.SummaryView;
-import org.gusdb.wdk.model.view.WdkView;
 import org.gusdb.wdk.model.xml.XmlAttributeField;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
@@ -71,9 +71,22 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+/**
+ * @author jerric
+ *
+ */
+/**
+ * @author jerric
+ * 
+ */
 public class ModelXmlParser extends XmlParser {
 
     private static final Logger logger = Logger.getLogger(ModelXmlParser.class);
+
+    private static final Pattern PROPERTY_PATTERN = Pattern.compile(
+            "\\@([\\w\\.\\-]+)\\@", Pattern.MULTILINE);
+    private static final Pattern CONSTANT_PATTERN = Pattern.compile(
+            "\\%\\%([\\w\\.\\-]+)\\%\\%", Pattern.MULTILINE);
 
     private URL xmlSchemaURL;
     private String xmlDataDir;
@@ -92,8 +105,8 @@ public class ModelXmlParser extends XmlParser {
             IOException, SAXException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException, InstantiationException, IllegalAccessException,
-            ClassNotFoundException {
-        logger.debug("Parsing model...");
+            ClassNotFoundException, URISyntaxException {
+        logger.debug("Loading configuration...");
 
         // get model config
         ModelConfig config = getModelConfig(projectId);
@@ -104,19 +117,185 @@ public class ModelXmlParser extends XmlParser {
         URL modelPropURL = makeURL(gusHome, "config/" + projectId
                 + "/model.prop");
 
-        // validate the master model file
-        logger.debug("Validating model files...");
-        if (!validate(modelURL))
-            throw new WdkModelException("Master model validation failed.");
-
-        logger.debug("Combining & preparing DOM...");
-
-        // replace any <import> tag with content from sub-models in the
-        // master model, and build the master document
-        Document masterDoc = buildMasterDocument(modelURL);
-
         // load property map
-        Map<String, String> properties = getPropMap(modelPropURL);
+        Map<String, String> properties = loadProperties(projectId,
+                modelPropURL, config);
+
+        // load master model
+        logger.debug("Resolving WDK model...");
+        Set<String> replacedMacros = new LinkedHashSet<String>();
+        Document masterDoc = buildMasterDocument(projectId, modelURL,
+                properties, replacedMacros);
+
+        // write document into an input source
+        logger.debug("Parsing WDK model...");
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        Source source = new DOMSource(masterDoc);
+        Result result = new StreamResult(output);
+        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        transformer.transform(source, result);
+        InputStream input = new ByteArrayInputStream(output.toByteArray());
+        WdkModel model = (WdkModel) digester.parse(input);
+
+        model.setXmlSchema(xmlSchemaURL); // set schema for xml data
+        model.setXmlDataDir(new File(xmlDataDir)); // consider refactoring
+        model.configure(config);
+        model.setResources();
+        model.setProperties(properties, replacedMacros);
+
+        return model;
+    }
+
+    private ModelConfig getModelConfig(String projectId) throws SAXException,
+            IOException, WdkModelException {
+        ModelConfigParser parser = new ModelConfigParser(gusHome);
+        return parser.parseConfig(projectId);
+    }
+
+    private Document buildMasterDocument(String projectId, URL wdkModelURL,
+            Map<String, String> properties, Set<String> replacedMacros)
+            throws SAXException, IOException, ParserConfigurationException,
+            WdkModelException, TransformerFactoryConfigurationError,
+            TransformerException, URISyntaxException {
+        // load constants from master file
+        Map<String, String> constants = loadConstants(projectId, wdkModelURL);
+
+        // get the xml document of the model
+        Document masterDoc = loadDocument(wdkModelURL, properties,
+                replacedMacros, constants);
+        Node root = masterDoc.getElementsByTagName("wdkModel").item(0);
+
+        // get all imports, and replace each of them with the sub-model
+        NodeList children = root.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (!(child instanceof Element)) continue;
+            Element importNode = (Element) child;
+            if (!importNode.getTagName().equals("import")) continue;
+
+            // get url to the first import
+            String href = importNode.getAttribute("file");
+            URL importURL = makeURL(gusHome, "lib/wdk/" + href);
+
+            // load constants from import doc, and merge it with master ones
+            Map<String, String> subConsts = loadConstants(projectId, importURL);
+            for (String key : constants.keySet()) {
+                if (!subConsts.containsKey(key)) // keep all sub-constants
+                    subConsts.put(key, constants.get(key));
+            }
+
+            Document importDoc = loadDocument(importURL, properties,
+                    replacedMacros, subConsts);
+
+            // get the children nodes from imported sub-model, and add them
+            // into master document
+            Node subRoot = importDoc.getElementsByTagName("wdkModel").item(0);
+            NodeList childrenNodes = subRoot.getChildNodes();
+            for (int j = 0; j < childrenNodes.getLength(); j++) {
+                Node childNode = childrenNodes.item(j);
+                if (childNode instanceof Element) {
+                    Node imported = masterDoc.importNode(childNode, true);
+                    root.appendChild(imported);
+                }
+            }
+        }
+
+        return masterDoc;
+    }
+
+    private Map<String, String> loadConstants(String projectId, URL modelXmlURL)
+            throws IOException, SAXException,
+            ParserConfigurationException, URISyntaxException {
+        Map<String, String> constants = new LinkedHashMap<String, String>();
+        // load xml document without validation
+        File file = new File(modelXmlURL.toURI());
+        String content = new String(Utilities.readFile(file));
+        Document document = loadDocument(content);
+        Node root = document.getElementsByTagName("wdkModel").item(0);
+        NodeList children = root.getChildNodes();
+        for (int i = 0; i < children.getLength(); i++) {
+            Node child = children.item(i);
+            if (child instanceof Element) {
+                Element element = (Element) child;
+                if (element.getTagName().equals("constant")) {
+                    String name = element.getAttribute("name");
+                    String includes = element.getAttribute("includeProjects");
+                    String excludes = element.getAttribute("excludeProjects");
+                    String value = element.getTextContent();
+                    if (includes.length() > 0) {
+                        // if includes is set, ignore excludes
+                        String[] array = includes.trim().split("\\s*,\\s*");
+                        if (arrayContains(array, projectId))
+                            constants.put(name, value);
+                    } else if (excludes.length() > 0) {
+                        String[] array = excludes.trim().split("\\s*,\\s*");
+                        if (!arrayContains(array, projectId))
+                            constants.put(name, value);
+                    } else { // no in/excludes, include by default
+                        constants.put(name, value);
+                    }
+                }
+            }
+        }
+        return constants;
+    }
+
+    private boolean arrayContains(String[] array, String key) {
+        for (String value : array) {
+            if (value.equals(key)) return true;
+        }
+        return false;
+    }
+
+    /**
+     * Valid the xml first, and then subsitute properties and constants, and at
+     * last return the parsed XML Document.
+     * 
+     * @param modelXmlURL
+     * @param properties
+     * @param replacedMacros
+     * @param constants
+     * @return
+     * @throws SAXException
+     * @throws IOException
+     * @throws ParserConfigurationException
+     * @throws WdkModelException
+     * @throws TransformerFactoryConfigurationError
+     * @throws TransformerException
+     * @throws URISyntaxException
+     */
+    private Document loadDocument(URL modelXmlURL,
+            Map<String, String> properties, Set<String> replacedMacros,
+            Map<String, String> constants) throws SAXException, IOException,
+            ParserConfigurationException, WdkModelException,
+            TransformerFactoryConfigurationError, TransformerException,
+            URISyntaxException {
+        // validate the sub-model
+        validate(modelXmlURL);
+
+        // load file into string
+        File file = new File(modelXmlURL.toURI());
+        String content = new String(Utilities.readFile(file));
+
+        // substitute the constants & properties. Constants first, since
+        // properties are more specific.
+        content = substituteConstants(content, constants);
+        content = substituteProps(content, properties, replacedMacros);
+
+        return loadDocument(content);
+    }
+
+    private Map<String, String> loadProperties(String projectId,
+            URL modelPropURL, ModelConfig config) throws IOException {
+        Map<String, String> propMap = new LinkedHashMap<String, String>();
+        Properties properties = new Properties();
+        properties.load(modelPropURL.openStream());
+        Iterator<Object> it = properties.keySet().iterator();
+        while (it.hasNext()) {
+            String propName = (String) it.next();
+            String value = properties.getProperty(propName);
+            propMap.put(propName, value);
+        }
 
         // add several config into the prop map automatically
         if (!properties.containsKey("PROJECT_ID")) {
@@ -134,105 +313,50 @@ public class ModelXmlParser extends XmlParser {
             properties.put("WDK_ENGINE_SCHEMA", engineSchema);
         }
 
-        Set<String> replacedMacros = new LinkedHashSet<String>();
-        InputStream modelXmlStream = substituteProps(masterDoc, properties,
-                replacedMacros);
-
-        logger.debug("Parsing model DOM...");
-        WdkModel model = (WdkModel) digester.parse(modelXmlStream);
-
-        model.setXmlSchema(xmlSchemaURL); // set schema for xml data
-        model.setXmlDataDir(new File(xmlDataDir)); // consider refactoring
-        model.configure(config);
-        model.setResources();
-        model.setProperties(properties, replacedMacros);
-
-        return model;
-    }
-
-    private ModelConfig getModelConfig(String projectId) throws SAXException,
-            IOException, WdkModelException {
-        ModelConfigParser parser = new ModelConfigParser(gusHome);
-        return parser.parseConfig(projectId);
-    }
-
-    private Document buildMasterDocument(URL wdkModelURL) throws SAXException,
-            IOException, ParserConfigurationException, WdkModelException {
-        // get the xml document of the model
-        Document masterDoc = buildDocument(wdkModelURL);
-        Node rootNode = masterDoc.getElementsByTagName("wdkModel").item(0);
-
-        // get all imports, and replace each of them with the sub-model
-        NodeList importNodes = masterDoc.getElementsByTagName("import");
-        for (int i = 0; i < importNodes.getLength(); i++) {
-            // get url to the first import
-            Node importNode = importNodes.item(i);
-            String href = importNode.getAttributes().getNamedItem("file").getNodeValue();
-            URL importURL = makeURL(gusHome, "lib/wdk/" + href);
-
-            // validate the sub-model
-            if (!validate(importURL))
-                throw new WdkModelException("sub model "
-                        + importURL.toExternalForm() + " validation failed.");
-
-            // logger.debug("Importing: " + importURL.toExternalForm());
-
-            Document importDoc = buildDocument(importURL);
-
-            // get the children nodes from imported sub-model, and add them
-            // into master document
-            Node subRoot = importDoc.getElementsByTagName("wdkModel").item(0);
-            NodeList childrenNodes = subRoot.getChildNodes();
-            for (int j = 0; j < childrenNodes.getLength(); j++) {
-                Node childNode = childrenNodes.item(j);
-                if (childNode instanceof Element) {
-                    Node imported = masterDoc.importNode(childNode, true);
-                    rootNode.appendChild(imported);
-                }
-            }
-        }
-        return masterDoc;
-    }
-
-    private Map<String, String> getPropMap(URL modelPropURL) throws IOException {
-        Map<String, String> propMap = new LinkedHashMap<String, String>();
-        Properties properties = new Properties();
-        properties.load(modelPropURL.openStream());
-        Iterator<Object> it = properties.keySet().iterator();
-        while (it.hasNext()) {
-            String propName = (String) it.next();
-            String value = properties.getProperty(propName);
-            propMap.put(propName, value);
-        }
         return propMap;
     }
 
-    private InputStream substituteProps(Document masterDoc,
-            Map<String, String> properties, Set<String> replacedMacros)
+    private String substituteConstants(String content,
+            Map<String, String> constants)
             throws TransformerFactoryConfigurationError, TransformerException,
-            WdkModelException {
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-
-        // transform the DOM doc to a string
-        Source source = new DOMSource(masterDoc);
-        Result result = new StreamResult(out);
-        Transformer transformer = TransformerFactory.newInstance().newTransformer();
-        transformer.transform(source, result);
-        String content = new String(out.toByteArray());
-
-        Pattern pattern = Pattern.compile("\\@([\\w\\.\\-]+)\\@",
-                Pattern.MULTILINE);
-        Matcher matcher = pattern.matcher(content);
+            WdkModelException, URISyntaxException {
+        Matcher matcher = CONSTANT_PATTERN.matcher(content);
 
         // search and substitute the property macros
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
         int prevPos = 0;
         while (matcher.find()) {
             String propName = matcher.group(1);
 
             // check if the property macro is defined
-            if (!properties.containsKey(propName))
-                continue;
+            if (!constants.containsKey(propName)) continue;
+
+            String propValue = constants.get(propName);
+            buffer.append(content.subSequence(prevPos, matcher.start()));
+            buffer.append(propValue);
+            prevPos = matcher.end();
+        }
+        if (prevPos < content.length())
+            buffer.append(content.substring(prevPos));
+
+        // construct input stream
+        return buffer.toString();
+    }
+
+    private String substituteProps(String content,
+            Map<String, String> properties, Set<String> replacedMacros)
+            throws TransformerFactoryConfigurationError, TransformerException,
+            WdkModelException, URISyntaxException {
+        Matcher matcher = PROPERTY_PATTERN.matcher(content);
+
+        // search and substitute the property macros
+        StringBuilder buffer = new StringBuilder();
+        int prevPos = 0;
+        while (matcher.find()) {
+            String propName = matcher.group(1);
+
+            // check if the property macro is defined
+            if (!properties.containsKey(propName)) continue;
 
             String propValue = properties.get(propName);
             buffer.append(content.subSequence(prevPos, matcher.start()));
@@ -245,7 +369,7 @@ public class ModelXmlParser extends XmlParser {
             buffer.append(content.substring(prevPos));
 
         // construct input stream
-        return new ByteArrayInputStream(buffer.toString().getBytes());
+        return buffer.toString();
     }
 
     protected Digester configureDigester() {
@@ -804,8 +928,7 @@ public class ModelXmlParser extends XmlParser {
         try {
             // parse the command line arguments
             cmdLine = parser.parse(options, args);
-        }
-        catch (ParseException exp) {
+        } catch (ParseException exp) {
             // oops, something went wrong
             System.err.println("");
             System.err.println("Parsing failed.  Reason: " + exp.getMessage());

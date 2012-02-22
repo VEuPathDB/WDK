@@ -1,8 +1,5 @@
 package org.gusdb.wdk.model.view;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.gusdb.wdk.model.WdkModelBase;
 
 public abstract class WdkView extends WdkModelBase {

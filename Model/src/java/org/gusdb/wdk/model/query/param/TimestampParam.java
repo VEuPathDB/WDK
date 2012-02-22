@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.util.Date;
 
-import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
