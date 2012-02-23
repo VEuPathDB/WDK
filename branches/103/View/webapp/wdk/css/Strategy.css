@@ -1,0 +1,1149 @@
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      = Strategy Styles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+#stage-stack { display: none; }
+
+#strategy_workspace {
+  margin-top:-27px;
+  position:relative;
+  text-align:right;
+  top:27px;
+}
+
+#strategy_results .resizable-wrapper {
+  padding-bottom: 10px;
+  border: 1px solid #000;
+  width: 100%;
+  z-index: 10;
+}
+
+#strategy_results .scrollable-wrapper {
+  overflow-y: scroll;
+  position: relative;
+  border: 1px solid #000;
+  height: 100%;
+}
+
+#strategy_results .ui-resizable-handle.ui-resizable-s {
+  background-color: #F0F0F0;
+  background-image: url(../images/bottomGrip.png);
+  background-position: center;
+  background-repeat: no-repeat;
+  bottom: 0;
+  height: 8px;
+}
+
+#strat-instructions {
+  background-color:#EDEDED;
+  border-color:#FFFFFF #CCCCCC #666677 #AAAAAA;
+  border-style:solid;
+  border-width:2px;
+  font-size:11pt;
+  height:100px;
+  left:50px;
+  padding:0 5px;
+  position:absolute;
+  text-align:center;
+  top:10px;
+  width:187px;
+}
+
+#strat-instructions img#bs-arrow {
+  height:94px;
+  left:118px;
+  margin:0 0 -79px;
+  position:relative;
+  top:-20px;
+}
+
+#strat-instructions-2 {
+  background-color:#EDEDED;
+  border-color:#FFFFFF #CCCCCC #666677 #AAAAAA;
+  border-style:solid;
+  border-width:2px;
+  font-size:11pt;
+  height:78px;
+  left:141px;
+  padding:0 5px;
+  position:absolute;
+  text-align:center;
+  top:10px;
+  width:187px;
+}
+
+#strat-instructions-2 img#ns-arrow {
+  height:46px;
+  left:-26px;
+  margin:0 0 -74px;
+  position:relative;
+  top:-57px;
+  width:45px;
+}
+
+#strat-instructions-2 img#bs-arrow {
+  height:86px;
+  left:73px;
+  margin:0 0 -79px;
+  position:relative;
+  top:-22px;
+}
+
+/* The main diagram container needs to be positioned relatively, so that
+      it's children can be positioned within it. */
+.diagram {
+  position: relative;
+  left:    0em;
+  background-color: #EDEDED;
+  height:   135px;
+  border-color: #ffffff #cccccc #666677 #aaaaaa;
+  border-style: ridge;
+  border-width: 4px;
+}
+
+.invalid-image:hover{
+  cursor:pointer;
+}
+
+/* Turn off this Opera/Mozilla feature. */
+.diagram abbr, .diagram acronym { border-bottom: 0 }
+
+div.sub_diagram {
+  position: relative;
+}
+  
+.diagram div li {
+  position: absolute;
+  margin:   0.8em;
+  padding:  0;
+}
+
+/* State names will be centered within their boxes. */
+.diagram h4 {
+  margin:      0;
+  padding:     0;
+  font-size:   1em;
+  font-weight: normal;
+  line-height: 2;
+  text-align:  center;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Rows, columns, heights, widths, and sizes. */
+.row1 { 
+  top: 17px;
+}
+
+.row2 { 
+  top: 65px;
+}
+
+.arrow {
+  position: relative;
+  z-index: 1;
+}
+
+.arrow.right {
+  background: url(../images/rightarrow92.png) no-repeat scroll 100% 0;
+  border: none;
+  height: 11px;
+  top: -2.3em
+}
+
+.arrow.right.size1 {
+  left: 8em;
+  width: 4.3em;
+}
+  
+.arrow.right.size2 {
+  left: 5.2em;
+  width: 7.1em;
+}
+  
+.arrow.right.size3 {
+  left: 5.2em;
+  width: 4.8em;
+}
+
+.arrow.right.size4 {
+  top: -1.5em;
+  left: 8.3em;
+  width: 4.2em;
+}
+
+.arrow.right.size5 {
+  left: 8em;
+  width: 2em;
+}
+    
+.arrow.down {
+  top: 0.35em;
+  left: 4em;  
+}
+  
+.operation {
+  height: 18px;
+  text-align: center;
+  margin-top: -4px;
+  margin-right: 2px;
+  padding: 5px 0 0 0;
+}
+
+td.operation, div.operation, li.operation {
+  background-image: url(../images/operationIcons.gif);
+}
+
+td.operation {
+  height: 18px;
+  width: 44px;
+  background-repeat: no-repeat;
+}
+
+.operation.MINUS {
+  border: 2px solid #FFFFFF;
+  height: 25px;
+  background-position: -30px -11px;
+}
+
+.operation.INTERSECT {
+  border: 2px solid #FFFFFF;
+  height: 25px;
+  background-position: -30px -47px;
+}
+
+.operation.UNION {
+  border: 2px solid #FFFFFF;
+  height: 25px;
+  background-position: -30px -83px;
+}
+  
+.operation.RMINUS {
+  border: 2px solid #FFFFFF;
+  height: 25px;
+  background-position: -30px -119px;
+}
+	
+.rightarrow3 {
+	position: absolute;
+	left: 54px;
+	top: -3.2em;
+	z-index: 1;
+	height: 11px;
+	width: 54px;
+}
+		
+.downarrow {
+	position: absolute;
+	left: 3.2em;
+	top: -0.6em;
+	z-index: 1; 	
+}
+	
+.operation {
+        background-repeat: no-repeat;
+	height: 18px;
+	text-align: center;
+	margin-top: -4px;
+	margin-right: 2px;
+	padding: 5px 0 0 0;
+}
+
+a.operation img {
+  height: 22px;
+  width: 8em;
+}
+
+span.stepNumber {
+  position: absolute;
+  top:9em;
+  left:2.7em;
+  font-weight:bold;
+  white-space:nowrap;
+}
+
+.operation[type="span"] {
+        background-image: url(../images/operationSpanIcons.gif);
+	background-position:0px -11px;
+}
+
+
+td.operation {
+	height: 18px;
+	width: 44px;
+}
+  
+h6.resultCount {
+  font-size:10px;
+  font-style: italic;
+  font-weight: bold;
+  text-align:center;
+  width:100%;
+  bottom: 0;
+}
+
+.operation.SPAN {
+	background-image:url("../images/operationSpanIcons.gif");
+	height:27px;
+}
+
+.operation.SPAN.overlap {
+	background-position:-32px -6px;
+}
+
+.operation.SPAN.b_contain_a {
+	background-position:-26px -42px;
+}
+
+.operation.SPAN.a_contain_b {
+	background-position:-26px -85px;
+}
+
+.operation.MINUS {
+	border: 2px solid #FFFFFF;
+	height: 25px;
+	background-position: -30px -11px;
+}
+
+.diagram div.simple {
+  border: 2px solid #000;
+}
+   
+.diagram div.simple, .diagram div.operation {
+  background-color: #d0cfcf;
+  border-width: 2px;
+}
+  
+.diagram div.operation {
+  margin: 0;
+  padding: 0;
+  border: 2px solid #EDEDED;
+  background-color: #EDEDED;
+  height: 37px;
+  background-repeat: no-repeat;
+  top:25px;
+}
+
+.diagram div.simple.selected,.diagram div.operation.selected {
+   background-color:#FFFFA0;
+}
+
+.diagram div.operation.selected {
+  border: 2px solid #ffffa0;
+}
+
+.diagram div.operation.MINUS {
+  background-position: 0px -11px;
+}
+
+.diagram div.operation.INTERSECT {
+  background-position: 0px -47px;
+}
+
+.diagram div.operation.UNION {
+  background-position: 0px -83px;
+}
+  
+.diagram div.operation.RMINUS {
+  background-position: 0px -119px;
+}
+	
+.diagram div.operation.SPAN.overlap {
+	background-position: -5px -10px;
+}
+	
+.diagram div.operation.SPAN.b_contain_a {
+	background-position: 0px -48px;
+}
+	
+.diagram div.operation.SPAN.a_contain_b {
+	background-position: 0px -88px;
+}
+
+.diagram div.transform {
+  border: none;
+  height: 3.4em;
+  width: 8.7em;
+  background: url(../images/TransformBg.gif) no-repeat 2px 0;
+}
+
+.diagram div.transform.selected {
+  background-image: url(../images/TransformBg_yellow.gif);
+}
+
+.diagram div.transform h6.resultCount {
+  bottom: 4px;
+}
+
+.diagram .stepBox div.expandedStep {
+  background:url(../images/expandedBg.gif) no-repeat;
+  border:none;
+  height:42px;
+  position:absolute;
+  top:10px;
+  left:4px;
+  width:102px;
+  z-index:0;
+}
+
+.diagram .stepBox div.invalidStep {
+  background:none;
+  border:none;
+  position:absolute;
+  opacity: 0.6;
+  z-index:499;
+}
+
+a.crumb_name img {
+  position:absolute;
+  left:-1px;
+  top:-1px;
+}
+  
+div.transform a.crumb_name img{
+  left: 9px;
+  top: 1px;
+}
+
+.crumb_details.operation_details {
+  width: 674px;
+}
+
+.crumb_details {
+  display: none;
+  background-color: #eee;
+  color: #000000;
+  border: solid black;
+  position:absolute;
+  z-index: 495;  //1000; so menubar menus appear on top
+  text-align: center;
+  padding-bottom: 5px;
+  min-width: 550px;   /* this allows for some space between Delete and X */
+}
+
+.crumb_details div.crumb_menu {
+  background-image:url(../images/crumbMenu.png);  
+  position: relative;
+  white-space: nowrap;
+  border-bottom: 2px solid #000000;
+  padding: 6px 0px 5px 0px;
+  min-width: 510px;
+  height: 12px;
+  cursor:move;
+}
+
+.crumb_menu span, .crumb_menu a {
+  font-size: 12px;
+}
+
+.crumb_menu span, .crumb_menu a.close_link {
+  float: right;
+  position: relative;
+  top: -3px;
+  right: 3px;
+  padding-left: 10px;
+}
+
+#bread_crumb_div td {
+  vertical-align: top;
+}
+
+.param {
+  margin: 0;
+  font-size: 12px;
+}
+
+.param .name {
+  font-weight: bold;
+}
+
+.question_name {
+  font-size: 14px;
+  margin: 3px 0px;
+}
+
+.question_name span {
+  font-weight: bold;
+}
+
+.crumb_details table {
+  margin: 7px 10px;
+  line-height: 1;
+  border-collapse: separate;
+  border-spacing: 2px;
+}
+
+.diagram div#record_name {
+  border: none;
+  position: absolute;
+  padding: 0px 0px 0px 5px;   
+  text-align: left;
+/*  color: #08438F; */
+  font-weight:bold;
+  text-decoration:none;
+}
+.diagram div.strategy_menu,
+.diagram div.strategy_name {
+  border: none;
+  position: absolute;
+  right: 0px;
+  font-size: 12pt;
+  margin-right: 18px;
+  top: 0;
+  text-align: right;
+}
+
+.diagram div.strategy_menu {
+  margin-top: 5px;
+}
+
+.diagram div.strategy_menu span.strategy_small_text {
+  font-size: 10px;
+  color: #888;
+
+}
+
+span.closeStrategy {
+  position: absolute;
+  top: 0;
+  right: 0;
+}
+
+
+.diagram h6.step_info_link {
+  border: none;
+  left: 86px;
+  top: -34px;
+  position: relative;
+}
+
+.diagram h6.step_info_link div.info_link_pop_up_div {
+  display: none;
+  background-color: lightYellow;
+  font-weight: normal;
+  font-size: 10px;
+  border: thin solid black;
+  color: #000000;
+}
+
+.diagram h6.step_info_link a:hover div.info_link_pop_up_div {
+  display: block;
+  position: relative;
+  top: -24px;
+  left: 15px;
+  z-index: 5;
+}
+
+/* First selector is for history page,
+   second selector is for strat diagram */
+.modal_div, .diagram .modal_div {
+  display: none;
+  background-color: #FFFFFF;
+  background-image: url(../images/filter_top.gif);
+  background-repeat: repeat-x;
+  border: 1px solid #888888;
+  padding: 5px;
+  z-index: 90;
+  text-align: left; /* Run tab: all content in Rename/Save As popups */
+}
+
+.modal_div .dragHandle {
+  border:1px solid grey;
+  top: -16px;
+  height: 14px;
+  cursor: default;
+}
+
+.dragHandle .modal_name {
+  border: none;
+  top: 0;
+  width: 100%;
+  position: absolute;
+}
+
+.save_strat, .diagram .save_strat {
+  position: absolute;
+  right: 5em;
+  top: 4em;
+  width: 23em;
+}
+
+.save_strat .dragHandle .modal_name {
+        margin:0;
+        padding:0;
+        position:absolute;
+}
+
+/* This selector is for Browse and Run  tab */
+.export_link, .diagram .export_link {
+  position: absolute;
+  right: 5em; /* for Run tab */
+  top: 4em;   /* for Run tab */
+}
+
+.export_link p, .diagram .export_link p {
+  font-size: 10pt;
+  color: #000000;
+  padding: 5px;
+}
+
+.diagram .filterImg {
+  position:relative;
+  float:right;
+  right:3px;
+  top:-10px;
+}
+
+.disabled {
+  opacity:0.4;
+  cursor:move;
+}
+
+a.disabled:hover, a.disabled:active {
+  color:#0B4796;
+}
+
+b.strat_help_title > span {
+  display: none;
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      = Add Step Popup Styles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+#filter_div {
+  width: 100%;
+  min-height: 50px;
+}
+  
+#instructions {
+  position: relative;
+  left: 70px;
+}
+
+#filter_div td {
+  vertical-align: top;
+}
+
+#query_selection {
+/*  left: 40px;*/
+  position:relative;
+  margin-top: 28px;  /* thiner Add Step   36px; */
+  width: 100%;
+}
+
+#query_form {
+	/*display: none;*/
+	position: absolute;
+	left:140px; 
+	top:140px;
+	min-width: 600px;
+	max-width: 78%;
+/*	min-width: 700px; */
+/* decrease to remove the 5th column in Finder 885px;*/  
+/*  increase to accommodate gene basket 775px; */ 
+/* increase to accommodate blast data type options   741px; */
+/*	max-width: 78%;  */ 
+/* increase to accommodate the basket */
+	background-color: #FFFFFF;
+	background-repeat: repeat-x;
+	background-position: 0 26px;   /* was 36px, decreased to have Add Step title thiner */
+	border: 1px solid #888888;	
+	padding: 0 8px 8px 8px;
+	z-index: 490;  //  999; ; so menubar menus appear on top, but under Details box
+}
+
+#query_form form {
+  position: relative;
+  margin-top:40px;
+}
+
+#query_form .dragHandle, .attributesList .dragHandle {
+  height: 23px;
+}
+
+#query_selection ul {
+  background-image: url(../images/new_step_menu.jpg);
+  list-style-type: none;
+  border: 1px solid #888;
+  padding: 3px;
+}
+
+#query_selection table {
+/*  background-image: url(../images/new_step_menu.jpg);*/
+  border-collapse: separate;
+  border-spacing: 3px;
+}
+
+#query_selection ul li ul{
+  z-index: 200;
+}
+#query_selection .top_nav {
+  line-height: 1.3;
+}
+
+#query_selection .top_nav ul {
+  position:absolute; 
+  display:none;
+}
+
+#query_selection .top_nav li {
+  position:relative;
+  width:11em;
+  text-align:left;
+  z-index:50;
+  padding-right: 13px;
+        white-space: nowrap;
+}
+
+#query_selection .top_nav li a:link, #query_selection .top_nav li a:visited{
+  color:#000000; /*414141;*/
+}
+
+#query_selection .top_nav li a:hover{
+  color:#B30101;
+}
+
+#query_selection .top_nav li:hover {
+} 
+
+#query_selection .top_nav li ul li {
+  text-align:left;
+  width: 350px;  /*  288px;  */  /*250px;*/
+}
+
+#query_selection .top_nav li:hover ul{
+  display: block;
+  left: 11.25em;
+  top: -4px;
+}
+
+.close_window, .close_selcolwindow {
+  position: absolute;
+  right: 0px;
+  top:0px;
+}
+
+.back {
+  position: absolute;
+  left: 0px;
+  top:0px;
+  z-index:1;
+}
+.back img, .close_window img  {
+	width:25px;
+}
+
+#question_title {
+  position:relative;
+  left: 65px;
+  top:4px;
+  font-size: 26px;
+}
+
+/* might not be in use */
+.form_subtitle {
+  position:relative;
+  left: 20px;
+  top:4px;
+  font-size: 14px;
+}
+
+#form_title {
+  position:relative;
+  left: 65px;
+  top:4px;
+  font-size: 26px;
+}
+
+
+
+.dragHandle {
+  position: absolute;
+  left: -1px;
+  background-color: Grey;
+  height: 14px;   /* thiner Add Step 25px; */
+  width: 100%;
+  background-image: url(../images/handbar.jpg);
+  cursor: move;
+  border-top: 1px solid #888888;   /* #345D9B; */
+  border-left: 1px solid #888888;   /*  #345D9B; */
+  border-right: 1px solid #888888;    /* #345D9B; */
+  border-bottom: 1px solid #000000;
+}
+
+#operations {
+	margin: 10px 20px 10px 10px; 
+}
+
+#operations ul li {
+  float: left;
+  margin: 2px 0;
+}
+
+#operations .opcheck {
+        clear: left;
+}
+
+#operations td {
+  padding: 0;
+        vertical-align:middle;
+	text-align:left;
+}
+
+.filter {
+  border: 1px solid black;
+}
+
+.filter.params, .filter.operators, .filter-button {
+       background-color: #fff;
+        margin: 4px;
+        margin-left: auto;
+        margin-right: auto;
+        width: 95%;
+        padding: 0;
+}
+
+.filter.params {
+}
+
+.filter.operators {
+}
+
+.filter-button {
+        padding-top: 10px;
+        text-align: center;
+}
+
+.filter_link {
+  /*position: relative;
+  float: right;
+  margin-right: 5px;
+  top: 65px;*/
+  color: #FFFFFF;
+}
+table.parameter-errors{
+  border-collapse:separate;
+  border:1px dotted red;
+  color:red;
+  margin:10px 0 0 22px;
+  width:95%;
+}
+table.parameter-errors td{
+  padding:6px 0 0 10px;
+}
+div.bottom-close{
+  position:relative;
+  bottom:8px;
+  right:5px;
+  top:-5px;
+  text-decoration:underline;
+}
+
+.crumb_details ul.question_name {
+    float:left;
+    position:relative;
+    left:50%;
+}
+
+.crumb_details ul.question_name li {
+    float:left;
+    font-weight:bold;
+    margin-top:8px;
+    position:relative;
+    right:50%;
+}
+
+.crumb_details ul.question_name li.operation {
+    width:36px;
+    margin-top: 2px;
+}
+
+.crumb_details .filter, .crumb_details .operation {
+    border:none;
+}
+
+.crumb_details #operations {
+    margin: auto;
+}
+
+.crumb_details #form_question {
+    border: 1px solid black;
+    background-color: white;
+    margin: 0 5px;
+    padding-bottom: 5px;
+}
+
+.crumb_details .form_subtitle {
+    font-size: 15px;
+}
+
+.crumb_details .param {
+  vertical-align: top;
+}
+
+.crumb_details .param.name {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.crumb_details .param.value {
+  max-width: 400px;
+  text-align: left;
+}
+
+/* -----------------------------------------------------------------------------
+      = Styles for All Strategies Tab
+ * -------------------------------------------------------------------------- */
+
+ul.menubar {
+    border-bottom: 1px solid;
+    list-style-image:none;
+    list-style-position:outside;
+    list-style-type:none;
+    float:left;
+    display:inline-block;
+    margin:0 0 5px;
+    padding:0 10px;
+    width: 98%;
+}
+
+.menubar li {;
+    float:left;
+    padding:0.24em 0;
+    margin:0;
+}
+
+.menubar li a {
+    color:black;
+    display:inline-block;
+    padding:0.24em 1em;
+    text-align:center;
+    text-decoration:none;
+}
+
+.menubar li a:hover {
+    color:black;
+    font-weight:bold;
+    padding:0.24em 0.8em;
+    position:relative;
+}
+
+.menubar .selected_type {
+    background-color: #FFFFA0;
+}
+
+.menubar .selected_type a {
+    color:black;
+    padding:0.24em 0.8em;
+    font-weight:bold;
+    position:relative;
+}
+
+.history_panel {
+    display: none;
+}
+
+.history_panel.enabled {
+    display: inline;
+}
+
+.history_panel table {
+  width: 100%;
+  margin: 0;
+  border-left: 1px solid black;
+  border-right: 1px solid black;
+}
+
+.history_panel table td {
+  padding: 0;    
+}
+
+.unsaved-strategies-body {
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.tbody-overflow {
+    height: 250px;
+}
+
+table.history_controls {
+//  display:inline-block;
+ font-size:130%;
+   font-weight:bold;
+   padding:3px 0px;
+}
+#invalid-step-text{
+  background-color:#FFFFFF;
+  padding:5px;
+  position:absolute;
+  right:95px;
+  top:25px;
+  width:260px;
+border-color:grey;
+}
+#invalid-legend{
+    font-weight:normal;
+}
+#strategy_messages {
+  min-height:100px;
+  display:none;
+}
+
+.diagram .diagramSection.scrollableSteps {
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  margin-right: 12px;
+  max-width: 86%;
+}
+
+.diagram .diagramSection, .diagram .diagramSection .stepBox {
+  border: none;
+  float: left;
+  position: relative;
+}
+
+.diagram .stepBox {
+  margin-left: 12px;
+}
+
+.diagram .stepBox .box {
+  width: 8em;
+  height: 3em; 
+  margin-right: 0.3em;
+}
+
+.diagram .stepBox div, .diagram .stepWrapper {
+  position: relative;
+}
+
+div#step_type{
+	margin-left:-10px;
+}
+div#sections{
+	line-height:1.25;
+	padding-right:50px;
+}
+div#sections td{
+	vertical-align: top;
+}
+
+/**************************************************
+ ******* CSS for AddStep PopUp ********************
+ *************************************************/
+.menu_section {
+   text-indent:-5px; 
+   margin-left:3px;
+}
+.qf_section{
+	height:190px;
+	margin-bottom:-11px;
+	margin-top:22px;
+	overflow-y:scroll;
+	padding:10px 8px 0 5px;
+	text-align:left;
+	width:170px;   /*  158px; */
+	margin-left:-6px;
+}
+.qf_section ul ul li{
+	text-indent:3px;
+}
+.qf_section ul li:hover{
+	cursor:pointer;
+	font-weight:bold;
+}
+
+.qf_section ul li.category{
+	background:url("/assets/images/menu_arrow.png") no-repeat scroll 100% 0 transparent;
+}
+
+#process-crumbs{
+	border-style:solid;
+	border-width:0 0 1px;
+	margin-bottom:-20px;
+	margin-top:30px;
+	padding-bottom:5px;
+	text-align:center;
+}
+#process-crumbs > div{
+	display:inline-block;
+	text-align:center;
+	width:56px;
+	opacity:0.3;
+	vertical-align:top;
+}
+#process-crumbs > div.active{
+	opacity:1.0;
+}
+#process-crumbs > div > p{
+	font-size:8pt;
+	font-style:italic;
+}
+.step-image{
+	width:40px;
+}
+.transition{
+	height:15px;
+	margin-top:13px;
+	vertical-align:top;
+	width:108px;
+	opacity:0.3;
+}
+
+
+/*div.operations input[type='radio']{
+	float:right;
+}
+div#span_popup{
+	float:right;
+}
+div#span_popup>table{
+	border:1px solid #BBBBBB;
+}
+td#middle{
+	border-right:1px solid #BBBBBB;
+	border-left:1px solid #BBBBBB;
+}
+ul#directions{
+	border:1px solid #BBBBBB;
+	font-size:8pt;
+	line-height:1.5;
+	padding:10px;
+	width:185px;
+}
+img.step_img{
+	width:20px;
+	position:relative;
+}
+img#step_1{
+	left:-325px;
+	top:-161px;
+}
+img#step_2{
+	left:21px;
+	top:-161px;
+}
+img#step_3{
+	left:-71px;
+	top:-161px;
+}
+img#step_4{
+	left:-120px;
+	top:-86px;
+}
+img#step_5{
+	left:-385px;
+	top:-22px;
+}
+*/
+
+/*CSS for Span Logic Operations Section*/
+
+#query_form #errors {
+  position: relative;
+  top: 35px;
+}
+
