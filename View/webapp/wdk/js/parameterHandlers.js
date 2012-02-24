@@ -1,7 +1,7 @@
 var dependedParams;
 var dependedValues;
 var displayTermMap;
-var oldValues
+var oldValues;
 var termDisplayMap;
 
 function initParamHandlers() {
