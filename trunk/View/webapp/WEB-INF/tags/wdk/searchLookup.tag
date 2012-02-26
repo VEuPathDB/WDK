@@ -99,7 +99,8 @@ var searchTable = $('#search-lookup').dataTable( {
         "sDom": '<"H"f<"#type-filter">lr>t<"F"ip>',
         "oLanguage": {
             // "sSearch": "<b style='font-size:120%'>To find a search, provide a keyword:</>",
-	    "sSearch": "<b style='font-size:120%'>Do you need help finding a feature search?</>",
+	    "sSearch": "<b style='font-size:120%'>Do you need help finding a <i>Search</i>?</b>.....Enter term:</>",
+  	//	"sSearch": "<b style='font-size:120%'>Enter term to find a <i>Search</i>:</>",
             //  "sLengthMenu": "<span style='padding-left:50px'>Show _MENU_ searches</>",
 //	   "sInfo":"Showing _START_ to _END_ of _TOTAL_ searches",
 	   "sInfo":"Found _TOTAL_ searches",
@@ -151,7 +152,7 @@ $("img#close-table").live("click", function () {
 <div  id="search-lookup-panel" style="width:90%"  
 	title='Enter a keyword; searches that contain the keyword in its name, category or description will be listed'>
 
-<a style="position:absolute;top:8px;left:70px;" href='javascript:void(0)'>
+<a style="position:absolute;top:8px;right:50px;" href='javascript:void(0)'>
 	<img id="close-table" style='vertical-align:middle' src='wdk/images/close.gif'>
 </a>
 
