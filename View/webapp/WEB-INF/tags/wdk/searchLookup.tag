@@ -11,8 +11,9 @@
 #search-lookup_wrapper #type-filter { display:inline; }
 #search-lookup td { border: 1px dotted #eeeeee; padding:2px}
 
-// removed the child condition >  because somehow a <b> tag appears between the <td> and the mycontent div....we need to figure out why..
-#search-lookup td div.mycontent { display: none; }  
+//removed the child condition >  because somehow a <b> tag appears between the <td> and the mycontent div....
+//#search-lookup td > div.mycontent { display: none; }  
+//done in a different way...
 
 .mycontent ul { padding: 3px 3px 3px 15px; list-style: disc outside none; }
 .mycontent li { padding-bottom: 3px; }
@@ -126,7 +127,8 @@ $("img#close-table").css("display","none");
 
 
 function toggleContent(ele) {
-    $(ele).siblings("div.mycontent").clone().dialog({width: 600});
+    var mydiv= $(ele).siblings("div.mycontent").clone().dialog({width: 600});
+    mydiv.css("display","block");
 }
 
 //add event on input box
@@ -184,7 +186,7 @@ $("img#close-table").live("click", function () {
       <td>
 	 <a title="Click to open a popup with a detailed description" href="javascript:void(0)" onclick="toggleContent(this)">${fn:substring(question.description,0,50)}...</a>
 
-         <div class="mycontent" title="${question.displayName}">
+         <div class="mycontent" title="${question.displayName}" style="display:none">
           <h3>Summary</h3>
           <div>${question.summary}</div>
 
