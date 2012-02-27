@@ -11,7 +11,9 @@
 #search-lookup_wrapper #type-filter { display:inline; }
 #search-lookup td { border: 1px dotted #eeeeee; padding:2px}
 
-#search-lookup td > div.mycontent { display: none; }
+// removed the child condition >  because somehow a <b> tag appears between the <td> and the mycontent div....we need to figure out why..
+#search-lookup td div.mycontent { display: none; }  
+
 .mycontent ul { padding: 3px 3px 3px 15px; list-style: disc outside none; }
 .mycontent li { padding-bottom: 3px; }
 .mycontent h3 { margin: 15px 0px 0px 0px; padding: 10px; background-color: #EEEEEE; }
