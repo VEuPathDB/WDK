@@ -98,7 +98,7 @@ var searchTable = $('#search-lookup').dataTable( {
 		"sScrollY": "90px",
 //		"bScrollInfinite": true,
 		"bScrollCollapse": true,
-        "aaSorting": [ [ 3, 'desc'] ],
+        "aaSorting": [[ 1, 'asc']],
         "sDom": '<"H"f<"#type-filter">lr>t<"F"ip>',
         "oLanguage": {
             // "sSearch": "<b style='font-size:120%'>To find a search, provide a keyword:</>",
