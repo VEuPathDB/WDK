@@ -159,3 +159,40 @@ function getWebAppUrl() {
 	scriptPath = scriptPath.substring(0, scriptPath.length - suffixLen);
 	return scriptPath;
 }
+
+
+/*  Old CSS for html tooltips
+div.htmltooltip{
+  background-color:#FFFFC3;
+  border:1px solid #BBBBBB;
+  font-size:98%;
+  left:-1000px;
+  padding:3px;
+  position:absolute;
+  top:-1000px;
+  width:250px;
+  z-index:1000;
+}
+*/
+
+function assignTooltips(selector) {
+        $(selector).qtip({
+          position: {
+	       adjust: {
+	         x: -20, y: 3
+	       }
+	     },
+          show: {
+            solo: true,
+            event: 'click mouseenter'
+          },
+          events: {
+            show: function(event, api) {
+              setTimeout("$('#ui-tooltip-" + api.get('id') + "').qtip('hide')", 10000);
+            }
+          },
+	     hide: {
+            event: 'click'
+          }
+        });
+}
