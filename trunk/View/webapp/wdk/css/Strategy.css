@@ -113,10 +113,11 @@ div.sub_diagram {
   position: relative;
 }
   
+//what is this for??
 .diagram div li {
-  position: absolute;
-  margin:   0.8em;
-  padding:  0;
+//  position: absolute;
+//  margin:   0.8em;
+//  padding:  0;
 }
 
 /* State names will be centered within their boxes. */
@@ -503,6 +504,10 @@ div.transform a.crumb_name img{
   color: #888;
 
 }
+.diagram div.strategy_menu span.strategy_small_text div{
+  color: black;
+
+}
 
 span.closeStrategy {
   position: absolute;
@@ -566,7 +571,7 @@ span.closeStrategy {
   position: absolute;
   right: 5em;
   top: 4em;
-  width: 23em;
+//  width: 23em;
 }
 
 .save_strat .dragHandle .modal_name {

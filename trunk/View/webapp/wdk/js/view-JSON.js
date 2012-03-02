@@ -9,6 +9,8 @@ var insert_popup = "Insert a new step to the left of this one, by either running
 var delete_popup = "Delete this step from the strategy; if this step is the only step in this strategy, this will delete the strategy also";
 var x_popup = "Close this popup";
 
+var save_warning = "<i><b>Important!</b> <ul class='cirbulletlist'><li>You are saving/sharing the search template, not the IDs in your result.</li><li>The IDs in <b>any step result might change</b> upon a new release (every other month), and we cannot recover your old result.</li><li>To keep a copy of your current result please <a href='javascript:void(0)'>download your IDs</a>.</li></ul></i><br>";
+
 	//Simple Steps
 var ss_rename_popup = "Rename this search";
 var ss_view_popup = "View the results of this search in the Results area below";
@@ -516,7 +518,7 @@ function createStrategyName(strat){
 
 	if(json.saved){
 		share = "<a id='share_" + id + "' title='Email this URL to your best friend.' href=\"javascript:void(0)\" onclick=\"showExportLink('" + id + "')\"><b style='font-size:120%'>Share</b></a>"+
-		"<div class='modal_div export_link' id='export_link_div_" + id + "'>" +
+		"<div class='modal_div export_link' id='export_link_div_" + id + "' style='width:500px'>" +
 	        "<div class='dragHandle'>" +
 		"<div class='modal_name'>"+
 		"<span class='h3left'>Copy and paste URL below to email</span>" + 
@@ -525,6 +527,7 @@ function createStrategyName(strat){
 		"<img alt='Close' src='wdk/images/Close-X.png' height='16' />" +
 		"</a>"+
 		"</div>"+
+save_warning +
 		"<input type='text' size=" + (exportURL.length-6) + " value=" + exportURL + " readonly='true' />" +
 		"</div>";
 	}else if(guestUser == 'true'){
@@ -544,7 +547,7 @@ function createStrategyName(strat){
 	else {
 		save = "<a id='save_" + id + "' title='A saved strategy is like a snapshot, it cannot be changed.' class='save_strat_link' href='javascript:void(0)' onclick=\"showSaveForm('" + id + "', true)\"><b style='font-size:120%'>" + sTitle + "</b></a>";
 	}
-	save += "<div id='save_strat_div_" + id + "' class='modal_div save_strat'>" +
+	save += "<div id='save_strat_div_" + id + "' class='modal_div save_strat' style='width:500px'>" +
 		"<div class='dragHandle'>" +
 		"<div class='modal_name'>"+
 		"<span class='h3left'>" + sTitle + "</span>" + 
@@ -553,9 +556,10 @@ function createStrategyName(strat){
 		"<img alt='Close' src='wdk/images/Close-X.png' height='16' />" +
 		"</a>"+
 		"</div>"+
-		"<form onsubmit='return validateSaveForm(this);' action=\"javascript:saveStrategy('" + id + "', true)\">"+
+		"<form id='save_strat_form' onsubmit='return validateSaveForm(this);' action=\"javascript:saveStrategy('" + id + "', true)\">"+
+save_warning +
 		"<input type='hidden' value='" + id + "' name='strategy'/>"+
-		"<input type='text' value='' name='name'/>"+
+		"<input type='text' value='' name='name' size ='50'/>"+
 		"<input style='margin-left:5px;' type='submit' value='Save'/>"+
 		"</form>"+
 		"</div>";

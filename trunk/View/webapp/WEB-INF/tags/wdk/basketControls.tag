@@ -3,7 +3,11 @@
 
 <table width="100%" id="basket-control">
   <tr>
-    <td>
+
+<td style="padding:1px;vertical-align:middle" width="50%">
+<table>
+<tr>
+    <td style="padding:1px">
       <input id="refresh-basket-button" type="button" value="Refresh" onClick="refreshBasket();"/>
     </td>
     <td>
@@ -14,9 +18,21 @@
     <td>
       <imp:customBasketControl />
     </td>
+</td>
+</tr>
+</table>
+</td>
+
+<td width="50%">
+<table align="right">
+<tr>
     <td style="text-align:right;padding:3px 0 0;vertical-align:top">
-	<span style="font-style:italic;margin-bottom:7px;margin-right:5px;position:relative;right:5px;"><b>Note on invalid IDs:</b> Changes that occur between database releases might invalidate some of the IDs in your Baskets. <br>We will map your old IDs to new IDs. Unmapped old IDs will not be included in your basket.</span>
+	<span style="color:darkred;font-style:italic;margin-bottom:7px;margin-right:5px;position:relative;right:5px;"><b>Note on new releases:</b> Annotation changes might make IDs in your baskets outdated. <br>We will map your old IDs to new IDs. Unmapped IDs will not be kept.<br>To keep a copy of your current basket please download your IDs.</span>
     </td>
+</tr>
+</table>
+</td>
+
   </tr>
 </table>
 

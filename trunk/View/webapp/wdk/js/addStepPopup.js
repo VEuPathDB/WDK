@@ -56,7 +56,7 @@ function showSaveForm(stratId, save, share){
 	var stratName = getStrategyOBJ(stratId).name;
 	$("input[type=text]", saveForm).attr("value", stratName);
        if (save){
-         $("form", saveForm).attr("action", "javascript:saveOrRenameStrategy(" + stratId + ", true, true, false)");
+         $("form", saveForm).attr("id","save_strat_form","action", "javascript:saveOrRenameStrategy(" + stratId + ", true, true, false)");
          $("span.h3left", saveForm).text("Save As");
          $("input[type=submit]", saveForm).attr("value", "Save");
          if (share) {
@@ -64,11 +64,15 @@ function showSaveForm(stratId, save, share){
                   $("form", saveForm).append("<input type='hidden' name='actionStrat' value='" + stratId + "'/>");
 		  $("span.h3left", saveForm).text("First you need to Save it!");
          }
+	// we want save_warning, defined in view-JSON.js, to appear for save and share only
+	 $("form#save_strat_form i").css("display","block");
        }
        else{
-         $("form", saveForm).attr("action", "javascript:saveOrRenameStrategy(" + stratId + ", true, false, false)");
+         $("form", saveForm).attr("id","save_strat_form","action", "javascript:saveOrRenameStrategy(" + stratId + ", true, false, false)");
          $("span.h3left", saveForm).text("Rename");
          $("input[type=submit]", saveForm).attr("value", "Rename");
+	// we want save_warning, defined in view-JSON.js, to appear for save and share only
+	 $("form#save_strat_form i").css("display","none");
        }
 	saveForm.show();
          $("input[name='name']", saveForm).focus().select();
