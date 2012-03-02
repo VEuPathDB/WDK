@@ -2,6 +2,8 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
+
 
 <%@ attribute name="model"
              type="org.gusdb.wdk.model.jspwrap.WdkModelBean"
@@ -14,6 +16,13 @@
               required="false"
               description="Currently active user object"
 %>
+
+<c:set var="releaseDate" value="${applicationScope.wdkModel.releaseDate}" />
+<c:set var="inputDateFormat" value="dd MMMM yyyy HH:mm"/>
+<fmt:setLocale value="en-US"/>
+<fmt:parseDate pattern="${inputDateFormat}" var="rlsDate" value="${releaseDate}"/> 
+<fmt:formatDate var="releaseDate_formatted" value="${rlsDate}" pattern="d MMM yyyy"/>
+
 <!--strategyHistory.tag-->
 <c:set var="unsavedStrategiesMap" value="${user.unsavedStrategiesByCategory}"/>
 <c:set var="savedStrategiesMap" value="${user.savedStrategiesByCategory}"/>
@@ -28,12 +37,12 @@
   </c:when>
   <c:otherwise>
 
-<!--
-<ul style="font-style:italic;margin-bottom:7px;border:1px solid black"><b>Note on new releases:</b> Changes might affect your steps in two ways:
-<li>- <b>Steps results may vary</b> (different set of IDs returned) because all steps are rerun with the new data,
-<li>- A step will become invalid if <b>we modify the search form</b>, either by adding a new parameter, or changing parameter values: <b>you will need to revise the step</b>
-</ul>
--->
+<!-- to make appear on a popup probably -->
+<div style="text-align:center;font-size:95%;font-style:italic;margin-bottom:7px;border:1px outset darkred;padding:3px;color:darkred">
+<b>Important note on new releases:</b> About every 2 months we release new data or annotation (latest release ${releaseDate_formatted}.)
+<br>The IDs in <b>any step result might change</b> after a release.
+</div>
+
 
   <c:set var="typeC" value="0"/>
   <!-- begin creating tabs for history sections -->
@@ -90,8 +99,8 @@
          <input type="button" value="Delete" onclick="handleBulkStrategies('delete')"/>
       </td>
 <td width="50%" style="text-align:right">
-<div title="Upon a new release, a step will become invalid if we modify the search form, either by adding a new parameter, or changing parameter values; you need to revise the step!"
-	id="invalid-legend"><img src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/> = strategy contains outdated steps, open to revise (<a style="" href="<c:url value="/wdk/jsp/whyInvalid.jsp"/>" target="_blank" onClick="poptastic(this.href); return false;">why?</a>)</div>
+<div title="Also upon a new release, a step will become outdated if we modify the search form, by changing a parameter or its possible values; you need to revise the step!"
+	id="invalid-legend"><img src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/> = strategy contains outdated steps, open to revise (<a style="" href="<c:url value="/wdk/jsp/whyInvalid.jsp"/>" target="_blank" onClick="poptastic(this.href,'unused',250,800); return false;">why?</a>)</div>
 </td>
 
    </tr>
@@ -136,7 +145,8 @@
 <c:set var="request_uri" value="${fn:substringBefore(request_uri, '/')}" />
 <c:set var="exportBaseUrl" value = "${scheme}://${serverName}/${request_uri}/im.do?s=" />
 
-<!-- popups for save/rename forms -->
+<!-- popups for save/rename/share forms -->
+<!-- (though share does not need a form, just an input box with the url inside) -->
 
     <div class='modal_div save_strat' id="hist_save_rename">
       <div class='dragHandle'>
@@ -185,3 +195,14 @@
 </c:choose> 
 <!-- end of deciding strategy emptiness -->
 <!--end strategyHistory.tag-->
+
+
+
+<!-- save_warning is defined in view-JSON.js, where the popups for save/rename/shared in Opened tab, use it -->
+<!--  history.js prepares the form defined here, used for these popups in the All tab (history view) -->
+<!-- the form is shared by all strategies, we need to add the message only once -->
+<script type="text/javascript">
+	var myform = $("form#save_strat_form");
+	myform.prepend(save_warning);
+	$("i,form#save_strat_form").css("font-size","95%");
+</script>

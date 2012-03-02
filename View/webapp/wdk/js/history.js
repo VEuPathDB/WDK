@@ -103,7 +103,7 @@ function showHistSave(ele, stratId, save,share) {
        var stratName = $("div#text_" + stratId + " span").text();
        var popup = perm_popup.clone();
 	   popup.addClass('viewed-popup-box');
-	   $("input[name='name']", popup).attr("value",stratName);
+	   $("input[name='name']", popup).attr("value",stratName).attr("size",40);
 	   $("input[name='strategy']",popup).attr("value",stratId);
        if (save){
          $("form", popup).attr("action", "javascript:saveOrRenameStrategy(" + stratId + ", true, true, true)");
@@ -117,6 +117,7 @@ function showHistSave(ele, stratId, save,share) {
          $("form", popup).attr("action", "javascript:saveOrRenameStrategy(" + stratId + ", true, false, true)");
          $("span.h3left", popup).text("Rename");
          $("input[type=submit]", popup).attr("value", "Rename");
+
        }
        var btnOffset = $(ele).offset();
        var prntOffset = $("div#search_history").offset();
@@ -124,6 +125,13 @@ function showHistSave(ele, stratId, save,share) {
        popup.css("right", "292px");
        popup.appendTo(perm_popup.parent()).show();
 	$("input[name='name']", popup).focus().select();
+
+   if (save){
+	$("form#save_strat_form i").css("display","block");
+   }
+       else{
+	$("form#save_strat_form i").css("display","none");
+   }
 }
 
 function showHistShare(ele, stratId, url) {
@@ -133,16 +141,19 @@ function showHistShare(ele, stratId, url) {
 	popup.addClass('viewed-popup-box');
 	$("span.h3left", popup).text("Copy and paste URL below to email");
 	$("input[name='name']", popup).attr("value",url).attr("readonly",true).attr("size",url.length - 6);
-	$("input[type=submit]", popup).attr("value", "Ok").click(function(){
-		closeModal();
-		return false;
-	});
+ 	$("input[type=submit]", popup).attr("value", "Ok").click(function(){
+                closeModal();
+                return false;
+      });
 	var btnOffset = $(ele).offset();
     var prntOffset = $("div#search_history").offset();
     popup.css("top", (btnOffset.top - prntOffset.top - 40) + "px");
     popup.css("right", "292px");
-    popup.css("width", "43.5em");
+    //popup.css("width", "43.5em");
     popup.appendTo(perm_popup.parent()).show();
+
+
+
 }
 
 function selectAllHist(type) {
