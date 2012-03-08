@@ -21,6 +21,10 @@
   <script type="text/javascript" src="/assets/js/${wdkQuestion.customJavascript}"></script>
 </c:if>
 
+<script type="text/javascript">
+  $(function() { assignParamTooltips('.help-link'); });
+</script>
+
 <c:forEach items="${paramGroups}" var="paramGroupItem">
     <c:set var="group" value="${paramGroupItem.key}" />
     <c:set var="paramGroup" value="${paramGroupItem.value}" />
@@ -87,7 +91,7 @@
                 <%-- an individual param (can not use fullName, w/ '.', for mapped props) --%>
                 <tr>
                     <td width="30%" align="right" style="vertical-align:top">
-                        <span style="font-weight:bold">${qP.prompt}</span> <img id="help_${pNam}" class="help_link" rel="htmltooltip" src="wdk/images/question.png" />
+                        <span style="font-weight:bold">${qP.prompt}</span> <img class="help-link" title="${fn:escapeXml(qP.help)}" src="wdk/images/question.png" />
                     </td>
                     <c:choose>
                         <c:when test="${paramType eq 'EnumParam' || paramType eq 'FlatVocabParam'}">
@@ -140,20 +144,6 @@
         </c:forEach> <%-- end of forEach params --%>
         
         </table>
-    
-        <%-- prepare the help info --%>
-        <c:forEach items="${paramGroup}" var="paramItem">
-            <c:set var="pNam" value="${paramItem.key}" />
-            <c:set var="qP" value="${paramItem.value}" />
-            
-            <c:set var="isHidden" value="${qP.isVisible == false}"/>
-            <c:set var="isReadonly" value="${qP.isReadonly == true}"/>
-    
-                <c:if test="${!isHidden}">
-                   <div class="htmltooltip" id="help_${pNam}_tip">${qP.help}</div>
-                </c:if>
-            
-        </c:forEach>
     
         </div> <%-- end of group-detail div --%>
     </div> <%-- end of param-group div --%>
