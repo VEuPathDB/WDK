@@ -105,10 +105,6 @@ function initStrategyPanels() {
 		dataType: "html",
 		success: function(data) {
 			$("#strategy_new").html(data);
-				try {
-					customNewTab();
-				}
-				catch(e) {}
 		},
 		error: function() {
 			$("#tab_strategy_new").parent("li").remove();
