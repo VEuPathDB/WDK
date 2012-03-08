@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class TreeNode {
@@ -95,6 +96,9 @@ public class TreeNode {
 		return _booleanFields[fieldId.ordinal()];
 	}
 	
+	public void turnOnSelectedLeaves(String... names) {
+		setBooleansToTrue(BoolField.SELECTED, Arrays.asList(names));
+	}
 	public void turnOnSelectedLeaves(List<String> selectedList) {
 		setBooleansToTrue(BoolField.SELECTED, selectedList);
 	}
@@ -105,6 +109,9 @@ public class TreeNode {
 		return getNamesOfLeavesWithBoolean(BoolField.SELECTED, true);
 	}
 	
+	public void setDefaultLeaves(String...names) {
+		setBooleansToTrue(BoolField.DEFAULT, Arrays.asList(names));
+	}
 	public void setDefaultLeaves(List<String> defaultList) {
 		setBooleansToTrue(BoolField.DEFAULT, defaultList);
 	}
