@@ -8,23 +8,10 @@
 /* the default font size has to be 12px, otherwise the step boxes will not be aligned correctly. */
 body { font-size: 12px; }
 
-div.htmltooltip{
-  background-color:#FFFFC3;
-  border:1px solid #BBBBBB;
-  font-size:98%;
-  left:-1000px;
-  padding:3px;
-  position:absolute;
-  top:-1000px;
-  width:250px;
-  z-index:1000;
-}
-
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      = Header & Menu styles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 #menu #favorite-menu { float: right; }
-
 
 
 /* -----------------------------------------------------------------------------
