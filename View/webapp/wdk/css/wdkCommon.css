@@ -85,6 +85,13 @@ table.paneltoggle {
         padding-left: 3px;
 }
 
+table.recordTable {
+  border-bottom: black solid thin;
+  border-top: black solid thin;
+  border-right: black solid thin;
+  border-left: black solid thin;
+}
+
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =favorites.tag
@@ -508,6 +515,9 @@ tr.rowMedium td {
     padding-left:   5px;
     padding-top:    5px;
     padding-bottom: 5px;
+    padding-right: 4px;
+    border-left: black dotted thin;
+    border-right: black dotted thin;
 }
 tr.rowLight {
     background-color: #FFFFFF;
@@ -519,7 +529,10 @@ tr.rowLight {
 tr.rowLight td {
     padding-left:   5px;
     padding-top:    5px;
+    padding-right: 5px;
     padding-bottom: 5px;
+    border-left: black dotted thin;
+    border-right: black dotted thin;
 }
 
 td.recordClassTitle{
@@ -536,13 +549,18 @@ tr.headerRow {
 	background: #EFEFEF;
 }
 
+tr.headerRow th {
+   border-left: black solid thin;
+   border-right: black solid thin;
+}
+
 
 /* used in gene record pages for section titles (top/bottom border look */
 tr.headerRow > td,th {
    border-width:2px 0;
    border-style:solid;
-   padding: 3px;
    vertical-align: middle;
+   padding: 4px;
 }
 
 .formPopup {
