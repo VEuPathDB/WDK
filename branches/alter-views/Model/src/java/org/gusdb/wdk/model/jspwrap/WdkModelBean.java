@@ -109,6 +109,30 @@ public class WdkModelBean {
         return questions;
     }
 
+    // getWebsiteQuestions does not include all expression questions included in an internal page
+    // we need this for the searchesLookup table
+ public Map<QuestionBean, CategoryBean> getAllQuestions()
+            throws WdkModelException {
+        Map<QuestionBean, CategoryBean> questions = new LinkedHashMap<QuestionBean, CategoryBean>();
+        Map<String, CategoryBean> categories = getWebserviceRootCategories();
+        Stack<CategoryBean> stack = new Stack<CategoryBean>();
+        stack.addAll(categories.values());
+        while (!stack.isEmpty()) {
+            CategoryBean category = stack.pop();
+            for (QuestionBean question : category.getWebserviceQuestions()) {
+                questions.put(question, category);
+            }
+            // add the children in reversed order to make sure they have the
+            // correct order when popping out from stack.
+            List<CategoryBean> children = new ArrayList<CategoryBean>(
+                    category.getWebserviceChildren().values());
+            for (int i = children.size() - 1; i >= 0; i--) {
+                stack.push(children.get(i));
+            }
+        }
+        return questions;
+    }
+
     /**
      * @return Map of questionSetName --> {@link QuestionSetBean}
      */
