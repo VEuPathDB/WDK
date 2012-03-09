@@ -1,6 +1,8 @@
 package org.gusdb.wdk.model;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -71,11 +73,11 @@ public class Utilities {
     public static final int DEFAULT_PAGE_SIZE = 20;
 
     public static final int DEFAULT_SUMMARY_ATTRIBUTE_SIZE = 6;
-    
+
     public static final int DEFAULT_WEIGHT = 10;
-    
+
     public static final int MAX_PK_COLUMN_COUNT = 3;
-    
+
     public static final int MAX_PK_COLUMN_VALUE_SIZE = 1999;
 
     public static final String INTERNAL_PARAM_SET = "InternalParams";
@@ -89,15 +91,44 @@ public class Utilities {
 
     public static final String PARAM_PROJECT_ID = COLUMN_PROJECT_ID;
     public static final String PARAM_USER_ID = COLUMN_USER_ID;
-    
+
     public static final String MACRO_ID_SQL = "##WDK_ID_SQL##";
-    
+
     public static final String QUERY_CTX_QUESTION = "wdk-question";
     public static final String QUERY_CTX_PARAM = "wdk-param";
     public static final String QUERY_CTX_QUERY = "wdk-query";
     public static final String QUERY_CTX_USER = "wdk-user";
 
+    /*
+     * Inner class to act as a JAF datasource to send HTML e-mail content
+     */
+    private static class HTMLDataSource implements javax.activation.DataSource {
 
+        private String html;
+
+        public HTMLDataSource(String htmlString) {
+            html = htmlString;
+        }
+
+        // Return html string in an InputStream.
+        // A new stream must be returned each time.
+        public InputStream getInputStream() throws IOException {
+            if (html == null) throw new IOException("Null HTML");
+            return new ByteArrayInputStream(html.getBytes());
+        }
+
+        public OutputStream getOutputStream() throws IOException {
+            throw new IOException("This DataHandler cannot write HTML");
+        }
+
+        public String getContentType() {
+            return "text/html";
+        }
+
+        public String getName() {
+            return "JAF text/html dataSource to send e-mail only";
+        }
+    }
 
     public static String encrypt(String data) throws WdkModelException,
             NoSuchAlgorithmException {
@@ -187,15 +218,16 @@ public class Utilities {
             jsRow = (JSONArray) jsResult.get(row);
             for (int col = 0; col < result[row].length; col++) {
                 Object cell = jsRow.get(col);
-                result[row][col] = (cell == null || cell == JSONObject.NULL)
-                        ? null : cell.toString();
+                result[row][col] = (cell == null || cell == JSONObject.NULL) ? null
+                        : cell.toString();
             }
         }
         return result;
     }
 
     public static void sendEmail(WdkModel wdkModel, String email, String reply,
-            String subject, String content) throws WdkUserException, WdkModelException  {
+            String subject, String content) throws WdkUserException,
+            WdkModelException {
         String smtpServer = wdkModel.getModelConfig().getSmtpServer();
 
         logger.debug("Sending message to: " + email + ", reply: " + reply
@@ -210,53 +242,29 @@ public class Utilities {
         // instantiate a message
         Message message = new MimeMessage(session);
         try {
-        message.setFrom(new InternetAddress(reply));
-        message.setReplyTo(new Address[] { new InternetAddress(reply) });
-        message.setRecipient(Message.RecipientType.TO, new InternetAddress(
-                email));
-        message.setSubject(subject);
-        message.setSentDate(new Date());
-        // set html content
-        message.setDataHandler(new DataHandler(new HTMLDataSource(content)));
+            message.setFrom(new InternetAddress(reply));
+            message.setReplyTo(new Address[] { new InternetAddress(reply) });
+            message.setRecipient(Message.RecipientType.TO, new InternetAddress(
+                    email));
+            message.setSubject(subject);
+            message.setSentDate(new Date());
+            // set html content
+            message.setDataHandler(new DataHandler(new HTMLDataSource(content)));
 
-        // send email
-        Transport.send(message);
-        } catch(AddressException ex) {
+            // send email
+            Transport.send(message);
+        } catch (AddressException ex) {
             throw new WdkUserException(ex);
         } catch (MessagingException ex) {
             throw new WdkModelException(ex);
         }
     }
 
-    /*
-     * Inner class to act as a JAF datasource to send HTML e-mail content
-     */
-    private static class HTMLDataSource implements javax.activation.DataSource {
-
-        private String html;
-
-        public HTMLDataSource(String htmlString) {
-            html = htmlString;
-        }
-
-        // Return html string in an InputStream.
-        // A new stream must be returned each time.
-        public InputStream getInputStream() throws IOException {
-            if (html == null) throw new IOException("Null HTML");
-            return new ByteArrayInputStream(html.getBytes());
-        }
-
-        public OutputStream getOutputStream() throws IOException {
-            throw new IOException("This DataHandler cannot write HTML");
-        }
-
-        public String getContentType() {
-            return "text/html";
-        }
-
-        public String getName() {
-            return "JAF text/html dataSource to send e-mail only";
-        }
+    public static byte[] readFile(File file) throws IOException {
+        byte[] buffer = new byte[(int) file.length()];
+        InputStream stream = new FileInputStream(file);
+        stream.read(buffer, 0, buffer.length);
+        stream.close();
+        return buffer;
     }
-
 }

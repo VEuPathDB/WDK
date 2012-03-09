@@ -45,11 +45,11 @@ public class AnswerParam extends Param {
     private AnswerParam(AnswerParam param) {
         super(param);
         if (param.recordClassRefs != null)
-            this.recordClassRefs = new ArrayList<RecordClassReference>(
-                    param.recordClassRefs);
+            this.recordClassRefs =
+                    new ArrayList<RecordClassReference>(param.recordClassRefs);
         if (param.recordClasses != null)
-            this.recordClasses = new LinkedHashMap<String, RecordClass>(
-                    param.recordClasses);
+            this.recordClasses =
+                    new LinkedHashMap<String, RecordClass>(param.recordClasses);
     }
 
     /**
@@ -92,10 +92,11 @@ public class AnswerParam extends Param {
      * org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel model) throws WdkModelException {
+    public void resolveReferences(WdkModel model) throws WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, SQLException,
+            JSONException {
+        super.resolveReferences(model);
         if (resolved) return;
-
-        this.wdkModel = model;
 
         // resolve recordClass ref
         for (RecordClassReference reference : recordClassRefs) {
@@ -107,15 +108,17 @@ public class AnswerParam extends Param {
 
         // make sure all record classes has the same primary key definition
         RecordClass recordClass = recordClasses.values().iterator().next();
-        String[] columns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
+        String[] columns =
+                recordClass.getPrimaryKeyAttributeField().getColumnRefs();
         Set<String> set = new HashSet<String>();
         for (String column : columns) {
             set.add(column);
         }
         for (RecordClass rc : recordClasses.values()) {
-            String message = "The recordClasses referred in answerParam "
-                    + getFullName()
-                    + " doesn't have same primary key definitions.";
+            String message =
+                    "The recordClasses referred in answerParam "
+                            + getFullName()
+                            + " doesn't have same primary key definitions.";
             columns = rc.getPrimaryKeyAttributeField().getColumnRefs();
             if (columns.length != set.size())
                 throw new WdkModelException(message);
@@ -136,8 +139,8 @@ public class AnswerParam extends Param {
     @Override
     protected void appendJSONContent(JSONObject jsParam, boolean extra)
             throws JSONException {
-    // add recordClass ref
-    // jsParam.put("recordClass", recordClassRef);
+        // add recordClass ref
+        // jsParam.put("recordClass", recordClassRef);
     }
 
     public AnswerValue getAnswerValue(User user, String dependentValue)
@@ -229,7 +232,9 @@ public class AnswerParam extends Param {
         Step step = user.getStep(stepId);
 
         // make sure the input step is of the acceptable type
-        String rcName = step.getAnswerValue().getQuestion().getRecordClass().getFullName();
+        String rcName =
+                step.getAnswerValue().getQuestion().getRecordClass()
+                        .getFullName();
         if (!recordClasses.containsKey(rcName))
             throw new WdkUserException("The step of record type '" + rcName
                     + "' is not allowed in the answerParam "
@@ -255,7 +260,7 @@ public class AnswerParam extends Param {
                     + "answerParam " + getFullName() + " for project "
                     + projectId);
     }
-    
+
     public boolean allowRecordClass(String recordClassName) {
         return recordClasses.containsKey(recordClassName);
     }

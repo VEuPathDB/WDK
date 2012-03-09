@@ -18,6 +18,8 @@ import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.view.RecordView;
+import org.gusdb.wdk.model.view.SummaryView;
 import org.json.JSONException;
 
 public class RecordClass extends WdkModelBase implements
@@ -128,7 +130,7 @@ public class RecordClass extends WdkModelBase implements
     private Map<String, NestedRecordList> nestedRecordListQuestionRefs = new LinkedHashMap<String, NestedRecordList>();
 
     private AttributeCategoryTree attributeCategoryTree;
-    
+
     // for sanity testing
     private boolean doNotTest = false;
     private List<ParamValuesSet> unexcludedParamValuesSets = new ArrayList<ParamValuesSet>();
@@ -178,6 +180,12 @@ public class RecordClass extends WdkModelBase implements
     private List<FavoriteReference> favorites = new ArrayList<FavoriteReference>();
     private String favoriteNoteFieldName;
     private AttributeField favoriteNoteField;
+
+    private List<SummaryView> summaryViewList = new ArrayList<SummaryView>();
+    private Map<String, SummaryView> summaryViewMap = new LinkedHashMap<String, SummaryView>();
+
+    private List<RecordView> recordViewList = new ArrayList<RecordView>();
+    private Map<String, RecordView> recordViewMap = new LinkedHashMap<String, RecordView>();
 
     // ////////////////////////////////////////////////////////////////////
     // Called at model creation time
@@ -280,9 +288,9 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public void setAttributeCategoryTree(AttributeCategoryTree tree) {
-    	attributeCategoryTree = tree;
+        attributeCategoryTree = tree;
     }
-    
+
     // ////////////////////////////////////////////////////////////
     // public getters
     // ////////////////////////////////////////////////////////////
@@ -302,9 +310,9 @@ public class RecordClass extends WdkModelBase implements
     public Map<String, TableField> getTableFieldMap(FieldScope scope) {
         Map<String, TableField> fields = new LinkedHashMap<String, TableField>();
         for (TableField field : tableFieldsMap.values()) {
-        	if (scope.isFieldInScope(field)) {
-        		fields.put(field.getName(), field);
-        	}
+            if (scope.isFieldInScope(field)) {
+                fields.put(field.getName(), field);
+            }
         }
         return fields;
     }
@@ -327,9 +335,9 @@ public class RecordClass extends WdkModelBase implements
         fields.put(primaryKeyField.getName(), primaryKeyField);
 
         for (AttributeField field : attributeFieldsMap.values()) {
-        	if (scope.isFieldInScope(field)) {
+            if (scope.isFieldInScope(field)) {
                 fields.put(field.getName(), field);
-        	}
+            }
         }
         return fields;
     }
@@ -380,16 +388,18 @@ public class RecordClass extends WdkModelBase implements
     }
 
     public AttributeCategoryTree getAttributeCategoryTree(FieldScope scope) {
-    	return attributeCategoryTree.getTrimmedCopy(scope);
+        return attributeCategoryTree.getTrimmedCopy(scope);
     }
-    
+
     public String toString() {
         String newline = System.getProperty("line.separator");
         StringBuffer buf = new StringBuffer("Record: name='" + name + "'").append(newline);
 
-        buf.append("--- Attribute Category Tree (with attribute count per category) ---").append(newline);
+        buf.append(
+                "--- Attribute Category Tree (with attribute count per category) ---").append(
+                newline);
         buf.append(attributeCategoryTree.toString());
-        
+
         buf.append("--- Attributes ---").append(newline);
         for (AttributeField attribute : attributeFieldsMap.values()) {
             buf.append(attribute.getName()).append(newline);
@@ -469,7 +479,7 @@ public class RecordClass extends WdkModelBase implements
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         if (resolved) return;
-
+        super.resolveReferences(model);
         this.wdkModel = model;
 
         if (name.length() == 0 || name.indexOf('\'') >= 0)
@@ -539,36 +549,45 @@ public class RecordClass extends WdkModelBase implements
 
         // resolve references in the attribute category tree
         resolveCategoryTreeReferences(model);
-        
+
+        // resolve references for views
+        for (SummaryView summaryView : summaryViewMap.values()) {
+            summaryView.resolveReferences(model);
+        }
+        for (RecordView recordView : recordViewMap.values()) {
+            recordView.resolveReferences(model);
+        }
+
         resolved = true;
     }
-    
-    private void resolveCategoryTreeReferences(WdkModel model) throws WdkModelException,
-    		NoSuchAlgorithmException, WdkUserException, SQLException, JSONException {
+
+    private void resolveCategoryTreeReferences(WdkModel model)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
         // ensure attribute categories are unique, then add attribute
-        //  references to appropriate places on category tree
+        // references to appropriate places on category tree
         if (attributeCategoryTree == null) {
-        	// no categories were specified for this record class
-        	// must still create tree to hold all (uncategorized) attributes
-        	attributeCategoryTree = new AttributeCategoryTree();
+            // no categories were specified for this record class
+            // must still create tree to hold all (uncategorized) attributes
+            attributeCategoryTree = new AttributeCategoryTree();
         }
-        
+
         // this must be called before the attributes are added....
         attributeCategoryTree.resolveReferences(model);
-        
-        for (AttributeQueryReference queryRef : attributesQueryRefList) {
-        	for (AttributeField attribute : queryRef.getAttributeFields()) {
-        		attributeCategoryTree.addAttributeToCategories(attribute);
-        	}
-        }
-    	for (AttributeField attribute : attributeFieldList) {
-    		if (attribute != getPrimaryKeyAttributeField()) {
-    			attributeCategoryTree.addAttributeToCategories(attribute);
-    		}
-    	}
-	}
 
-	private void resolveAttributeQueryReferences(WdkModel wdkModel)
+        for (AttributeQueryReference queryRef : attributesQueryRefList) {
+            for (AttributeField attribute : queryRef.getAttributeFields()) {
+                attributeCategoryTree.addAttributeToCategories(attribute);
+            }
+        }
+        for (AttributeField attribute : attributeFieldList) {
+            if (attribute != getPrimaryKeyAttributeField()) {
+                attributeCategoryTree.addAttributeToCategories(attribute);
+            }
+        }
+    }
+
+    private void resolveAttributeQueryReferences(WdkModel wdkModel)
             throws WdkModelException, NoSuchAlgorithmException,
             WdkUserException, SQLException, JSONException {
         String[] paramNames = primaryKeyField.getColumnRefs();
@@ -713,7 +732,9 @@ public class RecordClass extends WdkModelBase implements
         }
     }
 
-    private Param getUserParam() throws WdkModelException {
+    private Param getUserParam() throws WdkModelException,
+            NoSuchAlgorithmException, WdkUserException, SQLException,
+            JSONException {
         // create the missing user_id param for the attribute query
         ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
         if (paramSet.contains(Utilities.PARAM_USER_ID))
@@ -1023,6 +1044,56 @@ public class RecordClass extends WdkModelBase implements
             }
         }
         favorites = null;
+
+        // exclude the summary views
+        for (SummaryView view : summaryViewList) {
+            if (view.include(projectId)) {
+                view.excludeResources(projectId);
+                String name = view.getName();
+                if (summaryViewMap.containsKey(name))
+                    throw new WdkModelException("The summary view '" + name
+                            + "' is duplicated in record " + getFullName());
+
+                summaryViewMap.put(name, view);
+            }
+        }
+        summaryViewList = null;
+
+        // add WDK supported views to all record classes
+        for (SummaryView view : SummaryView.createSupportedSummaryViews()) {
+            String name = view.getName();
+            // only add the view if it hasn't been defined by the user. that is,
+            // user can custom the views supported by WDK by default.
+            if (!summaryViewMap.containsKey(name)) {
+                view.excludeResources(projectId);
+                summaryViewMap.put(name, view);
+            }
+        }
+
+        // exclude the summary views
+        for (RecordView view : recordViewList) {
+            if (view.include(projectId)) {
+                view.excludeResources(projectId);
+                String name = view.getName();
+                if (recordViewMap.containsKey(name))
+                    throw new WdkModelException("The record view '" + name
+                            + "' is duplicated in record " + getFullName());
+
+                recordViewMap.put(name, view);
+            }
+        }
+        recordViewList = null;
+
+        // add WDK supported views to all record classes
+        for (RecordView view : RecordView.createSupportedRecordViews()) {
+            String name = view.getName();
+            // only add the view if it hasn't been defined by the user. that is,
+            // user can custom the views supported by WDK by default.
+            if (!recordViewMap.containsKey(name)) {
+                view.excludeResources(projectId);
+                recordViewMap.put(name, view);
+            }
+        }
     }
 
     public void addFilter(AnswerFilter filter) {
@@ -1044,10 +1115,12 @@ public class RecordClass extends WdkModelBase implements
             throws WdkModelException {
         if (filterName == null) return null;
         AnswerFilterInstance instance = filterMap.get(filterName);
-        if (instance == null)
-            throw new WdkModelException("The name [" + filterName
-                    + "] does not " + "match any filter instance of type "
-                    + getFullName());
+
+        // ignore the invalid filter name
+        // if (instance == null)
+        // throw new WdkModelException("The name [" + filterName
+        // + "] does not " + "match any filter instance of type "
+        // + getFullName());
         return instance;
     }
 
@@ -1174,7 +1247,7 @@ public class RecordClass extends WdkModelBase implements
     public String getChecksum() {
         return null;
     }
-    
+
     public void setUseBasket(boolean useBasket) {
         this.useBasket = useBasket;
     }
@@ -1234,5 +1307,52 @@ public class RecordClass extends WdkModelBase implements
 
     public AttributeField getFavoriteNoteField() {
         return favoriteNoteField;
+    }
+
+    public Map<String, SummaryView> getSummaryViews() {
+        return new LinkedHashMap<String, SummaryView>(summaryViewMap);
+    }
+
+    public SummaryView getSummaryView(String viewName) throws WdkUserException {
+        if (summaryViewMap.containsKey(viewName)) {
+            return summaryViewMap.get(viewName);
+        } else {
+            throw new WdkUserException("Unknown summary view for record class "
+                    + "[" + getFullName() + "]: " + viewName);
+        }
+    }
+
+    public void addSummaryView(SummaryView view) {
+        if (summaryViewList == null) summaryViewMap.put(view.getName(), view);
+        else summaryViewList.add(view);
+    }
+
+    public Map<String, RecordView> getRecordViews() {
+        return new LinkedHashMap<String, RecordView>(recordViewMap);
+    }
+
+    public RecordView getRecordView(String viewName) throws WdkUserException {
+        if (recordViewMap.containsKey(viewName)) {
+            return recordViewMap.get(viewName);
+        } else {
+            throw new WdkUserException("Unknown record view for record class "
+                    + "[" + getFullName() + "]: " + viewName);
+        }
+    }
+
+    public RecordView getDefaultRecordView() {
+        for (RecordView view : recordViewMap.values()) {
+            if (view.isDefault()) return view;
+        }
+
+        if (recordViewMap.size() > 0)
+            return recordViewMap.values().iterator().next();
+
+        return null;
+    }
+
+    public void addRecordView(RecordView view) {
+        if (recordViewList == null) recordViewMap.put(view.getName(), view);
+        else recordViewList.add(view);
     }
 }

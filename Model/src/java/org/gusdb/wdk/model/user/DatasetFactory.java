@@ -113,7 +113,8 @@ public class DatasetFactory {
                 dataset = new Dataset(this, datasetId);
                 dataset.setRecordClass(recordClass);
                 loadDatasetIndex(connection, dataset);
-            } catch (WdkModelException ex) {
+            }
+            catch (WdkModelException ex) {
                 logger.debug("Creating dataset for user #" + user.getUserId());
 
                 // doesn't exist, create one
@@ -123,6 +124,9 @@ public class DatasetFactory {
 
                 // and save the values
                 insertDatasetValues(recordClass, connection, dataset, values);
+                // check remote table to solve out-dated db-link issue with
+                // Oracle.
+                checkRemoteTable();
             }
             dataset.setUser(user);
 
@@ -133,17 +137,20 @@ public class DatasetFactory {
                 logger.debug("user dataset exist: " + userDatasetId);
                 dataset.setUserDatasetId(userDatasetId);
                 loadUserDataset(connection, dataset);
-            } catch (WdkModelException ex) {
+            }
+            catch (WdkModelException ex) {
                 // user-dataset doesn't exist, insert it
                 dataset.setUploadFile(uploadFile);
                 insertUserDataset(connection, dataset);
             }
             connection.commit();
             return dataset;
-        } catch (SQLException ex) {
+        }
+        catch (SQLException ex) {
             connection.rollback();
             throw ex;
-        } finally {
+        }
+        finally {
             if (connection != null) {
                 connection.setAutoCommit(true);
                 connection.close();
@@ -186,9 +193,9 @@ public class DatasetFactory {
         try {
             loadDatasetIndex(connection, dataset);
             loadUserDataset(connection, dataset);
-        } finally {
-            if (connection != null)
-                connection.close();
+        }
+        finally {
+            if (connection != null) connection.close();
         }
         return dataset;
     }
@@ -210,10 +217,10 @@ public class DatasetFactory {
         // get dataset id
         StringBuffer sqlDatasetId = new StringBuffer("SELECT ");
         sqlDatasetId.append(COLUMN_DATASET_ID);
-        sqlDatasetId.append(" FROM ").append(wdkSchema)
-                .append(TABLE_DATASET_INDEX);
-        sqlDatasetId.append(" WHERE ").append(COLUMN_DATASET_CHECKSUM)
-                .append(" = ?");
+        sqlDatasetId.append(" FROM ").append(wdkSchema).append(
+                TABLE_DATASET_INDEX);
+        sqlDatasetId.append(" WHERE ").append(COLUMN_DATASET_CHECKSUM).append(
+                " = ?");
         int datasetId;
         ResultSet resultSet = null;
         try {
@@ -229,7 +236,8 @@ public class DatasetFactory {
                 throw new WdkModelException("The dataset with checksum '"
                         + datasetChecksum + "' doesn't exist.");
             datasetId = resultSet.getInt(COLUMN_DATASET_ID);
-        } finally {
+        }
+        finally {
             SqlUtils.closeResultSet(resultSet);
         }
 
@@ -246,16 +254,19 @@ public class DatasetFactory {
                         datasetId);
                 dataset.setUserDatasetId(userDatasetId);
                 loadUserDataset(connection, dataset);
-            } catch (WdkModelException ex) {
+            }
+            catch (WdkModelException ex) {
                 // user data set doesn't exist
                 dataset.setUploadFile("");
                 insertUserDataset(connection, dataset);
             }
             return dataset;
-        } catch (SQLException ex) {
+        }
+        catch (SQLException ex) {
             connection.rollback();
             throw ex;
-        } finally {
+        }
+        finally {
             connection.setAutoCommit(true);
             connection.close();
         }
@@ -268,10 +279,8 @@ public class DatasetFactory {
         int columnCount = Utilities.MAX_PK_COLUMN_COUNT;
         StringBuffer sql = new StringBuffer();
         for (int i = 1; i <= columnCount; i++) {
-            if (sql.length() == 0)
-                sql.append("SELECT ");
-            else
-                sql.append(", ");
+            if (sql.length() == 0) sql.append("SELECT ");
+            else sql.append(", ");
             sql.append(columnPrefx + i);
         }
         sql.append(" FROM ").append(wdkSchema).append(TABLE_DATASET_VALUE);
@@ -285,8 +294,7 @@ public class DatasetFactory {
                     sql.toString(), "wdk-dataset-factory-dataset-by-id");
 
             RecordClass recordClass = dataset.getRecordClass();
-            PrimaryKeyAttributeField pkField = recordClass
-                    .getPrimaryKeyAttributeField();
+            PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
             String[] pkColumns = pkField.getColumnRefs();
 
             List<String> values = new ArrayList<String>();
@@ -294,8 +302,8 @@ public class DatasetFactory {
                 Map<String, Object> columnValues = new LinkedHashMap<String, Object>();
                 for (int i = 1; i <= pkColumns.length; i++) {
                     String column = pkColumns[i - 1];
-                    Object columnValue = resultSet
-                            .getObject(Utilities.COLUMN_PK_PREFIX + i);
+                    Object columnValue = resultSet.getObject(Utilities.COLUMN_PK_PREFIX
+                            + i);
                     columnValues.put(column, columnValue);
                 }
                 // create primary key value stub to format the primary key
@@ -304,7 +312,8 @@ public class DatasetFactory {
                 values.add(pkValue.getValue().toString());
             }
             return values;
-        } finally {
+        }
+        finally {
             SqlUtils.closeResultSet(resultSet);
         }
 
@@ -348,10 +357,10 @@ public class DatasetFactory {
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(COLUMN_USER_DATASET_ID);
         sql.append(" FROM ").append(userSchema).append(TABLE_USER_DATASET);
-        sql.append(" WHERE ").append(COLUMN_DATASET_ID).append(" = ")
-                .append(datasetId);
-        sql.append(" AND ").append(Utilities.COLUMN_USER_ID).append(" = ")
-                .append(user.getUserId());
+        sql.append(" WHERE ").append(COLUMN_DATASET_ID).append(" = ").append(
+                datasetId);
+        sql.append(" AND ").append(Utilities.COLUMN_USER_ID).append(" = ").append(
+                user.getUserId());
 
         Object result = SqlUtils.executeScalar(wdkModel, dataSource,
                 sql.toString(), "wdk-dataset-factory-user-dataset-id");
@@ -377,8 +386,7 @@ public class DatasetFactory {
         sql.append(COLUMN_DATASET_SIZE).append(", ");
         sql.append(COLUMN_RECORD_CLASS).append(", ");
         sql.append(COLUMN_SUMMARY).append(") VALUES (?, ?, ?, ?, ?)");
-        PreparedStatement psInsert = connection
-                .prepareStatement(sql.toString());
+        PreparedStatement psInsert = connection.prepareStatement(sql.toString());
         try {
             psInsert.setInt(1, datasetId);
             psInsert.setString(2, checksum);
@@ -386,9 +394,9 @@ public class DatasetFactory {
             psInsert.setString(4, recordClass.getFullName());
             psInsert.setString(5, dataset.getSummary());
             psInsert.execute();
-        } finally {
-            if (psInsert != null)
-                psInsert.close();
+        }
+        finally {
+            if (psInsert != null) psInsert.close();
         }
         return dataset;
     }
@@ -396,8 +404,7 @@ public class DatasetFactory {
     private void insertDatasetValues(RecordClass recordClass,
             Connection connection, Dataset dataset, List<String[]> values)
             throws SQLException {
-        int columnCount = recordClass.getPrimaryKeyAttributeField()
-                .getColumnRefs().length;
+        int columnCount = recordClass.getPrimaryKeyAttributeField().getColumnRefs().length;
 
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(wdkSchema).append(TABLE_DATASET_VALUE);
@@ -411,8 +418,7 @@ public class DatasetFactory {
         }
         sql.append(")");
 
-        PreparedStatement psInsert = connection
-                .prepareStatement(sql.toString());
+        PreparedStatement psInsert = connection.prepareStatement(sql.toString());
         try {
             for (int i = 0; i < values.size(); i++) {
                 String[] value = values.get(i);
@@ -423,18 +429,17 @@ public class DatasetFactory {
                 }
                 psInsert.addBatch();
 
-                if ((i + 1) % 1000 == 0)
-                    psInsert.executeBatch();
+                if ((i + 1) % 1000 == 0) psInsert.executeBatch();
             }
-            if (values.size() % 1000 != 0)
-                psInsert.executeBatch();
-        } catch (BatchUpdateException ex) {
+            if (values.size() % 1000 != 0) psInsert.executeBatch();
+        }
+        catch (BatchUpdateException ex) {
             logger.error(ex);
             ex.getNextException().printStackTrace();
             throw ex;
-        } finally {
-            if (psInsert != null)
-                psInsert.close();
+        }
+        finally {
+            if (psInsert != null) psInsert.close();
         }
     }
 
@@ -456,19 +461,18 @@ public class DatasetFactory {
         sql.append(COLUMN_CREATE_TIME).append(", ");
         sql.append(COLUMN_UPLOAD_FILE).append(") VALUES (?, ?, ?, ?, ?)");
 
-        PreparedStatement psInsert = connection
-                .prepareStatement(sql.toString());
+        PreparedStatement psInsert = connection.prepareStatement(sql.toString());
         try {
             psInsert.setInt(1, userDatasetId);
             psInsert.setInt(2, dataset.getDatasetId());
             psInsert.setInt(3, dataset.getUser().getUserId());
-            psInsert.setTimestamp(4, new Timestamp(dataset.getCreateTime()
-                    .getTime()));
+            psInsert.setTimestamp(4, new Timestamp(
+                    dataset.getCreateTime().getTime()));
             psInsert.setString(5, dataset.getUploadFile());
             psInsert.executeUpdate();
-        } finally {
-            if (psInsert != null)
-                psInsert.close();
+        }
+        finally {
+            if (psInsert != null) psInsert.close();
         }
     }
 
@@ -492,16 +496,15 @@ public class DatasetFactory {
             String rcName = resultSet.getString(COLUMN_RECORD_CLASS);
             // the recordClass might be determined by the datasetParam later
             if (dataset.getRecordClass() == null) {
-                dataset.setRecordClass((RecordClass) wdkModel
-                        .resolveReference(rcName));
+                dataset.setRecordClass((RecordClass) wdkModel.resolveReference(rcName));
             }
-        } finally {
+        }
+        finally {
             try {
-                if (resultSet != null)
-                    resultSet.close();
-            } finally {
-                if (stmt != null)
-                    stmt.close();
+                if (resultSet != null) resultSet.close();
+            }
+            finally {
+                if (stmt != null) stmt.close();
             }
         }
     }
@@ -522,13 +525,13 @@ public class DatasetFactory {
                         + dataset.getUserDatasetId() + ") does not exist.");
             dataset.setCreateTime(resultSet.getTimestamp(COLUMN_CREATE_TIME));
             dataset.setUploadFile(resultSet.getString(COLUMN_UPLOAD_FILE));
-        } finally {
+        }
+        finally {
             try {
-                if (resultSet != null)
-                    resultSet.close();
-            } finally {
-                if (stmt != null)
-                    stmt.close();
+                if (resultSet != null) resultSet.close();
+            }
+            finally {
+                if (stmt != null) stmt.close();
             }
         }
     }
@@ -540,11 +543,9 @@ public class DatasetFactory {
             public int compare(String[] o1, String[] o2) {
                 int limit = Math.min(o1.length, o2.length);
                 for (int i = 0; i < limit; i++) {
-                    if (o1[i] == null || o2[i] == null)
-                        break;
+                    if (o1[i] == null || o2[i] == null) break;
                     int result = o1[i].compareTo(o2[i]);
-                    if (result != 0)
-                        return result;
+                    if (result != 0) return result;
                 }
                 return 0;
             }
@@ -567,8 +568,7 @@ public class DatasetFactory {
         int length = recordClass.getPrimaryKeyAttributeField().getColumnRefs().length;
         for (String row : rows) {
             row = row.trim();
-            if (row.length() == 0)
-                continue;
+            if (row.length() == 0) continue;
             String[] columns = row.split(REGEX_COLUMN_DIVIDER);
             if (columns.length > length)
                 throw new WdkDatasetException("The dataset raw value of "
@@ -599,10 +599,31 @@ public class DatasetFactory {
                 builder.append(val).append(COLUMN_DIVIDER);
             }
             String key = builder.toString();
-            if (set.contains(key))
-                values.remove(i);
-            else
-                set.add(key);
+            if (set.contains(key)) values.remove(i);
+            else set.add(key);
         }
+    }
+
+    /**
+     * The method is used to address out-dated db-link issue with Oracle. The
+     * solution is suggested by Oracle support, that: " Since clocks are
+     * synchronized at the end of a remote query, precede each remote query with
+     * a dummy remote query to the same site (such as select * from
+     * dual@remote)."
+     * 
+     * @throws WdkModelException
+     * @throws WdkUserException
+     * @throws SQLException
+     */
+    private void checkRemoteTable() throws WdkModelException, WdkUserException,
+            SQLException {
+        String dblink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
+        StringBuilder sql = new StringBuilder("SELECT count(*) FROM ");
+        sql.append(wdkSchema).append(TABLE_DATASET_VALUE).append(dblink);
+
+        // execute this dummy sql to make sure the remote table is sync-ed.
+        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+        SqlUtils.executeScalar(wdkModel, dataSource, sql.toString(),
+                "wdk-remote-dataset-dummy");
     }
 }

@@ -20,10 +20,8 @@ public class ModelConfigParser extends XmlParser {
         // validate the configuration file
         URL configURL = makeURL(gusHome, "config/" + projectId
                 + "/model-config.xml");
-        if (!validate(configURL))
-            throw new WdkModelException("Relax-NG validation failed on "
-                    + configURL.toExternalForm());
 
+        validate(configURL);
         ModelConfig modelConfig = (ModelConfig) digester.parse(configURL.openStream());
         modelConfig.setGusHome(gusHome);
         modelConfig.setProjectId(projectId);

@@ -5,7 +5,9 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import javax.servlet.ServletOutputStream;
@@ -347,11 +349,17 @@ public class ProcessRESTAction extends Action {
                     displayMap = getDisplayMap(ep);
                 } else {
                     displayMap = new HashMap<String, String>();
-                    // TODO - assumed the depended param is an abstract enum
-                    // param, which might not be true.
-                    EnumParamBean depep = new EnumParamBean(
-                            ep.getDependedParam());
-                    for (String depterm : depep.getVocabMap().keySet()) {
+                    ParamBean dependedParam = ep.getDependedParam();
+                    Set<String> dependedValues;
+                    if (dependedParam instanceof EnumParamBean) {
+                        EnumParamBean enumParam = (EnumParamBean) dependedParam;
+                        dependedValues = enumParam.getVocabMap().keySet();
+                    } else {
+                        dependedValues = new LinkedHashSet<String>();
+                        String value = dependedParam.getDefault();
+                        if (value != null) dependedValues.add(value);
+                    }
+                    for (String depterm : dependedValues) {
                         ep.setDependedValue(depterm);
                         try {
                             displayMap.putAll(getDisplayMap(ep));
@@ -440,9 +448,8 @@ public class ProcessRESTAction extends Action {
 
     private Map<String, String> getDisplayMap(EnumParamBean param)
             throws Exception {
-        String displayType =  param.getDisplayType();
-        boolean isTreeBox = (displayType != null && displayType.equals(
-                AbstractEnumParam.DISPLAY_TREE_BOX));
+        String displayType = param.getDisplayType();
+        boolean isTreeBox = (displayType != null && displayType.equals(AbstractEnumParam.DISPLAY_TREE_BOX));
         logger.debug(param.getFullName() + " as tree: " + isTreeBox);
         if (!isTreeBox) return param.getDisplayMap();
 

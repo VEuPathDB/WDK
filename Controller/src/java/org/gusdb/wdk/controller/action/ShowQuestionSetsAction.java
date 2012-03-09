@@ -15,6 +15,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
@@ -49,7 +50,8 @@ public class ShowQuestionSetsAction extends Action {
         return forward;
     }
 
-    protected void sessionStart(HttpServletRequest request, HttpServlet servlet) {
+    protected void sessionStart(HttpServletRequest request, HttpServlet servlet)
+            throws WdkModelException {
         WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
                 CConstants.WDK_MODEL_KEY);
         Map<String, Map<String, Map<String, AttributeFieldBean>>> sumAttrsByQuestion = getSummaryAttributesByQuestionMap(wdkModel);
@@ -58,7 +60,7 @@ public class ShowQuestionSetsAction extends Action {
     }
 
     private static Map<String, Map<String, Map<String, AttributeFieldBean>>> getSummaryAttributesByQuestionMap(
-            WdkModelBean wdkModel) {
+            WdkModelBean wdkModel) throws WdkModelException {
         Map<String, Map<String, Map<String, AttributeFieldBean>>> sumAttrsByQuestion = new LinkedHashMap<String, Map<String, Map<String, AttributeFieldBean>>>();
         QuestionSetBean[] qSets = wdkModel.getQuestionSets();
         for (QuestionSetBean qSet : qSets) {

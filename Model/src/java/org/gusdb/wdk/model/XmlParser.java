@@ -3,8 +3,10 @@
  */
 package org.gusdb.wdk.model;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -13,6 +15,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.digester.Digester;
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
@@ -31,8 +34,9 @@ import com.thaiopensource.xml.sax.ErrorHandlerImpl;
  */
 public abstract class XmlParser {
 
-    protected String gusHome;
+    private static final Logger logger = Logger.getLogger(XmlParser.class);
 
+    protected String gusHome;
     protected ValidationDriver validator;
     protected Digester digester;
 
@@ -77,36 +81,44 @@ public abstract class XmlParser {
         }
     }
 
-    protected boolean validate(URL modelXmlURL) throws SAXException,
-            IOException {
-        // System.out.println("Validating model " + modelXmlURL);
+    protected void validate(URL modelXmlURL) throws SAXException, IOException,
+            WdkModelException {
+        logger.debug("Validating model file: " + modelXmlURL);
+        String err = "Validation failed: " + modelXmlURL.toExternalForm();
         try {
             InputSource is = ValidationDriver.uriOrFileInputSource(modelXmlURL.toExternalForm());
             boolean result = validator.validate(is);
-            if (!result)
-                System.err.println("Validation failed: "
-                        + modelXmlURL.toExternalForm());
-            return result;
+            if (!result) {
+                logger.error(err);
+                throw new WdkModelException(err);
+            }
         } catch (SAXException ex) {
-            System.err.println("Cannot validate: "
-                    + modelXmlURL.toExternalForm());
+            logger.error(err + "\n" + ex);
             throw ex;
         } catch (IOException ex) {
-            System.err.println("Cannot validate: "
-                    + modelXmlURL.toExternalForm());
+            logger.error(err + "\n" + ex);
             throw ex;
         }
     }
 
-    protected Document buildDocument(URL modelXmlURL) throws SAXException,
+    /**
+     * Load XML Document from string content with out validation & substitution.
+     * 
+     * @param content
+     * @return
+     * @throws IOException
+     * @throws SAXException
+     * @throws ParserConfigurationException
+     */
+    protected Document loadDocument(String content) throws SAXException,
             IOException, ParserConfigurationException {
+        // load the content into DOM model
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         // turn off validation here, since we don't use DTD; validation is done
         // before this point
         factory.setValidating(false);
         factory.setNamespaceAware(false);
-        DocumentBuilder builder;
-        builder = factory.newDocumentBuilder();
+        DocumentBuilder builder = factory.newDocumentBuilder();
 
         // ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
         // builder.setErrorHandler(errorHandler);
@@ -132,7 +144,9 @@ public abstract class XmlParser {
             }
         });
 
-        Document doc = builder.parse(modelXmlURL.openStream());
+        InputStream stream = new ByteArrayInputStream(content.getBytes());
+        Document doc = builder.parse(stream);
+        stream.close();
         return doc;
     }
 
