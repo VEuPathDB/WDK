@@ -298,19 +298,19 @@ public class ModelXmlParser extends XmlParser {
         }
 
         // add several config into the prop map automatically
-        if (!properties.containsKey("PROJECT_ID")) {
-            properties.put("PROJECT_ID", projectId);
+        if (!propMap.containsKey("PROJECT_ID")) {
+            propMap.put("PROJECT_ID", projectId);
         }
-        if (!properties.containsKey("USER_DBLINK")) {
+        if (!propMap.containsKey("USER_DBLINK")) {
             String userDbLink = config.getAppDB().getUserDbLink();
-            properties.put("USER_DBLINK", userDbLink);
+            propMap.put("USER_DBLINK", userDbLink);
         }
-        if (!properties.containsKey("USER_SCHEMA")) {
-            properties.put("USER_SCHEMA", config.getUserDB().getUserSchema());
+        if (!propMap.containsKey("USER_SCHEMA")) {
+            propMap.put("USER_SCHEMA", config.getUserDB().getUserSchema());
         }
-        if (!properties.containsKey("WDK_ENGINE_SCHEMA")) {
+        if (!propMap.containsKey("WDK_ENGINE_SCHEMA")) {
             String engineSchema = config.getUserDB().getWdkEngineSchema();
-            properties.put("WDK_ENGINE_SCHEMA", engineSchema);
+            propMap.put("WDK_ENGINE_SCHEMA", engineSchema);
         }
 
         return propMap;
