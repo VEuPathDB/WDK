@@ -140,8 +140,7 @@ public abstract class QueryInstance {
             }
         }
 
-        if (validate)
-            validateValues(user, values);
+        if (validate) validateValues(user, values);
         // passed, assign the value
         this.values = new LinkedHashMap<String, String>(values);
         checksum = null;
@@ -203,8 +202,8 @@ public abstract class QueryInstance {
             WdkModelException, SQLException {
         // the values are dependent values. need to convert it into independent
         // values
-        Map<String, String> independentValues = query
-                .dependentValuesToIndependentValues(user, values);
+        Map<String, String> independentValues =
+                query.dependentValuesToIndependentValues(user, values);
 
         // construct param-value map; param is sorted by name
         String[] paramNames = new String[independentValues.size()];
@@ -225,8 +224,8 @@ public abstract class QueryInstance {
         logger.debug("retrieving results of query [" + query.getFullName()
                 + "]");
 
-        ResultList resultList = (cached) ? getCachedResults()
-                : getUncachedResults();
+        ResultList resultList =
+                (cached) ? getCachedResults() : getUncachedResults();
 
         logger.debug("results of query [" + query.getFullName()
                 + "] retrieved.");
@@ -240,8 +239,9 @@ public abstract class QueryInstance {
         StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
         sql.append(getSql()).append(") f");
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        Object objSize = SqlUtils.executeScalar(wdkModel, dataSource,
-                sql.toString(), query.getFullName() + "-count");
+        Object objSize =
+                SqlUtils.executeScalar(wdkModel, dataSource, sql.toString(),
+                        query.getFullName() + "-count");
         int resultSize = Integer.parseInt(objSize.toString());
         logger.debug("end getting query size");
         return resultSize;
@@ -259,8 +259,8 @@ public abstract class QueryInstance {
 
     protected String getCachedSql() throws NoSuchAlgorithmException,
             SQLException, WdkModelException, JSONException, WdkUserException {
-        CacheFactory cacheFactory = wdkModel.getResultFactory()
-                .getCacheFactory();
+        CacheFactory cacheFactory =
+                wdkModel.getResultFactory().getCacheFactory();
         QueryInfo queryInfo = cacheFactory.getQueryInfo(getQuery());
 
         String cacheTable = queryInfo.getCacheTable();
@@ -296,19 +296,20 @@ public abstract class QueryInstance {
                 // check for dependent param
                 if (param instanceof AbstractEnumParam
                         && ((AbstractEnumParam) param).getDependedParam() != null) {
-                    String dependedParam = ((AbstractEnumParam) param)
-                            .getDependedParam().getName();
+                    String dependedParam =
+                            ((AbstractEnumParam) param).getDependedParam()
+                                    .getName();
                     String dependedValue = values.get(dependedParam);
                     ((AbstractEnumParam) param).setDependedValue(dependedValue);
                 }
 
                 // validate param
                 param.validate(user, dependentValue);
-            } catch (Exception ex) {
+            }
+            catch (Exception ex) {
                 ex.printStackTrace();
                 errMsg = ex.getMessage();
-                if (errMsg == null)
-                    errMsg = ex.getClass().getName();
+                if (errMsg == null) errMsg = ex.getClass().getName();
             }
             if (errMsg != null) {
                 if (errors == null)
@@ -317,8 +318,9 @@ public abstract class QueryInstance {
             }
         }
         if (errors != null) {
-            WdkModelException ex = new WdkModelException(
-                    "Some of the input parameters are invalid.", errors);
+            WdkModelException ex =
+                    new WdkModelException(
+                            "Some of the input parameters are invalid.", errors);
             logger.debug(ex.formatErrors());
             throw ex;
         }
@@ -354,14 +356,14 @@ public abstract class QueryInstance {
             JSONException, WdkUserException {
         // the empty & default values are filled
         Map<String, String> values = fillEmptyValues(this.values);
-        Map<String, String> internalValues = new LinkedHashMap<String, String>();
+        Map<String, String> internalValues =
+                new LinkedHashMap<String, String>();
         Map<String, Param> params = query.getParamMap();
         for (String paramName : params.keySet()) {
             Param param = params.get(paramName);
 
             String dependentValue = values.get(paramName);
-            String internalValue = param.dependentValueToInternalValue(user,
-                    dependentValue);
+            String internalValue = param.getInternalValue(user, dependentValue);
             internalValues.put(paramName, internalValue);
         }
         return internalValues;

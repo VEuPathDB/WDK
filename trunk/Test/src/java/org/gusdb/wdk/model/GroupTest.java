@@ -10,8 +10,6 @@ import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.param.Param;
 import org.junit.Assert;
 import org.junit.Test;
 

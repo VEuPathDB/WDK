@@ -5,7 +5,16 @@ function configureBasket() {
     var index = (tab.length > 0) ? parseInt(tab.attr("tab-index")) : 0;
     jQuery("#basket-menu").tabs({
         selected: index,
-        load: function(event, ui) {
+        load: basketTabSelected,
+        ajaxOptions: {
+            error: function( xhr, status, index, anchor ) {
+                alert( "Couldn't load this tab. Please try again later." + status );
+            }
+        }
+    });
+}
+
+function basketTabSelected(event, ui) {
             var currentTab = getCurrentBasketTab();
 
             var currentDiv = getCurrentBasketRegion();
@@ -32,13 +41,6 @@ function configureBasket() {
                 control.find("input#make-strategy-from-basket-button").attr("disabled",true);
                 control.find("input#export-basket-button").attr("disabled",true);
             }
-        },
-        ajaxOptions: {
-            error: function( xhr, status, index, anchor ) {
-                alert( "Couldn't load this tab. Please try again later." + status );
-            }
-        }
-    });
 }
 
 function showBasket(){	
@@ -142,7 +144,7 @@ function updateBasket(ele, type, pk, pid, recordType) {
 		da = jQuery.json.serialize(a);
 		action = (i.attr("value") == '0') ? "add" : "remove";
 	}else if(type == "page"){
-		currentDiv.find(".Results_Pane div.primaryKey").each(function(){
+		currentDiv.find(".Results_Div div.primaryKey").each(function(){
 			var o = new Object();
 			jQuery("span",this).each(function(){;
 				o[jQuery(this).attr("key")] = jQuery(this).text();
@@ -196,7 +198,7 @@ function updateBasket(ele, type, pk, pid, recordType) {
 				}else if(type == "clear"){
 					showBasket();
 				}else{
-					var image = currentDiv.find(".Results_Pane img.basket");
+					var image = currentDiv.find(".Results_Div img.basket");
 					if(action == "add-all" || action == "add") {
 						image.attr("src","wdk/images/basket_color.png");
 						image.attr("title","Click to remove this item from the basket.");
@@ -235,14 +237,14 @@ function updateBasketCount(c){
 
 function checkPageBasket(){
 	var currentDiv = getCurrentBasketRegion();
-        var headImage = currentDiv.find(".Results_Pane img.head.basket");
+        var headImage = currentDiv.find(".Results_Div img.head.basket");
 	if (guestUser == 'true') {
 		headImage.attr("src","wdk/images/basket_gray.png");
 		headImage.attr("title","Please log in to use the basket.");
 	}
 	else {
 		allIn = true;
-		currentDiv.find(".Results_Pane img.basket").each(function(){
+		currentDiv.find(".Results_Div img.basket").each(function(){
 			if(!(jQuery(this).hasClass("head"))){
 				if(jQuery(this).attr("value") == 0){
 					allIn = false;
@@ -262,11 +264,7 @@ function checkPageBasket(){
 }
 
 function getCurrentBasketRegion() {
-    var section = jQuery("#strategy_tabs > #selected > a").attr("id");
-    var regionId = ".Workspace";
-    if (section == "tab_basket")
-        regionId = "#basket-menu " + getCurrentBasketTab().children("a").attr("href");
-    return jQuery(regionId);
+    return window.wdk.findActiveView();
 }
 
 function getCurrentBasketTab() {

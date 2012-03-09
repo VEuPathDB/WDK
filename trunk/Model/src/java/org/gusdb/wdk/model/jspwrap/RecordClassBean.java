@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.ReporterRef;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.view.RecordView;
 
 /**
  * A wrapper on a {@link RecordClass} that provides simplified access for
@@ -64,7 +65,7 @@ public class RecordClassBean {
         return fieldBeans;
     }
 
-    public QuestionBean[] getQuestions() {
+    public QuestionBean[] getQuestions() throws WdkModelException {
         WdkModel wdkModel = recordClass.getWdkModel();
         Question questions[] = wdkModel.getQuestions(recordClass);
         QuestionBean[] questionBeans = new QuestionBean[questions.length];
@@ -165,7 +166,7 @@ public class RecordClassBean {
         return recordClass.isUseBasket();
     }
 
-    public QuestionBean[] getTransformQuestions() {
+    public QuestionBean[] getTransformQuestions() throws WdkModelException {
         Question[] questions = recordClass.getTransformQuestions(changeType);
         QuestionBean[] beans = new QuestionBean[questions.length];
         for (int i = 0; i < questions.length; i++) {
@@ -193,5 +194,16 @@ public class RecordClassBean {
     public String getShortDisplayName() {
         return recordClass.getShortDisplayName();
     }
-    
+
+    public RecordView getDefaultRecordView() {
+        return recordClass.getDefaultRecordView();
+    }   
+
+    public Map<String, RecordView> getRecordViews() {
+        return recordClass.getRecordViews();
+    } 
+
+    public AttributeFieldBean getFavoriteNoteField() {
+        return new AttributeFieldBean(recordClass.getFavoriteNoteField());
+    }
 }

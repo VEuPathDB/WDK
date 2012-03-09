@@ -77,10 +77,11 @@
         
         <c:set var="isHidden" value="${qP.isVisible == false}"/>
         <c:set var="isReadonly" value="${qP.isReadonly == true}"/>
-  
+        <c:set var="paramType" value="${qP.type}" />
+
         <%-- hide invisible params --%>
         <c:choose>
-            <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.TimestampParamBean'}">
+            <c:when test="${paramType eq 'TimestampParam'}">
                 <imp:timestampParamInput qp="${qP}" />
             </c:when>
             <c:when test="${isHidden}">
@@ -93,19 +94,24 @@
                         <span style="font-weight:bold">${qP.prompt}</span> <img class="help-link" title="${fn:escapeXml(qP.help)}" src="wdk/images/question.png" />
                     </td>
                     <c:choose>
-                        <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.EnumParamBean'}">
+                        <c:when test="${paramType eq 'EnumParam' || paramType eq 'FlatVocabParam'}">
                             <td align="left" style="vertical-align:bottom" id="${qP.name}aaa">
                                 <imp:enumParamInput qp="${qP}" />
                             </td>
                         </c:when>
-                        <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.AnswerParamBean'}">
+                        <c:when test="${paramType eq 'AnswerParam'}">
                             <td align="left" valign="top">
                                 <imp:answerParamInput qp="${qP}" />
                             </td>
                         </c:when>
-                        <c:when test="${qP.class.name eq 'org.gusdb.wdk.model.jspwrap.DatasetParamBean'}">
+                        <c:when test="${paramType eq 'DatasetParam'}">
                             <td align="left" valign="top">
                                 <imp:datasetParamInput qp="${qP}" />
+                            </td>
+                        </c:when>
+                        <c:when test="${paramType eq 'StringParam'}">
+                            <td align="left" valign="top">
+                                <wdk:stringParamInput qp="${qP}" />
                             </td>
                         </c:when>
                         <c:otherwise>  <%-- not enumParam --%>
@@ -123,7 +129,9 @@
                                 </c:when>
                                 <c:otherwise>
                                     <td align="left" valign="top">
-                                        <html:text styleId="${pNam}" property="value(${pNam})" size="35" />
+                                      <div class="ui-state-error ui-corner-all">
+                                        Unknown param type
+                                      </div>
                                     </td>
                                 </c:otherwise>
                             </c:choose>

@@ -71,8 +71,8 @@ public abstract class Param extends WdkModelBase {
             String dependentValue) throws NoSuchAlgorithmException,
             WdkUserException, WdkModelException, SQLException, JSONException;
 
-    public abstract String dependentValueToInternalValue(User user,
-            String independentValue) throws WdkModelException,
+    protected abstract String dependentValueToInternalValue(User user,
+            String dependentValue) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException;
 
@@ -131,6 +131,9 @@ public abstract class Param extends WdkModelBase {
     protected Question contextQuestion;
     protected Query contextQuery;
 
+    private String handlerClass;
+    private ParamHandler handler;
+
     public Param() {
         visible = true;
         readonly = false;
@@ -159,6 +162,8 @@ public abstract class Param extends WdkModelBase {
         this.wdkModel = param.wdkModel;
         this.noTranslation = param.noTranslation;
         this.resolved = param.resolved;
+        this.handlerClass = param.handlerClass;
+        this.handler = param.handler;
         this.contextQuestion = param.contextQuestion;
         this.contextQuery = param.contextQuery;
     }
@@ -199,8 +204,7 @@ public abstract class Param extends WdkModelBase {
     }
 
     public String getPrompt() {
-        if (prompt == null)
-            return name;
+        if (prompt == null) return name;
         return prompt;
     }
 
@@ -209,18 +213,16 @@ public abstract class Param extends WdkModelBase {
     }
 
     public String getHelp() {
-        if (help == null)
-            return getPrompt();
+        if (help == null) return getPrompt();
         return help;
     }
-    
+
     void setHelp(String help) {
         this.help = help;
     }
 
     public void setDefault(String defaultValue) {
-        if (defaultValue == null)
-            return; // use the current one
+        if (defaultValue == null) return; // use the current one
         this.defaultValue = defaultValue;
     }
 
@@ -292,8 +294,7 @@ public abstract class Param extends WdkModelBase {
      *            the emptyValue to set
      */
     public void setEmptyValue(String emptyValue) {
-        if (emptyValue != null && emptyValue.length() == 0)
-            emptyValue = "";
+        if (emptyValue != null && emptyValue.length() == 0) emptyValue = "";
         this.emptyValue = emptyValue;
     }
 
@@ -319,14 +320,14 @@ public abstract class Param extends WdkModelBase {
     public String toString() {
         String newline = System.getProperty("line.separator");
         String classnm = this.getClass().getName();
-        StringBuffer buf = new StringBuffer(classnm + ": name='" + name + "'"
-                + newline + "  prompt='" + prompt + "'" + newline + "  help='"
-                + help + "'" + newline + "  default='" + defaultValue + "'"
-                + newline + "  readonly=" + readonly + newline + "  visible="
-                + visible + newline + "  noTranslation=" + noTranslation
-                + newline);
-        if (group != null)
-            buf.append("  group=" + group.getName() + newline);
+        StringBuffer buf =
+                new StringBuffer(classnm + ": name='" + name + "'" + newline
+                        + "  prompt='" + prompt + "'" + newline + "  help='"
+                        + help + "'" + newline + "  default='" + defaultValue
+                        + "'" + newline + "  readonly=" + readonly + newline
+                        + "  visible=" + visible + newline + "  noTranslation="
+                        + noTranslation + newline);
+        if (group != null) buf.append("  group=" + group.getName() + newline);
 
         return buf.toString();
     }
@@ -394,11 +395,9 @@ public abstract class Param extends WdkModelBase {
     public String compressValue(String value) throws WdkModelException,
             NoSuchAlgorithmException, WdkUserException {
         // check if the value is already been compressed
-        if (value == null || value.length() == 0)
-            return null;
+        if (value == null || value.length() == 0) return null;
 
-        if (value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX))
-            return value;
+        if (value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX)) return value;
 
         // check if the value needs to be compressed
         if (value.length() >= Utilities.MAX_PARAM_VALUE_SIZE) {
@@ -410,20 +409,18 @@ public abstract class Param extends WdkModelBase {
 
     public String decompressValue(String value) throws WdkModelException,
             WdkUserException {
-        if (value == null || value.length() == 0)
-            return null;
+        if (value == null || value.length() == 0) return null;
 
         // check if the value is compressed; that is, if it has a compression
         // prefix
-        if (!value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX))
-            return value;
+        if (!value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX)) return value;
 
         // decompress the value
-        String checksum = value.substring(
-                Utilities.PARAM_COMPRESSE_PREFIX.length()).trim();
+        String checksum =
+                value.substring(Utilities.PARAM_COMPRESSE_PREFIX.length())
+                        .trim();
         String decompressed = queryFactory.getClobValue(checksum);
-        if (decompressed != null)
-            value = decompressed;
+        if (decompressed != null) value = decompressed;
         return value;
     }
 
@@ -486,8 +483,53 @@ public abstract class Param extends WdkModelBase {
     public void setContextQuestion(Question question) {
         this.contextQuestion = question;
     }
-    
+
     public void setContextQuery(Query query) {
         this.contextQuery = query;
+    }
+
+    public void setHandlerClass(String handlerClass) {
+        this.handlerClass = handlerClass;
+    }
+
+    public void setHandler(ParamHandler handler) throws WdkUserException,
+            WdkModelException {
+        handler.setParam(this);
+        handler.setWdkModel(wdkModel);
+        this.handler = handler;
+    }
+
+    public String getInternalValue(User user, String dependentValue)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
+        String internalValue =
+                dependentValueToInternalValue(user, dependentValue);
+        if (handler != null)
+            internalValue = handler.transform(user, internalValue);
+        return internalValue;
+    }
+
+    @Override
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException,
+            WdkUserException {
+        super.resolveReferences(wdkModel);
+
+        this.wdkModel = wdkModel;
+
+        if (handlerClass != null) {
+            try {
+                Class<? extends ParamHandler> hClass =
+                        Class.forName(handlerClass).asSubclass(
+                                ParamHandler.class);
+                handler = hClass.newInstance();
+                handler.setParam(this);
+                handler.setWdkModel(wdkModel);
+            }
+            catch (Exception ex) {
+                throw new WdkModelException(ex);
+            }
+            handlerClass = null;
+        }
     }
 }

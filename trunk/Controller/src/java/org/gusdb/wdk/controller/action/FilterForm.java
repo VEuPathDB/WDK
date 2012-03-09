@@ -73,10 +73,16 @@ public class FilterForm extends BooleanExpressionForm {
             return errors;
         }
 
-        QuestionBean wdkQuestion = getQuestion();
-        if (wdkQuestion == null) {
+        QuestionBean wdkQuestion;
+        try {
+            wdkQuestion = getQuestion();
+        } catch (WdkModelException ex) {
+            ActionMessage message = new ActionMessage("mapped.properties",
+                    ex.getMessage());
+            errors.add(ActionErrors.GLOBAL_MESSAGE, message);
             return errors;
         }
+        if (wdkQuestion == null) return errors;
 
         ParamBean[] params = wdkQuestion.getParams();
         for (int i = 0; i < params.length; i++) {
@@ -100,7 +106,8 @@ public class FilterForm extends BooleanExpressionForm {
                         String dependentValue = p.rawOrDependentValueToDependentValue(
                                 user, rawOrDependentValue);
                         p.validate(user, dependentValue);
-                    } catch (Exception ex) {
+                    }
+                    catch (Exception ex) {
                         ex.printStackTrace();
 
                         if (errMsg == null) errMsg = ex.getMessage();
@@ -114,7 +121,8 @@ public class FilterForm extends BooleanExpressionForm {
                 }
                 // System.out.println("===== Validated " + p.getName() + ": '" +
                 // errMsg + "'");
-            } catch (WdkModelException exp) {
+            }
+            catch (WdkModelException exp) {
                 errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
                         "mapped.properties", p.getPrompt(), exp.getMessage()));
                 request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
@@ -123,7 +131,7 @@ public class FilterForm extends BooleanExpressionForm {
         return errors;
     }
 
-    public void cleanup() {
+    public void cleanup() throws WdkModelException {
         QuestionBean question = getQuestion();
         Vector<String> v = new Vector<String>();
         if (question != null) {
@@ -143,7 +151,7 @@ public class FilterForm extends BooleanExpressionForm {
         question = s;
     }
 
-    public QuestionBean getQuestion() {
+    public QuestionBean getQuestion() throws WdkModelException {
         if (question == null) {
             if (qFullName == null) return null;
             int dotI = qFullName.indexOf('.');

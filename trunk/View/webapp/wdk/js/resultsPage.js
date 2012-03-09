@@ -4,6 +4,52 @@ resultsPage.js
 
 Provides functions to support results table
 */
+
+function configureSummaryViews(ele) {
+    var workspace = window.wdk.findActiveWorkspace(); 
+    var summaryViews = workspace.find("#Summary_Views");
+    var currentTab = parseInt(summaryViews.children("ul").attr("currentTab"));    
+    workspace.find("#Summary_Views").tabs({
+        selected : currentTab,
+        ajaxOptions: {
+            error: function( xhr, status, index, anchor ) {
+                alert( "Couldn't load this tab. Please try again later." + status );
+            }
+        }
+    });
+}
+
+function summaryViewTabSelected(event, ui) {
+            var currentTab = getCurrentBasketTab();
+
+            var currentDiv = getCurrentBasketRegion();
+            currentDiv.prepend(jQuery("#basket-control-panel #basket-control").clone());
+
+            // store the selection cookie
+            var currentId = currentTab.attr("id");
+            setCurrentTabCookie('basket', currentId);
+            var control = jQuery("#basket-menu #basket-control");
+            if (currentDiv.find("table").length > 0) {
+                control.find("input#empty-basket-button").attr("disabled",false);
+                control.find("input#make-strategy-from-basket-button").attr("disabled",false);
+                control.find("input#export-basket-button").attr("disabled",false);
+                // create multi select control for adding columns
+                checkPageBasket();
+                createFlexigridFromTable(jQuery("#basket-menu #Results_Table"));
+                try {
+                    customBasketPage();
+                } catch(err) {
+                    //Do nothing
+                }
+            } else {
+                control.find("input#empty-basket-button").attr("disabled",true);
+                control.find("input#make-strategy-from-basket-button").attr("disabled",true);
+                control.find("input#export-basket-button").attr("disabled",true);
+            }
+}
+
+
+
 function moveAttr(col_ix, table) {
     // Get name of target attribute & attribute to left (if any)
     // NOTE:  Have to convert these from frontId to backId!!!
@@ -37,6 +83,10 @@ function updateAttrs(attrSelector, commandUrl) {
         attributes.push(this.value);
     });
     var url = commandUrl + "&command=update&attribute=" + attributes.join("&attribute=");
+    
+    // close the dialog
+    form.parents(".attributesList").dialog("close");
+
     updateResultsPage(form, url, true);
 }
 
@@ -48,15 +98,41 @@ function resetAttr(url, button) {
 }
 
 function updateResultsPage(element, url, update) {
-    if (element.parents("#strategy_results").length > 0) {
-            GetResultsPage(url, update, true);
-    }
-    else {
+    // determine whether to refresh strategy result or basket result
+    var tab = $("#strategy_tabs > li#selected > a").attr("id");
+    if (tab == "tab_strategy_results") {
+        GetResultsPage(url, update, true);
+    } else if (tab == "tab_basket") {
         ChangeBasket(url + "&results_only=true");
     }
 }
 
-function GetResultsPage(url, update, ignoreFilters){
+function sortResult(attribute, order) {
+    var command = "command=sort&attribute=" + attribute + "&sortOrder=" + order;
+    updateSummary(command);
+}
+
+function removeAttribute(attribute) {
+    var command = "command=remove&attribute=" + attribute;
+    updateSummary(command);
+}
+
+function updateSummary(command) {
+    var info = $("#Summary_Views");
+    var url = info.attr("updateUrl");
+    var strategyId = info.attr("strategy");
+    var stepId = info.attr("step");
+    var strategy = getStrategyFromBackId(strategyId);
+    var view = $("#Summary_Views > ul > li.ui-tabs-selected").attr("id");
+    url += "?strategy=" + strategyId + "&strategy_checksum=" + strategy.checksum + "&step=" 
+        + stepId + "&view=" + view + "&" + command;
+
+    GetResultsPage(url, true, true, true);
+}
+
+
+
+function GetResultsPage(url, update, ignoreFilters, resultOnly){
     var s = parseUrlUtil("strategy", url);
     var st = parseUrlUtil("step", url);
     var strat = getStrategyFromBackId(s[0]);
@@ -81,7 +157,10 @@ function GetResultsPage(url, update, ignoreFilters){
         },
         success: function(data){
             if (update && ErrorHandler("Results", data, strat, null)) {
-                ResultsToGrid(data, ignoreFilters, currentDiv);
+                if (resultOnly == undefined)
+                    resultOnly = (url.indexOf('showResult.do') >= 0);
+               
+                ResultsToGrid(data, ignoreFilters, currentDiv, resultOnly);
                 updateResultLabels(currentDiv, strat, step);
             }
             if(strat != false) removeLoading(strat.frontId);
@@ -100,7 +179,7 @@ function updateResultLabels(currentDiv, strat, step) {
     }
 }
 
-function ResultsToGrid(data, ignoreFilters, div) {
+function ResultsToGrid(data, ignoreFilters, div, resultOnly) {
     var oldFilters;
     var currentDiv = div;
     if (currentDiv == undefined) currentDiv = getCurrentBasketRegion();
@@ -207,16 +286,17 @@ function openAdvancedPaging(element){
 }
 
 function openAttributeList(element){
-    var button = $(element);
-
-    var popup = button.next(".attributesList");    
-
-    // Position the popup.
-    var left = $(window).width()/2 - popup.width()/2 + $(window).scrollLeft();
-    var top = $(window).scrollTop() - button.offset().top + 200;
-    popup.css({'display' : 'block',
-               'top' : top + 'px',
-               'left' : left + 'px'});
+    var list = $(element).next(".attributesList");
+    if (list.length > 0) {
+        var id = "dialog" + Math.floor(Math.random() * 1000000000);
+        $(element).attr("dialog", id);
+        list.attr("id", id).dialog({
+            autoOpen: false
+        });
+    }
+    var id = $(element).attr("dialog");
+    list = $("#" + id);
+    list.dialog("open");
 }
 
 function closeAttributeList(element){
@@ -235,7 +315,7 @@ function toggleAttributes(from) {
       if (name == '') continue;
 
       // look for the checkboxes with the attribute name, and toggle them
-      var attribute = $(".Results_Pane .attributesList input#" + name);
+      var attribute = $(".Results_Div .attributesList input#" + name);
       if (attribute.attr("disabled") == false)
          attribute.attr('checked', state);
    }

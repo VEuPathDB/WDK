@@ -1,8 +1,18 @@
 @import url("reset.css");
 
+
+
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       Stylesheet for base styles for StrategiesWDK-based sites
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/* the default font size has to be 12px, otherwise the step boxes will not be aligned correctly. */
+body { font-size: 12px; }
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     = Header & Menu styles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+#menu #favorite-menu { float: right; }
+
 
 /* -----------------------------------------------------------------------------
       =WDK params
@@ -468,7 +478,7 @@ div.Workspace {
    /* z-index was 50 originally, then moved to 16 so "Select columns" popup covered the
       steps in the strategy but still is under DYK at 180.  Changed to 185 so Columns pop-up
       appeared over DYK. */
-   z-index: 185;
+   /*z-index: 185; */
 }
 
 span.marker a:link, span.marker a:visited {
@@ -711,6 +721,13 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
 .favorite-refresh-button {
     clear: both;
 }
+
+#Feature_Pane .label {
+    width: 100px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
 .type-ahead-help {
     color: #666666;
     font-size: smaller;
@@ -771,4 +788,9 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
   background-color: #FFFFFF;
   margin: 2px; padding: 5px;
 }
+#word-cloud #layout .word {
+  padding: 0px 2px 0px 2px;
+}
 #word-cloud #layout .word { padding: 2px; }
+
+#form_question .filter-button { text-align: center; }

@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.user.User;
+import org.gusdb.wdk.model.view.SummaryView;
 import org.json.JSONException;
 
 /**
@@ -68,7 +69,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     private boolean fullAnswer = false;
 
     private String customJavascriptFile = "";
-    
+
     private List<AttributeList> attributeLists = new ArrayList<AttributeList>();
 
     private String[] defaultSummaryAttributeNames;
@@ -92,6 +93,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     private List<WdkModelText> sqlMacroList = new ArrayList<WdkModelText>();
     private Map<String, String> sqlMacroMap = new LinkedHashMap<String, String>();
 
+    private List<SummaryView> summaryViewList = new ArrayList<SummaryView>();
+    private Map<String, SummaryView> summaryViewMap = new LinkedHashMap<String, SummaryView>();
+
     // /////////////////////////////////////////////////////////////////////
     // setters called at initialization
     // /////////////////////////////////////////////////////////////////////
@@ -99,8 +103,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     /**
      * default constructor used by model parser
      */
-    public Question() {
-    }
+    public Question() {}
 
     /**
      * copy constructor
@@ -126,8 +129,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         this.recordClassRef = question.recordClassRef;
         this.defaultSortingMap.putAll(question.defaultSortingMap);
         this.summary = question.summary;
-        this.defaultSummaryAttributeFields
-                .putAll(question.defaultSummaryAttributeFields);
+        this.defaultSummaryAttributeFields.putAll(question.defaultSummaryAttributeFields);
         this.wdkModel = question.wdkModel;
 
         this.noSummaryOnSingleRecord = question.noSummaryOnSingleRecord;
@@ -192,9 +194,9 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     }
 
     public void setCustomJavascript(String customJavascript) {
-    	this.customJavascriptFile = customJavascript;
+        this.customJavascriptFile = customJavascript;
     }
-    
+
     public void addAttributeList(AttributeList attributeList) {
         this.attributeLists.add(attributeList);
     }
@@ -350,15 +352,14 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     }
 
     public String getDisplayName() {
-        if (displayName == null)
-            displayName = getFullName();
+        if (displayName == null) displayName = getFullName();
         return displayName;
     }
 
     public String getCustomJavascript() {
-    	return customJavascriptFile;
+        return customJavascriptFile;
     }
-    
+
     /**
      * @deprecated
      */
@@ -384,10 +385,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     }
 
     public String getFullName() {
-        if (questionSet == null)
-            return name;
-        else
-            return questionSet.getName() + "." + name;
+        if (questionSet == null) return name;
+        else return questionSet.getName() + "." + name;
     }
 
     public String getQuestionSetName() {
@@ -515,36 +514,36 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         return attributeFields;
     }
 
-	public AttributeCategoryTree getAttributeCategoryTree(FieldScope scope) throws WdkModelException {
-		
-		// get trimmed copy of category tree
-		AttributeCategoryTree tree = recordClass.getAttributeCategoryTree(scope);
-		
-		// integrate dynamic attributes into tree as first root node
-		AttributeCategory dynamic = new AttributeCategory();
-		dynamic.setName("dynamic");
-		dynamic.setDisplayName("Search-Specific");
-		for (AttributeField field : dynamicAttributeSet.getAttributeFieldMap(scope).values()) {
-			if (field.getName().equals(Utilities.COLUMN_WEIGHT)) {
-				tree.addAttributeToCategories(field);
-			}
-			else {
-				dynamic.addField(field);
-			}
-		}
-		if (!dynamic.getFields().isEmpty()) {
-			tree.prependAttributeCategory(dynamic);
-		}
-		
-		return tree;
-	}
+    public AttributeCategoryTree getAttributeCategoryTree(FieldScope scope)
+            throws WdkModelException {
+
+        // get trimmed copy of category tree
+        AttributeCategoryTree tree = recordClass.getAttributeCategoryTree(scope);
+
+        // integrate dynamic attributes into tree as first root node
+        AttributeCategory dynamic = new AttributeCategory();
+        dynamic.setName("dynamic");
+        dynamic.setDisplayName("Search-Specific");
+        for (AttributeField field : dynamicAttributeSet.getAttributeFieldMap(
+                scope).values()) {
+            if (field.getName().equals(Utilities.COLUMN_WEIGHT)) {
+                tree.addAttributeToCategories(field);
+            } else {
+                dynamic.addField(field);
+            }
+        }
+        if (!dynamic.getFields().isEmpty()) {
+            tree.prependAttributeCategory(dynamic);
+        }
+
+        return tree;
+    }
 
     @Override
     public void resolveReferences(WdkModel model) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
-        if (resolved)
-            return;
+        if (resolved) return;
         super.resolveReferences(model);
         this.wdkModel = model;
 
@@ -552,8 +551,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             // it must happen before dynamicAttributeSet, because it is
             // referenced
             // in the dynamicAttributeSet.
-            this.recordClass = (RecordClass) model
-                    .resolveReference(recordClassRef);
+            this.recordClass = (RecordClass) model.resolveReference(recordClassRef);
 
             // the id query is always cloned to keep a reference to the
             // question.
@@ -599,11 +597,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             dynamicAttributeSet.resolveReferences(model);
 
             // make sure we always display weight for combined question
-            //if (query.isCombined()) {
-            //    AttributeField weight = dynamicAttributeSet
-            //            .getAttributeFieldMap().get(Utilities.COLUMN_WEIGHT);
-            //    weight.setRemovable(false);
-            //}
+            // if (query.isCombined()) {
+            // AttributeField weight = dynamicAttributeSet
+            // .getAttributeFieldMap().get(Utilities.COLUMN_WEIGHT);
+            // weight.setRemovable(false);
+            // }
 
             // resolve default summary attributes
             if (defaultSummaryAttributeNames != null) {
@@ -620,9 +618,13 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             defaultSummaryAttributeNames = null;
 
             // make sure we create index on primary keys
-            String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
-                    .getColumnRefs();
+            String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
             query.setIndexColumns(pkColumns);
+
+            // resolve summary views
+            for (SummaryView summaryView : summaryViewMap.values()) {
+                summaryView.resolveReferences(model);
+            }
         } catch (WdkModelException ex) {
             logger.error("resolving question '" + getFullName() + " failed. "
                     + ex);
@@ -652,13 +654,11 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
         for (String attrName : defaultSortingMap.keySet()) {
             map.put(attrName, defaultSortingMap.get(attrName));
-            if (map.size() >= User.SORTING_LEVEL)
-                break;
+            if (map.size() >= User.SORTING_LEVEL) break;
         }
 
         // no sorting map defined, use the definition in recordClass
-        if (map.size() == 0)
-            map = recordClass.getSortingAttributeMap();
+        if (map.size() == 0) map = recordClass.getSortingAttributeMap();
 
         return map;
     }
@@ -744,10 +744,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
                             + " has more than one <attributesList> for "
                             + "project " + projectId);
                 } else {
-                    this.defaultSummaryAttributeNames = attributeList
-                            .getSummaryAttributeNames();
-                    this.defaultSortingMap = attributeList
-                            .getSortingAttributeMap();
+                    this.defaultSummaryAttributeNames = attributeList.getSummaryAttributeNames();
+                    this.defaultSortingMap = attributeList.getSortingAttributeMap();
                     hasAttributeList = true;
                 }
             }
@@ -802,6 +800,20 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             }
         }
         sqlMacroList = null;
+
+        // exclude the summary views
+        for (SummaryView view : summaryViewList) {
+            if (view.include(projectId)) {
+                view.excludeResources(projectId);
+                String name = view.getName();
+                if (summaryViewMap.containsKey(name))
+                    throw new WdkModelException("The summary view '" + name
+                            + "' is duplicated in question " + getFullName());
+
+                summaryViewMap.put(name, view);
+            }
+        }
+        summaryViewList = null;
     }
 
     private Query createDynamicAttributeQuery(WdkModel wdkModel)
@@ -852,10 +864,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         for (Param param : query.getParams()) {
             if (param instanceof AnswerParam) {
                 AnswerParam answerParam = (AnswerParam) param;
-                Map<String, RecordClass> recordClasses = answerParam
-                        .getRecordClasses();
-                if (recordClasses.containsKey(rcName))
-                    list.add(answerParam);
+                Map<String, RecordClass> recordClasses = answerParam.getRecordClasses();
+                if (recordClasses.containsKey(rcName)) list.add(answerParam);
             }
         }
         AnswerParam[] array = new AnswerParam[list.size()];
@@ -869,5 +879,47 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
     public void addSqlParamValue(WdkModelText sqlMacro) {
         this.sqlMacroList.add(sqlMacro);
+    }
+
+    public Map<String, SummaryView> getSummaryViews() {
+        // get views from record
+        Map<String, SummaryView> map = recordClass.getSummaryViews();
+
+        // override the views defined in the question
+        map.putAll(summaryViewMap);
+
+        return map;
+    }
+
+    public SummaryView getSummaryView(String viewName) throws WdkUserException {
+        SummaryView view = summaryViewMap.get(viewName);
+        if (view != null) return view;
+
+        return recordClass.getSummaryView(viewName);
+    }
+
+    public SummaryView getDefaultSummaryView() throws WdkModelException {
+        // first look for default in the views defined in question
+        for (SummaryView view : summaryViewMap.values()) {
+            if (view.isDefault()) return view;
+        }
+        // then look for the default in the views from record
+        Map<String, SummaryView> viewsFromRecord = recordClass.getSummaryViews();
+        for (SummaryView view : viewsFromRecord.values()) {
+            if (view.isDefault()) return view;
+        }
+        // return the first view from question
+        if (summaryViewMap.size() > 0)
+            return summaryViewMap.values().iterator().next();
+        // return the first view from record
+        if (viewsFromRecord.size() > 0)
+            return viewsFromRecord.values().iterator().next();
+
+        return null;
+    }
+
+    public void addSummaryView(SummaryView view) {
+        if (summaryViewList == null) summaryViewMap.put(view.getName(), view);
+        else summaryViewList.add(view);
     }
 }

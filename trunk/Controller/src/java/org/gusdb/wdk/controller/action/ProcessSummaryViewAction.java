@@ -27,43 +27,43 @@ import org.gusdb.wdk.model.user.User;
  * @author Jerric
  * 
  */
-public class ProcessSummaryAction extends Action {
+public class ProcessSummaryViewAction extends Action {
 
-    private static Logger logger = Logger.getLogger(ProcessSummaryAction.class);
+    private static final String PARAM_STEP = "step";
+    private static final String PARAM_VIEW = "view";
+    private static final String PARAM_COMMAND = "command";
+    private static final String PARAM_ATTRIBUTE = "attribute";
+    private static final String PARAM_SORT_ORDER = "sortOrder";
+     
+    private static final String FORWARD_SHOW_SUMMARY_VIEW = "show-summary-view";
+
+    private static Logger logger = Logger.getLogger(ProcessSummaryViewAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        // get user, or create one, if not exist
-        WdkModelBean wdkModel = (WdkModelBean) servlet.getServletContext().getAttribute(
-                CConstants.WDK_MODEL_KEY);
-        UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                CConstants.WDK_USER_KEY);
-        if (wdkUser == null) {
-            wdkUser = wdkModel.getUserFactory().getGuestUser();
-            request.getSession().setAttribute(CConstants.WDK_USER_KEY, wdkUser);
-        }
+        logger.debug("Entering ProcessSummaryViewAction...");
+
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
+        UserBean wdkUser = ActionUtility.getUser(servlet, request);
+
+        String stepId = request.getParameter(PARAM_STEP);
+        String view = request.getParameter(PARAM_VIEW);
+        String command = request.getParameter(PARAM_COMMAND);
+        String attributeName = request.getParameter(PARAM_ATTRIBUTE);
+        String sortingOrder = request.getParameter(PARAM_SORT_ORDER);
+
+        if (stepId == null || stepId.length() == 0)
+            throw new WdkModelException("Step is required!");
+        StepBean step = wdkUser.getStep(Integer.parseInt(stepId));
+        // step.resetAnswerValue();
+
+        QuestionBean question = step.getQuestion();
+        String questionName = question.getFullName();
 
         // get the query string
         String queryString = request.getQueryString();
         logger.debug("url before process: " + queryString);
-
-        // get question
-        String questionName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-        if (questionName == null || questionName.length() == 0) {
-            String stepId = request.getParameter(CConstants.WDK_STEP_ID_KEY);
-            StepBean step = null;
-            if (stepId != null && stepId.length() != 0) {
-                step = wdkUser.getStep(Integer.parseInt(stepId));
-                step.resetAnswerValue();
-            } else {
-                throw new WdkModelException(
-                        "No step was specified for ProcessSummary!");
-            }
-
-            questionName = step.getQuestionName();
-        }
-        QuestionBean question = wdkModel.getQuestion(questionName);
 
         // get summary checksum, if have
         String summaryChecksum = null; // request.getParameter(CConstants.WDK_SUMMARY_KEY);
@@ -82,11 +82,8 @@ public class ProcessSummaryAction extends Action {
         } else sortingChecksum = null;
 
         // get command
-        String command = request.getParameter(CConstants.WDK_SUMMARY_COMMAND_KEY);
         if (command != null) {
             if (command.equalsIgnoreCase("sort")) { // sorting
-                String attributeName = request.getParameter(CConstants.WDK_SUMMARY_ATTRIBUTE_KEY);
-                String sortingOrder = request.getParameter(CConstants.WDK_SUMMARY_SORTING_ORDER_KEY);
                 boolean ascending = !sortingOrder.equalsIgnoreCase("DESC");
                 String checksum = wdkUser.addSortingAttribute(questionName,
                         attributeName, ascending);
@@ -118,8 +115,8 @@ public class ProcessSummaryAction extends Action {
                         }
                     }
                     logger.debug("Old Summary list: " + summaryList);
-                    for (String attributeName : attributeNamesList) {
-                        summaryList.add(attributeName);
+                    for (String attrName : attributeNamesList) {
+                        summaryList.add(attrName);
                     }
                 } else {
                     for (String attribute : summary) {
@@ -127,13 +124,13 @@ public class ProcessSummaryAction extends Action {
                     }
 
                     if (command.equalsIgnoreCase("add")) {
-                        for (String attributeName : attributeNames) {
-                            if (!summaryList.contains(attributeName))
-                                summaryList.add(attributeName);
+                        for (String attrName : attributeNames) {
+                            if (!summaryList.contains(attrName))
+                                summaryList.add(attrName);
                         }
                     } else if (command.equalsIgnoreCase("remove")) {
-                        for (String attributeName : attributeNames) {
-                            summaryList.remove(attributeName);
+                        for (String attrName : attributeNames) {
+                            summaryList.remove(attrName);
                         }
                     } else if (command.equalsIgnoreCase("arrange")) {
                         // Get the attribute that will be to the left of
@@ -143,10 +140,10 @@ public class ProcessSummaryAction extends Action {
                         // attributeName the first element.
                         // Otherwise, make it the first element AFTER
                         // attributeToLeft
-                        for (String attributeName : attributeNames) {
-                            summaryList.remove(attributeName);
+                        for (String attrName : attributeNames) {
+                            summaryList.remove(attrName);
                             int toIndex = summaryList.indexOf(attributeToLeft) + 1;
-                            summaryList.add(toIndex, attributeName);
+                            summaryList.add(toIndex, attrName);
                         }
                     } else {
                         throw new WdkModelException("Unknown command: "
@@ -190,12 +187,11 @@ public class ProcessSummaryAction extends Action {
         StringBuffer url = new StringBuffer();
         if (!fromBasket) {
             // construct url to show summary action
-            ActionForward showSummary = mapping.findForward(CConstants.PQ_SHOW_SUMMARY_MAPKEY);
-            url.append(showSummary.getPath());
-            url.append("?");
-            url.append(queryString);
-            // don't skip to the record page
-            url.append("&noskip=1&resultsOnly=true");
+            ActionForward showSummaryView = mapping.findForward(FORWARD_SHOW_SUMMARY_VIEW);
+            logger.debug("forward: " + showSummaryView);
+            url.append(showSummaryView.getPath());
+            url.append("?step=").append(stepId);
+            url.append("&view=").append(view);
         } else {
             ActionForward showBasket = mapping.findForward(CConstants.PQ_SHOW_BASKET_MAPKEY);
             url.append(showBasket.getPath());

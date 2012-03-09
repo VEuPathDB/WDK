@@ -3,6 +3,17 @@
 <wdkModel>
 
 
+    <constant name="CONST01"><![CDATA[Specific Const01]]></constant>
+    <constant name="CONST03"><![CDATA[Specific Const03]]></constant>
+    <constant name="CONST04"><![CDATA[Specific Const04]]></constant>
+
+
+    <defaultPropertyList name="SUB_CONST01"><value>%%CONST01%%</value></defaultPropertyList>
+    <defaultPropertyList name="SUB_CONST02"><value>%%CONST02%%</value></defaultPropertyList>
+    <defaultPropertyList name="SUB_CONST03"><value>%%CONST03%%</value></defaultPropertyList>
+    <defaultPropertyList name="SUB_CONST04"><value>%%CONST04%%</value></defaultPropertyList>
+
+
     <!-- ************ -->
     <!-- questionSets -->
     <!-- ************ -->
@@ -35,7 +46,6 @@
         </description>
         
         <question name="SampleQuestion"
-                  category="sample"
                   displayName="Sample Question"
                   queryRef="SampleQueries.SampleIdQuery"
                   recordClassRef="SampleRecords.SampleRecord"
@@ -69,7 +79,8 @@
                     </text>
                 </textAttribute>
     
-                <linkAttribute name="url" displayName="URL" visible="Url">
+                <linkAttribute name="url" displayName="URL">
+                    <displayText>Url"</displayText>
                     <url excludeProjects="ToyDB">
                         <![CDATA[@SAMPLE_URL@]]>
                     </url>
@@ -130,7 +141,6 @@
         </question>
         
         <question name="SampleQuestion"
-                  category="sample"
                   displayName="Toy Sample Question"
                   queryRef="SampleQueries.SampleIdQuery"
                   recordClassRef="SampleRecords.SampleRecord"
@@ -138,7 +148,6 @@
         </question>
         
         <question name="ToyQuestion"
-                  category="sample"
                   displayName="Toy Sample Question"
                   queryRef="SampleQueries.SampleIdQuery"
                   recordClassRef="SampleRecords.SampleRecord"
@@ -168,7 +177,6 @@
                  includeProjects="ToyDB">
     
         <question name="SampleQuestion"
-                  category="sample"
                   displayName="Sample Question"
                   queryRef="SampleQueries.SampleIdQuery"
                   recordClassRef="SampleRecords.SampleRecord">
@@ -182,7 +190,6 @@
                  includeProjects="ToyDB">
     
         <question name="SampleQuestion"
-                  category="sample"
                   displayName="Sample Question"
                   queryRef="SampleQueries.SampleIdQuery"
                   recordClassRef="SampleRecords.SampleRecord">

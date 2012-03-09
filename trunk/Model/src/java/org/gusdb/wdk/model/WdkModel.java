@@ -14,10 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultFactory;
@@ -36,7 +32,6 @@ import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 import org.json.JSONException;
-import org.xml.sax.SAXException;
 
 // why is this in impl?
 
@@ -52,27 +47,12 @@ public class WdkModel {
 
     /**
      * Convenience method for constructing a model from the configuration
-     * information
+     * information.
      * 
-     * @throws JSONException
-     * @throws SQLException
-     * @throws SAXException
-     * @throws IOException
-     * @throws TransformerException
-     * @throws TransformerFactoryConfigurationError
-     * @throws ParserConfigurationException
-     * @throws NoSuchAlgorithmException
-     * @throws ClassNotFoundException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws WdkUserException
+     * @throws WdkModelException
      */
     public static WdkModel construct(String projectId, String gusHome)
-            throws WdkModelException, NoSuchAlgorithmException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException, IOException, SAXException, SQLException,
-            JSONException, WdkUserException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+            throws WdkModelException {
         StackTraceElement[] stackTrace = new Throwable().getStackTrace();
         int index = stackTrace.length - 1;
         String tip = "";
@@ -80,11 +60,16 @@ public class WdkModel {
         logger.debug("Constructing wdk model [" + projectId + "] (GUS_HOME="
                 + gusHome + "); " + tip);
 
-        ModelXmlParser parser = new ModelXmlParser(gusHome);
-        WdkModel wdkModel = parser.parseModel(projectId);
-        
-        logger.debug("Model ready to use.");
-        return wdkModel;
+        try {
+            ModelXmlParser parser = new ModelXmlParser(gusHome);
+            WdkModel wdkModel = parser.parseModel(projectId);
+
+            logger.debug("Model ready to use.");
+            return wdkModel;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw new WdkModelException(ex);
+        }
     }
 
     private ModelConfig modelConfig;
@@ -160,7 +145,6 @@ public class WdkModel {
     private String secretKey;
 
     private User systemUser;
-
 
     /**
      * @param initRecordClassList
@@ -1085,7 +1069,7 @@ public class WdkModel {
     }
 
     public boolean getUseWeights() {
-	return modelConfig.getUseWeights();
+        return modelConfig.getUseWeights();
     }
 
     public User getSystemUser() throws NoSuchAlgorithmException,
