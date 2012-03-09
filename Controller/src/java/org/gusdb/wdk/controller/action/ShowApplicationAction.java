@@ -23,7 +23,10 @@ import org.json.JSONObject;
  * multiple strategies can be loaded by the UI
  */
 public class ShowApplicationAction extends ShowSummaryAction {
-    private static Logger logger = Logger.getLogger(ShowApplicationAction.class);
+
+    private static final String PARAM_TAB = "tab";
+
+    private static final Logger logger = Logger.getLogger(ShowApplicationAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
@@ -56,6 +59,12 @@ public class ShowApplicationAction extends ShowSummaryAction {
             String activeStrategies = jsState.toString();
             request.setAttribute(CConstants.WDK_STRATEGY_COLLECTION_KEY,
                     activeStrategies);
+
+            // get the tab info, if present
+            String tab = request.getParameter(PARAM_TAB);
+            if (tab != null && tab.length() > 0) {
+
+            }
 
 	    String strategyViewFile = CConstants.WDK_CUSTOM_VIEW_DIR
 		+ File.separator + CConstants.WDK_PAGES_DIR

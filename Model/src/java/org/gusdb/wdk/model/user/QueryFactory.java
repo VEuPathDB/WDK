@@ -121,7 +121,6 @@ public class QueryFactory {
         StringBuffer sb = new StringBuffer();
         int i = 0;
         for (String colName : columns.keySet()) {
-            i++;
             // only use a limit number of attribtues in sorting
             if (i >= Utilities.SORTING_LEVEL) break;
 
@@ -129,6 +128,7 @@ public class QueryFactory {
             if (sb.length() > 0) sb.append(", ");
             sb.append(colName);
             sb.append(ascend ? " ASC" : " DESC");
+            i++;
         }
         String columnsContent = sb.toString();
         String checksum = Utilities.encrypt(columnsContent);

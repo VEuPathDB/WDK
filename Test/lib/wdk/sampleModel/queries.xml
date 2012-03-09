@@ -11,15 +11,15 @@
     A query fetchs the data from database or some other sources to a question or recordClass.
     -->
 
-    <querySet name="SampleQueries" excludeProjects="ToyDB">
+    <querySet name="SampleQueries" queryType="id" excludeProjects="ToyDB">
     
         <sqlQuery name="SampleIdQuery" displayName="Get Query Ids by query name"
                   isCacheable="true" excludeProjects="ToyDB">
             <paramRef ref="params.query_name" excludeProjects="ToyDB"/>
             <paramRef ref="params.query_name" includeProjects="ToyDB" 
                       default="SampleToyQuery" allowEmpty="true"/>
-            <paramRef ref="params.booleanParam" useTermOnly="true"/>
-            <paramRef ref="params.flatVocabParam" useTermOnly="false"/>
+            <paramRef ref="params.booleanParam" noTranslation="true"/>
+            <paramRef ref="params.flatVocabParam" noTranslation="false"/>
             <column name="query_instance_id"/>
             <column name="start_time" includeProjects="ToyDB"/>
             <column name="start_time" excludeProjects="ToyDB"/>
@@ -54,7 +54,7 @@
     
         <sqlQuery name="SampleIdQuery" displayName="Get Query Ids by query name"
                   isCacheable="true" includeProjects="ToyDB">
-            <paramRef ref="params.flatVocabParam" useTermOnly="false"/>
+            <paramRef ref="params.flatVocabParam" noTranslation="false"/>
             <column name="query_instance_id"/>
             <sql excludeProjects="ToyDB">
                 <![CDATA[
@@ -68,12 +68,12 @@
         <sqlQuery name="SampleAttributeQuery" displayName="Get Query Attributes"
                   isCacheable="true">
             <paramRef ref="params.primaryKey"/>
-            <column name="query_instance_id" sortingTable="queryinstance"/>
-            <column name="query_name" sortingTable="queryinstance"/>
-            <column name="cached" sortingTable="queryinstance"/>
-            <column name="result_table" sortingTable="queryinstance"/>
-            <column name="query_checksum" sortingTable="queryinstance"/>
-            <column name="result_message" sortingTable="queryinstance"/>
+            <column name="query_instance_id" />
+            <column name="query_name" />
+            <column name="cached" />
+            <column name="result_table" />
+            <column name="query_checksum" />
+            <column name="result_message" />
             <sql>
                 <![CDATA[
                 SELECT qi.query_instance_id
@@ -91,8 +91,8 @@
         <sqlQuery name="SampleTableQuery" displayName="Get Query Attributes"
                   isCacheable="true">
             <paramRef ref="params.primaryKey"/>
-            <column name="query_instance_id" sortingTable="queryinstance"/>
-            <column name="query_name" sortingTable="queryinstance"/>
+            <column name="query_instance_id" />
+            <column name="query_name" />
             <sql>
                 <![CDATA[
                 SELECT qi.query_instance_id
@@ -118,21 +118,21 @@
             </sql>
         </sqlQuery>
         
-        <wsQuery name="SampleWsQuery" displayName="Sample Process Query" 
+        <processQuery name="SampleprocessQuery" displayName="Sample Process Query" 
                  processName="org.apidb.apicomplexa.wsfplugin.ncbiblast.NcbiBlastPlugin"
                  excludeProjects="ToyDB">
             <paramRef ref="params.query_instance_id" excludeProjects="ToyDB"/>
             <paramRef ref="params.query_instance_id" includeProjects="ToyDB"/>
             <wsColumn name="query_instance_id" excludeProjects="ToyDB"/>
             <wsColumn name="query_instance_id" includeProjects="ToyDB"/>
-        </wsQuery>
+        </processQuery>
         
-        <wsQuery name="SampleWsQuery" displayName="Sample Process Query" 
+        <processQuery name="SampleWsQuery" displayName="Sample Process Query" 
                  processName="org.apidb.apicomplexa.wsfplugin.ncbiblast.NcbiBlastPlugin" 
                  includeProjects="ToyDB">
             <paramRef ref="params.query_instance_id"/>
             <wsColumn name="query_instance_id"/>
-        </wsQuery>
+        </processQuery>
 
         <sqlQuery name="NestedListQuery" displayName="Get Query Attributes"
                   isCacheable="true">
@@ -151,7 +151,7 @@
     </querySet>
 
 
-    <querySet name="SampleQueries" includeProjects="ToyDB">
+    <querySet name="SampleQueries" queryType="id" includeProjects="ToyDB">
     
         <sqlQuery name="SampleIdQuery" displayName="Get Query Ids by query name"
                   isCacheable="true">

@@ -31,40 +31,43 @@ import org.xml.sax.SAXException;
  */
 public class ApplicationInitListener implements ServletContextListener {
 
+    public static boolean resourceExists(String path,
+            ServletContext servletContext) {
+        try {
+            URL url = servletContext.getResource(path);
+            return url != null;
+        }
+        catch (MalformedURLException exp) {
+            RuntimeException e = new RuntimeException(exp);
+            throw e;
+        }
+    }
+
     public void contextDestroyed(ServletContextEvent sce) {
         try {
             DBPlatform.closeAllPlatforms();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
     public void contextInitialized(ServletContextEvent sce) {
 
-        ServletContext application = sce.getServletContext();
+        ServletContext servletContext = sce.getServletContext();
 
-        String projectId = application.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
-        String gusHome = application.getRealPath(application.getInitParameter(Utilities.SYSTEM_PROPERTY_GUS_HOME));
+        String projectId = servletContext.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
+        String gusHome = servletContext.getRealPath(servletContext.getInitParameter(Utilities.SYSTEM_PROPERTY_GUS_HOME));
 
-        String alwaysGoToSummary = application.getInitParameter(CConstants.WDK_ALWAYSGOTOSUMMARY_PARAM);
-        String loginUrl = application.getInitParameter(CConstants.WDK_LOGIN_URL_PARAM);
+        String alwaysGoToSummary = servletContext.getInitParameter(CConstants.WDK_ALWAYSGOTOSUMMARY_PARAM);
+        String loginUrl = servletContext.getInitParameter(CConstants.WDK_LOGIN_URL_PARAM);
 
         try {
-            initMemberVars(application, projectId, gusHome, alwaysGoToSummary,
-                    loginUrl);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            initMemberVars(servletContext, projectId, gusHome,
+                    alwaysGoToSummary, loginUrl);
         }
-    }
-
-    public static boolean resourceExists(String path,
-            ServletContext servletContext) {
-        try {
-            URL url = servletContext.getResource(path);
-            return url != null;
-        } catch (MalformedURLException exp) {
-            RuntimeException e = new RuntimeException(exp);
-            throw e;
+        catch (Exception ex) {
+            throw new RuntimeException(ex);
         }
     }
 

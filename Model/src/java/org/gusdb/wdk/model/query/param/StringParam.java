@@ -1,6 +1,7 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,8 +28,6 @@ import org.json.JSONObject;
  */
 public class StringParam extends Param {
 
-    private static final long serialVersionUID = 7561711069245980824L;
-    
     private List<WdkModelText> regexes = new ArrayList<WdkModelText>();
     private String regex;
     private int length = 0;
@@ -116,7 +115,9 @@ public class StringParam extends Param {
     // protected methods
     // ///////////////////////////////////////////////////////////////
 
-    public void resolveReferences(WdkModel model) throws WdkModelException {
+    public void resolveReferences(WdkModel model) throws WdkModelException, NoSuchAlgorithmException, WdkUserException, SQLException, JSONException {
+        super.resolveReferences(model);
+
         if (regex == null) regex = model.getModelConfig().getParamRegex();
     }
 

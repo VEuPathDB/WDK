@@ -26,6 +26,8 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
+import org.gusdb.wdk.model.view.RecordView;
+import org.gusdb.wdk.model.view.SummaryView;
 import org.json.JSONException;
 
 /**
@@ -39,6 +41,9 @@ public class User /* implements Serializable */{
 
     public final static String SORTING_ATTRIBUTES_SUFFIX = "_sort";
     public final static String SUMMARY_ATTRIBUTES_SUFFIX = "_summary";
+
+    private final static String SUMMARY_VIEW_PREFIX = "summary_view_";
+    private final static String RECORD_VIEW_PREFIX = "record_view_";
 
     public static final int SORTING_LEVEL = 3;
 
@@ -618,12 +623,10 @@ public class User /* implements Serializable */{
             Strategy[] array = new Strategy[strategies.size()];
             strategies.values().toArray(array);
             return array;
-        }
-        catch (WdkUserException ex) {
+        } catch (WdkUserException ex) {
             System.out.println(ex);
             throw ex;
-        }
-        catch (WdkModelException ex) {
+        } catch (WdkModelException ex) {
             System.out.println(ex);
             throw ex;
         }
@@ -1046,7 +1049,7 @@ public class User /* implements Serializable */{
 
     public String addSortingAttribute(String questionFullName, String attrName,
             boolean ascending) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException {
+            NoSuchAlgorithmException, JSONException, SQLException {
         Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>();
         sortingMap.put(attrName, ascending);
         Map<String, Boolean> previousMap = getSortingAttributes(questionFullName);
@@ -1062,6 +1065,13 @@ public class User /* implements Serializable */{
         String sortingChecksum = queryFactory.makeSortingChecksum(sortingMap);
 
         applySortingChecksum(questionFullName, sortingChecksum);
+
+        // update cached step if needed
+        if (cachedStep != null
+                && cachedStep.getQuestionName().equals(questionFullName)) {
+            cachedStep.getAnswerValue().setSortingMap(sortingMap);
+        }
+
         return sortingChecksum;
     }
 
@@ -1126,8 +1136,6 @@ public class User /* implements Serializable */{
         // }
         // }
 
-        if (summaryChecksum == null || summaryChecksum.length() == 0)
-            setSummaryAttributes(questionFullName, summary);
         return summary;
     }
 
@@ -1139,25 +1147,17 @@ public class User /* implements Serializable */{
 
     public String setSummaryAttributes(String questionFullName,
             String[] summaryNames) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException {
+            NoSuchAlgorithmException, JSONException, SQLException {
         // make sure all the attribute names exist
         Question question = (Question) wdkModel.resolveReference(questionFullName);
         Map<String, AttributeField> attributes = question.getAttributeFieldMap();
 
         // instead throwing out an error, just ignore the invalid columns
-        // for (String summaryName : summaryNames) {
-        // if (!attributes.containsKey(summaryName))
-        // throw new WdkModelException("Invalid summary attribute ["
-        // + summaryName + "] for question [" + questionFullName
-        // + "]");
-        // }
-
         List<String> validNames = new ArrayList<String>();
         for (String name : summaryNames) {
             if (attributes.containsKey(name)) validNames.add(name);
         }
-        summaryNames = new String[validNames.size()];
-        validNames.toArray(summaryNames);
+        summaryNames = validNames.toArray(new String[0]);
 
         logger.debug("Saving Valid summary names: " + validNames);
         // create checksum
@@ -1165,6 +1165,12 @@ public class User /* implements Serializable */{
         String summaryChecksum = queryFactory.makeSummaryChecksum(summaryNames);
 
         applySummaryChecksum(questionFullName, summaryChecksum);
+
+        // update cached step if needed
+        if (cachedStep != null
+                && cachedStep.getQuestionName().equals(questionFullName)) {
+            cachedStep.getAnswerValue().setSummaryAttributes(summaryNames);
+        }
 
         return summaryChecksum;
     }
@@ -1196,8 +1202,7 @@ public class User /* implements Serializable */{
                 + Integer.toString(userId);
         try {
             key = UserFactory.encrypt(key);
-        }
-        catch (NoSuchAlgorithmException ex) {
+        } catch (NoSuchAlgorithmException ex) {
             throw new WdkUserException(ex);
         }
         // save the remote key
@@ -1273,8 +1278,7 @@ public class User /* implements Serializable */{
             try {
                 Strategy strategy = getStrategy(id);
                 strategies.add(strategy);
-            }
-            catch (WdkUserException ex) {
+            } catch (WdkUserException ex) {
                 // something wrong with loading a strat, probably the strategy
                 // doesn't exist anymore
                 logger.warn("something wrong with loading a strat, probably "
@@ -1375,8 +1379,7 @@ public class User /* implements Serializable */{
         Question question = null;
         try {
             question = leftStep.getQuestion();
-        }
-        catch (WdkModelException ex) {
+        } catch (WdkModelException ex) {
             // in case the left step has an invalid question, try the right
             question = rightStep.getQuestion();
         }
@@ -1524,51 +1527,105 @@ public class User /* implements Serializable */{
         return basketFactory.getBasketCounts(this);
     }
 
-	public int getBasketCounts(List<String[]> records, RecordClass recordClass)
-			throws WdkUserException, WdkModelException, SQLException {
-		int count = wdkModel.getBasketFactory().getBasketCounts(this, records, recordClass);
-		if (logger.isDebugEnabled()) {
-			logger.debug("How many of " + convert(records) + " in basket? " + count);
-		}
-		return count;
-	}
+    public int getBasketCounts(List<String[]> records, RecordClass recordClass)
+            throws WdkUserException, WdkModelException, SQLException {
+        int count = wdkModel.getBasketFactory().getBasketCounts(this, records,
+                recordClass);
+        if (logger.isDebugEnabled()) {
+            logger.debug("How many of " + convert(records) + " in basket? "
+                    + count);
+        }
+        return count;
+    }
 
-	private String convert(List<String[]> records) {
-		StringBuilder sb = new StringBuilder("List { ");
-		for (String[] item : records) {
-			sb.append("[ ");
-			for (String s : item) {
-				sb.append(s).append(", ");
-			}
-			sb.append(" ],");
-		}
-		sb.append(" }");
-		return sb.toString();
-	}
+    private String convert(List<String[]> records) {
+        StringBuilder sb = new StringBuilder("List { ");
+        for (String[] item : records) {
+            sb.append("[ ");
+            for (String s : item) {
+                sb.append(s).append(", ");
+            }
+            sb.append(" ],");
+        }
+        sb.append(" }");
+        return sb.toString();
+    }
 
-	public int getFavoriteCount(List<Map<String, Object>> records,
-			RecordClass recordClass) throws WdkUserException, WdkModelException, SQLException {
+    public int getFavoriteCount(List<Map<String, Object>> records,
+            RecordClass recordClass) throws WdkUserException,
+            WdkModelException, SQLException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         int count = 0;
         for (Map<String, Object> item : records) {
-        	boolean inFavs = favoriteFactory.isInFavorite(this, recordClass, item);
-        	if (logger.isDebugEnabled()) {
-        		logger.debug("Is " + convert(item) + " in favorites? " + inFavs);
-        	}
-        	if (inFavs) {
-        		count++;
-        	}
+            boolean inFavs = favoriteFactory.isInFavorite(this, recordClass,
+                    item);
+            if (logger.isDebugEnabled()) {
+                logger.debug("Is " + convert(item) + " in favorites? " + inFavs);
+            }
+            if (inFavs) {
+                count++;
+            }
         }
         return count;
-	}
+    }
 
-	private String convert(Map<String, Object> item) {
-		StringBuilder sb = new StringBuilder("Map { ");
-		for (String s : item.keySet()) {
-			sb.append("{ ").append(s).append(", ").append(item.get(s)).append(" },");
-		}
-		sb.append(" }");
-		return sb.toString();
-	}
+    private String convert(Map<String, Object> item) {
+        StringBuilder sb = new StringBuilder("Map { ");
+        for (String s : item.keySet()) {
+            sb.append("{ ").append(s).append(", ").append(item.get(s)).append(
+                    " },");
+        }
+        sb.append(" }");
+        return sb.toString();
+    }
 
+    public SummaryView getCurrentSummaryView(Question question)
+            throws WdkModelException, WdkUserException {
+        String key = SUMMARY_VIEW_PREFIX + question.getFullName();
+        String viewName = projectPreferences.get(key);
+        SummaryView view;
+        if (viewName == null) { // no summary view set, use the default one
+            view = question.getDefaultSummaryView();
+        } else {
+            view = question.getSummaryView(viewName);
+        }
+        return view;
+    }
+
+    public void setCurrentSummaryView(Question question, SummaryView summaryView)
+            throws WdkUserException, WdkModelException {
+        String key = SUMMARY_VIEW_PREFIX + question.getFullName();
+        if (summaryView == null) { // remove the current summary view
+            projectPreferences.remove(key);
+        } else { // store the current summary view
+            String viewName = summaryView.getName();
+            projectPreferences.put(key, viewName);
+        }
+        save();
+    }
+
+    public RecordView getCurrentRecordView(RecordClass recordClass)
+            throws WdkUserException {
+        String key = RECORD_VIEW_PREFIX + recordClass.getFullName();
+        String viewName = projectPreferences.get(key);
+        RecordView view;
+        if (viewName == null) { // no record view set, use the default one
+            view = recordClass.getDefaultRecordView();
+        } else {
+            view = recordClass.getRecordView(viewName);
+        }
+        return view;
+    }
+
+    public void setCurrentRecordView(RecordClass recordClass,
+            RecordView recordView) throws WdkUserException, WdkModelException {
+        String key = RECORD_VIEW_PREFIX + recordClass.getFullName();
+        if (recordView == null) { // remove the current record view
+            projectPreferences.remove(key);
+        } else { // store the current record view
+            String viewName = recordView.getName();
+            projectPreferences.put(key, viewName);
+        }
+        save();
+    }
 }

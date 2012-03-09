@@ -92,6 +92,36 @@ function WDK() {
             handler();
         }
     }
+
+    this.findActiveWorkspace = function() {
+        // check if the current page is result page
+        var tabs = jQuery("#strategy_tabs");
+        var section = "";
+        if (tabs.length > 0) { // on result page
+            // determine the default top level tab
+            section = tabs.children("#selected").children("a").attr("id");
+            if (section == "tab_basket") { // on basket tab
+                section = jQuery("#basket #basket-menu > ul > li.ui-tabs-selected > a").attr("href");
+                section = "#basket #basket-menu > " + section;
+            } else { // on open strategies tab
+                section = "#" + section.substring(4) + " .Workspace";
+            }
+        } else { // not on strategy page, just get the general workspace
+           section = ".Workspace";
+        }
+        return jQuery(section);
+    }
+
+    this.findActiveView = function() {
+        var workspace = this.findActiveWorkspace();
+        // check if we have summary view or record view
+        var views = workspace.find("#Summary_Views");
+        if (views.length == 0) { // no sumamry views, get record views
+            views = workspace.find("#Record_Views");
+        }
+        var section = views.children("ul").children("li.ui-tabs-selected").children("a").attr("href");
+        return views.find(section);
+    }
     
     this.initialize();
 }

@@ -165,6 +165,9 @@ public class BasketFactory {
                 SqlUtils.verifyTime(wdkModel, sqlInsert,
                         "wdk-basket-factory-insert", start);
             }
+            // check the remote table to solve out-dated db-link issue with
+            // Oracle.
+            checkRemoteTable();
         }
         finally {
             SqlUtils.closeStatement(psInsert);
@@ -222,6 +225,9 @@ public class BasketFactory {
                 SqlUtils.verifyTime(wdkModel, sqlDelete,
                         "wdk-basket-factory-delete", start);
             }
+            // check the remote table to solve out-dated db-link issue with
+            // Oracle.
+            checkRemoteTable();
         }
         finally {
             SqlUtils.closeStatement(psDelete);
@@ -248,6 +254,10 @@ public class BasketFactory {
             psDelete.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sqlDelete,
                     "wdk-basket-factory-delete-all", start);
+
+            // check the remote table to solve out-dated db-link issue with
+            // Oracle.
+            checkRemoteTable();
         }
         finally {
             SqlUtils.closeStatement(psDelete);
@@ -299,14 +309,15 @@ public class BasketFactory {
         return counts;
     }
 
-	public int getBasketCounts(User user, List<String[]> records, RecordClass recordClass)
-			throws SQLException, WdkUserException, WdkModelException {
+    public int getBasketCounts(User user, List<String[]> records,
+            RecordClass recordClass) throws SQLException, WdkUserException,
+            WdkModelException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();                
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
         String sqlCount = "SELECT count(*) FROM " + schema + TABLE_BASKET
-        		+ " WHERE " + COLUMN_USER_ID + "= ? AND " + COLUMN_PROJECT_ID
+                + " WHERE " + COLUMN_USER_ID + "= ? AND " + COLUMN_PROJECT_ID
                 + " = ? AND " + COLUMN_RECORD_CLASS + " = ?";
         for (int i = 1; i <= pkColumns.length; i++) {
             sqlCount += " AND " + Utilities.COLUMN_PK_PREFIX + i + " = ?";
@@ -340,7 +351,7 @@ public class BasketFactory {
                     if (resultSet != null) resultSet.close();
                 }
                 if (hasRecord) {
-                	basketCount++;
+                    basketCount++;
                 }
             }
             return basketCount;
@@ -348,8 +359,8 @@ public class BasketFactory {
         finally {
             SqlUtils.closeStatement(psCount);
         }
-	}
-    
+    }
+
     public String getBasket(User user, RecordClass recordClass)
             throws WdkUserException, WdkModelException, SQLException,
             NoSuchAlgorithmException, JSONException {
@@ -701,5 +712,28 @@ public class BasketFactory {
         for (int i = 0; i < pkValue.length; i++) {
             ps.setString(i + 4, pkValue[i]);
         }
+    }
+
+    /**
+     * The method is used to address out-dated db-link issue with Oracle. The
+     * solution is suggested by Oracle support, that: " Since clocks are
+     * synchronized at the end of a remote query, precede each remote query with
+     * a dummy remote query to the same site (such as select * from
+     * dual@remote)."
+     * 
+     * @throws WdkModelException
+     * @throws WdkUserException
+     * @throws SQLException
+     */
+    private void checkRemoteTable() throws WdkModelException, WdkUserException,
+            SQLException {
+        String dblink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
+        StringBuilder sql = new StringBuilder("SELECT count(*) FROM ");
+        sql.append(schema).append(TABLE_BASKET).append(dblink);
+
+        // execute this dummy sql to make sure the remote table is sync-ed.
+        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+        SqlUtils.executeScalar(wdkModel, dataSource, sql.toString(),
+                "wdk-remote-basket-dummy");
     }
 }

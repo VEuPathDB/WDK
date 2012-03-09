@@ -269,7 +269,7 @@ public class WdkModelBean {
     }
 
     public boolean getUseWeights() {
-	return wdkModel.getUseWeights();
+        return wdkModel.getUseWeights();
     }
 
     public UserBean getSystemUser() throws NoSuchAlgorithmException,
@@ -290,10 +290,10 @@ public class WdkModelBean {
         return new QuestionBean(wdkModel.getQuestion(questionFullName));
     }
 
-    public Map<String, ParamBean> getParams() {
+    public Map<String, ParamBean> getParams() throws WdkModelException {
         Map<String, ParamBean> params = new LinkedHashMap<String, ParamBean>();
-        for(ParamSet paramSet : wdkModel.getAllParamSets()) {
-            for(Param param : paramSet.getParams()) {
+        for (ParamSet paramSet : wdkModel.getAllParamSets()) {
+            for (Param param : paramSet.getParams()) {
                 ParamBean bean;
                 if (param instanceof AbstractEnumParam) {
                     bean = new EnumParamBean((AbstractEnumParam) param);
@@ -303,8 +303,11 @@ public class WdkModelBean {
                     bean = new DatasetParamBean((DatasetParam) param);
                 } else if (param instanceof TimestampParam) {
                     bean = new TimestampParamBean((TimestampParam) param);
+                } else if (param instanceof StringParam) {
+                    bean = new StringParamBean((StringParam) param);
                 } else {
-                    bean = new ParamBean(param);
+                    throw new WdkModelException("Unknown param type:"
+                            + param.getClass().getName());
                 }
                 params.put(param.getFullName(), bean);
             }

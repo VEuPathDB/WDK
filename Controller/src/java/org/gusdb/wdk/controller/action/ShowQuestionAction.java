@@ -267,6 +267,7 @@ public class ShowQuestionAction extends Action {
             String defaultViewFile = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator
                     + CConstants.WDK_PAGES_DIR + File.separator
                     + CConstants.WDK_QUESTION_PAGE;
+            logger.debug("forward: " + defaultViewFile);
 
             ActionForward forward = new ActionForward(defaultViewFile);
 
