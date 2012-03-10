@@ -72,15 +72,33 @@
 
 <c:set var="userAgent" value="${header['User-Agent']}"/>
 
-<!-- allow user's previous settings to override defaults -->
+<%-- most CSS selector characters (., >, +, ~, #, :, etc) are not valid in id attributes or tag names --%>
+<%-- but some of the names used in gene page contain . or : .......  remove or escape them \\ --%>
+<c:set var="name" value="${fn:replace(name, '.', '')}"/>
+<c:set var="name" value="${fn:replace(name, ':', '')}"/>
+
+<!-- allow user's previous setting (in cookie: section open or closed) to override default in database -->
 <c:set var="cookieKey" value="show${name}"/>
 <c:set var="userPref" value="${cookie[cookieKey].value}"/>
-<c:if test="${userPref == '1'}"><c:set var="isOpen" value="true"/></c:if>
-<c:if test="${userPref == '0'}"><c:set var="isOpen" value="false"/></c:if>
 
-<%-- <a name="${name}"> --%>
+<%-- 	- check cookie state
+	- if cookie not found, check if isOpen was specified in table (passed to tag as an attribute)
+	- otherwise isOpen will be set to false (closed section)
+--%>
+<c:choose>
+<%-- found cookie --%>
+<c:when test='${not empty userPref}'>
+	<c:if test="${userPref == '1'}"><c:set var="isOpen" value="true"/></c:if>
+	<c:if test="${userPref == '0'}"><c:set var="isOpen" value="false"/></c:if>
+</c:when>
+<%-- did not find cookie --%>
+<c:otherwise>
+	<c:if test='${empty isOpen}'>  
+		<c:set var="isOpen" value="false"/>
+	</c:if>
+</c:otherwise>
+</c:choose>
 
-<%-- <c:set var="displayNameParam" value="This%20Data%20Set"/> --%>
 <c:set var="displayNameParam">
 	<c:url value="${displayName}"/>
 </c:set>
@@ -90,13 +108,10 @@
 
 <table width="100%" class="paneltoggle"
        cellpadding="3"        
-       bgcolor="#DDDDDD"
-       
-       >
+       bgcolor="#DDDDDD">
   <tr>
     <c:choose>
       <c:when test="${noData}">
-
         <td><font size="-1" face="Arial,Helvetica"><b>${displayName}</b></font>  <i>none</i></td>
       </c:when>
       <c:otherwise>
@@ -116,12 +131,6 @@
             <c:set var="anchorName" value="${name}ShowHide"/>
             <a name="${anchorName}"></a>   
         </c:if>
-
-<%-- most CSS selector characters (., >, +, ~, #, :, etc) are not valid in id attributes or tag names --%>
-<%-- but some of the names used in gene page contain . or : .......  remove or escape them \\ --%>
-<c:set var="name" value="${fn:replace(name, '.', '')}"/>
-<c:set var="name" value="${fn:replace(name, ':', '')}"/>
-
 
         <%--  Safari/IE cannot handle this way of doing it  --%>
         <c:choose>
