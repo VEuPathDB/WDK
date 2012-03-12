@@ -102,6 +102,9 @@ public class SummaryTester {
             if (cmdLine.hasOption(ARG_FILTER)) {
                 String filterName = cmdLine.getOptionValue(ARG_FILTER);
                 filter = question.getRecordClass().getFilter(filterName);
+                if (filter == null)
+                    throw new WdkUserException(
+                            "Given filter name doesn't exist: " + filterName);
             }
 
             User user = wdkModel.getSystemUser();
@@ -158,7 +161,8 @@ public class SummaryTester {
 
                 pageCount++;
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             ex.printStackTrace();
             // System.exit(-1);
         }
@@ -219,8 +223,7 @@ public class SummaryTester {
             JSONException, WdkUserException {
         // QueryInstance instance = answer.getAttributesQueryInstance();
         QueryInstance instance = answerValue.getIdsQueryInstance();
-        String query = (instance instanceof SqlQueryInstance)
-                ? ((SqlQueryInstance) instance).getUncachedSql()
+        String query = (instance instanceof SqlQueryInstance) ? ((SqlQueryInstance) instance).getUncachedSql()
                 : instance.getSql();
         String newline = System.getProperty("line.separator");
         String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);
@@ -309,7 +312,8 @@ public class SummaryTester {
         try {
             // parse the command line arguments
             cmdLine = parser.parse(options, args);
-        } catch (ParseException exp) {
+        }
+        catch (ParseException exp) {
             // oops, something went wrong
             System.err.println("");
             System.err.println("Parsing failed.  Reason: " + exp.getMessage());
