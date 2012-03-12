@@ -157,7 +157,7 @@
         <img alt='Close' src="<c:url value='/wdk/images/Close-X.png'/>"  height='16'/>
         </a>
       </div>
-      <form id='save_strat_form' onsubmit='return validateSaveForm(this);'>
+      <form id='save_strat_form_hist' onsubmit='return validateSaveForm(this);'>
         <input type='hidden' value="" name='strategy'/>
         <input type='text' value="" name='name' maxlength='200'/>
         <input  style='margin-left:5px;' type='submit' value='Save'/>
@@ -202,7 +202,7 @@
 <!--  history.js prepares the form defined here, used for these popups in the All tab (history view) -->
 <!-- the form is shared by all strategies, we need to add the message only once -->
 <script type="text/javascript">
-	var myform = $("form#save_strat_form");
+	var myform = $("form#save_strat_form_hist");
 	myform.prepend(save_warning);
-	$("i,form#save_strat_form").css("font-size","95%");
+	$("i,form#save_strat_form_hist").css("font-size","95%");
 </script>
