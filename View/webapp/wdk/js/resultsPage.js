@@ -70,7 +70,9 @@ function moveAttr(col_ix, table) {
         step = $(table).attr('step');
     }
     // build url.
-    var url = "processSummary.do?strategy=" + strat + "&step=" + step + "&command=arrange&attribute=" + attr + "&left=" + left;
+    var info = $("#Summary_Views");
+    var url = info.attr("updateUrl");
+    url += "?strategy=" + strat + "&step=" + step + "&command=arrange&attribute=" + attr + "&left=" + left;
     updateResultsPage($(table), url, false);
 }
 
