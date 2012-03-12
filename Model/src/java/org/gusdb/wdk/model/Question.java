@@ -96,6 +96,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     private List<SummaryView> summaryViewList = new ArrayList<SummaryView>();
     private Map<String, SummaryView> summaryViewMap = new LinkedHashMap<String, SummaryView>();
 
+    private int releaseNumber;
+
     // /////////////////////////////////////////////////////////////////////
     // setters called at initialization
     // /////////////////////////////////////////////////////////////////////
@@ -143,6 +145,20 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
                     question.sqlMacroList);
         this.sqlMacroMap = new LinkedHashMap<String, String>(
                 question.sqlMacroMap);
+    }
+
+    public int getReleaseNumber() {
+        return releaseNumber;
+    }
+
+    public void setReleaseNumber(int releaseNumber) {
+        this.releaseNumber = releaseNumber;
+    }
+
+    public boolean isNew() {
+        int currentRelease = wdkModel.getReleaseNumber();
+        if (currentRelease == 0) return false; // current release is not set
+        else return (currentRelease <= releaseNumber);
     }
 
     /**
@@ -625,7 +641,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             for (SummaryView summaryView : summaryViewMap.values()) {
                 summaryView.resolveReferences(model);
             }
-        } catch (WdkModelException ex) {
+        }
+        catch (WdkModelException ex) {
             logger.error("resolving question '" + getFullName() + " failed. "
                     + ex);
             throw ex;

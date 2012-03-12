@@ -17,6 +17,7 @@ public class WdkModelName extends WdkModelBase {
     private String displayName;
     private String version;
     private String releaseDate;
+    private int releaseNumber;
 
     /**
      * @return the displayName
@@ -63,6 +64,14 @@ public class WdkModelName extends WdkModelBase {
         this.releaseDate = releaseDate;
     }
 
+    public int getReleaseNumber() {
+        return releaseNumber;
+    }
+
+    public void setReleaseNumber(int releaseNumber) {
+        this.releaseNumber = releaseNumber;
+    }
+
     /*
      * (non-Javadoc)
      * 
@@ -70,7 +79,7 @@ public class WdkModelName extends WdkModelBase {
      */
     @Override
     public void excludeResources(String projectId) {
-    // no resources held by ModelName. do nothing
+        // no resources held by ModelName. do nothing
     }
 
     /*
@@ -83,6 +92,6 @@ public class WdkModelName extends WdkModelBase {
     @Override
     public void resolveReferences(WdkModel wodkModel) throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
-    // nothing to do
+        // nothing to do
     }
 }
