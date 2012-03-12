@@ -20,8 +20,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.user.User;
 
 /**
  * @author Jerric
@@ -34,7 +32,7 @@ public class ProcessSummaryViewAction extends Action {
     private static final String PARAM_COMMAND = "command";
     private static final String PARAM_ATTRIBUTE = "attribute";
     private static final String PARAM_SORT_ORDER = "sortOrder";
-     
+
     private static final String FORWARD_SHOW_SUMMARY_VIEW = "show-summary-view";
 
     private static Logger logger = Logger.getLogger(ProcessSummaryViewAction.class);
@@ -44,7 +42,7 @@ public class ProcessSummaryViewAction extends Action {
             throws Exception {
         logger.debug("Entering ProcessSummaryViewAction...");
 
-        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
+        //WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
 
         String stepId = request.getParameter(PARAM_STEP);
@@ -66,12 +64,12 @@ public class ProcessSummaryViewAction extends Action {
         logger.debug("url before process: " + queryString);
 
         // get summary checksum, if have
-        String summaryChecksum = null; // request.getParameter(CConstants.WDK_SUMMARY_KEY);
-        if (summaryChecksum != null && summaryChecksum.length() > 0) {
-            // apply the current summary to the question first, then do other
-            // command
-            wdkUser.applySummaryChecksum(questionName, summaryChecksum);
-        } else summaryChecksum = null;
+        //String summaryChecksum = null; // request.getParameter(CConstants.WDK_SUMMARY_KEY);
+        // if (summaryChecksum != null && summaryChecksum.length() > 0) {
+        // // apply the current summary to the question first, then do other
+        // // command
+        // wdkUser.applySummaryChecksum(questionName, summaryChecksum);
+        // } else summaryChecksum = null;
 
         // get sorting checksum, if have
         String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
@@ -177,8 +175,8 @@ public class ProcessSummaryViewAction extends Action {
                 + CConstants.WDK_SUMMARY_ARRANGE_ORDER_KEY + "=[^&]*", "");
         queryString = queryString.replaceAll("&"
                 + CConstants.WDK_SUMMARY_SORTING_ORDER_KEY + "=[^&]*", "");
-        queryString = queryString.replaceAll("&"
-                + CConstants.WDK_SUMMARY_KEY + "=[^&]*", "");
+        queryString = queryString.replaceAll("&" + CConstants.WDK_SUMMARY_KEY
+                + "=[^&]*", "");
 
         String strBasket = request.getParameter("from_basket");
         boolean fromBasket = (strBasket != null && strBasket.equals("true"));

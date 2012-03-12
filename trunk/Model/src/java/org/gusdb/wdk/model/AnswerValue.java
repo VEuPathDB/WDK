@@ -1160,11 +1160,14 @@ public class AnswerValue {
         Integer size = resultSizesByFilter.get(filterName);
         if (size == null || !idsQueryInstance.isCached()) {
             RecordClass recordClass = question.getRecordClass();
-            AnswerFilterInstance filter = recordClass.getFilter(filterName);
 
             String innerSql = idsQueryInstance.getSql();
             int assignedWeight = idsQueryInstance.getAssignedWeight();
-            innerSql = filter.applyFilter(user, innerSql, assignedWeight);
+
+            // ignore invalid filters
+            AnswerFilterInstance filter = recordClass.getFilter(filterName);
+            if (filter != null)
+                innerSql = filter.applyFilter(user, innerSql, assignedWeight);
 
             StringBuffer sql = new StringBuffer("SELECT count(*) FROM ");
             sql.append("(").append(innerSql).append(") f");

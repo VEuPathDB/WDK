@@ -83,7 +83,7 @@ public abstract class XmlParser {
 
     protected void validate(URL modelXmlURL) throws SAXException, IOException,
             WdkModelException {
-        logger.debug("Validating model file: " + modelXmlURL);
+        logger.trace("Validating model file: " + modelXmlURL);
         String err = "Validation failed: " + modelXmlURL.toExternalForm();
         try {
             InputSource is = ValidationDriver.uriOrFileInputSource(modelXmlURL.toExternalForm());
