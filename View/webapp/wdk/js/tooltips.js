@@ -19,14 +19,21 @@ div.htmltooltip{
  * the right, negative to the left).
  */
 function assignTooltips(selector, xOffset) {
+  doTooltips(selector, xOffset, 'top-center', 'bottom-center');
+}
+function assignTooltipsLeft(selector, xOffset) {
+  doTooltips(selector, xOffset, 'top-right', 'bottom-left');
+}
+
+function doTooltips(selector, xOffset, tipPos, targetPos) {
   $(selector).qtip({
     position: {
       adjust: {
         x: (xOffset == undefined ? 0 : xOffset),
         y: 3
       },
-      my: 'top-center',
-      at: 'bottom-center'
+      my: tipPos,
+      at: targetPos
     },
     show: {
       solo: true,
