@@ -78,6 +78,7 @@ public class AnswerFilterInstanceReference extends WdkModelBase {
             WdkUserException {
         // resolve the instance reference
         this.instance = recordClass.getFilter(ref);
+        if (instance == null) throw new WdkModelException("Filter doesn't exist: " + ref);
         resolved = true;
     }
 }
