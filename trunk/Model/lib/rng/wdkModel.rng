@@ -12,6 +12,9 @@
             <optional>
                 <attribute name="releaseDate"/>
             </optional>
+            <optional>
+                <attribute name="releaseNumber" />
+            </optional>
             <ref name="IncludeExclude"/>
           </element>
 
@@ -998,6 +1001,11 @@
       <optional>
         <attribute name="noSummaryOnSingleRecord">
           <data type="boolean" />
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="releaseNumber">
+          <data type="unsignedShort" />
         </attribute>
       </optional>
 

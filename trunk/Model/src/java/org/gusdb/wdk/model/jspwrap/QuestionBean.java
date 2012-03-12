@@ -432,4 +432,13 @@ public class QuestionBean {
     	}
     	return false;
     }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.Question#isNew()
+     */
+    public boolean isNew() {
+        return question.isNew();
+    }
+    
 }
