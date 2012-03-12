@@ -106,7 +106,7 @@ function showHistSave(ele, stratId, save,share) {
 	   $("input[name='name']", popup).attr("value",stratName).attr("size",40);
 	   $("input[name='strategy']",popup).attr("value",stratId);
        if (save){
-         $("form", popup).attr("action", "javascript:saveOrRenameStrategy(" + stratId + ", true, true, true)");
+         $("form#save_strat_form_hist", popup).attr("action", "javascript:saveOrRenameStrategy(" + stratId + ", true, true, true)");
          $("span.h3left", popup).text("Save As");
          $("input[type=submit]", popup).attr("value", "Save");
  	 if (share) {
@@ -114,7 +114,7 @@ function showHistSave(ele, stratId, save,share) {
          }
        }
        else{
-         $("form", popup).attr("action", "javascript:saveOrRenameStrategy(" + stratId + ", true, false, true)");
+         $("form#save_strat_form_hist", popup).attr("action", "javascript:saveOrRenameStrategy(" + stratId + ", true, false, true)");
          $("span.h3left", popup).text("Rename");
          $("input[type=submit]", popup).attr("value", "Rename");
 
@@ -127,10 +127,10 @@ function showHistSave(ele, stratId, save,share) {
 	$("input[name='name']", popup).focus().select();
 
    if (save){
-	$("form#save_strat_form i").css("display","block");
+	$("form#save_strat_form_hist i").css("display","block");
    }
        else{
-	$("form#save_strat_form i").css("display","none");
+	$("form#save_strat_form_hist i").css("display","none");
    }
 }
 
