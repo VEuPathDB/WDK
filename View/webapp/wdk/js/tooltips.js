@@ -54,7 +54,7 @@ function assignParamTooltips(selector) {
     },
     show: {
       solo: true,
-      event: 'click'
+      event: 'click mouseenter'
     },
     hide: {
       event: 'click'
@@ -67,8 +67,9 @@ function assignParamTooltips(selector) {
         // hide the tooltip 'expireSecs' seconds after it appears
         setTimeout("$('" + tipSelector + "').qtip('hide');", (expireSecs*1000));
 
-        // hide the tooltip if the tooltip is clicked
-        $(tipSelector).click( function(){ $(tipSelector).qtip('hide'); } );
+        // hide the tooltip if the tooltip is clicked or "mouseouted"
+        var hideFunc = function(){ $(tipSelector).qtip('hide'); };
+        $(tipSelector).click(hideFunc).mouseout(hideFunc);
       }
     }
   });
