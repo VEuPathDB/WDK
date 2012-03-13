@@ -1,16 +1,3 @@
-/*  Old CSS for html tooltips (was in AllSites.css)
-div.htmltooltip{
-  background-color:#FFFFC3;
-  border:1px solid #BBBBBB;
-  font-size:98%;
-  left:-1000px;
-  padding:3px;
-  position:absolute;
-  top:-1000px;
-  width:250px;
-  z-index:1000;
-}
-*/
 
 /* Basic HTML tooltip functionality.  Tooltip appears during target
  * mousover, then disappears on mouseout.  Only one tooltip at a time.
