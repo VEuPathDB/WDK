@@ -91,7 +91,7 @@
                 <%-- an individual param (can not use fullName, w/ '.', for mapped props) --%>
                 <tr>
                     <td width="30%" align="right" style="vertical-align:top">
-                        <span style="font-weight:bold">${qP.prompt}</span> <img class="help-link" title="${fn:escapeXml(qP.help)}" src="wdk/images/question.png" />
+                        <span style="font-weight:bold">${qP.prompt}</span> <img class="help-link" style="cursor:pointer" title="${fn:escapeXml(qP.help)}" src="wdk/images/question.png" />
                     </td>
                     <c:choose>
                         <c:when test="${paramType eq 'EnumParam' || paramType eq 'FlatVocabParam'}">
