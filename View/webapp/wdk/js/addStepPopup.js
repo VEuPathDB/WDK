@@ -101,7 +101,6 @@ function validateSaveForm(form){
 function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isOrtholog){
 	//edit = 0 ::: adding a new step
 	//edit = 1 ::: editing a current step
-	$("div#query_tooltips").remove();
 	var ps = document.createElement('div');
 	var qf = document.createElement('div');
 	var topMenu_script = null;
@@ -236,11 +235,6 @@ function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isO
 	}
 	
 	$("#query_form").append(quesForm);
-	var tooltips = $("#query_form div.htmltooltip");
-	if (tooltips.length > 0) {
-		$('body').append("<div id='query_tooltips'></div>");
-		tooltips.remove().appendTo("div#query_tooltips");
-	}
 
 	if(edit == 1)
 		$("#query_form div#operations input#" + operation).attr('checked','checked'); 
@@ -252,7 +246,6 @@ function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isO
 		$("#query_form").append("<div style='padding:5px;margin:5px 15px 5px 15px;border-top:1px solid grey;border-bottom:1px solid grey'>" + dataSources.html() + "</div>");
 
 	$("#query_form").append("<div class='bottom-close'><a href='javascript:closeAll(false)' class='close_window'>Close</a></div>");
-	htmltooltip.render();
 	setDraggable($("#query_form"), ".dragHandle");
 	$("#query_form").fadeIn("normal");
 	if(topMenu_script != null){
@@ -390,13 +383,12 @@ function callWizard(url, ele, id, sec, action, stratFrontId){
                             } else {
                                 WizardLoading(false);
                             }
-                    }else{
-                        WizardLoading(false);
-                        $("#qf_content").children().wrapAll('<div class="stage" />');
-                        $("#qf_content > div.stage").appendTo("#stage-stack");
-			setPopupContent(data);
-                    }
-						htmltooltip.render();
+                        } else {
+                            WizardLoading(false);
+                            $("#qf_content").children().wrapAll('<div class="stage" />');
+                            $("#qf_content > div.stage").appendTo("#stage-stack");
+			                setPopupContent(data);
+                        }
 					}	
 				});
 				break;
@@ -432,7 +424,6 @@ function callWizard(url, ele, id, sec, action, stratFrontId){
 								showNewSection(ele,id,sec);
 							}
 						}
-						htmltooltip.render();
 					}	
 				});
 				break;
@@ -440,7 +431,6 @@ function callWizard(url, ele, id, sec, action, stratFrontId){
 				showNewSection(ele,id,sec);
 				break;
 	}
-        // htmltooltip.render();
 	
 	return false;
 }
