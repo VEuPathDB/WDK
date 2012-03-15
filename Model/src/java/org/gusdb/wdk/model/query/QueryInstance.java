@@ -202,8 +202,8 @@ public abstract class QueryInstance {
             WdkModelException, SQLException {
         // the values are dependent values. need to convert it into independent
         // values
-        Map<String, String> independentValues =
-                query.dependentValuesToIndependentValues(user, values);
+        Map<String, String> independentValues = query.dependentValuesToIndependentValues(
+                user, values);
 
         // construct param-value map; param is sorted by name
         String[] paramNames = new String[independentValues.size()];
@@ -224,8 +224,8 @@ public abstract class QueryInstance {
         logger.debug("retrieving results of query [" + query.getFullName()
                 + "]");
 
-        ResultList resultList =
-                (cached) ? getCachedResults() : getUncachedResults();
+        ResultList resultList = (cached) ? getCachedResults()
+                : getUncachedResults();
 
         logger.debug("results of query [" + query.getFullName()
                 + "] retrieved.");
@@ -239,9 +239,8 @@ public abstract class QueryInstance {
         StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
         sql.append(getSql()).append(") f");
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        Object objSize =
-                SqlUtils.executeScalar(wdkModel, dataSource, sql.toString(),
-                        query.getFullName() + "-count");
+        Object objSize = SqlUtils.executeScalar(wdkModel, dataSource,
+                sql.toString(), query.getFullName() + "-count");
         int resultSize = Integer.parseInt(objSize.toString());
         logger.debug("end getting query size");
         return resultSize;
@@ -259,8 +258,7 @@ public abstract class QueryInstance {
 
     protected String getCachedSql() throws NoSuchAlgorithmException,
             SQLException, WdkModelException, JSONException, WdkUserException {
-        CacheFactory cacheFactory =
-                wdkModel.getResultFactory().getCacheFactory();
+        CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
         QueryInfo queryInfo = cacheFactory.getQueryInfo(getQuery());
 
         String cacheTable = queryInfo.getCacheTable();
@@ -296,9 +294,7 @@ public abstract class QueryInstance {
                 // check for dependent param
                 if (param instanceof AbstractEnumParam
                         && ((AbstractEnumParam) param).getDependedParam() != null) {
-                    String dependedParam =
-                            ((AbstractEnumParam) param).getDependedParam()
-                                    .getName();
+                    String dependedParam = ((AbstractEnumParam) param).getDependedParam().getName();
                     String dependedValue = values.get(dependedParam);
                     ((AbstractEnumParam) param).setDependedValue(dependedValue);
                 }
@@ -318,9 +314,8 @@ public abstract class QueryInstance {
             }
         }
         if (errors != null) {
-            WdkModelException ex =
-                    new WdkModelException(
-                            "Some of the input parameters are invalid.", errors);
+            WdkModelException ex = new WdkModelException(
+                    "Some of the input parameters are invalid.", errors);
             logger.debug(ex.formatErrors());
             throw ex;
         }
@@ -331,6 +326,12 @@ public abstract class QueryInstance {
             JSONException, WdkUserException {
         Map<String, String> newValues = new LinkedHashMap<String, String>();
         Map<String, Param> paramMap = query.getParamMap();
+
+        // set dependent param values, if any
+        for (Param param : paramMap.values()) {
+            resolveDependedValue(values, param);
+        }
+
         for (String paramName : paramMap.keySet()) {
             Param param = paramMap.get(paramName);
 
@@ -351,13 +352,29 @@ public abstract class QueryInstance {
         return newValues;
     }
 
+    private void resolveDependedValue(Map<String, String> values, Param param)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
+        if (!(param instanceof AbstractEnumParam)) return;
+        
+        AbstractEnumParam enumParam = (AbstractEnumParam) param;
+        Param dependedParam = enumParam.getDependedParam();
+        if (dependedParam == null) return;
+
+        String dependedValue = values.get(dependedParam.getName());
+        if (dependedValue == null) {
+            resolveDependedValue(values, dependedParam);
+            dependedValue = dependedParam.getDefault();
+        }
+        enumParam.setDependedValue(dependedValue);
+    }
+
     protected Map<String, String> getInternalParamValues()
             throws WdkModelException, SQLException, NoSuchAlgorithmException,
             JSONException, WdkUserException {
         // the empty & default values are filled
         Map<String, String> values = fillEmptyValues(this.values);
-        Map<String, String> internalValues =
-                new LinkedHashMap<String, String>();
+        Map<String, String> internalValues = new LinkedHashMap<String, String>();
         Map<String, Param> params = query.getParamMap();
         for (String paramName : params.keySet()) {
             Param param = params.get(paramName);
