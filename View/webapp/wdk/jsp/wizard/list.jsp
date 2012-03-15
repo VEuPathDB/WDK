@@ -271,7 +271,16 @@ ${rcDisplay} basket
                 <div class="original" id="sl_${cat.name}" style="display:none">
                     <ul class="menu_section">
                         <c:forEach items="${cat.websiteQuestions}" var="q">
-                            <li onclick="callWizard('${partialUrl}&questionFullName=${q.fullName}&stage=question',null,null,null,'next')">${q.displayName}</li>
+                          <c:set var="newIcon">
+                            <c:if test="${q.new}"><img src="<c:url value='/wdk/images/new-feature.png' />" /></c:if>
+                          </c:set>
+                          <li onclick="callWizard('${partialUrl}&questionFullName=${q.fullName}&stage=question',null,null,null,'next')">
+                            ${q.displayName}
+                            <c:if test="${q.new}">
+                              <img src="<c:url value='/wdk/images/new-feature.png' />"
+                                   title="This is a new search in the current release." />
+                            </c:if>
+                          </li>
                         </c:forEach>
                     </ul>
                 </div>
