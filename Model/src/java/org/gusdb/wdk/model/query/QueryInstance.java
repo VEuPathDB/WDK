@@ -329,7 +329,7 @@ public abstract class QueryInstance {
 
         // set dependent param values, if any
         for (Param param : paramMap.values()) {
-            resolveDependedValue(values, param);
+            query.resolveDependedValue(values, param);
         }
 
         for (String paramName : paramMap.keySet()) {
@@ -350,23 +350,6 @@ public abstract class QueryInstance {
             newValues.put(paramName, value);
         }
         return newValues;
-    }
-
-    private void resolveDependedValue(Map<String, String> values, Param param)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
-        if (!(param instanceof AbstractEnumParam)) return;
-        
-        AbstractEnumParam enumParam = (AbstractEnumParam) param;
-        Param dependedParam = enumParam.getDependedParam();
-        if (dependedParam == null) return;
-
-        String dependedValue = values.get(dependedParam.getName());
-        if (dependedValue == null) {
-            resolveDependedValue(values, dependedParam);
-            dependedValue = dependedParam.getDefault();
-        }
-        enumParam.setDependedValue(dependedValue);
     }
 
     protected Map<String, String> getInternalParamValues()

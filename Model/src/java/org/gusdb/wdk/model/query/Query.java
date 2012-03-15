@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
@@ -205,10 +206,8 @@ public abstract class Query extends WdkModelBase {
 
     public void addColumn(Column column) {
         column.setQuery(this);
-        if (columnList != null)
-            this.columnList.add(column);
-        else
-            columnMap.put(column.getName(), column);
+        if (columnList != null) this.columnList.add(column);
+        else columnMap.put(column.getName(), column);
     }
 
     public Map<String, Column> getColumnMap() {
@@ -321,8 +320,7 @@ public abstract class Query extends WdkModelBase {
                 if (columnMap.containsKey(columnName)) {
                     throw new WdkModelException("The column '" + columnName
                             + "' is duplicated in query " + getFullName());
-                } else
-                    columnMap.put(columnName, column);
+                } else columnMap.put(columnName, column);
             }
         }
         columnList = null;
@@ -341,8 +339,7 @@ public abstract class Query extends WdkModelBase {
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         // logger.debug("Resolving " + getFullName() + " - " + resolved);
-        if (resolved)
-            return;
+        if (resolved) return;
 
         this.wdkModel = wdkModel;
 
@@ -361,11 +358,16 @@ public abstract class Query extends WdkModelBase {
         }
         paramRefList = null;
 
+        // apply the default values to depended params
+        Map<String, String> valueStub = new LinkedHashMap<String, String>();
+        for (Param param : paramMap.values()) {
+            resolveDependedValue(valueStub, param);
+        }
+
         // resolve columns
         for (Column column : columnMap.values()) {
             String sortingColumn = column.getSortingColumn();
-            if (sortingColumn == null)
-                continue;
+            if (sortingColumn == null) continue;
             if (!columnMap.containsKey(sortingColumn))
                 throw new WdkModelException("Query [" + getFullName()
                         + "] has a column [" + column.getName()
@@ -385,6 +387,23 @@ public abstract class Query extends WdkModelBase {
 
         resolveQueryReferences(wdkModel);
         resolved = true;
+    }
+
+    void resolveDependedValue(Map<String, String> values, Param param)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
+        if (!(param instanceof AbstractEnumParam)) return;
+
+        AbstractEnumParam enumParam = (AbstractEnumParam) param;
+        Param dependedParam = enumParam.getDependedParam();
+        if (dependedParam == null) return;
+
+        String dependedValue = values.get(dependedParam.getName());
+        if (dependedValue == null) {
+            resolveDependedValue(values, dependedParam);
+            dependedValue = dependedParam.getDefault();
+        }
+        enumParam.setDependedValue(dependedValue);
     }
 
     private void updateParamValuesSetsWithDefaults() throws WdkModelException,
@@ -423,8 +442,7 @@ public abstract class Query extends WdkModelBase {
     public int getAnswerParamCount() {
         int count = 0;
         for (Param param : paramMap.values()) {
-            if (param instanceof AnswerParam)
-                count++;
+            if (param instanceof AnswerParam) count++;
         }
         return count;
     }
@@ -440,20 +458,16 @@ public abstract class Query extends WdkModelBase {
         buffer.append(": params{");
         boolean firstParam = true;
         for (Param param : paramMap.values()) {
-            if (firstParam)
-                firstParam = false;
-            else
-                buffer.append(", ");
+            if (firstParam) firstParam = false;
+            else buffer.append(", ");
             buffer.append(param.getName()).append("[");
             buffer.append(param.getClass().getSimpleName()).append("]");
         }
         buffer.append("} columns{");
         boolean firstColumn = true;
         for (Column column : columnMap.values()) {
-            if (firstColumn)
-                firstColumn = false;
-            else
-                buffer.append(", ");
+            if (firstColumn) firstColumn = false;
+            else buffer.append(", ");
             buffer.append(column.getName());
         }
         buffer.append("}");
