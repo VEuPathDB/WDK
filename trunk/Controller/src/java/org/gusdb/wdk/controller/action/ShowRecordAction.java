@@ -34,7 +34,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 public class ShowRecordAction extends Action {
 
     private static final String ATTR_PAGE_ID = "wdkPageId";
-    
+
     private static Logger logger = Logger.getLogger(ShowRecordAction.class);
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
@@ -94,7 +94,8 @@ public class ShowRecordAction extends Action {
             String fieldName = names.next();
             try {
                 wdkRecord.getAttributes().get(fieldName);
-            } catch (WdkModelException ex) {
+            }
+            catch (WdkModelException ex) {
                 // most likely user provided an invalid record id, the record
                 // has been marked as invalid, and ex can be ignored.
                 logger.info(ex);
@@ -104,11 +105,11 @@ public class ShowRecordAction extends Action {
 
         request.setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 
-	String frontAction = user.getFrontAction();
-	if (frontAction != null) {
-	    request.setAttribute("action", frontAction);
-	}
-	user.resetFrontAction();
+        String frontAction = user.getFrontAction();
+        if (frontAction != null) {
+            request.setAttribute("action", frontAction);
+        }
+        user.resetFrontAction();
 
         String defaultViewFile = customViewDir + File.separator
                 + CConstants.WDK_RECORD_PAGE;
@@ -133,7 +134,7 @@ public class ShowRecordAction extends Action {
         int pageId = random.nextInt(Integer.MAX_VALUE);
         request.setAttribute(ATTR_PAGE_ID, pageId);
         logger.info("wdk-record-page-id=" + pageId + " --- start page loading.");
-                
+
         return forward;
     }
 }

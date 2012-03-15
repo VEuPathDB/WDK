@@ -3,6 +3,7 @@ package org.gusdb.wdk.model;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
@@ -47,7 +48,15 @@ public class RecordInstance extends AttributeValueContainer {
         this.recordClass = recordClass;
         this.isValidRecord = true;
 
-        pkValues = lookupPrimaryKeys(pkValues);
+        // by Jerric - the alias should be check before creatin an instance.
+        // List<Map<String, Object>> records = recordClass.lookupPrimaryKeys(
+        // user, pkValues);
+        // if (records.size() != 1)
+        // throw new WdkUserException("The primary key doesn't map to "
+        // + "singular record: " + pkValues);
+        //
+        // pkValues = records.get(0);
+
         PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
                 recordClass.getPrimaryKeyAttributeField(), pkValues);
         setPrimaryKey(primaryKey);
@@ -128,18 +137,20 @@ public class RecordInstance extends AttributeValueContainer {
 
         Query query = recordClass.getAttributeQuery(queryName);
 
-            logger.debug("filling attribute values from record on query: " + query.getFullName());
-            for (Column column : query.getColumns()) {
-                logger.debug("column: " + column.getName());
-            }
-            if (query instanceof SqlQuery)
-                logger.debug("SQL: \n" + ((SqlQuery)query).getSql());
+        logger.debug("filling attribute values from record on query: "
+                + query.getFullName());
+        for (Column column : query.getColumns()) {
+            logger.debug("column: " + column.getName());
+        }
+        if (query instanceof SqlQuery)
+            logger.debug("SQL: \n" + ((SqlQuery) query).getSql());
 
         Map<String, String> paramValues = primaryKey.getValues();
         // put user id in the attribute query
         String userId = Integer.toString(user.getUserId());
         paramValues.put(Utilities.PARAM_USER_ID, userId);
-        QueryInstance instance = query.makeInstance(user, paramValues, true, 0, new LinkedHashMap<String, String>());
+        QueryInstance instance = query.makeInstance(user, paramValues, true, 0,
+                new LinkedHashMap<String, String>());
 
         ResultList resultList = null;
         try {
@@ -163,7 +174,8 @@ public class RecordInstance extends AttributeValueContainer {
                         (ColumnAttributeField) field, objValue);
                 addAttributeValue(value);
             }
-        } finally {
+        }
+        finally {
             if (resultList != null) resultList.close();
         }
         logger.debug("column attributes are cached.");
@@ -523,35 +535,5 @@ public class RecordInstance extends AttributeValueContainer {
             buf.append(":   " + attribute.getBriefDisplay());
             buf.append(newline);
         }
-    }
-
-    private Map<String, Object> lookupPrimaryKeys(Map<String, Object> pkValues)
-            throws WdkModelException, SQLException, NoSuchAlgorithmException,
-            JSONException, WdkUserException {
-        // nothing to look up
-        Query aliasQuery = recordClass.getAliasQuery();
-        if (aliasQuery == null) return pkValues;
-
-        // get alias from the alias query
-        Map<String, Object> newValue = new LinkedHashMap<String, Object>();
-        Map<String, String> oldValues = new LinkedHashMap<String, String>();
-        for (String param : pkValues.keySet()) {
-            String oldParam = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + param;
-            String value = Utilities.parseValue(pkValues.get(param));
-            oldValues.put(oldParam, value);
-        }
-
-        QueryInstance instance = aliasQuery.makeInstance(user, oldValues, true,
-                0, new LinkedHashMap<String, String>());
-        ResultList resultList = instance.getResults();
-        if (resultList.next()) {
-            for (String param : pkValues.keySet()) {
-                newValue.put(param, resultList.get(param));
-            }
-            // no alias found, use the original ones
-        } else newValue.putAll(pkValues);
-        resultList.close();
-
-        return newValue;
     }
 }
