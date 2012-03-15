@@ -361,7 +361,8 @@ public abstract class Query extends WdkModelBase {
         // apply the default values to depended params
         Map<String, String> valueStub = new LinkedHashMap<String, String>();
         for (Param param : paramMap.values()) {
-            resolveDependedValue(valueStub, param);
+            // FIXME - this cause problems with some params, need to investigate. comment out temporarily
+            // resolveDependedValue(valueStub, param);
         }
 
         // resolve columns
