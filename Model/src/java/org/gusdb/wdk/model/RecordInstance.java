@@ -48,14 +48,13 @@ public class RecordInstance extends AttributeValueContainer {
         this.recordClass = recordClass;
         this.isValidRecord = true;
 
-        // by Jerric - the alias should be check before creatin an instance.
-        // List<Map<String, Object>> records = recordClass.lookupPrimaryKeys(
-        // user, pkValues);
-        // if (records.size() != 1)
-        // throw new WdkUserException("The primary key doesn't map to "
-        // + "singular record: " + pkValues);
-        //
-        // pkValues = records.get(0);
+         List<Map<String, Object>> records = recordClass.lookupPrimaryKeys(
+         user, pkValues);
+         if (records.size() != 1)
+         throw new WdkUserException("The primary key doesn't map to "
+         + "singular record: " + pkValues);
+       
+         pkValues = records.get(0);
 
         PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
                 recordClass.getPrimaryKeyAttributeField(), pkValues);
