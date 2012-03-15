@@ -8,9 +8,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.gusdb.wdk.model.dbms.DBPlatform;
+import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ColumnType;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
@@ -1355,4 +1357,53 @@ public class RecordClass extends WdkModelBase implements
         if (recordViewList == null) recordViewMap.put(view.getName(), view);
         else recordViewList.add(view);
     }
+
+    public boolean hasMultipleRecords(User user, Map<String, Object> pkValues)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
+        List<Map<String, Object>> records = lookupPrimaryKeys(user, pkValues);
+        return records.size() > 1;
+    }
+
+    List<Map<String, Object>> lookupPrimaryKeys(User user,
+            Map<String, Object> pkValues) throws SQLException,
+            WdkModelException, NoSuchAlgorithmException, WdkUserException,
+            JSONException {
+        List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
+        // nothing to look up
+        if (aliasQuery == null) {
+            records.add(pkValues);
+            return records;
+        }
+
+        // get alias from the alias query
+        Map<String, String> oldValues = new LinkedHashMap<String, String>();
+        for (String param : pkValues.keySet()) {
+            String oldParam = Utilities.ALIAS_OLD_KEY_COLUMN_PREFIX + param;
+            String value = Utilities.parseValue(pkValues.get(param));
+            oldValues.put(oldParam, value);
+        }
+
+        QueryInstance instance = aliasQuery.makeInstance(user, oldValues, true,
+                0, new LinkedHashMap<String, String>());
+        ResultList resultList = null;
+        try {
+            resultList = instance.getResults();
+            while (resultList.next()) {
+                Map<String, Object> newValue = new LinkedHashMap<String, Object>();
+                for (String param : pkValues.keySet()) {
+                    newValue.put(param, resultList.get(param));
+                }
+                records.add(newValue);
+            }
+            // no alias found, use the original ones
+            if (records.size() == 0) records.add(pkValues);
+        }
+        finally {
+            if (resultList != null) resultList.close();
+        }
+
+        return records;
+    }
+
 }

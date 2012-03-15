@@ -1,5 +1,7 @@
 package org.gusdb.wdk.model.jspwrap;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -12,7 +14,10 @@ import org.gusdb.wdk.model.ReporterRef;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.view.RecordView;
+import org.json.JSONException;
 
 /**
  * A wrapper on a {@link RecordClass} that provides simplified access for
@@ -206,4 +211,23 @@ public class RecordClassBean {
     public AttributeFieldBean getFavoriteNoteField() {
         return new AttributeFieldBean(recordClass.getFavoriteNoteField());
     }
+
+    /**
+     * @param user
+     * @param pkValues
+     * @return
+     * @throws WdkModelException
+     * @throws NoSuchAlgorithmException
+     * @throws WdkUserException
+     * @throws SQLException
+     * @throws JSONException
+     * @see org.gusdb.wdk.model.RecordClass#hasMultipleRecords(org.gusdb.wdk.model.user.User, java.util.Map)
+     */
+    public boolean hasMultipleRecords(UserBean user, Map<String, Object> pkValues)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
+        return recordClass.hasMultipleRecords(user.getUser(), pkValues);
+    }
+    
+    
 }

@@ -314,4 +314,8 @@ public class WdkModelBean {
         }
         return params;
     }
+    
+    public RecordClassBean getRecordClass(String rcName) throws WdkModelException {
+        return new RecordClassBean(wdkModel.getRecordClass(rcName));
+    }
 }
