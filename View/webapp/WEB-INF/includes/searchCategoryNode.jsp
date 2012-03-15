@@ -22,7 +22,10 @@
         <c:forEach items="${questions}" var="question">
           <li>
             <c:url var="questionUrl" value="/showQuestion.do?questionFullName=${question.fullName}"/>
-            <a href="${questionUrl}"><span>${question.displayName}</span></a>
+            <c:set var="newIcon">
+              <c:if test="${question.new}"><img src="<c:url value='/wdk/images/new-feature.png' />" /></c:if>
+            </c:set>
+            <a href="${questionUrl}"><span>${newIcon} ${question.displayName}</span></a>
           </li>
         </c:forEach>
       </ul>
