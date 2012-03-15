@@ -137,16 +137,16 @@ public class StepFactory {
         String filterName = null;
         int estimateSize;
         Exception exception = null;
-        //try {
-            if (filter != null) {
-                filterName = filter.getName();
-                estimateSize = answerValue.getFilterSize(filterName);
-            } else estimateSize = answerValue.getResultSize();
-        //} catch (Exception ex) {
-        //    estimateSize = 0;
-        //    logger.error(ex);
-        //    exception = ex;
-        //}
+        // try {
+        if (filter != null) {
+            filterName = filter.getName();
+            estimateSize = answerValue.getFilterSize(filterName);
+        } else estimateSize = answerValue.getResultSize();
+        // } catch (Exception ex) {
+        // estimateSize = 0;
+        // logger.error(ex);
+        // exception = ex;
+        // }
 
         String displayParamContent = getParamContent(dependentValues);
 
@@ -216,10 +216,12 @@ public class StepFactory {
             psInsertStep.executeUpdate();
 
             connection.commit();
-        } catch (SQLException ex) {
+        }
+        catch (SQLException ex) {
             connection.rollback();
             throw ex;
-        } finally {
+        }
+        finally {
             connection.setAutoCommit(true);
             SqlUtils.closeResultSet(rsMax);
             SqlUtils.closeStatement(psInsertStep);
@@ -269,7 +271,8 @@ public class StepFactory {
             if (result == 0)
                 throw new WdkUserException("The Step #" + displayId
                         + " of user " + user.getEmail() + " cannot be found.");
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(psHistory);
         }
     }
@@ -339,7 +342,8 @@ public class StepFactory {
             psDeleteSteps.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql.toString(),
                     "wdk-step-factory-delete-all-steps", start);
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(psDeleteSteps);
         }
     }
@@ -376,7 +380,8 @@ public class StepFactory {
             if (result == 0)
                 throw new WdkUserException("The strategy #" + displayId
                         + " of user " + user.getEmail() + " cannot be found.");
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(psStrategy);
         }
     }
@@ -401,7 +406,8 @@ public class StepFactory {
             psDeleteStrategies.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql.toString(),
                     "wdk-step-factory-delete-all-strategies", start);
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(psDeleteStrategies);
         }
     }
@@ -449,9 +455,11 @@ public class StepFactory {
                     start);
             rsHistory.next();
             return rsHistory.getInt("num");
-        } catch (SQLException ex) {
+        }
+        catch (SQLException ex) {
             throw new WdkUserException(ex);
-        } finally {
+        }
+        finally {
             SqlUtils.closeResultSet(rsHistory);
         }
     }
@@ -490,7 +498,8 @@ public class StepFactory {
                 // invalidSteps.put(stepId, step);
                 // }
             }
-        } finally {
+        }
+        finally {
             SqlUtils.closeResultSet(rsStep);
         }
         logger.debug("Steps: " + steps.size());
@@ -526,7 +535,8 @@ public class StepFactory {
                         + " of user " + user.getEmail() + " doesn't exist.");
 
             return loadStep(user, rsStep, false);
-        } finally {
+        }
+        finally {
             SqlUtils.closeResultSet(rsStep);
         }
     }
@@ -577,7 +587,8 @@ public class StepFactory {
                     answerChecksum);
             step.setAnswer(answer);
             step.setParamValues(dependentValues);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             step.setValid(false);
             step.setValidationMessage(ex.getMessage());
         }
@@ -659,7 +670,8 @@ public class StepFactory {
             psUpdateStepTree.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql.toString(),
                     "wdk-step-factory-update-step-tree", start);
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(psUpdateStepTree);
         }
     }
@@ -679,7 +691,8 @@ public class StepFactory {
     void updateStep(User user, Step step, boolean updateTime)
             throws WdkUserException, SQLException, NoSuchAlgorithmException,
             WdkModelException, JSONException {
-        logger.debug("step #" + step.getDisplayId() + " new custom name: '" + step.getBaseCustomName() + "'");
+        logger.debug("step #" + step.getDisplayId() + " new custom name: '"
+                + step.getBaseCustomName() + "'");
         // update custom name
         Date lastRunTime = (updateTime) ? new Date() : step.getLastRunTime();
         int estimateSize = step.getEstimateSize();
@@ -716,7 +729,8 @@ public class StepFactory {
 
             // update dependencies
             if (step.isCombined()) updateStepTree(user, step);
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(psStep);
         }
     }
@@ -755,7 +769,8 @@ public class StepFactory {
             }
 
             return userStrategies;
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(psStrategyIds);
             SqlUtils.closeResultSet(rsStrategyIds);
         }
@@ -813,13 +828,15 @@ public class StepFactory {
                 try {
                     Strategy strategy = loadStrategy(user, resultSet);
                     strategies.add(strategy);
-                } catch (WdkException ex) {
+                }
+                catch (WdkException ex) {
                     logger.error("ignore strategy #"
                             + resultSet.getInt("strategy_id") + ", cause: "
                             + ex);
                 }
             }
-        } finally {
+        }
+        finally {
             SqlUtils.closeResultSet(resultSet);
         }
         Collections.sort(strategies, new Comparator<Strategy>() {
@@ -872,78 +889,6 @@ public class StepFactory {
         return strategy;
     }
 
-    //
-    // private Step loadStepTree(User user, int stepId) throws SQLException,
-    // WdkUserException, WdkModelException, JSONException {
-    // Step step = loadStep(user, stepId);
-    // if (!step.isCombined()) return step;
-    //
-    // Stack<Integer> stepTree = new Stack<Integer>();
-    // stepTree.push(stepId);
-    //
-    // Map<Integer, Step> steps = new LinkedHashMap<Integer, Step>();
-    // steps.put(stepId, step);
-    //
-    // Integer parentAnswerId;
-    // Step parentStep;
-    //
-    // PreparedStatement psStepTree = null;
-    // String sql = "SELECT " + COLUMN_LEFT_CHILD_ID + ", "
-    // + COLUMN_RIGHT_CHILD_ID + " FROM " + userSchema + TABLE_STEP
-    // + " WHERE " + Utilities.COLUMN_USER_ID + " = ? AND "
-    // + COLUMN_DISPLAY_ID + " = ?";
-    // try {
-    // psStepTree = SqlUtils.getPreparedStatement(dataSource, sql);
-    //
-    // while (!stepTree.empty()) {
-    // parentAnswerId = stepTree.pop();
-    // long start = System.currentTimeMillis();
-    // psStepTree.setInt(1, user.getUserId());
-    // psStepTree.setInt(2, parentAnswerId.intValue());
-    //
-    // ResultSet rsAnswerTree = null;
-    // try {
-    // rsAnswerTree = psStepTree.executeQuery();
-    // SqlUtils.verifyTime(wdkModel, sql, start);
-    // if (rsAnswerTree.next()) {
-    // parentStep = steps.get(parentAnswerId);
-    //
-    // // left child
-    // Step currentStep;
-    // int currentStepId = rsAnswerTree.getInt(COLUMN_LEFT_CHILD_ID);
-    // if (currentStepId >= 1) {
-    // currentStep = loadStep(user, currentStepId);
-    // stepTree.push(currentStepId);
-    // steps.put(currentStepId, currentStep);
-    //
-    // parentStep.setPreviousStep(currentStep);
-    // currentStep.setNextStep(parentStep);
-    // if (!currentStep.isValid())
-    // parentStep.setValid(false);
-    // }
-    // // right child
-    // currentStepId = rsAnswerTree.getInt(COLUMN_RIGHT_CHILD_ID);
-    // if (currentStepId >= 1) {
-    // currentStep = loadStep(user, currentStepId);
-    // stepTree.push(currentStepId);
-    // steps.put(currentStepId, currentStep);
-    //
-    // parentStep.setChildStep(currentStep);
-    // currentStep.setParentStep(parentStep);
-    // if (!currentStep.isValid())
-    // parentStep.setValid(false);
-    // }
-    // }
-    // } finally {
-    // if (rsAnswerTree != null) rsAnswerTree.close();
-    // }
-    // }
-    // } finally {
-    // SqlUtils.closeStatement(psStepTree);
-    // }
-    // return step;
-    // }
-
     Strategy importStrategy(User user, Strategy oldStrategy,
             Map<Integer, Integer> stepIdsMap) throws WdkUserException,
             WdkModelException, SQLException, NoSuchAlgorithmException,
@@ -965,7 +910,7 @@ public class StepFactory {
         // Jerric - the imported strategy should always be unsaved.
         Strategy strategy = createStrategy(user, latestStep, name, null, false,
                 oldStrategy.getDescription(), false);
-	return loadStrategy(user, strategy.getStrategyId(), false);
+        return loadStrategy(user, strategy.getStrategyId(), false);
     }
 
     Step importStep(User newUser, Step oldStep, Map<Integer, Integer> stepIdsMap)
@@ -1076,7 +1021,8 @@ public class StepFactory {
              * "(\\([\\d]+\\))?\\*$", "")); }
              */
             return strategy;
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(psStrategy);
             SqlUtils.closeResultSet(rsStrategy);
         }
@@ -1120,7 +1066,8 @@ public class StepFactory {
             User user = wdkModel.getUserFactory().getUser(userId);
             Strategy strategy = loadStrategy(user, resultSet);
             return strategy;
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(ps);
             SqlUtils.closeResultSet(resultSet);
         }
@@ -1226,7 +1173,8 @@ public class StepFactory {
                 throw new WdkUserException("The strategy #"
                         + strategy.getStrategyId() + " of user "
                         + user.getEmail() + " cannot be found.");
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(psStrategy);
             SqlUtils.closeResultSet(rsStrategy);
         }
@@ -1241,7 +1189,7 @@ public class StepFactory {
             String savedName, boolean saved, String description, boolean hidden)
             throws SQLException, WdkUserException, WdkModelException,
             JSONException, NoSuchAlgorithmException {
-	logger.debug("creating strategy, saved=" + saved);
+        logger.debug("creating strategy, saved=" + saved);
         int userId = user.getUserId();
 
         String userIdColumn = Utilities.COLUMN_USER_ID;
@@ -1275,7 +1223,8 @@ public class StepFactory {
             } else {// otherwise, generate default name
                 name = getNextName(user, root.getCustomName(), saved);
             }
-        } finally {
+        }
+        finally {
             SqlUtils.closeResultSet(rsCheckName);
         }
 
@@ -1333,10 +1282,12 @@ public class StepFactory {
 
             logger.debug("new strategy created, internal#=" + internalId);
             connection.commit();
-        } catch (SQLException ex) {
+        }
+        catch (SQLException ex) {
             connection.rollback();
             throw ex;
-        } finally {
+        }
+        finally {
             connection.setAutoCommit(true);
             SqlUtils.closeStatement(psStrategy);
             SqlUtils.closeResultSet(rsMax);
@@ -1366,7 +1317,8 @@ public class StepFactory {
                     "wdk-step-factory-strategy-count", start);
             rsStrategy.next();
             return rsStrategy.getInt("num");
-        } finally {
+        }
+        finally {
             SqlUtils.closeResultSet(rsStrategy);
         }
     }
@@ -1423,7 +1375,8 @@ public class StepFactory {
             if (rsCheckName.next()) return true;
 
             return false;
-        } finally {
+        }
+        finally {
             SqlUtils.closeResultSet(rsCheckName);
         }
     }
@@ -1517,7 +1470,8 @@ public class StepFactory {
                 }
             }
             return name;
-        } finally {
+        }
+        finally {
             SqlUtils.closeResultSet(rsNames);
         }
     }
@@ -1541,7 +1495,8 @@ public class StepFactory {
             psUpdate.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql.toString(),
                     "wdk-step-factory-update-strategy-time", start);
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(psUpdate);
         }
     }
@@ -1567,7 +1522,8 @@ public class StepFactory {
             psUpdate.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql,
                     "wdk-step-factory-update-strategy-signature", start);
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(psUpdate);
         }
     }
