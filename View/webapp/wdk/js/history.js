@@ -137,23 +137,21 @@ function showHistSave(ele, stratId, save,share) {
 function showHistShare(ele, stratId, url) {
 	$(".viewed-popup-box").remove();
 	var perm_popup = $("div#hist_save_rename");
-    var popup = perm_popup.clone();
+    	var popup = perm_popup.clone();
 	popup.addClass('viewed-popup-box');
 	$("span.h3left", popup).text("Copy and paste URL below to email");
 	$("input[name='name']", popup).attr("value",url).attr("readonly",true).attr("size",url.length - 6);
  	$("input[type=submit]", popup).attr("value", "Ok").click(function(){
                 closeModal();
                 return false;
-      });
+      		});
 	var btnOffset = $(ele).offset();
-    var prntOffset = $("div#search_history").offset();
-    popup.css("top", (btnOffset.top - prntOffset.top - 40) + "px");
-    popup.css("right", "292px");
-    //popup.css("width", "43.5em");
-    popup.appendTo(perm_popup.parent()).show();
-
-
-
+    	var prntOffset = $("div#search_history").offset();
+   	popup.css("top", (btnOffset.top - prntOffset.top - 40) + "px");
+   	popup.css("right", "292px");
+	popup.appendTo(perm_popup.parent()).show();
+	//make sure the warning is visible
+	$(".viewed-popup-box form#save_strat_form_hist i").css("display","block");
 }
 
 function selectAllHist(type) {
