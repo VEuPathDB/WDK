@@ -1048,53 +1048,56 @@ public class RecordClass extends WdkModelBase implements
         favorites = null;
 
         // exclude the summary views
+        Map<String, SummaryView> summaryViews = new LinkedHashMap<String, SummaryView>();
         for (SummaryView view : summaryViewList) {
             if (view.include(projectId)) {
                 view.excludeResources(projectId);
                 String name = view.getName();
-                if (summaryViewMap.containsKey(name))
+                if (summaryViews.containsKey(name))
                     throw new WdkModelException("The summary view '" + name
                             + "' is duplicated in record " + getFullName());
 
-                summaryViewMap.put(name, view);
+                summaryViews.put(name, view);
             }
         }
         summaryViewList = null;
 
-        // add WDK supported views to all record classes
-        for (SummaryView view : SummaryView.createSupportedSummaryViews()) {
-            String name = view.getName();
-            // only add the view if it hasn't been defined by the user. that is,
-            // user can custom the views supported by WDK by default.
-            if (!summaryViewMap.containsKey(name)) {
-                view.excludeResources(projectId);
-                summaryViewMap.put(name, view);
-            }
+        // add WDK supported views to all record classes, first
+        for (SummaryView view : SummaryView.createSupportedSummaryViews(this)) {
+            view.excludeResources(projectId);
+            summaryViewMap.put(view.getName(), view);
         }
+ 
+        // then add user defined views to override WDK supported ones
+        for (SummaryView view : summaryViews.values()) {
+            summaryViewMap.put(view.getName(), view);
+        } 
+
 
         // exclude the summary views
+        Map<String, RecordView> recordViews = new LinkedHashMap<String, RecordView>();
         for (RecordView view : recordViewList) {
             if (view.include(projectId)) {
                 view.excludeResources(projectId);
                 String name = view.getName();
-                if (recordViewMap.containsKey(name))
+                if (recordViews.containsKey(name))
                     throw new WdkModelException("The record view '" + name
                             + "' is duplicated in record " + getFullName());
 
-                recordViewMap.put(name, view);
+                recordViews.put(name, view);
             }
         }
         recordViewList = null;
 
-        // add WDK supported views to all record classes
+        // add WDK supported views to all record classes first
         for (RecordView view : RecordView.createSupportedRecordViews()) {
-            String name = view.getName();
-            // only add the view if it hasn't been defined by the user. that is,
-            // user can custom the views supported by WDK by default.
-            if (!recordViewMap.containsKey(name)) {
-                view.excludeResources(projectId);
-                recordViewMap.put(name, view);
-            }
+            view.excludeResources(projectId);
+            recordViewMap.put(view.getName(), view);
+        }
+
+        // then add user defined views to override WDK supported ones
+        for (RecordView view : recordViews.values()) {
+            recordViewMap.put(view.getName(), view);
         }
     }
 

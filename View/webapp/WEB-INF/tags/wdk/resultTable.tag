@@ -28,6 +28,13 @@
 <c:set var="type" value="${typeMap['plural']}"/>
 
 
+<c:choose>
+  <c:when test='${wdkAnswer.resultSize == 0}'>
+        No results are retrieved
+  </c:when>
+  <c:otherwise>
+
+
 <!-- pager -->
 <pg:pager isOffset="true"
           scope="request"
@@ -294,3 +301,6 @@
 <%--------- END OF PAGING BOTTOM BAR ----------%>
 </pg:pager>
 
+
+  </c:otherwise> <%-- end of resultSize != 0 --%>
+</c:choose>

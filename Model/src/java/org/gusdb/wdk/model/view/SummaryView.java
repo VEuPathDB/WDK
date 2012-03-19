@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -12,18 +13,18 @@ import org.json.JSONException;
 
 public class SummaryView extends WdkView {
 
-    public static SummaryView[] createSupportedSummaryViews() {
+    public static SummaryView[] createSupportedSummaryViews(RecordClass recordClass) {
         List<SummaryView> views = new ArrayList<SummaryView>();
-        views.add(createDefaultSummaryView());
+        views.add(createDefaultSummaryView(recordClass));
         return views.toArray(new SummaryView[0]);
     }
 
-    private static SummaryView createDefaultSummaryView() {
+    private static SummaryView createDefaultSummaryView(RecordClass recordClass) {
         SummaryView view = new SummaryView();
         view.setName("_default");
-        view.setDisplay("Default");
+        view.setDisplay(recordClass.getDisplayName() + " Results");
         view.setDefault(true);
-        view.setJsp("/wdk/jsp/results/table.jsp");
+        view.setJsp("/wdk/jsp/results/default.jsp");
         return view;
     }
 
