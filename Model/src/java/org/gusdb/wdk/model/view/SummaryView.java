@@ -23,7 +23,6 @@ public class SummaryView extends WdkView {
         SummaryView view = new SummaryView();
         view.setName("_default");
         view.setDisplay(recordClass.getDisplayName() + " Results");
-        view.setDefault(true);
         view.setJsp("/wdk/jsp/results/default.jsp");
         return view;
     }
