@@ -11,6 +11,7 @@ function configureSummaryViews(ele) {
     var currentTab = parseInt(summaryViews.children("ul").attr("currentTab"));    
     workspace.find("#Summary_Views").tabs({
         selected : currentTab,
+        cache: true,
         ajaxOptions: {
             error: function( xhr, status, index, anchor ) {
                 alert( "Couldn't load this tab. Please try again later." + status );

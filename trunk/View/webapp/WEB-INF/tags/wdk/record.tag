@@ -46,8 +46,7 @@
     <c:forEach items="${views}" var="item">
       <c:set var="view" value="${item.value}" />
       <li>
-        <a title="Record_View" 
-           href="<c:url value='/showRecordView.do?name=${recordClass.fullName}&view=${view.name}${pkUrl}' />"
+        <a href="<c:url value='/showRecordView.do?name=${recordClass.fullName}&view=${view.name}${pkUrl}' />"
         >${view.display} <span> </span></a>
       </li>
     </c:forEach>
@@ -58,7 +57,8 @@
 <script>
   $(function() {
     var currentTab = parseInt(jQuery("#Record_Views > ul").attr("currentTab"));
-    jQuery( "#Record_Views" ).tabs({ selected : currentTab });
+    jQuery( "#Record_Views" ).tabs({ selected : currentTab,
+                                     cache: true });
   });
 </script>
 
