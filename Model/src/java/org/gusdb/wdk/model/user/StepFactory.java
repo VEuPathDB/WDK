@@ -137,16 +137,16 @@ public class StepFactory {
         String filterName = null;
         int estimateSize;
         Exception exception = null;
-        // try {
-        if (filter != null) {
-            filterName = filter.getName();
-            estimateSize = answerValue.getFilterSize(filterName);
-        } else estimateSize = answerValue.getResultSize();
-        // } catch (Exception ex) {
-        // estimateSize = 0;
-        // logger.error(ex);
-        // exception = ex;
-        // }
+        try {
+            if (filter != null) {
+                filterName = filter.getName();
+                estimateSize = answerValue.getFilterSize(filterName);
+            } else estimateSize = answerValue.getResultSize();
+        } catch (Exception ex) {
+            estimateSize = 0;
+            logger.error(ex);
+            exception = ex;
+        }
 
         String displayParamContent = getParamContent(dependentValues);
 
