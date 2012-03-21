@@ -363,10 +363,10 @@ public abstract class AbstractEnumParam extends Param {
                     : termInternalMap.get(term);
             if (!termInternalMap.containsKey(term)) {
                 // term doesn't exists need to correct it later
-                logger.warn("param " + getFullName() + " encountered an "
+                throw new WdkUserException("param " + getFullName() + " encountered an "
                         + "invalid term from user #" + user.getUserId() + ": "
                         + term);
-                internal = term;
+                //internal = term;
             }
             if (quote && !(internal.startsWith("'") && internal.endsWith("'")))
                 internal = "'" + internal.replaceAll("'", "''") + "'";
