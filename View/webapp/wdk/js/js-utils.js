@@ -39,15 +39,15 @@ function showLoading(divId){
 	var t = 0;
 	if(divId == undefined){
 		d = $("#Strategies");
-		le = "225px";
-		t = "40px";
+		le = "10px";
+		t = "15px";
 		l_gif = "loading.gif";
-		sz = "45";
+		sz = "35";
 	}else if($("#diagram_" + divId).length > 0){
 		d = $("#diagram_" + divId);
 		le = "10px";
-		t = "10px";
-		l_gif = "loading2.gif";
+		t = "12px";
+		l_gif = "loading.gif";
 		sz = "35";
 	} else {
 		d = $("#" + divId);
