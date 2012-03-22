@@ -12,16 +12,18 @@
 
 <%-- JS libraries --%>
 <%-- comment out the production code. need to revert this on check in --%>
-<!--
+
 <script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-1.7.min.js"/>'></script>
--->
+<!--
 <script type="text/javascript" src="http://code.jquery.com/jquery-1.7.js"></script>
+-->
 <script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-ui-1.8.16.custom.min.js"/>'></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.blockUI.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.cookie.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.dataTables-1.8.1.min.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jstree/jquery.jstree.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/qtip2/jquery.qtip.min.js'/>"></script>
+<script type="text/javascript" src="<c:url value='/wdk/js/lib/json.js'/>"></script>
 
 <%-- styles for JS libraries --%>
 <link rel="Stylesheet" type="text/css" href="<c:url value='/wdk/css/ui-custom/custom-theme/jquery-ui-1.8.16.custom.css' />"/>
