@@ -400,9 +400,13 @@ public abstract class Query extends WdkModelBase {
         if (dependedParam == null) return;
 
         String dependedValue = values.get(dependedParam.getName());
+        resolveDependedValue(values, dependedParam);
         if (dependedValue == null) {
             resolveDependedValue(values, dependedParam);
             dependedValue = dependedParam.getDefault();
+        } else if (dependedParam instanceof AbstractEnumParam) {
+            if (!((AbstractEnumParam)dependedParam).getVocabMap().containsKey(dependedValue))
+                dependedValue = dependedParam.getDefault();
         }
         enumParam.setDependedValue(dependedValue);
     }
