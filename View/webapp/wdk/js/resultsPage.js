@@ -21,6 +21,7 @@ function configureSummaryViews(ele) {
 }
 
 function summaryViewTabSelected(event, ui) {
+/*
             var currentTab = getCurrentBasketTab();
 
             var currentDiv = getCurrentBasketRegion();
@@ -47,6 +48,7 @@ function summaryViewTabSelected(event, ui) {
                 control.find("input#make-strategy-from-basket-button").attr("disabled",true);
                 control.find("input#export-basket-button").attr("disabled",true);
             }
+*/
 }
 
 
@@ -139,7 +141,7 @@ function GetResultsPage(url, update, ignoreFilters, resultOnly){
     var s = parseUrlUtil("strategy", url);
     var st = parseUrlUtil("step", url);
     var strat = getStrategyFromBackId(s[0]);
-    var currentDiv = getCurrentBasketRegion();
+    var currentDiv = window.wdk.findActiveView();
     var step = null;
     if(strat == false){
         strat = new Object();
@@ -185,7 +187,7 @@ function updateResultLabels(currentDiv, strat, step) {
 function ResultsToGrid(data, ignoreFilters, div, resultOnly) {
     var oldFilters;
     var currentDiv = div;
-    if (currentDiv == undefined) currentDiv = getCurrentBasketRegion();
+    if (currentDiv == undefined) currentDiv = window.wdk.findActiveView();
     if (ignoreFilters) {
         oldFilters = $("#strategy_results > div.Workspace div.layout-detail div.filter-instance .link-url");
     }
