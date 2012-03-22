@@ -281,7 +281,7 @@ img.plus-minus {
 }
 
 .h4left {
-//	font-size: 130%;
+/*	font-size: 130%; */
 	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
 	color:  black;    
@@ -381,18 +381,18 @@ tr.subheaderrow th {
 }
 
 tr.headerrow th { 
-//	white-space: nowrap;
+/*	white-space: nowrap; */
 	font-size: 12px;
 	vertical-align:	middle;
 	padding: 1px 2px;
-	border-width: 2px 1px 2px 1px; // 2px 0 2px 0; results headers side borders
+	border-width: 2px 1px 2px 1px; /* 2px 0 2px 0; results headers side borders */
 	border-style: solid;
 }
 
 /* result column headers */
 tr.headerrow th table tbody tr td { 
 	padding: 1px;
-//	white-space: nowrap;
+/*	white-space: nowrap; */
 	vertical-align: middle;
 	font-size: 12px;
 }
@@ -580,7 +580,7 @@ tr.headerRow > td,th {
 	background-position: 0 26px;   /* was 36px, decreased to have Add Step title thiner */
 	border: 1px solid #888888;	
 	padding: 0 8px 8px 8px;
-	z-index: 190;   //as good as 1000; used by select columns popup to cover results
+	z-index: 190;   / * as good as 1000; used by select columns popup to cover results */
 }
 
 .attributesList {
@@ -590,7 +590,6 @@ tr.headerRow > td,th {
 }
 
 .attributesFormWrapper {
-	margin-top: 30px;
 	font-family: Arial, Helvetica, sans-serif;
 	font-weight: normal;
 }
