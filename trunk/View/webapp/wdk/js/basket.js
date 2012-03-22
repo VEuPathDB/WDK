@@ -6,6 +6,7 @@ function configureBasket() {
     jQuery("#basket-menu").tabs({
         selected: index,
         load: basketTabSelected,
+        cache: true,
         ajaxOptions: {
             error: function( xhr, status, index, anchor ) {
                 alert( "Couldn't load this tab. Please try again later." + status );
@@ -16,15 +17,14 @@ function configureBasket() {
 
 function basketTabSelected(event, ui) {
             var currentTab = getCurrentBasketTab();
-            var currentDiv = getCurrentBasketRegion();
-//            currentDiv.prepend(jQuery("#basket-control-panel #basket-control").clone());
-            jQuery("div#Basket_View").prepend(jQuery("#basket-control-panel #basket-control").clone());
+            var workspace = window.wdk.findActiveWorkspace();
+            workspace.prepend(jQuery("#basket-control-panel #basket-control").clone());
             // store the selection cookie
             var currentId = currentTab.attr("id");
             setCurrentTabCookie('basket', currentId);
-            var control = jQuery("#basket-menu #basket-control");
-//            if (currentDiv.find("table").length > 0) {
-            if (jQuery("div#Basket_View").find("table").length > 0) {
+            var currentDiv = getCurrentBasketRegion();
+            var control = workspace.children("#basket-control");
+            if (currentDiv.find("table").length > 0) {
                 control.find("input#empty-basket-button").attr("disabled",false);
                 control.find("input#make-strategy-from-basket-button").attr("disabled",false);
                 control.find("input#export-basket-button").attr("disabled",false);
