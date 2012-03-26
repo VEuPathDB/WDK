@@ -9,31 +9,33 @@
 
 <c:set var="step" value="${requestScope.wdkStep}" />
 <c:set var="plugins" value="${attribute.attributePlugins}" />
-<script type="text/javascript">
-  $(function() {
-	  $(".jqbutton").button();
-  });
-</script>
-<div class="attribute-plugins">
-  <c:if test="${fn:length(plugins) > 0}">
-    <div>
-      <input type="image" class="handle jqbutton" onclick="openAttributePlugins(this)"
-             src="wdk/images/plugin.png" title="Analyze/graph the contents of this column"/>
-    </div>
-  <div class="plugins">
-    <div class="title">
-      <image class="handle close" onclick="closeAttributePlugins(this)" src="wdk/images/close.gif" />
-      <h3>Analyze/Graph the contents of this column</h3>
-    </div>
-    <ul>
-      <c:forEach items="${plugins}" var="item">
-        <c:set var="plugin" value="${item.value}" />
-        <li class="plugin" plugin="${plugin.name}" title="${plugin.description}"
-            onclick="invokeAttributePlugin(this, '${step.stepId}', '${attribute.name}')">
-          ${plugin.display}
-        </li>
-      </c:forEach>
-    </ul>
+<c:if test="${fn:length(plugins) > 0}">
+	<script type="text/javascript">
+	  $(function() {
+	    $(".jqbutton").button();
+	    assignStickyTooltipByTitle('.attribPluginTip', { tipPos: 'top-right', targetPos: 'bottom-right' });
+	  });
+	</script>
+  <div>
+    <c:set var="tipContents">
+		  <div>
+		    <div>
+		      <h4 style="white-space:nowrap; margin-left:0">Analyze/Graph the contents of this column</h4>
+		    </div>
+		    <ul style="margin-top: 4px;">
+		      <c:forEach items="${plugins}" var="item">
+		        <c:set var="plugin" value="${item.value}" />
+		        <li>- 
+		          <a style="color:#8F0165; cursor:pointer" plugin="${plugin.name}" title="${plugin.description}"
+		            onclick="invokeAttributePlugin(this, '${step.stepId}', '${attribute.name}')">
+		            ${plugin.display}
+		          </a>
+		        </li>
+		      </c:forEach>
+		    </ul>
+		  </div>    
+    </c:set>
+    <input type="image" class="jqbutton attribPluginTip" title="${fn:escapeXml(tipContents)}"
+           src="wdk/images/plugin.png" title="Analyze/graph the contents of this column"/>
   </div>
-  </c:if>
-</div>
+</c:if>

@@ -733,44 +733,6 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
 }
 
 .jqbutton.ui-button {padding:0px;}
-.attribute-plugins .handle {
-  cursor: pointer;
-}
-
-.attribute-plugins .plugins {
-  display: none;
-  background-color: #EAEAEE;
-  position: absolute;
-  margin-left: -100px;
-  border: 3px ridge #666666;
-  cursor: auto;
-  width: 400px;
-  overflow: auto;
-}
-.attribute-plugins .plugins .title {
-  background-image: url("../images/crumbMenu.png");
-  border-bottom: 1px solid #666666;
-  height: 23px;
-}
-.attribute-plugins .plugins .close {
-  float: right;
-  padding: 3px;
-}
-.attribute-plugins .plugins h3 {
-  white-space: nowrap;
-  padding: 5px 25px 5px 3px;
-}
-.attribute-plugins .plugins .plugin {
-  font-weight: normal;
-  list-style: square inside none;
-  padding: 3px;
-  cursor: pointer;
-}
-.attribute-plugins .plugins .highlight {
-  background-color: #FFFFFF;
-}
-
-#attribute-plugin #tab-view, #attribute-plugin #tab-download { overflow: auto; }
 
 #histogram .bar {
     height: 12px;
