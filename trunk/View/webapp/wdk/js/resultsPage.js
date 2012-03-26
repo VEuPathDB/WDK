@@ -326,49 +326,64 @@ function toggleAttributes(from) {
    }
 }
 
-
-function openAttributePlugins(ele) {
-    var plugins = $(ele).parents(".attribute-plugins").children(".plugins");
-    // attach hover events on the plugin entry
-    plugins.find(".plugin").hover(
-        function() { $(this).addClass("highlight"); },
-        function() { $(this).removeClass("highlight"); }
-    );
-    plugins.show();
+/* This code should be removed as soon as we get approval for the alternate
+ * solution.  If you find this code later than 4/2012, please delete.
+function assignAttributePluginTip(selector) {
+    $(selector)
+      .qtip({
+    	  position: {
+	        my: 'top-right',
+	        at: 'bottom-center'
+	      },
+          show: {
+              solo: true,
+              event: 'click'
+          },
+          hide: {
+              event: 'click'
+          },
+          events: {
+              show: setHideTipEvents
+          }
+      })
+      .removeData('qtip') // clears data from target so second tooltip can be applied
+      .qtip({
+    	  position: {
+  	        my: 'top-right',
+  	        at: 'bottom-center'
+  	      },
+          content: '<h4>Analyze/Graph the contents of this column</h4>',
+          show: { solo: true }
+      });
 }
-
-function closeAttributePlugins(ele) {
-    var plugins = $(ele).parents(".attribute-plugins").children(".plugins");
-    plugins.hide();
-}
-
+*/
 
 function invokeAttributePlugin(ele, stepId, attributeName) {
-        var pluginName = $(ele).attr("plugin");
-        var title = $(ele).html();
-        var plugins = $(ele).parents(".plugins");
-	var url = "invokeAttributePlugin.do?step=" + stepId + "&attribute=" + attributeName + "&plugin=" + pluginName;	
-	$.ajax({
-		url: url,
-		dataType: "html",
-		beforeSend: function(){
-                        plugins.hide();
-			$("body").block();
-		},
-		success: function(data){
-			// create a place holder for the result
-			if ($("#attribute-plugin-result").length == 0)
-				$("body").append("<div id=\"attribute-plugin-result\"> </div>");
-			$("#attribute-plugin-result").html(data)
-                            .dialog({ width : 825,
-                                      maxHeight: 800,
-                                      title : title
-                                    });
-                        $("body").unblock();
-		},
-                error: function() {
-                        $("body").unblock();
-                }
-	});
-
+    var pluginName = $(ele).attr("plugin");
+    var title = $(ele).html();
+    var plugins = $(ele).parents(".plugins");
+    var url = "invokeAttributePlugin.do?step=" + stepId + "&attribute=" + attributeName + "&plugin=" + pluginName;    
+    $.ajax({
+        url: url,
+        dataType: "html",
+        beforeSend: function(){
+            plugins.hide();
+            $("body").block();
+        },
+        success: function(data){
+            // create a place holder for the result
+            if ($("#attribute-plugin-result").length == 0)
+                $("body").append("<div id=\"attribute-plugin-result\"> </div>");
+            $("#attribute-plugin-result")
+                .html(data)
+                .dialog({ width : 825,
+                          maxHeight: 800,
+                          title : title
+                });
+            $("body").unblock();
+        },
+        error: function() {
+            $("body").unblock();
+        }
+    });
 }
