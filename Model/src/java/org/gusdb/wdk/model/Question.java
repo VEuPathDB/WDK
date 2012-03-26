@@ -939,4 +939,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         if (summaryViewList == null) summaryViewMap.put(view.getName(), view);
         else summaryViewList.add(view);
     }
+
+    public void resolveDependedParams(Map<String, String> paramValues)
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
+        query.resolveDependedParams(paramValues);
+    }
 }

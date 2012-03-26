@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -129,6 +130,16 @@ public class EnumParamBean extends ParamBean {
         // sb.append(s).append(", ");
         // sb.append(" ]");
         this.currentValues = currentValues;
+    }
+
+    public String[] getInvalidValues() throws Exception {
+        if (currentValues == null) return new String[0];
+        List<String> invalidValues = new ArrayList<String>();
+        Map<String, String> terms = param.getVocabMap();
+        for (String term : currentValues) {
+            if (!terms.containsKey(term)) invalidValues.add(term);
+        }
+        return invalidValues.toArray(new String[0]);
     }
 
     public TreeNode getParamTree() throws Exception {

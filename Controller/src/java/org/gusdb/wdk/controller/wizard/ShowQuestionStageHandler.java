@@ -86,6 +86,7 @@ public class ShowQuestionStageHandler implements StageHandler {
         // prepare question form
         logger.debug("Preparing form for question: " + questionName);
         QuestionForm questionForm = new QuestionForm();
+        questionForm.copyFrom(wizardForm);
         ShowQuestionAction.prepareQuestionForm(question, servlet, request,
                 questionForm);
         wizardForm.copyFrom(questionForm);
