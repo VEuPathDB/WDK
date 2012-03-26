@@ -54,39 +54,35 @@
     
   </pg:last>
 </pg:index>
-  
-      </td>
+</td>
      
-   <%-- 'All' link to display all results, if the result set is not too big --%>
-      <td>
-		&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <input class="paging-button" style="width:150px" type="button" value="Advanced Paging" onclick="openAdvancedPaging(this)"/>
-		<div class="advanced-paging" style="">
-			<span id="CAP" onclick="openAdvancedPaging($(this).parent().prev())">[x]</span>
-<input type="hidden" id="resultSize" class="resultSize" value="${resultSize}" />
-          Jump To page:
-          <input type="text" id="${pager_id}_pageNumber" class="pageNumber" size="5" value="${currentPageNumber}"/>
-          <input type="hidden" id="pageUrl" class="pageUrl" value="${advancedPagingUrl}" />
-          <font size="-1">
-            [1..<span id="${pager_id}_pageCount" class="pageCount">${wdkAnswer.pageCount}</span>]
-             <br/>Results Per Page:
-          </font>
-          
-          <!-- display the choice of page size -->
-          <select id="${pager_id}_pageSize" class="pageSize" onchange="updatePageCount(this);">
-             <option value="5" ${(wdk_paging_pageSize == 5)? 'SELECTED' : ''}>5</option>
-             <option value="10" ${(wdk_paging_pageSize == 10)? 'SELECTED' : ''}>10</option>
-             <option value="20" ${(wdk_paging_pageSize == 20)? 'SELECTED' : ''}>20</option>
-             <option value="50" ${(wdk_paging_pageSize == 50)? 'SELECTED' : ''}>50</option>
-             <option value="100" ${(wdk_paging_pageSize== 100)? 'SELECTED' : ''}>100</option>
-             <option value="500" ${(wdk_paging_pageSize == 500)? 'SELECTED' : ''}>500 (slow)</option>
-             <option value="1000" ${(wdk_paging_pageSize== 1000)? 'SELECTED' : ''}>1000 (very slow)</option>
-           </select>
-           <input type="button" value="GO" onclick="gotoPage(this);"/>
-       </div>
-      </td>
-    </tr>
-  </table> 
+<%-- 'All' link to display all results, if the result set is not too big --%>
+	<td>
+	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+	    <input class="paging-button" style="width:150px" type="button" value="Advanced Paging" onclick="openAdvancedPaging(this)"/>
+			<div class="advanced-paging" title="Advanced Paging">
+        <input type="hidden" id="resultSize" class="resultSize" value="${resultSize}" />
+        <div class="text">Jump To page:</div>
+        <input type="text" id="${pager_id}_pageNumber" class="pageNumber" size="5" value="${currentPageNumber}"/>
+        <input type="hidden" id="pageUrl" class="pageUrl" value="${advancedPagingUrl}" />
+        [1..<span id="${pager_id}_pageCount" class="pageCount">${wdkAnswer.pageCount}</span>]
+        <hr/>
+        <div class="text">Results Per Page:</div>
+	      <!-- display the choice of page size -->
+	      <select id="${pager_id}_pageSize" class="pageSize" onchange="updatePageCount(this);">
+	          <option value="5" ${(wdk_paging_pageSize == 5)? 'SELECTED' : ''}>5</option>
+	          <option value="10" ${(wdk_paging_pageSize == 10)? 'SELECTED' : ''}>10</option>
+	          <option value="20" ${(wdk_paging_pageSize == 20)? 'SELECTED' : ''}>20</option>
+	          <option value="50" ${(wdk_paging_pageSize == 50)? 'SELECTED' : ''}>50</option>
+	          <option value="100" ${(wdk_paging_pageSize== 100)? 'SELECTED' : ''}>100</option>
+	          <option value="500" ${(wdk_paging_pageSize == 500)? 'SELECTED' : ''}>500 (slow)</option>
+	          <option value="1000" ${(wdk_paging_pageSize== 1000)? 'SELECTED' : ''}>1000 (very slow)</option>
+	      </select>
+	      <input class="submit" type="button" value="GO" onclick="closeAdvancedPaging(this); gotoPage(this);"/>
+      </div>
+    </td>
+  </tr>
+</table> 
 
    
   

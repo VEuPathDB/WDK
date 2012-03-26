@@ -135,8 +135,6 @@ function updateSummary(command) {
     GetResultsPage(url, true, true, true);
 }
 
-
-
 function GetResultsPage(url, update, ignoreFilters, resultOnly){
     var s = parseUrlUtil("strategy", url);
     var st = parseUrlUtil("step", url);
@@ -270,28 +268,19 @@ function gotoPage(element) {
 }
 
 function openAdvancedPaging(element){
-    var button = $(element);
-   
-    var isOpen = (button.val() == "Advanced Paging");
-    var panel = button.next(".advanced-paging");
-    var offset = button.position();
-    offset.left += button.width() + 20;
-    offset.top -= 20;
-    if(isOpen){
-        panel.css({"display" : "block",
-                   "left": offset.left + "px",
-                   "top": offset.top + "px",
-                   "width": "290px", 
-                   "z-index" : 500});
-        button.val("Cancel");
-    }else{
-        panel.css({"display" : "none"});
-        button.val("Advanced Paging");
-    }
+	$("#" + getDialogId(element, "advanced-paging")).dialog("open");
+}
+
+function closeAdvancedPaging(submitObj) {
+	$(submitObj).parents(".advanced-paging").dialog("close");
 }
 
 function openAttributeList(element){
-    var list = $(element).next(".attributesList");
+    $("#" + getDialogId(element, "attributesList")).dialog("open");
+}
+
+function getDialogId(element, dialogClass) {
+	var list = $(element).next("." + dialogClass);
     if (list.length > 0) {
         var id = "dialog" + Math.floor(Math.random() * 1000000000);
         $(element).attr("dialog", id);
@@ -299,16 +288,7 @@ function openAttributeList(element){
             autoOpen: false
         });
     }
-    var id = $(element).attr("dialog");
-    list = $("#" + id);
-    list.dialog("open");
-}
-
-function closeAttributeList(element){
-    var button = $(element);
-    
-    var popup = button.parents(".attributesList");
-    popup.hide();
+    return $(element).attr("dialog");
 }
 
 function toggleAttributes(from) {
