@@ -358,12 +358,10 @@ public abstract class Query extends WdkModelBase {
         }
         paramRefList = null;
 
+        // FIXME - this cause problems with some params, need to investigate. comment out temporarily
         // apply the default values to depended params
         Map<String, String> valueStub = new LinkedHashMap<String, String>();
-        for (Param param : paramMap.values()) {
-            // FIXME - this cause problems with some params, need to investigate. comment out temporarily
-            // resolveDependedValue(valueStub, param);
-        }
+        // resolveDependedParams(valueStub)
 
         // resolve columns
         for (Column column : columnMap.values()) {
@@ -390,6 +388,14 @@ public abstract class Query extends WdkModelBase {
         resolved = true;
     }
 
+    public void resolveDependedParams(Map<String, String> values) 
+            throws WdkModelException, NoSuchAlgorithmException,
+            WdkUserException, SQLException, JSONException {
+        for (Param param : paramMap.values()) {
+            resolveDependedValue(values, param);
+        }
+    }
+
     void resolveDependedValue(Map<String, String> values, Param param)
             throws WdkModelException, NoSuchAlgorithmException,
             WdkUserException, SQLException, JSONException {
@@ -402,12 +408,13 @@ public abstract class Query extends WdkModelBase {
         String dependedValue = values.get(dependedParam.getName());
         resolveDependedValue(values, dependedParam);
         if (dependedValue == null) {
-            resolveDependedValue(values, dependedParam);
             dependedValue = dependedParam.getDefault();
         } else if (dependedParam instanceof AbstractEnumParam) {
+            // check if the depended value is valid, and if not, use default value.
             if (!((AbstractEnumParam)dependedParam).getVocabMap().containsKey(dependedValue))
                 dependedValue = dependedParam.getDefault();
         }
+        logger.debug("PARAM " + param.getName() + " DEPENDED VAL: " + dependedValue);
         enumParam.setDependedValue(dependedValue);
     }
 

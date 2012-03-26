@@ -44,8 +44,6 @@ Otherwise a standard select menu is used.
 	
 
 
-<!--<div class="param">-->
-
 <c:choose>
 <c:when test="${qP.multiPick}">
   <%-- multiPick is true, use checkboxes or scroll pane --%>
@@ -167,4 +165,19 @@ Otherwise a standard select menu is used.
   </div>
 </c:otherwise> <%-- end of pick single item --%>
 </c:choose>
-<!--</div>-->
+
+
+<%-- display invalid terms, if any. --%>
+<c:set var="invalidTerms" value="${qP.invalidValues}" />
+<c:if test="${fn:length(invalidTerms) != 0}">
+  <div class="invalid-values">
+    <p>The option(s) you previously selected for this parameter, ${qP.prompt}, is no longer available. <br />
+       Here is the option you selected:</p>
+    <ul>
+      <c:forEach items="${invalidTerms}" var="term">
+        <li>${term}</li>
+      </c:forEach>
+    </ul>
+  </div>
+</c:if>
+

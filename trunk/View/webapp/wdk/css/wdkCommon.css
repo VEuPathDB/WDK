@@ -69,6 +69,11 @@ body { font-size: 12px; }
     float: left;
     clear: left;
 }
+
+.params .invalid-values { color:red; padding:5px; }
+.params .invalid-values ul { list-style:disc outside none; margin:2px 2px 2px 15px; }
+
+
 /*
 .param-controls > a:link, 
 .param-controls > a:visited,

@@ -123,6 +123,8 @@ public class ShowQuestionAction extends Action {
         qForm.setServlet(servlet);
 
         boolean hasAllParams = true;
+        
+        // fetch the previous values
         ParamBean[] params = wdkQuestion.getParams();
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
         for (ParamBean param : params) {
@@ -135,6 +137,17 @@ public class ShowQuestionAction extends Action {
                         .getParameterValues(paramName));
             if (paramValue == null || paramValue.length() == 0)
                 paramValue = null;
+            if (paramValue != null)
+                paramValues.put(paramName, paramValue);
+        }
+            
+        // resolve the depended params
+        wdkQuestion.resolveDependedParams(paramValues);
+
+        // process each param
+        for (ParamBean param : params) {
+            String paramName = param.getName();
+            String paramValue = paramValues.get(paramName);
 
             // handle the additional information
             logger.debug("ShowQuestion: processing " + paramName);
