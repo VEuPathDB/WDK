@@ -760,3 +760,11 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
 #word-cloud #layout .word { padding: 2px; }
 
 #form_question .filter-button { text-align: center; }
+
+.advanced-paging div.text {
+	font-size: 110%;
+	padding-bottom: 5px;
+}
+.advanced-paging .submit {
+		float:right;
+}
