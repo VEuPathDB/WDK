@@ -41,7 +41,8 @@ public class EnumParam extends AbstractEnumParam {
     protected synchronized void initVocabMap() throws WdkModelException {
         Param dependedParam = getDependedParam();
         if (termInternalMap != null && termInternalMap.size() > 0
-                && (dependedParam == null || !isDependedValueChanged())) return;
+                && (dependedParam == null || !isDependedValueChanged()))
+            return;
 
         termInternalMap = new LinkedHashMap<String, String>();
         termDisplayMap = new LinkedHashMap<String, String>();
@@ -145,7 +146,11 @@ public class EnumParam extends AbstractEnumParam {
         EnumItem[] enumItems = enumItemList.getEnumItems();
         for (EnumItem item : enumItems) {
             if (item.isDefault()) {
-                if (sb.length() > 0) sb.append(",");
+                if (sb.length() > 0) {
+                    // single pick default should be singular value
+                    if (!multiPick) break;
+                    sb.append(",");
+                }
                 sb.append(item.getTerm());
             }
         }
