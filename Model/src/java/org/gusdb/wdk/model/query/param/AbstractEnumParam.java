@@ -363,10 +363,10 @@ public abstract class AbstractEnumParam extends Param {
                     : termInternalMap.get(term);
             if (!termInternalMap.containsKey(term)) {
                 // term doesn't exists need to correct it later
-                throw new WdkUserException("param " + getFullName() + " encountered an "
-                        + "invalid term from user #" + user.getUserId() + ": "
-                        + term);
-                //internal = term;
+                throw new WdkUserException("param " + getFullName()
+                        + " encountered an " + "invalid term from user #"
+                        + user.getUserId() + ": " + term);
+                // internal = term;
             }
             if (quote && !(internal.startsWith("'") && internal.endsWith("'")))
                 internal = "'" + internal.replaceAll("'", "''") + "'";
@@ -444,7 +444,8 @@ public abstract class AbstractEnumParam extends Param {
         logger.trace("select mode: '" + selectMode + "'");
         if (defaultValue != null && defaultValue.length() > 0) return;
 
-        if (selectMode == null) selectMode = SELECT_MODE_FIRST;
+        // single pick can only select one value
+        if (selectMode == null || !multiPick) selectMode = SELECT_MODE_FIRST;
         if (selectMode.equalsIgnoreCase(SELECT_MODE_ALL)) {
             StringBuilder builder = new StringBuilder();
             for (String term : termInternalMap.keySet()) {
