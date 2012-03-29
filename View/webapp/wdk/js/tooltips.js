@@ -46,9 +46,13 @@ function setUpTooltips(selector, conf) {
 function assignTooltips(selector, xOffset) {
 	setUpTooltips(selector, makeConf({ xOffset: xOffset, tipPos: 'top-center', targetPos: 'bottom-center' }));
 }
-// places tip to the left of and below the target, keyed off the bottom right corner 
+// places tip to the left of and below the target, keyed off the bottom left corner 
 function assignTooltipsLeft(selector, xOffset) {
 	setUpTooltips(selector, makeConf({ xOffset: xOffset, tipPos: 'top-right', targetPos: 'bottom-left' }));
+}
+// places tip to the right of and below the target, keyed off the bottom right corner 
+function assignTooltipsRight(selector, xOffset) {
+	setUpTooltips(selector, makeConf({ xOffset: xOffset, tipPos: 'top-left', targetPos: 'bottom-right' }));
 }
 
 /**
