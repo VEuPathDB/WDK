@@ -462,11 +462,14 @@ public class StepValidator extends BaseCLI {
             file = new File(name + "_" + count + ".log");
         }
         PrintWriter writer = new PrintWriter(new FileWriter(file));
+        writer.println("user_id\temail\tstrategy_id\tproject\tis_saved\tcreate_time\tlast_modified\tname");
 
         String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
-        String sql = "SELECT s.user_id, s.strategy_id, s.is_saved, s.name "
-                + "FROM " + strategyTable + " d, " + schema + "strategies s "
-                + "WHERE d.strategy_id = s.strategy_id";
+        String sql = "SELECT u.email, s.* FROM " + schema + "strategies s, "
+                + schema + "users u, " + strategyTable + " d "
+                + " WHERE d.strategy_id = s.strategy_id "
+                + "   AND s.user_id = u.user_id "
+                + " ORDER BY s.user_id ASC s.strategy_id ASC";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         ResultSet resultSet = null;
         try {
@@ -475,9 +478,17 @@ public class StepValidator extends BaseCLI {
             while (resultSet.next()) {
                 writer.print(resultSet.getInt("user_id"));
                 writer.print("\t");
+                writer.print(resultSet.getString("email"));
+                writer.print("\t");
                 writer.print(resultSet.getInt("strategy_id"));
                 writer.print("\t");
+                writer.println(resultSet.getString("project_id"));
+                writer.print("\t");
                 writer.print(resultSet.getBoolean("is_saved"));
+                writer.print("\t");
+                writer.print(resultSet.getDate("create_time"));
+                writer.print("\t");
+                writer.print(resultSet.getBoolean("last_modify_time"));
                 writer.print("\t");
                 writer.println(resultSet.getString("name"));
             }
