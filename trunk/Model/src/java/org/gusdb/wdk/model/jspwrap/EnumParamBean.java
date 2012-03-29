@@ -4,6 +4,7 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -132,14 +133,14 @@ public class EnumParamBean extends ParamBean {
         this.currentValues = currentValues;
     }
 
-    public String[] getInvalidValues() throws Exception {
-        if (currentValues == null) return new String[0];
-        List<String> invalidValues = new ArrayList<String>();
+    public Map<String, Boolean> getCurrentValues() throws Exception {
+        if (currentValues == null) return new LinkedHashMap<String, Boolean>();
+        Map<String, Boolean> values = new LinkedHashMap<String, Boolean>();
         Map<String, String> terms = param.getVocabMap();
         for (String term : currentValues) {
-            if (!terms.containsKey(term)) invalidValues.add(term);
+            values.put(term, terms.containsKey(term));
         }
-        return invalidValues.toArray(new String[0]);
+        return values;
     }
 
     public TreeNode getParamTree() throws Exception {

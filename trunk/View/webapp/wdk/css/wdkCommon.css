@@ -70,8 +70,14 @@ body { font-size: 12px; }
     clear: left;
 }
 
-.params .invalid-values { color:red; padding:5px; }
+.params .invalid-params { padding:10px 5px 5px 100px; font-weight: bold; }
+.params .invalid-params ul { list-style:disc outside none; margin:2px 2px 2px 15px; }
+.params .invalid-params li { color:red; }
+
+.params .invalid-values { padding:5px; font-weight: bold; }
 .params .invalid-values ul { list-style:disc outside none; margin:2px 2px 2px 15px; }
+.params .invalid-values li.invalid { color:red; }
+
 
 
 /*

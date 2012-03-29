@@ -17,8 +17,8 @@ public abstract class MapActionForm extends ActionForm {
     private static final long serialVersionUID = 1L;
     private static final Logger logger = Logger.getLogger(MapActionForm.class);
 
-    private Map<String, Object> values = new LinkedHashMap<String, Object>();
-    private Map<String, String[]> arrays = new LinkedHashMap<String, String[]>();
+    protected Map<String, Object> values = new LinkedHashMap<String, Object>();
+    protected Map<String, String[]> arrays = new LinkedHashMap<String, String[]>();
 
     public Object getValue(String key) {
         return values.get(key);
