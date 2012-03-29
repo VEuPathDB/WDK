@@ -121,6 +121,7 @@ public class ShowQuestionAction extends Action {
         logger.debug("strategy count: " + user.getStrategyCount());
 
         qForm.setServlet(servlet);
+        qForm.setQuestion(wdkQuestion);
 
         boolean hasAllParams = true;
         
@@ -143,6 +144,9 @@ public class ShowQuestionAction extends Action {
             
         // resolve the depended params
         wdkQuestion.resolveDependedParams(paramValues);
+
+        // get invalid params
+        request.setAttribute("invalidParams", qForm.getInvalidParams());
 
         // process each param
         for (ParamBean param : params) {

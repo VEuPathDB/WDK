@@ -1,6 +1,7 @@
 package org.gusdb.wdk.controller.action;
 
 import java.util.Map;
+import java.util.LinkedHashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -9,6 +10,7 @@ import org.apache.struts.action.ActionErrors;
 import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionMessage;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -184,5 +186,22 @@ public class QuestionForm extends MapActionForm {
      */
     public void setCustomName(String customName) {
         this.customName = customName;
+    }
+
+    public Map<String, String> getInvalidParams() throws WdkModelException {
+        QuestionBean question = getQuestion();
+        Map<String, ParamBean> params = question.getParamsMap();
+        Map<String, String> invalidParams = new LinkedHashMap<String, String>();
+        for (String param : values.keySet()) {
+            if (!params.containsKey(param))
+                invalidParams.put(param, values.get(param).toString());
+        }
+        for (String param : arrays.keySet()) {
+            if (!params.containsKey(param)) {
+                String value = Utilities.fromArray(arrays.get(param));
+                invalidParams.put(param, value);
+            }
+        }
+        return invalidParams;
     }
 }

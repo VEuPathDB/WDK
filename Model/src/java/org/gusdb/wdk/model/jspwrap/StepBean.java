@@ -10,6 +10,7 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -459,11 +460,13 @@ public class StepBean {
                 FlatVocabParam fvParam = (FlatVocabParam) param;
                 if (fvParam.getMultiPick()) values = paramValue.split(",");
             }
+            String wrapper = (param instanceof AbstractEnumParam) ? "array" : "value";
             // URL encode the values
             for (String value : values) {
+                
                 try {
-                    sb.append("&" + paramName + "="
-                            + URLEncoder.encode(value.trim(), "UTF-8"));
+                    String pName = URLEncoder.encode(wrapper + "(" + paramName + ")", "UTF-8");
+                    sb.append("&" + pName + "=" + URLEncoder.encode(value.trim(), "UTF-8"));
                 } catch (UnsupportedEncodingException ex) {
                     throw new WdkModelException(ex);
                 }
