@@ -1,6 +1,7 @@
 // cannot use $ for jQuery, since this script is also included in record page, 
 // and might have conflict if gbrowse is included.
 
+
 jQuery(document).ready(function(){
 	var firstType = jQuery(".menubar li a:first");
 	if (firstType.length > 0) {
@@ -75,11 +76,12 @@ function showInputBox(holder, type, callback){
 	if(type == 'group') {
 		var perc = 60;
 		var maxlen = 42;
+		jQuery(noteSpan).html("<input style='width:" + perc  + "%' type='text' name='favorite-" + type + "' value='" + value + "' maxlength='" + maxlen + "'/>");
 	}else{
 		var perc = 80;
 		var maxlen = 198;
+		jQuery(noteSpan).html("<textarea style='width:" + perc  + "%' name='favorite-" + type + "' class='input' cols=" + maxlen + "' rows='2'>" + value + "</textarea>");
 	}
-	jQuery(noteSpan).html("<input style='width:" + perc  + "%' type='text' name='favorite-" + type + "' value='" + value + "' maxlength='" + maxlen + "'/>");
 	jQuery(noteSpan).append("<input id='" + type + "_Save' type='button' value='Save'/>");
 	jQuery(noteSpan).append("<input id='" + type + "_Cancel' type='button' value='Cancel'/>");
 	jQuery("input#" + type + "_Save", noteSpan).click(function(){ 
@@ -115,8 +117,11 @@ function updateFavoriteNote(holder) {
 	var record = getRecord(holder);
     var rcName = jQuery(holder).parents(".wdk-record").attr("recordClass");
 	var noteSpan = jQuery(holder).parents("td").find("span.favorite-note");
-	var note = jQuery("input",noteSpan).val();
+//	var note = jQuery("input",noteSpan).val();
+	var note = jQuery("textarea",noteSpan).val();
 	var d = "action=note&note=" + note + "&type=" + rcName + "&data=" + record;
+alert(note);
+
 	jQuery.ajax({
 		url: "processFavorite.do",
 		data: d,
