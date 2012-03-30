@@ -774,3 +774,52 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
 .advanced-paging .submit {
 		float:right;
 }
+
+
+/* -----------------------------------------------------------------------------
+      = Styles for Tabs, in favorites and strategies
+ * -------------------------------------------------------------------------- */
+
+ul.menubar {
+    border-bottom: 1px solid;
+    list-style-image:none;
+    list-style-position:outside;
+    list-style-type:none;
+    float:left;
+    display:inline-block;
+    margin:0 0 5px;
+    padding:0 10px;
+    width: 98%;
+}
+
+.menubar li {;
+    float:left;
+    padding:0.24em 0;
+    margin:0;
+}
+
+.menubar li a {
+    color:black;
+    display:inline-block;
+    padding:0.24em 1em;
+    text-align:center;
+    text-decoration:none;
+}
+
+.menubar li a:hover {
+    color:black;
+    font-weight:bold;
+    padding:0.24em 0.8em;
+    position:relative;
+}
+
+.menubar .selected_type {
+    background-color: #FFFFA0;
+}
+
+.menubar .selected_type a {
+    color:black;
+    padding:0.24em 0.8em;
+    font-weight:bold;
+    position:relative;
+}
