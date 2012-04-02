@@ -1,6 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.io.File;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -8,7 +7,6 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -17,7 +15,6 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
-import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -84,34 +81,8 @@ public class ShowSummaryViewAction extends Action {
 
         ProcessPaging(request, step);
 
-        ActionForward forward;
-        if (view == null) { // no view is defined, fall back to the old ways
-            // this part of the code is deprecated, consider removal in the
-            // future.
-            ServletContext context = getServlet().getServletContext();
-            String baseFilePath = CConstants.WDK_CUSTOM_VIEW_DIR
-                    + File.separator + CConstants.WDK_PAGES_DIR
-                    + File.separator + CConstants.WDK_RESULTS_DIR;
-            String customViewFile1 = baseFilePath + File.separator
-                    + question.getFullName() + ".results.jsp";
-            String customViewFile2 = baseFilePath + File.separator
-                    + question.getFullName() + ".results.jsp";
-            String defaultViewFile = CConstants.WDK_DEFAULT_VIEW_DIR
-                    + File.separator + CConstants.WDK_PAGES_DIR
-                    + File.separator + CConstants.WDK_RESULTS_PAGE;
-
-            if (ApplicationInitListener.resourceExists(customViewFile1, context)) {
-                forward = new ActionForward(customViewFile1);
-            } else if (ApplicationInitListener.resourceExists(customViewFile2,
-                    context)) {
-                forward = new ActionForward(customViewFile2);
-            } else {
-                forward = new ActionForward(defaultViewFile);
-            }
-        } else {
-            logger.debug("view=" + view.getName() + ", jsp=" + view.getJsp());
-            forward = new ActionForward(view.getJsp());
-        }
+        logger.debug("view=" + view.getName() + ", jsp=" + view.getJsp());
+        ActionForward forward = new ActionForward(view.getJsp());
 
         logger.debug("Leaving ShowSummaryViewAction");
         return forward;

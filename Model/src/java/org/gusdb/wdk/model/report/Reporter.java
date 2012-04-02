@@ -191,8 +191,10 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
     /**
      * @return
+     * @throws WdkUserException 
+     * @throws WdkModelException 
      */
-    protected Map<String, AttributeField> getSummaryAttributes() {
+    protected Map<String, AttributeField> getSummaryAttributes() throws WdkModelException, WdkUserException {
         return baseAnswer.getSummaryAttributeFieldMap();
     }
 
