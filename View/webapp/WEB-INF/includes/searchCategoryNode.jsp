@@ -23,7 +23,7 @@
           <li>
             <c:url var="questionUrl" value="/showQuestion.do?questionFullName=${question.fullName}"/>
             <c:set var="newIcon">
-              <c:if test="${question.new}"><img src="<c:url value='/wdk/images/new-feature.png' />" /></c:if>
+              <c:if test="${question.new}"><img alt="New feature icon" title="This is a new search" src="<c:url value='/wdk/images/new-feature.png' />" /></c:if>
             </c:set>
             <a href="${questionUrl}"><span>${newIcon} ${question.displayName}</span></a>
           </li>
