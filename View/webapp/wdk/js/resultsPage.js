@@ -80,7 +80,7 @@ function moveAttr(col_ix, table) {
 }
 
 function updateAttrs(attrSelector, commandUrl) {
-    var form = $(attrSelector);
+    var form = $(attrSelector).parents().parents("form");
     var selected = $("input:checked",form);
     var attributes = [];
 
@@ -267,20 +267,25 @@ function gotoPage(element) {
     GetResultsPage(gotoPageUrl, true, true);
 }
 
+function openAttributeList(element){
+    openBlockingDialog("#" + getDialogId(element, "attributesList"));
+}
+
 function openAdvancedPaging(element){
-	$("#" + getDialogId(element, "advanced-paging")).dialog("open");
+    openBlockingDialog("#" + getDialogId(element, "advanced-paging"));
 }
 
 function closeAdvancedPaging(submitObj) {
-	$(submitObj).parents(".advanced-paging").dialog("close");
+    $(submitObj).parents(".advanced-paging").dialog("close");
 }
 
-function openAttributeList(element){
-    $("#" + getDialogId(element, "attributesList")).dialog("open");
+function openBlockingDialog(selector) {
+    $(selector).dialog({ modal: true });
+    $(selector).dialog("open");
 }
 
 function getDialogId(element, dialogClass) {
-	var list = $(element).next("." + dialogClass);
+    var list = $(element).next("." + dialogClass);
     if (list.length > 0) {
         var id = "dialog" + Math.floor(Math.random() * 1000000000);
         $(element).attr("dialog", id);
@@ -306,64 +311,24 @@ function toggleAttributes(from) {
    }
 }
 
-/* This code should be removed as soon as we get approval for the alternate
- * solution.  If you find this code later than 4/2012, please delete.
-function assignAttributePluginTip(selector) {
-    $(selector)
-      .qtip({
-    	  position: {
-	        my: 'top-right',
-	        at: 'bottom-center'
-	      },
-          show: {
-              solo: true,
-              event: 'click'
-          },
-          hide: {
-              event: 'click'
-          },
-          events: {
-              show: setHideTipEvents
-          }
-      })
-      .removeData('qtip') // clears data from target so second tooltip can be applied
-      .qtip({
-    	  position: {
-  	        my: 'top-right',
-  	        at: 'bottom-center'
-  	      },
-          content: '<h4>Analyze/Graph the contents of this column</h4>',
-          show: { solo: true }
-      });
-}
-*/
-
 function invokeAttributePlugin(ele, stepId, attributeName) {
     var pluginName = $(ele).attr("plugin");
-    var title = $(ele).html();
-    var plugins = $(ele).parents(".plugins");
+    var title = $(ele).attr("plugintitle");
     var url = "invokeAttributePlugin.do?step=" + stepId + "&attribute=" + attributeName + "&plugin=" + pluginName;    
     $.ajax({
         url: url,
         dataType: "html",
-        beforeSend: function(){
-            plugins.hide();
-            $("body").block();
-        },
-        success: function(data){
+        success: function(data) {
             // create a place holder for the result
-            if ($("#attribute-plugin-result").length == 0)
+            if ($("#attribute-plugin-result").length == 0) {
                 $("body").append("<div id=\"attribute-plugin-result\"> </div>");
+            }
             $("#attribute-plugin-result")
                 .html(data)
                 .dialog({ width : 825,
                           maxHeight: 800,
-                          title : title
-                });
-            $("body").unblock();
-        },
-        error: function() {
-            $("body").unblock();
+                          title : title,
+                          modal : true });
         }
     });
 }

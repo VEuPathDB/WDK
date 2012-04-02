@@ -136,7 +136,7 @@ public class TabularReporter extends Reporter {
         }
     }
 
-    private Set<AttributeField> validateColumns() throws WdkModelException {
+    private Set<AttributeField> validateColumns() throws WdkModelException, WdkUserException {
         // the config map contains a list of column names;
         Map<String, AttributeField> summary = getSummaryAttributes();
         Set<AttributeField> columns = new LinkedHashSet<AttributeField>();

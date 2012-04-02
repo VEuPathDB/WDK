@@ -72,8 +72,6 @@ public class AnswerValueTest {
             String[] summaryList = new String[list.size()];
             list.toArray(summaryList);
 
-            answerValue.setSummaryAttributes(summaryList);
-
             summaryFields = answerValue.getSummaryAttributeFieldMap();
 
             for (String name : summaryList) {
@@ -106,8 +104,6 @@ public class AnswerValueTest {
         }
         String[] summaryList = new String[list.size()];
         list.toArray(summaryList);
-
-        answerValue.setSummaryAttributes(summaryList);
 
         displayFields = answerValue.getDisplayableAttributeMap();
         summaryFields = answerValue.getSummaryAttributeFieldMap();

@@ -113,15 +113,11 @@ public class StepFactory {
         // get summary list and sorting list
         String questionName = question.getFullName();
         Map<String, Boolean> sortingAttributes = user.getSortingAttributes(questionName);
-        String[] summaryAttributes = user.getSummaryAttributes(questionName);
 
         // create answer
         AnswerValue answerValue = question.makeAnswerValue(user,
                 dependentValues, pageStart, pageEnd, sortingAttributes, filter,
                 validate, assignedWeight);
-        if (summaryAttributes != null) {
-            answerValue.setSummaryAttributes(summaryAttributes);
-        }
         Answer answer = answerValue.getAnswer();
 
         logger.debug("id query name  :"
