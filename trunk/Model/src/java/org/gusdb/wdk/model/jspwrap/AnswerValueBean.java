@@ -241,7 +241,7 @@ public class AnswerValueBean {
         this.downloadConfigMap = downloadConfigMap;
     }
 
-    public AttributeFieldBean[] getSummaryAttributes() {
+    public AttributeFieldBean[] getSummaryAttributes() throws WdkModelException, WdkUserException {
         Map<String, AttributeField> attribs = answerValue.getSummaryAttributeFieldMap();
         AttributeFieldBean[] beans = new AttributeFieldBean[attribs.size()];
         int index = 0;
@@ -252,7 +252,7 @@ public class AnswerValueBean {
         return beans;
     }
 
-    public String[] getSummaryAttributeNames() {
+    public String[] getSummaryAttributeNames() throws WdkModelException, WdkUserException {
         AttributeFieldBean[] sumAttribs = getSummaryAttributes();
         String[] names = new String[sumAttribs.length];
         for (int i = 0; i < sumAttribs.length; i++) {
@@ -261,7 +261,7 @@ public class AnswerValueBean {
         return names;
     }
 
-    public AttributeFieldBean[] getDownloadAttributes() {
+    public AttributeFieldBean[] getDownloadAttributes() throws WdkModelException, WdkUserException {
         AttributeFieldBean[] sumAttribs = getSummaryAttributes();
         if (downloadConfigMap == null || downloadConfigMap.size() == 0) {
             return sumAttribs;
@@ -314,7 +314,7 @@ public class AnswerValueBean {
         return rmTables;
     }
 
-    public String[] getDownloadAttributeNames() {
+    public String[] getDownloadAttributeNames() throws WdkModelException, WdkUserException {
         AttributeFieldBean[] downloadAttribs = getDownloadAttributes();
         Vector<String> v = new Vector<String>();
         for (int i = 0; i < downloadAttribs.length; i++) {
@@ -426,20 +426,12 @@ public class AnswerValueBean {
         return fieldBeans;
     }
 
-    public TreeNode getDisplayableAttributeTree() throws WdkModelException {
+    public TreeNode getDisplayableAttributeTree() throws WdkModelException, WdkUserException {
     	return answerValue.getDisplayableAttributeTree();
     }
 
-    public TreeNode getReportMakerAttributeTree() throws WdkModelException {
+    public TreeNode getReportMakerAttributeTree() throws WdkModelException, WdkUserException {
     	return answerValue.getReportMakerAttributeTree();
-    }
-    
-    /**
-     * @param attributeName
-     * @see org.gusdb.wdk.model.AnswerValue#addSumaryAttribute(java.lang.String)
-     */
-    public void setSumaryAttribute(String[] attributeNames) {
-        answerValue.setSummaryAttributes(attributeNames);
     }
 
     public void setFilter(String filterName) throws WdkModelException {

@@ -90,11 +90,6 @@ public class User /* implements Serializable */{
     private Integer frontStrategy = null;
     private Integer frontStep = null;
 
-    /**
-     * cache the last step. This data may have impact on the memory usage.
-     */
-    private Step cachedStep;
-
     User(WdkModel model, int userId, String email, String signature)
             throws WdkUserException {
         this.userId = userId;
@@ -779,15 +774,7 @@ public class User /* implements Serializable */{
     public Step getStep(int displayId) throws WdkUserException,
             WdkModelException, SQLException, JSONException,
             NoSuchAlgorithmException {
-        // if (cachedStep == null || cachedStep.getDisplayId() != displayId) {
-        cachedStep = stepFactory.loadStep(this, displayId);
-        // } else { // update the sorting and summary attributes
-        // AnswerValue answerValue = cachedStep.getAnswer().getAnswerValue();
-        // String questionName = answerValue.getQuestion().getFullName();
-        // answerValue.setSortingMap(getSortingAttributes(questionName));
-        // answerValue.setSumaryAttributes(getSummaryAttributes(questionName));
-        // }
-        return cachedStep;
+        return stepFactory.loadStep(this, displayId);
     }
 
     public Strategy getStrategy(int userStrategyId) throws WdkUserException,
@@ -810,7 +797,6 @@ public class User /* implements Serializable */{
     public void deleteSteps(boolean allProjects) throws WdkUserException,
             SQLException, WdkModelException {
         stepFactory.deleteSteps(this, allProjects);
-        cachedStep = null;
     }
 
     public void deleteInvalidSteps() throws WdkUserException,
@@ -828,9 +814,6 @@ public class User /* implements Serializable */{
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException {
         stepFactory.deleteStep(this, displayId);
-        // decrement the history count
-        if (cachedStep != null && cachedStep.getDisplayId() == displayId)
-            cachedStep = null;
     }
 
     public void deleteStrategy(int strategyId) throws WdkUserException,
@@ -1065,13 +1048,6 @@ public class User /* implements Serializable */{
         String sortingChecksum = queryFactory.makeSortingChecksum(sortingMap);
 
         applySortingChecksum(questionFullName, sortingChecksum);
-
-        // update cached step if needed
-        if (cachedStep != null
-                && cachedStep.getQuestionName().equals(questionFullName)) {
-            cachedStep.getAnswerValue().setSortingMap(sortingMap);
-        }
-
         return sortingChecksum;
     }
 
@@ -1082,8 +1058,7 @@ public class User /* implements Serializable */{
     }
 
     public String[] getSummaryAttributes(String questionFullName)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException {
+            throws WdkUserException, WdkModelException {
         Question question = wdkModel.getQuestion(questionFullName);
 
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
@@ -1165,13 +1140,6 @@ public class User /* implements Serializable */{
         String summaryChecksum = queryFactory.makeSummaryChecksum(summaryNames);
 
         applySummaryChecksum(questionFullName, summaryChecksum);
-
-        // update cached step if needed
-        if (cachedStep != null
-                && cachedStep.getQuestionName().equals(questionFullName)) {
-            cachedStep.getAnswerValue().setSummaryAttributes(summaryNames);
-        }
-
         return summaryChecksum;
     }
 

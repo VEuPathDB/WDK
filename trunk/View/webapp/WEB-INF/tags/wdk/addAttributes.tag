@@ -21,9 +21,9 @@
 <div class="attributesList formPopup" title="Select Columns">
 
   <div class="attributesFormWrapper">
-  <form action="javascript:void(0);" onSubmit="updateAttrs(this,'${commandUrl}')">
+  <form>
     <div class="formButtonPanel">
-      <input type="submit" value="Update Columns"/>
+      <input type="button" value="Update Columns" onclick="updateAttrs(this,'${commandUrl}')"/>
     </div>
     <c:if test="${wdkAnswer.useCheckboxTree}">
       <c:set var="checkboxTreeId" value="sfcbt-${wdkAnswer.recordClass.name}-${idgen.nextId}"/>
@@ -73,7 +73,7 @@
       </div>
     </c:if>
     <div class="formButtonPanel">
-      <input type="submit" value="Update Columns"/>
+      <input type="button" value="Update Columns" onclick="updateAttrs(this,'${commandUrl}')"/>
     </div>
   </form>
   </div>

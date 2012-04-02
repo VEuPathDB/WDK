@@ -38,7 +38,6 @@ public class UserBean /* implements Serializable */{
     private static Logger logger = Logger.getLogger(UserBean.class);
 
     private User user;
-    private StepBean latestStep;
 
     private int stepId;
 
@@ -652,8 +651,7 @@ public class UserBean /* implements Serializable */{
             SQLException {
         Step step = user.createStep(question.question, params, filterName,
                 deleted, validate, assignedWeight);
-        latestStep = new StepBean(this, step);
-        return latestStep;
+        return new StepBean(this, step);
     }
 
     /*
@@ -806,9 +804,8 @@ public class UserBean /* implements Serializable */{
     public StepBean combineStep(String expression, boolean useBooleanFilter)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        latestStep = new StepBean(this, user.combineStep(expression,
+        return new StepBean(this, user.combineStep(expression,
                 useBooleanFilter, false));
-        return latestStep;
     }
 
     /*
@@ -1189,11 +1186,7 @@ public class UserBean /* implements Serializable */{
     public StepBean getStep(int displayId) throws WdkUserException,
             WdkModelException, SQLException, JSONException,
             NoSuchAlgorithmException {
-        if (latestStep != null && latestStep.getStepId() == displayId)
-            return latestStep;
-        ;
-        latestStep = new StepBean(this, user.getStep(displayId));
-        return latestStep;
+        return new StepBean(this, user.getStep(displayId));
     }
 
     /**
@@ -1219,8 +1212,7 @@ public class UserBean /* implements Serializable */{
             JSONException {
         Step step = user.createBooleanStep(previousStep.step, childStep.step,
                 operator, useBooleanFilter, filterName);
-        latestStep = new StepBean(this, step);
-        return latestStep;
+        return new StepBean(this, step);
     }
 
     public void setViewResults(String strategyKey, int stepId,

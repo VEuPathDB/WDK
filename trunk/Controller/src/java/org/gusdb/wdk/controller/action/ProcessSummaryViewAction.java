@@ -105,14 +105,12 @@ public class ProcessSummaryViewAction extends Action {
                 if (command.equalsIgnoreCase("update")) {
                     List<String> attributeNamesList = new ArrayList<String>(
                             Arrays.asList(attributeNames));
-                    System.out.println("Summary list: " + summaryList);
                     for (String summaryName : summary) {
                         if (attributeNamesList.contains(summaryName)) {
                             summaryList.add(summaryName);
                             attributeNamesList.remove(summaryName);
                         }
                     }
-                    logger.debug("Old Summary list: " + summaryList);
                     for (String attrName : attributeNamesList) {
                         summaryList.add(attrName);
                     }
@@ -148,7 +146,6 @@ public class ProcessSummaryViewAction extends Action {
                                 + command);
                     }
                 }
-                logger.debug("New Summary list: " + summaryList);
 
                 summary = new String[summaryList.size()];
                 summaryList.toArray(summary);

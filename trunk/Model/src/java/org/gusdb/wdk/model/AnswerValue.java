@@ -106,7 +106,6 @@ public class AnswerValue {
     private Map<String, Integer> resultSizesByProject;
 
     private Map<String, Boolean> sortingMap;
-    private Map<String, AttributeField> summaryFieldMap;
 
     private AnswerFilterInstance filter;
 
@@ -148,7 +147,6 @@ public class AnswerValue {
         // get sorting columns
         if (sortingMap == null) sortingMap = question.getSortingAttributeMap();
         this.sortingMap = sortingMap;
-        this.summaryFieldMap = new LinkedHashMap<String, AttributeField>();
 
         // get the view
         this.filter = filter;
@@ -182,8 +180,6 @@ public class AnswerValue {
 
         this.sortingMap = new LinkedHashMap<String, Boolean>(
                 answerValue.sortingMap);
-        this.summaryFieldMap = new LinkedHashMap<String, AttributeField>(
-                answerValue.summaryFieldMap);
         this.filter = answerValue.filter;
     }
 
@@ -955,7 +951,7 @@ public class AnswerValue {
 
         if (expected != pageRecordInstances.size()) {
             StringBuffer buffer = new StringBuffer();
-            for (String name : summaryFieldMap.keySet()) {
+            for (String name : getSummaryAttributeFieldMap().keySet()) {
                 if (buffer.length() > 0) buffer.append(", ");
                 buffer.append(name);
             }
@@ -1066,15 +1062,16 @@ public class AnswerValue {
         return displayAttributes;
     }
 
-    public TreeNode getDisplayableAttributeTree() throws WdkModelException {
+    public TreeNode getDisplayableAttributeTree() throws WdkModelException, WdkUserException {
         return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.NON_INTERNAL));
     }
 
-    public TreeNode getReportMakerAttributeTree() throws WdkModelException {
+    public TreeNode getReportMakerAttributeTree() throws WdkModelException, WdkUserException {
         return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.REPORT_MAKER));
     }
 
-    private TreeNode convertAttributeTree(AttributeCategoryTree rawAttributeTree) {
+    private TreeNode convertAttributeTree(AttributeCategoryTree rawAttributeTree)
+    		throws WdkModelException, WdkUserException {
         TreeNode root = rawAttributeTree.toTreeNode("category root",
                 "Attribute Categories");
         List<String> currentlySelectedFields = new ArrayList<String>();
@@ -1087,30 +1084,28 @@ public class AnswerValue {
         return root;
     }
 
-    public Map<String, AttributeField> getSummaryAttributeFieldMap() {
-        Map<String, AttributeField> fields;
-        if (summaryFieldMap.size() > 0) {
-            fields = new LinkedHashMap<String, AttributeField>(summaryFieldMap);
-        } else fields = question.getSummaryAttributeFieldMap();
-        return fields;
-    }
 
-    public void setSummaryAttributes(String[] attributeNames) {
-        if (attributeNames == null) {
-            this.summaryFieldMap.clear();
-            return;
-        }
+    //private Map<String, AttributeField> summaryFieldMap;
+    //this.summaryFieldMap = new LinkedHashMap<String, AttributeField>();
+    
+    public Map<String, AttributeField> getSummaryAttributeFieldMap()
+    		throws WdkModelException, WdkUserException {
+        
+    	// get preferred attribs from user and initialize map
+    	String[] userPrefAttributes = user.getSummaryAttributes(question.getFullName());
         Map<String, AttributeField> summaryFields = new LinkedHashMap<String, AttributeField>();
+        
         // always put the primary key as the first attribute
         PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
         summaryFields.put(pkField.getName(), pkField);
-        Map<String, AttributeField> fields = question.getAttributeFieldMap();
-        for (String attributeName : attributeNames) {
-            AttributeField field = fields.get(attributeName);
+
+        // add remainder of attributes to map and return
+        Map<String, AttributeField> allFields = question.getAttributeFieldMap();
+        for (String attributeName : userPrefAttributes) {
+            AttributeField field = allFields.get(attributeName);
             if (field != null) summaryFields.put(attributeName, field);
         }
-        summaryFieldMap.clear();
-        summaryFieldMap.putAll(summaryFields);
+        return summaryFields;
     }
 
     /**
