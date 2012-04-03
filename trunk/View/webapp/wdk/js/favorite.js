@@ -120,7 +120,7 @@ function updateFavoriteNote(holder) {
 //	var note = jQuery("input",noteSpan).val();
 	var note = jQuery("textarea",noteSpan).val();
 	var d = "action=note&note=" + note + "&type=" + rcName + "&data=" + record;
-alert(note);
+//alert(note);
 
 	jQuery.ajax({
 		url: "processFavorite.do",
