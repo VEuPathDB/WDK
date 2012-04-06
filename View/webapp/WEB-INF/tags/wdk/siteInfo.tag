@@ -1,8 +1,9 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
-<%-- this comes from Workspace.jsp; since it is generic enough to be used in any page, we move it here --%>
+<%-- some of this comes from Workspace.jsp; since it is generic enough to be used in any page, we move it here --%>
 
+<c:set var="siteName" value="${applicationScope.wdkModel.name}" />
 <c:set var="scheme" value="${pageContext.request.scheme}" />
 <c:set var="serverName" value="${pageContext.request.serverName}" />
 <c:set var="request_uri" value="${requestScope['javax.servlet.forward.request_uri']}" />
@@ -27,7 +28,7 @@
 			isGuest="${wdkUser.guest}">
 </div>
 </div>
-<%--
+<!-- testing function in wdkCommon.js -->
 <script type="text/javascript">
    	var temp=new wdkUser();
 	alert(temp.id + "," + temp.name + "," + temp.country + "," + temp.email + "," + temp.isGuest);
