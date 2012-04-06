@@ -28,10 +28,11 @@
 			isGuest="${wdkUser.guest}">
 </div>
 </div>
-<!-- testing function in wdkCommon.js -->
+
+<!-- testing function in wdkCommon.js
 <script type="text/javascript">
    	var temp=new wdkUser();
 	alert(temp.id + "," + temp.name + "," + temp.country + "," + temp.email + "," + temp.isGuest);
 </script>
---%>
+-->
 
