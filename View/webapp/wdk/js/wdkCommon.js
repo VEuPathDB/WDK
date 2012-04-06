@@ -7,6 +7,29 @@ jQuery(document).ready(function() {
     if (window.wdk == undefined) window.wdk = new WDK();
 });
 
+//some helper functions
+function guestUser() {
+	var guestUser = $("#guestUser").attr("name");
+	return guestUser;
+}
+function exportBaseURL() {
+	var exportBaseURL = $("#exportBaseURL").attr("name");
+	return exportBaseURL;
+}
+function modelName() {
+	var modelName = $("#modelName").attr("name");
+	return modelName;
+}
+
+function wdkUser() {
+	this.id = $("#wdk-userinfo").attr("user-id");
+	this.name = $("#wdk-userinfo").attr("name");
+	this.country = $("#wdk-userinfo").attr("country");
+	this.email = $("#wdk-userinfo").attr("email");
+	this.isGuest = $("#wdk-userinfo").attr("isGuest");
+}
+
+
 function WDK() {
 
     this.initialize = function() {
