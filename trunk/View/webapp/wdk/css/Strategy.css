@@ -113,12 +113,14 @@ div.sub_diagram {
   position: relative;
 }
   
-//what is this for??
+/*  what is this for??
 .diagram div li {
-//  position: absolute;
-//  margin:   0.8em;
-//  padding:  0;
+  position: absolute;
+  margin:   0.8em;
+  padding:  0;
 }
+*/
+
 
 /* State names will be centered within their boxes. */
 .diagram h4 {
@@ -417,7 +419,7 @@ div.transform a.crumb_name img{
   color: #000000;
   border: solid black;
   position:absolute;
-  z-index: 495;  //1000; so menubar menus appear on top
+  z-index: 495;  /*  1000; so menubar menus appear on top */
   text-align: center;
   padding-bottom: 5px;
   min-width: 550px;   /* this allows for some space between Delete and X */
@@ -571,7 +573,7 @@ span.closeStrategy {
   position: absolute;
   right: 5em;
   top: 4em;
-//  width: 23em;
+/*   width: 23em;  */
 }
 
 .save_strat .dragHandle .modal_name {
@@ -656,7 +658,7 @@ b.strat_help_title > span {
 	background-position: 0 26px;   /* was 36px, decreased to have Add Step title thiner */
 	border: 1px solid #888888;	
 	padding: 0 8px 8px 8px;
-	z-index: 490;  //  999; ; so menubar menus appear on top, but under Details box
+	z-index: 490;  /*  999; ; so menubar menus appear on top, but under Details box  */
 }
 
 #query_form form {
@@ -930,7 +932,7 @@ div.bottom-close{
 }
 
 table.history_controls {
-//  display:inline-block;
+/*  display:inline-block; */
  font-size:130%;
    font-weight:bold;
    padding:3px 0px;
