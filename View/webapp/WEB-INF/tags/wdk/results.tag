@@ -3,20 +3,16 @@
 <%@ taglib prefix="pg" uri="http://jsptags.com/tags/navigation/pager" %>
 <%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
-
 <%@ attribute name="strategy"
               type="org.gusdb.wdk.model.jspwrap.StrategyBean"
               required="true"
               description="Strategy bean we are looking at"
 %>
-
-
 <%@ attribute name="step"
               type="org.gusdb.wdk.model.jspwrap.StepBean"
               required="true"
               description="Step bean we are looking at"
 %>
-
 
 <c:set var="wdkModel" value="${applicationScope.wdkModel}" />
 <c:set var="wdkUser" value="${sessionScope.wdkUser}" />
@@ -27,18 +23,13 @@
 <c:set var="recordName" value="${recordClass.fullName}" />
 <c:set var="recHasBasket" value="${recordClass.useBasket}" />
 
-
 <jsp:useBean id="typeMap" class="java.util.HashMap"/>
 <c:set target="${typeMap}" property="singular" value="${wdkStep.displayType}"/>
 <imp:getPlural pluralMap="${typeMap}"/>
 <c:set var="type" value="${typeMap['plural']}"/>
 
-<c:if test="${strategy != null}">
-    <imp:filterLayouts strategyId="${strategy.strategyId}" 
-                     stepId="${step.stepId}"
-                     answerValue="${wdkAnswer}" />
-</c:if>
 
+<!-- ================ TAG SHARED BY BASKET AND OPENED TABS =============== -->
 <!-- handle empty result set situation -->
 <c:choose>
   <c:when test='${strategy == null && wdkUser.guest && wdkAnswer.resultSize == 0}'>
@@ -49,7 +40,9 @@
   </c:when>
   <c:otherwise>
 
-<table width="100%"><tr>
+
+<!-- ================ RESULTS TITLE AND LINKS TO NASKET AND DOWNLOADS   =============== -->
+<table id = "title-links" width="100%"><tr>
 <td class="h3left" style="vertical-align:middle;padding-bottom:7px;">
     <c:if test="${strategy != null}">
         <span id="text_strategy_number">${strategy.name}</span> 
@@ -80,7 +73,15 @@
 </td>
 </tr></table>
 
+<!-- ================ FILTERS DEFINED IN MODEL.XML =============== -->
+<c:if test="${strategy != null}">
+    <imp:filterLayouts strategyId="${strategy.strategyId}" 
+                     stepId="${step.stepId}"
+                     answerValue="${wdkAnswer}" />
+</c:if>
 
+
+<!-- ================ SUMMARY VIEWS (EXTRA TABS DEFINED IN MODEL.XML)  =============== -->
 <%-- display view list --%>
 <script>
 $(function() {

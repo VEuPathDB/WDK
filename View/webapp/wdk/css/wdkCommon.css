@@ -387,7 +387,8 @@ table.results {
 
 tr.subheaderrow th {
 	padding: 0px;  /* not needed in paging bar */
-	border-width: 2px 0 2px 0;
+/*	border-width: 2px 0 2px 0; */
+	border: 0;
 	border-style: solid;
 }
 
@@ -486,10 +487,6 @@ a.redbutton:active span {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 div.Workspace {
    position: relative;
-   /* z-index was 50 originally, then moved to 16 so "Select columns" popup covered the
-      steps in the strategy but still is under DYK at 180.  Changed to 185 so Columns pop-up
-      appeared over DYK. */
-   /*z-index: 185; */
 }
 
 span.marker a:link, span.marker a:visited {
@@ -653,20 +650,27 @@ tr.headerRow > td,th {
 	margin-bottom: 15px;
 }
 
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     = jquery css
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+.ui-tabs .ui-tabs-panel {
+	padding:0.5em 0.5em 0.5em;
+	border-width: 0 1px 1px;
+}
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       = Basket Tab Styles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-#basket-menu .ui-tabs-panel{
+#basket-menu > .ui-tabs-panel{
 	border-width:0 1px 1px;
-	padding:0;
+	padding:0; 
 }
 
 #basket #basket-control-panel { display: none; }
 
 #basket table#basket-control {
-	margin-bottom: 1px;
+/*	margin-bottom: 1px; */
 	margin-left:2px;
 	clear: both;
 	font-size:85%;
@@ -822,4 +826,16 @@ ul.menubar {
     padding:0.24em 0.8em;
     font-weight:bold;
     position:relative;
+}
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      = Result and basket title and links
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+div#strategy_results table#title-links {
+	background-color:#FFFFA0;
+}
+table#title-links {
+	font-size:12px; /*we need to figure out why the font size in this table becomes different when used in basket vs results table */
+}
+div#Summary_Views {
+	border:0;
 }
