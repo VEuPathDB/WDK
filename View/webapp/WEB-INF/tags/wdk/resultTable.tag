@@ -3,14 +3,11 @@
 <%@ taglib prefix="pg" uri="http://jsptags.com/tags/navigation/pager" %>
 <%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
 
-
-
 <%@ attribute name="step"
               type="org.gusdb.wdk.model.jspwrap.StepBean"
               required="true"
               description="Step bean we are looking at"
 %>
-
 
 <c:set var="wdkAnswer" value="${step.answerValue}"/>
 <c:set var="qName" value="${wdkAnswer.question.fullName}" />
@@ -21,19 +18,16 @@
 <c:set var="answerRecords" value="${wdkAnswer.records}" />
 <c:set var="wdkView" value="${requestScope.wdkView}" />
 
-
 <jsp:useBean id="typeMap" class="java.util.HashMap"/>
 <c:set target="${typeMap}" property="singular" value="${step.displayType}"/>
 <wdk:getPlural pluralMap="${typeMap}"/>
 <c:set var="type" value="${typeMap['plural']}"/>
-
 
 <c:choose>
   <c:when test='${wdkAnswer.resultSize == 0}'>
         No results are retrieved
   </c:when>
   <c:otherwise>
-
 
 <!-- pager -->
 <pg:pager isOffset="true"
@@ -55,7 +49,7 @@
 
 <%--------- PAGING TOP BAR ----------%>
 <c:url var="commandUrl" value="/processSummaryView.do?step=${step.stepId}&view=${wdkView.name}" />
-<table width="100%" border="0" cellpadding="3" cellspacing="0">
+<table  width="100%">
 	<tr class="subheaderrow">
 	<th style="text-align: left;white-space:nowrap;"> 
 	       <wdk:pager wdkAnswer="${wdkAnswer}" pager_id="top"/> 
@@ -82,7 +76,7 @@
 <div class="Results_Div flexigrid">
 <div class="bDiv">
 <div class="bDivBox">
-<table class="Results_Table" width="100%" border="0" cellpadding="3" cellspacing="0" step="${step.stepId}">
+<table  width="100%" class="Results_Table" step="${step.stepId}">
 <thead>
 <tr class="headerrow">
             <c:if test="${recHasBasket}">
@@ -285,7 +279,7 @@
 <%--------- END OF RESULTS  ----------%>
 
 <%--------- PAGING BOTTOM BAR ----------%>
-<table width="100%" border="0" cellpadding="3" cellspacing="0">
+<table width="100%">
 	<tr class="subheaderrow">
 	<th style="text-align:left;white-space:nowrap;"> 
 	       <wdk:pager wdkAnswer="${wdkAnswer}" pager_id="bottom"/> 

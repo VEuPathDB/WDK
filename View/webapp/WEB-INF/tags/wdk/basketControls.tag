@@ -27,7 +27,7 @@
 <table align="right">
 <tr>
     <td style="text-align:right;padding:3px 0 0;vertical-align:top">
-	<span style="color:darkred;font-style:italic;margin-bottom:7px;margin-right:5px;position:relative;right:5px;"><b>Note on new releases:</b> Annotation changes might make IDs in your baskets outdated. <br>We will map your old IDs to new IDs. Unmapped IDs will not be in the basket.<br>To keep a copy of your current basket please download your IDs.</span>
+	<span style="color:darkred;font-style:italic;margin-bottom:7px;margin-right:5px;position:relative;right:5px;"><b>Note on new releases:</b> Annotation changes might make IDs in your baskets outdated. <br>We will map your old IDs to new IDs. Unmapped IDs will not be in the basket.<br>To keep a copy of your current basket please download your IDs now.</span>
     </td>
 </tr>
 </table>

@@ -26,7 +26,9 @@
 
 <c:set var="recordClass" value="${answerValue.recordClass}" />
 
+<!-- already in includes.tag
 <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkFilter.css' />">
+-->
 
 <c:forEach items="${recordClass.filterLayouts}" var="layout">
     <div class="filter-layout" id="${layout.name}">
