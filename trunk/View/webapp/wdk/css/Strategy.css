@@ -932,10 +932,9 @@ div.bottom-close{
 }
 
 table.history_controls {
-/*  display:inline-block; */
- font-size:130%;
+   font-size:130%;
    font-weight:bold;
-   padding:3px 0px;
+   margin-top:1em;
 }
 #invalid-step-text{
   background-color:#FFFFFF;
@@ -948,6 +947,7 @@ border-color:grey;
 }
 #invalid-legend{
     font-weight:normal;
+font-size:75%;font-style:italic;color:darkred;
 }
 #strategy_messages {
   min-height:100px;
