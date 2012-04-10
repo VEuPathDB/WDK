@@ -37,19 +37,20 @@
   </c:when>
   <c:otherwise>
 
-<!-- to make appear on a popup probably -->
-<div style="text-align:center;font-size:95%;font-style:italic;margin-bottom:7px;border:1px outset darkred;padding:3px;color:darkred">
-<b>Important note on new releases:</b> About every 2 months we release new data or annotation (latest release ${releaseDate_formatted}.)
-<br>The IDs in <b>any step result might change</b> after a release.
-</div>
+<script>
+$(function() {
+	$( ".tabs" ).tabs();
+});
+$(function() {
+	$( "#dialog" ).dialog({ autoOpen: false });
+});
+</script>
 
-
-  <c:set var="typeC" value="0"/>
-  <!-- begin creating tabs for history sections -->
-  <ul class="menubar">
+<div style="border:0;" id="history-menu" class="tabs">
+<ul class="menubar">
 
 <!-- the order of tabs is determined in apicommonmodel.xml -->
-  <c:forEach items="${unsavedStrategiesMap}" var="strategyEntry">
+<c:forEach items="${unsavedStrategiesMap}" var="strategyEntry">
     <c:set var="type" value="${strategyEntry.key}"/>
     <c:set var="unsavedStratList" value="${strategyEntry.value}"/>
     <c:set var="savedStratList" value="${savedStrategiesMap[type]}" />
@@ -66,44 +67,58 @@
       <c:set var="recDispName" value="${strat.displayType}"/>
       <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
 
-      <c:set var="typeC" value="${typeC+1}"/>
-      <c:if test="${typeC != 1}">
-        <li>|</li>
-      </c:if>
       <li>
         <a id="tab_${recTabName}" onclick="displayHist('${recTabName}')"
-           href="javascript:void(0)">${recDispName}&nbsp;Strategies&nbsp;(${totalStratsCount})</a>
+           href=".tab_${recTabName}">${recDispName}&nbsp;Strategies&nbsp;(${totalStratsCount})</a>
       </li>
     </c:if>
-  </c:forEach>
+</c:forEach>
 
   <c:if test="${fn:length(invalidStrategies) > 0}">
     <li>
       <a id="tab_invalid" onclick="displayHist('invalid')"
        href="javascript:void(0)">Invalid&nbsp;Strategies</a></li>
   </c:if>
-  <%-- <li class="cmplt_hist_link">
-    <a id="tab_cmplt" onclick="displayHist('cmplt')" href="javascript:void(0)">All My Queries</a>
-  </li> --%>
+
   </ul>
 
+</div>
+
+
 <table class="history_controls clear" width="100%">
-   <tr>
-      <td width="30%">Select:&nbsp;<a class="check_toggle" onclick="selectAllHist()" href="javascript:void(0)">All</a>&nbsp|&nbsp;
+<tr>
+      <td style="vertical-align:middle" width="30%">Select:&nbsp;<a class="check_toggle" onclick="selectAllHist()" href="javascript:void(0)">All</a>&nbsp|&nbsp;
                   <a class="check_toggle" onclick="selectAllHist('saved')" href="javascript:void(0)">Saved</a>&nbsp|&nbsp;
                   <a class="check_toggle" onclick="selectAllHist('unsaved')" href="javascript:void(0)">Unsaved</a>&nbsp|&nbsp;
                   <a class="check_toggle" onclick="selectNoneHist()" href="javascript:void(0)">None</a></td>
-      <td width="20%" class="medium">
+      <td style="vertical-align:middle" width="20%" class="medium">
          <input type="button" value="Open" onclick="handleBulkStrategies('open')"/>
          <input type="button" value="Close" onclick="handleBulkStrategies('close')"/>
          <input type="button" value="Delete" onclick="handleBulkStrategies('delete')"/>
       </td>
+
+
 <td width="50%" style="text-align:right">
-<div title="Also upon a new release, a step will become outdated if we modify the search form, by changing a parameter or its possible values; you need to revise the step!"
-	id="invalid-legend"><img src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/> = strategy contains outdated steps, open to revise (<a style="" href="<c:url value="/wdk/jsp/whyInvalid.jsp"/>" target="_blank" onClick="poptastic(this.href,'unused',250,800); return false;">why?</a>)</div>
+
+<div id="invalid-legend">
+<b>Note on new releases: </b>Changes on annotation or new data might affect <b>any step result</b>.
+<br><img src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/> = the strategy contains <b>outdated steps</b>, open to revise (<a  href="javascript:void(0)"  onClick="openWhyInvalid(this)">why?</a>)
+</div>
+
+<div id="dialog" class="why-invalid" title="Outdated steps">
+<ul class="cirbulletlist">
+<li>Upon a new release, some of your strategies might contain "<i>outdated</i>" steps.
+<br><br><br>
+<li>A step will be marked "<i>outdated</i>" when we have modified its search form. <br><br>We might have added new values to an existing parameter (for example: a new organism) or we might have added a new parameter in the search.
+<br><br><br>
+<li>Please open an outdated strategy to start revising its outdated steps. 
+<br><br>When a step is outdated it will be covered with a <span style="font-size:140%;color:darkred;font-family:sans-serif">X</span>; please click on it and revise the step.
+</ul>
+</div>
+
 </td>
 
-   </tr>
+</tr>
 </table>
 
 
@@ -116,7 +131,7 @@
   <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
 
   <c:if test="${fn:length(strategies) > 0}">
-    <div class="panel_${recTabName} history_panel unsaved-strategies">
+    <div class="tab_${recTabName} panel_${recTabName} history_panel unsaved-strategies">
       <imp:strategyTable strategies="${strategies}" wdkUser="${wdkUser}" prefix="Unsaved" />
     </div>
   </c:if>
@@ -131,7 +146,7 @@
   <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
 
   <c:if test="${fn:length(strategies) > 0}">
-    <div class="panel_${recTabName} history_panel saved-strategies">
+    <div class="tab_${recTabName} panel_${recTabName} history_panel saved-strategies">
       <imp:strategyTable strategies="${strategies}" wdkUser="${wdkUser}" prefix="Saved" />
     </div>
   </c:if>
@@ -172,10 +187,13 @@
     </div>
 </c:if>
 
+<!--
 <div class="panel_cmplt history_panel">
   <h1>All My Queries</h1>
   <div class="loading"></div>
 </div>
+-->
+
 
 <table class="history_controls">
    <tr>
@@ -205,4 +223,8 @@
 	var myform = $("form#save_strat_form_hist");
 	myform.prepend(save_warning);
 	$("i,form#save_strat_form_hist").css("font-size","95%");
+
+function openWhyInvalid(element){
+	$( "#dialog" ).dialog('open');
+}
 </script>
