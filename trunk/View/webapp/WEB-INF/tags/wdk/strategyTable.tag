@@ -119,7 +119,9 @@
             <option value="copyStrategy('${strategyId}', true);">Copy</option>
             <option value="${saveAction}">Save As</option>
             <option value="${shareAction}">Share</option>
-            <option value="deleteStrategy(${strategyId}, true)">Delete</option>
+      <!--      <option value="deleteStrategy(${strategyId}, true)">Delete</option> -->
+<!-- I think we should remove the delete option here -->
+      <option value="handleBulkStrategies('delete',${strategyId})">Delete</option>
          </select>
       </td>
       <td nowrap style="padding:0 2px 0 2px;">${strategy.createdTimeFormatted}</td>
