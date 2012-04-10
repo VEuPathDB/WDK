@@ -650,7 +650,7 @@ function openStrategy(stratId){
 function deleteStrategy(stratId, fromHist){
 	var url = "deleteStrategy.do?strategy=" + stratId;
 	var stratName;
-	var message = "Are you sure you want to delete the strategy '";
+	var message = "If you shared a strategy, its URL stays valid even if you delete the strategy.======== Are you sure you want to delete the strategy '";
 	if (fromHist) stratName = $.trim($("div#text_" + stratId).text());
 	else {
 		strat = getStrategyFromBackId(stratId);
