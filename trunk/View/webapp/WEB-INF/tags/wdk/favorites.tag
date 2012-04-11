@@ -28,7 +28,6 @@
 <tr>
 <td width="50%" style="padding:0">
 	<input class="favorite-refresh-button" style="margin-left:10px;cursor:pointer" title="Reload the page after you click on the star to add/remove IDs." type="button" value="Reload page" onclick="window.location.reload();"/>
- 	<div style="clear:both;font-style:italic;font-size:90%;padding-left:10px;" >(Mouse over column headings for help)</div>
 </td>
 <td width="50%" style="text-align:right;padding:0">
 	<p style="color:darkred;font-size:95%;font-style:italic"><b>Note on new releases:</b> 
@@ -36,6 +35,14 @@
 	<br>Click on any ID to access the new ID's page. Unmapped IDs will show a message.</p>
 </td>
 </tr>
+<tr>
+<td width="50%" style="padding:0">
+ 	<div style="clear:both;font-style:italic;font-size:90%;padding-left:10px;" >(Mouse over column headings for help)</div>
+</td>
+<td width="50%">
+</td>
+</tr>
+
 </table>
 
             <c:forEach var="fav_item" items="${allFavorites}">

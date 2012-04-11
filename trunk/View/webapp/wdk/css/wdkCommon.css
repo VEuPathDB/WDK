@@ -721,7 +721,7 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
 
 .favorites_panel {
     display: none;
-    padding: 10px;
+    padding: 0 10px;
 }
 
 .favorites_panel .favorite-note-button {
