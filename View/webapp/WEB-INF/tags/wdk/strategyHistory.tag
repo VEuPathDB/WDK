@@ -109,10 +109,9 @@ $(function() {
 <ul class="cirbulletlist">
 <li>Upon a new release, some of your strategies might contain "<i>outdated</i>" steps.
 <br><br><br>
-<li>A step will be marked "<i>outdated</i>" when we have modified its search form. <br><br>We might have added new values to an existing parameter (for example: a new organism) or we might have added a new parameter in the search.
+<li>A step will be marked "<i>outdated</i>" (covered with a <span style="font-size:140%;color:darkred;font-family:sans-serif">X</span> ) when we have modified its search form and we cannot easily map your old search into the new form.
 <br><br><br>
-<li>Please open an outdated strategy to start revising its outdated steps. 
-<br><br>When a step is outdated it will be covered with a <span style="font-size:140%;color:darkred;font-family:sans-serif">X</span>; please click on it and revise the step.
+<li>Please open an outdated strategy to start revising its outdated steps. Just click on each outdated step to open the revise form. 
 </ul>
 </div>
 
