@@ -233,7 +233,7 @@ function handleBulkStrategies(type,stratToDelete) {
 			stratNames = $.trim($("div#text_" + stratToDelete).text());
 		}
 
-		$.blockUI({message: "<h2>Delete Strategies</h2><span style='font-weight:bold'>You are about to delete the following strategies:</span><br />" + stratNames + "<br />If you shared a strategy, its URL will stay valid.<br /><br /><span style='font-weight:bold'>Are you sure you want to do that?</span><br/><form action='javascript:performBulkAction(\"" + type + "\",\"" + stratToDelete + "\");'><input type='submit' onclick='$.unblockUI();return false;' value='Cancel'/><input type='submit' onclick='$.unblockUI();return true;' value='OK' /></form>", css: {position : 'absolute', backgroundImage : 'none'}});
+		$.blockUI({message: "<h2>Delete Strategies</h2><span style='font-weight:bold'>You are about to delete the following strategies:</span><br />" + stratNames + "<br /><br />If you shared a strategy, its URL will stay valid.<br /><br /><span style='font-weight:bold'>Are you sure you want to do that?</span><br/><form action='javascript:performBulkAction(\"" + type + "\",\"" + stratToDelete + "\");'><input type='submit' onclick='$.unblockUI();return false;' value='Cancel'/><input type='submit' onclick='$.unblockUI();return true;' value='OK' /></form>", css: {position : 'absolute', backgroundImage : 'none'}});
 	}
 	else {
 		performBulkAction(type);
