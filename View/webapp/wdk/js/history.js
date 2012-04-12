@@ -217,9 +217,10 @@ function handleBulkStrategies(type,stratToDelete) {
 	//this function is called from two different locations in the page:
 	//	- the button, expecting at least one selected strategy, or 
 	// 	- from the dropdown menu, specific to each strategy. (was calling deleteStrategy() in controller-JSON.js)
-	// In the latter case, there is no need to select; the click tells us which strat is to be deleted (stratToDelete)
+	// In the latter case, there is no need to select; the click tells us which strat is to be deleted (stratToDelete, std)
 
-	if (!stratToDelete && selected.length == 0) {
+	var std = stratToDelete;
+	if (!std && selected.length == 0) {
 		alert("No strategies were selected!");
 		return false;
 	}
@@ -229,25 +230,30 @@ function handleBulkStrategies(type,stratToDelete) {
 			stratNames += "<li>" + $.trim($("div#text_" + n).text())+ "</li>";
 		});
 		stratNames += '</ol>';
-		if(stratToDelete) {
-			stratNames = $.trim($("div#text_" + stratToDelete).text());
+
+		if(std) {
+			stratNames = $.trim($("div#text_" + std).text());
+		}
+		else {
+			std=0;
 		}
 
-		$.blockUI({message: "<h2>Delete Strategies</h2><span style='font-weight:bold'>You are about to delete the following strategies:</span><br />" + stratNames + "<br /><br />If you shared a strategy, its URL will stay valid.<br /><br /><span style='font-weight:bold'>Are you sure you want to do that?</span><br/><form action='javascript:performBulkAction(\"" + type + "\",\"" + stratToDelete + "\");'><input type='submit' onclick='$.unblockUI();return false;' value='Cancel'/><input type='submit' onclick='$.unblockUI();return true;' value='OK' /></form>", css: {position : 'absolute', backgroundImage : 'none'}});
+		$.blockUI({message: "<h2>Delete Strategies</h2><span style='font-weight:bold'>You are about to delete the following strategies:</span><br />" + stratNames + "<br /><br />If you shared a strategy, its URL will stay valid.<br /><br /><span style='font-weight:bold'>Are you sure you want to do that?</span><br/><form action='javascript:performBulkAction(\"" + type + "\",\"" + std + "\");'><input type='submit' onclick='$.unblockUI();return false;' value='Cancel'/><input type='submit' onclick='$.unblockUI();return true;' value='OK' /></form>", css: {position : 'absolute', backgroundImage : 'none'}});
 	}
 	else {
 		performBulkAction(type);
 	}
+	std=0;
 }
 
-function performBulkAction(type,stratToDelete) { 
+function performBulkAction(type,stratTD) {
 	var agree;
 	var url;
 	if (type == 'delete') url = "deleteStrategy.do?strategy=";
 	else if (type == 'open') url = "showStrategy.do?strategy=";
 	else url = "closeStrategy.do?strategy=";
 
-	if(stratToDelete) { url = url + stratToDelete; }
+	if(stratTD > 0) { url = url + stratTD; }
 	else { 	url = url + selected.join(","); }
 
 	$.ajax({
@@ -270,6 +276,7 @@ function performBulkAction(type,stratToDelete) {
                            + ". \nReloading this page might solve the problem. \nOtherwise, please contact site support.");
 		}
 	});
+	stratTD=undefined;
 }
 
 function displayName(histId) {
