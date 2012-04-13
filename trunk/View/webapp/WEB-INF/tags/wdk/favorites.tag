@@ -127,7 +127,7 @@
                             </td>
                             <td width="60%"  class="mytdStyle" >
 								<c:set var="favNote" value="${favorite.note}"/>
-                                <span class="favorite-note">${favNote}</span>
+                              <pre><span class="favorite-note">${favNote}</span></pre>
                                 <div class="favorite-button-div"><a href="javascript:void(0)" class="favorite-note-button" onClick="showInputBox(this, 'note', 'updateFavoriteNote(this)')" >edit</a></div>
                             </td>
                             <td width="30%"  class="mytdStyle" >
