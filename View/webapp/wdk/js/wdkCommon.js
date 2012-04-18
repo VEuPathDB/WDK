@@ -5,6 +5,8 @@
 // On all pages, check that cookies are enabled.
 jQuery(document).ready(function() {
     if (window.wdk == undefined) window.wdk = new WDK();
+    wdk.registerToggle();
+    wdk.registerTable();
 });
 
 //some helper functions
@@ -30,7 +32,7 @@ function wdkUser() {
 }
 
 
-function WDK() {
+var WDK = function() {
 
     this.initialize = function() {
         var testCookieName = 'wdkTestCookie';
@@ -212,3 +214,27 @@ function getWebAppUrl() {
 	scriptPath = scriptPath.substring(0, scriptPath.length - suffixLen);
 	return scriptPath;
 }
+
+
+WDK.prototype.registerToggle = function() {
+    // register toggles
+    jQuery(".wdk-toggle").each(function() {
+        // check if the section should be displayed by default
+        var show = $(this).attr("show");
+        var active = (show == "true") ? 0 : false;
+        $(this).accordion({
+            autoHeight: false,
+            collapsible: true,
+            active: active
+        });
+    });
+}
+
+WDK.prototype.registerTable = function() {
+    // register data tables on wdk table
+    jQuery(".wdk-table.datatables").dataTable({
+        "bJQueryUI": true
+    });
+}
+
+

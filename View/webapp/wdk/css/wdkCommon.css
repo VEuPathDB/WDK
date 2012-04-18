@@ -113,6 +113,20 @@ table.recordTable {
   border-left: black solid thin;
 }
 
+.wdk-table .table-name { text-align:center; font-size:larger; padding:5px; }
+.wdk-table .table-description { color:#666666; }
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+         = TOGGLE 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+.wdk-toggle .display-name { padding:5px; background-color:#EEEEEE; }
+.wdk-toggle .handle { width:20px; height:20px; cursor:pointer; float:left; background-position:center; background-repeat:no-repeat; }
+.wdk-toggle .handle.open { background-image:url(../images/plus.gif); }
+.wdk-toggle .handle.close { background-image:url(../images/minus.gif); }
+.wdk-toggle .content { margin:5px; }
+
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =favorites.tag
