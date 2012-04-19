@@ -8,6 +8,15 @@
               description="The WDK Table to be rendered"
 %>
 
+<%@ attribute name="sortable"
+              required="false"
+              description="Whether to enable sorting on the table. default true"
+%>
+
+
+<c:if test="${sortable == null || sortable eq ''}">
+  <c:set var="sortable" value="${true}" />
+</c:if>
 
 <c:catch var="tableError">
 
@@ -19,7 +28,10 @@
     </c:when>
     <c:otherwise>
 
-<table class="wdk-table">
+<c:if test="${sortable}">
+  <c:set var="datatable" value="datatables" />
+</c:if>
+<table class="wdk-table ${datatable}">
 
   <thead>
     <tr class="headerrow">
@@ -84,7 +96,7 @@
 
 
 <%-- display the description --%>
-<div class="table-description">${tbl.tableField.description}</div>
+<div class="wdk-table-description">${tbl.tableField.description}</div>
 
 
 
