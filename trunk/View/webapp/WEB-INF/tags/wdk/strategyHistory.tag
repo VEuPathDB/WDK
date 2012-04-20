@@ -107,11 +107,11 @@ $(function() {
 
 <div id="dialog" class="why-invalid" title="Outdated steps">
 <ul class="cirbulletlist">
-<li>Upon a new release, some of your strategies might contain "<i>outdated</i>" steps.
+<li>Upon a new release, some of your strategies might contain outdated steps.
 <br><br><br>
-<li>A step will be marked "<i>outdated</i>" (covered with a <span style="font-size:140%;color:darkred;font-family:sans-serif">X</span> ) when we have modified its search form and we cannot easily map your old search into the new form.
+<li>A step will be marked outdated (covered with a <span style="font-size:140%;color:darkred;font-family:sans-serif">X</span> ) when we have modified its search form and we cannot easily map your old search into the new form.
 <br><br><br>
-<li>Please open an outdated strategy to start revising its outdated steps. Just click on each outdated step to open the revise form. 
+<li>Please open an outdated strategy to start revising its outdated steps. Then, just click on each outdated step to open the revise form. 
 </ul>
 </div>
 
