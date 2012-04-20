@@ -433,6 +433,11 @@ tr.lines td, tr.linesalt td {
 	 Strategy history panel
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+div#history-menu .ui-tabs-panel {
+	border:0;
+}
+
+
 table.datatables tr.headerrow th {
 	border-width:0px 0px 2px;
 }
@@ -473,6 +478,14 @@ a.redbutton:active span {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =WorkSpace Divs 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/	
+div.Workspace {
+   position: relative;
+	border: 2px solid #0B4796;
+	margin-top:10px;
+	padding: 10px;
+	
+}
+
 .step {background-image: url(../images/loading_step.png);}
 .record {background-image: url(../images/loading.png);}
 
@@ -489,9 +502,7 @@ a.redbutton:active span {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =MISC 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-div.Workspace {
-   position: relative;
-}
+
 
 span.marker a:link, span.marker a:visited {
 	padding-left: 15px;
@@ -835,7 +846,7 @@ ul.menubar {
       = Result and basket title and links
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 div#strategy_results table#title-links {
-	background-color:#FFFFA0;
+/*	background-color:#FFFFA0; */
 }
 table#title-links {
 	font-size:12px; /*we need to figure out why the font size in this table becomes different when used in basket vs results table */
