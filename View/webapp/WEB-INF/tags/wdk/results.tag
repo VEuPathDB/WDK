@@ -40,6 +40,13 @@
   </c:when>
   <c:otherwise>
 
+<!-- ================ FILTERS DEFINED IN MODEL.XML =============== -->
+<c:if test="${strategy != null}">
+    <imp:filterLayouts strategyId="${strategy.strategyId}" 
+                     stepId="${step.stepId}"
+                     answerValue="${wdkAnswer}" />
+</c:if>
+
 
 <!-- ================ RESULTS TITLE AND LINKS TO NASKET AND DOWNLOADS   =============== -->
 <table id = "title-links" width="100%"><tr>
@@ -73,12 +80,7 @@
 </td>
 </tr></table>
 
-<!-- ================ FILTERS DEFINED IN MODEL.XML =============== -->
-<c:if test="${strategy != null}">
-    <imp:filterLayouts strategyId="${strategy.strategyId}" 
-                     stepId="${step.stepId}"
-                     answerValue="${wdkAnswer}" />
-</c:if>
+
 
 
 <!-- ================ SUMMARY VIEWS (EXTRA TABS DEFINED IN MODEL.XML)  =============== -->
