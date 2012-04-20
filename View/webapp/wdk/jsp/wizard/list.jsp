@@ -270,13 +270,10 @@ ${rcDisplay} basket
                 <c:set var="cat" value="${catEntry.value}" />
                 <div class="original" id="sl_${cat.name}" style="display:none">
                     <ul class="menu_section">
-                        <c:forEach items="${cat.websiteQuestions}" var="q">
-                          <li onclick="callWizard('${partialUrl}&questionFullName=${q.fullName}&stage=question',null,null,null,'next')">
-                            ${q.displayName}
-                            <c:if test="${q.new}">
-                              <img alt="new feature icon" src="<c:url value='/wdk/images/new-feature.png' />"
-                                   title="This is a new search in the current release" />
-                            </c:if>
+                        <c:forEach items="${cat.websiteQuestions}" var="question">
+                          <li onclick="callWizard('${partialUrl}&questionFullName=${question.fullName}&stage=question',null,null,null,'next')">
+                            ${question.displayName}
+                            <imp:questionFeature question="${question}" />
                           </li>
                         </c:forEach>
                     </ul>
