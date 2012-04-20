@@ -17,7 +17,7 @@ public class WdkModelName extends WdkModelBase {
     private String displayName;
     private String version;
     private String releaseDate;
-    private int releaseNumber;
+    private String buildNumber;
 
     /**
      * @return the displayName
@@ -64,12 +64,12 @@ public class WdkModelName extends WdkModelBase {
         this.releaseDate = releaseDate;
     }
 
-    public int getReleaseNumber() {
-        return releaseNumber;
+    public String getBuildNumber() {
+        return buildNumber;
     }
 
-    public void setReleaseNumber(int releaseNumber) {
-        this.releaseNumber = releaseNumber;
+    public void setBuildNumber(String buildNumber) {
+        this.buildNumber = buildNumber;
     }
 
     /*

@@ -146,7 +146,7 @@ public class WdkModel {
 
     private User systemUser;
     
-    private int releaseNumber;
+    private String buildNumber;
 
     /**
      * @param initRecordClassList
@@ -611,7 +611,7 @@ public class WdkModel {
                     this.displayName = wdkModelName.getDisplayName();
                     this.version = wdkModelName.getVersion();
                     this.releaseDate = wdkModelName.getReleaseDate();
-                    this.releaseNumber = wdkModelName.getReleaseNumber();
+                    this.buildNumber = wdkModelName.getBuildNumber();
                     hasModelName = true;
                 }
             }
@@ -1101,16 +1101,16 @@ public class WdkModel {
     }
 
     /**
-     * @return the releaseNumber
+     * @return the buildNumber
      */
-    public int getReleaseNumber() {
-        return releaseNumber;
+    public String getBuildNumber() {
+        return buildNumber;
     }
 
     /**
-     * @param releaseNumber the releaseNumber to set
+     * @param buildNumber the buildNumber to set
      */
-    public void setReleaseNumber(int releaseNumber) {
-        this.releaseNumber = releaseNumber;
+    public void setBuildNumber(String buildNumber) {
+        this.buildNumber = buildNumber;
     }
 }
