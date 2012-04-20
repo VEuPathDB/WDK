@@ -96,7 +96,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     private List<SummaryView> summaryViewList = new ArrayList<SummaryView>();
     private Map<String, SummaryView> summaryViewMap = new LinkedHashMap<String, SummaryView>();
 
-    private int releaseNumber;
+    private String newBuild;
+    private String reviseBuild;
 
     // /////////////////////////////////////////////////////////////////////
     // setters called at initialization
@@ -147,18 +148,32 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
                 question.sqlMacroMap);
     }
 
-    public int getReleaseNumber() {
-        return releaseNumber;
+    public String getNewBuild() {
+        return newBuild;
     }
 
-    public void setReleaseNumber(int releaseNumber) {
-        this.releaseNumber = releaseNumber;
+    public void setNewBuild(String newBuild) {
+        this.newBuild = newBuild;
+    }
+
+    public String getReviseBuild() {
+        return reviseBuild;
+    }
+
+    public void setReviseBuild(String reviseBuild) {
+        this.reviseBuild = reviseBuild;
     }
 
     public boolean isNew() {
-        int currentRelease = wdkModel.getReleaseNumber();
-        if (currentRelease == 0) return false; // current release is not set
-        else return (currentRelease <= releaseNumber);
+        String currentBuild = wdkModel.getBuildNumber();
+        if (currentBuild == null) return false; // current release is not set
+        else return (currentBuild.equals(newBuild));
+    }
+
+    public boolean isRevised() {
+        String currentBuild = wdkModel.getBuildNumber();
+        if (currentBuild == null) return false; // current release is not set
+        else return (currentBuild.equals(reviseBuild));
     }
 
     /**

@@ -441,6 +441,10 @@ public class QuestionBean {
         return question.isNew();
     }
 
+    public boolean isRevised() {
+        return question.isRevised();
+    }
+
     public void resolveDependedParams(Map<String, String> paramValues)
             throws WdkModelException, NoSuchAlgorithmException,
             WdkUserException, SQLException, JSONException {

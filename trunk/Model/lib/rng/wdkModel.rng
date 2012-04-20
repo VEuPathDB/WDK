@@ -13,7 +13,7 @@
                 <attribute name="releaseDate"/>
             </optional>
             <optional>
-                <attribute name="releaseNumber" />
+                <attribute name="buildNumber" />
             </optional>
             <ref name="IncludeExclude"/>
           </element>
@@ -1004,9 +1004,10 @@
         </attribute>
       </optional>
       <optional>
-        <attribute name="releaseNumber">
-          <data type="unsignedShort" />
-        </attribute>
+        <choice>
+          <attribute name="newBuild" />
+          <attribute name="reviseBuild" />
+        </choice>
       </optional>
 
       <zeroOrMore>
