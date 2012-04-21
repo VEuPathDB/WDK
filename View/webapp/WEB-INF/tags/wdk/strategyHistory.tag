@@ -101,14 +101,18 @@ $(function() {
 <td width="50%" style="text-align:right">
 
 <div id="invalid-legend">
+Here we store your <b>search templates</b>, not the IDs in your result.
+<br>
 <b>Note on new releases: </b>Changes on annotation or new data might affect <b>any step result</b>.
-<br><img src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/> = the strategy contains <b>outdated steps</b>, open to revise (<a  href="javascript:void(0)"  onClick="openWhyInvalid(this)">why?</a>)
+<br>Also, if we modify a search template, you will need to revise your step. The strategy will be marked as <img style="vertical-align:bottom" src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/>. &nbsp;<a  href="javascript:void(0)"  onClick="openWhyInvalid(this)"> Why?</a>
+
+<!--
+<br><img src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/> = the strategy contains <b>outdated steps</b>, open to revise (<a  href="javascript:void(0)"  onClick="openWhyInvalid(this)">Why?</a>)
+-->
 </div>
 
 <div id="dialog" class="why-invalid" title="Outdated steps">
 <ul class="cirbulletlist">
-<li>Upon a new release, some of your strategies might contain outdated steps.
-<br><br><br>
 <li>A step will be marked outdated (covered with a <span style="font-size:140%;color:darkred;font-family:sans-serif">X</span> ) when we have modified its search form and we cannot easily map your old search into the new form.
 <br><br><br>
 <li>Please open an outdated strategy to start revising its outdated steps. Then, just click on each outdated step to open the revise form. 
