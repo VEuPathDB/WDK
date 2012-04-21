@@ -16,6 +16,6 @@
   </c:when>
   <c:when test="${question.revised}">
     <img alt="Revised feature icon" title="This search has been revised" 
-         src="<c:url value='/wdk/images/revised-feature.gif' />" />
+         src="<c:url value='/wdk/images/revised-small.png' />" />
   </c:when>
 </c:choose>
