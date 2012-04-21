@@ -947,7 +947,7 @@ border-color:grey;
 }
 #invalid-legend{
     font-weight:normal;
-font-size:75%;font-style:italic;color:darkred;
+    font-size:72%;font-style:italic;color:darkred;
 }
 #strategy_messages {
   min-height:100px;
