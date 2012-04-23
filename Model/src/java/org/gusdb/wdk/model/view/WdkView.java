@@ -1,14 +1,29 @@
 package org.gusdb.wdk.model.view;
 
+import java.util.List;
+import java.util.ArrayList;
+
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelBase;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 
 public abstract class WdkView extends WdkModelBase {
+
+    private static final Logger logger = Logger.getLogger(WdkView.class);
 
     private String name;
     private String display;
     private String jsp;
     private boolean _default;
 
+    private List<WdkModelText> descriptions;
+    private String description;
+
+    public WdkView() {
+        description = "";
+        descriptions = new ArrayList<WdkModelText>();
+    }
 
     /**
      * @return the name
@@ -70,4 +85,42 @@ public abstract class WdkView extends WdkModelBase {
         this._default = _default;
     }
 
+    /**
+     * @return the description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * @param description
+     *            the description to set
+     */
+    public void addDescription(WdkModelText description) {
+        this.descriptions.add(description);
+    }
+
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+     */
+    @Override
+    public void excludeResources(String projectId) throws WdkModelException {
+        // exclude descriptions
+        boolean hasDescription = false;
+        for (WdkModelText description : descriptions) {
+            if (description.include(projectId)) {
+                if (hasDescription) {
+                    throw new WdkModelException("The view " + getName()
+                            + " has more than one description for project "
+                            + projectId);
+                } else {
+                    this.description = description.getText();
+                    hasDescription = true;
+                }
+            }
+        }
+        descriptions = null;
+    }
 }

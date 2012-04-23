@@ -1376,6 +1376,12 @@
       <optional>
           <attribute name="handlerClass" />
       </optional>
+      <zeroOrMore>
+        <element name="description">
+          <ref name="IncludeExclude" />
+          <text />
+        </element>
+      </zeroOrMore>
   </define>
 
 </grammar>
