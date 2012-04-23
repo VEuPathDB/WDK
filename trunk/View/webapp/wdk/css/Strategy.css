@@ -423,6 +423,7 @@ div.transform a.crumb_name img{
   text-align: center;
   padding-bottom: 5px;
   min-width: 550px;   /* this allows for some space between Delete and X */
+  overflow: auto; /* make sure long param strings are within the popup, with horizontal scroll bar if needed. */
 }
 
 .crumb_details div.crumb_menu {
