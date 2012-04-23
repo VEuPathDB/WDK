@@ -178,7 +178,7 @@ Otherwise a standard select menu is used.
 
 <c:if test="${invalid}">
   <div class="invalid-values">
-    <p>The some of the option(s) you previously selected are no longer available.</p>
+    <p>Some of the option(s) you previously selected are no longer available.</p>
     <p>Here is a list of the values you selected (unavailable options are marks as red):</p>
     <ul>
       <c:forEach items="${currentValues}" var="entry">
