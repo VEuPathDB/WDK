@@ -570,10 +570,25 @@ public class ModelXmlParser extends XmlParser {
                 "wdkModel/recordClassSet/recordClass/summaryView",
                 SummaryView.class, "addSummaryView");
 
+        configureNode(
+                digester,
+                "wdkModel/recordClassSet/recordClass/summaryView/description",
+                WdkModelText.class, "addDescription");
+        digester.addCallMethod(
+                "wdkModel/recordClassSet/recordClass/summaryView/description",
+                "setText", 0);
+
         configureNode(digester,
                 "wdkModel/recordClassSet/recordClass/recordView",
                 RecordView.class, "addRecordView");
-    }
+
+        configureNode(
+                digester,
+                "wdkModel/recordClassSet/recordClass/recordView/description",
+                WdkModelText.class, "addDescription");
+        digester.addCallMethod(
+                "wdkModel/recordClassSet/recordClass/recordView/description",
+                "setText", 0);    }
 
     private void configureQuerySet(Digester digester) {
         // QuerySet
@@ -742,6 +757,14 @@ public class ModelXmlParser extends XmlParser {
 
         configureNode(digester, "wdkModel/questionSet/question/summaryView",
                 SummaryView.class, "addSummaryView");
+
+        configureNode(
+                digester,
+                "wdkModel/questionSet/question/summaryView/description",
+                WdkModelText.class, "addDescription");
+        digester.addCallMethod(
+                "wdkModel/questionSet/question/summaryView/description",
+                "setText", 0);
     }
 
     private void configureXmlQuestionSet(Digester digester) {
