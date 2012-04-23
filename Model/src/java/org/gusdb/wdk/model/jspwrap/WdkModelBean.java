@@ -29,6 +29,8 @@ public class WdkModelBean {
 
     WdkModel wdkModel;
 
+    private String questionName;
+
     public WdkModelBean(WdkModel wdkModel) {
         this.wdkModel = wdkModel;
     }
@@ -317,5 +319,13 @@ public class WdkModelBean {
     
     public RecordClassBean getRecordClass(String rcName) throws WdkModelException {
         return new RecordClassBean(wdkModel.getRecordClass(rcName));
+    }
+
+    public void setQuestionName(String questionName) {
+        this.questionName = questionName;
+    }
+
+    public QuestionBean getQuestion() throws Exception{
+        return new QuestionBean(wdkModel.getQuestion(questionName));
     }
 }
