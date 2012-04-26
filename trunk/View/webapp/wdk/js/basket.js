@@ -22,7 +22,7 @@ function basketTabSelected(event, ui) {
             // store the selection cookie
             var currentId = currentTab.attr("id");
             setCurrentTabCookie('basket', currentId);
-            var currentDiv = getCurrentBasketRegion();
+            var currentDiv = ui.panel;
             var control = workspace.children("#basket-control");
             if (currentDiv.find("table").length > 0) {
                 control.find("input#empty-basket-button").attr("disabled",false);
