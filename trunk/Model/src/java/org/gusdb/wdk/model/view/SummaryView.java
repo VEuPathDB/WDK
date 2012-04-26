@@ -22,7 +22,9 @@ public class SummaryView extends WdkView {
     private static SummaryView createDefaultSummaryView(RecordClass recordClass) {
         SummaryView view = new SummaryView();
         view.setName("_default");
-        view.setDisplay(recordClass.getDisplayName() + " Results");
+        //view.setDisplay(recordClass.getDisplayName() + " Results");
+	// basket shares the tab title with the results table, so the tab should say "Genes" not "Gene results"
+	view.setDisplay(recordClass.getDisplayName() + "s");
         view.setJsp("/wdk/jsp/results/default.jsp");
         return view;
     }
