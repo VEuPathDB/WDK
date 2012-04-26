@@ -450,37 +450,49 @@ var set_weight = "<div name='All_weighting' class='param-group' type='ShowHide'>
 
 // HANDLE THE DISPLAY OF THE PARAMETERS IN THE STEP DETAILS BOX
 function createParameters(params, isSpan){
-	var table = document.createElement('table');
-	if (isSpan) {
-		// TODO:  if span logic moves into WDK, the code
-		// for the span logic details box should move here.
-		try {	//params includes the sentence with formatting and all
-			var contents = customSpanParameters(params);
-			$(table).append(contents);
-		}
-		catch(err) {}
+    var table = document.createElement('table');
+    //Note for datasetParams
+    var dPmessage="<br>Review Your Results</b>: It is possible that some of your IDs are not in our database and will not return results.<br> Until we have a mechanism for informing you which IDs are missing, please review your results carefully.";
+    
+    if (isSpan) {
+	// TODO:  if span logic moves into WDK, the code
+	// for the span logic details box should move here.
+	try {	//params includes the sentence with formatting and all
+	    var contents = customSpanParameters(params);
+	    $(table).append(contents);
 	}
-	else {
-		$(params).each(function(){
-        	if (this.visible) {
-			var tr = document.createElement('tr');
-			var prompt = document.createElement('td');
-			var space = document.createElement('td');
-			var value = document.createElement('td');
-			$(prompt).addClass("medium param name");
-			$(prompt).html("<b><i>" + this.prompt + "</i></b>");
-			$(space).addClass("medium param");
-			$(space).html("&nbsp;:&nbsp;");
-			$(value).addClass("medium param value");
-			$(value).html( this.value );
-			$(tr).append(prompt);
-			$(tr).append(space);
-			$(tr).append(value);
-			$(table).append(tr);
-        	}
-		});
-	}
-	return table;
+	catch(err) {}
+    }
+    else {
+	$(params).each(function(){
+			   if (this.visible) {
+			       var tr = document.createElement('tr');
+			       var prompt = document.createElement('td');
+			       var space = document.createElement('td');
+			       var value = document.createElement('td');
+			       $(prompt).addClass("medium param name");
+			       $(prompt).html("<b><i>" + this.prompt + "</i></b>");
+			       $(space).addClass("medium param");
+			       $(space).html("&nbsp;:&nbsp;");
+			       $(value).addClass("medium param value");
+			       $(value).html( this.value );
+			       $(tr).append(prompt);
+			       $(tr).append(space);
+			       $(tr).append(value);
+			       $(table).append(tr);
+			       if(this.prompt.indexOf("input set") != -1) {
+				   tr = document.createElement('tr');
+				   prompt = document.createElement('td');
+				   prompt.setAttribute('colspan','3');
+				   //$(prompt).addClass("medium param name");
+				   $(prompt).html("<b><i>" + dPmessage + "</i></b>");
+				   $(tr).append(prompt);
+				   $(table).append(tr);
+			       }
+			   }
+		       });
+    }
+    return table;
 }
 
 // HANDLE THE DISPLAY OF THE STRATEGY RECORD TYPE DIV
