@@ -83,7 +83,7 @@ public class ApplicationInitListener implements ServletContextListener {
         WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
 
         // load wizard
-        Wizard wizard = Wizard.loadWizard(gusHome);
+        Wizard wizard = Wizard.loadWizard(gusHome, wdkModel);
         wizard.excludeResources(projectId);
         wizard.resolveReferences(wdkModelRaw);
 
