@@ -57,6 +57,7 @@ public class WizardParser extends XmlParser {
         validate(file.toURI().toURL());
 
         Wizard wizard = (Wizard) digester.parse(new FileInputStream(file));
+        wizard.setFile(resource);
         return wizard;
 
     }
