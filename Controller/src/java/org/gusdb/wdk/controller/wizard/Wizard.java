@@ -21,33 +21,42 @@ import org.xml.sax.SAXException;
 public class Wizard extends WdkModelBase {
 
     private static final String WIZARD_PATH = "/lib/wdk/wizard/";
+    private static final String DEFAULT_FILE = "default.xml";
+    private static final String CUSTOM_FILE = "custom.xml";
     private static final Logger logger = Logger.getLogger(Wizard.class);
 
     public static Wizard loadWizard(String gusHome, WdkModelBean wdkModel)
             throws SAXException, IOException, WdkModelException,
             NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
-        // load all the wizards
+            JSONException { 
         WizardParser parser = new WizardParser(gusHome);
-        Wizard wizard = null;
+        
+        // load default wizard
+        Wizard defaultWizard = loadWizard(wdkModel, parser, DEFAULT_FILE);
+        
+        // load custom wizard
+        Wizard customWizard = loadWizard(wdkModel, parser, CUSTOM_FILE);
 
-        File dir = new File(gusHome + WIZARD_PATH);
-        logger.debug("wizard-dir: " + dir.getAbsolutePath());
-        File[] files = dir.listFiles();
-        if (files != null) {
-
-            for (File file : dir.listFiles()) {
-                logger.debug("wizard-file: " + file.getAbsolutePath());
-                String fileName = file.getName().toLowerCase();
-                if (!fileName.endsWith(".xml")) continue;
-
-                Wizard w = parser.parseWizard(file.getAbsolutePath());
-                w.excludeResources(wdkModel.getProjectId());
-                if (wizard == null) wizard = w;
-                else wizard.merge(w);
-            }
+        // merge wizards
+        if (customWizard != null) {
+            customWizard.merge(defaultWizard);
+        } else {
+            customWizard = defaultWizard;
         }
-        wizard.resolveReferences(wdkModel.getModel());
+        
+        customWizard.resolveReferences(wdkModel.getModel());
+        return customWizard;
+    }
+
+    private static Wizard loadWizard(WdkModelBean wdkModel, WizardParser parser,
+            String fileName) throws WdkModelException, SAXException,
+            IOException {
+        File file = new File(WIZARD_PATH + fileName);
+        if (!file.exists()) return null;
+
+        logger.debug("Loading wizard-file: " + fileName);
+        Wizard wizard = parser.parseWizard(file.getAbsolutePath());
+        wizard.excludeResources(wdkModel.getProjectId());
         return wizard;
     }
 
