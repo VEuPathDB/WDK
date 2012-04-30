@@ -32,10 +32,10 @@ public class Wizard extends WdkModelBase {
         WizardParser parser = new WizardParser(gusHome);
         
         // load default wizard
-        Wizard defaultWizard = loadWizard(wdkModel, parser, DEFAULT_FILE);
+        Wizard defaultWizard = loadWizard(wdkModel, parser, gusHome + WIZARD_PATH + DEFAULT_FILE);
         
         // load custom wizard
-        Wizard customWizard = loadWizard(wdkModel, parser, CUSTOM_FILE);
+        Wizard customWizard = loadWizard(wdkModel, parser, gusHome + WIZARD_PATH + CUSTOM_FILE);
 
         // merge wizards
         if (customWizard != null) {
@@ -51,7 +51,7 @@ public class Wizard extends WdkModelBase {
     private static Wizard loadWizard(WdkModelBean wdkModel, WizardParser parser,
             String fileName) throws WdkModelException, SAXException,
             IOException {
-        File file = new File(WIZARD_PATH + fileName);
+        File file = new File(fileName);
         if (!file.exists()) return null;
 
         logger.debug("Loading wizard-file: " + fileName);
