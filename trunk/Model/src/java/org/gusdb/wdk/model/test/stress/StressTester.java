@@ -303,7 +303,7 @@ public class StressTester {
                     Set<String> values = new LinkedHashSet<String>();
                     if (param instanceof FlatVocabParam) {
                         FlatVocabParam fvParam = (FlatVocabParam) param;
-                        String[] terms = fvParam.getVocab();
+                        String[] terms = fvParam.getVocab(null); // assume independent param
                         for (String term : terms) {
                             values.add(term);
                         }

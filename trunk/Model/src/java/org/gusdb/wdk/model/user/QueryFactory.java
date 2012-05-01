@@ -199,8 +199,7 @@ public class QueryFactory {
         }
     }
 
-    public String makeClobChecksum(String paramValue) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException {
+    public String makeClobChecksum(String paramValue) throws WdkModelException, WdkUserException {
         // make the checksum
         String checksum = Utilities.encrypt(paramValue);
 

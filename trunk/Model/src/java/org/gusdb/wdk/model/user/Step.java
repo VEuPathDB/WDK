@@ -80,7 +80,7 @@ public class Step {
     }
 
     public Step getPreviousStep() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+            SQLException {
         if (previousStep == null && previousStepId != 0)
             setPreviousStep(stepFactory.loadStep(user, previousStepId));
         return previousStep;
@@ -99,7 +99,7 @@ public class Step {
     }
 
     public Step getChildStep() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+            SQLException {
         if (childStep == null && childStepId != 0)
             setChildStep(stepFactory.loadStep(user, childStepId));
         return childStep;
@@ -376,9 +376,7 @@ public class Step {
         this.booleanExpression = booleanExpression;
     }
 
-    public void update(boolean updateTime) throws WdkUserException,
-            NoSuchAlgorithmException, SQLException, WdkModelException,
-            JSONException {
+    public void update(boolean updateTime) throws WdkUserException, WdkModelException {
         stepFactory.updateStep(user, this, updateTime);
     }
 
@@ -430,7 +428,7 @@ public class Step {
      * @throws WdkUserException
      */
     public boolean isValid() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+            SQLException {
         if (!valid)
             return false;
         Step prevStep = getPreviousStep();
@@ -781,8 +779,8 @@ public class Step {
         this.filterName = filterName;
     }
 
-    public AnswerValue getAnswerValue() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public AnswerValue getAnswerValue()
+            throws WdkModelException, WdkUserException {
         // even if a step is invalid, still allow user to create answerValue
         // if (!valid)
         // throw new WdkUserException("Step #" + internalId

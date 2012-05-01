@@ -4,9 +4,6 @@ public class WdkException extends Exception {
 
     public static String modelName;
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = 877548355767390313L;
 
     public WdkException() {

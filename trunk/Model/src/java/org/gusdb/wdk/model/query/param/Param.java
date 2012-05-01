@@ -52,29 +52,20 @@ public abstract class Param extends WdkModelBase {
      * @param user
      * @param rawValue
      * @return
-     * @throws NoSuchAlgorithmException
      * @throws WdkModelException
      * @throws WdkUserException
-     * @throws SQLException
-     * @throws JSONException
      */
     public abstract String rawOrDependentValueToDependentValue(User user,
-            String rawValue) throws NoSuchAlgorithmException,
-            WdkModelException, WdkUserException, SQLException, JSONException;
+            String rawValue) throws WdkModelException, WdkUserException;
 
     public abstract String dependentValueToRawValue(User user,
-            String dependentValue) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException;
+            String dependentValue) throws WdkModelException, WdkUserException;
 
     public abstract String dependentValueToIndependentValue(User user,
-            String dependentValue) throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException, JSONException;
+            String dependentValue) throws WdkUserException, WdkModelException;
 
     protected abstract String dependentValueToInternalValue(User user,
-            String dependentValue) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException;
+            String dependentValue) throws WdkModelException, WdkUserException;
 
     protected abstract void applySuggection(ParamSuggestion suggest);
 
@@ -90,8 +81,7 @@ public abstract class Param extends WdkModelBase {
      * @throws WdkUserException
      */
     protected abstract void validateValue(User user, String rawOrDependentValue)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException;
+            throws WdkModelException, WdkUserException;
 
     protected abstract void appendJSONContent(JSONObject jsParam, boolean extra)
             throws JSONException;
@@ -132,7 +122,7 @@ public abstract class Param extends WdkModelBase {
     protected Query contextQuery;
 
     private String handlerClass;
-    private ParamHandler handler;
+    protected ParamHandler handler;
 
     public Param() {
         visible = true;
@@ -226,9 +216,7 @@ public abstract class Param extends WdkModelBase {
         this.defaultValue = defaultValue;
     }
 
-    public String getDefault() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public String getDefault() throws WdkModelException, WdkUserException {
         if (defaultValue != null && defaultValue.length() == 0)
             defaultValue = null;
         return defaultValue;
@@ -392,8 +380,7 @@ public abstract class Param extends WdkModelBase {
         noTranslations = null;
     }
 
-    public String compressValue(String value) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException {
+    public String compressValue(String value) throws WdkModelException, WdkUserException {
         // check if the value is already been compressed
         if (value == null || value.length() == 0) return null;
 
@@ -437,22 +424,21 @@ public abstract class Param extends WdkModelBase {
     }
 
     public String replaceSql(String sql, String internalValue)
-            throws SQLException, NoSuchAlgorithmException, WdkModelException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         String regex = "\\$\\$" + name + "\\$\\$";
         // escape all single quotes in the value
         return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
     }
 
     public void validate(User user, String dependentValue)
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
+            throws WdkModelException, SQLException,
             JSONException, WdkUserException {
         // handle the empty case
         if (dependentValue == null || dependentValue.length() == 0) {
             if (!allowEmpty)
                 throw new WdkModelException("The parameter '" + getPrompt()
                         + "' does not allow empty value");
-            // otherwise, got empty value and is allowd, no need for further
+            // otherwise, got empty value and is allowed, no need for further
             // validation.
         } else {
             // value is not empty, the sub classes will complete further
@@ -492,27 +478,22 @@ public abstract class Param extends WdkModelBase {
         this.handlerClass = handlerClass;
     }
 
-    public void setHandler(ParamHandler handler) throws WdkUserException,
-            WdkModelException {
+    public void setHandler(ParamHandler handler) throws WdkUserException, WdkModelException {
         handler.setParam(this);
         handler.setWdkModel(wdkModel);
         this.handler = handler;
     }
 
     public String getInternalValue(User user, String dependentValue)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
-        String internalValue =
-                dependentValueToInternalValue(user, dependentValue);
-        if (handler != null)
-            internalValue = handler.transform(user, internalValue);
-        return internalValue;
+            throws WdkModelException, WdkUserException {
+    	String internalValue = dependentValueToInternalValue(user, dependentValue);
+    	if (handler != null)
+    		internalValue = handler.transform(user, internalValue);
+    	return internalValue;
     }
 
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
         super.resolveReferences(wdkModel);
 
         this.wdkModel = wdkModel;

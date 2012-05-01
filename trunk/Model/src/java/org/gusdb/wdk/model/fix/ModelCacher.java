@@ -17,6 +17,7 @@ import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
@@ -392,19 +393,18 @@ public class ModelCacher extends BaseCLI {
             dependedValues.add(null);
         } else if (dependedParam instanceof AbstractEnumParam) {
             AbstractEnumParam enumParam = (AbstractEnumParam) dependedParam;
-            dependedValues.addAll(enumParam.getVocabMap().keySet());
+            dependedValues.addAll(enumParam.getVocabMap(null).keySet());
         } else {
             dependedValues.add(dependedParam.getDefault());
         }
         for (String dependedValue : dependedValues) {
-            param.setDependedValue(dependedValue);
             try {
-                for (String term : param.getVocab()) {
+                for (String term : param.getVocab(dependedValue)) {
                     psEnum.setInt(1, paramId);
                     psEnum.setString(2, term);
                     psEnum.addBatch();
                 }
-            } catch (WdkModelException ex) {
+            } catch (WdkRuntimeException ex) {
                 if (ex.getMessage().startsWith("No item returned by")) {
                     // the enum param doeesn't return any row, ignore it.
                     continue;

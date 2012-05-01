@@ -19,12 +19,8 @@ import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
-import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.StringParam;
-import org.gusdb.wdk.model.query.param.TimestampParam;
 import org.gusdb.wdk.model.view.SummaryView;
 import org.json.JSONException;
 
@@ -34,31 +30,13 @@ import org.json.JSONException;
  */
 public class QuestionBean {
 
-    public static ParamBean createBeanFromParam(UserBean user, Param param) throws WdkModelException {
-        ParamBean bean;
-        if (param instanceof AbstractEnumParam) {
-            bean = new EnumParamBean((AbstractEnumParam) param);
-        } else if (param instanceof AnswerParam) {
-            bean = new AnswerParamBean((AnswerParam) param);
-        } else if (param instanceof DatasetParam) {
-            bean = new DatasetParamBean((DatasetParam) param);
-        } else if (param instanceof TimestampParam) {
-            bean = new TimestampParamBean((TimestampParam) param);
-        } else if (param instanceof StringParam) {
-            bean = new StringParamBean((StringParam)param);
-        } else {
-            throw new WdkModelException("Unknown param type: " + param.getClass().getCanonicalName());
-        }
-        bean.setUser(user);
-        return bean;
-    }
-
     Question question;
 
     private Map<String, String> params = new LinkedHashMap<String, String>();
     private UserBean user;
     private int weight;
-    private Map<String, ParamBean> _paramBeanMap;
+    
+	private Map<String, ParamBean<?>> _paramBeanMap;
 
     /**
      * the recordClass full name for the answerParams input type.
@@ -72,9 +50,9 @@ public class QuestionBean {
 
     private void initializeParamBeans() throws WdkModelException {
         Param[] params = question.getParams();
-        _paramBeanMap = new LinkedHashMap<String, ParamBean>();
+        _paramBeanMap = new LinkedHashMap<String, ParamBean<?>>();
         for (int i = 0; i < params.length; i++) {
-            _paramBeanMap.put(params[i].getName(), createBeanFromParam(user, params[i]));
+            _paramBeanMap.put(params[i].getName(), ParamBeanFactory.createBeanFromParam(user, params[i]));
         }
     }
     
@@ -82,11 +60,11 @@ public class QuestionBean {
         return new RecordClassBean(question.getRecordClass());
     }
 
-    public ParamBean[] getParams() {
+    public ParamBean<?>[] getParams() {
         return _paramBeanMap.values().toArray(new ParamBean[0]);
     }
 
-    public Map<String, ParamBean> getParamsMap() {
+    public Map<String, ParamBean<?>> getParamsMap() {
     	return _paramBeanMap;
     }
 
@@ -94,13 +72,13 @@ public class QuestionBean {
      * @return
      * @see org.gusdb.wdk.model.Question#getParamMapByGroups()
      */
-    public Map<GroupBean, Map<String, ParamBean>> getParamMapByGroups() {
+    public Map<GroupBean, Map<String, ParamBean<?>>> getParamMapByGroups() {
         Map<Group, Map<String, Param>> paramGroups = question.getParamMapByGroups();
-        Map<GroupBean, Map<String, ParamBean>> paramGroupBeans = new LinkedHashMap<GroupBean, Map<String, ParamBean>>();
+        Map<GroupBean, Map<String, ParamBean<?>>> paramGroupBeans = new LinkedHashMap<GroupBean, Map<String, ParamBean<?>>>();
         for (Group group : paramGroups.keySet()) {
             GroupBean groupBean = new GroupBean(group);
             Map<String, Param> paramGroup = paramGroups.get(group);
-            Map<String, ParamBean> paramGroupBean = new LinkedHashMap<String, ParamBean>();
+            Map<String, ParamBean<?>> paramGroupBean = new LinkedHashMap<String, ParamBean<?>>();
             for (String paramName : paramGroup.keySet()) {
                 paramGroupBean.put(paramName, _paramBeanMap.get(paramName));
             }
@@ -114,14 +92,14 @@ public class QuestionBean {
      * @return
      * @see org.gusdb.wdk.model.Question#getParamMapByGroups(java.lang.String)
      */
-    public Map<GroupBean, Map<String, ParamBean>> getParamMapByGroups(
+    public Map<GroupBean, Map<String, ParamBean<?>>> getParamMapByGroups(
             String displayType) {
         Map<Group, Map<String, Param>> paramGroups = question.getParamMapByGroups(displayType);
-        Map<GroupBean, Map<String, ParamBean>> paramGroupBeans = new LinkedHashMap<GroupBean, Map<String, ParamBean>>();
+        Map<GroupBean, Map<String, ParamBean<?>>> paramGroupBeans = new LinkedHashMap<GroupBean, Map<String, ParamBean<?>>>();
         for (Group group : paramGroups.keySet()) {
             GroupBean groupBean = new GroupBean(group);
             Map<String, Param> paramGroup = paramGroups.get(groupBean);
-            Map<String, ParamBean> paramGroupBean = new LinkedHashMap<String, ParamBean>();
+            Map<String, ParamBean<?>> paramGroupBean = new LinkedHashMap<String, ParamBean<?>>();
             for (String paramName : paramGroup.keySet()) {
                 paramGroupBean.put(paramName, _paramBeanMap.get(paramName));
             }
@@ -425,7 +403,7 @@ public class QuestionBean {
     }
     
     public boolean getContainsWildcardTextParam() {
-    	for (ParamBean param : _paramBeanMap.values()) {
+    	for (ParamBean<?> param : _paramBeanMap.values()) {
     		if (param.getName().equals("text_expression")) {
     			return true;
     		}
@@ -445,9 +423,4 @@ public class QuestionBean {
         return question.isRevised();
     }
 
-    public void resolveDependedParams(Map<String, String> paramValues)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
-        question.resolveDependedParams(paramValues);
-    }
 }

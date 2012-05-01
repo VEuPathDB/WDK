@@ -1,12 +1,6 @@
 package org.gusdb.wdk.model;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.Query;
-import org.json.JSONException;
 
 public class NestedRecordList extends WdkModelBase {
 
@@ -49,9 +43,7 @@ public class NestedRecordList extends WdkModelBase {
     }
 
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
         this.question = (Question) wdkModel.resolveReference(questionTwoPartName);
         question.resolveReferences(wdkModel);
 

@@ -9,16 +9,13 @@ import org.gusdb.wdk.model.query.param.StringParam;
  * @author jerric
  * 
  */
-public class StringParamBean extends ParamBean {
-
-    private final StringParam param;
+public class StringParamBean extends ParamBean<StringParam> {
 
     /**
      * @param param
      */
     public StringParamBean(StringParam param) {
         super(param);
-        this.param = param;
     }
 
     public int getLength() {

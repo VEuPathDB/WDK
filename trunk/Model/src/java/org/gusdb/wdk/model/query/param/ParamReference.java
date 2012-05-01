@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model.query.param;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,8 +11,6 @@ import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
 
 /**
  * @author Jerric
@@ -24,8 +20,7 @@ public class ParamReference extends Reference {
 
     public static Param resolveReference(WdkModel wdkModel,
             ParamReference paramRef, String servedQueryName)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         String twoPartName = paramRef.getTwoPartName();
         Param param = (Param) wdkModel.resolveReference(twoPartName);
         // clone the param to have different default values

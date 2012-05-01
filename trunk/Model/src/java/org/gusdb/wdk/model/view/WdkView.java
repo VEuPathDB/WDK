@@ -10,7 +10,8 @@ import org.gusdb.wdk.model.WdkModelText;
 
 public abstract class WdkView extends WdkModelBase {
 
-    private static final Logger logger = Logger.getLogger(WdkView.class);
+    @SuppressWarnings("unused")
+	private static final Logger logger = Logger.getLogger(WdkView.class.getName());
 
     private String name;
     private String display;

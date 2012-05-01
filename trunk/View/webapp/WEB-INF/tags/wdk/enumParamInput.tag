@@ -31,9 +31,9 @@ Otherwise a standard select menu is used.
 <c:set var="pNam" value="${qP.name}"/>
 <c:set var="opt" value="0"/>
 <c:set var="displayType" value="${qP.displayType}"/>
-<c:set var="dependedParam" value="${qP.dependedParam}"/>
-<c:if test="${dependedParam != null}">
-  <c:set var="dependedParam" value="${dependedParam.name}" />
+<c:set var="dependedParamObj" value="${qP.dependedParam}"/>
+<c:if test="${dependedParamObj != null}">
+  <c:set var="dependedParam" value="${dependedParamObj.name}" />
   <c:set var="dependentClass" value="dependentParam" />
 </c:if>
 <%-- Setting a variable to display the items in the parameter in a horizontal layout --%>
@@ -179,7 +179,7 @@ Otherwise a standard select menu is used.
 <c:if test="${invalid}">
   <div class="invalid-values">
     <p>Some of the option(s) you previously selected are no longer available.</p>
-    <p>Here is a list of the values you selected (unavailable options are marks as red):</p>
+    <p>Here is a list of the values you selected (unavailable options are marked in red):</p>
     <ul>
       <c:forEach items="${currentValues}" var="entry">
         <c:set var="style">

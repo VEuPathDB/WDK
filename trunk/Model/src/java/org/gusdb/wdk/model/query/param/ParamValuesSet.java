@@ -1,15 +1,11 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 public class ParamValuesSet extends WdkModelBase {
     private String name;
@@ -108,7 +104,5 @@ public class ParamValuesSet extends WdkModelBase {
         return buf.toString();
     }
 
-    public void resolveReferences(WdkModel wodkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {}
+    public void resolveReferences(WdkModel wodkModel) throws WdkModelException { }
 }

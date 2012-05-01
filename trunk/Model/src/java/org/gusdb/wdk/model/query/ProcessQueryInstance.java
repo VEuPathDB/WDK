@@ -59,9 +59,7 @@ public class ProcessQueryInstance extends QueryInstance {
      */
     public ProcessQueryInstance(User user, ProcessQuery query,
             Map<String, String> values, boolean validate, int assignedWeight,
-            Map<String, String> context) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+            Map<String, String> context) throws WdkModelException, WdkUserException {
         super(user, query, values, validate, assignedWeight, context);
         this.query = query;
     }
@@ -88,8 +86,7 @@ public class ProcessQueryInstance extends QueryInstance {
      */
     @Override
     public void insertToCache(Connection connection, String tableName,
-            int instanceId) throws WdkModelException, SQLException,
-            NoSuchAlgorithmException, JSONException, WdkUserException {
+            int instanceId) throws WdkModelException, WdkUserException {
         logger.debug("inserting process query result to cache...");
         Map<String, Column> columns = query.getColumnMap();
         String weightColumn = Utilities.COLUMN_WEIGHT;
@@ -157,11 +154,16 @@ public class ProcessQueryInstance extends QueryInstance {
             }
             if (rowId % 1000 != 0)
                 ps.executeBatch();
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkUserException("Unable to insert record into cache.", e);
+        }
+        finally {
             // close the statement manually, since we need to keep the
             // connection open to finish the transaction.
             if (ps != null)
-                ps.close();
+                try { ps.close(); }
+                catch (SQLException e) { logger.error("Unable to close PreparedStatement!"); }
         }
         logger.debug("process query cache insertion finished.");
     }
@@ -174,9 +176,7 @@ public class ProcessQueryInstance extends QueryInstance {
      * wdk.model.Column[], java.lang.Integer, java.lang.Integer)
      */
     @Override
-    protected ResultList getUncachedResults() throws WdkModelException,
-            SQLException, NoSuchAlgorithmException, JSONException,
-            WdkUserException {
+    protected ResultList getUncachedResults() throws WdkModelException, WdkUserException {
         WsfRequest request = new WsfRequest();
         request.setPluginClass(query.getProcessName());
         request.setProjectId(wdkModel.getProjectId());
@@ -239,12 +239,13 @@ public class ProcessQueryInstance extends QueryInstance {
             throw new WdkModelException(ex);
         } catch (MalformedURLException ex) {
             throw new WdkModelException(ex);
-        }
+        } catch (JSONException ex) {
+            throw new WdkModelException(ex);
+		}
     }
 
-    private WsfResponse getResponse(WsfRequest request, boolean local)
-            throws ServiceException, WdkModelException, RemoteException,
-            MalformedURLException, JSONException {
+    private WsfResponse getResponse(WsfRequest request, boolean local) throws WdkModelException, ServiceException, MalformedURLException, RemoteException, JSONException {
+    	
         String serviceUrl = query.getWebServiceUrl();
 
         // DEBUG
@@ -270,8 +271,7 @@ public class ProcessQueryInstance extends QueryInstance {
                     String more = service.requestResult(requestId, i);
                     buffer.append(more);
                 }
-                String[][] content = Utilities
-                        .convertContent(buffer.toString());
+                String[][] content = Utilities.convertContent(buffer.toString());
                 response.setResult(content);
             }
         } else { // invoke the process query via web service
@@ -309,8 +309,7 @@ public class ProcessQueryInstance extends QueryInstance {
      * @see org.gusdb.wdk.model.query.QueryInstance#getSql()
      */
     @Override
-    public String getSql() throws WdkModelException, SQLException,
-            NoSuchAlgorithmException, JSONException, WdkUserException {
+    public String getSql() throws WdkModelException, WdkUserException {
         // always get sql that queries on the cached result
         return getCachedSql();
     }
@@ -324,9 +323,7 @@ public class ProcessQueryInstance extends QueryInstance {
      */
     @Override
     public void createCache(Connection connection, String tableName,
-            int instanceId, String[] indexColumns) throws WdkModelException,
-            SQLException, NoSuchAlgorithmException, JSONException,
-            WdkUserException {
+            int instanceId, String[] indexColumns) throws WdkModelException, WdkUserException {
         logger.debug("creating process query cache...");
         DBPlatform platform = query.getWdkModel().getQueryPlatform();
         Column[] columns = query.getColumns();
@@ -384,9 +381,14 @@ public class ProcessQueryInstance extends QueryInstance {
 
             // also insert the result into the cache
             insertToCache(connection, tableName, instanceId);
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkUserException("Unable to create cache.", e);
+        }
+        finally {
             if (stmt != null)
-                stmt.close();
+                try { stmt.close(); }
+                catch (SQLException e) { logger.error("Unable to close Statement!", e); }
         }
     }
 
@@ -396,8 +398,7 @@ public class ProcessQueryInstance extends QueryInstance {
      * @see org.gusdb.wdk.model.query.QueryInstance#getResultSize()
      */
     @Override
-    public int getResultSize() throws NoSuchAlgorithmException, SQLException,
-            WdkModelException, JSONException, WdkUserException {
+    public int getResultSize() throws WdkModelException, WdkUserException {
         if (!cached) {
             int count = 0;
             ResultList resultList = getResults();

@@ -1,15 +1,15 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
@@ -38,6 +38,7 @@ public class FlatVocabParam extends AbstractEnumParam {
         super(param);
         this.query = param.query;
         this.queryTwoPartName = param.queryTwoPartName;
+        this.servedQueryName = param.servedQueryName;
     }
 
     // ///////////////////////////////////////////////////////////////////
@@ -72,9 +73,7 @@ public class FlatVocabParam extends AbstractEnumParam {
      * org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel model) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveReferences(WdkModel model) throws WdkModelException {
         super.resolveReferences(model);
 
         // the vocab query is always cloned to keep a reference to the param
@@ -110,104 +109,98 @@ public class FlatVocabParam extends AbstractEnumParam {
      * 
      * @see org.gusdb.wdk.model.query.param.AbstractEnumParam#initVocabMap()
      */
-    protected synchronized void initVocabMap() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
-        Param dependedParam = getDependedParam();
-        if (termInternalMap != null && termInternalMap.size() > 0
-                && (dependedParam == null || !isDependedValueChanged()))
-            return;
-
-        termInternalMap = new LinkedHashMap<String, String>();
-        termDisplayMap = new LinkedHashMap<String, String>();
-        termParentMap = new LinkedHashMap<String, String>();
-
-        if (dependedParam != null && dependedValue == null)
-            return;
-
-        // check if the query has "display" column
-        boolean hasDisplay = query.getColumnMap().containsKey(COLUMN_DISPLAY);
-        boolean hasParent = query.getColumnMap()
-                .containsKey(COLUMN_PARENT_TERM);
-
-        // prepare param values
-        Map<String, String> values = new LinkedHashMap<String, String>();
-        values.put(PARAM_SERVED_QUERY, servedQueryName);
-        if (dependedParam != null) {
-            // use the depended param as the input param for the vocab query, 
-            // since the depended param might be overriden by question or 
-            // query, while the original input param in the vocab query
-            // does not know about it.
-            query.addParam(dependedParam.clone());
-            values.put(dependedParam.getName(), dependedValue);
-        }
-
-        User user = wdkModel.getSystemUser();
-
-        Map<String, String> context = new LinkedHashMap<String, String>();
-        context.put(Utilities.QUERY_CTX_PARAM, getFullName());
-        if (contextQuestion != null)
-            context.put(Utilities.QUERY_CTX_QUESTION,
-                    contextQuestion.getFullName());
-        logger.debug("PARAM [" + getFullName() + "] context Question: " +
-            ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName()) +
-            ", context Query: " + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
-        QueryInstance instance = query.makeInstance(user, values, true, 0,
-                context);
-
-        ResultList result = instance.getResults();
-        while (result.next()) {
-            Object objTerm = result.get(COLUMN_TERM);
-            Object objInternal = result.get(COLUMN_INTERNAL);
-            if (objTerm == null)
-                throw new WdkModelException("The term of flatVocabParam ["
-                        + getFullName() + "] is null. query ["
-                        + query.getFullName() + "].\n" + instance.getSql());
-            if (objInternal == null)
-                throw new WdkModelException("The internal of flatVocabParam ["
-                        + getFullName() + "] is null. query ["
-                        + query.getFullName() + "].\n" + instance.getSql());
-
-            String term = objTerm.toString().trim();
-            String value = objInternal.toString().trim();
-            String display = hasDisplay ? result.get(COLUMN_DISPLAY).toString()
-                    .trim() : term;
-            String parentTerm = null;
-            if (hasParent) {
-                Object parent = result.get(COLUMN_PARENT_TERM);
-                if (parent != null)
-                    parentTerm = parent.toString().trim();
-            }
-
-            // escape the term & parentTerm
-            // term = term.replaceAll("[,]", "_");
-            // if (parentTerm != null)
-            // parentTerm = parentTerm.replaceAll("[,]", "_");
-            if (term.indexOf(',') >= 0 && dependedParam != null)
-                throw new WdkModelException(this.getFullName()
-                        + ": The term cannot contain comma: '" + term + "'");
-            if (parentTerm != null && parentTerm.indexOf(',') >= 0)
-                throw new WdkModelException(this.getFullName()
-                        + ": The parent term cannot contain " + "comma: '"
-                        + parentTerm + "'");
-
-            termParentMap.put(term, parentTerm);
-
-            termInternalMap.put(term, value);
-            termDisplayMap.put(term, display);
-        }
-        if (termInternalMap.isEmpty()) {
-            if (query instanceof SqlQuery)
-                logger.debug("vocab query returns 0 rows:"
-                        + ((SqlQuery) query).getSql());
-            throw new WdkModelException("No item returned by the query ["
-                    + query.getFullName() + "] of FlatVocabParam ["
-                    + getFullName() + "].");
-        }
-        initTreeMap();
-        applySelectMode();
-
-        setDependedValueChanged(false);
+    protected EnumParamCache createEnumParamCache(String dependedValue) throws WdkModelException {
+    	String errorStr = "Could not retrieve flat vocab values for param " +
+    		getName() + " using depended value " + dependedValue;
+    	try {
+	        Param dependedParam = getDependedParam();
+	        EnumParamCache cache = new EnumParamCache(this, dependedValue);
+	
+	        // check if the query has "display" column
+	        boolean hasDisplay = query.getColumnMap().containsKey(COLUMN_DISPLAY);
+	        boolean hasParent = query.getColumnMap()
+	                .containsKey(COLUMN_PARENT_TERM);
+	
+	        // prepare param values
+	        Map<String, String> values = new LinkedHashMap<String, String>();
+	        values.put(PARAM_SERVED_QUERY, servedQueryName);
+	
+	        // add depended value if is dependent param
+	        if (isDependentParam()) {
+	            // use the depended param as the input param for the vocab query, 
+	            // since the depended param might be overriden by question or 
+	            // query, while the original input param in the vocab query
+	            // does not know about it.
+	            query.addParam(dependedParam.clone());
+	            values.put(dependedParam.getName(), dependedValue);
+	        }
+	
+	        User user = wdkModel.getSystemUser();
+	
+	        Map<String, String> context = new LinkedHashMap<String, String>();
+	        context.put(Utilities.QUERY_CTX_PARAM, getFullName());
+	        if (contextQuestion != null)
+	            context.put(Utilities.QUERY_CTX_QUESTION,
+	                    contextQuestion.getFullName());
+	        logger.debug("PARAM [" + getFullName() + "] context Question: " +
+	            ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName()) +
+	            ", context Query: " + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
+	        QueryInstance instance = query.makeInstance(user, values, true, 0,
+	                context);
+	
+	        ResultList result = instance.getResults();
+	        while (result.next()) {
+	            Object objTerm = result.get(COLUMN_TERM);
+	            Object objInternal = result.get(COLUMN_INTERNAL);
+	            if (objTerm == null)
+	                throw new WdkModelException("The term of flatVocabParam ["
+	                        + getFullName() + "] is null. query ["
+	                        + query.getFullName() + "].\n" + instance.getSql());
+	            if (objInternal == null)
+	                throw new WdkModelException("The internal of flatVocabParam ["
+	                        + getFullName() + "] is null. query ["
+	                        + query.getFullName() + "].\n" + instance.getSql());
+	
+	            String term = objTerm.toString().trim();
+	            String value = objInternal.toString().trim();
+	            String display = hasDisplay ? result.get(COLUMN_DISPLAY).toString()
+	                    .trim() : term;
+	            String parentTerm = null;
+	            if (hasParent) {
+	                Object parent = result.get(COLUMN_PARENT_TERM);
+	                if (parent != null)
+	                    parentTerm = parent.toString().trim();
+	            }
+	
+	            // escape the term & parentTerm
+	            // term = term.replaceAll("[,]", "_");
+	            // if (parentTerm != null)
+	            // parentTerm = parentTerm.replaceAll("[,]", "_");
+	            if (term.indexOf(',') >= 0 && dependedParam != null)
+	                throw new WdkModelException(this.getFullName()
+	                        + ": The term cannot contain comma: '" + term + "'");
+	            if (parentTerm != null && parentTerm.indexOf(',') >= 0)
+	                throw new WdkModelException(this.getFullName()
+	                        + ": The parent term cannot contain " + "comma: '"
+	                        + parentTerm + "'");
+	
+	            cache.addTermValues(term, value, display, parentTerm);
+	        }
+	        if (cache.isEmpty()) {
+	            if (query instanceof SqlQuery)
+	                logger.debug("vocab query returns 0 rows:"
+	                        + ((SqlQuery) query).getSql());
+	            throw new WdkModelException("No item returned by the query ["
+	                    + query.getFullName() + "] of FlatVocabParam ["
+	                    + getFullName() + "].");
+	        }
+	        initTreeMap(cache);
+	        applySelectMode(cache);
+	        return cache;
+    	}
+    	catch (WdkUserException e) {
+    		throw new WdkRuntimeException(errorStr, e);
+    	}
     }
 
     /*

@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model.query;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
@@ -84,9 +82,7 @@ public class ProcessQuery extends Query {
      * .WdkModel)
      */
     @Override
-    public void resolveQueryReferences(WdkModel wdkModel)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+    public void resolveQueryReferences(WdkModel wdkModel) throws WdkModelException {
         if (webServiceUrl == null)
             webServiceUrl = wdkModel.getModelConfig().getWebServiceUrl();
     }
@@ -99,8 +95,7 @@ public class ProcessQuery extends Query {
     @Override
     public QueryInstance makeInstance(User user, Map<String, String> values,
             boolean validate, int assignedWeight, Map<String, String> context)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         return new ProcessQueryInstance(user, this, values, validate,
                 assignedWeight, context);
     }

@@ -9,7 +9,7 @@ import org.gusdb.wdk.model.query.param.TimestampParam;
  * @author xingao
  *
  */
-public class TimestampParamBean extends ParamBean {
+public class TimestampParamBean extends ParamBean<TimestampParam> {
 
     /**
      * @param param

@@ -1,14 +1,10 @@
 package org.gusdb.wdk.model;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.json.JSONException;
 
 public class RecordClassSet extends WdkModelBase implements ModelSetI {
 
@@ -68,9 +64,7 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
     }
 
     @Override
-    public void resolveReferences(WdkModel model) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveReferences(WdkModel model) throws WdkModelException {
         if (name.length() == 0 || name.indexOf('\'') >= 0)
             throw new WdkModelException("recordClassSet name cannot be empty "
                     + "or having single quotes: " + name);

@@ -114,10 +114,10 @@ public class GroupTest {
         WdkModelBean wdkModelBean = new WdkModelBean(wdkModel);
         for (QuestionSetBean questionSet : wdkModelBean.getQuestionSets()) {
             for(QuestionBean question : questionSet.getQuestions()) {
-                Map<String, ParamBean> params = question.getParamsMap();
+                Map<String, ParamBean<?>> params = question.getParamsMap();
                 if (params.size() == 0) continue;
                 
-                Map<GroupBean, Map<String, ParamBean>> groups = question.getParamMapByGroups();
+                Map<GroupBean, Map<String, ParamBean<?>>> groups = question.getParamMapByGroups();
                 Assert.assertTrue(groups.size() > 0); 
             }
         }
