@@ -71,11 +71,11 @@ public class QuestionForm extends MapActionForm {
         }
         if (wdkQuestion == null) return errors;
 
-        Map<String, ParamBean> params = wdkQuestion.getParamsMap();
+        Map<String, ParamBean<?>> params = wdkQuestion.getParamsMap();
         for (String paramName : params.keySet()) {
             String prompt = paramName;
             try {
-                ParamBean param = params.get(paramName);
+            	ParamBean<?> param = params.get(paramName);
                 param.setUser(user);
                 prompt = param.getPrompt();
                 String rawOrDependentValue = (String) getValue(paramName);
@@ -190,7 +190,7 @@ public class QuestionForm extends MapActionForm {
 
     public Map<String, String> getInvalidParams() throws WdkModelException {
         QuestionBean question = getQuestion();
-        Map<String, ParamBean> params = question.getParamsMap();
+        Map<String, ParamBean<?>> params = question.getParamsMap();
         Map<String, String> invalidParams = new LinkedHashMap<String, String>();
         for (String param : values.keySet()) {
             if (!params.containsKey(param))

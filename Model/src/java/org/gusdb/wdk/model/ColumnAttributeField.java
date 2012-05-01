@@ -1,14 +1,11 @@
 package org.gusdb.wdk.model;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.query.Column;
-import org.json.JSONException;
 
 public class ColumnAttributeField extends AttributeField {
 
@@ -43,9 +40,7 @@ public class ColumnAttributeField extends AttributeField {
      * )
      */
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
         super.resolveReferences(wdkModel);
 
         // verify the name

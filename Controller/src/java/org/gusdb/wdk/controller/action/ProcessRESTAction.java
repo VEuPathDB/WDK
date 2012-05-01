@@ -77,10 +77,10 @@ public class ProcessRESTAction extends Action {
                         + "' doesn't exist.");
             Map<String, String> params = new LinkedHashMap<String, String>();
             Map<String, String> outputConfig = new LinkedHashMap<String, String>();
-            Map<String, ParamBean> paramMap = wdkQuestion.getParamsMap();
+            Map<String, ParamBean<?>> paramMap = wdkQuestion.getParamsMap();
             for (String key : paramMap.keySet()) {
                 String val = null;
-                ParamBean param = paramMap.get(key);
+                ParamBean<?> param = paramMap.get(key);
                 if (param instanceof DatasetParamBean) {
                     String data = null;
                     String uploadFile = "";
@@ -311,9 +311,9 @@ public class ProcessRESTAction extends Action {
         writer.println("<doc title='description'><![CDATA["
                 + wdkQuestion.getDescription() + "]]></doc>");
         writer.println("<request>");
-        Map<String, ParamBean> params = wdkQuestion.getParamsMap();
+        Map<String, ParamBean<?>> params = wdkQuestion.getParamsMap();
         for (String key : params.keySet()) {
-            ParamBean param = params.get(key);
+        	ParamBean<?> param = params.get(key);
             def_value = param.getDefault();
             repeating = "";
             if (param instanceof EnumParamBean) {
@@ -349,7 +349,7 @@ public class ProcessRESTAction extends Action {
                     displayMap = getDisplayMap(ep);
                 } else {
                     displayMap = new HashMap<String, String>();
-                    ParamBean dependedParam = ep.getDependedParam();
+                    ParamBean<?> dependedParam = ep.getDependedParam();
                     Set<String> dependedValues;
                     if (dependedParam instanceof EnumParamBean) {
                         EnumParamBean enumParam = (EnumParamBean) dependedParam;

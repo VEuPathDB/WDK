@@ -1,15 +1,11 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
+import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.json.JSONObject;
 
 public class EnumParam extends AbstractEnumParam {
@@ -38,17 +34,10 @@ public class EnumParam extends AbstractEnumParam {
     // /////////// Protected properties ////////////////////////////////////
     // ///////////////////////////////////////////////////////////////////
 
-    protected synchronized void initVocabMap() throws WdkModelException {
+    @Override
+    protected EnumParamCache createEnumParamCache(String dependedValue) throws WdkModelException {
         Param dependedParam = getDependedParam();
-        if (termInternalMap != null && termInternalMap.size() > 0
-                && (dependedParam == null || !isDependedValueChanged()))
-            return;
-
-        termInternalMap = new LinkedHashMap<String, String>();
-        termDisplayMap = new LinkedHashMap<String, String>();
-
-        termParentMap = new LinkedHashMap<String, String>();
-
+        EnumParamCache cache = new EnumParamCache(this, dependedValue);
         EnumItem[] enumItems = enumItemList.getEnumItems();
         for (EnumItem item : enumItems) {
             String term = item.getTerm();
@@ -68,27 +57,25 @@ public class EnumParam extends AbstractEnumParam {
                         + ": The parent term cannot contain" + "comma: '"
                         + parentTerm + "'");
 
-            if (dependedParam != null && dependedValue != null) {
-                // if this is a dependent param, and the depended value
-                // is set, only include items that are valid for the
-                // current depended value
+            if (isDependentParam()) {
+                // if this is a dependent param, only include items that are
+            	//   valid for the current depended value
                 String[] dependedValues = dependedValue.split(",");
                 skip = !item.isValidFor(dependedValues);
             }
 
             if (!skip) {
-                termInternalMap.put(term, item.getInternal());
-                termDisplayMap.put(term, display);
-                termParentMap.put(term, parentTerm);
+                cache.addTermValues(term, item.getInternal(), display, parentTerm);
             }
         }
         // check if the result is empty
-        if (termInternalMap.isEmpty())
+        if (cache.isEmpty())
             throw new WdkEmptyEnumListException("The EnumParam ["
-                    + getFullName() + "] doesn't have any value");
+                    + getFullName() + "] doesn't have any values.");
 
-        initTreeMap();
-        applySelectMode();
+        initTreeMap(cache);
+        applySelectMode(cache);
+        return cache;
     }
 
     /*
@@ -135,9 +122,7 @@ public class EnumParam extends AbstractEnumParam {
      * org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel model) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
+    public void resolveReferences(WdkModel model) throws WdkModelException {
         super.resolveReferences(model);
 
         enumItemList.resolveReferences(model);

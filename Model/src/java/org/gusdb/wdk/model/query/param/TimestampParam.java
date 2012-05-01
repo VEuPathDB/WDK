@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model.query.param;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.text.DateFormat;
 import java.util.Date;
 
@@ -64,9 +62,8 @@ public class TimestampParam extends Param {
      * (org.gusdb.wdk.model.user.User, java.lang.String)
      */
     @Override
-    public String dependentValueToIndependentValue(User user,
-            String dependentValue) throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException, JSONException {
+    public String dependentValueToIndependentValue(User user, String dependentValue)
+    		throws WdkUserException, WdkModelException {
         return dependentValue;
     }
 
@@ -79,8 +76,7 @@ public class TimestampParam extends Param {
      */
     @Override
     public String dependentValueToInternalValue(User user, String dependentValue)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException,  WdkUserException {
         return dependentValue;
     }
 
@@ -93,8 +89,7 @@ public class TimestampParam extends Param {
      */
     @Override
     public String dependentValueToRawValue(User user, String dependentValue)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
+            throws WdkModelException, WdkUserException {
         return dependentValue;
     }
 
@@ -107,8 +102,7 @@ public class TimestampParam extends Param {
      */
     @Override
     public String rawOrDependentValueToDependentValue(User user, String rawValue)
-            throws NoSuchAlgorithmException, WdkModelException,
-            WdkUserException, SQLException, JSONException {
+            throws WdkModelException, WdkUserException {
         return rawValue;
     }
 
@@ -121,8 +115,7 @@ public class TimestampParam extends Param {
      */
     @Override
     protected void validateValue(User user, String rawOrDependentValue)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         // the value of timestamp can be any string
         // make sure the value is in valid time format
         // try {

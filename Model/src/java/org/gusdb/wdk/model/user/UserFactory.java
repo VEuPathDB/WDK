@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -59,29 +58,24 @@ public class UserFactory {
     private static final String EMAIL_MACRO_USER_NAME = "USER_NAME";
     private static final String EMAIL_MACRO_EMAIL = "EMAIL";
     private static final String EMAIL_MACRO_PASSWORD = "PASSWORD";
-
-    public static String encrypt(String str) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("MD5");
-        byte[] encrypted = digest.digest(str.getBytes());
+    
+    public static String encrypt(String str) {
         // convert each byte into hex format
         StringBuffer buffer = new StringBuffer();
-        for (byte code : encrypted) {
+        for (byte code : Utilities.getEncryptedBytes(str)) {
             buffer.append(Integer.toHexString(code & 0xFF));
         }
         return buffer.toString();
     }
 
-    /**
+	/**
      * md5 checksum algorithm. encrypt(String) drops leading zeros of hex codes
      * so is not compatible with md5
      **/
     public static String md5(String str) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("MD5");
-        byte[] encrypted = digest.digest(str.getBytes());
         StringBuffer buffer = new StringBuffer();
-        for (byte code : encrypted) {
-            buffer.append(Integer.toString((code & 0xff) + 0x100, 16)
-                    .substring(1));
+        for (byte code : Utilities.getEncryptedBytes(str)) {
+            buffer.append(Integer.toString((code & 0xff) + 0x100, 16).substring(1));
         }
         return buffer.toString();
     }
@@ -234,15 +228,12 @@ public class UserFactory {
             return user;
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new WdkUserException(ex);
         } finally {
             SqlUtils.closeStatement(psUser);
         }
     }
 
-    public User createGuestUser() throws WdkUserException, WdkModelException,
-            SQLException, NoSuchAlgorithmException {
+    public User createGuestUser() throws WdkUserException, WdkModelException {
         PreparedStatement psUser = null;
         try {
             // get a new user id
@@ -279,7 +270,11 @@ public class UserFactory {
             logger.info("Guest user #" + userId + " created.");
 
             return user;
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkUserException("Unable to create guest user.", e);
+        }
+        finally {
             SqlUtils.closeStatement(psUser);
         }
     }
@@ -329,8 +324,6 @@ public class UserFactory {
 
             // passed validation, load user information
             return getUser(userId);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new WdkUserException(ex);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
@@ -521,8 +514,6 @@ public class UserFactory {
                         + "'s signature is updated");
             }
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } catch (NoSuchAlgorithmException ex) {
             throw new WdkUserException(ex);
         } finally {
             SqlUtils.closeResultSet(rs);
@@ -958,8 +949,6 @@ public class UserFactory {
 
             // passed check, then save the new password
             savePassword(email, newPassword);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new WdkUserException(ex);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {
@@ -985,8 +974,6 @@ public class UserFactory {
             ps.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql, "wdk-user-update-password",
                     start);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new WdkUserException(ex);
         } catch (SQLException ex) {
             throw new WdkUserException(ex);
         } finally {

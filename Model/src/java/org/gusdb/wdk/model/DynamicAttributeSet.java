@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,7 +8,6 @@ import java.util.Map;
 import org.gusdb.wdk.model.attribute.plugin.AttributePluginReference;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
-import org.json.JSONException;
 
 public class DynamicAttributeSet extends WdkModelBase {
 
@@ -132,9 +129,7 @@ public class DynamicAttributeSet extends WdkModelBase {
      * .WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel wodkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
         RecordClass recordClass = question.getRecordClass();
         Query dynamicAttributeQuery = question.getDynamicAttributeQuery();
         Map<String, Column> columns = dynamicAttributeQuery.getColumnMap();

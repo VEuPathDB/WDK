@@ -1,15 +1,11 @@
 package org.gusdb.wdk.model.view;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
 
 public class SummaryView extends WdkView {
 
@@ -41,9 +37,7 @@ public class SummaryView extends WdkView {
     }
 
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
         super.resolveReferences(wdkModel);
 
         if (handlerClass != null) {  // resolve the handler class

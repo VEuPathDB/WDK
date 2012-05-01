@@ -130,7 +130,7 @@ public class QueryTester {
             prompt += " (choose one";
             if (enumParam.getMultiPick().booleanValue()) prompt += " or more";
             prompt += "):";
-            Map<String, String> vocabs = enumParam.getVocabMap();
+            Map<String, String> vocabs = enumParam.getVocabMap(null); // assume independent param
             for (String term : vocabs.keySet()) {
                 String internal = vocabs.get(term);
                 prompt += newline + "    " + term + " (" + internal + ")";

@@ -19,20 +19,17 @@ import org.json.JSONException;
  * @author xingao
  * 
  */
-public class AnswerParamBean extends ParamBean {
-
-    private AnswerParam answerParam;
+public class AnswerParamBean extends ParamBean<AnswerParam> {
 
     public AnswerParamBean(AnswerParam answerParam) {
         super(answerParam);
-        this.answerParam = answerParam;
     }
 
     public StepBean[] getSteps(UserBean user) throws WdkUserException,
             WdkModelException, SQLException, JSONException,
             NoSuchAlgorithmException {
         // only get the steps for the first record class
-        Map<String, RecordClass> recordClasses = answerParam.getRecordClasses();
+        Map<String, RecordClass> recordClasses = param.getRecordClasses();
         RecordClass recordClass = recordClasses.values().iterator().next();
         return user.getSteps(recordClass.getFullName());
     }
@@ -40,7 +37,7 @@ public class AnswerParamBean extends ParamBean {
     public AnswerValueBean getAnswerValue() throws Exception {
         try {
             User user = this.user.getUser();
-            AnswerValue answerValue = answerParam.getAnswerValue(user,
+            AnswerValue answerValue = param.getAnswerValue(user,
                     dependentValue);
             return new AnswerValueBean(answerValue);
         } catch (Exception ex) {
@@ -55,6 +52,6 @@ public class AnswerParamBean extends ParamBean {
      * @see org.gusdb.wdk.model.query.param.AnswerParam#allowRecordClass(java.lang.String)
      */
     public boolean allowRecordClass(String recordClassName) {
-        return answerParam.allowRecordClass(recordClassName);
+        return param.allowRecordClass(recordClassName);
     }
 }

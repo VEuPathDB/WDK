@@ -30,9 +30,7 @@ public class RecordClass extends WdkModelBase implements
     // private static final Logger logger = Logger.getLogger(RecordClass.class);
 
     public static Query prepareQuery(WdkModel wdkModel, Query query,
-            String[] paramNames) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+            String[] paramNames) throws WdkModelException {
         Map<String, Column> columns = query.getColumnMap();
         Map<String, Param> originalParams = query.getParamMap();
         Query newQuery = query.clone();
@@ -477,9 +475,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     @Override
-    public void resolveReferences(WdkModel model) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveReferences(WdkModel model) throws WdkModelException {
         if (resolved) return;
         super.resolveReferences(model);
         this.wdkModel = model;
@@ -564,8 +560,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     private void resolveCategoryTreeReferences(WdkModel model)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
+            throws WdkModelException {
         // ensure attribute categories are unique, then add attribute
         // references to appropriate places on category tree
         if (attributeCategoryTree == null) {
@@ -590,8 +585,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     private void resolveAttributeQueryReferences(WdkModel wdkModel)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
+            throws WdkModelException {
         String[] paramNames = primaryKeyField.getColumnRefs();
         for (AttributeQueryReference reference : attributesQueryRefList) {
             // validate attribute query
@@ -633,9 +627,7 @@ public class RecordClass extends WdkModelBase implements
         }
     }
 
-    private void resolveAliasQuery(WdkModel wdkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    private void resolveAliasQuery(WdkModel wdkModel) throws WdkModelException {
         if (aliasQueryRef != null) {
             Query query = (SqlQuery) wdkModel.resolveReference(aliasQueryRef);
 
@@ -668,8 +660,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     private void resolveTableFieldReferences(WdkModel wdkModel)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
+            throws WdkModelException {
         String[] paramNames = primaryKeyField.getColumnRefs();
 
         // resolve the references for table queries
@@ -691,8 +682,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     private void resolveFilterReferences(WdkModel wdkModel)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
+            throws WdkModelException {
         // resolve references for filter instances
         for (AnswerFilter filter : filterList) {
             filter.resolveReferences(wdkModel);
@@ -734,9 +724,7 @@ public class RecordClass extends WdkModelBase implements
         }
     }
 
-    private Param getUserParam() throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
+    private Param getUserParam() throws WdkModelException {
         // create the missing user_id param for the attribute query
         ParamSet paramSet = wdkModel.getParamSet(Utilities.INTERNAL_PARAM_SET);
         if (paramSet.contains(Utilities.PARAM_USER_ID))

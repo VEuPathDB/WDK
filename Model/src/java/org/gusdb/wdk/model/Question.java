@@ -287,8 +287,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             Map<String, String> dependentValues, int pageStart, int pageEnd,
             Map<String, Boolean> sortingAttributes,
             AnswerFilterInstance filter, int assignedWeight)
-            throws NoSuchAlgorithmException, WdkUserException,
-            WdkModelException, SQLException, JSONException {
+            throws WdkUserException, WdkModelException {
         return makeAnswerValue(user, dependentValues, pageStart, pageEnd,
                 sortingAttributes, filter, true, assignedWeight);
     }
@@ -311,8 +310,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             Map<String, String> dependentValues, int pageStart, int pageEnd,
             Map<String, Boolean> sortingAttributes,
             AnswerFilterInstance filter, boolean validate, int assignedWeight)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            throws WdkUserException, WdkModelException {
         Map<String, String> context = new LinkedHashMap<String, String>();
         context.put(Utilities.QUERY_CTX_QUESTION, getFullName());
 
@@ -569,9 +567,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     }
 
     @Override
-    public void resolveReferences(WdkModel model) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveReferences(WdkModel model) throws WdkModelException {
         if (resolved) return;
         super.resolveReferences(model);
         this.wdkModel = model;
@@ -953,9 +949,4 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
         else summaryViewList.add(view);
     }
 
-    public void resolveDependedParams(Map<String, String> paramValues)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
-        query.resolveDependedParams(paramValues);
-    }
 }

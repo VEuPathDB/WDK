@@ -3,12 +3,9 @@
  */
 package org.gusdb.wdk.model;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import org.json.JSONException;
 
 /**
  * @author Jerric
@@ -34,8 +31,7 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
         return values;
     }
 
-    public Object getValue() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+    public Object getValue() throws WdkModelException {
         if (value == null)
             value = Utilities.replaceMacros(field.getText(), pkValues);
         return value;
@@ -63,35 +59,27 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
      * @return
      * @see java.lang.Object#hashCode()
      */
+    @Override
     public int hashCode() {
-        try {
-            return getValue().hashCode();
-        } catch (WdkModelException ex) {
-            throw new RuntimeException(ex);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new RuntimeException(ex);
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        } catch (JSONException ex) {
-            throw new RuntimeException(ex);
-        }
+    	try {
+    		return getValue().hashCode();
+    	}
+    	catch (WdkModelException e) {
+    		throw new WdkRuntimeException(e);
+    	}
     }
 
     /**
      * @return
      * @see java.lang.Object#toString()
      */
+    @Override
     public String toString() {
         try {
             return (String) getValue();
-        } catch (WdkModelException ex) {
-            throw new RuntimeException(ex);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new RuntimeException(ex);
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        } catch (JSONException ex) {
-            throw new RuntimeException(ex);
         }
+        catch (WdkModelException ex) {
+            throw new WdkRuntimeException(ex);
+        } 
     }
 }

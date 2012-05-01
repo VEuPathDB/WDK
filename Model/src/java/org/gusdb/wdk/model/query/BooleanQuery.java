@@ -239,8 +239,7 @@ public class BooleanQuery extends SqlQuery {
     @Override
     public QueryInstance makeInstance(User user, Map<String, String> values,
             boolean validate, int assignedWeight, Map<String, String> context)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         return new BooleanQueryInstance(user, this, values, validate,
                 assignedWeight, context);
     }

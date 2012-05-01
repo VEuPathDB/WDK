@@ -238,9 +238,7 @@ public class AnswerFilterInstance extends WdkModelBase {
      * .WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
         if (resolved) return;
 
         this.wdkModel = wdkModel;
@@ -296,8 +294,7 @@ public class AnswerFilterInstance extends WdkModelBase {
     }
 
     public String applyFilter(User user, String sql, int assignedWeight)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         Map<String, Param> params = filterQuery.getParamMap();
 
         String filterSql = filterQuery.getSql();

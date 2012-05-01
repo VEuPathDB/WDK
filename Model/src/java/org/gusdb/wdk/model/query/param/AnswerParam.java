@@ -92,9 +92,7 @@ public class AnswerParam extends Param {
      * org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel model) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
+    public void resolveReferences(WdkModel model) throws WdkModelException {
         super.resolveReferences(model);
         if (resolved) return;
 
@@ -161,9 +159,8 @@ public class AnswerParam extends Param {
      * (org.gusdb.wdk.model.user.User, java.lang.String)
      */
     @Override
-    public String dependentValueToIndependentValue(User user,
-            String dependentValue) throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException, JSONException {
+    public String dependentValueToIndependentValue(User user, String dependentValue)
+    		throws WdkUserException, WdkModelException {
         int stepId = Integer.parseInt(dependentValue);
         Step step = user.getStep(stepId);
         return step.getAnswerKey();
@@ -178,8 +175,7 @@ public class AnswerParam extends Param {
      */
     @Override
     public String dependentValueToInternalValue(User user, String dependentValue)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         int stepId = Integer.parseInt(dependentValue);
 
         if (isNoTranslation()) return Integer.toString(stepId);
@@ -198,8 +194,7 @@ public class AnswerParam extends Param {
      */
     @Override
     public String dependentValueToRawValue(User user, String dependentValue)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
+            throws WdkModelException, WdkUserException {
         return dependentValue;
     }
 
@@ -212,8 +207,7 @@ public class AnswerParam extends Param {
      */
     @Override
     public String rawOrDependentValueToDependentValue(User user, String rawValue)
-            throws NoSuchAlgorithmException, WdkModelException,
-            WdkUserException, SQLException, JSONException {
+            throws WdkModelException, WdkUserException {
         return rawValue;
     }
 
@@ -226,8 +220,7 @@ public class AnswerParam extends Param {
      */
     @Override
     protected void validateValue(User user, String dependentValue)
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         int stepId = Integer.parseInt(dependentValue);
         Step step = user.getStep(stepId);
 

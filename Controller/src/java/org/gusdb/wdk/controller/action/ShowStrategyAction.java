@@ -408,15 +408,13 @@ public class ShowStrategyAction extends ShowQuestionAction {
             WdkModelException, WdkUserException, SQLException {
 
         JSONArray jsParams = new JSONArray();
-        Map<GroupBean, Map<String, ParamBean>> groups = step.getQuestion().getParamMapByGroups();
+        Map<GroupBean, Map<String, ParamBean<?>>> groups = step.getQuestion().getParamMapByGroups();
         Map<String, String> paramValues = step.getParams();
         for (GroupBean group : groups.keySet()) {
-            Map<String, ParamBean> params = groups.get(group);
+            Map<String, ParamBean<?>> params = groups.get(group);
             for (String paramName : params.keySet()) {
-                ParamBean param = params.get(paramName);
-                String dependentValue = paramValues.containsKey(paramName) ? paramValues.get(paramName)
-                        : param.getDefault();
-
+            	ParamBean<?> param = params.get(paramName);
+                String dependentValue = getDependentValue(paramValues, param);
                 JSONObject jsParam = new JSONObject();
                 jsParam.put("name", paramName);
                 if (param != null) {
@@ -427,12 +425,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
                     param.setUser(user);
                     param.setTruncateLength(TRUNCATE_LENGTH);
                     try {
-                        String rawValue;
-                        if (param instanceof EnumParamBean) {
-                            rawValue = ((EnumParamBean) param).getRawDisplayValue();
-                        } else rawValue = param.getBriefRawValue();
-                        jsParam.put("value", rawValue);
-			jsParam.put("internal",param.getRawValue());
+                        jsParam.put("value", getRawValue(paramValues, param));
+                        jsParam.put("internal",param.getRawValue());
                     } catch (Exception ex) {
                         throw new WdkModelException(ex);
                     }
@@ -445,7 +439,26 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("params", jsParams);
     }
 
-    static private void outputSubStrategy(WdkModelBean model, UserBean user,
+    private static String getRawValue(Map<String, String> paramValues, ParamBean<?> param)
+    		throws WdkUserException, WdkModelException {
+        if (param instanceof EnumParamBean) {
+        	EnumParamBean enumParam = (EnumParamBean)param;
+        	if (enumParam.isDependentParam()) {
+        		enumParam.setDependedValue(getDependentValue(paramValues, enumParam.getDependedParam()));
+        	}
+            return enumParam.getRawDisplayValue();
+        }
+        return param.getBriefRawValue();
+	}
+
+	private static String getDependentValue(Map<String, String> paramValues, ParamBean<?> param)
+    		throws WdkUserException, WdkModelException {
+    	return paramValues.containsKey(param.getName()) ?
+    			paramValues.get(param.getName()) :
+                param.getDefault();
+	}
+
+	static private void outputSubStrategy(WdkModelBean model, UserBean user,
             StepBean step, JSONObject jsStep, int strategyId)
             throws NoSuchAlgorithmException, JSONException, WdkModelException,
             WdkUserException, SQLException {

@@ -3,10 +3,6 @@
  */
 package org.gusdb.wdk.model;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-
-import org.json.JSONException;
 
 /**
  * @author xingao
@@ -79,9 +75,7 @@ public class MacroDeclaration extends WdkModelBase {
      * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel wodkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveReferences(WdkModel wodkModel) throws WdkModelException {
         // do nothing
     }
 

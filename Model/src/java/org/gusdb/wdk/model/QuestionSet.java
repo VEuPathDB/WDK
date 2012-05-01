@@ -1,13 +1,9 @@
 package org.gusdb.wdk.model;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.json.JSONException;
 
 /**
  * QuestionSet.java
@@ -123,9 +119,7 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
         else questionMap.put(question.getName(), question);
     }
 
-    public void resolveReferences(WdkModel model) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveReferences(WdkModel model) throws WdkModelException {
         for (Question question : questionMap.values()) {
             question.resolveReferences(model);
         }

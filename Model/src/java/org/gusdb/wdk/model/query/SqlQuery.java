@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model.query;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -91,8 +89,7 @@ public class SqlQuery extends Query {
     @Override
     public QueryInstance makeInstance(User user, Map<String, String> values,
             boolean validate, int assignedWeight, Map<String, String> context)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         return new SqlQueryInstance(user, this, values, validate,
                 assignedWeight, context);
     }
@@ -175,9 +172,7 @@ public class SqlQuery extends Query {
      * .WdkModel)
      */
     @Override
-    public void resolveQueryReferences(WdkModel wdkModel)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+    public void resolveQueryReferences(WdkModel wdkModel) throws WdkModelException {
         // apply the sql macros into sql
         if (this.sql == null)
             throw new WdkModelException("null sql in "
