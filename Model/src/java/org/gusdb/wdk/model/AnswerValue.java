@@ -127,15 +127,11 @@ public class AnswerValue {
      * @param endIndex
      *            The index of the last <code>RecordInstance</code> in the page,
      *            inclusive.
-     * @throws JSONException
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
      * @throws WdkUserException
      */
     AnswerValue(User user, Question question, QueryInstance idsQueryInstance,
             int startIndex, int endIndex, Map<String, Boolean> sortingMap,
             AnswerFilterInstance filter) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         this.user = user;
         this.question = question;
@@ -216,9 +212,7 @@ public class AnswerValue {
         return pageCount;
     }
 
-    public int getResultSize() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public int getResultSize() throws WdkModelException, WdkUserException {
         logger.debug("getting result size: cache=" + resultSize + ", isCached="
                 + idsQueryInstance.isCached());
         if (resultSize == null || !idsQueryInstance.isCached()) {
@@ -815,8 +809,7 @@ public class AnswerValue {
         return sql;
     }
 
-    public String getIdSql() throws NoSuchAlgorithmException, SQLException,
-            WdkModelException, JSONException, WdkUserException {
+    public String getIdSql() throws WdkModelException, WdkUserException {
         // String[] pkColumns =
         // question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
         //
@@ -1150,10 +1143,12 @@ public class AnswerValue {
     }
 
     public int getFilterSize(String filterName)
-            throws NoSuchAlgorithmException, SQLException, WdkModelException,
-            JSONException, WdkUserException {
-        Integer size = resultSizesByFilter.get(filterName);
-        if (size == null || !idsQueryInstance.isCached()) {
+            throws WdkModelException, WdkUserException {
+    	Integer size = resultSizesByFilter.get(filterName);
+	    if (size != null && idsQueryInstance.isCached()) {
+	    	return size;
+	    }
+	    try {
             RecordClass recordClass = question.getRecordClass();
 
             String innerSql = idsQueryInstance.getSql();
@@ -1175,8 +1170,12 @@ public class AnswerValue {
             size = Integer.parseInt(result.toString());
 
             resultSizesByFilter.put(filterName, size);
-        }
-        return size;
+            
+            return size;
+    	}
+	    catch (SQLException e) {
+	    	throw new WdkUserException("Unable to get filter size for filter " + filterName, e);
+	    }
     }
 
     /**

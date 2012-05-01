@@ -13,16 +13,16 @@ import org.json.JSONException;
  * A wrapper on a {@link Param} that provides simplified access for consumption
  * by a view
  */
-public abstract class ParamBean {
+public abstract class ParamBean<T extends Param> {
 
-    // private static Logger logger = Logger.getLogger( ParamBean.class );
+    // private static Logger logger = Logger.getLogger( ParamBean.class.getName() );
 
     protected UserBean user;
     protected String dependentValue;
     protected int truncateLength;
-    private Param param;
+    protected T param;
 
-    public ParamBean(Param param) {
+    public ParamBean(T param) {
         this.param = param;
         truncateLength = Utilities.TRUNCATE_DEFAULT;
     }
@@ -51,8 +51,7 @@ public abstract class ParamBean {
         return param.getHelp();
     }
 
-    public String getDefault() throws NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException, WdkModelException {
+    public String getDefault() throws WdkUserException, WdkModelException {
         return param.getDefault();
     }
 
@@ -108,17 +107,11 @@ public abstract class ParamBean {
         this.dependentValue = dependentValue;
     }
 
-    public String getRawValue() throws Exception {
-        try {
+    public String getRawValue() throws WdkModelException, WdkUserException {
         return param.dependentValueToRawValue(user.getUser(), dependentValue);
-        } catch(Exception ex) {
-            ex.printStackTrace();
-            throw ex;
-        }
     }
 
-    public String getBriefRawValue() throws Exception {
-        try {
+    public String getBriefRawValue() throws WdkModelException, WdkUserException {
         String rawValue = getRawValue();
         if (rawValue != null) {
             rawValue = rawValue.replaceAll("\\,", ", ");
@@ -126,10 +119,6 @@ public abstract class ParamBean {
                 rawValue = rawValue.substring(0, truncateLength) + "...";
         }
         return rawValue;
-        } catch(Exception ex) {
-            ex.printStackTrace();
-            throw ex;
-        }
     }
 
     public void setTruncateLength(int truncateLength) {

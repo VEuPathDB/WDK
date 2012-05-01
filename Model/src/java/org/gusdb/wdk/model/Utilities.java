@@ -99,6 +99,8 @@ public class Utilities {
     public static final String QUERY_CTX_QUERY = "wdk-query";
     public static final String QUERY_CTX_USER = "wdk-user";
 
+    private static final String ALGORITHM = "MD5";
+    
     /*
      * Inner class to act as a JAF datasource to send HTML e-mail content
      */
@@ -130,19 +132,17 @@ public class Utilities {
         }
     }
 
-    public static String encrypt(String data) throws WdkModelException,
-            NoSuchAlgorithmException {
+    public static String encrypt(String data) throws WdkModelException {
         return encrypt(data, false);
     }
 
     public static String encrypt(String data, boolean shortDigest)
-            throws WdkModelException, NoSuchAlgorithmException {
+            throws WdkModelException {
         // cannot encrypt null value
         if (data == null || data.length() == 0)
             throw new WdkModelException("Cannot encrypt an empty/null string");
-
-        MessageDigest digest = MessageDigest.getInstance("MD5");
-        byte[] byteBuffer = digest.digest(data.toString().getBytes());
+        
+        byte[] byteBuffer = getEncryptedBytes(data.toString());
         if (shortDigest) {
             // just take the first 8 bytes from MD5 hash
             int size = Math.min(byteBuffer.length, 8);
@@ -160,9 +160,17 @@ public class Utilities {
         return buffer.toString();
     }
 
-    public static String replaceMacros(String text, Map<String, Object> tokens)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+    public static byte[] getEncryptedBytes(String str) {
+    	try {
+    		MessageDigest digest = MessageDigest.getInstance(ALGORITHM);
+    		return digest.digest(str.getBytes());
+    	}
+    	catch (NoSuchAlgorithmException e) {
+			throw new WdkRuntimeException("Unable to initialize MessageDigest with algorithm " + ALGORITHM, e);
+    	}
+	}
+    
+    public static String replaceMacros(String text, Map<String, Object> tokens) {
         for (String token : tokens.keySet()) {
             Object object = tokens.get(token);
             String value = (object == null) ? "" : object.toString();

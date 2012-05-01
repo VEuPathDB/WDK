@@ -57,10 +57,10 @@ public class ProcessQuestionAction extends Action {
                     + request.getParameter(CConstants.QUESTION_FULLNAME_PARAM)
                     + "' doesn't exist.");
 
-        Map<String, ParamBean> params = question.getParamsMap();
+        Map<String, ParamBean<?>> params = question.getParamsMap();
         // convert from raw data to user dependent data
         for (String paramName : params.keySet()) {
-            ParamBean param = params.get(paramName);
+        	ParamBean<?> param = params.get(paramName);
 
             String rawValue = (String) qform.getValue(paramName);
             logger.debug("Param raw: " + paramName + " = " + rawValue);
@@ -100,14 +100,11 @@ public class ProcessQuestionAction extends Action {
                     dependentValue = Integer.toString(dataset.getUserDatasetId());
                 }
             } else if (rawValue != null && rawValue.length() > 0) {
-                dependentValue = param.rawOrDependentValueToDependentValue(
-                        user, rawValue);
+            	// check to see if this param is dependent and assign depended value
+                dependentValue = param.rawOrDependentValueToDependentValue(user, rawValue);
             }
-            // if (dependentValue != null && dependentValue.length() > 0) {
-            logger.debug("param " + paramName + " - "
-                    + param.getClass().getSimpleName() + " = " + dependentValue);
+            logger.debug("param " + paramName + " - " + param.getClass().getSimpleName() + " = " + dependentValue);
             paramValues.put(paramName, dependentValue);
-            // }
         }
         return paramValues;
     }
@@ -126,7 +123,7 @@ public class ProcessQuestionAction extends Action {
             // the params has been validated, and now is parsed, and if the size
             // of the value is too long, ti will be replaced is checksum
             Map<String, String> params = prepareParams(wdkUser, request, qForm);
-
+            
             // get the assigned weight
             String strWeight = request.getParameter(CConstants.WDK_ASSIGNED_WEIGHT_KEY);
             boolean hasWeight = (strWeight != null && strWeight.length() > 0);

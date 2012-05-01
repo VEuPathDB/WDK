@@ -15,13 +15,12 @@ import org.json.JSONException;
  * @author xingao
  * 
  */
-public class DatasetParamBean extends ParamBean {
+public class DatasetParamBean extends ParamBean<DatasetParam> {
 
     private DatasetParam param;
 
     public DatasetParamBean(DatasetParam datasetParam) {
         super(datasetParam);
-        this.param = datasetParam;
     }
 
     public DatasetBean getDataset() throws WdkModelException, WdkUserException,

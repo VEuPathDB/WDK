@@ -3,10 +3,6 @@
  */
 package org.gusdb.wdk.model;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-
-import org.json.JSONException;
 
 /**
  * @author Jerric
@@ -65,8 +61,7 @@ public class WdkModelText extends WdkModelBase {
      * .WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel wodkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+    public void resolveReferences(WdkModel wodkModel) {
     // have nothing to do
     }
 }

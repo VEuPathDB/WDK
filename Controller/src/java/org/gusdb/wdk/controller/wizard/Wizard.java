@@ -157,9 +157,7 @@ public class Wizard extends WdkModelBase {
      * .WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
 
         if (stageMap.size() == 0)
             throw new WdkModelException("The wizard does not contain any "

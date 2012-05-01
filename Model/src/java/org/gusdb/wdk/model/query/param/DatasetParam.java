@@ -62,9 +62,7 @@ public class DatasetParam extends Param {
      * org.gusdb.wdk.model.Param#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel model) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
+    public void resolveReferences(WdkModel model) throws WdkModelException {
         super.resolveReferences(model);
         recordClass = (RecordClass) wdkModel.resolveReference(recordClassRef);
     }
@@ -99,9 +97,8 @@ public class DatasetParam extends Param {
      *      java.lang.String)
      */
     @Override
-    public String dependentValueToIndependentValue(User user,
-            String dependentValue) throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException, JSONException {
+    public String dependentValueToIndependentValue(User user, String dependentValue)
+    		throws WdkUserException, WdkModelException {
         logger.debug("dependent to independent: " + dependentValue);
         int userDatasetId = Integer.parseInt(dependentValue);
         Dataset dataset = user.getDataset(userDatasetId);
@@ -118,8 +115,7 @@ public class DatasetParam extends Param {
      */
     @Override
     public String dependentValueToInternalValue(User user, String dependentValue)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         // the input has to be a user-dataset-id
         int userDatasetId = Integer.parseInt(dependentValue);
 
@@ -159,8 +155,7 @@ public class DatasetParam extends Param {
      */
     @Override
     public String dependentValueToRawValue(User user, String dependentValue)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
+            throws WdkModelException, WdkUserException {
         logger.debug("dependent to raw: " + dependentValue);
         int userDatasetId = Integer.parseInt(dependentValue);
         Dataset dataset = user.getDataset(userDatasetId);
@@ -177,8 +172,7 @@ public class DatasetParam extends Param {
      */
     @Override
     public String rawOrDependentValueToDependentValue(User user, String rawValue)
-            throws NoSuchAlgorithmException, WdkModelException,
-            WdkUserException, SQLException {
+            throws WdkModelException, WdkUserException {
         // first assume the input is dependent value, that is, user dataset id
         if (rawValue == null || rawValue.length() == 0) return null;
         if (rawValue.matches("\\d+")) {
@@ -206,8 +200,7 @@ public class DatasetParam extends Param {
      * @throws SQLException
      */
     public String rawValueToDependentValue(User user, String uploadFile,
-            String rawValue) throws NoSuchAlgorithmException, WdkUserException,
-            WdkModelException, SQLException {
+            String rawValue) throws WdkUserException, WdkModelException {
         logger.debug("raw to dependent: " + rawValue);
         Dataset dataset = user.createDataset(recordClass, uploadFile, rawValue);
         return Integer.toString(dataset.getUserDatasetId());
@@ -221,9 +214,7 @@ public class DatasetParam extends Param {
      * .user.User, java.lang.String)
      */
     @Override
-    protected void validateValue(User user, String dependentValue)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+    protected void validateValue(User user, String dependentValue) throws WdkModelException, WdkUserException {
         // try to get the dataset
         int userDatasetId = Integer.parseInt(dependentValue);
         user.getDataset(userDatasetId);

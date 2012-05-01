@@ -44,8 +44,7 @@ public class ResultFactory {
     }
 
     public ResultList getCachedResults(QueryInstance instance)
-            throws SQLException, NoSuchAlgorithmException, WdkModelException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
 
         // get the cached sql
         Query query = instance.getQuery();
@@ -62,28 +61,36 @@ public class ResultFactory {
         sql.append(" = ").append(instance.getInstanceId());
 
         // get the resultList
-        DataSource dataSource = platform.getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
-                sql.toString(), query.getFullName() + "-cached");
-        return new SqlResultList(resultSet);
+        try {
+        	DataSource dataSource = platform.getDataSource();
+        	ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
+        			sql.toString(), query.getFullName() + "-cached");
+        	return new SqlResultList(resultSet);
+        }
+        catch (SQLException e) {
+        	throw new WdkUserException("Unable to retrieve cached results.", e);
+        }
     }
 
     public int getInstanceId(QueryInstance instance, String[] indexColumns)
-            throws SQLException, NoSuchAlgorithmException, WdkModelException,
-            JSONException, WdkUserException {
-        Query query = instance.getQuery();
-        QueryInfo queryInfo = cacheFactory.getQueryInfo(query);
-        // get the query instance id; null if not exist
-        Integer instanceId = checkInstanceId(instance, queryInfo);
-        if (instanceId == null) // instance cache not exist, create it
-            instanceId = createCache(instance, queryInfo, indexColumns);
-        instance.setInstanceId(instanceId);
-        return instanceId;
+            throws WdkModelException, WdkUserException {
+    	try {
+	        Query query = instance.getQuery();
+	        QueryInfo queryInfo = cacheFactory.getQueryInfo(query);
+	        // get the query instance id; null if not exist
+	        Integer instanceId = checkInstanceId(instance, queryInfo);
+	        if (instanceId == null) // instance cache not exist, create it
+	            instanceId = createCache(instance, queryInfo, indexColumns);
+	        instance.setInstanceId(instanceId);
+	        return instanceId;
+    	}
+    	catch (SQLException e) {
+    		throw new WdkUserException("Unable to get instance ID.", e);
+    	}
     }
 
     public String getCacheTable(QueryInstance instance, String[] indexColumn)
-            throws SQLException, WdkModelException, NoSuchAlgorithmException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         // make sure the instance is cached
         getInstanceId(instance, indexColumn);
         Query query = instance.getQuery();
@@ -109,8 +116,7 @@ public class ResultFactory {
      * @throws WdkUserException
      */
     private Integer checkInstanceId(QueryInstance instance, QueryInfo queryInfo)
-            throws NoSuchAlgorithmException, WdkModelException, JSONException,
-            WdkUserException, SQLException {
+    		throws WdkUserException, WdkModelException {
         String checksum = instance.getChecksum();
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(CacheFactory.COLUMN_INSTANCE_ID).append(", ");
@@ -134,14 +140,17 @@ public class ResultFactory {
             instance.setResultMessage(message);
             instance.setInstanceId(instanceId);
             return instanceId;
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Unable to check instance ID.", e);
+        }
+        finally {
             SqlUtils.closeResultSet(resultSet);
         }
     }
 
     private int createCache(QueryInstance instance, QueryInfo queryInfo,
-            String[] indexColumns) throws JSONException, SQLException,
-            WdkUserException, NoSuchAlgorithmException, WdkModelException {
+            String[] indexColumns) throws SQLException, WdkUserException, WdkModelException {
         DataSource dataSource = platform.getDataSource();
 
         // start transaction
@@ -198,13 +207,7 @@ public class ResultFactory {
         } catch (WdkUserException ex) {
             connection.rollback();
             throw ex;
-        } catch (NoSuchAlgorithmException ex) {
-            connection.rollback();
-            throw ex;
         } catch (WdkModelException ex) {
-            connection.rollback();
-            throw ex;
-        } catch (JSONException ex) {
             connection.rollback();
             throw ex;
         } finally {
@@ -255,8 +258,7 @@ public class ResultFactory {
 
     private void addCacheInstance(Connection connection, QueryInfo queryInfo,
             QueryInstance instance, int instanceId, String checksum)
-            throws SQLException, NoSuchAlgorithmException, WdkModelException,
-            JSONException, WdkUserException {
+    		throws WdkModelException, WdkUserException, SQLException {
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(CacheFactory.TABLE_INSTANCE).append(" (");
         sql.append(CacheFactory.COLUMN_INSTANCE_ID).append(", ");
@@ -273,10 +275,16 @@ public class ResultFactory {
             ps.setString(3, checksum);
             platform.setClobData(ps, 4, instance.getResultMessage(), false);
             ps.executeUpdate();
-        } finally {
+        }
+        finally {
             // close the statement manually, since we cannot close the
             // connection; it's not committed yet.
-            if (ps != null) ps.close();
+        	try {
+        		if (ps != null) ps.close();
+        	}
+        	catch (SQLException e) {
+        		logger.error("Unable to close PreparedStatement after update!");
+        	}
         }
     }
 }

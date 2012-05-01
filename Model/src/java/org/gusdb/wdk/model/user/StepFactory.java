@@ -504,8 +504,7 @@ public class StepFactory {
     }
 
     // get left child id, right child id in here
-    Step loadStep(User user, int displayId) throws WdkUserException,
-            SQLException, WdkModelException, JSONException {
+    Step loadStep(User user, int displayId) throws WdkUserException, WdkModelException {
         String answerIdColumn = AnswerFactory.COLUMN_ANSWER_ID;
         ResultSet rsStep = null;
         String sql = "SELECT h.*, a." + AnswerFactory.COLUMN_ANSWER_CHECKSUM
@@ -532,14 +531,19 @@ public class StepFactory {
 
             return loadStep(user, rsStep, false);
         }
+        catch (SQLException e) {
+        	throw new WdkUserException("Unable to load step.", e);
+		}
+        catch (JSONException e) {
+        	throw new WdkUserException("Unable to load step.", e);
+		}
         finally {
             SqlUtils.closeResultSet(rsStep);
         }
     }
 
     private Step loadStep(User user, ResultSet rsStep, boolean loadTree)
-            throws WdkModelException, SQLException, JSONException,
-            WdkUserException {
+            throws WdkModelException, WdkUserException, SQLException, JSONException {
         // load Step info
         int stepId = rsStep.getInt(COLUMN_STEP_INTERNAL_ID);
         int displayId = rsStep.getInt(COLUMN_DISPLAY_ID);
@@ -593,8 +597,7 @@ public class StepFactory {
     }
 
     private void updateStepTree(User user, Step step)
-            throws NoSuchAlgorithmException, WdkUserException,
-            WdkModelException, JSONException, SQLException {
+            throws WdkUserException, WdkModelException {
         Question question = step.getQuestion();
         Map<String, String> displayParams = step.getParamValues();
 
@@ -667,6 +670,9 @@ public class StepFactory {
             SqlUtils.verifyTime(wdkModel, sql.toString(),
                     "wdk-step-factory-update-step-tree", start);
         }
+        catch (SQLException e) {
+        	throw new WdkUserException("Could not update step tree.", e);
+        }
         finally {
             SqlUtils.closeStatement(psUpdateStepTree);
         }
@@ -685,8 +691,7 @@ public class StepFactory {
      * @throws NoSuchAlgorithmException
      */
     void updateStep(User user, Step step, boolean updateTime)
-            throws WdkUserException, SQLException, NoSuchAlgorithmException,
-            WdkModelException, JSONException {
+            throws WdkUserException, WdkModelException {
         logger.debug("step #" + step.getDisplayId() + " new custom name: '"
                 + step.getBaseCustomName() + "'");
         // update custom name
@@ -725,6 +730,9 @@ public class StepFactory {
 
             // update dependencies
             if (step.isCombined()) updateStepTree(user, step);
+        }
+        catch (SQLException e) {
+        	throw new WdkUserException("Could not update step.", e);
         }
         finally {
             SqlUtils.closeStatement(psStep);

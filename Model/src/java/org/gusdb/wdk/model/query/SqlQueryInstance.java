@@ -52,9 +52,7 @@ public class SqlQueryInstance extends QueryInstance {
      */
     protected SqlQueryInstance(User user, SqlQuery query,
             Map<String, String> values, boolean validate, int assignedWeight,
-            Map<String, String> context) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+            Map<String, String> context) throws WdkModelException, WdkUserException {
         super(user, query, values, validate, assignedWeight, context);
         this.query = query;
     }
@@ -79,16 +77,18 @@ public class SqlQueryInstance extends QueryInstance {
      * Integer, java.lang.Integer)
      */
     @Override
-    protected ResultList getUncachedResults() throws WdkModelException,
-            SQLException, NoSuchAlgorithmException, JSONException,
-            WdkUserException {
-        String sql = getUncachedSql();
-
-        DBPlatform platform = query.getWdkModel().getQueryPlatform();
-        DataSource dataSource = platform.getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-                query.getFullName() + "-uncached-result");
-        return new SqlResultList(resultSet);
+    protected ResultList getUncachedResults() throws WdkModelException, WdkUserException {
+    	try {
+	        String sql = getUncachedSql();
+	        DBPlatform platform = query.getWdkModel().getQueryPlatform();
+	        DataSource dataSource = platform.getDataSource();
+	        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+	                query.getFullName() + "-uncached-result");
+	        return new SqlResultList(resultSet);
+    	}
+    	catch (SQLException e) {
+    		throw new WdkUserException("Could not get uncached results from DB.", e);
+    	}
     }
 
     /*
@@ -100,8 +100,7 @@ public class SqlQueryInstance extends QueryInstance {
      */
     @Override
     public void insertToCache(Connection connection, String tableName,
-            int instanceId) throws WdkModelException, SQLException,
-            NoSuchAlgorithmException, JSONException, WdkUserException {
+            int instanceId) throws WdkModelException, WdkUserException {
         String idColumn = CacheFactory.COLUMN_INSTANCE_ID;
         Map<String, Column> columns = query.getColumnMap();
         StringBuffer columnList = new StringBuffer();
@@ -133,17 +132,19 @@ public class SqlQueryInstance extends QueryInstance {
 
             SqlUtils.verifyTime(wdkModel, buffer.toString(),
                     query.getFullName() + "-insert-cache", start);
-        } catch (SQLException ex) {
+        }
+        catch (SQLException ex) {
             logger.error("Fail to run SQL:\n" + buffer);
-            throw ex;
-        } finally {
-            if (stmt != null)
-                stmt.close();
+            throw new WdkUserException("Could not insert values into cache.", ex);
+        }
+        finally {
+        	if (stmt != null)
+                try { stmt.close(); }
+                catch (SQLException e) { logger.error("Could not close Statement!", e); }
         }
     }
 
-    public String getUncachedSql() throws WdkModelException, SQLException,
-            NoSuchAlgorithmException, JSONException, WdkUserException {
+    public String getUncachedSql() throws WdkModelException, WdkUserException {
         Map<String, String> internalValues = getInternalParamValues();
         Map<String, Param> params = query.getParamMap();
         String sql = query.getSql();
@@ -186,8 +187,7 @@ public class SqlQueryInstance extends QueryInstance {
      * @see org.gusdb.wdk.model.query.QueryInstance#getSql()
      */
     @Override
-    public String getSql() throws WdkModelException, SQLException,
-            NoSuchAlgorithmException, JSONException, WdkUserException {
+    public String getSql() throws WdkModelException, WdkUserException {
         if (isCached())
             return getCachedSql();
         else
@@ -204,8 +204,7 @@ public class SqlQueryInstance extends QueryInstance {
     @Override
     public void createCache(Connection connection, String tableName,
             int instanceId, String[] indexColumns)
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         // get the sql with param values applied.
         String sql = getUncachedSql();
 
@@ -226,12 +225,14 @@ public class SqlQueryInstance extends QueryInstance {
             ResultFactory resultFactory = wdkModel.getResultFactory();
             resultFactory.createCacheTableIndex(connection, tableName,
                     indexColumns);
-        } catch (SQLException ex) {
-            logger.error("Fail to run SQL:\n" + buffer);
-            throw ex;
+        }
+        catch (SQLException ex) {
+        	logger.error("Fail to run SQL:\n" + buffer);
+            throw new WdkUserException("Unable to create cache.", ex);
         } finally {
             if (stmt != null)
-                stmt.close();
+            	try { stmt.close(); }
+                catch (SQLException e) { logger.error("Could not close Statement!", e); }
         }
     }
 }

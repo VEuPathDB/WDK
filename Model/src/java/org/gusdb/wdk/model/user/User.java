@@ -772,8 +772,7 @@ public class User /* implements Serializable */{
     }
 
     public Step getStep(int displayId) throws WdkUserException,
-            WdkModelException, SQLException, JSONException,
-            NoSuchAlgorithmException {
+            WdkModelException {
         return stepFactory.loadStep(this, displayId);
     }
 
@@ -900,19 +899,16 @@ public class User /* implements Serializable */{
         return datasetFactory;
     }
 
-    public Dataset getDataset(String datasetChecksum) throws WdkUserException,
-            SQLException, WdkModelException {
+    public Dataset getDataset(String datasetChecksum) throws WdkUserException, WdkModelException {
         return datasetFactory.getDataset(this, datasetChecksum);
     }
 
-    public Dataset getDataset(int userDatasetId) throws SQLException,
-            WdkModelException, WdkUserException {
+    public Dataset getDataset(int userDatasetId) throws WdkModelException, WdkUserException {
         return datasetFactory.getDataset(this, userDatasetId);
     }
 
     public Dataset createDataset(RecordClass recordClass, String uploadFile,
-            String strValues) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException {
+            String strValues) throws WdkUserException, WdkModelException {
         return datasetFactory.getDataset(this, recordClass, uploadFile,
                 strValues);
     }
@@ -1168,11 +1164,7 @@ public class User /* implements Serializable */{
 
         String key = Long.toString(now.getTime()) + "->"
                 + Integer.toString(userId);
-        try {
-            key = UserFactory.encrypt(key);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new WdkUserException(ex);
-        }
+        key = UserFactory.encrypt(key);
         // save the remote key
         String saveKey = Long.toString(now.getTime()) + "<-" + key;
         globalPreferences.put(PREF_REMOTE_KEY, saveKey);

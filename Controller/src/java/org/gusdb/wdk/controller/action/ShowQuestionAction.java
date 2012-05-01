@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Vector;
 
 import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -32,6 +33,7 @@ import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.WdkEmptyEnumListException;
 import org.json.JSONException;
 
@@ -45,19 +47,22 @@ import org.gusdb.fgputil.FormatUtil;
 
 public class ShowQuestionAction extends Action {
 
+    private static final long serialVersionUID = 606366686398482133L;
+
+    private static final Logger logger = Logger.getLogger(ShowQuestionAction.class.getName());
+    
     public static final String LABELS_SUFFIX = "-labels";
     public static final String TERMS_SUFFIX = "-values";
 
     public static final String PARAM_INPUT_STEP = "inputStep";
 
     private static final int MAX_PARAM_LABEL_LEN = 200;
-    /**
-     * 
-     */
-    private static final long serialVersionUID = 606366686398482133L;
-    private static final Logger logger = Logger
-            .getLogger(ShowQuestionAction.class);
 
+    private static final String DEFAULT_VIEW_FILE =
+    	CConstants.WDK_CUSTOM_VIEW_DIR + File.separator + 
+    	CConstants.WDK_PAGES_DIR + File.separator +
+    	CConstants.WDK_QUESTION_PAGE;
+    
     static String[] getLengthBoundedLabels(String[] labels) {
         return getLengthBoundedLabels(labels, MAX_PARAM_LABEL_LEN);
     }
@@ -118,32 +123,14 @@ public class ShowQuestionAction extends Action {
         UserBean user = ActionUtility.getUser(servlet, request);
         wdkQuestion.setUser(user);
 
-        logger.debug("strategy count: " + user.getStrategyCount());
-
         qForm.setServlet(servlet);
         qForm.setQuestion(wdkQuestion);
 
         boolean hasAllParams = true;
-        
-        // fetch the previous values
         ParamBean[] params = wdkQuestion.getParams();
-        Map<String, String> paramValues = new LinkedHashMap<String, String>();
-        for (ParamBean param : params) {
-            param.setUser(user);
-            String paramName = param.getName();
-            String paramValue = (String) qForm.getValue(paramName);
 
-            if (paramValue == null || paramValue.length() == 0)
-                paramValue = Utilities.fromArray(request
-                        .getParameterValues(paramName));
-            if (paramValue == null || paramValue.length() == 0)
-                paramValue = null;
-            if (paramValue != null)
-                paramValues.put(paramName, paramValue);
-        }
-            
-        // resolve the depended params
-        wdkQuestion.resolveDependedParams(paramValues);
+        // fetch the previous values
+        Map<String, String> paramValues = getParamMapFromForm(user, params, qForm, request);
 
         // get invalid params
         request.setAttribute("invalidParams", qForm.getInvalidParams());
@@ -154,20 +141,26 @@ public class ShowQuestionAction extends Action {
             String paramValue = paramValues.get(paramName);
 
             // handle the additional information
-            logger.debug("ShowQuestion: processing " + paramName);
             if (param instanceof EnumParamBean) {
                 EnumParamBean enumParam = (EnumParamBean) param;
                 
+                if (enumParam.isDependentParam() && enumParam.getDependedValue() == null) {
+                	// value not previously set (e.g. by getVocabAction)
+                	ParamBean dependedParam = enumParam.getDependedParam();
+                	String currentDependedValue = paramValues.get(dependedParam.getName());
+                	if (currentDependedValue == null) {
+                		// no previous value supplied; use default value
+                		currentDependedValue = dependedParam.getDefault();
+                	}
+                	enumParam.setDependedValue(currentDependedValue);
+                }
+                
                 String[] terms = enumParam.getVocab();
-                String[] labels = getLengthBoundedLabels(enumParam
-                        .getDisplays());
+                String[] labels = getLengthBoundedLabels(enumParam.getDisplays());
                 qForm.setArray(paramName + LABELS_SUFFIX, labels);
                 qForm.setArray(paramName + TERMS_SUFFIX, terms);
-
-                logger.debug("terms: " + FormatUtil.arrayToString(terms));
                 
                 // if no default is assigned, use the first enum item
-                logger.debug("ShowQuestion: is enumParam with current value (before): " + paramValue);
                 if (paramValue == null) {
                     String defaultValue = param.getDefault();
                     if (defaultValue != null)
@@ -176,7 +169,6 @@ public class ShowQuestionAction extends Action {
                     paramValue = param.dependentValueToRawValue(user,
                             paramValue);
                 }
-                logger.debug("ShowQuestion: is enumParam with default value (after): " + paramValue);
                 if (paramValue != null) {
                     String[] currentValues = paramValue.split(",");
                     qForm.setArray(paramName, currentValues);
@@ -229,10 +221,11 @@ public class ShowQuestionAction extends Action {
                             paramValue);
                 }
             }
-            if (paramValue == null)
+            if (paramValue == null) {
                 hasAllParams = false;
-            else
+            } else {
                 qForm.setValue(paramName, paramValue);
+            }
             paramValues.put(paramName, paramValue);
             logger.debug("param: " + paramName + "='" + paramValue + "'");
         }
@@ -249,131 +242,86 @@ public class ShowQuestionAction extends Action {
         request.setAttribute("params", paramValues);
     }
 
-    @Override
+    private static Map<String, String> getParamMapFromForm(UserBean user, ParamBean[] params, QuestionForm qForm, HttpServletRequest request) {
+        Map<String, String> paramValues = new LinkedHashMap<String, String>();
+        for (ParamBean param : params) {
+            param.setUser(user);
+            String paramName = param.getName();
+            String paramValue = (String) qForm.getValue(paramName);
+
+            if (paramValue == null || paramValue.length() == 0)
+                paramValue = Utilities.fromArray(request.getParameterValues(paramName));
+            if (paramValue != null && paramValue.length() == 0)
+                paramValue = null;
+            if (paramValue != null)
+                paramValues.put(paramName, paramValue);
+        }
+        return paramValues;
+	}
+
+	@Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        logger.debug("Entering ShowQuestionAction..");
-
-        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
-        ActionServlet servlet = getServlet();
         try {
+        	logger.debug("Entering ShowQuestionAction..");
+
+        	ActionServlet servlet = getServlet();
             QuestionForm qForm = (QuestionForm) form;
-            String qFullName = qForm.getQuestionFullName();
-            if (qFullName == null) {
-                qFullName = request
-                        .getParameter(CConstants.QUESTION_FULLNAME_PARAM);
-            }
-            if (qFullName == null) {
-                qFullName = (String) request
-                        .getAttribute(CConstants.QUESTION_FULLNAME_PARAM);
-            }
-            QuestionBean wdkQuestion = wdkModel.getQuestion(qFullName);
-            if (wdkQuestion == null)
-                throw new WdkUserException("The question '" + qFullName
-                        + "' doesn't exist.");
+            String qFullName = getQuestionName(qForm, request);
+            QuestionBean wdkQuestion = getQuestionBean(servlet, qFullName);
 
-            setUpDependentParams(request, wdkQuestion);
+            prepareQuestionForm(wdkQuestion, servlet, request, qForm);
+            setParametersAsAttributes(request);
             
-            ShowQuestionAction.prepareQuestionForm(wdkQuestion, servlet,
-                    request, qForm);
-
-            // check and set custom form
-            ShowQuestionAction.checkCustomForm(servlet, request, wdkQuestion);
-
-            String defaultViewFile = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator
-                    + CConstants.WDK_PAGES_DIR + File.separator
-                    + CConstants.WDK_QUESTION_PAGE;
-            logger.debug("forward: " + defaultViewFile);
-
-            ActionForward forward = new ActionForward(defaultViewFile);
-
-            Enumeration<?> paramNames = request.getParameterNames();
-            while (paramNames.hasMoreElements()) {
-                String paramName = (String) paramNames.nextElement();
-                String[] values = request.getParameterValues(paramName);
-                String value = Utilities.fromArray(values);
-                request.setAttribute(paramName, value);
-            }
-
-            String gotoSum = request
-                    .getParameter(CConstants.GOTO_SUMMARY_PARAM);
-            if (qForm.getParamsFilled() && "1".equals(gotoSum)) {
-                forward = mapping.findForward(CConstants.SKIPTO_SUMMARY_MAPKEY);
-                logger.debug("SQA: form has all param vals, going to summary page " + forward.getPath() + " directly");
-            }
-
-            return forward;
-        } catch (Exception ex) {
+            return determineView(servlet, request, wdkQuestion, qForm, mapping);
+        }
+        catch (Exception ex) {
             ex.printStackTrace();
             throw ex;
         }
     }
     
-    
-    /**
-     * Assigns values to dependent params based on the default values OR current values of
-     * the param each depends on.  This enables the page to load the full question without making
-     * an ajax call to retrieve the initial value of dependent params.
-     * 
-     * @param request associated request
-     * @param question question containing the params
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
-     * @throws WdkUserException
-     * @throws SQLException
-     * @throws JSONException
-     */
-    private void setUpDependentParams(HttpServletRequest request, QuestionBean question)
-    		throws WdkModelException, NoSuchAlgorithmException, WdkUserException, SQLException, JSONException {
-        
-        // find the dependent param
-        Map<String, ParamBean> enumParams = question.getParamsMap();
-        for (ParamBean paramBean : enumParams.values()) {
-        	if (paramBean instanceof EnumParamBean) {
-        		EnumParamBean enumParamBean = (EnumParamBean)paramBean;
-        		if (enumParamBean.getDependedParam() != null) {
-        			// then this is a dependent param; need to do the following:
-        			// 1. find depended param and get its default value
-        			// 2. set value on dependent param
-        			// 3. test result
-        			// 4. set attribute on request
-        			
-        			ParamBean dependedParam = enumParamBean.getDependedParam();
-        			String defaultValue = dependedParam.getDefault();
-        			logger.debug("Original default value is: " + defaultValue);
-        			if (defaultValue == null && dependedParam instanceof EnumParamBean) {
-                        String[] terms = ((EnumParamBean)dependedParam).getVocab();
-                        defaultValue = terms[0];
-        			}
-        			else {
-        				UserBean user = ActionUtility.getUser(servlet, request);
-        				defaultValue = dependedParam.dependentValueToRawValue(user, defaultValue);
-        				logger.debug("Changed to converted dependent value: " + defaultValue);
-        				// this is apparently not enough; if list, then get last item in list
-        				if (defaultValue.contains(",")) {
-        					String[] vals = defaultValue.split(",");
-        					defaultValue = vals[vals.length-1];
-        					logger.debug("Extracted last value in list: " + defaultValue);
-        				}
-        			}
-        			logger.debug("Will set depended value to " + defaultValue);
-                    enumParamBean.setDependedValue(defaultValue);
+    private QuestionBean getQuestionBean(ActionServlet servlet, String qFullName) throws WdkUserException, WdkModelException {
+        QuestionBean questionBean = ActionUtility.getWdkModel(servlet).getQuestion(qFullName);
+        if (questionBean == null)
+            throw new WdkUserException("The question '" + qFullName + "' doesn't exist.");
+        return questionBean;
+	}
 
-                    // try the dependent value, and ignore empty list exception, since
-                    // it may be caused by the choices on the depended param
-                    try {
-                    	enumParamBean.getDisplayMap();
-                    }
-                    catch (WdkEmptyEnumListException ex) {
-                    	// do nothing
-                    }
-                    
-        			// get default value here..., then:
-        			//enumParamBean.setDependedValue(defaultValue);
-        			request.setAttribute("vocabParam", enumParamBean);
-        		}
-        	}
+	private static ActionForward determineView(ActionServlet servlet,
+			HttpServletRequest request, QuestionBean wdkQuestion,
+			QuestionForm qForm, ActionMapping mapping) {
+        checkCustomForm(servlet, request, wdkQuestion);
+        ActionForward forward = new ActionForward(DEFAULT_VIEW_FILE);
+        if (qForm.getParamsFilled() && "1".equals(request.getParameter(CConstants.GOTO_SUMMARY_PARAM))) {
+            forward = mapping.findForward(CConstants.SKIPTO_SUMMARY_MAPKEY);
+            logger.debug("SQA: form has all param vals, going to summary page " + forward.getPath() + " directly");
         }
-    }
+        return forward;
+	}
+
+	private static void setParametersAsAttributes(HttpServletRequest request) {
+        Enumeration<?> paramNames = request.getParameterNames();
+        while (paramNames.hasMoreElements()) {
+            String paramName = (String) paramNames.nextElement();
+            String[] values = request.getParameterValues(paramName);
+            String value = Utilities.fromArray(values);
+            request.setAttribute(paramName, value);
+        }
+	}
+
+	private String getQuestionName(QuestionForm qForm,
+			HttpServletRequest request) {
+        String qFullName = qForm.getQuestionFullName();
+        if (qFullName == null) {
+            qFullName = request
+                    .getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+        }
+        if (qFullName == null) {
+            qFullName = (String) request
+                    .getAttribute(CConstants.QUESTION_FULLNAME_PARAM);
+        }
+        return qFullName;
+	}
 }

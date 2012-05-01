@@ -31,11 +31,11 @@ import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.json.JSONArray;
-import org.json.JSONException;
 
 /**
  * @author xingao
@@ -84,25 +84,25 @@ public class DatasetFactory {
 
     public Dataset getDataset(User user, RecordClass recordClass,
             String uploadFile, String strValues)
-            throws NoSuchAlgorithmException, WdkModelException,
-            WdkUserException, SQLException {
+            throws WdkModelException, WdkUserException {
         List<String[]> values = parseValues(recordClass, strValues);
         return getDataset(user, recordClass, uploadFile, values);
     }
 
     public Dataset getDataset(User user, RecordClass recordClass,
             String uploadFile, List<String[]> values)
-            throws NoSuchAlgorithmException, WdkModelException,
-            WdkUserException, SQLException {
+            throws WdkModelException, WdkUserException {
         if (values.size() == 0)
             throw new WdkDatasetException("The dataset is empty. User #"
                     + user.getUserId());
 
-        // remove duplicates
-        removeDuplicates(values);
-        String checksum = getChecksum(values);
-        Connection connection = userPlatform.getDataSource().getConnection();
+        Connection connection = null;
         try {
+        	// remove duplicates
+        	removeDuplicates(values);
+        
+        	String checksum = getChecksum(values);
+        	connection = userPlatform.getDataSource().getConnection();
             Dataset dataset;
             connection.setAutoCommit(false);
 
@@ -146,15 +146,28 @@ public class DatasetFactory {
             connection.commit();
             return dataset;
         }
-        catch (SQLException ex) {
-            connection.rollback();
-            throw ex;
+        catch (NoSuchAlgorithmException e) {
+        	throw new WdkRuntimeException(e);
+        }
+        catch (SQLException e) {
+        	try {
+        		if (connection != null) connection.rollback();
+        	}
+        	catch(SQLException e2) {
+        		logger.error("Unable to roll back exception after SQL error during processing.", e2);
+        	}
+            throw new WdkRuntimeException("Error while retrieving dataset.", e);
         }
         finally {
-            if (connection != null) {
-                connection.setAutoCommit(true);
-                connection.close();
-            }
+        	try {
+        		if (connection != null) {
+        			connection.setAutoCommit(true);
+        			connection.close();
+        		}
+        	}
+        	catch(SQLException e2) {
+        		logger.error("Unable to close DB connection.", e2);
+        	}        	
         }
     }
 
@@ -171,33 +184,39 @@ public class DatasetFactory {
      * @throws WdkUserException
      */
     public Dataset getDataset(User user, int userDatasetId)
-            throws SQLException, WdkModelException, WdkUserException {
-        StringBuffer sql = new StringBuffer("SELECT ");
-        sql.append(COLUMN_DATASET_ID);
-        sql.append(" FROM ").append(userSchema).append(TABLE_USER_DATASET);
-        sql.append(" WHERE ").append(Utilities.COLUMN_USER_ID);
-        sql.append(" = ").append(user.getUserId());
-        sql.append(" AND ").append(COLUMN_USER_DATASET_ID);
-        sql.append(" = ").append(userDatasetId);
-
-        DataSource dataSource = userPlatform.getDataSource();
-        Object result = SqlUtils.executeScalar(wdkModel, dataSource,
-                sql.toString(), "wdk-dataset-factory-dataset-by-user-dataset");
-        int datasetId = Integer.parseInt(result.toString());
-
-        Dataset dataset = new Dataset(this, datasetId);
-        dataset.setUser(user);
-        dataset.setUserDatasetId(userDatasetId);
-
-        Connection connection = dataSource.getConnection();
-        try {
-            loadDatasetIndex(connection, dataset);
-            loadUserDataset(connection, dataset);
-        }
-        finally {
-            if (connection != null) connection.close();
-        }
-        return dataset;
+            throws WdkModelException, WdkUserException {
+	        StringBuffer sql = new StringBuffer("SELECT ");
+	        sql.append(COLUMN_DATASET_ID);
+	        sql.append(" FROM ").append(userSchema).append(TABLE_USER_DATASET);
+	        sql.append(" WHERE ").append(Utilities.COLUMN_USER_ID);
+	        sql.append(" = ").append(user.getUserId());
+	        sql.append(" AND ").append(COLUMN_USER_DATASET_ID);
+	        sql.append(" = ").append(userDatasetId);
+	
+	        DataSource dataSource = userPlatform.getDataSource();
+	        Connection connection = null;
+	        try {
+	        	Object result = SqlUtils.executeScalar(wdkModel, dataSource,
+	        			sql.toString(), "wdk-dataset-factory-dataset-by-user-dataset");
+	        	int datasetId = Integer.parseInt(result.toString());
+	
+	        	Dataset dataset = new Dataset(this, datasetId);
+	        	dataset.setUser(user);
+	        	dataset.setUserDatasetId(userDatasetId);
+	
+	        	connection = dataSource.getConnection();
+	            loadDatasetIndex(connection, dataset);
+	            loadUserDataset(connection, dataset);
+	            return dataset;
+	        }
+	        catch (SQLException e) {
+	        	throw new WdkUserException("Unable to get data set with ID: " + userDatasetId, e);
+	        }
+	        finally {
+	            if (connection != null)
+	            	try { connection.close(); }
+	            	catch (SQLException e) { logger.error("Unable to close DB conection!", e); }
+	        }
     }
 
     /**
@@ -213,68 +232,70 @@ public class DatasetFactory {
      * @throws WdkUserException
      */
     public Dataset getDataset(User user, String datasetChecksum)
-            throws SQLException, WdkModelException, WdkUserException {
-        // get dataset id
-        StringBuffer sqlDatasetId = new StringBuffer("SELECT ");
-        sqlDatasetId.append(COLUMN_DATASET_ID);
-        sqlDatasetId.append(" FROM ").append(wdkSchema).append(
-                TABLE_DATASET_INDEX);
-        sqlDatasetId.append(" WHERE ").append(COLUMN_DATASET_CHECKSUM).append(
-                " = ?");
-        int datasetId;
-        ResultSet resultSet = null;
-        try {
-            long start = System.currentTimeMillis();
-            String sql = sqlDatasetId.toString();
-            PreparedStatement psQuery = SqlUtils.getPreparedStatement(
-                    dataSource, sql);
-            psQuery.setString(1, datasetChecksum);
-            resultSet = psQuery.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql,
-                    "wdk-dataset-factory-dataset-by-checksum", start);
-            if (!resultSet.next())
-                throw new WdkModelException("The dataset with checksum '"
-                        + datasetChecksum + "' doesn't exist.");
-            datasetId = resultSet.getInt(COLUMN_DATASET_ID);
-        }
-        finally {
-            SqlUtils.closeResultSet(resultSet);
-        }
-
-        // try to get a user dataset id
-        Connection connection = dataSource.getConnection();
-        try {
-            connection.setAutoCommit(false);
-
-            Dataset dataset = new Dataset(this, datasetId);
-            dataset.setUser(user);
-            loadDatasetIndex(connection, dataset);
-            try {
-                int userDatasetId = getUserDatasetId(connection, user,
-                        datasetId);
-                dataset.setUserDatasetId(userDatasetId);
-                loadUserDataset(connection, dataset);
-            }
-            catch (WdkModelException ex) {
-                // user data set doesn't exist
-                dataset.setUploadFile("");
-                insertUserDataset(connection, dataset);
-            }
-            return dataset;
-        }
-        catch (SQLException ex) {
-            connection.rollback();
-            throw ex;
-        }
-        finally {
-            connection.setAutoCommit(true);
-            connection.close();
-        }
+            throws WdkModelException, WdkUserException {
+    	try {
+	        // get dataset id
+	        StringBuffer sqlDatasetId = new StringBuffer("SELECT ");
+	        sqlDatasetId.append(COLUMN_DATASET_ID);
+	        sqlDatasetId.append(" FROM ").append(wdkSchema).append(
+	                TABLE_DATASET_INDEX);
+	        sqlDatasetId.append(" WHERE ").append(COLUMN_DATASET_CHECKSUM).append(
+	                " = ?");
+	        int datasetId;
+	        ResultSet resultSet = null;
+	        try {
+	            long start = System.currentTimeMillis();
+	            String sql = sqlDatasetId.toString();
+	            PreparedStatement psQuery = SqlUtils.getPreparedStatement(dataSource, sql);
+	            psQuery.setString(1, datasetChecksum);
+	            resultSet = psQuery.executeQuery();
+	            SqlUtils.verifyTime(wdkModel, sql,
+	                    "wdk-dataset-factory-dataset-by-checksum", start);
+	            if (!resultSet.next())
+	                throw new WdkModelException("The dataset with checksum '"
+	                        + datasetChecksum + "' doesn't exist.");
+	            datasetId = resultSet.getInt(COLUMN_DATASET_ID);
+	        }
+	        finally {
+	            SqlUtils.closeResultSet(resultSet);
+	        }
+	
+	        // try to get a user dataset id
+	        Connection connection = dataSource.getConnection();
+	        try {
+	            connection.setAutoCommit(false);
+	
+	            Dataset dataset = new Dataset(this, datasetId);
+	            dataset.setUser(user);
+	            loadDatasetIndex(connection, dataset);
+	            try {
+	                int userDatasetId = getUserDatasetId(connection, user,
+	                        datasetId);
+	                dataset.setUserDatasetId(userDatasetId);
+	                loadUserDataset(connection, dataset);
+	            }
+	            catch (WdkModelException ex) {
+	                // user data set doesn't exist
+	                dataset.setUploadFile("");
+	                insertUserDataset(connection, dataset);
+	            }
+	            return dataset;
+	        }
+	        catch (SQLException ex) {
+	            connection.rollback();
+	            throw ex;
+	        }
+	        finally {
+	            connection.setAutoCommit(true);
+	            connection.close();
+	        }
+    	}
+    	catch (SQLException e) {
+    		throw new WdkUserException("Unable to retrieve data set.", e);
+    	}
     }
 
-    List<String> getDatasetValues(Dataset dataset) throws SQLException,
-            WdkUserException, WdkModelException, NoSuchAlgorithmException,
-            JSONException {
+    List<String> getDatasetValues(Dataset dataset) throws WdkUserException, WdkModelException {
         String columnPrefx = Utilities.COLUMN_PK_PREFIX;
         int columnCount = Utilities.MAX_PK_COLUMN_COUNT;
         StringBuffer sql = new StringBuffer();
@@ -312,6 +333,9 @@ public class DatasetFactory {
                 values.add(pkValue.getValue().toString());
             }
             return values;
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Could not retrieve dataset values.", e);
         }
         finally {
             SqlUtils.closeResultSet(resultSet);

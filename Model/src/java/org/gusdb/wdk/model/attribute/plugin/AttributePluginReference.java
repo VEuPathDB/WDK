@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.attribute.plugin;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,8 +10,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
 
 /**
  * @author jerric
@@ -120,9 +116,7 @@ public class AttributePluginReference extends WdkModelBase {
     }
 
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
         super.resolveReferences(wdkModel);
 
         // make sure the implementation does implement AttributePlugin interface

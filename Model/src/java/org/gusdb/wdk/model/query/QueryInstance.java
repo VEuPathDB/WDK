@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.dbms.QueryInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
@@ -36,22 +37,18 @@ public abstract class QueryInstance {
 
     public abstract void createCache(Connection connection, String tableName,
             int instanceId, String[] indexColumns)
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
-            JSONException, WdkUserException;
+            throws WdkModelException, WdkUserException;
 
     public abstract void insertToCache(Connection connection, String tableName,
-            int instanceId) throws WdkModelException, SQLException,
-            NoSuchAlgorithmException, JSONException, WdkUserException;
+            int instanceId) throws WdkModelException, WdkUserException;
 
-    public abstract String getSql() throws WdkModelException, SQLException,
-            NoSuchAlgorithmException, JSONException, WdkUserException;
+    public abstract String getSql() throws WdkModelException, WdkUserException;
 
     protected abstract void appendSJONContent(JSONObject jsInstance)
             throws JSONException;
 
     protected abstract ResultList getUncachedResults()
-            throws WdkModelException, SQLException, NoSuchAlgorithmException,
-            JSONException, WdkUserException;
+            throws WdkModelException, WdkUserException;
 
     private static final Logger logger = Logger.getLogger(QueryInstance.class);
 
@@ -70,8 +67,7 @@ public abstract class QueryInstance {
 
     protected QueryInstance(User user, Query query, Map<String, String> values,
             boolean validate, int assignedWeight, Map<String, String> context)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         this.user = user;
         this.query = query;
         this.wdkModel = query.getWdkModel();
@@ -97,8 +93,7 @@ public abstract class QueryInstance {
      * @throws NoSuchAlgorithmException
      * @throws WdkUserException
      */
-    public Integer getInstanceId() throws NoSuchAlgorithmException,
-            SQLException, WdkModelException, JSONException, WdkUserException {
+    public Integer getInstanceId() throws WdkModelException, WdkUserException {
         if (instanceId == null) {
             ResultFactory resultFactory = wdkModel.getResultFactory();
             String[] indexColumns = query.getIndexColumns();
@@ -116,8 +111,7 @@ public abstract class QueryInstance {
     }
 
     private void setValues(Map<String, String> values, boolean validate)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         logger.trace("----- input value for [" + query.getFullName()
                 + "] -----");
         for (String paramName : values.keySet()) {
@@ -130,7 +124,7 @@ public abstract class QueryInstance {
         if (params.containsKey(userKey) && !values.containsKey(userKey)) {
             values.put(userKey, Integer.toString(user.getUserId()));
         }
-
+        
         // convert the values into dependent values
         for (Param param : params.values()) {
             if (values.containsKey(param.getName())) {
@@ -146,8 +140,7 @@ public abstract class QueryInstance {
         checksum = null;
     }
 
-    public String getResultMessage() throws NoSuchAlgorithmException,
-            SQLException, WdkModelException, JSONException, WdkUserException {
+    public String getResultMessage() throws WdkModelException, WdkUserException {
         // make sure the result message is loaded by getting instance id
         getInstanceId();
         return resultMessage;
@@ -172,8 +165,7 @@ public abstract class QueryInstance {
         this.cached = cached;
     }
 
-    public String getChecksum() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public String getChecksum() throws WdkModelException, WdkUserException {
         if (checksum == null) {
             JSONObject jsQuery = getJSONContent();
             checksum = Utilities.encrypt(jsQuery.toString());
@@ -181,27 +173,28 @@ public abstract class QueryInstance {
         return checksum;
     }
 
-    public JSONObject getJSONContent() throws JSONException,
-            NoSuchAlgorithmException, WdkModelException, WdkUserException,
-            SQLException {
-        JSONObject jsInstance = new JSONObject();
-        jsInstance.put("project", wdkModel.getProjectId());
-        jsInstance.put("query", query.getFullName());
-
-        jsInstance.put("params", getIndependentParamValuesJSONObject());
-        jsInstance.put("assignedWeight", assignedWeight);
-
-        // include extra info from child
-        appendSJONContent(jsInstance);
-
-        return jsInstance;
+    public JSONObject getJSONContent() throws WdkModelException, WdkUserException {
+    	try {
+	        JSONObject jsInstance = new JSONObject();
+	        jsInstance.put("project", wdkModel.getProjectId());
+	        jsInstance.put("query", query.getFullName());
+	
+	        jsInstance.put("params", getIndependentParamValuesJSONObject());
+	        jsInstance.put("assignedWeight", assignedWeight);
+	
+	        // include extra info from child
+	        appendSJONContent(jsInstance);
+	
+	        return jsInstance;
+    	}
+    	catch (JSONException e) {
+    		throw new WdkUserException("Unable to build JSON object.", e);
+    	}
     }
 
     public JSONObject getIndependentParamValuesJSONObject()
-            throws JSONException, NoSuchAlgorithmException, WdkUserException,
-            WdkModelException, SQLException {
-        // the values are dependent values. need to convert it into independent
-        // values
+            throws WdkUserException, WdkModelException {
+        // the values are dependent values. need to convert it into independent values
         Map<String, String> independentValues = query.dependentValuesToIndependentValues(
                 user, values);
 
@@ -210,17 +203,21 @@ public abstract class QueryInstance {
         independentValues.keySet().toArray(paramNames);
         Arrays.sort(paramNames);
 
-        JSONObject jsParams = new JSONObject();
-        for (String paramName : paramNames) {
-            String value = independentValues.get(paramName);
-            if (value != null && value.length() > 0)
-                jsParams.put(paramName, value);
+        try {
+	        JSONObject jsParams = new JSONObject();
+	        for (String paramName : paramNames) {
+	            String value = independentValues.get(paramName);
+	            if (value != null && value.length() > 0)
+	                jsParams.put(paramName, value);
+	        }
+	        return jsParams;
         }
-        return jsParams;
+        catch (JSONException e) {
+        	throw new WdkUserException("Error while converting param values to JSON." + e);
+        }
     }
 
-    public ResultList getResults() throws NoSuchAlgorithmException,
-            SQLException, WdkModelException, JSONException, WdkUserException {
+    public ResultList getResults() throws WdkModelException, WdkUserException {
         logger.debug("retrieving results of query [" + query.getFullName()
                 + "]");
 
@@ -233,31 +230,33 @@ public abstract class QueryInstance {
         return resultList;
     }
 
-    public int getResultSize() throws NoSuchAlgorithmException, SQLException,
-            WdkModelException, JSONException, WdkUserException {
+    public int getResultSize() throws WdkModelException, WdkUserException {
         logger.debug("start getting query size");
-        StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
-        sql.append(getSql()).append(") f");
-        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        Object objSize = SqlUtils.executeScalar(wdkModel, dataSource,
-                sql.toString(), query.getFullName() + "-count");
-        int resultSize = Integer.parseInt(objSize.toString());
-        logger.debug("end getting query size");
-        return resultSize;
+        try {
+	        StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
+	        sql.append(getSql()).append(") f");
+	        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+	        Object objSize = SqlUtils.executeScalar(wdkModel, dataSource,
+	                sql.toString(), query.getFullName() + "-count");
+	        int resultSize = Integer.parseInt(objSize.toString());
+	        logger.debug("end getting query size");
+	        return resultSize;
+        }
+        catch (SQLException e) {
+        	throw new WdkUserException("Unable to retrieve result size.", e);
+        }
     }
 
     public Map<String, String> getValues() {
         return values;
     }
 
-    private ResultList getCachedResults() throws NoSuchAlgorithmException,
-            SQLException, WdkModelException, JSONException, WdkUserException {
+    private ResultList getCachedResults() throws WdkModelException, WdkUserException {
         ResultFactory factory = wdkModel.getResultFactory();
         return factory.getCachedResults(this);
     }
 
-    protected String getCachedSql() throws NoSuchAlgorithmException,
-            SQLException, WdkModelException, JSONException, WdkUserException {
+    protected String getCachedSql() throws WdkModelException, WdkUserException {
         CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
         QueryInfo queryInfo = cacheFactory.getQueryInfo(getQuery());
 
@@ -272,8 +271,7 @@ public abstract class QueryInstance {
     }
 
     private void validateValues(User user, Map<String, String> values)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         Map<String, Param> params = query.getParamMap();
         Map<String, String> errors = null;
 
@@ -292,13 +290,16 @@ public abstract class QueryInstance {
                 prompt = param.getPrompt();
 
                 // check for dependent param
-                if (param instanceof AbstractEnumParam
-                        && ((AbstractEnumParam) param).getDependedParam() != null) {
+                /* Skipping for now; since AbstractEnumParam.validateValue() only checks for empty values,
+                 * it doesn't matter if the dependent value is "valid" per the depended param.
+                 * We should add code to more robustly verify that the passed param value is valid.
+                if (param instanceof AbstractEnumParam && ((AbstractEnumParam) param).isDependentParam()) {
                     String dependedParam = ((AbstractEnumParam) param).getDependedParam().getName();
                     String dependedValue = values.get(dependedParam);
-                    ((AbstractEnumParam) param).setDependedValue(dependedValue);
-                }
-
+                    // the following method must be implemented!
+                    ((AbstractEnumParam) param).validateValue(user, dependentValue, dependedValue);
+                }*/
+                
                 // validate param
                 param.validate(user, dependentValue);
             }
@@ -322,49 +323,62 @@ public abstract class QueryInstance {
     }
 
     private Map<String, String> fillEmptyValues(Map<String, String> values)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
-        Map<String, String> newValues = new LinkedHashMap<String, String>();
+            throws WdkModelException, WdkUserException {
+        Map<String, String> newValues = new LinkedHashMap<String, String>(values);
         Map<String, Param> paramMap = query.getParamMap();
 
-        // set dependent param values, if any
-        for (Param param : paramMap.values()) {
-            query.resolveDependedValue(values, param);
-        }
-
+        // iterate through this query's params, filling values
         for (String paramName : paramMap.keySet()) {
-            Param param = paramMap.get(paramName);
-
-            String value;
-            if (!values.containsKey(paramName)) {
-                // param not provided, use default value
-                value = param.getDefault();
-            } else { // param provided, but it can be empty
-                value = values.get(paramName);
-                // logger.debug("param " + paramName + " provided value: '"
-                // + value + "'");
-                if (value == null || value.length() == 0) {
-                    value = param.isAllowEmpty() ? param.getEmptyValue() : null;
-                }
-            }
-            newValues.put(paramName, value);
+        	resolveParamValue(paramMap.get(paramName), newValues);
         }
         return newValues;
     }
 
+    private void resolveParamValue(Param param, Map<String, String> values)
+    		throws WdkModelException, WdkUserException {
+        String value;
+        if (!values.containsKey(param.getName())) {
+            // param not provided, determine value
+        	if (param instanceof AbstractEnumParam && ((AbstractEnumParam)param).isDependentParam()) {
+        		// special case; must get value of depended param first
+        		AbstractEnumParam aeParam = (AbstractEnumParam)param;
+        		resolveParamValue(aeParam.getDependedParam(), values);
+        		value = aeParam.getDefault(values.get(aeParam.getDependedParam().getName()));
+        	}
+        	else {
+        		value = param.getDefault();
+        	}
+        }
+        else { // param provided, but it can be empty
+            value = values.get(param.getName());
+            if (value == null || value.length() == 0) {
+                value = param.isAllowEmpty() ? param.getEmptyValue() : null;
+            }
+        }
+        values.put(param.getName(), value);
+	}
+    
     protected Map<String, String> getInternalParamValues()
-            throws WdkModelException, SQLException, NoSuchAlgorithmException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         // the empty & default values are filled
         Map<String, String> values = fillEmptyValues(this.values);
         Map<String, String> internalValues = new LinkedHashMap<String, String>();
         Map<String, Param> params = query.getParamMap();
         for (String paramName : params.keySet()) {
             Param param = params.get(paramName);
+        	String internalValue, dependentValue = values.get(paramName);
 
-            String dependentValue = values.get(paramName);
-            String internalValue = param.getInternalValue(user, dependentValue);
-            internalValues.put(paramName, internalValue);
+            // TODO: refactor so this fork isn't necessary
+            if (param instanceof AbstractEnumParam && ((AbstractEnumParam)param).isDependentParam()) {
+            	EnumParamBean paramBean = new EnumParamBean((AbstractEnumParam)param);
+            	paramBean.setDependedValue(values.get(paramBean.getDependedParam().getName()));
+            	internalValue = paramBean.getInternalValue(user, dependentValue);
+            }
+            else {
+            	internalValue = param.getInternalValue(user, dependentValue);
+            }
+            
+        	internalValues.put(paramName, internalValue);
         }
         return internalValues;
     }

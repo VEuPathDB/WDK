@@ -17,7 +17,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
@@ -67,14 +66,12 @@ public abstract class Query extends WdkModelBase {
     public abstract QueryInstance makeInstance(User user,
             Map<String, String> values, boolean validate, int assignedWeight,
             Map<String, String> context) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException;
 
     public abstract Query clone();
 
     public abstract void resolveQueryReferences(WdkModel wdkModel)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException;
+            throws WdkModelException;
 
     // =========================================================================
     // Constructors
@@ -244,10 +241,14 @@ public abstract class Query extends WdkModelBase {
         return wdkModel;
     }
 
-    public String getChecksum(boolean extra) throws JSONException,
-            NoSuchAlgorithmException, WdkModelException {
-        JSONObject jsQuery = getJSONContent(extra);
-        return Utilities.encrypt(jsQuery.toString());
+    public String getChecksum(boolean extra) throws WdkModelException {
+    	try {
+    		JSONObject jsQuery = getJSONContent(extra);
+    		return Utilities.encrypt(jsQuery.toString());
+    	}
+    	catch (JSONException e) {
+    		throw new WdkModelException("Unable to get JSON content for checksum.", e);
+    	}
     }
 
     /**
@@ -335,9 +336,7 @@ public abstract class Query extends WdkModelBase {
         paramValuesSets = tempList;
     }
 
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
         // logger.debug("Resolving " + getFullName() + " - " + resolved);
         if (resolved) return;
 
@@ -360,7 +359,7 @@ public abstract class Query extends WdkModelBase {
 
         // FIXME - this cause problems with some params, need to investigate. comment out temporarily
         // apply the default values to depended params
-        Map<String, String> valueStub = new LinkedHashMap<String, String>();
+        // Map<String, String> valueStub = new LinkedHashMap<String, String>();
         // resolveDependedParams(valueStub)
 
         // resolve columns
@@ -386,36 +385,6 @@ public abstract class Query extends WdkModelBase {
 
         resolveQueryReferences(wdkModel);
         resolved = true;
-    }
-
-    public void resolveDependedParams(Map<String, String> values) 
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
-        for (Param param : paramMap.values()) {
-            resolveDependedValue(values, param);
-        }
-    }
-
-    void resolveDependedValue(Map<String, String> values, Param param)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
-        if (!(param instanceof AbstractEnumParam)) return;
-
-        AbstractEnumParam enumParam = (AbstractEnumParam) param;
-        Param dependedParam = enumParam.getDependedParam();
-        if (dependedParam == null) return;
-
-        String dependedValue = values.get(dependedParam.getName());
-        resolveDependedValue(values, dependedParam);
-        if (dependedValue == null) {
-            dependedValue = dependedParam.getDefault();
-        } else if (dependedParam instanceof AbstractEnumParam) {
-            // check if the depended value is valid, and if not, use default value.
-            if (!((AbstractEnumParam)dependedParam).getVocabMap().containsKey(dependedValue))
-                dependedValue = dependedParam.getDefault();
-        }
-        logger.debug("PARAM " + param.getName() + " DEPENDED VAL: " + dependedValue);
-        enumParam.setDependedValue(dependedValue);
     }
 
     private void updateParamValuesSetsWithDefaults() throws WdkModelException,
@@ -516,8 +485,7 @@ public abstract class Query extends WdkModelBase {
 
     public Map<String, String> dependentValuesToIndependentValues(User user,
             Map<String, String> dependentValues)
-            throws NoSuchAlgorithmException, WdkModelException,
-            WdkUserException, SQLException, JSONException {
+            throws WdkModelException, WdkUserException {
         Map<String, String> independentValues = new LinkedHashMap<String, String>();
         for (String paramName : dependentValues.keySet()) {
             Param param = paramMap.get(paramName);

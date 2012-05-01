@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.dbms;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -15,9 +14,9 @@ import javax.sql.DataSource;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
-import org.json.JSONException;
 
 /**
  * @author Jerric Gao
@@ -419,30 +418,30 @@ public class CacheFactory {
     }
 
     public synchronized QueryInfo getQueryInfo(Query query)
-            throws SQLException, NoSuchAlgorithmException, JSONException,
-            WdkModelException, WdkUserException {
-        String checksum = query.getChecksum(true);
+            throws WdkModelException, WdkUserException {
+
+    	String checksum = query.getChecksum(true);
         String queryName = query.getFullName();
         QueryInfo queryInfo = checkQueryInfo(queryName, checksum);
         if (queryInfo != null) return queryInfo;
-
-        // cache table doesn't exist, create one
-        queryInfo = new QueryInfo();
-        queryInfo.setQueryId(platform.getNextId(null, TABLE_QUERY));
-        queryInfo.setCacheTable(CACHE_TABLE_PREFIX + queryInfo.getQueryId());
-        queryInfo.setQueryName(queryName);
-        queryInfo.setQueryChecksum(checksum);
-
-        StringBuffer sql = new StringBuffer("INSERT INTO ");
-        sql.append(TABLE_QUERY).append(" (");
-        sql.append(COLUMN_QUERY_ID).append(", ");
-        sql.append(COLUMN_QUERY_NAME).append(", ");
-        sql.append(COLUMN_QUERY_CHECKSUM).append(", ");
-        sql.append(COLUMN_TABLE_NAME).append(") ");
-        sql.append("VALUES (?, ?, ?, ?)");
-
+    	
         PreparedStatement psInsert = null;
         try {
+	        // cache table doesn't exist, create one
+	        queryInfo = new QueryInfo();
+	        queryInfo.setQueryId(platform.getNextId(null, TABLE_QUERY));
+	        queryInfo.setCacheTable(CACHE_TABLE_PREFIX + queryInfo.getQueryId());
+	        queryInfo.setQueryName(queryName);
+	        queryInfo.setQueryChecksum(checksum);
+	
+	        StringBuffer sql = new StringBuffer("INSERT INTO ");
+	        sql.append(TABLE_QUERY).append(" (");
+	        sql.append(COLUMN_QUERY_ID).append(", ");
+	        sql.append(COLUMN_QUERY_NAME).append(", ");
+	        sql.append(COLUMN_QUERY_CHECKSUM).append(", ");
+	        sql.append(COLUMN_TABLE_NAME).append(") ");
+	        sql.append("VALUES (?, ?, ?, ?)");
+
             long start = System.currentTimeMillis();
             psInsert = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             psInsert.setInt(1, queryInfo.getQueryId());
@@ -451,15 +450,18 @@ public class CacheFactory {
             psInsert.setString(4, queryInfo.getCacheTable());
             psInsert.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql.toString(),"wdk_cache_insert instance", start);
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkRuntimeException("Unable to create update table.", e);
+        }
+        finally {
             SqlUtils.closeStatement(psInsert);
         }
         return queryInfo;
     }
 
     private QueryInfo checkQueryInfo(String queryName, String checksum)
-            throws NoSuchAlgorithmException, JSONException, WdkModelException,
-            SQLException {
+            throws WdkModelException, WdkUserException {
         // check if the query table has been seen before
         QueryInfo queryInfo = null;
 
@@ -487,10 +489,11 @@ public class CacheFactory {
 
                 // queryInfoMap.put(queryKey, queryInfo);
             }
-        } catch (WdkUserException ex) {
-            // TODO Auto-generated catch block
-            ex.printStackTrace();
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkUserException("Unable to check query info.", e);
+        }
+        finally {
             SqlUtils.closeResultSet(resultSet);
             if (resultSet == null) SqlUtils.closeStatement(ps);
         }

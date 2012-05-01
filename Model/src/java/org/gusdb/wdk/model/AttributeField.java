@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -16,7 +14,6 @@ import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.attribute.plugin.AttributePluginReference;
-import org.json.JSONException;
 
 /**
  * @author Jerric
@@ -206,9 +203,7 @@ public abstract class AttributeField extends Field {
      * )
      */
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
         super.resolveReferences(wdkModel);
 
         // resolve plugin references

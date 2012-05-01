@@ -70,14 +70,6 @@ public class AttributeCategoryTree extends WdkModelBase {
 		}
 		catch (WdkModelException e) {
 			throw new IllegalStateException("Existing category tree has been corrupted.", e);
-		} catch (NoSuchAlgorithmException e) {
-			throw new IllegalStateException("Existing category tree has been corrupted.", e);
-		} catch (WdkUserException e) {
-			throw new IllegalStateException("Existing category tree has been corrupted.", e);
-		} catch (SQLException e) {
-			throw new IllegalStateException("Existing category tree has been corrupted.", e);
-		} catch (JSONException e) {
-			throw new IllegalStateException("Existing category tree has been corrupted.", e);
 		}
 		return copy;
 	}
@@ -95,8 +87,7 @@ public class AttributeCategoryTree extends WdkModelBase {
 	 * @throws NoSuchAlgorithmException 
 	 */
 	@Override
-	public void resolveReferences(WdkModel model) throws WdkModelException,
-			NoSuchAlgorithmException, WdkUserException, SQLException, JSONException {
+	public void resolveReferences(WdkModel model) throws WdkModelException {
 		super.resolveReferences(model);
 		for (AttributeCategory cat : topLevelCategories) {
 			addCategoryToMap(cat);
