@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model;
 
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -22,7 +21,7 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
         this.pkValues = new LinkedHashMap<String, Object>(pkValues);
     }
 
-    public Map<String, String> getValues() throws SQLException {
+    public Map<String, String> getValues() {
         Map<String, String> values = new LinkedHashMap<String, String>();
         for (String column : pkValues.keySet()) {
             String value = Utilities.parseValue(pkValues.get(column));

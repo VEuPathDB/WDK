@@ -69,9 +69,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         private PrimaryKeyAttributeValue primaryKey;
         private Map<String, AttributeField> fields;
 
-        private TableValueRow(TableValue tableValue)
-                throws NoSuchAlgorithmException, WdkModelException,
-                JSONException, SQLException {
+        private TableValueRow(TableValue tableValue) {
             this.primaryKey = tableValue.primaryKey;
             this.fields = tableValue.getTableField().getAttributeFieldMap();
         }
@@ -141,16 +139,10 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         public AttributeValue get(Object key) {
             try {
                 return getAttributeValue((String) key);
-            } catch (NoSuchAlgorithmException ex) {
-                throw new RuntimeException(ex);
             } catch (WdkModelException ex) {
-                throw new RuntimeException(ex);
-            } catch (SQLException ex) {
-                throw new RuntimeException(ex);
-            } catch (JSONException ex) {
-                throw new RuntimeException(ex);
+                throw new WdkRuntimeException(ex);
             } catch (WdkUserException ex) {
-                throw new RuntimeException(ex);
+                throw new WdkRuntimeException(ex);
             }
         }
 
@@ -231,9 +223,8 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
          */
         @Override
         protected void fillColumnAttributeValues(Query attributeQuery)
-                throws WdkModelException, NoSuchAlgorithmException,
-                JSONException, SQLException {
-        // do nothing, since the data is filled by the parent TableValue
+                throws WdkModelException {
+        	// do nothing, since the data is filled by the parent TableValue
         }
 
         @Override
@@ -250,9 +241,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
     private List<Map<String, AttributeValue>> rows;
 
     public TableValue(User user, PrimaryKeyAttributeValue primaryKey,
-            TableField tableField, boolean bulk) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+            TableField tableField, boolean bulk) throws WdkModelException, WdkUserException {
         // this.user = user;
         this.primaryKey = primaryKey;
         this.tableField = tableField;
@@ -490,8 +479,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
         logger.debug("Table value rows initialized.");
     }
 
-    void initializeRow(ResultList resultList) throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, SQLException {
+    void initializeRow(ResultList resultList) throws WdkModelException  {
         TableValueRow row = new TableValueRow(this);
 
         // fill in the column attributes

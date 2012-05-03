@@ -63,7 +63,7 @@ public class ShowQuestionStageHandler implements StageHandler {
 
         // set the previous step value
         String paramName = null;
-        for (ParamBean param : question.getParams()) {
+        for (ParamBean<?> param : question.getParams()) {
             // the previous step should be stored in the value of first
             // answer param.
             if (param instanceof AnswerParamBean) {

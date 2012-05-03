@@ -45,12 +45,13 @@ public class ShowResultSizeAction extends Action {
 
         // load cache
         ServletContext application = servlet.getServletContext();
-        Object cache = application.getAttribute(KEY_SIZE_CACHE_MAP);
-        Map<String, Integer> sizeCache;
-        if (cache == null || !(cache instanceof Map)) {
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Integer> sizeCache = (Map<String, Integer>)application.getAttribute(KEY_SIZE_CACHE_MAP);
+        if (sizeCache == null) {
             sizeCache = new LinkedHashMap<String, Integer>();
             application.setAttribute(KEY_SIZE_CACHE_MAP, sizeCache);
-        } else sizeCache = (Map<String, Integer>) cache;
+        }
 
         // check if the size value has been cached
         int size;

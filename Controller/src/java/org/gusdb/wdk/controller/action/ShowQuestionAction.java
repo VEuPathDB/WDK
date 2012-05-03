@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Vector;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -32,12 +31,7 @@ import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.WdkEmptyEnumListException;
 import org.json.JSONException;
-
-import org.gusdb.fgputil.FormatUtil;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is requested.
@@ -127,7 +121,7 @@ public class ShowQuestionAction extends Action {
         qForm.setQuestion(wdkQuestion);
 
         boolean hasAllParams = true;
-        ParamBean[] params = wdkQuestion.getParams();
+        ParamBean<?>[] params = wdkQuestion.getParams();
 
         // fetch the previous values
         Map<String, String> paramValues = getParamMapFromForm(user, params, qForm, request);
@@ -136,7 +130,7 @@ public class ShowQuestionAction extends Action {
         request.setAttribute("invalidParams", qForm.getInvalidParams());
 
         // process each param
-        for (ParamBean param : params) {
+        for (ParamBean<?> param : params) {
             String paramName = param.getName();
             String paramValue = paramValues.get(paramName);
 
@@ -146,7 +140,7 @@ public class ShowQuestionAction extends Action {
                 
                 if (enumParam.isDependentParam() && enumParam.getDependedValue() == null) {
                 	// value not previously set (e.g. by getVocabAction)
-                	ParamBean dependedParam = enumParam.getDependedParam();
+                	ParamBean<?> dependedParam = enumParam.getDependedParam();
                 	String currentDependedValue = paramValues.get(dependedParam.getName());
                 	if (currentDependedValue == null) {
                 		// no previous value supplied; use default value
@@ -242,9 +236,9 @@ public class ShowQuestionAction extends Action {
         request.setAttribute("params", paramValues);
     }
 
-    private static Map<String, String> getParamMapFromForm(UserBean user, ParamBean[] params, QuestionForm qForm, HttpServletRequest request) {
+    private static Map<String, String> getParamMapFromForm(UserBean user, ParamBean<?>[] params, QuestionForm qForm, HttpServletRequest request) {
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
-        for (ParamBean param : params) {
+        for (ParamBean<?> param : params) {
             param.setUser(user);
             String paramName = param.getName();
             String paramValue = (String) qForm.getValue(paramName);

@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model;
 
-import java.sql.SQLException;
 
 /**
  * @author Jerric Gao
@@ -26,7 +25,7 @@ public class ColumnAttributeValue extends AttributeValue {
      * @see org.gusdb.wdk.model.AttributeValue#getValue()
      */
     @Override
-    public Object getValue() throws WdkModelException, SQLException {
+    public Object getValue() throws WdkModelException {
         return Utilities.parseValue(value);
     }
 
