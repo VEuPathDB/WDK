@@ -1,11 +1,7 @@
 package org.gusdb.wdk.model;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import org.json.JSONException;
 
 /**
  * A value representing a hyperlink
@@ -24,9 +20,7 @@ public class LinkAttributeValue extends AttributeValue {
         this.container = container;
     }
 
-    public String getDisplayText() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public String getDisplayText() throws WdkModelException, WdkUserException {
         if (displayText == null) {
             String text = field.getDisplayText();
             Map<String, AttributeField> subFields = field.parseFields(text);
@@ -40,8 +34,7 @@ public class LinkAttributeValue extends AttributeValue {
         return this.displayText;
     }
 
-    public String getUrl() throws WdkModelException, NoSuchAlgorithmException,
-            SQLException, JSONException, WdkUserException {
+    public String getUrl() throws WdkModelException, WdkUserException {
         if (this.url == null) {
             String url = field.getUrl();
             Map<String, AttributeField> subFields = field.parseFields(url);
@@ -56,8 +49,7 @@ public class LinkAttributeValue extends AttributeValue {
     }
 
     @Override
-    public Object getValue() throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+    public Object getValue() throws WdkModelException, WdkUserException {
         return getDisplayText() + "(" + getUrl() + ")";
     }
 }

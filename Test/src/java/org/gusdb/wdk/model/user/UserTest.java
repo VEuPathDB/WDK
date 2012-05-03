@@ -5,7 +5,6 @@ package org.gusdb.wdk.model.user;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Random;
 
@@ -18,8 +17,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
 
 /**
  * @author xingao

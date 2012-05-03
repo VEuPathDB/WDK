@@ -19,8 +19,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 /**
  * @author xingao
  * 
@@ -73,7 +71,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         }
 
         public void remove() {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException("This functionality is not implemented.");
         }
 
     }

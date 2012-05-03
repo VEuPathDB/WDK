@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import junit.framework.Assert;
+
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.TableField;
@@ -26,6 +28,8 @@ import org.junit.Test;
  */
 public class TableQueryTest {
 
+    private static final boolean ASSERTION = false;
+    
     private User user;
     private WdkModel wdkModel;
 
@@ -53,10 +57,10 @@ public class TableQueryTest {
                                 values, true, 0,
                                 new LinkedHashMap<String, String>());
                         int result = instance.getResultSize();
-                        // Assert.assertTrue(result + " >= " + min, result >=
-                        // min);
-                        // Assert.assertTrue(result + " <= " + max, result <=
-                        // max);
+                        if (ASSERTION) {
+                        	Assert.assertTrue(result + " >= " + min, result >= min);
+                        	Assert.assertTrue(result + " <= " + max, result <= max);
+                        }
                     }
                 }
 

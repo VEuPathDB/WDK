@@ -84,9 +84,9 @@ public class FilterForm extends BooleanExpressionForm {
         }
         if (wdkQuestion == null) return errors;
 
-        ParamBean[] params = wdkQuestion.getParams();
+        ParamBean<?>[] params = wdkQuestion.getParams();
         for (int i = 0; i < params.length; i++) {
-            ParamBean p = params[i];
+        	ParamBean<?> p = params[i];
             try {
                 String[] pVals = null;
                 if ((p instanceof EnumParamBean)

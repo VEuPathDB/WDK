@@ -70,8 +70,7 @@ public class RecordInstance extends AttributeValueContainer {
      * 
      */
     public RecordInstance(AnswerValue answerValue, Map<String, Object> pkValues)
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         this.answerValue = answerValue;
         this.recordClass = answerValue.getQuestion().getRecordClass();
         this.isValidRecord = true;
@@ -123,8 +122,7 @@ public class RecordInstance extends AttributeValueContainer {
      */
     @Override
     protected void fillColumnAttributeValues(Query attributeQuery)
-            throws WdkModelException, NoSuchAlgorithmException, JSONException,
-            SQLException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         logger.debug("filling column attribute values...");
         if (answerValue != null) {
             answerValue.integrateAttributesQuery(attributeQuery);
@@ -202,8 +200,7 @@ public class RecordInstance extends AttributeValueContainer {
     }
 
     public TableValue getTableValue(String tableName)
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         TableField tableField = recordClass.getTableField(tableName);
 
         // check if the table value has been cached

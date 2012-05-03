@@ -38,9 +38,7 @@ public class TextAttributeValue extends AttributeValue {
      * @see org.gusdb.wdk.model.AttributeValue#getValue()
      */
     @Override
-    public Object getValue() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public Object getValue() throws WdkModelException, WdkUserException {
         if (this.text == null) {
             String text = field.getText();
             Map<String, AttributeField> subFields = field.parseFields(text);
