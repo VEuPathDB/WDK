@@ -6,6 +6,7 @@ package org.gusdb.wdk.model.jspwrap;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.DatasetParam;
@@ -17,8 +18,9 @@ import org.json.JSONException;
  */
 public class DatasetParamBean extends ParamBean<DatasetParam> {
 
-    private DatasetParam param;
-
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger.getLogger(DatasetParamBean.class.getName());
+	
     public DatasetParamBean(DatasetParam datasetParam) {
         super(datasetParam);
     }
