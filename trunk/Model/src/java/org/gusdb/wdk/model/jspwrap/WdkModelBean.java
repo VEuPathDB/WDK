@@ -292,11 +292,11 @@ public class WdkModelBean {
         return new QuestionBean(wdkModel.getQuestion(questionFullName));
     }
 
-    public Map<String, ParamBean> getParams() throws WdkModelException {
-        Map<String, ParamBean> params = new LinkedHashMap<String, ParamBean>();
+    public Map<String, ParamBean<?>> getParams() throws WdkModelException {
+        Map<String, ParamBean<?>> params = new LinkedHashMap<String, ParamBean<?>>();
         for (ParamSet paramSet : wdkModel.getAllParamSets()) {
             for (Param param : paramSet.getParams()) {
-                ParamBean bean;
+                ParamBean<?> bean;
                 if (param instanceof AbstractEnumParam) {
                     bean = new EnumParamBean((AbstractEnumParam) param);
                 } else if (param instanceof AnswerParam) {

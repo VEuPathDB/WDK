@@ -267,7 +267,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             updated = updateSortingSummary(request, wdkUser, questionName);
 
             Map<String, String> params = new HashMap<String, String>();
-            for (ParamBean param : wdkQuestion.getParams()) {
+            for (ParamBean<?> param : wdkQuestion.getParams()) {
                 String paramName = param.getName();
                 Object value = qForm.getValue(paramName);
                 params.put(paramName, (String) value);
@@ -567,12 +567,13 @@ public class ShowSummaryAction extends ShowQuestionAction {
         if (filterName != null) key += ":" + filterName;
 
         ServletContext application = servlet.getServletContext();
-        Object cache = application.getAttribute(KEY_SIZE_CACHE_MAP);
-        Map<String, Integer> sizeCache;
-        if (cache == null || !(cache instanceof Map<?, ?>)) {
+
+        @SuppressWarnings("unchecked")
+		Map<String, Integer> sizeCache = (Map<String, Integer>)application.getAttribute(KEY_SIZE_CACHE_MAP);
+        if (sizeCache == null) {
             sizeCache = new LinkedHashMap<String, Integer>();
             application.setAttribute(KEY_SIZE_CACHE_MAP, sizeCache);
-        } else sizeCache = (Map<String, Integer>) cache;
+        }
 
         // check if the size value has been cached
         if (sizeCache.containsKey(key)) return sizeCache.get(key);

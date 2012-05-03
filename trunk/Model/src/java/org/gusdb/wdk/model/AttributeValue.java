@@ -3,19 +3,18 @@ package org.gusdb.wdk.model;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
+import org.apache.log4j.Logger;
 import org.json.JSONException;
 
 public abstract class AttributeValue {
 
-    // private static final Logger logger =
-    // WdkLogManager.getLogger("org.gusdb.wdk.model.FieldValue");
+    @SuppressWarnings("unused")
+    private static final Logger logger = Logger.getLogger(AttributeValue.class.getName());
 
     protected AttributeField field;
     protected Object value;
 
-    public abstract Object getValue() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException;
+    public abstract Object getValue() throws WdkModelException, WdkUserException;
 
     public AttributeValue(AttributeField field) {
         this.field = field;
@@ -70,12 +69,6 @@ public abstract class AttributeValue {
             Object value = getValue();
             return (value == null) ? null : value.toString();
         } catch (WdkModelException ex) {
-            throw new RuntimeException(ex);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new RuntimeException(ex);
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        } catch (JSONException ex) {
             throw new RuntimeException(ex);
         } catch (WdkUserException ex) {
             throw new RuntimeException(ex);

@@ -207,16 +207,16 @@ public class Utilities {
         return sb.toString();
     }
 
-    public static String parseValue(Object objValue) throws SQLException {
-        String value;
-        if (objValue == null) value = null;
-        else if (objValue instanceof Clob) {
-            Clob clob = (Clob) objValue;
-            value = clob.getSubString(1, (int) clob.length());
-        } else value = objValue.toString();
-        return value;
+    public static String parseValue(Object objValue) {
+    	if (objValue == null) return null;
+    	return objValue.toString();
     }
 
+    public static String parseValue(Clob clobValue) throws SQLException {
+    	if (clobValue == null) return null;
+    	return clobValue.getSubString(1, (int) clobValue.length());    	
+    }
+    
     public static String[][] convertContent(String content)
             throws JSONException {
         JSONArray jsResult = new JSONArray(content);

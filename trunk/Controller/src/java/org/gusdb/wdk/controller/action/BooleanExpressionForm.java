@@ -15,9 +15,6 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 
 public class BooleanExpressionForm extends ActionForm {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = -6371621860440022826L;
 
     private static Logger logger = Logger.getLogger(BooleanExpressionForm.class);
@@ -65,8 +62,6 @@ public class BooleanExpressionForm extends ActionForm {
     public ActionErrors validate(ActionMapping mapping,
             HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();
-
-        String errMsg = null;
         try {
             UserBean wdkUser = ActionUtility.getUser(getServlet(), request);
             String expression = getBooleanExpression();
@@ -74,15 +69,11 @@ public class BooleanExpressionForm extends ActionForm {
             logger.info("Validating boolean expression: " + expression);
 
             wdkUser.validateExpression(expression);
-            if (errMsg != null) {
-                errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
-                        "mapped.properties", "booleanExpression", errMsg));
-            }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             ex.printStackTrace();
-            errMsg = ex.getMessage();
             errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
-                    "mapped.properties", "booleanExpression", errMsg));
+                    "mapped.properties", "booleanExpression", ex.getMessage()));
         }
 
         return errors;

@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -12,29 +10,26 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.SqlQuery;
-import org.json.JSONException;
 
 /**
  * @author xingao
  * 
  */
-public abstract class AttributeValueContainer {
-
+public abstract class AttributeValueContainer implements AttributeValueMap {
+	
     private static final Logger logger = Logger.getLogger(AttributeValueContainer.class);
 
     protected abstract Map<String, AttributeField> getAttributeFieldMap();
 
     protected abstract void fillColumnAttributeValues(Query attributeQuery)
-            throws WdkModelException, NoSuchAlgorithmException, JSONException,
-            SQLException, WdkUserException;
+            throws WdkModelException, WdkUserException;
 
     protected abstract PrimaryKeyAttributeValue getPrimaryKey();
 
     private Map<String, AttributeValue> attributeValueCache = new LinkedHashMap<String, AttributeValue>();
 
     public AttributeValue getAttributeValue(String fieldName)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException, WdkUserException {
         // get the field from the cache; primary key always exists in the cache
         Map<String, AttributeField> fields = getAttributeFieldMap();
         AttributeField field = fields.get(fieldName);
@@ -79,7 +74,7 @@ public abstract class AttributeValueContainer {
         return value;
     }
 
-    protected void addAttributeValue(AttributeValue value) {
+    public void addAttributeValue(AttributeValue value) {
         attributeValueCache.put(value.getAttributeField().getName(), value);
     }
 }
