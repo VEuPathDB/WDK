@@ -82,7 +82,7 @@
 <center style="padding:4px 0;font-style:italic;background-color:#FFFFA0;">Results for the selected step above</center>
 -->
 <br>
-<div title="Step in yellow above. You may select a different step by clicking on its result number (inside the step)." class="h4left">My Step Result:</div>
+<div title="Step in yellow above. You may select a different step by clicking on its result number (inside the step)." class="h4left">&nbsp;&nbsp;&nbsp;My Step Result:</div>
 
 
   <div class="Workspace">&nbsp;
