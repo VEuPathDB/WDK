@@ -206,15 +206,22 @@ public class Utilities {
         }
         return sb.toString();
     }
-
+    
     public static String parseValue(Object objValue) {
     	if (objValue == null) return null;
+    	if (objValue instanceof Clob) {
+    		return parseClob((Clob)objValue);
+    	}
     	return objValue.toString();
     }
-
-    public static String parseValue(Clob clobValue) throws SQLException {
-    	if (clobValue == null) return null;
-    	return clobValue.getSubString(1, (int) clobValue.length());    	
+    
+    private static String parseClob(Clob clobValue) {
+    	try {
+    		return clobValue.getSubString(1, (int)clobValue.length());
+    	}
+    	catch (SQLException e) {
+    		throw new WdkRuntimeException("Error while reading Clob", e);
+    	}
     }
     
     public static String[][] convertContent(String content)
