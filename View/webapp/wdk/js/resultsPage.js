@@ -7,16 +7,18 @@ Provides functions to support results table
 
 function configureSummaryViews(ele) {
     var workspace = window.wdk.findActiveWorkspace(); 
-    var summaryViews = workspace.find("#Summary_Views");
-    var currentTab = parseInt(summaryViews.children("ul").attr("currentTab"));    
-    workspace.find("#Summary_Views").tabs({
-        selected : currentTab,
-        cache: true,
-        ajaxOptions: {
-            error: function( xhr, status, index, anchor ) {
-               // alert( "Couldn't load this tab. Please try again later." + status );
+    $(".Summary_Views").each(function() {
+        var summaryViews = $(this);
+        var currentTab = parseInt(summaryViews.children("ul").attr("currentTab"));    
+        summaryViews.tabs({
+            selected : currentTab,
+            cache: true,
+            ajaxOptions: {
+                    error: function( xhr, status, index, anchor ) {
+                    // alert( "Couldn't load this tab. Please try again later." + status );
+                }
             }
-        }
+        });
     });
 }
 
