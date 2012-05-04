@@ -92,7 +92,7 @@ $(function() {
 </script>
 
 
-<div id="Summary_Views" strategy="${strategy.strategyId}" step="${step.stepId}"
+<div id="Summary_Views" class="Summary_Views" strategy="${strategy.strategyId}" step="${step.stepId}"
      updateUrl="<c:url value='/processSummaryView.do' />">
   <c:set var="question" value="${wdkStep.question}" />
   <c:set var="views" value="${question.summaryViews}" />
