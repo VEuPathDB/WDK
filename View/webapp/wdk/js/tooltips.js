@@ -54,6 +54,10 @@ function assignTooltipsLeft(selector, xOffset) {
 function assignTooltipsRight(selector, xOffset) {
 	setUpTooltips(selector, makeConf({ xOffset: xOffset, tipPos: 'top-left', targetPos: 'bottom-right' }));
 }
+//places tip below the target but left justified (so tip does not spread further left than target) 
+function assignTooltipsLeftJustified(selector, xOffset) {
+	setUpTooltips(selector, makeConf({ xOffset: xOffset, tipPos: 'top-left', targetPos: 'bottom-left' }));
+}
 
 /**
  * "Sticky" HTML tooltip functionality.  Pass in selector, content, and optional
