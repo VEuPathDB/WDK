@@ -81,19 +81,6 @@ function initDependentParamHandlers(isEdit) {
 			}
 		}
 	}
-
-	// trigger the change function once for each depended param.
-    /* RRD 02/2012 No longer need to do this since dependent param values are loaded along with regular params
-	var triggeredParams = [];
-	for (var name in dependedParams) {
-		if (!triggeredParams[dependedParams[name]]) {
-			dependedParam =  $("td#" + dependedParams[name] + "aaa input[name='array(" + dependedParams[name] + ")']:first," +
-                	           "td#" + dependedParams[name] + "aaa select[name='array(" + dependedParams[name] + ")']");
-			dependedParam.change();
-			triggeredParams[dependedParams[name]] = true;
-		}
-	}
-	*/
 }
 
 function initTypeAhead(isEdit) {
@@ -222,6 +209,9 @@ function updateDependentParam(paramName, dependedValue) {
 						}
 						oldValues[name] = null;
 					}
+				},
+				error: function (jqXHR, textStatus, errorThrown) {
+					alert("Error retrieving dependent param: " + textStatus + "\n" + errorThrown);
 				}
 			});
 		}
