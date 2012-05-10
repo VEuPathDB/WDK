@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.SearchCategory;
 import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.query.param.*;
@@ -26,6 +27,8 @@ import org.gusdb.wdk.model.xml.XmlRecordClassSet;
  * consumption by a view
  */
 public class WdkModelBean {
+
+    private static final Logger logger = Logger.getLogger(WdkModelBean.class);
 
     WdkModel wdkModel;
 
@@ -325,7 +328,12 @@ public class WdkModelBean {
         this.questionName = questionName;
     }
 
-    public QuestionBean getQuestion() throws Exception{
-        return new QuestionBean(wdkModel.getQuestion(questionName));
+    public QuestionBean getQuestion() {
+        try {
+            return new QuestionBean(wdkModel.getQuestion(questionName));
+        } catch (Exception ex) {
+            logger.error(ex);
+            return null;
+        }
     }
 }
