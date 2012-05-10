@@ -13,9 +13,16 @@
               description="Whether to enable sorting on the table. default true"
 %>
 
+<%@ attribute name="showHeader"
+              required="false"
+              description="Whether to show header row on the table. default true"
+%>
 
 <c:if test="${sortable == null || sortable eq ''}">
-  <c:set var="sortable" value="${true}" />
+  <c:set var="sortable" value="true" />
+</c:if>
+<c:if test="${showHeader == null || showHeader eq ''}">
+  <c:set var="showHeader" value="true" />
 </c:if>
 
 <c:catch var="tableError">
@@ -28,11 +35,12 @@
     </c:when>
     <c:otherwise>
 
-<c:if test="${sortable}">
+<c:if test="${sortable eq 'true'}">
   <c:set var="datatable" value="datatables" />
 </c:if>
 <table class="wdk-table ${datatable}">
 
+  <c:if test="${showHeader eq 'true'}">
   <thead>
     <tr class="headerrow">
         <c:forEach var="hCol" items="${table.tableField.attributeFields}">
@@ -42,6 +50,7 @@
         </c:forEach>
     </tr>
   </thead>
+  </c:if>
 
   <tbody>
     <%-- table rows --%>
@@ -77,7 +86,7 @@
     </c:forEach>
   </tbody>
 
-  <c:if test="${size >= 20}">
+  <c:if test="${(showHeader eq 'true') && (size >= 20)}">
   <tfoot>
     <tr class="footerrow">
         <c:forEach var="hCol" items="${table.tableField.attributeFields}">
