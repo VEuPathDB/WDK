@@ -147,11 +147,11 @@ public abstract class AbstractEnumParam extends Param {
      * the default value of the depended param as the depended value (recursively).
      */
     @Override
-    public String getDefault() throws WdkUserException, WdkModelException {
+    public String getDefault() throws WdkModelException {
     	return getDefault(null);
     }
 
-    public String getDefault(String dependedParamVal) throws WdkModelException, WdkUserException {
+    public String getDefault(String dependedParamVal) throws WdkModelException {
     	if (isDependentParam()) {
     		if (dependedParamVal == null) {
     			logger.warn("Retrieving default value for dependent param " + getName() +
@@ -421,10 +421,17 @@ public abstract class AbstractEnumParam extends Param {
 
     /**
      * Builds the default value of the "current" enum values
+     * @throws WdkUserException 
+     * @throws WdkModelException 
      */
-    protected void applySelectMode(EnumParamCache cache) {
-        logger.trace("select mode: '" + selectMode + "'");
-
+    protected void applySelectMode(EnumParamCache cache) throws WdkModelException {
+        logger.debug("applySelectMode(): select mode: '" + selectMode + "', default from model = " + super.getDefault());
+        String defaultFromModel = super.getDefault();
+        if (cache.getTerms().contains(defaultFromModel)) {
+        	cache.setDefaultValue(defaultFromModel);
+        	return;
+        }
+        
         // single pick can only select one value
         if (selectMode == null || !multiPick) selectMode = SELECT_MODE_FIRST;
         if (selectMode.equalsIgnoreCase(SELECT_MODE_ALL)) {

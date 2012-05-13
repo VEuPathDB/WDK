@@ -110,6 +110,7 @@ public class FlatVocabParam extends AbstractEnumParam {
      * @see org.gusdb.wdk.model.query.param.AbstractEnumParam#initVocabMap()
      */
     protected EnumParamCache createEnumParamCache(String dependedValue) throws WdkModelException {
+    	logger.trace("Entering createEnumParamCache(" + dependedValue + ")");
     	String errorStr = "Could not retrieve flat vocab values for param " +
     		getName() + " using depended value " + dependedValue;
     	try {
@@ -145,8 +146,7 @@ public class FlatVocabParam extends AbstractEnumParam {
 	        logger.debug("PARAM [" + getFullName() + "] context Question: " +
 	            ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName()) +
 	            ", context Query: " + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
-	        QueryInstance instance = query.makeInstance(user, values, true, 0,
-	                context);
+	        QueryInstance instance = query.makeInstance(user, values, true, 0, context);
 	
 	        ResultList result = instance.getResults();
 	        while (result.next()) {
@@ -188,14 +188,18 @@ public class FlatVocabParam extends AbstractEnumParam {
 	        }
 	        if (cache.isEmpty()) {
 	            if (query instanceof SqlQuery)
-	                logger.debug("vocab query returns 0 rows:"
-	                        + ((SqlQuery) query).getSql());
+	                logger.warn("vocab query returned 0 rows:" + ((SqlQuery) query).getSql());
 	            throw new WdkModelException("No item returned by the query ["
 	                    + query.getFullName() + "] of FlatVocabParam ["
 	                    + getFullName() + "].");
 	        }
+	        else {
+	        	logger.debug("Query [" + query.getFullName() + "] returned " +
+	        			cache.getNumTerms() + " of FlatVocabParam [" + getFullName() + "].");
+	        }
 	        initTreeMap(cache);
 	        applySelectMode(cache);
+	    	logger.trace("Leaving createEnumParamCache(" + dependedValue + ")");
 	        return cache;
     	}
     	catch (WdkUserException e) {
