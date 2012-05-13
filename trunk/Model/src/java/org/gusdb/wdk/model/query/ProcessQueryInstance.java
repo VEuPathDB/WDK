@@ -399,7 +399,7 @@ public class ProcessQueryInstance extends QueryInstance {
      */
     @Override
     public int getResultSize() throws WdkModelException, WdkUserException {
-        if (!cached) {
+        if (!isCached()) {
             int count = 0;
             ResultList resultList = getResults();
             while (resultList.next()) {

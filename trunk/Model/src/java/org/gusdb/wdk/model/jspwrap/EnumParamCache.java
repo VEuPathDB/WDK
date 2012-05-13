@@ -52,6 +52,10 @@ public class EnumParamCache {
 		// all maps should contain the same keys (except top level nodes will have null parents)
 		return _termInternalMap.isEmpty();
 	}
+	
+	public int getNumTerms() {
+		return _termInternalMap.size();
+	}
 
 	public Set<String> getTerms() {
 		return new LinkedHashSet<String>(_termInternalMap.keySet());
