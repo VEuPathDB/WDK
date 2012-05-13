@@ -32,7 +32,7 @@ public class GetVocabAction extends Action {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        logger.debug("Entering GetVocabAction...");
+        logger.trace("Entering GetVocabAction...");
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         try {
             String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
@@ -40,8 +40,7 @@ public class GetVocabAction extends Action {
             String dependedValue = request.getParameter("dependedValue");
             boolean getXml = Boolean.valueOf(request.getParameter("xml"));
             QuestionBean wdkQuestion = wdkModel.getQuestion(qFullName);
-            EnumParamBean param = (EnumParamBean) wdkQuestion.getParamsMap().get(
-                    paramName);
+            EnumParamBean param = (EnumParamBean) wdkQuestion.getParamsMap().get(paramName);
 
             param.setDependedValue(dependedValue);
 
@@ -75,7 +74,7 @@ public class GetVocabAction extends Action {
                 forward = new ActionForward(htmlVocabFile);
             }
 
-        logger.debug("Leaving GetVocabAction...");
+            logger.trace("Leaving GetVocabAction...");
             return forward;
         } catch (Exception ex) {
             ex.printStackTrace();

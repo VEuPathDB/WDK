@@ -36,6 +36,7 @@ public class EnumParam extends AbstractEnumParam {
 
     @Override
     protected EnumParamCache createEnumParamCache(String dependedValue) throws WdkModelException {
+    	logger.trace("Entering createEnumParamCache(" + dependedValue + ")");
         Param dependedParam = getDependedParam();
         EnumParamCache cache = new EnumParamCache(this, dependedValue);
         EnumItem[] enumItems = enumItemList.getEnumItems();
@@ -75,6 +76,7 @@ public class EnumParam extends AbstractEnumParam {
 
         initTreeMap(cache);
         applySelectMode(cache);
+    	logger.trace("Leaving createEnumParamCache(" + dependedValue + ")");
         return cache;
     }
 

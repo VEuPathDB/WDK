@@ -113,6 +113,8 @@ public class ShowQuestionAction extends Action {
             ActionServlet servlet, HttpServletRequest request,
             QuestionForm qForm) throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
+    	logger.trace("Entering prepareQustionForm()");
+    	
         // get the current user
         UserBean user = ActionUtility.getUser(servlet, request);
         wdkQuestion.setUser(user);
@@ -125,7 +127,7 @@ public class ShowQuestionAction extends Action {
 
         // fetch the previous values
         Map<String, String> paramValues = getParamMapFromForm(user, params, qForm, request);
-
+        
         // get invalid params
         request.setAttribute("invalidParams", qForm.getInvalidParams());
 
@@ -134,6 +136,7 @@ public class ShowQuestionAction extends Action {
             String paramName = param.getName();
             String paramValue = paramValues.get(paramName);
 
+        	logger.debug("  Processing param " + paramName + "...");
             // handle the additional information
             if (param instanceof EnumParamBean) {
                 EnumParamBean enumParam = (EnumParamBean) param;
@@ -234,6 +237,7 @@ public class ShowQuestionAction extends Action {
         request.setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
         request.setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
         request.setAttribute("params", paramValues);
+    	logger.trace("Leaving prepareQustionForm()");
     }
 
     private static Map<String, String> getParamMapFromForm(UserBean user, ParamBean<?>[] params, QuestionForm qForm, HttpServletRequest request) {

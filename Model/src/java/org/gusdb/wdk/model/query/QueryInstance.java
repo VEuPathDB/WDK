@@ -58,7 +58,6 @@ public abstract class QueryInstance {
     protected WdkModel wdkModel;
     protected Map<String, String> values;
     protected String resultMessage;
-    protected boolean cached;
 
     private String checksum;
     protected int assignedWeight;
@@ -71,7 +70,6 @@ public abstract class QueryInstance {
         this.user = user;
         this.query = query;
         this.wdkModel = query.getWdkModel();
-        this.cached = query.isCached();
         this.assignedWeight = assignedWeight;
         this.context = context;
 
@@ -154,15 +152,7 @@ public abstract class QueryInstance {
      * @return the cached
      */
     public boolean isCached() {
-        return this.cached;
-    }
-
-    /**
-     * @param cached
-     *            the cached to set
-     */
-    public void setCached(boolean cached) {
-        this.cached = cached;
+        return query.isCached();
     }
 
     public String getChecksum() throws WdkModelException, WdkUserException {
@@ -221,7 +211,7 @@ public abstract class QueryInstance {
         logger.debug("retrieving results of query [" + query.getFullName()
                 + "]");
 
-        ResultList resultList = (cached) ? getCachedResults()
+        ResultList resultList = (isCached()) ? getCachedResults()
                 : getUncachedResults();
 
         logger.debug("results of query [" + query.getFullName()
