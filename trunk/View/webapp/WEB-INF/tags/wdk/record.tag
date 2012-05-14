@@ -1,7 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="pg" uri="http://jsptags.com/tags/navigation/pager" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 
 <%@ attribute name="record"
@@ -23,7 +23,7 @@
 <div class="h2center">${recordClass.type}: ${primaryKey}</div>
 
 <div id="basket-control">
-  <wdk:recordPageBasketIcon />
+  <imp:recordPageBasketIcon />
 </div>
 
 <%-- display view list --%>

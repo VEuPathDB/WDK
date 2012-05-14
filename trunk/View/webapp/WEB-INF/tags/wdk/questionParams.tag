@@ -123,7 +123,7 @@
                         </c:when>
                         <c:when test="${paramType eq 'StringParam'}">
                             <td align="left" valign="top">
-                                <wdk:stringParamInput qp="${qP}" />
+                                <imp:stringParamInput qp="${qP}" />
                             </td>
                         </c:when>
                         <c:otherwise>  <%-- not enumParam --%>
