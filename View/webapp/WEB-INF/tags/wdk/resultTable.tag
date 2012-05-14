@@ -1,7 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="pg" uri="http://jsptags.com/tags/navigation/pager" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <%@ attribute name="step"
               type="org.gusdb.wdk.model.jspwrap.StepBean"
@@ -20,7 +20,7 @@
 
 <jsp:useBean id="typeMap" class="java.util.HashMap"/>
 <c:set target="${typeMap}" property="singular" value="${step.displayType}"/>
-<wdk:getPlural pluralMap="${typeMap}"/>
+<imp:getPlural pluralMap="${typeMap}"/>
 <c:set var="type" value="${typeMap['plural']}"/>
 
 <c:choose>
@@ -52,10 +52,10 @@
 <table  width="100%">
 	<tr class="subheaderrow">
 	<th style="text-align: left;white-space:nowrap;"> 
-	       <wdk:pager wdkAnswer="${wdkAnswer}" pager_id="top"/> 
+	       <imp:pager wdkAnswer="${wdkAnswer}" pager_id="top"/> 
 	</th>
 	<th style="text-align: right;white-space:nowrap;">
-               <wdk:addAttributes wdkAnswer="${wdkAnswer}" commandUrl="${commandUrl}"/>
+               <imp:addAttributes wdkAnswer="${wdkAnswer}" commandUrl="${commandUrl}"/>
 	</th>
   <%-- remove Reset button when new tree structure is activated --%>
   <c:if test="${not wdkAnswer.useCheckboxTree}">
@@ -162,7 +162,7 @@
           </td>
         </c:if>
           <td>
-              <wdk:attributePlugin attribute="${sumAttrib}" />
+              <imp:attributePlugin attribute="${sumAttrib}" />
           </td>
          </tr>
       </table>
@@ -282,7 +282,7 @@
 <table width="100%">
 	<tr class="subheaderrow">
 	<th style="text-align:left;white-space:nowrap;"> 
-	       <wdk:pager wdkAnswer="${wdkAnswer}" pager_id="bottom"/> 
+	       <imp:pager wdkAnswer="${wdkAnswer}" pager_id="bottom"/> 
 	</th>
 	<th style="text-align:right;white-space:nowrap;">
 		&nbsp;
