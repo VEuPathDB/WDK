@@ -82,6 +82,7 @@ public class StepFactory {
     private static final String COLUMN_IS_SAVED = "is_saved";
     private static final String COLUMN_NAME = "name";
     private static final String COLUMN_SAVED_NAME = "saved_name";
+    private static final String COLUMN_VERSION = "version";
 
     static final int COLUMN_NAME_LIMIT = 200;
 
@@ -138,7 +139,8 @@ public class StepFactory {
                 filterName = filter.getName();
                 estimateSize = answerValue.getFilterSize(filterName);
             } else estimateSize = answerValue.getResultSize();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             estimateSize = 0;
             logger.error(ex);
             exception = ex;
@@ -504,7 +506,8 @@ public class StepFactory {
     }
 
     // get left child id, right child id in here
-    Step loadStep(User user, int displayId) throws WdkUserException, WdkModelException {
+    Step loadStep(User user, int displayId) throws WdkUserException,
+            WdkModelException {
         String answerIdColumn = AnswerFactory.COLUMN_ANSWER_ID;
         ResultSet rsStep = null;
         String sql = "SELECT h.*, a." + AnswerFactory.COLUMN_ANSWER_CHECKSUM
@@ -532,18 +535,19 @@ public class StepFactory {
             return loadStep(user, rsStep, false);
         }
         catch (SQLException e) {
-        	throw new WdkUserException("Unable to load step.", e);
-		}
+            throw new WdkUserException("Unable to load step.", e);
+        }
         catch (JSONException e) {
-        	throw new WdkUserException("Unable to load step.", e);
-		}
+            throw new WdkUserException("Unable to load step.", e);
+        }
         finally {
             SqlUtils.closeResultSet(rsStep);
         }
     }
 
     private Step loadStep(User user, ResultSet rsStep, boolean loadTree)
-            throws WdkModelException, WdkUserException, SQLException, JSONException {
+            throws WdkModelException, WdkUserException, SQLException,
+            JSONException {
         // load Step info
         int stepId = rsStep.getInt(COLUMN_STEP_INTERNAL_ID);
         int displayId = rsStep.getInt(COLUMN_DISPLAY_ID);
@@ -596,8 +600,8 @@ public class StepFactory {
         return step;
     }
 
-    private void updateStepTree(User user, Step step)
-            throws WdkUserException, WdkModelException {
+    private void updateStepTree(User user, Step step) throws WdkUserException,
+            WdkModelException {
         Question question = step.getQuestion();
         Map<String, String> displayParams = step.getParamValues();
 
@@ -671,7 +675,7 @@ public class StepFactory {
                     "wdk-step-factory-update-step-tree", start);
         }
         catch (SQLException e) {
-        	throw new WdkUserException("Could not update step tree.", e);
+            throw new WdkUserException("Could not update step tree.", e);
         }
         finally {
             SqlUtils.closeStatement(psUpdateStepTree);
@@ -732,7 +736,7 @@ public class StepFactory {
             if (step.isCombined()) updateStepTree(user, step);
         }
         catch (SQLException e) {
-        	throw new WdkUserException("Could not update step.", e);
+            throw new WdkUserException("Could not update step.", e);
         }
         finally {
             SqlUtils.closeStatement(psStep);
@@ -787,9 +791,8 @@ public class StepFactory {
         String answerColumn = AnswerFactory.COLUMN_ANSWER_ID;
         StringBuffer sql = new StringBuffer("SELECT DISTINCT sr.* ");
         sql.append(", sr." + COLUMN_LAST_VIEWED_TIME + ", sp."
-                + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", a."
-                + AnswerFactory.COLUMN_PROJECT_VERSION + ", a."
-                + AnswerFactory.COLUMN_QUESTION_NAME);
+                + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID + ", sr."
+                + COLUMN_VERSION + ", a." + AnswerFactory.COLUMN_QUESTION_NAME);
         sql.append(" FROM " + userSchema + TABLE_STRATEGY + " sr, "
                 + userSchema + TABLE_STEP + " sp, " + wdkSchema
                 + AnswerFactory.TABLE_ANSWER + " a");
@@ -870,7 +873,7 @@ public class StepFactory {
 
         strategy.setLastRunTime(resultSet.getTimestamp(COLUMN_LAST_VIEWED_TIME));
         strategy.setEstimateSize(resultSet.getInt(COLUMN_ESTIMATE_SIZE));
-        strategy.setVersion(resultSet.getString(AnswerFactory.COLUMN_PROJECT_VERSION));
+        strategy.setVersion(resultSet.getString(COLUMN_VERSION));
         if (resultSet.getObject(COLUMN_IS_VALID) != null)
             strategy.setValid(resultSet.getBoolean(COLUMN_IS_VALID));
 
@@ -979,7 +982,6 @@ public class StepFactory {
             StringBuffer sql = new StringBuffer("SELECT sr.*, ");
             sql.append(" sp." + COLUMN_ESTIMATE_SIZE + ", sp."
                     + COLUMN_IS_VALID + ", a."
-                    + AnswerFactory.COLUMN_PROJECT_VERSION + ", a."
                     + AnswerFactory.COLUMN_QUESTION_NAME);
             sql.append(" FROM " + userSchema + TABLE_STRATEGY + " sr, "
                     + userSchema + TABLE_STEP + " sp, " + wdkSchema
@@ -1039,7 +1041,7 @@ public class StepFactory {
         String answerColumn = AnswerFactory.COLUMN_ANSWER_ID;
         StringBuffer sql = new StringBuffer("SELECT sr.*, ");
         sql.append(" sp." + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID
-                + ", a." + AnswerFactory.COLUMN_PROJECT_VERSION + ", a."
+                + ", a."
                 + AnswerFactory.COLUMN_QUESTION_NAME);
         sql.append(" FROM " + userSchema + TABLE_STRATEGY + " sr, "
                 + userSchema + TABLE_STEP + " sp, " + wdkSchema
@@ -1265,8 +1267,8 @@ public class StepFactory {
                     + COLUMN_IS_SAVED + ", " + COLUMN_NAME + ", "
                     + COLUMN_SAVED_NAME + ", " + COLUMN_PROJECT_ID + ", "
                     + COLUMN_IS_DELETED + ", " + COLUMN_SIGNATURE + ", "
-                    + COLUMN_DESCRIPTION
-                    + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                    + COLUMN_DESCRIPTION + ", " + COLUMN_VERSION
+                    + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             start = System.currentTimeMillis();
             psStrategy = SqlUtils.getPreparedStatement(dataSource, sql);
             psStrategy.setInt(1, displayId);
@@ -1280,6 +1282,7 @@ public class StepFactory {
             psStrategy.setBoolean(9, false);
             psStrategy.setString(10, signature);
             psStrategy.setString(11, description);
+            psStrategy.setString(12, wdkModel.getVersion());
             psStrategy.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql,
                     "wdk-step-factory-insert-strategy", start);
