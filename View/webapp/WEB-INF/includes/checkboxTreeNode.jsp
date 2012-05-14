@@ -4,7 +4,7 @@
 <%-- Take recursive variable and set locally to maintain call stack state --%>
 <c:set var="node" value="${recurseTermNode}"/>
 
-<a href="#" style="cursor:default"><span style="cursor:text">${node.displayName}</span></a>
+<a href="javascript:void(0)" style="cursor:default"><span style="cursor:text">${node.displayName}</span></a>
 <ul>
   
   <!-- Pushes leaves to the 'bottom' at each level of the tree -->
@@ -17,7 +17,7 @@
 	  </c:forEach>
 	  <c:forEach var="leafNode" items="${node.leafNodes}">
 	    <li class="jstree-leaf" rel="leaf" id="${leafNode.name}">
-	      <a href="#" style="cursor:default"><c:if test="${useHelpParam}"><label for="${leafNode.name}" title="${leafNode.help}"></c:if><span style="cursor:text">${leafNode.displayName}</span><c:if test="${useHelpParam}"></label></c:if></a>
+	      <a href="javascript:void(0)" style="cursor:default"><c:if test="${useHelpParam}"><label for="${leafNode.name}" title="${leafNode.help}"></c:if><span style="cursor:text">${leafNode.displayName}</span><c:if test="${useHelpParam}"></label></c:if></a>
 	    </li>
 	  </c:forEach>
 	</c:if>
@@ -27,7 +27,7 @@
     <c:forEach var="childNode" items="${node.childNodes}">
       <c:if test="${childNode.isLeaf}">
         <li class="jstree-leaf" rel="leaf" id="${childNode.name}">
-          <a href="#" style="cursor:default"><c:if test="${useHelpParam}"><label for="${childNode.name}" title="${childNode.help}"></c:if><span style="cursor:text">${childNode.displayName}</span><c:if test="${useHelpParam}"></label></c:if></a>
+          <a href="javascript:void(0)" style="cursor:default"><c:if test="${useHelpParam}"><label for="${childNode.name}" title="${childNode.help}"></c:if><span style="cursor:text">${childNode.displayName}</span><c:if test="${useHelpParam}"></label></c:if></a>
         </li>
       </c:if>
       <c:if test="${not childNode.isLeaf}">
