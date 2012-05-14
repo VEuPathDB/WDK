@@ -214,6 +214,21 @@ function updateImage(imgId, imgSrc) {
     return true;
 }
 
+function updateDiv(divId, urlToLoad, errorMsg) {
+	jQuery.ajax({
+		url: urlToLoad,
+		type: "GET",
+		data: {},
+		dataType: "html",
+		success: function(data){
+			jQuery('#'+divId).html(data);
+		},
+		error: function (jqXHR, textStatus, errorThrown) {
+			alert(errorMsg + "\n" + textStatus + "\n" + errorThrown);
+		}
+	});
+}
+
 function handle_dnaContextDiv() {
     handleHttpResponseImageMapDiv('dnaContextDiv');
 }
