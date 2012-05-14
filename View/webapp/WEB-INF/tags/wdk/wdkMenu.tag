@@ -1,6 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <%@ attribute name="refer" 
                           type="java.lang.String"
@@ -20,7 +19,7 @@
         <a href="http://apycom.com/" style="display:none;"></a>
      </span>
   </a>
-  <ul><wdk:searchCategories /></ul>
+  <ul><imp:searchCategories /></ul>
 </li>
 
 <%-- strategy menu --%>
@@ -37,7 +36,7 @@
 
 <c:choose>
   <c:when test="${wdkUser == null || wdkUser.guest}">
-    <wdk:requestURL path="/showApplication.do" />
+    <imp:requestURL path="/showApplication.do" />
     <c:set var="clickEvent" value="setCurrentTabCookie('application', 'basket');popLogin('${originRequestUrl}');" />
     <c:set var="title" value="Group IDs together to work with them. You can add IDs from a result, or from a details page." />
     <c:set var="href" value="javascript:void(0)" />
@@ -64,7 +63,7 @@
 <li id="favorite-menu">
 <c:choose>
   <c:when test="${wdkUser == null || wdkUser.guest}">
-    <wdk:requestURL path="/showFavorite.do" />
+    <imp:requestURL path="/showFavorite.do" />
       <a id="mybasket" onclick="popLogin('${originRequestUrl}');" 
          href="javascript:void(0)"
          title="Store IDs for easy access to their details page. You can add IDs *only* from the details page, one at a time." 

@@ -22,39 +22,6 @@ function configureSummaryViews(ele) {
     });
 }
 
-function summaryViewTabSelected(event, ui) {
-/*
-            var currentTab = getCurrentBasketTab();
-
-            var currentDiv = getCurrentBasketRegion();
-            currentDiv.prepend(jQuery("#basket-control-panel #basket-control").clone());
-
-            // store the selection cookie
-            var currentId = currentTab.attr("id");
-            setCurrentTabCookie('basket', currentId);
-            var control = jQuery("#basket-menu #basket-control");
-            if (currentDiv.find("table").length > 0) {
-                control.find("input#empty-basket-button").attr("disabled",false);
-                control.find("input#make-strategy-from-basket-button").attr("disabled",false);
-                control.find("input#export-basket-button").attr("disabled",false);
-                // create multi select control for adding columns
-                checkPageBasket();
-                createFlexigridFromTable(jQuery("#basket-menu #Results_Table"));
-                try {
-                    customBasketPage();
-                } catch(err) {
-                    //Do nothing
-                }
-            } else {
-                control.find("input#empty-basket-button").attr("disabled",true);
-                control.find("input#make-strategy-from-basket-button").attr("disabled",true);
-                control.find("input#export-basket-button").attr("disabled",true);
-            }
-*/
-}
-
-
-
 function moveAttr(col_ix, table) {
     // Get name of target attribute & attribute to left (if any)
     // NOTE:  Have to convert these from frontId to backId!!!
@@ -194,13 +161,6 @@ function ResultsToGrid(data, ignoreFilters, div, resultOnly) {
 
     currentDiv.html(data);
 
-    try {
-        customResultsPage();
-    }
-    catch(err) {
-        //Do nothing;
-    }
-    
     // invoke filters
         var wdkFilter = new WdkFilter();
     

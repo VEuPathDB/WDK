@@ -1,5 +1,4 @@
-<%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="w" uri="http://www.servletsuite.com/servlets/wraptag" %>
 
@@ -156,6 +155,6 @@
   <c:set var="wdkTable" value="${tblEntry.value}" />
   <c:if test="${wdkTable.tableField.internal == false}">
     <div> </div>
-    <wdk:wdkTable tblName="${tblEntry.key}" isOpen="true"/>
+    <imp:wdkTable tblName="${tblEntry.key}" isOpen="true"/>
   </c:if>
 </c:forEach>
