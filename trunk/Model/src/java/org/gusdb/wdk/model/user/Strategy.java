@@ -406,6 +406,8 @@ public class Strategy {
     public String getChecksum() throws JSONException, NoSuchAlgorithmException,
             WdkModelException, WdkUserException, SQLException {
         JSONObject jsStrategy = getJSONContent();
+        // exclude version, since it will be updated whenever a strategy is opened.
+        jsStrategy.remove("version");
         return Utilities.encrypt(jsStrategy.toString());
     }
 
