@@ -40,47 +40,48 @@ function initParamHandlers() {
 }
 
 function initDependentParamHandlers(isEdit) {
-	$('div.dependentParam').each(function() {
-		$('input, select', this).attr('disabled',true);
-		var name = $(this).attr('name');
-		if (!dependedParams[name]) {
-			dependedParams[name] = $(this).attr('dependson');
-		}
-		var dependedParam = $("td#" + dependedParams[name] + "aaa input[name='array(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='array(" + dependedParams[name] + ")']");
-		dependedParam.change(function() {
-			dependedValues = [];
-			var paramName = getParamName($(this).attr('name'), true);
-			var inputs = $("td#" + paramName + "aaa input[name='array(" + paramName + ")']:checked, td#" + paramName + "aaa select[name='array(" + paramName + ")']");
-			inputs.each(function() {
-				dependedValues.push($(this).val());
-			});
-            jQuery.unique(dependedValues);
-			updateDependentParam(name, dependedValues.join(","));
-		});
-		$('input, select', this).attr('disabled',false);
-	});
+  $('div.dependentParam').each(function() {
+				 $('input, select', this).attr('disabled',true);
+				 var name = $(this).attr('name');
+				 if (!dependedParams[name]) {
+				   dependedParams[name] = $(this).attr('dependson');
+				 }
+				 var dependedParam = $("td#" + dependedParams[name] + "aaa input[name='array(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='array(" + dependedParams[name] + ")']");
+				 dependedParam.change(function() {
+							dependedValues = [];
+							var paramName = getParamName($(this).attr('name'), true);
+							var inputs = $("td#" + paramName + "aaa input[name='array(" + paramName + ")']:checked, td#" + paramName + "aaa select[name='array(" + paramName + ")']");
+							inputs.each(function() {
+								      dependedValues.push($(this).val());
+								    });
+							jQuery.unique(dependedValues);
+							updateDependentParam(name, dependedValues.join(","));
+						      });
+				 $('input, select', this).attr('disabled',false);
+				 dependedParam.change();
+			       });
 
-	//If revising, store all of the old param values before triggering the depended param's change function.
-	if (isEdit) {
-		for (var name in dependedParams) {
-			var input = $("input.typeAhead[name='value(" + name + ")']");
-			if (input.length == 0) {
-				input = $("div.dependentParam[name='" + name + "']").find("select");
-				if (input.length > 0) {
-					// If this is a select, there's only one value
-					oldValues[name] = input.val();
-				}
-				else {
-					// Otherwise, we have to know which option(s) are checked
-					var allVals = [];
-					$("div.dependentParam[name='" + name + "']").find("input:checked").each(function() {
-       						allVals.push($(this).val());
-	     				});
-					oldValues[name] = allVals;
-				}
-			}
-		}
+  //If revising, store all of the old param values before triggering the depended param's change function.
+  if (isEdit) {
+    for (var name in dependedParams) {
+      var input = $("input.typeAhead[name='value(" + name + ")']");
+      if (input.length == 0) {
+	input = $("div.dependentParam[name='" + name + "']").find("select");
+	if (input.length > 0) {
+	  // If this is a select, there's only one value
+	  oldValues[name] = input.val();
 	}
+	else {
+	  // Otherwise, we have to know which option(s) are checked
+	  var allVals = [];
+	  $("div.dependentParam[name='" + name + "']").find("input:checked").each(function() {
+										    allVals.push($(this).val());
+										  });
+	  oldValues[name] = allVals;
+	}
+      }
+    }
+  }
 }
 
 function initTypeAhead(isEdit) {
@@ -172,6 +173,7 @@ function updateDependentParam(paramName, dependedValue) {
 		var questionName = dependentParam.closest("form").find("input:hidden[name=questionFullName]").val();
 		var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&dependedValue=' + dependedValue;
 		if ($('input.typeAhead',dependentParam).length > 0) {
+
 			var sendReqUrl = sendReqUrl + '&xml=true';
 			$("#" + paramName + "_display").attr('disabled',true).val('Loading options...');
 			$.ajax({
