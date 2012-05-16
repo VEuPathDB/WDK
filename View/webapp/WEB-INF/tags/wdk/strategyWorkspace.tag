@@ -12,8 +12,8 @@
 
 <div id="stage-stack"> </div>
 
-  <div id="contentwrapper">
-    <div id="contentcolumn2">
+<div id="contentwrapper">
+   <div id="contentcolumn2">
       <div class="innertube">
 
 <c:if test="${includeDYK}">
@@ -24,6 +24,7 @@
   setStrategyStatusCounts('${allCount}','${openCount}');
 </script>
 
+<!--  ----------MY STRATEGIES MENU (TABs)-------- -->
 <ul id="strategy_tabs">
 <%-- showPanel() is in addStepPopup.js --%>
 
@@ -38,28 +39,24 @@
    <li><a id="tab_search_history" title="View and browse all your strategies" 
 	onclick="this.blur()" href="javascript:showPanel('search_history')">All <font class="subscriptCount">(${allCount})</font></a></li>
 
-
-<c:set var="basketTitle" value="View your basket. Use the basket to operate on the items in it. For example, add them as a step in a strategy"/>
-
-<c:if test="${fn:length(basketCounts) > 0}">
-<c:choose>
-  <c:when test="${wdkUser.guest}">
+      <c:set var="basketTitle" value="View your basket. Use the basket to operate on the items in it. For example, add them as a step in a strategy"/>
+      <c:if test="${fn:length(basketCounts) > 0}">
+      <c:choose>
+	  <c:when test="${wdkUser.guest}">
    <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:popLogin();"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
-  </c:when>
-  <c:otherwise>
+	  </c:when>
+	  <c:otherwise>
    <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:showPanel('basket')"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
-  </c:otherwise>
-</c:choose>
-</c:if>
+	  </c:otherwise>
+      </c:choose>
+      </c:if>
 
    <li><a id="tab_sample_strat" title="View example strategies, both simple and more complex" 
 	onclick="this.blur()" href="javascript:showPanel('sample_strat')">Examples</a></li>
 
    <li><a id="tab_help" title="Help in using strategies"
 	href="javascript:showPanel('help')">Help</a></li>
-
 </ul>
-
 
 
 <%--------------- REST OF PAGE ---------------%>
@@ -67,6 +64,7 @@
 <c:set var="newStrategy" value="${requestScope.newStrategy}" />
 <c:set var="newStrat"><c:if test="${newStrategy != null && newStrategy == true}">newStrategy="true"</c:if></c:set>
 
+<!--- OPENED tab --->
 <div id="strategy_results" class="workspace_panel">
   <div id="strategy_messages">
   </div>
@@ -76,35 +74,40 @@
       </div>
     </div> 
   </div>
+
   <br/>
 
 <!--
 <center style="padding:4px 0;font-style:italic;background-color:#FFFFA0;">Results for the selected step above</center>
 -->
-<br>
-<div title="Step in yellow above. You may select a different step by clicking on its result number (inside the step)." class="h4left">&nbsp;&nbsp;&nbsp;My Step Result:</div>
-
+  <br/>
+  <div style="font-size:120%" title="Step in yellow above. You may select a different step by clicking on its result number (inside the step)." class="h4left">&nbsp;&nbsp;&nbsp;My Step Result:</div>
 
   <div class="Workspace">&nbsp;
   </div>
 </div>
 
+
+<!-- ALL tab -->
 <div id="search_history" class="workspace_panel">
 </div>
 
+<!-- BASKET -->
 <div id="basket" class="workspace_panel">
 </div>
 
+<!-- SAMPLE STRATS --?
 <div id="sample_strat" class="workspace_panel">
 </div>
 
-
+<!-- HELP -->
 <div id="help">
 </div>
 
+<!-- QUERY GRID -->
 <div id="strategy_new" class="workspace_panel">
 </div>
 
       </div>
-    </div>
-  </div>
+   </div>
+</div>
