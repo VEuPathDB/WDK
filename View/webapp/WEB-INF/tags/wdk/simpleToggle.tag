@@ -21,7 +21,8 @@
   <c:set var="show" value="${true}" />
 </c:if>
 
-<div class="wdk-toggle ${name}" show="${show}">
+<%--  name could be a string with several words (e.g. "external links",  which generates several class names... not needed? --%>
+<div class="wdk-toggle" show="${show}">
   <h3><a href="#">${name}</a></h3>
   <div>${content}</div>
 </div>
