@@ -381,7 +381,7 @@ function receiveAsyncContent(request, contentTag) {
 
 // return domain.org from www.domain.org
 function secondLevelDomain(){
-  dm = document.domain.split(/\./);
+  var dm = document.domain.split(/\./);
   if(dm.length > 1) {
     return(dm[dm.length-2] + "." +  dm[dm.length-1]) ;
   }else{
