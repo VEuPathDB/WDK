@@ -668,17 +668,21 @@ tr.headerRow > td,th {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      = jquery css
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+.ui-widget-header { 
+	padding:0;
+	background:none;
+	border:0; 
+} 
 .ui-tabs .ui-tabs-panel {
 	padding:0.5em 0.5em 0.5em;
-	border-width: 0 1px 1px;
+	border-width: 1px;
 }
-
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       = Basket Tab Styles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #basket-menu > .ui-tabs-panel{
-	border-width:0 1px 1px;
 	padding:0; 
 }
 
