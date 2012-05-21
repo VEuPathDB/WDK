@@ -691,10 +691,12 @@ public class SanityTester {
             new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
         System.out.println(" [Time] " + sdFormat.format(new Date()));
         System.out.println();
-        
+
+	//System.out.println(" MODEL: " + modelName + "\n\n");
+
         sanityTester.testQuerySets(QuerySet.TYPE_VOCAB);
         sanityTester.testQuerySets(QuerySet.TYPE_ATTRIBUTE);
-        sanityTester.testQuerySets(QuerySet.TYPE_TABLE);
+        if ( !modelName.equals("EuPathDB") ) { sanityTester.testQuerySets(QuerySet.TYPE_TABLE); }
         sanityTester.testQuestionSets();
         sanityTester.testRecordSets();
         if (!indexOnly) {
@@ -702,5 +704,7 @@ public class SanityTester {
                 System.exit(1);
             }
         }
+
+
     }
 }
