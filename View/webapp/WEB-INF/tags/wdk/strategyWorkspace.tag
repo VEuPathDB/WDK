@@ -96,7 +96,7 @@
 <div id="basket" class="workspace_panel">
 </div>
 
-<!-- SAMPLE STRATS --?
+<!-- SAMPLE STRATS -->
 <div id="sample_strat" class="workspace_panel">
 </div>
 
