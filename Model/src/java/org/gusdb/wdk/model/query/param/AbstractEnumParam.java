@@ -480,9 +480,18 @@ public abstract class AbstractEnumParam extends Param {
                         + ", please double check this default value.");
             } else { // default is not a valid term, and param doesn't depend on
                      // anything. The default must be wrong.
-                throw new WdkModelException("The default value from model, '"
-                        + defaultFromModel + "', is not a valid term for "
-                        + "param " + getFullName());
+
+                // temporarily stop throwing out error, print warning logs
+                // instead.
+
+                // throw new WdkModelException("The default value from model, '"
+                // + defaultFromModel + "', is not a valid term for "
+                // + "param " + getFullName());
+                logger.warn("The default value from model, '"
+                        + defaultFromModel
+                        + "', is not a valid term for param " + getFullName()
+                        + ", please double check this default value.");
+
             }
         }
 
