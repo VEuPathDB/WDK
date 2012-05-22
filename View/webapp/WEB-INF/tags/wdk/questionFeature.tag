@@ -11,11 +11,11 @@
 
 <c:choose>
   <c:when test="${question.new}">
-    <img alt="New feature icon" title="This is a new search" 
+    <img alt="New feature icon" title="This is a new search!" 
          src="<c:url value='/wdk/images/new-feature.png' />" />
   </c:when>
   <c:when test="${question.revised}">
-    <img alt="Revised feature icon" title="This search has been revised" 
+    <img alt="Revised feature icon" title="There are new data in this search!" 
          src="<c:url value='/wdk/images/revised-small.png' />" />
   </c:when>
 </c:choose>
