@@ -1,6 +1,6 @@
 var strats = new Object();
 var xmldoc = null;
-var exportBaseURL;
+//var exportBaseURL; now defined as function in wdkCommon.js
 var sidIndex = 0;
 var recordType= new Array();   //stratid, recordType which is the type of the last step
 var state = null;
