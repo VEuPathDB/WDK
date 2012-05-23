@@ -9,18 +9,17 @@ jQuery(document).ready(function() {
     wdk.registerTable();
 });
 
-//some helper functions
+//some helper functions used by isolates results page (clustal) and view-JSON.js
 function guestUser() {
-	var guestUser = $("#guestUser").attr("name");
-	return guestUser;
+	return $("#guestUser").attr("name");
 }
+
 function exportBaseURL() {
-	var exportBaseURL = $("#exportBaseURL").attr("name");
-	return exportBaseURL;
+	return $("#exportBaseURL").attr("name");
 }
+
 function modelName() {
-	var modelName = $("#modelName").attr("name");
-	return modelName;
+	return $("#modelName").attr("name");
 }
 
 function wdkUser() {
