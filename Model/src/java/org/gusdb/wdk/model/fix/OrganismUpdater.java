@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.fix;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -9,11 +10,11 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.ModelConfigUserDB;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -26,6 +27,8 @@ import org.json.JSONObject;
 public class OrganismUpdater {
 
     private static final String PARAM_ORGANISM = "organism";
+
+    private static final Logger logger = Logger.getLogger(OrganismUpdater.class);
 
     /**
      * @param args
@@ -62,13 +65,17 @@ public class OrganismUpdater {
     }
 
     private Map<String, String> loadMapFile(String fileName) throws IOException {
-        Properties properties = new Properties();
-        properties.load(new FileReader(new File(fileName)));
+        BufferedReader reader = new BufferedReader(new FileReader(new File(
+                fileName)));
         Map<String, String> mappings = new HashMap<String, String>();
-        for (Object key : properties.keySet()) {
-            String property = (String) key;
-            mappings.put(property, properties.getProperty(property));
+        String line;
+        while ((line = reader.readLine()) != null) {
+            line = line.trim();
+            if (line.length() == 0) continue;
+            String[] parts = line.split("=", 2);
+            mappings.put(parts[0].trim(), parts[1].trim());
         }
+        reader.close();
         return mappings;
     }
 
@@ -80,6 +87,8 @@ public class OrganismUpdater {
 
     private void updateStepParams(Set<String> clobKeys) throws SQLException,
             JSONException {
+        logger.info("Checking step params...");
+
         DBPlatform platform = wdkModel.getUserPlatform();
         DataSource dataSource = platform.getDataSource();
         PreparedStatement psSelect = null, psUpdate = null;
@@ -90,17 +99,26 @@ public class OrganismUpdater {
                 + " WHERE u.is_guest = 0 AND u.user_id = s.user_id "
                 + "   AND s.answer_id = a.answer_id AND a.project_id = ?";
         String update = "UPDATE " + userSchema + "steps "
-                + " SET display_param = ? WHERE step_id = ?";
+                + " SET display_params = ? WHERE step_id = ?";
         try {
             psSelect = SqlUtils.getPreparedStatement(dataSource, select);
             psUpdate = SqlUtils.getPreparedStatement(dataSource, update);
             psSelect.setString(1, projectId);
             resultSet = psSelect.executeQuery();
             int count = 0;
+            int stepCount = 0;
             while (resultSet.next()) {
+                stepCount++;
+                if (stepCount % 1000 == 0) {
+                    logger.debug(stepCount + " steps read");
+                }
+
                 int stepId = resultSet.getInt("step_id");
                 String content = platform.getClobData(resultSet,
                         "display_params");
+                if (content == null || content.trim().length() == 0) continue;
+                if (content.replaceAll("\\s", "").equals("{}")) continue;
+                
                 JSONObject jsParams = new JSONObject(content);
                 if (changeParams(jsParams, clobKeys)) {
                     content = jsParams.toString();
@@ -114,11 +132,11 @@ public class OrganismUpdater {
             }
         }
         catch (SQLException ex) {
+            logger.error(ex);
             throw ex;
         }
         finally {
             SqlUtils.closeResultSet(resultSet);
-            SqlUtils.closeStatement(psSelect);
             SqlUtils.closeStatement(psUpdate);
         }
     }
@@ -150,6 +168,7 @@ public class OrganismUpdater {
     }
 
     private void updateClobValues(Set<String> clobKeys) throws SQLException {
+        logger.info("Checking clob values...");
         DBPlatform platform = wdkModel.getUserPlatform();
         DataSource dataSource = platform.getDataSource();
         PreparedStatement psSelect = null, psUpdate = null;
@@ -159,6 +178,7 @@ public class OrganismUpdater {
                 + " SET clob_value = ? WHERE clob_checksum = ?";
         try {
             int count = 0;
+            int clobCount = 0;
             psSelect = SqlUtils.getPreparedStatement(dataSource, select);
             psUpdate = SqlUtils.getPreparedStatement(dataSource, update);
             for (String clobKey : clobKeys) {
@@ -177,6 +197,11 @@ public class OrganismUpdater {
                         if (count % 100 == 0) psUpdate.executeBatch();
                     }
                     if (count % 100 != 0) psUpdate.executeBatch();
+
+                    clobCount++;
+                    if (clobCount % 1000 == 0) {
+                        logger.debug(clobCount + " clobs read.");
+                    }
                 }
                 resultSet.close();
             }
@@ -191,7 +216,7 @@ public class OrganismUpdater {
     }
 
     private boolean changeClobs(StringBuilder content) {
-        boolean updated = true;
+        boolean updated = false;
         StringBuilder buffer = new StringBuilder();
         for (String organism : content.toString().split("\\s*,\\s*")) {
             if (mappings.containsKey(organism)) {
