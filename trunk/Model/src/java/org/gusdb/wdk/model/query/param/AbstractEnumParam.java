@@ -465,6 +465,10 @@ public abstract class AbstractEnumParam extends Param {
         logger.debug("applySelectMode(): select mode: '" + selectMode
                 + "', default from model = " + super.getDefault());
         String defaultFromModel = super.getDefault();
+
+        String errorMessage = "The default value from model, '"
+                + defaultFromModel + "', is not a valid term for param "
+                + getFullName() + ", please double check this default value.";
         if (defaultFromModel != null) {
             if (cache.getTerms().contains(defaultFromModel)) {
                 cache.setDefaultValue(defaultFromModel);
@@ -474,23 +478,11 @@ public abstract class AbstractEnumParam extends Param {
                 // and make sure the default is as intended.
                 // Cannot throws exception here, since the default might not be
                 // valid for a different depended value.
-                logger.warn("The default value from model, '"
-                        + defaultFromModel
-                        + "', is not a valid term for param " + getFullName()
-                        + ", please double check this default value.");
+                logger.warn(errorMessage);
             } else { // default is not a valid term, and param doesn't depend on
                      // anything. The default must be wrong.
-
-                // temporarily stop throwing out error, print warning logs
-                // instead.
-
-                // throw new WdkModelException("The default value from model, '"
-                // + defaultFromModel + "', is not a valid term for "
-                // + "param " + getFullName());
-                logger.warn("The default value from model, '"
-                        + defaultFromModel
-                        + "', is not a valid term for param " + getFullName()
-                        + ", please double check this default value.");
+                logger.warn(errorMessage);
+                throw new WdkModelException(errorMessage);
 
             }
         }
