@@ -127,11 +127,13 @@
                             </td>
                             <td width="60%"  class="mytdStyle" >
 								<c:set var="favNote" value="${favorite.note}"/>
-                              <pre><span class="favorite-note">${favNote}</span></pre>
+                              <span class="favorite-note">${favNote}</span>
+                              <textarea class="favorite-note hidden input" rows="2" cols="198" name="favorite-note">${favNote}</textarea>
                                 <div class="favorite-button-div"><a href="javascript:void(0)" class="favorite-note-button" onClick="showInputBox(this, 'note', 'updateFavoriteNote(this)')" >edit</a></div>
                             </td>
                             <td width="30%"  class="mytdStyle" >
 								<c:set var="favGroup" value="${favorite.group}"/>
+                                <input type="text" class="favorite-group hidden input" name="favorite-group" maxlength="42" value="${favGroup}"/>
 								<c:set var="favGroupStyle" value=""/>
 								<c:if test="${fn:length(favGroup) == 0}">
 									<c:set var="favGroup" value="Click edit to add a project"/>

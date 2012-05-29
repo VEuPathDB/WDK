@@ -66,30 +66,28 @@ function showInputBox(holder, type, callback){
 	if(old_holder != null){
 		jQuery("input[id$='_Cancel']").click();
 	}
-	var noteSpan = jQuery(holder).parents("td").find("span.favorite-" + type);
+  var cell = jQuery(holder).parents("td");
+	var noteSpan = cell.find("span.favorite-" + type);
+	var noteInput = cell.find(".input.favorite-" + type);
 	old_holder = holder;
 	jQuery(holder).remove();
-	var note = jQuery(noteSpan).text();
+  noteSpan.addClass("hidden");
+  noteInput.removeClass("hidden");
 	var opacity = jQuery(noteSpan).css("opacity");
-	jQuery(noteSpan).css("opacity","1");
-	var value = note;
-	if(type == 'group') {
-		var perc = 60;
-		var maxlen = 42;
-		jQuery(noteSpan).html("<input style='width:" + perc  + "%' type='text' name='favorite-" + type + "' value='" + value + "' maxlength='" + maxlen + "'/>");
-	}else{
-		var perc = 80;
-		var maxlen = 198;
-		jQuery(noteSpan).html("<textarea style='width:" + perc  + "%' name='favorite-" + type + "' class='input' cols=" + maxlen + "' rows='2'>" + value + "</textarea>");
-	}
-	jQuery(noteSpan).append("<input id='" + type + "_Save' type='button' value='Save'/>");
-	jQuery(noteSpan).append("<input id='" + type + "_Cancel' type='button' value='Cancel'/>");
-	jQuery("input#" + type + "_Save", noteSpan).click(function(){ 
+	jQuery(cell).append("<input id='" + type + "_Save' type='button' value='Save'/>")
+	  .append("<input id='" + type + "_Cancel' type='button' value='Cancel'/>");
+	jQuery("input#" + type + "_Save", cell).click(function(){ 
 		eval(callback); 
-		jQuery(this).parent().after(old_holder);
-		old_holder = null;
 	});
-	jQuery("input#" + type + "_Cancel", noteSpan).click(function(){ CancelChange(this, value, opacity); });
+	jQuery("input#" + type + "_Cancel", cell).click(function(){
+    jQuery("input#" + type + "_Save", cell).remove();
+    jQuery("input#" + type + "_Cancel", cell).remove();
+    noteInput.addClass('hidden');
+    noteSpan.removeClass('hidden');
+    cell.append(old_holder);
+		old_holder = null;
+    jQuery("div#groups-list", cell).remove();
+  });
 	if(type == 'group' && jQuery("div#groups-list ul li").length > 0){
 		var groupList = jQuery("div#groups-list").clone();
 		jQuery("li", groupList).each(function(){
@@ -103,24 +101,14 @@ function showInputBox(holder, type, callback){
 	jQuery("input", noteSpan).focus().select();
 }
 
-function CancelChange(h, v, o){
-	h = jQuery(h).parent();
-	h.html(v);
-	h.after(old_holder);
-	old_holder = null;
-	jQuery("div#groups-list", h).remove();
-	if(o != "1")
-		h.css("opacity",o);
-}
-
 function updateFavoriteNote(holder) {
 	var record = getRecord(holder);
-    var rcName = jQuery(holder).parents(".wdk-record").attr("recordClass");
-	var noteSpan = jQuery(holder).parents("td").find("span.favorite-note");
-//	var note = jQuery("input",noteSpan).val();
-	var note = jQuery("textarea",noteSpan).val();
+  var cell = jQuery(holder).parents("td");
+  var rcName = jQuery(holder).parents(".wdk-record").attr("recordClass");
+	var noteSpan = cell.find("span.favorite-note");
+	var noteInput = cell.find(".input.favorite-note");
+	var note = noteInput.val();
 	var d = "action=note&note=" + note + "&type=" + rcName + "&data=" + record;
-//alert(note);
 
 	jQuery.ajax({
 		url: "processFavorite.do",
@@ -128,16 +116,25 @@ function updateFavoriteNote(holder) {
 		dataType: "html",
 		type: "post",
 		success: function(data){
-			jQuery(noteSpan).html(note);
+			//jQuery(noteSpan).html(note);
+      noteSpan.text(noteInput.val());
+      jQuery("input#note_Save", cell).remove();
+      jQuery("input#note_Cancel", cell).remove();
+      noteInput.addClass('hidden');
+      noteSpan.removeClass('hidden');
+      cell.append(old_holder);
+      old_holder = null;
 		}
 	});
 }
 
 function updateFavoriteGroup(holder) {
 	var record = getRecord(holder);
-    var rcName = jQuery(holder).parents(".wdk-record").attr("recordClass");
-	var groupSpan = jQuery(holder).parents("td").find("span.favorite-group");
-	var group = jQuery("input",groupSpan).val();
+  var cell = jQuery(holder).parents("td");
+  var rcName = jQuery(holder).parents(".wdk-record").attr("recordClass");
+	var groupSpan = cell.find("span.favorite-group");
+  var groupInput = cell.find("input.favorite-group");
+	var group = groupInput.val();
 	var d = "action=group&group=" + group + "&type=" + rcName + "&data=" + record;
 	jQuery.ajax({
 		url: "processFavorite.do",
@@ -145,7 +142,14 @@ function updateFavoriteGroup(holder) {
 		dataType: "html",
 		type: "post",
 		success: function(data){
-			jQuery(groupSpan).css("opacity","1.0").html(group);
+      groupSpan.text(groupInput.val());
+      groupSpan.css("opacity", 1); // this is for user-defined favorite-group
+      jQuery("input#group_Save", cell).remove();
+      jQuery("input#group_Cancel", cell).remove();
+      groupInput.addClass('hidden');
+      groupSpan.removeClass('hidden');
+      cell.append(old_holder);
+      old_holder = null;
 			loadFavoriteGroups();
 		}
 	});
