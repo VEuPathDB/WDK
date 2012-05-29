@@ -724,6 +724,22 @@ div.favorite-button-div{
     cursor: pointer;
 }
 
+.favorite-note, .favorite-group {
+    font-family: monospace;
+    white-space: pre;
+}
+
+textarea.favorite-group {
+    width: 60%;
+}
+textarea.favorite-note {
+    width: 80%;
+}
+
+.favorite-note.hidden, .favorite-group.hidden {
+    display: none;
+}
+
 .favorite-group-button, .favorite-note-button {
 	float:right;
 	text-align:left;
