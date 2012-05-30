@@ -269,37 +269,43 @@ public class StepValidator extends BaseCLI {
         DataSource source = wdkModel.getUserPlatform().getDataSource();
 
         String tempTable = "wdk_part_steps";
-
+   
+        try {
         String sql = "CREATE TABLE " + tempTable + " NOLOGGING AS "
                 + " (SELECT s.step_id, s.user_id, s.display_id, "
                 + "         s.left_child_id, s.right_child_id, s.is_valid "
-                + "  FROM " + step + "s, " + answer + " a                 "
-                + "  WHERE a.project_id IN " + projects
-                + "    AND user_id IN  (SELECT user_id FROM " + step
-                + "                     WHERE is_valid = 0)";
+                + "  FROM " + step + " s, " + answer + " a                 "
+                + "  WHERE s.answer_id = a.answer_id "
+                + "    AND a.project_id IN " + projects
+                + "    AND s.user_id IN  (SELECT user_id FROM " + step
+                + "                     WHERE is_valid = 0) )";
         SqlUtils.executeUpdate(wdkModel, source, sql,
                 "wdk-invalidate-create-part-steps");
 
         sql = "UPDATE " + step + " SET is_valid = 0 "
-                + "WHERE is_valid IS NULL "
-                + "  AND answer_id IN                   "
-                + "    (SELECT answer_id FROM " + answer
-                + "     WHERE project_id IN  " + projects
-                + "  AND step_id IN                  "
-                + "    (SELECT step_id FROM " + tempTable
-                + "     START WITH is_valid = 0 "
-                + "     CONNECT BY (prior display_id = right_child_id "
+                + "WHERE step_id IN ( "
+                + "    SELECT s.step_id "
+                + "    FROM " + step + " s, " + answer + " a "
+                + "    WHERE s.is_valid IS NULL "
+                + "      AND s.answer_id = a.answer_id      "
+                + "      AND a.project_id IN  " + projects
+                + "      AND s.step_id IN                  "
+                + "        (SELECT step_id FROM " + tempTable
+                + "         START WITH is_valid = 0 "
+                + "         CONNECT BY (prior display_id = right_child_id "
                 + "                 OR prior display_id = left_child_id) "
-                + "         AND prior user_id = user_id)";
+                + "         AND prior user_id = user_id)"
+                + "  )";
 
         // <ADD-AG 042911>
         executeByBatch(wdkModel, source, sql,
                 "STEP:wdk-invalidate-parent-step", null, null);
 
-        sql = "DROP TABLE " + tempTable + " PURGE";
-        SqlUtils.executeUpdate(wdkModel, source, sql,
+        } finally {
+             String sql = "DROP TABLE " + tempTable + " PURGE";
+            SqlUtils.executeUpdate(wdkModel, source, sql,
                 "wdk-invalidate-drop-part-steps");
-
+        }
     }
 
     private void deleteInvalidParams(WdkModel wdkModel)
@@ -369,7 +375,7 @@ public class StepValidator extends BaseCLI {
         StringBuilder sql = new StringBuilder("CREATE TABLE ");
         sql.append(danglingTable + " AS ");
         sql.append("(SELECT s.step_id ");
-        sql.append(" FROM " + stepTable + " s, " + wdkScheme + "answers a ");
+        sql.append(" FROM " + stepTable + " s, " + wdkScheme + "answers a, ");
         sql.append("      ((SELECT s1.step_id ");
         sql.append("        FROM " + stepTable + " s1 ");
         sql.append("        LEFT JOIN " + stepTable + " s2 ");
@@ -385,10 +391,10 @@ public class StepValidator extends BaseCLI {
         sql.append("          AND s1.right_child_id = s2.display_id ");
         sql.append("        WHERE s1.right_child_id IS NOT NULL ");
         sql.append("          AND s2.display_id IS NULL) ");
-        sql.append("      ) sd, ");
+        sql.append("      ) sd ");
         sql.append(" WHERE sd.step_id = s.step_id ");
         sql.append("   AND s.answer_id = a.answer_id");
-        sql.append("   AND a.project_id IN " + projects);
+        sql.append("   AND a.project_id IN " + projects + ")");
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
@@ -461,7 +467,7 @@ public class StepValidator extends BaseCLI {
             count++;
             file = new File(name + "_" + count + ".log");
         }
-        PrintWriter writer = new PrintWriter(new FileWriter(file));
+        PrintWriter writer = new PrintWriter(new FileWriter(file, true));
         writer.println("user_id\temail\tstrategy_id\tproject\tis_saved\tcreate_time\tlast_modified\tname");
 
         String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
@@ -469,7 +475,7 @@ public class StepValidator extends BaseCLI {
                 + schema + "users u, " + strategyTable + " d "
                 + " WHERE d.strategy_id = s.strategy_id "
                 + "   AND s.user_id = u.user_id "
-                + " ORDER BY s.user_id ASC s.strategy_id ASC";
+                + " ORDER BY s.user_id ASC, s.strategy_id ASC";
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         ResultSet resultSet = null;
         try {
@@ -482,13 +488,13 @@ public class StepValidator extends BaseCLI {
                 writer.print("\t");
                 writer.print(resultSet.getInt("strategy_id"));
                 writer.print("\t");
-                writer.println(resultSet.getString("project_id"));
+                writer.print(resultSet.getString("project_id"));
                 writer.print("\t");
                 writer.print(resultSet.getBoolean("is_saved"));
                 writer.print("\t");
                 writer.print(resultSet.getDate("create_time"));
                 writer.print("\t");
-                writer.print(resultSet.getBoolean("last_modify_time"));
+                writer.print(resultSet.getDate("last_modify_time"));
                 writer.print("\t");
                 writer.println(resultSet.getString("name"));
             }
@@ -551,8 +557,9 @@ public class StepValidator extends BaseCLI {
 
         if ((dmlSql == null) || (selectSql == null)) {
             dmlSql = sql.substring(0, sql.indexOf("IN ", 0)) + " = ?";
-            selectSql = sql.substring(sql.indexOf("IN ", 0) + 4);
-            selectSql = selectSql.substring(0, selectSql.length() - 1);
+            selectSql = sql.substring(sql.indexOf("IN ", 0) + 3).trim();
+            if (selectSql.startsWith("(")) selectSql = selectSql.substring(1);
+            if (selectSql.endsWith(")")) selectSql = selectSql.substring(0, selectSql.length() - 1);
 
             // logger.info("dmlSql= " + dmlSql);
             // logger.info("selectSql= " + selectSql);
@@ -601,7 +608,7 @@ public class StepValidator extends BaseCLI {
             String sql, String name) throws SQLException, WdkUserException,
             WdkModelException {
 
-        sql = sql + " where is_valid is not NULL and rownum < 1000";
+        sql = sql + " AND is_valid is not NULL and rownum < 1000";
 
         int rowsAffected = 1000;
         int totalAffected = 0;
