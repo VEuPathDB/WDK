@@ -9,7 +9,10 @@ function configureSummaryViews(ele) {
     var workspace = window.wdk.findActiveWorkspace(); 
     $(".Summary_Views").each(function() {
         var summaryViews = $(this);
-        var currentTab = parseInt(summaryViews.children("ul").attr("currentTab"));    
+        // disable remembering current tab for now due to peerformance issue on
+        // loading the genomic summary view. Always use the first tab.
+        // var currentTab = parseInt(summaryViews.children("ul").attr("currentTab"));    
+        var currentTab = 0;
         summaryViews.tabs({
             selected : currentTab,
             cache: true,
