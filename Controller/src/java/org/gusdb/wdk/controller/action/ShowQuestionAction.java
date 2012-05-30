@@ -158,6 +158,7 @@ public class ShowQuestionAction extends Action {
                 qForm.setArray(paramName + TERMS_SUFFIX, terms);
                 
                 // if no default is assigned, use the first enum item
+                logger.debug("ENUM PARAM " + paramName + " = " + paramValue);
                 if (paramValue == null) {
                     String defaultValue = param.getDefault();
                     if (defaultValue != null)
