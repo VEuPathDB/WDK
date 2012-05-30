@@ -13,14 +13,14 @@
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 
 <div style="display:none">
-<!-- used by goToIsolate() ------>
+<!-- used by goToIsolate()    -->
 <div id="modelName" name="${siteName}"></div>
 
-<!-- used by view-JSON.js and controller-JSON.js --------->
+<!-- used by view-JSON.js and controller-JSON.js   -->
 <div id="guestUser" name="${wdkUser.guest}"></div>
 <div id="exportBaseURL" name="${exportBaseUrl}"></div>
 
-<!-- for future uses --->
+<!-- for future uses -->
 <div id="wdk-userinfo" user-id="${wdkUser.userId}" 
 			name="${wdkUser.lastName}" 
 			country="${wdkUser.country}" 
