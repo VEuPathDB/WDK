@@ -1,6 +1,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
+
 <table width="100%" id="basket-control">
   <tr>
 
@@ -27,7 +28,11 @@
 <table align="right">
 <tr>
     <td style="text-align:right;padding:3px 0 0;vertical-align:top">
-	<span style="color:darkred;font-style:italic;margin-bottom:7px;margin-right:5px;position:relative;right:5px;"><b>Note on new releases:</b> When we update annotations, IDs may change or be removed. <br>We will map your old IDs to new IDs. Unmapped IDs will not be in the basket.<br>To keep a copy of your current basket please download your IDs now.</span>
+	<span class="basket-warning">
+<b>Note on new releases:</b> IDs sometimes change or are retired. <a  href="javascript:void(0)" onClick="openWhyAnnotChanges(this)"> Why?</a>
+<br>Old IDs are mapped to new IDs when possible. Retired IDs will not be in the basket.
+<br>To keep a copy of your current basket please download your IDs now.
+	</span>
     </td>
 </tr>
 </table>
@@ -43,3 +48,4 @@
     <input type="submit" value="No" onclick="jQuery.unblockUI();return false;" />
   </form>
 </div>
+

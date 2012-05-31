@@ -41,9 +41,6 @@
 $(function() {
 	$( ".tabs" ).tabs();
 });
-$(function() {
-	$( "#dialog" ).dialog({ autoOpen: false });
-});
 </script>
 
 <div style="border:0;" id="history-menu" class="tabs">
@@ -90,41 +87,23 @@ $(function() {
       <td style="vertical-align:middle" width="30%">Select:&nbsp;<a class="check_toggle" onclick="selectAllHist()" href="javascript:void(0)">All</a>&nbsp|&nbsp;
                   <a class="check_toggle" onclick="selectAllHist('saved')" href="javascript:void(0)">Saved</a>&nbsp|&nbsp;
                   <a class="check_toggle" onclick="selectAllHist('unsaved')" href="javascript:void(0)">Unsaved</a>&nbsp|&nbsp;
-                  <a class="check_toggle" onclick="selectNoneHist()" href="javascript:void(0)">None</a></td>
+                  <a class="check_toggle" onclick="selectNoneHist()" href="javascript:void(0)">None</a>
+      </td>
       <td style="vertical-align:middle" width="20%" class="medium">
          <input type="button" value="Open" onclick="handleBulkStrategies('open')"/>
          <input type="button" value="Close" onclick="handleBulkStrategies('close')"/>
          <input type="button" value="Delete" onclick="handleBulkStrategies('delete')"/>
       </td>
-
-
-<td width="50%" style="text-align:right">
-
-<div id="invalid-legend">
-Here we store your <b>search templates</b>, not the IDs in your result.
-<br>
-<b>Note on new releases: </b>Changes on annotation or new data might affect <b>any step result</b>.
-<br>Also, if we modify a search template, you will need to revise your step. The strategy will be marked as <img style="vertical-align:bottom" src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/>. &nbsp;<a  href="javascript:void(0)"  onClick="openWhyInvalid(this)"> Why?</a>
-
-<!--
-<br><img src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/> = the strategy contains <b>outdated steps</b>, open to revise (<a  href="javascript:void(0)"  onClick="openWhyInvalid(this)">Why?</a>)
--->
+ 
+      <td width="50%" style="text-align:right">
+<div class="strat-legend">
+<br><b>Strategy results are not stored</b>, only the strategy steps and parameter values are.
+<br><b>Results might change</b> with subsequent releases of the site if the underlying data has changed.
+<br>The strategies marked with <a  href="javascript:void(0)"  onClick="openWhyRevise(this)"><img style="vertical-align:bottom" src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/></a> contain searches that have been redesigned, and <b>require your revision</b>.  <a  href="javascript:void(0)"  onClick="openWhyRevise(this)"> Why?</a>
 </div>
-
-<div id="dialog" class="why-invalid" title="Outdated steps">
-<ul class="cirbulletlist">
-<li>A step will be marked outdated (covered with a <span style="font-size:140%;color:darkred;font-family:sans-serif">X</span> ) when we have modified its search form and we cannot easily map your old search into the new form.
-<br><br><br>
-<li>Please open an outdated strategy to start revising its outdated steps. Then, just click on each outdated step to open the revise form. 
-</ul>
-</div>
-
-</td>
-
+      </td>
 </tr>
 </table>
-
-
 
 <!-- begin creating history sections to display strategies -->
 <c:forEach items="${unsavedStrategiesMap}" var="strategyEntry">
@@ -164,7 +143,7 @@ Here we store your <b>search templates</b>, not the IDs in your result.
 <c:set var="exportBaseUrl" value = "${scheme}://${serverName}/${request_uri}/im.do?s=" />
 
 <!-- popups for save/rename/share forms -->
-<!-- (though share does not need a form, just an input box with the url inside) -->
+<!-- (though share does not need a form, just a span with the url) -->
 
     <div class='modal_div save_strat' id="hist_save_rename">
       <div class='dragHandle'>
@@ -226,8 +205,4 @@ Here we store your <b>search templates</b>, not the IDs in your result.
 	var myform = $("form#save_strat_form_hist");
 	myform.prepend(save_warning);
 	$("i,form#save_strat_form_hist").css("font-size","95%");
-
-function openWhyInvalid(element){
-	$( "#dialog" ).dialog('open');
-}
 </script>
