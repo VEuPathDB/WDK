@@ -362,7 +362,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("shortName", step.getShortDisplayName());
         jsStep.put("results", step.getEstimateSize());
         jsStep.put("questionName", step.getQuestionName());
-        jsStep.put("displayName", step.getQuestion().getDisplayName());
+        jsStep.put("displayName", step.getDisplayName());
         jsStep.put("isboolean", step.getIsBoolean());
         jsStep.put("istransform", step.getIsTransform());
         jsStep.put("filtered", step.isFiltered());
@@ -408,13 +408,14 @@ public class ShowStrategyAction extends ShowQuestionAction {
             WdkModelException, WdkUserException, SQLException {
 
         JSONArray jsParams = new JSONArray();
+        try {
         Map<GroupBean, Map<String, ParamBean<?>>> groups = step.getQuestion().getParamMapByGroups();
         Map<String, String> paramValues = step.getParams();
         for (GroupBean group : groups.keySet()) {
             Map<String, ParamBean<?>> params = groups.get(group);
             for (String paramName : params.keySet()) {
             	ParamBean<?> param = params.get(paramName);
-                String dependentValue = getDependentValue(paramValues, param);
+                String dependentValue = getUserDependentValue(paramValues, param);
                 JSONObject jsParam = new JSONObject();
                 jsParam.put("name", paramName);
                 if (param != null) {
@@ -436,6 +437,9 @@ public class ShowStrategyAction extends ShowQuestionAction {
                 jsParams.put(jsParam);
             }
         }
+        } catch(WdkModelException ex) {
+            // ignore the invalid question name
+        }
         jsStep.put("params", jsParams);
     }
 
@@ -444,18 +448,26 @@ public class ShowStrategyAction extends ShowQuestionAction {
         if (param instanceof EnumParamBean) {
         	EnumParamBean enumParam = (EnumParamBean)param;
         	if (enumParam.isDependentParam()) {
-        		enumParam.setDependedValue(getDependentValue(paramValues, enumParam.getDependedParam()));
+        		enumParam.setDependedValue(getUserDependentValue(paramValues, enumParam.getDependedParam()));
         	}
             return enumParam.getRawDisplayValue();
         }
         return param.getBriefRawValue();
 	}
 
-	private static String getDependentValue(Map<String, String> paramValues, ParamBean<?> param)
+	private static String getUserDependentValue(Map<String, String> paramValues, ParamBean<?> param)
     		throws WdkUserException, WdkModelException {
-    	return paramValues.containsKey(param.getName()) ?
-    			paramValues.get(param.getName()) :
-                param.getDefault();
+    	    if (paramValues.containsKey(param.getName())) {
+    	        return paramValues.get(param.getName());
+            } else {
+                if (param instanceof EnumParamBean) {
+                    EnumParamBean enumParam = (EnumParamBean)param;
+                    if (enumParam.isDependentParam()) {
+                        enumParam.setDependedValue(getUserDependentValue(paramValues, enumParam.getDependedParam()));
+                    }
+                }
+                return param.getDefault();
+            }
 	}
 
 	static private void outputSubStrategy(WdkModelBean model, UserBean user,
