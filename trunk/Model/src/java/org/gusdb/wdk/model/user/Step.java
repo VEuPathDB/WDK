@@ -105,10 +105,12 @@ public class Step {
         return childStep;
     }
 
-    public int getAnswerParamCount() throws WdkUserException, WdkModelException {
-        String questionName = this.answer.getQuestionName();
-        Question question = this.user.getWdkModel().getQuestion(questionName);
-        return question.getQuery().getAnswerParamCount();
+    public int getAnswerParamCount() {
+        try {
+            return getQuestion().getQuery().getAnswerParamCount();
+        } catch(WdkModelException ex) {
+            return 0;
+        }
     }
 
     public int getResultSize() {
@@ -206,7 +208,11 @@ public class Step {
     public String getCustomName() throws WdkModelException {
         String name = customName;
         if (name == null || name.length() == 0) {
-            name = getQuestion().getShortDisplayName();
+            try {
+                name = getQuestion().getShortDisplayName();
+            } catch(WdkModelException ex) {
+                name = null;
+            }
         }
         if (name == null)
             name = getQuestionName();
@@ -240,11 +246,21 @@ public class Step {
          * name = name.trim().replaceAll("\\s+", " "); if (name.length() > 4000)
          * name = name.substring(0, 4000); } return name;
          */
-        return getQuestion().getShortDisplayName();
+        try {
+            return getQuestion().getShortDisplayName();
+        } catch(WdkModelException ex) {
+            return getDisplayName();
+        }
     }
 
-    public String getDisplayName() throws WdkModelException {
-        return getQuestion().getDisplayName();
+    public String getDisplayName() {
+        try {
+            return getQuestion().getDisplayName();
+        } catch(WdkModelException ex) {
+            if (customName != null) return customName;
+            else if (answer != null) return answer.getQuestionName();
+            else return null;
+        }
     }
 
     /**
@@ -344,8 +360,12 @@ public class Step {
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
      */
-    public boolean isCombined() throws WdkModelException {
-        return getQuestion().getQuery().isCombined();
+    public boolean isCombined() {
+        try {
+            return getQuestion().getQuery().isCombined();
+        } catch(WdkModelException ex) {
+            return false;
+        }
     }
 
     /**
@@ -357,8 +377,12 @@ public class Step {
      * @throws WdkModelException
      * @throws NoSuchAlgorithmException
      */
-    public boolean isTransform() throws WdkModelException {
-        return getQuestion().getQuery().isTransform();
+    public boolean isTransform() {
+        try {
+            return getQuestion().getQuery().isTransform();
+        } catch(WdkModelException ex) {
+            return false;
+        }
     }
 
     /**
@@ -380,8 +404,12 @@ public class Step {
         stepFactory.updateStep(user, this, updateTime);
     }
 
-    public String getDescription() throws WdkModelException {
-        return getQuestion().getDescription();
+    public String getDescription() {
+        try {
+            return getQuestion().getDescription();
+        } catch(WdkModelException ex) {
+            return null;
+        }
     }
 
     /**
@@ -399,7 +427,7 @@ public class Step {
         this.deleted = isDeleted;
     }
 
-    public boolean isCollapsible() throws WdkModelException {
+    public boolean isCollapsible() {
         if (collapsible)
             return true;
         // it is true if the step is a branch
@@ -706,7 +734,13 @@ public class Step {
         if (filter == null)
             return false;
 
-        RecordClass recordClass = getQuestion().getRecordClass();
+        Question question;
+        try {
+            question = getQuestion();
+        } catch(WdkModelException ex) {
+            return false;
+        }
+        RecordClass recordClass = question.getRecordClass();
         AnswerFilterInstance defaultFilter = recordClass.getDefaultFilter();
         if (defaultFilter == null)
             return true;
@@ -728,19 +762,31 @@ public class Step {
         return step;
     }
 
-    public boolean isBoolean() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
-        return getQuestion().getQuery().isBoolean();
+    public boolean isBoolean() {
+        try {
+            return getQuestion().getQuery().isBoolean();
+        } catch(WdkModelException ex) {
+            return false;
+        }
     }
 
     public JSONObject getJSONContent(int strategyId) throws JSONException,
             WdkUserException, WdkModelException, SQLException {
         JSONObject jsStep = new JSONObject();
+
+        Question question = null;
         jsStep.put("id", this.displayId);
         jsStep.put("customName", this.customName);
-        jsStep.put("answer", this.answer.getAnswerChecksum());
-        jsStep.put("collapsed", this.isCollapsible());
-        jsStep.put("collapsedName", this.getCollapsedName());
+        try {
+            jsStep.put("answer", this.answer.getAnswerChecksum());
+            jsStep.put("collapsed", this.isCollapsible());
+            jsStep.put("collapsedName", this.getCollapsedName());
+        } catch (WdkModelException ex) { // the question is invalid
+            jsStep.put("answer", "");
+            jsStep.put("collapsed", false);
+            jsStep.put("collapsedName", "");
+        }
+
         jsStep.put("deleted", deleted);
         jsStep.put("size", this.estimateSize);
         Step prevStep = getPreviousStep();
@@ -751,7 +797,7 @@ public class Step {
         if (childStep != null) {
             jsStep.put("child", childStep.getJSONContent(strategyId));
         }
-        if (this.isCollapsible()) { // a sub-strategy, needs to get order number
+        if (question != null && this.isCollapsible()) { // a sub-strategy, needs to get order number
             String subStratId = strategyId + "_" + this.displayId;
             Integer order = user.getStrategyOrder(subStratId);
             if (order == null)
@@ -767,8 +813,12 @@ public class Step {
         return (Question) wdkModel.resolveReference(questionName);
     }
 
-    public AnswerFilterInstance getFilter() throws WdkModelException {
-        return getQuestion().getRecordClass().getFilter(filterName);
+    public AnswerFilterInstance getFilter() {
+        try {
+            return getQuestion().getRecordClass().getFilter(filterName);
+        } catch (WdkModelException ex) {
+            return null;
+        }
     }
 
     public String getFilterName() {
