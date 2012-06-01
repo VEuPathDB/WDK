@@ -98,14 +98,15 @@ public class DatasetFactory {
 
         Connection connection = null;
         try {
-        	// remove duplicates
-        	removeDuplicates(values);
+            // remove duplicates
+            removeDuplicates(values);
         
-        	String checksum = getChecksum(values);
-        	connection = userPlatform.getDataSource().getConnection();
+            String checksum = getChecksum(values);
+            connection = userPlatform.getDataSource().getConnection();
             Dataset dataset;
             connection.setAutoCommit(false);
 
+            boolean needRefresh = false;
             // check if dataset exists
             try {
                 // get dataset id, catch WdkModelException if it doesn't exist
@@ -124,9 +125,7 @@ public class DatasetFactory {
 
                 // and save the values
                 insertDatasetValues(recordClass, connection, dataset, values);
-                // check remote table to solve out-dated db-link issue with
-                // Oracle.
-                checkRemoteTable();
+                needRefresh = true;
             }
             dataset.setUser(user);
 
@@ -142,8 +141,15 @@ public class DatasetFactory {
                 // user-dataset doesn't exist, insert it
                 dataset.setUploadFile(uploadFile);
                 insertUserDataset(connection, dataset);
+                needRefresh = true;
             }
             connection.commit();
+
+            if (needRefresh) {
+                // check remote table to solve out-dated db-link issue with Oracle.
+                checkRemoteTable();
+            }
+
             return dataset;
         }
         catch (NoSuchAlgorithmException e) {
