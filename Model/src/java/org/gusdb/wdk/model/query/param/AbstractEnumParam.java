@@ -104,7 +104,7 @@ public abstract class AbstractEnumParam extends Param {
     }
 
     public boolean isSkipValidation() {
-        return (displayType != null && displayType.compareTo(DISPLAY_TYPE_AHEAD) == 0);
+        return (displayType != null && displayType.equals(DISPLAY_TYPE_AHEAD));
     }
 
     public void setQuote(boolean quote) {
@@ -363,11 +363,17 @@ public abstract class AbstractEnumParam extends Param {
             String internal = (isNoTranslation()) ? term
                     : cache.getInternal(term);
             if (!cache.containsTerm(term)) {
-                // term doesn't exists need to correct it later
-                throw new WdkUserException("param " + getFullName()
-                        + " encountered an invalid term from user #"
-                        + user.getUserId() + ": " + term);
-                // internal = term;
+                // doesn't validate term, if it doesn't exist in the list, just
+                // use it as internval value. This is for wildcard support in
+                // type-ahead params.
+                if (isSkipValidation()) {
+                    internal = term;
+                } else {
+                    // term doesn't exists need to correct it later
+                    throw new WdkUserException("param " + getFullName()
+                            + " encountered an invalid term from user #"
+                            + user.getUserId() + ": " + term);
+                }
             }
             if (quote && !(internal.startsWith("'") && internal.endsWith("'")))
                 internal = "'" + internal.replaceAll("'", "''") + "'";
@@ -465,6 +471,10 @@ public abstract class AbstractEnumParam extends Param {
         logger.debug("applySelectMode(): select mode: '" + selectMode
                 + "', default from model = " + super.getDefault());
         String defaultFromModel = super.getDefault();
+
+        String errorMessage = "The default value from model, '"
+                + defaultFromModel + "', is not a valid term for param "
+                + getFullName() + ", please double check this default value.";
         if (defaultFromModel != null) {
             if (cache.getTerms().contains(defaultFromModel)) {
                 cache.setDefaultValue(defaultFromModel);
@@ -474,23 +484,11 @@ public abstract class AbstractEnumParam extends Param {
                 // and make sure the default is as intended.
                 // Cannot throws exception here, since the default might not be
                 // valid for a different depended value.
-                logger.warn("The default value from model, '"
-                        + defaultFromModel
-                        + "', is not a valid term for param " + getFullName()
-                        + ", please double check this default value.");
+                logger.warn(errorMessage);
             } else { // default is not a valid term, and param doesn't depend on
                      // anything. The default must be wrong.
-
-                // temporarily stop throwing out error, print warning logs
-                // instead.
-
-                // throw new WdkModelException("The default value from model, '"
-                // + defaultFromModel + "', is not a valid term for "
-                // + "param " + getFullName());
-                logger.warn("The default value from model, '"
-                        + defaultFromModel
-                        + "', is not a valid term for param " + getFullName()
-                        + ", please double check this default value.");
+                logger.warn(errorMessage);
+                throw new WdkModelException(errorMessage);
 
             }
         }
