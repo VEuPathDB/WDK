@@ -8,6 +8,8 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Map;
 
+
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
@@ -440,9 +442,15 @@ public class StepBean {
     }
 
     public String getQuestionUrlParams() throws WdkModelException {
+        Question question;
+        try {
+            question = step.getQuestion();
+        } catch (WdkModelException ex) {
+            return "";
+        }
         StringBuffer sb = new StringBuffer();
         Map<String, String> paramValues = step.getParamValues();
-        Map<String, Param> params = step.getQuestion().getParamMap();
+        Map<String, Param> params = question.getParamMap();
         for (String paramName : paramValues.keySet()) {
             String paramValue = paramValues.get(paramName).toString();
 
