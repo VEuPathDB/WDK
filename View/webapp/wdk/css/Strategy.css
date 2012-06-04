@@ -946,7 +946,7 @@ table.history_controls {
   width:260px;
 border-color:grey;
 }
-#invalid-legend{
+.strat-legend{
     font-weight:normal;
     font-size:72%;font-style:italic;color:darkred;
 }
