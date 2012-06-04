@@ -441,7 +441,9 @@ div#history-menu .ui-tabs-panel {
 table.datatables tr.headerrow th {
 	border-width:0px 0px 2px;
 }
-
+.ui-dialog-title {
+	font-weight: bold;
+}
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     =RED BUTTON
@@ -724,6 +726,22 @@ div.favorite-button-div{
     cursor: pointer;
 }
 
+.favorite-note, .favorite-group {
+    font-family: monospace;
+    white-space: pre;
+}
+
+textarea.favorite-group {
+    width: 60%;
+}
+textarea.favorite-note {
+    width: 80%;
+}
+
+.favorite-note.hidden, .favorite-group.hidden {
+    display: none;
+}
+
 .favorite-group-button, .favorite-note-button {
 	float:right;
 	text-align:left;
@@ -849,12 +867,25 @@ ul.menubar {
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       = Result and basket title and links
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-div#strategy_results table#title-links {
-/*	background-color:#FFFFA0; */
-}
+
 table#title-links {
-	font-size:12px; /*we need to figure out why the font size in this table becomes different when used in basket vs results table */
+	font-size:12px; 
+/*we need to figure out why the font size in this table becomes different when used in basket vs results table */
 }
 div#Summary_Views {
 	border:0;
+}
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      = Basket note on new releases
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+span.basket-warning {
+color:darkred;font-style:italic;margin-bottom:7px;margin-right:5px;position:relative;right:5px;
+}
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      = Favorites note on new releases
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+p.fav-warning {
+color:darkred;font-style:italic;font-size:95%;
 }
