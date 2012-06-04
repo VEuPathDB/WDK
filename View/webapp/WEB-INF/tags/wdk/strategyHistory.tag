@@ -99,7 +99,7 @@ $(function() {
 <div class="strat-legend">
 <br><b>Strategy results are not stored</b>, only the strategy steps and parameter values are.
 <br><b>Results might change</b> with subsequent releases of the site if the underlying data has changed.
-<br>The strategies marked with <a  href="javascript:void(0)"  onClick="openWhyRevise(this)"><img style="vertical-align:bottom" src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/></a> contain searches that have been redesigned, and <b>require your revision</b>.  <a  href="javascript:void(0)"  onClick="openWhyRevise(this)"> Why?</a>
+<br><b>Strategies that require your revision</b> are marked with <a  href="javascript:void(0)"  onClick="openWhyRevise(this)"><img style="vertical-align:bottom" src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/></a>. <a  href="javascript:void(0)"  onClick="openWhyRevise(this)"> Why?</a>
 </div>
       </td>
 </tr>
