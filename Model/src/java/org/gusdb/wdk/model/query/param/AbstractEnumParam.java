@@ -488,7 +488,7 @@ public abstract class AbstractEnumParam extends Param {
             } else { // default is not a valid term, and param doesn't depend on
                      // anything. The default must be wrong.
                 logger.warn(errorMessage);
-                throw new WdkModelException(errorMessage);
+                // throw new WdkModelException(errorMessage);
 
             }
         }
