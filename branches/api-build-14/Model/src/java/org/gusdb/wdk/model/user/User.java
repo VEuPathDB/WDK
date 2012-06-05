@@ -1544,6 +1544,10 @@ public class User /* implements Serializable */{
         String key = SUMMARY_VIEW_PREFIX + question.getFullName();
         String viewName = projectPreferences.get(key);
         SummaryView view;
+
+        // disable the summary view in user's preference, always use the
+        // default view.
+        viewName = null;
         if (viewName == null) { // no summary view set, use the default one
             view = question.getDefaultSummaryView();
         } else {
