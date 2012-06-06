@@ -596,7 +596,8 @@ public class StepFactory {
             step.setValid(false);
             step.setValidationMessage(ex.getMessage());
         }
-        if (!step.isValid()) setStepValidFlag(step);
+        // do not update the flag here, it's redundant.
+        //if (!step.isValid()) setStepValidFlag(step);
         return step;
     }
 
@@ -1487,7 +1488,8 @@ public class StepFactory {
             WdkUserException, WdkModelException {
         StringBuffer sql = new StringBuffer("UPDATE ");
         sql.append(userSchema).append(TABLE_STRATEGY);
-        sql.append(" SET ").append(COLUMN_LAST_VIEWED_TIME + " = ? ");
+        sql.append(" SET ").append(COLUMN_LAST_VIEWED_TIME + " = ?, ");
+        sql.append(COLUMN_VERSION + " = ? ");
         sql.append(" WHERE ").append(COLUMN_PROJECT_ID).append(" = ? ");
         sql.append(" AND ").append(Utilities.COLUMN_USER_ID).append(" = ? ");
         sql.append(" AND ").append(COLUMN_DISPLAY_ID).append(" = ?");
@@ -1496,9 +1498,10 @@ public class StepFactory {
             long start = System.currentTimeMillis();
             psUpdate = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             psUpdate.setTimestamp(1, new Timestamp(new Date().getTime()));
-            psUpdate.setString(2, wdkModel.getProjectId());
-            psUpdate.setInt(3, user.getUserId());
-            psUpdate.setInt(4, strategyId);
+            psUpdate.setString(2, wdkModel.getVersion());
+            psUpdate.setString(3, wdkModel.getProjectId());
+            psUpdate.setInt(4, user.getUserId());
+            psUpdate.setInt(5, strategyId);
             psUpdate.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql.toString(),
                     "wdk-step-factory-update-strategy-time", start);
