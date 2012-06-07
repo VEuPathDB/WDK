@@ -24,7 +24,7 @@
   setStrategyStatusCounts('${allCount}','${openCount}');
 </script>
 
-<!--  ----------MY STRATEGIES MENU (TABs)-------- -->
+<%------------MY STRATEGIES MENU (TABs)----------%>
 <ul id="strategy_tabs">
 <%-- showPanel() is in addStepPopup.js --%>
 
@@ -64,7 +64,7 @@
 <c:set var="newStrategy" value="${requestScope.newStrategy}" />
 <c:set var="newStrat"><c:if test="${newStrategy != null && newStrategy == true}">newStrategy="true"</c:if></c:set>
 
-<!--- OPENED tab --->
+<!-- OPENED tab -->
 <div id="strategy_results" class="workspace_panel">
   <div id="strategy_messages">
   </div>
