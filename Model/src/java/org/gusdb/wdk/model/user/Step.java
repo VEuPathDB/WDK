@@ -632,7 +632,7 @@ public class Step {
         try {
             return getQuestion().getRecordClass().getFullName();
         } catch (WdkModelException ex) {
-            ex.printStackTrace();
+            // ex.printStackTrace();
             return "Unknown Type";
         }
     }

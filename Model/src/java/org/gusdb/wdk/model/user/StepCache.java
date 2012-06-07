@@ -17,7 +17,7 @@ public class StepCache implements Runnable {
     /**
      * The maximum life, in milliseconds, of a cached step since last access.
      */
-    private static final long MAX_LIFE = 1000 * 60 * 1;
+    private static final long MAX_LIFE = 1000 * 60 * 5;
 
     private static final Logger logger = Logger.getLogger(StepCache.class);
 
@@ -111,6 +111,8 @@ public class StepCache implements Runnable {
     }
 
     public synchronized void addStep(Step step) {
+        logger.debug("Step #" + step.getDisplayId() + " of user #" + step.getUser().getUserId()
+                + " added cache.");
         User user = step.getUser();
         StepKey key = new StepKey(user.getUserId(), step.getDisplayId());
         StepNode node = new StepNode(step);
@@ -134,6 +136,7 @@ public class StepCache implements Runnable {
     }
 
     public void run() {
+        running = true;
         while (running) {
             purgeCache();
             try {
@@ -152,7 +155,8 @@ public class StepCache implements Runnable {
             if (node.getLastAccessed() < threshold) keys.add(key);
         }
         // remove expired steps
-        logger.debug(keys.size() + " steps expired.");
+        if (keys.size() > 0)
+            logger.debug(keys.size()  + "/" + steps.size() + " steps expired.");
         for (StepKey key : keys) {
             steps.remove(key);
         }
