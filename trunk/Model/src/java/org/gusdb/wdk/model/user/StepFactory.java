@@ -88,20 +88,26 @@ public class StepFactory {
 
     private static final Logger logger = Logger.getLogger(StepFactory.class);
 
-    private WdkModel wdkModel;
-    private String userSchema;
-    private String wdkSchema;
-    private DBPlatform userPlatform;
-    private DataSource dataSource;
+    private final WdkModel wdkModel;
+    private final String userSchema;
+    private final String wdkSchema;
+    private final DBPlatform userPlatform;
+    private final DataSource dataSource;
+    
+    private final StepCache stepCache;
 
     public StepFactory(WdkModel wdkModel) {
         this.wdkModel = wdkModel;
+        this.stepCache = new StepCache();
         this.userPlatform = wdkModel.getUserPlatform();
         dataSource = userPlatform.getDataSource();
 
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         this.userSchema = userDB.getUserSchema();
         this.wdkSchema = userDB.getWdkEngineSchema();
+        
+        // start the purge thread for the cache
+        new Thread(stepCache).start();
     }
 
     // parse boolexp to pass left_child_id, right_child_id to loadAnswer
@@ -235,6 +241,8 @@ public class StepFactory {
         step.setEstimateSize(estimateSize);
         step.setAssignedWeight(assignedWeight);
         step.setException(exception);
+        
+        stepCache.addStep(step);
 
         // update step dependencies
         updateStepTree(user, step);
@@ -269,6 +277,8 @@ public class StepFactory {
             if (result == 0)
                 throw new WdkUserException("The Step #" + displayId
                         + " of user " + user.getEmail() + " cannot be found.");
+            
+            stepCache.removeStep(user.getUserId(), displayId);
         }
         finally {
             SqlUtils.closeStatement(psHistory);
@@ -340,6 +350,8 @@ public class StepFactory {
             psDeleteSteps.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql.toString(),
                     "wdk-step-factory-delete-all-steps", start);
+            
+            stepCache.removeSteps(user.getUserId());
         }
         finally {
             SqlUtils.closeStatement(psDeleteSteps);
@@ -488,7 +500,7 @@ public class StepFactory {
                     "wdk-step-factory-load-all-steps", start);
 
             while (rsStep.next()) {
-                Step step = loadStep(user, rsStep, false);
+                Step step = loadStep(user, rsStep);
                 int stepId = step.getDisplayId();
                 // if (step.isValid()) {
                 steps.put(stepId, step);
@@ -508,6 +520,9 @@ public class StepFactory {
     // get left child id, right child id in here
     Step loadStep(User user, int displayId) throws WdkUserException,
             WdkModelException {
+        Step step = stepCache.getStep(user.getUserId(), displayId);
+        if (step != null) return step;
+        
         String answerIdColumn = AnswerFactory.COLUMN_ANSWER_ID;
         ResultSet rsStep = null;
         String sql = "SELECT h.*, a." + AnswerFactory.COLUMN_ANSWER_CHECKSUM
@@ -532,7 +547,7 @@ public class StepFactory {
                 throw new WdkUserException("The Step #" + displayId
                         + " of user " + user.getEmail() + " doesn't exist.");
 
-            return loadStep(user, rsStep, false);
+            return loadStep(user, rsStep);
         }
         catch (SQLException e) {
             throw new WdkUserException("Unable to load step.", e);
@@ -545,15 +560,18 @@ public class StepFactory {
         }
     }
 
-    private Step loadStep(User user, ResultSet rsStep, boolean loadTree)
+    private Step loadStep(User user, ResultSet rsStep)
             throws WdkModelException, WdkUserException, SQLException,
             JSONException {
+        int displayId = rsStep.getInt(COLUMN_DISPLAY_ID);
+        Step step = stepCache.getStep(user.getUserId(), displayId);
+        if (step != null) return step;
+
         // load Step info
         int stepId = rsStep.getInt(COLUMN_STEP_INTERNAL_ID);
-        int displayId = rsStep.getInt(COLUMN_DISPLAY_ID);
         String questionName = rsStep.getString(AnswerFactory.COLUMN_QUESTION_NAME);
 
-        Step step = new Step(this, user, displayId, stepId);
+        step = new Step(this, user, displayId, stepId);
         step.setCreatedTime(rsStep.getTimestamp(COLUMN_CREATE_TIME));
         step.setLastRunTime(rsStep.getTimestamp(COLUMN_LAST_RUN_TIME));
         step.setCustomName(rsStep.getString(COLUMN_CUSTOM_NAME));
@@ -596,8 +614,11 @@ public class StepFactory {
             step.setValid(false);
             step.setValidationMessage(ex.getMessage());
         }
+        
         // do not update the flag here, it's redundant.
         //if (!step.isValid()) setStepValidFlag(step);
+        
+        stepCache.addStep(step);
         return step;
     }
 
