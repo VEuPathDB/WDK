@@ -727,8 +727,7 @@ div.favorite-button-div{
 }
 
 .favorite-note, .favorite-group {
-    font-family: monospace;
-    white-space: pre;
+    white-space: pre-wrap;
 }
 
 textarea.favorite-group {
