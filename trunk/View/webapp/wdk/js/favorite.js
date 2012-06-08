@@ -110,6 +110,13 @@ function updateFavoriteNote(holder) {
 	var note = noteInput.val();
 	var d = "action=note&note=" + note + "&type=" + rcName + "&data=" + record;
 
+  if (note.length > 200) {
+    alert("Your note exceeds the maximum of 200 characters. Please update " +
+        "your note to use no more than 200 characters.\n\n" +
+        "Current number of characters: " + note.length);
+    return false;
+  }
+
 	jQuery.ajax({
 		url: "processFavorite.do",
 		data: d,
