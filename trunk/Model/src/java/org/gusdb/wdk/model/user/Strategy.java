@@ -417,6 +417,7 @@ public class Strategy {
         jsStrategy.put("id", this.displayId);
         jsStrategy.put("name", this.name);
         jsStrategy.put("savedName", this.savedName);
+        jsStrategy.put("description", this.description);
         jsStrategy.put("saved", this.isSaved);
         jsStrategy.put("deleted", this.isDeleted);
         jsStrategy.put("valid", isValid());

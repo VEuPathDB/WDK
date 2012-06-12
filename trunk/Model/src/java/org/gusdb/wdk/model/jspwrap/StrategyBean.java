@@ -194,6 +194,14 @@ public class StrategyBean {
 
     /**
      * @return
+     * @see org.gusdb.wdk.model.user.Strategy#setDescription()
+     */
+    public void setDescription(String description) {
+        strategy.setDescription(description);
+    }
+
+    /**
+     * @return
      * @see org.gusdb.wdk.model.user.Strategy#getSignature()
      */
     public String getSignature() {

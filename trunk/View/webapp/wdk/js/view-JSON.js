@@ -557,7 +557,7 @@ save_warning +
 		save = "<a id='save_" + id + "' title='Please LOGIN so you can SAVE (make a snapshot) your strategy.' class='save_strat_link' href='javascript:void(0)' onclick=\"popLogin();setFrontAction('save'," + id + ");\"><b style='font-size:120%'>" + sTitle + "</b></a>";
 	}
 	else {
-		save = "<a id='save_" + id + "' title='A saved strategy is like a snapshot, it cannot be changed.' class='save_strat_link' href='javascript:void(0)' onclick=\"showSaveForm('" + id + "', true)\"><b style='font-size:120%'>" + sTitle + "</b></a>";
+		save = "<a id='save_" + id + "' title='A saved strategy is like a snapshot, it cannot be changed.' class='save_strat_link' href='javascript:void(0)' onclick=\"showUpdateDialog('" + id + "', true)\"><b style='font-size:120%'>" + sTitle + "</b></a>";
 	}
 	save += "<div id='save_strat_div_" + id + "' class='modal_div save_strat' style='width:500px'>" +
 		"<div class='dragHandle'>" +
@@ -579,7 +579,7 @@ save_warning +
                    " href='javascript:void(0)' onclick=\"copyStrategy('" + id + "')\">" +
                    "<b style='font-size:120%'>Copy</b></a>";
 
-var rename = "<a id='rename_" + strat.frontId + "' href='javascript:void(0)' title='Click to rename.'  onclick=\"showSaveForm('" + id + "', false)\"><b style='font-size:120%'>Rename</b></a>";
+var rename = "<a id='rename_" + strat.frontId + "' href='javascript:void(0)' title='Click to rename.'  onclick=\"showUpdateDialog('" + id + "', false)\"><b style='font-size:120%'>Rename</b></a>";
 
 var deleteStrat = "<a id='delete_" + strat.frontId + "' href='javascript:void(0)' title='Click to delete.'  onclick=\"deleteStrategy('" + id + "', false)\"><b style='font-size:120%'>Delete</b></a>";
 

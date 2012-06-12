@@ -135,23 +135,40 @@ function showHistSave(ele, stratId, save,share) {
 }
 
 function showHistShare(ele, stratId, url) {
-	$(".viewed-popup-box").remove();
-	var perm_popup = $("div#hist_save_rename");
-    	var popup = perm_popup.clone();
-	popup.addClass('viewed-popup-box');
-	$("span.h3left", popup).text("Copy and paste URL below to email");
-	$("input[name='name']", popup).attr("value",url).attr("readonly",true).attr("size",url.length - 6);
- 	$("input[type=submit]", popup).attr("value", "Ok").click(function(){
-                closeModal();
-                return false;
-      		});
-	var btnOffset = $(ele).offset();
-    	var prntOffset = $("div#search_history").offset();
-   	popup.css("top", (btnOffset.top - prntOffset.top - 40) + "px");
-   	popup.css("right", "292px");
-	popup.appendTo(perm_popup.parent()).show();
-	//make sure the warning is visible
-	$(".viewed-popup-box form#save_strat_form_hist i").css("display","block");
+  var dialog_container = $("#share_dialog");
+
+  if (dialog_container.length != 1) {
+    //create dialog
+    dialog_container = $("<div id='share_dialog'></div>")
+      .dialog({
+        title: "Copy and paste the following URL to share your strategy",
+        autoOpen: false,
+        modal: true,
+        width: 500
+      });
+  }
+  dialog_container.empty()
+    .append($("<p>" + url + "</p>").css("margin", "auto").css("margin-top", 40).css("text-align", "center"));
+  dialog_container.dialog("open");
+
+
+	// $(".viewed-popup-box").remove();
+	// var perm_popup = $("div#hist_save_rename");
+  //   	var popup = perm_popup.clone();
+	// popup.addClass('viewed-popup-box');
+	// $("span.h3left", popup).text("Copy and paste URL below to email");
+	// $("input[name='name']", popup).attr("value",url).attr("readonly",true).attr("size",url.length - 6);
+ 	// $("input[type=submit]", popup).attr("value", "Ok").click(function(){
+  //               closeModal();
+  //               return false;
+  //     		});
+	// var btnOffset = $(ele).offset();
+  //   	var prntOffset = $("div#search_history").offset();
+  //  	popup.css("top", (btnOffset.top - prntOffset.top - 40) + "px");
+  //  	popup.css("right", "292px");
+	// popup.appendTo(perm_popup.parent()).show();
+	// //make sure the warning is visible
+	// $(".viewed-popup-box form#save_strat_form_hist i").css("display","block");
 }
 
 function selectAllHist(type) {
@@ -295,4 +312,123 @@ function hideName(histId) {
 
 function hideAnyName() {
     hideName(overStepId);
+}
+
+function showUpdateDialog(strat_id, save, fromHist) {
+  var strat = getStrategyOBJ(strat_id),
+      step_id = strat.JSON.steps[strat.JSON.steps.length].id,
+      dialog_container = $("#strategy_save_dialog"),
+      title = (save) ? "Save Strategy" : "Update Strategy",
+      submitValue = (save) ? "Save strategy" : "Update strategy",
+      type = (save) ? "SaveStrategy" : "RenameStrategy",
+      form;
+
+  if (dialog_container.length == 0) {
+    dialog_container = $("<div id='strategy_save_dialog'></div>")
+      .append($("<div id='save_as_msg'></div>").hide()
+        .append("<p class='important'>Important!</p>")
+        .append($("<ul></ul>")
+          .append("<li>You are saving this search template, " +
+              "not the IDs in your search results.</li>")
+          .append("<li>The IDs in <b>any step resuls might change</b> " +
+              "upon a new release (every other month), and we cannot recover " +
+              "your old results.</li>")
+          .append("<li>To keep a copy of your current results, " +
+              "please <a class='download' href='#'>download your IDs</a>.</li>")
+        )
+      )
+      .append($("<form></form>")
+        .append("<input type='hidden' name='strategy'/>")
+        .append($("<dl></dl>")
+          .append("<dt id='name_label'>Name:</dt>")
+          .append("<dd id='name_input'><input type='text' name='name'/></dd>")
+          .append("<dt id='desc_label'>Description:</dt>")
+          .append("<dd id='desc_input'><textarea name='description' rows='10'>" +
+              "</textarea></dd>")
+        ).append("<div style='text-align: right'><input name='submit' " +
+            "type='submit' value='Save strategy'/></div>")
+      )
+      .appendTo(document.body)
+      .hide()
+      .dialog({
+        autoOpen:   false,
+        title:      title,
+        width:      'auto',
+        modal:      true,
+        resizable:  false
+      });
+  }
+  dialog_container.find(".download").click(function(e) {
+    e.preventDefault();
+    downloadStep(step_id);
+  });
+  form = dialog_container.find("form").get(0);
+  if (save) {
+    dialog_container.find("#save_as_msg").show();
+  } else {
+    dialog_container.find("#save_as_msg").hide();
+  }
+  if (!(save || strat.JSON.saved)) {
+    dialog_container.find("#desc_label").hide();
+    dialog_container.find("#desc_input").hide();
+  } else {
+    dialog_container.find("#desc_label").show();
+    dialog_container.find("#desc_input").show();
+  }
+  form.name.value = strat.name||"";
+  form.description.value = strat.description||"";
+  form.strategy.value = strat_id;
+  form.submit.value = submitValue;
+
+  $(form).submit(function(event) {
+    event.preventDefault();
+    $.ajax({
+      url: "renameStrategy.do",
+      dataType: "json",
+      data: {
+        strategy: strat.backId,
+        name: this.name.value,
+        description: this.description.value,
+        checkName: true,
+        save: save,
+        strategy_checksum: (strat.subStratOf != null) ? getStrategy(strat.subStratOf).checksum : strat.checksum,
+        showHistory: fromHist,
+        state: p_state
+      },
+      beforeSend: function(){
+        if(!fromHist) {
+          showLoading(strat.frontId);
+        }
+      },
+      success: function(data){
+        if(ErrorHandler(type, data, strat, form, form.name.value, fromHist)){
+            updateStrategies(data);
+            if (fromHist) {
+              update_hist = true;
+              updateHistory();
+            }
+        }
+        if(!fromHist) {
+          removeLoading(strat.frontId);
+        }
+        $(form).off();
+        dialog_container.dialog('close');
+      }
+    });
+  });
+  dialog_container.dialog('open');
+}
+
+function showFullDescriptionDialog(strat_id) {
+  var strat = getStrategyOBJ(strat_id);
+  $("<div></div>").html(
+    strat.description
+    // new lines to breaks
+    .replace(/\n/g, "<br/>")
+    // autolink
+    .replace(/(https?:\/\/\S+)/g, "$1".link("$1"))
+  ).dialog({
+    title: strat.name,
+    width: 600
+  });
 }
