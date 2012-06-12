@@ -41,6 +41,7 @@ public class ProcessRenameStrategyAction extends Action {
 
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
             String customName = request.getParameter("name");
+            String description = request.getParameter("description");
             boolean save = Boolean.valueOf(request.getParameter("save")).booleanValue();
             boolean checkName = Boolean.valueOf(
                     request.getParameter("checkName")).booleanValue();
@@ -96,7 +97,8 @@ public class ProcessRenameStrategyAction extends Action {
 
                 // whether its a save or rename, set new name specified by user.
                 strategy.setName(customName);
-		strategy.setSavedName(customName);
+                strategy.setSavedName(customName);
+                strategy.setDescription(description);
                 strategy.update(save || strategy.getIsSaved());
 
                 try {

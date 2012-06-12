@@ -323,6 +323,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStrategy.put("id", Integer.toString(strategy.getStrategyId()));
         jsStrategy.put("saved", strategy.getIsSaved());
         jsStrategy.put("savedName", strategy.getSavedName());
+        jsStrategy.put("description", strategy.getDescription());
         jsStrategy.put("importId", strategy.getImportId());
         jsStrategy.put("isValid", strategy.isValid());
 

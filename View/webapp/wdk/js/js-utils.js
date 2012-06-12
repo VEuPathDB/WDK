@@ -28,6 +28,7 @@ function getStrategyOBJ(backId){
 		s.checksum = json.checksum;
 		s.JSON = json;
 		s.name = json.name;
+    s.description = json.description;
 		return s;
 	}
 }

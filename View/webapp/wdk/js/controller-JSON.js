@@ -360,7 +360,8 @@ function loadModel(json, ord){
 	strat.JSON = strategy;
 	strat.isSaved = strategy.saved;
 	strat.name = strategy.name;
-  	strat.importId = strategy.importId;
+	strat.description = strategy.description;
+	strat.importId = strategy.importId;
 	var steps = strategy.steps;
 	strats[ord] = strat;
 	strat.initSteps(steps, ord);
