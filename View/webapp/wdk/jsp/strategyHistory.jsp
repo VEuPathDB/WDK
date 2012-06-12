@@ -7,12 +7,14 @@
 <script type="text/javascript">
 $(document).ready(function() {
     $("#search_history table.datatables").dataTable( {
+        "bAutoWidth": false,
         "bJQueryUI": true,
         "bScrollCollapse": true,
         "aoColumns": [ { "bSortable": false }, 
                        null, 
                        { "bSortable": false },
-                       { "bSortable": false },
+                       // { "bSortable": false },
+                       // { "bSortable": false },
                        { "bSortable": false },
                        null, 
                        null, 

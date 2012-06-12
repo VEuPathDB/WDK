@@ -917,6 +917,7 @@ div.bottom-close{
   margin: 0;
   border-left: 1px solid black;
   border-right: 1px solid black;
+  table-layout: fixed;
 }
 
 .history_panel table td {
@@ -992,6 +993,49 @@ div#sections{
 }
 div#sections td{
 	vertical-align: top;
+}
+
+.strategy_description div {
+    /*
+    padding: 0em .4em !important;
+    height: 1em;
+    display: inline-block;
+    */
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.strategy_description div.empty, .strategy_description div.unsaved {
+    font-style: italic;
+    color: #AAA;
+}
+
+.strategy_description div.full * {
+    display: inline;
+}
+
+#strategy_save_dialog dt {
+    margin-top: 1em;
+    font-weight: bold;
+}
+
+#strategy_save_dialog textarea, #strategy_save_dialog input[type="text"], #strategy_save_dialog div {
+    width: 570px;
+}
+
+#strategy_save_dialog ul {
+    list-style: disc;
+    padding-left: 1em;
+}
+
+#strategy_save_dialog li {
+    margin: .4em 0;
+}
+
+#strategy_save_dialog .important {
+    font-weight: bold;
 }
 
 /**************************************************
