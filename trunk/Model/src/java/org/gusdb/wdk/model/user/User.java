@@ -919,7 +919,11 @@ public class User /* implements Serializable */{
         return datasetFactory.getDataset(this, recordClass, uploadFile, values);
     }
 
-    public void save() throws WdkUserException, WdkModelException {
+    /**
+     * set this method synchronized to make sure the preferences are not 
+     * updated at the same time.
+     */
+    public synchronized void save() throws WdkUserException, WdkModelException {
         userFactory.saveUser(this);
     }
 
