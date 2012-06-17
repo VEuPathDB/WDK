@@ -328,12 +328,9 @@ function showUpdateDialog(strat_id, save, fromHist) {
       .append($("<div id='save_as_msg'></div>").hide()
         .append("<p class='important'>Important!</p>")
         .append($("<ul></ul>")
-          .append("<li>You are saving this search template, " +
-              "not the IDs in your search results.</li>")
-          .append("<li>The IDs in <b>any step resuls might change</b> " +
-              "upon a new release (every other month), and we cannot recover " +
-              "your old results.</li>")
-          .append("<li>To keep a copy of your current results, " +
+          .append("<li>You are saving/sharing this strategy, not the IDs in your result.</li>")
+          .append("<li>Results might change with subsequent releases of the site if the underlying data has changed.</li>")
+          .append("<li>To keep a copy of your current result, " +
               "please <a class='download' href='#'>download your IDs</a>.</li>")
         )
       )
