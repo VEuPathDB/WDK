@@ -945,7 +945,8 @@ table.history_controls {
   right:95px;
   top:25px;
   width:260px;
-border-color:grey;
+  border-color:grey;
+  z-index: 85; /* show above step glyphs, yet below model_div */
 }
 .strat-legend{
     font-weight:normal;
