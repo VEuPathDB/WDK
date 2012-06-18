@@ -774,7 +774,6 @@ public class Step {
             WdkUserException, WdkModelException, SQLException {
         JSONObject jsStep = new JSONObject();
 
-        Question question = null;
         jsStep.put("id", this.displayId);
         jsStep.put("customName", this.customName);
         try {
@@ -797,7 +796,7 @@ public class Step {
         if (childStep != null) {
             jsStep.put("child", childStep.getJSONContent(strategyId));
         }
-        if (question != null && this.isCollapsible()) { // a sub-strategy, needs to get order number
+        if (this.isCollapsible()) { // a sub-strategy, needs to get order number
             String subStratId = strategyId + "_" + this.displayId;
             Integer order = user.getStrategyOrder(subStratId);
             if (order == null)

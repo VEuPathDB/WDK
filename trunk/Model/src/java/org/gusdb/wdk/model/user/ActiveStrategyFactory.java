@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
@@ -17,6 +18,8 @@ import org.json.JSONException;
  * 
  */
 class ActiveStrategyFactory {
+
+    private static final Logger logger = Logger.getLogger(ActiveStrategyFactory.class);
 
     /**
      * newly opened strategies is always at the end, which means it has the
@@ -59,6 +62,7 @@ class ActiveStrategyFactory {
     synchronized void openActiveStrategy(String strategyKey)
             throws NumberFormatException, WdkUserException, WdkModelException,
             JSONException, SQLException, NoSuchAlgorithmException {
+        logger.debug("Opening strategy: " + strategyKey);
         if (getStrategy(strategyKey) != null) return;
 
         String parentKey = getParentKey(strategyKey);
@@ -71,9 +75,11 @@ class ActiveStrategyFactory {
     }
 
     synchronized void closeActiveStrategy(String strategyKey) {
+        logger.debug("Closing strategy: " + strategyKey);
         ActiveStrategy strategy = getStrategy(strategyKey);
         if (strategy == null) return;
-        strategy.parent.children.remove(strategyKey);
+        strategy = strategy.parent.children.remove(strategyKey);
+        logger.debug("strategy " + strategy.strategyKey + " closed.");
     }
 
     /**
@@ -136,7 +142,7 @@ class ActiveStrategyFactory {
         ActiveStrategy strategy = getStrategy(strategyKey);
         if (strategy == null || strategy.strategyKey == null) return 0;
         int order = 1;
-        System.out.println("current: " + strategyKey + ", parent: "
+        logger.debug("current: " + strategyKey + ", parent: "
                 + strategy.parent.strategyKey + ", children: "
                 + strategy.parent.children.size());
         for (ActiveStrategy sibling : strategy.parent.children.values()) {
@@ -174,18 +180,18 @@ class ActiveStrategyFactory {
 
     private void replaceStrategy(Strategy strategy, ActiveStrategy oldStrategy,
             ActiveStrategy newStrategy, Map<Integer, Integer> stepMap) {
-        System.out.println("current view: " + viewStrategyKey + ", "
+        logger.debug("current view: " + viewStrategyKey + ", "
                 + viewStepId);
-        System.out.println("replace old: " + oldStrategy.strategyKey
+        logger.debug("replace old: " + oldStrategy.strategyKey
                 + ", new: " + newStrategy.strategyKey);
         for (int old : stepMap.keySet()) {
-            System.out.println("step " + old + "->" + stepMap.get(old));
+            logger.debug("step " + old + "->" + stepMap.get(old));
         }
         for (ActiveStrategy oldChild : oldStrategy.children.values()) {
             String oldKey = oldChild.strategyKey;
             int oldId = Integer.parseInt(oldKey.substring(oldKey.indexOf('_') + 1));
             Integer newId = stepMap.get(oldId);
-            System.out.println("convert step " + oldId + "->" + newId);
+            logger.debug("convert step " + oldId + "->" + newId);
             if (newId == null) {
                 Step step;
                 try {
@@ -193,7 +199,7 @@ class ActiveStrategyFactory {
                     if (step == null) throw new WdkModelException();
                     newId = oldId;
                 } catch (Exception ex) { // step no longer exist
-                    System.out.println("step #" + oldId + " has been deleted");
+                    logger.debug("step #" + oldId + " has been deleted");
                     continue; // skip this branch
                 }
             }
@@ -234,6 +240,17 @@ class ActiveStrategyFactory {
      */
     public int getViewStepId() {
         if (getViewStrategyKey() == null) return 0;
+
+        // check if the viewStepId belongs to the current strategy
+        try {
+            ActiveStrategy activeStrategy = getStrategy(viewStrategyKey);
+            Strategy strategy = user.getStrategy(activeStrategy.strategyId);
+            Step step = strategy.getStepById(viewStepId);
+        if (step == null) viewStepId = strategy.getLatestStepId();
+        } catch (Exception ex) {
+            return 0;
+        }
+
         return viewStepId;
     }
 

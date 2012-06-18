@@ -145,9 +145,9 @@ public class ShowStrategyAction extends ShowQuestionAction {
             } else {
                 String oldChecksum = oldState.get(strategy.getStrategyId());
                 String newChecksum = strategy.getChecksum();
-                if (!newChecksum.equals(oldChecksum)) {
+                // if (!newChecksum.equals(oldChecksum)) {
                     strategies.put(strategyId, strategy);
-                }
+                // }
             }
         }
         return strategies;
