@@ -47,8 +47,13 @@ public class CloseStrategyAction extends Action {
             ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
             StringBuffer url = new StringBuffer(showStrategy.getPath());
             url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
+            // reset the strategy id, otherwise it will be opened again by showStrategy.do
+            url.append("&" + CConstants.WDK_STRATEGY_ID_KEY + "=");
             ActionForward forward = new ActionForward(url.toString());
-            forward.setRedirect(true);
+            forward.setRedirect(false);
+
+            logger.debug("Leaving, redirecting to " + url);
+
             return forward;
         } catch (Exception ex) {
             logger.error(ex);
