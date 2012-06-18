@@ -112,7 +112,7 @@ public class StepCache implements Runnable {
 
     public synchronized void addStep(Step step) {
         logger.debug("Step #" + step.getDisplayId() + " of user #" + step.getUser().getUserId()
-                + " added cache.");
+                + " added to cache.");
         User user = step.getUser();
         StepKey key = new StepKey(user.getUserId(), step.getDisplayId());
         StepNode node = new StepNode(step);
