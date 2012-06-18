@@ -475,29 +475,31 @@ public abstract class AbstractEnumParam extends Param {
         String errorMessage = "The default value from model, '"
                 + defaultFromModel + "', is not a valid term for param "
                 + getFullName() + ", please double check this default value.";
-        if (defaultFromModel != null) { // validate default values.
+        if (defaultFromModel != null) {
+            // default defined in the model, validate default values, and set it
+            // to the cache.
             String[] defaults = getMultiPick() ? defaultFromModel.split("\\s*,\\s*")
                     : new String[] { defaultFromModel };
             for (String def : defaults) {
-                if (cache.getTerms().contains(def)) {
-                    return;
-                } else if (isDependentParam()) {
-                    // the given default doesn't match any term, need to
-                    // investigate
-                    // and make sure the default is as intended.
-                    // Cannot throws exception here, since the default might not
-                    // be
-                    // valid for a different depended value.
-                    logger.warn(errorMessage);
-                } else { // default is not a valid term, and param doesn't
-                         // depend on
-                         // anything. The default must be wrong.
-                    logger.warn(errorMessage);
-                    throw new WdkModelException(errorMessage);
+                if (!cache.getTerms().contains(def)) {
+                    // the given default doesn't match any term
+                    if (isDependentParam()) {
+                        // need to investigate and make sure the default is as
+                        // intended.
+                        // Cannot throws exception here, since the default might
+                        // not be valid for a different depended value.
+                        logger.warn(errorMessage);
+                    } else {
+                        // param doesn't depend on anything. The default must be
+                        // wrong.
+                        logger.warn(errorMessage);
+                        throw new WdkModelException(errorMessage);
 
+                    }
                 }
             }
             cache.setDefaultValue(defaultFromModel);
+            return;
         }
 
         // single pick can only select one value
