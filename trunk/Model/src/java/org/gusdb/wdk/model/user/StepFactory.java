@@ -934,6 +934,7 @@ public class StepFactory {
         // If user does not already have a copy of this strategy, need to
         // look up the answers recursively, construct step objects.
         Step latestStep = importStep(user, oldRootStep, stepIdsMap);
+        
         // Need to create strategy & then load it so that all AnswerValues
         // are created properly
         // Jerric - the imported strategy should always be unsaved.
