@@ -125,7 +125,16 @@
             <option value="downloadStep('${strategy.latestStepId}')">Download</option>
             <option value="showUpdateDialog('${strategyId}', false, true)">Rename</option>
             <c:if test="${strategy.isSaved}">
-              <option value="showUpdateDialog('${strategyId}', false, true)">Add/edit description</option>
+              <option value="showUpdateDialog('${strategyId}', false, true)">
+              <c:choose>
+                <c:when test="${empty strategy.description}">
+                  Add description
+                </c:when>
+                <c:otherwise>
+                  Edit description
+                </c:otherwise>
+              </c:choose>
+              </option>
             </c:if>
             <option value="copyStrategy('${strategyId}', true);">Copy</option>
             <option value="${saveAction}">Save As</option>
