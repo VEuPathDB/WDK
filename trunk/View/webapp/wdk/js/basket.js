@@ -16,33 +16,37 @@ function configureBasket() {
 }
 
 function basketTabSelected(event, ui) {
-            var currentTab = getCurrentBasketTab();
-            var workspace = window.wdk.findActiveWorkspace();
-            workspace.prepend(jQuery("#basket-control-panel #basket-control").clone());
-            // store the selection cookie
-            var currentId = currentTab.attr("id");
-            setCurrentTabCookie('basket', currentId);
-            var currentDiv = $(ui.panel);
-            var control = workspace.children("#basket-control");
-            if (currentDiv.find("table").length > 0) {
-                control.find("input#empty-basket-button").attr("disabled",false);
-                control.find("input#make-strategy-from-basket-button").attr("disabled",false);
-                control.find("input#export-basket-button").attr("disabled",false);
-                // create multi select control for adding columns
-                checkPageBasket();
-                createFlexigridFromTable(jQuery("#basket-menu #Results_Table"));
-                try {
-                    customBasketPage();
-                } catch(err) {
-                    //Do nothing
-                }
-            } else {
-                control.find("input#empty-basket-button").attr("disabled",true);
-                control.find("input#make-strategy-from-basket-button").attr("disabled",true);
-                control.find("input#export-basket-button").attr("disabled",true);
-            }
+    var currentTab = getCurrentBasketTab();
+    var workspace = window.wdk.findActiveWorkspace();
+    workspace.prepend(jQuery("#basket-control-panel #basket-control").clone());
+    // store the selection cookie
+    var currentId = currentTab.attr("id");
+    setCurrentTabCookie('basket', currentId);
+    var currentDiv = $(ui.panel);
+    var control = workspace.children("#basket-control");
+    if (currentDiv.find("table").length > 0) {
+        control.find("input#empty-basket-button").attr("disabled",false);
+        control.find("input#make-strategy-from-basket-button").attr("disabled",false);
+        control.find("input#export-basket-button").attr("disabled",false);
+        // create multi select control for adding columns
+        checkPageBasket();
+        createFlexigridFromTable(jQuery("#basket-menu #Results_Table"));
+        try {
+            customBasketPage();
+        } catch(err) {
+            //Do nothing
+        }
+    } else {
+        control.find("input#empty-basket-button").attr("disabled",true);
+        control.find("input#make-strategy-from-basket-button").attr("disabled",true);
+        control.find("input#export-basket-button").attr("disabled",true);
+    }
 
-
+    // connect dialog
+    $(".open-dialog-annot-change").click(function(e) {
+        e.preventDefault();
+        $("#dialog-annot-change").dialog("open");
+    });
 }
 
 function showBasket(){	
