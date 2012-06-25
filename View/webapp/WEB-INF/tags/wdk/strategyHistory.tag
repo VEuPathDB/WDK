@@ -96,11 +96,7 @@ $(function() {
       </td>
  
       <td width="50%" style="text-align:right">
-<div class="strat-legend">
-<br><b>Strategy results are not stored</b>, only the strategy steps and parameter values are.
-<br><b>Results might change</b> with subsequent releases of the site if the underlying data has changed.
-<br><b>Strategies that require your revision</b> are marked with <a  href="javascript:void(0)"  onClick="openWhyRevise(this)"><img style="vertical-align:bottom" src="<c:url value="wdk/images/invalidIcon.png"/>" width="12"/></a>. <a  href="javascript:void(0)"  onClick="openWhyRevise(this)"> Why?</a>
-</div>
+<div class="strat-legend"><imp:verbiage key="note.strat-legend.content"/></div>
       </td>
 </tr>
 </table>
@@ -205,4 +201,13 @@ $(function() {
 	var myform = $("form#save_strat_form_hist");
 	myform.prepend(save_warning);
 	$("i,form#save_strat_form_hist").css("font-size","95%");
+
+    <%-- connect dialogs --%>
+    $(function() {
+      $(".open-dialog-revise-search").click(function(e) {
+        e.preventDefault();
+        $("#dialog-revise-search").dialog("open");
+      });
+    });
 </script>
+
