@@ -45,7 +45,7 @@ function basketTabSelected(event, ui) {
     // connect dialog
     $(".open-dialog-annot-change").click(function(e) {
         e.preventDefault();
-        $("#dialog-annot-change").dialog("open");
+        $("#wdk-dialog-annot-change").dialog("open");
     });
 }
 
