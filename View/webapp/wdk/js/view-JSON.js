@@ -545,7 +545,7 @@ save_warning +
 	}else if(guestUser() == 'true'){
 		share = "<a id='share_" + id + "' title='Please LOGIN so you can SAVE and then SHARE (email) your strategy.' href='javascript:void(0)' onclick=\"popLogin();setFrontAction('share'," + id + ");\"><b style='font-size:120%'>Share</b></a>";
 	}else{
-		share = "<a id='share_" + id + "' title='SAVE this strategy so you can SHARE it (email its URL).' href='javascript:void(0)' onclick=\"showSaveForm('" + id + "', true,true)\"><b style='font-size:120%'>Share</b></a>";
+		share = "<a id='share_" + id + "' title='SAVE this strategy so you can SHARE it (email its URL).' href='javascript:void(0)' onclick=\"if (confirm('Before you can share your strategy, you need to save it. Would you like to do that now?')) { showUpdateDialog('" + id + "', true,true) }\"><b style='font-size:120%'>Share</b></a>";
 	}
 
 

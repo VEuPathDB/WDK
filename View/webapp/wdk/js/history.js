@@ -135,40 +135,10 @@ function showHistSave(ele, stratId, save,share) {
 }
 
 function showHistShare(ele, stratId, url) {
-  var dialog_container = $("#share_dialog");
+  var dialog_container = $("#wdk-dialog-share-strat");
 
-  if (dialog_container.length != 1) {
-    //create dialog
-    dialog_container = $("<div id='share_dialog'></div>")
-      .dialog({
-        title: "Copy and paste the following URL to share your strategy",
-        autoOpen: false,
-        modal: true,
-        width: 500
-      });
-  }
-  dialog_container.empty()
-    .append($("<p>" + url + "</p>").css("margin", "auto").css("margin-top", 40).css("text-align", "center"));
+  dialog_container.find(".share_url").html(url.link(url));
   dialog_container.dialog("open");
-
-
-	// $(".viewed-popup-box").remove();
-	// var perm_popup = $("div#hist_save_rename");
-  //   	var popup = perm_popup.clone();
-	// popup.addClass('viewed-popup-box');
-	// $("span.h3left", popup).text("Copy and paste URL below to email");
-	// $("input[name='name']", popup).attr("value",url).attr("readonly",true).attr("size",url.length - 6);
- 	// $("input[type=submit]", popup).attr("value", "Ok").click(function(){
-  //               closeModal();
-  //               return false;
-  //     		});
-	// var btnOffset = $(ele).offset();
-  //   	var prntOffset = $("div#search_history").offset();
-  //  	popup.css("top", (btnOffset.top - prntOffset.top - 40) + "px");
-  //  	popup.css("right", "292px");
-	// popup.appendTo(perm_popup.parent()).show();
-	// //make sure the warning is visible
-	// $(".viewed-popup-box form#save_strat_form_hist i").css("display","block");
 }
 
 function selectAllHist(type) {
@@ -317,61 +287,33 @@ function hideAnyName() {
 function showUpdateDialog(strat_id, save, fromHist) {
   var strat = getStrategyOBJ(strat_id),
       step_id = strat.JSON.steps[strat.JSON.steps.length].id,
-      dialog_container = $("#strategy_save_dialog"),
+      dialog_container = $("#wdk-dialog-update-strat"),
       title = (save) ? "Save Strategy" : "Update Strategy",
       submitValue = (save) ? "Save strategy" : "Update strategy",
       type = (save) ? "SaveStrategy" : "RenameStrategy",
       form;
 
-  if (dialog_container.length == 0) {
-    dialog_container = $("<div id='strategy_save_dialog'></div>")
-      .append($("<div id='save_as_msg'></div>").hide()
-        .append("<p class='important'>Important!</p>")
-        .append($("<ul></ul>")
-          .append("<li>You are saving/sharing this strategy, not the IDs in your result.</li>")
-          .append("<li>Results might change with subsequent releases of the site if the underlying data has changed.</li>")
-          .append("<li>To keep a copy of your current result, " +
-              "please <a class='download' href='#'>download your IDs</a>.</li>")
-        )
-      )
-      .append($("<form></form>")
-        .append("<input type='hidden' name='strategy'/>")
-        .append($("<dl></dl>")
-          .append("<dt id='name_label'>Name:</dt>")
-          .append("<dd id='name_input'><input type='text' name='name'/></dd>")
-          .append("<dt id='desc_label'>Description:</dt>")
-          .append("<dd id='desc_input'><textarea name='description' rows='10'>" +
-              "</textarea></dd>")
-        ).append("<div style='text-align: right'><input name='submit' " +
-            "type='submit' value='Save strategy'/></div>")
-      )
-      .appendTo(document.body)
-      .hide()
-      .dialog({
-        autoOpen:   false,
-        title:      title,
-        width:      'auto',
-        modal:      true,
-        resizable:  false
-      });
-  }
   dialog_container.find(".download").click(function(e) {
     e.preventDefault();
     downloadStep(step_id);
   });
+
   form = dialog_container.find("form").get(0);
+
   if (save) {
-    dialog_container.find("#save_as_msg").show();
+    dialog_container.find(".save_as_msg").show();
   } else {
-    dialog_container.find("#save_as_msg").hide();
+    dialog_container.find(".save_as_msg").hide();
   }
+
   if (!(save || strat.JSON.saved)) {
-    dialog_container.find("#desc_label").hide();
-    dialog_container.find("#desc_input").hide();
+    dialog_container.find(".desc_label").hide();
+    dialog_container.find(".desc_input").hide();
   } else {
-    dialog_container.find("#desc_label").show();
-    dialog_container.find("#desc_input").show();
+    dialog_container.find(".desc_label").show();
+    dialog_container.find(".desc_input").show();
   }
+
   form.name.value = strat.name||"";
   form.description.value = strat.description||"";
   form.strategy.value = strat_id;
@@ -426,6 +368,7 @@ function showFullDescriptionDialog(strat_id) {
     .replace(/(https?:\/\/\S+)/g, "$1".link("$1"))
   ).dialog({
     title: strat.name,
+    modal: true,
     width: 600
   });
 }
