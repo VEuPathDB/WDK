@@ -1017,26 +1017,33 @@ div#sections td{
     display: inline;
 }
 
-#strategy_save_dialog dt {
+#wdk-dialog-update-strat dt {
     margin-top: 1em;
     font-weight: bold;
 }
 
-#strategy_save_dialog textarea, #strategy_save_dialog input[type="text"], #strategy_save_dialog div {
+#wdk-dialog-update-strat textarea,
+#wdk-dialog-update-strat input[type="text"],
+#wdk-dialog-update-strat div {
     width: 570px;
 }
 
-#strategy_save_dialog ul {
+#wdk-dialog-update-strat ul, #wdk-dialog-share-strat ul {
     list-style: disc;
     padding-left: 1em;
 }
 
-#strategy_save_dialog li {
+#wdk-dialog-update-strat li, #wdk-dialog-share-strat li {
     margin: .4em 0;
 }
 
-#strategy_save_dialog .important {
+#wdk-dialog-update-strat .important, #wdk-dialog-share-strat .important {
     font-weight: bold;
+}
+
+#wdk-dialog-share-strat .share_url {
+    margin: 40px auto;
+    text-align: center;
 }
 
 /**************************************************

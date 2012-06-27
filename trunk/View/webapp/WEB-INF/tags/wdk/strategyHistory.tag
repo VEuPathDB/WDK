@@ -206,7 +206,7 @@ $(function() {
     $(function() {
       $(".open-dialog-revise-search").click(function(e) {
         e.preventDefault();
-        $("#dialog-revise-search").dialog("open");
+        $("#wdk-dialog-revise-search").dialog("open");
       });
     });
 </script>
