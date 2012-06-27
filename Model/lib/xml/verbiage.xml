@@ -9,7 +9,6 @@
 <xmlAnswer>
 
     <record id="dialog.revise-search">
-        <attribute name="id"></attribute>
         <attribute name="title">Redesigned Searches</attribute>
         <attribute name="content">
             <![CDATA[
@@ -29,7 +28,6 @@
     </record>
 
     <record id="dialog.annot-change">
-        <attribute name="id"></attribute>
         <attribute name="title">Annotation Changes</attribute>
         <attribute name="content">
             <![CDATA[
@@ -37,6 +35,34 @@
   <li>genome annotations are constantly updated to reflect new biological information concerning the sequences.
   <br><br>
   <li>when annotations are updated during a new release of our websites, some ids may change or be retired.
+</ul>
+            ]]>
+        </attribute>
+    </record>
+
+    <record id="dialog.update-strat">
+        <attribute name="title">Update Strategy</attribute>
+        <attribute name="content">
+            <![CDATA[
+<p class="important">Important!</p>
+<ul>
+    <li>You are saving/sharing this strategy, not the IDs in your result.</li>
+    <li>Results might change with subsequent releases of the site if the underlying data has changed.</li>
+    <li>To keep a copy of your current result, please <a class="download" href="#">download your IDs</a>.</li>
+</ul>
+            ]]>
+        </attribute>
+    </record>
+
+    <record id="dialog.share-strat">
+        <attribute name="title">Share Your Strategy Using The URL Below</attribute>
+        <attribute name="content">
+            <![CDATA[
+<p class="important">Important!</p>
+<ul>
+    <li>You are saving/sharing this strategy, not the IDs in your result.</li>
+    <li>Results might change with subsequent releases of the site if the underlying data has changed.</li>
+    <li>To keep a copy of your current result, please <a class="download" href="#">download your IDs</a>.</li>
 </ul>
             ]]>
         </attribute>
