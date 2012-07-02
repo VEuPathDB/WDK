@@ -194,7 +194,9 @@ function updateDependentParam(paramName, dependedValue) {
 					var newContent = $("div.param, div.param-multiPick",data);
 					if (newContent.length > 0) {
 						dependentParam.html(newContent.html());
-					} else { // div.param-tree, but calling .html() on response erases javascript
+					} else {
+						// this case is specifically for checkbox trees
+						//   calling .html() on response erases javascript, so insert directly
 						dependentParam.html(data);
 					}
 					

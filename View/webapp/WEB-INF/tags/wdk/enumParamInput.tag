@@ -86,13 +86,13 @@ Otherwise a standard select menu is used.
     <c:when test="${displayType eq 'treeBox'}">
     
       <c:if test="${qp.useCheckboxTree}">
-        <div class="param-tree ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+        <div class="${dependentClass}" dependson="${dependedParam}" name="${pNam}">
           <imp:checkboxTree id="${pNam}CBT${idgen.nextId}" rootNode="${qP.paramTree}" checkboxName="array(${pNam})" buttonAlignment="left"/>
         </div>
       </c:if>
       
       <c:if test="${not qp.useCheckboxTree}">
-				<div class="param-tree ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+				<div class="${dependentClass}" dependson="${dependedParam}" name="${pNam}">
 				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 		            <div class="param-controls">
 		            <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
