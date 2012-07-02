@@ -41,25 +41,24 @@ function initParamHandlers() {
 
 function initDependentParamHandlers(isEdit) {
   $('div.dependentParam').each(function() {
-				 $('input, select', this).attr('disabled',true);
-				 var name = $(this).attr('name');
-				 if (!dependedParams[name]) {
-				   dependedParams[name] = $(this).attr('dependson');
-				 }
-				 var dependedParam = $("td#" + dependedParams[name] + "aaa input[name='array(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='array(" + dependedParams[name] + ")']");
-				 dependedParam.change(function() {
-							dependedValues = [];
-							var paramName = getParamName($(this).attr('name'), true);
-							var inputs = $("td#" + paramName + "aaa input[name='array(" + paramName + ")']:checked, td#" + paramName + "aaa select[name='array(" + paramName + ")']");
-							inputs.each(function() {
-								      dependedValues.push($(this).val());
-								    });
-							jQuery.unique(dependedValues);
-							updateDependentParam(name, dependedValues.join(","));
-						      });
-				 $('input, select', this).attr('disabled',false);
-				 dependedParam.change();
-			       });
+    $('input, select', this).attr('disabled',true);
+    var name = $(this).attr('name');
+    if (!dependedParams[name]) {
+      dependedParams[name] = $(this).attr('dependson');
+    }
+    var dependedParam = $("td#" + dependedParams[name] + "aaa input[name='array(" + dependedParams[name] + ")'], td#" + dependedParams[name] + "aaa select[name='array(" + dependedParams[name] + ")']");
+    dependedParam.change(function() {
+        dependedValues = [];
+		var paramName = getParamName($(this).attr('name'), true);
+		var inputs = $("td#" + paramName + "aaa input[name='array(" + paramName + ")']:checked, td#" + paramName + "aaa select[name='array(" + paramName + ")']");
+		inputs.each(function() {
+		    dependedValues.push($(this).val());
+		});
+		jQuery.unique(dependedValues);
+		updateDependentParam(name, dependedValues.join(","));
+    });
+    $('input, select', this).attr('disabled',false);
+  });
 
   //If revising, store all of the old param values before triggering the depended param's change function.
   if (isEdit) {
