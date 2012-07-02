@@ -63,10 +63,12 @@ $(function() {
       </c:choose>
       <c:set var="recDispName" value="${strat.displayType}"/>
       <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
-
       <li>
-        <a id="tab_${recTabName}" onclick="displayHist('${recTabName}')"
-           href=".tab_${recTabName}">${recDispName}&nbsp;Strategies&nbsp;(${totalStratsCount})</a>
+        <a id="tab_${recTabName}" 
+	   onclick="displayHist('${recTabName}')"
+           href=".tab_${recTabName}">
+		${recDispName} (${totalStratsCount})
+	</a>
       </li>
     </c:if>
 </c:forEach>
