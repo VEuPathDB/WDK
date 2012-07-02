@@ -61,7 +61,6 @@
      also included in summary page to support the addStep popup            --%>
 <%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
 <c:if test="${refer == 'question' || refer == 'summary'}">
-  <script type="text/javascript" src="<c:url value='/wdk/js/treeControl.js'/>"></script>
   <script type="text/javascript" src="<c:url value='/wdk/js/parameterHandlers.js'/>"></script>
 </c:if>
 
