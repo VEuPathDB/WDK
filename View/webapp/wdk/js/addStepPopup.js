@@ -359,7 +359,7 @@ function callWizard(url, ele, id, sec, action, stratFrontId){
 	$("div#errors").html("");
 	switch (action){
 			case "submit":
-                                var stage = $(ele).find("#stage").val();
+				var stage = $(ele).find("#stage").val();
 				url = url + "stage="+stage+"&strategy="+strategy.backId;
 				$(ele).attr("action", "javascript:void(0)");
 				$.ajax({
