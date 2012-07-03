@@ -89,17 +89,24 @@
       </td>
 
       <td class="strategy_description">
-        <c:choose>
-          <c:when test="${!strategy.isSaved}">
-            <div class="unsaved" title="Click to save and add description" onclick="showUpdateDialog(${strategyId}, true, true);">Save to add a description</div>
-          </c:when>
-          <c:when test="${empty strategy.description}">
-            <div class="empty" title="Click to add a description" onclick="showUpdateDialog(${strategyId}, false, true);">Click to add a description</div>
-          </c:when>
-          <c:otherwise>
-            <div class="full" title="Click to view entire description" onclick="showFullDescriptionDialog(${strategyId});"><c:out value="${strategy.description}"/></div>
-          </c:otherwise>
-        </c:choose>
+      <c:choose>
+        <c:when test="${wdkUser.guest}">
+          <div class="unsaved" title="Click to save and add description" onclick="popLogin();">Click to save and add a description</div>
+        </c:when>
+        <c:otherwise>
+          <c:choose>
+            <c:when test="${!strategy.isSaved}">
+              <div class="unsaved" title="Click to save and add description" onclick="showUpdateDialog(${strategyId}, true, true);">Save to add a description</div>
+            </c:when>
+            <c:when test="${empty strategy.description}">
+              <div class="empty" title="Click to add a description" onclick="showUpdateDialog(${strategyId}, false, true);">Click to add a description</div>
+            </c:when>
+            <c:otherwise>
+              <div class="full" title="Click to view entire description" onclick="showUpdateDialog(${strategyId}, false, true);"><c:out value="${strategy.description}"/></div>
+            </c:otherwise>
+          </c:choose>
+        </c:otherwise>
+      </c:choose>
       </td>
 
       <td nowrap>
