@@ -203,13 +203,5 @@ $(function() {
 	var myform = $("form#save_strat_form_hist");
 	myform.prepend(save_warning);
 	$("i,form#save_strat_form_hist").css("font-size","95%");
-
-    <%-- connect dialogs --%>
-    $(function() {
-      $(".open-dialog-revise-search").click(function(e) {
-        e.preventDefault();
-        $("#wdk-dialog-revise-search").dialog("open");
-      });
-    });
 </script>
 

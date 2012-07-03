@@ -45,7 +45,7 @@ var WDK = function() {
             jQuery.blockUI({message: "<div><h2>Cookies are disabled</h2><p>This site requires cookies.  Please enable them in your browser preferences.</p><input type='submit' value='OK' onclick='jQuery.unblockUI();' /></div>", css: {position : 'absolute', backgroundImage : 'none'}});
         }
     }
-    
+
     // -------------------------------------------------------------------------
     // cookie handling methods
     // -------------------------------------------------------------------------
@@ -75,7 +75,7 @@ var WDK = function() {
     }
 
     // ------------------------------------------------------------------------
-    // Event registration & handling code. The proper event will be invoked 
+    // Event registration & handling code. The proper event will be invoked
     // during the page loading of the assign type. For example, question events
     // will be invoked on the loading of stand-alone question page, and the
     // loading of question page in the add/revise step popup box.
@@ -83,7 +83,7 @@ var WDK = function() {
     this.questionEvents = new Array();
     this.resultEvents = new Array();
     this.recordEvents = new Array();
-    
+
     this.registerQuestionEvent = function(handler) {
         this.questionEvents.push(handler);
     }
@@ -146,7 +146,7 @@ var WDK = function() {
         var section = views.children("ul").children("li.ui-tabs-selected").children("a").attr("href");
         return views.find(section);
     }
-    
+
     this.initialize();
 }
 
@@ -237,3 +237,40 @@ WDK.prototype.registerTable = function() {
 }
 
 
+// instantiate dialogs
+$(function() {
+  var dialogOpts = {
+    width: "auto",
+    autoOpen: false,
+    modal: true,
+    resizable: false
+  };
+  $("[id^='wdk-dialog-']").dialog(dialogOpts);
+});
+
+// connect dialogs
+$(function() {
+
+  $("#basket").on("click", ".open-dialog-annot-change", function(e) {
+    e.preventDefault();
+    $("#wdk-dialog-annot-change").dialog("open");
+  })
+
+  $("#search_history").on("click", ".open-dialog-revise-search", function(e) {
+    e.preventDefault();
+    $("#wdk-dialog-revise-search").dialog("open");
+  })
+
+  $("body").on("click", ".qtip .open-dialog-update-strat", function(e) {
+    e.preventDefault();
+    var qt = $(this).parents(".qtip").qtip("api"),
+        strat_id = qt.get("position.target").parents("tr").attr("id").substr(6);
+    //qt.hide();
+    showUpdateDialog(strat_id, false, true);
+  });
+
+  $(".ui-dialog").on('dialogopen', function() {
+    $(".strategy-description.qtip").qtip("hide");
+  });
+
+});
