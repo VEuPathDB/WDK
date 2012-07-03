@@ -41,12 +41,6 @@ function basketTabSelected(event, ui) {
         control.find("input#make-strategy-from-basket-button").attr("disabled",true);
         control.find("input#export-basket-button").attr("disabled",true);
     }
-
-    // connect dialog
-    $(".open-dialog-annot-change").click(function(e) {
-        e.preventDefault();
-        $("#wdk-dialog-annot-change").dialog("open");
-    });
 }
 
 function showBasket(){	

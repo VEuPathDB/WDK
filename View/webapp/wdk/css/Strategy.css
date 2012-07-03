@@ -1017,6 +1017,10 @@ div#sections td{
     display: inline;
 }
 
+.ui-dialog-fixed-width {
+    width: 500px !important;
+}
+
 #wdk-dialog-update-strat dt {
     margin-top: 1em;
     font-weight: bold;
@@ -1041,9 +1045,17 @@ div#sections td{
     font-weight: bold;
 }
 
+#wdk-dialog-update-strat .count.warn {
+    color: red;
+}
+
 #wdk-dialog-share-strat .share_url {
     margin: 40px auto;
     text-align: center;
+}
+
+.strategy-description.ui-tooltip {
+    max-width: 35em;
 }
 
 /**************************************************
