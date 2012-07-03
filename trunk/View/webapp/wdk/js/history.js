@@ -318,9 +318,14 @@ function showUpdateDialog(strat_id, save, fromHist) {
   form.description.value = strat.description||"";
   form.strategy.value = strat_id;
   form.submit.value = submitValue;
+  $(form).data("strategy", strat);
 
   $(form).submit(function(event) {
     event.preventDefault();
+    if (this.description.value.length > 4000) {
+      return alert("You have exceeded the 4,000 character limit. " +
+                   "Please revised your description.");
+    }
     $.ajax({
       url: "renameStrategy.do",
       dataType: "json",
@@ -358,17 +363,16 @@ function showUpdateDialog(strat_id, save, fromHist) {
   dialog_container.dialog('open');
 }
 
-function showFullDescriptionDialog(strat_id) {
-  var strat = getStrategyOBJ(strat_id);
-  $("<div></div>").html(
-    strat.description
-    // new lines to breaks
-    .replace(/\n/g, "<br/>")
-    // autolink
-    .replace(/(https?:\/\/\S+)/g, "$1".link("$1"))
-  ).dialog({
-    title: strat.name,
-    modal: true,
-    width: 600
-  });
-}
+// connect update counter
+$(function() {
+  var updateContainer = document.getElementById("wdk-dialog-update-strat"),
+      updateForm = $("form", updateContainer).get(0),
+      updateCounter = function(event) {
+        var str = updateForm.description.value;
+        $(".char_counter .count", updateContainer)
+            .text(str.length)
+            .toggleClass("warn", str.length > 3900);
+      };
+  $(updateContainer).on('dialogopen', updateCounter);
+  $(updateForm.description).on('keydown keyup', updateCounter);
+});
