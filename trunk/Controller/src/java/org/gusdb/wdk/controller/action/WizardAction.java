@@ -105,7 +105,7 @@ public class WizardAction extends Action {
                 boolean first = (forward.indexOf('?') < 0);
                 for (String key : attributes.keySet()) {
                     Object value = attributes.get(key);
-                    String strValue = (value == null) ? null : value.toString();
+                    String strValue = (value == null) ? "" : value.toString();
                     builder.append(first ? "?" : "&");
                     builder.append(URLEncoder.encode(key, "utf-8") + "=");
                     builder.append(URLEncoder.encode(strValue, "utf-8"));

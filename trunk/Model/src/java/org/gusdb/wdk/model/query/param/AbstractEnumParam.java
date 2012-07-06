@@ -551,17 +551,6 @@ public abstract class AbstractEnumParam extends Param {
     /*
      * (non-Javadoc)
      * 
-     * @see org.gusdb.wdk.model.query.param.Param#clone()
-     */
-    @Override
-    public Param clone() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     * 
      * @see
      * org.gusdb.wdk.model.query.param.Param#appendJSONContent(org.json.JSONObject
      * , boolean)

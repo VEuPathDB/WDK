@@ -45,7 +45,7 @@ public class UnitTestHelper {
         return random;
     }
 
-    public static WdkModel getModel() throws Exception {
+    public synchronized static WdkModel getModel() throws Exception {
         if (wdkModel == null) {
             logger.info("Loading model...");
             String projectId = System.getProperty(Utilities.ARGUMENT_PROJECT_ID);
@@ -64,7 +64,7 @@ public class UnitTestHelper {
         return wdkModel;
     }
 
-    public static User getGuest() throws Exception {
+    public synchronized static User getGuest() throws Exception {
         if (guest == null) {
             WdkModel wdkModel = getModel();
             guest = wdkModel.getUserFactory().createGuestUser();
@@ -74,7 +74,7 @@ public class UnitTestHelper {
         return guest;
     }
 
-    public static User getRegisteredUser() throws Exception {
+    public synchronized static User getRegisteredUser() throws Exception {
         if (registeredUser == null) {
             WdkModel wdkModel = getModel();
             UserFactory userFactory = wdkModel.getUserFactory();
