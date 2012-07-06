@@ -447,7 +447,7 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters, ac
 function RenameStep(ele, s, stp){
 	var new_name = $(ele).val();
 	step = getStep(s, stp);
-	var url = "renameStep.do?strategy=" + getStrategy(s).backId + "&stepId=" + step.back_step_Id + "&customName=" + escape(new_name);	
+	var url = "renameStep.do?strategy=" + getStrategy(s).backId + "&stepId=" + step.back_step_Id + "&customName=" + encodeURIComponent(new_name);	
 	$.ajax({
 			url: url,
 			dataType: "html",
