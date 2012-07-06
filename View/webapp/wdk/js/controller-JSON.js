@@ -446,7 +446,7 @@ function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters, ac
 function RenameStep(ele, s, stp){
 	var new_name = $(ele).val();
 	step = getStep(s, stp);
-	var url = "renameStep.do?strategy=" + getStrategy(s).backId + "&stepId=" + step.back_step_Id + "&customName=" + escape(new_name);	
+	var url = "renameStep.do?strategy=" + getStrategy(s).backId + "&stepId=" + step.back_step_Id + "&customName=" + encodeURICompontent(new_name);	
 	$.ajax({
 			url: url,
 			dataType: "html",
@@ -774,7 +774,7 @@ function saveOrRenameStrategy(stratId, checkName, save, fromHist){
 	var cs = strat.checksum;
 	if(strat.subStratOf != null)
 		cs = getStrategy(strat.subStratOf).checksum;
-	url = url + strategy + "&name=" + escape(name) + "&checkName=" + checkName+"&save=" + save + "&action=" + action + "&actionStrat=" + actionStrat + "&strategy_checksum="+cs;
+	url = url + strategy + "&name=" + encodeURICompontent(name) + "&checkName=" + checkName+"&save=" + save + "&action=" + action + "&actionStrat=" + actionStrat + "&strategy_checksum="+cs;
 	if (fromHist) url = url + "&showHistory=true";
 	$.ajax({
 		url: url,
