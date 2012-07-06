@@ -67,7 +67,7 @@ public abstract class AttributeValue {
     public String toString() {
         try {
             Object value = getValue();
-            return (value == null) ? null : value.toString();
+            return (value == null) ? "" : value.toString();
         } catch (WdkModelException ex) {
             throw new RuntimeException(ex);
         } catch (WdkUserException ex) {

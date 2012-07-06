@@ -252,7 +252,6 @@ public class ProcessRESTAction extends Action {
             String base = request.getHeader("Host") + "/webservices/";
             writer.println("<resources base='http://" + base + "'>");
             if (sQName.split(":")[1].equals("all")) {
-                if (qFullName != null)
                     wdkQuestionSet = wdkModel.getQuestionSetsMap().get(
                             sQName.split(":")[0]);
                 if (wdkQuestionSet == null)
@@ -266,7 +265,6 @@ public class ProcessRESTAction extends Action {
                 }
                 writer.println("</resource>");
             } else {
-                if (qFullName != null)
                     wdkQuestion = wdkModel.getQuestion(qFullName);
                 if (wdkQuestion == null)
                     throw new WdkUserException("The question '" + qFullName

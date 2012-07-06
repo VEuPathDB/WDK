@@ -153,7 +153,7 @@ public class Stage extends WdkModelBase {
                 Class<?> hClass = Class.forName(handlerClass);
                 this.handler = (StageHandler) hClass.newInstance();
             } catch (Exception ex) {
-                new WdkModelException("The flow stage handler is not of type: "
+                throw new WdkModelException("The flow stage handler is not of type: "
                         + StageHandler.class + ". stage: " + name, ex);
             }
         }

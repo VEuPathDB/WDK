@@ -85,7 +85,7 @@ public class BasketTest {
         Map<String, Integer> counts = new HashMap<String, Integer>();
         for (RecordClassBean rcBean : beanCounts.keySet()) {
         	String rcName = rcBean.getFullName();
-        	counts.put(rcName, beanCounts.get(rcName));
+        	counts.put(rcName, beanCounts.get(rcBean));
         }
         for (RecordClassSet rcSet : wdkModel.getAllRecordClassSets()) {
             for (RecordClass rc : rcSet.getRecordClasses()) {

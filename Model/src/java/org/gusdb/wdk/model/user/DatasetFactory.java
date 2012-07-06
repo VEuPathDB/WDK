@@ -513,9 +513,11 @@ public class DatasetFactory {
         sql.append(" WHERE ").append(COLUMN_DATASET_ID).append(" = ");
         sql.append(dataset.getDatasetId());
 
-        Statement stmt = connection.createStatement();
-        ResultSet resultSet = stmt.executeQuery(sql.toString());
+        Statement stmt = null;
+        ResultSet resultSet = null;
         try {
+          stmt = connection.createStatement();
+          resultSet = stmt.executeQuery(sql.toString());
             if (!resultSet.next())
                 throw new WdkModelException("The dataset ("
                         + dataset.getDatasetId() + ") does not exist.");
@@ -547,9 +549,11 @@ public class DatasetFactory {
         sql.append(" WHERE ").append(COLUMN_USER_DATASET_ID).append(" = ");
         sql.append(dataset.getUserDatasetId());
 
-        Statement stmt = connection.createStatement();
-        ResultSet resultSet = stmt.executeQuery(sql.toString());
+        Statement stmt = null;
+        ResultSet resultSet = null;
         try {
+           stmt = connection.createStatement();
+           resultSet = stmt.executeQuery(sql.toString());
             if (!resultSet.next())
                 throw new WdkModelException("The userDataset ("
                         + dataset.getUserDatasetId() + ") does not exist.");

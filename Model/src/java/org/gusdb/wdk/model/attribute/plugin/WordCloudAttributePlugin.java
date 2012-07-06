@@ -148,7 +148,7 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
                 String part = word.substring(0, word.length() - 1);
                 if (!tags.containsKey(part) && word.endsWith("es")) {
                     part = word.substring(0, word.length() - 2);
-                    if (!tags.containsValue(part) && word.endsWith("ies"))
+                    if (!tags.containsKey(part) && word.endsWith("ies"))
                         part = word.substring(0, word.length() - 3) + "y";
                 }
 

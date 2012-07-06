@@ -38,8 +38,11 @@ class ActiveStrategy {
     public boolean equals(Object obj) {
         if (obj == null || !(obj instanceof ActiveStrategy)) return false;
         ActiveStrategy strategy = (ActiveStrategy) obj;
-        if (strategyKey == null && strategy.strategyKey == null) return true;
-        return strategyKey.equals(strategy.strategyKey);
+        if (strategyKey == null) {
+          return (strategy.strategyKey == null);
+        } else {
+          return strategyKey.equals(strategy.strategyKey);
+        }
     }
 
     /*

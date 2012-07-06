@@ -61,10 +61,10 @@ public class ShowApplicationAction extends ShowSummaryAction {
                     activeStrategies);
 
             // get the tab info, if present
-            String tab = request.getParameter(PARAM_TAB);
-            if (tab != null && tab.length() > 0) {
-
-            }
+//            String tab = request.getParameter(PARAM_TAB);
+//            if (tab != null && tab.length() > 0) {
+//
+//            }
 
 	    String strategyViewFile = CConstants.WDK_CUSTOM_VIEW_DIR
 		+ File.separator + CConstants.WDK_PAGES_DIR
