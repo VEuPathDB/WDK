@@ -12,6 +12,7 @@ import javax.sql.DataSource;
 
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.ColumnType;
@@ -120,6 +121,10 @@ public class TestDBManager extends BaseCLI {
             BufferedReader reader = new BufferedReader(
                     new FileReader(nextTable));
             String firstLine = reader.readLine();
+            if (firstLine == null) {
+              reader.close();
+              throw new WdkModelException("File should not be empty:" + nextTable.getAbsolutePath());
+            }
 
             try {
                 Map<String, String> columnTypes = createTable(tableName,

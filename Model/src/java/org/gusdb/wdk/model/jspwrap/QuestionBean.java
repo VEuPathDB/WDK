@@ -98,11 +98,12 @@ public class QuestionBean {
         Map<GroupBean, Map<String, ParamBean<?>>> paramGroupBeans = new LinkedHashMap<GroupBean, Map<String, ParamBean<?>>>();
         for (Group group : paramGroups.keySet()) {
             GroupBean groupBean = new GroupBean(group);
-            Map<String, Param> paramGroup = paramGroups.get(groupBean);
+            Map<String, Param> paramGroup = paramGroups.get(group);
             Map<String, ParamBean<?>> paramGroupBean = new LinkedHashMap<String, ParamBean<?>>();
             for (String paramName : paramGroup.keySet()) {
                 paramGroupBean.put(paramName, _paramBeanMap.get(paramName));
             }
+            paramGroupBeans.put(groupBean, paramGroupBean);
         }
         return paramGroupBeans;
     }

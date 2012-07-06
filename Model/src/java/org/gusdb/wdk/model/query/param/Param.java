@@ -39,7 +39,7 @@ import org.json.JSONObject;
  * 
  *         Internal data: the data used in the SQL.
  */
-public abstract class Param extends WdkModelBase {
+public abstract class Param extends WdkModelBase implements Cloneable {
 
     protected static Logger logger = Logger.getLogger(Param.class);
 

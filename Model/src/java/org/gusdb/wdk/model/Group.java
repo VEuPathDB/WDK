@@ -26,7 +26,7 @@ public class Group extends WdkModelBase {
 
     private GroupSet groupSet;
 
-    public static Group Empty() {
+    public synchronized static Group Empty() {
         if (empty == null) {
             empty = new Group();
             empty.displayType = "empty";
