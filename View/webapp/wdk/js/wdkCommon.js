@@ -11,23 +11,23 @@ jQuery(document).ready(function() {
 
 //some helper functions used by isolates results page (clustal) and view-JSON.js
 function guestUser() {
-	return $("#guestUser").attr("name");
+  return $("#guestUser").attr("name");
 }
 
 function exportBaseURL() {
-	return $("#exportBaseURL").attr("name");
+  return $("#exportBaseURL").attr("name");
 }
 
 function modelName() {
-	return $("#modelName").attr("name");
+  return $("#modelName").attr("name");
 }
 
 function wdkUser() {
-	this.id = $("#wdk-userinfo").attr("user-id");
-	this.name = $("#wdk-userinfo").attr("name");
-	this.country = $("#wdk-userinfo").attr("country");
-	this.email = $("#wdk-userinfo").attr("email");
-	this.isGuest = $("#wdk-userinfo").attr("isGuest");
+  this.id = $("#wdk-userinfo").attr("user-id");
+  this.name = $("#wdk-userinfo").attr("name");
+  this.country = $("#wdk-userinfo").attr("country");
+  this.email = $("#wdk-userinfo").attr("email");
+  this.isGuest = $("#wdk-userinfo").attr("isGuest");
 }
 
 
@@ -50,28 +50,28 @@ var WDK = function() {
     // cookie handling methods
     // -------------------------------------------------------------------------
     this.createCookie = function(name,value,days) {
-    	if (days) {
-    		var date = new Date();
-    		date.setTime(date.getTime()+(days*24*60*60*1000));
-    		var expires = "; expires="+date.toGMTString();
-    	}
-    	else var expires = "";
-    	document.cookie = name+"="+value+expires+"; path=/";
+      if (days) {
+        var date = new Date();
+        date.setTime(date.getTime()+(days*24*60*60*1000));
+        var expires = "; expires="+date.toGMTString();
+      }
+      else var expires = "";
+      document.cookie = name+"="+value+expires+"; path=/";
     };
 
     this.readCookie = function(name) {
-    	var nameEQ = name + "=";
-    	var ca = document.cookie.split(';');
-    	for(var i=0;i < ca.length;i++) {
-    		var c = ca[i];
-    		while (c.charAt(0)==' ') c = c.substring(1,c.length);
-    		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
-    	}
-    	return null;
+      var nameEQ = name + "=";
+      var ca = document.cookie.split(';');
+      for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+      }
+      return null;
     };
 
     this.eraseCookie = function(name) {
-    	this.createCookie(name,"",-1);
+      this.createCookie(name,"",-1);
     }
 
     // ------------------------------------------------------------------------
@@ -187,31 +187,31 @@ function checkAll(bool, form, node) {
     var cb = form[node];//document.getElementsByName(node);
     for (var i=0; i<cb.length; i++) {
          if (cb[i].disabled) continue;
-	 if(bool && cb[i].checked == false) cb[i].click();
+   if(bool && cb[i].checked == false) cb[i].click();
          if(!bool && cb[i].checked == true) cb[i].click();
     }
 }
 
 // returns whether or not user is logged in
 function isUserLoggedIn() {
-	return (jQuery('#loginStatus').attr('loggedIn') == "true");
+  return (jQuery('#loginStatus').attr('loggedIn') == "true");
 }
 
 function getWebAppUrl() {
-	var scripts = document.getElementsByTagName('script');
-	var scriptPath;
-	for (var i = 0; i < scripts.length; i++) {
-    	var script = scripts[i];
-    	scriptPath =
-    		((script.getAttribute.length !== undefined) ?
-    				script.src : script.getAttribute('src', -1));
-    	if (scriptPath.indexOf("wdkCommon.js") != -1) {
-    		break;
-    	}
-	}
-	var suffixLen = new String("wdk/js/wdkCommon.js").length;
-	scriptPath = scriptPath.substring(0, scriptPath.length - suffixLen);
-	return scriptPath;
+  var scripts = document.getElementsByTagName('script');
+  var scriptPath;
+  for (var i = 0; i < scripts.length; i++) {
+      var script = scripts[i];
+      scriptPath =
+        ((script.getAttribute.length !== undefined) ?
+            script.src : script.getAttribute('src', -1));
+      if (scriptPath.indexOf("wdkCommon.js") != -1) {
+        break;
+      }
+  }
+  var suffixLen = new String("wdk/js/wdkCommon.js").length;
+  scriptPath = scriptPath.substring(0, scriptPath.length - suffixLen);
+  return scriptPath;
 }
 
 
@@ -237,8 +237,8 @@ WDK.prototype.registerTable = function() {
 }
 
 
-// instantiate dialogs
 $(function() {
+  // instantiate dialogs
   var dialogOpts = {
     width: "auto",
     autoOpen: false,
@@ -246,21 +246,17 @@ $(function() {
     resizable: false
   };
   $("[id^='wdk-dialog-']").dialog(dialogOpts);
-});
-
-// connect dialogs
-$(function() {
-
-  $("#basket").on("click", ".open-dialog-annot-change", function(e) {
+  
+  // connect dialogs
+  $("body").on("click", "[class^='open-dialog-']", function(e) {
     e.preventDefault();
-    $("#wdk-dialog-annot-change").dialog("open");
-  })
+    var match = this.className.match(/^open-dialog-(\w+-\w+)$/);
+    if (match) {
+      $("#wdk-dialog-" + match[1]).dialog("open");
+    }
+  });
 
-  $("#search_history").on("click", ".open-dialog-revise-search", function(e) {
-    e.preventDefault();
-    $("#wdk-dialog-revise-search").dialog("open");
-  })
-
+  // connect update strat dialog to qtip edit link 
   $("body").on("click", ".qtip .open-dialog-update-strat", function(e) {
     e.preventDefault();
     var qt = $(this).parents(".qtip").qtip("api"),
@@ -269,6 +265,7 @@ $(function() {
     showUpdateDialog(strat_id, false, true);
   });
 
+  // hide qtips when dialogs are open
   $(".ui-dialog").on('dialogopen', function() {
     $(".strategy-description.qtip").qtip("hide");
   });
