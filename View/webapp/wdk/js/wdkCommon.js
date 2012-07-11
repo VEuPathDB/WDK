@@ -237,7 +237,7 @@ WDK.prototype.registerTable = function() {
 }
 
 
-$(function() {
+jQuery(function() {
   // instantiate dialogs
   var dialogOpts = {
     width: "auto",
@@ -245,29 +245,29 @@ $(function() {
     modal: true,
     resizable: false
   };
-  $("[id^='wdk-dialog-']").dialog(dialogOpts);
+  jQuery("[id^='wdk-dialog-']").dialog(dialogOpts);
   
   // connect dialogs
-  $("body").on("click", "[class^='open-dialog-']", function(e) {
+  jQuery("body").on("click", "[class^='open-dialog-']", function(e) {
     e.preventDefault();
     var match = this.className.match(/^open-dialog-(\w+-\w+)$/);
     if (match) {
-      $("#wdk-dialog-" + match[1]).dialog("open");
+      jQuery("#wdk-dialog-" + match[1]).dialog("open");
     }
   });
 
   // connect update strat dialog to qtip edit link 
-  $("body").on("click", ".qtip .open-dialog-update-strat", function(e) {
+  jQuery("body").on("click", ".qtip .open-dialog-update-strat", function(e) {
     e.preventDefault();
-    var qt = $(this).parents(".qtip").qtip("api"),
+    var qt = jQuery(this).parents(".qtip").qtip("api"),
         strat_id = qt.get("position.target").parents("tr").attr("id").substr(6);
     //qt.hide();
     showUpdateDialog(strat_id, false, true);
   });
 
   // hide qtips when dialogs are open
-  $(".ui-dialog").on('dialogopen', function() {
-    $(".strategy-description.qtip").qtip("hide");
+  jQuery(".ui-dialog").on('dialogopen', function() {
+    jQuery(".strategy-description.qtip").qtip("hide");
   });
 
 });
