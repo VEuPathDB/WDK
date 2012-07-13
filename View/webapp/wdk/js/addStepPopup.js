@@ -369,9 +369,12 @@ function callWizard(url, ele, id, sec, action, stratFrontId){
 					dataType: "html",
 					data: parseInputs()+"&state="+p_state,
 					beforeSend: function(){
+            $(".crumb_details").block( {message: "Loading..."} );
 						WizardLoading(true);
 					},
 					success: function(data){
+            hideDetails();
+            $(".crumb_details").unblock();
 						if(data.indexOf("{") == 0){
 							data = eval("("+data+")");
                             // before close, check if json is success or error, if error, display 
