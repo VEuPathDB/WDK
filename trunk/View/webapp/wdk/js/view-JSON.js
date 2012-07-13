@@ -314,7 +314,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
                 var url = "wizard.do?action=revise&step=" + modelstep.back_boolean_Id + "&";
 		var oform = "<form id='form_question' class='clear' enctype='multipart/form-data' "
                     + " action='wizard.do' method='post' name='questionForm' "
-                    + " onsubmit=\"callWizard('" + url + "',this,null,null,'submit', " + strat.frontId + ");hideDetails(this);\">";
+                    + " onsubmit=\"callWizard('" + url + "',this,null,null,'submit', " + strat.frontId + ");\">";
 		var cform = "</form>";
 		var stage_input = "<input type='hidden' id='stage' value='process_boolean'/>";
 		var params_table = "<div class='filter operators'><span class='form_subtitle' style='padding-right:20px'><b>Revise Operation</b></span><div id='operations'><table style='margin-left:auto; margin-right:auto;'><tr><td class='opcheck' valign='middle'><input type='radio' name='boolean' value='INTERSECT' /></td><td class='operation INTERSECT'></td><td valign='middle'>&nbsp;" + (parseInt(modelstep.frontId)-1) + "&nbsp;<b>INTERSECT</b>&nbsp;" + (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='boolean' value='UNION'></td><td class='operation UNION'></td><td>&nbsp;" + (parseInt(modelstep.frontId)-1) + "&nbsp;<b>UNION</b>&nbsp;" + (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='boolean' value='MINUS'></td><td class='operation MINUS'></td><td>&nbsp;" + (parseInt(modelstep.frontId)-1) + "&nbsp;<b>MINUS</b>&nbsp;" + (modelstep.frontId) + "</td><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td class='opcheck'><input type='radio' name='boolean' value='RMINUS'></td><td class='operation RMINUS'></td><td>&nbsp;" + (modelstep.frontId) + "&nbsp;<b>MINUS</b>&nbsp;" + (parseInt(modelstep.frontId)-1) + "</td></tr></table></div></div>"
@@ -381,7 +381,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 
 		edit_step =	"<a title='" + ss_edit_popup + "'  class='edit_step_link " + disab 
                     + "' href='javascript:void(0)' onclick='Edit_Step(this,\"" + questionName 
-                    + "\",\"" + parms + "\"," + hideQu + "," + hideOp + "," + jsonstep.assignedWeight + ");hideDetails(this)' id='" + sid + "|" + jsonstep.id + "|" + modelstep.operation + "'>Revise</a>&nbsp;|&nbsp;";
+                    + "\",\"" + parms + "\"," + hideQu + "," + hideOp + "," + jsonstep.assignedWeight + ");' id='" + sid + "|" + jsonstep.id + "|" + modelstep.operation + "'>Revise</a>&nbsp;|&nbsp;";
 
 		if(modelstep.frontId == 1 || modelstep.isTransform || jsonstep.isboolean){
 			expand_step = 	"<a title='" + ss_expand_popup + "' class='expand_step_link disabled' href='javascript:void(0)'>Make Nested Strategy</a>&nbsp;|&nbsp;";
@@ -392,7 +392,7 @@ function createDetails(modelstep, prevjsonstep, jsonstep, sid){
 		collapse_step = "";
 	}
 	insertRecName = (prevjsonstep == null) ? jsonstep.dataType : prevjsonstep.dataType;			
-	insert_step = 	"<a title='" + insert_popup + "'  class='insert_step_link' id='" + sid + "|" + parentid + "' href='javascript:void(0)' onclick='Insert_Step(this,\"" + insertRecName + "\");hideDetails(this)'>Insert Step Before</a>&nbsp;|&nbsp;";
+	insert_step = 	"<a title='" + insert_popup + "'  class='insert_step_link' id='" + sid + "|" + parentid + "' href='javascript:void(0)' onclick='Insert_Step(this,\"" + insertRecName + "\");'>Insert Step Before</a>&nbsp;|&nbsp;";
 	var customMenu = "";
 
 // this code (function in html/assets/js/customStrategy.js)  adds the ortholog link 

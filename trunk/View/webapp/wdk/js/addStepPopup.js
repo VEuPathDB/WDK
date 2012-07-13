@@ -323,6 +323,7 @@ function openStage(strat_id,step_id,isAdd, stage){
 			disableAddStepButtons();
 		},
 		success: function(data){
+      hideDetails();
 			dykClose();
 			$("body").append(data);
 			if(isAdd)
@@ -397,7 +398,12 @@ function callWizard(url, ele, id, sec, action, stratFrontId){
 					type: "get",
 					dataType: "html",
 					data: d,
+          beforeSend: function(jqXHR, data) {
+            $(".crumb_details").block( {message: "Loading..."} );
+          },
 					success: function(data){
+            hideDetails();
+            $(".crumb_details").unblock();
 						if(data.indexOf("{") == 0){
 							updateStrategies(data);
 						}else{
