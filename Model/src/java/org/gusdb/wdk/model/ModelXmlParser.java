@@ -88,8 +88,8 @@ public class ModelXmlParser extends XmlParser {
     private static final Pattern CONSTANT_PATTERN = Pattern.compile(
             "\\%\\%([\\w\\.\\-]+)\\%\\%", Pattern.MULTILINE);
 
-    private URL xmlSchemaURL;
-    private String xmlDataDir;
+    private final URL xmlSchemaURL;
+    private final String xmlDataDir;
 
     public ModelXmlParser(String gusHome) throws SAXException, IOException {
         super(gusHome, "lib/rng/wdkModel.rng");
@@ -137,6 +137,7 @@ public class ModelXmlParser extends XmlParser {
         InputStream input = new ByteArrayInputStream(output.toByteArray());
         WdkModel model = (WdkModel) digester.parse(input);
 
+        model.setGusHome(gusHome);
         model.setXmlSchema(xmlSchemaURL); // set schema for xml data
         model.setXmlDataDir(new File(xmlDataDir)); // consider refactoring
         model.configure(config);

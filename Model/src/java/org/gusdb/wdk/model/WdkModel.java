@@ -72,6 +72,7 @@ public class WdkModel {
         }
     }
 
+    private String gusHome;
     private ModelConfig modelConfig;
     private String projectId;
 
@@ -1111,5 +1112,13 @@ public class WdkModel {
      */
     public void setBuildNumber(String buildNumber) {
         this.buildNumber = buildNumber;
+    }
+
+    public String getGusHome() {
+      return gusHome;
+    }
+
+    public void setGusHome(String gusHome) {
+      this.gusHome = gusHome;
     }
 }
