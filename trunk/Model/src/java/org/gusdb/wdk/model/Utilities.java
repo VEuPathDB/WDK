@@ -241,7 +241,7 @@ public class Utilities {
     }
 
     public static void sendEmail(WdkModel wdkModel, String email, String reply,
-            String subject, String content) throws WdkUserException,
+            String subject, String content, String ccAddresses) throws WdkUserException,
             WdkModelException {
         String smtpServer = wdkModel.getModelConfig().getSmtpServer();
 
@@ -261,6 +261,11 @@ public class Utilities {
             message.setReplyTo(new Address[] { new InternetAddress(reply) });
             message.setRecipient(Message.RecipientType.TO, new InternetAddress(
                     email));
+            // add Cc addresses
+            if (ccAddresses != null && !ccAddresses.isEmpty()) {
+                message.setRecipients(Message.RecipientType.CC,
+                    InternetAddress.parse(ccAddresses));
+            }
             message.setSubject(subject);
             message.setSentDate(new Date());
             // set html content
@@ -273,6 +278,12 @@ public class Utilities {
         } catch (MessagingException ex) {
             throw new WdkModelException(ex);
         }
+    }
+
+    public static void sendEmail(WdkModel wdkModel, String email, String reply,
+            String subject, String content) throws WdkUserException,
+            WdkModelException {
+        sendEmail(wdkModel, email, reply, subject, content, null);
     }
 
     public static byte[] readFile(File file) throws IOException {
