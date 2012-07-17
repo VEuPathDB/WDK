@@ -129,17 +129,18 @@ public class ContactUsAction extends Action {
           escapeHtml(redmineMetaInfo + "\n\n" + content));
 
       JSONObject jsMessage = new JSONObject();
+      jsMessage.put("status", "success");
       jsMessage.put("message", "We appreciate your feedback. Your email was sent successfully.");
       PrintWriter writer = response.getWriter();
       writer.print(jsMessage.toString());
       return null;
-    } catch (WdkUserException ex) {
-      return doError(ex.getMessage(), response);
     } catch (Exception ex) {
       //response.setStatus(500);
       logger.error(ex);
-      ex.printStackTrace();
-      throw ex;
+      //ex.printStackTrace();
+      doError(ex.getMessage(), response);
+      return null;
+      //throw ex;
     }
   }
 
@@ -150,9 +151,11 @@ public class ContactUsAction extends Action {
 
   private ActionForward doError(String message, HttpServletResponse response)
     throws Exception {
-      response.setStatus(400);
+      JSONObject jsMessage = new JSONObject();
+      jsMessage.put("status", "error");
+      jsMessage.put("message", message);
       PrintWriter writer = response.getWriter();
-      writer.print(message);
+      writer.print(jsMessage.toString());
       return null;
   }
 }
