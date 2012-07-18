@@ -362,17 +362,3 @@ function showUpdateDialog(strat_id, save, fromHist) {
   });
   dialog_container.dialog('open');
 }
-
-// connect update counter
-$(function() {
-  var updateContainer = document.getElementById("wdk-dialog-update-strat"),
-      updateForm = $("form", updateContainer).get(0),
-      updateCounter = function(event) {
-        var str = updateForm.description.value;
-        $(".char_counter .count", updateContainer)
-            .text(str.length)
-            .toggleClass("warn", str.length > 3900);
-      };
-  $(updateContainer).on('dialogopen', updateCounter);
-  $(updateForm.description).on('keydown keyup', updateCounter);
-});
