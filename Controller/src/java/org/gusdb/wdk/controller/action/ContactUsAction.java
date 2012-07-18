@@ -1,9 +1,9 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.PrintWriter;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.Action;
@@ -12,11 +12,8 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -28,10 +25,6 @@ import org.json.JSONObject;
  *
  */
 public class ContactUsAction extends Action {
-  /**
-   * the action for email
-   */
-  private static final String PARAM_ACTION = "action";
   /**
    * the reply-to address
    */
@@ -101,7 +94,8 @@ public class ContactUsAction extends Action {
         + "Privacy preferences: " + "\n"
         + "Uid: " + uid + "\n"
         + "Browser information: " + browser + "\n"
-        + "Referer page: " + referer;
+        + "Referer page: " + referer + "\n"
+        + "WDK Model version: " + version;
 
     String autoContent = "****THIS IS NOT A REPLY**** \nThis is an automatic" +
         " response, that includes your message for your records, to let you" +
