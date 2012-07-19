@@ -65,7 +65,7 @@ function WordCloud() {
             if (rank < from) return;
             if (rank > to) return;
 
-            var count = parseInt($(this).attr("count"));
+            var count = parseInt($(this).attr("count"), 10);
             if (count > maxCount) maxCount = count;
             if (count < minCount) minCount = count;
             tags.push($(this).clone());
@@ -87,7 +87,7 @@ function WordCloud() {
         var MIN_FONT = 6.0;
         var scale = (MAX_FONT - MIN_FONT) / (maxCount - minCount);
         $.each(tags, function (index, tag) {
-            var count = parseInt($(tag).attr("count"));
+            var count = parseInt($(tag).attr("count"), 10);
             var fontSize = (count - minCount) * scale + MIN_FONT;
             $(tag).css("font-size", fontSize + "pt");
         });
