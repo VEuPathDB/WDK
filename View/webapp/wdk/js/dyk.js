@@ -65,8 +65,8 @@ function initDYK(o,co){
 /*		drag: function(e, u){
 			var lef = $(this).css('left');
 			var to = $(this).css('top');
-			lef = parseInt(lef.split("px")[0]) - 3;
-			to = parseInt(to.split("px")[0]) + 3;
+			lef = parseInt(lef.split("px")[0], 10) - 3;
+			to = parseInt(to.split("px")[0], 10) + 3;
 			$("div#dyk-shadow").css({
 				top: to + "px",
 				left: lef + "px"
@@ -78,8 +78,8 @@ function initDYK(o,co){
 		stop:function(e,ui){
 			var lef = $(this).css('left');
 			var to = $(this).css('top');
-			lef = parseInt(lef.split("px")[0]) + 6;
-			to = parseInt(to.split("px")[0]) + 6;
+			lef = parseInt(lef.split("px")[0], 10) + 6;
+			to = parseInt(to.split("px")[0], 10) + 6;
 			$("div#dyk-shadow").css({
 				top: to + "px",
 				left: lef + "px"
@@ -119,12 +119,12 @@ function setCurrent(tipnum){
 }
 
 function nextTip(){
-	currentTip = parseInt(currentTip) + 1;
+	currentTip = parseInt(currentTip, 10) + 1;
 	displayCurrent();
 }
 
 function prevTip(){
-	currentTip = parseInt(currentTip) - 1;
+	currentTip = parseInt(currentTip, 10) - 1;
 	displayCurrent();
 }
 

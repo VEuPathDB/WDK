@@ -244,7 +244,7 @@ function showStrategies(view, ignoreFilters, besc){
 		$("#Strategies").parent().parent().height(330);
 	}
 	else if (height) {
-		height = parseInt(height);
+		height = parseInt(height, 10);
 		if ($("#strategy_results .resizable-wrapper:has(#Strategies)").height() > height) {
 			$("#strategy_results .resizable-wrapper:has(#Strategies)").height(height);
 		}
@@ -293,7 +293,7 @@ function displayOpenSubStrategies(s, d){
 		sCount++;
 	for(var j=1;j<=sCount;j++){
 		subs = getStrategy(s.subStratOrder[j]);
-		subs.color = parseInt(s.getStep(getStrategy(s.subStratOrder[j]).backId.split("_")[1],false).frontId) % colors.length;
+		subs.color = parseInt(s.getStep(getStrategy(s.subStratOrder[j]).backId.split("_")[1],false).frontId, 10) % colors.length;
 		$(subs.DIV).addClass("sub_diagram").css({"margin-left": (subs.depth(null) * indent) + "px",
 												 "border-color": colors[subs.color].top+" "+colors[subs.color].right+" "+colors[subs.color].bottom+" "+colors[subs.color].left
 												});
@@ -374,7 +374,7 @@ function loadModel(json, ord){
 
 function unloadStrategy(id){
 	for(s in strats){
-		s = parseInt(s);
+		s = parseInt(s, 10);
 		if(strats[s].frontId == id){
 			delete strats[s];
 			return;

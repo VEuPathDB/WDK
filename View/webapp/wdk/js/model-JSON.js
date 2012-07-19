@@ -122,14 +122,14 @@ Strategy.prototype.initSteps = function(steps, ord){
 			if(i == stepCount)
 				st.isLast = true;
 			if(st.frontId != 1){
-				pstp = steps[parseInt(i)-1];
-				if(parseInt(i)-1 == 1)
+				pstp = steps[parseInt(i, 10)-1];
+				if(parseInt(i, 10)-1 == 1)
 					st.prevStepType = "";
 				else 
 					st.prevStepType = (pstp.istransform) ? "transform" : "boolean";
 			}
 			if(!st.isLast){
-				nstp = steps[parseInt(i)+1];
+				nstp = steps[parseInt(i, 10)+1];
 				st.nextStepType = (nstp.istransform) ? "transform" : "boolean";
 			}
 			arr.push(st);

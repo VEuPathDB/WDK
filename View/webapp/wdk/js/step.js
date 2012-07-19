@@ -12,7 +12,7 @@ function showDetails(det){
 	if (!parent.is("div")) parent = parent.parent(); // for non-boolean details, grandparent is step div
 	var diagram = parent.parent();
 	var dId = $(diagram).attr("id").substring(8);
-	dId = parseInt(dId);
+	dId = parseInt(dId, 10);
 */
 	var disp = openDetail.attr("disp");
 	$("body").children("div.crumb_details").each(function(){
@@ -71,7 +71,7 @@ function Edit_Step(ele, questionName, url, hideQuery, hideOp, assignedWeight){
 		current_Front_Strategy_Id = parts[0];
 
                 // the input id is the back id of the step that is current revised.
-		var inputId = parseInt(parts[1]);
+		var inputId = parseInt(parts[1], 10);
                 var step = strat.getStep(inputId);
                 operation = parts[2];
 
