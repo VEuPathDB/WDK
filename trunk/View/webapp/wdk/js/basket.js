@@ -2,7 +2,7 @@ function configureBasket() {
     // determine the default tab
     var current = getCurrentTabCookie('basket');
     var tab = jQuery("#basket-menu > ul > li#" + current);
-    var index = (tab.length > 0) ? parseInt(tab.attr("tab-index")) : 0;
+    var index = (tab.length > 0) ? parseInt(tab.attr("tab-index"), 10) : 0;
     jQuery("#basket-menu").tabs({
         selected: index,
         load: basketTabSelected,

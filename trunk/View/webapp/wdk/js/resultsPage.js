@@ -11,7 +11,7 @@ function configureSummaryViews(ele) {
         var summaryViews = $(this);
         // disable remembering current tab for now due to peerformance issue on
         // loading the genomic summary view. Always use the first tab.
-        // var currentTab = parseInt(summaryViews.children("ul").attr("currentTab"));    
+        // var currentTab = parseInt(summaryViews.children("ul").attr("currentTab"), 10);    
         var currentTab = 0;
         summaryViews.tabs({
             selected : currentTab,
@@ -208,7 +208,7 @@ function createFlexigridFromTable(table) {
 
 function updatePageCount(element) {
     var advancedPaging = $(element).parent();
-    var resultSize = parseInt($("input.resultSize",advancedPaging).val());
+    var resultSize = parseInt($("input.resultSize",advancedPaging).val(), 10);
     var pageSize = $(".pageSize",advancedPaging).val();
     var pageCount = Math.ceil(resultSize / pageSize);
     if (pageCount * pageSize < resultSize) pageCount++;
