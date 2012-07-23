@@ -137,8 +137,11 @@ function showHistSave(ele, stratId, save,share) {
 function showHistShare(ele, stratId, url) {
   var dialog_container = $("#wdk-dialog-share-strat");
 
-  dialog_container.find(".share_url").html(url.link(url));
   dialog_container.dialog("open");
+  $("<input/>").val(url)
+  .appendTo(dialog_container.find(".share_url").html(""))
+  .focus()
+  .select();
 }
 
 function selectAllHist(type) {
