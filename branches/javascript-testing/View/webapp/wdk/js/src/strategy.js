@@ -2,18 +2,20 @@
  *  WDK Strategy module
  *
  *  This is using the API defined at https://github.com/semmypurewal/jermaine/blob/master/lib/util/util.js.
+ *  The "util" namespace is being attached to "window.wdk" (i.e., "window.wdk.util").
  *
  */
 
 /**
- *  Our namespace is located at org.gusdb.wdk.strategy
+ *  Our namespace is located at "window.wdk".
  *  `exports` is a reference to the namespace, which means
- *  adding thing to it will make them publicly available.
+ *  adding things to it will make them publicly available.
  *  Remember, a namespace is essentially an object.
  *
  *  Scope of work here:
  *  - Scope all variables (using jshint for globals reporting).
  *  - Attach functions and objects to namespace
+ *  - Add "use strict" pragma
  *  - Pass JSHint (TODO - determine "WDK profile")
  */
 wdk.util.namespace("wdk.strategy", function(exports) {
