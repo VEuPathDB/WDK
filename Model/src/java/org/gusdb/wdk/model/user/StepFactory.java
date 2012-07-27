@@ -107,7 +107,7 @@ public class StepFactory {
         this.wdkSchema = userDB.getWdkEngineSchema();
         
         // start the purge thread for the cache
-        new Thread(stepCache).start();
+        // new Thread(stepCache).start();
     }
 
     // parse boolexp to pass left_child_id, right_child_id to loadAnswer
@@ -242,7 +242,7 @@ public class StepFactory {
         step.setAssignedWeight(assignedWeight);
         step.setException(exception);
         
-        stepCache.addStep(step);
+        //stepCache.addStep(step);
 
         // update step dependencies
         updateStepTree(user, step);
@@ -278,7 +278,7 @@ public class StepFactory {
                 throw new WdkUserException("The Step #" + displayId
                         + " of user " + user.getEmail() + " cannot be found.");
             
-            stepCache.removeStep(user.getUserId(), displayId);
+            //stepCache.removeStep(user.getUserId(), displayId);
         }
         finally {
             SqlUtils.closeStatement(psHistory);
@@ -351,7 +351,7 @@ public class StepFactory {
             SqlUtils.verifyTime(wdkModel, sql.toString(),
                     "wdk-step-factory-delete-all-steps", start);
             
-            stepCache.removeSteps(user.getUserId());
+            //stepCache.removeSteps(user.getUserId());
         }
         finally {
             SqlUtils.closeStatement(psDeleteSteps);
@@ -618,7 +618,7 @@ public class StepFactory {
         // do not update the flag here, it's redundant.
         //if (!step.isValid()) setStepValidFlag(step);
         
-        stepCache.addStep(step);
+        //stepCache.addStep(step);
         return step;
     }
 
