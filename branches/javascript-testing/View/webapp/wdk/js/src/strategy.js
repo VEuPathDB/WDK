@@ -307,10 +307,20 @@ wdk.util.namespace("wdk.strategy", function(exports) {
     return strat.frontId;
   }
   
+  // making these static methods just cuz
+  Step.getStep = getStep;
+  Step.findStep = findStep;
+  Step.getStepFromBackId = getStepFromBackId;
+  Strategy.getStrategy = getStrategy;
+  Strategy.getSubStrategies = getSubStrategies;
+  Strategy.getStrategyFromBackId = getStrategyFromBackId;
+  Strategy.findStrategy = findStrategy;
+  Strategy.isLoaded = isLoaded;
 
   exports.Strategy = Strategy;
   exports.Step = Step;
   exports.strats = strats;
   exports.loadModel = loadModel;
+
     
 });
