@@ -17,6 +17,7 @@
  *  - Pass JSHint (TODO - determine "WDK profile")
  */
 wdk.util.namespace("wdk.strategy", function(exports) {
+  "use strict";
 
   var strats = {},
       sidIndex = 0;
