@@ -302,6 +302,7 @@ function showUpdateDialog(strat_id, save, fromHist) {
   });
 
   form = dialog_container.find("form").get(0);
+  $(form).unbind("submit");
 
   if (save) {
     dialog_container.find(".save_as_msg").show();
@@ -358,7 +359,6 @@ function showUpdateDialog(strat_id, save, fromHist) {
         if(!fromHist) {
           removeLoading(strat.frontId);
         }
-        $(form).off();
         dialog_container.dialog('close');
       }
     });
