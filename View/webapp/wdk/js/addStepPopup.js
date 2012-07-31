@@ -47,6 +47,7 @@ function showPanel(panel) {
 		$("body > .crumb_details").hide();
 	}
 	setCurrentTabCookie('application', panel);
+  $(".strategy-description.qtip").qtip("hide");
 }
 
 function showSaveForm(stratId, save, share){
@@ -320,6 +321,7 @@ function openStage(strat_id,step_id,isAdd, stage){
 		dataType: "html",
 		beforeSend: function(){
 			$("#query_form").remove();
+			$("#query_form_overlay").remove();
 			disableAddStepButtons();
 		},
 		success: function(data){
@@ -331,6 +333,8 @@ function openStage(strat_id,step_id,isAdd, stage){
 			else
 				$("#query_form h1#query_form_title").html("Insert&nbsp;Step");
 			setDraggable($("#query_form"), ".dragHandle");
+      $("#query_form").css("z-index", 9001);
+      $("#query_form_overlay").css("z-index", 9000).height($("body").height());
 		},
 		error: function(){
 			alert("Error getting the needed information from the server \n Please contact the system administrator");
@@ -352,94 +356,97 @@ function WizardLoading(boo){
 }
 
 function callWizard(url, ele, id, sec, action, stratFrontId){
-    // set isPopup flag, which will be used by param initialization process
-    window.isPopup = true;
-    mapTypeAheads();
-    if (stratFrontId == undefined) stratFrontId = current_Front_Strategy_Id; 
-    var strategy = getStrategy(stratFrontId);
-	$("div#errors").html("");
-	switch (action){
-			case "submit":
-				var stage = $(ele).find("#stage").val();
-				url = url + "stage="+stage+"&strategy="+strategy.backId;
-				$(ele).attr("action", "javascript:void(0)");
-				$.ajax({
-					url: url,
-					type: "post",
-					dataType: "html",
-					data: parseInputs()+"&state="+p_state,
-					beforeSend: function(){
-            $(".crumb_details").block( {message: "Loading..."} );
-						WizardLoading(true);
-					},
-					success: function(data){
-            hideDetails();
-            $(".crumb_details").unblock();
-						if(data.indexOf("{") == 0){
-							data = eval("("+data+")");
-                            // before close, check if json is success or error, if error, display 
-                            // it in the current qf_content
-                            if (ErrorHandler("Wizard", data, strategy, $("#errors"))) {
-                                closeAll();
-                                updateStrategies(data);
-                            } else {
-                                WizardLoading(false);
-                            }
-                        } else {
-                            WizardLoading(false);
-                            $("#qf_content").children().wrapAll('<div class="stage" />');
-                            $("#qf_content > div.stage").appendTo("#stage-stack");
-			                setPopupContent(data);
-                        }
-					}	
-				});
-				break;
-			case "next":
-				d = "strategy="+strategy.backId;
-				$.ajax({
-					url: url,
-					type: "get",
-					dataType: "html",
-					data: d,
-          beforeSend: function(jqXHR, data) {
-            $(".crumb_details").block( {message: "Loading..."} );
-          },
-					success: function(data){
-            hideDetails();
-            $(".crumb_details").unblock();
-						if(data.indexOf("{") == 0){
-							updateStrategies(data);
-						}else{
-							if($("#qf_content").length == 0){
-								urlparts = url.split("/");
-								$.ajax({
-									async: false,
-									url:"wdk/jsp/wizard/context.jsp",
-									type:"get",
-									success:function(data){
-										$("body").append(data);
-										setDraggable($("#query_form"), ".dragHandle");
-									} 
-								});
-							}else{
-                                                                $("#qf_content").children().wrapAll('<div class="stage" />');
-                                                                $("#qf_content > .stage").appendTo("#stage-stack");
-							}
-							setPopupContent(data);
-							
-							if(ele != undefined){
-								showNewSection(ele,id,sec);
-							}
-						}
-					}	
-				});
-				break;
-			default:
-				showNewSection(ele,id,sec);
-				break;
-	}
-	
-	return false;
+  // set isPopup flag, which will be used by param initialization process
+  window.isPopup = true;
+  mapTypeAheads();
+  if (stratFrontId == undefined) stratFrontId = current_Front_Strategy_Id; 
+  var strategy = getStrategy(stratFrontId);
+  $("div#errors").html("");
+  switch (action) {
+    case "submit":
+      var stage = $(ele).find("#stage").val();
+      url = url + "stage="+stage+"&strategy="+strategy.backId;
+      $(ele).attr("action", "javascript:void(0)");
+      $.ajax({
+        url: url,
+        type: "post",
+        dataType: "html",
+        data: parseInputs()+"&state="+p_state,
+        beforeSend: function(){
+          $(".crumb_details").block( {message: "Loading..."} );
+          WizardLoading(true);
+        },
+        success: function(data){
+          hideDetails();
+          $(".crumb_details").unblock();
+          if(data.indexOf("{") == 0){
+            data = eval("("+data+")");
+            // before close, check if json is success or error, if error, display 
+            // it in the current qf_content
+            if (ErrorHandler("Wizard", data, strategy, $("#errors"))) {
+              closeAll();
+              updateStrategies(data);
+            } else {
+              WizardLoading(false);
+            }
+          } else {
+            WizardLoading(false);
+            $("#qf_content").children().wrapAll('<div class="stage" />');
+            $("#qf_content > div.stage").appendTo("#stage-stack");
+            setPopupContent(data);
+          }
+          $("#query_form").css("z-index", 9001);
+          $("#query_form_overlay").css("z-index", 9000).height($("body").height());
+        }
+      });
+      break;
+    case "next":
+      d = "strategy="+strategy.backId;
+      $.ajax({
+        url: url,
+        type: "get",
+        dataType: "html",
+        data: d,
+        beforeSend: function(jqXHR, data) {
+          $(".crumb_details").block( {message: "Loading..."} );
+        },
+        success: function(data){
+          hideDetails();
+          $(".crumb_details").unblock();
+          if(data.indexOf("{") == 0){
+            updateStrategies(data);
+          }else{
+            if($("#qf_content").length == 0){
+              urlparts = url.split("/");
+              $.ajax({
+                async: false,
+                url:"wdk/jsp/wizard/context.jsp",
+                type:"get",
+                success:function(data){
+                  $("body").append(data);
+                  setDraggable($("#query_form"), ".dragHandle");
+                } 
+              });
+            }else{
+              $("#qf_content").children().wrapAll('<div class="stage" />');
+              $("#qf_content > .stage").appendTo("#stage-stack");
+            }
+            setPopupContent(data);
+
+            if(ele != undefined){
+              showNewSection(ele,id,sec);
+            }
+          }
+          $("#query_form").css("z-index", 9001);
+          $("#query_form_overlay").css("z-index", 9000).height($("body").height());
+        }
+      });
+      break;
+    default:
+      showNewSection(ele,id,sec);
+      break;
+  }
+  return false;
 }
 
 function backStage(){
@@ -488,9 +495,11 @@ function close(ele){
 function closeAll(hide,as){
 	if(hide){
 		$("#query_form").hide();
+		$("#query_form_overlay").hide();
 	}else{
 		isSpan = false;
 		$("#query_form").remove();
+		$("#query_form_overlay").remove();
 		$(".original").remove();
 		$("#stage-stack").html("");
 	}
