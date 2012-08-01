@@ -19,6 +19,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
@@ -135,6 +136,10 @@ public class ModelCacher extends BaseCLI {
             WdkUserException {
         // need to reset the cache first
         wdkModel.getResultFactory().getCacheFactory().resetCache(false, true);
+        
+        // recreate the cache for the queries
+        CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
+        cacheFactory.recreateCache(true, true);
 
         DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
         String projectId = wdkModel.getProjectId();
