@@ -73,10 +73,9 @@
     <c:if test="${recHasBasket}"><a id="basketStep" style="font-size:120%" href="javascript:void(0)" onClick="${basketClick}"><b>Add ${r_count} to Basket</b></a>&nbsp;|&nbsp;</c:if>
    </c:if>
     <a style="font-size:120%" href="downloadStep.do?step_id=${step.stepId}"><b>Download ${r_count}</b></a>
-<!--   <c:if test="${!empty sessionScope.GALAXY_URL}">
+  <c:if test="${!empty sessionScope.GALAXY_URL}">
     &nbsp;|&nbsp;<a href="downloadStep.do?step_id=${step.stepId}&wdkReportFormat=tabular"><b>SEND TO GALAXY</b></a>
   </c:if>
--->
   </div>
 </td>
 </tr></table>
