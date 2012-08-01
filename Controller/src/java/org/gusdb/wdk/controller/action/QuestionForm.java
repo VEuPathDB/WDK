@@ -13,11 +13,16 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
+import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.EnumParam;
+
+import com.sun.servicetag.Installer;
 
 /**
  * form bean for showing a wdk question from a question set
@@ -192,9 +197,17 @@ public class QuestionForm extends MapActionForm {
         QuestionBean question = getQuestion();
         Map<String, ParamBean<?>> params = question.getParamsMap();
         Map<String, String> invalidParams = new LinkedHashMap<String, String>();
-        for (String param : values.keySet()) {
-            if (!params.containsKey(param))
-                invalidParams.put(param, values.get(param).toString());
+        for (String paramName : values.keySet()) {
+          ParamBean<?> param = params.get(paramName);
+          // do not validate type-adead params
+          boolean typeAhead = false;
+          if (param != null && param instanceof EnumParamBean) {
+            EnumParamBean enumParam = (EnumParamBean) param;
+            typeAhead = enumParam.getDisplayType().equals(
+                AbstractEnumParam.DISPLAY_TYPE_AHEAD);
+          }
+          if (!typeAhead && !params.containsKey(paramName))
+            invalidParams.put(paramName, values.get(paramName).toString());
         }
         for (String param : arrays.keySet()) {
             if (!params.containsKey(param)) {
