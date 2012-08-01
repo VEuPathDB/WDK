@@ -173,8 +173,11 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
         if (currentValues == null) return new LinkedHashMap<String, Boolean>();
         Map<String, Boolean> values = new LinkedHashMap<String, Boolean>();
         Map<String, String> terms = getVocabMap();
+        // ignore the validation for type-ahead params.
+        boolean typeAhead = getDisplayType().equals(AbstractEnumParam.DISPLAY_TYPE_AHEAD);
         for (String term : currentValues) {
-            values.put(term, terms.containsKey(term));
+            boolean valid = typeAhead || terms.containsKey(term);
+            values.put(term, valid);
         }
         return values;
     }
