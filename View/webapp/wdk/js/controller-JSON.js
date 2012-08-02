@@ -277,6 +277,8 @@ function showStrategies(view, ignoreFilters, besc){
 		NewResults(-1);
 	}
 	if(sC == 0) showInstructions();
+        // add fancy tooltips
+        assignTooltips(".filterImg", 0);
 }
 
 function displayOpenSubStrategies(s, d){
