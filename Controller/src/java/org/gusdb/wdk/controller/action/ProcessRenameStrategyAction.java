@@ -152,6 +152,8 @@ public class ProcessRenameStrategyAction extends Action {
             url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
             if (!opened)
                 url.append("&").append(CConstants.WDK_OPEN_KEY).append("=false");
+            url.append("&").append(CConstants.WDK_STRATEGY_ID_KEY).append("=")
+                .append(strategy.getStrategyId());
 
             ActionForward forward = new ActionForward(url.toString(), true);
             return forward;
