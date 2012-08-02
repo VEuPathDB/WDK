@@ -296,7 +296,8 @@ function showUpdateDialog(strat_id, save, fromHist) {
       type = (save) ? "SaveStrategy" : "RenameStrategy",
       form;
 
-  dialog_container.find(".download").click(function(e) {
+  dialog_container.dialog("option", "title", title)
+  .find(".download").click(function(e) {
     e.preventDefault();
     downloadStep(step_id);
   });
@@ -328,39 +329,17 @@ function showUpdateDialog(strat_id, save, fromHist) {
     event.preventDefault();
     if (this.description.value.length > 4000) {
       return alert("You have exceeded the 4,000 character limit. " +
-                   "Please revised your description.");
+          "Please revised your description.");
     }
-    $.ajax({
-      url: "renameStrategy.do",
-      dataType: "json",
-      data: {
-        strategy: strat.backId,
-        name: this.name.value,
-        description: this.description.value,
-        checkName: true,
-        save: save,
-        strategy_checksum: (strat.subStratOf != null) ? getStrategy(strat.subStratOf).checksum : strat.checksum,
-        showHistory: fromHist,
-        state: p_state
-      },
-      beforeSend: function(){
-        if(!fromHist) {
-          showLoading(strat.frontId);
-        }
-      },
-      success: function(data){
-        if(ErrorHandler(type, data, strat, form, form.name.value, fromHist)){
-            updateStrategies(data);
-            if (fromHist) {
-              update_hist = true;
-              updateHistory();
-            }
-        }
-        if(!fromHist) {
-          removeLoading(strat.frontId);
-        }
-        dialog_container.dialog('close');
-      }
+    // update strat object
+    strat.name = this.name.value;
+    strat.description = this.description.value;
+
+    dialog_container.block();
+    saveOrRenameStrategy(strat, true, save, fromHist, form).success(function() {
+      dialog_container.dialog('close');
+    }).complete(function() {
+      dialog_container.unblock();
     });
   });
   dialog_container.dialog('open');
