@@ -52,7 +52,7 @@ function ErrorHandler(evt, data, strategy, qform, name, fromHist){
 			if(evt == "SaveStrategy"){
 				var overwrite = confirm("A strategy already exists with the name '" + name + ".' Do you want to overwrite the existing strategy?");
 				if (overwrite) {
-					saveOrRenameStrategy(strategy.backId, false, true, fromHist);
+					saveOrRenameStrategy(strategy, false, true, fromHist, qform);
 				}
 			}else if(evt == "RenameStrategy"){
 				alert("An unsaved strategy already exists with the name '" + name + ".'");

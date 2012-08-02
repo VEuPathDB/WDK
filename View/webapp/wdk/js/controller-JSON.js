@@ -763,41 +763,40 @@ function copyStrategy(stratId, fromHist){
         });     
 }
 
-function saveOrRenameStrategy(stratId, checkName, save, fromHist){
-	var strat = getStrategyOBJ(stratId);
-	var form = $("#save_strat_div_" + stratId);
-	if (fromHist) form = $(".viewed-popup-box form");
-	var name = $("input[name='name']",form).attr("value");
-	var strategy = $("input[name='strategy']",form).attr("value");
-	var action = $("input[name='action']",form).val();
-	var actionStrat = $("input[name='actionStrat']",form).val();
-	var url="renameStrategy.do?strategy=";
-	var cs = strat.checksum;
-	if(strat.subStratOf != null)
-		cs = getStrategy(strat.subStratOf).checksum;
-	url = url + strategy + "&name=" + encodeURIComponent(name) + "&checkName=" + checkName+"&save=" + save + "&action=" + action + "&actionStrat=" + actionStrat + "&strategy_checksum="+cs;
-	if (fromHist) url = url + "&showHistory=true";
-	$.ajax({
-		url: url,
-		dataType: "json",
-		data:"state=" + p_state,
-		beforeSend: function(){
-			if(!fromHist)
-				showLoading(strat.frontId);
-		},
-		success: function(data){
-					var type = save ? "SaveStrategy" : "RenameStrategy";
-					if(ErrorHandler(type, data, strat, form, name, fromHist)){
-							updateStrategies(data);
-							if (fromHist) {
-								update_hist = true;
-								updateHistory();
-							}
-					}
-					if(!fromHist)
-						removeLoading(strat.frontId);
-		}
-	});
+function saveOrRenameStrategy(strategy, checkName, save, fromHist, form) {
+  return $.ajax({
+    url: "renameStrategy.do",
+    dataType: "json",
+    data: {
+      strategy: strategy.backId,
+      name: strategy.name,
+      description: strategy.description,
+      checkName: checkName,
+      save: save,
+      strategy_checksum: (strategy.subStratOf != null) ?
+          getStrategy(strategy.subStratOf).checksum : strategy.checksum,
+      showHistory: fromHist,
+      state: p_state
+    },
+    beforeSend: function(){
+      if(!fromHist) {
+        showLoading(strategy.frontId);
+      }
+    },
+    success: function(data) {
+      var type = save ? "SaveStrategy" : "RenameStrategy";
+      if(ErrorHandler(type, data, strategy, form, strategy.name, fromHist)){
+        updateStrategies(data);
+          if (fromHist) {
+            update_hist = true;
+            updateHistory();
+          }
+      }
+      if(!fromHist) {
+        removeLoading(strategy.frontId);
+      }
+    }
+  });
 }
 
 function ChangeFilter(strategyId, stepId, url, filter) {
