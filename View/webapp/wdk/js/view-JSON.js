@@ -110,7 +110,7 @@ function multiStep(modelstep, prevjsonstep, jsonstep, sid){
 		jsonstep.operation = "SPAN " + getSpanOperation(jsonstep.params);
 	}
 	if(jsonstep.isValid) bool_link = "NewResults(" + sid + "," + modelstep.frontId + ", true)";
-	if(jsonstep.filtered) filterImg = "<span class='filterImg'><img src='wdk/images/filter.gif' height='10px' width='10px'/></span>";
+	if(jsonstep.filtered) filterImg = "<span class='filterImg' title='Step is filtered on " + jsonStep.filterName + "'><img src='wdk/images/filter.gif' height='12px' width='12px'/></span>";
 	boolinner = ""+
 		"			<a id='" + sid + "|" + modelstep.back_boolean_Id + "|" + jsonstep.operation + "' title='CLICK to modify this operation.' class='operation' href='javascript:void(0)' onclick='showDetails(this)'>"+
 		"				<img src='wdk/images/transparent1.gif'>"+
@@ -147,7 +147,7 @@ function multiStep(modelstep, prevjsonstep, jsonstep, sid){
 	}
 	var childfilterImg = "";
 	if(childStp.filtered)
-		childfilterImg = "<span class='filterImg'><img src='wdk/images/filter.gif' height='10px' width='10px'/></span>";
+		childfilterImg = "<span class='filterImg' title='Step is filtered on " + childStp.filterName + "'><img src='wdk/images/filter.gif' height='12px' width='12px'/></span>";
 	childinner = ""+
 		"		<h4>"+
 		"			<a style='text-decoration:underline' title='CLICK to make changes to this step and/or how it is combined with the previous step' id='stepId_" + modelstep.frontId + "' class='crumb_name' onclick='showDetails(this)' href='javascript:void(0)'>"+
@@ -211,7 +211,7 @@ function singleStep(modelstep, prevjsonstep, jsonstep, sid){
 	}
 	var filterImg = "";
 	if(jsonstep.filtered)
-		filterImg = "<span class='filterImg'><img src='wdk/images/filter.gif' height='10px' width='10px'/></span>";
+		filterImg = "<span class='filterImg' title='Step is filtered on " + jsonStep.filterName + "'><img src='wdk/images/filter.gif' height='12px' width='12px'/></span>";
 	inner = ""+
 		"		<h4>"+
 		"			<a style='text-decoration:underline' title='CLICK to make changes to this step.' id='stepId_" + modelstep.frontId + "' class='crumb_name' onclick='showDetails(this)' href='javascript:void(0)'>"+
