@@ -908,11 +908,16 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     }
 
     public Map<String, SummaryView> getSummaryViews() {
+      Map<String, SummaryView> map = new LinkedHashMap<>(summaryViewMap);
         // get views from record
-        Map<String, SummaryView> map = recordClass.getSummaryViews();
+        Map<String, SummaryView> recordMap = recordClass.getSummaryViews();
 
-        // override the views defined in the question
-        map.putAll(summaryViewMap);
+        // don't override the views defined in the question
+        for (String name : recordMap.keySet()) {
+          if (!map.containsKey(name)) {
+            map.put(name, recordMap.get(name));
+          }
+        }
 
         return map;
     }
