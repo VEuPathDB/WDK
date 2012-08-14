@@ -603,22 +603,26 @@ public class DatasetFactory {
         for (String row : rows) {
             row = row.trim();
             if (row.length() == 0) continue;
-            String[] columns = row.split(REGEX_COLUMN_DIVIDER);
-            if (columns.length > length)
+
+            String[] record = new String[length];
+            if (length == 1) { // one column primary key, ignore the divider
+              record[0] = row;
+            } else { // multi column primary key
+              String[] columns = row.split(REGEX_COLUMN_DIVIDER);
+              if (columns.length > length)
                 throw new WdkDatasetException("The dataset raw value of "
                         + "recordClass '" + recordClass.getFullName()
                         + "' has more columns than expected: '" + row + "'");
 
-            // check if the value is too long, throw an exception if it is.
-            for (String column : columns) {
+              // check if the value is too long, throw an exception if it is.
+              for (String column : columns) {
                 if (column.length() > MAX_VALUE_LENGTH)
                     throw new WdkUserException("The dataset raw value is too "
                             + " big to be an id for the recordClass "
                             + recordClass.getFullName() + ": " + column);
+              }
+              System.arraycopy(columns, 0, record, 0, columns.length);
             }
-
-            String[] record = new String[length];
-            System.arraycopy(columns, 0, record, 0, columns.length);
             records.add(record);
         }
         return records;

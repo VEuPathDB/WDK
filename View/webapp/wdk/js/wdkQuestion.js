@@ -5,17 +5,11 @@
 function initializeQuestion() {
     var question = new WdkQuestion();
     question.registerGroups();
-
-    // invoke the registered question events
-    if (window.wdk != undefined) {
-        window.wdk.onloadQuestion();
-    }
 }
 
 function WdkQuestion() {
 
     this.registerGroups = function() {
-        var wdk = new WDK();
         $(".param-group[type='ShowHide']").each(function() {
             // register the click event
             var name = $(this).attr("name");
@@ -30,15 +24,15 @@ function WdkQuestion() {
                 detail.toggle();
                 if (detail.css("display") == "none") {
                     handle.src = path + "/plus.gif";
-                    wdk.createCookie(name, "hide", expire);
+                    WDK.createCookie(name, "hide", expire);
                 } else {
                     handle.src = path + "/minus.gif";
-                    wdk.createCookie(name, "show", expire);
+                    WDK.createCookie(name, "show", expire);
                 }
             });
             
             // decide whether need to change the display or not
-            var showFlag = wdk.readCookie(name);
+            var showFlag = WDK.readCookie(name);
             if (showFlag == null) return;
             
             var status = $(this).children(".group-detail").css("display");
