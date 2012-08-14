@@ -1432,8 +1432,7 @@ public class StepFactory {
         String name = strategy.getName();
         if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
         name = getNextName(user, name, false);
-        return createStrategy(user, root, name, null, false,
-                strategy.getDescription(), false);
+        return createStrategy(user, root, name, null, false, null, false);
     }
 
     /**
@@ -1457,8 +1456,7 @@ public class StepFactory {
         String name = step.getCustomName();
         if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
         name = getNextName(user, name, false);
-        return createStrategy(user, step, name, null, false,
-                strategy.getDescription(), false);
+        return createStrategy(user, step, name, null, false, null, false);
     }
 
     private String getNextName(User user, String oldName, boolean saved)
