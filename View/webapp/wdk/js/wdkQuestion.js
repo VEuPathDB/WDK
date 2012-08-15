@@ -24,15 +24,15 @@ function WdkQuestion() {
                 detail.toggle();
                 if (detail.css("display") == "none") {
                     handle.src = path + "/plus.gif";
-                    WDK.createCookie(name, "hide", expire);
+                    window.wdk.createCookie(name, "hide", expire);
                 } else {
                     handle.src = path + "/minus.gif";
-                    WDK.createCookie(name, "show", expire);
+                    window.wdk.createCookie(name, "show", expire);
                 }
             });
             
             // decide whether need to change the display or not
-            var showFlag = WDK.readCookie(name);
+            var showFlag = window.wdk.readCookie(name);
             if (showFlag == null) return;
             
             var status = $(this).children(".group-detail").css("display");
