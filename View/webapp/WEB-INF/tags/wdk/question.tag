@@ -29,13 +29,15 @@
 <imp:errors/>
 
 <%-- the js has to be included here in order to appear in the step form --%>
-<script type="text/javascript" src='<c:url value="/wdk/js/wdkQuestion.js"/>'></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    initializeQuestion();
 
 <c:if test="${showParams == null}">
-	<script type="text/javascript">
-		$(document).ready(function() { initParamHandlers(); });
-	</script>
+    initParamHandlers();
 </c:if>
+});
+</script>
 
 <div class="params">
     <imp:questionParams />
