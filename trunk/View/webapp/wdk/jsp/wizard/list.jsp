@@ -284,18 +284,20 @@ ${rcDisplay} basket
  
 <%-- Initialize Add Step panel --%>
 <script type="text/javascript">
-   rclass = "${recordClass.fullName}";
-   sdName = "${recordClass.shortDisplayName}";
-   //alert(rclass);
-   //alert(sdName);
+	rclass = "${recordClass.fullName}";
+	sdName = "${recordClass.shortDisplayName}";
 
-   ele = $("li[onclick*='sl_recordclasses']")[0];
+	ele = $("li[onclick*='sl_recordclasses']")[0];
+	callWizard(null,ele,'sl_recordclasses',2);
+  // $("td#section-1 ul.menu_section:first > li:first").click();
 
-   callWizard(null,ele,'sl_recordclasses',2);
-   // $("td#section-1 ul.menu_section:first > li:first").click();
+  ele = $('li.category[onclick*= "' + sdName + '" ]')[0];
+  callWizard(null,ele,'sl_'+ sdName + 'RecordClasses_' + sdName + 'RecordClass' ,3);
+  // $("td#section-2 ul.menu_section:first > li:first").click();
 
-   ele = $('li.category[onclick*= "' + sdName + '" ]')[0];
-	
-   callWizard(null,ele,'sl_'+ sdName + 'RecordClasses_' + sdName + 'RecordClass' ,3);
-   // $("td#section-2 ul.menu_section:first > li:first").click();
+	if( sdName === "Gene" ) {
+		ele = $('li.category[onclick*= "other_attributes" ]')[0];
+		callWizard(null,ele,'sl_other_attributes',4);
+	}
+
 </script>

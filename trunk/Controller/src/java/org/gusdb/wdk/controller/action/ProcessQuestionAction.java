@@ -140,6 +140,10 @@ public class ProcessQuestionAction extends Action {
             }
 
             QuestionBean wdkQuestion = qForm.getQuestion();
+						logger.debug("\n\n\n****ProcessQuestionAction:  ALL RIGHT UP TO HERE \n\n\n");
+
+
+
             AnswerValueBean answerValue = wdkQuestion.makeAnswerValue(wdkUser,
                     params, weight);
             logger.debug("Test run search [" + qFullName
