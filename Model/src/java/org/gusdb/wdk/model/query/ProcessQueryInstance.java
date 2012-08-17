@@ -176,8 +176,7 @@ public class ProcessQueryInstance extends QueryInstance {
      * wdk.model.Column[], java.lang.Integer, java.lang.Integer)
      */
     @Override
-				protected ResultList getUncachedResults() throws WdkModelException, WdkUserException {
-						logger.debug("\n\n\n***** ProcessQueryInstance: getUncachedResults:  WE GOT HERE********\n\n\n");
+    protected ResultList getUncachedResults() throws WdkModelException, WdkUserException {
         WsfRequest request = new WsfRequest();
         request.setPluginClass(query.getProcessName());
         request.setProjectId(wdkModel.getProjectId());
@@ -211,9 +210,7 @@ public class ProcessQueryInstance extends QueryInstance {
 
         StringBuffer resultMessage = new StringBuffer();
         try {
-						logger.debug("\n\n\n***** ProcessQueryInstance: getUncachedResults:  WE GOT HERE inside try before response********\n\n\n");
             WsfResponse response = getResponse(request, query.isLocal());
-					
             this.resultMessage = response.getMessage();
             this.signal = response.getSignal();
             String[][] content = response.getResult();
@@ -237,16 +234,12 @@ public class ProcessQueryInstance extends QueryInstance {
             return new ArrayResultList<String>(indices, content);
 
         } catch (RemoteException ex) {
-		logger.debug("\n\n\n***** ProcessQueryInstance: getUncachedResults: caught RemoteException*******\n\n\n");
             throw new WdkModelException(ex);
         } catch (ServiceException ex) {
-		logger.debug("\n\n\n***** ProcessQueryInstance: getUncachedResults: caught ServiceException*******\n\n\n");
             throw new WdkModelException(ex);
         } catch (MalformedURLException ex) {
-		logger.debug("\n\n\n***** ProcessQueryInstance: getUncachedResults: caught MalformedException*******\n\n\n");
             throw new WdkModelException(ex);
         } catch (JSONException ex) {
-		logger.debug("\n\n\n***** ProcessQueryInstance: getUncachedResults: caught JSONException*******\n\n\n");
             throw new WdkModelException(ex);
 		}
     }
