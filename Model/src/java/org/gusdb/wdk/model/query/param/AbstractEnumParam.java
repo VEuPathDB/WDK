@@ -268,10 +268,10 @@ public abstract class AbstractEnumParam extends Param {
             parent.addChild(node);
         }
 
-        if (suppressNode) suppressChildren(cache.getTermTreeListRef());
+        if (suppressNode) suppressChildren(cache, cache.getTermTreeListRef());
     }
 
-    private void suppressChildren(List<EnumParamTermNode> children) {
+    private void suppressChildren(EnumParamCache cache, List<EnumParamTermNode> children) {
         boolean suppressed = false;
         if (children.size() == 1) {
             // has only one child, suppress it in the tree if it has
@@ -284,14 +284,17 @@ public abstract class AbstractEnumParam extends Param {
                 for (EnumParamTermNode grandChild : grandChildren) {
                     children.add(grandChild);
                 }
+                // also remove the suppressed node from term & internal map
+                cache.removeTerm(child.getTerm());
+                
                 // need to suppress children
-                suppressChildren(children);
+                suppressChildren(cache, children);
                 suppressed = true;
             }
         }
         if (!suppressed) {
             for (EnumParamTermNode child : children) {
-                suppressChildren(child.getChildrenList());
+                suppressChildren(cache, child.getChildrenList());
             }
         }
     }
