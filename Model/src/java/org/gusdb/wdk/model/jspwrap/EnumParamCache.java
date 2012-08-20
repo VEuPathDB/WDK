@@ -128,4 +128,9 @@ public class EnumParamCache {
 		return _dependedValue;
 	}
 	
+	public void removeTerm(String term) {
+	  _termDisplayMap.remove(term);
+	  _termInternalMap.remove(term);
+	  _termParentMap.remove(term);
+	}
 }
