@@ -22,51 +22,7 @@ $(document).ready(function() {
                        null, 
                        null, 
                        { "bSortable": false } ],
-        "aaSorting": [[ 5, "desc" ]],
-        "fnDrawCallback": function(oSettings) {
-            $(".strategy_description .full", this).qtip({
-              content: {
-                text: function(api) {
-                  return $(this).html()
-                      .replace(/\n/g, "<br/>")
-                      .replace(/(https?:\/\/\S+)/g, "<a href='$1' target='_blank'>$1</a>")
-                },
-                title: {
-                  text: "<a href='#' class='open-dialog-update-strat'>Edit description</a>",
-                  button: "Close"
-                }
-              },
-              position: {
-                my: "top left",
-                at: "bottom left"
-              },
-              show: {
-                solo: true
-              },
-              hide: false,
-              style: {
-                classes: "strategy-description"
-              },
-              events: {
-                show: function(event, api) {
-                  // disable all other qtips
-                  $(".strategy_description .full", "#search_history").each(function(idx, el) {
-                    // don't disable this qtip
-                    if (el == api.elements.target.get(0)) return;
-                    $(el).qtip("disable");
-                  });
-                },
-                hide: function(event, api) {
-                  // disable all other qtips
-                  $(".strategy_description .full", "#search_history").each(function(idx, el) {
-                    // don't disable this qtip
-                    if (el == api.elements.target.get(0)) return;
-                    $(el).qtip("enable");
-                  });
-                }
-              }
-            });
-        }
+        "aaSorting": [[ 5, "desc" ]]
     } );
 } );
 </script>
