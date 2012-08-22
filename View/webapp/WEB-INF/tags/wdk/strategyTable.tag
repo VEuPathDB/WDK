@@ -33,12 +33,8 @@
     <th class="sortable" scope="col" style="min-width:16em;">
       <c:if test="${prefix != null}">${prefix}&nbsp;</c:if>Strategies&nbsp;(${fn:length(strategies)})
     </th>
-    <th scope="col">&nbsp;</th>
-    <!--
-    <th scope="col" style="width:4em;">&nbsp;</th>
-    <th scope="col" style="width:6em;">&nbsp;</th>
-    -->
-    <th scope="col" style="width:12em;">&nbsp;</th>
+    <th scope="col">Description</th>
+    <th scope="col" style="width:12em;">Actions</th>
     <th class="sortable" style="width:9em;" scope="col">Created</th>
     <th class="sortable" style="width:9em;" scope="col">
       <c:choose>
@@ -58,7 +54,12 @@
   <%-- begin of forEach strategy in the category --%>
   <c:forEach items="${strategies}" var="strategy">
     <c:set var="strategyId" value="${strategy.strategyId}"/>
-   <tr id="strat_${strategyId}">
+    <tr id="strat_${strategyId}"
+        data-back-id="${strategyId}"
+        data-name="${strategy.name}"
+        data-description="<c:out value="${strategy.description}"/>"
+        data-saved="${strategy.isSaved}"
+        data-step-id="${strategy.latestStepId}">
       <td scope="row"><input type=checkbox id="${strategyId}" onclick="updateSelectedList()"/></td>
       <%-- need to see if this strategy id is in the session. --%>
       <c:set var="active" value=""/>
@@ -96,13 +97,13 @@
         <c:otherwise>
           <c:choose>
             <c:when test="${!strategy.isSaved}">
-              <div class="unsaved" title="Click to save and add description" onclick="showUpdateDialog(${strategyId}, true, true);">Save to add a description</div>
+              <div class="unsaved" title="Click to save and add description" onclick="showUpdateDialog(this, true, true);">Save to add a description</div>
             </c:when>
             <c:when test="${empty strategy.description}">
-              <div class="empty" title="Click to add a description" onclick="showUpdateDialog(${strategyId}, false, true);">Click to add a description</div>
+              <div class="empty" title="Click to add a description" onclick="showUpdateDialog(this, false, true);">Click to add a description</div>
             </c:when>
             <c:otherwise>
-              <div class="full" title="Click to view entire description" onclick="showUpdateDialog(${strategyId}, false, true);"><c:out value="${strategy.description}"/></div>
+              <div class="full" title="Click to view entire description" onclick="showDescriptionDialog(this, false, true);"><c:out value="${strategy.description}"/></div>
             </c:otherwise>
           </c:choose>
         </c:otherwise>
@@ -110,7 +111,7 @@
       </td>
 
       <td nowrap>
-         <c:set var="saveAction" value="showUpdateDialog('${strategyId}', true, true);"/>
+         <c:set var="saveAction" value="showUpdateDialog(this, true, true);"/>
          <c:set var="shareAction" value="showHistShare(this, '${strategyId}', '${exportBaseUrl}${strategy.importId}');" />
          <c:if test="${!strategy.isSaved}">
            <c:set var="shareAction" value="if (confirm('Before you can share your strategy, you need to save it. Would you like to do that now?')) { ${saveAction} }" />
@@ -130,9 +131,9 @@
               </c:otherwise>
             </c:choose>
             <option value="downloadStep('${strategy.latestStepId}')">Download</option>
-            <option value="showUpdateDialog('${strategyId}', false, true)">Rename</option>
+            <option value="showUpdateDialog(this, false, true)">Rename</option>
             <c:if test="${strategy.isSaved}">
-              <option value="showUpdateDialog('${strategyId}', false, true)">
+              <option value="showUpdateDialog(this, false, true)">
               <c:choose>
                 <c:when test="${empty strategy.description}">
                   Add description

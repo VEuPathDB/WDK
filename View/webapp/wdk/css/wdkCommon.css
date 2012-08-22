@@ -438,9 +438,11 @@ div#history-menu .ui-tabs-panel {
 }
 
 
+/* see https://redmine.apidb.org/issues/9167#note-8
 table.datatables tr.headerrow th {
 	border-width:0px 0px 2px;
 }
+*/
 .ui-dialog-title {
 	font-weight: bold;
 }
