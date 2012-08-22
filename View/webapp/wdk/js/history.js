@@ -287,9 +287,29 @@ function hideAnyName() {
     hideName(overStepId);
 }
 
-function showUpdateDialog(strat_id, save, fromHist) {
-  var strat = getStrategyOBJ(strat_id),
-      step_id = strat.JSON.steps[strat.JSON.steps.length].id,
+function showDescriptionDialog(el, save, fromHist) {
+  var dialog_container = $("#wdk-dialog-strat-desc"),
+      row = $(el).parents("tr"),
+      strat = row.data();
+  dialog_container.find(".description").html(
+    strat.description.replace(/\n/g, "<br/>")
+        .replace(/(https?:\/\/\S+)/g, "<a href='$1' target='_blank'>$1</a>")
+  );
+  
+  dialog_container.dialog("option", "title", strat.name);
+  dialog_container.dialog("option", "width", 600);
+  dialog_container.find(".edit a").click(function(e) {
+    e.preventDefault();
+    dialog_container.dialog("close");
+    showUpdateDialog(el, save, fromHist);
+    $(this).unbind("click");
+  });
+  dialog_container.dialog("open");
+}
+
+function showUpdateDialog(el, save, fromHist) {
+  var row = $(el).parents("tr"),
+      strat = row.data(),
       dialog_container = $("#wdk-dialog-update-strat"),
       title = (save) ? "Save Strategy" : "Update Strategy",
       submitValue = (save) ? "Save strategy" : "Update strategy",
@@ -299,7 +319,7 @@ function showUpdateDialog(strat_id, save, fromHist) {
   dialog_container.dialog("option", "title", title)
   .find(".download").click(function(e) {
     e.preventDefault();
-    downloadStep(step_id);
+    downloadStep(strat.stepId);
   });
 
   form = dialog_container.find("form").get(0);
@@ -311,7 +331,7 @@ function showUpdateDialog(strat_id, save, fromHist) {
     dialog_container.find(".save_as_msg").hide();
   }
 
-  if (!(save || strat.JSON.saved)) {
+  if (!(save || strat.saved)) {
     dialog_container.find(".desc_label").hide();
     dialog_container.find(".desc_input").hide();
   } else {
@@ -321,22 +341,24 @@ function showUpdateDialog(strat_id, save, fromHist) {
 
   form.name.value = strat.name||"";
   form.description.value = strat.description||"";
-  form.strategy.value = strat_id;
+  form.strategy.value = strat.backId;
   form.submit.value = submitValue;
   $(form).data("strategy", strat);
 
   $(form).submit(function(event) {
+    var strategy;
     event.preventDefault();
     if (this.description.value.length > 4000) {
       return alert("You have exceeded the 4,000 character limit. " +
           "Please revised your description.");
     }
-    // update strat object
-    strat.name = this.name.value;
-    strat.description = this.description.value;
+    // update strat row data
+    row.data("name", this.name.value);
+    row.data("description", this.description.value);
 
     dialog_container.block();
-    saveOrRenameStrategy(strat, true, save, fromHist, form).success(function() {
+    strategy = jQuery.extend(getStrategyOBJ(strat.backId), strat);
+    saveOrRenameStrategy(strategy, true, save, fromHist, form).success(function() {
       dialog_container.dialog('close');
     }).complete(function() {
       dialog_container.unblock();
