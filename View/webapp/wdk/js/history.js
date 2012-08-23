@@ -292,7 +292,10 @@ function showDescriptionDialog(el, save, fromHist) {
       row = $(el).parents("tr"),
       strat = row.data();
   dialog_container.find(".description").html(
-    strat.description.replace(/\n/g, "<br/>")
+    strat.description
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\n/g, "<br/>")
         .replace(/(https?:\/\/\S+)/g, "<a href='$1' target='_blank'>$1</a>")
   );
   
