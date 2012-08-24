@@ -311,7 +311,7 @@ function showDescriptionDialog(el, save, fromHist) {
 }
 
 function showUpdateDialog(el, save, fromHist) {
-  var row = $(el).parents("tr"),
+  var row = $(el).parents(".strategy-data"),
       strat = row.data(),
       dialog_container = $("#wdk-dialog-update-strat"),
       title = (save) ? "Save Strategy" : "Update Strategy",

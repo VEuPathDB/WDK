@@ -55,6 +55,7 @@
   <c:forEach items="${strategies}" var="strategy">
     <c:set var="strategyId" value="${strategy.strategyId}"/>
     <tr id="strat_${strategyId}"
+        class="strategy-data"
         data-back-id="${strategyId}"
         data-name="${strategy.name}"
         data-description="<c:out value="${strategy.description}"/>"
