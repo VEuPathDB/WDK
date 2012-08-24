@@ -37,6 +37,12 @@ function displayModel(strat){
 	  $("#Strategies").removeAttr("style");
 	  if(strat.isDisplay){
 		var div_strat = document.createElement("div");
+    div_strat.setAttribute("data-step-id", strat.stepId);
+    div_strat.setAttribute("data-saved", strat.saved);
+    div_strat.setAttribute("data-name", strat.name);
+    div_strat.setAttribute("data-description", strat.description);
+    div_strat.setAttribute("data-back-id", strat.backId);
+    $(div_strat).addClass("strategy-data");
 		var div_steps_section = document.createElement("div");
 		div_steps_section.setAttribute('class','diagramSection scrollableSteps');
 		var div_steps = document.createElement("div");
@@ -545,7 +551,7 @@ save_warning +
 	}else if(guestUser() == 'true'){
 		share = "<a id='share_" + id + "' title='Please LOGIN so you can SAVE and then SHARE (email) your strategy.' href='javascript:void(0)' onclick=\"popLogin();setFrontAction('share'," + id + ");\"><b style='font-size:120%'>Share</b></a>";
 	}else{
-		share = "<a id='share_" + id + "' title='SAVE this strategy so you can SHARE it (email its URL).' href='javascript:void(0)' onclick=\"if (confirm('Before you can share your strategy, you need to save it. Would you like to do that now?')) { showUpdateDialog('" + id + "', true,true) }\"><b style='font-size:120%'>Share</b></a>";
+		share = "<a id='share_" + id + "' title='SAVE this strategy so you can SHARE it (email its URL).' href='javascript:void(0)' onclick=\"if (confirm('Before you can share your strategy, you need to save it. Would you like to do that now?')) { showUpdateDialog(this, true,true) }\"><b style='font-size:120%'>Share</b></a>";
 	}
 
 
@@ -557,7 +563,7 @@ save_warning +
 		save = "<a id='save_" + id + "' title='Please LOGIN so you can SAVE (make a snapshot) your strategy.' class='save_strat_link' href='javascript:void(0)' onclick=\"popLogin();setFrontAction('save'," + id + ");\"><b style='font-size:120%'>" + sTitle + "</b></a>";
 	}
 	else {
-		save = "<a id='save_" + id + "' title='A saved strategy is like a snapshot, it cannot be changed.' class='save_strat_link' href='javascript:void(0)' onclick=\"showUpdateDialog('" + id + "', true)\"><b style='font-size:120%'>" + sTitle + "</b></a>";
+		save = "<a id='save_" + id + "' title='A saved strategy is like a snapshot, it cannot be changed.' class='save_strat_link' href='javascript:void(0)' onclick=\"showUpdateDialog(this, true)\"><b style='font-size:120%'>" + sTitle + "</b></a>";
 	}
 	save += "<div id='save_strat_div_" + id + "' class='modal_div save_strat' style='width:500px'>" +
 		"<div class='dragHandle'>" +
@@ -579,7 +585,7 @@ save_warning +
                    " href='javascript:void(0)' onclick=\"copyStrategy('" + id + "')\">" +
                    "<b style='font-size:120%'>Copy</b></a>";
 
-var rename = "<a id='rename_" + strat.frontId + "' href='javascript:void(0)' title='Click to rename.'  onclick=\"showUpdateDialog('" + id + "', false)\"><b style='font-size:120%'>Rename</b></a>";
+var rename = "<a id='rename_" + strat.frontId + "' href='javascript:void(0)' title='Click to rename.'  onclick=\"showUpdateDialog(this, false)\"><b style='font-size:120%'>Rename</b></a>";
 
 var deleteStrat = "<a id='delete_" + strat.frontId + "' href='javascript:void(0)' title='Click to delete.'  onclick=\"deleteStrategy('" + id + "', false)\"><b style='font-size:120%'>Delete</b></a>";
 
