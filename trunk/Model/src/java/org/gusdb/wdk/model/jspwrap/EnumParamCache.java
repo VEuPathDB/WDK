@@ -129,6 +129,13 @@ public class EnumParamCache {
 	}
 	
 	public void removeTerm(String term) {
+	  // before removing the term, need to shortcut the children to its parent
+	  String parent = _termParentMap.get(term);
+	  for (String child : _termParentMap.keySet()) {
+	    if (term.equals(_termParentMap.get(child)))
+	      _termParentMap.put(child, parent);
+	  }
+	  
 	  _termDisplayMap.remove(term);
 	  _termInternalMap.remove(term);
 	  _termParentMap.remove(term);
