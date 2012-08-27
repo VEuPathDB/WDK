@@ -30,6 +30,7 @@ var has_invalid = false;
 // MANAGE THE DISPLAY OF THE STRATEGY BASED ON THE ID PASSED IN
 function displayModel(strat){
 	if(strats){
+console.log(strat);
 	  $("#strat-instructions").remove();
 	  $("#strat-instructions-2").remove();
 	  // For IE : when instructions are shown, need to specify 'overflow : visible'
@@ -37,10 +38,10 @@ function displayModel(strat){
 	  $("#Strategies").removeAttr("style");
 	  if(strat.isDisplay){
 		var div_strat = document.createElement("div");
-    div_strat.setAttribute("data-step-id", strat.stepId);
-    div_strat.setAttribute("data-saved", strat.saved);
-    div_strat.setAttribute("data-name", strat.name);
-    div_strat.setAttribute("data-description", strat.description);
+    div_strat.setAttribute("data-step-id", strat.JSON.steps[strat.JSON.steps.length].id);
+    div_strat.setAttribute("data-saved", Boolean(strat.saved));
+    div_strat.setAttribute("data-name", strat.name||"");
+    div_strat.setAttribute("data-description", strat.description||"");
     div_strat.setAttribute("data-back-id", strat.backId);
     $(div_strat).addClass("strategy-data");
 		var div_steps_section = document.createElement("div");
