@@ -30,7 +30,6 @@ var has_invalid = false;
 // MANAGE THE DISPLAY OF THE STRATEGY BASED ON THE ID PASSED IN
 function displayModel(strat){
 	if(strats){
-console.log(strat);
 	  $("#strat-instructions").remove();
 	  $("#strat-instructions-2").remove();
 	  // For IE : when instructions are shown, need to specify 'overflow : visible'
