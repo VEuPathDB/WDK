@@ -17,7 +17,10 @@ function configureSummaryViews(ele) {
             selected : currentTab,
             cache: true,
             ajaxOptions: {
-                    error: function( xhr, status, index, anchor ) {
+                success: function(data) {
+                  createFlexigridFromTable(summaryViews.find(" .Results_Table"));
+                },
+                error: function( xhr, status, index, anchor ) {
                     // alert( "Couldn't load this tab. Please try again later." + status );
                 }
             }
@@ -185,7 +188,7 @@ function ResultsToGrid(data, ignoreFilters, div, resultOnly) {
     }
 
     // convert results table to drag-and-drop flex grid
-    createFlexigridFromTable(currentDiv.find(" .Results_Table"));
+    // createFlexigridFromTable(currentDiv.find(" .Results_Table"));  // moved to tab load success callback
 
     // check the basket for the page if needed
     checkPageBasket();
