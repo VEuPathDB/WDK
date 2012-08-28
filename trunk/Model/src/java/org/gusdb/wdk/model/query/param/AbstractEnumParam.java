@@ -284,8 +284,9 @@ public abstract class AbstractEnumParam extends Param {
                 for (EnumParamTermNode grandChild : grandChildren) {
                     children.add(grandChild);
                 }
-                // also remove the suppressed node from term & internal map
-                cache.removeTerm(child.getTerm());
+                // Also remove the suppressed node from term & internal map.
+                // Disable the cache change, to have a correct tree on portal.
+                // cache.removeTerm(child.getTerm());
                 
                 // need to suppress children
                 suppressChildren(cache, children);
