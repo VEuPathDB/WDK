@@ -41,8 +41,6 @@ import org.json.JSONException;
 
 public class ShowQuestionAction extends Action {
 
-    private static final long serialVersionUID = 606366686398482133L;
-
     private static final Logger logger = Logger.getLogger(ShowQuestionAction.class.getName());
     
     public static final String LABELS_SUFFIX = "-labels";
