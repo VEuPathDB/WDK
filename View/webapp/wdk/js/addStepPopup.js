@@ -358,6 +358,10 @@ function WizardLoading(boo){
 function callWizard(url, ele, id, sec, action, stratFrontId){
   // set isPopup flag, which will be used by param initialization process
   window.isPopup = true;
+
+  // hide any open tooltips
+  $(".qtip").qtip("hide");
+
   mapTypeAheads();
   if (stratFrontId == undefined) stratFrontId = current_Front_Strategy_Id; 
   var strategy = getStrategy(stratFrontId);
