@@ -152,6 +152,6 @@ function assignParamTooltips(selector) {
 		yOffset: 3,
 		tipPos: 'top-right',
 		targetPos: 'bottom-center',
-		stickySecs: 10
+		stickySecs: 7
 	});
 }
