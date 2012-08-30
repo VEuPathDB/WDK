@@ -15,6 +15,16 @@ function changeFormat(e)
     document.formatForm.submit();
     return true;
 }
+
+$(function() {
+  "use strict";
+  $(document.forms.downloadConfigForm).submit(function(e) {
+    e.preventDefault();
+    this.target = $("input[name='downloadType'][value='plain']", this)
+        .is(":checked") ? "_blank" : "_self";
+    this.submit();
+  });
+});
 //-->
 </script>
 
