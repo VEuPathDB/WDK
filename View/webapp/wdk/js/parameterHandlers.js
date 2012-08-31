@@ -65,6 +65,10 @@ function initDependentParamHandlers(isEdit) {
       jQuery.unique(dependedValues);
       updateDependentParam(name, dependedValues.join(","));
     });
+    if ($(this).has('input.typeAhead')) {
+      dependedParam.change();
+    }
+
     $('input, select', this).attr('disabled',false);
   });
   
