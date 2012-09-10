@@ -188,7 +188,7 @@ function ResultsToGrid(data, ignoreFilters, div, resultOnly) {
     }
 
     // convert results table to drag-and-drop flex grid
-    // createFlexigridFromTable(currentDiv.find(" .Results_Table"));  // moved to tab load success callback
+    createFlexigridFromTable(currentDiv.find(" .Results_Table"));
 
     // check the basket for the page if needed
     checkPageBasket();
