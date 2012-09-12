@@ -2805,7 +2805,7 @@
 						if(rc) {
 							if(!$t.children(":checkbox").length) {
 								nm = rcn.call(_this, $t);
-								$t.prepend("<input type='checkbox' class='jstree-real-checkbox' id='" + nm[0] + "' name='" + nm[0] + "' value='" + nm[1] + "' />");
+								$t.prepend($("<input type='checkbox' />").addClass("jstree-real-checkbox").attr("id", nm[0]).attr("name", nm[0]).val(nm[1]));
 							}
 							else {
 								$t.children(":checkbox").addClass("jstree-real-checkbox");
