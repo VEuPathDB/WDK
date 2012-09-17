@@ -136,8 +136,10 @@ public abstract class AbstractEnumParam extends Param {
 
     public Param getDependedParam() throws WdkModelException {
         if (!isDependentParam()) return null;
-        if (contextQuery != null) {
-            String paramName = dependedParamRef.split("\\.")[1];
+        String paramName = dependedParamRef.split("\\.")[1];
+        if (contextQuestion != null) {
+            return contextQuestion.getParamMap().get(paramName);
+        } else if (contextQuery != null) {
             return contextQuery.getParamMap().get(paramName);
         }
         return (Param) wdkModel.resolveReference(dependedParamRef);
@@ -441,11 +443,25 @@ public abstract class AbstractEnumParam extends Param {
             throws WdkModelException, WdkUserException {
         if (!isSkipValidation()) {
             String rawValue = decompressValue(dependedParamVal);
+            logger.debug("param=" + getFullName() + " - validating: " + rawValue);
             String[] terms = getTerms(rawValue);
             if (terms.length == 0 && !allowEmpty)
                 throw new WdkUserException(
                         "The value to enumParam/flatVocabParam "
                                 + getFullName() + " cannot be empty");
+            Map<String, String> map = getVocabMap();
+            boolean error = false;
+            StringBuilder message = new StringBuilder();
+            for (String term : terms) {
+                if (!map.containsKey(term)) {
+                    error = true;
+                    message.append("Invalid term for param [" + getFullName()
+                            + "]: " + term + ". ");
+                }
+            }
+            if (error) throw new WdkUserException(message.toString());
+        } else {
+            logger.debug("param=" + getFullName() + " - skip validation");
         }
     }
 

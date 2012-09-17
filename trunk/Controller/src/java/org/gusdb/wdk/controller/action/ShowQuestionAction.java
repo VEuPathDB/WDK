@@ -150,7 +150,10 @@ public class ShowQuestionAction extends Action {
             // need to check if the current value is still valid
             try {
               dependedParam.validate(user, currentDependedValue);
+              logger.debug("PASS validating depended param " + dependedParam.getName() + "=" + currentDependedValue);
             } catch (Exception ex) {
+              logger.debug("FAIL validating depended param " + dependedParam.getName() + "=" 
+                    + currentDependedValue + ", use " +  dependedParam.getDefault() + " instead");
               // the stored depended value is no longer valid, reset to default.
               currentDependedValue = dependedParam.getDefault();
             }
