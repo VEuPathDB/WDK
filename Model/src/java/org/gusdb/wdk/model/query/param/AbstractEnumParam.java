@@ -446,18 +446,6 @@ public abstract class AbstractEnumParam extends Param {
                 throw new WdkUserException(
                         "The value to enumParam/flatVocabParam "
                                 + getFullName() + " cannot be empty");
-
-            Map<String, String> map = getVocabMap();
-            boolean error = false;
-            StringBuilder message = new StringBuilder();
-            for (String term : terms) {
-                if (!map.containsKey(term)) {
-                    error = true;
-                    message.append("Invalid term for param [" + getFullName()
-                            + "]: " + term + ". ");
-                }
-            }
-            if (error) throw new WdkUserException(message.toString());
         }
     }
 
@@ -508,10 +496,6 @@ public abstract class AbstractEnumParam extends Param {
                     } else {
                         // param doesn't depend on anything. The default must be
                         // wrong.
-                        errorMessage += "\nValid terms:\n";
-                        for (String term : cache.getTerms()) {
-                           errorMessage += term + "\n";
-                        }
                         logger.warn(errorMessage);
                         throw new WdkModelException(errorMessage);
 
