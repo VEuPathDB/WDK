@@ -28,7 +28,6 @@ import org.json.JSONException;
  */
 public class EnumParamBean extends ParamBean<AbstractEnumParam> {
 
-	@SuppressWarnings("unused")
 	private static final Logger logger = Logger.getLogger(EnumParamBean.class.getName());
 	
     private String[] currentValues;
