@@ -219,4 +219,11 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     public boolean getUseCheckboxTree() {
         return true;
     }
+
+    @Override
+    public void validate(UserBean user, String rawOrDependentValue)
+            throws WdkModelException, WdkUserException {
+      logger.debug("Validating param=" + getName() + ", value=" + rawOrDependentValue + ", dependedValue=" + _dependedValue);
+      param.validateValue(user.getUser(), rawOrDependentValue, _dependedValue); 
+    }
 }

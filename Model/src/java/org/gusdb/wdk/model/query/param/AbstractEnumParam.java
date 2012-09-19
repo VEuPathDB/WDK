@@ -156,7 +156,12 @@ public abstract class AbstractEnumParam extends Param {
      */
     @Override
     public String getDefault() throws WdkModelException {
-        return getDefault(null);
+        String dependedValue = null;
+        if (isDependentParam()) {
+            dependedValue = getDependedParam().getDefault();
+            logger.debug("param=" + getFullName() + " getting default with depended=" + dependedValue);
+        }
+        return getDefault(dependedValue);
     }
 
     public String getDefault(String dependedParamVal) throws WdkModelException {
@@ -439,17 +444,35 @@ public abstract class AbstractEnumParam extends Param {
      * .user.User, java.lang.String)
      */
     @Override
-    protected void validateValue(User user, String dependedParamVal)
+    protected void validateValue(User user, String userDependentValue)
+             throws WdkModelException, WdkUserException {
+        String dependedValue = null;
+        if (isDependentParam()) {
+            dependedValue = getDependedParam().getDefault();
+        }
+        validateValue(user, userDependentValue, dependedValue);
+    }
+
+    public void validateValue(User user, String userDependentValue, String dependedValue)
             throws WdkModelException, WdkUserException {
+        // handle the empty case
+        if (userDependentValue == null || userDependentValue.length() == 0) {
+            if (!allowEmpty)
+                throw new WdkModelException("The parameter '" + getPrompt()
+                        + "' does not allow empty value");
+            // otherwise, got empty value and is allowed, no need for further
+            // validation.
+        }
+
         if (!isSkipValidation()) {
-            String rawValue = decompressValue(dependedParamVal);
+            String rawValue = decompressValue(userDependentValue);
             logger.debug("param=" + getFullName() + " - validating: " + rawValue);
             String[] terms = getTerms(rawValue);
             if (terms.length == 0 && !allowEmpty)
                 throw new WdkUserException(
                         "The value to enumParam/flatVocabParam "
                                 + getFullName() + " cannot be empty");
-            Map<String, String> map = getVocabMap();
+            Map<String, String> map = getVocabMap(dependedValue);
             boolean error = false;
             StringBuilder message = new StringBuilder();
             for (String term : terms) {

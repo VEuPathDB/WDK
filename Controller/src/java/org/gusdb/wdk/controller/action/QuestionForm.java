@@ -13,6 +13,7 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
+import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
@@ -72,6 +73,27 @@ public class QuestionForm extends MapActionForm {
         if (wdkQuestion == null) return errors;
 
         Map<String, ParamBean<?>> params = wdkQuestion.getParamsMap();
+        
+        // before validating params, need to set depended values properly.
+        for (ParamBean<?> param : params.values()) {
+          if (param instanceof EnumParamBean) {
+            EnumParamBean enumParam = (EnumParamBean)param;
+            if (enumParam.isDependentParam()) {
+              try {
+                  String dependedParamName = enumParam.getDependedParam().getName();
+                  String dependedValue = (String)getValue(dependedParamName);
+                  enumParam.setDependedValue(dependedValue);
+                  logger.debug("param=" + param.getFullName() + ", set dependedValue=" + dependedValue);
+              } catch (WdkModelException ex) {
+                ActionMessage message = new ActionMessage("mapped.properties",
+                       param.getPrompt(), ex.getMessage());
+                errors.add(ActionErrors.GLOBAL_MESSAGE, message);
+            }
+            }
+          }
+        }
+
+
         for (String paramName : params.keySet()) {
             String prompt = paramName;
             try {
