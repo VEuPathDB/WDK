@@ -891,3 +891,8 @@ color:darkred;font-style:italic;margin-bottom:7px;margin-right:5px;position:rela
 p.fav-warning {
 color:darkred;font-style:italic;font-size:95%;
 }
+
+
+#query-description-section{ margin:10px; font-size:12pt; }
+
+.record-panel { overflow:auto; }
