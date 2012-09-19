@@ -76,7 +76,13 @@ public abstract class AbstractEnumParam extends Param {
 
     private EnumParamCache getEnumParamCache(String dependedParamVal) {
         if (isDependentParam() && dependedParamVal == null) {
-            throw new NoDependedValueException(
+            try {
+                dependedParamVal = getDependedParam().getDefault();
+            } catch (Exception ex) {
+                throw new NoDependedValueException(ex);
+            }
+            if (dependedParamVal == null)
+                throw new NoDependedValueException(
                     "Attempt made to retrieve values in dependent param "
                             + getName() + " without setting depended value.");
         }
