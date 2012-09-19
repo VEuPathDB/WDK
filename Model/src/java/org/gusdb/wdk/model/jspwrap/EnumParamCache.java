@@ -44,7 +44,9 @@ public class EnumParamCache {
 			throw new IllegalArgumentException("Null { " + badVals.toString().substring(1) + "} value(s) found for term " + term);
 		}
 		// strip off the comma from term
-		term = term.replaceAll(",", " -");
+        term = term.replaceAll(",", " -");
+        term = term.replaceAll("`", "'");
+        term = term.replaceAll("``", "\"");
 		
 		_termInternalMap.put(term, internalVal);
 		_termDisplayMap.put(term, displayVal);
