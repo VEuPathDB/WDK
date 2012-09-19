@@ -9,4 +9,8 @@ public class NoDependedValueException extends WdkRuntimeException {
 	public NoDependedValueException(String message) {
 		super(message);
 	}
+
+        public NoDependedValueException(Exception cause) {
+            super(cause);
+        }
 }
