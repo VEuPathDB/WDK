@@ -382,7 +382,9 @@ public abstract class Param extends WdkModelBase implements Cloneable {
 
     public String compressValue(String value) throws WdkModelException, WdkUserException {
         // check if the value is already been compressed
-        if (value == null || value.length() == 0) return null;
+        if (value == null || value.trim().length() == 0) return null;
+        
+        value = value.trim();
 
         if (value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX)) return value;
 
@@ -407,7 +409,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
                 value.substring(Utilities.PARAM_COMPRESSE_PREFIX.length())
                         .trim();
         String decompressed = queryFactory.getClobValue(checksum);
-        if (decompressed != null) value = decompressed;
+        if (decompressed != null) value = decompressed.trim();
         return value;
     }
 
