@@ -472,7 +472,8 @@ public abstract class AbstractEnumParam extends Param {
 
         if (!isSkipValidation()) {
             String rawValue = decompressValue(userDependentValue);
-            logger.debug("param=" + getFullName() + " - validating: " + rawValue);
+            logger.info("param=" + getFullName() + " - validating: " + rawValue + ", with dependedValue=" + dependedValue);
+ 
             String[] terms = getTerms(rawValue);
             if (terms.length == 0 && !allowEmpty)
                 throw new WdkUserException(

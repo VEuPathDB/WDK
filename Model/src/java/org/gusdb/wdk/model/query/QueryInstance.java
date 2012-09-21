@@ -283,15 +283,15 @@ public abstract class QueryInstance {
                 /* Skipping for now; since AbstractEnumParam.validateValue() only checks for empty values,
                  * it doesn't matter if the dependent value is "valid" per the depended param.
                  * We should add code to more robustly verify that the passed param value is valid.
+                 */
                 if (param instanceof AbstractEnumParam && ((AbstractEnumParam) param).isDependentParam()) {
                     String dependedParam = ((AbstractEnumParam) param).getDependedParam().getName();
                     String dependedValue = values.get(dependedParam);
                     // the following method must be implemented!
                     ((AbstractEnumParam) param).validateValue(user, dependentValue, dependedValue);
-                }*/
-                
-                // validate param
-                param.validate(user, dependentValue);
+                } else { // validate param
+                    param.validate(user, dependentValue);
+                }
             }
             catch (Exception ex) {
                 ex.printStackTrace();
