@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.query.param;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -60,6 +61,12 @@ public class FlatVocabParam extends AbstractEnumParam {
      */
     public void setServedQueryName(String servedQueryName) {
         this.servedQueryName = servedQueryName;
+    }
+
+    @Override
+    public void setContextQuestion(Question question) {
+        super.setContextQuestion(question);
+        this.query.setContextQuestion(question);
     }
 
     // ///////////////////////////////////////////////////////////////////

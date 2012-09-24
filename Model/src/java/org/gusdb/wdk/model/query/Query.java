@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -55,6 +56,8 @@ public abstract class Query extends WdkModelBase {
     private String[] indexColumns;
 
     private boolean hasWeight;
+
+    private Question contextQuestion;
 
     // =========================================================================
     // Abstract methods
@@ -105,6 +108,7 @@ public abstract class Query extends WdkModelBase {
                 query.paramValuesSets);
         this.wdkModel = query.wdkModel;
         this.hasWeight = query.hasWeight;
+        this.contextQuestion = query.contextQuestion;
 
         // clone columns
         for (String columnName : query.columnMap.keySet()) {
@@ -119,6 +123,18 @@ public abstract class Query extends WdkModelBase {
             param.setContextQuery(this);
             paramMap.put(paramName, param);
         }
+    }
+
+    public void setContextQuestion(Question question) {
+        this.contextQuestion = question;
+        // also set context question to params
+        for (Param param : paramMap.values()) {
+            param.setContextQuestion(question);
+        }
+    }
+
+    public Question getContextQuestion() {
+        return contextQuestion;
     }
 
     public void setIndexColumns(String[] indexColumns) {
@@ -263,6 +279,9 @@ public abstract class Query extends WdkModelBase {
         JSONObject jsQuery = new JSONObject();
         jsQuery.put("name", getFullName());
         jsQuery.put("project", wdkModel.getProjectId());
+
+        if (contextQuestion != null)
+            jsQuery.put("contextQuestion", contextQuestion.getFullName());
 
         // construct params; ordered by paramName
         String[] paramNames = new String[paramMap.size()];

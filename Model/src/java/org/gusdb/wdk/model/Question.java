@@ -405,6 +405,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     public void setQuery(Query q) {
         this.query = q;
         this.idQueryRef = q.getFullName();
+        this.query.setContextQuestion(this);
     }
 
     public String getName() {
@@ -607,11 +608,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
                     query.addParam(param);
                 }
             }
-            // set question to the param context; all params are cloned along
-            // with the cloning of the query.
-            for (Param param : query.getParams()) {
-                param.setContextQuestion(this);
-            }
+
+            query.setContextQuestion(this);
 
             // all the id queries should have weight column
             query.setHasWeight(true);
