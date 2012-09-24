@@ -416,6 +416,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     public JSONObject getJSONContent(boolean extra) throws JSONException {
         JSONObject jsParam = new JSONObject();
         jsParam.put("name", getFullName());
+        
         appendJSONContent(jsParam, extra);
         return jsParam;
     }

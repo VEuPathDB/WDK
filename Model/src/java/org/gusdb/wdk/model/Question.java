@@ -583,7 +583,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             // question.
             query = (Query) model.resolveReference(idQueryRef);
             query = query.clone();
-            query.setContextQuestion(this);
 
             // check if we have customized sqlMacros
             if (query instanceof SqlQuery) {
@@ -609,11 +608,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
                     query.addParam(param);
                 }
             }
-            // set question to the param context; all params are cloned along
-            // with the cloning of the query.
-            for (Param param : query.getParams()) {
-                param.setContextQuestion(this);
-            }
+            query.setContextQuestion(this);
 
             // all the id queries should have weight column
             query.setHasWeight(true);

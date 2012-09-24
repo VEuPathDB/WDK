@@ -108,6 +108,7 @@ public abstract class Query extends WdkModelBase {
                 query.paramValuesSets);
         this.wdkModel = query.wdkModel;
         this.hasWeight = query.hasWeight;
+        this.contextQuestion = query.getContextQuestion();
 
         // clone columns
         for (String columnName : query.columnMap.keySet()) {
@@ -130,6 +131,9 @@ public abstract class Query extends WdkModelBase {
 
     public void setContextQuestion(Question contextQuestion) {
       this.contextQuestion = contextQuestion;
+      for (Param param : paramMap.values()) {
+        param.setContextQuestion(contextQuestion);
+      }
     }
 
     public void setIndexColumns(String[] indexColumns) {
