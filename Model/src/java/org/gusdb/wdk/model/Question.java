@@ -405,6 +405,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     public void setQuery(Query q) {
         this.query = q;
         this.idQueryRef = q.getFullName();
+        query.setContextQuestion(this);
     }
 
     public String getName() {
@@ -582,6 +583,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
             // question.
             query = (Query) model.resolveReference(idQueryRef);
             query = query.clone();
+            query.setContextQuestion(this);
 
             // check if we have customized sqlMacros
             if (query instanceof SqlQuery) {

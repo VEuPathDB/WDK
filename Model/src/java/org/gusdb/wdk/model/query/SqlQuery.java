@@ -48,9 +48,16 @@ public class SqlQuery extends Query {
         super(query);
         this.clobRow = query.clobRow;
         this.sql = query.sql;
-        this.sqlMacroMap = new LinkedHashMap<String, String>(query.sqlMacroMap);
-        this.dependentTableMap = new LinkedHashMap<String, String>(
-                query.dependentTableMap);
+        if (query.sqlList != null) 
+          this.sqlList = new ArrayList<>(query.sqlList);
+        if (query.sqlMacroMap != null)
+          this.sqlMacroMap = new LinkedHashMap<>(query.sqlMacroMap);
+        if (query.sqlMacroList != null)
+          this.sqlMacroList = new ArrayList<>(query.sqlMacroList);
+        if (query.dependentTableMap != null)
+          this.dependentTableMap = new LinkedHashMap<>(query.dependentTableMap);
+        if (query.dependentTableList != null)
+          this.dependentTableList = new ArrayList<>(query.dependentTableList);
     }
 
     public void addSql(WdkModelText sql) {
