@@ -5,6 +5,12 @@
 function initializeQuestion() {
     var question = new WdkQuestion();
     question.registerGroups();
+
+    // invoke the registered question events
+    if (window.wdk != undefined) {
+        window.wdk.onloadQuestion();
+    }
+
 }
 
 function WdkQuestion() {
