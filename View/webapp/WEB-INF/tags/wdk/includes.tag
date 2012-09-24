@@ -23,7 +23,8 @@
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.dataTables-1.9.0.min.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/FixedColumns.min.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/FixedHeader.min.js'/>"></script>
-<script type="text/javascript" src="<c:url value='/wdk/js/lib/jstree/jquery.jstree.js'/>"></script>
+<!--  <script type="text/javascript" src="<c:url value='/wdk/js/lib/jstree/jquery.jstree.js'/>"></script>  -->
+<script type="text/javascript" src="wdk/js/lib/jstree/jquery.jstree.js"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/qtip2/jquery.qtip.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/json.js'/>"></script>
 
