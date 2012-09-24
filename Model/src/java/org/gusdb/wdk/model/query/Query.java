@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -55,6 +56,8 @@ public abstract class Query extends WdkModelBase {
     private String[] indexColumns;
 
     private boolean hasWeight;
+    
+    private Question contextQuestion;
 
     // =========================================================================
     // Abstract methods
@@ -119,6 +122,14 @@ public abstract class Query extends WdkModelBase {
             param.setContextQuery(this);
             paramMap.put(paramName, param);
         }
+    }
+    
+    public Question getContextQuestion() {
+      return contextQuestion;
+    }
+
+    public void setContextQuestion(Question contextQuestion) {
+      this.contextQuestion = contextQuestion;
     }
 
     public void setIndexColumns(String[] indexColumns) {
@@ -263,6 +274,10 @@ public abstract class Query extends WdkModelBase {
         JSONObject jsQuery = new JSONObject();
         jsQuery.put("name", getFullName());
         jsQuery.put("project", wdkModel.getProjectId());
+        
+        // add context question name
+        if (contextQuestion != null) 
+          jsQuery.put("contextQuestion", contextQuestion.getFullName());
 
         // construct params; ordered by paramName
         String[] paramNames = new String[paramMap.size()];
