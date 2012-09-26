@@ -56,7 +56,7 @@ public abstract class AttributeValueContainer implements AttributeValueMap {
 
             logger.debug("filling attribute values from query " + query.getFullName());
             for (Column column : query.getColumns()) {
-                logger.debug("column: " + column.getName());
+                // logger.debug("column: " + column.getName());
             }
             if (query instanceof SqlQuery)
                 logger.debug("SQL: \n" + ((SqlQuery)query).getSql());

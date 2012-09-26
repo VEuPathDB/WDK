@@ -82,7 +82,7 @@ public class Dumper {
         Map<String, String> config = parseListArgs("config", reporterConfig);
 
         // Get the reporter
-        AnswerValue answer = question.makeAnswerValue(user, params, 0);
+        AnswerValue answer = question.makeAnswerValue(user, params, true, 0);
         Reporter reporter = answer.createReport(reporterName, config);
 
         try {

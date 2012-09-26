@@ -233,7 +233,7 @@ public class QuestionBean {
      */
     public AnswerValueBean makeAnswerValue(UserBean user,
             Map<String, String> paramValues, int pageStart, int pageEnd,
-            Map<String, Boolean> sortingMap, String filterName,
+            Map<String, Boolean> sortingMap, String filterName, boolean validate,
             int assignedWeight) throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
         AnswerFilterInstance filter = null;
@@ -242,7 +242,7 @@ public class QuestionBean {
             filter = recordClass.getFilter(filterName);
         }
         AnswerValue answerValue = question.makeAnswerValue(user.getUser(),
-                paramValues, pageStart, pageEnd, sortingMap, filter,
+                paramValues, pageStart, pageEnd, sortingMap, filter, validate,
                 assignedWeight);
         return new AnswerValueBean(answerValue);
     }
@@ -293,11 +293,11 @@ public class QuestionBean {
      * @see org.gusdb.wdk.model.Question#makeAnswer(java.util.Map)
      */
     public AnswerValueBean makeAnswerValue(UserBean user,
-            Map<String, String> paramValues, int assignedWeight)
+            Map<String, String> paramValues, boolean validate, int assignedWeight)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         return new AnswerValueBean(question.makeAnswerValue(user.getUser(),
-                paramValues, assignedWeight));
+                paramValues, validate, assignedWeight));
     }
 
     /**
@@ -374,7 +374,7 @@ public class QuestionBean {
                     + "the questionBean before calling to create answerValue.");
 
         AnswerValue answerValue = question.makeAnswerValue(user.getUser(),
-                params, weight);
+                params, false, weight);
 
         // reset the params
         params.clear();
