@@ -156,7 +156,7 @@ public class SanityTester {
         try {
             question.getQuery().setIsCacheable(false);
             AnswerValue answerValue = question.makeAnswerValue(user,
-                    paramValuesSet.getParamValues(), 0);
+                    paramValuesSet.getParamValues(), true, 0);
 
             int resultSize = answerValue.getResultSize();
 

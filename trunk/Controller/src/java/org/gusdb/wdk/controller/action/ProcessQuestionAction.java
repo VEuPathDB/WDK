@@ -140,8 +140,9 @@ public class ProcessQuestionAction extends Action {
             }
 
             QuestionBean wdkQuestion = qForm.getQuestion();
+            // the question is already validated in the question form, don't need to do it again.
             AnswerValueBean answerValue = wdkQuestion.makeAnswerValue(wdkUser,
-                    params, weight);
+                    params, false, weight);
             logger.debug("Test run search [" + qFullName
                     + "] and get # of results: " + answerValue.getResultSize());
 
