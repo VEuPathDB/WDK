@@ -140,11 +140,16 @@ public class StepBean {
     public boolean getIsFirstStep() {
         return step.isFirstStep();
     }
-
     public AnswerValueBean getAnswerValue() throws WdkUserException,
             NoSuchAlgorithmException, WdkModelException, JSONException,
             SQLException {
-        return new AnswerValueBean(step.getAnswerValue());
+        return getAnswerValue(true);
+    }
+
+    public AnswerValueBean getAnswerValue(boolean validate) throws WdkUserException,
+            NoSuchAlgorithmException, WdkModelException, JSONException,
+            SQLException {
+        return new AnswerValueBean(step.getAnswerValue(validate));
     }
 
     public int getAnswerId() {
