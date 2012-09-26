@@ -60,7 +60,7 @@ public class ShowResultSizeAction extends Action {
         } else {// size is not cached get it and cache it
             UserBean user = ActionUtility.getUser(servlet, request);
             StepBean step = user.getStep(Integer.parseInt(stepId));
-            AnswerValueBean answerValue = step.getAnswerValue();
+            AnswerValueBean answerValue = step.getAnswerValue(false);
             size = (filterName == null) ? answerValue.getResultSize()
                     : answerValue.getFilterSize(filterName);
 
