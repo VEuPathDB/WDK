@@ -265,7 +265,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
      * @throws NoSuchAlgorithmException
      */
     public AnswerValue makeAnswerValue(User user,
-            Map<String, String> dependentValues, int assignedWeight)
+            Map<String, String> dependentValues, boolean validate, int assignedWeight)
             throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException {
         int pageStart = 1;
@@ -274,22 +274,13 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
                 defaultSortingMap);
         AnswerFilterInstance filter = recordClass.getDefaultFilter();
         AnswerValue answerValue = makeAnswerValue(user, dependentValues,
-                pageStart, pageEnd, sortingMap, filter, assignedWeight);
+                pageStart, pageEnd, sortingMap, filter, validate, assignedWeight);
         if (this.fullAnswer) {
             int resultSize = answerValue.getResultSize();
             if (resultSize > pageEnd)
                 answerValue.setPageIndex(pageStart, resultSize);
         }
         return answerValue;
-    }
-
-    public AnswerValue makeAnswerValue(User user,
-            Map<String, String> dependentValues, int pageStart, int pageEnd,
-            Map<String, Boolean> sortingAttributes,
-            AnswerFilterInstance filter, int assignedWeight)
-            throws WdkUserException, WdkModelException {
-        return makeAnswerValue(user, dependentValues, pageStart, pageEnd,
-                sortingAttributes, filter, true, assignedWeight);
     }
 
     /**

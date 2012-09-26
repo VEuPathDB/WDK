@@ -52,7 +52,7 @@ public class DumperHelp {
 
 	Map<String, String> emptyConfig = new LinkedHashMap<String,String>();
 
-	AnswerValue answer = question.makeAnswerValue(user, params, 0);
+	AnswerValue answer = question.makeAnswerValue(user, params, true, 0);
 	Reporter reporter = answer.createReport(reporterName, emptyConfig);
 
 	System.out.println("Help for reporter: " + reporterName);

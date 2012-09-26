@@ -840,7 +840,7 @@ public class Step {
                     .getSortingAttributes(question.getFullName());
             int endIndex = user.getItemsPerPage();
             answerValue = question.makeAnswerValue(user, paramValues, 1,
-                    endIndex, sortingMap, getFilter(), assignedWeight);
+                    endIndex, sortingMap, getFilter(), true, assignedWeight);
             this.estimateSize = answerValue.getResultSize();
             update(false);
         }

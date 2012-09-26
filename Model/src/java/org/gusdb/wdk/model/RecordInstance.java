@@ -339,7 +339,7 @@ public class RecordInstance extends AttributeValueContainer {
         AnswerFilterInstance filter = question.getRecordClass().getDefaultFilter();
         // create an answer with maximium allowed rows
         return question.makeAnswerValue(user, params, pageStart, pageEnd,
-                sortingMap, filter, 0);
+                sortingMap, filter, true, 0);
     }
 
     // maybe change this to RecordInstance[][] for jspwrap purposes?
