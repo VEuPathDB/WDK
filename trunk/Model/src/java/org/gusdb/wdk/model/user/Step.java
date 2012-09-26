@@ -830,6 +830,11 @@ public class Step {
 
     public AnswerValue getAnswerValue()
             throws WdkModelException, WdkUserException {
+        return getAnswerValue(true);
+    }
+
+    public AnswerValue getAnswerValue(boolean validate)
+            throws WdkModelException, WdkUserException {
         // even if a step is invalid, still allow user to create answerValue
         // if (!valid)
         // throw new WdkUserException("Step #" + internalId
@@ -840,7 +845,7 @@ public class Step {
                     .getSortingAttributes(question.getFullName());
             int endIndex = user.getItemsPerPage();
             answerValue = question.makeAnswerValue(user, paramValues, 1,
-                    endIndex, sortingMap, getFilter(), true, assignedWeight);
+                    endIndex, sortingMap, getFilter(), validate, assignedWeight);
             this.estimateSize = answerValue.getResultSize();
             update(false);
         }
