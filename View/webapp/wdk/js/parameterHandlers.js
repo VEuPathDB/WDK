@@ -63,7 +63,9 @@ function initDependentParamHandlers(isEdit) {
         dependedValues.push($(this).val());
       });
       jQuery.unique(dependedValues);
-      updateDependentParam(name, dependedValues.join(","));
+      updateDependentParam(name, dependedValues.join(",")).then(function() {
+        wdkEvent.publish("questionchange");
+      });
     });
     if ($(this).has('input.typeAhead')) {
       dependedParam.change();
@@ -195,7 +197,7 @@ function updateDependentParam(paramName, dependedValue) {
     if ($('input.typeAhead',dependentParam).length > 0) {
       var sendReqUrl = sendReqUrl + '&xml=true';
       $("#" + paramName + "_display").attr('disabled',true).val('Loading options...');
-      $.ajax({
+      return $.ajax({
         url: sendReqUrl,
         dataType: "xml",
         success: function(data){
@@ -204,7 +206,7 @@ function updateDependentParam(paramName, dependedValue) {
         }
       });
     } else {
-      $.ajax({
+      return $.ajax({
         url: sendReqUrl,
         type: "POST",
         data: {},
@@ -226,7 +228,7 @@ function updateDependentParam(paramName, dependedValue) {
             else {
               var allVals = oldValues[paramName];
               jQuery.each(allVals, function() {
-          $("input[value='" + this + "']", dependentParam).attr('checked',true);
+                $("input[value='" + this + "']", dependentParam).attr('checked',true);
               });
             }
             oldValues[name] = null;
