@@ -50,17 +50,17 @@ function initDependentParamHandlers(isEdit) {
       dependedParams[name] = $(this).attr('dependson');
     }
     var dependedParam = $("td#" + dependedParams[name] + 
-	"aaa input[name='array(" + dependedParams[name] + ")'], td#" + 
+        "aaa input[name='array(" + dependedParams[name] + ")'], td#" + 
         dependedParams[name] + "aaa select[name='array(" + dependedParams[name] + 
-	")']");
+        ")']");
     dependedParam.change(function() {
       dependedValues = [];
       var paramName = getParamName($(this).attr('name'), true);
       var inputs = $("td#" + paramName + "aaa input[name='array(" + paramName + 
-	  ")']:checked, td#" + paramName + "aaa select[name='array(" + paramName + 
+          ")']:checked, td#" + paramName + "aaa select[name='array(" + paramName + 
           ")']");
       inputs.each(function() {
-	dependedValues.push($(this).val());
+        dependedValues.push($(this).val());
       });
       jQuery.unique(dependedValues);
       updateDependentParam(name, dependedValues.join(","));
@@ -78,20 +78,20 @@ function initDependentParamHandlers(isEdit) {
     for (var name in dependedParams) {
       var input = $("input.typeAhead[name='value(" + name + ")']");
       if (input.length == 0) {
-	input = $("div.dependentParam[name='" + name + "']").find("select");
-	if (input.length > 0) {
-	  // If this is a select, there's only one value
-	  oldValues[name] = input.val();
-	}
-	else {
-	  // Otherwise, we have to know which option(s) are checked
-	  var allVals = [];
-	  $("div.dependentParam[name='" + name + "']").find("input:checked")
-	    .each(function() {
-	      allVals.push($(this).val());
-	  });
-	  oldValues[name] = allVals;
-	}
+        input = $("div.dependentParam[name='" + name + "']").find("select");
+        if (input.length > 0) {
+          // If this is a select, there's only one value
+          oldValues[name] = input.val();
+        }
+        else {
+          // Otherwise, we have to know which option(s) are checked
+          var allVals = [];
+          $("div.dependentParam[name='" + name + "']").find("input:checked")
+            .each(function() {
+              allVals.push($(this).val());
+            });
+          oldValues[name] = allVals;
+        }
       }
     }
   }
@@ -110,11 +110,11 @@ function initTypeAhead(isEdit) {
       $("#" + paramName + "_display").val('Loading options...');
       var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&xml=true';
       $.ajax({
-	url: sendReqUrl,
-	dataType: "xml",
-	success: function(data){
-	  createAutoComplete(data, paramName);
-	}
+        url: sendReqUrl,
+        dataType: "xml",
+        success: function(data){
+          createAutoComplete(data, paramName);
+        }
       });
     }
   });  
@@ -135,7 +135,7 @@ function createAutoComplete(obj, name) {
       def.push(display);
       displayTermMap[name][display] = term;
       termDisplayMap[name][term] = display;
-    });		
+    });    
   }
 
   var odd = true;
@@ -144,13 +144,13 @@ function createAutoComplete(obj, name) {
     source: function( request, response ){     
       var result = $.ui.autocomplete.filter(def, request.term);
       if (result.length == 0) {
-	result.push(noMatch);
+        result.push(noMatch);
       } else {
-	var matcher = new RegExp("("+$.ui.autocomplete.escapeRegex(request.term)+")", "ig" );
-	result = $.map(result, function(item){
-	  var display = item.replace(matcher, "<strong>$1</strong>");
-	  return { label: display,    value: item};
-	});
+        var matcher = new RegExp("("+$.ui.autocomplete.escapeRegex(request.term)+")", "ig" );
+        result = $.map(result, function(item){
+          var display = item.replace(matcher, "<strong>$1</strong>");
+          return { label: display,    value: item};
+        });
       }
       odd = true;
       response(result);
@@ -196,45 +196,45 @@ function updateDependentParam(paramName, dependedValue) {
       var sendReqUrl = sendReqUrl + '&xml=true';
       $("#" + paramName + "_display").attr('disabled',true).val('Loading options...');
       $.ajax({
-	url: sendReqUrl,
-	dataType: "xml",
-	success: function(data){
-	  $('input',dependentParam).removeAttr('disabled');
-	  createAutoComplete(data, paramName);
-	}
+        url: sendReqUrl,
+        dataType: "xml",
+        success: function(data){
+          $('input',dependentParam).removeAttr('disabled');
+          createAutoComplete(data, paramName);
+        }
       });
     } else {
       $.ajax({
-	url: sendReqUrl,
-	type: "POST",
-	data: {},
-	dataType: "html",
-	success: function(data){
-	  var newContent = $("div.param, div.param-multiPick",data);
-	  if (newContent.length > 0) {
-	    dependentParam.html(newContent.html());
-	  } else {
-	    // this case is specifically for checkbox trees
-	    //   calling .html() on response erases javascript, so insert directly
-	    dependentParam.html(data);
-	  }
-	  if (oldValues[paramName]) {
-	    var input = $("select",dependentParam);
-	    if (input.length > 0) {
-	      input.val(oldValues[paramName]);
-	    }
-	    else {
-	      var allVals = oldValues[paramName];
-	      jQuery.each(allVals, function() {
-		$("input[value='" + this + "']", dependentParam).attr('checked',true);
-	      });
-	    }
-	    oldValues[name] = null;
-	  }
-	},
-	error: function (jqXHR, textStatus, errorThrown) {
-	  alert("Error retrieving dependent param: " + textStatus + "\n" + errorThrown);
-	}
+        url: sendReqUrl,
+        type: "POST",
+        data: {},
+        dataType: "html",
+        success: function(data){
+          var newContent = $("div.param, div.param-multiPick",data);
+          if (newContent.length > 0) {
+            dependentParam.html(newContent.html());
+          } else {
+            // this case is specifically for checkbox trees
+            //   calling .html() on response erases javascript, so insert directly
+            dependentParam.html(data);
+          }
+          if (oldValues[paramName]) {
+            var input = $("select",dependentParam);
+            if (input.length > 0) {
+              input.val(oldValues[paramName]);
+            }
+            else {
+              var allVals = oldValues[paramName];
+              jQuery.each(allVals, function() {
+          $("input[value='" + this + "']", dependentParam).attr('checked',true);
+              });
+            }
+            oldValues[name] = null;
+          }
+        },
+        error: function (jqXHR, textStatus, errorThrown) {
+          alert("Error retrieving dependent param: " + textStatus + "\n" + errorThrown);
+        }
       });
     }
   }
