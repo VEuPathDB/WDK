@@ -10,6 +10,7 @@ function initializeQuestion() {
     if (window.wdk != undefined) {
         window.wdk.onloadQuestion();
     }
+    wdkEvent.publish("questionload");
 
 }
 
@@ -51,4 +52,5 @@ function WdkQuestion() {
             }
         });
     };
+
 }
