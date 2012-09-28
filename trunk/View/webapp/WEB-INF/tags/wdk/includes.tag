@@ -36,6 +36,7 @@
 
 <%-- WDK based js files --%>
 <script type="text/javascript" src='<c:url value="/wdk/js/api.js"/>'></script>
+<script type="text/javascript" src='<c:url value="/wdk/js/wdkEvent.js"/>'></script>
 <script type="text/javascript" src='<c:url value="/wdk/js/wdkCommon.js"/>'></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/stratTabCookie.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/js-utils.js'/>"></script>
