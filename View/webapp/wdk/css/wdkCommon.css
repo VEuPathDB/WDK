@@ -1,270 +1,61 @@
 @import url("reset.css");
 
 
-
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      Stylesheet for base styles for StrategiesWDK-based sites
+    =Base stylesheet for StrategiesWDK-based sites
+       - the default font size has to be 12px, otherwise the step boxes will not be aligned correctly
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-/* the default font size has to be 12px, otherwise the step boxes will not be aligned correctly. */
-body { font-size: 12px; }
 
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     = Header & Menu styles
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-#menu #favorite-menu { float: right; }
+body { 
+  font-size: 12px; 
+  text-align: left;
+	color: #000000;
+	background-color: #ffffff;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	white-space: normal;
+	background-repeat: repeat-x;
+}
 
 
-/* -----------------------------------------------------------------------------
-      =WDK params
- * -------------------------------------------------------------------------- */
-.param-group .group-title {
-	text-align: center;
-/*	padding: 0 0 5px;  */
-/*	padding: 3px;  */
+h1 {
+	font-size: 170%;   /* 20px; */
+	font-family: Verdana, Arial, Helvetica, sans-serif;
 	font-weight: bold;
-/*	position: relative;  */
-}
-.param-group .group-title span{
-	position: relative;
-	top: -5px;
-
-}
-
-.param-group[type='ShowHide'] {
-    background-color: #DEDEDE;
-    border: 1px solid white;
-}
-
-.param-group[type='ShowHide'] .group-handle {
-    cursor: pointer;
-}
-
-.param-group[type='ShowHide'] .group-detail {
-
-}
-
-.param-group td, .param-group th {
-    padding: 3px;
-}
-
-/* css for the tree box enum param */
-.param-group .term-children {
-    display: none;
-}
-
-.param-group img.plus-minus, .param-group .term-node input {
-    float: left;
-}
-
-.param-group .term-node span {
-    margin-left: 5px;
-}
-
-.param-group .term-node {
-    clear: left;
-    line-height: 1.5;
-}
-
-.param-controls {
-    float: left;
-    clear: left;
-}
-
-.params .invalid-params { padding:10px 5px 5px 100px; font-weight: bold; }
-.params .invalid-params ul { list-style:disc outside none; margin:2px 2px 2px 15px; }
-.params .invalid-params li { color:red; }
-
-.params .invalid-values { padding:5px; font-weight: bold; }
-.params .invalid-values ul { list-style:disc outside none; margin:2px 2px 2px 15px; }
-.params .invalid-values li.invalid { color:red; }
-
-
-
-/*
-.param-controls > a:link, 
-.param-controls > a:visited,
-.param-controls > a:hover,
-.param-controls > a:active,
-.param-multiPick  a:link, 
-.param-multiPick  a:visited,
-.param-multiPick  a:hover,
-.param-multiPick  a:active{
-	font-size:  8pt;
-}
-*/
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 =TABLES 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-table.center {margin-left:auto; margin-right:auto;}
-
-table.paneltoggle {
-        background:#dddddd;
-        margin-bottom:0px;
-        padding-top: 2.5px;
-        padding-right: 3px;
-        padding-bottom: 2.5px;
-        padding-left: 3px;
-}
-
-table.recordTable {
-  border-bottom: black solid thin;
-  border-top: black solid thin;
-  border-right: black solid thin;
-  border-left: black solid thin;
-}
-
-
-.wdk-table { border:black solid thin; }
-.wdk-table-description { color:#666666; }
-
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 =favorites.tag
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-table.mytableStyle {
-	empty-cells:show;
-	border-width:1px;
-	border-style:solid;	  
-	border-color:black;
-	border-collapse:collapse; 
-	table-layout: auto;      
-}
-tr.mytdStyle {
-	text-align:center;
-
-}
-tr.mythStyle {
-	background-color:lightgrey;
-	text-align:center;
-	font-weight:bold;
-}
-td.mythStyle,td.mytdStyle,th.mythStyle {
-	vertical-align:middle;
-	border-width:1px;
-	border-style:inset;
-	border-color:gray;
-	-moz-border-radius:0px;
-	padding:3px;
-}
-th.mythStyle {
-	font-weight:bold;
-	background-color:lightgrey;
-	border-bottom: 3px solid grey;
-}
-
-
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     = jquery validation plugin messages
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-label.error {
-  float: none;
-  color: red;
-  padding-left: .5em;
-  vertical-align: top;
-  font-weight:bold;
-}
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     = Advanced Paging Pop Up initial style
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-.advanced-paging {
-  display:none; 
-  position:absolute;
-  border:solid 2px #888888;   /* #B2BFD4;   */
-  background-color:#c2cee1;
-  padding:5px;
-}
-
-.advanced-paging span#CAP{
-  font-size:7pt;
-  cursor:pointer;
-  left:250px;
-  position:absolute;
-  top:0px;
-}
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     = Summary page tabs
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-ul#strategy_tabs {
-    font-size: 15px;
-    border-bottom: 1px solid #777;
-    margin:0 0 1px;
-    padding:0 10px;
-    height: 24.5px;
-    width: 98%;
-}
-
-#strategy_tabs li {
-    display: inline;
-    list-style-type: none;
-    margin:0;
-    padding: 0;
-}
-
-#search_history {
-	min-height: 130px;
-}
-
-.workspace_panel {
-	clear: both;
-	position: absolute;
-	left: -999em;
-	width:100%;
-}
-
-.toggle {display: none;}
-.boggle {margin: 6px 20px 6px 20px; display: none;}
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 =TAGS 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-#wrap {
-	width: 100%;
-	text-align: left;
-}
-
-img.plus-minus {
-	cursor: pointer;
-}
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 =STRUCTURE 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/	
- 
-#contentwrapper {
-	float: left;
-	width: 100%;
-	margin: 12px 0 12px 0;
-}
-
-#contentcolumn2 {
-	min-width: 900px;
-}
-
-#center {
-	width: 100%;
 	text-align: center;
+	margin-bottom: 14px;
 }
 
-/* used to position the strategy workspace title */
-.innertube{
-	margin: 6px; /*Margins for inner DIV inside each column (to provide padding)*/
-	/*position: relative;   */
+h2 {
+	font-size: 150%;   /* 18px; */
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	margin-bottom: 11px;
+ 	text-align: left;
+	margin-left: 11px;
 }
 
-#full {
-	width: 100%;
-	text-align: center;
-	clear: both;
+h3 {
+	font-size: 120%;   /* 14px; */
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	margin-bottom: 11px;
+ 	text-align: left;
+	margin-left: 11px;
 }
 
 
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 =Fonts 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+a:link, a:visited {
+	text-decoration: none;
+}
+
+a:hover, a:active {
+	text-decoration: none;
+}
+
+td { 
+    padding: 4px 4px 4px 4px;
+}
 
 .h2center {
 	font-size: 150%;
@@ -319,11 +110,324 @@ img.plus-minus {
 	font-size: 95%;	
 }
 
+#wrap {
+	width: 100%;
+	text-align: left;
+}
+
+.clear {
+   clear:both;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      = MENUBAR Tabs, in favorites and strategies
+  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+ul.menubar {
+    border-bottom: 1px solid;
+    list-style-image:none;
+    list-style-position:outside;
+    list-style-type:none;
+    float:left;
+    display:inline-block;
+    margin:0 0 5px;
+    padding:0 10px;
+    width: 98%;
+}
+
+.menubar li {;
+    float:left;
+    padding:0.24em 0;
+    margin:0;
+}
+
+.menubar li a {
+    color:black;
+    display:inline-block;
+    padding:0.24em 1em;
+    text-align:center;
+    text-decoration:none;
+}
+
+.menubar li a:hover {
+    color:black;
+    font-weight:bold;
+    padding:0.24em 0.8em;
+    position:relative;
+}
+
+.menubar .selected_type {
+    background-color: #FFFFA0;
+}
+
+.menubar .selected_type a {
+    color:black;
+    padding:0.24em 0.8em;
+    font-weight:bold;
+    position:relative;
+}
+
+
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      =WDK params
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+.param-group .group-title {	
+	text-align: center;
+/*	padding: 0 0 5px;  */
+/*	padding: 3px;  */
+	font-weight: bold;
+/*	position: relative;  */
+}
+.param-group .group-title span{
+	position: relative;
+	top: -5px;
+
+}
+
+.param-group[type='ShowHide'] {
+  background-color: #DEDEDE;
+  border: 1px solid white;
+}
+
+.param-group[type='ShowHide'] .group-handle {
+  cursor: pointer;
+}
+
+.param-group[type='ShowHide'] .group-detail {
+
+}
+
+.param-group td, .param-group th {
+    padding: 3px;
+}
+
+/* css for the tree box enum param */
+.param-group .term-children {
+    display: none;
+}
+
+.param-group img.plus-minus, .param-group .term-node input {
+    float: left;
+}
+
+.param-group .term-node span {
+    margin-left: 5px;
+}
+
+.param-group .term-node {
+    clear: left;
+    line-height: 1.5;
+}
+
+.param-controls {
+    float: left;
+    clear: left;
+}
+
+.params .invalid-params { padding:10px 5px 5px 100px; font-weight: bold; }
+.params .invalid-params ul { list-style:disc outside none; margin:2px 2px 2px 15px; }
+.params .invalid-params li { color:red; }
+
+.params .invalid-values { padding:5px; font-weight: bold; }
+.params .invalid-values ul { list-style:disc outside none; margin:2px 2px 2px 15px; }
+.params .invalid-values li.invalid { color:red; }
+
+
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 =SEARCH PAGE:enumParamInputNode, also apicomm DQG_bubble
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+img.plus-minus {
+	cursor: pointer;
+}
+
+.type-ahead-help {
+    color: #666666;
+    font-size: smaller;
+}
+
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 =STRUCTURE STRATEGY WORKSPACE 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/	
+ 
+#contentwrapper {
+	float: left;
+	width: 100%;
+	margin: 12px 0 12px 0;
+}
+
+#contentcolumn2 {
+	min-width: 900px;
+  margin: 0 8px;
+}
+
+#center {
+	width: 100%;
+	text-align: center;
+}
+
+/* used to position the strategy workspace title */
+.innertube{
+	margin: 6px; /*Margins for inner DIV inside each column (to provide padding)*/
+	/*position: relative;   */
+}
+
+#full {
+	width: 100%;
+	text-align: center;
+	clear: both;
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     = STRATEGY tabs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+ul#strategy_tabs {
+    font-size: 15px;
+    border-bottom: 1px solid #777;
+    margin:0 0 1px;
+    padding:0 10px;
+    height: 24.5px;
+    width: 98%;
+}
+
+#strategy_tabs li {
+    display: inline;
+    list-style-type: none;
+    margin:0;
+    padding: 0;
+}
+
+#search_history {
+	min-height: 130px;
+}
+
+.workspace_panel {
+	clear: both;
+	position: absolute;
+	left: -999em;
+	width:100%;
+}
+
+#strategy_tabs a:link, #strategy_tabs a:visited, #strategy_tabs li span {
+    border-color: #CCCCCC #CCCCCC #777777;
+    border-style: solid;
+    border-width: 1px;
+    float: left;
+    margin-top: 2px;
+    padding:0.24em 1em;
+    text-align:center;
+    text-decoration:none;
+}
+
+#strategy_tabs #selected a {
+    background-color: #FFFFFF;
+    border-color: #777777 #777777 #FFFFFF;
+    color: #000000;
+    font-weight:bold;
+}
+
+#strategy_tabs li span#stratTitle {
+	border:none;
+	padding-left:0em;
+}
+
+span.subscriptCount, font.subscriptCount {
+	color:#600000;   /*dark red, tested against color blindness */
+	display:inline;
+	font-size:12px;
+	vertical-align:middle;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 STRATEGY HISTORY (All tab)  ==> TO STRATEGY.css??
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+div#history-menu .ui-tabs-panel {
+	border:0;
+}
+
+
+/* see https://redmine.apidb.org/issues/9167#note-8
+table.datatables tr.headerrow th {
+	border-width:0px 0px 2px;
+}
+*/
+
+.ui-dialog-title {
+	font-weight: bold;
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    =RED BUTTON   ==> TO STRATEGY.css??
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+a.redbutton {
+   display: block;
+   text-decoration: none;
+   background-attachment: scroll;
+   background-color: transparent;
+   background-image: url(../images/redboxb.gif);
+   background-position: right top;   
+   background-repeat: no-repeat;
+}
+
+a.redbutton span {
+   display: block;
+   color: #FFFFFF;
+   font: normal 13px arial, sans-serif;
+   line-height: 13px;
+   padding: 15px 21px 12px;
+   text-decoration: none;
+}
+
+a.redbutton:active {
+   background-position: bottom right;
+   color: #cecece;
+   outline: none; /* hide dotted outline in Firefox */
+}
+
+a.redbutton:active span {
+   padding: 16px 21px 11px; /* push text down 1px */
+}
+
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 =TABLES    
+	 =RESULTS PAGE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+#form_question .filter-button { text-align: center; }
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     = Advanced Paging Pop Up initial style
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+.advanced-paging {
+  display:none; 
+  position:absolute;
+  border:solid 2px #888888;   /* #B2BFD4;   */
+  background-color:#c2cee1;
+  padding:5px;
+}
+
+.advanced-paging span#CAP{
+  font-size:7pt;
+  cursor:pointer;
+  left:250px;
+  position:absolute;
+  top:0px;
+}
+
+.advanced-paging div.text {
+	font-size: 110%;
+	padding-bottom: 5px;
+}
+.advanced-paging .submit {
+		float:right;
+}
+
+
 td.headerrow {
 	height: 29px;
 	font-size: 15px;
@@ -429,59 +533,7 @@ tr.lines td, tr.linesalt td {
 	padding: 0px 2px;
 }
 
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 Strategy history panel
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-div#history-menu .ui-tabs-panel {
-	border:0;
-}
-
-
-/* see https://redmine.apidb.org/issues/9167#note-8
-table.datatables tr.headerrow th {
-	border-width:0px 0px 2px;
-}
-*/
-.ui-dialog-title {
-	font-weight: bold;
-}
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    =RED BUTTON
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-a.redbutton {
-   display: block;
-   text-decoration: none;
-   background-attachment: scroll;
-   background-color: transparent;
-   background-image: url(../images/redboxb.gif);
-   background-position: right top;   
-   background-repeat: no-repeat;
-}
-
-a.redbutton span {
-   display: block;
-   color: #FFFFFF;
-   font: normal 13px arial, sans-serif;
-   line-height: 13px;
-   padding: 15px 21px 12px;
-   text-decoration: none;
-}
-
-a.redbutton:active {
-   background-position: bottom right;
-   color: #cecece;
-   outline: none; /* hide dotted outline in Firefox */
-}
-
-a.redbutton:active span {
-   padding: 16px 21px 11px; /* push text down 1px */
-}
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 =WorkSpace Divs 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/	
 div.Workspace {
    position: relative;
 	border: 2px solid #0B4796;
@@ -492,55 +544,133 @@ div.Workspace {
 
 .step {background-image: url(../images/loading_step.png);}
 
+
+tr.headerRow {
+	background: #EFEFEF;
+}
+
+tr.headerRow th {
+   border-left: black solid thin;
+   border-right: black solid thin;
+}
+
+
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 =ADVANCED STRATEGY PAGING 
+	 =RESULTS:  addAttributes.tag used in resultTable.tag
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-#adv_paging {
-	width: 225px;
-	padding: 6px;
-	background-color: #7a3b17;
-	color: #FFFFFF;
+
+.formPopup {
+	position: absolute;
+	background-color: #FFFFFF;
+	background-repeat: repeat-x;
+	background-position: 0 26px;   /* was 36px, decreased to have Add Step title thiner */
+	border: 1px solid #888888;	
+	padding: 0 8px 8px 8px;
+	z-index: 190;   /* as good as 1000... in select columns popup to cover results */
 }
+
+.attributesList {
+	display: none;
+	text-align: left;
+	min-width: 300px;
+}
+
+.attributesFormWrapper {
+	font-family: Arial, Helvetica, sans-serif;
+	font-weight: normal;
+}
+
+.formButtonPanel {
+	text-align: center;
+	padding: 5px;
+}
+
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    RESULTS PAGE: column summaries
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+#histogram .bar {
+    height: 12px;
+    background-image: url(../images/blue_bar.gif);
+}
+
+#word-cloud #tags, #word-cloud #word-order, #word-cloud #count-order { display: none; }
+#word-cloud .help { color: #666666; font-size: smaller; font-style:italic; text-align: center; vertical-align: top; }
+#word-cloud th { border-width: 0px; }
+#word-cloud input[name=from], #word-cloud input[name=to] { text-align: right; height: 15px; }
+#word-cloud #amount { width: 400px; }
+#word-cloud #layout {
+  border: 1px solid #666666;
+  background-color: #FFFFFF;
+  margin: 2px; padding: 5px;
+}
+#word-cloud #layout .word {
+  padding: 0px 2px 0px 2px;
+}
+#word-cloud #layout .word { padding: 2px; }
+
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      = RESULT PAGE and basket title and links
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+table#title-links {
+	font-size:12px; 
+/*we need to figure out why the font size in this table becomes different when used in basket vs results table */
+}
+div#Summary_Views {
+	border:0;
+}
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      = RESULTS used in group default view (orthomcl)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+.record-panel { overflow:auto; }
+
+
+
+
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 =MISC 
+	 =RECORD PAGE tables: in toggle.tag and wdkTable.tag
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+table.center {margin-left:auto; margin-right:auto;}
+
+table.paneltoggle {
+        background:#dddddd;
+        margin-bottom:0px;
+        padding-top: 2.5px;
+        padding-right: 3px;
+        padding-bottom: 2.5px;
+        padding-left: 3px;
+}
+
+table.recordTable {
+  border-bottom: black solid thin;
+  border-top: black solid thin;
+  border-right: black solid thin;
+  border-left: black solid thin;
+}
+
+
+.wdk-table { border:black solid thin; }
+.wdk-table-description { color:#666666; }
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 = toggle.tag
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-
-span.marker a:link, span.marker a:visited {
-	padding-left: 15px;
-	font-weight: bold;
-}
-
-.help_div {
-	background-color: lightYellow;
-	border: 1px solid black;
-}
-
-#strategy_tabs a:link, #strategy_tabs a:visited, #strategy_tabs li span {
-    border-color: #CCCCCC #CCCCCC #777777;
-    border-style: solid;
-    border-width: 1px;
-    float: left;
-    margin-top: 2px;
-    padding:0.24em 1em;
-    text-align:center;
-    text-decoration:none;
-}
+.toggle {display: none;}
+.boggle {margin: 6px 20px 6px 20px; display: none;}
 
 
-#strategy_tabs #selected a {
-    background-color: #FFFFFF;
-    border-color: #777777 #777777 #FFFFFF;
-    color: #000000;
-    font-weight:bold;
-}
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 = wdkTable.tag
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-img.basket {
-	margin:-1px 0px -2px -1px;
-}
-
-/* used still in some tables in record pages */
 tr.rowMedium {
     background-color: #DDDDDD;
     color: black;
@@ -571,27 +701,10 @@ tr.rowLight td {
     border-right: black dotted thin;
 }
 
-td.recordClassTitle{
-    background-color: #918599;
-    color: white;
-    font-family: arial;
-    font-size: 10pt;
-    border-width:1px 0;
-    border-style:solid;
-}
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 =RECORD PAGE section titles (top bottom border look)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-
-tr.headerRow {
-	background: #EFEFEF;
-}
-
-tr.headerRow th {
-   border-left: black solid thin;
-   border-right: black solid thin;
-}
-
-
-/* used in gene record pages for section titles (top bottom border look */
 tr.headerRow > td,th {
    border-width:2px 0;
    border-style:solid;
@@ -599,43 +712,17 @@ tr.headerRow > td,th {
    padding: 4px;
 }
 
-.formPopup {
-	position: absolute;
-	background-color: #FFFFFF;
-	background-repeat: repeat-x;
-	background-position: 0 26px;   /* was 36px, decreased to have Add Step title thiner */
-	border: 1px solid #888888;	
-	padding: 0 8px 8px 8px;
-	z-index: 190;   /* as good as 1000; used by select columns popup to cover results */
-}
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 =RECORD page:  wdk/jsp/records/default.jsp
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+.fixed {font-family:courier, fixed-width, monospace; font-size:10pt; color:#000000;}
 
-.attributesList {
-	display: none;
-	text-align: left;
-	min-width: 300px;
-}
 
-.attributesFormWrapper {
-	font-family: Arial, Helvetica, sans-serif;
-	font-weight: normal;
-}
 
-.formButtonPanel {
-	text-align: center;
-	padding: 5px;
-}
 
-.extraOption {
-    text-align: left;
-    padding-left: 30px;
-}
-
-.clear {
-   clear:both;
-}
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 = styles for blockUI popups
+	 =blockUI popups 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 .blockMsg{
@@ -670,22 +757,15 @@ tr.headerRow > td,th {
 
 
 
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-     = jquery css
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-.ui-widget-header { 
-	padding:0;
-	background:none;
-	border:0; 
-} 
-.ui-tabs .ui-tabs-panel {
-	padding:0.5em 0.5em 0.5em;
-	border-width: 1px;
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 = BASKET
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+img.basket {
+	margin:-1px 0px -2px -1px;
 }
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      = Basket Tab Styles
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #basket-menu > .ui-tabs-panel{
 	padding:0; 
@@ -700,21 +780,58 @@ tr.headerRow > td,th {
 	font-size:85%;
 }
 
-#strategy_tabs li span#stratTitle {
-	border:none;
-	padding-left:0em;
-}
-
-span.subscriptCount, font.subscriptCount {
-	color:#600000;   /*dark red, tested against color blindness */
-	display:inline;
-	font-size:12px;
-	vertical-align:middle;
-}
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      = Favorite/Primary key Styles
+      =  note on new releases
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+span.basket-warning {
+	color:darkred;font-style:italic;margin-bottom:7px;margin-right:5px;position:relative;right:5px;
+}
+
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    = FAVORITES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     =in menubar: favorite tab
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+#menu #favorite-menu { float: right; }
+
+table.mytableStyle {
+	empty-cells:show;
+	border-width:1px;
+	border-style:solid;	  
+	border-color:black;
+	border-collapse:collapse; 
+	table-layout: auto;      
+}
+tr.mytdStyle {
+	text-align:center;
+
+}
+tr.mythStyle {
+	background-color:lightgrey;
+	text-align:center;
+	font-weight:bold;
+}
+td.mythStyle,td.mytdStyle,th.mythStyle {
+	vertical-align:middle;
+	border-width:1px;
+	border-style:inset;
+	border-color:gray;
+	-moz-border-radius:0px;
+	padding:3px;
+}
+th.mythStyle {
+	font-weight:bold;
+	background-color:lightgrey;
+	border-bottom: 3px solid grey;
+}
+
+
 .record .primaryKey {
     display: none;
 }
@@ -775,117 +892,9 @@ span.wdk-record {        /*to not affect a tr same class in favorites page */
     clear: both;
 }
 
-#Feature_Pane .label {
-    width: 100px;
-    font-weight: bold;
-    white-space: nowrap;
-}
 
-.type-ahead-help {
-    color: #666666;
-    font-size: smaller;
-}
-
-.jqbutton.ui-button {padding:0px;}
-
-#histogram .bar {
-    height: 12px;
-    background-image: url(../images/blue_bar.gif);
-}
-
-#word-cloud #tags, #word-cloud #word-order, #word-cloud #count-order { display: none; }
-#word-cloud .help { color: #666666; font-size: smaller; font-style:italic; text-align: center; vertical-align: top; }
-#word-cloud th { border-width: 0px; }
-#word-cloud input[name=from], #word-cloud input[name=to] { text-align: right; height: 15px; }
-#word-cloud #amount { width: 400px; }
-#word-cloud #layout {
-  border: 1px solid #666666;
-  background-color: #FFFFFF;
-  margin: 2px; padding: 5px;
-}
-#word-cloud #layout .word {
-  padding: 0px 2px 0px 2px;
-}
-#word-cloud #layout .word { padding: 2px; }
-
-#form_question .filter-button { text-align: center; }
-
-.advanced-paging div.text {
-	font-size: 110%;
-	padding-bottom: 5px;
-}
-.advanced-paging .submit {
-		float:right;
-}
-
-
-/* -----------------------------------------------------------------------------
-      = Styles for Tabs, in favorites and strategies
- * -------------------------------------------------------------------------- */
-
-ul.menubar {
-    border-bottom: 1px solid;
-    list-style-image:none;
-    list-style-position:outside;
-    list-style-type:none;
-    float:left;
-    display:inline-block;
-    margin:0 0 5px;
-    padding:0 10px;
-    width: 98%;
-}
-
-.menubar li {;
-    float:left;
-    padding:0.24em 0;
-    margin:0;
-}
-
-.menubar li a {
-    color:black;
-    display:inline-block;
-    padding:0.24em 1em;
-    text-align:center;
-    text-decoration:none;
-}
-
-.menubar li a:hover {
-    color:black;
-    font-weight:bold;
-    padding:0.24em 0.8em;
-    position:relative;
-}
-
-.menubar .selected_type {
-    background-color: #FFFFA0;
-}
-
-.menubar .selected_type a {
-    color:black;
-    padding:0.24em 0.8em;
-    font-weight:bold;
-    position:relative;
-}
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      = Result and basket title and links
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-table#title-links {
-	font-size:12px; 
-/*we need to figure out why the font size in this table becomes different when used in basket vs results table */
-}
-div#Summary_Views {
-	border:0;
-}
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      = Basket note on new releases
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-
-span.basket-warning {
-color:darkred;font-style:italic;margin-bottom:7px;margin-right:5px;position:relative;right:5px;
-}
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      = Favorites note on new releases
+      = note on new releases
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 p.fav-warning {
@@ -893,4 +902,131 @@ color:darkred;font-style:italic;font-size:95%;
 }
 
 
-.record-panel { overflow:auto; }
+
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     = jQuery 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+.ui-widget-header { 
+	padding:0;
+	background:none;
+	border:0; 
+} 
+.ui-tabs .ui-tabs-panel {
+	padding:0.5em 0.5em 0.5em;
+	border-width: 1px;
+}
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     = jQuery validation plugin messages
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+label.error {
+  float: none;
+  color: red;
+  padding-left: .5em;
+  vertical-align: top;
+  font-weight:bold;
+}
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    some jQuery style is overwritten
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+
+.jqbutton.ui-button {padding:0px;}
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 = jQuery tabs:  basket page
+         = in wdk/css/ui-custom-custom-theme/jquery-ui....custom.css
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+.ui-tabs .ui-tabs-nav li a {
+	padding: 0.1em 1em;
+}
+
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 =MISC 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+span.marker a:link, span.marker a:visited {
+	padding-left: 15px;
+	font-weight: bold;
+}
+
+.help_div {
+	background-color: lightYellow;
+	border: 1px solid black;
+}
+
+
+
+/* THE END */
+
+
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    UNUSED?
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/* 
+.param-controls > a:link, 
+.param-controls > a:visited,
+.param-controls > a:hover,
+.param-controls > a:active,
+.param-multiPick  a:link, 
+.param-multiPick  a:visited,
+.param-multiPick  a:hover,
+.param-multiPick  a:active{
+	font-size:  8pt;
+}
+*/
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	 =RESULTS PAGE: Advanced Paging : UNUSED: comment out
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+/*
+#adv_paging {
+	width: 225px;
+	padding: 6px;
+	background-color: #7a3b17;
+	color: #FFFFFF;
+}
+*/
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    UNUSED?
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/*
+td.recordClassTitle{
+    background-color: #918599;
+    color: white;
+    font-family: arial;
+    font-size: 10pt;
+    border-width:1px 0;
+    border-style:solid;
+}
+*/
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    UNUSED?
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/*
+#Feature_Pane .label {
+    width: 100px;
+    font-weight: bold;
+    white-space: nowrap;
+}
+*/
+
+/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    UNUSED?
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+/*
+.extraOption {
+    text-align: left;
+    padding-left: 30px;
+}
+*/

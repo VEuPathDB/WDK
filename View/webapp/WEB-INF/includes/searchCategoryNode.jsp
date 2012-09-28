@@ -7,7 +7,7 @@
 <c:set var="category" value="${requestScope.searchCategoryNode}"/>
 
 
-<li><a class="parent"><span>${category.displayName}</span></a>
+<li><a class="parent category"><span>${category.displayName}</span></a>
  
   <c:set var="categories" value="${category.websiteChildren}" />
   <c:set var="questions" value="${category.websiteQuestions}" />
