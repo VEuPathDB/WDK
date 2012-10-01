@@ -55,6 +55,9 @@ $(function() {
              		<option value="${fmt.key}" ${(fmt.key == format) ? "selected" : ""}>${fmt.value}</option>
           	</c:forEach>
         </select>
+        <c:if test="${param.signature != null}">
+           <input type="hidden" name="signature" value="${param.signature}" />
+        </c:if>
 </form>
 <hr>
 </c:when> <%-- end of ${step.estimateSize != 0} --%>

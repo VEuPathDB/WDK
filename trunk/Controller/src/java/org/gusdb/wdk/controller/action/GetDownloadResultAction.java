@@ -16,6 +16,7 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.report.Reporter;
 
 /**
@@ -42,9 +43,16 @@ public class GetDownloadResultAction extends Action {
                 throw new Exception(
                         "no userAnswer id is given for which to download the result");
 
+            String signature = request.getParameter("signature");
+            UserBean wdkUser;
+            if (signature != null && signature.length() > 0) {
+                WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
+                wdkUser = wdkModel.getUserFactory().getUser(signature);
+            } else {
+                wdkUser = ActionUtility.getUser(servlet, request);
+            }
+
             int histId = Integer.parseInt(histIdstr);
-            UserBean wdkUser = (UserBean) request.getSession().getAttribute(
-                    CConstants.WDK_USER_KEY);
             StepBean userAnswer = wdkUser.getStep(histId);
             AnswerValueBean wdkAnswerValue = userAnswer.getAnswerValue();
 
