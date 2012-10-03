@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -16,7 +14,6 @@ import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
 
 /**
  * @author Jerric
@@ -38,8 +35,7 @@ public class BooleanExpression {
     }
 
     public Step parseExpression(String expression, boolean useBooleanFilter)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            throws WdkModelException {
         this.orgExp = expression;
         // TEST
         // System.out.println("Expression: " + expression);
@@ -54,10 +50,10 @@ public class BooleanExpression {
             if (expression.charAt(i) == '(') count++;
             else if (expression.charAt(i) == ')') count--;
             if (count < 0)
-                throw new WdkUserException("Bad parentheses: " + orgExp);
+                throw new WdkModelException("Bad parentheses: " + orgExp);
         }
         if (count != 0)
-            throw new WdkUserException("Bad parentheses: " + orgExp);
+            throw new WdkModelException("Bad parentheses: " + orgExp);
 
         // insert a space before open parenthes; it's used when getting operator
         expression = expression.replaceAll("\\(",
@@ -72,7 +68,7 @@ public class BooleanExpression {
     }
 
     private String replaceLiterals(String expression,
-            Map<String, String> replace) throws WdkUserException {
+            Map<String, String> replace) throws WdkModelException {
         // split the expression by quotes, and literals are the even items. If
         // the expression ends with a quote, the String.split() won't be able to
         // separate an extra part beyond the last quote. I have to append a
@@ -84,7 +80,7 @@ public class BooleanExpression {
 
         // validate the expression by number of quotes; there are odd parts
         if (parts.length % 2 == 0)
-            throw new WdkUserException("Odd number of quotes in: " + orgExp);
+            throw new WdkModelException("Odd number of quotes in: " + orgExp);
 
         // replace literals with stub
         StringBuffer sb = new StringBuffer(parts[0]);
@@ -99,9 +95,7 @@ public class BooleanExpression {
     }
 
     private Step parseBlock(String block, Map<String, String> replace,
-            boolean useBooleanFilter) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+            boolean useBooleanFilter) throws WdkModelException {
         // check if the expression can be divided further
         // to do so, just need to check if there're spaces
         int spaces = block.indexOf(" ");
@@ -134,15 +128,14 @@ public class BooleanExpression {
     }
 
     private Step buildLeaf(String block, Map<String, String> replace)
-            throws WdkUserException, WdkModelException, SQLException,
-            JSONException, NoSuchAlgorithmException {
+            throws WdkModelException {
         // the block must be a history id or an id starting with '#'
         String strId = (block.charAt(0) == '#') ? block.substring(1) : block;
         int stepDisplayId;
         try {
             stepDisplayId = Integer.parseInt(strId);
         } catch (NumberFormatException ex) {
-            throw new WdkUserException("Invalid Step Id: " + orgExp);
+            throw new WdkModelException("Invalid Step Id: " + orgExp);
         }
 
         // get history
@@ -162,7 +155,7 @@ public class BooleanExpression {
      * @return
      * @throws WdkUserException
      */
-    private String[] getTriplet(String block) throws WdkUserException {
+    private String[] getTriplet(String block) throws WdkModelException {
         int pos;
 
         // get the right part
@@ -174,11 +167,11 @@ public class BooleanExpression {
                 if (block.charAt(pos) == '(') parenthese--;
                 if (block.charAt(pos) == ')') parenthese++;
                 if (parenthese < 0)
-                    throw new WdkUserException("Bad parentheses: " + orgExp);
+                    throw new WdkModelException("Bad parentheses: " + orgExp);
                 pos--;
             }
             if (parenthese != 0)
-                throw new WdkUserException("Bad parentheses: " + orgExp);
+                throw new WdkModelException("Bad parentheses: " + orgExp);
         } else { // no parenthese, then must be separated with space
             pos = block.lastIndexOf(" ");
         }
@@ -195,7 +188,7 @@ public class BooleanExpression {
         String remain = block.substring(0, pos).trim();
         int start = remain.lastIndexOf(" ");
         if (start < 0)
-            throw new WdkUserException("Incomplete expression: " + orgExp);
+            throw new WdkModelException("Incomplete expression: " + orgExp);
         String operator = remain.substring(start).trim();
 
         // grab left piece

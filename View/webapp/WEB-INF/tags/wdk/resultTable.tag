@@ -83,7 +83,7 @@
               <th>
               <c:choose>
                 <c:when test="${wdkUser.guest}">
-                  <c:set var="basketClick" value="popLogin();setFrontAction('basketPage');" />
+                  <c:set var="basketClick" value="User.login();" />
                   <c:set var="basketTitle" value="Please log in to use the basket." />
                 </c:when>
                 <c:otherwise>
@@ -109,7 +109,7 @@
             <c:when test="${!sumAttrib.sortable}">
               <img src="<c:url value='/wdk/images/results_arrw_up_blk.png'/>" border="0" alt="Sort up"/>
             </c:when>
-            <c:when test="${attrName == sortingAttrNames[0] && sortingAttrOrders[0]}">
+            <c:when test="${attrName eq sortingAttrNames[0] and sortingAttrOrders[0]}">
               <img src="<c:url value='/wdk/images/results_arrw_up_gr.png'/>"  alt="Sort up" 
                   title="Result is sorted by ${sumAttrib}" />
             </c:when>
@@ -128,7 +128,7 @@
             <c:when test="${!sumAttrib.sortable}">
 	      <img src="<c:url value='/wdk/images/results_arrw_dwn_blk.png'/>" border="0" />
 	    </c:when>
-            <c:when test="${attrName == sortingAttrNames[0] && !sortingAttrOrders[0]}">
+            <c:when test="${attrName eq sortingAttrNames[0] and not sortingAttrOrders[0]}">
               <img src="<c:url value='/wdk/images/results_arrw_dwn_gr.png'/>" alt="Sort down" 
 	                    title="Result is sorted by ${sumAttrib}" />
             </c:when>
@@ -202,7 +202,7 @@
                 <c:set var="basketClick" value="updateBasket(this,'single', '${primaryKey.value}', '${modelName}', '${recNam}')" />
               </c:when>
               <c:otherwise>
-                <c:set var="basketClick" value="popLogin();setFrontAction('${basketId}');" />
+                <c:set var="basketClick" value="User.login();" />
                 <c:set var="basketTitle" value="Please log in to use the basket." />
               </c:otherwise>
             </c:choose>

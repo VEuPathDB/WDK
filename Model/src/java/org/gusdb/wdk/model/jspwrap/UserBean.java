@@ -107,7 +107,16 @@ public class UserBean /* implements Serializable */{
     public String getCountry() {
         return user.getCountry();
     }
-
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#getOpenId()
+     */
+    public String getOpenId() {
+        return user.getOpenId();
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -255,7 +264,16 @@ public class UserBean /* implements Serializable */{
     public void setCountry(String country) {
         user.setCountry(country);
     }
-
+    
+    /*
+     * (non-Javadoc)
+     * 
+     * @see org.gusdb.wdk.model.user.User#setOpenId(java.lang.String)
+     */
+    public void setOpenId(String openId) {
+        user.setOpenId(openId);
+    }
+    
     /*
      * (non-Javadoc)
      * 
@@ -1327,7 +1345,7 @@ public class UserBean /* implements Serializable */{
         return basketFactory.getBasket(user, recordClass.recordClass);
     }
 
-    public Map<RecordClassBean, Integer> getBasketCounts() throws SQLException {
+    public Map<RecordClassBean, Integer> getBasketCounts() throws WdkModelException {
         Map<RecordClass, Integer> counts = user.getBasketCounts();
         Map<RecordClassBean, Integer> beans = new LinkedHashMap<RecordClassBean, Integer>();
         for (RecordClass recordClass : counts.keySet()) {
@@ -1338,20 +1356,13 @@ public class UserBean /* implements Serializable */{
         return beans;
     }
 
-    public int getBasketCount() throws SQLException {
-        try {
-            Map<RecordClass, Integer> baskets = user.getBasketCounts();
-            int total = 0;
-            for (int count : baskets.values()) {
-                total += count;
-            }
-            return total;
+    public int getBasketCount() throws WdkModelException {
+        Map<RecordClass, Integer> baskets = user.getBasketCounts();
+        int total = 0;
+        for (int count : baskets.values()) {
+            total += count;
         }
-        catch (SQLException ex) {
-            logger.error(ex);
-            ex.printStackTrace();
-            throw ex;
-        }
+        return total;
     }
 
     /**

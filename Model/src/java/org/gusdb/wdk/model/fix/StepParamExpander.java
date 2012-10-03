@@ -159,7 +159,7 @@ public class StepParamExpander extends BaseCLI {
     }
 
     private PreparedStatement prepareInsert(WdkModel wdkModel)
-            throws SQLException {
+            throws SQLException, WdkModelException {
         String schema = "";
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(schema + "step_params ");

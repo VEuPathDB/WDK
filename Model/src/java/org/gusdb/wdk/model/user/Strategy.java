@@ -102,15 +102,13 @@ public class Strategy {
         return isSaved;
     }
 
-    public Step getLatestStep() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public Step getLatestStep() throws WdkModelException {
         if (latestStep == null && latestStepId != 0)
             setLatestStep(stepFactory.loadStep(user, latestStepId));
         return latestStep;
     }
 
-    public void setLatestStep(Step step) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+    public void setLatestStep(Step step) throws WdkModelException {
         this.latestStep = step;
         // also update the cached info
         latestStepId = step.getDisplayId();
@@ -170,8 +168,7 @@ public class Strategy {
         return latestStepId;
     }
 
-    public Step getStepById(int id) throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public Step getStepById(int id) throws WdkModelException {
         return getLatestStep().getStepByDisplayId(id);
     }
 
@@ -437,8 +434,7 @@ public class Strategy {
      * @throws WdkModelException
      * @throws WdkUserException
      */
-    public boolean isValid() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public boolean isValid() throws WdkModelException {
         if (latestStep != null) valid = latestStep.isValid();
         return valid;
     }

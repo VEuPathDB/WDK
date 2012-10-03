@@ -1,6 +1,6 @@
 function getStrategyJSON(backId){
 	var strategyJSON = null;
-	$.ajax({
+	jQuery.ajax({
 		async: false,
 		url:"showStrategy.do?strategy=" + backId + "&open=false",
 		type: "POST",
@@ -39,56 +39,56 @@ function showLoading(divId){
 	var l = 0;
 	var t = 0;
 	if(divId == undefined){
-		d = $("#Strategies");
+		d = jQuery("#Strategies");
 		le = "10px";
 		t = "15px";
 		l_gif = "loading.gif";
 		sz = "35";
-	}else if($("#diagram_" + divId).length > 0){
-		d = $("#diagram_" + divId);
+	}else if(jQuery("#diagram_" + divId).length > 0){
+		d = jQuery("#diagram_" + divId);
 		le = "10px";
 		t = "12px";
 		l_gif = "loading.gif";
 		sz = "35";
 	} else {
-		d = $("#" + divId);
+		d = jQuery("#" + divId);
 		le = "405px";
 		t = "160px";
 		l_gif = "loading.gif";
 		sz = "50";
 	}
 	var l = document.createElement('span');
-	$(l).attr("id","loadingGIF");
+	jQuery(l).attr("id","loadingGIF");
 	var i = document.createElement('img');
-	$(i).attr("src","wdk/images/" + l_gif);
-	$(i).attr("height",sz);
-	$(i).attr("width",sz);
-	$(l).prepend(i);
-	$(l).css({
+	jQuery(i).attr("src","wdk/images/" + l_gif);
+	jQuery(i).attr("height",sz);
+	jQuery(i).attr("width",sz);
+	jQuery(l).prepend(i);
+	jQuery(l).css({
 		"text-align": "center",
 		position: "absolute",
 		left: le,
 		top: t
 	});
-	$(d).append(l);
+	jQuery(d).append(l);
 }
 
 // remove the loading icon for the given strategy
 function removeLoading(divId){
 	if(divId == undefined)
-		$("#Strategies span#loadingGIF").remove();
+		jQuery("#Strategies span#loadingGIF").remove();
 	else
-		$("#diagram_" + divId + " span#loadingGIF").remove();
+		jQuery("#diagram_" + divId + " span#loadingGIF").remove();
 }
 
 // parses the inputs of the question form to be sent via ajax call
 function parseInputs(){
-        // has to use find in two steps, IE7 cannot find the form using $("#query_form form#form_question")
-	var quesForm = $("#query_form").find("form#form_question");
+        // has to use find in two steps, IE7 cannot find the form using jQuery("#query_form form#form_question")
+	var quesForm = jQuery("#query_form").find("form#form_question");
         
         // if the questionForm is popupped by other ways, get it from the opened popup under body.
         if (quesForm.length == 0)
-            quesForm = $("body").children("div.crumb_details").find("form#form_question");
+            quesForm = jQuery("body").children("div.crumb_details").find("form#form_question");
 
         // Jerric - use ajax to serialize the form data
 	var d = quesForm.serialize();
@@ -97,7 +97,7 @@ function parseInputs(){
 
 function checkEnter(ele,evt){
 	var charCode = (evt.which) ? evt.which : evt.keyCode;
-	if(charCode == 13) $(ele).blur();
+	if(charCode == 13) jQuery(ele).blur();
 }
 
 function parseUrlUtil(name,url){
@@ -126,14 +126,14 @@ function getDisplayType(type, number){
 }
 
 function initShowHide(details){
-	$(".param-group[type='ShowHide']",details).each(function() {
+	jQuery(".param-group[type='ShowHide']",details).each(function() {
         // register the click event
-        var name = $(this).attr("name") + "_details";
+        var name = jQuery(this).attr("name") + "_details";
         var expire = 365;   // in days
-        $(this).find(".group-handle").unbind('click').click(function() {
+        jQuery(this).find(".group-handle").unbind('click').click(function() {
             var handle = this;
             var path = handle.src.substr(0, handle.src.lastIndexOf("/"));
-            var detail = $(this).parents(".param-group").children(".group-detail");
+            var detail = jQuery(this).parents(".param-group").children(".group-detail");
             detail.toggle();
             if (detail.css("display") == "none") {
                 handle.src = path + "/plus.gif";
@@ -148,33 +148,31 @@ function initShowHide(details){
         var showFlag = wdk.readCookie(name);
         if (showFlag == null) return;
         
-        var status = $(this).children(".group-detail").css("display");
+        var status = jQuery(this).children(".group-detail").css("display");
         if ((showFlag == "show") && (status == "none")) {   
             // should show, but it is hidden
-            $(this).find(".group-handle").trigger("click");
+            jQuery(this).find(".group-handle").trigger("click");
         } else if ((showFlag == "hide") && (status != "none")) {
             // should hide, bit it is shown
-            $(this).find(".group-handle").trigger("click");
+            jQuery(this).find(".group-handle").trigger("click");
         }
 	});
 }
 
+/* No longer used... but may put back.
 function setFrontAction(action, strat, step) {
 	jQuery("#loginForm form[name=loginForm]").append("<input type='hidden' name='action' value='" + action + "'/>");
 	jQuery("#loginForm form[name=loginForm]").append("<input type='hidden' name='actionStrat' value='" + strat + "'/>");
 	jQuery("#loginForm form[name=loginForm]").append("<input type='hidden' name='actionStep' value='" + step + "'/>");
 }
+*/
 
 function setDraggable(e, handle){
-	var rlimit = $("div#contentwrapper").width() - e.width() - 18;
+	var rlimit = jQuery("div#contentwrapper").width() - e.width() - 18;
 	if(rlimit < 0) rlimit = 525;
-	var blimit = $("body").height();
-	$(e).draggable({
+	var blimit = jQuery("body").height();
+	jQuery(e).draggable({
 		handle: handle,
 		containment: [0,0,rlimit,blimit]
 	});
-}
-
-function popLogin() {
-	jQuery.blockUI({message: '<h1>You have to be logged in to do that!</h1><input type="button" value="OK" onclick="$.unblockUI();" />'});
 }

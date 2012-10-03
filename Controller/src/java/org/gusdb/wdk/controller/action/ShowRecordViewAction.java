@@ -11,6 +11,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
@@ -27,11 +28,12 @@ public class ShowRecordViewAction extends Action {
 
     public static final String ATTR_RECORD = "wdkRecord";
 
-    private static final Logger logger = Logger.getLogger(ShowRecordViewAction.class);
+    private static final Logger logger = Logger.getLogger(ShowRecordViewAction.class.getName());
 
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
+      try {
         logger.debug("Entering ShowRecordFeatureAction");
 
         // get record
@@ -78,10 +80,15 @@ public class ShowRecordViewAction extends Action {
 
         ActionForward forward;
 
-        logger.debug("view=" + view.getName() + ", jsp=" + view.getJsp());
+        logger.info("view=" + view.getName() + ", jsp=" + view.getJsp());
         forward = new ActionForward(view.getJsp());
 
-        logger.debug("Leaving ShowRecordFeatureAction");
+        logger.info("Leaving ShowRecordFeatureAction");
         return forward;
+      }
+      catch (Exception e) {
+        logger.error("Exception processing show record.", e);
+        throw e;
+      }
     }
 }

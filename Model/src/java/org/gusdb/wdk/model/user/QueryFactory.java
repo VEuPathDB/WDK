@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,7 +13,6 @@ import javax.sql.DataSource;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 
@@ -41,8 +39,7 @@ public class QueryFactory {
     }
 
     public String makeSummaryChecksum(String[] summaryAttributes)
-            throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException {
+            throws WdkModelException {
         Set<String> usedAttributes = new HashSet<String>();
         // create checksum for config columns
         StringBuffer sb = new StringBuffer();
@@ -76,14 +73,14 @@ public class QueryFactory {
                     start);
             return checksum;
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
+            throw new WdkModelException(ex);
         } finally {
             SqlUtils.closeStatement(psInsert);
         }
     }
 
     public String[] getSummaryAttributes(String summaryChecksum)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         ResultSet rsSelect = null;
         try {
             String sql = "SELECT " + COLUMN_CLOB_VALUE + " FROM " + wdkSchema
@@ -108,15 +105,13 @@ public class QueryFactory {
             }
             return attributes;
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
+            throw new WdkModelException("Unable to get summary attributes for checksum " + summaryChecksum, ex);
         } finally {
             SqlUtils.closeResultSet(rsSelect);
         }
     }
 
-    public String makeSortingChecksum(Map<String, Boolean> columns)
-            throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException {
+    public String makeSortingChecksum(Map<String, Boolean> columns) throws WdkModelException {
         // create checksum for sorting columns
         StringBuffer sb = new StringBuffer();
         int i = 0;
@@ -151,14 +146,14 @@ public class QueryFactory {
                     start);
             return checksum;
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
+            throw new WdkModelException(ex);
         } finally {
             SqlUtils.closeStatement(psInsert);
         }
     }
 
     public Map<String, Boolean> getSortingAttributes(String sortingChecksum)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         ResultSet rsSelect = null;
         try {
             String sql = "SELECT " + COLUMN_CLOB_VALUE + " FROM " + wdkSchema
@@ -184,7 +179,7 @@ public class QueryFactory {
                 // validate the format of the pair
                 if (pair.length != 2
                         || (!"ASC".equalsIgnoreCase(pair[1]) && !"DESC".equalsIgnoreCase(pair[1])))
-                    throw new WdkUserException(
+                    throw new WdkModelException(
                             "Invalid sorting attribute format: '" + sortingPair
                                     + "'");
                 String attribute = pair[0];
@@ -193,13 +188,13 @@ public class QueryFactory {
             }
             return attributes;
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
+            throw new WdkModelException(ex);
         } finally {
             SqlUtils.closeResultSet(rsSelect);
         }
     }
 
-    public String makeClobChecksum(String paramValue) throws WdkModelException, WdkUserException {
+    public String makeClobChecksum(String paramValue) throws WdkModelException {
         // make the checksum
         String checksum = Utilities.encrypt(paramValue);
 
@@ -228,8 +223,7 @@ public class QueryFactory {
         }
     }
 
-    public String getClobValue(String paramChecksum) throws WdkModelException,
-            WdkUserException {
+    public String getClobValue(String paramChecksum) throws WdkModelException {
         ResultSet rs = null;
         try {
             long start = System.currentTimeMillis();

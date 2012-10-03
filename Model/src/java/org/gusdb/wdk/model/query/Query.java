@@ -68,8 +68,7 @@ public abstract class Query extends WdkModelBase {
 
     public abstract QueryInstance makeInstance(User user,
             Map<String, String> values, boolean validate, int assignedWeight,
-            Map<String, String> context) throws WdkModelException,
-            WdkUserException;
+            Map<String, String> context) throws WdkModelException;
 
     public abstract Query clone();
 
@@ -504,7 +503,7 @@ public abstract class Query extends WdkModelBase {
 
     public Map<String, String> dependentValuesToIndependentValues(User user,
             Map<String, String> dependentValues)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         Map<String, String> independentValues = new LinkedHashMap<String, String>();
         for (String paramName : dependentValues.keySet()) {
             Param param = paramMap.get(paramName);

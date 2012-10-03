@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.AnswerFilterInstance;
 import org.gusdb.wdk.model.AnswerValue;
 import org.gusdb.wdk.model.AttributeField;
@@ -30,14 +31,16 @@ import org.json.JSONException;
  */
 public class QuestionBean {
 
+    private static final Logger logger = Logger.getLogger(QuestionBean.class.getName());
+  
     Question question;
 
     private Map<String, String> params = new LinkedHashMap<String, String>();
     private UserBean user;
     private int weight;
     
-	private Map<String, ParamBean<?>> _paramBeanMap;
-
+    private Map<String, ParamBean<?>> _paramBeanMap;
+	
     /**
      * the recordClass full name for the answerParams input type.
      */
@@ -357,7 +360,7 @@ public class QuestionBean {
         params.put(name, value);
     }
 
-    public void setUser(UserBean user) {
+    public void setUser(UserBean user) throws SQLException {
         this.user = user;
     }
 
@@ -368,22 +371,25 @@ public class QuestionBean {
     public AnswerValueBean getAnswerValue() throws WdkUserException,
             WdkModelException, NoSuchAlgorithmException, SQLException,
             JSONException {
-        try {
+      try {
         if (user == null)
-            throw new WdkUserException("User is not set. Please set user to "
-                    + "the questionBean before calling to create answerValue.");
-
-        AnswerValue answerValue = question.makeAnswerValue(user.getUser(),
-                params, false, weight);
-
+          throw new WdkUserException("User is not set. Please set user to "
+              + "the questionBean before calling to create answerValue.");
+  
+        AnswerValue answerValue = question.makeAnswerValue(user.getUser(), params, false, weight);
+        
         // reset the params
         params.clear();
-
+  
         return new AnswerValueBean(answerValue);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new WdkModelException(ex);
+      }
+      catch (Exception ex) {
+        logger.error("Exception thrown in getAnswerValue(): " + ex);
+        for (StackTraceElement elem : Thread.currentThread().getStackTrace()) {
+          logger.error("  " + elem.toString());
         }
+        throw new WdkModelException(ex);
+      }
     }
 
     /**

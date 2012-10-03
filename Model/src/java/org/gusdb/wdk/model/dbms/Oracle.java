@@ -19,7 +19,6 @@ import oracle.sql.CLOB;
 
 import org.apache.commons.dbcp.DelegatingConnection;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * @author Jerric Gao
@@ -44,7 +43,7 @@ public class Oracle extends DBPlatform {
      */
     @Override
     public void createSequence(String sequence, int start, int increment)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws WdkModelException {
         StringBuffer sql = new StringBuffer("CREATE SEQUENCE ");
         sql.append(sequence);
         sql.append(" START WITH ").append(start);
@@ -110,16 +109,15 @@ public class Oracle extends DBPlatform {
      * java.lang.String)
      */
     @Override
-    public int getNextId(String schema, String table) throws SQLException,
-            WdkModelException, WdkUserException {
-        schema = normalizeSchema(schema);
+    public int getNextId(String schema, String table) throws WdkModelException {
+		schema = normalizeSchema(schema);
 
-        StringBuffer sql = new StringBuffer("SELECT ");
-        sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
-        sql.append(".nextval FROM dual");
-        BigDecimal id = (BigDecimal) SqlUtils.executeScalar(wdkModel,
-                dataSource, sql.toString(), "wdk_select_next_id");
-        return id.intValue();
+		StringBuffer sql = new StringBuffer("SELECT ");
+		sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
+		sql.append(".nextval FROM dual");
+		BigDecimal id = (BigDecimal) SqlUtils.executeScalar(wdkModel,
+            dataSource, sql.toString(), "wdk_select_next_id");
+		return id.intValue();
     }
 
     /*
@@ -197,7 +195,7 @@ public class Oracle extends DBPlatform {
      */
     @Override
     public boolean checkTableExists(String schema, String tableName)
-            throws SQLException, WdkModelException, WdkUserException {
+            throws WdkModelException {
         StringBuffer sql = new StringBuffer("SELECT count(*) FROM ALL_TABLES ");
         sql.append("WHERE table_name = '");
         sql.append(tableName.toUpperCase()).append("'");
@@ -250,7 +248,7 @@ public class Oracle extends DBPlatform {
      */
     @Override
     public void dropTable(String schema, String table, boolean purge)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws WdkModelException {
         String name = "wdk_drop_table";
         String sql = "DROP TABLE ";
         if (schema != null) sql = schema;
@@ -271,7 +269,7 @@ public class Oracle extends DBPlatform {
      */
     @Override
     public void disableStatistics(Connection connection, String schema,
-            String tableName) throws SQLException {
+            String tableName) throws WdkModelException {
         schema = schema.toUpperCase();
         tableName = tableName.toUpperCase();
         CallableStatement stUnlock = null, stDelete = null, stLock = null;
@@ -290,10 +288,12 @@ public class Oracle extends DBPlatform {
             stLock.executeUpdate("{call DBMS_STATS.LOCK_TABLE_STATS('" + schema
                     + "', '" + tableName + "') }");
             stLock.executeUpdate();
-        } finally {
-            if (stUnlock != null) stUnlock.close();
-            if (stDelete != null) stDelete.close();
-            if (stLock != null) stLock.close();
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Unable to disable statistics on table " + schema + "." + tableName, e);
+        }
+        finally {
+        	SqlUtils.closeQuietly(stUnlock, stDelete, stLock);
         }
     }
 
@@ -305,7 +305,7 @@ public class Oracle extends DBPlatform {
      */
     @Override
     public String[] queryTableNames(String schema, String pattern)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws WdkModelException {
         String sql = "SELECT table_name FROM all_tables WHERE owner = '"
                 + schema.toUpperCase() + "' AND table_name LIKE '"
                 + pattern.toUpperCase() + "'";
@@ -320,6 +320,8 @@ public class Oracle extends DBPlatform {
             String[] array = new String[tables.size()];
             tables.toArray(array);
             return array;
+        } catch (SQLException e) {
+        	throw new WdkModelException("Could not query table names from schema [ " + schema + " ]", e);
         } finally {
             SqlUtils.closeResultSet(resultSet);
         }

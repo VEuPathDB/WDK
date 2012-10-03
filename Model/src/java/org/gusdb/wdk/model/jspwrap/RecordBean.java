@@ -172,14 +172,6 @@ public class RecordBean {
                 values.put(column, pkValues.get(column));
             }
             return user.isInFavorite(recordClass, values);
-        } catch (SQLException ex) {
-            logger.error(ex);
-            ex.printStackTrace();
-            throw ex;
-        } catch (WdkUserException ex) {
-            logger.error(ex);
-            ex.printStackTrace();
-            throw ex;
         } catch (WdkModelException ex) {
             logger.error(ex);
             ex.printStackTrace();

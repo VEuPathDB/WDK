@@ -3,14 +3,17 @@
  */
 package org.gusdb.wdk.model.dbms;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Wrapper;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.LinkedHashSet;
@@ -87,10 +90,11 @@ public final class SqlUtils {
     }
 
     public static PreparedStatement getPreparedStatement(DataSource dataSource,
-            String sql) throws SQLException {
-        Connection connection = dataSource.getConnection();
+            String sql) throws WdkModelException {
+        Connection connection = null;
         PreparedStatement ps = null;
         try {
+        	connection = dataSource.getConnection();
             ps = connection.prepareStatement(sql);
             ps.setFetchSize(100);
             return ps;
@@ -98,8 +102,8 @@ public final class SqlUtils {
             logger.error("Failed to prepare query:\n" + sql);
             closeStatement(ps);
 
-            if (ps == null && connection != null) connection.close();
-            throw ex;
+            if (ps == null && connection != null) closeQuietly(connection);
+            throw new WdkModelException("Unable to get prepared statement.", ex);
         }
     }
 
@@ -138,8 +142,7 @@ public final class SqlUtils {
      * @throws WdkUserException
      */
     public static int executeUpdate(WdkModel wdkModel, DataSource dataSource,
-            String sql, String name) throws SQLException, WdkUserException,
-            WdkModelException {
+            String sql, String name) throws WdkModelException {
         Connection connection = null;
         Statement stmt = null;
         try {
@@ -151,10 +154,10 @@ public final class SqlUtils {
             return result;
         } catch (SQLException ex) {
             logger.error("Failed to run nonQuery:\n" + sql);
-            throw ex;
+            throw new WdkModelException("Failed to execute update: " + sql, ex);
         } finally {
             closeStatement(stmt);
-            if (stmt == null && connection != null) connection.close();
+            if (stmt == null && connection != null) closeQuietly(connection);
         }
     }
 
@@ -184,7 +187,6 @@ public final class SqlUtils {
             logger.error("Failed to run nonQuery:\n" + sql);
             throw ex;
         } finally {
-            // closeStatement(stmt);
             if (stmt != null) stmt.close();
         }
     }
@@ -202,13 +204,13 @@ public final class SqlUtils {
      */
     public static ResultSet executeQuery(WdkModel wdkModel,
             DataSource dataSource, String sql, String name)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws WdkModelException {
         return executeQuery(wdkModel, dataSource, sql, name, 100);
     }
     
-        public static ResultSet executeQuery(WdkModel wdkModel,
-            DataSource dataSource, String sql, String name, int fetchSize)
-            throws SQLException, WdkUserException, WdkModelException {
+    public static ResultSet executeQuery(WdkModel wdkModel,
+        DataSource dataSource, String sql, String name, int fetchSize)
+        		throws WdkModelException {
         ResultSet resultSet = null;
         Connection connection = null;
         try {
@@ -221,9 +223,9 @@ public final class SqlUtils {
             return resultSet;
         } catch (SQLException ex) {
             logger.error("Failed to run query:\n" + sql);
-            if (resultSet == null && connection != null) connection.close();
+            if (resultSet == null && connection != null) closeQuietly(connection);
             closeResultSet(resultSet);
-            throw ex;
+            throw new WdkModelException("Failure executing query: " + sql, ex);
         }
     }
 
@@ -245,7 +247,7 @@ public final class SqlUtils {
      */
     public static Object executeScalar(WdkModel wdkModel,
             DataSource dataSource, String sql, String name)
-            throws SQLException, WdkModelException, WdkUserException {
+            throws WdkModelException {
         ResultSet resultSet = null;
         try {
             resultSet = executeQuery(wdkModel, dataSource, sql, name);
@@ -253,7 +255,11 @@ public final class SqlUtils {
                 throw new WdkModelException("The SQL doesn't return any row:\n"
                         + sql);
             return resultSet.getObject(1);
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Unable to execute scalar query: " + sql, e);
+        }
+        finally {
             closeResultSet(resultSet);
         }
     }
@@ -281,7 +287,7 @@ public final class SqlUtils {
     }
 
     public static void verifyTime(WdkModel wdkModel, String sql, String name,
-            long fromTime) throws WdkUserException, WdkModelException {
+            long fromTime) throws WdkModelException {
         // verify the name
         if (name.length() > 100 || name.indexOf('\n') >= 0) {
             StringWriter writer = new StringWriter();
@@ -333,8 +339,43 @@ public final class SqlUtils {
         }
     }
 
+    public static void closeQuietly(Wrapper... wrappers) {
+    	for (Wrapper wrap : wrappers) {
+    		if (wrap != null) {
+          if (wrap instanceof DatabaseResultStream) {
+            try { ((DatabaseResultStream)wrap).close(); } catch (IOException e) { }
+          }
+          if (wrap instanceof ResultSet) {
+            try { ((ResultSet)wrap).close(); } catch (SQLException e) { }
+          }
+          if (wrap instanceof CallableStatement) {
+            try { ((CallableStatement)wrap).close(); } catch (SQLException e) { }
+          }
+          if (wrap instanceof PreparedStatement) {
+            try { ((PreparedStatement)wrap).close(); } catch (SQLException e) { }
+          }
+	    		if (wrap instanceof Statement) {
+	    			try { ((Statement)wrap).close(); } catch (SQLException e) { }
+	    		}
+          if (wrap instanceof Connection) {
+            try { ((Connection)wrap).close(); } catch (SQLException e) { }
+          }
+    		}
+    	}
+    }
+
+	public static void attemptRollback(Connection connection) {
+		try {
+			connection.rollback();
+		}
+		catch (SQLException e) {
+			logger.error("Could not roll back transaction!", e);
+		}
+	}
+	
     /**
      * private constructor, make sure SqlUtils cannot be instanced.
      */
     private SqlUtils() {}
+
 }

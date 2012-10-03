@@ -8,10 +8,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionServlet;
-import org.gusdb.wdk.controller.action.ActionUtility;
-import org.gusdb.wdk.controller.action.QuestionForm;
 import org.gusdb.wdk.controller.action.ShowQuestionAction;
-import org.gusdb.wdk.controller.action.WizardForm;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.form.QuestionForm;
+import org.gusdb.wdk.controller.form.WizardForm;
 import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;

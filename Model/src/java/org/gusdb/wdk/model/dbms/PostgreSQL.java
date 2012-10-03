@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * @author Jerric Gao
@@ -38,7 +37,7 @@ public class PostgreSQL extends DBPlatform {
      */
     @Override
     public void createSequence(String sequence, int start, int increment)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws WdkModelException {
         StringBuffer sql = new StringBuffer("CREATE SEQUENCE ");
         sql.append(sequence);
         sql.append(" START ");
@@ -96,8 +95,7 @@ public class PostgreSQL extends DBPlatform {
      * @see org.gusdb.wdk.model.dbms.DBPlatform#getNextId(java.lang.String,
      * java.lang.String)
      */
-    public int getNextId(String schema, String table) throws SQLException,
-            WdkModelException, WdkUserException {
+    public int getNextId(String schema, String table) throws WdkModelException {
         schema = normalizeSchema(schema);
 
         StringBuffer sql = new StringBuffer("SELECT nextval('");
@@ -175,7 +173,7 @@ public class PostgreSQL extends DBPlatform {
      */
     @Override
     public boolean checkTableExists(String schema, String tableName)
-            throws SQLException, WdkModelException, WdkUserException {
+            throws WdkModelException {
         if (schema == null || schema.length() == 0) schema = defaultSchema;
         if (schema.endsWith("."))
             schema = schema.substring(0, schema.length() - 1);
@@ -227,7 +225,7 @@ public class PostgreSQL extends DBPlatform {
      */
     @Override
     public void dropTable(String schema, String table, boolean purge)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws WdkModelException {
         String sql = "DROP TABLE ";
         if (schema != null) sql = schema;
         sql += table;
@@ -256,7 +254,7 @@ public class PostgreSQL extends DBPlatform {
      */
     @Override
     public String[] queryTableNames(String schema, String pattern)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws WdkModelException {
         String sql = "SELECT tablename FROM pg_tables WHERE schemaname = '"
                 + schema + "' AND tablename LIKE '" + pattern + "'";
         ResultSet resultSet = null;
@@ -270,6 +268,8 @@ public class PostgreSQL extends DBPlatform {
             String[] array = new String[tables.size()];
             tables.toArray(array);
             return array;
+        } catch (SQLException e) {
+        	throw new WdkModelException("Unable to query table names for schema [ " + schema + " ].", e);
         } finally {
             SqlUtils.closeResultSet(resultSet);
         }

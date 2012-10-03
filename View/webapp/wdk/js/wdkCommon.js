@@ -4,30 +4,39 @@
 
 // On all pages, check that cookies are enabled.
 jQuery(document).ready(function() {
-    if (window.wdk == undefined) window.wdk = new WDK();
+    
+	// set up WDK global object
+	if (window.wdk == undefined) window.wdk = new WDK();
     wdk.registerToggle();
     wdk.registerTable();
+
+	// call all onload functions throughout the page
+	Utilities.executeOnloadFunctions("body");
+	
+	// convert all buttons to jQuery buttons
+	jQuery(".button").button();
+
 });
 
 //some helper functions used by isolates results page (clustal) and view-JSON.js
 function guestUser() {
-  return $("#guestUser").attr("name");
+  return jQuery("#guestUser").attr("name");
 }
 
 function exportBaseURL() {
-  return $("#exportBaseURL").attr("name");
+  return jQuery("#exportBaseURL").attr("name");
 }
 
 function modelName() {
-  return $("#modelName").attr("name");
+  return jQuery("#modelName").attr("name");
 }
 
 function wdkUser() {
-  this.id = $("#wdk-userinfo").attr("user-id");
-  this.name = $("#wdk-userinfo").attr("name");
-  this.country = $("#wdk-userinfo").attr("country");
-  this.email = $("#wdk-userinfo").attr("email");
-  this.isGuest = $("#wdk-userinfo").attr("isGuest");
+  this.id = jQuery("#wdk-userinfo").attr("user-id");
+  this.name = jQuery("#wdk-userinfo").attr("name");
+  this.country = jQuery("#wdk-userinfo").attr("country");
+  this.email = jQuery("#wdk-userinfo").attr("email");
+  this.isGuest = jQuery("#wdk-userinfo").attr("isGuest");
 }
 
 
@@ -192,11 +201,6 @@ function checkAll(bool, form, node) {
     }
 }
 
-// returns whether or not user is logged in
-function isUserLoggedIn() {
-  return (jQuery('#loginStatus').attr('loggedIn') == "true");
-}
-
 function getWebAppUrl() {
   var scripts = document.getElementsByTagName('script');
   var scriptPath;
@@ -219,9 +223,9 @@ WDK.prototype.registerToggle = function() {
     // register toggles
     jQuery(".wdk-toggle").each(function() {
         // check if the section should be displayed by default
-        var show = $(this).attr("show");
+        var show = jQuery(this).attr("show");
         var active = (show == "true") ? 0 : false;
-        $(this).accordion({
+        jQuery(this).accordion({
             autoHeight: false,
             collapsible: true,
             active: active
@@ -237,7 +241,16 @@ WDK.prototype.registerTable = function() {
 }
 
 
-jQuery(document).ready(function($) {
+setUpNavDropDowns = function() {
+	jQuery('#nav-top li ul').parent().each(function() {
+		var dropDownMenu = jQuery(this).children('ul')[0];
+		jQuery(this)
+		    .mouseover(function(){ jQuery(dropDownMenu).show(); })
+		    .mouseout(function(){ jQuery(dropDownMenu).hide(); });
+	});
+};
+
+jQuery(document).ready(function(jQuery) {
   // instantiate dialogs
   var dialogOpts = {
     width: "auto",
@@ -245,32 +258,46 @@ jQuery(document).ready(function($) {
     modal: true,
     resizable: false,
     beforeClose: function() {
-      $(this).find("form").each(function() {
+      jQuery(this).find("form").each(function() {
         this.reset();
       });
     },
     open: function() {
-      $(".strategy-description.qtip").qtip("hide");
+      jQuery(".strategy-description.qtip").qtip("hide");
     }
   };
-  $("[id^='wdk-dialog-']").dialog(dialogOpts);
+  jQuery("[id^='wdk-dialog-']").dialog(dialogOpts);
   
   // connect dialogs
-  $("body").on("click", "[class^='open-dialog-']", function(e) {
+  jQuery("body").on("click", "[class^='open-dialog-']", function(e) {
     e.preventDefault();
     var match = this.className.match(/^open-dialog-(\w+-\w+)$/);
     if (match) {
-      $("#wdk-dialog-" + match[1]).dialog("open");
+      jQuery("#wdk-dialog-" + match[1]).dialog("open");
     }
   });
 
   // connect update strat dialog to qtip edit link 
-  $("body").on("click", ".qtip .open-dialog-update-strat", function(e) {
+  jQuery("body").on("click", ".qtip .open-dialog-update-strat", function(e) {
     e.preventDefault();
-    var qt = $(this).parents(".qtip").qtip("api"),
+    var qt = jQuery(this).parents(".qtip").qtip("api"),
         strat_id = qt.get("position.target").parents("tr").attr("id").substr(6);
     //qt.hide();
     showUpdateDialog(strat_id, false, true);
   });
 
 });
+
+// this function is used by reporter pages
+function makeSelection(state) {
+    var form = document.downloadConfigForm;
+    var cb = form.selectedFields;
+    for (var i=0; i<cb.length; i++) {
+        if (state == 1) cb[i].checked = 'checked';
+        else if (state == 0) cb[i].checked = null;
+        else if (state == -1) {
+            cb[i].checked = ((cb[i].checked) ? '' : 'checked');
+        }
+    }
+}
+

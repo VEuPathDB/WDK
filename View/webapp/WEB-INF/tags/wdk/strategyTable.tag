@@ -93,7 +93,7 @@
       <td class="strategy_description">
       <c:choose>
         <c:when test="${wdkUser.guest}">
-          <div class="unsaved" title="Click to save and add description" onclick="popLogin();">Click to save and add a description</div>
+          <div class="unsaved" title="Click to save and add description" onclick="User.login();">Click to save and add a description</div>
         </c:when>
         <c:otherwise>
           <c:choose>
@@ -118,8 +118,8 @@
            <c:set var="shareAction" value="if (confirm('Before you can share your strategy, you need to save it. Would you like to do that now?')) { ${saveAction} }" />
          </c:if>
          <c:if test="${wdkUser.guest}">
-           <c:set var="saveAction" value="popLogin();"/>
-           <c:set var="shareAction" value="popLogin();"/>
+           <c:set var="saveAction" value="User.login();"/>
+           <c:set var="shareAction" value="User.login();"/>
          </c:if>
          <select id="actions_${strategyId}" onchange="eval(this.value);this[0].selected='true';">
             <option value="return false;">---Actions---</option>

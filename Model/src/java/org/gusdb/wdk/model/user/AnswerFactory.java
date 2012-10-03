@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,7 +18,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -56,9 +54,7 @@ public class AnswerFactory {
         this.answers = new HashMap<Answer, Answer>();
     }
 
-    public Answer saveAnswerValue(AnswerValue answerValue) throws SQLException,
-            NoSuchAlgorithmException, WdkModelException, JSONException,
-            WdkUserException {
+    public Answer saveAnswerValue(AnswerValue answerValue) throws WdkModelException {
         // use transaction
         String questionName = answerValue.getQuestion().getFullName();
         String answerChecksum = answerValue.getChecksum();
@@ -92,8 +88,7 @@ public class AnswerFactory {
      * @throws WdkModelException
      * @throws WdkUserException
      */
-    public Answer getAnswer(String questionName, String answerChecksum)
-            throws SQLException, WdkUserException, WdkModelException {
+    public Answer getAnswer(String questionName, String answerChecksum) throws WdkModelException {
         String projectId = wdkModel.getProjectId();
 
         // use the cache if exists.
@@ -129,15 +124,19 @@ public class AnswerFactory {
                 answer.setQueryChecksum(resultSet.getString(COLUMN_QUERY_CHECKSUM));
                 answer.setQuestionName(resultSet.getString(COLUMN_QUESTION_NAME));
             }
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Unable to get Answer for question " + questionName +
+        			" and checksum " + answerChecksum, e);
+        }
+        finally {
             SqlUtils.closeResultSet(resultSet);
         }
         answers.put(answer, answer);
         return answer;
     }
 
-    private void saveAnswer(Answer answer, String paramClob)
-            throws SQLException, WdkUserException, WdkModelException {
+    private void saveAnswer(Answer answer, String paramClob) throws WdkModelException {
         // prepare the sql
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(wdkSchema).append(TABLE_ANSWER).append(" (");
@@ -163,7 +162,11 @@ public class AnswerFactory {
             ps.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql.toString(),
                     "wdk-answer-factory-insert", start);
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Unable to save answer", e);
+        }
+        finally {
             SqlUtils.closeStatement(ps);
         }
     }

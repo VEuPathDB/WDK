@@ -48,7 +48,7 @@ Otherwise a standard select menu is used.
 <c:when test="${qP.multiPick}">
   <%-- multiPick is true, use checkboxes or scroll pane --%>
   <c:choose>
-    <c:when test="${displayType eq 'checkBox' || (displayType == null && fn:length(qP.vocab) < 15)}"><%-- use checkboxes --%>
+    <c:when test="${displayType eq 'checkBox' or (displayType eq null and fn:length(qP.vocab) lt 15)}"><!-- use checkboxes -->
 	 <div class="param-multiPick ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
       <c:set var="i" value="0"/>
       <table border="1" cellspacing="0"><tr><td>

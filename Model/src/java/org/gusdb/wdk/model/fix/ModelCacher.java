@@ -294,7 +294,7 @@ public class ModelCacher extends BaseCLI {
     }
 
     private void deleteCache(DataSource dataSource, String projectId,
-            String schema) throws SQLException {
+            String schema) throws SQLException, WdkModelException {
         // delete enum_param values
         PreparedStatement psEnums = null, psParams = null, psQuestions = null;
         try {

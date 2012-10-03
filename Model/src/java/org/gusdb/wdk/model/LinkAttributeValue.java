@@ -20,7 +20,7 @@ public class LinkAttributeValue extends AttributeValue {
         this.container = container;
     }
 
-    public String getDisplayText() throws WdkModelException, WdkUserException {
+    public String getDisplayText() throws WdkModelException {
         if (displayText == null) {
             String text = field.getDisplayText();
             Map<String, AttributeField> subFields = field.parseFields(text);
@@ -34,7 +34,7 @@ public class LinkAttributeValue extends AttributeValue {
         return this.displayText;
     }
 
-    public String getUrl() throws WdkModelException, WdkUserException {
+    public String getUrl() throws WdkModelException {
         if (this.url == null) {
             String url = field.getUrl();
             Map<String, AttributeField> subFields = field.parseFields(url);
@@ -49,7 +49,7 @@ public class LinkAttributeValue extends AttributeValue {
     }
 
     @Override
-    public Object getValue() throws WdkModelException, WdkUserException {
+    public Object getValue() throws WdkModelException {
         return getDisplayText() + "(" + getUrl() + ")";
     }
 }

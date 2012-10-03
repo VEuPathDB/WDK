@@ -41,17 +41,14 @@ public class RecordInstance extends AttributeValueContainer {
      * @throws NoSuchAlgorithmException
      */
     public RecordInstance(User user, RecordClass recordClass,
-            Map<String, Object> pkValues) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+            Map<String, Object> pkValues) throws WdkModelException {
         this.user = user;
         this.recordClass = recordClass;
         this.isValidRecord = true;
 
-         List<Map<String, Object>> records = recordClass.lookupPrimaryKeys(
-         user, pkValues);
+         List<Map<String, Object>> records = recordClass.lookupPrimaryKeys(user, pkValues);
          if (records.size() != 1)
-         throw new WdkUserException("The primary key doesn't map to "
+         throw new WdkModelException("The primary key doesn't map to "
          + "singular record: " + pkValues);
        
          pkValues = records.get(0);
@@ -70,7 +67,7 @@ public class RecordInstance extends AttributeValueContainer {
      * 
      */
     public RecordInstance(AnswerValue answerValue, Map<String, Object> pkValues)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         this.answerValue = answerValue;
         this.recordClass = answerValue.getQuestion().getRecordClass();
         this.isValidRecord = true;
@@ -122,7 +119,7 @@ public class RecordInstance extends AttributeValueContainer {
      */
     @Override
     protected void fillColumnAttributeValues(Query attributeQuery)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         logger.debug("filling column attribute values...");
         if (answerValue != null) {
             answerValue.integrateAttributesQuery(attributeQuery);
@@ -157,7 +154,7 @@ public class RecordInstance extends AttributeValueContainer {
                 // throwing exception prevents proper handling in front
                 // end...just return?
                 isValidRecord = false;
-                throw new WdkUserException("Attribute query " + queryName
+                throw new WdkModelException("Attribute query " + queryName
                         + " doesn't return any row: \n" + instance.getSql());
             }
 

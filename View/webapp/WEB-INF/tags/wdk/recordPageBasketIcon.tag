@@ -27,13 +27,13 @@
     <c:choose>
         <c:when test="${wdkUser.guest}">
           <c:if test="${wdkRecord.recordClass.useBasket}">
-          <a class="basket" href="javascript:void(0)" onClick="popLogin();setFrontAction('${basketId}');"> Add to Basket
+          <a class="basket" href="javascript:void(0)" onclick="User.login();"> Add to Basket
             <img src="<c:url value='/wdk/images/basket_gray.png'/>" width='${imagesize}' value="0" title="Please log in to access the basket."/>
           </a>
           &nbsp;&nbsp;&nbsp;&nbsp;
           </c:if>
 
-          <a class="favorite" href="javascript:void(0)" onClick="popLogin();setFrontAction('${favoriteId}');">Add to Favorites
+          <a class="favorite" href="javascript:void(0)" onclick="User.login();">Add to Favorites
             <img src="<c:url value='/wdk/images/favorite_gray.gif'/>" width='${imagesize}' value="0" title="Please log in to access the favorites."/>
           </a>
          </c:when>

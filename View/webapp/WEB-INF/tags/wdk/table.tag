@@ -86,7 +86,7 @@
     </c:forEach>
   </tbody>
 
-  <c:if test="${(showHeader eq 'true') && (size >= 20)}">
+  <c:if test="${showHeader eq 'true' and size ge 20}">
   <tfoot>
     <tr class="footerrow">
         <c:forEach var="hCol" items="${table.tableField.attributeFields}">

@@ -349,7 +349,7 @@ public abstract class AbstractEnumParam extends Param {
      */
     @Override
     public String dependentValueToIndependentValue(User user,
-            String dependentValue) throws WdkUserException, WdkModelException {
+            String dependentValue) throws WdkModelException {
         return dependentValue;
     }
 
@@ -362,13 +362,13 @@ public abstract class AbstractEnumParam extends Param {
      */
     @Override
     public String dependentValueToInternalValue(User user, String dependedValue)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         return dependentValueToInternalValue(user, dependedValue, null);
     }
 
     public String dependentValueToInternalValue(User user,
             String dependedValue, String dependedParamValue)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         EnumParamCache cache = getEnumParamCache(dependedParamValue);
 
         String rawValue = decompressValue(dependedValue);
@@ -387,7 +387,7 @@ public abstract class AbstractEnumParam extends Param {
                     internal = term;
                 } else {
                     // term doesn't exists need to correct it later
-                    throw new WdkUserException("param " + getFullName()
+                    throw new WdkModelException("param " + getFullName()
                             + " encountered an invalid term from user #"
                             + user.getUserId() + ": " + term);
                 }
@@ -402,13 +402,12 @@ public abstract class AbstractEnumParam extends Param {
 
     @Override
     public String getInternalValue(User user, String dependentValue)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         return getInternalValue(user, dependentValue, null);
     }
 
     public String getInternalValue(User user, String dependentValue,
-            String dependedParamValue) throws WdkModelException,
-            WdkUserException {
+            String dependedParamValue) throws WdkModelException {
         String internalValue = dependentValueToInternalValue(user,
                 dependentValue, dependedParamValue);
         if (handler != null)
@@ -425,7 +424,7 @@ public abstract class AbstractEnumParam extends Param {
      */
     @Override
     public String dependentValueToRawValue(User user, String dependentValue)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         return decompressValue(dependentValue);
     }
 
@@ -438,7 +437,7 @@ public abstract class AbstractEnumParam extends Param {
      */
     @Override
     public String rawOrDependentValueToDependentValue(User user, String rawValue)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         return compressValue(rawValue);
     }
 

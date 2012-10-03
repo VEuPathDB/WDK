@@ -110,7 +110,7 @@ public class QuestionChecksumUpdater extends BaseCLI {
     }
 
     private PreparedStatement prepareUpdate(WdkModel wdkModel)
-            throws SQLException {
+            throws SQLException, WdkModelException {
         StringBuffer sql = new StringBuffer("UPDATE ");
         sql.append(wdkModel.getModelConfig().getUserDB().getWdkEngineSchema());
         sql.append("answers SET old_query_checksum = query_checksum, ");

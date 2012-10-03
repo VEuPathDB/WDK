@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model.user;
 
 import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -120,20 +121,20 @@ public class UserFactory {
     public User createUser(String email, String lastName, String firstName,
             String middleName, String title, String organization,
             String department, String address, String city, String state,
-            String zipCode, String phoneNumber, String country,
+            String zipCode, String phoneNumber, String country, String openId,
             Map<String, String> globalPreferences,
             Map<String, String> projectPreferences) throws WdkUserException,
             WdkModelException {
         return createUser(email, lastName, firstName, middleName, title,
                 organization, department, address, city, state, zipCode,
-                phoneNumber, country, globalPreferences, projectPreferences,
+                phoneNumber, country, openId, globalPreferences, projectPreferences,
                 true);
     }
 
     User createUser(String email, String lastName, String firstName,
             String middleName, String title, String organization,
             String department, String address, String city, String state,
-            String zipCode, String phoneNumber, String country,
+            String zipCode, String phoneNumber, String country, String openId,
             Map<String, String> globalPreferences,
             Map<String, String> projectPreferences, boolean resetPwd)
             throws WdkUserException, WdkModelException {
@@ -178,13 +179,14 @@ public class UserFactory {
             psUser.setString(8, title);
             psUser.setString(9, organization);
             psUser.setString(10, department);
-            psUser.setString(11, address);
+            psUser.setString(11, openId);  // TODO: put back address!
             psUser.setString(12, city);
             psUser.setString(13, state);
             psUser.setString(14, zipCode);
             psUser.setString(15, phoneNumber);
             psUser.setString(16, country);
             psUser.setString(17, signature);
+            //psUser.setString(18, openId);
             psUser.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sql, "wdk-user-register", start);
 
@@ -202,6 +204,7 @@ public class UserFactory {
             user.setZipCode(zipCode);
             user.setPhoneNumber(phoneNumber);
             user.setCountry(country);
+            user.setOpenId(openId);
             user.addUserRole(defaultRole);
             user.setGuest(false);
 
@@ -233,7 +236,7 @@ public class UserFactory {
         }
     }
 
-    public User createGuestUser() throws WdkUserException, WdkModelException {
+    public User createGuestUser() throws WdkModelException {
         PreparedStatement psUser = null;
         try {
             // get a new user id
@@ -272,23 +275,25 @@ public class UserFactory {
             return user;
         }
         catch (SQLException e) {
-        	throw new WdkUserException("Unable to create guest user.", e);
+        	throw new WdkModelException("Unable to create guest user.", e);
+        }
+        catch (WdkUserException e) {
+        	throw new WdkModelException("Unable to create guest user.", e);
         }
         finally {
             SqlUtils.closeStatement(psUser);
         }
     }
 
-    public User login(User guest, String email, String password)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+    public User login(User guest, String openId)
+            throws WdkUserException, WdkModelException {
         // make sure the guest is really a guest
         if (!guest.isGuest())
             throw new WdkUserException("User has been logged in.");
 
-        // authenticate the user; if fails, a WdkUserException will be thrown
-        // out
-        User user = authenticate(email, password);
+        // authenticate the user; if fails, a WdkUserException will be thrown out
+        User user = getUserByOpenId(openId);
+        if (user == null) return user;
 
         // merge the history of the guest into the user
         user.mergeUser(guest);
@@ -299,106 +304,131 @@ public class UserFactory {
         return user;
     }
 
-    private User authenticate(String email, String password)
-            throws WdkUserException, WdkModelException {
-        // convert email to lower case
-        email = email.trim();
-        ResultSet rs = null;
-        String sql = "SELECT user_id " + "FROM " + userSchema + "users WHERE "
-                + "email = ? AND passwd = ?";
-        try {
-            // encrypt password
-            password = encrypt(password);
+    public User login(User guest, String email, String password)
+            throws WdkUserException, WdkModelException,
+            NoSuchAlgorithmException, SQLException, JSONException {
+        // make sure the guest is really a guest
+        if (!guest.isGuest())
+            throw new WdkUserException("User has been logged in.");
 
-            // query on the database to see if the pair match
-            long start = System.currentTimeMillis();
-            PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource,
-                    sql);
-            ps.setString(1, email);
-            ps.setString(2, password);
-            rs = ps.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-user-login", start);
-            if (!rs.next())
-                throw new WdkUserException("Invalid email or password.");
-            int userId = rs.getInt("user_id");
-
-            // passed validation, load user information
-            return getUser(userId);
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } finally {
-            SqlUtils.closeResultSet(rs);
+        // authenticate the user; if fails, a WdkUserException will be thrown out
+        User user = authenticate(email, password);
+        if (user == null) {
+          throw new WdkUserException("Invalid email or password.");
         }
+
+        // merge the history of the guest into the user
+        user.mergeUser(guest);
+
+        // update user active timestamp
+        updateUser(user);
+
+        return user;
+    }
+    
+    private User authenticate(String email, String password) throws WdkModelException {
+        String[] fields = new String[]{
+        		"email", email.trim().toLowerCase(),
+        		"passwd", encrypt(password)
+        };
+        return getUserByFields(fields, "wdk-user-login");
+
+    }
+    
+    public User getUserByEmail(String email) throws WdkModelException {
+        return getUserByFields(new String[]{ "email", email.trim() }, "wdk-user-get-id-by-email");
+    }
+
+    public User getUserByOpenId(String openId) throws WdkModelException {
+      // TODO: after openid field is created, use it instead of address!
+      return getUserByFields(new String[]{ "address", openId.trim() }, "wdk-user-get-id-by-openid");
+    }
+    
+    // FIXME: should probably be renamed getUserBySignature
+  	public User getUser(String signature) throws WdkModelException {
+  		User user = getUserByFields(new String[]{ "signature", signature }, "wdk-user-get-id-by-signature");
+  		if (user == null) {
+  		  // signature is rarely sent in by user; if User cannot be found, it's probably an error
+  		  throw new WdkModelException("Unable to find user with signature: " + signature);
+  		}
+  		return user;
+  	}
+
+  	/**
+  	 * Returns a User based on the passed parameters, or null if none can be found
+  	 * 
+  	 * @param fieldMap a even-numbered array of key value pairs
+  	 * (column_name, required_value) from which to identify a user
+  	 * @param queryName name of this query (for logging)
+  	 * @return User that meets the criteria, or null if none exists
+  	 * @throws WdkModelException if problem occurs accessing database
+  	 */
+    private User getUserByFields(String[] fieldMap, String queryName) throws WdkModelException {
+    	Connection conn = null;
+    	PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            // get user information
+          	String sql = getUserIdQuery(fieldMap);
+            long start = System.currentTimeMillis();
+            conn = dataSource.getConnection();
+            ps = conn.prepareStatement(sql);
+            for (int i=0; i<fieldMap.length; i+=2) {
+            	ps.setString((i / 2) + 1, fieldMap[i+1]);
+            }
+            rs = ps.executeQuery();
+            SqlUtils.verifyTime(wdkModel, sql.toString(), queryName, start);
+            if (!rs.next()) {
+                logger.warn("Unable to get user given the following params: " + toParamString(fieldMap));
+                return null;
+            }
+            // read user info
+            int userId = rs.getInt("user_id");
+            return getUser(userId);
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Unable to get user given the following params: " + toParamString(fieldMap), e);
+        }
+        finally {
+            SqlUtils.closeQuietly(rs, ps, conn);
+        }
+    }
+
+	  private String getUserIdQuery(String[] fieldMap) throws WdkModelException {
+    	StringBuilder sql = new StringBuilder()
+    		.append("SELECT ").append(Utilities.COLUMN_USER_ID)
+    		.append(" FROM ").append(userSchema).append(TABLE_USER);
+    	if (fieldMap.length % 2 == 1) {
+    		throw new WdkModelException("Only even-sized array 'map' can be passed to this method.");
+    	}
+    	for (int i=0; i<fieldMap.length; i+=2) {
+    		sql.append(i == 0 ? " WHERE " : " AND ")
+    	       .append(fieldMap[i])
+    	       .append(fieldMap[i+1] == null ? " IS NULL" : " = ?");
+    	}
+    	String sqlStr = sql.toString();
+      logger.info("Generated the following SQL: " + sqlStr);
+    	return sqlStr;
+	  }
+
+    private String toParamString(String[] fieldMap) {
+    	StringBuilder str = new StringBuilder("Map [ ");
+    	for (int i = 0; i < fieldMap.length; i += 2) {
+    		str.append("{ \"").append(fieldMap[i]).append("\", ");
+    		str.append(fieldMap[i+1] == null ? "null } " : "\"" + fieldMap[i+1] + "\" } ");
+    	}
+    	return str.append("]").toString();
     }
 
     /**
-     * Only load the basic information of the user
+     * Returns user by user ID.  Since the ID will generally be produced "internally",
+     * this function throws WdkModelException if user is not found.
      * 
-     * @param email
-     * @return
-     * @throws WdkUserException
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkModelException
+     * @param userId user ID
+     * @return user object
+     * @throws WdkModelException if user cannot be found or error occurs
      */
-    public User getUserByEmail(String email) throws WdkUserException,
-            SQLException, WdkModelException {
-        email = email.trim();
-
-        ResultSet rsUser = null;
-        String sql = "SELECT " + Utilities.COLUMN_USER_ID + " FROM "
-                + userSchema + TABLE_USER + " WHERE email = ?";
-        try {
-            // get user information
-            long start = System.currentTimeMillis();
-            PreparedStatement psUser = SqlUtils.getPreparedStatement(
-                    dataSource, sql);
-            psUser.setString(1, email);
-            rsUser = psUser.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-user-get-id-by-email",
-                    start);
-            if (!rsUser.next())
-                throw new WdkUserException("The user with email '" + email
-                        + "' doesn't exist.");
-
-            // read user info
-            int userId = rsUser.getInt("user_id");
-            return getUser(userId);
-        } finally {
-            SqlUtils.closeResultSet(rsUser);
-        }
-    }
-
-    public User getUser(String signature) throws WdkUserException,
-            WdkModelException {
-        ResultSet rsUser = null;
-        String sql = "SELECT user_id FROM " + userSchema
-                + "users WHERE signature = ?";
-        try {
-            // get user information
-            long start = System.currentTimeMillis();
-            PreparedStatement psUser = SqlUtils.getPreparedStatement(
-                    dataSource, sql);
-            psUser.setString(1, signature);
-            rsUser = psUser.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-user-get-id-by-signature",
-                    start);
-            if (!rsUser.next())
-                throw new WdkUserException("The user with signature '"
-                        + signature + "' doesn't exist.");
-
-            // read user info
-            int userId = rsUser.getInt("user_id");
-            return getUser(userId);
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        } finally {
-            SqlUtils.closeResultSet(rsUser);
-        }
-    }
-
-    public User getUser(int userId) throws WdkUserException, SQLException,
-            WdkModelException {
+    public User getUser(int userId) throws WdkModelException {
         ResultSet rsUser = null;
         String sql = "SELECT email, signature, is_guest, last_name, "
                 + "first_name, middle_name, title, organization, "
@@ -408,14 +438,13 @@ public class UserFactory {
         try {
             // get user information
             long start = System.currentTimeMillis();
-            PreparedStatement psUser = SqlUtils.getPreparedStatement(
-                    dataSource, sql);
+            PreparedStatement psUser = SqlUtils.getPreparedStatement(dataSource, sql);
             psUser.setInt(1, userId);
             rsUser = psUser.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql, "wdk-user-get-user-by-id", start);
-            if (!rsUser.next())
-                throw new WdkUserException("The user with id " + userId
-                        + " doesn't exist.");
+            if (!rsUser.next()) {
+              throw new WdkModelException("Invalid user id: " + userId);
+            }
 
             // read user info
             String email = rsUser.getString("email");
@@ -428,12 +457,14 @@ public class UserFactory {
             user.setTitle(rsUser.getString("title"));
             user.setOrganization(rsUser.getString("organization"));
             user.setDepartment(rsUser.getString("department"));
-            user.setAddress(rsUser.getString("address"));
+            user.setAddress(""); // TODO: FIX rsUser.getString("address"));
             user.setCity(rsUser.getString("city"));
             user.setState(rsUser.getString("state"));
             user.setZipCode(rsUser.getString("zip_code"));
             user.setPhoneNumber(rsUser.getString("phone_number"));
             user.setCountry(rsUser.getString("country"));
+            user.setOpenId(rsUser.getString("address")); // TODO: FIX!!!
+            //user.setOpenId(rsUser.getString("open_id"));
 
             // load the user's roles
             user.setUserRole(getUserRoles(user));
@@ -442,7 +473,14 @@ public class UserFactory {
             user.setPreferences(getPreferences(user));
 
             return user;
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Unable to get user with ID " + userId, e);
+        }
+        catch (WdkUserException e) {
+          throw new WdkModelException("Unable to get user with ID " + userId, e);
+        }
+        finally {
             SqlUtils.closeResultSet(rsUser);
         }
     }
@@ -608,7 +646,7 @@ public class UserFactory {
      * @throws WdkUserException
      * @throws WdkModelException
      */
-    void saveUser(User user) throws WdkUserException, WdkModelException {
+    void saveUser(User user) throws WdkModelException {
         int userId = user.getUserId();
         // check if user exists in the database. if not, fail and ask to create
         // the user first
@@ -633,13 +671,14 @@ public class UserFactory {
             psUser.setString(6, user.getOrganization());
             psUser.setString(7, user.getDepartment());
             psUser.setString(8, user.getTitle());
-            psUser.setString(9, user.getAddress());
+            psUser.setString(9, user.getOpenId()); // TODO: FIX!!! user.getAddress());
             psUser.setString(10, user.getCity());
             psUser.setString(11, user.getState());
             psUser.setString(12, user.getZipCode());
             psUser.setString(13, user.getPhoneNumber());
             psUser.setString(14, user.getCountry());
             psUser.setString(15, user.getEmail());
+            //psUser.setString(16, user.getOpenId());
             psUser.setInt(16, userId);
             psUser.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sqlUser, "wdk-user-update-user",
@@ -651,7 +690,7 @@ public class UserFactory {
             // save preference
             savePreferences(user);
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
+            throw new WdkModelException(ex);
         } finally {
             SqlUtils.closeStatement(psUser);
         }
@@ -720,8 +759,7 @@ public class UserFactory {
         }
     }
 
-    private void savePreferences(User user) throws WdkUserException,
-            WdkModelException, SQLException {
+    private void savePreferences(User user) throws WdkModelException {
         // get old preferences and determine what to delete, update, insert
         int userId = user.getUserId();
         List<Map<String, String>> oldPreferences = getPreferences(user);
@@ -738,8 +776,7 @@ public class UserFactory {
 
     private void updatePreferences(int userId, String projectId,
             Map<String, String> oldPreferences,
-            Map<String, String> newPreferences) throws WdkUserException,
-            WdkModelException, SQLException {
+            Map<String, String> newPreferences) throws WdkModelException {
         // determine whether to delete, insert or update
         Set<String> toDelete = new LinkedHashSet<String>();
         Map<String, String> toUpdate = new LinkedHashMap<String, String>();
@@ -814,7 +851,11 @@ public class UserFactory {
             psUpdate.executeBatch();
             SqlUtils.verifyTime(wdkModel, sqlUpdate,
                     "wdk-user-update-preference", start);
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Unable to update user (id=" + userId + ") preferences", e);
+        }
+        finally {
             SqlUtils.closeStatement(psDelete);
             SqlUtils.closeStatement(psInsert);
             SqlUtils.closeStatement(psUpdate);
@@ -829,8 +870,7 @@ public class UserFactory {
      * @throws WdkModelException
      * @throws SQLException
      */
-    private List<Map<String, String>> getPreferences(User user)
-            throws WdkUserException, WdkModelException, SQLException {
+    private List<Map<String, String>> getPreferences(User user) throws WdkModelException {
         Map<String, String> global = new LinkedHashMap<String, String>();
         Map<String, String> specific = new LinkedHashMap<String, String>();
         int userId = user.getUserId();
@@ -855,7 +895,11 @@ public class UserFactory {
                 else if (projectId.equals(this.projectId))
                     specific.put(prefName, prefValue);
             }
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Could not get preferences for user " + user.getUserId(), e);
+        }
+        finally {
             SqlUtils.closeResultSet(resultSet);
             if (resultSet == null)
                 SqlUtils.closeStatement(psSelect);
@@ -866,9 +910,11 @@ public class UserFactory {
         return preferences;
     }
 
-    public void resetPassword(String email) throws WdkUserException,
-            WdkModelException, SQLException {
+    public void resetPassword(String email) throws WdkUserException, WdkModelException {
         User user = getUserByEmail(email);
+        if (user == null) {
+          throw new WdkUserException("Cannot find user with email: " + email);
+        }
         resetPassword(user);
     }
 
@@ -1007,34 +1053,33 @@ public class UserFactory {
         }
     }
 
-    public void deleteUser(String email) throws WdkUserException,
-            WdkModelException, SQLException {
+    public void deleteUser(String email) throws WdkUserException, WdkModelException {
         // get user id
         User user = getUserByEmail(email);
+        if (user == null) {
+          throw new WdkUserException("Unable to find user with email: " + email);
+        }
 
         // delete strategies and steps from all projects
         user.deleteStrategies(true);
         user.deleteSteps(true);
 
         String where = " WHERE user_id = " + user.getUserId();
-        try {
-            // delete preference
-            String sql = "DELETE FROM " + userSchema + "preferences" + where;
-            SqlUtils.executeUpdate(wdkModel, dataSource, sql,
-                    "wdk-user-delete-preference");
+        
+        // delete preference
+        String sql = "DELETE FROM " + userSchema + "preferences" + where;
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql,
+                "wdk-user-delete-preference");
 
-            // delete user roles
-            sql = "DELETE FROM " + userSchema + "user_roles" + where;
-            SqlUtils.executeUpdate(wdkModel, dataSource, sql,
-                    "wdk-user-delete-role");
+        // delete user roles
+        sql = "DELETE FROM " + userSchema + "user_roles" + where;
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql,
+                "wdk-user-delete-role");
 
-            // delete user
-            sql = "DELETE FROM " + userSchema + "users" + where;
-            SqlUtils.executeUpdate(wdkModel, dataSource, sql,
-                    "wdk-user-delete-user");
-        } catch (SQLException ex) {
-            throw new WdkUserException(ex);
-        }
+        // delete user
+        sql = "DELETE FROM " + userSchema + "users" + where;
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql,
+                "wdk-user-delete-user");
     }
 
     public WdkModel getWdkModel() {

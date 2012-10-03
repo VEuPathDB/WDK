@@ -117,7 +117,7 @@ public class Migrator1_17To1_18 extends Migrator {
         SqlUtils.closeStatement(psInsertHistory);
     }
 
-    private void prepareStatements(DataSource dataSource) throws SQLException {
+    private void prepareStatements(DataSource dataSource) throws SQLException, WdkModelException {
         // prepare insert answer statement
         StringBuffer sqlInsertAnswer = new StringBuffer("INSERT INTO ");
         sqlInsertAnswer.append(NEW_WDK_SCHEMA).append("answer (");

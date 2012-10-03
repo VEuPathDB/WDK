@@ -241,8 +241,7 @@ public class Utilities {
     }
 
     public static void sendEmail(WdkModel wdkModel, String email, String reply,
-            String subject, String content, String ccAddresses) throws WdkUserException,
-            WdkModelException {
+            String subject, String content, String ccAddresses) throws WdkModelException {
         String smtpServer = wdkModel.getModelConfig().getSmtpServer();
 
         logger.debug("Sending message to: " + email + ", reply: " + reply
@@ -274,15 +273,14 @@ public class Utilities {
             // send email
             Transport.send(message);
         } catch (AddressException ex) {
-            throw new WdkUserException(ex);
+            throw new WdkModelException(ex);
         } catch (MessagingException ex) {
             throw new WdkModelException(ex);
         }
     }
 
     public static void sendEmail(WdkModel wdkModel, String email, String reply,
-            String subject, String content) throws WdkUserException,
-            WdkModelException {
+            String subject, String content) throws WdkModelException {
         sendEmail(wdkModel, email, reply, subject, content, null);
     }
 

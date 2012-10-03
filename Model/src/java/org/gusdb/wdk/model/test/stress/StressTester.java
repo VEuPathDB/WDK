@@ -170,7 +170,7 @@ public class StressTester {
             ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
                     "SELECT * FROM " + TABLE_STRESS_RESULT, "wdk-stress-result");
             SqlUtils.closeResultSet(rs);
-        } catch (SQLException e) {
+        } catch (WdkModelException e) {
             // table doesn't exist, create it
             DBPlatform platform = wdkModel.getQueryPlatform();
             String numericType = platform.getNumberDataType(20);
