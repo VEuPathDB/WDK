@@ -11,5 +11,5 @@ public interface ParamHandler {
     
     void setWdkModel(WdkModel wdkModel) throws WdkUserException, WdkModelException;
     
-    String transform(User user, String internalValue) throws WdkUserException;
+    String transform(User user, String internalValue) throws WdkModelException;
 }

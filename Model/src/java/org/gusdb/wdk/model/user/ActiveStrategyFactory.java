@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -59,9 +58,7 @@ class ActiveStrategyFactory {
         return ids;
     }
 
-    synchronized void openActiveStrategy(String strategyKey)
-            throws NumberFormatException, WdkUserException, WdkModelException,
-            JSONException, SQLException, NoSuchAlgorithmException {
+    synchronized void openActiveStrategy(String strategyKey) throws WdkModelException {
         logger.debug("Opening strategy: " + strategyKey);
         if (getStrategy(strategyKey) != null) return;
 
@@ -113,9 +110,7 @@ class ActiveStrategyFactory {
     }
 
     synchronized void replaceStrategy(User user, int oldId, int newId,
-            Map<Integer, Integer> stepMap) throws WdkUserException,
-            WdkModelException, JSONException, SQLException,
-            NoSuchAlgorithmException {
+            Map<Integer, Integer> stepMap) throws WdkModelException {
         ActiveStrategy oldStrategy = root.children.get(Integer.toString(oldId));
         // if the old strategy is not opened, do nothing.
         if (oldStrategy == null) return;
@@ -156,9 +151,7 @@ class ActiveStrategyFactory {
         root.children.clear();
     }
 
-    private String getParentKey(String strategyKey) throws WdkUserException,
-            WdkModelException, JSONException, SQLException,
-            NoSuchAlgorithmException {
+    private String getParentKey(String strategyKey) throws WdkModelException {
         int pos = strategyKey.indexOf('_');
         if (pos < 0) return null;
         int strategyId = Integer.parseInt(strategyKey.substring(0, pos));

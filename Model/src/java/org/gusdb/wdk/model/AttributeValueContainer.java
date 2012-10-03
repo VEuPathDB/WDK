@@ -22,14 +22,14 @@ public abstract class AttributeValueContainer implements AttributeValueMap {
     protected abstract Map<String, AttributeField> getAttributeFieldMap();
 
     protected abstract void fillColumnAttributeValues(Query attributeQuery)
-            throws WdkModelException, WdkUserException;
+            throws WdkModelException;
 
     protected abstract PrimaryKeyAttributeValue getPrimaryKey();
 
     private Map<String, AttributeValue> attributeValueCache = new LinkedHashMap<String, AttributeValue>();
 
     public AttributeValue getAttributeValue(String fieldName)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         // get the field from the cache; primary key always exists in the cache
         Map<String, AttributeField> fields = getAttributeFieldMap();
         AttributeField field = fields.get(fieldName);
@@ -56,7 +56,7 @@ public abstract class AttributeValueContainer implements AttributeValueMap {
 
             logger.debug("filling attribute values from query " + query.getFullName());
             for (Column column : query.getColumns()) {
-                // logger.debug("column: " + column.getName());
+                logger.trace("column: " + column.getName());
             }
             if (query instanceof SqlQuery)
                 logger.debug("SQL: \n" + ((SqlQuery)query).getSql());

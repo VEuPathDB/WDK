@@ -8,11 +8,11 @@ public class WdkRuntimeException extends RuntimeException {
 		super(message);
 	}
 
-	public WdkRuntimeException(Exception cause) {
+	public WdkRuntimeException(Throwable cause) {
 		super(cause);
 	}
 	
-	public WdkRuntimeException(String message, Exception cause) {
+	public WdkRuntimeException(String message, Throwable cause) {
 		super(message, cause);
 	}
 	

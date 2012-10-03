@@ -13,20 +13,19 @@
 <%-- JS libraries --%>
 <%-- comment out the production code. need to revert this on check in --%>
 
+<!--<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.js"></script>-->
 <script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-1.7.min.js"/>'></script>
-<!--
-<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.js"></script>
--->
+
 <script type="text/javascript" src='<c:url value="/wdk/js/lib/jquery-ui-1.8.16.custom.min.js"/>'></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.blockUI.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.cookie.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/jquery.dataTables-1.9.0.min.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/FixedColumns.min.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/FixedHeader.min.js'/>"></script>
-<!--  <script type="text/javascript" src="<c:url value='/wdk/js/lib/jstree/jquery.jstree.js'/>"></script>  -->
-<script type="text/javascript" src="wdk/js/lib/jstree/jquery.jstree.js"></script>
+<script type="text/javascript" src="${pageContext.request.contextPath}/wdk/js/lib/jstree/jquery.jstree.js"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/qtip2/jquery.qtip.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/lib/json.js'/>"></script>
+<script type="text/javascript" src='<c:url value="/wdk/js/lib/handlebars-1.0.0.beta.6.js"/>'></script>
 
 <%-- styles for JS libraries --%>
 <link rel="Stylesheet" type="text/css" href="<c:url value='/wdk/css/ui-custom/custom-theme/jquery-ui-1.8.16.custom.css' />"/>
@@ -36,14 +35,16 @@
 
 <%-- WDK based js files --%>
 <script type="text/javascript" src='<c:url value="/wdk/js/api.js"/>'></script>
-<script type="text/javascript" src='<c:url value="/wdk/js/wdkEvent.js"/>'></script>
-<script type="text/javascript" src='<c:url value="/wdk/js/wdkCommon.js"/>'></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/stratTabCookie.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/js-utils.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/checkboxTree.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/basket.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/favorite.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/tooltips.js'/>"></script>
+<script type="text/javascript" src='<c:url value="/wdk/js/Utilities.js"/>'></script>
+<script type="text/javascript" src='<c:url value="/wdk/js/User.js"/>'></script>
+<script type="text/javascript" src='<c:url value="/wdk/js/wdkEvent.js"/>'></script>
+<script type="text/javascript" src='<c:url value="/wdk/js/wdkCommon.js"/>'></script>
 
 <%-- WDL based styles --%>
 <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkCommon.css' />">

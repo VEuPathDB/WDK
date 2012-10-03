@@ -1,6 +1,5 @@
 @import url("reset.css");
 
-
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     =Base stylesheet for StrategiesWDK-based sites
        - the default font size has to be 12px, otherwise the step boxes will not be aligned correctly
@@ -16,7 +15,6 @@ body {
 	white-space: normal;
 	background-repeat: repeat-x;
 }
-
 
 h1 {
 	font-size: 170%;   /* 20px; */
@@ -110,6 +108,10 @@ td {
 	font-size: 95%;	
 }
 
+.tiny-text {
+	font-size: 9px;
+}
+
 #wrap {
 	width: 100%;
 	text-align: left;
@@ -132,6 +134,125 @@ td {
     height:0;
     font-size: 1px;
     line-height: 0px;
+}
+
+/***** Styling for the Login pop-up box *****/
+
+#login table {
+  width: 100%;
+  border: 0px;
+  border-collapse: separate;
+  border-spacing: 3px;
+  *border-collapse: expression('separate', cellSpacing = '3px');
+}
+
+#login th { border-width: 0px 0px 0px 0px; }
+
+#login td { margin-top: 3px; }
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   =smallMenu
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
+/***** Styling for the header links *****/
+
+#nav-top-div {
+  float: right;
+}
+#nav-top {
+  float: left;
+  line-height: 1;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 12px;
+  font-weight: normal;
+}
+#nav-top li {
+  float: left;
+  width: auto;
+  z-index: 520;
+  display: inline;
+  list-style-type: none;
+  padding-right: 15px;
+  background-image: url('../images/menu_divider.png');
+  background-position: center right;
+  background-repeat: no-repeat;
+}
+#nav-top .no-divider {
+  padding-right: 0px;
+  background-image: none;
+}
+#nav-top .empty-divider {
+  padding-right: 7px;
+  background-image: none;
+}
+#nav-top .socmedia-link {
+  position: relative;
+  bottom: 3px;
+}
+#nav-top .nav-last {
+  padding-right:5px
+}
+#nav-top a:link, #nav-top a:visited {
+  display: block;
+  color: black;
+  width: auto;
+  text-decoration: none;
+}
+#nav-top a:hover, #nav-top a:active {
+  display: block;
+  color: #0000CD;
+  width: auto;
+  text-decoration: none;
+}
+
+/***** Styling for drop-down menus *****/
+
+#nav-top li ul {
+  position: absolute;
+  width: 13em;
+  text-align: left;
+  background-color: #FFFFFF;
+  border: solid #808080 1px;
+  display: none;
+  z-index: 520;
+}
+
+#nav-top li ul li {
+	display: block;
+  width: 100%;
+  margin: 0px;
+  /* undo divider added to top level links */
+  padding: 0px;
+  background-image: none;
+}
+
+#nav-top li ul li a {
+	display: block;
+	width: 100%;
+	margin: 0px;
+	border: 0px;
+	padding: 3px;
+}
+
+#nav-top li ul li a:hover {
+	background-color: #D3D3D3;
+}
+
+/***** Styles for Pop-Up Dialogs *****/
+
+.popup-dialog {
+  width: 650px;
+  text-decoration:none;
+}
+.popup-dialog h2 {
+  font-size: 16px;
+  font-weight: bold;
+  margin: 12px 0px;
+}
+.popup-dialog p {
+  font-size: 12px;
+  margin: 5px;
+  line-height: 14px;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -181,7 +302,6 @@ ul.menubar {
     font-weight:bold;
     position:relative;
 }
-
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -646,12 +766,46 @@ div#Summary_Views {
 .record-panel { overflow:auto; }
 
 
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   =USER PROFILE-RELATED FORM STYLES
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
+div.user-form-frame {
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 12px;
+  padding: 8px;
+}
 
+div.user-form-frame h1 {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+div.user-form-frame table {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+dif.user-form-frame th {
+  padding: 7px;
+}
+
+div.user-form-frame td {
+  height: 20px;
+  padding: 5px;
+}
+
+div.user-form-frame ul {
+	margin-left: 7px;
+  list-style-type: circle;
+  list-style-position: inside;
+}
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =RECORD PAGE tables: in toggle.tag and wdkTable.tag
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+
 table.center {margin-left:auto; margin-right:auto;}
 
 table.paneltoggle {
@@ -977,7 +1131,9 @@ span.marker a:link, span.marker a:visited {
 	border: 1px solid black;
 }
 
-
+.onload-function {
+  display: none;
+}
 
 /* THE END */
 

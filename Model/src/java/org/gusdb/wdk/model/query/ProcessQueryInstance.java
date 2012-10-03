@@ -59,7 +59,7 @@ public class ProcessQueryInstance extends QueryInstance {
      */
     public ProcessQueryInstance(User user, ProcessQuery query,
             Map<String, String> values, boolean validate, int assignedWeight,
-            Map<String, String> context) throws WdkModelException, WdkUserException {
+            Map<String, String> context) throws WdkModelException {
         super(user, query, values, validate, assignedWeight, context);
         this.query = query;
     }
@@ -86,7 +86,7 @@ public class ProcessQueryInstance extends QueryInstance {
      */
     @Override
     public void insertToCache(Connection connection, String tableName,
-            int instanceId) throws WdkModelException, WdkUserException {
+            int instanceId) throws WdkModelException {
         logger.debug("inserting process query result to cache...");
         Map<String, Column> columns = query.getColumnMap();
         String weightColumn = Utilities.COLUMN_WEIGHT;
@@ -156,7 +156,7 @@ public class ProcessQueryInstance extends QueryInstance {
                 ps.executeBatch();
         }
         catch (SQLException e) {
-        	throw new WdkUserException("Unable to insert record into cache.", e);
+        	throw new WdkModelException("Unable to insert record into cache.", e);
         }
         finally {
             // close the statement manually, since we need to keep the
@@ -176,7 +176,7 @@ public class ProcessQueryInstance extends QueryInstance {
      * wdk.model.Column[], java.lang.Integer, java.lang.Integer)
      */
     @Override
-    protected ResultList getUncachedResults() throws WdkModelException, WdkUserException {
+    protected ResultList getUncachedResults() throws WdkModelException {
         WsfRequest request = new WsfRequest();
         request.setPluginClass(query.getProcessName());
         request.setProjectId(wdkModel.getProjectId());
@@ -309,7 +309,7 @@ public class ProcessQueryInstance extends QueryInstance {
      * @see org.gusdb.wdk.model.query.QueryInstance#getSql()
      */
     @Override
-    public String getSql() throws WdkModelException, WdkUserException {
+    public String getSql() throws WdkModelException {
         // always get sql that queries on the cached result
         return getCachedSql();
     }
@@ -323,7 +323,7 @@ public class ProcessQueryInstance extends QueryInstance {
      */
     @Override
     public void createCache(Connection connection, String tableName,
-            int instanceId, String[] indexColumns) throws WdkModelException, WdkUserException {
+            int instanceId, String[] indexColumns) throws WdkModelException {
         logger.debug("creating process query cache...");
         DBPlatform platform = query.getWdkModel().getQueryPlatform();
         Column[] columns = query.getColumns();
@@ -383,7 +383,7 @@ public class ProcessQueryInstance extends QueryInstance {
             insertToCache(connection, tableName, instanceId);
         }
         catch (SQLException e) {
-        	throw new WdkUserException("Unable to create cache.", e);
+        	throw new WdkModelException("Unable to create cache.", e);
         }
         finally {
             if (stmt != null)
@@ -398,7 +398,7 @@ public class ProcessQueryInstance extends QueryInstance {
      * @see org.gusdb.wdk.model.query.QueryInstance#getResultSize()
      */
     @Override
-    public int getResultSize() throws WdkModelException, WdkUserException {
+    public int getResultSize() throws WdkModelException {
         if (!isCached()) {
             int count = 0;
             ResultList resultList = getResults();

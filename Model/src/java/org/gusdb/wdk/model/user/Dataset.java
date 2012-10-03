@@ -155,8 +155,8 @@ public class Dataset {
         return factory.getDatasetValues(this);
     }
 
-    public String getValue() throws WdkUserException, WdkModelException {
-        List<String> values =factory.getDatasetValues(this);
+    public String getValue() throws WdkModelException {
+        List<String> values = factory.getDatasetValues(this);
         StringBuffer sb = new StringBuffer();
         for (String value : values) {
             if (sb.length() > 0) sb.append(DatasetFactory.RECORD_DIVIDER + " ");

@@ -14,7 +14,7 @@ public abstract class AttributeValue {
     protected AttributeField field;
     protected Object value;
 
-    public abstract Object getValue() throws WdkModelException, WdkUserException;
+    public abstract Object getValue() throws WdkModelException;
 
     public AttributeValue(AttributeField field) {
         this.field = field;
@@ -68,9 +68,8 @@ public abstract class AttributeValue {
         try {
             Object value = getValue();
             return (value == null) ? "" : value.toString();
-        } catch (WdkModelException ex) {
-            throw new RuntimeException(ex);
-        } catch (WdkUserException ex) {
+        }
+        catch (WdkModelException ex) {
             throw new RuntimeException(ex);
         }
     }

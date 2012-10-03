@@ -84,14 +84,14 @@ public class DatasetFactory {
 
     public Dataset getDataset(User user, RecordClass recordClass,
             String uploadFile, String strValues)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         List<String[]> values = parseValues(recordClass, strValues);
         return getDataset(user, recordClass, uploadFile, values);
     }
 
     public Dataset getDataset(User user, RecordClass recordClass,
             String uploadFile, List<String[]> values)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         if (values.size() == 0)
             throw new WdkDatasetException("The dataset is empty. User #"
                     + user.getUserId());
@@ -190,7 +190,7 @@ public class DatasetFactory {
      * @throws WdkUserException
      */
     public Dataset getDataset(User user, int userDatasetId)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
 	        StringBuffer sql = new StringBuffer("SELECT ");
 	        sql.append(COLUMN_DATASET_ID);
 	        sql.append(" FROM ").append(userSchema).append(TABLE_USER_DATASET);
@@ -216,7 +216,7 @@ public class DatasetFactory {
 	            return dataset;
 	        }
 	        catch (SQLException e) {
-	        	throw new WdkUserException("Unable to get data set with ID: " + userDatasetId, e);
+	        	throw new WdkModelException("Unable to get data set with ID: " + userDatasetId, e);
 	        }
 	        finally {
 	            if (connection != null)
@@ -238,7 +238,7 @@ public class DatasetFactory {
      * @throws WdkUserException
      */
     public Dataset getDataset(User user, String datasetChecksum)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
     	try {
 	        // get dataset id
 	        StringBuffer sqlDatasetId = new StringBuffer("SELECT ");
@@ -297,11 +297,11 @@ public class DatasetFactory {
 	        }
     	}
     	catch (SQLException e) {
-    		throw new WdkUserException("Unable to retrieve data set.", e);
+    		throw new WdkModelException("Unable to retrieve data set.", e);
     	}
     }
 
-    List<String> getDatasetValues(Dataset dataset) throws WdkUserException, WdkModelException {
+    List<String> getDatasetValues(Dataset dataset) throws WdkModelException {
         String columnPrefx = Utilities.COLUMN_PK_PREFIX;
         int columnCount = Utilities.MAX_PK_COLUMN_COUNT;
         StringBuffer sql = new StringBuffer();
@@ -360,7 +360,7 @@ public class DatasetFactory {
      * @throws WdkUserException
      */
     private int getDatasetId(Connection connection, String datasetChecksum)
-            throws SQLException, WdkModelException, WdkUserException {
+            throws WdkModelException {
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(COLUMN_DATASET_ID);
         sql.append(" FROM ").append(wdkSchema).append(TABLE_DATASET_INDEX);
@@ -383,7 +383,7 @@ public class DatasetFactory {
      * @throws WdkUserException
      */
     public int getUserDatasetId(Connection connection, User user, int datasetId)
-            throws SQLException, WdkModelException, WdkUserException {
+            throws WdkModelException {
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(COLUMN_USER_DATASET_ID);
         sql.append(" FROM ").append(userSchema).append(TABLE_USER_DATASET);
@@ -399,7 +399,7 @@ public class DatasetFactory {
 
     private Dataset insertDatasetIndex(RecordClass recordClass,
             Connection connection, String checksum, List<String[]> values)
-            throws SQLException, WdkModelException, WdkUserException {
+            throws WdkModelException {
         // get a new dataset id
         int datasetId = userPlatform.getNextId(wdkSchema, TABLE_DATASET_INDEX);
         Dataset dataset = new Dataset(this, datasetId);
@@ -416,8 +416,9 @@ public class DatasetFactory {
         sql.append(COLUMN_DATASET_SIZE).append(", ");
         sql.append(COLUMN_RECORD_CLASS).append(", ");
         sql.append(COLUMN_SUMMARY).append(") VALUES (?, ?, ?, ?, ?)");
-        PreparedStatement psInsert = connection.prepareStatement(sql.toString());
+        PreparedStatement psInsert = null;
         try {
+        	psInsert = connection.prepareStatement(sql.toString());
             psInsert.setInt(1, datasetId);
             psInsert.setString(2, checksum);
             psInsert.setInt(3, dataset.getSize());
@@ -425,8 +426,11 @@ public class DatasetFactory {
             psInsert.setString(5, dataset.getSummary());
             psInsert.execute();
         }
+        catch (SQLException e) {
+        	throw new WdkModelException("Could not insert dataset index.", e);
+        }
         finally {
-            if (psInsert != null) psInsert.close();
+            SqlUtils.closeQuietly(psInsert);
         }
         return dataset;
     }
@@ -474,7 +478,7 @@ public class DatasetFactory {
     }
 
     private void insertUserDataset(Connection connection, Dataset dataset)
-            throws SQLException, WdkModelException, WdkUserException {
+            throws SQLException, WdkModelException {
         // get new user dataset id
         int userDatasetId = userPlatform.getNextId(userSchema,
                 TABLE_USER_DATASET);
@@ -596,7 +600,7 @@ public class DatasetFactory {
     }
 
     public List<String[]> parseValues(RecordClass recordClass, String strValue)
-            throws WdkUserException {
+            throws WdkModelException {
         String[] rows = strValue.split(REGEX_RECORD_DIVIDER);
         List<String[]> records = new ArrayList<String[]>();
         int length = recordClass.getPrimaryKeyAttributeField().getColumnRefs().length;
@@ -617,7 +621,7 @@ public class DatasetFactory {
               // check if the value is too long, throw an exception if it is.
               for (String column : columns) {
                 if (column.length() > MAX_VALUE_LENGTH)
-                    throw new WdkUserException("The dataset raw value is too "
+                    throw new WdkModelException("The dataset raw value is too "
                             + " big to be an id for the recordClass "
                             + recordClass.getFullName() + ": " + column);
               }
@@ -653,8 +657,7 @@ public class DatasetFactory {
      * @throws WdkUserException
      * @throws SQLException
      */
-    private void checkRemoteTable() throws WdkModelException, WdkUserException,
-            SQLException {
+    private void checkRemoteTable() throws WdkModelException {
         String dblink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
         StringBuilder sql = new StringBuilder("SELECT count(*) FROM ");
         sql.append(wdkSchema).append(TABLE_DATASET_VALUE).append(dblink);

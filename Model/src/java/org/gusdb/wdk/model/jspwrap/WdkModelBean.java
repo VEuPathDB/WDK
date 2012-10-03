@@ -11,14 +11,20 @@ import java.util.Stack;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.SearchCategory;
 import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.query.param.*;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.RecordClassSet;
+import org.gusdb.wdk.model.SearchCategory;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamSet;
+import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.param.TimestampParam;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 
@@ -28,7 +34,7 @@ import org.gusdb.wdk.model.xml.XmlRecordClassSet;
  */
 public class WdkModelBean {
 
-    private static final Logger logger = Logger.getLogger(WdkModelBean.class);
+    private static final Logger logger = Logger.getLogger(WdkModelBean.class.getName());
 
     WdkModel wdkModel;
 
@@ -231,7 +237,7 @@ public class WdkModelBean {
         return rcBeans;
     }
 
-    public UserFactoryBean getUserFactory() throws WdkUserException {
+    public UserFactoryBean getUserFactory() throws WdkModelException {
         return new UserFactoryBean(wdkModel.getUserFactory());
     }
 

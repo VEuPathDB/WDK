@@ -67,7 +67,7 @@ public class BasketTest {
         Question question = recordClass.getRealtimeBasketQuestion();
         Map<String, String> params = new HashMap<String, String>();
         params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
-        AnswerValue answerValue = question.makeAnswerValue(user, params, 0);
+        AnswerValue answerValue = question.makeAnswerValue(user, params, true, 0);
         Assert.assertTrue("answer size >= 5", answerValue.getResultSize() >= 5);
         // check each records
         for (RecordInstance instance : answerValue.getRecordInstances()) {

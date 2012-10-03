@@ -159,7 +159,7 @@ public class StringParam extends Param {
      */
     @Override
     public String dependentValueToInternalValue(User user, String dependentValue)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         String rawValue = decompressValue(dependentValue);
         if (rawValue == null || rawValue.length() == 0) rawValue = emptyValue;
         if (isNoTranslation()) return rawValue;
@@ -178,7 +178,7 @@ public class StringParam extends Param {
      */
     @Override
     public String dependentValueToRawValue(User user, String dependentValue)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         return decompressValue(dependentValue);
     }
 
@@ -191,7 +191,7 @@ public class StringParam extends Param {
      */
     @Override
     public String rawOrDependentValueToDependentValue(User user, String rawValue)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         return compressValue(rawValue);
     }
 

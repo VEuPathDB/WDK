@@ -14,6 +14,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
@@ -28,8 +29,6 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 public class DownloadStepAnswerValueAction extends Action {
     
     private static final Logger logger = Logger.getLogger( DownloadStepAnswerValueAction.class );
-
-    private static final String PROP_SIGNATURE = "signature";
     
     public ActionForward execute( ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response )

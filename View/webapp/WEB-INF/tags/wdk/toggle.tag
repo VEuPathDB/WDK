@@ -156,7 +156,7 @@
       </c:otherwise>
     </c:choose>
     </td>
-    <c:if test='${displayLink != null && displayLink != ""}'>
+    <c:if test='${displayLink ne null and displayLink ne ""}'>
       <td align="left">
          <font size="-1" face="Arial,Helvetica">
 				 ${displayLink}
@@ -165,7 +165,7 @@
     </c:if>
 
     <c:choose>
-	 <c:when  test='${dsLink != null && dsLink != ""}'>
+	 <c:when  test='${dsLink ne null and dsLink ne ""}'>
 	 <td align="right">
            <font size="-1" face="Arial,Helvetica">
            [<a href="${dsLink}">Data Sources</a>]
@@ -174,14 +174,14 @@
 	</c:when>
 	<c:otherwise>
 	<c:choose>
-      <c:when test='${attribution != null && attribution != ""}'>
+      <c:when test='${attribution ne null and attribution ne ""}'>
         <td align="right">
            <font size="-1" face="Arial,Helvetica">
            [<a href="getDataSource.do?display=detail&datasets=${attribution}&title=${displayNameParam}">Data Sources</a>]
            </font>
         </td>
       </c:when>
-      <c:when test="${name != null && name !='' && ds_ref_table != null && ds_ref_table != ''}">
+      <c:when test="${name ne null and name ne '' and ds_ref_table ne null and ds_ref_table ne ''}">
         <td align="right">
           <font size="-2" face="Arial,Helvetica">
           [<a href="<c:url value='/getDataSource.do?recordClass=${wdkRecord.recordClass.fullName}&display=detail&target=${name}' />">Data Sources</a>]
@@ -239,7 +239,7 @@
      </c:otherwise>
      </c:choose>
 
-        <c:if test="${imageId != null && isOpen}">
+        <c:if test="${imageId ne null and isOpen}">
           <script type="text/javascript">
             <!-- //
               updateImage('${imageId}', '${imageSource}')
@@ -247,7 +247,7 @@
           </script>
         </c:if>
 
-        <c:if test="${imageMapDivId != null && isOpen}">
+        <c:if test="${imageMapDivId ne null and isOpen}">
           <script type="text/javascript">
             <!-- //
               updateImageMapDiv('${imageMapDivId}', '${imageMapSource}', '${postLoadJS}')

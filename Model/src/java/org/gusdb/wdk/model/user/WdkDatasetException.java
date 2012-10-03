@@ -3,13 +3,13 @@
  */
 package org.gusdb.wdk.model.user;
 
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author xingao
  *
  */
-public class WdkDatasetException extends WdkUserException {
+public class WdkDatasetException extends WdkModelException {
 
     /**
      * 

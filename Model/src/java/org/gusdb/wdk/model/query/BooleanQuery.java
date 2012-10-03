@@ -1,14 +1,11 @@
 package org.gusdb.wdk.model.query;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.Map;
 
 import org.gusdb.wdk.model.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.RecordClassReference;
@@ -73,9 +70,7 @@ public class BooleanQuery extends SqlQuery {
     private StringParam useBooleanFilter;
     private RecordClass recordClass;
 
-    public BooleanQuery(RecordClass recordClass) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
+    public BooleanQuery(RecordClass recordClass) throws WdkModelException {
         this.recordClass = recordClass;
         this.wdkModel = recordClass.getWdkModel();
         String rcName = recordClass.getFullName().replace('.', '_');
@@ -161,8 +156,7 @@ public class BooleanQuery extends SqlQuery {
 
     private AnswerParam prepareOperand(ParamSet paramSet,
             RecordClass recordClass, String paramName)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
+            throws WdkModelException {
         AnswerParam operand;
         if (paramSet.contains(paramName)) {
             operand = (AnswerParam) paramSet.getParam(paramName);
@@ -179,8 +173,7 @@ public class BooleanQuery extends SqlQuery {
     }
 
     private StringParam prepareStringParam(ParamSet paramSet, String paramName)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
+            throws WdkModelException {
         StringParam param;
         if (paramSet.contains(paramName)) {
             param = (StringParam) paramSet.getParam(paramName);
@@ -239,7 +232,7 @@ public class BooleanQuery extends SqlQuery {
     @Override
     public QueryInstance makeInstance(User user, Map<String, String> values,
             boolean validate, int assignedWeight, Map<String, String> context)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         return new BooleanQueryInstance(user, this, values, validate,
                 assignedWeight, context);
     }

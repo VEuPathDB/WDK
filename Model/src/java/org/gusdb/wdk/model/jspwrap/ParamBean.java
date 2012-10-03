@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.jspwrap;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -15,7 +16,8 @@ import org.json.JSONException;
  */
 public abstract class ParamBean<T extends Param> {
 
-    // private static Logger logger = Logger.getLogger( ParamBean.class.getName() );
+    @SuppressWarnings("unused")
+    private static Logger logger = Logger.getLogger(ParamBean.class.getName());
 
     protected UserBean user;
     protected String dependentValue;

@@ -1,19 +1,11 @@
 package org.gusdb.wdk.jmx.mbeans;
 
 import java.lang.reflect.InvocationTargetException;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Map;
-import javax.sql.DataSource;
-import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
-
 import java.util.Iterator;
+import java.util.Map;
+
 import javax.management.Attribute;
 import javax.management.AttributeList;
 import javax.management.AttributeNotFoundException;
@@ -24,9 +16,11 @@ import javax.management.MBeanException;
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.ReflectionException;
+import javax.sql.DataSource;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.jmx.mbeans.dbms.AbstractDBInfo;
-import org.gusdb.wdk.jmx.mbeans.dbms.OracleDBInfo;
+import org.gusdb.wdk.model.dbms.DBPlatform;
 
 public abstract class AbstractDB extends BeanBase implements DynamicMBean {
 

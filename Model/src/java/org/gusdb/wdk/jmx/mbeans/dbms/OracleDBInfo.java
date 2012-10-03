@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 
 public class OracleDBInfo extends AbstractDBInfo {
 
+  @SuppressWarnings("unused")
   private static final Logger logger = Logger.getLogger(OracleDBInfo.class);
 
   public OracleDBInfo() {

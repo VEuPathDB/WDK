@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
@@ -73,7 +75,7 @@ public class Cache extends BeanBase implements CacheMBean   {
           value = rs.getString(columnName);
         }
       }
-    } catch (SQLException sqle) {
+    } catch (WdkModelException | SQLException sqle) {
       logger.fatal(sqle);
     } finally {
         SqlUtils.closeResultSet(rs);

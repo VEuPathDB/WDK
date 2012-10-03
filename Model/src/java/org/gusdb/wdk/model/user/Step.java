@@ -79,8 +79,7 @@ public class Step {
         assignedWeight = 0;
     }
 
-    public Step getPreviousStep() throws WdkUserException, WdkModelException,
-            SQLException {
+    public Step getPreviousStep() throws WdkModelException {
         if (previousStep == null && previousStepId != 0)
             setPreviousStep(stepFactory.loadStep(user, previousStepId));
         return previousStep;
@@ -98,8 +97,7 @@ public class Step {
         return (nextStep != null) ? nextStep : parentStep;
     }
 
-    public Step getChildStep() throws WdkUserException, WdkModelException,
-            SQLException {
+    public Step getChildStep() throws WdkModelException {
         if (childStep == null && childStepId != 0)
             setChildStep(stepFactory.loadStep(user, childStepId));
         return childStep;
@@ -400,7 +398,7 @@ public class Step {
         this.booleanExpression = booleanExpression;
     }
 
-    public void update(boolean updateTime) throws WdkUserException, WdkModelException {
+    public void update(boolean updateTime) throws WdkModelException {
         stepFactory.updateStep(user, this, updateTime);
     }
 
@@ -455,8 +453,7 @@ public class Step {
      * @throws WdkModelException
      * @throws WdkUserException
      */
-    public boolean isValid() throws WdkUserException, WdkModelException,
-            SQLException {
+    public boolean isValid() throws WdkModelException {
         if (!valid)
             return false;
         Step prevStep = getPreviousStep();
@@ -529,8 +526,7 @@ public class Step {
         this.setNextStep(step);
     }
 
-    public Step getStepByDisplayId(int displayId) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+    public Step getStepByDisplayId(int displayId) throws WdkModelException {
         Step target;
         if (this.displayId == displayId) {
             return this;
@@ -695,8 +691,7 @@ public class Step {
      * @throws NoSuchAlgorithmException
      * 
      */
-    public Step deepClone() throws NoSuchAlgorithmException, WdkModelException,
-            JSONException, WdkUserException, SQLException {
+    public Step deepClone() throws WdkModelException {
         Step step;
         AnswerValue answerValue = getAnswerValue();
         if (!isCombined()) {
@@ -829,12 +824,12 @@ public class Step {
     }
 
     public AnswerValue getAnswerValue()
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         return getAnswerValue(true);
     }
 
     public AnswerValue getAnswerValue(boolean validate)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         // even if a step is invalid, still allow user to create answerValue
         // if (!valid)
         // throw new WdkUserException("Step #" + internalId

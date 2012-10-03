@@ -54,18 +54,15 @@ public class UserTest {
         String email = "wdk-test@email";
         String firstName = "Test";
         String lastName = "User";
-        try {
-            User user = userFactory.getUserByEmail(email);
-            // user exists, delete first
-            userFactory.deleteUser(user.getEmail());
-        }
-        catch (WdkUserException ex) {
-            // user doesn't exist do nothing
+        User user = userFactory.getUserByEmail(email);
+        if (user != null) {
+          // user exists, delete first
+          userFactory.deleteUser(user.getEmail());
         }
 
-        User user = userFactory.createUser(email, lastName, firstName, null,
+        user = userFactory.createUser(email, lastName, firstName, null,
                 null, null, null, null, null, null, null, null, null, null,
-                null);
+                null, null);
 
         Assert.assertFalse("not guest", user.isGuest());
         Assert.assertEquals("email", email, user.getEmail());
@@ -92,14 +89,11 @@ public class UserTest {
     public void testDeleteUser() throws WdkUserException, WdkModelException,
             SQLException {
         String email = "wdk-test@email";
-        User user;
-        try {
-            user = userFactory.getUserByEmail(email);
-        }
-        catch (WdkUserException ex) {
-            // user doesn't exist, create it
-            user = userFactory.createUser(email, "Test", "User", null, null,
-                    null, null, null, null, null, null, null, null, null, null);
+        User user = userFactory.getUserByEmail(email);
+        if (user == null) {
+          // user doesn't exist, create it
+          user = userFactory.createUser(email, "Test", "User", null, null, null,
+              null, null, null, null, null, null, null, null, null, null);
         }
 
         userFactory.deleteUser(user.getEmail());
@@ -109,7 +103,7 @@ public class UserTest {
             userFactory.getUserByEmail(email);
             Assert.assertFalse("User still exists", true);
         }
-        catch (WdkUserException ex) {
+        catch (WdkModelException ex) {
             // expected, user, doesn't exist
         }
     }

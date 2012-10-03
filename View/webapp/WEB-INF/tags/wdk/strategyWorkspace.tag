@@ -43,7 +43,7 @@
       <c:if test="${fn:length(basketCounts) > 0}">
       <c:choose>
 	  <c:when test="${wdkUser.guest}">
-   <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:popLogin();"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
+   <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:User.login();"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
 	  </c:when>
 	  <c:otherwise>
    <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:showPanel('basket')"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
@@ -62,7 +62,7 @@
 <%--------------- REST OF PAGE ---------------%>
 
 <c:set var="newStrategy" value="${requestScope.newStrategy}" />
-<c:set var="newStrat"><c:if test="${newStrategy != null && newStrategy == true}">newStrategy="true"</c:if></c:set>
+<c:set var="newStrat"><c:if test="${newStrategy ne null and newStrategy eq true}">newStrategy="true"</c:if></c:set>
 
 <!-- OPENED tab -->
 <div id="strategy_results" class="workspace_panel">
