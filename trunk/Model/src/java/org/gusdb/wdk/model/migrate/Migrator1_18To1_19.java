@@ -577,8 +577,7 @@ public class Migrator1_18To1_19 extends Migrator {
     }
 
     private int addStep(WdkModel wdkModel, HistoryInfo history,
-            Map<Integer, Integer> stepMap) throws NoSuchAlgorithmException,
-            WdkModelException, SQLException, JSONException, WdkUserException {
+            Map<Integer, Integer> stepMap) throws WdkModelException, WdkUserException {
         String paramClob = prepareParams(wdkModel, history, stepMap);
         int stepId;
         if (paramClob.startsWith("{")) {
@@ -592,9 +591,8 @@ public class Migrator1_18To1_19 extends Migrator {
     }
 
     private String prepareParams(WdkModel wdkModel, HistoryInfo history,
-            Map<Integer, Integer> stepMap) throws WdkModelException,
-            JSONException, NoSuchAlgorithmException, SQLException,
-            WdkUserException {
+            Map<Integer, Integer> stepMap) throws WdkModelException, WdkUserException {
+      try {
         String paramClob = history.paramClob;
         if (paramClob.startsWith("{")) {
             Question question = (Question) wdkModel.resolveReference(history.questionName);
@@ -628,11 +626,15 @@ public class Migrator1_18To1_19 extends Migrator {
             }
         }
         return paramClob;
+      }
+      catch (JSONException e) {
+        throw new WdkModelException("Could not prepare params.", e);
+      }
     }
 
     private int getUserDatasetId(WdkModel wdkModel, int userId,
-            DatasetParam param, String value) throws SQLException,
-            WdkModelException, WdkUserException, NoSuchAlgorithmException {
+            DatasetParam param, String value) throws
+            WdkModelException {
         User user = wdkModel.getUserFactory().getUser(userId);
         if (value.length() == 65 || value.length() == 32) {
             // the value is a dataset_checksum, or a combined checksum
@@ -659,8 +661,7 @@ public class Migrator1_18To1_19 extends Migrator {
     }
 
     private int insertRawStep(WdkModel wdkModel, HistoryInfo history,
-            String paramClob) throws JSONException, SQLException,
-            WdkModelException, WdkUserException {
+            String paramClob) throws WdkModelException, WdkUserException {
         String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
         String sql = "INSERT INTO " + schema + "steps (step_id, display_id, "
                 + "user_id, answer_id, left_child_id, right_child_id, "
@@ -669,9 +670,9 @@ public class Migrator1_18To1_19 extends Migrator {
                 + "display_params) "
                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)";
 
-        JSONObject jsParams = new JSONObject(paramClob);
         Integer leftChild = null, rightChild = null;
         try {
+            JSONObject jsParams = new JSONObject(paramClob);
             Question question = (Question) wdkModel.resolveReference(history.questionName);
             Query query = question.getQuery();
             if (query.isBoolean()) {
@@ -692,10 +693,14 @@ public class Migrator1_18To1_19 extends Migrator {
                     }
                 }
             }
-        } catch (WdkModelException ex) {
+        }
+        catch (WdkModelException ex) {
             // question name doesn't exist
             history.isValid = false;
             ex.printStackTrace();
+        }
+        catch (JSONException e) {
+          throw new WdkModelException("Could not insert raw step.", e);
         }
 
         DBPlatform platform = wdkModel.getUserPlatform();
@@ -727,7 +732,11 @@ public class Migrator1_18To1_19 extends Migrator {
             ps.executeUpdate();
 
             return displayId;
-        } finally {
+        }
+        catch (SQLException e) {
+          throw new WdkModelException("Could not insert raw step.", e);
+        }
+        finally {
             SqlUtils.closeStatement(ps);
         }
     }

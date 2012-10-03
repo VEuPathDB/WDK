@@ -18,7 +18,7 @@
 <c:set value="${wdkQuestion.paramMapByGroups}" var="paramGroups"/>
 
 <c:if test="${not empty wdkQuestion.customJavascript}">
-  <script type="text/javascript" src="/assets/js/${wdkQuestion.customJavascript}"></script>
+  <script type="text/javascript" src="${pageContext.request.contextPath}/wdkCustomization/js/questions/${wdkQuestion.customJavascript}"></script>
 </c:if>
 
 <script type="text/javascript">
@@ -103,7 +103,7 @@
                 <%-- an individual param (can not use fullName, w/ '.', for mapped props) --%>
                 <tr>
                     <td width="30%" align="right" style="vertical-align:top">
-                        <span style="font-weight:bold">${qP.prompt}</span> <img class="help-link" style="cursor:pointer" title="${fn:escapeXml(qP.help)}" src="wdk/images/question.png" />
+                        <span style="font-weight:bold">${qP.prompt}</span> <img class="help-link" style="cursor:pointer" title="${fn:escapeXml(qP.help)}" src="${pageContext.request.contextPath}/wdk/images/question.png" />
                     </td>
                     <c:choose>
                         <c:when test="${paramType eq 'EnumParam' || paramType eq 'FlatVocabParam'}">

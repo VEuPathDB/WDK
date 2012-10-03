@@ -113,7 +113,7 @@ function chooseType(paramName, type) {
     </c:if>
     
     <!-- display an existing info -->
-    <c:if test="${dataset != null && fn:length(dataset.uploadFile) > 0}">
+    <c:if test="${dataset ne null and fn:length(dataset.uploadFile) gt 0}">
         <tr>
             <td colspan="2" align="right">
                 <i>Data was uploaded from: ${dataset.uploadFile}</i>
@@ -121,7 +121,7 @@ function chooseType(paramName, type) {
         </tr>
     </c:if>
 
-    <c:if test="${defaultType != 'basket' && noAction}">
+    <c:if test="${defaultType ne 'basket' and noAction}">
         <!-- display an input box and upload file button -->
         <tr class="dataset-file">
             <td align="left" valign="top">

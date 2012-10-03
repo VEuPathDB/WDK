@@ -294,7 +294,7 @@ public class AnswerFilterInstance extends WdkModelBase {
     }
 
     public String applyFilter(User user, String sql, int assignedWeight)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         Map<String, Param> params = filterQuery.getParamMap();
 
         String filterSql = filterQuery.getSql();

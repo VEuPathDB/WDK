@@ -131,8 +131,7 @@ public class AnswerValue {
      */
     AnswerValue(User user, Question question, QueryInstance idsQueryInstance,
             int startIndex, int endIndex, Map<String, Boolean> sortingMap,
-            AnswerFilterInstance filter) throws WdkModelException,
-            WdkUserException {
+            AnswerFilterInstance filter) throws WdkModelException {
         this.user = user;
         this.question = question;
         this.resultFactory = question.getWdkModel().getResultFactory();
@@ -212,7 +211,7 @@ public class AnswerValue {
         return pageCount;
     }
 
-    public int getResultSize() throws WdkModelException, WdkUserException {
+    public int getResultSize() throws WdkModelException {
         logger.debug("getting result size: cache=" + resultSize + ", isCached="
                 + idsQueryInstance.isCached());
         if (resultSize == null || !idsQueryInstance.isCached()) {
@@ -330,14 +329,11 @@ public class AnswerValue {
         return pageRecordInstances.get(primaryKey);
     }
 
-    public String getChecksum() throws WdkModelException,
-            NoSuchAlgorithmException, JSONException, WdkUserException,
-            SQLException {
+    public String getChecksum() throws WdkModelException {
         return idsQueryInstance.getChecksum();
     }
 
-    public String getAnswerKey() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public String getAnswerKey() throws WdkModelException {
         String key = getChecksum();
         if (filter != null) key += ":" + filter.getName();
         return key;
@@ -507,7 +503,7 @@ public class AnswerValue {
      * @throws WdkUserException
      */
     void integrateAttributesQuery(Query attributeQuery)
-    		throws WdkModelException, WdkUserException {
+    		throws WdkModelException {
         initPageRecordInstances();
 
         WdkModel wdkModel = question.getWdkModel();
@@ -576,7 +572,7 @@ public class AnswerValue {
 	        }
         }
         catch (SQLException e) {
-        	throw new WdkUserException("Unable to get record instances.", e);
+        	throw new WdkModelException("Unable to get record instances.", e);
         }
         
         if (count != pageRecordInstances.size()) {
@@ -593,8 +589,7 @@ public class AnswerValue {
     // Private Methods
     // ------------------------------------------------------------------
 
-    private String getPagedAttributeSql(Query attributeQuery)
-            throws WdkModelException, WdkUserException {
+    private String getPagedAttributeSql(Query attributeQuery) throws WdkModelException {
         // get the paged SQL of id query
         String idSql = getPagedIdSql();
 
@@ -717,8 +712,7 @@ public class AnswerValue {
         return sql.toString().replace(Utilities.MACRO_ID_SQL, idSql);
     }
 
-    public String getAttributeSql(Query attributeQuery)
-            throws WdkModelException, WdkUserException {
+    public String getAttributeSql(Query attributeQuery) throws WdkModelException {
         String queryName = attributeQuery.getFullName();
         Query dynaQuery = question.getDynamicAttributeQuery();
         String idSql = idsQueryInstance.getSql();
@@ -745,7 +739,7 @@ public class AnswerValue {
         return sql;
     }
 
-    public String getSortedIdSql() throws WdkModelException, WdkUserException  {
+    public String getSortedIdSql() throws WdkModelException  {
         if (sortedIdSql != null) return sortedIdSql;
 
         // get id sql
@@ -800,7 +794,7 @@ public class AnswerValue {
         return sortedIdSql;
     }
 
-    private String getPagedIdSql() throws WdkModelException, WdkUserException {
+    private String getPagedIdSql() throws WdkModelException {
         String sortedIdSql = getSortedIdSql();
         DBPlatform platform = question.getWdkModel().getQueryPlatform();
         String sql = platform.getPagedSql(sortedIdSql, startIndex, endIndex);
@@ -810,7 +804,7 @@ public class AnswerValue {
         return sql;
     }
 
-    public String getIdSql() throws WdkModelException, WdkUserException {
+    public String getIdSql() throws WdkModelException {
         // String[] pkColumns =
         // question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
         //
@@ -837,7 +831,7 @@ public class AnswerValue {
     }
 
     private void prepareSortingSqls(Map<String, String> sqls,
-            Collection<String> orders) throws WdkModelException, WdkUserException {
+            Collection<String> orders) throws WdkModelException {
         Map<String, AttributeField> fields = question.getAttributeFieldMap();
         Map<String, String> querySqls = new LinkedHashMap<String, String>();
         Map<String, String> queryNames = new LinkedHashMap<String, String>();
@@ -906,7 +900,7 @@ public class AnswerValue {
      * @throws WdkModelException
      * @throws WdkUserException
      */
-    private void initPageRecordInstances() throws WdkModelException, WdkUserException {
+    private void initPageRecordInstances() throws WdkModelException {
         if (pageRecordInstances != null) return;
 
         logger.debug("Initializing paged records......");
@@ -939,7 +933,7 @@ public class AnswerValue {
 	        }
         }
         catch (SQLException e) {
-        	throw new WdkUserException("Unable to get record instances.", e);
+        	throw new WdkModelException("Unable to get record instances.", e);
         }
 
         // check if the number of records is expected
@@ -1086,7 +1080,7 @@ public class AnswerValue {
     //this.summaryFieldMap = new LinkedHashMap<String, AttributeField>();
     
     public Map<String, AttributeField> getSummaryAttributeFieldMap()
-    		throws WdkModelException, WdkUserException {
+    		throws WdkModelException {
         
     	// get preferred attribs from user and initialize map
     	String[] userPrefAttributes = user.getSummaryAttributes(question.getFullName());
@@ -1135,8 +1129,7 @@ public class AnswerValue {
         return ids;
     }
 
-    public Answer getAnswer() throws NoSuchAlgorithmException, SQLException,
-            WdkModelException, JSONException, WdkUserException {
+    public Answer getAnswer() throws WdkModelException {
         if (answer == null) {
             AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
             String questionName = question.getFullName();
@@ -1147,7 +1140,7 @@ public class AnswerValue {
     }
 
     public int getFilterSize(String filterName)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
     	Integer size = resultSizesByFilter.get(filterName);
 	    if (size != null && idsQueryInstance.isCached()) {
 	    	return size;
@@ -1177,8 +1170,8 @@ public class AnswerValue {
             
             return size;
     	}
-	    catch (SQLException e) {
-	    	throw new WdkUserException("Unable to get filter size for filter " + filterName, e);
+	    catch (WdkModelException e) {
+	    	throw new WdkModelException("Unable to get filter size for filter " + filterName, e);
 	    }
     }
 

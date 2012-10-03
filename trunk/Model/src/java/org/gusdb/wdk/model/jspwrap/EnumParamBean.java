@@ -112,7 +112,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     }
 
 	public String getInternalValue(User user, String dependentValue)
-			throws WdkModelException, WdkUserException {
+			throws WdkModelException {
 		return param.getInternalValue(user, dependentValue, _dependedValue);
 	}
 

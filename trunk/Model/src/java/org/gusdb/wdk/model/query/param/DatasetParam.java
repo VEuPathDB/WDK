@@ -98,7 +98,7 @@ public class DatasetParam extends Param {
      */
     @Override
     public String dependentValueToIndependentValue(User user, String dependentValue)
-    		throws WdkUserException, WdkModelException {
+    		throws WdkModelException {
         logger.debug("dependent to independent: " + dependentValue);
         int userDatasetId = Integer.parseInt(dependentValue);
         Dataset dataset = user.getDataset(userDatasetId);
@@ -115,7 +115,7 @@ public class DatasetParam extends Param {
      */
     @Override
     public String dependentValueToInternalValue(User user, String dependentValue)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         // the input has to be a user-dataset-id
         int userDatasetId = Integer.parseInt(dependentValue);
 
@@ -155,7 +155,7 @@ public class DatasetParam extends Param {
      */
     @Override
     public String dependentValueToRawValue(User user, String dependentValue)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         logger.debug("dependent to raw: " + dependentValue);
         int userDatasetId = Integer.parseInt(dependentValue);
         Dataset dataset = user.getDataset(userDatasetId);
@@ -172,7 +172,7 @@ public class DatasetParam extends Param {
      */
     @Override
     public String rawOrDependentValueToDependentValue(User user, String rawValue)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         // first assume the input is dependent value, that is, user dataset id
         if (rawValue == null || rawValue.length() == 0) return null;
         if (rawValue.matches("\\d+")) {
@@ -200,7 +200,7 @@ public class DatasetParam extends Param {
      * @throws SQLException
      */
     public String rawValueToDependentValue(User user, String uploadFile,
-            String rawValue) throws WdkUserException, WdkModelException {
+            String rawValue) throws WdkModelException {
         logger.debug("raw to dependent: " + rawValue);
         Dataset dataset = user.createDataset(recordClass, uploadFile, rawValue);
         return Integer.toString(dataset.getUserDatasetId());
@@ -214,7 +214,7 @@ public class DatasetParam extends Param {
      * .user.User, java.lang.String)
      */
     @Override
-    protected void validateValue(User user, String dependentValue) throws WdkModelException, WdkUserException {
+    protected void validateValue(User user, String dependentValue) throws WdkModelException {
         // try to get the dataset
         int userDatasetId = Integer.parseInt(dependentValue);
         user.getDataset(userDatasetId);

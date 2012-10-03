@@ -17,7 +17,7 @@
 </c:if>
 
 <%-- set the weight --%>
-<c:if test="${wdkModel.useWeights && !wdkQuestion.isTransform}">
+<c:if test="${wdkModel.useWeights and not wdkQuestion.isTransform}">
   <div name="All_weighting" class="param-group" type="ShowHide">
     <c:set var="display" value="none"/>
     <c:set var="image" value="plus.gif"/>

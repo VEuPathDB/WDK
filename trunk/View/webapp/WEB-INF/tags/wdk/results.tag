@@ -32,10 +32,10 @@
 <!-- ================ TAG SHARED BY BASKET AND OPENED TABS =============== -->
 <!-- handle empty result set situation -->
 <c:choose>
-  <c:when test='${strategy == null && wdkUser.guest && wdkAnswer.resultSize == 0}'>
+  <c:when test='${strategy eq null and wdkUser.guest and wdkAnswer.resultSize eq 0}'>
     Please login to use the basket
   </c:when>
-  <c:when test='${strategy == null && wdkAnswer.resultSize == 0}'>
+  <c:when test='${strategy eq null and wdkAnswer.resultSize eq 0}'>
     Basket Empty
   </c:when>
   <c:otherwise>
@@ -64,7 +64,7 @@
    <c:if test="${strategy != null}">
     <c:choose>
       <c:when test="${wdkUser.guest}">
-        <c:set var="basketClick" value="popLogin();setFrontAction('basketStep');" />
+        <c:set var="basketClick" value="User.login();" />
       </c:when>
       <c:otherwise>
         <c:set var="basketClick" value="updateBasket(this, '${step.stepId}', '0', '${modelName}', '${recordName}');" />

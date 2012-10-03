@@ -141,8 +141,6 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
                 return getAttributeValue((String) key);
             } catch (WdkModelException ex) {
                 throw new WdkRuntimeException(ex);
-            } catch (WdkUserException ex) {
-                throw new WdkRuntimeException(ex);
             }
         }
 

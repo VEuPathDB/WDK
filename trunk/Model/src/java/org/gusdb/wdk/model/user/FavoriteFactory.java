@@ -58,9 +58,7 @@ public class FavoriteFactory {
      * @throws NoSuchAlgorithmException
      */
     public void addToFavorite(User user, RecordClass recordClass,
-            List<Map<String, Object>> recordIds) throws SQLException,
-            WdkUserException, WdkModelException, NoSuchAlgorithmException,
-            JSONException {
+            List<Map<String, Object>> recordIds) throws WdkModelException {
         logger.debug("adding favorite...");
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
@@ -137,15 +135,18 @@ public class FavoriteFactory {
                 SqlUtils.verifyTime(wdkModel, sqlInsert, "wdk-favorite-insert",
                         start);
             }
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException ("Could not add item to favorites", e);
+        }
+        finally {
             SqlUtils.closeStatement(psInsert);
             SqlUtils.closeStatement(psCount);
         }
     }
 
     public void removeFromFavorite(User user, RecordClass recordClass,
-            List<Map<String, Object>> recordIds) throws SQLException,
-            WdkUserException, WdkModelException {
+            List<Map<String, Object>> recordIds) throws WdkModelException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -180,13 +181,16 @@ public class FavoriteFactory {
                 SqlUtils.verifyTime(wdkModel, sqlDelete, "wdk-favorite-delete",
                         -start);
             }
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Could not remove favorite(s) for user " + user.getUserId(), e);
+        }
+        finally {
             SqlUtils.closeStatement(psDelete);
         }
     }
 
-    public void clearFavorite(User user) throws SQLException, WdkUserException,
-            WdkModelException {
+    public void clearFavorite(User user) throws WdkModelException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String sqlDelete = "DELETE FROM " + schema + TABLE_FAVORITES
@@ -203,13 +207,16 @@ public class FavoriteFactory {
             psDelete.executeUpdate();
             SqlUtils.verifyTime(wdkModel, sqlDelete, "wdk-favorite-delete-all",
                     start);
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Failed to clear favorite for user " + user.getUserId(), e);
+        }
+        finally {
             SqlUtils.closeStatement(psDelete);
         }
     }
 
-    public int getFavoriteCounts(User user) throws SQLException,
-            WdkUserException, WdkModelException {
+    public int getFavoriteCounts(User user) throws WdkModelException {
         // load the unique counts
         String sql = "SELECT count(*) AS fav_size FROM " + schema
                 + TABLE_FAVORITES + " WHERE " + COLUMN_USER_ID + " = ? AND "
@@ -227,15 +234,18 @@ public class FavoriteFactory {
             if (rs.next()) {
                 count = rs.getInt("fav_size");
             }
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Could not get favorite counts for user " + user.getUserId(), e);
+        }
+        finally {
             SqlUtils.closeResultSet(rs);
         }
         return count;
     }
 
     public Map<RecordClass, List<Favorite>> getFavorites(User user)
-            throws WdkUserException, WdkModelException, SQLException,
-            NoSuchAlgorithmException, JSONException {
+            throws WdkModelException {
         String sql = "SELECT * FROM " + schema + TABLE_FAVORITES + " WHERE "
                 + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_USER_ID + " =?"
                 + " ORDER BY " + COLUMN_RECORD_CLASS + " ASC, lower("
@@ -279,14 +289,17 @@ public class FavoriteFactory {
                 list.add(favorite);
             }
             return favorites;
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Cannot get favorites for user " + user.getUserId(), e);
+        }
+        finally {
             SqlUtils.closeResultSet(rs);
         }
     }
 
     public boolean isInFavorite(User user, RecordClass recordClass,
-            Map<String, Object> recordId) throws SQLException,
-            WdkUserException, WdkModelException {
+            Map<String, Object> recordId) throws WdkModelException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -314,14 +327,17 @@ public class FavoriteFactory {
                 hasRecord = (rsCount > 0);
             }
             return hasRecord;
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Could not check whether record id(s) are favorites for user " + user.getUserId(), e);
+        }
+        finally {
             SqlUtils.closeResultSet(resultSet);
         }
     }
 
     public void setNotes(User user, RecordClass recordClass,
-            List<Map<String, Object>> recordIds, String note)
-            throws SQLException, WdkUserException, WdkModelException {
+            List<Map<String, Object>> recordIds, String note) throws WdkModelException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -357,14 +373,17 @@ public class FavoriteFactory {
                 psUpdate.executeBatch();
                 SqlUtils.verifyTime(wdkModel, sql, "wdk-favorite-update-note", -start);
             }
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Could not set favorite note for user " + user.getUserId(), e);
+        }
+        finally {
             SqlUtils.closeStatement(psUpdate);
         }
     }
 
     public void setGroups(User user, RecordClass recordClass,
-            List<Map<String, Object>> recordIds, String group)
-            throws SQLException, WdkUserException, WdkModelException {
+            List<Map<String, Object>> recordIds, String group) throws WdkModelException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -400,13 +419,16 @@ public class FavoriteFactory {
                 psUpdate.executeBatch();
                 SqlUtils.verifyTime(wdkModel, sql, "wdk-favorite-update-group", -start);
             }
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Could not set favorite group for user " + user.getUserId(), e);
+        }
+        finally {
             SqlUtils.closeStatement(psUpdate);
         }
     }
 
-    public String[] getGroups(User user) throws WdkUserException,
-            WdkModelException, SQLException {
+    public String[] getGroups(User user) throws WdkModelException {
         String sql = "SELECT " + COLUMN_RECORD_GROUP + " FROM " + schema
                 + TABLE_FAVORITES + " WHERE " + COLUMN_USER_ID + "= ? AND "
                 + COLUMN_PROJECT_ID + " = ?";
@@ -432,7 +454,11 @@ public class FavoriteFactory {
             groups.toArray(array);
             Arrays.sort(array);
             return array;
-        } finally {
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Could not set favorite groups for user " + user.getUserId(), e);
+        }
+        finally {
             SqlUtils.closeResultSet(resultSet);
         }
     }

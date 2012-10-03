@@ -175,7 +175,7 @@ public class StepTest {
         try {
             user.getStep(step.getDisplayId());
             Assert.assertTrue("step is not deleted", false);
-        } catch (WdkUserException ex) {
+        } catch (WdkModelException ex) {
             // do nothing, expected
         }
     }

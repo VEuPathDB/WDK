@@ -418,7 +418,7 @@ public class CacheFactory {
     }
 
     public synchronized QueryInfo getQueryInfo(Query query)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
 
     	String checksum = query.getChecksum(true);
         String queryName = query.getFullName();
@@ -461,7 +461,7 @@ public class CacheFactory {
     }
 
     private QueryInfo checkQueryInfo(String queryName, String checksum)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         // check if the query table has been seen before
         QueryInfo queryInfo = null;
 
@@ -491,7 +491,7 @@ public class CacheFactory {
             }
         }
         catch (SQLException e) {
-        	throw new WdkUserException("Unable to check query info.", e);
+        	throw new WdkModelException("Unable to check query info.", e);
         }
         finally {
             SqlUtils.closeResultSet(resultSet);

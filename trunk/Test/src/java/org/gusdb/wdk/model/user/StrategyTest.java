@@ -98,7 +98,7 @@ public class StrategyTest {
         try {
             user.getStrategy(strategy.getStrategyId());
             Assert.assertTrue("strategy not deleted", false);
-        } catch (WdkUserException ex) {
+        } catch (WdkModelException ex) {
             // do nothing, expected.
         }
 

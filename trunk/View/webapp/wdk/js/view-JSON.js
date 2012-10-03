@@ -549,7 +549,7 @@ save_warning +
 		"<input type='text' size=" + (exportURL.length-6) + " value=" + exportURL + " readonly='true' />" +
 		"</div>";
 	}else if(guestUser() == 'true'){
-		share = "<a id='share_" + id + "' title='Please LOGIN so you can SAVE and then SHARE (email) your strategy.' href='javascript:void(0)' onclick=\"popLogin();setFrontAction('share'," + id + ");\"><b style='font-size:120%'>Share</b></a>";
+		share = "<a id='share_" + id + "' title='Please LOGIN so you can SAVE and then SHARE (email) your strategy.' href='javascript:void(0)' onclick=\"User.login();\"><b style='font-size:120%'>Share</b></a>";
 	}else{
 		share = "<a id='share_" + id + "' title='SAVE this strategy so you can SHARE it (email its URL).' href='javascript:void(0)' onclick=\"if (confirm('Before you can share your strategy, you need to save it. Would you like to do that now?')) { showUpdateDialog(this, true,true) }\"><b style='font-size:120%'>Share</b></a>";
 	}
@@ -560,7 +560,7 @@ save_warning +
 	var sTitle = "Save As";
 	// if(json.saved) sTitle = "COPY AS";
 	if (guestUser() == 'true') {
-		save = "<a id='save_" + id + "' title='Please LOGIN so you can SAVE (make a snapshot) your strategy.' class='save_strat_link' href='javascript:void(0)' onclick=\"popLogin();setFrontAction('save'," + id + ");\"><b style='font-size:120%'>" + sTitle + "</b></a>";
+		save = "<a id='save_" + id + "' title='Please LOGIN so you can SAVE (make a snapshot) your strategy.' class='save_strat_link' href='javascript:void(0)' onclick=\"User.login();\"><b style='font-size:120%'>" + sTitle + "</b></a>";
 	}
 	else {
 		save = "<a id='save_" + id + "' title='A saved strategy is like a snapshot, it cannot be changed.' class='save_strat_link' href='javascript:void(0)' onclick=\"showUpdateDialog(this, true)\"><b style='font-size:120%'>" + sTitle + "</b></a>";

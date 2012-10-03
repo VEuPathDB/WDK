@@ -79,13 +79,12 @@ public class UnitTestHelper {
             WdkModel wdkModel = getModel();
             UserFactory userFactory = wdkModel.getUserFactory();
             // check if user exist
-            try {
-                registeredUser = userFactory.getUserByEmail(REGISTERED_USER_EMAIL);
-            } catch (WdkUserException ex) {
+            registeredUser = userFactory.getUserByEmail(REGISTERED_USER_EMAIL);
+            if (registeredUser == null) {
                 // user doesn't exist, create one
                 registeredUser = userFactory.createUser(REGISTERED_USER_EMAIL,
                         "Test", "User", null, null, "WDK", null, null, null,
-                        null, null, null, null, null, null);
+                        null, null, null, null, null, null, null);
                 userFactory.savePassword(REGISTERED_USER_EMAIL,
                         REGISTERED_USER_PASSWORD);
             }

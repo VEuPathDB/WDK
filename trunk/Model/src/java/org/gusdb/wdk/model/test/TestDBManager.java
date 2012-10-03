@@ -90,22 +90,16 @@ public class TestDBManager extends BaseCLI {
         }
     }
 
-    private void dropTables(DBPlatform platform, String[] tables)
-            throws Exception {
+    private void dropTables(DBPlatform platform, String[] tables) throws WdkModelException {
         for (int t = 0; t < tables.length; t++) {
             File nextTable = new File(tables[t]);
             if ("CVS".equals(nextTable.getName())) continue;
 
             String tableName = nextTable.getName();
-            try {
-                System.err.println("Dropping table " + tableName);
-                String dropTable = "drop table " + tableName;
-                SqlUtils.executeUpdate(wdkModel, platform.getDataSource(),
-                        dropTable, "wdk-drop-table");
-            } catch (SQLException ex) {
-                System.err.println("Dropping table '" + tableName + "' failed.");
-                ex.printStackTrace();
-            }
+            System.err.println("Dropping table " + tableName);
+            String dropTable = "drop table " + tableName;
+            SqlUtils.executeUpdate(wdkModel, platform.getDataSource(),
+                    dropTable, "wdk-drop-table");
         }
     }
 

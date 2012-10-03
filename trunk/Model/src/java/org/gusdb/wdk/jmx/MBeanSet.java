@@ -1,14 +1,12 @@
 package org.gusdb.wdk.jmx;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Collections;
+import java.util.Properties;
 
-import java.util.Properties;  
-import java.util.Enumeration;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import org.apache.log4j.Logger;
 
 /**
@@ -43,7 +41,7 @@ public class MBeanSet {
         logger.warn(mbeansetProperty + " not found in classpath. No MBeans will be loaded.");
     }
 
-    Enumeration e = props.propertyNames();
+    Enumeration<?> e = props.propertyNames();
     while (e.hasMoreElements()) {
       String key = (String) e.nextElement();
       map.put(key, (String)props.getProperty(key));

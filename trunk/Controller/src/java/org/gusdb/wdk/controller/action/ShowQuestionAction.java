@@ -20,6 +20,8 @@ import org.apache.struts.action.ActionMapping;
 import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.form.QuestionForm;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -279,7 +281,7 @@ public class ShowQuestionAction extends Action {
 
       return determineView(servlet, request, wdkQuestion, qForm, mapping);
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Error while processing showQuestion", ex);
       throw ex;
     }
   }
@@ -305,6 +307,7 @@ public class ShowQuestionAction extends Action {
       logger.debug("SQA: form has all param vals, going to summary page "
           + forward.getPath() + " directly");
     }
+    logger.info("ShowQuestionAction will go to: " + forward);
     return forward;
   }
 

@@ -342,8 +342,7 @@ public class WdkModel {
     }
 
     public Question getBooleanQuestion(RecordClass recordClass)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         // check if the boolean question already exists
         String qname = Question.BOOLEAN_QUESTION_PREFIX
                 + recordClass.getFullName().replace('.', '_');
@@ -369,8 +368,7 @@ public class WdkModel {
     }
 
     public BooleanQuery getBooleanQuery(RecordClass recordClass)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         // check if the boolean query already exists
         String queryName = BooleanQuery.getQueryName(recordClass);
         QuerySet internalQuerySet = getQuerySet(Utilities.INTERNAL_QUERY_SET);

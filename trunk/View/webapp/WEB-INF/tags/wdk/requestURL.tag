@@ -1,6 +1,9 @@
 <%-- set the request scope var 'originRequestUrl' to be the value
      of the client's original request URL before Tomcat may have
      munged it during forwards --%>
+
+<%-- RRD 09/2012: Believe this may be deprecated!  Revisit during conversion to XML --%>
+
 <%@ taglib prefix="c"  uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 

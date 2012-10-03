@@ -79,14 +79,14 @@ public class OrganismUpdater {
         return mappings;
     }
 
-    public void update() throws SQLException, JSONException {
+    public void update() throws SQLException, JSONException, WdkModelException {
         Set<String> clobKeys = new HashSet<String>();
         updateStepParams(clobKeys);
         updateClobValues(clobKeys);
     }
 
     private void updateStepParams(Set<String> clobKeys) throws SQLException,
-            JSONException {
+            JSONException, WdkModelException {
         logger.info("Checking step params...");
 
         DBPlatform platform = wdkModel.getUserPlatform();
@@ -167,7 +167,7 @@ public class OrganismUpdater {
         return updated;
     }
 
-    private void updateClobValues(Set<String> clobKeys) throws SQLException {
+    private void updateClobValues(Set<String> clobKeys) throws SQLException, WdkModelException {
         logger.info("Checking clob values...");
         DBPlatform platform = wdkModel.getUserPlatform();
         DataSource dataSource = platform.getDataSource();

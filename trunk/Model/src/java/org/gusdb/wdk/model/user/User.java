@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -28,7 +26,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.view.RecordView;
 import org.gusdb.wdk.model.view.SummaryView;
-import org.json.JSONException;
 
 /**
  * @author xingao
@@ -70,8 +67,9 @@ public class User /* implements Serializable */{
     private String zipCode;
     private String phoneNumber;
     private String country;
+    private String openId;
 
-    private Set<String> userRoles;
+	private Set<String> userRoles;
     private boolean guest = true;
 
     /**
@@ -329,10 +327,24 @@ public class User /* implements Serializable */{
     }
 
     /**
+     * @return user's OpenID
+     */
+    public String getOpenId() {
+		    return openId;
+    }
+    
+    /**
+     * @param openId user's OpenID
+     */
+	  public void setOpenId(String openId) {
+		    this.openId = openId;
+	  }
+	
+    /**
      * @return Returns the guest.
      * @throws WdkUserException
      */
-    public boolean isGuest() throws WdkUserException {
+    public boolean isGuest() {
         return guest;
     }
 
@@ -418,8 +430,7 @@ public class User /* implements Serializable */{
      * @throws NoSuchAlgorithmException
      */
     synchronized Step createStep(AnswerValue answerValue, boolean deleted,
-            int assignedWeight) throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException, JSONException {
+            int assignedWeight) throws WdkModelException {
         Question question = answerValue.getQuestion();
         Map<String, String> paramValues = answerValue.getIdsQueryInstance().getValues();
         AnswerFilterInstance filter = answerValue.getFilter();
@@ -433,8 +444,7 @@ public class User /* implements Serializable */{
     public synchronized Step createStep(Question question,
             Map<String, String> paramValues, String filterName,
             boolean deleted, boolean validate, int assignedWeight)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            throws WdkModelException {
         AnswerFilterInstance filter = null;
         RecordClass recordClass = question.getRecordClass();
         if (filterName != null) {
@@ -447,8 +457,7 @@ public class User /* implements Serializable */{
     public synchronized Step createStep(Question question,
             Map<String, String> paramValues, AnswerFilterInstance filter,
             boolean deleted, boolean validate, int assignedWeight)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            throws WdkModelException {
         int endIndex = getItemsPerPage();
         return createStep(question, paramValues, filter, 1, endIndex, deleted,
                 validate, assignedWeight);
@@ -457,37 +466,32 @@ public class User /* implements Serializable */{
     public synchronized Step createStep(Question question,
             Map<String, String> paramValues, AnswerFilterInstance filter,
             int pageStart, int pageEnd, boolean deleted, boolean validate,
-            int assignedWeight) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            int assignedWeight) throws WdkModelException {
         Step step = stepFactory.createStep(this, question, paramValues, filter,
                 pageStart, pageEnd, deleted, validate, assignedWeight);
         return step;
     }
 
     public synchronized Strategy createStrategy(Step step, boolean saved)
-            throws WdkUserException, WdkModelException, SQLException,
-            JSONException, NoSuchAlgorithmException {
+            throws WdkModelException {
         return createStrategy(step, null, null, saved, null, false);
     }
 
     public synchronized Strategy createStrategy(Step step, boolean saved,
-            boolean hidden) throws WdkUserException, WdkModelException,
-            SQLException, JSONException, NoSuchAlgorithmException {
+            boolean hidden) throws WdkModelException {
         return createStrategy(step, null, null, saved, null, hidden);
     }
 
     // Transitional method...how to handle savedName properly?
     // Probably by expecting it if a name is given?
     public synchronized Strategy createStrategy(Step step, String name,
-            boolean saved) throws WdkUserException, WdkModelException,
-            SQLException, JSONException, NoSuchAlgorithmException {
+            boolean saved) throws WdkModelException {
         return createStrategy(step, name, null, saved, null, false);
     }
 
     public synchronized Strategy createStrategy(Step step, String name,
             String savedName, boolean saved, String description, boolean hidden)
-            throws WdkUserException, WdkModelException, SQLException,
-            JSONException, NoSuchAlgorithmException {
+            throws WdkModelException {
         Strategy strategy = stepFactory.createStrategy(this, step, name,
                 savedName, saved, description, hidden);
 
@@ -507,14 +511,9 @@ public class User /* implements Serializable */{
      * user.
      * 
      * @param user
-     * @throws WdkUserException
      * @throws WdkModelException
-     * @throws JSONException
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
      */
-    void mergeUser(User user) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+    void mergeUser(User user) throws WdkModelException {
         // TEST
         logger.debug("Merging user #" + user.getUserId() + " into user #"
                 + userId + "...");
@@ -566,8 +565,7 @@ public class User /* implements Serializable */{
         }
     }
 
-    public Map<Integer, Step> getStepsMap() throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+    public Map<Integer, Step> getStepsMap() throws WdkModelException {
         logger.debug("loading steps...");
         Map<Integer, Step> invalidSteps = new LinkedHashMap<Integer, Step>();
         Map<Integer, Step> allSteps = stepFactory.loadSteps(this, invalidSteps);
@@ -575,9 +573,7 @@ public class User /* implements Serializable */{
         return allSteps;
     }
 
-    public Map<Integer, Strategy> getStrategiesMap() throws WdkUserException,
-            WdkModelException, JSONException, SQLException,
-            NoSuchAlgorithmException {
+    public Map<Integer, Strategy> getStrategiesMap() throws WdkModelException {
         logger.debug("loading strategies...");
         Map<Integer, Strategy> invalidStrategies = new LinkedHashMap<Integer, Strategy>();
         Map<Integer, Strategy> strategies = stepFactory.loadStrategies(this,
@@ -587,8 +583,7 @@ public class User /* implements Serializable */{
     }
 
     public Map<String, List<Step>> getStepsByCategory()
-            throws WdkUserException, WdkModelException, SQLException,
-            JSONException, NoSuchAlgorithmException {
+            throws WdkModelException {
         Map<Integer, Step> steps = getStepsMap();
         Map<String, List<Step>> category = new LinkedHashMap<String, List<Step>>();
         for (Step step : steps.values()) {
@@ -608,9 +603,7 @@ public class User /* implements Serializable */{
         return category;
     }
 
-    public Strategy[] getInvalidStrategies() throws WdkUserException,
-            WdkModelException, JSONException, SQLException,
-            NoSuchAlgorithmException {
+    public Strategy[] getInvalidStrategies() throws WdkModelException {
         try {
             Map<Integer, Strategy> strategies = new LinkedHashMap<Integer, Strategy>();
             stepFactory.loadStrategies(this, strategies);
@@ -618,18 +611,14 @@ public class User /* implements Serializable */{
             Strategy[] array = new Strategy[strategies.size()];
             strategies.values().toArray(array);
             return array;
-        } catch (WdkUserException ex) {
-            System.out.println(ex);
-            throw ex;
-        } catch (WdkModelException ex) {
+        }
+        catch (WdkModelException ex) {
             System.out.println(ex);
             throw ex;
         }
     }
 
-    public Strategy[] getStrategies() throws WdkUserException,
-            WdkModelException, JSONException, SQLException,
-            NoSuchAlgorithmException {
+    public Strategy[] getStrategies() throws WdkModelException {
         Map<Integer, Strategy> map = getStrategiesMap();
         Strategy[] array = new Strategy[map.size()];
         map.values().toArray(array);
@@ -637,17 +626,14 @@ public class User /* implements Serializable */{
     }
 
     public Map<String, List<Strategy>> getStrategiesByCategory()
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
+            throws WdkModelException {
         Map<Integer, Strategy> strategies = getStrategiesMap();
         return formatStrategiesByRecordClass(strategies.values());
     }
 
     public Map<String, List<Strategy>> getUnsavedStrategiesByCategory()
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
-        List<Strategy> strategies = stepFactory.loadStrategies(this, false,
-                false);
+            throws WdkModelException {
+        List<Strategy> strategies = stepFactory.loadStrategies(this, false, false);
         return formatStrategiesByRecordClass(strategies);
     }
 
@@ -660,24 +646,19 @@ public class User /* implements Serializable */{
      * @throws SQLException
      */
     public Map<String, List<Strategy>> getSavedStrategiesByCategory()
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
-        List<Strategy> strategies = stepFactory.loadStrategies(this, true,
-                false);
+            throws WdkModelException {
+        List<Strategy> strategies = stepFactory.loadStrategies(this, true, false);
         return formatStrategiesByRecordClass(strategies);
     }
 
     public Map<String, List<Strategy>> getRecentStrategiesByCategory()
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
-        List<Strategy> strategies = stepFactory.loadStrategies(this, false,
-                true);
+            throws WdkModelException {
+        List<Strategy> strategies = stepFactory.loadStrategies(this, false, true);
         return formatStrategiesByRecordClass(strategies);
     }
 
     public Map<String, List<Strategy>> getActiveStrategiesByCategory()
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
+            throws WdkModelException {
         Strategy[] strategies = getActiveStrategies();
         List<Strategy> list = new ArrayList<Strategy>();
         for (Strategy strategy : strategies)
@@ -686,8 +667,7 @@ public class User /* implements Serializable */{
     }
 
     private Map<String, List<Strategy>> formatStrategiesByRecordClass(
-            Collection<Strategy> strategies) throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+            Collection<Strategy> strategies) throws WdkModelException {
         Map<String, List<Strategy>> category = new LinkedHashMap<String, List<Strategy>>();
         for (RecordClassSet rcSet : wdkModel.getAllRecordClassSets()) {
             for (RecordClass recordClass : rcSet.getRecordClasses()) {
@@ -710,8 +690,7 @@ public class User /* implements Serializable */{
     }
 
     public Map<Integer, Step> getStepsMap(String dataType)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
+            throws WdkModelException {
         Map<Integer, Step> steps = getStepsMap();
         Map<Integer, Step> selected = new LinkedHashMap<Integer, Step>();
         for (int stepDisplayId : steps.keySet()) {
@@ -722,25 +701,21 @@ public class User /* implements Serializable */{
         return selected;
     }
 
-    public Step[] getSteps(String dataType) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, JSONException,
-            SQLException {
+    public Step[] getSteps(String dataType) throws WdkModelException {
         Map<Integer, Step> map = getStepsMap(dataType);
         Step[] array = new Step[map.size()];
         map.values().toArray(array);
         return array;
     }
 
-    public Step[] getSteps() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public Step[] getSteps() throws WdkModelException {
         Map<Integer, Step> map = getStepsMap();
         Step[] array = new Step[map.size()];
         map.values().toArray(array);
         return array;
     }
 
-    public Step[] getInvalidSteps() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public Step[] getInvalidSteps() throws WdkModelException {
         Map<Integer, Step> steps = new LinkedHashMap<Integer, Step>();
         stepFactory.loadSteps(this, steps);
 
@@ -750,8 +725,7 @@ public class User /* implements Serializable */{
     }
 
     public Map<Integer, Strategy> getStrategiesMap(String dataType)
-            throws WdkUserException, WdkModelException, JSONException,
-            SQLException, NoSuchAlgorithmException {
+            throws WdkModelException {
         Map<Integer, Strategy> strategies = getStrategiesMap();
         Map<Integer, Strategy> selected = new LinkedHashMap<Integer, Strategy>();
         for (int strategyId : strategies.keySet()) {
@@ -762,85 +736,68 @@ public class User /* implements Serializable */{
         return selected;
     }
 
-    public Strategy[] getStrategies(String dataType) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, JSONException,
-            SQLException {
+    public Strategy[] getStrategies(String dataType) throws WdkModelException {
         Map<Integer, Strategy> map = getStrategiesMap(dataType);
         Strategy[] array = new Strategy[map.size()];
         map.values().toArray(array);
         return array;
     }
 
-    public Step getStep(int displayId) throws WdkUserException,
-            WdkModelException {
+    public Step getStep(int displayId) throws WdkModelException {
         return stepFactory.loadStep(this, displayId);
     }
 
-    public Strategy getStrategy(int userStrategyId) throws WdkUserException,
-            WdkModelException, JSONException, SQLException,
-            NoSuchAlgorithmException {
+    public Strategy getStrategy(int userStrategyId) throws WdkModelException {
         return getStrategy(userStrategyId, true);
     }
 
     public Strategy getStrategy(int userStrategyId, boolean allowDeleted)
-            throws WdkUserException, WdkModelException, JSONException,
-            SQLException, NoSuchAlgorithmException {
+            throws WdkModelException {
         return stepFactory.loadStrategy(this, userStrategyId, allowDeleted);
     }
 
-    public void deleteSteps() throws WdkUserException, SQLException,
-            WdkModelException {
+    public void deleteSteps() throws WdkModelException {
         deleteSteps(false);
     }
 
-    public void deleteSteps(boolean allProjects) throws WdkUserException,
-            SQLException, WdkModelException {
+    public void deleteSteps(boolean allProjects) throws WdkModelException {
         stepFactory.deleteSteps(this, allProjects);
     }
 
-    public void deleteInvalidSteps() throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+    public void deleteInvalidSteps() throws WdkModelException {
         stepFactory.deleteInvalidSteps(this);
     }
 
-    public void deleteInvalidStrategies() throws WdkUserException,
-            WdkModelException, SQLException, JSONException,
-            NoSuchAlgorithmException {
+    public void deleteInvalidStrategies() throws WdkModelException {
         stepFactory.deleteInvalidStrategies(this);
     }
 
-    public void deleteStep(int displayId) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+    public void deleteStep(int displayId) throws WdkModelException {
         stepFactory.deleteStep(this, displayId);
     }
 
-    public void deleteStrategy(int strategyId) throws WdkUserException,
-            WdkModelException, SQLException {
+    public void deleteStrategy(int strategyId) throws WdkModelException {
         String strategyKey = Integer.toString(strategyId);
         int order = activeStrategyFactory.getOrder(strategyKey);
         if (order > 0) activeStrategyFactory.closeActiveStrategy(strategyKey);
         stepFactory.deleteStrategy(this, strategyId);
     }
 
-    public void deleteStrategies() throws SQLException, WdkUserException,
-            WdkModelException {
+    public void deleteStrategies() throws WdkModelException {
         activeStrategyFactory.clear();
         deleteStrategies(false);
     }
 
-    public void deleteStrategies(boolean allProjects) throws SQLException,
-            WdkUserException, WdkModelException {
+    public void deleteStrategies(boolean allProjects) throws WdkModelException {
         activeStrategyFactory.clear();
         stepFactory.deleteStrategies(this, allProjects);
     }
 
-    public int getStepCount() throws WdkUserException, WdkModelException {
+    public int getStepCount() throws WdkModelException {
         return stepFactory.getStepCount(this);
     }
 
-    public int getStrategyCount() throws WdkUserException, SQLException,
-            WdkModelException {
+    public int getStrategyCount() throws WdkModelException {
         return stepFactory.getStrategyCount(this);
     }
 
@@ -899,23 +856,22 @@ public class User /* implements Serializable */{
         return datasetFactory;
     }
 
-    public Dataset getDataset(String datasetChecksum) throws WdkUserException, WdkModelException {
+    public Dataset getDataset(String datasetChecksum) throws WdkModelException {
         return datasetFactory.getDataset(this, datasetChecksum);
     }
 
-    public Dataset getDataset(int userDatasetId) throws WdkModelException, WdkUserException {
+    public Dataset getDataset(int userDatasetId) throws WdkModelException {
         return datasetFactory.getDataset(this, userDatasetId);
     }
 
     public Dataset createDataset(RecordClass recordClass, String uploadFile,
-            String strValues) throws WdkUserException, WdkModelException {
+            String strValues) throws WdkModelException {
         return datasetFactory.getDataset(this, recordClass, uploadFile,
                 strValues);
     }
 
     public Dataset createDataset(RecordClass recordClass, String uploadFile,
-            List<String[]> values) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException {
+            List<String[]> values) throws WdkModelException {
         return datasetFactory.getDataset(this, recordClass, uploadFile, values);
     }
 
@@ -923,7 +879,7 @@ public class User /* implements Serializable */{
      * set this method synchronized to make sure the preferences are not 
      * updated at the same time.
      */
-    public synchronized void save() throws WdkUserException, WdkModelException {
+    public synchronized void save() throws WdkModelException {
         userFactory.saveUser(this);
     }
 
@@ -944,9 +900,7 @@ public class User /* implements Serializable */{
     }
 
     public void updateStep(Step step, String expression,
-            boolean useBooleanFilter) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+            boolean useBooleanFilter) throws WdkModelException {
         // get a new hidden step, in order to get the new answer
         Step newStep = combineStep(expression, useBooleanFilter, true);
         step.setAnswer(newStep.getAnswer());
@@ -954,15 +908,12 @@ public class User /* implements Serializable */{
         stepFactory.updateStep(this, step, true);
     }
 
-    public Step combineStep(String expression) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+    public Step combineStep(String expression) throws WdkModelException {
         return combineStep(expression, false, false);
     }
 
     public Step combineStep(String expression, boolean useBooleanFilter,
-            boolean deleted) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            boolean deleted) throws WdkModelException {
         logger.debug("Boolean expression: " + expression);
         BooleanExpression exp = new BooleanExpression(this);
         Step step = exp.parseExpression(expression, useBooleanFilter);
@@ -988,16 +939,14 @@ public class User /* implements Serializable */{
         return step;
     }
 
-    public void validateExpression(String expression) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
+    public void validateExpression(String expression) throws WdkModelException {
         // construct BooleanQuestionNode
         BooleanExpression be = new BooleanExpression(this);
         be.parseExpression(expression, false);
     }
 
     public Map<String, Boolean> getSortingAttributes(String questionFullName)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         Question question = wdkModel.getQuestion(questionFullName);
 
         String sortKey = questionFullName + SORTING_ATTRIBUTES_SUFFIX;
@@ -1031,8 +980,7 @@ public class User /* implements Serializable */{
     }
 
     public String addSortingAttribute(String questionFullName, String attrName,
-            boolean ascending) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
+            boolean ascending) throws WdkModelException {
         Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>();
         sortingMap.put(attrName, ascending);
         Map<String, Boolean> previousMap = getSortingAttributes(questionFullName);
@@ -1058,7 +1006,7 @@ public class User /* implements Serializable */{
     }
 
     public String[] getSummaryAttributes(String questionFullName)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         Question question = wdkModel.getQuestion(questionFullName);
 
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
@@ -1121,8 +1069,7 @@ public class User /* implements Serializable */{
     }
 
     public String setSummaryAttributes(String questionFullName,
-            String[] summaryNames) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
+            String[] summaryNames) throws WdkModelException {
         // make sure all the attribute names exist
         Question question = (Question) wdkModel.resolveReference(questionFullName);
         Map<String, AttributeField> attributes = question.getAttributeFieldMap();
@@ -1152,8 +1099,7 @@ public class User /* implements Serializable */{
      * @throws NoSuchAlgorithmException
      */
     public void applySummaryChecksum(String questionFullName,
-            String summaryChecksum) throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException {
+            String summaryChecksum) throws WdkModelException {
         String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
         projectPreferences.put(summaryKey, summaryChecksum);
     }
@@ -1204,8 +1150,7 @@ public class User /* implements Serializable */{
     }
 
     public synchronized Strategy importStrategy(String strategyKey)
-            throws NoSuchAlgorithmException, WdkModelException,
-            WdkUserException, SQLException, JSONException {
+            throws WdkModelException {
         Strategy oldStrategy;
         String[] parts = strategyKey.split(":");
         if (parts.length == 1) {
@@ -1222,9 +1167,7 @@ public class User /* implements Serializable */{
     }
 
     public synchronized Strategy importStrategy(Strategy oldStrategy,
-            Map<Integer, Integer> stepIdsMap) throws WdkModelException,
-            WdkUserException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+            Map<Integer, Integer> stepIdsMap) throws WdkModelException {
         Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy,
                 stepIdsMap);
         // highlight the imported strategy
@@ -1234,21 +1177,20 @@ public class User /* implements Serializable */{
         return newStrategy;
     }
 
-    public Strategy[] getActiveStrategies() throws WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
+    public Strategy[] getActiveStrategies() throws WdkModelException {
         int[] ids = activeStrategyFactory.getRootStrategies();
         List<Strategy> strategies = new ArrayList<Strategy>();
         for (int id : ids) {
             try {
                 Strategy strategy = getStrategy(id);
                 strategies.add(strategy);
-            } catch (WdkUserException ex) {
+            } catch (WdkModelException ex) {
                 // something wrong with loading a strat, probably the strategy
                 // doesn't exist anymore
                 logger.warn("something wrong with loading a strat, probably "
                         + "the strategy doesn't exist anymore. Please "
                         + "investigate:\nUser #" + userId
-                        + ", strategy display Id: " + id + "\nException: " + ex);
+                        + ", strategy display Id: " + id + "\nException: ", ex);
             }
         }
         Strategy[] array = new Strategy[strategies.size()];
@@ -1257,8 +1199,7 @@ public class User /* implements Serializable */{
     }
 
     public void addActiveStrategy(String strategyKey)
-            throws NumberFormatException, WdkUserException, WdkModelException,
-            JSONException, SQLException, NoSuchAlgorithmException {
+            throws WdkModelException {
         activeStrategyFactory.openActiveStrategy(strategyKey);
         int pos = strategyKey.indexOf('_');
         if (pos >= 0) strategyKey = strategyKey.substring(0, pos);
@@ -1272,9 +1213,7 @@ public class User /* implements Serializable */{
     }
 
     public void replaceActiveStrategy(int oldStrategyId, int newStrategyId,
-            Map<Integer, Integer> stepIdsMap) throws WdkUserException,
-            WdkModelException, JSONException, SQLException,
-            NoSuchAlgorithmException {
+            Map<Integer, Integer> stepIdsMap) throws WdkModelException {
         activeStrategyFactory.replaceStrategy(this, oldStrategyId,
                 newStrategyId, stepIdsMap);
     }
@@ -1304,7 +1243,7 @@ public class User /* implements Serializable */{
     }
 
     public boolean checkNameExists(Strategy strategy, String name, boolean saved)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws WdkModelException {
         return stepFactory.checkNameExists(strategy, name, saved);
     }
 
@@ -1337,8 +1276,7 @@ public class User /* implements Serializable */{
 
     public Step createBooleanStep(Step leftStep, Step rightStep,
             String booleanOperator, boolean useBooleanFilter, String filterName)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
+            throws WdkModelException {
         BooleanOperator operator = BooleanOperator.parse(booleanOperator);
         Question question = null;
         try {
@@ -1356,16 +1294,14 @@ public class User /* implements Serializable */{
 
     public Step createBooleanStep(Step leftStep, Step rightStep,
             BooleanOperator operator, boolean useBooleanFilter,
-            AnswerFilterInstance filter) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
+            AnswerFilterInstance filter) throws WdkModelException {
         // make sure the left & right step belongs to the user
         if (leftStep.getUser().getUserId() != userId)
-            throw new WdkUserException("The Left Step ["
+            throw new WdkModelException("The Left Step ["
                     + leftStep.getDisplayId()
                     + "] doesn't belong to the user #" + userId);
         if (rightStep.getUser().getUserId() != userId)
-            throw new WdkUserException("The Right Step ["
+            throw new WdkModelException("The Right Step ["
                     + rightStep.getDisplayId()
                     + "] doesn't belong to the user #" + userId);
 
@@ -1374,7 +1310,7 @@ public class User /* implements Serializable */{
         RecordClass rightRecordClass = rightStep.getQuestion().getRecordClass();
         if (!leftRecordClass.getFullName().equals(
                 rightRecordClass.getFullName()))
-            throw new WdkUserException("Boolean operation cannot be applied "
+            throw new WdkModelException("Boolean operation cannot be applied "
                     + "to results of different record types. Left operand is "
                     + "of type " + leftRecordClass.getFullName() + ", but the"
                     + " right operand is of type "
@@ -1415,84 +1351,74 @@ public class User /* implements Serializable */{
     }
 
     public Strategy copyStrategy(Strategy strategy)
-            throws NoSuchAlgorithmException, SQLException, WdkUserException,
-            WdkModelException, JSONException {
+            throws WdkModelException {
         Strategy copy = stepFactory.copyStrategy(strategy);
         return copy;
     }
 
     public Strategy copyStrategy(Strategy strategy, int stepId)
-            throws NoSuchAlgorithmException, SQLException, WdkModelException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         Strategy copy = stepFactory.copyStrategy(strategy, stepId);
         return copy;
     }
 
     public void addToFavorite(RecordClass recordClass,
-            List<Map<String, Object>> pkValues) throws WdkUserException,
-            WdkModelException, SQLException, NoSuchAlgorithmException,
-            JSONException {
+            List<Map<String, Object>> pkValues) throws WdkModelException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         favoriteFactory.addToFavorite(this, recordClass, pkValues);
     }
 
-    public void clearFavorite() throws WdkUserException, WdkModelException,
-            SQLException {
+    public void clearFavorite() throws WdkModelException {
         wdkModel.getFavoriteFactory().clearFavorite(this);
     }
 
-    public int getFavoriteCount() throws SQLException, WdkUserException,
-            WdkModelException {
+    public int getFavoriteCount() throws WdkModelException {
         return wdkModel.getFavoriteFactory().getFavoriteCounts(this);
     }
 
     public Map<RecordClass, List<Favorite>> getFavorites()
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            throws WdkModelException {
         return wdkModel.getFavoriteFactory().getFavorites(this);
     }
 
     public void removeFromFavorite(RecordClass recordClass,
-            List<Map<String, Object>> pkValues) throws WdkUserException,
-            WdkModelException, SQLException {
+            List<Map<String, Object>> pkValues) throws WdkModelException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         favoriteFactory.removeFromFavorite(this, recordClass, pkValues);
     }
 
     public boolean isInFavorite(RecordClass recordClass,
-            Map<String, Object> pkValue) throws WdkUserException,
-            WdkModelException, SQLException {
+            Map<String, Object> pkValue) throws WdkModelException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         return favoriteFactory.isInFavorite(this, recordClass, pkValue);
     }
 
     public void setFavoriteNotes(RecordClass recordClass,
             List<Map<String, Object>> pkValues, String note)
-            throws WdkUserException, WdkModelException, SQLException {
+            throws WdkModelException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         favoriteFactory.setNotes(this, recordClass, pkValues, note);
     }
 
     public void setFavoriteGroups(RecordClass recordClass,
             List<Map<String, Object>> pkValues, String group)
-            throws WdkUserException, WdkModelException, SQLException {
+            throws WdkModelException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         favoriteFactory.setGroups(this, recordClass, pkValues, group);
     }
 
-    public String[] getFavoriteGroups() throws WdkUserException,
-            WdkModelException, SQLException {
+    public String[] getFavoriteGroups() throws WdkModelException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         return favoriteFactory.getGroups(this);
     }
 
-    public Map<RecordClass, Integer> getBasketCounts() throws SQLException {
+    public Map<RecordClass, Integer> getBasketCounts() throws WdkModelException {
         BasketFactory basketFactory = wdkModel.getBasketFactory();
         return basketFactory.getBasketCounts(this);
     }
 
     public int getBasketCounts(List<String[]> records, RecordClass recordClass)
-            throws WdkUserException, WdkModelException, SQLException {
+            throws WdkModelException {
         int count = wdkModel.getBasketFactory().getBasketCounts(this, records,
                 recordClass);
         if (logger.isDebugEnabled()) {
@@ -1516,8 +1442,7 @@ public class User /* implements Serializable */{
     }
 
     public int getFavoriteCount(List<Map<String, Object>> records,
-            RecordClass recordClass) throws WdkUserException,
-            WdkModelException, SQLException {
+            RecordClass recordClass) throws WdkModelException {
         FavoriteFactory favoriteFactory = wdkModel.getFavoriteFactory();
         int count = 0;
         for (Map<String, Object> item : records) {

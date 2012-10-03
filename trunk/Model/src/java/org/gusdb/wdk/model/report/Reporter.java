@@ -152,7 +152,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
      * 
      * @throws SQLException
      */
-    protected abstract void initialize() throws SQLException;
+    protected abstract void initialize() throws WdkModelException;
 
     /**
      * Hook used to perform any teardown needed after calling the write method.

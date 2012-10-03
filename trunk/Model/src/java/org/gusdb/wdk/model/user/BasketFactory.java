@@ -265,7 +265,7 @@ public class BasketFactory {
     }
 
     public Map<RecordClass, Integer> getBasketCounts(User user)
-            throws SQLException {
+            throws WdkModelException {
         Map<RecordClass, Integer> counts = new LinkedHashMap<RecordClass, Integer>();
         Map<String, RecordClass> recordClasses = new LinkedHashMap<String, RecordClass>();
         for (RecordClassSet rcSet : wdkModel.getAllRecordClassSets()) {
@@ -303,6 +303,9 @@ public class BasketFactory {
                 }
             }
         }
+        catch (SQLException e) {
+        	throw new WdkModelException("Cannot retrieve basket counts for user " + user.getEmail(), e);
+        }
         finally {
             SqlUtils.closeResultSet(rs);
         }
@@ -310,8 +313,7 @@ public class BasketFactory {
     }
 
     public int getBasketCounts(User user, List<String[]> records,
-            RecordClass recordClass) throws SQLException, WdkUserException,
-            WdkModelException {
+            RecordClass recordClass) throws WdkModelException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -355,6 +357,9 @@ public class BasketFactory {
                 }
             }
             return basketCount;
+        }
+        catch (SQLException e) {
+        	throw new WdkModelException("Could not get basket counts for user " + user.getUserId(), e);
         }
         finally {
             SqlUtils.closeStatement(psCount);

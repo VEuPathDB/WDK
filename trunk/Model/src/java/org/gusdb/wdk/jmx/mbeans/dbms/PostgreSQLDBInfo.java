@@ -5,6 +5,7 @@ import org.apache.log4j.Logger;
 
 public class PostgreSQLDBInfo extends AbstractDBInfo {
 
+  @SuppressWarnings("unused")
   private static final Logger logger = Logger.getLogger(PostgreSQLDBInfo.class);
 
   public PostgreSQLDBInfo() {

@@ -1357,9 +1357,7 @@ public class RecordClass extends WdkModelBase implements
     }
 
     List<Map<String, Object>> lookupPrimaryKeys(User user,
-            Map<String, Object> pkValues) throws SQLException,
-            WdkModelException, NoSuchAlgorithmException, WdkUserException,
-            JSONException {
+            Map<String, Object> pkValues) throws WdkModelException {
         List<Map<String, Object>> records = new ArrayList<Map<String, Object>>();
         // nothing to look up
         if (aliasQuery == null) {

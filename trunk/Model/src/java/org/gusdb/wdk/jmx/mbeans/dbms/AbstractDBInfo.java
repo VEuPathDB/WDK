@@ -8,6 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import javax.sql.DataSource;
 
@@ -76,7 +78,7 @@ public abstract class AbstractDBInfo {
           metaDataMap.put(columnName, rs.getString(columnName) );
         }
       }
-    } catch (SQLException sqle) {
+    } catch (WdkModelException | SQLException sqle) {
       logger.error(sqle);
     } finally {
         SqlUtils.closeResultSet(rs);
@@ -101,7 +103,7 @@ public abstract class AbstractDBInfo {
           servernameDataMap.put(columnName, rs.getString(columnName) );
         }
       }
-    } catch (SQLException sqle) {
+    } catch (WdkModelException | SQLException sqle) {
       logger.error(sqle);
     } finally {
         SqlUtils.closeResultSet(rs);

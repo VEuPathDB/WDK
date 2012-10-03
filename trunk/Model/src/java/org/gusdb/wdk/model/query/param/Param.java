@@ -56,16 +56,16 @@ public abstract class Param extends WdkModelBase implements Cloneable {
      * @throws WdkUserException
      */
     public abstract String rawOrDependentValueToDependentValue(User user,
-            String rawValue) throws WdkModelException, WdkUserException;
+            String rawValue) throws WdkModelException;
 
     public abstract String dependentValueToRawValue(User user,
-            String dependentValue) throws WdkModelException, WdkUserException;
+            String dependentValue) throws WdkModelException;
 
     public abstract String dependentValueToIndependentValue(User user,
-            String dependentValue) throws WdkUserException, WdkModelException;
+            String dependentValue) throws WdkModelException;
 
     protected abstract String dependentValueToInternalValue(User user,
-            String dependentValue) throws WdkModelException, WdkUserException;
+            String dependentValue) throws WdkModelException;
 
     protected abstract void applySuggection(ParamSuggestion suggest);
 
@@ -380,7 +380,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
         noTranslations = null;
     }
 
-    public String compressValue(String value) throws WdkModelException, WdkUserException {
+    public String compressValue(String value) throws WdkModelException {
         // check if the value is already been compressed
         if (value == null || value.trim().length() == 0) return null;
         
@@ -396,8 +396,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
         return value;
     }
 
-    public String decompressValue(String value) throws WdkModelException,
-            WdkUserException {
+    public String decompressValue(String value) throws WdkModelException {
         if (value == null || value.length() == 0) return null;
 
         // check if the value is compressed; that is, if it has a compression
@@ -427,7 +426,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     }
 
     public String replaceSql(String sql, String internalValue)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         String regex = "\\$\\$" + name + "\\$\\$";
         // escape all single quotes in the value
         return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
@@ -488,7 +487,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     }
 
     public String getInternalValue(User user, String dependentValue)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
     	String internalValue = dependentValueToInternalValue(user, dependentValue);
     	if (handler != null)
     		internalValue = handler.transform(user, internalValue);

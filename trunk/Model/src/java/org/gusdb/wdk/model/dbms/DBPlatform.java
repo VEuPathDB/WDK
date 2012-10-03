@@ -119,7 +119,7 @@ public abstract class DBPlatform {
     // #########################################################################
 
     public abstract int getNextId(String schema, String table)
-            throws SQLException, WdkModelException, WdkUserException;
+            throws WdkModelException;
 
     public abstract String getNextIdSqlExpression(String schema, String table);
 
@@ -138,8 +138,7 @@ public abstract class DBPlatform {
     public abstract String getMinusOperator();
 
     public abstract void createSequence(String sequence, int start,
-            int increment) throws SQLException, WdkUserException,
-            WdkModelException;
+            int increment) throws WdkModelException;
 
     public abstract int setClobData(PreparedStatement ps, int columnIndex,
             String content, boolean commit) throws SQLException;
@@ -150,15 +149,15 @@ public abstract class DBPlatform {
     public abstract String getPagedSql(String sql, int startIndex, int endIndex);
 
     public abstract boolean checkTableExists(String schema, String tableName)
-            throws SQLException, WdkModelException, WdkUserException;
+            throws WdkModelException;
 
     public abstract String convertBoolean(boolean value);
 
     public abstract void dropTable(String schema, String table, boolean purge)
-            throws SQLException, WdkUserException, WdkModelException;
+            throws WdkModelException;
 
     public abstract void disableStatistics(Connection connection,
-            String schema, String tableName) throws SQLException;
+            String schema, String tableName) throws WdkModelException;
 
     /**
      * @param schema
@@ -171,7 +170,7 @@ public abstract class DBPlatform {
      * @throws WdkUserException
      */
     public abstract String[] queryTableNames(String schema, String pattern)
-            throws SQLException, WdkUserException, WdkModelException;
+            throws WdkModelException;
     
     public abstract String getDummyTable();
 

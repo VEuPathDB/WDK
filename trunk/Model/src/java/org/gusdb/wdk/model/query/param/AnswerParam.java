@@ -160,7 +160,7 @@ public class AnswerParam extends Param {
      */
     @Override
     public String dependentValueToIndependentValue(User user, String dependentValue)
-    		throws WdkUserException, WdkModelException {
+    		throws WdkModelException {
         int stepId = Integer.parseInt(dependentValue);
         Step step = user.getStep(stepId);
         return step.getAnswerKey();
@@ -175,7 +175,7 @@ public class AnswerParam extends Param {
      */
     @Override
     public String dependentValueToInternalValue(User user, String dependentValue)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         int stepId = Integer.parseInt(dependentValue);
 
         if (isNoTranslation()) return Integer.toString(stepId);
@@ -194,7 +194,7 @@ public class AnswerParam extends Param {
      */
     @Override
     public String dependentValueToRawValue(User user, String dependentValue)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         return dependentValue;
     }
 
@@ -207,7 +207,7 @@ public class AnswerParam extends Param {
      */
     @Override
     public String rawOrDependentValueToDependentValue(User user, String rawValue)
-            throws WdkModelException, WdkUserException {
+            throws WdkModelException {
         return rawValue;
     }
 
