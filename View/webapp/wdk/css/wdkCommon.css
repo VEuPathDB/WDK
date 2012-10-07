@@ -136,7 +136,20 @@ td {
     line-height: 0px;
 }
 
-/***** Styling for the Login pop-up box *****/
+#full {
+	width: 100%;
+	text-align: center;
+	clear: both;
+}
+#center {
+	width: 100%;
+	text-align: center;
+}
+
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    =Styling for the Login pop-up box 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 #login table {
   width: 100%;
@@ -151,7 +164,7 @@ td {
 #login td { margin-top: 3px; }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-   =smallMenu
+   =smallMenu 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /***** Styling for the header links *****/
@@ -194,13 +207,13 @@ td {
 }
 #nav-top a:link, #nav-top a:visited {
   display: block;
-  color: black;
+  color: black; 
   width: auto;
   text-decoration: none;
 }
 #nav-top a:hover, #nav-top a:active {
   display: block;
-  color: #0000CD;
+  color: #0000CD; 
   width: auto;
   text-decoration: none;
 }
@@ -256,7 +269,8 @@ td {
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      = MENUBAR Tabs, in favorites and strategies
+      = MENUBAR Tabs, in favorites and strategies history
+          should disappear when we use jquery tabs instead of our own code (half way in strats history)
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 ul.menubar {
@@ -386,6 +400,7 @@ img.plus-minus {
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =STRUCTURE STRATEGY WORKSPACE 
+   == happens to also be used by api sites for all pages.*****..
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/	
  
 #contentwrapper {
@@ -399,22 +414,10 @@ img.plus-minus {
   margin: 0 8px;
 }
 
-#center {
-	width: 100%;
-	text-align: center;
-}
-
-/* used to position the strategy workspace title */
 .innertube{
-	margin: 6px; /*Margins for inner DIV inside each column (to provide padding)*/
-	/*position: relative;   */
+	margin: 6px; 
 }
 
-#full {
-	width: 100%;
-	text-align: center;
-	clear: both;
-}
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      = STRATEGY tabs
@@ -889,7 +892,6 @@ tr.headerRow > td,th {
 
 
 
-
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =blockUI popups 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1072,8 +1074,6 @@ color:darkred;font-style:italic;font-size:95%;
 
 
 
-
-
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      = jQuery 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
@@ -1137,67 +1137,3 @@ span.marker a:link, span.marker a:visited {
 
 /* THE END */
 
-
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    UNUSED?
-   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/* 
-.param-controls > a:link, 
-.param-controls > a:visited,
-.param-controls > a:hover,
-.param-controls > a:active,
-.param-multiPick  a:link, 
-.param-multiPick  a:visited,
-.param-multiPick  a:hover,
-.param-multiPick  a:active{
-	font-size:  8pt;
-}
-*/
-
-/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	 =RESULTS PAGE: Advanced Paging : UNUSED: comment out
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-/*
-#adv_paging {
-	width: 225px;
-	padding: 6px;
-	background-color: #7a3b17;
-	color: #FFFFFF;
-}
-*/
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    UNUSED?
-   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/*
-td.recordClassTitle{
-    background-color: #918599;
-    color: white;
-    font-family: arial;
-    font-size: 10pt;
-    border-width:1px 0;
-    border-style:solid;
-}
-*/
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    UNUSED?
-   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/*
-#Feature_Pane .label {
-    width: 100px;
-    font-weight: bold;
-    white-space: nowrap;
-}
-*/
-
-/* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    UNUSED?
-   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
-/*
-.extraOption {
-    text-align: left;
-    padding-left: 30px;
-}
-*/
