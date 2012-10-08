@@ -12,6 +12,11 @@ jQuery(document).ready(function() {
 
 	// call all onload functions throughout the page
 	Utilities.executeOnloadFunctions("body");
+
+  // call all onload functions after ajax calls
+  $("body").ajaxSuccess(function() {
+    Utilities.executeOnloadFunctions("body");
+  });
 	
 	// convert all buttons to jQuery buttons
 	jQuery(".button").button();
