@@ -7,7 +7,7 @@
 
   <jsp:directive.attribute name="title" required="true" type="String"/>
   <jsp:directive.attribute name="numCols" required="true" type="java.lang.Integer"/>
-  <jsp:directive.attribute name="attributes" required="true" type="java.lang.reflect.Array"/>
+  <jsp:directive.attribute name="attributes" required="true" type="org.gusdb.wdk.model.jspwrap.FieldBean[]"/>
 
   <c:set var="numAttribs" value="${fn:length(attributes)}"/>
   <c:set var="numPerColumn" value="${(numAttribs div numCols) + (numAttribs mod numCols eq 0 ? 0 : 1)}"/>
