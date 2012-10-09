@@ -184,7 +184,7 @@ td {
   width: auto;
   z-index: 520;
   display: inline;
-  list-style-type: none;
+/*  list-style-type: none; */
   padding-right: 15px;
   background-image: url('../images/menu_divider.png');
   background-position: center right;
@@ -218,7 +218,6 @@ td {
   text-decoration: none;
 }
 
-/***** Styling for drop-down menus *****/
 
 #nav-top li ul {
   position: absolute;
@@ -234,7 +233,6 @@ td {
 	display: block;
   width: 100%;
   margin: 0px;
-  /* undo divider added to top level links */
   padding: 0px;
   background-image: none;
 }
@@ -248,8 +246,9 @@ td {
 }
 
 #nav-top li ul li a:hover {
-	background-color: #D3D3D3;
+	background-color: white;
 }
+
 
 /***** Styles for Pop-Up Dialogs *****/
 
