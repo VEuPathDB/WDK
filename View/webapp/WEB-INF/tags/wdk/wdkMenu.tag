@@ -10,6 +10,7 @@
 
 <c:set var="model" value="${applicationScope.wdkModel}" />
 <c:set var="wdkUser" value="${sessionScope.wdkUser}" />
+<c:set var="basketCount" value="${wdkUser.basketCount}"/>
 
 <%-- new search menu --%>
 <li>
@@ -52,7 +53,7 @@
 </c:choose>
 <li>
   <a id="mybasket" onclick="${clickEvent}" href="${href}" title="${title}"
-    ><span>My Basket (${basketCount})</span>
+    ><span>My Basket <span class="subscriptCount">(${basketCount})</span></span>
   </a>
 </li>
 
