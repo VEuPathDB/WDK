@@ -5,21 +5,21 @@
 // On all pages, check that cookies are enabled.
 jQuery(document).ready(function() {
     
-	// set up WDK global object
-	if (window.wdk == undefined) window.wdk = new WDK();
+  // set up WDK global object
+  if (window.wdk == undefined) window.wdk = new WDK();
     wdk.registerToggle();
     wdk.registerTable();
 
-	// call all onload functions throughout the page
-	Utilities.executeOnloadFunctions("body");
+  // call all onload functions throughout the page
+  Utilities.executeOnloadFunctions("body");
 
   // call all onload functions after ajax calls
   $("body").ajaxSuccess(function() {
     Utilities.executeOnloadFunctions("body");
   });
-	
-	// convert all buttons to jQuery buttons
-	jQuery(".button").button();
+  
+  // convert all buttons to jQuery buttons
+  jQuery(".button").button();
 
 });
 
@@ -247,12 +247,12 @@ WDK.prototype.registerTable = function() {
 
 
 setUpNavDropDowns = function() {
-	jQuery('#nav-top li ul').parent().each(function() {
-		var dropDownMenu = jQuery(this).children('ul')[0];
-		jQuery(this)
-		    .mouseover(function(){ jQuery(dropDownMenu).show(); })
-		    .mouseout(function(){ jQuery(dropDownMenu).hide(); });
-	});
+  jQuery('#nav-top li ul').parent().each(function() {
+    var dropDownMenu = jQuery(this).children('ul')[0];
+    jQuery(this)
+        .mouseover(function(){ jQuery(dropDownMenu).show(); })
+        .mouseout(function(){ jQuery(dropDownMenu).hide(); });
+  });
 };
 
 jQuery(document).ready(function(jQuery) {
