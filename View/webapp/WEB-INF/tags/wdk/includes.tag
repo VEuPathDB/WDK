@@ -75,7 +75,6 @@
   <script type="text/javascript" src="<c:url value='wdk/js/dyk.js'/>"></script>
 
   <!-- JQuery Drag And Drop Plugin -->
-  <script type="text/javascript" src="<c:url value='wdk/js/lib/json.js'/>"></script>
   <script type="text/javascript" src="<c:url value='wdk/js/lib/jquery.multiSelect.js'/>"></script>
   <script type="text/javascript" src="<c:url value='wdk/js/lib/jquery.form.js'/>"></script>
 
@@ -96,10 +95,8 @@
 
   <!-- Results Page AJAX Javascript code -->
   <script type="text/javascript" src="<c:url value='wdk/js/resultsPage.js'/>"></script>
-  <script type="text/javascript" src="<c:url value='wdk/js/basket.js'/>"></script>
   
   <script type="text/javascript" src="<c:url value='wdk/js/wdkFilter.js'/>"></script>
-  <script type="text/javascript" src="<c:url value='wdk/js/favorite.js'/>"></script>
 
   <!--[if lt IE 7]>
   <script type="text/javascript">
@@ -121,8 +118,5 @@
 <%-- scripts and styles used on the record page only                       --%>
 <%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
 <c:if test="${refer == 'record'}">
-  <script type="text/javascript" src="<c:url value='wdk/js/lib/json.js'/>"></script>
-  <script type="text/javascript" src="<c:url value='wdk/js/basket.js'/>"></script>
-  <script type="text/javascript" src="<c:url value='wdk/js/favorite.js'/>"></script>
 </c:if>
 
