@@ -8,7 +8,6 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
-import org.gusdb.wdk.controller.actionutil.ResponseType;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 
 /**
@@ -16,11 +15,6 @@ import org.gusdb.wdk.controller.actionutil.WdkAction;
  * @author rdoherty
  */
 public class ProcessLogoutAction extends WdkAction {
-
-  @Override
-  protected ResponseType getResponseType() {
-    return ResponseType.html;
-  }
 
   // no params are necessary or expected, but don't mind if user sends them
   @Override protected Map<String, ParamDef> getParamDefs() { return null; }

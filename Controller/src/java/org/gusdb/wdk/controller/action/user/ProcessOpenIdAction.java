@@ -9,7 +9,6 @@ import org.gusdb.wdk.controller.OpenIdUser;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
-import org.gusdb.wdk.controller.actionutil.ResponseType;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -19,11 +18,6 @@ import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 public class ProcessOpenIdAction extends WdkAction {
 
   private static final Logger LOG = Logger.getLogger(ProcessOpenIdAction.class.getName());
-  
-	@Override
-	protected ResponseType getResponseType() {
-		return ResponseType.html;
-	}
 
 	// choosing not to validate params here since most will be OpenId protocol-specific
 	@Override protected boolean shouldValidateParams() { return false; }

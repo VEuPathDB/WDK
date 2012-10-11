@@ -10,7 +10,6 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
-import org.gusdb.wdk.controller.actionutil.ResponseType;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
@@ -21,11 +20,6 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 public class ProcessSavePreferenceAction extends WdkAction {
 
     private static Logger logger = Logger.getLogger(ProcessSavePreferenceAction.class.getName());
-
-    @Override
-    protected ResponseType getResponseType() {
-      return ResponseType.html;
-    }
 
     //  since params are dynamic, do not validate
     @Override protected boolean shouldValidateParams() { return false; }

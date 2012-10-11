@@ -8,7 +8,6 @@ import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamDef.Required;
 import org.gusdb.wdk.controller.actionutil.ParamDefMapBuilder;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
-import org.gusdb.wdk.controller.actionutil.ResponseType;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -21,11 +20,6 @@ public class ProcessResetPasswordAction extends WdkAction {
 
     private static final Map<String,ParamDef> PARAM_DEFS = new ParamDefMapBuilder()
         .addParam("email", new ParamDef(Required.OPTIONAL)).toMap();
-  
-    @Override
-    protected ResponseType getResponseType() {
-      return ResponseType.html;
-    }
 
     @Override
     protected boolean shouldValidateParams() {
