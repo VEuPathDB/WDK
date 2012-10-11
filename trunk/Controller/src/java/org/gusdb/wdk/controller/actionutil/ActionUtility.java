@@ -19,8 +19,9 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
- * @author xingao
+ * Heritage methods to access the current user,  model, and request params
  * 
+ * @author xingao
  */
 public class ActionUtility {
 

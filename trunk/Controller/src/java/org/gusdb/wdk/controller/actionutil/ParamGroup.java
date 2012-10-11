@@ -1,12 +1,21 @@
 package org.gusdb.wdk.controller.actionutil;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-
+/**
+ * Grouping of a set of validated parameters and their definitions.
+ * 
+ * @author rdoherty
+ */
 public class ParamGroup {
 	
-	private Map<String, String[]> _values;
+  private static final Set<String> TRUE_VALUES =
+      new HashSet<>(Arrays.asList(new String[]{ "true", "1", "yes" }));
+	
+  private Map<String, String[]> _values;
 	private Map<String, ParamDef> _defs;
 	
 	public ParamGroup(Map<String,ParamDef> definitions, Map<String, String[]> values) {
@@ -14,6 +23,9 @@ public class ParamGroup {
 		_values = values;
 	}
 	
+	/**
+	 * @return a set of the names of all parameters in this group
+	 */
 	public Set<String> getKeys() {
 		return _defs.keySet();
 	}
@@ -64,7 +76,15 @@ public class ParamGroup {
 		String str = getValue(key);
 		return (str == null ? null : Integer.parseInt(str));
 	}
-
+  
+	public boolean getBooleanValue(String key) {
+    checkValidKey(key);
+    if (!_defs.get(key).getDataType().equals(ParamDef.DataType.BOOLEAN)) {
+      throw new IllegalArgumentException("The key [ " + key + " ] does not refer to a boolean param.");
+    }
+    return TRUE_VALUES.contains(getValue(key));
+  }
+  
 	public Map<String, String[]> getParamMap() {
 		return _values;
 	}

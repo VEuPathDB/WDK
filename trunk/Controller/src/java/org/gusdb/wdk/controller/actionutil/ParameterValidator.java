@@ -7,6 +7,14 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.controller.WdkValidationException;
 
+/**
+ * Given a map of parameter definitions, validates a map of key/value pairs for
+ * presence, number, and type.  Also assigns default values to parameters as
+ * requested.  An optional secondary validation can be performed by passing an
+ * implementation of SecondaryValidator.
+ * 
+ * @author rdoherty
+ */
 public class ParameterValidator {
 
 	private static final Logger LOG = Logger.getLogger(ParameterValidator.class.getName());
@@ -24,7 +32,7 @@ public class ParameterValidator {
 	 * @param expectedParams definitions of expected parameters
 	 * @param parameters writable map of parameter values
 	 * @return param group containing validated parameter definitions and values
-	 * @throws WdkValidationException if errors are found
+	 * @throws WdkValidationException if parameters do not pass validation
 	 */
 	public ParamGroup validateParameters(
 			Map<String, ParamDef> expectedParams,
@@ -60,6 +68,18 @@ public class ParameterValidator {
 		return group;
 	}
 	
+	/**
+	 * Uses expected parameter definitions to validate parameters passed in.  Any expected but
+   * optional parameters not found will be added to the parameter map as empty String[]. If
+   * an implementation of SecondaryValidator is passed, its performAdditionalValidation()
+   * method will be called after primary validation
+	 * 
+   * @param expectedParams definitions of expected parameters
+   * @param parameters writable map of parameter values
+   * @param validator secondary validator
+   * @return param group containing validated parameter definitions and values
+	 * @throws WdkValidationException if parameters do not pass validation
+	 */
 	public ParamGroup validateParameters(
 	    Map<String, ParamDef> expectedParams,
 	    Map<String, String[]> parameters,
@@ -75,6 +95,12 @@ public class ParameterValidator {
     }
 	}
 	
+	/**
+	 * List of problems found with the parameters
+	 * TODO: convert to a map
+	 * 
+	 * @return list of errors
+	 */
 	public List<String> getErrorList() {
 	  return _errors;
 	}
@@ -86,7 +112,11 @@ public class ParameterValidator {
 		if (!paramDef.isMultiple() && values.length > 1) {
 			errors.add("Param [ " + name + " ] must contain only a single value.");
 		}
+		
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 		// TODO: validate data types here!!!
+		// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+		
 		if (!paramDef.isRequired() && values.length == 0 && paramDef.getDefaultValue() != null) {
 			return paramDef.getDefaultValue();
 		}

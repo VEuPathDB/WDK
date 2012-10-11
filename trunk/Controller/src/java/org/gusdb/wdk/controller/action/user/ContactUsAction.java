@@ -48,11 +48,6 @@ public class ContactUsAction extends WdkAction {
     .addParam(PARAM_SUBJECT, new ParamDef(Required.REQUIRED))
     .addParam(PARAM_CONTENT, new ParamDef(Required.REQUIRED))
     .addParam(PARAM_ADDCC, new ParamDef(Required.OPTIONAL)).toMap();
-	
-	@Override
-	protected ResponseType getResponseType() {
-	  return ResponseType.json;
-	}
 
   @Override
   protected boolean shouldValidateParams() {
@@ -143,7 +138,7 @@ public class ContactUsAction extends WdkAction {
     JSONObject jsMessage = new JSONObject();
     jsMessage.put("status", status);
     jsMessage.put("message", message);
-    return new ActionResult()
+    return new ActionResult(ResponseType.json)
         .setRequestAttribute("jsonData", jsMessage.toString())
         .setViewName(SUCCESS);
   }
