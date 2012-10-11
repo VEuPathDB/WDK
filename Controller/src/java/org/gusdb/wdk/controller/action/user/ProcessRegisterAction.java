@@ -8,7 +8,6 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
-import org.gusdb.wdk.controller.actionutil.ResponseType;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
@@ -19,11 +18,6 @@ import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 public class ProcessRegisterAction extends WdkAction {
 
   private static Logger logger = Logger.getLogger(ProcessRegisterAction.class.getName());
-
-  @Override
-  protected ResponseType getResponseType() {
-    return ResponseType.html;
-  }
 
   // since wdk and custom preferences are unknown by this class, must skip validation
   @Override protected boolean shouldValidateParams() { return false; }

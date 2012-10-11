@@ -18,7 +18,6 @@ import org.gusdb.wdk.controller.actionutil.ParamDef.DataType;
 import org.gusdb.wdk.controller.actionutil.ParamDef.Required;
 import org.gusdb.wdk.controller.actionutil.ParamDefMapBuilder;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
-import org.gusdb.wdk.controller.actionutil.ResponseType;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -45,11 +44,6 @@ public class ProcessLoginAction extends WdkAction {
 	    .addParam(CConstants.WDK_PASSWORD_KEY, new ParamDef(Required.OPTIONAL))
 	    .addParam(CConstants.WDK_OPENID_KEY, new ParamDef(Required.OPTIONAL))
 	    .addParam(REMEMBER_PARAM_KEY, new ParamDef(Required.OPTIONAL)).toMap();
-	
-  @Override
-  protected ResponseType getResponseType() {
-    return ResponseType.html;
-  }
   
   @Override
   protected boolean shouldValidateParams() {
@@ -140,7 +134,7 @@ public class ProcessLoginAction extends WdkAction {
 						LOG.info("Setting referrer on OpenID login to : " + getRequestData().getReferrer());
 						auth.setReferringUrl(getOriginalReferrer(params, getRequestData()));
 						auth.setRememberUser(params.getSingleCheckboxValue("remember"));
-						String redirectUrl = auth.authRequest(openid, getWebServerRoot());
+						String redirectUrl = auth.authRequest(openid, getWebAppRoot());
             // same AuthenticationService MUST be used for stage 2, store on session for later retrieval
             setSessionAttribute(CConstants.WDK_OPENID_AUTH_SERVICE_KEY, auth);
 						return new ActionResult().setRedirect(true).setViewPath(redirectUrl);

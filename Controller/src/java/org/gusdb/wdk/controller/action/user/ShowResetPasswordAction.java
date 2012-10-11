@@ -6,18 +6,12 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
-import org.gusdb.wdk.controller.actionutil.ResponseType;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 
 /**
  * @author xingao
  */
 public class ShowResetPasswordAction extends WdkAction {
-
-    @Override
-    protected ResponseType getResponseType() {
-      return ResponseType.html;
-    }
 
     @Override
     protected boolean shouldValidateParams() {

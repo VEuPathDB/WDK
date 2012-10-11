@@ -1,5 +1,11 @@
 package org.gusdb.wdk.controller.actionutil;
 
+/**
+ * Defines set of response types (i.e. MIME types) of responses the server
+ * sends.
+ * 
+ * @author rdoherty
+ */
 public enum ResponseType {
   html           ("text/html", "page.html"),
   html_part      ("text/html", "page.html"),
@@ -11,7 +17,7 @@ public enum ResponseType {
   png            ("image/png", "image.png"),
   svg            ("image/svg+xml", "image.svg"),
   excel          ("application/vnd.ms-excel", "spreadsheet.xls"),
-  binary_data    ("application/octet-stream","data.bin");
+  binary_data    ("application/octet-stream", "data.bin");
   
   private String _mimeType;
   private String _defaultFileName;
@@ -21,10 +27,17 @@ public enum ResponseType {
     _defaultFileName = defaultFileName;
   }
   
+  /**
+   * @return MIME type of this response type
+   */
   public String getMimeType() {
     return _mimeType;
   }
   
+  /**
+   * @return default file name for this response (e.g. if a response is to be
+   * saved onto the client's disk)
+   */
   public String getDefaultFileName() {
     return _defaultFileName;
   }

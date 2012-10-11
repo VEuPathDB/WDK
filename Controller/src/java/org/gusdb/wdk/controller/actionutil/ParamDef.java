@@ -1,17 +1,25 @@
 package org.gusdb.wdk.controller.actionutil;
 
+/**
+ * Parameter definition for validation
+ * 
+ * @author rdoherty
+ */
 public class ParamDef {
-	
+
+  /** Tells whether the parameter is required */
 	public enum Required {
 		REQUIRED, OPTIONAL;
 	}
 	
+	/** Tells whether to expect multiple values for this parameter */
 	public enum Count {
 		SINGULAR, MULTIPLE;
 	}
-	
+
+	/** Data type of this parameter (for type checking) */
 	public enum DataType {
-		STRING, INTEGER, FLOAT;
+		STRING, INTEGER, FLOAT, BOOLEAN;
 	}
 	
 	private Required _required;

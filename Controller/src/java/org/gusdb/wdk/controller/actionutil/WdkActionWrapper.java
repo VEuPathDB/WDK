@@ -10,6 +10,16 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.model.WdkRuntimeException;
 
+/**
+ * Go-between class that allows Struts1 to call non-static actions that can
+ * contain state.  In struts-config.xml, this action can be assigned the 'type'
+ * attribute of an action.  It reads the parameter attribute of the action,
+ * which should contain the fully qualified name of a subclass of WdkAction.
+ * This action then instantiates and delegates the processing of the request to
+ * the child class and returns the ActionForward produced by that instance.
+ * 
+ * @author rdoherty
+ */
 public class WdkActionWrapper extends Action {
 	
 	private static final Logger LOG = Logger.getLogger(WdkActionWrapper.class.getName());
