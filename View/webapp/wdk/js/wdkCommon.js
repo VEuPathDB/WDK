@@ -3,7 +3,7 @@
 // =============================================================================
 
 // On all pages, check that cookies are enabled.
-jQuery(document).ready(function() {
+jQuery(document).ready(function($) {
     
   // set up WDK global object
   if (window.wdk == undefined) window.wdk = new WDK();
@@ -14,7 +14,7 @@ jQuery(document).ready(function() {
   Utilities.executeOnloadFunctions("body");
 
   // call all onload functions after ajax calls
-  $("body").ajaxSuccess(function() {
+  $("body").ajaxStop(function() {
     Utilities.executeOnloadFunctions("body");
   });
   
