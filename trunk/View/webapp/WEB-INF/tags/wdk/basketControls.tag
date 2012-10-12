@@ -26,11 +26,16 @@
 
 <td width="50%">
 <table align="right">
-<tr>
+  <tr>
     <td style="text-align:right;padding:3px 0 0;vertical-align:top">
-	<span class="basket-warning"><imp:verbiage key="note.basket-warning.content"/></span>
+      <span class="basket-warning">
+        <b>Note on new releases:</b> IDs sometimes change or are retired.
+        <a href="#" class="open-dialog-annot-change"> Why?</a>
+        <br/>Old IDs are mapped to new IDs when possible. Retired IDs will not be in the basket.
+        <br/>To keep a copy of your current basket please download your IDs now.
+      </span>
     </td>
-</tr>
+  </tr>
 </table>
 </td>
 

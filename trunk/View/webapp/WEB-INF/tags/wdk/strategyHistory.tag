@@ -98,7 +98,16 @@ $(function() {
       </td>
  
       <td width="50%" style="text-align:right">
-<div class="strat-legend"><imp:verbiage key="note.strat-legend.content"/></div>
+        <div class="strat-legend">
+          <br/><b>Strategy results are not stored</b>, only the strategy steps
+            and parameter values are.
+          <br/><b>Results might change</b> with subsequent releases of the site
+            if the underlying data has changed.
+          <br/><b>Strategies that require your revision</b> are marked with
+            <a href="#" class="open-dialog-revise-search">
+              <img style="vertical-align:bottom" src="wdk/images/invalidIcon.png" width="12">
+            </a>. <a href="#" class="open-dialog-revise-search"> Why?</a>
+        </div>
       </td>
 </tr>
 </table>
