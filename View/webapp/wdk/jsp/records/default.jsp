@@ -1,6 +1,7 @@
 <%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="w" uri="http://www.servletsuite.com/servlets/wraptag" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 
 <!-- get wdkRecord from proper scope -->
 <c:set value="${requestScope.wdkRecord}" var="wdkRecord"/>
@@ -9,17 +10,7 @@
 
 <table width="100%">
 
-  <!-- Added by Jerric - Display primary key content -->
-  <c:set value="${wdkRecord.primaryKey}" var="primaryKey"/>
-  <c:set var="pkValues" value="${primaryKey.values}" />
-  <c:forEach items="${pkValues}" var="pkValue">
-    <tr>
-      <td class="label">${pkValue.key}</td>
-      <td>${pkValue.value}</td>
-    </tr>
-  </c:forEach>
-
-  <c:forEach items="${wdkRecord.attributes}" var="attr">
+  <c:forEach items="${wdkRecord.summaryAttributes}" var="attr">
     <c:set var="fieldVal" value="${attr.value}"/>
     <c:if test="${fieldVal.attributeField.internal == false}">
       <tr>
