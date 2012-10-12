@@ -11,8 +11,15 @@ var Utilities = {
 	    var func = namespaces.pop();
 	    for (var i = 0; i < namespaces.length; i++) {
 	        context = context[namespaces[i]];
+          if (typeof context === "undefined") {
+            return false;
+          }
 	    }
-	    return context[func].apply(context, args);
+      if (context[func] instanceof Function) {
+        return context[func].apply(context, args);
+      } else {
+        return false;
+      }
 	},
 	
 	executeOnloadFunctions : function(selector) {
