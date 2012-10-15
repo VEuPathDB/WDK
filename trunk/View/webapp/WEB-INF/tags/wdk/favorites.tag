@@ -31,7 +31,7 @@
 </td>
 <td width="50%" style="text-align:right;padding:0">
 	<p class="fav-warning" >
-<b>Note on new releases:</b> IDs sometimes change or are retired. <a  href="javascript:void(0)"  onClick="openWhyAnnotChanges(this)"> Why? </a>
+<b>Note on new releases:</b> IDs sometimes change or are retired. <a  href="#"  class="open-dialog-annot-change"> Why? </a>
 <br>Click on any ID to access the new ID's page. Retired IDs will show a message.
 	</p>
 </td>
