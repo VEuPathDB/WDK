@@ -168,11 +168,15 @@ function setFrontAction(action, strat, step) {
 */
 
 function setDraggable(e, handle){
-	var rlimit = jQuery("div#contentwrapper").width() - e.width() - 18;
+  var tlimit,
+      rlimit,
+      blimit;
+	rlimit = jQuery("div#contentwrapper").width() - e.width() - 18;
 	if(rlimit < 0) rlimit = 525;
-	var blimit = jQuery("body").height();
+	blimit = jQuery("body").height();
+  tlimit = $("#contentwrapper").offset().top;
 	jQuery(e).draggable({
 		handle: handle,
-		containment: [0,0,rlimit,blimit]
+		containment: [0,tlimit,rlimit,blimit]
 	});
 }
