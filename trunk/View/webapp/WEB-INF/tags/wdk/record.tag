@@ -10,6 +10,11 @@
               description="The record instance"
 %>
 
+<%@ attribute name="recordSubtitle"
+              required="false"
+              description="Text that is displayed as a subtitle"
+%>
+
 <c:set var="wdkUser" value="${sessionScope.wdkUser}" />
 <c:set var="recordClass" value="${record.recordClass}" />
 <c:set var="primaryKey" value="${record.primaryKey}" />
@@ -20,7 +25,10 @@
 
 <div class="Workspace">
 
-<div class="h2center">${recordClass.type}: ${primaryKey}</div>
+<div id="record-title" class="h2center">${recordClass.type}: ${primaryKey}</div>
+<c:if test="${recordSubtitle ne ''}">
+  <div id="record-subtitle" class="h3center">${recordSubtitle}</div>
+</c:if>
 
 <div id="basket-control">
   <imp:recordPageBasketIcon />
