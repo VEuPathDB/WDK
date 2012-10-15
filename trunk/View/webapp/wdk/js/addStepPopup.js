@@ -530,12 +530,16 @@ function disableAddStepButtons() {
 }
 
 function setDraggable(e, handle){
-	var rlimit = $("div#contentwrapper").width() - e.width() - 18;
+  var tlimit,
+      rlimit,
+      blimit;
+	rlimit = $("div#contentwrapper").width() - e.width() - 18;
 	if(rlimit < 0) rlimit = 525;
-	var blimit = $("body").height();
+	blimit = $("body").height();
+  tlimit = $("#contentwrapper").offset().top;
 	$(e).draggable({
 		handle: handle,
-		containment: [0,0,rlimit,blimit]
+		containment: [0,tlimit,rlimit,blimit]
 	});
 }
 
