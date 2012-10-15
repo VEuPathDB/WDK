@@ -15,9 +15,7 @@
 <%-- new search menu --%>
 <li>
   <a title="START a NEW search strategy. Searches are organized by the genomic feature they return."
-    ><span>New Search
-        <a href="http://apycom.com/" style="display:none;"></a>
-     </span>
+    ><span>New Search</span>
   </a>
   <ul><imp:searchCategories /></ul>
 </li>
