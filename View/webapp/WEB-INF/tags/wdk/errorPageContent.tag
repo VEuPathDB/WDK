@@ -9,7 +9,7 @@
 	<c:set var="projectName" value="${wdkModel.name}"/>
 	<c:set var="supportEmail" value="${wdkModel.model.modelConfig.supportEmail}"/>
 	<div id="error-main" style="margin-top:0px; padding-top:30px;">
-	  <h1>We Apologize...</h1>
+	  <h1>We apologize...</h1>
 	  <a style="border:none" href="javascript:ErrorUtils.playSadTrombone()">
 	    <img class="error-image" src="${pageContext.request.contextPath}/wdkCustomization/images/sad-face.jpg"/>
 	  </a>
