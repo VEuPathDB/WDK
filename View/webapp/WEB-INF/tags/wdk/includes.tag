@@ -33,7 +33,7 @@
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/css/datatables.css' />"/>
 <link rel="StyleSheet" type="text/css" href="<c:url value='/wdk/js/lib/qtip2/jquery.qtip.mod.css'/>" />
 
-<%-- WDK based js files --%>
+<%-- WDK ja and css --%>
 <script type="text/javascript" src='<c:url value="/wdk/js/api.js"/>'></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/stratTabCookie.js'/>"></script>
 <script type="text/javascript" src="<c:url value='/wdk/js/js-utils.js'/>"></script>
@@ -44,15 +44,14 @@
 <script type="text/javascript" src='<c:url value="/wdk/js/Utilities.js"/>'></script>
 <script type="text/javascript" src='<c:url value="/wdk/js/User.js"/>'></script>
 <script type="text/javascript" src='<c:url value="/wdk/js/wdkEvent.js"/>'></script>
-<script type="text/javascript" src='<c:url value="/wdk/js/wdkCommon.js"/>'></script>
 
-<%-- WDL based styles --%>
+<script type="text/javascript" src='<c:url value="/wdk/js/wdkCommon.js"/>'></script>
 <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkCommon.css' />">
-<link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/flexigrid.css"/>'/>
+
 
 
 <%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
-<%-- scripts and styles used on the home page only                         --%>
+<%-- scripts and styles used on the HOME page only                         --%>
 <%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
 <c:if test="${refer == 'home'}">
 
@@ -60,7 +59,7 @@
 
 
 <%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
-<%-- scripts and styles used on the question page. all question content are 
+<%-- scripts and styles used on the QUESTION page. all question content are 
      also included in summary page to support the addStep popup            --%>
 <%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
 <c:if test="${refer == 'question' || refer == 'summary'}">
@@ -69,34 +68,40 @@
 
 
 <%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
-<%-- scripts and styles used on the summary page only                      --%>
+<%-- scripts and styles used on the SUMMARY page only                      --%>
 <%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
 <c:if test="${refer == 'summary'}">
+
+ <!-- Did you know popup -->
   <script type="text/javascript" src="<c:url value='wdk/js/dyk.js'/>"></script>
+  <link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/dyk.css"/>'/>
 
   <!-- JQuery Drag And Drop Plugin -->
   <script type="text/javascript" src="<c:url value='wdk/js/lib/jquery.multiSelect.js'/>"></script>
   <script type="text/javascript" src="<c:url value='wdk/js/lib/jquery.form.js'/>"></script>
 
-
-  <!-- filter menu javascript -->
+  <!-- Add Step menu  -->
   <script type="text/javascript" src="<c:url value='wdk/js/addStepPopup.js'/>"></script>
 
-  <!-- history page code -->
+  <!-- History page (All tab) -->
   <script type="text/javascript" src="<c:url value='wdk/js/history.js'/>"></script>
 
-  <!-- Strategy Interaction javascript -->
+  <!-- Strategy Interaction  -->
   <script type="text/javascript" src="<c:url value='wdk/js/model-JSON.js'/>"></script>
   <script type="text/javascript" src="<c:url value='wdk/js/view-JSON.js'/>"></script>
   <script type="text/javascript" src="<c:url value='wdk/js/controller-JSON.js'/>"></script>
   <script type="text/javascript" src="<c:url value='wdk/js/error-JSON.js'/>"></script>
   <script type="text/javascript" src="<c:url value='wdk/js/step.js'/>"></script>
-  <script type="text/javascript" src="<c:url value='wdk/js/lib/flexigrid.js'/>"></script>
 
-  <!-- Results Page AJAX Javascript code -->
+  <link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/Strategy.css"/>'/>
+
+  <!-- Results Page  -->
+  <script type="text/javascript" src="<c:url value='wdk/js/lib/flexigrid.js'/>"></script>
+  <link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/flexigrid.css"/>'/>
+
   <script type="text/javascript" src="<c:url value='wdk/js/resultsPage.js'/>"></script>
-  
   <script type="text/javascript" src="<c:url value='wdk/js/wdkFilter.js'/>"></script>
+  <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkFilter.css' />">
 
   <!--[if lt IE 7]>
   <script type="text/javascript">
@@ -106,17 +111,13 @@
   </script>
   <![endif]-->
 
-
-
-  <link rel="stylesheet" type="text/css" href="<c:url value='/wdk/css/wdkFilter.css' />">
-  <link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/dyk.css"/>'/>
-  <link rel="stylesheet" type="text/css" href='<c:url value="/wdk/css/Strategy.css"/>'/>
 </c:if>
 
 
 <%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
-<%-- scripts and styles used on the record page only                       --%>
+<%-- scripts and styles used on the RECORD page only                       --%>
 <%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
 <c:if test="${refer == 'record'}">
+
 </c:if>
 
