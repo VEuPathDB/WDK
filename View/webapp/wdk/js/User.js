@@ -19,12 +19,12 @@ User.populateUserControl = function(userData) {
 	jQuery('#user-control').html(html2);
 };
 
-User.login = function() {
+User.login = function(redirectUrl) {
 	var dialogHtml = jQuery("#user-login-form").html();
 	User._dialog = jQuery(dialogHtml).dialog({
 		modal: true,
 		close: function() { User._dialog = null; } 
-	});
+	}).find("input[name='redirectUrl']").val(redirectUrl);
 };
 
 User.processLogin = function(submitButton) {
