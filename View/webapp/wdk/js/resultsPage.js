@@ -16,7 +16,7 @@ function configureSummaryViews(ele) {
         summaryViews.tabs({
             selected : currentTab,
             cache: true,
-            spinner: '<img style="height:16px; margin-left:4px" src="wdk/images/loading.gif"/>',
+            spinner: '<img style="height:14px; margin-left:4px" src="wdk/images/loading.gif"/>',
             ajaxOptions: {
                 success: function(data) {
                     createFlexigridFromTable(summaryViews.find(" .Results_Table"));
