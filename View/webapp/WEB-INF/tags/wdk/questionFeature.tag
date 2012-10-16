@@ -15,7 +15,7 @@
          src="<c:url value='/wdk/images/new-feature.png' />" />
   </c:when>
   <c:when test="${question.revised}">
-    <img alt="Revised feature icon" title="This search has been revised, either the parameters or the underlying SQL; in some cases there might be new data in this search" 
+    <img alt="Revised feature icon" title="This search has been revised. Changes might include new or changed parameters, upgrades to the underlying search logic, or new or updated data." 
          src="<c:url value='/wdk/images/revised-small.png' />" />
   </c:when>
 </c:choose>
