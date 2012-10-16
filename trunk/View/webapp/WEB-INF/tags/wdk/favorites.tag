@@ -101,7 +101,7 @@
                             </td>
                             <td width="60%"  class="mytdStyle" >
 								<c:set var="favNote" value="${favorite.note}"/>
-                              <span class="favorite-note">${favNote}</span>
+                              <span class="favorite-note">${fn:escapeXml(favNote)}</span>
                               <textarea class="favorite-note hidden input" rows="2" cols="198" name="favorite-note">${favNote}</textarea>
                                 <div class="favorite-button-div"><a href="javascript:void(0)" class="favorite-note-button" onClick="showInputBox(this, 'note', 'updateFavoriteNote(this)')" >edit</a></div>
                             </td>
