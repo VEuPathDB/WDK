@@ -82,8 +82,8 @@
       <td>
         <div id="text_${strategyId}">
           <span <c:choose>
-		<c:when test="${active}">style="font-weight:bold;cursor:pointer" title="Click to go to the graphical display (Run tab)"</c:when>
-		<c:otherwise> style="cursor:pointer" title="Click to open this strategy in the strategy graphical display (Run tab)" </c:otherwise>
+		<c:when test="${active}">style="font-weight:bold;cursor:pointer" title="This strategy is already opened in the Strategy panel (bold)"</c:when>
+		<c:otherwise> style="cursor:pointer" title="Click to open this strategy in the Strategy panel (Browse tab)" </c:otherwise>
 		</c:choose>
 		 onclick="openStrategy('${strategyId}')"><c:out value="${dispNam}"/></span><c:if test="${!strategy.isSaved}">*</c:if><c:if test="${!strategy.valid}">&nbsp;&nbsp;&nbsp;<img src="<c:url value='/wdk/images/invalidIcon.png'/>" width="12"/></c:if>
         </div> 
