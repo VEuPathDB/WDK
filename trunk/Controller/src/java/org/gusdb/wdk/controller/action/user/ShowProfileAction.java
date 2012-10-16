@@ -14,6 +14,11 @@ import org.gusdb.wdk.controller.actionutil.WdkAction;
 public class ShowProfileAction extends WdkAction {
 
     @Override
+    protected boolean requiresLogin() {
+      return true;
+    }
+  
+    @Override
     protected boolean shouldValidateParams() {
       return true;
     }
@@ -29,6 +34,6 @@ public class ShowProfileAction extends WdkAction {
       String customViewFile = getCustomViewDir() + CConstants.WDK_PROFILE_PAGE;
       return (wdkResourceExists(customViewFile) ?
           new ActionResult().setViewPath(customViewFile) :
-          new ActionResult().setViewName(CConstants.SHOW_PROFILE_MAPKEY));
+          new ActionResult().setViewName(SUCCESS));
     }
 }
