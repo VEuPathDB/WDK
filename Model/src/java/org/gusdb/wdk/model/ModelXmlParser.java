@@ -205,9 +205,12 @@ public class ModelXmlParser extends XmlParser {
     }
 
     private Map<String, String> loadConstants(String projectId, URL modelXmlURL)
-            throws IOException, SAXException,
+            throws IOException, SAXException, WdkModelException,
             ParserConfigurationException, URISyntaxException {
         logger.trace("Test parsing " + modelXmlURL.toString());
+        
+        validate(modelXmlURL);
+
         Map<String, String> constants = new LinkedHashMap<String, String>();
         // load xml document without validation
         File file = new File(modelXmlURL.toURI());
