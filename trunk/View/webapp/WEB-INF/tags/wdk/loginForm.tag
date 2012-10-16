@@ -29,7 +29,8 @@
         <td align="right"><div class="small"><b>Password:</b></div></td>
         <td align="left"><div class="small"><input id="password" type="password" name="password" size="20"/></div></td>
       </tr>
-      <tr><td style="text-align:center" colspan="2"><div class="small"><b>- OR -</b></div></td></tr>
+      <!-- Remove until we add OpenID back in -->
+      <!--<tr><td style="text-align:center" colspan="2"><div class="small"><b>- OR -</b></div></td></tr>
       <tr>
         <td align="right">
           <div class="small">
@@ -38,7 +39,7 @@
           </div>
         </td>
         <td align="left"><div class="small"><input id="openid" type="text" size="20" name="openid"/></div></td>
-      </tr>
+      </tr>-->
       <tr>
         <td colspan="2" align="center" nowrap="nowrap">
           <input type="checkbox" id="remember" name="remember" size="11"/> Remember me on this computer.
