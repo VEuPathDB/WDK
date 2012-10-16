@@ -16,12 +16,13 @@ function configureSummaryViews(ele) {
         summaryViews.tabs({
             selected : currentTab,
             cache: true,
+            spinner: '<img style="height:16px; margin-left:4px" src="wdk/images/loading.gif"/>',
             ajaxOptions: {
                 success: function(data) {
-                  createFlexigridFromTable(summaryViews.find(" .Results_Table"));
+                    createFlexigridFromTable(summaryViews.find(" .Results_Table"));
                 },
                 error: function( xhr, status, index, anchor ) {
-                    // alert( "Couldn't load this tab. Please try again later." + status );
+                    //alert( "Couldn't load this tab. Please try again later." + status );
                 }
             }
         });
