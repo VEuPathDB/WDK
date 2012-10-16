@@ -1186,6 +1186,11 @@
   <define name ="linkAttribute">
     <element name="linkAttribute">
       <ref name="AttributeFieldContent" />
+      <optional>
+        <attribute name="newWindow">
+          <data type="boolean" />
+        </attribute>
+      </optional>
       <oneOrMore>
         <choice>
           <element name="displayText">

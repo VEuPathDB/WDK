@@ -216,52 +216,10 @@
 
   <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="sumAttrName">
     <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
-    <c:set var="align" value="align='${recAttr.attributeField.align}'" />
-    <c:set var="nowrap">
-        <c:if test="${recAttr.attributeField.nowrap}">white-space:nowrap;</c:if>
-    </c:set>
 
-
-    <c:set var="pkValues" value="${primaryKey.values}" />
-    <c:set var="recordLinkKeys" value="" />
-    <c:forEach items="${pkValues}" var="pkValue">
-      <c:set var="recordLinkKeys" value="${recordLinkKeys}&${pkValue.key}=${pkValue.value}" />
-    </c:forEach>
-
-    <td ${align} style="${nowrap}padding:3px 2px"><div>
-      
-      <c:set var="fieldVal" value="${recAttr.briefDisplay}"/>
-      
-      <c:choose>
-        <c:when test="${j == 0}">
-	  <%-- display a link to record page --%>
-	<!-- store the primary key pairs here -->
-      <div class="primaryKey" fvalue="${fieldVal}" style="display:none;">
-        <c:forEach items="${pkValues}" var="pkValue">
-          <span key="${pkValue.key}">${pkValue.value}</span>
-        </c:forEach>
-      </div>
-          <a href="showRecord.do?name=${recNam}${recordLinkKeys}">${fieldVal}</a>
-        </c:when>   <%-- when j=0 --%>
-
-        <c:otherwise>
-
-          <!-- need to know if fieldVal should be hot linked -->
-          <c:choose>
-			<c:when test="${fieldVal == null || fn:length(fieldVal) == 0}">
-               <span style="color:gray;">N/A</span>
-            </c:when>
-            <c:when test="${recAttr.class.name eq 'org.gusdb.wdk.model.LinkAttributeValue'}">
-		 <a href="${recAttr.url}">${recAttr.displayText}</a>
-            </c:when>
-            <c:otherwise>
-              ${fieldVal}
-            </c:otherwise>
-          </c:choose>
-
-        </c:otherwise>
-      </c:choose>
-    </div></td>
+    <td>
+      <imp:wdkAttribute attributeValue="${recAttr}" truncate="true" recordName="${recNam}" />
+    </td>
     <c:set var="j" value="${j+1}"/>
 
   </c:forEach>

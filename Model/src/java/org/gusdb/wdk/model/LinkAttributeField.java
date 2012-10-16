@@ -13,11 +13,21 @@ public class LinkAttributeField extends AttributeField {
     private List<WdkModelText> displayTexts;
     private String displayText;
 
+    private boolean newWindow = false;
+
     public LinkAttributeField() {
         displayTexts = new ArrayList<WdkModelText>();
         urls = new ArrayList<WdkModelText>();
         // by default, don't show linked attributes in the download
         this.inReportMaker = false;
+    }
+
+    public void setNewWindow(boolean newWindow) {
+      this.newWindow = newWindow;
+    }
+
+    public boolean isNewWindow() {
+      return newWindow;
     }
 
     public void addUrl(WdkModelText url) {
