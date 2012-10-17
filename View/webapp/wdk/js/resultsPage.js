@@ -51,7 +51,8 @@ function moveAttr(col_ix, table) {
     // build url.
     var info = $("#Summary_Views");
     var url = info.attr("updateUrl");
-    url += "?strategy=" + strat + "&step=" + step + "&command=arrange&attribute=" + attr + "&left=" + left;
+    var view = $("#Summary_Views > ul > li.ui-tabs-selected").attr("id");
+    url += "?strategy=" + strat + "&step=" + step + "&command=arrange&attribute=" + attr + "&left=" + left + "&view=" + view;
     updateResultsPage($(table), url, false);
 }
 
