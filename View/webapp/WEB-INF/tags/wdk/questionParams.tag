@@ -66,7 +66,7 @@
                 </c:choose>
             </c:set>
             <div class="group-title">
-                <img class="group-handle" src='<c:url value="/images/${image}" />' />
+                <img class="group-handle" src='wdk/images/${image}' />
                 ${groupName}
             </div>
             <div class="group-detail" style="display:${display};">
