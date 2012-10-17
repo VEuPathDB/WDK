@@ -184,17 +184,18 @@ $(function() {
 -->
 
 
-<table class="history_controls">
+<table class="history_controls clear" width="100%">
    <tr>
-      <td>Select:&nbsp;<a class="check_toggle" onclick="selectAllHist()" href="javascript:void(0)">All</a>&nbsp|&nbsp;
+      <td style="vertical-align:middle" width="30%">Select:&nbsp;<a class="check_toggle" onclick="selectAllHist()" href="javascript:void(0)">All</a>&nbsp|&nbsp;
                   <a class="check_toggle" onclick="selectAllHist('saved')" href="javascript:void(0)">Saved</a>&nbsp|&nbsp;
                   <a class="check_toggle" onclick="selectAllHist('unsaved')" href="javascript:void(0)">Unsaved</a>&nbsp|&nbsp;
                   <a class="check_toggle" onclick="selectNoneHist()" href="javascript:void(0)">None</a></td>
-      <td class="medium">
+      <td style="vertical-align:middle" width="20%" class="medium">
          <input type="button" value="Open" onclick="handleBulkStrategies('open')"/>
          <input type="button" value="Close" onclick="handleBulkStrategies('close')"/>
          <input type="button" value="Delete" onclick="handleBulkStrategies('delete')"/>
       </td>
+      <td width="50%" style="text-align:right"></td>
    </tr>
 </table>
 
