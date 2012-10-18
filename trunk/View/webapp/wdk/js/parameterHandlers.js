@@ -67,7 +67,7 @@ function initDependentParamHandlers(isEdit) {
         wdkEvent.publish("questionchange");
       });
     });
-    if ($(this).has('input.typeAhead')) {
+    if ($(this).has('input.typeAhead').length > 0) {
       dependedParam.change();
     }
 
@@ -194,6 +194,9 @@ function updateDependentParam(paramName, dependedValue) {
     var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + 
         '&name=' + paramName + '&dependedValue=' + dependedValue;
 
+    var questionSubmit = dependentParam.find("input, select").attr("disabled", true)
+        .parents("form").find("input[name='questionSubmit']").attr("disabled", true);
+
     if ($('input.typeAhead',dependentParam).length > 0) {
       var sendReqUrl = sendReqUrl + '&xml=true';
       $("#" + paramName + "_display").attr('disabled',true).val('Loading options...');
@@ -203,6 +206,7 @@ function updateDependentParam(paramName, dependedValue) {
         success: function(data){
           $('input',dependentParam).removeAttr('disabled');
           createAutoComplete(data, paramName);
+          questionSubmit.attr("disabled", false);
         }
       });
     } else {
@@ -233,6 +237,7 @@ function updateDependentParam(paramName, dependedValue) {
             }
             oldValues[name] = null;
           }
+          questionSubmit.attr("disabled", false);
         },
         error: function (jqXHR, textStatus, errorThrown) {
           alert("Error retrieving dependent param: " + textStatus + "\n" + errorThrown);
