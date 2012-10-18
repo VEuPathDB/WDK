@@ -821,12 +821,14 @@ function ChangeFilter(strategyId, stepId, url, filter) {
     beforeSend: function(){
       $("#strategy_results > div.Workspace").block();
       showLoading(f_strategyId);
+      disableAddStepButtons();
     },
     success: function(data){
       if(ErrorHandler("ChangeFilter", data, strategy, null)){
         updateStrategies(data, true);
         $("div.layout-detail td div.filter-instance div.current").removeClass('current');
         $(filterElt).parent('div').addClass('current');
+        enableAddStepButtons();
       }
     }
   });
