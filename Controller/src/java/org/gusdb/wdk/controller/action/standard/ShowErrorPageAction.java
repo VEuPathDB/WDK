@@ -22,8 +22,16 @@ public class ShowErrorPageAction extends WdkAction {
 
   private static final Logger LOG = Logger.getLogger(ShowErrorPageAction.class.getName());
 
+  private static final String PARAM_SOURCE = "source_id";
+  private static final String PARAM_PROJECT = "project_id";
+  private static final String PARAM_NAME = "name";
+  
   public static final Map<String, ParamDef> PARAM_DEFS = new ParamDefMapBuilder()
-      .addParam(CConstants.ERROR_TYPE_PARAM, new ParamDef(Required.OPTIONAL)).toMap();  
+      .addParam(CConstants.ERROR_TYPE_PARAM, new ParamDef(Required.OPTIONAL))
+      .addParam(PARAM_SOURCE, new ParamDef(Required.OPTIONAL))
+      .addParam(PARAM_PROJECT, new ParamDef(Required.OPTIONAL))
+      .addParam(PARAM_NAME, new ParamDef(Required.OPTIONAL))
+      .toMap();  
 
   @Override
   protected boolean shouldValidateParams() {
