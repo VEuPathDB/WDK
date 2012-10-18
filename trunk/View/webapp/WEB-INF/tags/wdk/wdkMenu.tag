@@ -33,8 +33,7 @@
 <%-- basket menu --%>
 <c:choose>
   <c:when test="${wdkUser == null || wdkUser.guest}">
-    <imp:requestURL path="/showApplication.do" />
-    <c:set var="clickEvent" value="setCurrentTabCookie('application', 'basket'); User.login('${originRequestUrl}');" />
+    <c:set var="clickEvent" value="setCurrentTabCookie('application', 'basket'); User.login('${pageContext.request.contextPath}/showApplication.do');" />
     <c:set var="title" value="Group IDs together to work with them. You can add IDs from a result, or from a details page." />
     <c:set var="href" value="javascript:void(0)" />
   </c:when>
@@ -59,8 +58,7 @@
 <li id="favorite-menu">
 <c:choose>
   <c:when test="${wdkUser == null || wdkUser.guest}">
-    <imp:requestURL path="/showFavorite.do" />
-      <a id="mybasket" onclick="User.login();" 
+      <a id="mybasket" onclick="User.login('${pageContext.request.contextPath}/showFavorite.do');"
          href="javascript:void(0)"
          title="Store IDs for easy access to their details page. You can add IDs *only* from the details page, one at a time." 
         ><span><img style="vertical-align:middle" height="20" 
