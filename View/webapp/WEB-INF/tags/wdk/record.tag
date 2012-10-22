@@ -65,8 +65,12 @@
 <script>
   $(function() {
     var currentTab = parseInt(jQuery("#Record_Views > ul").attr("currentTab"));
-    jQuery( "#Record_Views" ).tabs({ selected : currentTab,
-                                     cache: true });
+    jQuery( "#Record_Views" )
+        .tabs({
+            selected : currentTab,
+            cache: true,
+            spinner: '<img style="height:14px; margin-left:4px" src="wdk/images/loading.gif"/>'
+        });
   });
 </script>
 
