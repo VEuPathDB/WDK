@@ -23,7 +23,8 @@ public class ProcessLogoutAction extends WdkAction {
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
 
-    // reset the current user to new guest
+    // reset the session and replace current user with new guest
+    resetSession();
     setCurrentUser(getWdkModel().getUserFactory().getGuestUser());
 
     // tell cookie to expire immediately
