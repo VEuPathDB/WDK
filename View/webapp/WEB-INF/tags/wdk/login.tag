@@ -30,7 +30,7 @@
 	<script id="user-logged-in" type="text/x-handlebars-template">
     <li><a href="${pageContext.request.contextPath}/showProfile.do"><span id="user-name">{{userName}}</span>'s Profile</a></li>
     <li>
-      <form name="logoutForm" method="post" action="processLogout.do"></form>
+      <form name="logoutForm" method="post" action="${pageContext.request.contextPath}/processLogout.do"></form>
       <a href="javascript:void(0)" onclick="User.logout()">Logout</a>
     </li>
 	</script>
