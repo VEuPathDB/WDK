@@ -1517,4 +1517,9 @@ public class User /* implements Serializable */{
         }
         save();
     }
+    
+    @Override
+    public String toString() {
+      return "User #" + userId + " - " + email;
+    }
 }
