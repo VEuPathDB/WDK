@@ -1,5 +1,6 @@
 <%-- this tag file is only used to import static resources --%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <%@ attribute name="refer"
               required="false"
@@ -63,9 +64,7 @@
      also included in summary page to support the addStep popup            --%>
 <%-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ --%>
 <c:if test="${refer == 'question' || refer == 'summary'}">
-  <%-- this is included in parameterScript.tag
-  <script type="text/javascript" src="<c:url value='/wdk/js/parameterHandlers.js'/>"></script>
-  --%>
+  <imp:parameterScript />
 </c:if>
 
 

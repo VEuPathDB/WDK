@@ -52,8 +52,6 @@
 <c:set var="currentStepId" value="${newStepId - 1}" />
 
 
-<imp:parameterScript />
-
 
 <html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
 
