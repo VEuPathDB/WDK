@@ -13,6 +13,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
@@ -282,6 +283,18 @@ public abstract class WdkAction implements SecondaryValidator {
    */
   protected WdkModelBean getWdkModel() {
     return _wdkModel;
+  }
+  
+  /**
+   * Invalidates the current session and establishes a new one
+   */
+  protected void resetSession() {
+    HttpSession session = _request.getSession();
+    if (session != null) {
+      session.invalidate();
+    }
+    // create new session
+    _request.getSession(true);
   }
   
   /**
