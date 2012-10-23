@@ -529,7 +529,7 @@ a.redbutton:active span {
    padding: 16px 21px 11px; /* push text down 1px */
 }
 
-
+a.button { padding: 2px 5px; line-height:30px; margin: 3px; }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =RESULTS PAGE
