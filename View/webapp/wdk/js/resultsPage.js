@@ -260,7 +260,15 @@ function getDialogId(element, dialogClass) {
         var id = "dialog" + Math.floor(Math.random() * 1000000000);
         $(element).attr("dialog", id);
         list.attr("id", id).dialog({
-            autoOpen: false
+            autoOpen: false,
+            open: function(event, ui) {
+              var $this = $(this);
+              var dialogHeight = $this.height();
+              var viewportHeight = $(window).height();
+              $this.dialog("option", "height",
+                  dialogHeight > viewportHeight ? viewportHeight - 36 : "auto");
+              $this.dialog("option", "width", list.outerWidth() + 20);
+            }
         });
     }
     return $(element).attr("dialog");
