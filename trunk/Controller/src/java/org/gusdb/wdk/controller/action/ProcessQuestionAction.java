@@ -206,6 +206,11 @@ public class ProcessQuestionAction extends Action {
         if (skipToDownloadKey != null && skipToDownloadKey.length() > 0) {
             url.append("&" + CConstants.WDK_SKIPTO_DOWNLOAD_PARAM);
             url.append("=" + skipToDownloadKey);
+
+            // pass the reporter format if present
+            String format = request.getParameter("wdkReportFormat");
+            if (format != null && format.length() > 0)
+              url.append("&wdkReportFormat=" + format);
         }
 
         url.append("&" + CConstants.WDK_ASSIGNED_WEIGHT_KEY + "=" + weight);
