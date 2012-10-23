@@ -110,6 +110,11 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 forward = mapping.findForward(CConstants.SKIPTO_DOWNLOAD_MAPKEY);
                 String path = forward.getPath() + "?step_id="
                         + step.getStepId();
+
+                // pass the reporter format if present
+                String format = request.getParameter("wdkReportFormat");
+                if (format != null && format.length() > 0)
+                  path += "&wdkReportFormat=" + format;
                 return new ActionForward(path, true);
             } else if (!noSkip && answerValue.getResultSize() == 1
                     && answerValue.getQuestion().isNoSummaryOnSingleRecord()) {
