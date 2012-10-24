@@ -7,8 +7,6 @@ import org.apache.struts.Globals;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
-import org.gusdb.wdk.controller.actionutil.ParamDef.Required;
-import org.gusdb.wdk.controller.actionutil.ParamDefMapBuilder;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
 
@@ -22,26 +20,8 @@ public class ShowErrorPageAction extends WdkAction {
 
   private static final Logger LOG = Logger.getLogger(ShowErrorPageAction.class.getName());
 
-  private static final String PARAM_SOURCE = "source_id";
-  private static final String PARAM_PROJECT = "project_id";
-  private static final String PARAM_NAME = "name";
-  
-  public static final Map<String, ParamDef> PARAM_DEFS = new ParamDefMapBuilder()
-      .addParam(CConstants.ERROR_TYPE_PARAM, new ParamDef(Required.OPTIONAL))
-      .addParam(PARAM_SOURCE, new ParamDef(Required.OPTIONAL))
-      .addParam(PARAM_PROJECT, new ParamDef(Required.OPTIONAL))
-      .addParam(PARAM_NAME, new ParamDef(Required.OPTIONAL))
-      .toMap();  
-
-  @Override
-  protected boolean shouldValidateParams() {
-    return true;
-  }
-
-  @Override
-  protected Map<String, ParamDef> getParamDefs() {
-    return PARAM_DEFS;
-  }
+  @Override protected boolean shouldValidateParams() { return false; }
+  @Override protected Map<String, ParamDef> getParamDefs() { return EMPTY_PARAMS; }
 
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
