@@ -188,10 +188,12 @@ public abstract class WdkAction implements SecondaryValidator {
   }
   
   private ParamGroup buildParamGroup(Map<String, String[]> parameters) {
+    // generate param definitions based on passed params so calling code
+    //   sees a complete ParamGroup structure
     Map<String, ParamDef> definitions = new HashMap<String, ParamDef>();
     for (String key : parameters.keySet()) {
       String[] values = parameters.get(key);
-      definitions.put(key, new ParamDef(Required.REQUIRED,
+      definitions.put(key, new ParamDef(Required.OPTIONAL,
           values.length > 1 ? Count.MULTIPLE : Count.SINGULAR));
     }
     return new ParamGroup(definitions, parameters);
