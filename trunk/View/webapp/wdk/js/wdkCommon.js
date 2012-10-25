@@ -247,11 +247,19 @@ WDK.prototype.registerTable = function() {
 
 
 setUpNavDropDowns = function() {
-  jQuery('#nav-top li ul').parent().each(function() {
-    var dropDownMenu = jQuery(this).children('ul')[0];
-    jQuery(this)
-        .mouseover(function(){ jQuery(dropDownMenu).show(); })
-        .mouseout(function(){ jQuery(dropDownMenu).hide(); });
+  var timer;
+  jQuery("#nav-top > li").hoverIntent({
+    over: function() {
+      var $this = $(this);
+      clearTimeout(timer);
+      timer = setTimeout(function() {
+        $this.children("ul").show("fade");
+      }, 150);
+    },
+    out: function() {
+      $(this).children("ul").hide();
+    },
+    timeout: 500
   });
 };
 
