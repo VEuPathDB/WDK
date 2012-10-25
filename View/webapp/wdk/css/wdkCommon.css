@@ -183,7 +183,7 @@ td {
   float: left;
   width: auto;
   z-index: 520;
-  display: inline;
+  /* display: inline; */
 /*  list-style-type: none; */
   padding-right: 15px;
   background-image: url('../images/menu_divider.png');
@@ -230,7 +230,7 @@ td {
 }
 
 #nav-top li ul li {
-	display: block;
+	/*display: block;*/
   width: 100%;
   margin: 0px;
   padding: 0px;
