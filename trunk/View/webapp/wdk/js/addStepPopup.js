@@ -547,7 +547,7 @@ function setDraggable(e, handle){
 }
 
 function showNewSection(ele,sectionName,sectionNumber){
-	isSpan = (sectionName == 'span_logic' || sectionName.split("_")[0] == 'sl'); 
+	isSpan = (sectionName == 'span_logic' || (sectionName !== null && sectionName.split("_")[0] == 'sl'));
 	var sec = document.createElement('td');
 	var s = $("div#" + sectionName + ".original").clone();
 	$(sec).html($(s)
