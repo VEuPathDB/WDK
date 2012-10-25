@@ -15,7 +15,7 @@ function showDetails(det){
 	dId = parseInt(dId, 10);
 */
 	var disp = openDetail.attr("disp");
-	$("body").children("div.crumb_details").each(function(){
+	$("body > div.crumb_details").each(function(){
 		$(this).remove();	
 	});
 	$("div#Strategies").find("div.crumb_details").each(function(){
@@ -57,7 +57,7 @@ function hideDetails(det){
 	if(openDetail != null) openDetail.attr("disp","0");
 	openDetail = null;
 	
-	$("body").children("div.crumb_details").each(function(){
+	$("body > div.crumb_details").each(function(){
 		$(this).remove();	
 	});
 	$("a.crumb_name img").attr("src","wdk/images/plus.gif");
