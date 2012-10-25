@@ -156,7 +156,7 @@ function multiStep(modelstep, prevjsonstep, jsonstep, sid){
 		childfilterImg = "<span class='filterImg' title='Step is filtered on " + childStp.filterName + "'><img src='wdk/images/filter.gif' height='12px' width='12px'/></span>";
 	childinner = ""+
 		"		<h4>"+
-		"			<a style='text-decoration:underline' title='CLICK to make changes to this step and/or how it is combined with the previous step' id='stepId_" + modelstep.frontId + "' class='crumb_name' onclick='showDetails(this)' href='javascript:void(0)'>"+
+		"			<a style='text-decoration:underline' title='CLICK to make changes to the \"" + childStp.name + "\" step and/or how it is combined with the previous step' id='stepId_" + modelstep.frontId + "' class='crumb_name' onclick='showDetails(this)' href='javascript:void(0)'>"+
 		"				<span id='name'>"+uname+"</span>"+
 		"				<img src='wdk/images/plus.gif' width='13' height='13'/>"+
 		"				<span class='collapsible' style='display: none;'>false</span>"+
@@ -220,7 +220,7 @@ function singleStep(modelstep, prevjsonstep, jsonstep, sid){
 		filterImg = "<span class='filterImg' title='Step is filtered on " + jsonStep.filterName + "'><img src='wdk/images/filter.gif' height='12px' width='12px'/></span>";
 	inner = ""+
 		"		<h4>"+
-		"			<a style='text-decoration:underline' title='CLICK to make changes to this step.' id='stepId_" + modelstep.frontId + "' class='crumb_name' onclick='showDetails(this)' href='javascript:void(0)'>"+
+		"			<a style='text-decoration:underline' title='CLICK to make changes to the \"" + jsonstep.name + "\" step.' id='stepId_" + modelstep.frontId + "' class='crumb_name' onclick='showDetails(this)' href='javascript:void(0)'>"+
 		"				<span id='name'>"+uname+"</span>"+
 		"				<img src='wdk/images/plus.gif' width='13' height='13'/>"+
 		"				<span class='collapsible' style='display: none;'>false</span>"+
@@ -536,7 +536,7 @@ function createStrategyName(strat){
 
 	if(json.saved){
 		share = "<a id='share_" + id + "' title='Email this URL to your best friend.' href=\"javascript:void(0)\" onclick=\"showExportLink('" + id + "')\"><b style='font-size:120%'>Share</b></a>"+
-		"<div class='modal_div export_link' id='export_link_div_" + id + "' style='width:500px'>" +
+		"<div class='modal_div export_link' id='export_link_div_" + id + "' style='width:500px; margin-top:16px;'>" +
 	        "<div class='dragHandle'>" +
 		"<div class='modal_name'>"+
 		"<span class='h3left'>Copy and paste URL below to email</span>" + 
