@@ -8,7 +8,10 @@ var isSpan = false;
 function showExportLink(stratId){
  	closeModal();
  	var exportLink = $("div#export_link_div_" + stratId);
- 	exportLink.show();
+ 	exportLink.draggable({
+    handle: ".dragHandle",
+    containment: "#strategy_results .scrollable-wrapper"
+  }).show();
 }
 
 function showPanel(panel) {
