@@ -51,11 +51,13 @@
 <!-- ================ RESULTS TITLE AND LINKS TO NASKET AND DOWNLOADS   =============== -->
 <table id = "title-links" width="100%"><tr>
 <td class="h3left" style="vertical-align:middle;padding-bottom:7px;">
+  <span title="${step.displayName}">
     <c:if test="${strategy != null}">
         <span id="text_strategy_number">${strategy.name}</span> 
         - step <span id="text_step_number">${strategy.length}</span> - 
     </c:if>
     <span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${type}</span>
+  </span>
 </td>
 
 <td  style="vertical-align:middle;text-align:right;white-space:nowrap;">
