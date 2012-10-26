@@ -178,10 +178,7 @@
 <c:forEach items="${answerRecords}" var="record">
     <c:set value="${record.primaryKey}" var="primaryKey"/>
 	<c:set var="recNam" value="${record.recordClass.fullName}"/>
-<c:choose>
-  <c:when test="${i % 2 == 0}"><tr class="lines"></c:when>
-  <c:otherwise><tr class="linesalt"></c:otherwise>
-</c:choose>
+<tr class="${i % 2 eq 0 ? 'lines' : 'linesalt'}">
 
 
 
@@ -218,7 +215,7 @@
     <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
 
     <td>
-      <imp:wdkAttribute attributeValue="${recAttr}" truncate="true" recordName="${recNam}" />
+      <imp:wdkAttribute attributeValue="${recAttr}" truncate="${recAttr.truncateDisplay}" recordName="${recNam}" />
     </td>
     <c:set var="j" value="${j+1}"/>
 
