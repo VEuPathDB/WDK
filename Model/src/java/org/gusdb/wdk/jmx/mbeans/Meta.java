@@ -36,4 +36,12 @@ public class Meta extends BeanBase implements MetaMBean   {
       return wdkModel.getReleaseDate();
   }
 
+  public String getBuildNumber() {
+      return wdkModel.getBuildNumber();
+  }
+
+  public String getGusHome() {
+      return wdkModel.getGusHome();
+  }
+
 }
