@@ -7,4 +7,6 @@ public interface MetaMBean {
   public String getProjectId();
   public String getName();
   public String getReleaseDate();
+  public String getBuildNumber();
+  public String getGusHome();
 }
