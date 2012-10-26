@@ -40,6 +40,13 @@ public abstract class AttributeValue {
         return field.getName();
     }
 
+    /**
+     * @return whether to truncate this attribute value during display
+     */
+    public boolean isTruncateDisplay() {
+        return field.isTruncateDisplay();
+    }
+    
     public String getBriefDisplay() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
