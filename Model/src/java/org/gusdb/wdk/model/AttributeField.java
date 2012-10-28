@@ -32,7 +32,6 @@ public abstract class AttributeField extends Field {
     protected AttributeFieldContainer container;
 
     private boolean sortable = true;
-    private boolean truncateDisplay = true;
     private String align;
     private boolean nowrap = false;
     private boolean removable = true;
@@ -71,20 +70,6 @@ public abstract class AttributeField extends Field {
      */
     public void setSortable(boolean sortable) {
         this.sortable = sortable;
-    }
-
-    /**
-     * @return whether to truncate display
-     */
-    public boolean isTruncateDisplay() {
-      return truncateDisplay;
-    }
-
-    /**
-     * @param truncateDisplay true to truncate display, else false
-     */
-    public void setTruncateDisplay(boolean truncateDisplay) {
-      this.truncateDisplay = truncateDisplay;
     }
     
     /**
