@@ -1133,9 +1133,6 @@
     <optional>
       <attribute name="attributeCategory"/>
     </optional>
-    <optional>
-      <attribute name="truncateDisplay"/>
-    </optional>
     <zeroOrMore>
       <ref name="plugin" />
     </zeroOrMore>

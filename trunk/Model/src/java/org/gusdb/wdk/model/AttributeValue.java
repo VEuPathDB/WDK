@@ -39,23 +39,22 @@ public abstract class AttributeValue {
     public String getName() {
         return field.getName();
     }
-
-    /**
-     * @return whether to truncate this attribute value during display
-     */
-    public boolean isTruncateDisplay() {
-        return field.isTruncateDisplay();
-    }
     
     public String getBriefDisplay() throws WdkModelException,
             NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
         String display = getDisplay();
         int truncateTo = field.getTruncateTo();
-        if (truncateTo == 0) truncateTo = Utilities.TRUNCATE_DEFAULT;
-        if (display.length() > truncateTo)
-            display = display.substring(0, truncateTo) + "...";
-        return display;
+        switch (truncateTo) {
+          case -1:
+            return display;
+          case 0:
+            truncateTo = Utilities.TRUNCATE_DEFAULT;
+            // drop through
+          default:
+            return (display.length() <= truncateTo ? display :
+                display.substring(0, truncateTo) + "...");
+        }
     }
 
     public String getDisplay() throws WdkModelException,

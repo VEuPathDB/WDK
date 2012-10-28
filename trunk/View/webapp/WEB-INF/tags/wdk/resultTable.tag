@@ -205,7 +205,7 @@
                       <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="sumAttrName">
                         <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
                         <td>
-                          <imp:wdkAttribute attributeValue="${recAttr}" truncate="${recAttr.truncateDisplay}" recordName="${recNam}" />
+                          <imp:wdkAttribute attributeValue="${recAttr}" truncate="true" recordName="${recNam}" />
                         </td>
                         <c:set var="j" value="${j+1}"/>
                       </c:forEach>
