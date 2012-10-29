@@ -226,7 +226,7 @@ function gotoPage(element) {
     var pageNumber = $(".pageNumber",advancedPaging).val();
     var pageSize = $(".pageSize",advancedPaging).val();
 
-    var pageUrl = $(".pageUrl").val();
+    var pageUrl = $(".pageUrl", advancedPaging).val();
     
     var pageOffset = (pageNumber - 1) * pageSize;
     var gotoPageUrl = pageUrl.replace(/\&pager\.offset=\d+/, "");
