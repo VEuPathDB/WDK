@@ -1093,7 +1093,7 @@ div#sections td{
 }
 
 .qf_section ul li.category{
-	background:url("/assets/images/menu_arrow.png") no-repeat scroll 100% 0 transparent;
+	background:url("../images/menu_arrow.png") no-repeat scroll 100% 0 transparent;
 }
 
 #process-crumbs{
