@@ -250,14 +250,14 @@ setUpNavDropDowns = function() {
   var timer;
   jQuery("#nav-top > li").hoverIntent({
     over: function() {
-      var $this = $(this);
+      var $this = jQuery(this);
       clearTimeout(timer);
       timer = setTimeout(function() {
         $this.children("ul").show("fade");
       }, 150);
     },
     out: function() {
-      $(this).children("ul").hide();
+      jQuery(this).children("ul").hide();
     },
     timeout: 500
   });
@@ -287,6 +287,37 @@ jQuery(document).ready(function(jQuery) {
     var match = this.className.match(/^open-dialog-(\w+-\w+)$/);
     if (match) {
       jQuery("#wdk-dialog-" + match[1]).dialog("open");
+    }
+  });
+
+  // connect window pop outs
+  jQuery("body").on("click", "a[class^='open-window-']", function(e) {
+    e.preventDefault();
+    // regex below may be too stringent -- should allow for arbitrary identifier?
+    var windowName,
+        windowFeatures,
+        match = this.className.match(/^open-window-(\w+-\w+)$/),
+        windowUrl = this.href,
+        windowWidth = 980,
+        windowHeight = 620,
+        windowLeft = screen.width/2 - windowWidth/2,
+        windowTop = screen.height/2 - windowHeight/2,
+        defaultFeatures = {
+          location:   "no",
+          menubar:    "no",
+          resizable:  "yes",
+          status:     "no",
+          width:      windowWidth,
+          height:     windowHeight,
+          top:        windowTop,
+          left:       windowLeft
+        };
+
+    // in the future, allow spefied data attributes to override features
+    windowFeatures = $.map(defaultFeatures, function(v, k) { return k + "=" + v; }).join(",");
+    if (match) {
+      windowName = "wdk-window-" + match[1];
+      window.open(windowUrl, windowName.replace(/-/g, "_"), windowFeatures).focus();
     }
   });
 
