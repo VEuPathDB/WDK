@@ -43,9 +43,20 @@ public class ParamGroup {
 		return (_values.get(key).length == 0 ? null : _values.get(key)[0]);
 	}
 	
+	/**
+	 * Looks for the key in the parameter set.  If there is no value present,
+	 * returns an empty string.
+	 * 
+	 * @param key parameter name
+	 * @return the value of the parameter or an empty string if no value exists
+	 * @throws IllegalArgumentException if multiple values exist for this parameter
+	 */
 	public String getValueOrEmpty(String key) {
-	  String value = getValue(key);
-	  return (value == null ? "" : value);
+	  String[] values = _values.get(key);
+	  if (values != null && values.length > 1) {
+	    throw new IllegalArgumentException("The key [ " + key + " ] contains multiple values which cannot be retrieved with this method.");
+	  }
+	  return (values == null || values.length == 0 ? "" : values[0]);
 	}
 	
 	public String[] getValues(String key) {
