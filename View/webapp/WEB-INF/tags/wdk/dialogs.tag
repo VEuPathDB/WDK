@@ -41,7 +41,7 @@
     <imp:verbiage key="dialog.update-strat.title"/>
   </c:set>
   <div style="display:none;" id="wdk-dialog-update-strat" title="${udpateTitle}">
-    <div class="save_as_msg">
+    <div class="ui-state-highlight ui-corner-all save_as_msg">
       <imp:verbiage key="dialog.update-strat.content"/>
     </div>
     <form id="wdk-update-strat">
@@ -64,7 +64,7 @@
     <imp:verbiage key="dialog.share-strat.title"/>
   </c:set>
   <div style="display:none;" id="wdk-dialog-share-strat" title="${shareTitle}">
-    <div class="share_msg">
+    <div class="ui-state-highlight ui-corner-all share_msg">
       <imp:verbiage key="dialog.share-strat.content"/>
     </div>
     <div class="share_url"><jsp:text/></div>
