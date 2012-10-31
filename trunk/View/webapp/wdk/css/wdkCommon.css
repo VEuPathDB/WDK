@@ -1077,8 +1077,8 @@ color:darkred;font-style:italic;font-size:95%;
      = jQuery 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-.ui-widget-header { 
-	padding:0;
+.ui-tabs .ui-widget-header, .dataTables_wrapper .ui-widget-header { 
+	/*padding:0;*/
 	background:none;
 	border:0; 
 } 
@@ -1132,6 +1132,11 @@ span.marker a:link, span.marker a:visited {
 
 .onload-function {
   display: none;
+}
+
+.ui-state-highlight.save_as_msg, .ui-state-highlight.share_msg {
+    padding: 8px;
+    color: #8B0000;
 }
 
 /* THE END */
