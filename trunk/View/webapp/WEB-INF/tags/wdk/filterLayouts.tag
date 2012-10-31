@@ -41,7 +41,13 @@
         
         <div class="layout-info">
             <img class="handle" src="<c:url value="/wdk/images/${image}" />" />
-            <span class="display"><b>${layout.displayName}</b>&nbsp;&nbsp;</span><span style="font-size:90%;font-style:italic">(results removed by the filter will not be combined into the next step.)</span>
+            <span class="display">
+              <img src="${pageContext.request.contextPath}/wdk/images/filter.gif"/> 
+              <b>${layout.displayName}</b>&nbsp;&nbsp;
+            </span>
+            <span style="font-size:90%;font-style:italic">
+              (results removed by the filter will not be combined into the next step.)
+            </span>
         </div>
         <div class="layout-detail" style="display: ${show}">
     <%--        <div class="description">${layout.description}</div>  --%>
