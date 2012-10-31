@@ -1059,8 +1059,8 @@ div#sections td{
     text-align: center;
 }
 
-#wdk-dialog-share-strat .share_url input {
-  width: 100%;
+#wdk-dialog-share-strat input {
+  width: 570px;
 }
 
 .strategy-description.ui-tooltip {
