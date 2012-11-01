@@ -14,15 +14,42 @@
   <c:set var="recordName" value="${wdkAnswer.question.recordClass.fullName}" />
   <c:set var="recHasBasket" value="${wdkAnswer.question.recordClass.useBasket}" />
   <c:set var="dispModelName" value="${applicationScope.wdkModel.displayName}" />
-  <c:set var="answerRecords" value="${wdkAnswer.records}" />
+
+  <c:catch var="answerValueRecords_exception">
+    <c:set var="answerRecords" value="${wdkAnswer.records}" />
+  </c:catch>
+
   <c:set var="wdkView" value="${requestScope.wdkView}" />
-  
+
   <jsp:useBean id="typeMap" class="java.util.HashMap"/>
   <c:set target="${typeMap}" property="singular" value="${step.displayType}"/>
   <imp:getPlural pluralMap="${typeMap}"/>
   <c:set var="type" value="${typeMap['plural']}"/>
 
+  <c:set var="isBasket" value="${fn:contains(step.questionName, 'ByRealtimeBasket')}"/>
+
+
   <c:choose>
+    <c:when test='${answerValueRecords_exception ne null and isBasket}'>
+      <div class="ui-widget">
+        <div class="ui-state-error ui-corner-all" style="padding:8px;">
+          <p>
+            <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+            <div><imp:verbiage key="answer-value-records-error-msg.basket.content"/></div>
+          </p>
+        </div>
+      </div>
+    </c:when>
+    <c:when test='${answerValueRecords_exception ne null}'>
+      <div class="ui-widget">
+        <div class="ui-state-error ui-corner-all" style="padding:8px;">
+          <p>
+            <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+              <div><imp:verbiage key="answer-value-records-error-msg.default.content"/></div>
+          </p>
+        </div>
+      </div>
+    </c:when>
     <c:when test='${wdkAnswer.resultSize == 0}'>
       No results are retrieved
     </c:when>
@@ -45,6 +72,8 @@
         <c:if test="${wdk_sorting_checksum != null}">
           <pg:param name="sort" id="pager" />
         </c:if>
+
+        <pg:page> ${pageNumber} </pg:page>
     
         <%--------- PAGING TOP BAR ----------%>
         <c:url var="commandUrl" value="/processSummaryView.do?step=${step.stepId}&view=${wdkView.name}" />
