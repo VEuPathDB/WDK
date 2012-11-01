@@ -951,7 +951,7 @@ public class AnswerValue {
             logger.debug("expected: " + expected + ", actual: "
                     + pageRecordInstances.size());
             logger.debug("Paged ID SQL:\n" + sql);
-            throw new WdkModelException("The expacted result size is different"
+            throw new WdkModelException("The expected result size is different"
                     + " from the actual size. Please check the id query "
                     + idsQueryInstance.getQuery().getFullName() + " and the "
                     + "attribute queries that return the attributes (" + buffer

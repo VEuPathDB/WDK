@@ -1139,5 +1139,11 @@ span.marker a:link, span.marker a:visited {
     color: #8B0000;
 }
 
+.ui-state-error a,
+.ui-widget-content .ui-state-error a,
+.ui-widget-header .ui-state-error a {
+  color: #187A02;
+}
+
 /* THE END */
 
