@@ -108,7 +108,10 @@ public class MBeanRegistration {
       for (Map.Entry<String, String> entry : mbeanClassNames.entrySet()) {
       //for (String name : mbeanClassNames) {
         Object mb = getMbeanClassForName(entry.getKey());
-        if (mb == null) throw new RuntimeException("unable to instantiate class for " + entry.getKey());
+        if (mb == null) {
+           logger.warn("Unable to instantiate class for " + entry.getKey() + " . Skipping.");
+           continue;
+        }
         ObjectName objectName = makeObjectName(entry.getValue());
         registerMBean(mb, objectName);
       }
