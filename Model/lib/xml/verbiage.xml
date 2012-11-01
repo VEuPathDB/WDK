@@ -123,4 +123,23 @@
         </attribute>
     </record>
 
+    <record id="answer-value-records-error-msg.basket">
+      <attribute name="title">There is an error with your basket results</attribute>
+      <attribute name="content"><![CDATA[
+        It appears that there is a problem with your basket results.
+        This may be due to IDs of this record type changing or being retired.
+        Unfortunately, you may be required to <a href="javascript:void();"
+        onclick="emptyBasket();">clear</a> your basket in order to retain functionlity.
+        Feel free to contact us with any feedback.
+        ]]></attribute>
+    </record>
+
+    <record id="answer-value-records-error-msg.default">
+      <attribute name="title">There is an error with your results</attribute>
+      <attribute name="content"><![CDATA[
+        It appears something has gone wrong when retreiving your results.
+        Please contact us so that we can investigate what may be causing this.
+        ]]></attribute>
+    </record>
+
 </xmlAnswer>
