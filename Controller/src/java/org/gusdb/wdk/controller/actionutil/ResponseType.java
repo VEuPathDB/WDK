@@ -17,6 +17,7 @@ public enum ResponseType {
   png            ("image/png", "image.png"),
   svg            ("image/svg+xml", "image.svg"),
   excel          ("application/vnd.ms-excel", "spreadsheet.xls"),
+  zip            ("application/zip", "compressedFile.zip"),
   binary_data    ("application/octet-stream", "data.bin");
   
   private String _mimeType;
