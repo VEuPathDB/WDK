@@ -9,6 +9,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -25,6 +26,7 @@ import org.gusdb.wdk.controller.WdkValidationException;
 import org.gusdb.wdk.controller.actionutil.ParamDef.Count;
 import org.gusdb.wdk.controller.actionutil.ParamDef.Required;
 import org.gusdb.wdk.controller.actionutil.ParameterValidator.SecondaryValidator;
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -60,6 +62,9 @@ public abstract class WdkAction implements SecondaryValidator {
   public static final String EXCEPTION_PAGE = "exceptionPage";
   public static final String EXCEPTION_USER = "exceptionUser";
   public static final String EXCEPTION_OBJ = "exceptionObj";
+
+  // internal site URLs often contain this parameter from the auth service
+  private static final String AUTH_TICKET = "auth_tkt";
 
   /**
    * Provides standard information that came in on the current request
@@ -288,6 +293,15 @@ public abstract class WdkAction implements SecondaryValidator {
   }
   
   /**
+   * @return GUS_HOME web app parameter
+   */
+  protected String getGusHome() {
+    ServletContext context = _servlet.getServletContext();
+    String gusHomeBase = context.getInitParameter(Utilities.SYSTEM_PROPERTY_GUS_HOME);
+    return context.getRealPath(gusHomeBase);
+  }
+  
+  /**
    * Invalidates the current session and establishes a new one
    */
   protected void resetSession() {
@@ -399,6 +413,7 @@ public abstract class WdkAction implements SecondaryValidator {
     Map<String, ParamDef> definedParams = new HashMap<>(getParamDefs());
     
     // now add params that we may expect from any request (i.e. global params)
+    definedParams.put(AUTH_TICKET, new ParamDef(Required.OPTIONAL));
     definedParams.put(CConstants.WDK_RESPONSE_TYPE_KEY, new ParamDef(Required.OPTIONAL));
     
     return definedParams;
