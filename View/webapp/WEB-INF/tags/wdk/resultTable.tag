@@ -8,7 +8,9 @@
               required="true"
               description="Step bean we are looking at" %>
 
+
   <c:set var="wdkAnswer" value="${step.answerValue}"/>
+
   <c:set var="qName" value="${wdkAnswer.question.fullName}" />
   <c:set var="modelName" value="${applicationScope.wdkModel.name}" />
   <c:set var="recordName" value="${wdkAnswer.question.recordClass.fullName}" />
@@ -27,7 +29,6 @@
   <c:set var="type" value="${typeMap['plural']}"/>
 
   <c:set var="isBasket" value="${fn:contains(step.questionName, 'ByRealtimeBasket')}"/>
-
 
   <c:choose>
     <c:when test='${answerValueRecords_exception ne null and isBasket}'>
@@ -73,7 +74,7 @@
           <pg:param name="sort" id="pager" />
         </c:if>
 
-        <pg:page> ${pageNumber} </pg:page>
+ <!--  debuging line:       <pg:page> ${pageNumber} </pg:page> -->
     
         <%--------- PAGING TOP BAR ----------%>
         <c:url var="commandUrl" value="/processSummaryView.do?step=${step.stepId}&view=${wdkView.name}" />
@@ -85,25 +86,20 @@
             <th style="text-align: right;white-space:nowrap;">
               <imp:addAttributes wdkAnswer="${wdkAnswer}" commandUrl="${commandUrl}"/>
             </th>
-            <%-- remove Reset button when new tree structure is activated --%>
-            <c:if test="${not wdkAnswer.useCheckboxTree}">
-              <th style="text-align: right;white-space:nowrap;width:5%;">
-                &nbsp;
-                <input type="button" value="Reset Columns" onClick="resetAttr('${commandUrl}', this)" />
-              </th>
-            </c:if>
           </tr>
         </table>
         <%--------- END OF PAGING TOP BAR ----------%>
-    
+
         <!-- content of current page -->
         <c:set var="sortingAttrNames" value="${wdkAnswer.sortingAttributeNames}" />
         <c:set var="sortingAttrOrders" value="${wdkAnswer.sortingAttributeOrders}" />
         
         <%--------- RESULTS  ----------%>
-        <div class="Results_Div flexigrid">
+
+       <div class="Results_Div flexigrid">
           <div class="bDiv">
             <div class="bDivBox">
+
               <table  width="100%" class="Results_Table" step="${step.stepId}">
                 <thead>
                   <tr class="headerrow">
@@ -202,6 +198,8 @@
                 </thead>
                 <tbody class="rootBody">
                   <c:set var="i" value="0"/>
+
+<!-- FOR EACH ROW -->
                   <c:forEach items="${answerRecords}" var="record">
                     <c:set value="${record.primaryKey}" var="primaryKey"/>
                     <c:set var="recNam" value="${record.recordClass.fullName}"/>
@@ -231,11 +229,23 @@
                         </td>
                       </c:if>
                       <c:set var="j" value="0"/>
+
+<!-- FOR EACH COLUMN -->
                       <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="sumAttrName">
                         <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
-                        <td>
-                          <imp:wdkAttribute attributeValue="${recAttr}" truncate="true" recordName="${recNam}" />
-                        </td>
+
+<!--
+<c:choose>
+<c:when test = "${eupathIsolatesQuestion}">
+												<imp:isolateClustal recAttr="${recAttr}" recNam="${recNam}" primaryKey="${primaryKey}"/>
+</c:when>
+<c:otherwise>
+-->
+                         <imp:wdkAttribute attributeValue="${recAttr}" truncate="true" recordName="${recNam}" />
+<!--
+</c:otherwise>
+</c:choose>
+-->
                         <c:set var="j" value="${j+1}"/>
                       </c:forEach>
                     </tr>
@@ -243,22 +253,20 @@
                   </c:forEach>
                 </tbody>
               </table>
+
             </div>
           </div>
         </div>
+
         <%--------- END OF RESULTS  ----------%>
-    
+
+
+
         <%--------- PAGING BOTTOM BAR ----------%>
         <table width="100%">
           <tr class="subheaderrow">
             <th style="text-align:left;white-space:nowrap;"> 
               <imp:pager wdkAnswer="${wdkAnswer}" pager_id="bottom"/> 
-            </th>
-            <th style="text-align:right;white-space:nowrap;">
-              &nbsp;
-            </th>
-            <th style="text-align:right;white-space:nowrap;width:5%;">
-              &nbsp;
             </th>
           </tr>
         </table>
