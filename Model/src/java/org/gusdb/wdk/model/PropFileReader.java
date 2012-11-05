@@ -10,6 +10,8 @@ public abstract class PropFileReader {
 
   private static final Logger LOG = Logger.getLogger(PropFileReader.class.getName());
 
+  protected static final String FS = System.getProperty("file.separator");
+  
   private Properties _props;
   
   protected abstract String getPropertyFile();
