@@ -234,18 +234,18 @@
                       <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="sumAttrName">
                         <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
 
-<!--
+<%--
 <c:choose>
 <c:when test = "${eupathIsolatesQuestion}">
 												<imp:isolateClustal recAttr="${recAttr}" recNam="${recNam}" primaryKey="${primaryKey}"/>
 </c:when>
 <c:otherwise>
--->
+--%>
                          <imp:wdkAttribute attributeValue="${recAttr}" truncate="true" recordName="${recNam}" />
-<!--
+<%--
 </c:otherwise>
 </c:choose>
--->
+--%>
                         <c:set var="j" value="${j+1}"/>
                       </c:forEach>
                     </tr>
