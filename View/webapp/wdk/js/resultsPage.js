@@ -290,13 +290,17 @@ function toggleAttributes(from) {
 }
 
 function invokeAttributePlugin(ele, stepId, attributeName) {
+
     var pluginName = $(ele).attr("plugin");
     var title = $(ele).attr("plugintitle");
     var url = "invokeAttributePlugin.do?step=" + stepId + "&attribute=" + attributeName + "&plugin=" + pluginName;    
+
     $.ajax({
         url: url,
         dataType: "html",
+				beforeSend: jQuery.blockUI(),
         success: function(data) {
+						jQuery.unblockUI();
             // create a place holder for the result
             if ($("#attribute-plugin-result").length == 0) {
                 $("body").append("<div id=\"attribute-plugin-result\"> </div>");
@@ -308,5 +312,6 @@ function invokeAttributePlugin(ele, stepId, attributeName) {
                           title : title,
                           modal : true });
         }
+
     });
 }
