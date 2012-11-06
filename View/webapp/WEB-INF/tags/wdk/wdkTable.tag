@@ -79,12 +79,7 @@
           <c:set var="attributeValue" value="${rColEntry.value}"/>
           <c:if test="${attributeValue.attributeField.internal == false}">
             <c:set var="j" value="${j+1}"/>
-
-            <%-- need to know if value should be hot linked --%>
-        
-            <td>
-              <imp:wdkAttribute attributeValue="${attributeValue}" truncate="true" />
-            </td>
+            <imp:wdkAttribute attributeValue="${attributeValue}" truncate="true" />
           </c:if>
         </c:forEach>
 
