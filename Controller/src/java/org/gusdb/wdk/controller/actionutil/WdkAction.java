@@ -72,6 +72,7 @@ public abstract class WdkAction implements SecondaryValidator {
    * @author rdoherty
    */
   public static interface RequestData {
+    public String getWebAppBaseUrl();
     public String getRequestUrl();
     public String getQueryString();
     /** returns the full request URL (including the query string) */
@@ -427,6 +428,19 @@ public abstract class WdkAction implements SecondaryValidator {
   public RequestData getRequestData() {
     return new RequestData() {
 
+      @Override
+      public String getWebAppBaseUrl() {
+        return new StringBuilder()
+          .append(_request.getScheme())
+          .append("://")
+          .append(_request.getServerName())
+          .append(_request.getServerPort() == 80 ||
+                  _request.getServerPort() == 443 ?
+                  "" : ":" + _request.getServerPort())
+          .append(_request.getContextPath())
+          .toString();
+      }
+      
       @Override
       public String getRequestUrl() {
         return _request.getRequestURL().toString();
