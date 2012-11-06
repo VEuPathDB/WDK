@@ -583,7 +583,7 @@ save_warning +
 		"</div>";
         var copy = "<a title='Create a copy of the strategy.' class='copy_strat_link'" +
                    " href='javascript:void(0)' onclick=\"copyStrategy('" + id + "')\">" +
-                   "<b style='font-size:120%'>Copy</b></a>";
+                   "<b style='font-size:120%'>Duplicate</b></a>";
 
 var rename = "<a id='rename_" + strat.frontId + "' href='javascript:void(0)' title='Click to rename.'  onclick=\"showUpdateDialog(this, false)\"><b style='font-size:120%'>Rename</b></a>";
 
