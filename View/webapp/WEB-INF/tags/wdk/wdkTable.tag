@@ -79,7 +79,7 @@
           <c:set var="attributeValue" value="${rColEntry.value}"/>
           <c:if test="${attributeValue.attributeField.internal == false}">
             <c:set var="j" value="${j+1}"/>
-            <imp:wdkAttribute attributeValue="${attributeValue}" truncate="true" />
+            <imp:wdkAttribute attributeValue="${attributeValue}" truncate="false" />
           </c:if>
         </c:forEach>
 
