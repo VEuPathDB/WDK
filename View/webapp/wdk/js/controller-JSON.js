@@ -768,6 +768,7 @@ function copyStrategy(stratId, fromHist){
 function saveOrRenameStrategy(strategy, checkName, save, fromHist, form) {
   return $.ajax({
     url: "renameStrategy.do",
+    type: "POST",
     dataType: "json",
     data: {
       strategy: strategy.backId,
