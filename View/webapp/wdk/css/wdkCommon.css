@@ -1077,7 +1077,14 @@ color:darkred;font-style:italic;font-size:95%;
      = jQuery 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
-.ui-tabs .ui-widget-header, .dataTables_wrapper .ui-widget-header { 
+.ui-tabs .ui-widget-header {
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+}
+
+.dataTables_wrapper .ui-widget-header { 
 	/*padding:0;*/
 	background:none;
 	border:0; 
