@@ -1,0 +1,87 @@
+<?xml version="1.0" ?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+  <start>
+    <element name="sanityModel">
+      <oneOrMore>
+        <choice>
+          <ref name="sanityQuery" />
+          <ref name="sanityRecord" />
+          <ref name="sanityQuestion" />
+          <ref name="sanityXmlQuestion" />
+		  <element name="import">
+		      <attribute name="file"/>
+		  </element>
+        </choice>
+      </oneOrMore>
+    </element>
+  </start>
+
+  <!-- define inclusion/exclusion attributes -->
+  <define name="IncludeExclude">
+    <optional>
+      <attribute name="includeProjects" />
+    </optional>
+    <optional>
+      <attribute name="excludeProjects" />
+    </optional>
+  </define>  
+
+  <define name="sanityQuery">
+    <element name="sanityQuery">
+      <attribute name="ref" />
+      <attribute name="minOutputLength" />
+      <attribute name="maxOutputLength" />
+      <ref name="IncludeExclude"/>
+      <zeroOrMore>
+        <element name="sanityParam">
+          <attribute name="name" />
+          <attribute name="value" />
+        </element>
+      </zeroOrMore>
+     </element>
+  </define>
+
+  <define name="sanityQuestion">
+    <element name="sanityQuestion">
+      <attribute name="ref" />
+      <attribute name="minOutputLength" />
+      <attribute name="maxOutputLength" />
+      <attribute name="pageStart" />
+      <attribute name="pageEnd" />
+      <ref name="IncludeExclude"/>
+      <zeroOrMore>
+        <element name="sanityParam">
+          <attribute name="name" />
+          <attribute name="value" />
+        </element>
+      </zeroOrMore>
+     </element>
+  </define>
+
+  <define name="sanityRecord">
+    <element name="sanityRecord">
+      <attribute name="ref" />
+      <attribute name="primaryKey" />
+      <optional>
+        <attribute name="projectId" />
+      </optional>
+      <ref name="IncludeExclude"/>
+    </element>
+    
+  </define>
+
+  <define name="sanityXmlQuestion">
+    <element name="sanityXmlQuestion">
+      <attribute name="ref" />
+      <attribute name="minOutputLength" />
+      <attribute name="maxOutputLength" />
+      <attribute name="pageStart" />
+      <attribute name="pageEnd" />
+      <zeroOrMore>
+        <attribute name="xmlData" />
+      </zeroOrMore>
+      <ref name="IncludeExclude"/>
+     </element>
+  </define>
+
+</grammar>
