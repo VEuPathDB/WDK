@@ -141,12 +141,14 @@ function createAutoComplete(obj, name) {
   }
 
   var odd = true;
-  var noMatch = "No item found";
+  var noMatch = "<i>No item found</i>";
+  var wildCard = "<i>Find matches using a wildcard search</i>";
+  var wildCardTest = /\*/;
   $("#" + name + "_display").autocomplete({ 
     source: function( request, response ){     
       var result = $.ui.autocomplete.filter(def, request.term);
       if (result.length == 0) {
-        result.push(noMatch);
+        result.push(wildCardTest.test(request.term) ? wildCard : noMatch);
       } else {
         var matcher = new RegExp("("+$.ui.autocomplete.escapeRegex(request.term)+")", "ig" );
         result = $.map(result, function(item){
@@ -159,10 +161,10 @@ function createAutoComplete(obj, name) {
     },
     minLength: 3,
     focus: function(event, ui) {
-      if(ui.item.value == noMatch) return false;
+      if(ui.item.value === noMatch || ui.item.value === wildCard) return false;
     },
     select: function(event, ui){
-      if(ui.item.value == noMatch) return false;
+      if(ui.item.value === noMatch || ui.item.value === wildCard) return false;
     }
   }).data( "autocomplete" )._renderItem = function( ul, item ) {
     // only change here was to replace .text() with .html()
