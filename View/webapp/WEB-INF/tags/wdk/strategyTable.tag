@@ -154,7 +154,7 @@
               </c:choose>
               </option>
             </c:if>
-            <option value="copyStrategy('${strategyId}', true);">Copy</option>
+            <option value="copyStrategy('${strategyId}', true);">Duplicate</option>
             <option value="${saveAction}">Save As</option>
             <option value="${shareAction}">Share</option>
       <!--      <option value="deleteStrategy(${strategyId}, true)">Delete</option> -->
