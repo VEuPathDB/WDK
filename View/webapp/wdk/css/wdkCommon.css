@@ -1152,5 +1152,10 @@ span.marker a:link, span.marker a:visited {
   color: #187A02;
 }
 
+.ui-widget-overlay {
+  background: #333;
+  opacity: 0.5;
+}
+
 /* THE END */
 
