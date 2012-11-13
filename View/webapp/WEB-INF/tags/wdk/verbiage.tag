@@ -9,11 +9,21 @@
 <c:set var="keyParts" value="${fn:split(key, '.')}"/>
 
 <c:if test="${fn:length(keyParts) == 3}">
+
     <c:set var="id" value="${keyParts[0]}.${keyParts[1]}"/>
     <c:set var="attr" value="${keyParts[2]}"/>
-    
-    <c:set var="wdkAnswer" value="${wdkModel.xmlQuestionSetsMap['XmlQuestions'].questionsMap['WdkVerbiage'].fullAnswer.recordInstanceMap[id]}"/>
-    <c:set var="siteAnswer" value="${wdkModel.xmlQuestionSetsMap['XmlQuestions'].questionsMap['SiteVerbiage'].fullAnswer.recordInstanceMap[id]}"/>
+
+    <c:set var="xmlQuestions" value="${wdkModel.xmlQuestionSetsMap['XmlQuestions']}"/>
+    <c:set var="siteVerbiage" value="${xmlQuestions.questionsMap['SiteVerbiage']}"/>
+    <c:set var="wdkVerbiage" value="${xmlQuestions.questionsMap['WdkVerbiage']}"/>
+
+    <c:if test="${siteVerbiage ne null}">
+      <c:set var="siteAnswer" value="${siteVerbiage.fullAnswer.recordInstanceMap[id]}"/>
+    </c:if>
+
+    <c:if test="${wdkVerbiage ne null}">
+      <c:set var="wdkAnswer" value="${wdkVerbiage.fullAnswer.recordInstanceMap[id]}"/>
+    </c:if>
 
     <c:choose>
       <c:when test="${siteAnswer ne null}">
@@ -23,4 +33,5 @@
         <c:out value="${wdkAnswer.attributesMap[attr]}" default="" escapeXml="false" />
       </c:otherwise>
     </c:choose>
+
 </c:if>
