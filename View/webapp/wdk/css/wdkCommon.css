@@ -872,6 +872,14 @@ tr.rowLight td {
     border-right: black dotted thin;
 }
 
+table.dataTable tr.even {
+    background-color: #FFFFFF;
+}
+
+table.dataTable tr.odd {
+    background-color: #DDDDDD;
+}
+
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =RECORD PAGE section titles (top bottom border look)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
