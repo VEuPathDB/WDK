@@ -6,7 +6,7 @@ var Utilities = {
 	// Credit to Jason Bunting and Alex Nazarov for this helpful function
 	// See: http://stackoverflow.com/questions/359788/how-to-execute-a-javascript-function-when-i-have-its-name-as-a-string
 	executeFunctionByName : function(functionName, ns, context /*, args... */) {
-	    var args = Array.prototype.slice.call(arguments, 2);
+	    var args = Array.prototype.slice.call(arguments, 3);
 	    var namespaces = functionName.split(".");
 	    var func = namespaces.pop();
 	    for (var i = 0; i < namespaces.length; i++) {
