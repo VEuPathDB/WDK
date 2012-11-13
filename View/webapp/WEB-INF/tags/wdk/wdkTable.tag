@@ -54,6 +54,7 @@
 </c:choose>
 
 <c:if test="${suppressColumnHeaders == null || !suppressColumnHeaders}">
+  <thead>
     <c:set var="h" value="0"/>
     <tr class="headerRow">
         <c:forEach var="hCol" items="${tbl.tableField.attributeFields}">
@@ -63,8 +64,10 @@
            </c:if>
         </c:forEach>
     </tr>
+  </thead>
 </c:if>
 
+  <tbody>
     <%-- table rows --%>
     <c:set var="i" value="0"/>
     <c:forEach var="row" items="${tbl}">
@@ -86,6 +89,7 @@
         </tr>
         <c:set var="i" value="${i +  1}"/>
     </c:forEach>
+  </tbody>
 </table>
 
 <c:if test="${i == 0}">
