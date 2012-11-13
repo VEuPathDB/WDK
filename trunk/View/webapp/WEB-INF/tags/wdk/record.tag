@@ -69,7 +69,10 @@
         .tabs({
             selected : currentTab,
             cache: true,
-            spinner: '<img style="height:14px; margin-left:4px" src="wdk/images/loading.gif"/>'
+            spinner: '<img style="height:14px; margin-left:4px" src="wdk/images/loading.gif"/>',
+            load: function(event, ui) {
+              wdkEvent.publish("recordload", ui.panel);
+            }
         });
   });
 </script>

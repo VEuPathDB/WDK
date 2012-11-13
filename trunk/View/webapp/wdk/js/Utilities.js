@@ -5,37 +5,40 @@ var Utilities = {
 
 	// Credit to Jason Bunting and Alex Nazarov for this helpful function
 	// See: http://stackoverflow.com/questions/359788/how-to-execute-a-javascript-function-when-i-have-its-name-as-a-string
-	executeFunctionByName : function(functionName, context /*, args... */) {
+	executeFunctionByName : function(functionName, ns, context /*, args... */) {
 	    var args = Array.prototype.slice.call(arguments, 2);
 	    var namespaces = functionName.split(".");
 	    var func = namespaces.pop();
 	    for (var i = 0; i < namespaces.length; i++) {
-	        context = context[namespaces[i]];
-          if (typeof context === "undefined") {
+	        ns = ns[namespaces[i]];
+          if (typeof ns === "undefined") {
             return false;
           }
 	    }
-      if (context[func] instanceof Function) {
-        return context[func].apply(context, args);
+      if (ns[func] instanceof Function && context instanceof Object) {
+        return ns[func].apply(context, args);
       } else {
         return false;
       }
 	},
 	
 	executeOnloadFunctions : function(selector) {
-		jQuery(selector + " .onload-function").each(function(){
-			var functionName=jQuery(this).attr("data-function");
-			var functionArgStr=jQuery(this).attr("data-arguments");
-			if (functionArgStr === "") {
-				// no arguments
-				Utilities.executeFunctionByName(functionName, window);
-			}
-			else {
-				var functionArg = jQuery.parseJSON(functionArgStr);
-				Utilities.executeFunctionByName(functionName, window, functionArg);
-			}
+		jQuery(selector).find(".onload-function").each(function(){
+      var $this = jQuery(this),
+          data = $this.data(),
+          // name of function to execute, with namespace if necessary
+			    functionName = data["function"],
+          // arguments to provide
+			    functionArg = data["arguments"],
+          // determine of function has already been invoked
+          invoked = data["invoked"];
+      if (invoked) return;
+      // call function using window as root namespace, and
+      // provide 'this' as context for function call.
+      // This can be useful for jQuery function calls (e.g., $.fn.dataTable)
+      Utilities.executeFunctionByName(functionName, window, this, functionArg);
 			// remove element so it is not executed again
-			jQuery(this).remove();
+			$this.data("invoked", true);
 		});
 	}
 };
