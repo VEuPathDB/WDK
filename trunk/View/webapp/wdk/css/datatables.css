@@ -12,31 +12,31 @@
     padding-left: 10px;
 }
 
-table.datatables th, table.datatables td {
+table.dataTable th, table.dataTable td {
 /*  border-left: 1px dotted #CCCCCC; */
 /*  border-right: 1px dotted #CCCCCC; */
 }
-table.datatables th {
+table.dataTable th {
 	font-weight:bold;
 }
 
-table.datatables thead th.sortable {
+table.dataTable thead th.sortable {
   cursor: pointer;
 }
-table.datatables thead th div.DataTables_sort_wrapper {
+table.dataTable thead th div.DataTables_sort_wrapper {
   position: relative;
   padding-right: 20px;
   padding-right: 20px;
 }
-table.datatables thead th div.DataTables_sort_wrapper span {
+table.dataTable thead th div.DataTables_sort_wrapper span {
   position: absolute;
   top: 50%;
   margin-top: -8px;
   right: 0;
 }
-table.datatables td { border-bottom: 1px dotted #CCCCCC; }
-table.datatables tr.odd { background-color: #EEEEFF; }
-table.datatables tr.even { background-color: #FFFFFF; }
+table.dataTable td { border-bottom: 1px dotted #CCCCCC; }
+table.dataTable tr.odd { background-color: #EEEEFF; }
+table.dataTable tr.even { background-color: #FFFFFF; }
 
 
 
