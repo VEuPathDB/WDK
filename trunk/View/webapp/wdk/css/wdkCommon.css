@@ -198,10 +198,7 @@ td {
   padding-right: 7px;
   background-image: none;
 }
-#nav-top .socmedia-link {
-  position: relative;
-  bottom: 3px;
-}
+
 #nav-top .nav-last {
   padding-right:5px
 }
@@ -957,7 +954,6 @@ img.basket {
 	clear: both;
 	font-size:85%;
 }
-
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       =  note on new releases
