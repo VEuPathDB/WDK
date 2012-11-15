@@ -4,6 +4,7 @@
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
+<!-- initially websiteRootCategories-->
 <c:set var="category" value="${requestScope.searchCategoryNode}"/>
 
 
