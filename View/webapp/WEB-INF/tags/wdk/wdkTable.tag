@@ -24,6 +24,11 @@
 <%@ attribute name="suppressDisplayName"
               description="Should the display name be skipped?"
 %>
+
+<%@ attribute name="dataTable"
+              description="Should the table use dataTables?"
+              type="java.lang.Boolean"
+%>
 <c:catch var="tableError">
 <c:set value="${requestScope.wdkRecord}" var="wdkRecord"/>
 <c:set value="${wdkRecord.tables[tblName]}" var="tbl"/>
@@ -31,6 +36,13 @@
   <c:set value="${tbl.tableField.displayName}" var="tableDisplayName"/>
 </c:if>
 <c:set var="noData" value="false"/>
+
+<c:set var="tableClassName">
+  <c:choose>
+    <c:when test="${dataTable eq true}">recordTable wdk-data-table</c:when> 
+    <c:otherwise>recordTable</c:otherwise> 
+  </c:choose>
+</c:set>
 
 
 <c:set var="tblContent">
@@ -46,10 +58,10 @@
 <c:set var="projectId" value="${pkValues['project_id']}" />
 <c:set var="id" value="${pkValues['source_id']}" />
 
-	<table class="recordTable" title="Click to go to the comments page"  style="cursor:pointer" onclick="window.location='<c:url value="/showComment.do?projectId=${projectId}&stableId=${id}&commentTargetId=gene"/>';">
+	<table class="${tableClassName}" title="Click to go to the comments page"  style="cursor:pointer" onclick="window.location='<c:url value="/showComment.do?projectId=${projectId}&stableId=${id}&commentTargetId=gene"/>';">
 </c:when>
 <c:otherwise>
-	<table class="recordTable">
+	<table class="${tableClassName}">
 </c:otherwise>
 </c:choose>
 

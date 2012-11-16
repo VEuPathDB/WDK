@@ -7,8 +7,8 @@ jQuery(document).ready(function($) {
     
   // set up WDK global object
   if (window.wdk == undefined) window.wdk = new WDK();
-    wdk.registerToggle();
-    wdk.registerTable();
+  wdk.registerToggle();
+  wdk.registerTable();
 
   // call all onload functions throughout the page
   Utilities.executeOnloadFunctions("body");
@@ -16,34 +16,11 @@ jQuery(document).ready(function($) {
   // call all onload functions after ajax calls
   $("body").ajaxStop(function() {
     Utilities.executeOnloadFunctions("body");
+    wdk.registerTable();
   });
   
   // convert all buttons to jQuery buttons
   $(".button").button();
-
-  $.fn.wdkDataTable = function(opts) {
-    return this.each(function() {
-      var $this = $(this),
-          sorting = $this.data("sorting"),
-          dataTableOpts = {
-            "sScrollY": "500px",
-            "bScrollCollapse": true,
-            "bPaginate": false,
-            "bJQueryUI": true
-          };
-
-      if ($this.length === 0) return;
-
-      if (sorting) {
-        dataTableOpts["aoColumns"] = $.map(sorting, function(o) {
-          return o ? [null] : {"bSortable" : false };
-        });
-      }
-
-      // allow options to be passed like in the default dataTable function
-      $this.dataTable($.extend(dataTableOpts, opts));
-    });
-  };
 
 });
 
@@ -267,6 +244,9 @@ WDK.prototype.registerTable = function() {
     jQuery(".wdk-table.datatables").dataTable({
         "bJQueryUI": true
     });
+
+    // also register other tables
+    jQuery("table.wdk-data-table").not(".dataTable").wdkDataTable();
 }
 
 
@@ -368,4 +348,29 @@ function makeSelection(state) {
         }
     }
 }
+
+// custom dataTables plugin
+jQuery.fn.wdkDataTable = function(opts) {
+  return this.each(function() {
+    var $this = $(this),
+        sorting = $this.data("sorting"),
+        dataTableOpts = {
+          "sScrollY": "600px",
+          "bScrollCollapse": true,
+          "bPaginate": false,
+          "bJQueryUI": true
+        };
+
+    if ($this.length === 0) return;
+
+    if (sorting) {
+      dataTableOpts["aoColumns"] = $.map(sorting, function(o) {
+        return o ? [null] : {"bSortable" : false };
+      });
+    }
+
+    // allow options to be passed like in the default dataTable function
+    $this.dataTable($.extend(dataTableOpts, opts));
+  });
+};
 
