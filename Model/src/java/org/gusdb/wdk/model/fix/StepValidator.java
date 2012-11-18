@@ -271,7 +271,7 @@ public class StepValidator extends BaseCLI {
         String tempTable = "wdk_part_steps";
    
         try {
-        String sql = "CREATE TABLE " + tempTable + " NOLOGGING AS "
+        String sql = "CREATE TABLE " + tempTable + " AS "
                 + " (SELECT s.step_id, s.user_id, s.display_id, "
                 + "         s.left_child_id, s.right_child_id, s.is_valid "
                 + "  FROM " + step + " s, " + answer + " a                 "
