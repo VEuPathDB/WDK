@@ -271,7 +271,7 @@ public class StepValidator extends BaseCLI {
         String tempTable = "wdk_part_steps";
    
         try {
-        String sql = "CREATE TABLE " + tempTable + " NOLOGGING AS "
+        String sql = "CREATE TABLE " + tempTable + " AS "
                 + " (SELECT s.step_id, s.user_id, s.display_id, "
                 + "         s.left_child_id, s.right_child_id, s.is_valid "
                 + "  FROM " + step + " s, " + answer + " a                 "
@@ -298,6 +298,7 @@ public class StepValidator extends BaseCLI {
                 + "  )";
 
         // <ADD-AG 042911>
+        logger.info("\n\nWARNING: this final SQL might take 3 hours when using all projects; please let it run, killing the job would break replication.\n\n");
         executeByBatch(wdkModel, source, sql,
                 "STEP:wdk-invalidate-parent-step", null, null);
 
