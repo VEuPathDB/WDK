@@ -298,6 +298,7 @@ public class StepValidator extends BaseCLI {
                 + "  )";
 
         // <ADD-AG 042911>
+	logger.info("\n\nWARNING: this final SQL might take 3 hours when using all projects; please let it run, killing the job would break replication.\n\n");
         executeByBatch(wdkModel, source, sql,
                 "STEP:wdk-invalidate-parent-step", null, null);
 
