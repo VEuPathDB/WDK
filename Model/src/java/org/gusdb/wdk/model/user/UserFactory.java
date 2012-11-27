@@ -327,8 +327,13 @@ public class UserFactory {
     }
     
     private User authenticate(String email, String password) throws WdkModelException {
-        String[] fields = new String[]{
+				/*  String[] fields = new String[]{
         		"email", email.trim().toLowerCase(),
+        		"passwd", encrypt(password)
+        };
+				*/
+				String[] fields = new String[]{
+        		"email", email.trim(),
         		"passwd", encrypt(password)
         };
         return getUserByFields(fields, "wdk-user-login");
