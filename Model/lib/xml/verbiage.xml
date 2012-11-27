@@ -15,25 +15,39 @@
             <![CDATA[
 
 <h2>Notice for IE users</h2>
-<p>For the best experience, we recommend that you <a href="http://www.google.com/chromeframe" target="_blank">download a new Chrome plugin</a> that will make your browser work with our website. 
-<ul class="cirbulletlist">
-<li>It is very easy and fast</li> 
-<li>You do not need to be an administrator.</li>
-<li>You might need to clean the cache and restart IE to make it work</li>
-</ul>
+
+<p>For the best experience, we recommend that you
+  <a href="http://www.google.com/chromeframe" target="_blank">download a new Chrome plugin</a>
+  that will make your browser work with our website. 
+  <ul class="cirbulletlist">
+    <li>It is very easy and fast</li> 
+    <li>You do not need to be an administrator.</li>
+    <li>You might need to clean the cache and restart IE to make it work</li>
+  </ul>
 </p>
 
-<p>Even better, when possible, we recommend that you download one of the <span style="font-size:120%;font-weight:bold">supported browsers</span>, listed below:
-<ul id='supported-browsers'>
-<li class='browser-link'><a href='http://www.mozilla.com/firefox/'>Firefox</a></li>
-<li class='browser-link'><a href='http://www.apple.com/safari/'>Safari</a></li>
-<li class='browser-link'><a href='http://www.google.com/chrome/'>Chrome</a></li>
-</ul>
+<p>Even better, when possible, we recommend that you download one of the
+  <span style="font-size:120%;font-weight:bold">supported browsers</span>, listed below:
+  <ul id='supported-browsers'>
+    <li class='browser-link'><a href='http://www.mozilla.com/firefox/'>Firefox</a></li>
+    <li class='browser-link'><a href='http://www.apple.com/safari/'>Safari</a></li>
+    <li class='browser-link'><a href='http://www.google.com/chrome/'>Chrome</a></li>
+  </ul>
 </p>
-<p>If you are unable or not allowed to upgrade your browser, please <a href='mailto:help@eupathdb.org'>let us know</a>.</p>
-<p>To continue using this site with your current browser, click 'Ignore.'</p>
-<input type='submit' value='Ignore' onclick="jQuery.cookie('api-unsupported',true,{path:'/'});jQuery.unblockUI();"/>
 
+<p>If you are unable or not allowed to upgrade your browser, please
+  <a href='mailto:help@eupathdb.org'>let us know</a>.</p>
+
+<br/>
+<p><em><strong>Note:</strong> some tables do not render correctly in IE 9.
+  If a table does not appear correctly, try clicking on the "compatibility view"
+  button in your location bar.</em></p>
+
+<div style="text-align:center;">
+  <a class="button close-dialog-IE-warning"
+    onclick="jQuery.cookie('api-unsupported', true, {path:'/'});">
+    Continue using this site with your current browser</a>
+</div>
 
             ]]>
         </attribute>
