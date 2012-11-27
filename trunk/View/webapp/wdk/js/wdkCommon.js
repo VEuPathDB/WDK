@@ -286,11 +286,17 @@ jQuery(document).ready(function(jQuery) {
   jQuery("[id^='wdk-dialog-']").dialog(dialogOpts);
   
   // connect dialogs
-  jQuery("body").on("click", "[class^='open-dialog-']", function(e) {
+  jQuery("body").on("click", "[class*='open-dialog-']", function(e) {
     e.preventDefault();
-    var match = this.className.match(/^open-dialog-(\w+-\w+)$/);
+    var match = this.className.match(/\bopen-dialog-(\w+-\w+)\b/);
     if (match) {
       jQuery("#wdk-dialog-" + match[1]).dialog("open");
+    }
+  }).on("click", "[class*='close-dialog-']", function(e) {
+    e.preventDefault();
+    var match = this.className.match(/\bclose-dialog-(\w+-\w+)\b/);
+    if (match) {
+      jQuery("#wdk-dialog-" + match[1]).dialog("close");
     }
   });
 
