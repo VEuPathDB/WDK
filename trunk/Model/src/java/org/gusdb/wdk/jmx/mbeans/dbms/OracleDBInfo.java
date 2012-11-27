@@ -58,6 +58,7 @@ public class OracleDBInfo extends AbstractDBInfo {
     sql.append(" host host,         ");
     sql.append(" created created    ");
     sql.append(" from all_db_links  ");
+    sql.append(" order by db_link   ");
     
     return sql.toString();
   }
