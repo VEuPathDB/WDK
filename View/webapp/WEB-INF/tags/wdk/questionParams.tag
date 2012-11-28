@@ -154,7 +154,38 @@
         </c:choose>
         
         </c:forEach> <%-- end of forEach params --%>
-        
+
+        <%-- weight param --%>
+        <c:set var="weight" value="${param.weight}" />
+        <c:if test="${weight == null || weight == ''}">
+          <c:set var="weight" value="${10}" />
+        </c:if>
+
+        <tr>
+          <td width="30%" align="right" style="vertical-align:top">
+              <span style="font-weight:bold">Weight</span>
+              <img class="help-link" style="cursor:pointer"
+              title="Optionally give this search a &quot;weight&quot; (for example 10, 200, -50, integer only). In a search strategy, unions and intersects will sum the weights, giving higher scores to items found in multiple searches."
+              src="${pageContext.request.contextPath}/wdk/images/question.png" />
+          </td>
+          <td align="left" valign="top">
+            <input type="text" name="weight" maxlength="9" value="${weight}"/>
+          </td>
+        </tr>
+
+        <%-- custom name param --%>
+        <tr>
+          <td width="30%" align="right" style="vertical-align:top">
+              <span style="font-weight:bold">Search name</span>
+              <img class="help-link" style="cursor:pointer"
+              title="Give this search a descriptive name."
+              src="${pageContext.request.contextPath}/wdk/images/question.png" />
+          </td>
+          <td align="left" valign="top">
+            <input type="text" name="customName" maxlength="9" value="${customName}"/>
+          </td>
+        </tr>
+
         </table>
     
         </div> <%-- end of group-detail div --%>
@@ -162,10 +193,11 @@
 
 </c:forEach> <%-- end of foreach on paramGroups --%>
 
-<imp:weight wdkModel="${wdkModel}" wdkQuestion="${wdkQuestion}" />
+<%-- <imp:weight wdkModel="${wdkModel}" wdkQuestion="${wdkQuestion}" /> --%>
 
 
 <%-- set the custom name --%>
+<%--
 <div name="All_weighting" class="param-group" type="ShowHide">
 	  <c:set var="display" value="none"/>
   <c:set var="image" value="plus.gif"/>
@@ -180,3 +212,4 @@
   </div>
 </div>
 
+--%>
