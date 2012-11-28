@@ -182,7 +182,7 @@ sub validate {
 	  push (@errors,"$project : $org : $type : type name") if ($type != /\w+/);
 
 	  push (@errors, "$project : $org : $type : detailTable") if ( $orgHsh->{$org}->{$type}->{'table'} !~ /\w+\.*/);
-	  push (@errors, "$project : $org : $type : fields") if ( $orgHsh->{$org}->{$type}->{'fields'} !~ /\w+\,\.*/);
+	  push (@errors, "$project : $org : $type : fields") if ( $orgHsh->{$org}->{$type}->{'fields'} !~ /\w+\,*/);
 
 	  push (@errors, "$project : $org : $type : otherSql") if (defined($orgHsh->{$org}->{$type}->{'otherSql'}) && $orgHsh->{$org}->{$type}->{'otherSql'} !~ /\w*/);
 
