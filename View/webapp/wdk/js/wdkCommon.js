@@ -237,6 +237,28 @@ WDK.prototype.registerToggle = function() {
             active: active
         });
     });
+
+    // register expand/collapse links
+    // data-container is a selector for a container element
+    // data-show is a boolean to show or hide toggles
+    jQuery(".wdk-toggle-group").click(function(e) {
+      var $this = jQuery(this);
+      var container = $this.closest($this.data("container"));
+      var $toggles = container.find(".wdk-toggle");
+
+      if ($this.data("show")) {
+        $toggles.each(function() {
+          var $toggle = jQuery(this);
+          if ($toggle.accordion("option", "active") !== 0) {
+            $toggle.accordion("option", "active", 0);
+          }
+        });
+      } else {
+        $toggles.accordion("option", "active", false);
+      }
+
+      e.preventDefault();
+    });
 }
 
 WDK.prototype.registerTable = function() {
