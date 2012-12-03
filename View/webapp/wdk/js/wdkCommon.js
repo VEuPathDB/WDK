@@ -383,10 +383,13 @@ jQuery.fn.wdkDataTable = function(opts) {
     var $this = $(this),
         sorting = $this.data("sorting"),
         dataTableOpts = {
-          "sScrollY": "600px",
-          "bScrollCollapse": true,
-          "bPaginate": false,
-          "bJQueryUI": true
+          sScrollY: "600px",
+          bScrollCollapse: true,
+          bPaginate: false,
+          bJQueryUI: true,
+          oLanguage: {
+            sSearch: "Filter:"
+          }
         };
 
     if ($this.length === 0) return;
