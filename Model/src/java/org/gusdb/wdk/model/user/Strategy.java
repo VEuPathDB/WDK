@@ -405,6 +405,10 @@ public class Strategy {
         JSONObject jsStrategy = getJSONContent();
         // exclude version, since it will be updated whenever a strategy is opened.
         jsStrategy.remove("version");
+
+        // remove valid flag since it might be changed on loading
+        jsStrategy.remove("valid");
+
         return Utilities.encrypt(jsStrategy.toString());
     }
 
@@ -421,9 +425,9 @@ public class Strategy {
         jsStrategy.put("resultSize", getEstimateSize());
         jsStrategy.put("version", getVersion());
         jsStrategy.put("type", getType());
-        jsStrategy.put("latestStep", getLatestStep().getJSONContent(
-                this.displayId));
-
+ 
+        JSONObject stepContent = getLatestStep().getJSONContent(this.displayId);
+        jsStrategy.put("latestStep", stepContent);
         return jsStrategy;
     }
 
