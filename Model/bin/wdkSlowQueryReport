@@ -1,11 +1,14 @@
 #!/usr/bin/perl
 
+use lib "$ENV{GUS_HOME}/lib/perl";
+
 use strict;
 use Getopt::Long;
 use Time::Local;
 use FgpUtil::Log::SlowQueryReport;
 
-my ($threshold, $genepage, $notgenepage, $time_filter, $sort_column, $plotOutputFile, $logTailSize, $logDeathImmunity, $debug);
+usage() unless scalar(@ARGV);
+my ($threshold, $genepage, $notgenepage, $time_filter, $sort_column, $plotOutputFile, $logTailSize, $logDeathImmunity, $debug, $tabfile);
 
 $sort_column=2;
 &GetOptions('s=s' => \$threshold,
@@ -17,6 +20,7 @@ $sort_column=2;
 	    'l=s' => \$logTailSize,
 	    'i' => \$logDeathImmunity,
             'd' => \$debug,
+            'f' => \$tabfile,
 	   );
 
 
@@ -48,7 +52,7 @@ my $parseLogRecord = sub {
   return ($reject, $timestamp, $seconds, $name);
 };
 
-FgpUtil::Log::SlowQueryReport::makeReport($parseLogRecord, $time_filter, $plotOutputFile, $sort_column, $logTailSize, $logDeathImmunity, $threshold, $debug);
+FgpUtil::Log::SlowQueryReport::makeReport($parseLogRecord, $time_filter, $plotOutputFile, $sort_column, $logTailSize, $logDeathImmunity, $threshold, $debug, $tabfile);
 
 sub usage {
   print STDERR "
