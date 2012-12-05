@@ -5,6 +5,10 @@
     xmlns:fn="http://java.sun.com/jsp/jstl/functions"
     xmlns:imp="urn:jsptagdir:/WEB-INF/tags/imp">
 
+  <jsp:directive.attribute name="title" required="false"
+      description="Value to appear as the login pop-up's title"/>
+
+  <c:set var="title" value="${empty title ? 'Account Login' : title}"/>
   <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
   <c:set var="isLoggedIn" value="${wdkUser ne null and wdkUser.guest ne true}"/>
   <c:set var="userName" value="${wdkUser.firstName} ${wdkUser.lastName}"/>
@@ -43,7 +47,7 @@
 	</script>
 	
 	<script id="user-login-form" type="text/x-handlebars-template">
-    <div id="login" title="EuPathDB Account Login">
+    <div id="login" title="${title}">
       <imp:loginForm showError="false" showCancel="true"/>
     </div>
 	</script>
