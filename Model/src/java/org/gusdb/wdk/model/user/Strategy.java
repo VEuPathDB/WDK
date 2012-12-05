@@ -405,6 +405,10 @@ public class Strategy {
         JSONObject jsStrategy = getJSONContent();
         // exclude version, since it will be updated whenever a strategy is opened.
         jsStrategy.remove("version");
+
+        // exclude valid flag since it might be changed on loading
+        jsStrategy.remove("valid");
+        
         return Utilities.encrypt(jsStrategy.toString());
     }
 
