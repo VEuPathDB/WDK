@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -18,6 +19,7 @@ import org.gusdb.wdk.model.SearchCategory;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dbms.ConnectionContainer;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
@@ -32,7 +34,7 @@ import org.gusdb.wdk.model.xml.XmlRecordClassSet;
  * A wrapper on a {@link WdkModel} that provides simplified access for
  * consumption by a view
  */
-public class WdkModelBean {
+public class WdkModelBean implements ConnectionContainer {
 
     private static final Logger logger = Logger.getLogger(WdkModelBean.class.getName());
 
@@ -341,5 +343,11 @@ public class WdkModelBean {
             logger.error(ex);
             return null;
         }
+    }
+
+    @Override
+    public Connection getConnection(String key) 
+        throws WdkModelException, SQLException {
+      return wdkModel.getConnection(key);
     }
 }

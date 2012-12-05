@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -15,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.dbms.ConnectionContainer;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.query.BooleanQuery;
@@ -39,9 +41,12 @@ import org.json.JSONException;
  * @author
  * @modified Jan 6, 2006 - Jerric Add a stepFactory in the model
  */
-public class WdkModel {
+public class WdkModel implements ConnectionContainer {
 
-    public static final String WDK_VERSION = "2.2.0";
+  public static final String WDK_VERSION = "2.7.0";
+
+  public static final String CONNECTION_APP = "AppDB";
+  public static final String CONNECTION_USER = "UserDB";
 
     private static final Logger logger = Logger.getLogger(WdkModel.class);
 
@@ -76,7 +81,7 @@ public class WdkModel {
     private ModelConfig modelConfig;
     private String projectId;
 
-    private DBPlatform platform;
+    private DBPlatform queryPlatform;
     private DBPlatform userPlatform;
 
     private List<QuerySet> querySetList = new ArrayList<QuerySet>();
@@ -448,8 +453,8 @@ public class WdkModel {
         // initialize authentication factory
         // set the max active as half of the model's configuration
 
-        platform = (DBPlatform) Class.forName(appDB.getPlatformClass()).newInstance();
-        platform.initialize(this, "APP", appDB);
+        queryPlatform = (DBPlatform) Class.forName(appDB.getPlatformClass()).newInstance();
+        queryPlatform.initialize(this, "APP", appDB);
         userPlatform = (DBPlatform) Class.forName(userDB.getPlatformClass()).newInstance();
         userPlatform.initialize(this, "USER", userDB);
 
@@ -503,7 +508,7 @@ public class WdkModel {
     }
 
     public DBPlatform getQueryPlatform() {
-        return platform;
+        return queryPlatform;
     }
 
     // Function Added by Cary P. Feb 7, 2008
@@ -1118,5 +1123,17 @@ public class WdkModel {
 
     public void setGusHome(String gusHome) {
       this.gusHome = gusHome;
+    }
+
+    @Override
+    public Connection getConnection(String key) 
+        throws WdkModelException, SQLException {
+      if (key.equals(CONNECTION_APP)) {
+        return queryPlatform.getDataSource().getConnection();
+      } else if (key.equals(CONNECTION_USER)) {
+        return userPlatform.getDataSource().getConnection();
+      } else {  // unknown 
+        throw new WdkModelException("Invalid DB Connection key.");
+      }
     }
 }
