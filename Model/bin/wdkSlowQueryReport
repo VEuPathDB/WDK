@@ -20,7 +20,7 @@ $sort_column=2;
 	    'l=s' => \$logTailSize,
 	    'i' => \$logDeathImmunity,
             'd' => \$debug,
-            'f' => \$tabfile,
+            'f=s' => \$tabfile,
 	   );
 
 
@@ -61,7 +61,7 @@ Print a report summarizing the gbrowse slow query logs.
 
 Takes one or more logs on standard input.
 
-usage:  gbrowseSlowQueryReport [-s secs] [-g] [-n] [-t starttime[,endtime]] [-c colnum] [-p plotOutputFile] -d
+usage:  wdkSlowQueryReport [-s secs] [-g] [-n] [-t starttime[,endtime]] [-c colnum] [-p plotOutputFile] [-f tabOutputFile] [-d] [-i]
 
 where:
   -s:  slowness threshold in seconds.  run times over secs are reported in Slow columns
@@ -73,6 +73,8 @@ where:
         to wdkSlowQueryPlot.  Used to visualize the query durations over time.
   -l:  log tail size -- number of records of access log to analyze for
   -d:  print debugging info
+  -i:  immunity from log death: don't die if the log file doesn't cover the period of interest
+  -f:  optional file name to write the report in tab-delimited format (for import to excel)
 
 ";
   exit(1);
