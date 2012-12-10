@@ -21,11 +21,13 @@ public class ModelConfig extends AbstractConfig {
   
   protected void init() {
     org.gusdb.wdk.model.ModelConfig       modelConfig       = wdkModel.getModelConfig();
+    org.gusdb.wdk.model.QueryMonitor      queryMonitor      = modelConfig.getQueryMonitor();
     org.gusdb.wdk.model.ModelConfigUserDB modelConfigUserDB = modelConfig.getUserDB();
     org.gusdb.wdk.model.ModelConfigAppDB  modelConfigAppDB  = modelConfig.getAppDB();
 
     
     setValuesFromGetters("global", modelConfig);
+    setValuesFromGetters("queryMonitor", queryMonitor);
     setValuesFromGetters("userDb", modelConfigUserDB);
     setValuesFromGetters("appDb",  modelConfigAppDB);
   }
