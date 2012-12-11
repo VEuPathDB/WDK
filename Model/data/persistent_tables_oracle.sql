@@ -82,6 +82,7 @@ CREATE TABLE wdkengine.answers
   params CLOB,
   result_message CLOB,
   prev_answer_id NUMBER(12),
+  is_valid NUMBER(1),
   migration NUMBER(12),
   CONSTRAINT "answers_pk" PRIMARY KEY (answer_id),
   CONSTRAINT "answers_uq01" UNIQUE (project_id, question_name, answer_checksum)
