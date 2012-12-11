@@ -63,7 +63,7 @@
                 maxItems="${wdk_paging_total}"
                 url="${wdk_paging_url}"
                 maxPageItems="${wdk_paging_pageSize}"
-                export="currentPageNumber=pageNumber">
+                export="offset,currentPageNumber=pageNumber">
         <c:forEach var="paramName" items="${wdk_paging_params}">
           <pg:param name="${paramName}" id="pager" />
         </c:forEach>
@@ -77,7 +77,7 @@
  <!--  debuging line:       <pg:page> ${pageNumber} </pg:page> -->
     
         <%--------- PAGING TOP BAR ----------%>
-        <c:url var="commandUrl" value="/processSummaryView.do?step=${step.stepId}&view=${wdkView.name}" />
+        <c:url var="commandUrl" value="/processSummaryView.do?step=${step.stepId}&view=${wdkView.name}&pager.offset=${offset}" />
         <table  width="100%">
           <tr class="subheaderrow">
             <th style="text-align: left;white-space:nowrap;"> 

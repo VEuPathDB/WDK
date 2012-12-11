@@ -33,6 +33,7 @@ public class ProcessSummaryViewAction extends Action {
     private static final String PARAM_COMMAND = "command";
     private static final String PARAM_ATTRIBUTE = "attribute";
     private static final String PARAM_SORT_ORDER = "sortOrder";
+    private static final String PARAM_PAGER_OFFSET = "pager.offset";
 
     private static final String FORWARD_SHOW_SUMMARY_VIEW = "show-summary-view";
 
@@ -51,6 +52,7 @@ public class ProcessSummaryViewAction extends Action {
 	        String command = request.getParameter(PARAM_COMMAND);
 	        String attributeName = request.getParameter(PARAM_ATTRIBUTE);
 	        String sortingOrder = request.getParameter(PARAM_SORT_ORDER);
+          String pagerOffset = request.getParameter(PARAM_PAGER_OFFSET);
 	
 	        if (stepId == null || stepId.length() == 0)
 	            throw new WdkModelException("Step is required!");
@@ -188,6 +190,9 @@ public class ProcessSummaryViewAction extends Action {
 	            url.append(showSummaryView.getPath());
 	            url.append("?step=").append(stepId);
 	            url.append("&view=").append(view);
+              if (pagerOffset != null && pagerOffset.length() != 0) {
+                url.append("&pager.offset=").append(pagerOffset);
+              }
 	        } else {
 	            ActionForward showBasket = mapping.findForward(CConstants.PQ_SHOW_BASKET_MAPKEY);
 	            url.append(showBasket.getPath());
