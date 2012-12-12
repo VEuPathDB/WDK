@@ -261,7 +261,7 @@ public class StepValidator extends BaseCLI {
 
     private void flagDependentSteps(WdkModel wdkModel, String projects)
             throws WdkUserException, WdkModelException, SQLException {
-        logger.debug("Flagging invalid dependent steps...");
+        logger.debug("Flagging invalid dependent steps. These are any steps other than leave steps: boolean, transforms,... Here the root of the strategy will get marked, which will translate into an invalid icon by the strategy.");
 
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String step = userDB.getUserSchema() + "steps";
@@ -298,15 +298,14 @@ public class StepValidator extends BaseCLI {
                 + "  )";
 
         // <ADD-AG 042911>
-        logger.info("\n\nWARNING: this final SQL might take 3 hours when using all projects; please let it run, killing the job would break replication.\n\n");
+	logger.info("\n\nWARNING: this final SQL might take 3 hours when using all projects; please let it run, killing the job would break replication.\n...................................\n");
         executeByBatch(wdkModel, source, sql,
                 "STEP:wdk-invalidate-parent-step", null, null);
 
-        } finally {
+        }   finally {
              String sql = "DROP TABLE " + tempTable + " PURGE";
-            SqlUtils.executeUpdate(wdkModel, source, sql,
-                "wdk-invalidate-drop-part-steps");
-        }
+	     SqlUtils.executeUpdate(wdkModel, source, sql, "wdk-invalidate-drop-part-steps");
+		} 
     }
 
     private void deleteInvalidParams(WdkModel wdkModel)
