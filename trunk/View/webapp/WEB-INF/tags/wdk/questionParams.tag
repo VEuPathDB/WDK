@@ -97,7 +97,14 @@
                 <imp:timestampParamInput qp="${qP}" />
             </c:when>
             <c:when test="${isHidden}">
-               <html:hidden property="value(${pNam})"/>
+              <c:choose>
+                <c:when test="${pNam eq 'wdk_user_signature'}">
+                  <html:hidden property="value(${pNam})" value="${wdkUser.signature}"/>
+                </c:when>
+                <c:otherwise>
+                  <html:hidden property="value(${pNam})"/>
+                </c:otherwise>
+              </c:choose>
             </c:when>
             <c:otherwise> <%-- visible param --%>
                 <%-- an individual param (can not use fullName, w/ '.', for mapped props) --%>
