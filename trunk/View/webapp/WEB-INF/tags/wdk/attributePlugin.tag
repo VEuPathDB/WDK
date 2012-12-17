@@ -28,7 +28,7 @@
       <input type="image" id="${divId}" class="jqbutton" src="${pageContext.request.contextPath}/wdk/images/plugin.png"
              plugin="${plugin.name}" plugintitle="${plugin.display}"
              title="Analyze/Graph the contents of this column by ${fn:toLowerCase(plugin.display)}"
-             onclick="invokeAttributePlugin(this, '${step.stepId}', '${attribute.name}')" />
+             onclick="wdk.resultsPage.invokeAttributePlugin(this, '${step.stepId}', '${attribute.name}')" />
     </div>
   </c:forEach>
 </c:if>
@@ -38,7 +38,7 @@
 	<script type="text/javascript">
 	  $(function() {
 	    $(".jqbutton").button();
-	    assignStickyTooltipByTitle('#'+'${divId}', { tipPos: 'top-right', targetPos: 'bottom-right' });
+	    wdk.tooltips.assignStickyTooltipByTitle('#'+'${divId}', { tipPos: 'top-right', targetPos: 'bottom-right' });
 	  });
 	</script>
   <div>
@@ -52,7 +52,7 @@
 		      <c:forEach items="${plugins}" var="item">
 		        <c:set var="plugin" value="${item.value}" />
 		        <li>- 
-		          <a href="javascript:void(0)" onclick="invokeAttributePlugin(this, '${step.stepId}', '${attribute.name}')"
+		          <a href="javascript:void(0)" onclick="wdk.resultsPage.invokeAttributePlugin(this, '${step.stepId}', '${attribute.name}')"
 		             plugin="${plugin.name}" plugintitle="${plugin.display}" title="${plugin.description}">
 		            ${plugin.display}
 		          </a>

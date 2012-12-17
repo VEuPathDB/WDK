@@ -21,41 +21,41 @@
 </c:if>
 
 <script type="text/javascript">
-  setStrategyStatusCounts('${allCount}','${openCount}');
+  wdk.strategy.controller.setStrategyStatusCounts('${allCount}','${openCount}');
 </script>
 
 <%------------MY STRATEGIES MENU (TABs)----------%>
 <ul id="strategy_tabs">
-<%-- showPanel() is in addStepPopup.js --%>
+<%-- wdk.addStepPopup.showPanel() is in addStepPopup.js --%>
 
    <li><span id="stratTitle" class="h4left">My Strategies:</span></li> 
 
    <li><a id="tab_strategy_new" title="Start a new strategy. (Your opened strategies will remain untouched)"   
-	href="javascript:showPanel('strategy_new')" >New</a></li>
+	href="javascript:wdk.addStepPopup.showPanel('strategy_new')" >New</a></li>
 
    <li><a id="tab_strategy_results" title="View and interact with your opened strategies. To close a strategy, click the [X] in its upper right corner" 
-	onclick="this.blur()" href="javascript:showPanel('strategy_results')">Opened <font class="subscriptCount">(${openCount})</font></a></li>
+	onclick="this.blur()" href="javascript:wdk.addStepPopup.showPanel('strategy_results')">Opened <font class="subscriptCount">(${openCount})</font></a></li>
 
    <li><a id="tab_search_history" title="View and browse all your strategies" 
-	onclick="this.blur()" href="javascript:showPanel('search_history')">All <font class="subscriptCount">(${allCount})</font></a></li>
+	onclick="this.blur()" href="javascript:wdk.addStepPopup.showPanel('search_history')">All <font class="subscriptCount">(${allCount})</font></a></li>
 
       <c:set var="basketTitle" value="View your basket. Use the basket to operate on the items in it. For example, add them as a step in a strategy"/>
       <c:if test="${fn:length(basketCounts) > 0}">
       <c:choose>
 	  <c:when test="${wdkUser.guest}">
-   <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:User.login();"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
+   <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:wdk.user.login();"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
 	  </c:when>
 	  <c:otherwise>
-   <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:showPanel('basket')"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
+   <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:wdk.addStepPopup.showPanel('basket')"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
 	  </c:otherwise>
       </c:choose>
       </c:if>
 
    <li><a id="tab_sample_strat" title="View example strategies, both simple and more complex" 
-	onclick="this.blur()" href="javascript:showPanel('sample_strat')">Examples</a></li>
+	onclick="this.blur()" href="javascript:wdk.addStepPopup.showPanel('sample_strat')">Examples</a></li>
 
    <li><a id="tab_help" title="Help in using strategies"
-	href="javascript:showPanel('help')">Help</a></li>
+	href="javascript:wdk.addStepPopup.showPanel('help')">Help</a></li>
 </ul>
 
 

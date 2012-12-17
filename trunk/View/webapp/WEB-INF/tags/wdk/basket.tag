@@ -9,7 +9,7 @@
   <c:set var="total" value="${total + item.value}" />
 </c:forEach>
 
-<script> $(configureBasket); </script>
+<script> $(wdk.basket.configureBasket); </script>
 
 <div id="basket-control-panel">
   <imp:basketControls />

@@ -73,7 +73,7 @@
 </style>
 <c:set var="pMap" value="${question.paramsMap}"/>
 
-<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/wizard.do"  onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
+<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/wizard.do"  onsubmit="wdk.addStepPopup.callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
   
 <input type="hidden" id="stage" value="process_span" />
   

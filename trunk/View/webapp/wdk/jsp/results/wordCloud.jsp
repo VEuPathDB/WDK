@@ -8,8 +8,7 @@
 <c:set var="plugin" value="${requestScope.plugin}" />
 <c:set var="tags" value="${requestScope.tags}" />
 
-<script type="text/javascript" src="<c:url value='/wdk/js/wordCloud.js' />"></script>
-<div id="word-cloud">
+<div id="word-cloud" class="onload-function" data-function="wdk.wordCloud.init">
 <c:choose>
   <c:when test="${fn:length(tags) == 0}">
     No text available.
