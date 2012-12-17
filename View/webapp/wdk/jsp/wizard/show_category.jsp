@@ -24,7 +24,7 @@
     <c:forEach items="questions" var="question">
       <li>
         <c:url var="questionUrl" value="/wizard.do?wizard=boolean&step=question&question=${question.fullName}" />
-        <a href="javascript:callWizard('${questionUrl}')">${question.display}</a>
+        <a href="javascript:wdk.addStepPopup.callWizard('${questionUrl}')">${question.display}</a>
       </li>
     </c:forEach>
 </ul>

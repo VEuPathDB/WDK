@@ -24,11 +24,11 @@
       
 <pg:index>
   <pg:first>
-    <a href="javascript:GetResultsPage('${pageUrl}',true,true)">First</a>
+    <a href="javascript:wdk.resultsPage.GetResultsPage('${pageUrl}',true,true)">First</a>
   </pg:first>
 
   <pg:prev>
-    <a href="javascript:GetResultsPage('${pageUrl}',true,true)">Previous</a>
+    <a href="javascript:wdk.resultsPage.GetResultsPage('${pageUrl}',true,true)">Previous</a>
   </pg:prev>
 
   <pg:pages>
@@ -39,18 +39,18 @@
           <b>${pageNumber}</b>
         </c:when>
         <c:otherwise>
-          <a href="javascript:GetResultsPage('${pageUrl}',true,true)">${pageNumber}</a>
+          <a href="javascript:wdk.resultsPage.GetResultsPage('${pageUrl}',true,true)">${pageNumber}</a>
         </c:otherwise>
       </c:choose>
     </c:if>
   </pg:pages>
 
   <pg:next>
-    <a href="javascript:GetResultsPage('${pageUrl}',true,true)">Next</a>
+    <a href="javascript:wdk.resultsPage.GetResultsPage('${pageUrl}',true,true)">Next</a>
   </pg:next>
 
   <pg:last>
-    <a href="javascript:GetResultsPage('${pageUrl}',true,true)">Last</a>
+    <a href="javascript:wdk.resultsPage.GetResultsPage('${pageUrl}',true,true)">Last</a>
     
   </pg:last>
 </pg:index>
@@ -59,7 +59,7 @@
 <%-- 'All' link to display all results, if the result set is not too big --%>
 	<td>
 	    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-	    <input class="paging-button" style="width:150px" type="button" value="Advanced Paging" onclick="openAdvancedPaging(this)"/>
+	    <input class="paging-button" style="width:150px" type="button" value="Advanced Paging" onclick="wdk.resultsPage.openAdvancedPaging(this)"/>
 			<div class="advanced-paging" title="Advanced Paging">
         <input type="hidden" id="resultSize" class="resultSize" value="${resultSize}" />
         <div class="text">Jump To page:</div>
@@ -69,7 +69,7 @@
         <hr/>
         <div class="text">Results Per Page:</div>
 	      <!-- display the choice of page size -->
-	      <select id="${pager_id}_pageSize" class="pageSize" onchange="updatePageCount(this);">
+	      <select id="${pager_id}_pageSize" class="pageSize" onchange="wdk.resultsPage.updatePageCount(this);">
 	          <option value="5" ${(wdk_paging_pageSize == 5)? 'SELECTED' : ''}>5</option>
 	          <option value="10" ${(wdk_paging_pageSize == 10)? 'SELECTED' : ''}>10</option>
 	          <option value="20" ${(wdk_paging_pageSize == 20)? 'SELECTED' : ''}>20</option>
@@ -78,7 +78,7 @@
 	          <option value="500" ${(wdk_paging_pageSize == 500)? 'SELECTED' : ''}>500 (slow)</option>
 	          <option value="1000" ${(wdk_paging_pageSize== 1000)? 'SELECTED' : ''}>1000 (very slow)</option>
 	      </select>
-	      <input class="submit" type="button" value="GO" onclick="closeAdvancedPaging(this); gotoPage(this);"/>
+	      <input class="submit" type="button" value="GO" onclick="wdk.resultsPage.closeAdvancedPaging(this); wdk.resultsPage.gotoPage(this);"/>
       </div>
     </td>
   </tr>

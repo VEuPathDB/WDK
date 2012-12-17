@@ -43,16 +43,16 @@
                 <div id="span_logic" class="qf_section">
                     <ul class="menu_section">
 
-	<li class="category" onclick="callWizard(null,this,'sl_recordclasses',2)">Run a new Search for</li>
+	<li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_recordclasses',2)">Run a new Search for</li>
                        
 	<%-- only allow transform if the step has previous step --%>
 	<c:if test="${step.previousStep != null || action != 'insert'}">
-	 <%--   <li class="category" onclick="callWizard(null,this,'sl_transforms',2)">Convert results</li>    --%>
+	 <%--   <li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_transforms',2)">Convert results</li>    --%>
 
 		<c:set var="transforms" value="${recordClass.transformQuestions}" />
                 <c:forEach items="${transforms}" var="transform">
 			  <c:if test="${ fn:containsIgnoreCase(transform.displayName, 'ortholog')}">
-                  <li onclick="callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',this,null,null,'next')">
+                  <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',this,null,null,'next')">
                       ${transform.displayName}
                   </li>
 			 </c:if>
@@ -65,15 +65,15 @@
 
 	</c:if>
 
-	<li class="category" onclick="callWizard(null,this,'sl_baskets',2)">Add contents of Basket</li>
- 	<li class="category" onclick="callWizard(null,this,'sl_strategies',2)">Add existing Strategy</li>
+	<li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_baskets',2)">Add contents of Basket</li>
+ 	<li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_strategies',2)">Add existing Strategy</li>
 
 	<%-- add rest of transforms --%>
 
 	<c:if test="${step.previousStep != null || action != 'insert'}">
                 <c:forEach items="${transforms}" var="transform">
 			  <c:if test="${! fn:containsIgnoreCase(transform.displayName, 'ortholog')}">
-                  <li onclick="callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',this,null,null,'next')">
+                  <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',this,null,null,'next')">
                       ${transform.displayName}
                   </li>
 			 </c:if>
@@ -117,7 +117,7 @@
                         <c:set var="hasBasket" value="${true}" />
                         <c:set var="recordClass" value="${recordClasses[rcName]}" />
                         <c:set var="rcDisplay" value="${recordClass.displayName}" />
-                        <li onclick="callWizard('${partialUrl}&stage=basket&recordClass=${rcName}',this,null,null,'next')">
+                        <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=basket&recordClass=${rcName}',this,null,null,'next')">
 ${rcDisplay} basket
                         </li>
                     </c:if>
@@ -137,7 +137,7 @@ ${rcDisplay} basket
                 <c:set var="transforms" value="${recordClass.transformQuestions}" />
                 <c:forEach items="${transforms}" var="transform">
                   <li>
-                    <a href="javascript:void(0)" onclick="callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',this,null,null,'next')">
+                    <a href="javascript:void(0)" onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',this,null,null,'next')">
                       ${transform.displayName}
                     </a>
                   </li>
@@ -166,7 +166,7 @@ ${rcDisplay} basket
                                  )}">
                   <c:set var="hasStrategy" value="${true}" />
                   <c:set var="catId" value="${catId + 1}" />
-                  <li class="category" onclick="callWizard(null,this,'sl_strategies_${catId}',3)">${category.key}</li>
+                  <li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_strategies_${catId}',3)">${category.key}</li>
                 </c:if>
               </c:forEach>
               <c:if test="${hasStrategy == false}">
@@ -192,7 +192,7 @@ ${rcDisplay} basket
               <c:set var="actId" value="${0}" />
               <c:forEach items="${category.value}" var="activity">
                   <c:set var="actId" value="${actId + 1}" />
-                  <li class="category" onclick="callWizard(null,this,'sl_strategies_${catId}_${actId}',4)">${activity.key}</li>
+                  <li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_strategies_${catId}_${actId}',4)">${activity.key}</li>
               </c:forEach>
             </ul>
           </div>
@@ -212,7 +212,7 @@ ${rcDisplay} basket
                       <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
                     </c:if>
                     <li>
-                      <a href="javascript:void(0)" onclick="callWizard('${partialUrl}&insertStrategy=${strategy.strategyId}&stage=strategy',this,null,null,'next')">
+                      <a href="javascript:void(0)" onclick="wdk.addStepPopup.callWizard('${partialUrl}&insertStrategy=${strategy.strategyId}&stage=strategy',this,null,null,'next')">
                         ${displayName}<c:if test="${!strategy.isSaved}">*</c:if>
                      </a>
                     </li>
@@ -242,7 +242,7 @@ ${rcDisplay} basket
                                    || rcs.value.name eq 'SnpRecordClasses.SnpRecordClass'
                                    || rcs.value.name eq 'SageTagRecordClasses.SageTagRecordClass')
                                  )}">
-                    <li class="category" onclick="callWizard(null,this,'sl_${classId}',3)">${rcs.value.displayName}</li>
+                    <li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_${classId}',3)">${rcs.value.displayName}</li>
                 </c:if>
             </c:forEach>
             </ul>
@@ -256,14 +256,14 @@ ${rcDisplay} basket
                     <c:when test="${rcs.value.multiCategory}">
                     <c:forEach items="${rcs.value.websiteChildren}" var="catEntry">
                         <c:set var="cat" value="${catEntry.value}" />
-                        <li class="category" onclick="callWizard(null,this,'sl_${cat.name}',4)">${cat.displayName}</li>
+                        <li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_${cat.name}',4)">${cat.displayName}</li>
                     </c:forEach>
                     </c:when>
                     <c:otherwise>
                     <c:forEach items="${rcs.value.websiteChildren}" var="catEntry">
                     <c:set var="cat" value="${catEntry.value}" />
                     <c:forEach items="${cat.websiteQuestions}" var="q">
-                        <li onclick="callWizard('${partialUrl}&questionFullName=${q.fullName}&stage=question',this,null,null,'next')">${q.displayName}</li>
+                        <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${q.fullName}&stage=question',this,null,null,'next')">${q.displayName}</li>
                     </c:forEach>
                     </c:forEach>
                     </c:otherwise>
@@ -280,7 +280,7 @@ ${rcDisplay} basket
                 <div class="original" id="sl_${cat.name}" style="display:none">
                     <ul class="menu_section">
                         <c:forEach items="${cat.websiteQuestions}" var="question">
-                          <li onclick="callWizard('${partialUrl}&questionFullName=${question.fullName}&stage=question',this,null,null,'next')">
+                          <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${question.fullName}&stage=question',this,null,null,'next')">
                             ${question.displayName}
                             <imp:questionFeature question="${question}" />
                           </li>
@@ -297,16 +297,16 @@ ${rcDisplay} basket
 	sdName = "${recordClass.shortDisplayName}";
 
 	ele = $("li[onclick*='sl_recordclasses']")[0];
-	callWizard(null,ele,'sl_recordclasses',2);
+	wdk.addStepPopup.callWizard(null,ele,'sl_recordclasses',2);
   // $("td#section-1 ul.menu_section:first > li:first").click();
 
   ele = $('li.category[onclick*= "' + sdName + '" ]')[0];
-  callWizard(null,ele,'sl_'+ sdName + 'RecordClasses_' + sdName + 'RecordClass' ,3);
+  wdk.addStepPopup.callWizard(null,ele,'sl_'+ sdName + 'RecordClasses_' + sdName + 'RecordClass' ,3);
   // $("td#section-2 ul.menu_section:first > li:first").click();
 
 	if( sdName === "Gene" ) {
 		ele = $('li.category[onclick*= "other_attributes" ]')[0];
-		callWizard(null,ele,'sl_other_attributes',4);
+		wdk.addStepPopup.callWizard(null,ele,'sl_other_attributes',4);
 	}
 
 </script>

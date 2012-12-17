@@ -18,7 +18,7 @@
                 <c:set var="favorites" value="${fav_item.value}" /> <%-- a list of favorites of a record type --%>
 		<c:set var="idTag" value="${fn:replace(recordClass.fullName, '.', '_')}" />
                 <li>
-                  <a id="tab_${idTag}" href="javascript:void(0)" onclick="showFavorites('${idTag}')">${recordClass.type}s (${fn:length(favorites)})</a>
+                  <a id="tab_${idTag}" href="javascript:void(0)" onclick="wdk.favorite.showFavorites('${idTag}')">${recordClass.type}s (${fn:length(favorites)})</a>
                 </li>
               </c:forEach>
             </ul>
@@ -86,11 +86,11 @@
                                 <img class="clickable" src="<c:url value='/wdk/images/favorite_color.gif'/>" 
                                      title="Click to remove this item from favorites and reload page"
 				     height="16px" style="vertical-align:text-bottom"
-                                     onClick="updateFavorite(this, 'remove')"/>&nbsp;
+                                     onClick="wdk.favorite.updateFavorite(this, 'remove')"/>&nbsp;
                                 <img class="clickable" src="<c:url value='/wdk/images/basket_${basketColor}.png'/>" 
                                      title="Click to add/remove this item from your basket."
 				     height="16px"  style="vertical-align:text-bottom"
-                                     onClick="updateBasket(this,'recordPage', '${id}', '${pid}', '${recordClass.fullName}')" value="${basketValue}"/>&nbsp;
+                                     onClick="wdk.basket.updateBasket(this,'recordPage', '${id}', '${pid}', '${recordClass.fullName}')" value="${basketValue}"/>&nbsp;
 
 
     <c:set var="url" value="/showRecord.do?name=${recordClass.fullName}&source_id=${id}" />
@@ -103,7 +103,7 @@
 								<c:set var="favNote" value="${favorite.note}"/>
                               <span class="favorite-note">${fn:escapeXml(favNote)}</span>
                               <textarea class="favorite-note hidden input" rows="2" cols="198" name="favorite-note">${favNote}</textarea>
-                                <div class="favorite-button-div"><a href="javascript:void(0)" class="favorite-note-button" onClick="showInputBox(this, 'note', 'updateFavoriteNote(this)')" >edit</a></div>
+                                <div class="favorite-button-div"><a href="javascript:void(0)" class="favorite-note-button" onClick="wdk.favorite.showInputBox(this, 'note', 'wdk.favorite.updateFavoriteNote(this)')" >edit</a></div>
                             </td>
                             <td width="30%"  class="mytdStyle" >
 								<c:set var="favGroup" value="${favorite.group}"/>
@@ -114,7 +114,7 @@
 									<c:set var="favGroupStyle" value="opacity:0.2"/>
 								</c:if>
                                 <span class="favorite-group" style="${favGroupStyle}">${favGroup}</span>
-                                <a href="javascript:void(0)" class="favorite-group-button" onClick="showInputBox(this, 'group', 'updateFavoriteGroup(this)')">edit</a>
+                                <a href="javascript:void(0)" class="favorite-group-button" onClick="wdk.favorite.showInputBox(this, 'group', 'wdk.favorite.updateFavoriteGroup(this)')">edit</a>
                             </td>
                         </tr>
                     </c:forEach>

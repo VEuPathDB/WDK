@@ -9,10 +9,10 @@
 	<div class="modal_name">
 		<h1 style="font-size:130%;margin-top:4px;" id="query_form_title">${title}</h1>
 	</div>
-	<a class="back" href="javascript:backStage()">
+	<a class="back" href="javascript:wdk.addStepPopup.backStage()">
 		<img src="<c:url value='/wdk/images/backbutton.png'/>" alt='Close'/>
 	</a>
-	<a class='close_window' href='javascript:closeAll()'>
+	<a class='close_window' href='javascript:wdk.addStepPopup.closeAll()'>
 		<img src="<c:url value='/wdk/images/closebutton.png'/>" alt='Close'/>
 	</a>
 </span>

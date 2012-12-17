@@ -9,12 +9,12 @@
 <table>
 <tr>
     <td style="padding:1px">
-      <input id="refresh-basket-button" type="button" value="Refresh" onClick="refreshBasket();"/>
+      <input id="refresh-basket-button" type="button" value="Refresh" onClick="wdk.basket.refreshBasket();"/>
     </td>
     <td>
-      <input id="empty-basket-button" type="button" value="Empty basket" onClick="emptyBasket();"/></td>
+      <input id="empty-basket-button" type="button" value="Empty basket" onClick="wdk.basket.emptyBasket();"/></td>
     <td>
-      <input id="make-strategy-from-basket-button" type="button" value="Save basket to a strategy" onClick="saveBasket();"/>
+      <input id="make-strategy-from-basket-button" type="button" value="Save basket to a strategy" onClick="wdk.basket.saveBasket();"/>
     </td>
     <td>
       <imp:customBasketControl />

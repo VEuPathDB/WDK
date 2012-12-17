@@ -5,7 +5,7 @@
   
   <!-- This tag does not contain drop-downs, but smallMenu overrides should -->
   <!--   add this line if they want automatic drop-down logic               -->  
-  <!-- <span class="onload-function" data-function="setUpNavDropDowns"><jsp:text/></span> -->
+  <!-- <span class="onload-function" data-function="wdk.setUpNavDropDowns"><jsp:text/></span> -->
   
   <div id="nav-top-div">
 	  <ul id="nav-top">

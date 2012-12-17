@@ -10,13 +10,13 @@
 	<c:set var="supportEmail" value="${wdkModel.model.modelConfig.supportEmail}"/>
 	<div id="error-main" style="margin-top:0px; padding-top:30px;">
 	  <h1>We apologize...</h1>
-	  <a style="border:none" href="javascript:ErrorUtils.playSadTrombone()">
+	  <a style="border:none" href="javascript:wdk.util.playSadTrombone()">
 	    <img class="error-image" src="${pageContext.request.contextPath}/wdkCustomization/images/sad-face.jpg"/>
 	  </a>
 	  <p>
 	    An error has occurred and we cannot perform the action you requested.
 	    If you would like to submit details about this error to the ${projectName} team, please
-	    <a href="javascript:ErrorUtils.submitError()">click here.</a>
+	    <a href="javascript:wdk.util.submitError()">click here.</a>
 	  </p>
 	  <p>
 	    Thanks for your understanding.  If you would like correspondence about this error,
@@ -51,7 +51,7 @@
     </c:if>
   </c:set>
 	<div>
-	  <a href="javascript:ErrorUtils.toggleErrorDetails()">
+	  <a href="javascript:wdk.util.toggleErrorDetails()">
 	    <span id="exception-details-link" class="tiny-text">Show Details</span>
 	  </a>
 	  <div id="exception-information" style="display:none">
