@@ -65,7 +65,7 @@ $(function() {
       <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
       <li>
         <a id="tab_${recTabName}" 
-	   onclick="displayHist('${recTabName}')"
+	   onclick="wdk.history.displayHist('${recTabName}')"
            href=".tab_${recTabName}">
 		${recDispName} (${totalStratsCount})
 	</a>
@@ -75,7 +75,7 @@ $(function() {
 
   <c:if test="${fn:length(invalidStrategies) > 0}">
     <li>
-      <a id="tab_invalid" onclick="displayHist('invalid')"
+      <a id="tab_invalid" onclick="wdk.history.displayHist('invalid')"
        href="javascript:void(0)">Invalid&nbsp;Strategies</a></li>
   </c:if>
 
@@ -86,15 +86,15 @@ $(function() {
 
 <table class="history_controls clear" width="100%">
 <tr>
-      <td style="vertical-align:middle" width="30%">Select:&nbsp;<a class="check_toggle" onclick="selectAllHist()" href="javascript:void(0)">All</a>&nbsp|&nbsp;
-                  <a class="check_toggle" onclick="selectAllHist('saved')" href="javascript:void(0)">Saved</a>&nbsp|&nbsp;
-                  <a class="check_toggle" onclick="selectAllHist('unsaved')" href="javascript:void(0)">Unsaved</a>&nbsp|&nbsp;
-                  <a class="check_toggle" onclick="selectNoneHist()" href="javascript:void(0)">None</a>
+      <td style="vertical-align:middle" width="30%">Select:&nbsp;<a class="check_toggle" onclick="wdk.history.selectAllHist()" href="javascript:void(0)">All</a>&nbsp|&nbsp;
+                  <a class="check_toggle" onclick="wdk.history.selectAllHist('saved')" href="javascript:void(0)">Saved</a>&nbsp|&nbsp;
+                  <a class="check_toggle" onclick="wdk.history.selectAllHist('unsaved')" href="javascript:void(0)">Unsaved</a>&nbsp|&nbsp;
+                  <a class="check_toggle" onclick="wdk.history.selectNoneHist()" href="javascript:void(0)">None</a>
       </td>
       <td style="vertical-align:middle" width="20%" class="medium">
-         <input type="button" value="Open" onclick="handleBulkStrategies('open')"/>
-         <input type="button" value="Close" onclick="handleBulkStrategies('close')"/>
-         <input type="button" value="Delete" onclick="handleBulkStrategies('delete')"/>
+         <input type="button" value="Open" onclick="wdk.history.handleBulkStrategies('open')"/>
+         <input type="button" value="Close" onclick="wdk.history.handleBulkStrategies('close')"/>
+         <input type="button" value="Delete" onclick="wdk.history.handleBulkStrategies('delete')"/>
       </td>
  
       <td width="50%" style="text-align:right">
@@ -148,11 +148,11 @@ $(function() {
         <div class="modal_name">
           <span id='popup-title' class='h3left'></span>
         </div>
-        <a class='close_window' href='javascript:closeModal()'>
+        <a class='close_window' href='javascript:wdk.addStepPopup.closeModal()'>
         <img alt='Close' src="<c:url value='/wdk/images/Close-X.png'/>"  height='16'/>
         </a>
       </div>
-      <form id='save_strat_form_hist' onsubmit='return validateSaveForm(this);'>
+      <form id='save_strat_form_hist' onsubmit='return wdk.addStepPopup.validateSaveForm(this);'>
         <input type='hidden' value="" name='strategy'/>
         <input type='text' value="" name='name' maxlength='200'/>
         <input  style='margin-left:5px;' type='submit' value='Save'/>
@@ -177,14 +177,14 @@ $(function() {
 
 <table class="history_controls clear" width="100%">
    <tr>
-      <td style="vertical-align:middle" width="30%">Select:&nbsp;<a class="check_toggle" onclick="selectAllHist()" href="javascript:void(0)">All</a>&nbsp|&nbsp;
-                  <a class="check_toggle" onclick="selectAllHist('saved')" href="javascript:void(0)">Saved</a>&nbsp|&nbsp;
-                  <a class="check_toggle" onclick="selectAllHist('unsaved')" href="javascript:void(0)">Unsaved</a>&nbsp|&nbsp;
-                  <a class="check_toggle" onclick="selectNoneHist()" href="javascript:void(0)">None</a></td>
+      <td style="vertical-align:middle" width="30%">Select:&nbsp;<a class="check_toggle" onclick="wdk.history.selectAllHist()" href="javascript:void(0)">All</a>&nbsp|&nbsp;
+                  <a class="check_toggle" onclick="wdk.history.selectAllHist('saved')" href="javascript:void(0)">Saved</a>&nbsp|&nbsp;
+                  <a class="check_toggle" onclick="wdk.history.selectAllHist('unsaved')" href="javascript:void(0)">Unsaved</a>&nbsp|&nbsp;
+                  <a class="check_toggle" onclick="wdk.history.selectNoneHist()" href="javascript:void(0)">None</a></td>
       <td style="vertical-align:middle" width="20%" class="medium">
-         <input type="button" value="Open" onclick="handleBulkStrategies('open')"/>
-         <input type="button" value="Close" onclick="handleBulkStrategies('close')"/>
-         <input type="button" value="Delete" onclick="handleBulkStrategies('delete')"/>
+         <input type="button" value="Open" onclick="wdk.history.handleBulkStrategies('open')"/>
+         <input type="button" value="Close" onclick="wdk.history.handleBulkStrategies('close')"/>
+         <input type="button" value="Delete" onclick="wdk.history.handleBulkStrategies('delete')"/>
       </td>
       <td width="50%" style="text-align:right"></td>
    </tr>
@@ -202,7 +202,7 @@ $(function() {
 <!-- the form is shared by all strategies, we need to add the message only once -->
 <script type="text/javascript">
 	var myform = $("form#save_strat_form_hist");
-	myform.prepend(save_warning);
+	myform.prepend(wdk.strategy.view.save_warning);
 	$("i,form#save_strat_form_hist").css("font-size","95%");
 </script>
 

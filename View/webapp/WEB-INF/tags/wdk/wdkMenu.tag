@@ -22,7 +22,7 @@
 
 <%-- strategy menu --%>
 <li>
-  <a id="mysearch" onclick="setCurrentTabCookie('application','strategy_results');" 
+  <a id="mysearch" onclick="wdk.stratTabCookie.setCurrentTabCookie('application','strategy_results');" 
      href="<c:url value="/showApplication.do"/>" title="Access your Search Strategies Workspace"
     ><span>My Strategies<%--
      <span title="You have ${count} strategies" class="subscriptCount">(${count})</span>
@@ -33,17 +33,17 @@
 <%-- basket menu --%>
 <c:choose>
   <c:when test="${wdkUser == null || wdkUser.guest}">
-    <c:set var="clickEvent" value="setCurrentTabCookie('application', 'basket'); User.login('/showApplication.do');" />
+    <c:set var="clickEvent" value="wdk.stratTabCookie.setCurrentTabCookie('application', 'basket'); wdk.user.login('/showApplication.do');" />
     <c:set var="title" value="Group IDs together to work with them. You can add IDs from a result, or from a details page." />
     <c:set var="href" value="javascript:void(0)" />
   </c:when>
   <c:when test="${refer == 'summary'}">
-    <c:set var="clickEvent" value="showPanel('basket');" />
+    <c:set var="clickEvent" value="wdk.addStepPopup.showPanel('basket');" />
     <c:set var="title" value="Group IDs together to later make a step in a strategy." />
     <c:set var="href" value="javascript:void(0)" />
   </c:when>
   <c:otherwise>
-    <c:set var="clickEvent" value="setCurrentTabCookie('application', 'basket');" />
+    <c:set var="clickEvent" value="wdk.stratTabCookie.setCurrentTabCookie('application', 'basket');" />
     <c:set var="title" value="Group IDs together to later make a step in a strategy." />
     <c:url var="href" value="/showApplication.do" />
   </c:otherwise>
@@ -58,7 +58,7 @@
 <li id="favorite-menu">
 <c:choose>
   <c:when test="${wdkUser eq null or wdkUser.guest}">
-      <a id="mybasket" onclick="User.login('/showFavorite.do');"
+      <a id="mybasket" onclick="wdk.user.login('/showFavorite.do');"
          href="javascript:void(0)"
          title="Store IDs for easy access to their details page. You can add IDs *only* from the details page, one at a time." 
         ><span><img style="vertical-align:middle" height="20" 

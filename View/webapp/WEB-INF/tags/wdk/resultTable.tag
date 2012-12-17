@@ -107,11 +107,11 @@
                       <th>
                         <c:choose>
                           <c:when test="${wdkUser.guest}">
-                            <c:set var="basketClick" value="User.login();" />
+                            <c:set var="basketClick" value="wdk.user.login();" />
                             <c:set var="basketTitle" value="Please log in to use the basket." />
                           </c:when>
                           <c:otherwise>
-                            <c:set var="basketClick" value="updateBasket(this,'page', '0', '${modelName}', '${wdkAnswer.recordClass.fullName}')" />
+                            <c:set var="basketClick" value="wdk.basket.updateBasket(this,'page', '0', '${modelName}', '${wdkAnswer.recordClass.fullName}')" />
                           </c:otherwise>
                         </c:choose>
                         <a id="basketPage" href="javascript:void(0)" onclick="${basketClick}">
@@ -138,7 +138,7 @@
                                       </c:when>
                                       <c:otherwise>
                                         <%-- display sorting buttons --%>
-                                        <c:set var="resultsAction" value="javascript:sortResult('${attrName}', 'asc')" />
+                                        <c:set var="resultsAction" value="javascript:wdk.resultsPage.sortResult('${attrName}', 'asc')" />
                                         <a href="${resultsAction}" title="Sort by ${sumAttrib}">
                                           <img src="<c:url value='/wdk/images/results_arrw_up.png'/>" alt="Sort up" border="0" />
                                         </a>
@@ -157,7 +157,7 @@
                                       </c:when>
                                       <c:otherwise>
                                         <%-- display sorting buttons --%>
-                                        <c:set var="resultsAction" value="javascript:sortResult('${attrName}', 'desc')" />
+                                        <c:set var="resultsAction" value="javascript:wdk.resultsPage.sortResult('${attrName}', 'desc')" />
                                         <a href="${resultsAction}" title="Sort by ${sumAttrib}">
                                           <img src="<c:url value='/wdk/images/results_arrw_dwn.png'/>" alt="Sort down" border="0" />
                                         </a>
@@ -180,7 +180,7 @@
                             <c:if test="${sumAttrib.removable}">
                               <td style="width:20px;">
                                 <%-- display remove attribute button --%>
-                                <c:set var="resultsAction" value="javascript:removeAttribute('${attrName}')" />
+                                <c:set var="resultsAction" value="javascript:wdk.resultsPage.removeAttribute('${attrName}')" />
                                 <a href="${resultsAction}" title="Remove ${sumAttrib} column">
                                   <img src="<c:url value='/wdk/images/results_x.png'/>" alt="Remove" border="0" />
                                 </a>
@@ -216,10 +216,10 @@
                                 <c:set var="basket_img" value="basket_color.png"/>
                                 <c:set var="basketTitle" value="Click to remove this item from the basket." />
                               </c:if>
-                              <c:set var="basketClick" value="updateBasket(this,'single', '${primaryKey.value}', '${modelName}', '${recNam}')" />
+                              <c:set var="basketClick" value="wdk.basket.updateBasket(this,'single', '${primaryKey.value}', '${modelName}', '${recNam}')" />
                             </c:when>
                             <c:otherwise>
-                              <c:set var="basketClick" value="User.login();" />
+                              <c:set var="basketClick" value="wdk.user.login();" />
                               <c:set var="basketTitle" value="Please log in to use the basket." />
                             </c:otherwise>
                           </c:choose>

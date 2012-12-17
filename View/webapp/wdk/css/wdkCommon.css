@@ -1083,9 +1083,11 @@ color:darkred;font-style:italic;font-size:95%;
 
 .ui-tabs .ui-widget-header {
     background: none;
-    border-top: none;
-    border-left: none;
-    border-right: none;
+    border: none;
+}
+
+#search_history .ui-tabs .ui-widget-header {
+    border-bottom: 1px solid;
 }
 
 .dataTables_wrapper .ui-widget-header { 

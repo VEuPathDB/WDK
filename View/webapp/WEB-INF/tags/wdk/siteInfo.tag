@@ -10,29 +10,25 @@
 <c:set var="request_uri" value="${fn:substringAfter(request_uri, '/')}" />
 <c:set var="request_uri" value="${fn:substringBefore(request_uri, '/')}" />
 <c:set var="exportBaseUrl" value = "${scheme}://${serverName}/${request_uri}/im.do?s=" />
+<c:set var="webAppUrl" value = "${scheme}://${serverName}/${request_uri}/" />
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 
 <div style="display:none">
-<!-- used by goToIsolate()    -->
-<div id="modelName" name="${siteName}"></div>
+  <!-- used by goToIsolate()    -->
+  <div id="modelName" name="${siteName}"></div>
 
-<!-- used by view-JSON.js and controller-JSON.js   -->
-<div id="guestUser" name="${wdkUser.guest}"></div>
-<div id="exportBaseURL" name="${exportBaseUrl}"></div>
+  <!-- used by view-JSON.js and controller-JSON.js   -->
+  <div id="guestUser" name="${wdkUser.guest}"></div>
+  <div id="exportBaseURL" name="${exportBaseUrl}"></div>
 
-<!-- for future uses -->
-<div id="wdk-userinfo" user-id="${wdkUser.userId}" 
-			name="${wdkUser.lastName}" 
-			country="${wdkUser.country}" 
-			email="${wdkUser.email}" 
-			isGuest="${wdkUser.guest}">
+  <!-- for future uses -->
+  <div id="wdk-user"
+    data-id="${wdkUser.userId}" 
+    data-name="${wdkUser.lastName}" 
+    data-country="${wdkUser.country}" 
+    data-email="${wdkUser.email}" 
+    data-is-guest="${wdkUser.guest}"></div>
+
+  <div id="wdk-web-app-url" value="<c:url value='/'/>"></div>
 </div>
-</div>
-
-<!-- testing function in wdkCommon.js
-<script type="text/javascript">
-   	var temp=new wdkUser();
-	alert(temp.id + "," + temp.name + "," + temp.country + "," + temp.email + "," + temp.isGuest);
-</script>
--->
 

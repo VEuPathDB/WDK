@@ -16,14 +16,14 @@
               type="java.lang.String"
 %>
 
-<input type="button" onclick="openAttributeList(this);" class="addAttributesButton" value="Select Columns" />
+<input type="button" onclick="wdk.resultsPage.openAttributeList(this);" class="addAttributesButton" value="Select Columns" />
 
 <div class="attributesList formPopup" title="Select Columns">
 
   <div class="attributesFormWrapper">
   <form>
     <div class="formButtonPanel">
-      <input type="button" value="Update Columns" onclick="updateAttrs(this,'${commandUrl}')"/>
+      <input type="button" value="Update Columns" onclick="wdk.resultsPage.updateAttrs(this,'${commandUrl}')"/>
     </div>
     <c:if test="${wdkAnswer.useCheckboxTree}">
       <c:set var="checkboxTreeId" value="sfcbt-${wdkAnswer.recordClass.name}-${idgen.nextId}"/>
@@ -73,7 +73,7 @@
       </div>
     </c:if>
     <div class="formButtonPanel">
-      <input type="button" value="Update Columns" onclick="updateAttrs(this,'${commandUrl}')"/>
+      <input type="button" value="Update Columns" onclick="wdk.resultsPage.updateAttrs(this,'${commandUrl}')"/>
     </div>
   </form>
   </div>

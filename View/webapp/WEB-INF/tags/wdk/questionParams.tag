@@ -22,7 +22,7 @@
 </c:if>
 
 <script type="text/javascript">
-  $(function() { assignParamTooltips('.help-link'); });
+  $(function() { wdk.tooltips.assignParamTooltips('.help-link'); });
 </script>
 
 <c:set var="invalidParams" value="${requestScope.invalidParams}" />

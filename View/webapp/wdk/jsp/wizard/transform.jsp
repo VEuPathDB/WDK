@@ -24,7 +24,7 @@
 <c:set var="stage" value="${requestScope.stage}"/>
 
 
-<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
+<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="wdk.addStepPopup.callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
 <span style="display:none" id="strategyId">${wdkStrategy.strategyId}</span>
 <c:choose>
     <c:when test="${wdkStep.previousStep == null || action != 'revise'}">

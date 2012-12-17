@@ -16,7 +16,7 @@
   <c:set var="functionArg" value="{ &quot;isLoggedIn&quot;: ${isLoggedIn}, &quot;userName&quot;: &quot;${userName}&quot; }"/>
 
   <span class="onload-function"
-    data-function="User.populateUserControl"
+    data-function="wdk.user.populateUserControl"
     data-arguments="${fn:escapeXml(functionArg)}"><jsp:text/>
   </span>
 
@@ -27,7 +27,7 @@
   <span id="login-status" data-logged-in=""/>
 
 	<script id="user-not-logged-in" type="text/x-handlebars-template">
-    <li><a href="javascript:void(0)" onclick="User.login()">Login</a></li>
+    <li><a href="javascript:void(0)" onclick="wdk.user.login()">Login</a></li>
     <li><a href="${pageContext.request.contextPath}/showRegister.do">Register</a></li>
 	</script>
 	
@@ -35,7 +35,7 @@
     <li><a href="${pageContext.request.contextPath}/showProfile.do"><span id="user-name">{{userName}}</span>'s Profile</a></li>
     <li>
       <form name="logoutForm" method="post" action="${pageContext.request.contextPath}/processLogout.do"></form>
-      <a href="javascript:void(0)" onclick="User.logout()">Logout</a>
+      <a href="javascript:void(0)" onclick="wdk.user.logout()">Logout</a>
     </li>
 	</script>
 	

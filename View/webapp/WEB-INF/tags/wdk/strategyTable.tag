@@ -61,7 +61,7 @@
         data-description="<c:out value="${strategy.description}"/>"
         data-saved="${strategy.isSaved}"
         data-step-id="${strategy.latestStepId}">
-      <td scope="row"><input type=checkbox id="${strategyId}" onclick="updateSelectedList()"/></td>
+      <td scope="row"><input type=checkbox id="${strategyId}" onclick="wdk.history.updateSelectedList()"/></td>
       <%-- need to see if this strategy id is in the session. --%>
       <c:set var="active" value=""/>
       <c:set var="openedStrategies" value="${wdkUser.activeStrategyIds}"/>
@@ -73,7 +73,7 @@
 
 <%--
       <td>
-        <img id="img_${strategyId}" class="plus-minus plus" src="<c:url value='/wdk/images/sqr_bullet_plus.png'/>" alt="" onclick="toggleSteps2(${strategyId})"/>
+        <img id="img_${strategyId}" class="plus-minus plus" src="<c:url value='/wdk/images/sqr_bullet_plus.png'/>" alt="" onclick="wdk.history.toggleSteps2(${strategyId})"/>
       </td>
 --%>
 
@@ -82,7 +82,7 @@
       <td>
         <div id="text_${strategyId}" 
              style="cursor:pointer" 
-             onclick="openStrategy('${strategyId}')" 
+             onclick="wdk.strategy.controller.openStrategy('${strategyId}')" 
              <c:choose> 
 		         <c:when test="${active}"> title="This strategy is already opened in the Strategy panel (bold); click to go!"</c:when>
              <c:otherwise>title="Click to open this strategy in the Strategy panel (Browse tab)"</c:otherwise>
@@ -102,18 +102,18 @@
       <td class="strategy_description">
       <c:choose>
         <c:when test="${wdkUser.guest}">
-          <div class="unsaved" title="Click to save and add description" onclick="User.login();">Click to save and add a description</div>
+          <div class="unsaved" title="Click to save and add description" onclick="wdk.user.login();">Click to save and add a description</div>
         </c:when>
         <c:otherwise>
           <c:choose>
             <c:when test="${!strategy.isSaved}">
-              <div class="unsaved" title="Click to save and add description" onclick="showUpdateDialog(this, true, true);">Save to add a description</div>
+              <div class="unsaved" title="Click to save and add description" onclick="wdk.history.showUpdateDialog(this, true, true);">Save to add a description</div>
             </c:when>
             <c:when test="${empty strategy.description}">
-              <div class="empty" title="Click to add a description" onclick="showUpdateDialog(this, false, true);">Click to add a description</div>
+              <div class="empty" title="Click to add a description" onclick="wdk.history.showUpdateDialog(this, false, true);">Click to add a description</div>
             </c:when>
             <c:otherwise>
-              <div class="full" title="Click to view entire description" onclick="showDescriptionDialog(this, false, true);"><c:out value="${strategy.description}"/></div>
+              <div class="full" title="Click to view entire description" onclick="wdk.history.showDescriptionDialog(this, false, true);"><c:out value="${strategy.description}"/></div>
             </c:otherwise>
           </c:choose>
         </c:otherwise>
@@ -121,29 +121,29 @@
       </td>
 
       <td nowrap>
-         <c:set var="saveAction" value="showUpdateDialog(this, true, true);"/>
-         <c:set var="shareAction" value="showHistShare(this, '${strategyId}', '${exportBaseUrl}${strategy.importId}');" />
+         <c:set var="saveAction" value="wdk.history.showUpdateDialog(this, true, true);"/>
+         <c:set var="shareAction" value="wdk.history.showHistShare(this, '${strategyId}', '${exportBaseUrl}${strategy.importId}');" />
          <c:if test="${!strategy.isSaved}">
            <c:set var="shareAction" value="if (confirm('Before you can share your strategy, you need to save it. Would you like to do that now?')) { ${saveAction} }" />
          </c:if>
          <c:if test="${wdkUser.guest}">
-           <c:set var="saveAction" value="User.login();"/>
-           <c:set var="shareAction" value="User.login();"/>
+           <c:set var="saveAction" value="wdk.user.login();"/>
+           <c:set var="shareAction" value="wdk.user.login();"/>
          </c:if>
          <select id="actions_${strategyId}" onchange="eval(this.value);this[0].selected='true';">
             <option value="return false;">---Actions---</option>
             <c:choose>
               <c:when test="${!active}">
-                <option value="openStrategy('${strategyId}')">Open</option>
+                <option value="wdk.strategy.controller.openStrategy('${strategyId}')">Open</option>
               </c:when>
               <c:otherwise>
-                <option value="closeStrategy('${strategyId}', true)">Close</option>
+                <option value="wdk.strategy.controller.closeStrategy('${strategyId}', true)">Close</option>
               </c:otherwise>
             </c:choose>
-            <option value="downloadStep('${strategy.latestStepId}')">Download</option>
-            <option value="showUpdateDialog(this, false, true)">Rename</option>
+            <option value="wdk.history.downloadStep('${strategy.latestStepId}')">Download</option>
+            <option value="wdk.history.showUpdateDialog(this, false, true)">Rename</option>
             <c:if test="${strategy.isSaved}">
-              <option value="showUpdateDialog(this, false, true)">
+              <option value="wdk.history.showUpdateDialog(this, false, true)">
               <c:choose>
                 <c:when test="${empty strategy.description}">
                   Add description
@@ -154,12 +154,12 @@
               </c:choose>
               </option>
             </c:if>
-            <option value="copyStrategy('${strategyId}', true);">Duplicate</option>
+            <option value="wdk.strategy.controller.copyStrategy('${strategyId}', true);">Duplicate</option>
             <option value="${saveAction}">Save As</option>
             <option value="${shareAction}">Share</option>
       <!--      <option value="deleteStrategy(${strategyId}, true)">Delete</option> -->
 <!-- I think we should remove the delete option here -->
-      <option value="handleBulkStrategies('delete',${strategyId})">Delete</option>
+      <option value="wdk.history.handleBulkStrategies('delete',${strategyId})">Delete</option>
          </select>
       </td>
       <td nowrap style="padding:0 2px 0 2px;">${fn:substring(strategy.createdTimeFormatted, 0, 10)}</td>
