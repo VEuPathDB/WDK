@@ -73,7 +73,7 @@ public class UserFactory {
      * md5 checksum algorithm. encrypt(String) drops leading zeros of hex codes
      * so is not compatible with md5
      **/
-    public static String md5(String str) throws NoSuchAlgorithmException {
+    public static String md5(String str) {
         StringBuffer buffer = new StringBuffer();
         for (byte code : Utilities.getEncryptedBytes(str)) {
             buffer.append(Integer.toString((code & 0xff) + 0x100, 16).substring(1));

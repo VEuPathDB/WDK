@@ -2,9 +2,7 @@ package org.gusdb.wdk.controller.action.user;
 
 import java.util.Map;
 
-import javax.servlet.http.Cookie;
-
-import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.LoginCookieFactory;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
@@ -28,15 +26,8 @@ public class ProcessLogoutAction extends WdkAction {
     setCurrentUser(getWdkModel().getUserFactory().getGuestUser());
 
     // tell cookie to expire immediately
-    addCookieToResponse(getLogoutCookie());
+    addCookieToResponse(LoginCookieFactory.createLogoutCookie());
 
     return new ActionResult().setViewName(SUCCESS);
-  }
-  
-  public static Cookie getLogoutCookie() {
-    Cookie cookie = new Cookie(CConstants.WDK_LOGIN_COOKIE_KEY, "");
-    cookie.setMaxAge(0);
-    cookie.setPath("/");
-    return cookie;
   }
 }
