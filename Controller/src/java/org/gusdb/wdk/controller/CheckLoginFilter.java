@@ -1,7 +1,6 @@
 package org.gusdb.wdk.controller;
 
 import java.io.IOException;
-import java.net.URLDecoder;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -16,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.controller.LoginCookieFactory.LoginCookieParts;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -38,76 +38,56 @@ public class CheckLoginFilter implements Filter {
 
         // load model, user
         WdkModelBean wdkModel = (WdkModelBean) context.getAttribute(CConstants.WDK_MODEL_KEY);
-        UserBean wdkUser = (UserBean) req.getSession().getAttribute(
-                CConstants.WDK_USER_KEY);
-    
-        Cookie cookies[] = req.getCookies();
-        Cookie loginCookie = null;
-	
-        if (cookies != null) {
-            for (int i = 0; i < cookies.length; ++i) {
-                if (cookies[i].getName().equals(CConstants.WDK_LOGIN_COOKIE_KEY)) {
-                    loginCookie = cookies[i];
-                    break;
-                }
+        UserBean wdkUser = (UserBean) req.getSession().getAttribute(CConstants.WDK_USER_KEY);
+        Cookie loginCookie = LoginCookieFactory.findLoginCookie(req.getCookies());
+        
+        try {
+          UserFactoryBean factory = wdkModel.getUserFactory();
+          if (loginCookie == null) {
+            if (wdkUser != null && !wdkUser.isGuest()) {
+              // If there's no login cookie, but a non-guest user is
+              // logged in, we should log the user out.
+              UserBean guest = factory.getGuestUser();
+              logger.error("Logging out non-guest user b/c no login cookie found.");
+              req.getSession().setAttribute(CConstants.WDK_USER_KEY, guest);
             }
+          }
+          else {
+            // login cookie exists; break value into parts
+            LoginCookieFactory auth = new LoginCookieFactory(wdkModel.getSecretKey());
+            LoginCookieParts cookieParts = LoginCookieFactory.parseCookieValue(loginCookie.getValue());
+            
+            if (!auth.isValidCookie(cookieParts)) {
+              logger.debug("Secret Value: " + wdkModel.getSecretKey());
+              logger.debug("Cookie Hash: " + cookieParts.getChecksum());
+              throw new Exception("Login cookie is invalid and must be deleted.");
+            }
+            
+            // cookie is valid; create new auth cookie if:
+            //   1. coolie exists but no one is logged in, or
+            //   2. current cookie email does not match the logged-in user
+            if (wdkUser == null || !cookieParts.getUsername().equals(wdkUser.getEmail())) {
+
+              // get the user represented by the current cookie (if fails, then invalid cookie)
+              UserBean cookieUser = factory.getUserByEmail(cookieParts.getUsername());
+
+              // recreate login cookie with new timestamp
+              loginCookie = auth.createLoginCookie(cookieUser.getEmail(), cookieParts.isRemember());
+              res.addCookie(loginCookie);
+
+              // make sure logged in user matches cookie
+              req.getSession().setAttribute(CConstants.WDK_USER_KEY, cookieUser.getEmail());
+              req.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
+            }
+          }
         }
-
-	try {
-	    UserFactoryBean factory = wdkModel.getUserFactory();
-	    if (loginCookie != null) {
-		if (wdkUser == null || ! URLDecoder.decode(loginCookie.getValue(), "utf-8").contains(wdkUser.getEmail())) {
-		    // Check if cookie has been modified since it was set.
-                    String secretValue = wdkModel.getSecretKey();
-                            
-                    secretValue = loginCookie.getValue().substring(0,
-                            loginCookie.getValue().lastIndexOf("-"))
-                            + secretValue;
-                    String cookieHash = loginCookie.getValue().substring(
-                            loginCookie.getValue().lastIndexOf("-") + 1);
-		    
-                    secretValue = UserFactoryBean.md5(secretValue);
-
-                    if (!secretValue.equals(cookieHash)) {
-                        logger.debug("Secret Value: " + secretValue);
-                        logger.debug("Cookie Hash: " + cookieHash);
-                        throw new Exception("Login cookie is invalid and must be deleted.");
-                    }
-		    
-                    String email;
-                    String[] cookieParts = loginCookie.getValue().split("-");
-		    
-                    email = URLDecoder.decode(cookieParts[0], "utf-8");
-
-                    UserBean user = factory.getUserByEmail(email);
-                    if (loginCookie.getValue().contains("remember")) {
-                        loginCookie.setMaxAge(java.lang.Integer.MAX_VALUE / 256);
-                        loginCookie.setPath("/");
-                        res.addCookie(loginCookie);
-                    }
-
-                    req.getSession().setAttribute(CConstants.WDK_USER_KEY, user);
-                    req.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
-		}
-	    }
-	    else if (wdkUser != null && !wdkUser.isGuest()) {
-		// If there's no login cookie, but a non-guest user is
-		// logged in, we should log the user out.
-		UserBean guest = factory.getGuestUser();
-		logger.error("Logging out non-guest user b/c no login cookie found.");
-		req.getSession().setAttribute(CConstants.WDK_USER_KEY, guest);
-	    }
-	}
-	catch (Exception ex) {
-	    logger.error("Caught exception while checking login "
-			 + "cookie: " + ex);
-	    // tell browser to delete cookie if we had a problem
-	    loginCookie.setMaxAge(0);
-	    loginCookie.setPath("/");
-	    res.addCookie(loginCookie);
-	    // clear any user out of the session
-	    req.getSession().setAttribute(CConstants.WDK_USER_KEY, null);
-	}
+        catch (Exception ex) {
+          logger.error("Caught exception while checking login " + "cookie: " + ex);
+          // tell browser to delete cookie if we had a problem
+          res.addCookie(LoginCookieFactory.createLogoutCookie());
+          // clear any user out of the session
+          req.getSession().setAttribute(CConstants.WDK_USER_KEY, null);
+        }
 
         // set session id
         HttpSession session = req.getSession();
