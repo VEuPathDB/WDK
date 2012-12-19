@@ -21,6 +21,9 @@ import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 public class CheckLoginFilter implements Filter {
+  
+    private static final Logger LOG = Logger.getLogger(CheckLoginFilter.class.getName());
+  
     private FilterConfig config = null;
     private ServletContext context = null;
     private static Logger logger = Logger.getLogger(CheckLoginFilter.class);
@@ -44,6 +47,7 @@ public class CheckLoginFilter implements Filter {
         try {
           UserFactoryBean factory = wdkModel.getUserFactory();
           if (loginCookie == null) {
+            LOG.debug("Could not find login cookie.  User is: " + wdkUser);
             if (wdkUser != null && !wdkUser.isGuest()) {
               // If there's no login cookie, but a non-guest user is
               // logged in, we should log the user out.
@@ -53,6 +57,8 @@ public class CheckLoginFilter implements Filter {
             }
           }
           else {
+            LOG.debug("Found login cookie with value: " + loginCookie.getValue());
+            
             // login cookie exists; break value into parts
             LoginCookieFactory auth = new LoginCookieFactory(wdkModel.getSecretKey());
             LoginCookieParts cookieParts = LoginCookieFactory.parseCookieValue(loginCookie.getValue());
@@ -76,7 +82,7 @@ public class CheckLoginFilter implements Filter {
               res.addCookie(loginCookie);
 
               // make sure logged in user matches cookie
-              req.getSession().setAttribute(CConstants.WDK_USER_KEY, cookieUser.getEmail());
+              req.getSession().setAttribute(CConstants.WDK_USER_KEY, cookieUser);
               req.getSession().setAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
             }
           }
