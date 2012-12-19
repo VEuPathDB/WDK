@@ -34,11 +34,11 @@ public class UserFactoryBean {
         this.userFactory = userFactory;
     }
 
-    public static String encrypt(String str) throws NoSuchAlgorithmException {
+    public static String encrypt(String str) {
         return UserFactory.encrypt(str);
     }
 
-    public static String md5(String str) throws NoSuchAlgorithmException {
+    public static String md5(String str) {
         return UserFactory.md5(str);
     }
 

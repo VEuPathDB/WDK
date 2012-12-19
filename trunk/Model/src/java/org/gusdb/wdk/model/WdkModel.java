@@ -1053,8 +1053,8 @@ public class WdkModel implements ConnectionContainer {
         return paramName;
     }
 
-    public String getSecretKey() throws NoSuchAlgorithmException,
-            WdkModelException, IOException {
+    public String getSecretKey() throws WdkModelException {
+      try {
         if (secretKey == null) {
             // load secret key file & read contents
             String secretKeyFileLoc = modelConfig.getSecretKeyFile();
@@ -1073,6 +1073,10 @@ public class WdkModel implements ConnectionContainer {
             this.secretKey = UserFactory.md5(contents.toString());
         }
         return secretKey;
+      }
+      catch (IOException e) {
+        throw new WdkModelException("Unable to retrieve secret key from file.", e);
+      }
     }
 
     public boolean getUseWeights() {

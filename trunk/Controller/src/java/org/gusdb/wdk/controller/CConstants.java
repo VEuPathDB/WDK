@@ -187,7 +187,6 @@ public class CConstants {
     public static final String NEXT_BOOLEAN_OPERATION_SUFFIX = "_nextBooleanOperation"; //match WEB-INF/includes/booleanQuestionNode.jsp
 
     //keys for WDK cookies
-    public static final String WDK_LOGIN_COOKIE_KEY = "wdk_check_auth";
     public static final String WDK_TAB_STATE_COOKIE = "wdk_tab_state";
 
     //name of webapp init params, from web.xml, used in ApplicationInitListener.java

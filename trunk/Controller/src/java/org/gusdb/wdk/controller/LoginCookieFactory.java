@@ -42,6 +42,7 @@ public class LoginCookieFactory {
     public String getUsername() { return _username; }
     public boolean isRemember() { return _remember; }
     public String getChecksum() { return _checksum; }
+    public String toString() { return "{ " + _username + ", " + _remember + ", " + _checksum + " }"; }
   }
   
   private String _secretKey;

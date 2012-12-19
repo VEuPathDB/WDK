@@ -1,13 +1,11 @@
 package org.gusdb.wdk.controller.action.user;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 import javax.servlet.http.Cookie;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.controller.LoginCookieFactory;
 import org.gusdb.wdk.controller.AuthenticationService;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.WdkValidationException;
@@ -213,29 +211,11 @@ public class ProcessLoginAction extends WdkAction {
 	static void addLoginCookie(UserBean user, boolean remember, WdkModelBean model, WdkAction wdkAction) {
 		try {
 			// Create & send cookie
-			Cookie loginCookie = new Cookie(
-					CConstants.WDK_LOGIN_COOKIE_KEY, URLEncoder.encode(
-							user.getEmail(), "utf-8"));
-	
-			if (remember) {
-				loginCookie.setMaxAge(java.lang.Integer.MAX_VALUE / 256);
-				loginCookie.setValue(loginCookie.getValue() + "-remember");
-			}
-			else {
-				loginCookie.setMaxAge(-1);
-			}
-	
-			String secretValue = model.getSecretKey();
-			secretValue = UserFactoryBean.md5(loginCookie.getValue() + secretValue);
-	
-			loginCookie.setValue(loginCookie.getValue() + "-" + secretValue);
-	
-			// make sure the cookie is good for whole site, not just webapp
-			loginCookie.setPath("/");
-	
+		  LoginCookieFactory auth = new LoginCookieFactory(model.getModel().getSecretKey());
+			Cookie loginCookie = auth.createLoginCookie(user.getEmail(), remember);
 			wdkAction.addCookieToResponse(loginCookie);
 		}
-		catch (NoSuchAlgorithmException | WdkModelException | IOException e) {
+		catch (WdkModelException e) {
 			// This is a recoverable exception since this is not the session cookie, just
 			//   one to remember the user.  An error, but not one we need to advertise
 			LOG.error("Unable to add user cookie to response on login!", e);

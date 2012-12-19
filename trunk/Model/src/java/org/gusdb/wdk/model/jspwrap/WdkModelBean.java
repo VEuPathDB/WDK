@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -271,13 +270,10 @@ public class WdkModelBean implements ConnectionContainer {
 
     /**
      * @return
-     * @throws NoSuchAlgorithmException
      * @throws WdkModelException
-     * @throws IOException
      * @see org.gusdb.wdk.model.WdkModel#getSecretKey()
      */
-    public String getSecretKey() throws NoSuchAlgorithmException,
-            WdkModelException, IOException {
+    public String getSecretKey() throws WdkModelException  {
         return wdkModel.getSecretKey();
     }
 
