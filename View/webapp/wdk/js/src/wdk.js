@@ -345,7 +345,6 @@ function getWebAppUrl() {
   // On all pages, check that cookies are enabled.
   function init() {
     cookieTest();
-    registerTable();
     setUpDialogs();
     setUpPopups();
     load();

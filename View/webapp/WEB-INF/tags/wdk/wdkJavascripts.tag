@@ -31,12 +31,6 @@
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/json.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/handlebars-1.0.0.beta.6.js"><jsp:text/></script>
 
-  <!-- styles for JS libraries -->
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/ui-custom/custom-theme/jquery-ui-1.8.16.custom.css"/>
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/jquery.multiSelect.css"/>
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/datatables.css"/>
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/js/lib/qtip2/jquery.qtip.mod.css"/>
-
   <!-- WDK js and css -->
 
   <c:choose>
