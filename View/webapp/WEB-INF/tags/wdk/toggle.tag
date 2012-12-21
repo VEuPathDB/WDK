@@ -177,14 +177,14 @@
       <c:when test='${attribution ne null and attribution ne ""}'>
         <td align="right">
            <font size="-1" face="Arial,Helvetica">
-           [<a href="getDataSource.do?display=detail&datasets=${attribution}&title=${displayNameParam}">Data Sources</a>]
+           [<a href="getDataset.do?display=detail&datasets=${attribution}&title=${displayNameParam}">Data Sources</a>]
            </font>
         </td>
       </c:when>
       <c:when test="${name ne null and name ne '' and ds_ref_table ne null and ds_ref_table ne ''}">
         <td align="right">
           <font size="-2" face="Arial,Helvetica">
-          [<a href="<c:url value='/getDataSource.do?recordClass=${wdkRecord.recordClass.fullName}&display=detail&target=${name}' />">Data Sources</a>]
+          [<a href="<c:url value='/getDataset.do?recordClass=${wdkRecord.recordClass.fullName}&display=detail&target=${name}' />">Data Sources</a>]
           </font>
         </td>
       </c:when>
