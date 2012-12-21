@@ -160,40 +160,18 @@
     </ant>
   </target>
 
-  <target name="WDK/View-WebInstallation" depends="WDK/View-build-js">
+  <target name="WDK/View-WebInstallation">
     <ant target="defaultWebComponentInstall">
       <property name="project" value="WDK"/>
       <property name="component" value="View"/>
     </ant>
+    <ant target="webinstall-javascript">
+      <property name="srcDir" value="${webappTargetDir}/wdk/js/src"/>
+      <property name="initialFiles" value="util/namespace.js"/>
+      <property name="destDir" value="${webappTargetDir}/wdk/js"/>
+      <property name="destFilename" value="wdk.js"/>
+    </ant>
   </target>  
-
-  <target name="WDK/View-concat-js">
-    <concat destfile="${projectsDir}/WDK/View/webapp/wdk/js/wdk.js">
-      <filelist dir="${projectsDir}/WDK/View/webapp/wdk/js/src" files="util/namespace.js"/>
-      <fileset dir="${projectsDir}/WDK/View/webapp/wdk/js/src" includes="**/*.js" excludes="util/namespace.js"/>
-    </concat>
-  </target>
-
-  <target name="WDK/View-minify-js" depends="WDK/View-concat-js">
-    <apply executable="java" failonerror="true">
-      <fileset dir="${projectsDir}/WDK/View/webapp/wdk/js" includes="wdk.js"/>
-      <arg line="-jar" />
-      <arg path="${targetDir}/lib/java/yuicompressor-2.4.7.jar" />
-      <!-- <arg line="${yuicompressor.options}" /> -->
-      <srcfile />
-      <arg line="-o" />
-      <mapper type="glob" from="*.js" to="${projectsDir}/WDK/View/webapp/wdk/js/*-min.js"/>
-      <targetfile />
-    </apply>
-  </target>
-
-  <target name="WDK/View-clean-js">
-    <delete>
-      <fileset dir="${projectsDir}/WDK/View/webapp/wdk/js" includes="*.js"/>
-    </delete>
-  </target>
-
-  <target name="WDK/View-build-js" depends="WDK/View-clean-js,WDK/View-concat-js,WDK/View-minify-js"/>
 
   <target name="WebitePlusGusHome" depends="WDK-Installation,
                                             WDK/Controller-WebInstallation,
