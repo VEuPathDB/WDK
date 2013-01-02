@@ -114,6 +114,14 @@ public class WizardAction extends Action {
                     first = false;
                 }
 
+                int strategyId = wizardForm.getStrategyId();
+                if (Integer.toString(strategyId) != user.getViewStrategyId()) {
+                  // set view results to last step of strategy being revised
+                  StrategyBean strategy = user.getStrategy(strategyId);
+                  int stepId = strategy.getLatestStepId();
+                  user.setViewResults(Integer.toString(strategyId), stepId, 0);
+                }
+
                 logger.debug("wizard action: " + builder);
                 logger.debug("Leaving WizardAction.....");
                 return new ActionForward(builder.toString());
