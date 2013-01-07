@@ -41,7 +41,7 @@ public abstract class PropFileReader {
   protected void doExtraValidation(Properties props) { /* nothing by default */ }
   
   protected String getStringValue(String propertyName) {
-    return _props.getProperty(propertyName);
+    return _props.getProperty(propertyName).trim();
   }
   
   protected int getIntValue(String propertyName, int defaultValue) {
