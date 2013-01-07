@@ -298,7 +298,7 @@ public class ModelXmlParser extends XmlParser {
         Iterator<Object> it = properties.keySet().iterator();
         while (it.hasNext()) {
             String propName = (String) it.next();
-            String value = properties.getProperty(propName);
+            String value = properties.getProperty(propName).trim();
             propMap.put(propName, value);
         }
 
