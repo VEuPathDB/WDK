@@ -10,6 +10,12 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 
+/**
+ * The paramSet is used to organize params into logical groups.
+ * 
+ * @author jerric
+ *
+ */
 public class ParamSet extends WdkModelBase implements ModelSetI {
 
     private List<Param> paramList = new ArrayList<Param>();

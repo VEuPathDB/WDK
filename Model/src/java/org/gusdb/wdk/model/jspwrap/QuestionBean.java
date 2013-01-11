@@ -9,20 +9,20 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.AnswerFilterInstance;
-import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.Field;
-import org.gusdb.wdk.model.FieldScope;
 import org.gusdb.wdk.model.Group;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerFilterInstance;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.SummaryView;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.view.SummaryView;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.Field;
+import org.gusdb.wdk.model.record.FieldScope;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.TableField;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.json.JSONException;
 
 /**

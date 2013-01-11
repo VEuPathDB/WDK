@@ -11,16 +11,16 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.AttributeValue;
-import org.gusdb.wdk.model.FieldScope;
-import org.gusdb.wdk.model.PrimaryKeyAttributeValue;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordInstance;
-import org.gusdb.wdk.model.TableField;
-import org.gusdb.wdk.model.TableValue;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.record.FieldScope;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.TableField;
+import org.gusdb.wdk.model.record.TableValue;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.AttributeValue;
+import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -135,7 +135,7 @@ public class RecordBean {
     }
 
     /**
-     * @return Map of tableName --> {@link org.gusdb.wdk.model.TableValue}
+     * @return Map of tableName --> {@link org.gusdb.wdk.model.record.TableValue}
      * @throws WdkUserException
      * @throws JSONException
      * @throws SQLException

@@ -26,16 +26,14 @@ import java.util.regex.Pattern;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.AnswerFilterInstance;
-import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.ModelConfigUserDB;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerFilterInstance;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.BooleanQuery;
@@ -44,6 +42,8 @@ import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.json.JSONException;
 import org.json.JSONObject;
 

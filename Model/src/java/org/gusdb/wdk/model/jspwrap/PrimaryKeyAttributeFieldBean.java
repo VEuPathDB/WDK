@@ -1,6 +1,6 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.PrimaryKeyAttributeField;
+import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 
 public class PrimaryKeyAttributeFieldBean extends AttributeFieldBean {
 

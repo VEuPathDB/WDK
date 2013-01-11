@@ -7,10 +7,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.question.Question;
 import org.json.JSONException;
 import org.json.JSONObject;
 

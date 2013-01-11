@@ -8,11 +8,11 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;

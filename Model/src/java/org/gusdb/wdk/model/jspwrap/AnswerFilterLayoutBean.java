@@ -6,8 +6,8 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.gusdb.wdk.model.AnswerFilterInstance;
-import org.gusdb.wdk.model.AnswerFilterLayout;
+import org.gusdb.wdk.model.answer.AnswerFilterInstance;
+import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 
 /**
  * @author SYSTEM
@@ -23,7 +23,7 @@ public class AnswerFilterLayoutBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerFilterLayout#getDescription()
+     * @see org.gusdb.wdk.model.answer.AnswerFilterLayout#getDescription()
      */
     public String getDescription() {
         return layout.getDescription();
@@ -31,7 +31,7 @@ public class AnswerFilterLayoutBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerFilterLayout#getDisplayName()
+     * @see org.gusdb.wdk.model.answer.AnswerFilterLayout#getDisplayName()
      */
     public String getDisplayName() {
         return layout.getDisplayName();
@@ -39,7 +39,7 @@ public class AnswerFilterLayoutBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerFilterLayout#getName()
+     * @see org.gusdb.wdk.model.answer.AnswerFilterLayout#getName()
      */
     public String getName() {
         return layout.getName();
@@ -47,7 +47,7 @@ public class AnswerFilterLayoutBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerFilterLayout#getInstanceMap()
+     * @see org.gusdb.wdk.model.answer.AnswerFilterLayout#getInstanceMap()
      */
     public Map<String, AnswerFilterInstanceBean> getInstanceMap() {
         Map<String, AnswerFilterInstanceBean> beanMap = new LinkedHashMap<String, AnswerFilterInstanceBean>();
@@ -61,7 +61,7 @@ public class AnswerFilterLayoutBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerFilterLayout#getInstances()
+     * @see org.gusdb.wdk.model.answer.AnswerFilterLayout#getInstances()
      */
     public AnswerFilterInstanceBean[] getInstances() {
         AnswerFilterInstance[] instances = layout.getInstances();
@@ -74,7 +74,7 @@ public class AnswerFilterLayoutBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerFilterLayout#getlayoutMap()
+     * @see org.gusdb.wdk.model.answer.AnswerFilterLayout#getlayoutMap()
      */
     public String getFileName() {
         return layout.getFileName();
@@ -82,7 +82,7 @@ public class AnswerFilterLayoutBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerFilterLayout#isVisible()
+     * @see org.gusdb.wdk.model.answer.AnswerFilterLayout#isVisible()
      */
     public boolean isVisible() {
         return layout.isVisible();
@@ -90,7 +90,7 @@ public class AnswerFilterLayoutBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerFilterLayout#isVertical()
+     * @see org.gusdb.wdk.model.answer.AnswerFilterLayout#isVertical()
      */
     public boolean isVertical() {
         return layout.isVertical();

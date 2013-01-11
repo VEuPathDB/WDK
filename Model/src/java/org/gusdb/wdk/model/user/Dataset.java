@@ -8,10 +8,10 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
-import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.json.JSONException;
 
 /**

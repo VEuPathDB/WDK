@@ -6,9 +6,9 @@ package org.gusdb.wdk.model.xml;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.gusdb.wdk.model.AttributeField;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
 
 /**
  * @author Jerric

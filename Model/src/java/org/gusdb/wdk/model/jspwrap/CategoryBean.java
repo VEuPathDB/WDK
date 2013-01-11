@@ -6,9 +6,9 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.gusdb.wdk.model.SearchCategory;
-import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.question.SearchCategory;
 
 /**
  * @author xingao
@@ -24,7 +24,7 @@ public class CategoryBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.SearchCategory#getChildren()
+     * @see org.gusdb.wdk.model.question.SearchCategory#getChildren()
      */
     public Map<String, CategoryBean> getWebsiteChildren() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
@@ -44,7 +44,7 @@ public class CategoryBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.SearchCategory#getDisplayName()
+     * @see org.gusdb.wdk.model.question.SearchCategory#getDisplayName()
      */
     public String getDisplayName() {
         return category.getDisplayName();
@@ -52,7 +52,7 @@ public class CategoryBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.SearchCategory#getName()
+     * @see org.gusdb.wdk.model.question.SearchCategory#getName()
      */
     public String getName() {
         return category.getName();
@@ -60,7 +60,7 @@ public class CategoryBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.SearchCategory#getParent()
+     * @see org.gusdb.wdk.model.question.SearchCategory#getParent()
      */
     public CategoryBean getParent() {
         return new CategoryBean(category.getParent());
@@ -69,7 +69,7 @@ public class CategoryBean {
     /**
      * @return
      * @throws WdkModelException
-     * @see org.gusdb.wdk.model.SearchCategory#getQuestions()
+     * @see org.gusdb.wdk.model.question.SearchCategory#getQuestions()
      */
     public QuestionBean[] getWebsiteQuestions() throws WdkModelException {
         Question[] questions = category.getWebsiteQuestions();
@@ -83,7 +83,7 @@ public class CategoryBean {
     /**
      * @return
      * @throws WdkModelException
-     * @see org.gusdb.wdk.model.SearchCategory#getQuestions()
+     * @see org.gusdb.wdk.model.question.SearchCategory#getQuestions()
      */
     public QuestionBean[] getWebserviceQuestions() throws WdkModelException {
         Question[] questions = category.getWebserviceQuestions();
@@ -96,7 +96,7 @@ public class CategoryBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.SearchCategory#isMutliCategory()
+     * @see org.gusdb.wdk.model.question.SearchCategory#isMutliCategory()
      */
     public boolean isMultiCategory() {
         return category.isMultiCategory();

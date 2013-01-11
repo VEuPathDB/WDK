@@ -11,12 +11,12 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
-import org.gusdb.wdk.model.attribute.plugin.AttributePlugin;
-import org.gusdb.wdk.model.attribute.plugin.AttributePluginReference;
 import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.record.attribute.plugin.AttributePlugin;
+import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
 
 public class InvokeAttributePluginAction extends Action {
     

@@ -9,8 +9,8 @@ package org.gusdb.wdk.jmx.mbeans;
  *
  * @see org.gusdb.wdk.jmx.mbeans.AbstractConfig#setValuesFromGetters
  * @see org.gusdb.wdk.model.ModelConfig
- * @see org.gusdb.wdk.model.ModelConfigUserDB
- * @see org.gusdb.wdk.model.ModelConfigAppDB
+ * @see org.gusdb.wdk.model.config.ModelConfigUserDB
+ * @see org.gusdb.wdk.model.config.ModelConfigAppDB
  */
 public class ModelConfig extends AbstractConfig {
 
@@ -20,10 +20,10 @@ public class ModelConfig extends AbstractConfig {
   }
   
   protected void init() {
-    org.gusdb.wdk.model.ModelConfig       modelConfig       = wdkModel.getModelConfig();
-    org.gusdb.wdk.model.QueryMonitor      queryMonitor      = modelConfig.getQueryMonitor();
-    org.gusdb.wdk.model.ModelConfigUserDB modelConfigUserDB = modelConfig.getUserDB();
-    org.gusdb.wdk.model.ModelConfigAppDB  modelConfigAppDB  = modelConfig.getAppDB();
+    org.gusdb.wdk.model.config.ModelConfig       modelConfig       = wdkModel.getModelConfig();
+    org.gusdb.wdk.model.config.QueryMonitor      queryMonitor      = modelConfig.getQueryMonitor();
+    org.gusdb.wdk.model.config.ModelConfigUserDB modelConfigUserDB = modelConfig.getUserDB();
+    org.gusdb.wdk.model.config.ModelConfigAppDB  modelConfigAppDB  = modelConfig.getAppDB();
 
     
     setValuesFromGetters("global", modelConfig);
