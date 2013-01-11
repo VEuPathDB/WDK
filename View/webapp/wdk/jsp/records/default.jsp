@@ -19,7 +19,7 @@
           <!-- need to know if fieldVal should be hot linked -->
 
           <c:choose>
-            <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.LinkAttributeValue'}">
+            <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.record.attribute.LinkAttributeValue'}">
               <a href="${fieldVal.url}">${fieldVal.displayText}</a>
             </c:when>
             <c:otherwise>
@@ -52,7 +52,7 @@
             <!-- need to know if fieldVal should be hot linked -->
 
             <c:choose>
-              <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.LinkValue'}">
+              <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.record.attribute.LinkValue'}">
                  <a href="${fieldVal.url}">${fieldVal.visible}</a>
               </c:when>
               <c:otherwise>
@@ -112,7 +112,7 @@
                <c:otherwise>
                  <!-- need to know if fieldVal should be hot linked -->
                  <c:choose>
-                    <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.LinkValue'}">
+                    <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.record.attribute.LinkValue'}">
                        <a href="${fieldVal.url}">${fieldVal.visible}</a>
                     </c:when>
                     <c:otherwise>

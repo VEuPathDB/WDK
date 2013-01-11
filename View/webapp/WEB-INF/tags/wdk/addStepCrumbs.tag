@@ -6,13 +6,13 @@
 
 <%@ attribute name="wizard"
 			  required="false"
-     		  type="org.gusdb.wdk.model.wizard.Wizard"
+     		  type="org.gusdb.wdk.controller.wizard.Wizard"
 			  description="Wizard that is being displayed"
 %>
 
 <%@ attribute name="stage"
               required="false"
-              type="org.gusdb.wdk.model.wizard.Stage"
+              type="org.gusdb.wdk.controller.wizard.Stage"
               description="The current stage"
 %>
 
