@@ -4,7 +4,7 @@
 <%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <%@ attribute name="attributeValue"
-              type="org.gusdb.wdk.model.AttributeValue"
+              type="org.gusdb.wdk.model.record.attribute.AttributeValue"
               required="true"
               description="the attribute value to be rendered."
 %>
@@ -42,7 +42,7 @@
       <span style="color:gray;">N/A</span>
     </c:when>
 
-    <c:when test="${attributeValue.class.name eq 'org.gusdb.wdk.model.PrimaryKeyAttributeValue'}">
+    <c:when test="${attributeValue.class.name eq 'org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue'}">
       <c:set var="pkValues" value="${attributeValue.values}" />
       <c:set var="recordLinkKeys" value="" />
       <c:forEach items="${pkValues}" var="pkValue">
@@ -59,7 +59,7 @@
       <a href="<c:url value='/showRecord.do?name=${recordName}${recordLinkKeys}' />">${displayValue}</a>
     </c:when>
 
-    <c:when test="${attributeValue.class.name eq 'org.gusdb.wdk.model.LinkAttributeValue'}">
+    <c:when test="${attributeValue.class.name eq 'org.gusdb.wdk.model.record.attribute.LinkAttributeValue'}">
       <c:set var="target">
         <c:if test="${attributeField.newWindow}">target="_blank"</c:if>
       </c:set>

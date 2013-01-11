@@ -4,7 +4,7 @@
 
 <%@ attribute name="table"
               required="true"
-              type="org.gusdb.wdk.model.TableValue"
+              type="org.gusdb.wdk.model.record.TableValue"
               description="The WDK Table to be rendered"
 %>
 
@@ -71,7 +71,7 @@
         
             <td ${align} ${nowrap}>
                 <c:choose>
-                    <c:when test="${rCol.class.name eq 'org.gusdb.wdk.model.LinkAttributeValue'}">
+                    <c:when test="${rCol.class.name eq 'org.gusdb.wdk.model.record.attribute.LinkAttributeValue'}">
                         <a href="${rCol.url}">${rCol.displayText}</a>
                     </c:when>
                     <c:otherwise>
