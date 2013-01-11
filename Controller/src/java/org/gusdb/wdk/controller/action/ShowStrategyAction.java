@@ -265,8 +265,14 @@ public class ShowStrategyAction extends ShowQuestionAction {
             SQLException, NoSuchAlgorithmException {
         JSONObject jsState = new JSONObject();
         StrategyBean[] openedStrategies = user.getActiveStrategies();
+
+        logger.debug("PRINTING STATE for " + openedStrategies.length + " strategies");
+   
         for (int order = 0; order < openedStrategies.length; order++) {
             StrategyBean strat = openedStrategies[order];
+
+            logger.debug("#" + strat.getStrategyId() + " - " + strat.getChecksum());
+
             int stratId = strat.getStrategyId();
             JSONObject jsStrategy = new JSONObject();
             jsStrategy.put("id", stratId);
@@ -305,7 +311,13 @@ public class ShowStrategyAction extends ShowQuestionAction {
             throws JSONException, NoSuchAlgorithmException, WdkModelException,
             WdkUserException, SQLException {
         JSONObject jsStrategies = new JSONObject();
+
+        logger.debug("PRINTING DETAIL for " + strategies.size() + " strategies");
+
         for (StrategyBean strategy : strategies.values()) {
+
+            logger.debug("#" + strategy.getStrategyId() + " - " + strategy.getChecksum());
+
             JSONObject jsStrategy = outputStrategy(model, user, strategy);
             System.out.println("ID: " + strategy.getStrategyId());
             System.out.println("Checksum: " + strategy.getChecksum());

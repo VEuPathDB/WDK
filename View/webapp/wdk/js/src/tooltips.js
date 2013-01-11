@@ -91,6 +91,13 @@ wdk.util.namespace("window.wdk.tooltips", function(ns, $) {
    *  - stickySecs (1): how long the tooltip will appear on screen if mouse is no longer interacting with it
    */
   function setUpStickyTooltip(tipTarget, tipContent, conf) {
+    // use default config is it is not passed in
+    if (conf == undefined) conf = getConf();
+
+    // obtain the width from content
+    var width = $(tipContent).width();
+    if (width == undefined || width == 0) width = 280;
+
     $(tipTarget).qtip({
       content : tipContent,
       show: {
@@ -99,6 +106,9 @@ wdk.util.namespace("window.wdk.tooltips", function(ns, $) {
       },
       hide: {
         event: 'click'
+      },
+      style: {
+        width: width
       },
       position: {
         adjust: {
@@ -189,5 +199,5 @@ wdk.util.namespace("window.wdk.tooltips", function(ns, $) {
   ns.assignStickyTooltipByTitle = assignStickyTooltipByTitle;
   ns.assignStickyTooltipByElement = assignStickyTooltipByElement;
   ns.assignParamTooltips = assignParamTooltips;
-
+  ns.setUpStickyTooltip = setUpStickyTooltip;
 });

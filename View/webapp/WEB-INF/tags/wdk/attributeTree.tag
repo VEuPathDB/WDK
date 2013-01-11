@@ -8,7 +8,7 @@
 
 <%@ attribute name="treeObject"
               required="true"
-              type="org.gusdb.wdk.model.AttributeCategoryTree"
+              type="org.gusdb.wdk.model.record.attribute.AttributeCategoryTree"
               description="the AttributeCategoryTree to render" %>
 
 <%@ attribute name="checkboxName"
