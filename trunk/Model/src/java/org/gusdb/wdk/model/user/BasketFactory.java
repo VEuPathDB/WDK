@@ -14,18 +14,11 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.AttributeQueryReference;
-import org.gusdb.wdk.model.ColumnAttributeField;
-import org.gusdb.wdk.model.PrimaryKeyAttributeField;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -35,6 +28,13 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.question.QuestionSet;
+import org.gusdb.wdk.model.record.AttributeQueryReference;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordClassSet;
+import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
+import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.json.JSONException;
 
 /**

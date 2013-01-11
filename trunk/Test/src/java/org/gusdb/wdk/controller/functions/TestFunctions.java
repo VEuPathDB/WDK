@@ -9,8 +9,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.wdk.model.AttributeValue;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.junit.Test;
 
 public class TestFunctions {

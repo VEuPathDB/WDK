@@ -19,12 +19,12 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.SummaryView;
+import org.gusdb.wdk.model.answer.SummaryViewHandler;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.view.SummaryView;
-import org.gusdb.wdk.model.view.SummaryViewHandler;
 import org.json.JSONException;
 
 public class ShowSummaryViewAction extends Action {

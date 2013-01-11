@@ -16,11 +16,11 @@ import java.util.Calendar;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.ModelConfigUserDB;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wsf.util.BaseCLI;
@@ -282,6 +282,8 @@ public class StepValidator extends BaseCLI {
         SqlUtils.executeUpdate(wdkModel, source, sql,
                 "wdk-invalidate-create-part-steps");
 
+        // add a hint to use filter in CONNECT BY, which improves from 1368 
+        // seconds to 251 seconds.
         sql = "UPDATE " + step + " SET is_valid = 0 "
                 + "WHERE step_id IN ( "
                 + "    SELECT s.step_id "
@@ -290,15 +292,17 @@ public class StepValidator extends BaseCLI {
                 + "      AND s.answer_id = a.answer_id      "
                 + "      AND a.project_id IN  " + projects
                 + "      AND s.step_id IN                  "
-                + "        (SELECT step_id FROM " + tempTable
-                + "         START WITH is_valid = 0 "
+                + "        (SELECT /*+ connect_by_filtering */ step_id FROM " 
+                + tempTable + "         START WITH is_valid = 0 "
                 + "         CONNECT BY (prior display_id = right_child_id "
                 + "                 OR prior display_id = left_child_id) "
                 + "         AND prior user_id = user_id)"
                 + "  )";
 
         // <ADD-AG 042911>
-	logger.info("\n\nWARNING: this final SQL might take 3 hours when using all projects; please let it run, killing the job would break replication.\n...................................\n");
+        logger.info("\n\nWARNING: this final SQL might take 3 hours when using" +
+        		" all projects; please let it run, killing the job would" +
+        		" break replication.\n...................................\n");
         executeByBatch(wdkModel, source, sql,
                 "STEP:wdk-invalidate-parent-step", null, null);
 

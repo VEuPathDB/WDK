@@ -7,11 +7,11 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Random;
 
-import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Dataset;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;

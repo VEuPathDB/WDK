@@ -3,6 +3,8 @@
  */
 package org.gusdb.wdk.model.user;
 
+import java.security.NoSuchAlgorithmException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -13,19 +15,21 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.AnswerFilterInstance;
-import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.BooleanOperator;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerFilterInstance;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.answer.SummaryView;
+import org.gusdb.wdk.model.query.BooleanExpression;
+import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.query.BooleanQuery;
-import org.gusdb.wdk.model.view.RecordView;
-import org.gusdb.wdk.model.view.SummaryView;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordClassSet;
+import org.gusdb.wdk.model.record.RecordView;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.json.JSONException;
 
 /**
  * @author xingao

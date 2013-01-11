@@ -5,9 +5,9 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.QuestionSet;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.question.QuestionSet;
 
 /**
  * A wrapper on a {@link QuestionSet} that provides simplified access for

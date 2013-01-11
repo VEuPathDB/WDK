@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.struts.action.ActionMessages;
-import org.gusdb.wdk.model.AttributeValue;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.record.attribute.AttributeValue;
 
 public class Functions {
   

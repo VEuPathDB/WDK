@@ -228,7 +228,6 @@ CREATE INDEX wdkuser.steps_idx03 ON wdkuser.steps (user_id, display_id, last_run
 CREATE INDEX wdkuser.steps_idx04 ON wdkuser.steps (user_id, answer_id, is_deleted);
 CREATE INDEX wdkuser.steps_idx05 ON wdkuser.steps (display_id, user_id, answer_id);
 CREATE INDEX wdkuser.steps_idx06 ON wdkuser.steps (is_valid, user_id, display_id);
-CREATE INDEX wdkuser.steps_idx06 ON wdkuser.steps (is_valid, user_id);
 CREATE INDEX wdkuser.steps_idx07 ON wdkuser.steps (left_child_id, user_id);
 CREATE INDEX wdkuser.steps_idx08 ON wdkuser.steps (right_child_id, user_id);
 

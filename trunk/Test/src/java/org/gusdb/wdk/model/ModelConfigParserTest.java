@@ -5,6 +5,8 @@ package org.gusdb.wdk.model;
 
 import java.io.IOException;
 
+import org.gusdb.wdk.model.config.ModelConfig;
+import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.junit.Assert;
 import org.xml.sax.SAXException;
 

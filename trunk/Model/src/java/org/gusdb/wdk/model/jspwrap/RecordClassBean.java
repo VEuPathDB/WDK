@@ -5,17 +5,17 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.gusdb.wdk.model.AnswerFilterInstance;
-import org.gusdb.wdk.model.AnswerFilterLayout;
-import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.ReporterRef;
-import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.view.RecordView;
+import org.gusdb.wdk.model.answer.AnswerFilterInstance;
+import org.gusdb.wdk.model.answer.AnswerFilterLayout;
+import org.gusdb.wdk.model.answer.ReporterRef;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordView;
+import org.gusdb.wdk.model.record.TableField;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.json.JSONException;
 
 /**
