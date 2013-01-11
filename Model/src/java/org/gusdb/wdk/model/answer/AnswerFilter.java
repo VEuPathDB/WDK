@@ -71,6 +71,15 @@ public class AnswerFilter extends WdkModelBase {
    */
   public void setRecordClass(RecordClass recordClass) {
     this.recordClass = recordClass;
+    if (instanceList != null) {
+      for(AnswerFilterInstance instance : instanceList) {
+        instance.setRecordClass(recordClass);
+      }
+    } else if (instanceMap != null) {
+      for(AnswerFilterInstance instance : instanceMap.values()) {
+        instance.setRecordClass(recordClass);
+      }
+    }
   }
 
   @Override
