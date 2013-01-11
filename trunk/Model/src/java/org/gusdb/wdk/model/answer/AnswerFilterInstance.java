@@ -236,7 +236,6 @@ public class AnswerFilterInstance extends WdkModelBase {
         String paramName = param.getName();
         String paramValue = param.getText().trim();
  
-        System.out.println("record class: " + recordClass);
         if (paramValueMap.containsKey(paramName))
           throw new WdkModelException("The param [" + paramName
               + "] for answerFilterInstance [" + name + "] of type "
