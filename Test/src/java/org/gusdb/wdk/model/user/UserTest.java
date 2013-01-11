@@ -8,13 +8,13 @@ import java.sql.SQLException;
 import java.util.Map;
 import java.util.Random;
 
-import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -10,12 +10,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import org.gusdb.wdk.model.AnswerFilterInstance;
-import org.gusdb.wdk.model.BooleanOperator;
-import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerFilterInstance;
+import org.gusdb.wdk.model.query.BooleanOperator;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;

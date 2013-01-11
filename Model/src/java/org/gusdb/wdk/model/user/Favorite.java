@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model.user;
 
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordInstance;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordInstance;
 
 public class Favorite {
 

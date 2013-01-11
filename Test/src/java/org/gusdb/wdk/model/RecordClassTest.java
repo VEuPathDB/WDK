@@ -1,5 +1,8 @@
 package org.gusdb.wdk.model;
 
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordClassSet;
 import org.junit.Assert;
 import org.junit.Test;
 

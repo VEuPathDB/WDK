@@ -10,14 +10,14 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordClassSet;
-import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordClassSet;
+import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.junit.Test;

@@ -17,8 +17,8 @@ import org.gusdb.wdk.model.jspwrap.RecordBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.view.RecordView;
-import org.gusdb.wdk.model.view.RecordViewHandler;
+import org.gusdb.wdk.model.record.RecordView;
+import org.gusdb.wdk.model.record.RecordViewHandler;
 
 public class ShowRecordViewAction extends Action {
 

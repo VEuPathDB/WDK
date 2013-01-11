@@ -3,7 +3,7 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.AnswerFilterInstance;
+import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 
 /**
  * @author SYSTEM
@@ -23,7 +23,7 @@ public class AnswerFilterInstanceBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerFilterInstance#getDescription()
+     * @see org.gusdb.wdk.model.answer.AnswerFilterInstance#getDescription()
      */
     public String getDescription() {
         return instance.getDescription();
@@ -31,7 +31,7 @@ public class AnswerFilterInstanceBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerFilterInstance#getDisplayName()
+     * @see org.gusdb.wdk.model.answer.AnswerFilterInstance#getDisplayName()
      */
     public String getDisplayName() {
         return instance.getDisplayName();
@@ -39,7 +39,7 @@ public class AnswerFilterInstanceBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerFilterInstance#getName()
+     * @see org.gusdb.wdk.model.answer.AnswerFilterInstance#getName()
      */
     public String getName() {
         return instance.getName();
@@ -47,7 +47,7 @@ public class AnswerFilterInstanceBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerFilterInstance#isBooleanExpansion()
+     * @see org.gusdb.wdk.model.answer.AnswerFilterInstance#isBooleanExpansion()
      */
     public boolean isBooleanExpansion() {
         return instance.isBooleanExpansion();
@@ -55,7 +55,7 @@ public class AnswerFilterInstanceBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AnswerFilterInstance#isDefault()
+     * @see org.gusdb.wdk.model.answer.AnswerFilterInstance#isDefault()
      */
     public boolean isDefault() {
         return instance.isDefault();

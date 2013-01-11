@@ -11,13 +11,13 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.wdk.model.question.Question;
 import org.json.JSONObject;
 
 /**
