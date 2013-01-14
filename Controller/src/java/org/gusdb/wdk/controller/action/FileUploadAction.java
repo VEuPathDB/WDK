@@ -21,6 +21,7 @@ import org.json.JSONObject;
 
 public class FileUploadAction extends WdkAction {
 
+  @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(FileUploadAction.class.getName());
   
   private static final String UPLOAD_NAME_PREFIX = "file";
@@ -33,7 +34,6 @@ public class FileUploadAction extends WdkAction {
 
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
-    LOG.info("Entering FileUploadAction...");
     JSONObject result = new JSONObject();
     for (String fieldName : params.getKeys()) {
       if (fieldName.startsWith(UPLOAD_NAME_PREFIX)) {
@@ -48,6 +48,7 @@ public class FileUploadAction extends WdkAction {
           fileInfo.put("fileName", file.getName());
           fileInfo.put("size", file.getSize());
           fileInfo.put("contentType", file.getContentType());
+          fileInfo.put("tmpFileLocation", file.getStoreLocation());
           fileInfo.put("preview", getFilePreview(file));
         }
         result.append("results", fileInfo);
@@ -59,7 +60,7 @@ public class FileUploadAction extends WdkAction {
   }
   
   private String getFilePreview(DiskFileItem file) throws WdkModelException {
-    // NOTE: Could also use file.getContent().substring(0, PREVIEW_CHARS);
+    // NOTE: Could also use file.getString().substring(0, PREVIEW_CHARS);
     //       ...but we would be reading the whole thing into memory just to get
     //       the preview; probably not a good thing for mid- to large-size files.
     BufferedReader reader = null;
