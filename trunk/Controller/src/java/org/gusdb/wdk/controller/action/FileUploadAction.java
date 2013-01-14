@@ -3,6 +3,9 @@ package org.gusdb.wdk.controller.action;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 
 import org.apache.commons.fileupload.disk.DiskFileItem;
@@ -22,6 +25,8 @@ public class FileUploadAction extends WdkAction {
   
   private static final String UPLOAD_NAME_PREFIX = "file";
   private static final int PREVIEW_CHARS = 100;
+
+  private final DateFormat _dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
   
   @Override protected boolean shouldValidateParams() { return false; }
   @Override protected Map<String, ParamDef> getParamDefs() { return EMPTY_PARAMS; }
@@ -48,7 +53,9 @@ public class FileUploadAction extends WdkAction {
         result.append("results", fileInfo);
       }
     }
-    return new ActionResult(ResponseType.json).setStream(getStreamFromString(result.toString(2)));
+    return new ActionResult(ResponseType.json)
+      .setStream(getStreamFromString(result.toString(2)))
+      .setFileName("uploadedFileData." + _dateFormat.format(new Date()) + ".json");
   }
   
   private String getFilePreview(DiskFileItem file) throws WdkModelException {
