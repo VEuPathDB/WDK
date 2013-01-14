@@ -217,6 +217,10 @@ public class QuestionBean {
         return question.getDisplayName();
     }
 
+    public String getShortDisplayName() {
+        return question.getShortDisplayName();
+    }
+
     public String getHelp() {
         return question.getHelp();
     }

@@ -18,4 +18,4 @@
 <c:set var="descripId" value="query-description-section"/>
 
 <%-- display description for wdkQuestion --%>
-<div id="${descripId}"><b>Query description: </b>${wdkQuestion.description}</div>
+<div class="search-section" id="${descripId}"><b>Query description: </b>${wdkQuestion.description}</div>

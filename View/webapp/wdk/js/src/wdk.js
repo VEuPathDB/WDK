@@ -236,6 +236,43 @@ function getWebAppUrl() {
 
   };
 
+  var registerCollapsible = function() {
+    $(".collapsible").each(function() {
+      var $this = $(this);
+
+      if ($this.data("rendered")) {
+        return;
+      }
+
+      var $trigger = $this.children().first().addClass("collapsible-title");
+      var $content = $trigger.next().addClass("collapsible-content");
+      var $arrowSpan = $("<span></span>").prependTo($trigger);
+
+      if (!$trigger.attr("title")) {
+        $trigger.attr("title", "Click to expand or collapse");
+      }
+
+      if ($content.css("display") === "none") {
+        $content.hide();
+        $this.addClass("collapsed");
+        $arrowSpan.addClass("ui-icon ui-icon-triangle-1-e");
+      } else {
+        $content.show();
+        $arrowSpan.addClass("ui-icon ui-icon-triangle-1-s");
+      }
+
+      $trigger.on("click", function(e) {
+        e.preventDefault();
+        $this.toggleClass("collapsed", $content.css("display") === "block");
+        $content.slideToggle();
+        $arrowSpan.toggleClass("ui-icon-triangle-1-e", $this.hasClass("collapsed"));
+        $arrowSpan.toggleClass("ui-icon-triangle-1-s", !$this.hasClass("collapsed"));
+      });
+
+      $this.data("rendered", true);
+    });
+  }
+
   var registerTable = function() {
     // register data tables on wdk table
     $(".wdk-table.datatables").dataTable({
@@ -244,6 +281,82 @@ function getWebAppUrl() {
 
     // also register other tables
     $("table.wdk-data-table").not(".dataTable").wdkDataTable();
+  };
+
+  var registerTooltips = function() {
+    // register elements with fancy tooltips
+    $(".wdk-tooltip").not(".qtip").qtip({
+      position: {
+        my: "top center",
+        at: "bottom center"
+      }
+    });
+  };
+
+  var registerSnippet = function() {
+    $(".snippet").each(function(idx, node) {
+      var $node = $(node),
+          defaultHeight = $node.height();
+
+      if ($node.data("rendered")) {
+        return;
+      }
+
+      // We want to show at minimum two lines (i.e., leave 26px unobstructed).
+      var showHeight = Math.max($node.data("snippet-show"), 26) || 26;
+
+      // Add the height of the gradient to the showHeight
+      var height = showHeight + 24;
+
+      if (height >= $node.height()) {
+        $node.data("rendered", true);
+        return;
+      }
+
+      var $gradient = $("<div></div>").addClass("psGradient").attr("title", "Click \"Show more\" to expand");
+
+      // Wrap inner content so we can hide its overflow
+      $node.wrapInner($("<div></div>").height(height)
+          .css("overflow", "hidden"));
+
+      $gradient.appendTo($node);
+
+      var $show = $("<div><a href='#'><span " +
+          "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show more</a></div>")
+          .appendTo($node)
+          .on("click", "a", function(e) {
+            e.preventDefault();
+            $node.children().eq(0).animate({
+              height: $node.find("div > div").height()
+            },
+            {
+              easing: "easeOutQuint"
+            })
+            $show.hide();
+            $hide.show();
+            $gradient.hide();
+          });
+
+      var $hide = $("<div><a href='#'><span " +
+          "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a></div>")
+          .appendTo($node)
+          .css("padding-top", "1em")
+          .on("click", "a", function(e) {
+            e.preventDefault();
+            $node.children().eq(0).animate({
+              height: height
+            },
+            {
+              easing: "easeOutQuint"
+            });
+            $show.show();
+            $hide.hide();
+            $gradient.show();
+          })
+          .hide();
+
+      $node.data("rendered", true);
+    });
   };
 
   var setUpNavDropDowns = function() {
@@ -338,7 +451,10 @@ function getWebAppUrl() {
   function load() {
     wdk.util.executeOnloadFunctions("body");
     registerTable();
+    registerTooltips();
     registerToggle();
+    registerCollapsible();
+    registerSnippet();
     $(".button").button();
   }
 
