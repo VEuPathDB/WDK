@@ -174,7 +174,9 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
       if (ns[func] instanceof Function && context instanceof Object) {
         return ns[func].apply(context, args);
       } else {
-        console.error("Reference error: " + functionName + " is not a function");
+        if (typeof console === "object") {
+          console.error("Reference error: " + functionName + " is not a function");
+        }
         return false;
       }
   }
