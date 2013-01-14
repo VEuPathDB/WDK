@@ -13,6 +13,7 @@
 	<classpathentry kind="lib" path="/WDK Model/lib/java/commons-digester-1.7.jar"/>
 	<classpathentry kind="lib" path="/WDK Model/lib/java/jing-20081028.jar"/>
 	<classpathentry kind="lib" path="/WDK Model/lib/java/xsltc.jar"/>
+        <classpathentry kind="lib" path="/WDK Controller/lib/java/commons-fileupload-1.1.1.jar"/>
         <classpathentry kind="lib" path="/WDK Controller/lib/java/openid4java-full-0.9.6.jar"/>
         <!-- these are dependencies of openid4java -->
 	<classpathentry kind="lib" path="/WDK Controller/lib/java/commons-codec-1.3.jar"/>
