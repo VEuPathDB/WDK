@@ -6,7 +6,7 @@
   <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
       <title>File Upload Form</title>
-      <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+      <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"><jsp:text/></script>
       <script type="text/javascript">
         var addFormField = function() {
           var fieldCount = 1;
