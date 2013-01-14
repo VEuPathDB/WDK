@@ -4,8 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.controller.WdkValidationException;
+import org.gusdb.wdk.controller.actionutil.ParamDef.DataType;
 
 /**
  * Given a map of parameter definitions, validates a map of key/value pairs for
@@ -31,24 +33,56 @@ public class ParameterValidator {
 	 * 
 	 * @param expectedParams definitions of expected parameters
 	 * @param parameters writable map of parameter values
+	 * @param uploads map of uploaded files
 	 * @return param group containing validated parameter definitions and values
 	 * @throws WdkValidationException if parameters do not pass validation
 	 */
 	public ParamGroup validateParameters(
 			Map<String, ParamDef> expectedParams,
-			Map<String, String[]> parameters) throws WdkValidationException {
+			Map<String, String[]> parameters,
+			Map<String, DiskFileItem> uploads) throws WdkValidationException {
+	  return validateParameters(expectedParams, parameters, uploads,
+	      new SecondaryValidator() {
+          @Override public void performAdditionalValidation(ParamGroup params)
+              throws WdkValidationException { return; } } );
+	}
+	
+  /**
+   * Uses expected parameter definitions to validate parameters passed in.  Any expected but
+   * optional parameters not found will be added to the parameter map as empty String[]. If
+   * an implementation of SecondaryValidator is passed, its performAdditionalValidation()
+   * method will be called after primary validation
+   * 
+   * @param expectedParams definitions of expected parameters
+   * @param parameters writable map of parameter values
+   * @param uploads map of uploaded files
+   * @param validator secondary validator
+   * @return param group containing validated parameter definitions and values
+   * @throws WdkValidationException if parameters do not pass validation
+   */
+  public ParamGroup validateParameters(
+      Map<String, ParamDef> expectedParams,
+      Map<String, String[]> parameters,
+      Map<String, DiskFileItem> uploads,
+      SecondaryValidator validator) throws WdkValidationException {
 
-		ParamGroup group = new ParamGroup(expectedParams, parameters);
+		ParamGroup group = new ParamGroup(expectedParams, parameters, uploads);
 		// validate each param, and assign default value if warranted
 		for (String name : expectedParams.keySet()) {
-			// insulate code by replacing nulls with empty arrays
-			if (!parameters.containsKey(name)) {
-				parameters.put(name, new String[]{ });
-			}
-			String[] newValue = checkParam(name, expectedParams.get(name), parameters.get(name), _errors);
-			if (newValue != null) {
-				parameters.put(name, newValue);
-			}
+		  ParamDef paramDef = expectedParams.get(name);
+		  if (paramDef.getDataType().equals(DataType.FILE)) {
+		    checkFileParam(name, paramDef, uploads.get(name), _errors);
+		  }
+		  else {
+  			// insulate code by replacing nulls with empty arrays
+  			if (!parameters.containsKey(name)) {
+  				parameters.put(name, new String[]{ });
+  			}
+  			String[] newValue = checkParam(name, expectedParams.get(name), parameters.get(name), _errors);
+  			if (newValue != null) {
+  				parameters.put(name, newValue);
+  			}
+		  }
 		}
 		// check for extra params (ensures documentation compliance of child classes)
 		for (String name : parameters.keySet()) {
@@ -65,37 +99,28 @@ public class ParameterValidator {
 			throw new WdkValidationException(message +
 					(_errors.size() == 1 ? "the following error: " + _errors.get(0) : "multiple errors."), this);
 		}
-		return group;
-	}
-	
-	/**
-	 * Uses expected parameter definitions to validate parameters passed in.  Any expected but
-   * optional parameters not found will be added to the parameter map as empty String[]. If
-   * an implementation of SecondaryValidator is passed, its performAdditionalValidation()
-   * method will be called after primary validation
-	 * 
-   * @param expectedParams definitions of expected parameters
-   * @param parameters writable map of parameter values
-   * @param validator secondary validator
-   * @return param group containing validated parameter definitions and values
-	 * @throws WdkValidationException if parameters do not pass validation
-	 */
-	public ParamGroup validateParameters(
-	    Map<String, ParamDef> expectedParams,
-	    Map<String, String[]> parameters,
-	    SecondaryValidator validator) throws WdkValidationException {
-	  ParamGroup params = validateParameters(expectedParams, parameters);
     try {
-      validator.performAdditionalValidation(params);
-      return params;
+      validator.performAdditionalValidation(group);
     }
     catch (WdkValidationException e) {
       _errors.add(e.getMessage());
+      LOG.error(e);
       throw e;
     }
-	}
+		return group;
+  }
 	
-	/**
+	private static void checkFileParam(String name, ParamDef paramDef, DiskFileItem uploadedFile, List<String> errors) {
+	  if (paramDef.isRequired() && uploadedFile == null) {
+	    errors.add("Param [ " + name + " ] is required.");
+	  }
+
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // TODO: check file size and type (but how to specify?) !!!
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  }
+
+  /**
 	 * List of problems found with the parameters
 	 * TODO: convert to a map
 	 * 
