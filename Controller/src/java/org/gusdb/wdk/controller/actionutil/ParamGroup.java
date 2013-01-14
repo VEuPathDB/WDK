@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.fileupload.disk.DiskFileItem;
+
 /**
  * Grouping of a set of validated parameters and their definitions.
  * 
@@ -14,13 +16,15 @@ public class ParamGroup {
 	
   private static final Set<String> TRUE_VALUES =
       new HashSet<>(Arrays.asList(new String[]{ "true", "1", "yes" }));
-	
+
+  private Map<String, ParamDef> _defs;
   private Map<String, String[]> _values;
-	private Map<String, ParamDef> _defs;
+	private Map<String, DiskFileItem> _uploads;
 	
-	public ParamGroup(Map<String,ParamDef> definitions, Map<String, String[]> values) {
+	public ParamGroup(Map<String,ParamDef> definitions, Map<String, String[]> values, Map<String, DiskFileItem> uploads) {
 		_defs = definitions;
 		_values = values;
+		_uploads = uploads;
 	}
 	
 	/**
@@ -95,8 +99,13 @@ public class ParamGroup {
     }
     return TRUE_VALUES.contains(getValue(key));
   }
-  
+	
 	public Map<String, String[]> getParamMap() {
 		return _values;
 	}
+
+  public DiskFileItem getUpload(String key) {
+    checkValidKey(key);
+    return _uploads.get(key);
+  }
 }

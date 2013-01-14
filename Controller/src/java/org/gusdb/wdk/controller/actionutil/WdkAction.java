@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletContext;
@@ -16,6 +17,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItem;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
@@ -24,10 +30,12 @@ import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.WdkValidationException;
 import org.gusdb.wdk.controller.actionutil.ParamDef.Count;
+import org.gusdb.wdk.controller.actionutil.ParamDef.DataType;
 import org.gusdb.wdk.controller.actionutil.ParamDef.Required;
 import org.gusdb.wdk.controller.actionutil.ParameterValidator.SecondaryValidator;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
@@ -66,6 +74,9 @@ public abstract class WdkAction implements SecondaryValidator {
   // internal site URLs often contain this parameter from the auth service
   private static final String AUTH_TICKET = "auth_tkt";
 
+  // default max upload file size
+  private static final int DEFAULT_MAX_UPLOAD_SIZE_MB = 10;
+  
   /**
    * Provides standard information that came in on the current request
    * 
@@ -164,20 +175,55 @@ public abstract class WdkAction implements SecondaryValidator {
   }
   
   @SuppressWarnings("rawtypes")
-  private ParamGroup createParamGroup(Map parameterMap) throws WdkValidationException {
+  private ParamGroup createParamGroup(Map parameterMap) throws WdkValidationException, WdkUserException {
     ParamGroup params;
     @SuppressWarnings("unchecked")
-    Map<String, String[]> parameters = new HashMap<>((Map<String, String[]>)parameterMap);
+    Map<String, String[]> parameters = (Map<String, String[]>) (parameterMap == null ?
+        new HashMap<>() : new HashMap<>((Map<String, String[]>)parameterMap));
+    Map<String, DiskFileItem> uploads = getFileUploads();
     if (shouldValidateParams()) {
       ParameterValidator validator = new ParameterValidator();
-      params = validator.validateParameters(getExpectedParams(), parameters, this);
+      params = validator.validateParameters(getExpectedParams(), parameters, uploads, this);
     }
     else {
-      params = buildParamGroup(parameters);
+      params = buildParamGroup(parameters, uploads);
     }
     return params;
   }
 
+  private Map<String, DiskFileItem> getFileUploads() throws WdkUserException {
+    LOG.info("Loading file uploads.");
+    // if not multi-part, then just return empty map
+    if (!ServletFileUpload.isMultipartContent(new ServletRequestContext(_request))) {
+      LOG.info("Request is not multi-part.  Returning empty map.");
+      return new HashMap<String, DiskFileItem>();
+    }
+    try {
+      ServletFileUpload uploadHandler = new ServletFileUpload(new DiskFileItemFactory());
+      uploadHandler.setSizeMax(getMaxUploadSize()*1024*1024);
+      @SuppressWarnings("unchecked")
+      List<DiskFileItem> uploadList = uploadHandler.parseRequest(_request);
+      Map<String, DiskFileItem> uploadMap = new HashMap<String, DiskFileItem>();
+      for (DiskFileItem upload : uploadList) {
+        LOG.info("Got a disk item from request named " + upload.getFieldName() + ": " + upload);
+        uploadMap.put(upload.getFieldName(), upload);
+      }
+      return uploadMap;
+    }
+    catch (FileUploadException e) {
+      throw new WdkUserException("Error handling upload field.", e);
+    }
+  }
+  
+  /**
+   * Returns the maximum file upload size.  This can be overridden by subclasses.
+   * 
+   * @return max file size in megabytes
+   */
+  protected int getMaxUploadSize() {
+    return DEFAULT_MAX_UPLOAD_SIZE_MB;
+  }
+  
   private static void transferStream(OutputStream outputStream, InputStream inputStream)
       throws IOException {
     try {
@@ -193,7 +239,7 @@ public abstract class WdkAction implements SecondaryValidator {
     }
   }
   
-  private ParamGroup buildParamGroup(Map<String, String[]> parameters) {
+  private ParamGroup buildParamGroup(Map<String, String[]> parameters, Map<String, DiskFileItem> uploads) {
     // generate param definitions based on passed params so calling code
     //   sees a complete ParamGroup structure
     Map<String, ParamDef> definitions = new HashMap<String, ParamDef>();
@@ -202,7 +248,10 @@ public abstract class WdkAction implements SecondaryValidator {
       definitions.put(key, new ParamDef(Required.OPTIONAL,
           values.length > 1 ? Count.MULTIPLE : Count.SINGULAR));
     }
-    return new ParamGroup(definitions, parameters);
+    for (String key : uploads.keySet()) {
+      definitions.put(key, new ParamDef(Required.OPTIONAL, DataType.FILE));
+    }
+    return new ParamGroup(definitions, parameters, uploads);
   }
   
   /**
