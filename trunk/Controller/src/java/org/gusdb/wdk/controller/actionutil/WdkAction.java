@@ -192,10 +192,10 @@ public abstract class WdkAction implements SecondaryValidator {
   }
 
   private Map<String, DiskFileItem> getFileUploads() throws WdkUserException {
-    LOG.info("Loading file uploads.");
+    LOG.debug("Loading file uploads.");
     // if not multi-part, then just return empty map
     if (!ServletFileUpload.isMultipartContent(new ServletRequestContext(_request))) {
-      LOG.info("Request is not multi-part.  Returning empty map.");
+      LOG.debug("Request is not multi-part.  Returning empty map.");
       return new HashMap<String, DiskFileItem>();
     }
     try {
@@ -205,7 +205,7 @@ public abstract class WdkAction implements SecondaryValidator {
       List<DiskFileItem> uploadList = uploadHandler.parseRequest(_request);
       Map<String, DiskFileItem> uploadMap = new HashMap<String, DiskFileItem>();
       for (DiskFileItem upload : uploadList) {
-        LOG.info("Got a disk item from request named " + upload.getFieldName() + ": " + upload);
+        LOG.debug("Got a disk item from request named " + upload.getFieldName() + ": " + upload);
         uploadMap.put(upload.getFieldName(), upload);
       }
       return uploadMap;
