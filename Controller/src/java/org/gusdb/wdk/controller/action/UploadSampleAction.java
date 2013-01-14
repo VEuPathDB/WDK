@@ -19,10 +19,10 @@ import org.gusdb.wdk.controller.actionutil.WdkAction;
 import org.gusdb.wdk.model.WdkModelException;
 import org.json.JSONObject;
 
-public class FileUploadAction extends WdkAction {
+public class UploadSampleAction extends WdkAction {
 
   @SuppressWarnings("unused")
-  private static final Logger LOG = Logger.getLogger(FileUploadAction.class.getName());
+  private static final Logger LOG = Logger.getLogger(UploadSampleAction.class.getName());
   
   private static final String UPLOAD_NAME_PREFIX = "file";
   private static final int PREVIEW_CHARS = 100;
