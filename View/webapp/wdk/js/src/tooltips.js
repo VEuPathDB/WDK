@@ -95,7 +95,9 @@ wdk.util.namespace("window.wdk.tooltips", function(ns, $) {
     if (conf == undefined) conf = getConf();
 
     // obtain the width from content
-    var width = $(tipContent).width();
+    if (typeof tipContent !== "string") {
+      var width = $(tipContent).width();
+    }
     if (width == undefined || width == 0) width = 280;
 
     $(tipTarget).qtip({
