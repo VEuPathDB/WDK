@@ -233,7 +233,7 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
 
   function submitError() {
     var errorForm = $('#error-submission-form')[0];
-    WdkAjax.sendContactRequest(errorForm, function(){
+    sendContactRequest(errorForm, function(){
       $('#open-error-thanks-link').click();
     });
   }
