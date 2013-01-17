@@ -53,15 +53,15 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       if (!dependedParams[name]) {
         dependedParams[name] = $(this).attr('dependson');
       }
-      var dependedParam = $("td#" + dependedParams[name] + 
-          "aaa input[name='array(" + dependedParams[name] + ")'], td#" + 
+      var dependedParam = $("#" + dependedParams[name] + 
+          "aaa input[name='array(" + dependedParams[name] + ")'], #" + 
           dependedParams[name] + "aaa select[name='array(" + dependedParams[name] + 
           ")']");
       dependedParam.change(function() {
         dependedValues = [];
         var paramName = getParamName($(this).attr('name'), true);
-        var inputs = $("td#" + paramName + "aaa input[name='array(" + paramName + 
-            ")']:checked, td#" + paramName + "aaa select[name='array(" + paramName + 
+        var inputs = $("#" + paramName + "aaa input[name='array(" + paramName + 
+            ")']:checked, #" + paramName + "aaa select[name='array(" + paramName + 
             ")']");
         inputs.each(function() {
           dependedValues.push($(this).val());
@@ -195,7 +195,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   //==============================================================================
   function updateDependentParam(paramName, dependedValue) {
     if (dependedValue && dependedValue != 'Choose one:') {
-      var dependentParamSelector = "td#" + paramName + 
+      var dependentParamSelector = "#" + paramName + 
           "aaa > div.dependentParam[name='" + paramName + "']";
       var dependentParam = $(dependentParamSelector);
       var questionName = dependentParam.closest("form")
