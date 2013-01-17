@@ -180,7 +180,31 @@ public abstract class WdkAction implements SecondaryValidator {
     @SuppressWarnings("unchecked")
     Map<String, String[]> parameters = (Map<String, String[]>) (parameterMap == null ?
         new HashMap<>() : new HashMap<>((Map<String, String[]>)parameterMap));
-    Map<String, DiskFileItem> uploads = getFileUploads();
+    Map<String, DiskFileItem> uploads = new HashMap<String, DiskFileItem>();
+
+    // parse multipart form data, including "normal" params and files
+    if (ServletFileUpload.isMultipartContent(new ServletRequestContext(_request))) {
+      try {
+        ServletFileUpload uploadHandler = new ServletFileUpload(new DiskFileItemFactory());
+        uploadHandler.setSizeMax(getMaxUploadSize()*1024*1024);
+        @SuppressWarnings("unchecked")
+        List<DiskFileItem> uploadList = uploadHandler.parseRequest(_request);
+        for (DiskFileItem upload : uploadList) {
+          if (!upload.isFormField()) {
+            LOG.debug("Got a disk item from multi-part request named " + upload.getFieldName() + ": " + upload);
+            uploads.put(upload.getFieldName(), upload);
+          } else {
+            // TODO - handle things like checkboxes that should return array
+            LOG.debug("Got a non-disk item from multi-part request named " + upload.getFieldName() + ": " + upload.toString());
+            parameters.put(upload.getFieldName(), new String[] {upload.getString()});
+          }
+        }
+      }
+      catch (FileUploadException e) {
+        throw new WdkUserException("Error handling upload field.", e);
+      }
+    }
+
     if (shouldValidateParams()) {
       ParameterValidator validator = new ParameterValidator();
       params = validator.validateParameters(getExpectedParams(), parameters, uploads, this);
@@ -191,29 +215,29 @@ public abstract class WdkAction implements SecondaryValidator {
     return params;
   }
 
-  private Map<String, DiskFileItem> getFileUploads() throws WdkUserException {
-    LOG.debug("Loading file uploads.");
-    // if not multi-part, then just return empty map
-    if (!ServletFileUpload.isMultipartContent(new ServletRequestContext(_request))) {
-      LOG.debug("Request is not multi-part.  Returning empty map.");
-      return new HashMap<String, DiskFileItem>();
-    }
-    try {
-      ServletFileUpload uploadHandler = new ServletFileUpload(new DiskFileItemFactory());
-      uploadHandler.setSizeMax(getMaxUploadSize()*1024*1024);
-      @SuppressWarnings("unchecked")
-      List<DiskFileItem> uploadList = uploadHandler.parseRequest(_request);
-      Map<String, DiskFileItem> uploadMap = new HashMap<String, DiskFileItem>();
-      for (DiskFileItem upload : uploadList) {
-        LOG.debug("Got a disk item from request named " + upload.getFieldName() + ": " + upload);
-        uploadMap.put(upload.getFieldName(), upload);
-      }
-      return uploadMap;
-    }
-    catch (FileUploadException e) {
-      throw new WdkUserException("Error handling upload field.", e);
-    }
-  }
+  // private Map<String, DiskFileItem> getFileUploads() throws WdkUserException {
+  //   LOG.debug("Loading file uploads.");
+  //   // if not multi-part, then just return empty map
+  //   if (!ServletFileUpload.isMultipartContent(new ServletRequestContext(_request))) {
+  //     LOG.debug("Request is not multi-part.  Returning empty map.");
+  //     return new HashMap<String, DiskFileItem>();
+  //   }
+  //   try {
+  //     ServletFileUpload uploadHandler = new ServletFileUpload(new DiskFileItemFactory());
+  //     uploadHandler.setSizeMax(getMaxUploadSize()*1024*1024);
+  //     @SuppressWarnings("unchecked")
+  //     List<DiskFileItem> uploadList = uploadHandler.parseRequest(_request);
+  //     Map<String, DiskFileItem> uploadMap = new HashMap<String, DiskFileItem>();
+  //     for (DiskFileItem upload : uploadList) {
+  //       LOG.debug("Got a disk item from request named " + upload.getFieldName() + ": " + upload);
+  //       uploadMap.put(upload.getFieldName(), upload);
+  //     }
+  //     return uploadMap;
+  //   }
+  //   catch (FileUploadException e) {
+  //     throw new WdkUserException("Error handling upload field.", e);
+  //   }
+  // }
   
   /**
    * Returns the maximum file upload size.  This can be overridden by subclasses.
