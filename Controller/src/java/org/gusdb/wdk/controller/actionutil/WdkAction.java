@@ -214,30 +214,6 @@ public abstract class WdkAction implements SecondaryValidator {
     }
     return params;
   }
-
-  // private Map<String, DiskFileItem> getFileUploads() throws WdkUserException {
-  //   LOG.debug("Loading file uploads.");
-  //   // if not multi-part, then just return empty map
-  //   if (!ServletFileUpload.isMultipartContent(new ServletRequestContext(_request))) {
-  //     LOG.debug("Request is not multi-part.  Returning empty map.");
-  //     return new HashMap<String, DiskFileItem>();
-  //   }
-  //   try {
-  //     ServletFileUpload uploadHandler = new ServletFileUpload(new DiskFileItemFactory());
-  //     uploadHandler.setSizeMax(getMaxUploadSize()*1024*1024);
-  //     @SuppressWarnings("unchecked")
-  //     List<DiskFileItem> uploadList = uploadHandler.parseRequest(_request);
-  //     Map<String, DiskFileItem> uploadMap = new HashMap<String, DiskFileItem>();
-  //     for (DiskFileItem upload : uploadList) {
-  //       LOG.debug("Got a disk item from request named " + upload.getFieldName() + ": " + upload);
-  //       uploadMap.put(upload.getFieldName(), upload);
-  //     }
-  //     return uploadMap;
-  //   }
-  //   catch (FileUploadException e) {
-  //     throw new WdkUserException("Error handling upload field.", e);
-  //   }
-  // }
   
   /**
    * Returns the maximum file upload size.  This can be overridden by subclasses.
