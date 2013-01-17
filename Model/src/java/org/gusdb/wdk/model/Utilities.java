@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Clob;
@@ -19,11 +20,15 @@ import javax.activation.DataHandler;
 import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -257,7 +262,7 @@ public class Utilities {
   }
 
   public static void sendEmail(WdkModel wdkModel, String email, String reply,
-      String subject, String content, String ccAddresses)
+      String subject, String content, String ccAddresses, File[] attachments)
       throws WdkModelException {
     String smtpServer = wdkModel.getModelConfig().getSmtpServer();
 
@@ -284,7 +289,23 @@ public class Utilities {
       message.setSubject(subject);
       message.setSentDate(new Date());
       // set html content
-      message.setDataHandler(new DataHandler(new HTMLDataSource(content)));
+      MimeBodyPart messagePart = new MimeBodyPart();
+      messagePart.setDataHandler(new DataHandler(new HTMLDataSource(content)));
+
+      Multipart multipart = new MimeMultipart();
+      multipart.addBodyPart(messagePart);
+
+      // add attachment
+      if (attachments != null) {
+        for (File attachment : attachments) {
+          MimeBodyPart attachmentPart = new MimeBodyPart();
+          attachmentPart.setDataHandler(new DataHandler(attachment.toURI().toURL()));
+          attachmentPart.setFileName(attachment.getName());
+          multipart.addBodyPart(attachmentPart);
+        }
+      }
+
+      message.setContent(multipart);
 
       // send email
       Transport.send(message);
@@ -292,12 +313,19 @@ public class Utilities {
       throw new WdkModelException(ex);
     } catch (MessagingException ex) {
       throw new WdkModelException(ex);
+    } catch (MalformedURLException ex) {
+      throw new WdkModelException(ex);
     }
   }
 
   public static void sendEmail(WdkModel wdkModel, String email, String reply,
+      String subject, String content, String ccAddresses) throws WdkModelException {
+    sendEmail(wdkModel, email, reply, subject, content, ccAddresses, null);
+  }
+
+  public static void sendEmail(WdkModel wdkModel, String email, String reply,
       String subject, String content) throws WdkModelException {
-    sendEmail(wdkModel, email, reply, subject, content, null);
+    sendEmail(wdkModel, email, reply, subject, content, null, null);
   }
 
   public static byte[] readFile(File file) throws IOException {
