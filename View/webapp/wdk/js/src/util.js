@@ -171,7 +171,9 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
       for (var i = 0; i < namespaces.length; i++) {
           ns = ns[namespaces[i]];
       }
-      if (ns[func] instanceof Function && context instanceof Object) {
+      if (ns[func] instanceof Function &&
+          (context instanceof Object ||
+          /* Node is not an object in IE < 9 */ context.nodeType)) {
         return ns[func].apply(context, args);
       } else {
         if (typeof console === "object") {
