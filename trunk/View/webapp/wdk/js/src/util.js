@@ -97,8 +97,9 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
   function getDisplayType(type, number) {
     if (number == 1) {
       return type;
-    } else if (type.charAt(type.length-1) === 'y') {
+/*    } else if (type.charAt(type.length-1) === 'y') {
       return type.replace(/y$/,'ies');
+*/
     } else {
       return type + 's';
     }
