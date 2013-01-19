@@ -588,6 +588,6 @@ public abstract class WdkAction implements SecondaryValidator {
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
         .replaceAll("&", "&amp;")
-        .replaceAll("\n", "<br/>");
+        .replaceAll("\n", "<br/>\n");
   }
 }
