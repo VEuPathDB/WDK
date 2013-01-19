@@ -6,7 +6,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Clob;
@@ -262,7 +261,7 @@ public class Utilities {
   }
 
   public static void sendEmail(WdkModel wdkModel, String email, String reply,
-      String subject, String content, String ccAddresses, File[] attachments)
+      String subject, String content, String ccAddresses, DataHandler[] attachments)
       throws WdkModelException {
     String smtpServer = wdkModel.getModelConfig().getSmtpServer();
 
@@ -278,7 +277,7 @@ public class Utilities {
     // instantiate a message
     Message message = new MimeMessage(session);
     try {
-      message.setFrom(new InternetAddress(reply));
+      message.setFrom(new InternetAddress(reply + "<" + reply + ">", true));
       message.setReplyTo(new Address[] { new InternetAddress(reply) });
       message.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
       // add Cc addresses
@@ -297,23 +296,22 @@ public class Utilities {
 
       // add attachment
       if (attachments != null) {
-        for (File attachment : attachments) {
+        for (DataHandler attachment : attachments) {
           MimeBodyPart attachmentPart = new MimeBodyPart();
-          attachmentPart.setDataHandler(new DataHandler(attachment.toURI().toURL()));
+          attachmentPart.setDataHandler(attachment);
           attachmentPart.setFileName(attachment.getName());
           multipart.addBodyPart(attachmentPart);
         }
       }
 
       message.setContent(multipart);
+      //message.setDataHandler(new DataHandler(new ByteArrayDataSource(content.getBytes(), "text/plain")));
 
       // send email
       Transport.send(message);
     } catch (AddressException ex) {
       throw new WdkModelException(ex);
     } catch (MessagingException ex) {
-      throw new WdkModelException(ex);
-    } catch (MalformedURLException ex) {
       throw new WdkModelException(ex);
     }
   }
