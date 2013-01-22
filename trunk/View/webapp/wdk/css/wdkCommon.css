@@ -375,6 +375,9 @@ ul.menubar {
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       =WDK params
    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
+.param-group {
+  min-height: 0px; /* IE7 fix */
+}
 
 .param-group.empty {
   padding: 1em 2em; /* add padding that collpsible regions get */
@@ -407,6 +410,7 @@ ul.menubar {
 }
 
 .param-group .group-detail {
+  height: 100%; /* IE7 fix */
 }
 
 .param-item {
