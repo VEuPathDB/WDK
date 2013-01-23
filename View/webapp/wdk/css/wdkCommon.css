@@ -383,14 +383,19 @@ ul.menubar {
   padding: 1em 2em; /* add padding that collpsible regions get */
 }
 
-.param-group .group-title {	
+.param-group.Hide {
+  display: none;
+}
+
+.group-title {	
 /*	text-align: center;*/
 /*	padding: 0 0 5px;  */
 /*	padding: 3px;  */
 	font-weight: bold;
 /*	position: relative;  */
 }
-.param-group .group-title span{
+
+.group-title span{
 	position: relative;
 	top: -5px;
 
