@@ -73,7 +73,7 @@
 </c:set>
 
 <c:if test="${param.stage ne 'basket'}">
-<c:set var="Question_Footer" scope="request">
+<c:set var="Question_Details" scope="request">
     <imp:questionDescription />
 </c:set>
 </c:if>
@@ -97,6 +97,8 @@ ${Question_Header}
     : ${wdkQuestion.displayName}
   </span>
   <br><br>
+
+  ${Question_Details}
 
   <imp:questionForm />
 </div>
@@ -139,6 +141,3 @@ ${Question_Header}
 </c:if> <%-- End of hideOperation --%>
 
 </html:form>
-
-
-${Question_Footer}
