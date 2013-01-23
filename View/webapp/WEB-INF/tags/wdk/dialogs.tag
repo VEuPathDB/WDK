@@ -70,4 +70,9 @@
     <div class="share_url"><jsp:text/></div>
   </div>
 
+
+  <div id="wdk-dialog-login-form" title="Account login">
+    <imp:loginForm showCancel="true"/>
+  </div>
+
 </jsp:root>
