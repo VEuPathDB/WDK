@@ -46,7 +46,8 @@
 
     <c:choose>
       <c:when test="${group.name eq 'advancedParams'}">
-        <c:set var="advancedParams" value="${paramGroup}"/>
+        <c:set var="advancedGroup" value="${group}"/>
+        <c:set var="advancedParamGroup" value="${paramGroup}"/>
       </c:when>
 
       <c:otherwise>
@@ -57,6 +58,9 @@
         <c:choose>
           <c:when test="${displayType eq 'empty'}">
             <div name="${wdkQuestion.name}_${group.name}" class="param-group ${displayType} content-pane">
+          </c:when>
+          <c:when test="${displayType eq 'Hide'}">
+            <div name="${wdkQuestion.name}_${group.name}" class="param-group ${displayType}">
           </c:when>
           <c:otherwise>
             <c:if test="${group.visible ne true}">
@@ -82,7 +86,7 @@
 </c:forEach> <%-- end of foreach on paramGroups --%>
 
 
-<div name="${wdkQuestion.name}_advancedParams" class="param-group collapsible content-pane">
+<div name="${wdkQuestion.name}_${advancedGroup.name}" class="param-group ${advancedGroup.displayName} collapsible content-pane">
   <div class="group-title">Advanced Parameters</div>
   <div class="group-detail" style="display:none">
 
@@ -105,7 +109,7 @@
       </div>
 
       <%-- Advanced params --%>
-      <imp:questionParamGroup paramGroup="${advancedParams}" />
+      <imp:questionParamGroup paramGroup="${advancedParamGroup}" />
 
   </div>
 </div>
