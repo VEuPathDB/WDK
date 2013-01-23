@@ -24,7 +24,7 @@
   <!-- for future uses -->
   <div id="wdk-user"
     data-id="${wdkUser.userId}" 
-    data-name="${wdkUser.lastName}" 
+    data-name="${wdkUser.firstName} ${wdkUser.lastName}" 
     data-country="${wdkUser.country}" 
     data-email="${wdkUser.email}" 
     data-is-guest="${wdkUser.guest}"></div>

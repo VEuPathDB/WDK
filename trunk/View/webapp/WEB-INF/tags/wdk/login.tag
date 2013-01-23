@@ -15,41 +15,18 @@
   <c:set var="userName" value="${fn:escapeXml(userName)}"/>
   <c:set var="functionArg" value="{ &quot;isLoggedIn&quot;: ${isLoggedIn}, &quot;userName&quot;: &quot;${userName}&quot; }"/>
 
-  <span class="onload-function"
-    data-function="wdk.user.populateUserControl"
-    data-arguments="${fn:escapeXml(functionArg)}"><jsp:text/>
-  </span>
+  <c:choose>
+    <c:when test="${isLoggedIn eq true}">
+      <li><a href="${pageContext.request.contextPath}/showProfile.do">${userName}'s Profile</a></li>
+      <li id="user-control">
+        <form name="logoutForm" method="post" action="${pageContext.request.contextPath}/processLogout.do"></form>
+        <a href="javascript:void(0)" onclick="wdk.user.logout()">Logout</a>
+      </li>
+    </c:when>
+    <c:otherwise>
+      <li><a href="javascript:void(0)" class="open-dialog-login-form">Login</a></li>
+      <li><a href="${pageContext.request.contextPath}/showRegister.do">Register</a></li>
+    </c:otherwise>
+  </c:choose>
 
-  <!-- This is the visible content area, to be populated by populateUserControl -->
-  <span id="user-control"><jsp:text/></span>
-  
-  <!-- This is an invisible tag that contains the current status -->
-  <span id="login-status" data-logged-in=""/>
-
-	<script id="user-not-logged-in" type="text/x-handlebars-template">
-    <li><a href="javascript:void(0)" onclick="wdk.user.login()">Login</a></li>
-    <li><a href="${pageContext.request.contextPath}/showRegister.do">Register</a></li>
-	</script>
-	
-	<script id="user-logged-in" type="text/x-handlebars-template">
-    <li><a href="${pageContext.request.contextPath}/showProfile.do"><span id="user-name">{{userName}}</span>'s Profile</a></li>
-    <li>
-      <form name="logoutForm" method="post" action="${pageContext.request.contextPath}/processLogout.do"></form>
-      <a href="javascript:void(0)" onclick="wdk.user.logout()">Logout</a>
-    </li>
-	</script>
-	
-	<script id="user-login-message" type="text/x-handlebars-template">
-    <div id="login-message">
-      <div class="title">User Message</div>
-      <span>{{message}}</span>
-    </div>
-	</script>
-	
-	<script id="user-login-form" type="text/x-handlebars-template">
-    <div id="login" title="${title}">
-      <imp:loginForm showError="false" showCancel="true"/>
-    </div>
-	</script>
-	
 </jsp:root>

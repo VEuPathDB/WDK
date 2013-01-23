@@ -13,6 +13,7 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
   ns.country = function() { return userData.country; };
   ns.email = function() { return userData.email; };
   ns.isGuest = function() { return userData.isGuest; };
+  ns.isUserLoggedIn = function() { return !ns.isGuest(); }
 
   // var to hold reference to login dialog
   ns._dialog = null;
@@ -48,15 +49,15 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
   };
 
   ns.logout = function() {
-    var userName = $("#user-control #user-name").text();
-    if (confirm("Do you want to logout as " + userName + "?")) {
+    if (confirm("Do you want to logout as " + ns.name() + "?")) {
       $("#user-control form[name=logoutForm]").submit();
     }
   };
 
-  ns.isUserLoggedIn = function() {
-    return ($('#login-status').data('logged-in'));
-  };
+  // replaced above, just below ns.init
+  // ns.isUserLoggedIn = function() {
+  //   return ($('#login-status').data('logged-in'));
+  // };
 
   ns.validateRegistrationForm = function(e) {
       if (typeof e != 'undefined' && !enter_key_trap(e)) {
