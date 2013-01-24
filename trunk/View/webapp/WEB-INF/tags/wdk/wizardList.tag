@@ -52,7 +52,7 @@
 		<c:set var="transforms" value="${recordClass.transformQuestions}" />
                 <c:forEach items="${transforms}" var="transform">
 			  <c:if test="${ fn:containsIgnoreCase(transform.displayName, 'ortholog')}">
-                  <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',this,null,null,'next')">
+                  <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',this,'sl_transforms',2,'next')">
                       ${transform.displayName}
                   </li>
 			 </c:if>
@@ -73,7 +73,7 @@
 	<c:if test="${step.previousStep != null || action != 'insert'}">
                 <c:forEach items="${transforms}" var="transform">
 			  <c:if test="${! fn:containsIgnoreCase(transform.displayName, 'ortholog')}">
-                  <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',this,null,null,'next')">
+          <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',this,'sl_transforms',2,'next')">
                       ${transform.displayName}
                   </li>
 			 </c:if>
@@ -117,7 +117,7 @@
                         <c:set var="hasBasket" value="${true}" />
                         <c:set var="recordClass" value="${recordClasses[rcName]}" />
                         <c:set var="rcDisplay" value="${recordClass.displayName}" />
-                        <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=basket&recordClass=${rcName}',this,null,null,'next')">
+                        <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=basket&recordClass=${rcName}',this,'sl_baskets',3,'next')">
 ${rcDisplay} basket
                         </li>
                     </c:if>
@@ -137,7 +137,7 @@ ${rcDisplay} basket
                 <c:set var="transforms" value="${recordClass.transformQuestions}" />
                 <c:forEach items="${transforms}" var="transform">
                   <li>
-                    <a href="javascript:void(0)" onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',this,null,null,'next')">
+                    <a href="javascript:void(0)" onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=transform&questionFullName=${transform.fullName}',this,'sl_transforms',3,'next')">
                       ${transform.displayName}
                     </a>
                   </li>
@@ -212,7 +212,7 @@ ${rcDisplay} basket
                       <c:set var="displayName" value="${fn:substring(displayName,0,27)}..." />
                     </c:if>
                     <li>
-                      <a href="javascript:void(0)" onclick="wdk.addStepPopup.callWizard('${partialUrl}&insertStrategy=${strategy.strategyId}&stage=strategy',this,null,null,'next')">
+                      <a href="javascript:void(0)" onclick="wdk.addStepPopup.callWizard('${partialUrl}&insertStrategy=${strategy.strategyId}&stage=strategy',this,'sl_strategies_{$catId}_${actId}',5,'next')">
                         ${displayName}<c:if test="${!strategy.isSaved}">*</c:if>
                      </a>
                     </li>
@@ -263,7 +263,7 @@ ${rcDisplay} basket
                     <c:forEach items="${rcs.value.websiteChildren}" var="catEntry">
                     <c:set var="cat" value="${catEntry.value}" />
                     <c:forEach items="${cat.websiteQuestions}" var="q">
-                        <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${q.fullName}&stage=question',this,null,null,'next')">${q.displayName}</li>
+                      <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${q.fullName}&stage=question',this,'sl_${cat.name}',5,'next')">${q.displayName}</li>
                     </c:forEach>
                     </c:forEach>
                     </c:otherwise>
@@ -280,7 +280,7 @@ ${rcDisplay} basket
                 <div class="original" id="sl_${cat.name}" style="display:none">
                     <ul class="menu_section">
                         <c:forEach items="${cat.websiteQuestions}" var="question">
-                          <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${question.fullName}&stage=question',this,null,null,'next')">
+                          <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${question.fullName}&stage=question',this,'sl_${cat.name}',4,'next')">
                             ${question.displayName}
                             <imp:questionFeature question="${question}" />
                           </li>
