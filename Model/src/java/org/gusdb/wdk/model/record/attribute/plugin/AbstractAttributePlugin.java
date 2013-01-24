@@ -88,6 +88,14 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
         this.properties = properties;
     }
 
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
+    public String getProperty(String key) {
+        return properties.get(key);
+    }
+
     public void setAttributeField(AttributeField attribute) {
         this.attributeField = attribute;
     }
