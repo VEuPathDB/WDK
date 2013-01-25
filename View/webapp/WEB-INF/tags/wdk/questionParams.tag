@@ -56,11 +56,12 @@
         <c:set var="groupDisplay" value="block"/>
 
         <c:choose>
+          <%-- hide group if not visible -- based on visible attribute of params --%>
+          <c:when test="${displayType eq 'hidden'}">
+            <div name="${wdkQuestion.name}_${group.name}" class="param-group ${displayType}">
+          </c:when>
           <c:when test="${displayType eq 'empty'}">
             <div name="${wdkQuestion.name}_${group.name}" class="param-group ${displayType} content-pane">
-          </c:when>
-          <c:when test="${displayType eq 'Hide'}">
-            <div name="${wdkQuestion.name}_${group.name}" class="param-group ${displayType}">
           </c:when>
           <c:otherwise>
             <c:if test="${group.visible ne true}">
