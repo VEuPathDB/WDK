@@ -383,7 +383,7 @@ ul.menubar {
   padding: 1em 2em; /* add padding that collpsible regions get */
 }
 
-.param-group.Hide {
+.param-group.hidden {
   display: none;
 }
 

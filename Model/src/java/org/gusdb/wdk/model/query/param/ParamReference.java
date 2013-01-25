@@ -128,6 +128,8 @@ public class ParamReference extends Reference {
     if (groupRef != null) {
       Group group = (Group) wdkModel.resolveReference(groupRef);
       param.setGroup(group);
+    } else if (!param.isVisible()) {
+      param.setGroup(Group.Hidden());
     }
     param.resolveReferences(wdkModel);
     param.setResources(wdkModel);
