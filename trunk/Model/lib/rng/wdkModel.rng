@@ -1343,7 +1343,6 @@
             <choice>
               <value>empty</value>
               <value>ShowHide</value>
-              <value>Hide</value>
             </choice>
         </attribute>
       </optional>

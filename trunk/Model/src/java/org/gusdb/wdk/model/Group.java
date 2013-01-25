@@ -22,7 +22,9 @@ import java.util.List;
 public class Group extends WdkModelBase {
 
   private static final String DISPLAY_EMPTY = "empty";
+  private static final String DISPLAY_HIDDEN = "hidden";
   private static Group empty;
+  private static Group hidden;
 
   private String name;
   private String displayName;
@@ -47,6 +49,21 @@ public class Group extends WdkModelBase {
       empty.displayType = DISPLAY_EMPTY;
     }
     return empty;
+  }
+
+  /**
+   * The group used for parameters with no explicit group and with visibility
+   * set to false.
+   * 
+   * @return
+   */
+  public synchronized static Group Hidden() {
+    if (hidden == null) {
+      hidden = new Group();
+      hidden.displayType = DISPLAY_HIDDEN;
+      hidden.name = "_hidden";
+    }
+    return hidden;
   }
 
   /**
