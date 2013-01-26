@@ -62,13 +62,14 @@
           </c:when>
           <c:when test="${displayType eq 'empty'}">
             <div name="${wdkQuestion.name}_${group.name}" class="param-group ${displayType} content-pane">
+              <div class="group-title h4left">Parameters</div>
           </c:when>
           <c:otherwise>
             <c:if test="${group.visible ne true}">
               <c:set var="groupDisplay" value="none"/>
             </c:if>
             <div name="${wdkQuestion.name}_${group.name}" class="param-group ${displayType} collapsible content-pane">
-              <div class="group-title" title="Click to expand or collapse">${groupName}</div>
+              <div class="group-title h4left" title="Click to expand or collapse">${groupName}</div>
           </c:otherwise>
         </c:choose>
 
@@ -88,7 +89,7 @@
 
 
 <div name="${wdkQuestion.name}_${advancedGroup.name}" class="param-group ${advancedGroup.displayName} collapsible content-pane">
-  <div class="group-title">Advanced Parameters</div>
+  <div class="group-title h4left">Advanced Parameters</div>
   <div class="group-detail" style="display:none">
 
       <%-- weight param --%>
