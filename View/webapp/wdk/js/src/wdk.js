@@ -306,54 +306,135 @@ function getWebAppUrl() {
       var showHeight = Math.max($node.data("snippet-show"), 26) || 26;
 
       // Add the height of the gradient to the showHeight
-      var height = showHeight + 24;
+      var height = showHeight + 8;
 
       if (height >= $node.height()) {
         $node.data("rendered", true);
         return;
       }
 
-      var $gradient = $("<div></div>").addClass("psGradient").attr("title", "Click \"Show more\" to expand");
+      var $ellipsis = $("<div><b>&hellip;</b></div>")
+      .css("padding-left", "0.4em")
+      .attr("title", "Click \"Show more\" to expand");
 
       // Wrap inner content so we can hide its overflow
-      $node.wrapInner($("<div></div>").height(height)
+      $node.wrapInner($("<div class='orig'/>").height(height)
           .css("overflow", "hidden"));
 
-      $gradient.appendTo($node);
+      $ellipsis.appendTo($node);
 
-      var $show = $("<div><a href='#'><span " +
+      var $toggle1 = $("<div><a href='#'><span " +
           "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show more</a></div>")
           .appendTo($node)
-          .on("click", "a", function(e) {
+          .addClass("snippet-toggle");
+
+      var $toggle2 = $toggle1.clone()
+          .prependTo($node)
+          .css("float", "right");
+
+      $node.on("click", ".snippet-toggle a", function(e) {
             e.preventDefault();
-            $node.children().eq(0).animate({
-              height: $node.find("div > div").height()
-            },
-            {
-              easing: "easeOutQuint"
-            })
-            $show.hide();
-            $hide.show();
-            $gradient.hide();
+            if ($node.data("shown")) {
+              //hide
+              $node.find(".orig:first").animate({
+                height: height
+              },
+              {
+                easing: "easeOutQuint"
+              })
+              $toggle1.html("<a href='#'><span " +
+                "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show more</a>");
+              $toggle2.html("<a href='#'><span " +
+                "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show more</a>");
+              $ellipsis.show();
+              $node.data("shown", false);
+            } else {
+              //show
+              $node.find(".orig:first").animate({
+                height: $node.find("div > div").height()
+              },
+              {
+                easing: "easeOutQuint"
+              })
+              $toggle1.html("<a href='#'><span " +
+                "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
+              $toggle2.html("<a href='#'><span " +
+                "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
+              $ellipsis.hide();
+              $node.data("shown", true);
+            }
           });
 
-      var $hide = $("<div><a href='#'><span " +
-          "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a></div>")
-          .appendTo($node)
-          .css("padding-top", "1em")
-          .on("click", "a", function(e) {
-            e.preventDefault();
-            $node.children().eq(0).animate({
-              height: height
-            },
-            {
-              easing: "easeOutQuint"
-            });
-            $show.show();
-            $hide.hide();
-            $gradient.show();
-          })
-          .hide();
+      $node.data("rendered", true);
+    });
+  };
+
+  var registerTruncate = function() {
+    var SHOW_CHARS = 120;
+
+    $(".truncate").each(function(idx, node) {
+      var $node = $(node);
+
+      if ($node.data("rendered")) {
+        return;
+      }
+
+      var text = $node.text().trim();
+
+      if (text.length <= SHOW_CHARS) {
+        $node.data("rendered", true);
+        return;
+      }
+
+      $node.css("position", "relative");
+
+      var $teaser = $("<div/>")
+      .addClass("teaser")
+      .html(text.slice(0, SHOW_CHARS) + "<b>&hellip;</b>");
+
+      // on bottom
+      var $toggle1 = $("<div/>")
+      .addClass("truncate-toggle")
+      .attr("href", "#")
+      .html("<a href='#'><span " +
+          "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show more</a>");
+
+      // on right
+      var $toggle2 = $toggle1.clone()
+      .css({
+        "float": "right"
+      })
+
+
+      // hide original content and append teaser before it
+      var $orig = $node.wrapInner("<div class='orig'/>")
+      .find(".orig:first")
+      .after($toggle1)
+      .before($toggle2)
+      .before($teaser)
+      .hide();
+
+      $node.on("click", ".truncate-toggle", function(e) {
+        e.preventDefault();
+        if ($node.data("showing")) {
+          $orig.slideUp(function() {
+            $teaser.show();
+            $toggle1.html("<a href='#'><span " +
+              "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show more</a>");
+            $toggle2.html("<a href='#'><span " +
+              "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show more</a>");
+          });
+          $node.data("showing", false);
+        } else {
+          $teaser.hide();
+          $toggle1.html("<a href='#'><span " +
+            "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
+          $toggle2.html("<a href='#'><span " +
+            "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
+          $orig.slideDown();
+          $node.data("showing", true);
+        }
+      });
 
       $node.data("rendered", true);
     });
@@ -455,6 +536,7 @@ function getWebAppUrl() {
     registerToggle();
     registerCollapsible();
     registerSnippet();
+    registerTruncate();
     $(".button").button();
   }
 
