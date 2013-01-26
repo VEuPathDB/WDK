@@ -366,10 +366,17 @@ ul.menubar {
    );
 }
 
-.snippet .ui-icon-arrowthickstop-1-s, .snippet .ui-icon-arrowthickstop-1-n {
+.snippet .ui-icon-arrowthickstop-1-s,
+.snippet .ui-icon-arrowthickstop-1-n ,
+.truncate .ui-icon-arrowthickstop-1-s,
+.truncate .ui-icon-arrowthickstop-1-n {
   display: inline-block;
   position: relative;
   top: 0.3em;
+}
+
+.truncate-toggle, .snippet-toggle {
+  font-size: 11px;
 }
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -392,6 +399,7 @@ ul.menubar {
 /*	padding: 0 0 5px;  */
 /*	padding: 3px;  */
 	font-weight: bold;
+  /*font-size: larger;*/
 /*	position: relative;  */
 }
 
