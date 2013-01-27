@@ -390,7 +390,13 @@ function getWebAppUrl() {
 
       var $teaser = $("<div/>")
       .addClass("teaser")
-      .html(text.slice(0, SHOW_CHARS) + "<b>&hellip;</b>");
+      //.html(text.slice(0, SHOW_CHARS) + "<b>&hellip;</b>");
+      .html(text).css({
+        width: "90%",
+        "white-space": "nowrap",
+        overflow: "hidden",
+        "text-overflow": "ellipsis"
+      });
 
       // on bottom
       var $toggle1 = $("<div/>")
@@ -414,10 +420,17 @@ function getWebAppUrl() {
       .before($teaser)
       .hide();
 
+      var height = $orig.height();
+      $orig.height(13);
+
       $node.on("click", ".truncate-toggle", function(e) {
         e.preventDefault();
         if ($node.data("showing")) {
-          $orig.slideUp(function() {
+          // hide
+          $orig.animate({
+            height: 13
+          },function() {
+            $orig.hide();
             $teaser.show();
             $toggle1.html("<a href='#'><span " +
               "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show more</a>");
@@ -426,12 +439,17 @@ function getWebAppUrl() {
           });
           $node.data("showing", false);
         } else {
+          // show
           $teaser.hide();
+          $orig.show().animate({
+            height: height
+          }, function() {
+            $orig.height("auto");
+          });
           $toggle1.html("<a href='#'><span " +
             "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
           $toggle2.html("<a href='#'><span " +
             "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
-          $orig.slideDown();
           $node.data("showing", true);
         }
       });
