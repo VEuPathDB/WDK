@@ -40,11 +40,13 @@
   <c:set var="updateTitle">
     <imp:verbiage key="dialog.update-strat.title"/>
   </c:set>
+
   <div style="display:none;" id="wdk-dialog-update-strat" title="${udpateTitle}">
     <div class="ui-state-highlight ui-corner-all save_as_msg">
       <imp:verbiage key="dialog.update-strat.content"/>
     </div>
-    <form id="wdk-update-strat">
+    <form> <input type="hidden" name="strategy" value=""/> </form>
+    <form id="wdk-update-strat" >
       <input type="hidden" name="strategy" value=""/>
       <dl>
         <dt class="name_label">Name:</dt>
