@@ -299,7 +299,7 @@ sub runFullRecordFile{
 
     my $subDir =  $orgHsh->{$org}->{$type}->{'dir'} =~ /none/i ? '' : $orgHsh->{$org}->{$type}->{'dir'};
 
-    my $dir = "$downloadFileDir/$project/release-${release}/$subDir/txt";
+    my $dir = "$downloadFileDir/$project/release-${release}/$subDir/txt/data";
 
     `mkdir -p $dir`;
 
