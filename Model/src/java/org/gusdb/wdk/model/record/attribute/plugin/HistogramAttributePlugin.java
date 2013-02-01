@@ -73,7 +73,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
             String summarySql = composeSql(attributeColumn, attributeSql);
             DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
             resultSet = SqlUtils.executeQuery(wdkModel, dataSource, summarySql,
-                    "wdk-attribute-histogram-" + attributeField.getName());
+                attributeField.getName() + "__attribute-histogram");
             while (resultSet.next()) {
                 String column = resultSet.getString(attributeColumn);
                 if (column == null) column = "";

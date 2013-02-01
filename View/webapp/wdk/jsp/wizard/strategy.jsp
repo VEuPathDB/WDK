@@ -79,7 +79,9 @@
     </c:when>
 
     <c:otherwise>
-      <span class="h2center">Combine ${wdkStep.displayType}s in Step <span class="current_step_num">${currentStepId}</span> with ${importStrategy.displayType}s in Step <span class="new_step_num">${newStepId}</span>:</span>
+      <span class="h2center">Combine ${wdkStep.recordClass.displayNamePlural} in Step 
+      <span class="current_step_num">${currentStepId}</span> with ${importStrategy.latestStep.recordClass.displayNamePlural} in Step 
+      <span class="new_step_num">${newStepId}</span>:</span>
       <div style="text-align:center" id="operations">
                 <c:choose>
                     <c:when test="${allowBoolean == false}">

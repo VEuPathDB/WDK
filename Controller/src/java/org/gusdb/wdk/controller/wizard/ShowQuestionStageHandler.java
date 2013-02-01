@@ -96,7 +96,7 @@ public class ShowQuestionStageHandler implements StageHandler {
         String importType = question.getRecordClass().getFullName();
         boolean allowBoolean = true;
         if (previousStep != null)
-            allowBoolean = importType.equals(previousStep.getType());
+            allowBoolean = importType.equals(previousStep.getRecordClass().getFullName());
         logger.debug("allow boolean: " + allowBoolean);
         attributes.put(ATTR_ALLOW_BOOLEAN, allowBoolean);
 

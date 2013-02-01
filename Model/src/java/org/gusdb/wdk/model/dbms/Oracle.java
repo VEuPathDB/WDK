@@ -49,7 +49,7 @@ public class Oracle extends DBPlatform {
         sql.append(" START WITH ").append(start);
         sql.append(" INCREMENT BY ").append(increment);
         SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
-                "wdk_create_sequence");
+                "wdk-create-sequence");
     }
 
     /*
@@ -116,7 +116,7 @@ public class Oracle extends DBPlatform {
 		sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
 		sql.append(".nextval FROM dual");
 		BigDecimal id = (BigDecimal) SqlUtils.executeScalar(wdkModel,
-            dataSource, sql.toString(), "wdk_select_next_id");
+            dataSource, sql.toString(), "wdk-select-next-id");
 		return id.intValue();
     }
 
@@ -206,7 +206,7 @@ public class Oracle extends DBPlatform {
         sql.append(" AND owner = '").append(schema.toUpperCase()).append("'");
 
         BigDecimal count = (BigDecimal) SqlUtils.executeScalar(wdkModel,
-                dataSource, sql.toString(), "wdk_check_table_exist");
+                dataSource, sql.toString(), "wdk-check-table-exist");
         return (count.longValue() > 0);
     }
 
@@ -249,7 +249,7 @@ public class Oracle extends DBPlatform {
     @Override
     public void dropTable(String schema, String table, boolean purge)
             throws WdkModelException {
-        String name = "wdk_drop_table";
+        String name = "wdk-drop-table-" + table;
         String sql = "DROP TABLE ";
         if (schema != null) sql = schema;
         sql += table;
@@ -312,7 +312,7 @@ public class Oracle extends DBPlatform {
         ResultSet resultSet = null;
         try {
             resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-                    "wdk_select_tables");
+                    "wdk-oracle-select-table-names");
             List<String> tables = new ArrayList<String>();
             while (resultSet.next()) {
                 tables.add(resultSet.getString("table_name"));

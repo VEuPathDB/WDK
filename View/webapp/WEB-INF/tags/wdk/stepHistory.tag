@@ -40,9 +40,8 @@
           <th onmouseover="wdk.history.hideAnyName()" style="width: 5em;">&nbsp;</th>
        </tr>
        <c:forEach items="${steps}" var="step">
-         <c:set var="type" value="${step.dataType}"/>
-         <c:set var="recDispName" value="${step.question.recordClass.type}"/>
-         <c:set var="recTabName" value="${fn:substring(recDispName, 0, fn:indexOf(recDispName, ' ')-1)}"/>
+         <c:set var="type" value="${step.recordClass.fullName}"/>
+         <c:set var="recDispName" value="${step.question.recordClass.displayNamePlural}"/>
          <c:choose>
            <c:when test="${i % 2 == 0}"><tr class="lines"></c:when>
            <c:otherwise><tr class="linesalt"></c:otherwise>

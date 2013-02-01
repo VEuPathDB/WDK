@@ -18,7 +18,7 @@
                 <c:set var="favorites" value="${fav_item.value}" /> <%-- a list of favorites of a record type --%>
 		<c:set var="idTag" value="${fn:replace(recordClass.fullName, '.', '_')}" />
                 <li>
-                  <a id="tab_${idTag}" href="javascript:void(0)" onclick="wdk.favorite.showFavorites('${idTag}')">${recordClass.type}s (${fn:length(favorites)})</a>
+                  <a id="tab_${idTag}" href="javascript:void(0)" onclick="wdk.favorite.showFavorites('${idTag}')">${recordClass.displayNamePlural} (${fn:length(favorites)})</a>
                 </li>
               </c:forEach>
             </ul>
@@ -56,7 +56,7 @@
                 <table class="favorite-list mytableStyle" width="100%">
                     <tr>
 			<th title="Click on the star to remove an ID from Favorites. It will not be removed from this page until you hit 'Refresh' or reload the page." 
-			    class="mythStyle clickable">${recordClass.type}s</th>
+			    class="mythStyle clickable">${recordClass.displayNamePlural}</th>
 			<th title="Use this column to add notes (click Edit to change this field). Initially it contains the product name associated with the ID."  
 			    class="mythStyle clickable">Notes</th>
 			<th title="Organize your favorites by project names. Click Edit to add/change it; IDs with the same project name will be sorted together once the page is refreshed."  

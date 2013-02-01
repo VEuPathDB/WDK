@@ -178,7 +178,7 @@ $("img#close-table").live("click", function () {
     
       <td >
 	<a title="Click to go to search page" href="<c:url value='/showQuestion.do?questionFullName=${question.fullName}'/>">
-	 	Find ${question.recordClass.type}s by ${question.displayName}</a>
+	 	Find ${question.recordClass.displayNamePlural} by ${question.displayName}</a>
       </td>
   <td >
 	  ${category.displayName}

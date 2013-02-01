@@ -11,6 +11,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.RecordClass;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -35,8 +36,6 @@ public class Strategy {
     private int latestStepId = 0;
     private int estimateSize;
     private String version;
-    private String type;
-    private String displayType;
     private boolean valid = true;
     private Date lastRunTime;
 
@@ -178,13 +177,8 @@ public class Strategy {
         stepFactory.updateStrategy(user, this, overwrite);
     }
 
-    public String getType() {
-        if (latestStep != null) type = latestStep.getType();
-        return type;
-    }
-
-    void setType(String type) {
-        this.type = type;
+    public RecordClass getRecordClass() throws WdkModelException {
+        return getLatestStep().getRecordClass();
     }
 
     public Map<Integer, Integer> addStep(int targetStepId, Step step)
@@ -424,7 +418,7 @@ public class Strategy {
         jsStrategy.put("valid", isValid());
         jsStrategy.put("resultSize", getEstimateSize());
         jsStrategy.put("version", getVersion());
-        jsStrategy.put("type", getType());
+        jsStrategy.put("type", getRecordClass().getFullName());
  
         JSONObject stepContent = getLatestStep().getJSONContent(this.displayId);
         jsStrategy.put("latestStep", stepContent);
@@ -520,22 +514,6 @@ public class Strategy {
 
     void setEstimateSize(int estimateSize) {
         this.estimateSize = estimateSize;
-    }
-
-    /**
-     * @return the displayType
-     */
-    public String getDisplayType() {
-        if (latestStep != null) displayType = latestStep.getDisplayType();
-        return displayType;
-    }
-
-    /**
-     * @param displayType
-     *            the displayType to set
-     */
-    public void setDisplayType(String displayType) {
-        this.displayType = displayType;
     }
 
 }

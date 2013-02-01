@@ -231,7 +231,7 @@ public abstract class QueryInstance {
     sql.append(getSql()).append(") f");
     DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
     Object objSize = SqlUtils.executeScalar(wdkModel, dataSource,
-        sql.toString(), query.getFullName() + "-count");
+        sql.toString(), query.getFullName() + "__count");
     int resultSize = Integer.parseInt(objSize.toString());
     logger.debug("end getting query size");
     return resultSize;
