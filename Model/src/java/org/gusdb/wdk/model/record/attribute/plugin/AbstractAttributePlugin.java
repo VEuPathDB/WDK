@@ -190,7 +190,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
         ResultSet resultSet = null;
         try {
             resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-                    "wdk-attribute-plugin-combined", 5000);
+                    step.getQuestion().getQuery().getFullName() + "__attribute-plugin-combined", 5000);
             while (resultSet.next()) {
                 Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
                 for (String pkColumn : pkColumns) {

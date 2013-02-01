@@ -39,10 +39,6 @@ public class RecordClassBean {
         return recordClass.getName();
     }
 
-    public String getType() {
-        return recordClass.getType();
-    }
-
     /**
      * @return Map of fieldName --> {@link org.gusdb.wdk.model.FieldI}
      */
@@ -197,6 +193,17 @@ public class RecordClassBean {
      */
     public String getShortDisplayName() {
         return recordClass.getShortDisplayName();
+    }
+    
+    
+    
+
+    public String getDisplayNamePlural() {
+      return recordClass.getDisplayNamePlural();
+    }
+
+    public String getShortDisplayNamePlural() {
+      return recordClass.getShortDisplayNamePlural();
     }
 
     public RecordView getDefaultRecordView() {

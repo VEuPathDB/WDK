@@ -212,7 +212,7 @@ public class JSONReporter extends Reporter {
             writer.print("\"recordset\": {\"id\":\"" + av.getChecksum()
                     + "\",\"count\":\"" + this.getResultSize()
                     + "\", \"type\":\""
-                    + av.getQuestion().getRecordClass().getType()
+                    + av.getQuestion().getRecordClass().getDisplayName()
                     + "\", \"records\":[");
             for (AnswerValue pageAnswer : this) {
                 for (RecordInstance record : pageAnswer.getRecordInstances()) {

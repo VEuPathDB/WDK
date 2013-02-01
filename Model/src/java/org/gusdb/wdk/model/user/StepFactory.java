@@ -43,7 +43,6 @@ import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.record.RecordClass;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -905,11 +904,10 @@ public class StepFactory {
         if (resultSet.getObject(COLUMN_IS_VALID) != null)
             strategy.setValid(resultSet.getBoolean(COLUMN_IS_VALID));
 
+        // try loading recordClass to validate it.
         String questionName = resultSet.getString(AnswerFactory.COLUMN_QUESTION_NAME);
         Question question = (Question) wdkModel.getQuestion(questionName);
-        RecordClass recordClass = question.getRecordClass();
-        strategy.setType(recordClass.getFullName());
-        strategy.setDisplayType(recordClass.getDisplayName());
+        question.getRecordClass();
 
         String signature = strategy.getSignature();
         if (signature == null || signature.trim().length() == 0) {

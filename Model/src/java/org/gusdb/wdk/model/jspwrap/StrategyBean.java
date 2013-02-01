@@ -229,26 +229,10 @@ public class StrategyBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.user.Strategy#getDisplayType()
-     */
-    public String getDisplayType() {
-        return strategy.getDisplayType();
-    }
-
-    /**
-     * @return
      * @see org.gusdb.wdk.model.user.Strategy#getEstimateSize()
      */
     public int getEstimateSize() {
         return strategy.getEstimateSize();
-    }
-
-    /**
-     * @return
-     * @see org.gusdb.wdk.model.user.Strategy#getType()
-     */
-    public String getType() {
-        return strategy.getType();
     }
     
 }

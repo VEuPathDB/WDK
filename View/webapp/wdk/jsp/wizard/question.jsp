@@ -120,7 +120,7 @@ ${Question_Header}
       <c:if test="${wdkStep.previousStep != null && action == 'revise'}">
         <c:set var="wdkStep" value="${wdkStep.previousStep}" />
       </c:if>
-      <span class="h2center">Combine ${wdkStep.displayType}s in Step <span class="current_step_num">${currentStepId}</span> with ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num">${newStepId}</span>:</span>
+      <span class="h2center">Combine ${wdkStep.recordClass.displayNamePlural} in Step <span class="current_step_num">${currentStepId}</span> with ${wdkQuestion.recordClass.displayNamePlural} in Step <span class="new_step_num">${newStepId}</span>:</span>
 
       <div style="text-align:center" id="operations">
 

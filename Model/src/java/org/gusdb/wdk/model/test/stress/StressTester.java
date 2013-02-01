@@ -190,7 +190,7 @@ public class StressTester {
 
             // create the result table
             SqlUtils.executeUpdate(wdkModel, dataSource, sb.toString(),
-                    "wdk-create-table");
+                    "wdk-create-stress-test-table");
         }
         // initialize update prepared statement
         StringBuffer sb = new StringBuffer();

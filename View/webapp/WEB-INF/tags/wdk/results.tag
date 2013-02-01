@@ -23,10 +23,7 @@
 <c:set var="recordName" value="${recordClass.fullName}" />
 <c:set var="recHasBasket" value="${recordClass.useBasket}" />
 
-<jsp:useBean id="typeMap" class="java.util.HashMap"/>
-<c:set target="${typeMap}" property="singular" value="${wdkStep.displayType}"/>
-<imp:getPlural pluralMap="${typeMap}"/>
-<c:set var="type" value="${typeMap['plural']}"/>
+<c:set var="recordName" value="${wdkStep.recordClass.displayNamePlural}"/>
 
 
 <!-- ================ TAG SHARED BY BASKET AND OPENED TABS =============== -->
@@ -56,13 +53,13 @@
         <span id="text_strategy_number">${strategy.name}</span> 
         - step <span id="text_step_number">${strategy.length}</span> - 
     </c:if>
-    <span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${type}</span>
+    <span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${recordName}</span>
   </span>
 </td>
 
 <td  style="vertical-align:middle;text-align:right;white-space:nowrap;">
   <div style="float:right">
-   <c:set var="r_count" value="${wdkAnswer.resultSize} ${type}" />
+   <c:set var="r_count" value="${wdkAnswer.resultSize} ${recordName}" />
    <c:if test="${strategy != null}">
     <c:choose>
       <c:when test="${wdkUser.guest}">

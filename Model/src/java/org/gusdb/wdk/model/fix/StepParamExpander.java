@@ -128,11 +128,11 @@ public class StepParamExpander extends BaseCLI {
                 + "step_params ( step_id NUMBER(12) NOT NULL, "
                 + " param_name VARCHAR(200) NOT NULL, "
                 + " param_value VARCHAR(4000), migration NUMBER(12))",
-                "wdk-create-table");
+                "wdk-create-param-table");
 
         SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX " + schema
                 + "step_params_idx02 ON step_params (step_id, param_name)",
-                "wdk-create-indx");
+                "wdk-create-param-indx");
     }
 
     private ResultSet prepareSelect(WdkModel wdkModel, String schema)

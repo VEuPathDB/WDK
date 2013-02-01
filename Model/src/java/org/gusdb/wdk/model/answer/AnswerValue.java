@@ -579,7 +579,7 @@ public class AnswerValue {
       DBPlatform platform = wdkModel.getQueryPlatform();
       DataSource dataSource = platform.getDataSource();
       ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-          attributeQuery.getFullName() + "-paged");
+          attributeQuery.getFullName() + "__attr-paged");
       ResultList resultList = new SqlResultList(resultSet);
 
       // fill in the column attributes
@@ -686,7 +686,7 @@ public class AnswerValue {
       DBPlatform platform = wdkModel.getQueryPlatform();
       DataSource dataSource = platform.getDataSource();
       ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-          tableQuery.getFullName() + "-paged");
+          tableQuery.getFullName() + "_table-paged");
       ResultList resultList = new SqlResultList(resultSet);
 
       // initialize table values
@@ -977,7 +977,7 @@ public class AnswerValue {
       DBPlatform platform = wdkModel.getQueryPlatform();
       DataSource dataSource = platform.getDataSource();
       ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-          idsQueryInstance.getQuery().getFullName() + "-paged");
+          idsQueryInstance.getQuery().getFullName() + "__id-paged");
       ResultList resultList = new SqlResultList(resultSet);
       RecordClass recordClass = question.getRecordClass();
       PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
@@ -1231,7 +1231,7 @@ public class AnswerValue {
       WdkModel wdkModel = question.getWdkModel();
       DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
       Object result = SqlUtils.executeScalar(wdkModel, dataSource,
-          sql.toString(), idsQueryInstance.getQuery().getFullName() + "-"
+          sql.toString(), idsQueryInstance.getQuery().getFullName() + "__"
               + filterName + "-filter-size");
       size = Integer.parseInt(result.toString());
 
@@ -1306,7 +1306,7 @@ public class AnswerValue {
     ResultSet resultSet = null;
     try {
       resultSet = SqlUtils.executeQuery(wdkModel, dataSource, idSql,
-          idsQueryInstance.getQuery().getFullName() + "-all-ids");
+          idsQueryInstance.getQuery().getFullName() + "__all-ids");
       while (resultSet.next()) {
         String[] values = new String[pkColumns.length];
         for (int i = 0; i < pkColumns.length; i++) {

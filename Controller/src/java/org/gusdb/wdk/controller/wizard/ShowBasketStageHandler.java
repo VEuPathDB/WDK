@@ -68,7 +68,7 @@ public class ShowBasketStageHandler implements StageHandler {
 
         // check if boolean is allowed
         String importType = question.getRecordClass().getFullName();
-        boolean allowBoolean = importType.equals(inputStep.getType());
+        boolean allowBoolean = importType.equals(inputStep.getRecordClass().getFullName());
         attributes.put(ATTR_ALLOW_BOOLEAN, allowBoolean);
 
         logger.debug("Leaving BasketStageHandler....");

@@ -507,7 +507,7 @@ public class BasketFactory {
         param.setAllowEmpty(false);
         param.setRecordClassRef(rcName);
         param.setRecordClass(recordClass);
-        param.setPrompt(recordClass.getType() + "s from");
+        param.setPrompt(recordClass.getDisplayNamePlural() + " from");
         param.setDefaultType(DatasetParam.TYPE_BASKET);
         param.setAllowEmpty(false);
         paramSet.addParam(param);

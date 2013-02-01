@@ -905,7 +905,7 @@ div.bottom-close{
       = strategies All Tab
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 .history_panel {
-    display: none;
+    /*display: none;*/
 }
 
 .history_panel.enabled {

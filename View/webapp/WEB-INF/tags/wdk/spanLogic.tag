@@ -80,10 +80,10 @@
 <div id="spanLogicParams">
 	<imp:answerParamInput qp="${pMap['span_a']}"/>
 	<imp:answerParamInput qp="${pMap['span_b']}"/>
-	<input type="hidden" value="${wdkStep.displayType}" id="span_a_type"/>
-	<input type="hidden" value="${importStep.displayType}" id="span_b_type"/>
-	<c:set var="wdkStepRecType" value="${wdkStep.displayType}"/>
-	<c:set var="importStepRecType" value="${importStep.displayType}"/>
+	<input type="hidden" value="${wdkStep.recordClass.displayName}" id="span_a_type"/>
+	<input type="hidden" value="${importStep.recordClass.displayName}" id="span_b_type"/>
+	<c:set var="wdkStepRecType" value="${wdkStep.recordClass.displayName}"/>
+	<c:set var="importStepRecType" value="${importStep.recordClass.displayName}"/>
 	<c:set var="wdkStepResultSize" value="${wdkStep.resultSize}"/>
 	<c:set var="importStepResultSize" value="${importStep.resultSize}"/>
 	<c:if test="${wdkStepResultSize > 1}"><c:set var="wdkStepRecType" value="${wdkStepRecType}s"/></c:if>

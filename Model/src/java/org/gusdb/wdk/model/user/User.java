@@ -517,7 +517,7 @@ public class User /* implements Serializable */{
      * @param user
      * @throws WdkModelException
      */
-    void mergeUser(User user) throws WdkModelException {
+    public void mergeUser(User user) throws WdkModelException {
         // TEST
         logger.debug("Merging user #" + user.getUserId() + " into user #"
                 + userId + "...");
@@ -594,7 +594,7 @@ public class User /* implements Serializable */{
             // not include the histories marked as 'deleted'
             if (step.isDeleted()) continue;
 
-            String type = step.getType();
+            String type = step.getRecordClass().getFullName();
             List<Step> list;
             if (category.containsKey(type)) {
                 list = category.get(type);
@@ -680,33 +680,33 @@ public class User /* implements Serializable */{
             }
         }
         for (Strategy strategy : strategies) {
-            String type = strategy.getType();
+            String display = strategy.getRecordClass().getDisplayNamePlural();
             List<Strategy> list;
-            if (category.containsKey(type)) {
-                list = category.get(type);
+            if (category.containsKey(display)) {
+                list = category.get(display);
             } else {
                 list = new ArrayList<Strategy>();
-                category.put(type, list);
+                category.put(display, list);
             }
-            category.get(type).add(strategy);
+            category.get(display).add(strategy);
         }
         return category;
     }
 
-    public Map<Integer, Step> getStepsMap(String dataType)
+    public Map<Integer, Step> getStepsMap(String rcName)
             throws WdkModelException {
         Map<Integer, Step> steps = getStepsMap();
         Map<Integer, Step> selected = new LinkedHashMap<Integer, Step>();
         for (int stepDisplayId : steps.keySet()) {
             Step step = steps.get(stepDisplayId);
-            if (dataType.equalsIgnoreCase(step.getType()))
+            if (rcName.equalsIgnoreCase(step.getRecordClass().getFullName()))
                 selected.put(stepDisplayId, step);
         }
         return selected;
     }
 
-    public Step[] getSteps(String dataType) throws WdkModelException {
-        Map<Integer, Step> map = getStepsMap(dataType);
+    public Step[] getSteps(String rcName) throws WdkModelException {
+        Map<Integer, Step> map = getStepsMap(rcName);
         Step[] array = new Step[map.size()];
         map.values().toArray(array);
         return array;
@@ -728,13 +728,13 @@ public class User /* implements Serializable */{
         return array;
     }
 
-    public Map<Integer, Strategy> getStrategiesMap(String dataType)
+    public Map<Integer, Strategy> getStrategiesMap(String rcName)
             throws WdkModelException {
         Map<Integer, Strategy> strategies = getStrategiesMap();
         Map<Integer, Strategy> selected = new LinkedHashMap<Integer, Strategy>();
         for (int strategyId : strategies.keySet()) {
             Strategy strategy = strategies.get(strategyId);
-            if (dataType.equalsIgnoreCase(strategy.getType()))
+            if (rcName.equalsIgnoreCase(strategy.getRecordClass().getFullName()))
                 selected.put(strategyId, strategy);
         }
         return selected;

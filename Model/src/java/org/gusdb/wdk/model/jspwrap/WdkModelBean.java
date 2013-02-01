@@ -199,11 +199,11 @@ public class WdkModelBean implements ConnectionContainer {
         return recordClassMap;
     }
 
-    public Map<String, String> getRecordClassTypes() {
+    public Map<String, String> getRecordClassDisplayNames() {
         RecordClassBean[] recClasses = getRecordClasses();
         Map<String, String> types = new LinkedHashMap<String, String>();
         for (RecordClassBean r : recClasses) {
-            types.put(r.getFullName(), r.getType());
+            types.put(r.getFullName(), r.getDisplayName());
         }
         return types;
     }
