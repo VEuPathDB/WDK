@@ -212,7 +212,7 @@ public class XMLReporter extends Reporter {
             writer.println("<response>");
             writer.println("<recordset id='" + av.getChecksum() + "' count='"
                     + this.getResultSize() + "' type='"
-                    + av.getQuestion().getRecordClass().getType() + "'>");
+                    + av.getQuestion().getRecordClass().getDisplayName() + "'>");
             for (AnswerValue pageAnswer : this) {
                 for (RecordInstance record : pageAnswer.getRecordInstances()) {
                     writer.println("<record id='" + record.getPrimaryKey()

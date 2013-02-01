@@ -787,12 +787,17 @@
   <define name="recordClass">
     <element name="recordClass">
       <attribute name="name" />
-      <attribute name="type" />
       <optional>
         <attribute name="displayName" />
       </optional>
       <optional>
+        <attribute name="displayNamePlural" />
+      </optional>
+      <optional>
         <attribute name="shortDisplayName" />
+      </optional>
+      <optional>
+        <attribute name="shortDisplayNamePlural" />
       </optional>
       <optional>
         <attribute name="doNotTest">

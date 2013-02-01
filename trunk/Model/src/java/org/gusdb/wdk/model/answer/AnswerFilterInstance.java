@@ -298,7 +298,7 @@ public class AnswerFilterInstance extends WdkModelBase {
     sql = applyFilter(answerValue.getUser(), sql, assignedWeight);
     DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
     ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-        idInstance.getQuery().getFullName() + "-" + name + "-filtered");
+        idInstance.getQuery().getFullName() + "__" + name + "-filtered");
     try {
       return new SqlResultList(resultSet);
     } catch (SQLException ex) {

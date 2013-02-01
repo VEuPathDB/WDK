@@ -3,9 +3,12 @@ package org.gusdb.wdk.model.record;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Utilities;
@@ -43,16 +46,22 @@ import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
 /**
- * <p>RecordClass is the core entity in WDK, and it defined the type of the data
- * that is presented in WDK driven system.</p>
+ * <p>
+ * RecordClass is the core entity in WDK, and it defined the type of the data
+ * that is presented in WDK driven system.
+ * </p>
  * 
- * <p>Records are normally retrieved by running questions, and each question is
- * associated with one recordClass type.</p>
+ * <p>
+ * Records are normally retrieved by running questions, and each question is
+ * associated with one recordClass type.
+ * </p>
  * 
- * <p>Records can have attributes and tables, as well as nest records and nested
+ * <p>
+ * Records can have attributes and tables, as well as nest records and nested
  * record lists. A recordClass defines the attribute fields and table fields for
  * records, and for a given primary key, a RecordInstance can be instantiated,
- * and the instance will holds attribute values and table values.</p>
+ * and the instance will holds attribute values and table values.
+ * </p>
  * 
  * A record can have multiple attributes, but for each attribute, it can have
  * only have one value; the tables can have multiple attributes, and each
@@ -77,6 +86,19 @@ public class RecordClass extends WdkModelBase implements
 
   // private static final Logger logger = Logger.getLogger(RecordClass.class);
 
+  private static final Set<Character> VOWELS = new HashSet<>(Arrays.asList('a',
+      'e', 'i', 'o', 'u'));
+
+  /**
+   * This method takes in a bulk attribute or table query, and adds the primary
+   * key columns as params into the SQL, and return the a Query with the params.
+   * 
+   * @param wdkModel
+   * @param query
+   * @param paramNames
+   * @return
+   * @throws WdkModelException
+   */
   public static Query prepareQuery(WdkModel wdkModel, Query query,
       String[] paramNames) throws WdkModelException {
     Map<String, Column> columns = query.getColumnMap();
@@ -177,8 +199,9 @@ public class RecordClass extends WdkModelBase implements
    * consolidate them into one field.
    */
   private String displayName;
+  private String displayNamePlural;
   private String shortDisplayName;
-  private String type;
+  private String shortDisplayNamePlural;
 
   private String attributeOrdering;
 
@@ -267,11 +290,49 @@ public class RecordClass extends WdkModelBase implements
   }
 
   public String getDisplayName() {
-    return (displayName == null) ? getType() : displayName;
+    return (displayName == null) ? getName() : displayName;
   }
 
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
+  }
+
+  public String getDisplayNamePlural() {
+    if (displayNamePlural != null)
+      return displayNamePlural;
+
+    return getPlural(getDisplayName());
+  }
+
+  public void setDisplayNamePlural(String displayNamePlural) {
+    this.displayNamePlural = displayNamePlural;
+  }
+
+  public String getShortDisplayNamePlural() {
+    if (shortDisplayNamePlural != null)
+      return shortDisplayNamePlural;
+
+    return getPlural(displayName);
+  }
+
+  public void setShortDisplayNamePlural(String shortDisplayNamePlural) {
+    this.shortDisplayNamePlural = shortDisplayNamePlural;
+  }
+
+  private String getPlural(String name) {
+    if (name == null || name.length() == 0)
+      return name;
+
+    int length = name.length();
+    char last = name.charAt(length - 1);
+    if (last == 'o')
+      return name + "es";
+    if (last == 'y') {
+      char second = name.charAt(length - 2);
+      if (!VOWELS.contains(second))
+        return name.substring(0, length - 2) + "ies";
+    }
+    return name + "s";
   }
 
   /**
@@ -1233,21 +1294,6 @@ public class RecordClass extends WdkModelBase implements
    */
   public AnswerFilterInstance getBooleanExpansionFilter() {
     return booleanExpansionFilter;
-  }
-
-  /**
-   * @return the type
-   */
-  public String getType() {
-    return (type == null) ? getFullName() : type;
-  }
-
-  /**
-   * @param type
-   *          the type to set
-   */
-  public void setType(String type) {
-    this.type = type;
   }
 
   /**

@@ -57,7 +57,7 @@ function chooseType(paramName, type) {
 <c:set var="dsName" value="${pNam}_dataset"/>
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="dataset" value="${requestScope[dsName]}" />  
-<c:set var="recordType" value="${qp.recordClass.type}" />
+<c:set var="recordName" value="${qp.recordClass.displayNamePlural}" />
 <c:set var="defaultType" value="${qp.defaultType}" />
 <c:set var="dataChecked"><c:if test="${defaultType == 'data'}">checked</c:if></c:set>
 <c:set var="fileChecked"><c:if test="${defaultType == 'file'}">checked</c:if></c:set>
@@ -107,7 +107,7 @@ function chooseType(paramName, type) {
         <td colspan="2" align="left" valign="top" nowrap>
             <input type="radio" name="${pNam}_radio" ${basketChecked} ${disabled}
                    onclick="chooseType('${pNam}', 'basket');" />
-            Copy ${recordType}s from My Basket (${basketCount} ${recordType}s)&nbsp;
+            Copy ${recordName} from My Basket (${basketCount} ${recordName})&nbsp;
         </td>
     </tr>
     </c:if>

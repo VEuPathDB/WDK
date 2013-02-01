@@ -25,7 +25,7 @@
 
 <div class="Workspace">
 
-<div id="record-title" class="h2center">${recordClass.type}: ${primaryKey}</div>
+<div id="record-title" class="h2center">${recordClass.displayName}: ${primaryKey}</div>
 <c:if test="${recordSubtitle ne ''}">
   <div id="record-subtitle" class="h3center">${recordSubtitle}</div>
 </c:if>

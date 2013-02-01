@@ -241,7 +241,7 @@ public class SanityTester {
                     ResultSet rs = SqlUtils.executeQuery(wdkModel, wdkModel
                             .getQueryPlatform().getDataSource(),
                             testRowCountSql, querySet.getName()
-                                    + "-test-row-count");
+                                    + "__sanity-test-row-count");
                     rs.next();
                     minRows = maxRows = rs.getInt(1);
                     SqlUtils.closeResultSet(rs);
@@ -386,7 +386,7 @@ public class SanityTester {
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-                query.getFullName() + "-test-count");
+                query.getFullName() + "__sanity-test-count");
         resultSet.next();
         int count = resultSet.getInt(1);
         SqlUtils.closeResultSet(resultSet);
@@ -409,7 +409,7 @@ public class SanityTester {
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-                query.getFullName() + "-test-time");
+                query.getFullName() + "__sanity-test-time");
         if (count > 0 && !resultSet.next()) {
             String msg = "no row returned for " + query.getFullName()
                     + " using where clause (" + paramValuesSet.getWhereClause()
@@ -435,7 +435,7 @@ public class SanityTester {
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-                query.getFullName() + "-test-total-time");
+                query.getFullName() + "__sanity-test-total-time");
         int count = 0;
         while (resultSet.next())
             count++; // bring full result over to test speed

@@ -55,8 +55,8 @@ public class ShowStrategyStageHandler implements StageHandler {
             previousStep = StageHandlerUtility.getCurrentStep(request);
 
         // check if boolean is allowed
-        String childType = childStep.getType();
-        boolean allowBoolean = childType.equals(previousStep.getType());
+        String childType = childStep.getRecordClass().getFullName();
+        boolean allowBoolean = childType.equals(previousStep.getRecordClass().getFullName());
         attributes.put(ATTR_ALLOW_BOOLEAN, allowBoolean);
 
         logger.debug("Leaving StrategyStageHandler....");

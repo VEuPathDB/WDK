@@ -28,13 +28,9 @@ $(function() {
 //-->
 </script>
 
-<c:set var="type" value="${step.question.recordClass.type}" />
+<c:set var="recordName" value="${step.question.recordClass.displayName}" />
 
-<jsp:useBean id="typeMap" class="java.util.HashMap"/>
-<c:set target="${typeMap}" property="singular" value="${step.question.recordClass.type}"/>
-<imp:getPlural pluralMap="${typeMap}"/>
-<c:set var="type" value="${typeMap['plural']}"/>
-<div class="h2center">Download ${step.estimateSize} ${type} from the search:</div>
+<div class="h2center">Download ${step.estimateSize} ${recordName} from the search:</div>
 
 <i><div class="h3center">${step.displayName}</div></i>
 

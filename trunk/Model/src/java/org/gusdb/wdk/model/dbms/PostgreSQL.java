@@ -45,7 +45,7 @@ public class PostgreSQL extends DBPlatform {
         sql.append(" INCREMENT ");
         sql.append(increment);
         SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
-                "wdk_create_sequence");
+                "wdk-create-sequence");
     }
 
     /*
@@ -102,7 +102,7 @@ public class PostgreSQL extends DBPlatform {
         sql.append(schema).append(table).append(ID_SEQUENCE_SUFFIX);
         sql.append("')");
         long id = (Long) SqlUtils.executeScalar(wdkModel, dataSource,
-                sql.toString(), "wdk_select_next_id");
+                sql.toString(), "wdk-select-next-id");
         return (int) id;
     }
 
@@ -183,7 +183,7 @@ public class PostgreSQL extends DBPlatform {
         sql.append("WHERE tablename = '").append(tableName).append("'");
         sql.append(" AND schemaname = '").append(schema).append("'");
         long count = (Long) SqlUtils.executeScalar(wdkModel, dataSource,
-                sql.toString(), "wdk_check_table_exist");
+                sql.toString(), "wdk-check-table-exist");
         return (count > 0);
     }
 
@@ -230,7 +230,7 @@ public class PostgreSQL extends DBPlatform {
         if (schema != null) sql = schema;
         sql += table;
         // ignore purge option
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql, "wdk_drop_table");
+        SqlUtils.executeUpdate(wdkModel, dataSource, sql, "wdk-drop-table" + table);
     }
 
     /*
@@ -260,7 +260,7 @@ public class PostgreSQL extends DBPlatform {
         ResultSet resultSet = null;
         try {
             resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-                    "wdk_select_tables");
+                    "wdk-postgres-select-table-names");
             List<String> tables = new ArrayList<String>();
             while (resultSet.next()) {
                 tables.add(resultSet.getString("tablename"));

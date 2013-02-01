@@ -101,8 +101,8 @@ public class StepBean {
         step.setCustomName(customName);
     }
 
-    public String getDataType() {
-        return step.getType();
+    public RecordClassBean getRecordClass() throws WdkModelException {
+        return new RecordClassBean(step.getRecordClass());
     }
 
     public String getShortDisplayName() throws WdkModelException,
@@ -497,18 +497,6 @@ public class StepBean {
 
     public UserBean getUser() {
         return user;
-    }
-
-    public String getType() {
-        return step.getType();
-    }
-
-    public String getDisplayType() {
-        return step.getDisplayType();
-    }
-
-    public String getShortDisplayType() {
-        return step.getShortDisplayType();
     }
 
     /**

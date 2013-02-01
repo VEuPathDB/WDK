@@ -11,12 +11,8 @@
 
 <%-- display page header with wdkQuestion displayName as banner --%>
 <c:set var="wdkModel" value="${applicationScope.wdkModel}"/>
-<c:set var="recordType" value="${wdkQuestion.recordClass.type}"/>
+<c:set var="recordName" value="${wdkQuestion.recordClass.displayNamePlural}"/>
 <c:set var="showParams" value="${requestScope.showParams}"/>
-
-<c:if test="${fn:endsWith(recordType,'y')}">
-	<c:set var="recordType" value="${fn:substring(recordType,0,fn:length(recordType)-1)}ie" />
-</c:if>
 
 <%-- show all params of question, collect help info along the way --%>
 <c:set value="Help for question: ${wdkQuestion.displayName}" var="fromAnchorQ"/>
