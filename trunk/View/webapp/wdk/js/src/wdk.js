@@ -314,22 +314,25 @@ function getWebAppUrl() {
       }
 
       var $ellipsis = $("<div><b>&hellip;</b></div>")
-      .css("padding-left", "0.4em")
-      .attr("title", "Click \"Show more\" to expand");
+      .css("padding-left", "2.4em")
+      .attr("title", "Click to expand");
 
       // Wrap inner content so we can hide its overflow
       $node.wrapInner($("<div class='orig'/>").height(height)
           .css("overflow", "hidden"));
 
-      $ellipsis.appendTo($node);
+      //$ellipsis.appendTo($node);
 
       var $toggle1 = $("<div><a href='#'><span " +
-          "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show more</a></div>")
+          "class='ui-icon ui-icon-arrowthickstop-1-s'></span><b style='font-size:120%'>...</b></a></div>")
           .appendTo($node)
           .addClass("snippet-toggle");
 
-      var $toggle2 = $toggle1.clone()
+  //    var $toggle2 = $toggle1.clone()
+      var $toggle2 =  $("<div><a href='#'><span " +
+          "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Learn more</a></div>")
           .prependTo($node)
+					.addClass("snippet-toggle")
           .css("float", "right");
 
       $node.on("click", ".snippet-toggle a", function(e) {
@@ -343,10 +346,10 @@ function getWebAppUrl() {
                 easing: "easeOutQuint"
               })
               $toggle1.html("<a href='#'><span " +
-                "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show more</a>");
+                "class='ui-icon ui-icon-arrowthickstop-1-s'></span><b style='font-size:120%'>...</b></a>");
               $toggle2.html("<a href='#'><span " +
-                "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show more</a>");
-              $ellipsis.show();
+                "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Learn more</a>");
+             // $ellipsis.show();
               $node.data("shown", false);
             } else {
               //show
@@ -360,7 +363,7 @@ function getWebAppUrl() {
                 "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
               $toggle2.html("<a href='#'><span " +
                 "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
-              $ellipsis.hide();
+              //$ellipsis.hide();
               $node.data("shown", true);
             }
           });
@@ -370,7 +373,7 @@ function getWebAppUrl() {
   };
 
   var registerTruncate = function() {
-    var SHOW_CHARS = 120;
+    var SHOW_CHARS = 80; //120
 
     $(".truncate").each(function(idx, node) {
       var $node = $(node);
@@ -378,9 +381,9 @@ function getWebAppUrl() {
       if ($node.data("rendered")) {
         return;
       }
-
+			//text contains original text with any new lines
       var text = $node.text().trim();
-
+	
       if (text.length <= SHOW_CHARS) {
         $node.data("rendered", true);
         return;
@@ -390,20 +393,20 @@ function getWebAppUrl() {
 
       var $teaser = $("<div/>")
       .addClass("teaser")
-      //.html(text.slice(0, SHOW_CHARS) + "<b>&hellip;</b>");
-      .html(text).css({
+      .html(text.slice(0, SHOW_CHARS) + "<b>&hellip;</b>");
+ /*     .html(text).css({
         width: "90%",
         "white-space": "nowrap",
         overflow: "hidden",
         "text-overflow": "ellipsis"
       });
-
+*/
       // on bottom
       var $toggle1 = $("<div/>")
       .addClass("truncate-toggle")
       .attr("href", "#")
       .html("<a href='#'><span " +
-          "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show more</a>");
+          "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Learn more</a>");
 
       // on right
       var $toggle2 = $toggle1.clone()
@@ -433,9 +436,9 @@ function getWebAppUrl() {
             $orig.hide();
             $teaser.show();
             $toggle1.html("<a href='#'><span " +
-              "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show more</a>");
+              "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Learn more</a>");
             $toggle2.html("<a href='#'><span " +
-              "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show more</a>");
+              "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Learn more</a>");
           });
           $node.data("showing", false);
         } else {
