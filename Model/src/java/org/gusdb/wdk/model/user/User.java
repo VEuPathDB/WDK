@@ -680,15 +680,15 @@ public class User /* implements Serializable */{
             }
         }
         for (Strategy strategy : strategies) {
-            String display = strategy.getRecordClass().getDisplayNamePlural();
+            String rcName = strategy.getRecordClass().getFullName();
             List<Strategy> list;
-            if (category.containsKey(display)) {
-                list = category.get(display);
+            if (category.containsKey(rcName)) {
+                list = category.get(rcName);
             } else {
                 list = new ArrayList<Strategy>();
-                category.put(display, list);
+                category.put(rcName, list);
             }
-            category.get(display).add(strategy);
+            category.get(rcName).add(strategy);
         }
         return category;
     }
