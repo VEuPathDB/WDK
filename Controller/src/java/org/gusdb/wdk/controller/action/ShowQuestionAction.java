@@ -188,6 +188,7 @@ public class ShowQuestionAction extends Action {
             stepId = request.getParameter(PARAM_INPUT_STEP);
           if (stepId == null) {
             String strategyKey = request.getParameter("strategy");
+            if (strategyKey != null) {
             int pos = strategyKey.indexOf("_");
             if (pos < 0) {
               int strategyId = Integer.parseInt(strategyKey);
@@ -195,6 +196,7 @@ public class ShowQuestionAction extends Action {
               stepId = Integer.toString(strategy.getLatestStepId());
             } else {
               stepId = strategyKey.substring(pos + 1);
+            }
             }
           }
 
