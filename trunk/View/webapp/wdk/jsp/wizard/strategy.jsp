@@ -17,7 +17,7 @@
 <c:set var="buttonVal" value="Get Answer"/>
 
 
-<c:if test="${importStep.dataType != wdkStep.recordClass.fullName}">
+<c:if test="${importStep.recordClass.fullName != wdkStep.recordClass.fullName}">
 	<c:set var="checked" value="checked=''"/>
 	<c:set var="buttonVal" value="Continue"/>
 	<c:set var="spanOnly" value="true"/>
