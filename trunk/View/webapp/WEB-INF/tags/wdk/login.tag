@@ -19,7 +19,7 @@
     <c:when test="${isLoggedIn eq true}">
       <li><a href="${pageContext.request.contextPath}/showProfile.do">${userName}'s Profile</a></li>
       <li id="user-control">
-        <form name="logoutForm" method="post" action="${pageContext.request.contextPath}/processLogout.do"></form>
+        <form name="logoutForm" method="post" action="${pageContext.request.contextPath}/processLogout.do"><jsp:text/></form>
         <a href="javascript:void(0)" onclick="wdk.user.logout()">Logout</a>
       </li>
     </c:when>
