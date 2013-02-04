@@ -136,7 +136,7 @@ public abstract class WdkAction implements SecondaryValidator {
       
       ActionResult result;
       try {
-        _params = createParamGroup(request.getParameterMap());
+        _params = createParamGroup(getTypedParamMap(request.getParameterMap()));
         result = handleRequest(_params);
       }
       catch (WdkValidationException wve) {
@@ -154,7 +154,8 @@ public abstract class WdkAction implements SecondaryValidator {
         if (result.getFileName().isEmpty()) {
           result.setFileName(result.getResponseType().getDefaultFileName());
         }
-        _response.addHeader("Content-Disposition", "attachment, filename=\"" + result.getFileName() + "\"");
+        _response.setContentType(result.getResponseType().getMimeType());
+        _response.setHeader("Content-Disposition", "attachment; filename=\"" + result.getFileName() + "\"");
         transferStream(_response.getOutputStream(), result.getStream());
         return null;
       }
@@ -175,11 +176,15 @@ public abstract class WdkAction implements SecondaryValidator {
   }
   
   @SuppressWarnings("rawtypes")
-  private ParamGroup createParamGroup(Map parameterMap) throws WdkValidationException, WdkUserException {
-    ParamGroup params;
+  private Map<String, String[]> getTypedParamMap(Map parameterMap) {
     @SuppressWarnings("unchecked")
     Map<String, String[]> parameters = (Map<String, String[]>) (parameterMap == null ?
         new HashMap<>() : new HashMap<>((Map<String, String[]>)parameterMap));
+    return parameters;
+  }
+  
+  private ParamGroup createParamGroup(Map<String, String[]> paramMap) throws WdkValidationException, WdkUserException {
+    
     Map<String, DiskFileItem> uploads = new HashMap<String, DiskFileItem>();
 
     // parse multipart form data, including "normal" params and files
@@ -196,7 +201,7 @@ public abstract class WdkAction implements SecondaryValidator {
           } else {
             // TODO - handle things like checkboxes that should return array
             LOG.debug("Got a non-disk item from multi-part request named " + upload.getFieldName() + ": " + upload.toString());
-            parameters.put(upload.getFieldName(), new String[] {upload.getString()});
+            paramMap.put(upload.getFieldName(), new String[] {upload.getString()});
           }
         }
       }
@@ -205,12 +210,13 @@ public abstract class WdkAction implements SecondaryValidator {
       }
     }
 
+    ParamGroup params;
     if (shouldValidateParams()) {
       ParameterValidator validator = new ParameterValidator();
-      params = validator.validateParameters(getExpectedParams(), parameters, uploads, this);
+      params = validator.validateParameters(getExpectedParams(), paramMap, uploads, this);
     }
     else {
-      params = buildParamGroup(parameters, uploads);
+      params = buildParamGroup(paramMap, uploads);
     }
     return params;
   }
