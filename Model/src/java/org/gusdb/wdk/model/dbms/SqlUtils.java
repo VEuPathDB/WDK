@@ -331,15 +331,18 @@ public final class SqlUtils {
 
     // log time for baseline query, and only sql for the first time. goes to
     // info log
-    if (seconds >= monitor.getBaseline() && !monitor.isIgnoredBaseline(sql)) {
+    else if (seconds >= monitor.getBaseline() && !monitor.isIgnoredBaseline(sql)) {
       String message = "QUERY LOG [" + name + "]: " + seconds + " seconds.";
+      logger.warn(message);
+
       synchronized (queryNames) {
         if (!queryNames.contains(name)) {
           queryNames.add(name);
+	  message = "EXAMPLE QUERY [" + name + "]: " + seconds + " seconds.";
           message += "\n" + sql;
+	  logger.info(message);
         }
       }
-      logger.info(message);
     }
   }
 
