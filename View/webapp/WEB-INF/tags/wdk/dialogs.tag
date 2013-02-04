@@ -45,7 +45,6 @@
     <div class="ui-state-highlight ui-corner-all save_as_msg">
       <imp:verbiage key="dialog.update-strat.content"/>
     </div>
-    <form> <input type="hidden" name="strategy" value=""/> </form>
     <form id="wdk-update-strat" >
       <input type="hidden" name="strategy" value=""/>
       <dl>
