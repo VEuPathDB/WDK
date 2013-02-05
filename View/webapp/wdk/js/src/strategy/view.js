@@ -176,6 +176,8 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           "height='12px' width='12px'/></span>";
     }
 
+    var displayType = (jsonStep.results > 1) ? jsonStep.shortDisplayTypePlural : jsonStep.shortDisplayName;
+
     var boolinner = "<a id='" + sid + "|" + modelstep.back_boolean_Id + "|" +
         jsonStep.operation + "' title='CLICK to modify this operation.' " +
         "class='operation' href='javascript:void(0)' onclick='wdk.step.showDetails(this)'>"+
@@ -184,8 +186,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "<a title='CLICK to show these results in the area below.' " +
         "class='operation' onclick='" + bool_link +
         "' href='javascript:void(0)'>" + jsonStep.results + "&nbsp;" +
-        wdk.util.getDisplayType(jsonStep.shortDisplayType, jsonStep.results) + "</a>" +
-        "</h6>" + filterImg;
+        displayType + "</a>" + "</h6>" + filterImg;
 
     if (!modelstep.isLast) {
       if (modelstep.nextStepType == "transform") {
