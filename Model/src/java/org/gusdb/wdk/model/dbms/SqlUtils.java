@@ -340,7 +340,7 @@ public final class SqlUtils {
           queryNames.add(name);
 	  message = "EXAMPLE QUERY [" + name + "]: " + seconds + " seconds.";
           message += "\n" + sql;
-	  logger.info(message);
+	  SqlExampleLog.logger.info(message);
         }
       }
     }
