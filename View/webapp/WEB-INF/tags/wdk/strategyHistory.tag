@@ -51,7 +51,7 @@ $(function() {
     <c:set var="type" value="${strategyEntry.key}"/>
     <c:set var="unsavedStratList" value="${strategyEntry.value}"/>
     <c:set var="savedStratList" value="${savedStrategiesMap[type]}" />
-	<c:set var="totalStratsCount" value="${fn:length(savedStratList) + fn:length(unsavedStratList)}"/>
+	  <c:set var="totalStratsCount" value="${fn:length(savedStratList) + fn:length(unsavedStratList)}"/>
     <c:if test="${fn:length(unsavedStratList) > 0 || fn:length(savedStratList) > 0}">
       <c:choose>
         <c:when test="${fn:length(unsavedStratList) > 0}">
@@ -107,7 +107,7 @@ $(function() {
 <c:forEach items="${unsavedStrategiesMap}" var="strategyEntry">
   <c:set var="type" value="${strategyEntry.key}"/>
   <c:set var="strategies" value="${strategyEntry.value}"/>
-  <c:set var="recDispName" value="${strategies[0].latestStep.recordClass.displayName}"/>
+  <c:set var="recDispName" value="${strategies[0].latestStep.recordClass.displayNamePlural}"/>
   <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
 
   <c:if test="${fn:length(strategies) > 0}">
@@ -122,7 +122,7 @@ $(function() {
 <c:forEach items="${savedStrategiesMap}" var="strategyEntry">
   <c:set var="type" value="${strategyEntry.key}"/>
   <c:set var="strategies" value="${strategyEntry.value}"/>
-  <c:set var="recDispName" value="${strategies[0].latestStep.recordClass.displayName}"/>
+  <c:set var="recDispName" value="${strategies[0].latestStep.recordClass.displayNamePlural}"/>
   <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
 
   <c:if test="${fn:length(strategies) > 0}">
