@@ -371,8 +371,10 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("isCollapsed", step.getIsCollapsible() && showSubStrategy);
         jsStep.put("isUncollapsible", step.isUncollapsible());
         jsStep.put("dataType", step.getRecordClass().getFullName());
-        jsStep.put("displayType", step.getDisplayName());
-        jsStep.put("shortDisplayType", step.getShortDisplayName());
+        jsStep.put("displayType", step.getRecordClass().getDisplayName());
+        jsStep.put("shortDisplayType", step.getRecordClass().getShortDisplayName());
+        jsStep.put("displayTypePlural", step.getRecordClass().getDisplayNamePlural());
+        jsStep.put("shortDisplayTypePlural", step.getRecordClass().getShortDisplayNamePlural());
         jsStep.put("shortName", step.getShortDisplayName());
         jsStep.put("results", step.getEstimateSize());
         jsStep.put("questionName", step.getQuestionName());
