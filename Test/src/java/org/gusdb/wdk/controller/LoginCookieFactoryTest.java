@@ -9,10 +9,7 @@ import static org.junit.Assert.assertTrue;
 import javax.servlet.http.Cookie;
 
 import org.gusdb.wdk.controller.LoginCookieFactory.LoginCookieParts;
-import org.gusdb.wdk.model.WdkModelException;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class LoginCookieFactoryTest {
 
@@ -117,9 +114,4 @@ public class LoginCookieFactoryTest {
       assertFalse(factory.isValidCookie(parts));
     }
   }
-  
-  //public Cookie createLoginCookie(String username, boolean remember) throws WdkModelException;
-  //public static Cookie findLoginCookie(Cookie[] cookies);
-  //public static LoginCookieParts parseCookieValue(String cookieValue) throws WdkModelException;
-  //public boolean isValidCookie(LoginCookieParts cookieParts);  
 }
