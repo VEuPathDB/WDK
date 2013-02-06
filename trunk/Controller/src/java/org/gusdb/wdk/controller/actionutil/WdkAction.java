@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -194,15 +195,22 @@ public abstract class WdkAction implements SecondaryValidator {
         uploadHandler.setSizeMax(getMaxUploadSize()*1024*1024);
         @SuppressWarnings("unchecked")
         List<DiskFileItem> uploadList = uploadHandler.parseRequest(_request);
+        Map<String, List<String>> params = new HashMap<String, List<String>>();
         for (DiskFileItem upload : uploadList) {
           if (!upload.isFormField()) {
             LOG.debug("Got a disk item from multi-part request named " + upload.getFieldName() + ": " + upload);
             uploads.put(upload.getFieldName(), upload);
-          } else {
-            // TODO - handle things like checkboxes that should return array
-            LOG.debug("Got a non-disk item from multi-part request named " + upload.getFieldName() + ": " + upload.toString());
-            paramMap.put(upload.getFieldName(), new String[] {upload.getString()});
           }
+          else {
+            LOG.debug("Got a non-disk item from multi-part request named " + upload.getFieldName() + ": " + upload.toString());
+            if (!params.containsKey(upload.getFieldName())) {
+              params.put(upload.getFieldName(), new ArrayList<String>());
+            }
+            params.get(upload.getFieldName()).add(upload.getString());
+          }
+        }
+        for (String key : params.keySet()) {
+          paramMap.put(key, params.get(key).toArray(new String[0]));
         }
       }
       catch (FileUploadException e) {
@@ -508,8 +516,10 @@ public abstract class WdkAction implements SecondaryValidator {
       
       @Override
       public String getFullRequestUrl() {
-        return _request.getRequestURL()
-            .append(_request.getQueryString() == null ? "" : "?" + _request.getQueryString())
+        StringBuffer buf = _request.getRequestURL();
+        String qString = _request.getQueryString();
+        return (buf == null ? new StringBuffer() : buf)
+            .append(qString == null ? "" : "?" + qString)
             .toString();
       }
       

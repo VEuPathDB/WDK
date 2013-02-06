@@ -24,6 +24,8 @@ public class UploadSampleAction extends WdkAction {
   @SuppressWarnings("unused")
   private static final Logger LOG = Logger.getLogger(UploadSampleAction.class.getName());
   
+  private static final String UPLOAD_USER_NAME_KEY = "name";
+  private static final String UPLOAD_CHECKBOXES_KEY = "selections";
   private static final String UPLOAD_NAME_PREFIX = "file";
   private static final int PREVIEW_CHARS = 100;
 
@@ -35,6 +37,12 @@ public class UploadSampleAction extends WdkAction {
   @Override
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
     JSONObject result = new JSONObject();
+    String name = params.getValue(UPLOAD_USER_NAME_KEY);
+    result.put("username", name);
+    String[] selections = params.getValues(UPLOAD_CHECKBOXES_KEY);
+    for (String value : selections) {
+      result.append("selections", value);
+    }
     for (String fieldName : params.getKeys()) {
       if (fieldName.startsWith(UPLOAD_NAME_PREFIX)) {
         JSONObject fileInfo = new JSONObject();
