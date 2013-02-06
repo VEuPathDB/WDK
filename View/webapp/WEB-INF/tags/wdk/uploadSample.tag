@@ -21,6 +21,13 @@
     <body>
       <form method="post" action="uploadSample.do" enctype="multipart/form-data">
         <h3>Upload a file!</h3>
+        Enter your name: <input type="text" size="15" name="name"/><br/>
+        Check some boxes:<br/>
+        <ul>
+          <li><input type="checkbox" name="selections" value="A"/>A</li>
+          <li><input type="checkbox" name="selections" value="B"/>B</li>
+          <li><input type="checkbox" name="selections" value="C"/>C</li>
+        </ul>
         <div id="uploadFields">
           File 1: <input type="file" name="file1"/><br/>
         </div>
