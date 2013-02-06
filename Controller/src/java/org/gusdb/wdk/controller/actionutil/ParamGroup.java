@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.fileupload.disk.DiskFileItem;
+import org.apache.log4j.Logger;
 
 /**
  * Grouping of a set of validated parameters and their definitions.
@@ -14,6 +15,8 @@ import org.apache.commons.fileupload.disk.DiskFileItem;
  */
 public class ParamGroup {
 	
+  private static final Logger LOG = Logger.getLogger(ParamGroup.class.getName());
+  
   private static final Set<String> TRUE_VALUES =
       new HashSet<>(Arrays.asList(new String[]{ "true", "1", "yes" }));
 
@@ -64,11 +67,10 @@ public class ParamGroup {
 	}
 	
 	public String[] getValues(String key) {
-		checkValidKey(key);
-		if (!_defs.get(key).isMultiple()) {
-			throw new IllegalArgumentException("The key [ " + key + " ] refers to a single-value param. Please call getValue().");
+		if (_defs.containsKey(key) && !_defs.get(key).isMultiple()) {
+			LOG.warn("The key [ " + key + " ] refers to a single-value param but is being accessed via getValues().");
 		}
-		return _values.get(key);
+		return (_values.get(key) == null ? new String[0] : _values.get(key));
 	}
 	
 	private void checkValidKey(String key) {
