@@ -131,6 +131,7 @@ function chooseType(paramName, type) {
             </td>
             <td align="left">
                 <html:file styleId="${pNam}_file" styleClass="input" property="value(${pNam}_file)" disabled="true"/>
+								<div class="type-ahead-help">Maximum size: 10MB.
             </td>
         </tr>
     </c:if>
