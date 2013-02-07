@@ -165,9 +165,10 @@ public class AnswerValue {
    *          inclusive.
    * @throws WdkUserException
    */
-  public AnswerValue(User user, Question question, QueryInstance idsQueryInstance,
-      int startIndex, int endIndex, Map<String, Boolean> sortingMap,
-      AnswerFilterInstance filter) throws WdkModelException {
+  public AnswerValue(User user, Question question,
+      QueryInstance idsQueryInstance, int startIndex, int endIndex,
+      Map<String, Boolean> sortingMap, AnswerFilterInstance filter)
+      throws WdkModelException {
     this.user = user;
     this.question = question;
     this.resultFactory = question.getWdkModel().getResultFactory();
@@ -556,7 +557,8 @@ public class AnswerValue {
    * @throws WdkModelException
    * @throws WdkUserException
    */
-  public void integrateAttributesQuery(Query attributeQuery) throws WdkModelException {
+  public void integrateAttributesQuery(Query attributeQuery)
+      throws WdkModelException {
     initPageRecordInstances();
 
     WdkModel wdkModel = question.getWdkModel();
@@ -649,9 +651,13 @@ public class AnswerValue {
 
     // combine the id query with attribute query
     String attributeSql = getAttributeSql(attributeQuery);
-    StringBuffer sql = new StringBuffer("SELECT aq.* FROM (");
+    StringBuffer sql = new StringBuffer(
+        " /* the desired attributes, for a page of sorted results */ "
+            + " SELECT aq.* FROM (");
     sql.append(idSql);
-    sql.append(") pidq, (").append(attributeSql).append(") aq WHERE ");
+    sql.append(
+        ") pidq, (/* attribute query that returns attributes in a page */ ").append(
+        attributeSql).append(") aq WHERE ");
 
     boolean firstColumn = true;
     for (String column : pkField.getColumnRefs()) {
@@ -664,8 +670,8 @@ public class AnswerValue {
     return sql.toString();
   }
 
-  public void integrateTableQuery(TableField tableField) throws WdkModelException,
-      WdkUserException {
+  public void integrateTableQuery(TableField tableField)
+      throws WdkModelException, WdkUserException {
     initPageRecordInstances();
 
     WdkModel wdkModel = question.getWdkModel();
@@ -807,7 +813,8 @@ public class AnswerValue {
     List<String> orderClauses = new ArrayList<String>();
     prepareSortingSqls(attributeSqls, orderClauses);
 
-    StringBuffer sql = new StringBuffer("SELECT idq.* FROM ");
+    StringBuffer sql = new StringBuffer(
+        "/* the ID query results, sorted */ SELECT idq.* FROM ");
     sql.append(idSql).append(" idq");
     // add all tables involved
     for (String shortName : attributeSqls.keySet()) {
@@ -859,6 +866,9 @@ public class AnswerValue {
     DBPlatform platform = question.getWdkModel().getQueryPlatform();
     String sql = platform.getPagedSql(sortedIdSql, startIndex, endIndex);
 
+    // add comments to the sql
+    sql = " /* a page of sorted ids */ " + sql;
+
     logger.debug("paged id sql constructed.");
 
     return sql;
@@ -878,11 +888,15 @@ public class AnswerValue {
     // sql.append(" FROM (");
 
     String innerSql = idsQueryInstance.getSql();
+
+    // add comments to id sql
+    innerSql = " /* the ID query */" + innerSql;
+
     int assignedWeight = idsQueryInstance.getAssignedWeight();
     // apply filter
     if (filter != null)
       innerSql = filter.applyFilter(user, innerSql, assignedWeight);
-    return "(" + innerSql + ")";
+    return " /* filter applied on id query */ (" + innerSql + ")";
     // sql.append(innerSql).append(") bidq)");
     //
     // logger.debug("id sql constructed.");
@@ -919,6 +933,10 @@ public class AnswerValue {
           // query not processed yet, process it
           String shortName = "aq" + queryNames.size();
           String sql = getAttributeSql(query);
+
+          // add comments to sql
+          sql = " /* attribute query used for sorting: " + queryName + " */ "
+              + sql;
           queryNames.put(queryName, shortName);
           querySqls.put(queryName, sql);
         }
