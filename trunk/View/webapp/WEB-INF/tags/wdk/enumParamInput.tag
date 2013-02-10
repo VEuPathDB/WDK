@@ -149,7 +149,7 @@ Otherwise a standard select menu is used.
       <c:when test="${displayType eq 'typeAhead'}">
         <input type="text" id="${pNam}_display" size="50" value=""/>
         <html:hidden styleClass="typeAhead" property="value(${pNam})" />
-        <div class="type-ahead-help">You can enter wildcards as in *(your-term)*. <br>Or type three characters in the above textbox to get inline suggestions.</div>
+        <div class="type-ahead-help">You can enter wildcards as in *your-term*. <br>Or type three characters in the above textbox to get inline suggestions.</div>
       </c:when>
 
       <c:otherwise>
