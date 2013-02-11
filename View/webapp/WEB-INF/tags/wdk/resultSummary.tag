@@ -32,7 +32,7 @@
 <td class="h3left" style="vertical-align:middle;padding-bottom:7px;">
   <span title="${step.displayName}">
     <c:if test="${strategy != null}">
-        <span title="The strategy whch has the yellow step; you are looking at the results of that step.">Active Strategy:</span> <i style="font-weight:normal"><span id="text_strategy_number">${strategy.name}</span></i>&nbsp;--&nbsp;Results for <span style="background:#FFFFA0">Step <span id="text_step_number">${strategy.length}</span></span>: 
+        <span title="The strategy whch has the yellow step; you are looking at the results of that step.">Strategy:</span> <i style="font-weight:normal"><span id="text_strategy_number">${strategy.name}</span></i><br>Step <span id="text_step_number">${strategy.length}</span> Results: 
     </c:if>
     <i style="font-weight:normal"><span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${recordName}</span></i>
   </span>
