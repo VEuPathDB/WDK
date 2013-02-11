@@ -314,7 +314,7 @@ ul.menubar {
 }
 
 .content-pane {
-  margin: 1em;
+  margin: 0.5em;
   background: whiteSmoke;
   border: 1px solid #DDD;
   border-radius: 6px;
@@ -387,7 +387,8 @@ ul.menubar {
 }
 
 .param-group.empty {
-  padding: 1em 2em; /* add padding that collpsible regions get */
+  padding: 0.5em 1em; /* add padding that collpsible regions get */
+
 }
 
 .param-group.hidden {
@@ -433,14 +434,14 @@ ul.menubar {
 
 .param-item label {
   float: left;
-  width: 300px;
+  width: 249px;   /* 300px; */
   clear: both;
   text-align: right;
   padding-top: 4px;
 }
 
 .param-control {
-  margin-left: 310px;
+  margin-left: 250px; /*310px; */
 }
 
 .param-control td {
@@ -639,7 +640,10 @@ a.button { padding: 2px 5px; line-height:30px; margin: 3px; }
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	 =RESULTS PAGE
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
-#form_question .filter-button { text-align: center; }
+#form_question .filter-button { 
+	text-align: center; 
+	padding-top: 1em;
+}
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -778,9 +782,9 @@ tr.lines td, tr.linesalt td {
 
 div.Workspace {
    position: relative;
-	border: 2px solid #0B4796;
+/* 	border: 2px solid #0B4796; */
 	margin-top:5px;
-	padding: 10px;
+	padding: 6px;
 	
 }
 
@@ -994,14 +998,14 @@ table.dataTable tr.odd {
 }
 .collapsible-title span.ui-icon {
   position: absolute;
-  top: 0.8em;
-  left: 0.4em;
+  top: 0.4em;
+  left: -0.2em;
 }
 .collapsible-title, .collapsible-content {
-  padding: 1em 2em;
+  padding: 0.5em 1.5em;
 }
 .collapsible-content {
-  border-top: 1px solid #DDD;
+/*   border-top: 1px solid #DDD; */
 }
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
