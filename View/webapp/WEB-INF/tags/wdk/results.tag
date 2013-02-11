@@ -38,22 +38,27 @@
   <c:otherwise>
 
 <!-- ================ FILTERS DEFINED IN MODEL.XML =============== -->
+
+<imp:resultSummary strategy="${wdkStrategy}" step="${wdkStep}"/>
+
+
 <c:if test="${strategy != null}">
-    <imp:filterLayouts strategyId="${strategy.strategyId}" 
+  <imp:filterLayouts strategyId="${strategy.strategyId}" 
                      stepId="${step.stepId}"
                      answerValue="${wdkAnswer}" />
 </c:if>
 
 
-<!-- ================ RESULTS TITLE AND LINKS TO NASKET AND DOWNLOADS   =============== -->
+<!-- ================ RESULTS TITLE AND LINKS TO BASKET AND DOWNLOADS   =============== -->
+
+<!-- now in resultSummary.tag
 <table id = "title-links" width="100%"><tr>
 <td class="h3left" style="vertical-align:middle;padding-bottom:7px;">
   <span title="${step.displayName}">
     <c:if test="${strategy != null}">
-        <span id="text_strategy_number">${strategy.name}</span> 
-        - step <span id="text_step_number">${strategy.length}</span> - 
+        <span title="The strategy which has the yellow step; you are looking at the results of that step.">Active Strategy:</span> <i style="font-weight:normal"><span id="text_strategy_number">${strategy.name}</span></i>&nbsp;--&nbsp;Results for Step <span id="text_step_number">${strategy.length}</span>: 
     </c:if>
-    <span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${recordName}</span>
+    <i style="font-weight:normal"><span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${recordName}</span></i>
   </span>
 </td>
 
@@ -66,7 +71,7 @@
         <c:set var="basketClick" value="wdk.user.login();" />
       </c:when>
       <c:otherwise>
-        <c:set var="basketClick" value="wdk.basket.updateBasket(this, '${step.stepId}', '0', '${modelName}', '${recordName}');" />
+        <c:set var="basketClick" value="wdk.basket.updateBasket(this, '${step.stepId}', '0', '0', '${recordName}');" />
       </c:otherwise>
     </c:choose>
     <c:if test="${recHasBasket}"><a id="basketStep" style="font-size:120%" href="javascript:void(0)" onClick="${basketClick}"><b>Add ${r_count} to Basket</b></a>&nbsp;|&nbsp;</c:if>
@@ -78,7 +83,7 @@
   </div>
 </td>
 </tr></table>
-
+-->
 
 
 
