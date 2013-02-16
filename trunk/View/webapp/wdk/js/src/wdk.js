@@ -328,12 +328,10 @@ function getWebAppUrl() {
           .appendTo($node)
           .addClass("snippet-toggle");
 
-  		//cris    var $toggle2 = $toggle1.clone()
-      var $toggle2 =  $("<div><a href='#'><span " +
-          "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Learn more</a></div>")
-          .prependTo($node)
-					.addClass("snippet-toggle")
+  		var $toggle2 = $toggle1.clone()
+ 						 .prependTo($node)
           .css("float", "right");
+			$toggle2.html("");
 
       $node.on("click", ".snippet-toggle a", function(e) {
             e.preventDefault();
@@ -348,7 +346,9 @@ function getWebAppUrl() {
               $toggle1.html("<a href='#'><span " +
                 "class='ui-icon ui-icon-arrowthickstop-1-s'></span><b style='font-size:120%'>...</b></a>");
               $toggle2.html("<a href='#'><span " +
-                "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Learn more</a>");
+                "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show all datasets ...</a>");
+							$toggle2.html("");
+
              //cris    $ellipsis.show();
               $node.data("shown", false);
             } else {
@@ -363,6 +363,8 @@ function getWebAppUrl() {
                 "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
               $toggle2.html("<a href='#'><span " +
                 "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
+							//$toggle2.html(""); //dont show
+
               //cris    $ellipsis.hide();
               $node.data("shown", true);
             }
@@ -373,7 +375,7 @@ function getWebAppUrl() {
   };
 
   var registerTruncate = function() {
-    var SHOW_CHARS = 80; //120
+    var SHOW_CHARS = 120;
 
     $(".truncate").each(function(idx, node) {
       var $node = $(node);
