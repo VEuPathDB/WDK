@@ -321,14 +321,14 @@ function getWebAppUrl() {
       $node.wrapInner($("<div class='orig'/>").height(height)
           .css("overflow", "hidden"));
 
-      //$ellipsis.appendTo($node);
+      //cris   $ellipsis.appendTo($node);
 
       var $toggle1 = $("<div><a href='#'><span " +
           "class='ui-icon ui-icon-arrowthickstop-1-s'></span><b style='font-size:120%'>...</b></a></div>")
           .appendTo($node)
           .addClass("snippet-toggle");
 
-  //    var $toggle2 = $toggle1.clone()
+  		//cris    var $toggle2 = $toggle1.clone()
       var $toggle2 =  $("<div><a href='#'><span " +
           "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Learn more</a></div>")
           .prependTo($node)
@@ -349,7 +349,7 @@ function getWebAppUrl() {
                 "class='ui-icon ui-icon-arrowthickstop-1-s'></span><b style='font-size:120%'>...</b></a>");
               $toggle2.html("<a href='#'><span " +
                 "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Learn more</a>");
-             // $ellipsis.show();
+             //cris    $ellipsis.show();
               $node.data("shown", false);
             } else {
               //show
@@ -363,7 +363,7 @@ function getWebAppUrl() {
                 "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
               $toggle2.html("<a href='#'><span " +
                 "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
-              //$ellipsis.hide();
+              //cris    $ellipsis.hide();
               $node.data("shown", true);
             }
           });
@@ -381,7 +381,7 @@ function getWebAppUrl() {
       if ($node.data("rendered")) {
         return;
       }
-			//text contains original text with any new lines
+			//text contains original text with '\n'
       var text = $node.text().trim();
 	
       if (text.length <= SHOW_CHARS) {
@@ -389,12 +389,14 @@ function getWebAppUrl() {
         return;
       }
 
+      // this might be for IE7 so overflow: hidden works?
       $node.css("position", "relative");
 
       var $teaser = $("<div/>")
       .addClass("teaser")
       .html(text.slice(0, SHOW_CHARS) + "<b>&hellip;</b>");
- /*     .html(text).css({
+ /* cris: 2 problems: IE8 and italics in organism is lost on teaser
+       .html(text).css({
         width: "90%",
         "white-space": "nowrap",
         overflow: "hidden",
@@ -406,14 +408,14 @@ function getWebAppUrl() {
       .addClass("truncate-toggle")
       .attr("href", "#")
       .html("<a href='#'><span " +
-          "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Learn more</a>");
+          "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show full description ...</a>");
 
       // on right
       var $toggle2 = $toggle1.clone()
       .css({
         "float": "right"
       })
-
+      $toggle1.html(""); //dont show
 
       // hide original content and append teaser before it
       var $orig = $node.wrapInner("<div class='orig'/>")
@@ -436,9 +438,10 @@ function getWebAppUrl() {
             $orig.hide();
             $teaser.show();
             $toggle1.html("<a href='#'><span " +
-              "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Learn more</a>");
+              "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show full description ...</a>");
             $toggle2.html("<a href='#'><span " +
-              "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Learn more</a>");
+              "class='ui-icon ui-icon-arrowthickstop-1-s'></span>Show full description ...</a>");
+						$toggle1.html("");
           });
           $node.data("showing", false);
         } else {
@@ -453,6 +456,7 @@ function getWebAppUrl() {
             "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
           $toggle2.html("<a href='#'><span " +
             "class='ui-icon ui-icon-arrowthickstop-1-n'></span>Show less</a>");
+					//$toggle2.html("");
           $node.data("showing", true);
         }
       });
