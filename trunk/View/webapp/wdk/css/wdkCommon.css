@@ -782,7 +782,7 @@ tr.lines td, tr.linesalt td {
 
 div.Workspace {
    position: relative;
-/* 	border: 2px solid #0B4796; */
+ 	border: 2px solid #0B4796; 
 	margin-top:5px;
 	padding: 6px;
 	
