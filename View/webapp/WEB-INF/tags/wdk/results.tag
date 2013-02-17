@@ -39,9 +39,6 @@
 
 <!-- ================ FILTERS DEFINED IN MODEL.XML =============== -->
 
-<imp:resultSummary strategy="${wdkStrategy}" step="${wdkStep}"/>
-
-
 <c:if test="${strategy != null}">
   <imp:filterLayouts strategyId="${strategy.strategyId}" 
                      stepId="${step.stepId}"
@@ -51,40 +48,8 @@
 
 <!-- ================ RESULTS TITLE AND LINKS TO BASKET AND DOWNLOADS   =============== -->
 
-<!-- now in resultSummary.tag
-<table id = "title-links" width="100%"><tr>
-<td class="h3left" style="vertical-align:middle;padding-bottom:7px;">
-  <span title="${step.displayName}">
-    <c:if test="${strategy != null}">
-        <span title="The strategy which has the yellow step; you are looking at the results of that step.">Active Strategy:</span> <i style="font-weight:normal"><span id="text_strategy_number">${strategy.name}</span></i>&nbsp;--&nbsp;Results for Step <span id="text_step_number">${strategy.length}</span>: 
-    </c:if>
-    <i style="font-weight:normal"><span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${recordName}</span></i>
-  </span>
-</td>
-
-<td  style="vertical-align:middle;text-align:right;white-space:nowrap;">
-  <div style="float:right">
-   <c:set var="r_count" value="${wdkAnswer.resultSize} ${recordName}" />
-   <c:if test="${strategy != null}">
-    <c:choose>
-      <c:when test="${wdkUser.guest}">
-        <c:set var="basketClick" value="wdk.user.login();" />
-      </c:when>
-      <c:otherwise>
-        <c:set var="basketClick" value="wdk.basket.updateBasket(this, '${step.stepId}', '0', '0', '${recordName}');" />
-      </c:otherwise>
-    </c:choose>
-    <c:if test="${recHasBasket}"><a id="basketStep" style="font-size:120%" href="javascript:void(0)" onClick="${basketClick}"><b>Add ${r_count} to Basket</b></a>&nbsp;|&nbsp;</c:if>
-   </c:if>
-    <a style="font-size:120%" href="downloadStep.do?step_id=${step.stepId}&signature=${wdkUser.signature}"><b>Download ${r_count}</b></a>
-  <c:if test="${!empty sessionScope.GALAXY_URL}">
-    &nbsp;|&nbsp;<a href="downloadStep.do?step_id=${step.stepId}&wdkReportFormat=tabular"><b>SEND TO GALAXY</b></a>
-  </c:if>
-  </div>
-</td>
-</tr></table>
+<imp:resultSummary strategy="${wdkStrategy}" step="${wdkStep}"/>
 -->
-
 
 
 <!-- ================ SUMMARY VIEWS (EXTRA TABS DEFINED IN MODEL.XML)  =============== -->
