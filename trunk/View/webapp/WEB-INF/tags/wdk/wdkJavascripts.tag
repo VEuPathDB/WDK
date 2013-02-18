@@ -88,10 +88,12 @@
        also included in summary page to support the addStep popup            -->
   <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <c:if test="${refer == 'question' || refer == 'summary'}">
+  <!--
     <script>
       jQuery(wdk.question.init);
       jQuery(wdk.parameterHandlers.init);
     </script>
+  -->
   </c:if>
 
 
