@@ -487,6 +487,13 @@ ul.menubar {
 .params .invalid-values ul { list-style:disc outside none; margin:2px 2px 2px 15px; }
 .params .invalid-values li.invalid { color:red; }
 
+/* ======= Needed in treeParams, when param value is so long that it wraps (plasmo mass spec) ========*/
+.checkbox-tree .jstree-icon {
+  vertical-align:top;
+}
+.checkbox-tree li a span {
+  white-space:normal;
+}
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
