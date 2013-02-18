@@ -371,7 +371,8 @@ public class WdkModel implements ConnectionContainer {
     } else {
       booleanQuestion = new Question();
       booleanQuestion.setName(qname);
-      booleanQuestion.setDisplayName(recordClass.getDisplayName());
+      booleanQuestion.setDisplayName("Combine " + recordClass.getDisplayName()
+          + " results");
       booleanQuestion.setRecordClassRef(recordClass.getFullName());
       BooleanQuery booleanQuery = getBooleanQuery(recordClass);
       booleanQuestion.setQueryRef(booleanQuery.getFullName());
