@@ -98,6 +98,11 @@ public abstract class Query extends WdkModelBase {
 
   private String name;
   protected boolean cached = false;
+  /**
+   * A flag to check if the cached has been set. if not set, the value from
+   * parent querySet will be used.
+   */
+  private boolean setCache = false;
 
   // temp list, will be discarded after resolve references
   private List<ParamReference> paramRefList;
@@ -135,7 +140,7 @@ public abstract class Query extends WdkModelBase {
 
   public abstract void resolveQueryReferences(WdkModel wdkModel)
       throws WdkModelException;
-
+  
   // =========================================================================
   // Constructors
   // =========================================================================
@@ -159,6 +164,7 @@ public abstract class Query extends WdkModelBase {
     // logger.debug("clone query: " + query.getFullName());
     this.name = query.name;
     this.cached = query.cached;
+    this.setCache = query.setCache;
     this.paramMap = new LinkedHashMap<String, Param>();
     this.columnMap = new LinkedHashMap<String, Column>();
     this.wdkModel = query.wdkModel;
@@ -182,6 +188,22 @@ public abstract class Query extends WdkModelBase {
       param.setContextQuery(this);
       paramMap.put(paramName, param);
     }
+  }
+
+  /**
+   * @return the cached
+   */
+  public boolean isCached() {
+    return this.cached;
+  }
+
+  /**
+   * @param cached
+   *          the cached to set
+   */
+  public void setIsCacheable(boolean cached) {
+    this.cached = cached;
+    setCache = true;
   }
 
   public Question getContextQuestion() {
@@ -230,21 +252,6 @@ public abstract class Query extends WdkModelBase {
    */
   public void setQuerySet(QuerySet querySet) {
     this.querySet = querySet;
-  }
-
-  /**
-   * @return the cached
-   */
-  public boolean isCached() {
-    return this.cached;
-  }
-
-  /**
-   * @param cached
-   *          the cached to set
-   */
-  public void setIsCacheable(boolean cached) {
-    this.cached = cached;
   }
 
   public String getFullName() {
@@ -421,6 +428,10 @@ public abstract class Query extends WdkModelBase {
       return;
 
     this.wdkModel = wdkModel;
+    
+    // check if we need to use querySet's cache flag
+    if (!setCache) cached = getQuerySet().isCacheable();
+    
 
     // resolve the params
     for (ParamReference paramRef : paramRefList) {

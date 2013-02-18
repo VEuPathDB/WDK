@@ -13,9 +13,14 @@ import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 
 /**
- * An object representation of the <querySet> in the model. A query set can only
- * contain queries.
+ * An object representation of the {@code <querySet>} in the model. A query set
+ * can only contain queries.
+ * You can define isCacheable on querySet to provide default value to the contained queries.
  * 
+ * @author jerric
+ * 
+ */
+/**
  * @author jerric
  * 
  */
@@ -36,12 +41,28 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
   private List<WdkModelText> unexcludedTestRowCountSqls = new ArrayList<WdkModelText>();
   private String testRowCountSql;
 
+  private boolean cacheable = false;
+
   public void setName(String name) {
     this.name = name;
   }
 
   public String getName() {
     return name;
+  }
+
+  /**
+   * @return the default cacheable flag for the contained SqlQuery. If the
+   *         contained SqlQuery doesn't define its own flag, this value will be
+   *         used. This flag won't affect ProcessQuery, since it is always
+   *         cached.
+   */
+  public boolean isCacheable() {
+    return cacheable;
+  }
+
+  public void setCacheable(boolean cacheable) {
+    this.cacheable = cacheable;
   }
 
   public Query getQuery(String name) throws WdkModelException {
