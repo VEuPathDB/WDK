@@ -49,7 +49,7 @@
 <!-- ================ RESULTS TITLE AND LINKS TO BASKET AND DOWNLOADS   =============== -->
 
 <imp:resultSummary strategy="${wdkStrategy}" step="${wdkStep}"/>
--->
+
 
 
 <!-- ================ SUMMARY VIEWS (EXTRA TABS DEFINED IN MODEL.XML)  =============== -->
