@@ -36,6 +36,10 @@
   </div>
 </c:if>
 
+<!-- =================== ALL PARAM GROUPS ====================================
+        I think there is only one or  two groups in most of our queries;
+        the first includes all the visible ones, the second is the advanced group
+======================================================================================= -->
 <c:forEach items="${paramGroups}" var="paramGroupItem">
     <c:set var="group" value="${paramGroupItem.key}" />
     <c:set var="paramGroup" value="${paramGroupItem.value}" />
@@ -50,7 +54,7 @@
         <c:set var="advancedParamGroup" value="${paramGroup}"/>
       </c:when>
 
-      <c:otherwise>
+      <c:otherwise>  <!-- REGULAR SET OF PARAMS -->
         <%-- if displayType is empty, then don't make collapsible --%>
         <c:set var="paramClass" value=""/>
         <c:set var="groupDisplay" value="block"/>
@@ -64,7 +68,7 @@
             <div name="${wdkQuestion.name}_${group.name}" class="param-group ${displayType} content-pane">
               <div class="group-title h4left">Parameters</div>
           </c:when>
-          <c:otherwise>
+          <c:otherwise>  <-- REGULAR SET OF PARAMS -->
             <c:if test="${group.visible ne true}">
               <c:set var="groupDisplay" value="none"/>
             </c:if>
@@ -87,6 +91,12 @@
 
 </c:forEach> <%-- end of foreach on paramGroups --%>
 
+
+
+<!-- =================== ADVANCED PARAM SECTION, ====================================
+        the advanced param group in loop above (if it exists, it is the second one) 
+        will be included in this div after the weight              
+======================================================================================= -->
 
 <div name="${wdkQuestion.name}_${advancedGroup.name}" class="param-group ${advancedGroup.displayName} collapsible content-pane">
   <div class="group-title h4left">Advanced Parameters</div>
