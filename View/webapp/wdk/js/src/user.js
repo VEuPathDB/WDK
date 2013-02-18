@@ -33,11 +33,8 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
   };
 
   ns.login = function(redirectUrl) {
-    var dialogHtml = $("#user-login-form").html();
-    ns._dialog = $(dialogHtml).dialog({
-      modal: true,
-      close: function() { ns._dialog = null; } 
-    }).find("input[name='redirectUrl']").val(redirectUrl);
+    $("#wdk-dialog-login-form").dialog("open")
+    .find("input[name='redirectUrl']").val(redirectUrl);
   };
 
   ns.processLogin = function(submitButton) {
