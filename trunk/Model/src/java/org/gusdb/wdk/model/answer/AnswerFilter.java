@@ -12,6 +12,7 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.SqlQuery;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -112,6 +113,7 @@ public class AnswerFilter extends WdkModelBase {
       return;
     // resolve the reference to the filter query
     SqlQuery query = (SqlQuery) wdkModel.resolveReference(queryRef);
+    query = (SqlQuery) query.clone();
 
     // all the filter query should has a weight column
     query.setHasWeight(true);
@@ -128,12 +130,26 @@ public class AnswerFilter extends WdkModelBase {
     }
 
     // resolve the references in the instance
+    if (instanceMap.size() > 0) {
     for (AnswerFilterInstance instance : instanceMap.values()) {
       // set the references first
       instance.setFilterQuery(query);
       instance.setAnswerParam(answerParam);
       instance.resolveReferences(wdkModel);
     }
+    } else { // if no instance is defined, will create instances from the param.
+      
+    }
     resolved = true;
+  }
+  
+  private void createFilterInstances(SqlQuery filterQuery) {
+    // look up all the enum/flatVocab params
+    List<AbstractEnumParam> params = new ArrayList<>();
+    for (Param param : filterQuery.getParams()) {
+      if (param instanceof AbstractEnumParam) {
+        params.add((AbstractEnumParam)param);
+      }
+    }
   }
 }

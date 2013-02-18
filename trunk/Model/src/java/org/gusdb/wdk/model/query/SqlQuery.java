@@ -45,6 +45,7 @@ public class SqlQuery extends Query {
   private List<WdkModelText> sqlMacroList;
   private Map<String, String> sqlMacroMap;
   private boolean clobRow;
+  private boolean cached = false;
 
   private List<WdkModelText> dependentTableList;
   private Map<String, String> dependentTableMap;
@@ -63,6 +64,8 @@ public class SqlQuery extends Query {
     super(query);
     this.clobRow = query.clobRow;
     this.sql = query.sql;
+    this.cached = query.cached;
+
     if (query.sqlList != null)
       this.sqlList = new ArrayList<>(query.sqlList);
     if (query.sqlMacroMap != null)
