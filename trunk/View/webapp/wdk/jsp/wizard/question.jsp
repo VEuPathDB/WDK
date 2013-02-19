@@ -98,7 +98,8 @@ ${Question_Header}
   </span>
   <br><br>
 
-  ${Question_Details}
+<%--   ${Question_Details} 
+--%>
 
   <imp:questionForm />
 </div>
@@ -141,3 +142,5 @@ ${Question_Header}
 </c:if> <%-- End of hideOperation --%>
 
 </html:form>
+
+${Question_Details} 
