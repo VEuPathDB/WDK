@@ -444,14 +444,14 @@ ul.menubar {
 
 .param-item label {
   float: left;
-  width: 249px;   /* 300px; */
+  width: 320px;   /* 300px; */
   clear: both;
   text-align: right;
   padding-top: 4px;
 }
 
 .param-control {
-  margin-left: 250px; /*310px; */
+  margin-left: 330px; /*310px; */
 }
 
 .param-control td {
