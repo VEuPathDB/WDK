@@ -64,7 +64,6 @@ td {
  	text-align: center;
 	margin-left: 11px;
 }
-
 .h3center {
 	font-size: 120%;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
@@ -81,7 +80,7 @@ td {
 	color:  black;    
 	margin-bottom: 11px;
  	text-align: left;
-	margin-left: 11px;
+	margin-left: 5px;
 }
 
 .h4left {
@@ -91,8 +90,13 @@ td {
 	color:  black;    
  	text-align: left;
 }
-
-
+.h4center {
+/*	font-size: 130%; */
+	font-family: Verdana, Arial, Helvetica, sans-serif;
+	font-weight: bold;
+	color:  black;    
+ 	text-align: center;
+}
 .large {
 	font-size: 18px;
 	font-weight: bold;
@@ -313,11 +317,17 @@ ul.menubar {
     position:relative;
 }
 
+/* used in new search page
 .content-pane {
   margin: 0.5em;
   background: whiteSmoke;
   border: 1px solid #DDD;
   border-radius: 6px;
+}
+*/
+/* temporary search page, look like old one */
+.content-pane.collapsible{
+	background:#DEDEDE;
 }
 
 /* kanged from Amazon */
@@ -1006,9 +1016,9 @@ table.dataTable tr.odd {
 .collapsible-title span.ui-icon {
   position: absolute;
   top: 0.4em;
-  left: -0.2em;
+  left: -0.2em; /* 29.8 */
 }
-.collapsible-title, .collapsible-content {
+.collapsible-title, .collapsible-content, .notcollapsible  {
   padding: 0.5em 1.5em;
 }
 .collapsible-content {
