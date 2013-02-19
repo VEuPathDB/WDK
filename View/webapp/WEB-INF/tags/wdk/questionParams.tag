@@ -66,7 +66,7 @@
           </c:when>
           <c:when test="${displayType eq 'empty'}">
             <div name="${wdkQuestion.name}_${group.name}" class="param-group ${displayType} content-pane">
-              <div class="group-title h4left">Parameters</div>
+              <!-- <div class="group-title h4left">Parameters</div> -->
           </c:when>
           <c:otherwise>  <-- REGULAR SET OF PARAMS -->
             <c:if test="${group.visible ne true}">
@@ -95,13 +95,15 @@
 
 <!-- =================== ADVANCED PARAM SECTION, ====================================
         the advanced param group in loop above (if it exists, it is the second one) 
-        will be included in this div after the weight              
+        is included in this div after the weight    imp:questionParamGroup          
 ======================================================================================= -->
+<!-- use h4left and remove font-family style to go back to new search page style -->
 
 <div name="${wdkQuestion.name}_${advancedGroup.name}" class="param-group ${advancedGroup.displayName} collapsible content-pane">
-  <div class="group-title h4left">Advanced Parameters</div>
-  <div class="group-detail" style="display:none">
+  <div title="Click to open/close this section" class="group-title h4center" style="font-family:Arial,Helvetica,sans-serif">
+		Advanced Parameters</div>
 
+  <div class="group-detail" style="display:none">
       <%-- weight param --%>
       <c:set var="weight" value="${param.weight}" />
       <c:if test="${weight == null || weight == ''}">
@@ -120,7 +122,7 @@
         </div>
       </div>
 
-      <%-- Advanced params --%>
+      <%-- rest of Advanced params --%>
       <imp:questionParamGroup paramGroup="${advancedParamGroup}" />
 
   </div>
