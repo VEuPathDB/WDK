@@ -642,24 +642,18 @@ b.strat_help_title > span {
 }
 
 #query_form {
-	/*display: none;*/
 	position: absolute;
 	left:140px; 
 	top:140px;
-	min-width: 600px;
-	max-width: 78%;
-/*	min-width: 700px; */
-/* decrease to remove the 5th column in Finder 885px;*/  
-/*  increase to accommodate gene basket 775px; */ 
-/* increase to accommodate blast data type options   741px; */
-/*	max-width: 78%;  */ 
-/* increase to accommodate the basket */
+  width:80%;
+/* 	min-width: 600px; 
+	max-width: 78%;  */
 	background-color: #FFFFFF;
 	background-repeat: repeat-x;
-	background-position: 0 26px;   /* was 36px, decreased to have Add Step title thiner */
+	background-position: 0 26px;  
 	border: 1px solid #888888;	
 	padding: 0 8px 8px 8px;
-	z-index: 490;  /*  999; ; so menubar menus appear on top, but under Details box  */
+	z-index: 490; 
 }
 
 #query_form form {
