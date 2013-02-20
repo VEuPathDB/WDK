@@ -139,6 +139,8 @@ ${Question_Header}
     <html:submit property="questionSubmit" value="${buttonVal}"/>
 </div>
 
+<imp:nameStep/>
+
 </c:if> <%-- End of hideOperation --%>
 
 </html:form>
