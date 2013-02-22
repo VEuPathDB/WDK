@@ -29,9 +29,9 @@ my $parseLogRecord = sub {
 
   my $reject = 0;
 
-# 89468376 [WARN ] org.gusdb.wdk.model.dbms.SqlUtils:324 - 130.91.178.191 - [27/Sep/2010:11:24:05 -0400] SLOW SQL [GeneVQ.DomainDatabase-uncached-result]: 11.295 seconds.
+# 89468376 [WARN ] org.gusdb.wdk.model.dbms.SqlUtils:324 - 130.91.178.191 - [27/Sep/2010:11:24:05 -0400] SLOW QUERY LOG [GeneVQ.DomainDatabase__uncached-result]: 11.295 seconds.
 
-  $reject = 1 unless $logRecord =~ /SLOW SQL/;
+  $reject = 1 unless $logRecord =~ /QUERY LOG/;
   $reject = 1 if $logRecord =~ /\=\=/;  # some lines in the log are mangled, with missing newlines
                                         # the symptom is that the next log entry is mashed in
                                         # these are delimited by ========, so dodge that
