@@ -1248,6 +1248,10 @@ color:darkred;font-style:italic;font-size:95%;
 	border-width: 1px;
 }
 
+.ui-dialog-fixed-width {
+    width: 500px !important;
+}
+
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      = jQuery validation plugin messages
