@@ -20,7 +20,7 @@ foreach my $campus (@campusList) {
     chomp($component);
     my $lcComponent = lc($component);
     my $site = "$siteSet$campus.$lcComponent.org";
-    print "$site\t/usr/local/tomcat_instances/$component/logs/*.b$build/wdk.log4j*\t/var/log/httpd/$site/access_log\n";
+    print "$site /usr/local/tomcat_instances/$component/logs/*.b$build/wdk.log4j* /var/log/httpd/$site/access_log\n";
 
   }
 }
@@ -28,7 +28,7 @@ foreach my $campus (@campusList) {
 sub usage {
   print STDERR "
 
-Generate the tab-delimited input file that wdkSlowQueryReport reads from its standard in to specify what log files to report on. It can be used in a command pipeline with wdkSlowQueryReport.
+Generate the space-delimited input file that wdkSlowQueryReport reads from its standard in to specify what log files to report on. It can be used in a command pipeline with wdkSlowQueryReport.
 
 usage:  wdkSlowQueryReportInput -siteSet [ q | w ] -build <build>
 
