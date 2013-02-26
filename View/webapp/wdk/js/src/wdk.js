@@ -255,18 +255,18 @@ function getWebAppUrl() {
       if ($content.css("display") === "none") {
         $content.hide();
         $this.addClass("collapsed");
-        $arrowSpan.addClass("ui-icon ui-icon-triangle-1-e");
+        $arrowSpan.addClass("ui-icon wdk-icon-plus");
       } else {
         $content.show();
-        $arrowSpan.addClass("ui-icon ui-icon-triangle-1-s");
+        $arrowSpan.addClass("ui-icon wdk-icon-minus");
       }
 
       $trigger.on("click", function(e) {
         e.preventDefault();
         $this.toggleClass("collapsed", $content.css("display") === "block");
         $content.slideToggle();
-        $arrowSpan.toggleClass("ui-icon-triangle-1-e", $this.hasClass("collapsed"));
-        $arrowSpan.toggleClass("ui-icon-triangle-1-s", !$this.hasClass("collapsed"));
+        $arrowSpan.toggleClass("wdk-icon-plus", $this.hasClass("collapsed"));
+        $arrowSpan.toggleClass("wdk-icon-minus", !$this.hasClass("collapsed"));
       });
 
       $this.data("rendered", true);
