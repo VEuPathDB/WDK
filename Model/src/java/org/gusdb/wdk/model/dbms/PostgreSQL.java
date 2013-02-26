@@ -271,7 +271,7 @@ public class PostgreSQL extends DBPlatform {
         } catch (SQLException e) {
         	throw new WdkModelException("Unable to query table names for schema [ " + schema + " ].", e);
         } finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
         }
     }
 

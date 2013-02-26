@@ -416,7 +416,7 @@ public class Migrator1_18To1_19 extends Migrator {
                 if (count % 100 == 0) logger.debug(count + " histories read.");
             }
         } finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
         }
         logger.info("Totally read " + users.size() + " users");
         int count = 0;
@@ -498,7 +498,7 @@ public class Migrator1_18To1_19 extends Migrator {
                 stepMap.put(historyId, stepId);
             }
         } finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
         }
         return stepMap;
     }

@@ -130,7 +130,7 @@ public class AnswerFactory {
         			" and checksum " + answerChecksum, e);
         }
         finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
         }
         answers.put(answer, answer);
         return answer;

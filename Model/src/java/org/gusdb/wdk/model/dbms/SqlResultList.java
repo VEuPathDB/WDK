@@ -25,7 +25,7 @@ public class SqlResultList implements ResultList {
      */
     @Override
     protected void finalize() throws Throwable {
-        SqlUtils.closeResultSet(resultSet);
+        SqlUtils.closeResultSetAndStatement(resultSet);
         // TODO Auto-generated method stub
         super.finalize();
     }
@@ -43,7 +43,7 @@ public class SqlResultList implements ResultList {
      * @see org.gusdb.wdk.model.dbms.ResultList#close()
      */
     public void close() throws WdkModelException {
-        SqlUtils.closeResultSet(resultSet);
+        SqlUtils.closeResultSetAndStatement(resultSet);
     }
 
     /*

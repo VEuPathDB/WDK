@@ -169,7 +169,7 @@ public class Migrator1_12To1_13 extends Migrator {
                 histories.add(item);
             }
         } finally {
-            SqlUtils.closeResultSet(rsHistory);
+            SqlUtils.closeResultSetAndStatement(rsHistory);
         }
 
         PreparedStatement psHistory = null;

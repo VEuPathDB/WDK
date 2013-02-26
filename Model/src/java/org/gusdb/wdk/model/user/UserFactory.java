@@ -496,7 +496,7 @@ public class UserFactory {
     } catch (WdkUserException e) {
       throw new WdkModelException("Unable to get user with ID " + userId, e);
     } finally {
-      SqlUtils.closeResultSet(rsUser);
+      SqlUtils.closeResultSetAndStatement(rsUser);
     }
   }
 
@@ -523,7 +523,7 @@ public class UserFactory {
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
-      SqlUtils.closeResultSet(rs);
+      SqlUtils.closeResultSetAndStatement(rs);
     }
     User[] array = new User[users.size()];
     users.toArray(array);
@@ -568,7 +568,7 @@ public class UserFactory {
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
-      SqlUtils.closeResultSet(rs);
+      SqlUtils.closeResultSetAndStatement(rs);
       SqlUtils.closeStatement(psUser);
     }
   }
@@ -592,7 +592,7 @@ public class UserFactory {
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
-      SqlUtils.closeResultSet(rsRole);
+      SqlUtils.closeResultSetAndStatement(rsRole);
     }
     return roles;
   }
@@ -761,7 +761,7 @@ public class UserFactory {
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
-      SqlUtils.closeResultSet(rsUser);
+      SqlUtils.closeResultSetAndStatement(rsUser);
     }
   }
 
@@ -904,7 +904,7 @@ public class UserFactory {
       throw new WdkModelException("Could not get preferences for user "
           + user.getUserId(), e);
     } finally {
-      SqlUtils.closeResultSet(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet);
       if (resultSet == null)
         SqlUtils.closeStatement(psSelect);
     }
@@ -1002,7 +1002,7 @@ public class UserFactory {
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
-      SqlUtils.closeResultSet(rs);
+      SqlUtils.closeResultSetAndStatement(rs);
       // SqlUtils.closeStatement(ps);
     }
 
@@ -1050,7 +1050,7 @@ public class UserFactory {
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
-      SqlUtils.closeResultSet(rs);
+      SqlUtils.closeResultSetAndStatement(rs);
     }
   }
 
