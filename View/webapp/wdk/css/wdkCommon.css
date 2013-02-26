@@ -1014,9 +1014,21 @@ table.dataTable tr.odd {
   cursor: pointer;
 }
 .collapsible-title span.ui-icon {
+  /* styling block for arrow
   position: absolute;
   top: 0.4em;
   left: -0.2em; /* 29.8 */
+
+  /* styling block for plus/minus */
+  display: inline-block;
+  height: 14px;
+  top: 0;
+}
+.collapsible-title span.ui-icon.wdk-icon-plus {
+  background-image: url(../images/plus.gif);
+}
+.collapsible-title span.ui-icon.wdk-icon-minus {
+  background-image: url(../images/minus.gif);
 }
 .collapsible-title, .collapsible-content, .notcollapsible  {
   padding: 0.5em 1.5em;
