@@ -263,7 +263,7 @@ public class DatasetFactory {
 	            datasetId = resultSet.getInt(COLUMN_DATASET_ID);
 	        }
 	        finally {
-	            SqlUtils.closeResultSet(resultSet);
+	            SqlUtils.closeResultSetAndStatement(resultSet);
 	        }
 	
 	        // try to get a user dataset id
@@ -344,7 +344,7 @@ public class DatasetFactory {
         	throw new WdkModelException("Could not retrieve dataset values.", e);
         }
         finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
         }
 
     }

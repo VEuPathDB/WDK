@@ -120,7 +120,7 @@ public class StrategyFixer extends BaseCLI {
         } finally {
             SqlUtils.closeStatement(psUpdate);
             SqlUtils.closeStatement(psSelect);
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
         }
     }
 }

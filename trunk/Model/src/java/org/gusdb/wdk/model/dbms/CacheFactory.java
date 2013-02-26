@@ -281,7 +281,7 @@ public class CacheFactory {
         System.err.println();
         System.err.println("Total: " + queryCount + " cache tables.");
         System.err.println("====================== End of Cache Stattistics ======================");
-        SqlUtils.closeResultSet(resultSet);
+        SqlUtils.closeResultSetAndStatement(resultSet);
     }
 
     private void createQueryTable() {
@@ -365,7 +365,7 @@ public class CacheFactory {
             logger.error("Cannot query on table [" + TABLE_QUERY + "]. "
                     + ex.getMessage());
         } finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
         }
 
         // drop the cache tables
@@ -494,7 +494,7 @@ public class CacheFactory {
         	throw new WdkModelException("Unable to check query info.", e);
         }
         finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
             if (resultSet == null) SqlUtils.closeStatement(ps);
         }
         return queryInfo;

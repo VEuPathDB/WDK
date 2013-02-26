@@ -169,7 +169,7 @@ public class StressTester {
         try {
             ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
                     "SELECT * FROM " + TABLE_STRESS_RESULT, "wdk-stress-result");
-            SqlUtils.closeResultSet(rs);
+            SqlUtils.closeResultSetAndStatement(rs);
         } catch (WdkModelException e) {
             // table doesn't exist, create it
             DBPlatform platform = wdkModel.getQueryPlatform();
@@ -211,7 +211,7 @@ public class StressTester {
         rs.next();
         int count = rs.getInt(1);
         if (count > 0) testTag = rs.getLong(2);
-        SqlUtils.closeResultSet(rs);
+        SqlUtils.closeResultSetAndStatement(rs);
         return (testTag + 1);
     }
 

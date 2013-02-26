@@ -140,7 +140,7 @@ public class ResultFactory {
         	throw new WdkModelException("Unable to check instance ID.", e);
         }
         finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
         }
     }
 

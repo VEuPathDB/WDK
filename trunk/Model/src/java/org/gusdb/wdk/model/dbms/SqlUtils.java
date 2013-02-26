@@ -43,7 +43,7 @@ public final class SqlUtils {
    * @throws SQLException
    * @throws SQLException
    */
-  public static void closeResultSet(ResultSet resultSet) {
+  public static void closeResultSetAndStatement(ResultSet resultSet) {
     try {
       if (resultSet != null) {
         // close the statement in any way
@@ -228,7 +228,7 @@ public final class SqlUtils {
       logger.error("Failed to run query:\n" + sql);
       if (resultSet == null && connection != null)
         closeQuietly(connection);
-      closeResultSet(resultSet);
+      closeResultSetAndStatement(resultSet);
       throw new WdkModelException("Failure executing query: " + sql, ex);
     }
   }
@@ -260,7 +260,7 @@ public final class SqlUtils {
     } catch (SQLException e) {
       throw new WdkModelException("Unable to execute scalar query: " + sql, e);
     } finally {
-      closeResultSet(resultSet);
+      closeResultSetAndStatement(resultSet);
     }
   }
 

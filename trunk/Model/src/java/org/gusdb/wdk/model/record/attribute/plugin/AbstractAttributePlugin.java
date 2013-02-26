@@ -203,7 +203,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
             }
         }
         finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
         }
         return values;
     }

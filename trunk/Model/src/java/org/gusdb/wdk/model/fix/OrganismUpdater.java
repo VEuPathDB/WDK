@@ -136,7 +136,7 @@ public class OrganismUpdater {
             throw ex;
         }
         finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
             SqlUtils.closeStatement(psUpdate);
         }
     }
