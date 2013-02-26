@@ -228,7 +228,7 @@ public class StepFactory {
         	try {
         		connection.setAutoCommit(true);
         	} catch (SQLException e) { logger.error("Failed to reset connection auto commit to true!"); }
-            SqlUtils.closeResultSet(rsMax);
+            SqlUtils.closeResultSetAndStatement(rsMax);
             SqlUtils.closeStatement(psInsertStep);
         }
         // create the Step
@@ -476,7 +476,7 @@ public class StepFactory {
             throw new WdkModelException("Could not get step count for user " + user.getEmail(), ex);
         }
         finally {
-            SqlUtils.closeResultSet(rsHistory);
+            SqlUtils.closeResultSetAndStatement(rsHistory);
         }
     }
 
@@ -518,7 +518,7 @@ public class StepFactory {
         	throw new WdkModelException("Could not load steps for user", e);
         }
         finally {
-            SqlUtils.closeResultSet(rsStep);
+            SqlUtils.closeResultSetAndStatement(rsStep);
         }
         logger.debug("Steps: " + steps.size());
         logger.debug("Invalid: " + invalidSteps.size());
@@ -563,7 +563,7 @@ public class StepFactory {
             throw new WdkModelException("Unable to load step.", e);
         }
         finally {
-            SqlUtils.closeResultSet(rsStep);
+            SqlUtils.closeResultSetAndStatement(rsStep);
         }
     }
 
@@ -807,7 +807,7 @@ public class StepFactory {
         }
         finally {
             SqlUtils.closeStatement(psStrategyIds);
-            SqlUtils.closeResultSet(rsStrategyIds);
+            SqlUtils.closeResultSetAndStatement(rsStrategyIds);
         }
     }
 
@@ -873,7 +873,7 @@ public class StepFactory {
         	throw new WdkModelException("Could not load strategies for user " + user.getEmail(), e);
         }
         finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
         }
         Collections.sort(strategies, new Comparator<Strategy>() {
             public int compare(Strategy o1, Strategy o2) {
@@ -1054,7 +1054,7 @@ public class StepFactory {
         }
         finally {
             SqlUtils.closeStatement(psStrategy);
-            SqlUtils.closeResultSet(rsStrategy);
+            SqlUtils.closeResultSetAndStatement(rsStrategy);
         }
     }
 
@@ -1100,7 +1100,7 @@ public class StepFactory {
         }
         finally {
             SqlUtils.closeStatement(ps);
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
         }
     }
 
@@ -1207,7 +1207,7 @@ public class StepFactory {
         }
         finally {
             SqlUtils.closeStatement(psStrategy);
-            SqlUtils.closeResultSet(rsStrategy);
+            SqlUtils.closeResultSetAndStatement(rsStrategy);
         }
 
     }
@@ -1258,7 +1258,7 @@ public class StepFactory {
         	throw new WdkModelException("Could not create strategy", e);
         }
         finally {
-            SqlUtils.closeResultSet(rsCheckName);
+            SqlUtils.closeResultSetAndStatement(rsCheckName);
         }
 
         int displayId;
@@ -1327,7 +1327,7 @@ public class StepFactory {
         		connection.setAutoCommit(true);
         	} catch (SQLException e) { logger.error("Failed to reset connection auto commit to true!"); }
             SqlUtils.closeStatement(psStrategy);
-            SqlUtils.closeResultSet(rsMax);
+            SqlUtils.closeResultSetAndStatement(rsMax);
         }
 
         Strategy strategy = loadStrategy(user, displayId, false);
@@ -1358,7 +1358,7 @@ public class StepFactory {
         	throw new WdkModelException("Could not get strategy count for user " + user.getEmail(), e);
         }
         finally {
-            SqlUtils.closeResultSet(rsStrategy);
+            SqlUtils.closeResultSetAndStatement(rsStrategy);
         }
     }
 
@@ -1420,7 +1420,7 @@ public class StepFactory {
         			strategy.getInternalId() + ":" + name, e);
         }
         finally {
-            SqlUtils.closeResultSet(rsCheckName);
+            SqlUtils.closeResultSetAndStatement(rsCheckName);
         }
     }
 
@@ -1511,7 +1511,7 @@ public class StepFactory {
         	throw new WdkModelException("Unable to get next name", e);
         }
         finally {
-            SqlUtils.closeResultSet(rsNames);
+            SqlUtils.closeResultSetAndStatement(rsNames);
         }
     }
 

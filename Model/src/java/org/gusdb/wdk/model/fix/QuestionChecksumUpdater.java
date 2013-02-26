@@ -157,7 +157,7 @@ public class QuestionChecksumUpdater extends BaseCLI {
             }
             logger.info("totally updated " + count + " history params.");
         } finally {
-            SqlUtils.closeResultSet(rsHistory);
+            SqlUtils.closeResultSetAndStatement(rsHistory);
             SqlUtils.closeStatement(psUpdate);
         }
     }

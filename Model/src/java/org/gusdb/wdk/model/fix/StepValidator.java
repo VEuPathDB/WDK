@@ -505,7 +505,7 @@ public class StepValidator extends BaseCLI {
 
         }
         finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
             writer.flush();
             writer.close();
             System.out.println("Dangling strategies are saved at: "
@@ -601,7 +601,7 @@ public class StepValidator extends BaseCLI {
                     + ".");
         }
         finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
             SqlUtils.closeStatement(psInsert);
         }
     }

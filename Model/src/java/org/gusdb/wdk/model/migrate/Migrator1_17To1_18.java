@@ -112,7 +112,7 @@ public class Migrator1_17To1_18 extends Migrator {
         }
         System.out.println("Totally migrated " + count + " histories.");
 
-        SqlUtils.closeResultSet(histories);
+        SqlUtils.closeResultSetAndStatement(histories);
         SqlUtils.closeStatement(psInsertAnswer);
         SqlUtils.closeStatement(psInsertHistory);
     }
@@ -168,7 +168,7 @@ public class Migrator1_17To1_18 extends Migrator {
             String historyKey = userId + "_" + historyId;
             historyKeys.add(historyKey);
         }
-        SqlUtils.closeResultSet(resultSet);
+        SqlUtils.closeResultSetAndStatement(resultSet);
     }
 
     private void loadAnswers(DataSource dataSource) throws SQLException,
@@ -186,7 +186,7 @@ public class Migrator1_17To1_18 extends Migrator {
             String answerKey = projectId + "_" + answerChecksum;
             answerKeys.put(answerKey, answerId);
         }
-        SqlUtils.closeResultSet(resultSet);
+        SqlUtils.closeResultSetAndStatement(resultSet);
     }
 
     private String convertParams(String params, boolean isBoolean)

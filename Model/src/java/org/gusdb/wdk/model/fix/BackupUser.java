@@ -197,7 +197,7 @@ public class BackupUser extends BaseCLI {
                     + ".");
         }
         finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
             SqlUtils.closeStatement(psInsert);
         }
     }

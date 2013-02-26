@@ -239,7 +239,7 @@ public class FavoriteFactory {
         	throw new WdkModelException("Could not get favorite counts for user " + user.getUserId(), e);
         }
         finally {
-            SqlUtils.closeResultSet(rs);
+            SqlUtils.closeResultSetAndStatement(rs);
         }
         return count;
     }
@@ -294,7 +294,7 @@ public class FavoriteFactory {
         	throw new WdkModelException("Cannot get favorites for user " + user.getUserId(), e);
         }
         finally {
-            SqlUtils.closeResultSet(rs);
+            SqlUtils.closeResultSetAndStatement(rs);
         }
     }
 
@@ -332,7 +332,7 @@ public class FavoriteFactory {
         	throw new WdkModelException("Could not check whether record id(s) are favorites for user " + user.getUserId(), e);
         }
         finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
         }
     }
 
@@ -459,7 +459,7 @@ public class FavoriteFactory {
         	throw new WdkModelException("Could not set favorite groups for user " + user.getUserId(), e);
         }
         finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
         }
     }
 
