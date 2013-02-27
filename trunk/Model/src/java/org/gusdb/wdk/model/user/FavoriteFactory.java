@@ -100,7 +100,7 @@ public class FavoriteFactory {
                         hasRecord = (rsCount > 0);
                     }
                 } finally {
-                    if (resultSet != null) resultSet.close();
+                    if (resultSet != null) SqlUtils.closeResultSetOnly(resultSet);
                 }
                 if (hasRecord) continue;
 
@@ -442,7 +442,7 @@ public class FavoriteFactory {
 
             long start = System.currentTimeMillis();
             resultSet = psSelect.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-favorite-select-group", start);
+            SqlUtils.verifyTime(wdkModel, sql, "wdk-favorite-select-group", start, resultSet);
             Set<String> groups = new HashSet<String>();
             while (resultSet.next()) {
                 String group = resultSet.getString(COLUMN_RECORD_GROUP);

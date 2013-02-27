@@ -356,12 +356,12 @@ public class SanityTester {
         QueryInstance instance = query.makeInstance(user,
                 paramValuesSet.getParamValues(), true, 0,
                 new LinkedHashMap<String, String>());
-        ResultList rs = instance.getResults();
+        ResultList rl = instance.getResults();
 
-        while (rs.next()) {
+        while (rl.next()) {
             count++;
         }
-        rs.close();
+        rl.close();
         return count;
     }
 

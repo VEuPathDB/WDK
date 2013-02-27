@@ -143,7 +143,7 @@ public class BasketFactory {
                     }
                 }
                 finally {
-                    if (resultSet != null) resultSet.close();
+                    if (resultSet != null) SqlUtils.closeResultSetOnly(resultSet);
                 }
                 if (hasRecord) continue;
 
@@ -350,7 +350,7 @@ public class BasketFactory {
                     }
                 }
                 finally {
-                    if (resultSet != null) resultSet.close();
+                    if (resultSet != null) SqlUtils.closeResultSetOnly(resultSet);
                 }
                 if (hasRecord) {
                     basketCount++;

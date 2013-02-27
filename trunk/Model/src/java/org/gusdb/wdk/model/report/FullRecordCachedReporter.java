@@ -239,7 +239,7 @@ public class FullRecordCachedReporter extends Reporter {
                     }
                     ResultSet resultSet = ps.executeQuery();
                     SqlUtils.verifyTime(wdkModel, sql.toString(),
-                            "wdk-report-full-select-cache", start);
+					"wdk-report-full-select-cache", start, resultSet);
                     Map<String, String> tableValues = new LinkedHashMap<String, String>();
                     while (resultSet.next()) {
                         // check if display empty tables
@@ -251,7 +251,7 @@ public class FullRecordCachedReporter extends Reporter {
                                 "content");
                         tableValues.put(tableName, content);
                     }
-                    resultSet.close();
+                    SqlUtils.closeResultSetOnly(resultSet);
 
                     // output the value, preserving the order
                     for (TableField table : tables) {
