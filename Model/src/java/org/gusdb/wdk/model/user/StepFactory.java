@@ -502,7 +502,7 @@ public class StepFactory {
             psStep.setString(2, wdkModel.getProjectId());
             rsStep = psStep.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql,
-                    "wdk-step-factory-load-all-steps", start);
+				"wdk-step-factory-load-all-steps", start, rsStep);
 
             while (rsStep.next()) {
                 Step step = loadStep(user, rsStep);
@@ -791,7 +791,7 @@ public class StepFactory {
             psStrategyIds.setBoolean(3, false);
             rsStrategyIds = psStrategyIds.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql,
-                    "wdk-step-factory-load-all-strategies", start);
+				"wdk-step-factory-load-all-strategies", start, rsStrategyIds);
             Strategy strategy;
             int strategyId;
             while (rsStrategyIds.next()) {
@@ -853,7 +853,7 @@ public class StepFactory {
             }
             resultSet = ps.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql.toString(),
-                    "wdk-step-factory-load-strategies", start);
+				"wdk-step-factory-load-strategies", start, resultSet);
             while (resultSet.next()) {
                 // ignore the invalid strategies caused by missing steps.
                 // it was caused by replication failure. need to investigate
@@ -1487,7 +1487,7 @@ public class StepFactory {
             psNames.setBoolean(5, false);
             rsNames = psNames.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql,
-                    "wdk-step-factory-strategy-next-name", start);
+				"wdk-step-factory-strategy-next-name", start, rsNames);
 
             Set<String> names = new LinkedHashSet<String>();
             while (rsNames.next())
