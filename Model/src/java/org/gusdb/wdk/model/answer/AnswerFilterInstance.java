@@ -302,7 +302,7 @@ public class AnswerFilterInstance extends WdkModelBase {
     try {
       return new SqlResultList(resultSet);
     } catch (SQLException ex) {
-      resultSet.close();
+      SqlUtils.closeResultSetOnly(resultSet);
       throw ex;
     }
   }

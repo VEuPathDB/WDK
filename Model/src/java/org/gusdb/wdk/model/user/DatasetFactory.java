@@ -537,7 +537,7 @@ public class DatasetFactory {
         }
         finally {
             try {
-                if (resultSet != null) resultSet.close();
+                if (resultSet != null) SqlUtils.closeResultSetOnly(resultSet);
             }
             finally {
                 if (stmt != null) stmt.close();
@@ -566,7 +566,7 @@ public class DatasetFactory {
         }
         finally {
             try {
-                if (resultSet != null) resultSet.close();
+                if (resultSet != null) SqlUtils.closeResultSetOnly(resultSet);
             }
             finally {
                 if (stmt != null) stmt.close();

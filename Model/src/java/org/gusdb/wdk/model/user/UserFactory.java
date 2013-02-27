@@ -585,7 +585,7 @@ public class UserFactory {
       PreparedStatement psRole = SqlUtils.getPreparedStatement(dataSource, sql);
       psRole.setInt(1, user.getUserId());
       rsRole = psRole.executeQuery();
-      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-get-roles", start);
+      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-get-roles", start, rsRole);
       while (rsRole.next()) {
         roles.add(rsRole.getString("user_role"));
       }
@@ -751,7 +751,7 @@ public class UserFactory {
       PreparedStatement psUser = SqlUtils.getPreparedStatement(dataSource, sql);
       psUser.setTimestamp(1, timestamp);
       rsUser = psUser.executeQuery();
-      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-select-expired-user", start);
+      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-select-expired-user", start, rsUser);
       int count = 0;
       while (rsUser.next()) {
         deleteUser(rsUser.getString("email"));
@@ -890,7 +890,7 @@ public class UserFactory {
       psSelect = SqlUtils.getPreparedStatement(dataSource, sql);
       psSelect.setInt(1, userId);
       resultSet = psSelect.executeQuery();
-      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-select-preference", start);
+      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-select-preference", start, resultSet);
       while (resultSet.next()) {
         String projectId = resultSet.getString("project_id");
         String prefName = resultSet.getString("preference_name");

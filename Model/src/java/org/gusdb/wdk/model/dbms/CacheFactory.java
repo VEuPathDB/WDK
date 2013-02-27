@@ -478,7 +478,7 @@ public class CacheFactory {
             ps.setString(1, queryName);
             ps.setString(2, checksum);
             resultSet = ps.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql.toString(), "wdk-cache-select-query-info", start);
+            SqlUtils.verifyTime(wdkModel, sql.toString(), "wdk-cache-select-query-info", start, resultSet);
 
             if (resultSet.next()) {
                 queryInfo = new QueryInfo();

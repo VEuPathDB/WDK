@@ -203,7 +203,7 @@ public class OrganismUpdater {
                         logger.debug(clobCount + " clobs read.");
                     }
                 }
-                resultSet.close();
+                SqlUtils.closeResultSetOnly(resultSet);
             }
         }
         catch (SQLException ex) {

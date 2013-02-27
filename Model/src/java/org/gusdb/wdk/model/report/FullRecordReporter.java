@@ -351,7 +351,7 @@ public class FullRecordReporter extends Reporter {
                     psInsert.addBatch();
                     needUpdate = true;
                 }
-                rs.close();
+                SqlUtils.closeResultSetOnly(rs);
             }
 
             // write to the stream
