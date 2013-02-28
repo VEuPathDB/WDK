@@ -13,6 +13,10 @@
               description="Dataset name, for attribution"
 %>
 
+<%@ attribute name="preamble"
+              description="Text to go above the table and description"
+%>
+
 <%@ attribute name="postscript"
               description="Text to go below the table"
 %>
@@ -46,6 +50,8 @@
 
 
 <c:set var="tblContent">
+
+<div class="table-preamble">${preamble}</div>
 
 <%-- display the description --%>
 <div class="table-description">${tbl.tableField.description}</div>
