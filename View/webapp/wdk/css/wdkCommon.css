@@ -938,6 +938,7 @@ table.center {margin-left:auto; margin-right:auto;}
 
 table.paneltoggle {
         background:#dddddd;
+        margin-top: 5px;
         margin-bottom:0px;
         padding-top: 2.5px;
         padding-right: 3px;
@@ -961,7 +962,7 @@ table.recordTable {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 .toggle {display: none;}
-.boggle {margin: 6px 20px 6px 20px; display: none;}
+.boggle {margin: 6px 20px 20px 20px; display: none;}
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
