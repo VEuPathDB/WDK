@@ -78,6 +78,15 @@ public final class SqlUtils {
    */
   public static void closeResultSetOnly(ResultSet resultSet) {
     try {
+
+      // close our resultSet,remove from hash and write to log
+      if (resultSet != null) {
+	QueryLogInfo info = queryLogInfos.get(resultSet);
+	queryLogInfos.remove(resultSet);
+	resultSet.close();
+	if (info != null) logQueryTime(info.wdkModel, info.sql, info.name, info.startTime, info.firstPageTime, false);
+      }
+
       // log orphaned result sets, ie, those that are closed but still in hash
       Map<ResultSet,QueryLogInfo> closedResultSets = null; 
       synchronized (SqlUtils.class ){
@@ -101,12 +110,6 @@ public final class SqlUtils {
 	}
       }
 
-      if (resultSet != null) {
-	QueryLogInfo info = queryLogInfos.get(resultSet);
-	queryLogInfos.remove(resultSet);
-	resultSet.close();
-	if (info != null) logQueryTime(info.wdkModel, info.sql, info.name, info.startTime, info.firstPageTime, false);
-      }
     } catch (SQLException ex) {
       throw new RuntimeException(ex);
     }
