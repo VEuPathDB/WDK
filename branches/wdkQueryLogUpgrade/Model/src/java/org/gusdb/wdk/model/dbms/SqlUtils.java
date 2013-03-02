@@ -371,7 +371,7 @@ public final class SqlUtils {
     double lastPageSeconds = (System.currentTimeMillis() - startTime) / 1000D;
     double firstPageSeconds = firstPageTime < 0? lastPageSeconds : (firstPageTime - startTime) / 1000D;
  
-    String details = " [" + name + "]: first page: " + firstPageSeconds + " last page: " + lastPageSeconds + " seconds" + (isLeak? " LEAK " : "");
+    String details = " [" + name + "] execute: " + firstPageSeconds + " last page: " + lastPageSeconds + " seconds" + (isLeak? " LEAK " : "");
     if (lastPageSeconds < 0 || firstPageSeconds < 0) {
       logger.error("code error, negative exec time:");
       new Exception().printStackTrace();
