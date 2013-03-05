@@ -1328,5 +1328,15 @@ span.marker a:link, span.marker a:visited {
   opacity: 0.5;
 }
 
+.wdk-error {
+  padding: 0.4em;
+  color: darkred;
+  font-weight: bold;
+}
+.wdk-error::after {
+  content: "!";
+}
+
+
 /* THE END */
 
