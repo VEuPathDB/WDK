@@ -589,7 +589,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
                 if (!boolChecked) {
                   e.preventDefault();
                   e.stopPropagation();
-                  $(this).find("#operations").before("<div class='wdk-error' style='text-align:center'>Please choose an operation below</div>");
+                  if ($(this).find(".wdk-error").length === 0) {
+                    $(this).find("#operations").before("<div class='wdk-error' style='text-align:center'>Please choose an operation below</div>");
+                  }
                 } else {
                   if (inlineSubmit instanceof Function) {
                     inlineSubmit.call(this);
