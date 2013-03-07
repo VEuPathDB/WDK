@@ -576,6 +576,27 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
             }
             $("#query_form").css("z-index", 9001);
             $("#query_form_overlay").css("z-index", 9000).height($("body").height());
+
+            // attach submit handler to check that a boolean/span operation is selected
+            var $form = $("#query_form").find("#form_question");
+            var inlineSubmit = $form.get(0).onsubmit;
+            $form.get(0).onsubmit = null;
+            $form.submit(function(e) {
+              var bools = $(this).find("input[name='boolean']");
+              if (bools.length) {
+                var boolChecked = _.reduce(bools.toArray(),
+                    function(memo, input) { return memo || input.checked; }, false);
+                if (!boolChecked) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  $(this).find("#operations").before("<div class='wdk-error' style='text-align:center'>Please choose an operation below</div>");
+                } else {
+                  if (inlineSubmit instanceof Function) {
+                    inlineSubmit.call(this);
+                  }
+                }
+              }
+            });
           }
         });
         break;
