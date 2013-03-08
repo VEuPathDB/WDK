@@ -86,7 +86,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
             throw new RuntimeException(ex);
         }
         finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
         }
 
     }

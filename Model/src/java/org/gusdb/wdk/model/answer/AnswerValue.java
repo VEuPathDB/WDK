@@ -1334,7 +1334,7 @@ public class AnswerValue {
         pkValues.add(values);
       }
     } finally {
-      SqlUtils.closeResultSet(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet);
     }
     return pkValues;
   }

@@ -938,6 +938,7 @@ table.center {margin-left:auto; margin-right:auto;}
 
 table.paneltoggle {
         background:#dddddd;
+        margin-top: 5px;
         margin-bottom:0px;
         padding-top: 2.5px;
         padding-right: 3px;
@@ -961,7 +962,7 @@ table.recordTable {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 .toggle {display: none;}
-.boggle {margin: 6px 20px 6px 20px; display: none;}
+.boggle {margin: 6px 20px 20px 20px; display: none;}
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1014,9 +1015,21 @@ table.dataTable tr.odd {
   cursor: pointer;
 }
 .collapsible-title span.ui-icon {
+  /* styling block for arrow
   position: absolute;
   top: 0.4em;
   left: -0.2em; /* 29.8 */
+
+  /* styling block for plus/minus */
+  display: inline-block;
+  height: 14px;
+  top: 0;
+}
+.collapsible-title span.ui-icon.wdk-icon-plus {
+  background-image: url(../images/plus.gif);
+}
+.collapsible-title span.ui-icon.wdk-icon-minus {
+  background-image: url(../images/minus.gif);
 }
 .collapsible-title, .collapsible-content, .notcollapsible  {
   padding: 0.5em 1.5em;
@@ -1248,6 +1261,10 @@ color:darkred;font-style:italic;font-size:95%;
 	border-width: 1px;
 }
 
+.ui-dialog-fixed-width {
+    width: 500px !important;
+}
+
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      = jQuery validation plugin messages
@@ -1310,6 +1327,16 @@ span.marker a:link, span.marker a:visited {
   background: #333;
   opacity: 0.5;
 }
+
+.wdk-error {
+  padding: 0.4em;
+  color: darkred;
+  font-weight: bold;
+}
+.wdk-error::after {
+  content: "!";
+}
+
 
 /* THE END */
 

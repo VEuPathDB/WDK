@@ -355,7 +355,7 @@ public class XMLReporter extends Reporter {
                 psQuery.setString(pkColumns.length + 1, table.getName());
                 ResultSet rs = psQuery.executeQuery();
                 SqlUtils.verifyTime(wdkModel, sqlQuery,
-                        "wdk-report-xml-select-count", start);
+				    "wdk-report-xml-select-count", start, rs);
                 rs.next();
                 int count = rs.getInt("cache_count");
                 if (count == 0) {
@@ -371,7 +371,7 @@ public class XMLReporter extends Reporter {
                     psInsert.addBatch();
                     needUpdate = true;
                 }
-                rs.close();
+                SqlUtils.closeResultSetOnly(rs);
             }
 
             // write to the stream

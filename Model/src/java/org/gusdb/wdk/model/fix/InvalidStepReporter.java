@@ -133,7 +133,7 @@ public class InvalidStepReporter extends BaseCLI {
                         + question_name);
             }
         } finally {
-            resultSet.close();
+            SqlUtils.closeResultSetOnly(resultSet);
         }
         System.out.println("");
         System.out.println("");
@@ -194,7 +194,7 @@ public class InvalidStepReporter extends BaseCLI {
 
             }
         } finally {
-            resultSet.close();
+            SqlUtils.closeResultSetOnly(resultSet);
         }
         System.out.println("");
         System.out.println("");
@@ -273,7 +273,7 @@ public class InvalidStepReporter extends BaseCLI {
                         + param_value);
             }
         } finally {
-            resultSet.close();
+            SqlUtils.closeResultSetOnly(resultSet);
         }
         System.out.println("");
         System.out.println("");

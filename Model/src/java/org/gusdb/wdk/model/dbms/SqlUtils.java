@@ -37,13 +37,14 @@ public final class SqlUtils {
   private static final Set<String> queryNames = new HashSet<>();
 
   /**
-   * Close the resultSet and the underlying statement, connection
+   * Close the resultSet and the underlying statement, connection.
+   * Log the query.
    * 
    * @param resultSet
    * @throws SQLException
    * @throws SQLException
    */
-  public static void closeResultSet(ResultSet resultSet) {
+  public static void closeResultSetAndStatement(ResultSet resultSet) {
     try {
       if (resultSet != null) {
         // close the statement in any way
@@ -52,11 +53,29 @@ public final class SqlUtils {
           try {
             stmt = resultSet.getStatement();
           } finally {
-            resultSet.close();
+	      closeResultSetOnly(resultSet);
           }
         } finally {
           closeStatement(stmt);
         }
+      }
+    } catch (SQLException ex) {
+      throw new RuntimeException(ex);
+    }
+  }
+
+  /**
+   * Close the resultSet but not its statement.
+   * Log the query.
+   * 
+   * @param resultSet
+   * @throws SQLException
+   * @throws SQLException
+   */
+  public static void closeResultSetOnly(ResultSet resultSet) {
+    try {
+      if (resultSet != null) {
+	  resultSet.close();
       }
     } catch (SQLException ex) {
       throw new RuntimeException(ex);
@@ -228,7 +247,7 @@ public final class SqlUtils {
       logger.error("Failed to run query:\n" + sql);
       if (resultSet == null && connection != null)
         closeQuietly(connection);
-      closeResultSet(resultSet);
+      closeResultSetAndStatement(resultSet);
       throw new WdkModelException("Failure executing query: " + sql, ex);
     }
   }
@@ -260,7 +279,7 @@ public final class SqlUtils {
     } catch (SQLException e) {
       throw new WdkModelException("Unable to execute scalar query: " + sql, e);
     } finally {
-      closeResultSet(resultSet);
+      closeResultSetAndStatement(resultSet);
     }
   }
 
@@ -284,6 +303,11 @@ public final class SqlUtils {
    */
   public static String escapeWildcards(String value) {
     return value.replaceAll("%", "{%}").replaceAll("_", "{_}");
+  }
+
+  public static void verifyTime(WdkModel wdkModel, String sql, String name,
+				long fromTime, ResultSet resultSet) throws WdkModelException {
+      verifyTime(wdkModel, sql, name, fromTime);
   }
 
   public static void verifyTime(WdkModel wdkModel, String sql, String name,
