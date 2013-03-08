@@ -57,7 +57,9 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           "aaa input[name='array(" + dependedParams[name] + ")'], #" + 
           dependedParams[name] + "aaa select[name='array(" + dependedParams[name] + 
           ")']");
-      dependedParam.change(function() {
+      dependedParam.change(function(e) {
+        // supress change event until depended params are loaded
+        e.stopPropagation();
         dependedValues = [];
         var paramName = getParamName($(this).attr('name'), true);
         var inputs = $("#" + paramName + "aaa input[name='array(" + paramName + 
