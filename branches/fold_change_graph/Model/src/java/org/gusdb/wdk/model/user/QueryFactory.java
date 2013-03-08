@@ -107,7 +107,7 @@ public class QueryFactory {
         } catch (SQLException ex) {
             throw new WdkModelException("Unable to get summary attributes for checksum " + summaryChecksum, ex);
         } finally {
-            SqlUtils.closeResultSet(rsSelect);
+            SqlUtils.closeResultSetAndStatement(rsSelect);
         }
     }
 
@@ -190,7 +190,7 @@ public class QueryFactory {
         } catch (SQLException ex) {
             throw new WdkModelException(ex);
         } finally {
-            SqlUtils.closeResultSet(rsSelect);
+            SqlUtils.closeResultSetAndStatement(rsSelect);
         }
     }
 
@@ -243,7 +243,7 @@ public class QueryFactory {
         } catch (SQLException ex) {
             throw new WdkModelException(ex);
         } finally {
-            SqlUtils.closeResultSet(rs);
+            SqlUtils.closeResultSetAndStatement(rs);
         }
 
     }

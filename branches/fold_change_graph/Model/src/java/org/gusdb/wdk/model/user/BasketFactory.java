@@ -143,7 +143,7 @@ public class BasketFactory {
                     }
                 }
                 finally {
-                    if (resultSet != null) resultSet.close();
+                    if (resultSet != null) SqlUtils.closeResultSetOnly(resultSet);
                 }
                 if (hasRecord) continue;
 
@@ -307,7 +307,7 @@ public class BasketFactory {
         	throw new WdkModelException("Cannot retrieve basket counts for user " + user.getEmail(), e);
         }
         finally {
-            SqlUtils.closeResultSet(rs);
+            SqlUtils.closeResultSetAndStatement(rs);
         }
         return counts;
     }
@@ -350,7 +350,7 @@ public class BasketFactory {
                     }
                 }
                 finally {
-                    if (resultSet != null) resultSet.close();
+                    if (resultSet != null) SqlUtils.closeResultSetOnly(resultSet);
                 }
                 if (hasRecord) {
                     basketCount++;
@@ -414,7 +414,7 @@ public class BasketFactory {
             return buffer.toString();
         }
         finally {
-            SqlUtils.closeResultSet(rs);
+            SqlUtils.closeResultSetAndStatement(rs);
         }
     }
 

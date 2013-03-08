@@ -7,14 +7,6 @@
   <!-- Remove to save bandwidth until we add OpenID back in -->
   <!--<imp:aboutOpenId/>-->
 
-  <c:set var="ieTitle">
-    <imp:verbiage key="dialog.IE-warning.title"/>
-  </c:set>
-  <div style="display:none;" id="wdk-dialog-IE-warning" class="ui-dialog-fixed-width" title="${ieTitle}">
-    <imp:verbiage key="dialog.IE-warning.content"/>
-  </div>
-
-
   <c:set var="reviseTitle">
     <imp:verbiage key="dialog.revise-search.title"/>
   </c:set>
@@ -72,7 +64,7 @@
   </div>
 
 
-  <div id="wdk-dialog-login-form" title="Account login">
+  <div style="display:none" id="wdk-dialog-login-form" title="Account login">
     <imp:loginForm showCancel="true"/>
   </div>
 

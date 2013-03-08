@@ -1011,10 +1011,6 @@ div#sections td{
     display: inline;
 }
 
-.ui-dialog-fixed-width {
-    width: 500px !important;
-}
-
 #wdk-dialog-strat-desc .edit {
   text-align: right;
   margin-top: 4em;

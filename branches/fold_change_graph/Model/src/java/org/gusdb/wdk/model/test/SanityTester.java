@@ -244,7 +244,7 @@ public class SanityTester {
                                     + "__sanity-test-row-count");
                     rs.next();
                     minRows = maxRows = rs.getInt(1);
-                    SqlUtils.closeResultSet(rs);
+                    SqlUtils.closeResultSetAndStatement(rs);
                 }
             }
 
@@ -356,12 +356,12 @@ public class SanityTester {
         QueryInstance instance = query.makeInstance(user,
                 paramValuesSet.getParamValues(), true, 0,
                 new LinkedHashMap<String, String>());
-        ResultList rs = instance.getResults();
+        ResultList rl = instance.getResults();
 
-        while (rs.next()) {
+        while (rl.next()) {
             count++;
         }
-        rs.close();
+        rl.close();
         return count;
     }
 
@@ -389,7 +389,7 @@ public class SanityTester {
                 query.getFullName() + "__sanity-test-count");
         resultSet.next();
         int count = resultSet.getInt(1);
-        SqlUtils.closeResultSet(resultSet);
+        SqlUtils.closeResultSetAndStatement(resultSet);
         return count;
     }
 
@@ -418,7 +418,7 @@ public class SanityTester {
         }
         while (resultSet.next())
             ; // bring full result over to test speed
-        SqlUtils.closeResultSet(resultSet);
+        SqlUtils.closeResultSetAndStatement(resultSet);
     }
 
     private int testTableQuery_TotalTime(Query query)
@@ -439,7 +439,7 @@ public class SanityTester {
         int count = 0;
         while (resultSet.next())
             count++; // bring full result over to test speed
-        SqlUtils.closeResultSet(resultSet);
+        SqlUtils.closeResultSetAndStatement(resultSet);
         return count;
     }
 

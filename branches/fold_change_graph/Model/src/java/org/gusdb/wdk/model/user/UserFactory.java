@@ -496,7 +496,7 @@ public class UserFactory {
     } catch (WdkUserException e) {
       throw new WdkModelException("Unable to get user with ID " + userId, e);
     } finally {
-      SqlUtils.closeResultSet(rsUser);
+      SqlUtils.closeResultSetAndStatement(rsUser);
     }
   }
 
@@ -523,7 +523,7 @@ public class UserFactory {
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
-      SqlUtils.closeResultSet(rs);
+      SqlUtils.closeResultSetAndStatement(rs);
     }
     User[] array = new User[users.size()];
     users.toArray(array);
@@ -568,7 +568,7 @@ public class UserFactory {
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
-      SqlUtils.closeResultSet(rs);
+      SqlUtils.closeResultSetAndStatement(rs);
       SqlUtils.closeStatement(psUser);
     }
   }
@@ -585,14 +585,14 @@ public class UserFactory {
       PreparedStatement psRole = SqlUtils.getPreparedStatement(dataSource, sql);
       psRole.setInt(1, user.getUserId());
       rsRole = psRole.executeQuery();
-      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-get-roles", start);
+      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-get-roles", start, rsRole);
       while (rsRole.next()) {
         roles.add(rsRole.getString("user_role"));
       }
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
-      SqlUtils.closeResultSet(rsRole);
+      SqlUtils.closeResultSetAndStatement(rsRole);
     }
     return roles;
   }
@@ -751,7 +751,7 @@ public class UserFactory {
       PreparedStatement psUser = SqlUtils.getPreparedStatement(dataSource, sql);
       psUser.setTimestamp(1, timestamp);
       rsUser = psUser.executeQuery();
-      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-select-expired-user", start);
+      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-select-expired-user", start, rsUser);
       int count = 0;
       while (rsUser.next()) {
         deleteUser(rsUser.getString("email"));
@@ -761,7 +761,7 @@ public class UserFactory {
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
-      SqlUtils.closeResultSet(rsUser);
+      SqlUtils.closeResultSetAndStatement(rsUser);
     }
   }
 
@@ -890,7 +890,7 @@ public class UserFactory {
       psSelect = SqlUtils.getPreparedStatement(dataSource, sql);
       psSelect.setInt(1, userId);
       resultSet = psSelect.executeQuery();
-      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-select-preference", start);
+      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-select-preference", start, resultSet);
       while (resultSet.next()) {
         String projectId = resultSet.getString("project_id");
         String prefName = resultSet.getString("preference_name");
@@ -904,7 +904,7 @@ public class UserFactory {
       throw new WdkModelException("Could not get preferences for user "
           + user.getUserId(), e);
     } finally {
-      SqlUtils.closeResultSet(resultSet);
+      SqlUtils.closeResultSetAndStatement(resultSet);
       if (resultSet == null)
         SqlUtils.closeStatement(psSelect);
     }
@@ -1002,7 +1002,7 @@ public class UserFactory {
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
-      SqlUtils.closeResultSet(rs);
+      SqlUtils.closeResultSetAndStatement(rs);
       // SqlUtils.closeStatement(ps);
     }
 
@@ -1050,7 +1050,7 @@ public class UserFactory {
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
-      SqlUtils.closeResultSet(rs);
+      SqlUtils.closeResultSetAndStatement(rs);
     }
   }
 
