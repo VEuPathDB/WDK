@@ -10,50 +10,21 @@
 
 
  <record id="dialog.IE-warning">
-        <attribute name="title">Notice for IE users</attribute>
+   <attribute name="title">Notice for IE7/6/5 users</attribute>
         <attribute name="content">
             <![CDATA[
-
-<h2>Notice for IE users</h2>
-
-<p>For the best experience, we recommend 
-  <a href="http://www.google.com/chromeframe" target="_blank">downloading a Chrome plugin</a>
-  that will help your browser work with our website. 
-  <ul class="cirbulletlist">
-    <li>The download is easy and fast</li> 
-    <li>You do not need to be an administrator</li>
-    <li>After downloading, you may need to clean your cache and restart IE</li>
-  </ul>
-</p>
-
-<!--
-<p>Even better, when possible, we recommend that you download one of the
-  <span style="font-size:120%;font-weight:bold">supported browsers</span>, listed below:
-  <ul id='supported-browsers'>
-    <li class='browser-link'><a href='http://www.mozilla.com/firefox/'>Firefox</a></li>
-    <li class='browser-link'><a href='http://www.apple.com/safari/'>Safari</a></li>
-    <li class='browser-link'><a href='http://www.google.com/chrome/'>Chrome</a></li>
-  </ul>
-</p>
--->
-
-<br/>
-
+<p>Portions of the website are known to be incompatible with your version of
+  Internet Explorer. If possible, upgrade to IE8 or later,
+  or use another browser such as Chrome or Firefox.</p>
 <p>If you are unable or not allowed to upgrade your browser, please
-  <a href='mailto:help@eupathdb.org'>contact us</a>.</p>
-
-<!--
-<p><em><strong>Note:</strong> some tables do not render correctly in IE 9.
-  If a table does not appear correctly, try clicking on the "compatibility view"
-  button in your location bar.</em></p>
--->
-
+  <a href="${pageContext.request.contextPath}/contact.do"
+    class="open-window-contact-us">contact us</a>.
+</p>
 <div style="text-align:center;">
   <a class="button close-dialog-IE-warning"
     onclick="jQuery.cookie('api-unsupported', true, {path:'/'});">
     Continue using this site with your current browser</a>
 </div>
-
             ]]>
         </attribute>
     </record>

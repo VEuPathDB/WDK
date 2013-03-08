@@ -78,7 +78,7 @@ public class Cache extends BeanBase implements CacheMBean   {
     } catch (WdkModelException | SQLException sqle) {
       logger.fatal(sqle);
     } finally {
-        SqlUtils.closeResultSet(rs);
+        SqlUtils.closeResultSetAndStatement(rs);
     }
     return value;
   }

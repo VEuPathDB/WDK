@@ -323,7 +323,7 @@ public class Oracle extends DBPlatform {
         } catch (SQLException e) {
         	throw new WdkModelException("Could not query table names from schema [ " + schema + " ]", e);
         } finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
         }
     }
 

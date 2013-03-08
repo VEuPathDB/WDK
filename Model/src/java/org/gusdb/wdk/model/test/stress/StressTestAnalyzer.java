@@ -181,7 +181,7 @@ public class StressTestAnalyzer {
                 sb.toString(), "wdk-stress-response-time");
         rs.next();
         long sum = rs.getLong(1);
-        SqlUtils.closeResultSet(rs);
+        SqlUtils.closeResultSetAndStatement(rs);
         return (sum / 1000F);
     }
 
@@ -196,7 +196,7 @@ public class StressTestAnalyzer {
                 sb.toString(), "wdk-stress-response-time-by-type");
         rs.next();
         long sum = rs.getLong(1);
-        SqlUtils.closeResultSet(rs);
+        SqlUtils.closeResultSetAndStatement(rs);
         return (sum / 1000F);
     }
 
@@ -210,7 +210,7 @@ public class StressTestAnalyzer {
                 sb.toString(), "wdk-stress-response");
         rs.next();
         float average = rs.getFloat(1);
-        SqlUtils.closeResultSet(rs);
+        SqlUtils.closeResultSetAndStatement(rs);
         return (average / 1000F);
     }
 
@@ -225,7 +225,7 @@ public class StressTestAnalyzer {
                 sb.toString(), "wdk-stress-response-time-by-type");
         rs.next();
         float average = rs.getFloat(1);
-        SqlUtils.closeResultSet(rs);
+        SqlUtils.closeResultSetAndStatement(rs);
         return (average / 1000F);
     }
 
@@ -240,7 +240,7 @@ public class StressTestAnalyzer {
                 sb.toString(), "wdk-stress-response-time-by-type");
         rs.next();
         long sum = rs.getLong(1);
-        SqlUtils.closeResultSet(rs);
+        SqlUtils.closeResultSetAndStatement(rs);
         return (sum / 1000F);
     }
 
@@ -256,7 +256,7 @@ public class StressTestAnalyzer {
                 sb.toString(), "wdk-stress-response-time-by-type");
         rs.next();
         long sum = rs.getLong(1);
-        SqlUtils.closeResultSet(rs);
+        SqlUtils.closeResultSetAndStatement(rs);
         return (sum / 1000F);
     }
 
@@ -271,7 +271,7 @@ public class StressTestAnalyzer {
                 sb.toString(), "wdk-stress-response-time-by-type");
         rs.next();
         float average = rs.getFloat(1);
-        SqlUtils.closeResultSet(rs);
+        SqlUtils.closeResultSetAndStatement(rs);
         return (average / 1000F);
     }
 
@@ -287,7 +287,7 @@ public class StressTestAnalyzer {
                 sb.toString(), "wdk-stress-response-time-by-type");
         rs.next();
         float average = rs.getFloat(1);
-        SqlUtils.closeResultSet(rs);
+        SqlUtils.closeResultSetAndStatement(rs);
         return (average / 1000F);
     }
 

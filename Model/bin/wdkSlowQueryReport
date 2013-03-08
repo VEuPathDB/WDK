@@ -29,9 +29,9 @@ my $parseLogRecord = sub {
 
   my $reject = 0;
 
-# 89468376 [WARN ] org.gusdb.wdk.model.dbms.SqlUtils:324 - 130.91.178.191 - [27/Sep/2010:11:24:05 -0400] SLOW SQL [GeneVQ.DomainDatabase-uncached-result]: 11.295 seconds.
+# 89468376 [WARN ] org.gusdb.wdk.model.dbms.SqlUtils:324 - 130.91.178.191 - [27/Sep/2010:11:24:05 -0400] SLOW QUERY LOG [GeneVQ.DomainDatabase__uncached-result]: 11.295 seconds.
 
-  $reject = 1 unless $logRecord =~ /SLOW SQL/;
+  $reject = 1 unless $logRecord =~ /QUERY LOG/;
   $reject = 1 if $logRecord =~ /\=\=/;  # some lines in the log are mangled, with missing newlines
                                         # the symptom is that the next log entry is mashed in
                                         # these are delimited by ========, so dodge that
@@ -40,7 +40,7 @@ my $parseLogRecord = sub {
   chomp($logRecord);
 
   my ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $seconds, $timestamp);
-  if (/(\d+) \[WARN \] (.*):(\d+) - ([0-9.]*) - \[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d) (.+)\] .*SLOW SQL \[(.*)\]: ([0-9.]*) seconds/) {
+  if (/(\d+) \[WARN \] (.*):(\d+) - ([0-9.]*) - \[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d) (.+)\] .*QUERY LOG \[(.*)\]: ([0-9.]*) seconds/) {
     ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $seconds) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
 
     my $monthNumber = index("JanFebMarAprMayJunJulAugSepOctNovDec", $mon) / 3;
@@ -57,11 +57,11 @@ FgpUtil::Log::SlowQueryReport::makeReport($parseLogRecord, $time_filter, $plotOu
 sub usage {
   print STDERR "
 
-Print a report summarizing the gbrowse slow query logs.
+Print a report summarizing the WDK slow query logs.
 
 Takes one or more logs on standard input.
 
-usage:  wdkSlowQueryReport [-s secs] [-g] [-n] [-t starttime[,endtime]] [-c colnum] [-p plotOutputFile] [-f tabOutputFile] [-d] [-i]
+usage:  wdkSlowQueryReport -s secs [-g] [-n] [-t starttime[,endtime]] [-c colnum] [-p plotOutputFile] [-f tabOutputFile] [-d] [-i]
 
 where:
   -s:  slowness threshold in seconds.  run times over secs are reported in Slow columns
@@ -83,9 +83,7 @@ Stdin must contain one or more lines specifying log files.   Each line has three
 
 wdkSlowQueryReport uses ssh to login into that server and read all the log files implied by the log file glob.
 
-The access log is used to get a count of pages, which are shown in the page-requests column in the Statistics section at the 
-bottom of the report.  This is useful if we know that certain queries only happen on that page.  Right now this is hard coded 
-to look for EuPathDB gene pages.  It is useful for the gbrowseSlowQueryReport which tags queries as belonging to the gene page.  
+The access log is used to get a count of pages, which are shown in the page-requests column in the Statistics section at the bottom of the report.  This is useful if we know that certain queries only happen on that page.  Right now this is hard coded to look for EuPathDB gene pages.  It is useful for the gbrowseSlowQueryReport which tags queries as belonging to the gene page.
 
 ";
   exit(1);

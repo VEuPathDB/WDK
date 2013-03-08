@@ -107,7 +107,7 @@ public class StepParamExpander extends BaseCLI {
             }
             logger.info("Totally processed " + count + " steps.");
         } finally {
-            SqlUtils.closeResultSet(resultSet);
+            SqlUtils.closeResultSetAndStatement(resultSet);
             SqlUtils.closeStatement(psInsert);
         }
     }

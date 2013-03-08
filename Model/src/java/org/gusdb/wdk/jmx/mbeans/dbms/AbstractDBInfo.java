@@ -81,7 +81,7 @@ public abstract class AbstractDBInfo {
     } catch (WdkModelException | SQLException sqle) {
       logger.error(sqle);
     } finally {
-        SqlUtils.closeResultSet(rs);
+        SqlUtils.closeResultSetAndStatement(rs);
     }
   }
 
@@ -106,7 +106,7 @@ public abstract class AbstractDBInfo {
     } catch (WdkModelException | SQLException sqle) {
       logger.error(sqle);
     } finally {
-        SqlUtils.closeResultSet(rs);
+        SqlUtils.closeResultSetAndStatement(rs);
     }  
   }
 
@@ -135,7 +135,7 @@ public abstract class AbstractDBInfo {
     } catch (Exception e) {
         logger.error("NPE ", e);
     } finally {
-        SqlUtils.closeResultSet(rs);
+        SqlUtils.closeResultSetAndStatement(rs);
     }
 
   }
