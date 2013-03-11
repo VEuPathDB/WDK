@@ -445,7 +445,7 @@ ul.menubar {
 .param-item label {
   float: left;
   width: 320px;   /* 300px; */
-  clear: both;
+  /* clear: both; */
   text-align: right;
   padding-top: 4px;
 }
