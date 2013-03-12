@@ -26,6 +26,15 @@ DROP TABLE IF EXISTS wdkengine.clob_values;
 DROP TABLE IF EXISTS wdkengine.dataset_values;
 DROP TABLE IF EXISTS wdkengine.dataset_indices;
 
+/* =========================================================================
+   create schemas ("schemata"?)
+   ========================================================================= */
+
+-- CREATE SCHEMA IF NOT EXISTS wdkuser;
+CREATE SCHEMA wdkuser;
+
+-- CREATE SCHEMA IF NOT EXISTS wdkengine;
+CREATE SCHEMA wdkengine;
 
 
 /* =========================================================================
