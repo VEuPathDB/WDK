@@ -445,7 +445,7 @@ ul.menubar {
 .param-item label {
   float: left;
   width: 320px;   /* 300px; */
-  clear: both;
+  /* clear: both; */
   text-align: right;
   padding-top: 4px;
 }
@@ -1330,8 +1330,9 @@ span.marker a:link, span.marker a:visited {
 
 .wdk-error {
   padding: 0.4em;
-  color: darkred;
+  color: red;
   font-weight: bold;
+  font-size: large;
 }
 .wdk-error::after {
   content: "!";
