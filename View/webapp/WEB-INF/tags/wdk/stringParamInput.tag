@@ -18,9 +18,11 @@ Provides form input element for a given StringParam.
 <c:set var="length" value="${qP.length}"/>
 
 <c:choose>
-  <c:when test="${isReadonly}">
-    <bean:write name="qForm" property="value(${pNam})"/>
+  <c:when test="${qP.isVisible == false}">
     <html:hidden property="value(${pNam})"/>
+  </c:when>
+  <c:when test="${qP.isReadonly}">
+    <html:text styleId="${pNam}" property="value(${pNam})" size="35" readonly="true" />
   </c:when>
   <c:when test="${length > 50}">
     <html:textarea styleId="${pNam}" property="value(${pNam})" cols="35" rows="10" />
