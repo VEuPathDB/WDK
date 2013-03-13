@@ -370,19 +370,21 @@ public class SanityTester {
             SQLException, WdkModelException, JSONException, WdkUserException {
         // put user id into the param
         Map<String, String> params = new LinkedHashMap<String, String>();
-        params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
+        
+        // since this attribute query is the original copy from model and it doesn't
+        // params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
 
         SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
                 params, true, 0, new LinkedHashMap<String, String>());
 
-        if (paramValuesSet.getParamValues().size() != 2) {
-            throw new WdkUserException(
-                    "missing <defaultTestParamValues> for querySet "
-                            + query.getQuerySet().getName());
-        }
+//        if (paramValuesSet.getParamValues().size() != 2) {
+//            throw new WdkUserException(
+//                    "missing <defaultTestParamValues> for querySet "
+//                            + query.getQuerySet().getName());
+//        }
         String sql = "select count (*) from (select distinct "
                 + paramValuesSet.getNamesAsString() + " from ("
-                + instance.getUncachedSql() + "))";
+                + instance.getUncachedSql() + ") f1) f2";
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
         ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
@@ -404,7 +406,7 @@ public class SanityTester {
         SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
                 params, true, 0, new LinkedHashMap<String, String>());
 
-        String sql = "select * from (" + instance.getUncachedSql() + ") "
+        String sql = "select * from (" + instance.getUncachedSql() + ") f "
                 + paramValuesSet.getWhereClause();
 
         DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
