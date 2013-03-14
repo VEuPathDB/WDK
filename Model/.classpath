@@ -30,7 +30,7 @@
 	<classpathentry kind="lib" path="lib/java/jing-20081028.jar"/>
 	<classpathentry kind="lib" path="/WSF Service/lib/java/axis-1.4.jar"/>
 	<classpathentry kind="var" path="GUS_HOME/lib/java/WSF-Client.jar"/>
-        <classpathentry kind="var" path="GUS_HOME/lib/java/FgpUtil-Util.jar"/>
+        <classpathentry kind="var" path="GUS_HOME/lib/java/fgputil-util-1.0.0.jar"/>
 	<classpathentry kind="var" path="GUS_HOME/lib/java/db_driver/ojdbc5.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
