@@ -159,7 +159,7 @@ public class RecordClass extends WdkModelBase implements
           idqBuilder.append("(SELECT ");
         else
           idqBuilder.append(", ");
-        idqBuilder.append("$$" + column + "$$ AS " + column);
+        idqBuilder.append("SUBSTR($$" + column + "$$, 1, 4000) AS " + column);
       }
       DBPlatform platform = wdkModel.getQueryPlatform();
       idqBuilder.append(platform.getDummyTable());
