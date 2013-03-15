@@ -26,6 +26,6 @@
 	<classpathentry kind="lib" path="/WDK Controller/lib/java/httpcore-4.0.1.jar"/>
         <!-- end dependencies of openid4java -->
 	<classpathentry combineaccessrules="false" kind="src" path="/WSF Service"/>
-	<classpathentry kind="var" path="GUS_HOME/lib/java/FgpUtil-Util.jar"/>
+	<classpathentry kind="var" path="GUS_HOME/lib/java/fgputil-util-1.0.0.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
