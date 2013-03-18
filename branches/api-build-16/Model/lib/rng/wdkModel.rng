@@ -533,6 +533,11 @@
       <attribute name="displayName" />
     </optional>
     <optional>
+      <attribute name="isCacheable">
+        <data type="boolean" />
+      </attribute>
+    </optional>
+    <optional>
       <attribute name="doNotTest">
         <data type="boolean" />
       </attribute>
@@ -639,9 +644,6 @@
           <value>vocab</value>
         </choice>
       </attribute>
-      <attribute name="isCacheable">
-        <data type="boolean" />
-      </attribute>
       <optional>
         <attribute name="doNotTest">
           <data type="boolean" />
@@ -723,11 +725,6 @@
   <define name="sqlQuery">
     <element name="sqlQuery">
       <ref name="QueryBaseContents" />
-    <optional>
-      <attribute name="isCacheable">
-        <data type="boolean" />
-      </attribute>
-    </optional>
       <optional>
         <attribute name="clobRow">
           <data type="boolean" />
@@ -790,17 +787,12 @@
   <define name="recordClass">
     <element name="recordClass">
       <attribute name="name" />
+      <attribute name="type" />
       <optional>
         <attribute name="displayName" />
       </optional>
       <optional>
-        <attribute name="displayNamePlural" />
-      </optional>
-      <optional>
         <attribute name="shortDisplayName" />
-      </optional>
-      <optional>
-        <attribute name="shortDisplayNamePlural" />
       </optional>
       <optional>
         <attribute name="doNotTest">
