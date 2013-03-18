@@ -53,7 +53,7 @@ my $parseLogRecord = sub {
   return ($reject, $timestamp, $seconds, $name);
 };
 
-FgpUtil::Log::SlowQueryReport::makeReport($parseLogRecord, $time_filter, $plotOutputFile, $sort_column, $logTailSize, $logDeathImmunity, $threshold, $debug, $tabfile, $brief);
+FgpUtil::Util::SlowQueryReport::makeReport($parseLogRecord, $time_filter, $plotOutputFile, $sort_column, $logTailSize, $logDeathImmunity, $threshold, $debug, $tabfile, $brief);
 
 sub usage {
   print STDERR "
