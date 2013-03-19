@@ -63,7 +63,7 @@ public abstract class XmlParser {
         "org.apache.xerces.parsers.XIncludeParserConfiguration");
 
     ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
-    PropertyMap schemaProperties = new SinglePropertyMap(
+    PropertyMap schemaProperties = SinglePropertyMap.newInstance(
         ValidateProperty.ERROR_HANDLER, errorHandler);
     ValidationDriver validator = new ValidationDriver(schemaProperties,
         PropertyMap.EMPTY);
