@@ -484,6 +484,7 @@ function getWebAppUrl() {
     });
   };
 
+  // deprecated - see wdk.reporter.selectFields
   function makeSelection(state) {
       var form = document.downloadConfigForm;
       var cb = form.selectedFields;
