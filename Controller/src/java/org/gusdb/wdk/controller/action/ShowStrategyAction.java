@@ -370,11 +370,23 @@ public class ShowStrategyAction extends ShowQuestionAction {
         // the root of the sub-strategy should not be collapsed
         jsStep.put("isCollapsed", step.getIsCollapsible() && showSubStrategy);
         jsStep.put("isUncollapsible", step.isUncollapsible());
-        jsStep.put("dataType", step.getRecordClass().getFullName());
-        jsStep.put("displayType", step.getRecordClass().getDisplayName());
-        jsStep.put("shortDisplayType", step.getRecordClass().getShortDisplayName());
-        jsStep.put("displayTypePlural", step.getRecordClass().getDisplayNamePlural());
-        jsStep.put("shortDisplayTypePlural", step.getRecordClass().getShortDisplayNamePlural());
+
+    try {
+      RecordClassBean recordClass = step.getRecordClass();
+      jsStep.put("dataType", recordClass.getFullName());
+      jsStep.put("displayType", recordClass.getDisplayName());
+      jsStep.put("shortDisplayType", recordClass.getShortDisplayName());
+      jsStep.put("displayTypePlural", recordClass.getDisplayNamePlural());
+      jsStep.put("shortDisplayTypePlural",
+          recordClass.getShortDisplayNamePlural());
+    } catch (WdkModelException ex) {
+      jsStep.put("dataType", "unknown");
+      jsStep.put("displayType", "unknown");
+      jsStep.put("shortDisplayType", "unknown");
+      jsStep.put("displayTypePlural", "unknown");
+      jsStep.put("shortDisplayTypePlural", "unknown");
+    }
+
         jsStep.put("shortName", step.getShortDisplayName());
         jsStep.put("results", step.getEstimateSize());
         jsStep.put("questionName", step.getQuestionName());
