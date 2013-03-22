@@ -264,6 +264,7 @@ CREATE TABLE wdkuser.strategies
      is_deleted BOOLEAN,
      prev_strategy_id NUMERIC(12),
      migration NUMERIC(12),
+     version VARCHAR(100),
      CONSTRAINT "strategies_pk" PRIMARY KEY (strategy_id),
      CONSTRAINT "strategies_uq01" UNIQUE (user_id, display_id, project_id),
      CONSTRAINT "strategies_fk01" FOREIGN KEY (user_id, root_step_id)
