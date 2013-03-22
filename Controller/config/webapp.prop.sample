@@ -1,0 +1,7 @@
+# Property file for webinstall of WDK site
+
+webappTargetDir=/www/wdktemplate/webapp
+htdocsTargetDir=/www/wdktemplate/html
+cgibinTargetDir=/www/wdktemplate/cgi-bin
+cgilibTargetDir=/www/wdktemplate/cgi-lib
+confTargetDir=/www/wdktemplate/conf
