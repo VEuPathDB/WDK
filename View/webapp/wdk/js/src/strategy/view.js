@@ -176,7 +176,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           "height='12px' width='12px'/></span>";
     }
 
-    var displayType = (jsonStep.results > 1) ? jsonStep.shortDisplayTypePlural : jsonStep.shortDisplayName;
+    var displayType = (jsonStep.results > 1) ? jsonStep.shortDisplayTypePlural : jsonStep.shortDisplayType;
 
     var boolinner = "<a id='" + sid + "|" + modelstep.back_boolean_Id + "|" +
         jsonStep.operation + "' title='CLICK to modify this operation.' " +
@@ -237,7 +237,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       "      <span id='fullStepName' style='display: none;'>" + fullName + "</span>"+
       "      <div class='crumb_details'></div>"+
       "    </h4>"+
-      "    <h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='wdk.strategy.controller.NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + childStp.results + "&nbsp;" + wdk.util.getDisplayType(childStp.shortDisplayType, childStp.results) + "</a></h6>"+
+      "    <h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='wdk.strategy.controller.NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + childStp.results + "&nbsp;" + wdk.util.getDisplayType(childStp) + "</a></h6>"+
       childfilterImg +
       "<img class='arrow down' src='wdk/images/arrow_chain_down2.png' alt='equals'>";
 
@@ -319,7 +319,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       "      <span id='fullStepName' style='display: none;'>" + fullName + "</span>"+
       "      <div class='crumb_details'></div>"+
       "    </h4>"+
-      "    <h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='wdk.strategy.controller.NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + jsonStep.results + "&nbsp;" + wdk.util.getDisplayType(jsonStep.shortDisplayType,jsonStep.results) + "</a></h6>"+
+      "    <h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='wdk.strategy.controller.NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + jsonStep.results + "&nbsp;" + wdk.util.getDisplayType(jsonStep) + "</a></h6>"+
        filterImg;
 
     if (!modelstep.isLast) {
@@ -603,7 +603,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         customMenu + delete_step + "    </div>"+ name +
         "    <table></table><hr class='clear' />" + filteredName +
         "    <p><b>Results:&nbsp;</b>" + jsonStep.results + "&nbsp;" +
-        wdk.util.getDisplayType(jsonStep.shortDisplayType,jsonStep.results);
+        wdk.util.getDisplayType(jsonStep);
         // + "&nbsp;&nbsp;|&nbsp;&nbsp;<a href='downloadStep.do?step_id=" + modelstep.back_step_Id + "'>Download</a>";
          
     inner += "<hr class='clear' />" + createWeightSection(jsonStep,modelstep,sid);
@@ -702,8 +702,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   function createRecordTypeName(strat) {
     if (strat.subStratOf == null) {
       var div_sn = document.createElement("div");
-      $(div_sn).attr("id","record_name").addClass("strategy_small_text")
-          .text("(" + wdk.util.getDisplayType(strat.displayType) + ")");
+      $(div_sn).attr("id","record_name").addClass("strategy_small_text").text("(" + wdk.util.getDisplayType(strat.JSON.steps[strat.JSON.steps.length]) + ")");
       return div_sn;
     }
   }
