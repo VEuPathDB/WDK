@@ -501,9 +501,11 @@ ul.menubar {
 .checkbox-tree .jstree-icon {
   vertical-align:top;
 }
-.checkbox-tree li a span {
-  white-space:normal;
+.checkbox-tree li a {
+	height:auto;
+  white-space:normal; 
 }
+
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
