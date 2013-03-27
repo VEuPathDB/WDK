@@ -1,4 +1,46 @@
 ------------------------------------------------------------------------------
+ooooooooooooooooooooooooooo  WDK Version 2.17  ooooooooooooooooooooooooooooooo
+------------------------------------------------------------------------------
+https://www.cbil.upenn.edu/svn/gus/WDK/branches/api-build-17/
+
+
+FIXED BUGS: 
+- email case-insensitive
+ 
+UI related
+- file upload (to upload IDs on searches) : added hint on max size 10MB
+- add step: warning if operation not selected, now on frontend
+- plural names of record types coming from backend now
+
+Performance related
+- slow query logs improved
+- split css/js and javascript minification
+- search parameters by default are cached
+
+API Changes
+- new model param provided by WDK: wdk_user_signature, used  in questionParams.tag
+- Added getters to expose properties of attribute plugin
+- WdkAction: support to upload files
+- login dialog title : customizable
+- new ConnectionContainer.java
+- new projectMapper
+
+Refactoring
+- repackage WDK/Model classes
+- removed harcoded class name in DynamicAttributeSet,java
+
+
+
+
+
+
+
+
+
+
+
+
+------------------------------------------------------------------------------
 ooooooooooooooooooooooooooo  WDK Version 1.29  ooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 corresponds to EuPathDB build 10
