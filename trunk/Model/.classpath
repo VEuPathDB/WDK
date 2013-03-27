@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry excluding="**/.svn/" kind="src" path="src/java"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/fgputil-util"/>
-        <classpathentry kind="var" path="GUS_HOME/lib/java/not-deployed/servlet-api-2.4.jar"/>
 	<classpathentry kind="lib" path="lib/java/commons-beanutils-1.8.3.jar"/>
 	<classpathentry kind="lib" path="lib/java/commons-pool-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/java/serializer.jar"/>
@@ -28,9 +27,10 @@
 	<classpathentry kind="lib" path="/WSF Service/lib/java/commons-discovery-0.2.jar"/>
 	<classpathentry kind="lib" path="/WSF Test/lib/java/junit-4.4.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/WSF Test"/>
-	<classpathentry kind="lib" path="lib/java/jing-20081028.jar"/>
 	<classpathentry kind="lib" path="/WSF Service/lib/java/axis-1.4.jar"/>
 	<classpathentry kind="var" path="GUS_HOME/lib/java/WSF-Client.jar"/>
 	<classpathentry kind="var" path="GUS_HOME/lib/java/db_driver/ojdbc5.jar"/>
+	<classpathentry kind="lib" path="lib/java/not-deployed/servlet-api-2.4.jar"/>
+	<classpathentry kind="lib" path="lib/java/jing-20091111.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
