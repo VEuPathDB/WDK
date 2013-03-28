@@ -484,6 +484,7 @@ function getWebAppUrl() {
     });
   };
 
+  // deprecated - see wdk.reporter.selectFields
   function makeSelection(state) {
       var form = document.downloadConfigForm;
       var cb = form.selectedFields;
@@ -531,8 +532,8 @@ function getWebAppUrl() {
           windowFeatures,
           match = this.className.match(/^open-window-(\w+-\w+)$/),
           windowUrl = this.href,
-          windowWidth = 980,
-          windowHeight = 620,
+          windowWidth = 1050,
+          windowHeight = 740,
           windowLeft = screen.width/2 - windowWidth/2,
           windowTop = screen.height/2 - windowHeight/2,
           defaultFeatures = {

@@ -8,7 +8,7 @@
 
 
 
-<table width="100%">
+<table width="100%" class="wdk-record-table">
 
   <c:forEach items="${wdkRecord.summaryAttributes}" var="attr">
     <c:set var="fieldVal" value="${attr.value}"/>
@@ -37,7 +37,7 @@
 <c:forEach items="${wdkRecord.nestedRecords}" var="nrEntry">
   <br>
   Nested Records: <br>	
-  <table>
+  <table class="wdk-record-table nested-record">
   <tr><td><b>${nrEntry.key}</b></td></tr>
   <c:set var="nextNr" value="${nrEntry.value}"/>
 
@@ -72,7 +72,7 @@
 <!-- show all nested recordLists for record -->
 <c:forEach items="${wdkRecord.nestedRecordLists}" var="nrlEntry">
 <br>
-  <table>
+  <table class="wdk-record-table nested-record-list">
   <tr><td><b>${nrlEntry.key}</b></td></tr>
     
   <c:set var="i" value="0"/>

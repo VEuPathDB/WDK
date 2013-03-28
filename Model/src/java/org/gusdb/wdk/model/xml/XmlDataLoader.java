@@ -27,9 +27,6 @@ public class XmlDataLoader {
 
     private URL schemaURL;
 
-    /**
-     * 
-     */
     public XmlDataLoader(URL schemaURL) {
         this.schemaURL = schemaURL;
     }
@@ -86,7 +83,7 @@ public class XmlDataLoader {
         try {
 
             ErrorHandler errorHandler = new ErrorHandlerImpl(System.err);
-            PropertyMap schemaProperties = new SinglePropertyMap(
+            PropertyMap schemaProperties = SinglePropertyMap.newInstance(
                     ValidateProperty.ERROR_HANDLER, errorHandler);
             ValidationDriver vd = new ValidationDriver(schemaProperties,
                     PropertyMap.EMPTY, null);

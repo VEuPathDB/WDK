@@ -66,6 +66,7 @@
       <script src="${urlBase}/wdk/js/src/tooltips.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/user.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/util.js"><jsp:text/></script>
+      <script src="${urlBase}/wdk/js/src/reporter.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/wdk.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/wordCloud.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/plugins/wdkDataTables.js"><jsp:text/></script>

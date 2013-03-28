@@ -110,9 +110,8 @@
            toDir="../WDK/Model/lib/java" />
 
     <property environment="env"/>
-    <available file="${env.ORACLE_HOME}/jdbc/lib/ojdbc14.jar" type="file"  property="ojdbc14.present" />
-    <antcall target="copyLocal14Driver"/>
-    <available file="${env.ORACLE_HOME}/jdbc/lib/ojdbc5.jar" type="file"  property="ojdbc5.present" />
+    <available file="${env.ORACLE_HOME}/jdbc/lib/ojdbc5.jar" type="file" property="ojdbc5.present"/>
+    <fail unless="ojdbc5.present" message="To build WDK, the file $ORACLE_HOME/jdbc/lib/ojdbc5.jar must be available."/>
     <antcall target="copyLocal5Driver"/>
 
     <ant target="defaultComponentInstall">
@@ -127,20 +126,27 @@
       <property name="project" value="WDK"/>
       <property name="component" value="View"/>
     </ant>
-  </target>  
-
-  <target name="copyLocal14Driver" if="ojdbc14.present">
-    <echo>Installing local ojdbc14.jar from ${env.ORACLE_HOME}/jdbc/lib/ojdbc14.jar</echo>
-    <copy  file="${env.ORACLE_HOME}/jdbc/lib/ojdbc14.jar"
-     toDir="${targetDir}/lib/java/db_driver"
-     overwrite="true"/>
   </target>
 
   <target name="copyLocal5Driver" if="ojdbc5.present">
     <echo>Installing local ojdbc5.jar from ${env.ORACLE_HOME}/jdbc/lib/ojdbc5.jar</echo>
-    <copy  file="${env.ORACLE_HOME}/jdbc/lib/ojdbc5.jar"
-     toDir="${targetDir}/lib/java/db_driver"
-     overwrite="true"/>
+    <copy file="${env.ORACLE_HOME}/jdbc/lib/ojdbc5.jar"
+          toDir="${targetDir}/lib/java/db_driver"
+          overwrite="true"/>
+    <echo>Installing local ojdbc5.jar into local Maven repository</echo>
+    <exec dir="${projectsDir}/${project}"
+          executable="mvn"
+          failonerror="true"
+          failifexecutionfails="true">
+      <arg line="install:install-file"/>
+      <arg line="--quiet"/>
+      <arg line="-DgroupId=com.oracle"/>
+      <arg line="-DartifactId=ojdbc5"/>
+      <arg line="-Dversion=11.2.0.3"/>
+      <arg line="-Dpackaging=jar"/>
+      <arg line="-Dfile=${env.ORACLE_HOME}/jdbc/lib/ojdbc5.jar"/>
+      <arg line="-DgeneratePom=true"/>
+    </exec>
   </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
