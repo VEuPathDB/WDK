@@ -25,6 +25,9 @@ API Changes
 - new ConnectionContainer.java
 - new projectMapper
 
+Installation
+- Installation of the WDK now requires Maven (version 2 and above)
+
 Refactoring
 - repackage WDK/Model classes
 - removed harcoded class name in DynamicAttributeSet,java
