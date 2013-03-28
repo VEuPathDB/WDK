@@ -437,6 +437,10 @@ ul.menubar {
   height: 100%; /* IE7 fix */
 }
 
+.param-group .group-detail.hidden {
+  display: none;
+}
+
 .param-item {
   padding-top: 5px;
   padding-bottom: 5px;

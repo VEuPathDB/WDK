@@ -12,6 +12,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
 
   // var stage = null;
 
+  // deprecated?
   function showExportLink(stratId) {
      closeModal();
      var exportLink = $("div#export_link_div_" + stratId);
@@ -21,6 +22,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     }).show();
   }
 
+  // make panel object that implements show
   function showPanel(panel) {
 
     if (panel == 'strategy_results') {
@@ -579,26 +581,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
 
             // attach submit handler to check that a boolean/span operation is selected
             var $form = $("#query_form").find("#form_question");
-            var inlineSubmit = $form.get(0).onsubmit;
+            $form.data("inline-submit", $form.get(0).onsubmit);
             $form.get(0).onsubmit = null;
-            $form.submit(function(e) {
-              var bools = $(this).find("input[name='boolean']");
-              if (bools.length) {
-                var boolChecked = _.reduce(bools.toArray(),
-                    function(memo, input) { return memo || input.checked; }, false);
-                if (!boolChecked) {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if ($(this).find(".wdk-error").length === 0) {
-                    $(this).find("#operations").before("<div class='wdk-error' style='text-align:center'>Please choose an operation below</div>");
-                  }
-                } else {
-                  if (inlineSubmit instanceof Function) {
-                    inlineSubmit.call(this);
-                  }
-                }
-              }
-            });
+            $form.submit(validateOperations);
           }
         });
         break;
@@ -754,6 +739,30 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     $(".filter-button input[name='questionSubmit']").attr("value",v);
   }
 
+  function validateOperations(e) {
+    var $this = $(this);
+    var bools = $this.find("input[name='boolean']");
+    var inlineSubmit = $this.data("inline-submit");
+    e.preventDefault();
+    e.stopPropagation();
+    if (bools.length) {
+      var boolChecked = _.reduce(bools.toArray(),
+          function(memo, input) { return memo || input.checked; }, false);
+      if (!boolChecked) {
+        if ($this.find(".wdk-error").length === 0) {
+          $("<div>Please choose an operation below</div>")
+            .addClass("wdk-error")
+            .css("text-align", "center")
+            .insertBefore($this.find("#operations"));
+          return;
+        }
+      }
+    }
+    if (inlineSubmit instanceof Function) {
+      inlineSubmit.call(this, e);
+    }
+  }
+
   ns.showExportLink = showExportLink;
   ns.showPanel = showPanel;
   ns.showSaveForm = showSaveForm;
@@ -775,5 +784,6 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
   ns.setDraggable = setDraggable;
   ns.showNewSection = showNewSection;
   ns.changeButtonText = changeButtonText;
+  ns.validateOperations = validateOperations;
 
 });
