@@ -70,15 +70,9 @@
                                            WDK/View-Installation">
 
     <ant target="defaultProjectInstall"/>
-    
-    <!-- remove conflicting jar file -->
-    <!-- delete file="${targetDir}/lib/java/servlet-api-2.4.jar" / -->
 
-    <!-- copy the WSF-Clisnt.jar, which will be used by IDE -->
-    <copy  file="${targetDir}/lib/java/WSF-Client.jar"
-           toDir="../WDK/Model/lib/java" />
-  </target>  
-   
+  </target>
+
 
   <!-- oooooooooooooooooo  Installation Postprocess  ooooooooooooooooooooo -->
 
@@ -105,21 +99,89 @@
 
   <target name="WDK/Model-Installation">
 
-    <!-- copy the WSF-Clisnt.jar, which will be used by IDE -->
-    <copy  file="${targetDir}/lib/java/WSF-Client.jar"
-           toDir="../WDK/Model/lib/java" />
-
-    <property environment="env"/>
-    <available file="${env.ORACLE_HOME}/jdbc/lib/ojdbc5.jar" type="file" property="ojdbc5.present"/>
-    <fail unless="ojdbc5.present" message="To build WDK, the file $ORACLE_HOME/jdbc/lib/ojdbc5.jar must be available."/>
-    <antcall target="copyLocal5Driver"/>
+    <antcall target="handleOracleDriver"/>
 
     <ant target="defaultComponentInstall">
       <property name="project" value="WDK"/>
       <property name="component" value="Model"/>
     </ant>
-
   </target>  
+
+  <target name="handleOracleDriver">
+
+    <!-- set values for supported Oracle driver -->
+    <property name="oracle.driver.name" value="ojdbc6"/>
+    <property name="oracle.version" value="11.2.0.3"/>
+
+    <!-- check existence of Oracle  -->
+    <property environment="env"/>
+    <condition property="oracle.home.defined">
+      <isset property="env.ORACLE_HOME"/>
+    </condition>
+    <condition property="oracle.home.present">
+      <available file="${env.ORACLE_HOME}" type="dir"/>
+    </condition>
+    <condition property="ojdbc.present">
+      <available file="${env.ORACLE_HOME}/jdbc/lib/${oracle.driver.name}.jar" type="file"/>
+    </condition>
+
+    <!-- set valuse to false if not already set to true -->
+    <property name="oracle.home.present" value="false"/>
+    <property name="ojdbc.present" value="false"/>
+
+    <!-- build out specific conditions -->
+    <condition property="oracle.home.complete">
+      <and>
+        <isset property="oracle.home.defined"/>
+        <istrue value="${oracle.home.present}"/>
+        <istrue value="${ojdbc.present}"/>
+      </and>
+    </condition>
+    <condition property="oracle.home.incomplete">
+      <and>
+        <isset property="oracle.home.defined"/>
+        <or>
+          <isfalse value="${oracle.home.present}"/>
+          <isfalse value="${ojdbc.present}"/>
+        </or>
+      </and>
+    </condition>
+
+    <!-- perform conditional operations -->
+    <antcall target="warnAboutOracleDriver"/>
+    <antcall target="copyLocalOracleDriver"/>
+    <fail if="oracle.home.incomplete" message="Error: if $ORACLE_HOME is defined, file $ORACLE_HOME/jdbc/lib/${oracle.driver.name}.jar must be available."/>
+
+  </target>
+
+  <target name="warnAboutOracleDriver" unless="oracle.home.defined">
+    <echo>
+      Warning: Environment variable $ORACLE_HOME does not appear to be set.  If you are using Oracle, you
+               must manually install the Oracle JDBC driver (${oracle.driver.name}.jar) into $GUS_HOME/lib/java/db_driver
+               and (optionally) into your local Maven repository.
+    </echo>
+  </target>
+
+  <target name="copyLocalOracleDriver" if="oracle.home.complete">
+    <echo>Installing local ${oracle.driver.name}.jar from ${env.ORACLE_HOME}/jdbc/lib/${oracle.driver.name}.jar</echo>
+    <copy file="${env.ORACLE_HOME}/jdbc/lib/${oracle.driver.name}.jar"
+          toDir="${targetDir}/lib/java/db_driver"
+          overwrite="true"/>
+    <echo>Installing local ${oracle.driver.name}.jar into local Maven repository</echo>
+    <exec dir="${projectsDir}/${project}"
+          executable="mvn"
+          failonerror="true"
+          failifexecutionfails="true">
+      <arg line="install:install-file"/>
+      <arg line="--quiet"/>
+      <arg line="-DgroupId=com.oracle"/>
+      <arg line="-DartifactId=${oracle.driver.name}"/>
+      <arg line="-Dversion=${oracle.version}"/>
+      <arg line="-Dpackaging=jar"/>
+      <arg line="-Dfile=${env.ORACLE_HOME}/jdbc/lib/${oracle.driver.name}.jar"/>
+      <arg line="-DgeneratePom=true"/>
+    </exec>
+  </target>
 
   <target name="WDK/View-Installation">
     <ant target="defaultComponentInstall">
@@ -128,26 +190,6 @@
     </ant>
   </target>
 
-  <target name="copyLocal5Driver" if="ojdbc5.present">
-    <echo>Installing local ojdbc5.jar from ${env.ORACLE_HOME}/jdbc/lib/ojdbc5.jar</echo>
-    <copy file="${env.ORACLE_HOME}/jdbc/lib/ojdbc5.jar"
-          toDir="${targetDir}/lib/java/db_driver"
-          overwrite="true"/>
-    <echo>Installing local ojdbc5.jar into local Maven repository</echo>
-    <exec dir="${projectsDir}/${project}"
-          executable="mvn"
-          failonerror="true"
-          failifexecutionfails="true">
-      <arg line="install:install-file"/>
-      <arg line="--quiet"/>
-      <arg line="-DgroupId=com.oracle"/>
-      <arg line="-DartifactId=ojdbc5"/>
-      <arg line="-Dversion=11.2.0.3"/>
-      <arg line="-Dpackaging=jar"/>
-      <arg line="-Dfile=${env.ORACLE_HOME}/jdbc/lib/ojdbc5.jar"/>
-      <arg line="-DgeneratePom=true"/>
-    </exec>
-  </target>
 
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooo  Web Installation  oooooooooooooooooooooooo -->
