@@ -256,7 +256,19 @@ ${rcDisplay} basket
                     <c:when test="${rcs.value.multiCategory}">
                     <c:forEach items="${rcs.value.websiteChildren}" var="catEntry">
                         <c:set var="cat" value="${catEntry.value}" />
-                        <li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_${cat.name}',4)">${cat.displayName}</li>
+                        <c:choose>
+                            <c:when test="${cat.flattenInMenu eq true}">
+                                <c:forEach items="${cat.websiteQuestions}" var="question">
+                                  <li data-flatten="${cat.flattenInMenu}" onclick="wdk.addStepPopup.callWizard('${partialUrl}&questionFullName=${question.fullName}&stage=question',this,'sl_${cat.name}',4,'next')">
+                                    ${question.displayName}
+                                    <imp:questionFeature question="${question}" />
+                                  </li>
+                                </c:forEach>
+                            </c:when>
+                            <c:otherwise>
+                                <li class="category" onclick="wdk.addStepPopup.callWizard(null,this,'sl_${cat.name}',4)">${cat.displayName}</li>
+                            </c:otherwise>
+                        </c:choose>
                     </c:forEach>
                     </c:when>
                     <c:otherwise>
