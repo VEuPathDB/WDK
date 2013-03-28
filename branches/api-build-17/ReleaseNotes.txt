@@ -3,6 +3,8 @@ ooooooooooooooooooooooooooo  WDK Version 2.17  ooooooooooooooooooooooooooooooo
 ------------------------------------------------------------------------------
 https://www.cbil.upenn.edu/svn/gus/WDK/branches/api-build-17/
 
+March 28 2013
+
 
 FIXED BUGS: 
 - email case-insensitive
@@ -24,6 +26,9 @@ API Changes
 - login dialog title : customizable
 - new ConnectionContainer.java
 - new projectMapper
+
+Installation
+- Installation of the WDK now requires Maven (version 2 and above)
 
 Refactoring
 - repackage WDK/Model classes
