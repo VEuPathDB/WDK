@@ -122,6 +122,11 @@
 					</choice>
 			  </attribute>
 	    </optional>
+      <optional>
+        <attribute name="flattenInMenu">
+          <data type="boolean" />
+        </attribute>
+      </optional>
 	    <ref name="IncludeExclude"/>
 	    <zeroOrMore>
 	      <element name="questionRef">
