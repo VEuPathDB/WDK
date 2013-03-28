@@ -60,6 +60,14 @@ public class CategoryBean {
 
     /**
      * @return
+     * @see org.gusdb.wdk.model.question.SearchCategory#isFlattenInMenu()
+     */
+    public boolean isFlattenInMenu() {
+        return category.isFlattenInMenu();
+    }
+
+    /**
+     * @return
      * @see org.gusdb.wdk.model.question.SearchCategory#getParent()
      */
     public CategoryBean getParent() {

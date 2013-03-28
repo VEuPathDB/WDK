@@ -26,6 +26,15 @@ DROP TABLE IF EXISTS wdkengine.clob_values;
 DROP TABLE IF EXISTS wdkengine.dataset_values;
 DROP TABLE IF EXISTS wdkengine.dataset_indices;
 
+/* =========================================================================
+   create schemas ("schemata"?)
+   ========================================================================= */
+
+-- CREATE SCHEMA IF NOT EXISTS wdkuser;
+CREATE SCHEMA wdkuser;
+
+-- CREATE SCHEMA IF NOT EXISTS wdkengine;
+CREATE SCHEMA wdkengine;
 
 
 /* =========================================================================
@@ -259,6 +268,7 @@ CREATE TABLE wdkuser.strategies
      last_modify_time TIMESTAMP DEFAULT NOW(),
      description varchar(4000),
      signature varchar(40),
+     version varchar(100),
      name varchar(200) NOT NULL,
      saved_name varchar(200),
      is_deleted BOOLEAN,

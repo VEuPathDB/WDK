@@ -69,7 +69,7 @@
 <%-- step shortDisplayType comes from record shortDisplayName, which -if not set up in record.xml- defaults to displayName and type --%>
 
 
-<c:set var="type" value="${wdkStep.shortDisplayType}" />
+<c:set var="type" value="${wdkStep.shortDisplayName}" />
 <c:set var="allowSpan" value="${type eq 'Gene' || type eq 'ORF' || type eq 'SNP' || type eq 'Sage Tag' || type eq 'Segment'}" />
 
 <div class="filter operators">
