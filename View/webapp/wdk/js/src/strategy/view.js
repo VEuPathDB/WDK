@@ -614,6 +614,10 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       $(".crumb_menu a:not(.edit_step_link,.delete_step_link,.close_link)",
           detail_div).removeAttr('onclick').addClass('disabled');
     }
+    if (jsonStep.invalidQuestion == 'true') {
+      $(".crumb_menu a.edit_step_link",
+          detail_div).removeAttr('onclick').addClass('disabled');
+    }
 
     $("table", detail_div).replaceWith(params_table);
     return detail_div;       
