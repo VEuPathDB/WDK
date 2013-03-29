@@ -50,7 +50,10 @@ public class ProcessOpenIdAction extends WdkAction {
 		setSessionAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
 		
 		// go back to user's original page after successful login
-		return new ActionResult().setRedirect(true).setViewPath(auth.getReferringUrl());
+		return getSuccessfulLoginResult(auth.getReferringUrl());
 	}
 
+  protected ActionResult getSuccessfulLoginResult(String redirectUrl) {
+    return new ActionResult().setRedirect(true).setViewPath(redirectUrl);
+  }
 }
