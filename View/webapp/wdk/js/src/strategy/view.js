@@ -499,7 +499,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         collapseDisabled = "disabled";
         ocCol = "";
       }
-      
+
       var edit_step = "<a title='" + moEdit + "' class='edit_step_link " +
           disab + "' href='javascript:void(0)' " + ocExp +
           ">Revise</a>&nbsp;|&nbsp;";
@@ -612,6 +612,10 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
     if (!jsonStep.isValid) {
       $(".crumb_menu a:not(.edit_step_link,.delete_step_link,.close_link)",
+          detail_div).removeAttr('onclick').addClass('disabled');
+    }
+    if (jsonStep.invalidQuestion == 'true') {
+      $(".crumb_menu a.edit_step_link",
           detail_div).removeAttr('onclick').addClass('disabled');
     }
 
