@@ -12,7 +12,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.SqlQuery;
-import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -143,6 +142,7 @@ public class AnswerFilter extends WdkModelBase {
     resolved = true;
   }
   
+  /** TODO: this was started as a refactor; finish or delete
   private void createFilterInstances(SqlQuery filterQuery) {
     // look up all the enum/flatVocab params
     List<AbstractEnumParam> params = new ArrayList<>();
@@ -152,4 +152,5 @@ public class AnswerFilter extends WdkModelBase {
       }
     }
   }
+  */
 }
