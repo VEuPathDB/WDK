@@ -151,7 +151,7 @@
 
   <target name="warnAboutOracleDriver" unless="oracle.home.defined">
     <echo>
-      Warning: Environment variable $ORACLE_HOME does not appear to be set.  If you are using Oracle, you
+      IMPORTANT REMINDER: Environment variable $ORACLE_HOME does not appear to be set.  If you are using Oracle, you
                must manually install the Oracle JDBC driver (${oracle.driver.name}.jar) into $GUS_HOME/lib/java/db_driver
                and (optionally) into your local Maven repository.
     </echo>
