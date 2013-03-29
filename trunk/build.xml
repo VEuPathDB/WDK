@@ -44,7 +44,6 @@
     <antcall target="WSF-Checkout"/>
     <antcall target="FgpUtil-Checkout"/>
   </target>
-  
     
   <!-- oooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo -->
   <!-- oooooooooooooooooooooooooo    Update    oooooooooooooooooooooooooo -->
@@ -68,11 +67,8 @@
                                            WDK/Model-Installation,
                                            WDK/Controller-Installation,
                                            WDK/View-Installation">
-
     <ant target="defaultProjectInstall"/>
-
   </target>
-
 
   <!-- oooooooooooooooooo  Installation Postprocess  ooooooooooooooooooooo -->
 
@@ -86,7 +82,6 @@
     </replace> 
     
   </target>
-
 
   <!-- ooooooooooooooooooooooo  Install Components  ooooooooooooooooooooooo -->
 
@@ -163,6 +158,9 @@
   </target>
 
   <target name="copyLocalOracleDriver" if="oracle.home.complete">
+    <echo>Removing old versions of Oracle driver from GUS_HOME</echo>
+    <delete file="${targetDir}/lib/java/db_driver/ojdbc14.jar" quiet="true"/>
+    <delete file="${targetDir}/lib/java/db_driver/ojdbc5.jar" quiet="true"/>
     <echo>Installing local ${oracle.driver.name}.jar from ${env.ORACLE_HOME}/jdbc/lib/${oracle.driver.name}.jar</echo>
     <copy file="${env.ORACLE_HOME}/jdbc/lib/${oracle.driver.name}.jar"
           toDir="${targetDir}/lib/java/db_driver"
