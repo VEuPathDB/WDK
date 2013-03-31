@@ -30,6 +30,7 @@ wdk.util.namespace("window.wdk.tooltips", function(ns, $) {
           x: conf.getOrDefault('xOffset', 0),
           y: 3
         },
+        viewport: $(window),
         my: conf.getOrDefault('tipPos','top-center'),
         at: conf.getOrDefault('targetPos','bottom-center')
       },
@@ -117,6 +118,7 @@ wdk.util.namespace("window.wdk.tooltips", function(ns, $) {
           x: conf.getOrDefault('xOffset', 0),
           y: conf.getOrDefault('yOffset', 0)
         },
+        viewport: $(window),
         my: conf.getOrDefault('tipPos','top-left'),
         at: conf.getOrDefault('targetPos','bottom-right')
       },

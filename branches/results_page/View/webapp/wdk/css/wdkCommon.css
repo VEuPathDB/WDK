@@ -437,6 +437,10 @@ ul.menubar {
   height: 100%; /* IE7 fix */
 }
 
+.param-group .group-detail.hidden {
+  display: none;
+}
+
 .param-item {
   padding-top: 5px;
   padding-bottom: 5px;
@@ -501,11 +505,9 @@ ul.menubar {
 .checkbox-tree .jstree-icon {
   vertical-align:top;
 }
-.checkbox-tree li a {
-	height:auto;
-  white-space:normal; 
+.checkbox-tree li a span {
+  white-space:normal;
 }
-
 
 
 /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

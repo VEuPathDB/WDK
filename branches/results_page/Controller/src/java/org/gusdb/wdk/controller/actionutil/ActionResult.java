@@ -27,6 +27,8 @@ public class ActionResult implements Iterable<String> {
     VIEW_PATH,
     /** Stream a result to the user */
     STREAM,
+    /** Redirect to someplace outside the webapp */
+    EXTERNAL,
     /** Return an empty result */
     EMPTY;
   }
@@ -40,7 +42,8 @@ public class ActionResult implements Iterable<String> {
   private ResponseType _responseType;
   private ResultType _type = ResultType.VIEW_NAME;
   private String _viewName = WdkAction.SUCCESS;
-	private String _viewPath;
+  private String _viewPath;
+  private String _externalPath;
   private boolean _isRedirect = false;
   private String _fileName = "";
   private InputStream _stream;
@@ -75,8 +78,8 @@ public class ActionResult implements Iterable<String> {
   }
   
   public String getViewName() {
-		return _viewName;
-	}
+    return _viewName;
+  }
 
   /**
    * Sets the view name, and sets result type to VIEW_NAME.
@@ -84,11 +87,11 @@ public class ActionResult implements Iterable<String> {
    * @param viewName name of the view in the MVC container
    * @return this object
    */
-	public ActionResult setViewName(String viewName) {
-		_viewName = viewName;
-		_type = ResultType.VIEW_NAME;
-		return this;
-	}
+  public ActionResult setViewName(String viewName) {
+    _viewName = viewName;
+    _type = ResultType.VIEW_NAME;
+    return this;
+  }
 
   public String getViewPath() {
     return _viewPath;
@@ -105,18 +108,29 @@ public class ActionResult implements Iterable<String> {
     _type = ResultType.VIEW_PATH;
     return this;
   }
+
+  public String getExternalPath() {
+    return _externalPath;
+  }
   
-	public String getFileName() {
+  public ActionResult setExternalPath(String externalPath) {
+    _externalPath = externalPath;
+    _type = ResultType.EXTERNAL;
+    _isRedirect = true;
+    return this;
+  }
+  
+  public String getFileName() {
     return _fileName;
   }
 
-	/**
-	 * Sets the file name of the response.  This is useful for the streaming
-	 * result type.
-	 * 
-	 * @param fileName name of the file to return in the HTTP response header
-	 * @return this object
-	 */
+  /**
+   * Sets the file name of the response.  This is useful for the streaming
+   * result type.
+   * 
+   * @param fileName name of the file to return in the HTTP response header
+   * @return this object
+   */
   public ActionResult setFileName(String fileName) {
     _fileName = fileName;
     return this;
@@ -125,7 +139,7 @@ public class ActionResult implements Iterable<String> {
   public InputStream getStream() {
     return _stream;
   }
-
+  
   /**
    * Sets the input stream for the response and sets result type to STREAM.  The
    * stream should already be open and ready to read.  Responsibility for
@@ -140,33 +154,51 @@ public class ActionResult implements Iterable<String> {
     return this;
   }
   
-	public boolean isRedirect() {
-		return _isRedirect;
-	}
-	
-	public ActionResult setRedirect(boolean isRedirect) {
-		_isRedirect = isRedirect;
-		return this;
-	}
-	
-	public ResultType getType() {
-	  return _type;
-	}
+  public boolean isRedirect() {
+    return _isRedirect;
+  }
+
+  /**
+   * Sets this result as a redirect.  Note that if this result is currently
+   * pointed to an external resource (via setExternalPath()), redirect is
+   * true and can only be reset if this result is pointed to a view (via
+   * setViewName() or setViewPath()).
+   * 
+   * @param isRedirect whether the result should redirect to the set page
+   * @return this object
+   */
+  public ActionResult setRedirect(boolean isRedirect) {
+    if (_type != ResultType.EXTERNAL) {
+      _isRedirect = isRedirect;
+    }
+    return this;
+  }
+  
+  public ResultType getType() {
+    return _type;
+  }
 
   /**
    * @return true if result type is STREAM, otherwise false
    */
-	public boolean isStream() {
-	  return getType().equals(ResultType.STREAM);
-	}
-	
-	/**
-	 * @return true if result type is VIEW_PATH, otherwise false
-	 */
-	public boolean usesExplicitPath() {
-		return getType().equals(ResultType.VIEW_PATH);
-	}
+  public boolean isStream() {
+    return getType().equals(ResultType.STREAM);
+  }
+  
+  /**
+   * @return true if result type is VIEW_PATH, otherwise false
+   */
+  public boolean usesExplicitPath() {
+    return getType().equals(ResultType.VIEW_PATH);
+  }
 
+  /**
+   * @return true if result type is EXTERNAL, otherwise false
+   */
+  public boolean isExternalRedirect() {
+    return getType().equals(ResultType.EXTERNAL);
+  }
+  
   /**
    * @return true if result type is EMPTY, otherwise false
    */
@@ -182,19 +214,19 @@ public class ActionResult implements Iterable<String> {
    * @param value attribute value
    * @return
    */
-	public ActionResult setRequestAttribute(String key, Object value) {
-		_requestAttributes.put(key, value);
-		return this;
-	}
+  public ActionResult setRequestAttribute(String key, Object value) {
+    _requestAttributes.put(key, value);
+    return this;
+  }
 
   public Object getRequestAttribute(String name) {
     return _requestAttributes.get(name);
   }
   
-	@Override
-	public Iterator<String> iterator() {
-		return _requestAttributes.keySet().iterator();
-	}
+  @Override
+  public Iterator<String> iterator() {
+    return _requestAttributes.keySet().iterator();
+  }
 
   private static ActionResult getEmptyResult() {
     return new ActionResult() {

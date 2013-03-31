@@ -37,6 +37,7 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.digester.Digester;
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.UIConfig.ExtraLogoutCookies;
 import org.gusdb.wdk.model.answer.AnswerFilter;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterInstanceReference;
@@ -529,6 +530,8 @@ public class ModelXmlParser extends XmlParser {
     configureAttributeFields(digester);
 
     configureCommonNodes(digester);
+    
+    configureUiConfig(digester);
 
     return digester;
   }
@@ -994,6 +997,12 @@ public class ModelXmlParser extends XmlParser {
     digester.addCallMethod("*/value", "setText", 0);
   }
 
+  private void configureUiConfig(Digester digester) {
+    configureNode(digester, "wdkModel/uiConfig", UIConfig.class, "setUIConfig");
+    configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies", ExtraLogoutCookies.class, "setExtraLogoutCookies");
+    configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies/cookie", WdkCookie.class, "add");
+  }
+  
   public static void main(String[] args) throws SAXException, IOException,
       ParserConfigurationException, TransformerFactoryConfigurationError,
       TransformerException, WdkModelException, NoSuchAlgorithmException,
