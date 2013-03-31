@@ -148,7 +148,7 @@ public class ProcessLoginAction extends WdkAction {
 					setSessionAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
 					// go back to user's original page after successful login
 					String redirectPage = getOriginalReferrer(params, getRequestData());
-					return new ActionResult().setRedirect(true).setViewPath(redirectPage);
+					return getSuccessfulLoginResult(redirectPage);
 				}
 			}
 			catch (WdkUserException | WdkModelException ex) {
@@ -173,6 +173,10 @@ public class ProcessLoginAction extends WdkAction {
 		}
 	}
 
+	protected ActionResult getSuccessfulLoginResult(String redirectUrl) {
+	  return new ActionResult().setRedirect(true).setViewPath(redirectUrl);
+	}
+	
 	private static String getOriginalReferrer(ParamGroup params, RequestData requestData) {
 	  
 	  // always prefer the param value passed to us from a previous action
