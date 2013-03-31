@@ -160,6 +160,10 @@ public abstract class WdkAction implements SecondaryValidator {
         transferStream(_response.getOutputStream(), result.getStream());
         return null;
       }
+      else if (result.isExternalRedirect()){
+        _response.sendRedirect(result.getExternalPath());
+        return null;
+      }
       else {
         // otherwise, handle normal response
         assignAttributesToRequest(result);

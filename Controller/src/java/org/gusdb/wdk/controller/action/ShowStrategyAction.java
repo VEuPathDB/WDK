@@ -386,6 +386,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
       jsStep.put("shortDisplayType", "unknown");
       jsStep.put("displayTypePlural", "unknown");
       jsStep.put("shortDisplayTypePlural", "unknown");
+      jsStep.put("invalidQuestion", "true");
     }
 
         jsStep.put("shortName", step.getShortDisplayName());

@@ -1064,6 +1064,10 @@ div#sections td{
    text-indent:-5px; 
    margin-left:3px;
 }
+.menu_section li {
+  padding-left: 6px;
+  margin-left: -5px;
+}
 .qf_section{
 	height:190px;
 	margin-bottom:-11px;
