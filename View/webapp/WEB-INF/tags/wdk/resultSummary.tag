@@ -30,24 +30,13 @@
 <!-- ================ RESULTS TITLE AND LINKS TO BASKET AND DOWNLOADS   =============== -->
 <table id = "title-links" width="100%"><tr>
 
-<!--
+
 <td class="h3left" style="vertical-align:middle;padding-bottom:7px;">
-  <span title="${step.displayName}">
+    <span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${fn:toLowerCase(recordName)}</span>
     <c:if test="${strategy != null}">
-        <span title="The strategy whch has the yellow step; you are looking at the results of that step.">Strategy:</span> <i style="font-weight:normal"><span id="text_strategy_number">${strategy.name}</span></i><br>Step <span id="text_step_number">${strategy.length}</span> Results: 
-    </c:if>
-    <i style="font-weight:normal"><span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${recordName}</span></i>
-  </span>
-</td>
--->
-<td class="h3left" style="vertical-align:middle;padding-bottom:7px;">
-  <span title="${step.displayName}">
-    <c:if test="${strategy != null}">
+        in Step <span id="text_step_number">${strategy.length}</span> of Strategy:
         <span id="text_strategy_number">${strategy.name}</span> 
-        - step <span id="text_step_number">${strategy.length}</span> - 
     </c:if>
-    <span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${recordName}</span>
-  </span>
 </td>
 
 <td  style="vertical-align:middle;text-align:right;white-space:nowrap;">
