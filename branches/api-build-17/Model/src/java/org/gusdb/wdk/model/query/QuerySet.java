@@ -65,6 +65,14 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
     this.cacheable = cacheable;
   }
 
+  /**
+   *    This method is to match with the property of the xml
+   *    @param cacheable
+   *          */
+  public void setIsCacheable(boolean cacheable) {
+    this.cacheable = cacheable;
+  }
+
   public Query getQuery(String name) throws WdkModelException {
     Query q = queries.get(name);
     if (q == null)
