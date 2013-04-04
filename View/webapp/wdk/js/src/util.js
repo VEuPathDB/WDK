@@ -93,17 +93,21 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
      }
   }
 
-
+/* cris 3-26-13: added function below using values from backend
   function getDisplayType(type, number) {
     if (number == 1) {
       return type;
-/*    } else if (type.charAt(type.length-1) === 'y') {
+    } else if (type.charAt(type.length-1) === 'y') {
       return type.replace(/y$/,'ies');
-*/
+
     } else {
       return type + 's';
     }
   }
+*/
+  function getDisplayType(myStep) {
+ 		return ( (myStep.results > 1) ? myStep.shortDisplayTypePlural : myStep.shortDisplayType );
+	}
 
   function initShowHide(details) {
     $(".param-group[type='ShowHide']",details).each(function() {
