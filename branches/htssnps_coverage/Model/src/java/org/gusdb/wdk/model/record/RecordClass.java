@@ -159,7 +159,7 @@ public class RecordClass extends WdkModelBase implements
           idqBuilder.append("(SELECT ");
         else
           idqBuilder.append(", ");
-        idqBuilder.append("$$" + column + "$$ AS " + column);
+        idqBuilder.append("SUBSTR($$" + column + "$$, 1, 4000) AS " + column);
       }
       DBPlatform platform = wdkModel.getQueryPlatform();
       idqBuilder.append(platform.getDummyTable());
@@ -312,7 +312,7 @@ public class RecordClass extends WdkModelBase implements
     if (shortDisplayNamePlural != null)
       return shortDisplayNamePlural;
 
-    return getPlural(displayName);
+    return getPlural(getShortDisplayName());
   }
 
   public void setShortDisplayNamePlural(String shortDisplayNamePlural) {
@@ -330,7 +330,7 @@ public class RecordClass extends WdkModelBase implements
     if (last == 'y') {
       char second = name.charAt(length - 2);
       if (!VOWELS.contains(second))
-        return name.substring(0, length - 2) + "ies";
+        return name.substring(0, length - 1) + "ies";
     }
     return name + "s";
   }

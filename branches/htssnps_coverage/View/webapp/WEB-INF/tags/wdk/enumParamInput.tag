@@ -138,7 +138,7 @@ Otherwise a standard select menu is used.
       <c:when test="${displayType eq 'radioBox'}">
          <ul>
          <c:forEach items="${qP.displayMap}" var="entity">
-           <div ${v}>
+           <li ${v}>
              <html:radio property="array(${pNam})" value="${entity.key}" /> <span>${entity.value}</span>
            </li>
          </c:forEach>

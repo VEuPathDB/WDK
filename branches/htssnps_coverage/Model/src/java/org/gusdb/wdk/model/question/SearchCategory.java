@@ -30,6 +30,7 @@ public class SearchCategory extends WdkModelBase {
   private WdkModel wdkModel;
   private String name;
   private String displayName;
+  private boolean flattenInMenu;
   private String parentRef;
   private SearchCategory parent;
   private String usedBy;
@@ -39,6 +40,7 @@ public class SearchCategory extends WdkModelBase {
   public SearchCategory() {
     questionRefs = new ArrayList<CategoryQuestionRef>();
     children = new LinkedHashMap<String, SearchCategory>();
+    flattenInMenu = false;
   }
 
   public String getName() {
@@ -55,6 +57,14 @@ public class SearchCategory extends WdkModelBase {
 
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
+  }
+
+  public void setFlattenInMenu(boolean flattenInMenu) {
+    this.flattenInMenu = flattenInMenu;
+  }
+
+  public boolean isFlattenInMenu() {
+    return this.flattenInMenu;
   }
 
   public void addQuestionRef(CategoryQuestionRef questionRef) {
