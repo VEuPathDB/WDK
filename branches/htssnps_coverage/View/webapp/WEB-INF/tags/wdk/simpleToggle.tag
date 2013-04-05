@@ -22,7 +22,7 @@
 </c:if>
 
 <%--  name could be a string with several words (e.g. "external links",  which generates several class names... not needed? --%>
-<div class="wdk-toggle" show="${show}">
-  <h3><a href="#">${name}</a></h3>
-  <div>${content}</div>
+<div class="wdk-toggle ui-accordion ui-widget ui-helper-reset ui-accordion-icons" show="${show}">
+  <h3 class="ui-accordion-header ui-helper-reset ui-state-default ui-corner-all"><a href="#">${name}</a></h3>
+  <div class="ui-accordion-content ui-helper-reset ui-widget-content ui-corner-bottom">${content}</div>
 </div>
