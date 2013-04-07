@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd" >
+
+<!-- sample log4j config file.
+     <baseDirectory> should be replaced the webapp dir (e.g. "/var/wdktemplate")
+  -->
+
 <log4j:configuration>
 	<appender name="warn-log"
 		class="org.apache.log4j.RollingFileAppender">
         <!-- or class="org.apache.log4j.ConsoleAppender" -->
 		<param name="maxFileSize" value="10MB" />
 		<param name="maxBackupIndex" value="1" />
-		<param name="File" value="/www/wdktemplate/logs/wdk-warn.log4j" />
+		<param name="File" value="<baseDirectory>/logs/wdk-warn.log4j" />
 		<param name="threshold" value="warn" />
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern"
@@ -17,7 +22,7 @@
 		class="org.apache.log4j.RollingFileAppender">
 		<param name="maxFileSize" value="10MB" />
 		<param name="maxBackupIndex" value="1" />
-		<param name="File" value="/www/wdktemplate/logs/wdk-debug.log4j" />
+		<param name="File" value="<baseDirectory>/logs/wdk-debug.log4j" />
 		<layout class="org.apache.log4j.PatternLayout">
 			<param name="ConversionPattern"
 			       value="%-4r [%-5p] %C:%L - %X{ipAddress} - [%d{dd/MMM/yyyy:HH:mm:ss Z}] %m%n" />

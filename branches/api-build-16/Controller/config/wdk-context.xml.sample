@@ -1,10 +1,10 @@
-<Context path="/wdktemplate"
-          docBase="/www/wdktemplate/webapp"
+<Context path="/<webappName>"
+          docBase="<baseDirectory>/webapp"
           debug="1"
           privileged="false" allowLinking="true" crossContext="true">
     <Logger className="org.apache.catalina.logger.FileLogger"
-          prefix="wdktemplate."
+          prefix="<webappName>."
           suffix=".txt"
           timestamp="true"
-          docBase="/www/wdktemplate/logs" />
+          docBase="<baseDirectory>/logs" />
 </Context>

@@ -1,7 +1,8 @@
 # Property file for webinstall of WDK site
+# replace <baseDirectory> with the base directory (e.g. /www/wdktemplate)
 
-webappTargetDir=/www/wdktemplate/webapp
-htdocsTargetDir=/www/wdktemplate/html
-cgibinTargetDir=/www/wdktemplate/cgi-bin
-cgilibTargetDir=/www/wdktemplate/cgi-lib
-confTargetDir=/www/wdktemplate/conf
+webappTargetDir=<baseDirectory>/webapp
+htdocsTargetDir=<baseDirectory>/html
+cgibinTargetDir=<baseDirectory>/cgi-bin
+cgilibTargetDir=<baseDirectory>/cgi-lib
+confTargetDir=<baseDirectory>/conf
