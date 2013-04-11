@@ -789,7 +789,7 @@ tr.headerInternalRow td {
 }
 
 tr.lines {
-	background-color: #FFFFFF;
+	background-color: whitesmoke; /* was #FFFFFF */
 }
 
 tr.linesalt > td {
@@ -988,7 +988,7 @@ tr.rowMedium td {
     border-right: black dotted thin;
 }
 tr.rowLight {
-    background-color: #FFFFFF;
+    background-color: whitesmoke; /* was #FFFFFF */
     color: black;
     font-family: arial;
 	font-size: 10pt;
@@ -1004,11 +1004,11 @@ tr.rowLight td {
 }
 
 table.dataTable tr.even {
-    background-color: #FFFFFF;
+    background-color: #DDDDDD;
 }
 
 table.dataTable tr.odd {
-    background-color: #DDDDDD;
+    background-color: whitesmoke; /* was #FFFFFF */
 }
 
 /* collapsible */
