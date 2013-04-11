@@ -17,6 +17,6 @@
   <function>
     <name>groupAttributeRecordsBySource</name>
     <function-class>org.gusdb.wdk.controller.functions.Functions</function-class>
-    <function-signature>java.util.Collection groupAttributeRecordsBySource(java.util.Collection)</function-signature>
+    <function-signature>java.util.Collection groupAttributeRecordsBySource(java.util.Collection, java.lang.String)</function-signature>
   </function>
 </taglib>
