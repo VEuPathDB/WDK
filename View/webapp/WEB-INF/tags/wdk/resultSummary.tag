@@ -22,21 +22,20 @@
 <c:set var="recordClass" value="${wdkAnswer.question.recordClass}" />
 <c:set var="recordName" value="${recordClass.fullName}" />
 <c:set var="recHasBasket" value="${recordClass.useBasket}" />
-
 <c:set var="recordName" value="${wdkStep.recordClass.displayNamePlural}"/>
-
-
 
 <!-- ================ RESULTS TITLE AND LINKS TO BASKET AND DOWNLOADS   =============== -->
 <table id = "title-links" width="100%"><tr>
 
 
 <td class="h3left" style="vertical-align:middle;padding-bottom:7px;">
-    <span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${fn:toLowerCase(recordName)}</span>
-    <c:if test="${strategy != null}">
-        in Step <span id="text_step_number">${strategy.length}</span> of Strategy:
-        <span id="text_strategy_number">${strategy.name}</span> 
-    </c:if>
+  <span id="text_step_count">${wdkAnswer.resultSize} </span><span id="text_data_type">${recordName}</span>&nbsp;from<br>
+  <c:if test="${strategy != null}">
+    Step <span id="text_step_number">${strategy.length}</span> of Strategy:	
+			<span class="editme wdk-editable" id="strategy_name"  title="Click to edit">
+				<span id="text_strategy_number">${strategy.name}</span>
+			</span>
+  </c:if>
 </td>
 
 <td  style="vertical-align:middle;text-align:right;white-space:nowrap;">
