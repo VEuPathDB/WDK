@@ -810,9 +810,9 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     $(div_sm).attr("class","strategy_menu");
 
     if (strat.subStratOf == null) {
-      $(div_sn).html("<span style='font-size:14px;font-weight:bold;' " +
-          "title='Name of this strategy. The (*) indicates this strategy is " +
-          "NOT saved.'>Strategy: <span style='font-style:italic;'>" + name + "</span></span>" + append +
+	//		name="Unnamed";
+      $(div_sn).html("<span title='Click to edit" +
+          "'>Strategy: <span style='font-style:italic;cursor:pointer'>" + name + "</span></span>" + append +
           "<span id='strategy_id_span' style='display: none;'>" + id +
           "</span>");
       $(div_sm).html("<span class='strategy_small_text'>" +
