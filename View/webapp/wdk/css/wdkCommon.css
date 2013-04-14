@@ -669,17 +669,12 @@ a.button { padding: 2px 5px; line-height:30px; margin: 3px; }
 #text_strategy_number {
 	color:black;
   font-style:italic;
+  padding:4px;
+  cursor:pointer;
 }
 
 span#text_step_count, span#text_data_type {
 	background-color:#FFFFA0;
-}
-
-span#strategy_name {
-	font-style:italic;
-	color:black;
-	cursor:pointer;
-	padding:4px;
 }
 
 span.wdk-editable:hover {

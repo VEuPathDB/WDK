@@ -565,6 +565,7 @@ function getWebAppUrl() {
     registerCollapsible();
     registerSnippet();
     registerTruncate();
+		wdk.util.registerEditStrategyName();
     $(".button").button();
   }
 
