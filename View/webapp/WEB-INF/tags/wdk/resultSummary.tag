@@ -32,9 +32,8 @@
   <span id="text_step_count">${wdkAnswer.resultSize} </span><span id="text_data_type">${recordName}</span>&nbsp;from<br>
   <c:if test="${strategy != null}">
     Step <span id="text_step_number">${strategy.length}</span> of Strategy:	
-			<span class="editme wdk-editable" id="strategy_name"  title="Click to edit">
-				<span id="text_strategy_number">${strategy.name}</span>
-			</span>
+			<span class="editme wdk-editable" id="text_strategy_number" title="Click to edit">
+				${strategy.name}</span>
   </c:if>
 </td>
 
