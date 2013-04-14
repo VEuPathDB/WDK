@@ -252,6 +252,24 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
         "Show Details" : "Hide Details");
   }
 
+/***********************************
+Results page: edit strategy name
+by Ben Thomas, modified
+http://www.unleashed-technologies.com/
+**************************************/
+function registerEditStrategyName() {
+	$("div.Workspace table#title-links span.editme").click(function() {
+		if ($(this).children('input').length == 0) {
+			var inputbox = "<input type='text' class='inputbox' value=\""+$(this).text()+"\">";
+			$(this).html(inputbox);
+			$("span.editme input.inputbox").focus();
+			$("span.editme input.inputbox").blur(function() {
+				var value = $(this).val();
+				$("span.editme").text(value);
+				});
+		} 
+	});
+}
 
   ns.getDisplayType = getDisplayType;
   ns.initShowHide = initShowHide;
@@ -267,5 +285,6 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
   ns.playSadTrombone = playSadTrombone;
   ns.submitError = submitError;
   ns.toggleErrorDetails = toggleErrorDetails;
+  ns.registerEditStrategyName = registerEditStrategyName;
 
 });
