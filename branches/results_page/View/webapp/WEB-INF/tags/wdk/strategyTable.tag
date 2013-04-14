@@ -33,6 +33,7 @@
     <th class="sortable" scope="col" style="min-width:16em;">
       <c:if test="${prefix != null}">${prefix}&nbsp;</c:if>Strategies&nbsp;(${fn:length(strategies)})
     </th>
+    <th scope="col">Last Step Name</th>
     <th scope="col">Description</th>
     <th scope="col" style="width:12em;">Actions</th>
     <th class="sortable" style="width:9em;" scope="col">Created</th>
@@ -44,7 +45,7 @@
     </th>
     <th class="sortable" scope="col" style="width: 6em" title="It refers to the Website Version. See the Version number of this current release on the top left side of the header, on the right of the site name">Version</th>
     <th class="sortable" scope="col" style="width: 4em;text-align:right">Size</th>
-    <th style="width:1em;">&nbsp;&nbsp;</th>
+<!--    <th style="width:1em;">&nbsp;&nbsp;</th> -->
   </tr>
   </thead>
 
@@ -98,6 +99,8 @@
         </div> 
 
       </td>
+
+			<td>${strategy.latestStep.shortDisplayName}</td>
 
       <td class="strategy_description">
       <c:choose>
@@ -172,7 +175,7 @@
         </c:choose>
       </td>
       <td nowrap style="text-align:right">${strategy.estimateSize}</td>
-      <td>&nbsp;&nbsp;</td>
+<!--      <td>&nbsp;&nbsp;</td> -->
     </tr>
 
     <c:set var="i" value="${i+1}"/>
