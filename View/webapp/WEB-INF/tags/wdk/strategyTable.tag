@@ -26,7 +26,7 @@
 <c:set var="request_uri" value="${fn:substringBefore(request_uri, '/')}" />
 <c:set var="exportBaseUrl" value = "${scheme}://${serverName}/${request_uri}/im.do?s=" />
 
-// datatable config in strategyHistory.jsp
+<!-- datatable config in strategyHistory.jsp -->
 <table class="datatables" border="0" cellpadding="5" cellspacing="0">
   <thead>
   <tr class="headerrow">
