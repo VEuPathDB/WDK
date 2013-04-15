@@ -103,7 +103,12 @@
       </td>
 
 			<td style="text-align:center">${strategy.length}</td>
-			<td>${strategy.latestStep.shortDisplayName}</td>
+			<td>
+				<c:choose>
+				<c:when test="${strategy.length > 1}">${strategy.latestStep.childStep.shortDisplayName}</c:when>
+				<c:otherwise>${strategy.latestStep.shortDisplayName}</c:otherwise>
+				</c:choose>
+			</td>
 
       <td class="strategy_description">
       <c:choose>
