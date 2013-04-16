@@ -1,0 +1,17 @@
+#!/usr/bin/perl
+
+use lib "$ENV{GUS_HOME}/lib/perl";
+use WDK::Model::CommandHelper;
+
+my $GUS_HOME = $ENV{GUS_HOME};
+my $CLASSPATH = &WDK::Model::CommandHelper::getJavaClasspath($GUS_HOME);
+my $args = &WDK::Model::CommandHelper::getJavaArgs(@ARGV);
+my $sysargs = &WDK::Model::CommandHelper::getSystemArgs(@ARGV);
+my $sysProps = &WDK::Model::CommandHelper::getSystemProps($GUS_HOME, 'wdkUnitTest');
+
+my $cmd = "java $sysProps $sysargs -cp $CLASSPATH org.gusdb.wdk.model.test.TestUtility $args";
+
+system($cmd);
+
+
+
