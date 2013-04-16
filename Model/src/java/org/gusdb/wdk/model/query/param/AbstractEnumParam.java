@@ -511,7 +511,7 @@ public abstract class AbstractEnumParam extends Param {
         if (!map.containsKey(term)) {
           error = true;
           message.append("Invalid term for param [" + getFullName() + "]: "
-              + term + ". ");
+              + term + ". \n");
         }
       }
       if (error)
