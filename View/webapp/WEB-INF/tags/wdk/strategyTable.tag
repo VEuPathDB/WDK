@@ -26,7 +26,9 @@
 <c:set var="request_uri" value="${fn:substringBefore(request_uri, '/')}" />
 <c:set var="exportBaseUrl" value = "${scheme}://${serverName}/${request_uri}/im.do?s=" />
 
-<!-- datatable config in strategyHistory.jsp -->
+
+<!-- adding/removing columns: update datatable config in strategyHistory.jsp -->
+
 <table class="datatables" border="0" cellpadding="5" cellspacing="0">
   <thead>
   <tr class="headerrow">
@@ -35,7 +37,6 @@
       <c:if test="${prefix != null}">${prefix}&nbsp;</c:if>Strategies&nbsp;(${fn:length(strategies)})
     </th>
     <th class = "sortable" style="width:5em;" scope="col">#Steps</th>
-    <th class = "sortable" style="width:9em;" scope="col">Name of Last Step</th> 
     <th scope="col">Description</th>
     <th scope="col" style="width:12em;">Actions</th>
     <th class="sortable" style="width:9em;" scope="col">Created</th>
@@ -103,12 +104,6 @@
       </td>
 
 			<td style="text-align:center">${strategy.length}</td>
-			<td>
-				<c:choose>
-				<c:when test="${strategy.length > 1}">${strategy.latestStep.childStep.shortDisplayName}</c:when>
-				<c:otherwise>${strategy.latestStep.shortDisplayName}</c:otherwise>
-				</c:choose>
-			</td>
 
       <td class="strategy_description">
       <c:choose>

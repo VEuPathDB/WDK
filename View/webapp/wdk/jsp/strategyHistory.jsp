@@ -14,14 +14,13 @@ $(document).ready(function() {
         "aoColumns": [ { "bSortable": false }, 
                        null, 
                        null, 
-                       null, 
                        { "bSortable": false },
                        { "bSortable": false },
                        null, 
                        null, 
                        null, 
                        null  ],
-        "aaSorting": [[ 7, "desc" ]]
+        "aaSorting": [[ 6, "desc" ]]
     } );
 } );
 </script>
