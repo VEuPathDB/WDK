@@ -75,7 +75,7 @@ public class TestFunctions {
     
     try {
       Collection<Collection<Map<String, AttributeValue>>> result =
-          Functions.groupAttributeRecordsBySource(recordCollection);
+          Functions.groupAttributeRecordsBySource(recordCollection, SOURCE_ID);
 
       assertEquals(result.size(), 5);
       

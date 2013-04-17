@@ -10,6 +10,9 @@
               type="java.util.Map"
 %>
 
+
+<!-- get params from group -->
+
 <c:forEach items="${paramGroup}" var="paramItem">
   <c:set var="pNam" value="${paramItem.key}" />
   <c:set var="qP" value="${paramItem.value}" />
@@ -61,7 +64,7 @@
                           <imp:stringParamInput qp="${qP}" />
                       </div>
                   </c:when>
-                  <c:otherwise>  <%-- not enumParam --%>
+                  <c:otherwise>
                       <c:choose>
                           <c:when test="${isReadonly}">
                               <div class="param-control">
@@ -89,3 +92,4 @@
   </c:choose>
 
 </c:forEach> <%-- end of forEach params --%>
+

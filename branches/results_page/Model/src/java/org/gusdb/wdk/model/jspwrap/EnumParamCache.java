@@ -15,16 +15,16 @@ public class EnumParamCache {
 	//private static Logger logger = Logger.getLogger(EnumParamCache.class.getName());
 	
 	private AbstractEnumParam _source;
-	private String _dependedValue;
+	private Map<String, String> _dependedParamValues;
 	private String _defaultValue;
 	private Map<String, String> _termInternalMap = new LinkedHashMap<String, String>();
 	private Map<String, String> _termDisplayMap = new LinkedHashMap<String, String>();
 	private Map<String, String> _termParentMap = new LinkedHashMap<String, String>();
 	private List<EnumParamTermNode> _termTreeList = new ArrayList<EnumParamTermNode>();
 	
-	public EnumParamCache(AbstractEnumParam source, String dependedValue) {
+	public EnumParamCache(AbstractEnumParam source, Map<String, String> dependedParamValues) {
 		_source = source;
-		_dependedValue = dependedValue;
+		_dependedParamValues = dependedParamValues;
 	}
 	
 	public String getDefaultValue() {
@@ -126,8 +126,8 @@ public class EnumParamCache {
 		return _termTreeList;
 	}
 
-	public String getDependedValue() {
-		return _dependedValue;
+	public Map<String, String> getDependedValue() {
+		return _dependedParamValues;
 	}
 	
 	public void removeTerm(String term) {

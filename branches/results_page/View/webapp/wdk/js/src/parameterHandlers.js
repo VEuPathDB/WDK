@@ -25,7 +25,6 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       // delete window.isEdit;
     }
 
-    dependedParams = [];
     displayTermMap = [];
     termDisplayMap = [];
     oldValues = [];
@@ -50,28 +49,21 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     $('div.dependentParam').each(function() {
       $('input, select', this).attr('disabled', true);
       var name = $(this).attr('name');
-      if (!dependedParams[name]) {
-        dependedParams[name] = $(this).attr('dependson');
+      // the dependson may contain a comma separated list of param names the current param depends on
+      var dependedNames = $(this).attr('dependson').split(",");
+      for (var i=0; i < dependedNames.length; i++) {
+          var dependedName = dependedNames[i];
+          var dependedParam = $("#" + dependedName + 
+              "aaa input[name='array(" + dependedName + ")'], #" + 
+              dependedName + "aaa select[name='array(" + dependedName + 
+              ")']");
+          dependedParam.change(function() {
+            updateDependentParam(name).then(function() {
+              wdk.event.publish("questionchange");
+              dependedParam.parents("form").change();
+            });
+          });
       }
-      var dependedParam = $("#" + dependedParams[name] + 
-          "aaa input[name='array(" + dependedParams[name] + ")'], #" + 
-          dependedParams[name] + "aaa select[name='array(" + dependedParams[name] + 
-          ")']");
-      dependedParam.change(function() {
-        dependedValues = [];
-        var paramName = getParamName($(this).attr('name'), true);
-        var inputs = $("#" + paramName + "aaa input[name='array(" + paramName + 
-            ")']:checked, #" + paramName + "aaa select[name='array(" + paramName + 
-            ")']");
-        inputs.each(function() {
-          dependedValues.push($(this).val());
-        });
-        $.unique(dependedValues);
-        updateDependentParam(name, dependedValues.join(",")).then(function() {
-          wdk.event.publish("questionchange");
-          dependedParam.parents("form").change();
-        });
-      });
       if ($(this).has('input.typeAhead').length > 0) {
         dependedParam.change();
       }
@@ -193,15 +185,51 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   }
 
   //==============================================================================
-  function updateDependentParam(paramName, dependedValue) {
-    if (dependedValue && dependedValue != 'Choose one:') {
+  function updateDependentParam(paramName) {
+    // get the current param
+    var dependentParam = $("div.dependentParam[name='" + paramName + "']");
+    var dependedNames = dependentParam.attr('dependson').split(",");
+  
+    var dependedValues = {};
+    var hasValue = false;
+    // the dependson may contain a comma separated list of param names the current param depends on
+    for (var i=0; i < dependedNames.length; i++) {
+      var dependedName = dependedNames[i];
+      var dependedParam = $("#" + dependedName + 
+          "aaa input[name='array(" + dependedName + ")']:checked, #" + 
+          dependedName + "aaa select[name='array(" + dependedName + 
+          ")']");
+          
+      // get the selected values from depended param
+      var values = [];
+      var needInput = false;
+      dependedParam.each(function() {
+          var value = $(this).val();
+          if (value == 'Choose one:') needInput = true;
+          else values.push(value);
+      });
+      if (needInput) {
+        alert("Please choose a value.");
+        dependedParam.focus();
+        return;
+      }
+        
+      $.unique(values);
+      if (values.length > 0) {
+        dependedValues[dependedName] = values;
+        hasValue = true;
+      }
+    }
+    if (!hasValue) return;
+    
+    // get dependent param and question name, contruct url from them
       var dependentParamSelector = "#" + paramName + 
           "aaa > div.dependentParam[name='" + paramName + "']";
       var dependentParam = $(dependentParamSelector);
       var questionName = dependentParam.closest("form")
           .find("input:hidden[name=questionFullName]").val();
       var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + 
-          '&name=' + paramName + '&dependedValue=' + dependedValue;
+          '&name=' + paramName + '&dependedValue=' + JSON.stringify(dependedValues);
 
       if ($('input.typeAhead',dependentParam).length > 0) {
         sendReqUrl = sendReqUrl + '&xml=true';
@@ -247,7 +275,6 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           }
         });
       }
-    }
   }
 
   //==============================================================================
