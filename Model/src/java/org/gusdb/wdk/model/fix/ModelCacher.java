@@ -6,7 +6,6 @@ package org.gusdb.wdk.model.fix;
 import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.sql.DataSource;
@@ -15,7 +14,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.DBPlatform;
@@ -387,35 +385,17 @@ public class ModelCacher extends BaseCLI {
         }
     }
 
-    private void saveEnums(Question question, AbstractEnumParam param,
-            int paramId, PreparedStatement psEnum)
-            throws NoSuchAlgorithmException, WdkModelException, SQLException,
-            JSONException, WdkUserException {
-        // need to handle dependent params
-        Set<String> dependedValues = new HashSet<String>();
-        Param dependedParam = param.getDependedParam();
-        if (dependedParam == null) { // null means no depended value
-            dependedValues.add(null);
-        } else if (dependedParam instanceof AbstractEnumParam) {
-            AbstractEnumParam enumParam = (AbstractEnumParam) dependedParam;
-            dependedValues.addAll(enumParam.getVocabMap(null).keySet());
-        } else {
-            dependedValues.add(dependedParam.getDefault());
-        }
-        for (String dependedValue : dependedValues) {
-            try {
-                for (String term : param.getVocab(dependedValue)) {
-                    psEnum.setInt(1, paramId);
-                    psEnum.setString(2, term);
-                    psEnum.addBatch();
-                }
-            } catch (WdkRuntimeException ex) {
-                if (ex.getMessage().startsWith("No item returned by")) {
-                    // the enum param doeesn't return any row, ignore it.
-                    continue;
-                } else throw ex;
-            }
-        }
-        psEnum.executeBatch();
+  private void saveEnums(Question question, AbstractEnumParam param,
+          int paramId, PreparedStatement psEnum)
+          throws NoSuchAlgorithmException, WdkModelException, SQLException,
+          JSONException, WdkUserException {
+      // need to handle dependent params
+    Set<String> paramValues = param.getAllValues();
+    for (String paramValue : paramValues) {
+        psEnum.setInt(1, paramId);
+        psEnum.setString(2, paramValue);
+        psEnum.addBatch();
     }
+    psEnum.executeBatch();
+  }
 }

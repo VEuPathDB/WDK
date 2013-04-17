@@ -3,9 +3,7 @@ package org.gusdb.wdk.controller.action.services;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -343,42 +341,13 @@ public class ProcessRESTAction extends Action {
                         + "Use comma as a delimter.</doc>");
                 else writer.println("<doc title='SingleValued'>Choose "
                         + "at most one value from the options</doc>");
-                Map<String, String> displayMap;
-                if (ep.getDependedParam() == null) {
-                    displayMap = getDisplayMap(ep);
-                } else {
-                    displayMap = new HashMap<String, String>();
-                    ParamBean<?> dependedParam = ep.getDependedParam();
-                    Set<String> dependedValues;
-                    if (dependedParam instanceof EnumParamBean) {
-                        EnumParamBean enumParam = (EnumParamBean) dependedParam;
-                        dependedValues = enumParam.getVocabMap().keySet();
-                    } else {
-                        dependedValues = new LinkedHashSet<String>();
-                        String value = dependedParam.getDefault();
-                        if (value != null) dependedValues.add(value);
-                    }
-                    for (String depterm : dependedValues) {
-                        ep.setDependedValue(depterm);
-                        try {
-                            displayMap.putAll(getDisplayMap(ep));
-                        }
-                        catch (Exception e) {
-                            if (e instanceof WdkModelException) {
-                                logger.info("expected Empty result set for dependent parameter.");
-                                continue;
-                            } else {
-                                logger.info(e.toString());
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                }
-                for (String term : displayMap.keySet()) {
-                    String display = displayMap.get(term);
+                
+                
+                Set<String> values = ep.getAllValues();
+                for (String term : values) {
                     // writer.println("<option>" + term + "</option>");
                     writer.println("<option value='" + htmlEncode(term)
-                            + "'><doc title='description'><![CDATA[" + display
+                            + "'><doc title='description'><![CDATA[" + term
                             + "]]></doc></option>");
                 }
             }
