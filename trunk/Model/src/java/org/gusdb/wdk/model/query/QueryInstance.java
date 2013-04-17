@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -22,7 +23,6 @@ import org.gusdb.wdk.model.dbms.QueryInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
-import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
@@ -288,11 +288,15 @@ public abstract class QueryInstance {
          */
         if (param instanceof AbstractEnumParam
             && ((AbstractEnumParam) param).isDependentParam()) {
-          String dependedParam = ((AbstractEnumParam) param).getDependedParam().getName();
-          String dependedValue = values.get(dependedParam);
+          Set<Param> dependedParams = ((AbstractEnumParam) param).getDependedParams();
+          Map<String, String> dependedParamValues = new LinkedHashMap<>();
+          for (Param dependedParam : dependedParams) {
+            String dependedValue = values.get(dependedParam.getName());
+            dependedParamValues.put(dependedParam.getName(), dependedValue);
+          }
           // the following method must be implemented!
           ((AbstractEnumParam) param).validateValue(user, dependentValue,
-              dependedValue);
+              dependedParamValues);
         } else { // validate param
           param.validate(user, dependentValue);
         }
@@ -337,8 +341,13 @@ public abstract class QueryInstance {
           && ((AbstractEnumParam) param).isDependentParam()) {
         // special case; must get value of depended param first
         AbstractEnumParam aeParam = (AbstractEnumParam) param;
-        resolveParamValue(aeParam.getDependedParam(), values);
-        value = aeParam.getDefault(values.get(aeParam.getDependedParam().getName()));
+        Map<String, String> dependedValues = new LinkedHashMap<>();
+        for (Param dependedParam : aeParam.getDependedParams()) {
+          resolveParamValue(dependedParam, values);
+          String dependedName = dependedParam.getName();
+          dependedValues.put(dependedName, values.get(dependedName));
+        }
+        value = aeParam.getDefault(dependedValues);
       } else {
         value = param.getDefault();
       }
@@ -364,9 +373,14 @@ public abstract class QueryInstance {
       // TODO: refactor so this fork isn't necessary
       if (param instanceof AbstractEnumParam
           && ((AbstractEnumParam) param).isDependentParam()) {
-        EnumParamBean paramBean = new EnumParamBean((AbstractEnumParam) param);
-        paramBean.setDependedValue(values.get(paramBean.getDependedParam().getName()));
-        internalValue = paramBean.getInternalValue(user, dependentValue);
+        AbstractEnumParam aeParam = (AbstractEnumParam) param;
+        Map<String, String> dependedParamValues = new LinkedHashMap<>();
+        for (Param dependedParam : aeParam.getDependedParams()) {
+          String value = values.get(dependedParam.getName());
+          dependedParamValues.put(dependedParam.getName(), value);
+        }
+        internalValue = aeParam.getInternalValue(user, dependentValue,
+            dependedParamValues);
       } else {
         internalValue = param.getInternalValue(user, dependentValue);
       }

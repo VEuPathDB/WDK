@@ -55,7 +55,7 @@
       </c:when>
 
       <c:otherwise>  <!-- REGULAR SET OF PARAMS -->
-        <%-- if displayType is empty, then don't make collapsible --%>
+        <%-- if displayType is empty, then do not make collapsible --%>
         <c:set var="paramClass" value=""/>
         <c:set var="groupDisplay" value=""/>
 
@@ -78,11 +78,12 @@
         </c:choose>
 
           <div class="group-detail ${groupDisplay}">
-        
+
           <c:set var="paramCount" value="${fn:length(paramGroup)}"/>
+
           <%-- display parameter list --%>
           <imp:questionParamGroup paramGroup="${paramGroup}" />
-        
+
           </div> <%-- end of group-detail div --%>
 
         </div> <%-- end of param-group div --%>

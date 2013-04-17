@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -141,14 +142,16 @@ public class FlatVocabParam extends AbstractEnumParam {
    * 
    * @see org.gusdb.wdk.model.query.param.AbstractEnumParam#initVocabMap()
    */
-  protected EnumParamCache createEnumParamCache(String dependedValue)
-      throws WdkModelException {
-    logger.trace("Entering createEnumParamCache(" + dependedValue + ")");
+  protected EnumParamCache createEnumParamCache(
+      Map<String, String> dependedParamValues) throws WdkModelException {
+    logger.trace("Entering createEnumParamCache("
+        + Utilities.print(dependedParamValues) + ")");
     String errorStr = "Could not retrieve flat vocab values for param "
-        + getName() + " using depended value " + dependedValue;
+        + getName() + " using depended value "
+        + Utilities.print(dependedParamValues);
     try {
-      Param dependedParam = getDependedParam();
-      EnumParamCache cache = new EnumParamCache(this, dependedValue);
+      Set<Param> dependedParams = getDependedParams();
+      EnumParamCache cache = new EnumParamCache(this, dependedParamValues);
 
       // check if the query has "display" column
       boolean hasDisplay = query.getColumnMap().containsKey(COLUMN_DISPLAY);
@@ -164,8 +167,11 @@ public class FlatVocabParam extends AbstractEnumParam {
         // since the depended param might be overriden by question or
         // query, while the original input param in the vocab query
         // does not know about it.
-        query.addParam(dependedParam.clone());
-        values.put(dependedParam.getName(), dependedValue);
+        for (Param param : dependedParams) {
+          query.addParam(param.clone());
+          String value = dependedParamValues.get(param.getName());
+          values.put(param.getName(), value);
+        }
       }
 
       User user = wdkModel.getSystemUser();
@@ -210,7 +216,7 @@ public class FlatVocabParam extends AbstractEnumParam {
         // term = term.replaceAll("[,]", "_");
         // if (parentTerm != null)
         // parentTerm = parentTerm.replaceAll("[,]", "_");
-        if (term.indexOf(',') >= 0 && dependedParam != null)
+        if (term.indexOf(',') >= 0 && dependedParams != null)
           throw new WdkModelException(this.getFullName()
               + ": The term cannot contain comma: '" + term + "'");
         if (parentTerm != null && parentTerm.indexOf(',') >= 0)
@@ -234,7 +240,8 @@ public class FlatVocabParam extends AbstractEnumParam {
       }
       initTreeMap(cache);
       applySelectMode(cache);
-      logger.trace("Leaving createEnumParamCache(" + dependedValue + ")");
+      logger.trace("Leaving createEnumParamCache("
+          + Utilities.print(dependedParamValues) + ")");
       return cache;
     } catch (WdkUserException e) {
       throw new WdkRuntimeException(errorStr, e);
