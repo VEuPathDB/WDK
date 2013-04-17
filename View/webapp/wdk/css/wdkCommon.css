@@ -434,7 +434,8 @@ ul.menubar {
 }
 
 .param-group .group-detail {
-  height: 100%; /* IE7 fix */
+  /* it caused problem on template site */
+  /* height: 100%; */ /* IE7 fix */
 }
 
 .param-group .group-detail.hidden {
