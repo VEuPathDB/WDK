@@ -1,17 +1,19 @@
 package org.gusdb.wdk.model.query.param;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
+import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 /**
  * This class provides functions that are common among EnumParam and
@@ -55,6 +57,46 @@ import org.json.JSONObject;
  */
 public abstract class AbstractEnumParam extends Param {
 
+  /**
+   * @author jerric
+   * 
+   *         The ParamValueMap is used to eliminate duplicate value tuplets.
+   */
+  private static class ParamValueMap extends LinkedHashMap<String, String> {
+
+    /**
+   * 
+   */
+    private static final long serialVersionUID = 8058527840525499401L;
+
+    public ParamValueMap(Map<? extends String, ? extends String> m) {
+      super(m);
+    }
+
+    @Override
+    public int hashCode() {
+      return Utilities.print(this).hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (o instanceof ParamValueMap) {
+        ParamValueMap map = (ParamValueMap) o;
+        if (size() == map.size()) {
+          for (String key : keySet()) {
+            if (!map.containsKey(key))
+              return false;
+            if (!map.get(key).equals(get(key)))
+              return false;
+          }
+          return true;
+        } else
+          return false;
+      } else
+        return false;
+    }
+  }
+
   public static final String DISPLAY_TYPE_AHEAD = "typeAhead";
   public static final String DISPLAY_TREE_BOX = "treeBox";
 
@@ -65,7 +107,8 @@ public abstract class AbstractEnumParam extends Param {
   protected boolean multiPick = false;
   protected boolean quote = true;
 
-  protected String dependedParamRef;
+  private String dependedParamRefs;
+  private Set<Param> dependedParams;
   private String displayType;
 
   /**
@@ -79,39 +122,53 @@ public abstract class AbstractEnumParam extends Param {
    */
   private boolean suppressNode = false;
 
-  public AbstractEnumParam() {}
+  public AbstractEnumParam() {
+    dependedParams = new LinkedHashSet<>();
+  }
 
   public AbstractEnumParam(AbstractEnumParam param) {
     super(param);
     this.multiPick = param.multiPick;
     this.quote = param.quote;
-    this.dependedParamRef = param.dependedParamRef;
+    this.dependedParamRefs = param.dependedParamRefs;
+    this.dependedParams = new LinkedHashSet<>(param.dependedParams);
     this.displayType = param.displayType;
     this.selectMode = param.selectMode;
     this.suppressNode = param.suppressNode;
   }
 
-  protected abstract EnumParamCache createEnumParamCache(String dependedParamVal)
-      throws WdkModelException;
+  protected abstract EnumParamCache createEnumParamCache(
+      Map<String, String> dependedParamValues) throws WdkModelException;
 
-  private EnumParamCache getEnumParamCache(String dependedParamVal) {
-    if (isDependentParam() && dependedParamVal == null) {
+  private EnumParamCache getEnumParamCache(
+      Map<String, String> dependedParamValues) {
+    if (dependedParamValues == null)
+      dependedParamValues = new LinkedHashMap<>();
+    if (isDependentParam() && dependedParamValues.size() == 0) {
       try {
-        dependedParamVal = getDependedParam().getDefault();
+        for (Param param : getDependedParams()) {
+
+          String dependedParamVal = dependedParamValues.get(param.getName());
+          if (dependedParamVal == null)
+            dependedParamVal = param.getDefault();
+          if (dependedParamVal == null)
+            throw new NoDependedValueException(
+                "Attempt made to retrieve values of " + param.getName()
+                    + " in dependent param " + getName()
+                    + " without setting depended value.");
+          dependedParamValues.put(param.getName(), dependedParamVal);
+        }
       } catch (Exception ex) {
         throw new NoDependedValueException(ex);
       }
-      if (dependedParamVal == null)
-        throw new NoDependedValueException(
-            "Attempt made to retrieve values in dependent param " + getName()
-                + " without setting depended value.");
     }
     try {
-      return createEnumParamCache(dependedParamVal);
+      return createEnumParamCache(dependedParamValues);
     } catch (WdkModelException wme) {
       throw new WdkRuntimeException(
           "Unable to create EnumParamCache for param " + getName()
-              + " with depended value " + dependedParamVal, wme);
+              + " with depended values " + Utilities.print(dependedParamValues),
+          wme);
     }
   }
 
@@ -163,23 +220,15 @@ public abstract class AbstractEnumParam extends Param {
   }
 
   public boolean isDependentParam() {
-    return (dependedParamRef != null);
+    return (dependedParams.size() > 0);
   }
 
-  public Param getDependedParam() throws WdkModelException {
-    if (!isDependentParam())
-      return null;
-    String paramName = dependedParamRef.split("\\.")[1];
-    if (contextQuestion != null) {
-      return contextQuestion.getParamMap().get(paramName);
-    } else if (contextQuery != null) {
-      return contextQuery.getParamMap().get(paramName);
-    }
-    return (Param) wdkModel.resolveReference(dependedParamRef);
+  public Set<Param> getDependedParams() throws WdkModelException {
+    return isDependentParam() ? new LinkedHashSet<>(dependedParams) : null;
   }
 
-  public void setDependedParamRef(String dependedParamRef) {
-    this.dependedParamRef = dependedParamRef;
+  public void setDependedParamRef(String dependedParamRefs) {
+    this.dependedParamRefs = dependedParamRefs;
   }
 
   /**
@@ -189,23 +238,31 @@ public abstract class AbstractEnumParam extends Param {
    */
   @Override
   public String getDefault() throws WdkModelException {
-    String dependedValue = null;
+    Map<String, String> dependedValues = new LinkedHashMap<>();
     if (isDependentParam()) {
-      dependedValue = getDependedParam().getDefault();
+      for (Param param : getDependedParams()) {
+        dependedValues.put(param.getName(), param.getDefault());
+      }
       logger.debug("param=" + getFullName() + " getting default with depended="
-          + dependedValue);
+          + Utilities.print(dependedValues));
     }
-    return getDefault(dependedValue);
+    return getDefault(dependedValues);
   }
 
-  public String getDefault(String dependedParamVal) throws WdkModelException {
+  public String getDefault(Map<String, String> dependedParamValues)
+      throws WdkModelException {
     if (isDependentParam()) {
-      if (dependedParamVal == null) {
-        logger.warn("Retrieving default value for dependent param " + getName()
-            + " without depended param value.  Ensure this is intentional.");
-        dependedParamVal = getDependedParam().getDefault();
+      for (Param param : getDependedParams()) {
+        String dependedParamVal = dependedParamValues.get(param.getName());
+        if (dependedParamVal == null) {
+          logger.warn("Retrieving default value of " + param.getName()
+              + " for dependent param " + getName()
+              + " without depended param value.  Ensure this is intentional.");
+          dependedParamVal = param.getDefault();
+          dependedParamValues.put(param.getName(), dependedParamVal);
+        }
       }
-      return getEnumParamCache(dependedParamVal).getDefaultValue();
+      return getEnumParamCache(dependedParamValues).getDefaultValue();
     }
     return getEnumParamCache(null).getDefaultValue();
   }
@@ -214,64 +271,68 @@ public abstract class AbstractEnumParam extends Param {
     return getValueCache(null);
   }
 
-  public EnumParamCache getValueCache(String dependedParamVal) {
-    return getEnumParamCache(dependedParamVal);
+  public EnumParamCache getValueCache(Map<String, String> dependedParamValues) {
+    return getEnumParamCache(dependedParamValues);
   }
 
   public String[] getVocab() {
     return getVocab(null);
   }
 
-  public String[] getVocab(String dependedParamVal) throws WdkRuntimeException {
-    return getEnumParamCache(dependedParamVal).getVocab();
+  public String[] getVocab(Map<String, String> dependedParamValues)
+      throws WdkRuntimeException {
+    return getEnumParamCache(dependedParamValues).getVocab();
   }
 
   public EnumParamTermNode[] getVocabTreeRoots() {
     return getVocabTreeRoots(null);
   }
 
-  public EnumParamTermNode[] getVocabTreeRoots(String dependedParamVal) {
-    return getEnumParamCache(dependedParamVal).getVocabTreeRoots();
+  public EnumParamTermNode[] getVocabTreeRoots(
+      Map<String, String> dependedParamValues) {
+    return getEnumParamCache(dependedParamValues).getVocabTreeRoots();
   }
 
   public String[] getVocabInternal() {
     return getVocabInternal(null);
   }
 
-  public String[] getVocabInternal(String dependedParamVal) {
-    return getEnumParamCache(dependedParamVal).getVocabInternal();
+  public String[] getVocabInternal(Map<String, String> dependedParamValues) {
+    return getEnumParamCache(dependedParamValues).getVocabInternal();
   }
 
   public String[] getDisplays() {
     return getDisplays(null);
   }
 
-  public String[] getDisplays(String dependedParamVal) {
-    return getEnumParamCache(dependedParamVal).getDisplays();
+  public String[] getDisplays(Map<String, String> dependedParamValues) {
+    return getEnumParamCache(dependedParamValues).getDisplays();
   }
 
   public Map<String, String> getVocabMap() {
     return getVocabMap(null);
   }
 
-  public Map<String, String> getVocabMap(String dependedParamVal) {
-    return getEnumParamCache(dependedParamVal).getVocabMap();
+  public Map<String, String> getVocabMap(Map<String, String> dependedParamValues) {
+    return getEnumParamCache(dependedParamValues).getVocabMap();
   }
 
   public Map<String, String> getDisplayMap() {
     return getDisplayMap(null);
   }
 
-  public Map<String, String> getDisplayMap(String dependedParamVal) {
-    return getEnumParamCache(dependedParamVal).getDisplayMap();
+  public Map<String, String> getDisplayMap(
+      Map<String, String> dependedParamValues) {
+    return getEnumParamCache(dependedParamValues).getDisplayMap();
   }
 
   public Map<String, String> getParentMap() {
     return getParentMap(null);
   }
 
-  public Map<String, String> getParentMap(String dependedParamVal) {
-    return getEnumParamCache(dependedParamVal).getParentMap();
+  public Map<String, String> getParentMap(
+      Map<String, String> dependedParamValues) {
+    return getEnumParamCache(dependedParamValues).getParentMap();
   }
 
   // ///////////////////////////////////////////////////////////////////
@@ -395,8 +456,8 @@ public abstract class AbstractEnumParam extends Param {
   }
 
   public String dependentValueToInternalValue(User user, String dependedValue,
-      String dependedParamValue) throws WdkModelException {
-    EnumParamCache cache = getEnumParamCache(dependedParamValue);
+      Map<String, String> dependedParamValues) throws WdkModelException {
+    EnumParamCache cache = getEnumParamCache(dependedParamValues);
 
     String rawValue = decompressValue(dependedValue);
     if (rawValue == null || rawValue.length() == 0)
@@ -435,9 +496,9 @@ public abstract class AbstractEnumParam extends Param {
   }
 
   public String getInternalValue(User user, String dependentValue,
-      String dependedParamValue) throws WdkModelException {
+      Map<String, String> dependedParamValues) throws WdkModelException {
     String internalValue = dependentValueToInternalValue(user, dependentValue,
-        dependedParamValue);
+        dependedParamValues);
     if (handler != null)
       internalValue = handler.transform(user, internalValue);
     return internalValue;
@@ -477,15 +538,18 @@ public abstract class AbstractEnumParam extends Param {
   @Override
   protected void validateValue(User user, String userDependentValue)
       throws WdkModelException, WdkUserException {
-    String dependedValue = null;
+    Map<String, String> dependedParamValues = new LinkedHashMap<>();
     if (isDependentParam()) {
-      dependedValue = getDependedParam().getDefault();
+      for (Param param : getDependedParams()) {
+        dependedParamValues.put(param.getName(), param.getDefault());
+      }
     }
-    validateValue(user, userDependentValue, dependedValue);
+    validateValue(user, userDependentValue, dependedParamValues);
   }
 
   public void validateValue(User user, String userDependentValue,
-      String dependedValue) throws WdkModelException, WdkUserException {
+      Map<String, String> dependedParamValues) throws WdkModelException,
+      WdkUserException {
     // handle the empty case
     if (userDependentValue == null || userDependentValue.length() == 0) {
       if (!allowEmpty)
@@ -498,20 +562,21 @@ public abstract class AbstractEnumParam extends Param {
     if (!isSkipValidation()) {
       String rawValue = decompressValue(userDependentValue);
       logger.info("param=" + getFullName() + " - validating: " + rawValue
-          + ", with dependedValue=" + dependedValue);
+          + ", with dependedParamValues="
+          + Utilities.print(dependedParamValues));
 
       String[] terms = getTerms(rawValue);
       if (terms.length == 0 && !allowEmpty)
         throw new WdkUserException("The value to enumParam/flatVocabParam "
             + getFullName() + " cannot be empty");
-      Map<String, String> map = getVocabMap(dependedValue);
+      Map<String, String> map = getVocabMap(dependedParamValues);
       boolean error = false;
       StringBuilder message = new StringBuilder();
       for (String term : terms) {
         if (!map.containsKey(term)) {
           error = true;
           message.append("Invalid term for param [" + getFullName() + "]: "
-              + term + ". ");
+              + term + ". \n");
         }
       }
       if (error)
@@ -626,17 +691,67 @@ public abstract class AbstractEnumParam extends Param {
     this.suppressNode = suppressNode;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.gusdb.wdk.model.query.param.Param#appendJSONContent(org.json.JSONObject
-   * , boolean)
-   */
   @Override
-  protected void appendJSONContent(JSONObject jsParam, boolean extra)
-      throws JSONException {
-    // TODO Auto-generated method stub
+  public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+    super.resolveReferences(wdkModel);
 
+    dependedParams.clear();
+    if (dependedParamRefs != null && dependedParamRefs.trim().length() > 0)
+      for (String paramRef : dependedParamRefs.split(",")) {
+        String paramName = paramRef.split("\\.")[1].trim();
+        Param param;
+        if (contextQuestion != null) {
+          param = contextQuestion.getParamMap().get(paramName);
+        } else if (contextQuery != null) {
+          param = contextQuery.getParamMap().get(paramName);
+        } else {
+          param = (Param) wdkModel.resolveReference(paramRef);
+        }
+        if (dependedParams.contains(param))
+          throw new WdkModelException("Duplicate depended param ["
+              + param.getFullName() + "] defined in dependent param "
+              + getFullName());
+        dependedParams.add(param);
+      }
   }
+
+  @Override
+  public Set<String> getAllValues() throws WdkModelException {
+    Set<String> values = new LinkedHashSet<>();
+    AbstractEnumParam aeParam = (AbstractEnumParam) this;
+    if (aeParam.isDependentParam()) {
+      // dependent param, need to get all the combinations of the depended
+      // param values.
+      Set<Param> dependedParams = aeParam.getDependedParams();
+      Set<ParamValueMap> dependedValues = new LinkedHashSet<>();
+      for (Param dependedParam : dependedParams) {
+        Set<String> subValues = dependedParam.getAllValues();
+        Set<ParamValueMap> newDependedValues = new LinkedHashSet<>();
+        for (String subValue : subValues) {
+          for (ParamValueMap dependedValue : dependedValues) {
+            dependedValue = new ParamValueMap(dependedValue);
+            dependedValue.put(dependedParam.getName(), subValue);
+            newDependedValues.add(dependedValue);
+          }
+        }
+        dependedValues = newDependedValues;
+      }
+      // now for each dependedValue tuplet, get the possible values
+      for (Map<String, String> dependedValue : dependedValues) {
+        try {
+          values.addAll(aeParam.getVocabMap(dependedValue).keySet());
+        } catch (WdkRuntimeException ex) {
+          if (ex.getMessage().startsWith("No item returned by")) {
+            // the enum param doeesn't return any row, ignore it.
+            continue;
+          } else
+            throw ex;
+        }
+      }
+    } else {
+      values.addAll(aeParam.getVocabMap().keySet());
+    }
+    return values;
+  }
+
 }

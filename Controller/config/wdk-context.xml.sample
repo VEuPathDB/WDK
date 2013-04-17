@@ -1,0 +1,10 @@
+<Context path="/<webappName>"
+          docBase="<baseDirectory>/webapp"
+          debug="1"
+          privileged="false" allowLinking="true" crossContext="true">
+    <Logger className="org.apache.catalina.logger.FileLogger"
+          prefix="<webappName>."
+          suffix=".txt"
+          timestamp="true"
+          docBase="<baseDirectory>/logs" />
+</Context>
