@@ -332,4 +332,14 @@ public class Utilities {
     stream.close();
     return buffer;
   }
+  
+  public static String print(Map<?, ?> map) {
+    StringBuilder buffer = new StringBuilder("{");
+    for (Object key: map.keySet()) {
+      if (buffer.length() > 1) buffer.append(";");
+      buffer.append(key).append(":").append(map.get(key));
+    }
+    buffer.append("}");
+    return buffer.toString();
+  }
 }
