@@ -3,9 +3,6 @@
  */
 package org.gusdb.wdk.model;
 
-import org.apache.log4j.Logger;
-
-
 /**
  * An object representation of the <modelName> tag in the WDK model file. it
  * defines the project name, version, and other release information.
@@ -19,8 +16,6 @@ public class WdkModelName extends WdkModelBase {
   private String version;
   private String releaseDate;
   private String buildNumber;
-
-private static final Logger logger = Logger.getLogger(WdkModelName.class);
 
   /**
    * @return the displayName
@@ -49,7 +44,6 @@ private static final Logger logger = Logger.getLogger(WdkModelName.class);
    *          the version to set
    */
   public void setVersion(String version) {
-			//	logger.debug("\n\n\n\n\n\n***************************************Model version set to --" + version  + "-- \n\n\n\n\n\n");
     this.version = version;
   }
 
