@@ -216,6 +216,7 @@ public class WdkModel implements ConnectionContainer {
    * @return Returns the version.
    */
   public String getVersion() {
+logger.debug("\n\n\n\n\n\n***************************************Model version set to --" + version  + "-- \n\n\n\n\n\n");
     return version;
   }
 
@@ -1058,7 +1059,7 @@ public class WdkModel implements ConnectionContainer {
    */
   @Override
   protected void finalize() throws Throwable {
-    logger.debug("Model unloaded.");
+    logger.debug("\n\n\n\n\n\n***************************************Model unloaded.\n\n\n\n\n\n");
   }
 
   public String queryParamDisplayName(String paramName) {

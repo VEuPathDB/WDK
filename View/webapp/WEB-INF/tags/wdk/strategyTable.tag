@@ -167,8 +167,8 @@
 <%--       <td nowrap  style="padding:0 2px;text-align:right">${strategy.lastRunTimeFormatted}</td> --%>
       <td nowrap style="text-align:center">
         <c:choose>
-          <c:when test="${strategy.version == null || strategy.version eq ''}">${wdkModel.version}</c:when>
-          <c:otherwise>${strategy.version}</c:otherwise>
+          <c:when test="${not empty strategy.version}">${strategy.version}</c:when>
+          <c:otherwise>${wdkModel.version}</c:otherwise>
         </c:choose>
       </td>
       <td nowrap style="text-align:right">${strategy.estimateSize}</td>
