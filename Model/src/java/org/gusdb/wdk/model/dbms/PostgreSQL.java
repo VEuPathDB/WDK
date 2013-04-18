@@ -181,7 +181,7 @@ public class PostgreSQL extends DBPlatform {
 
         StringBuffer sql = new StringBuffer("SELECT count(*) FROM pg_tables ");
         sql.append("WHERE tablename = '").append(tableName).append("'");
-        sql.append(" AND schemaname = '").append(schema).append("'");
+        // sql.append(" AND schemaname = '").append(schema).append("'");
         long count = (Long) SqlUtils.executeScalar(wdkModel, dataSource,
                 sql.toString(), "wdk_check_table_exist");
         return (count > 0);
