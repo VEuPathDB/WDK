@@ -26,7 +26,8 @@ DROP TABLE IF EXISTS wdkengine.clob_values;
 DROP TABLE IF EXISTS wdkengine.dataset_values;
 DROP TABLE IF EXISTS wdkengine.dataset_indices;
 
-
+CREATE SCHEMA wdkuser;
+CREATE SCHEMA wdkengine;
 
 /* =========================================================================
    create sequences
