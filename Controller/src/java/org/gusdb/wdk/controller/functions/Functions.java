@@ -35,7 +35,7 @@ public class Functions {
    * by similar source ids
    */
   public static Collection<Collection<Map<String, AttributeValue>>>
-      groupAttributeRecordsBySource(Collection<Map<String, AttributeValue>> recordCollection)
+      groupAttributeRecordsBySource(Collection<Map<String, AttributeValue>> recordCollection, String primaryKeyName)
           throws WdkModelException {
     
     List<Collection<Map<String, AttributeValue>>> groups =
@@ -45,7 +45,7 @@ public class Functions {
     List<Map<String, AttributeValue>> tempList = new ArrayList<Map<String, AttributeValue>>();
     
     for (Map<String,AttributeValue> record : recordCollection) {
-      String nextSourceId = (String)record.get("source_id").getValue();
+      String nextSourceId = (String)record.get(primaryKeyName).getValue();
       if (currentSourceId == null) {
         // first record
         currentSourceId = nextSourceId;

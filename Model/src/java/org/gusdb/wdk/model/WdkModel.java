@@ -61,7 +61,9 @@ public class WdkModel implements ConnectionContainer {
   public static final String CONNECTION_USER = "UserDB";
 
   private static final Logger logger = Logger.getLogger(WdkModel.class);
-
+  
+  private static final String NL = System.getProperty("line.separator");
+  
   /**
    * Convenience method for constructing a model from the configuration
    * information.
@@ -138,7 +140,9 @@ public class WdkModel implements ConnectionContainer {
   private AnswerFactory answerFactory;
 
   private Map<String, String> properties;
-
+  
+  private UIConfig uiConfig = new UIConfig();
+  
   /**
    * xmlSchemaURL is used by the XmlQuestions. This is the only place where
    * XmlQuestion can find it.
@@ -834,38 +838,34 @@ public class WdkModel implements ConnectionContainer {
   }
 
   public String toString() {
-    String newline = System.getProperty("line.separator");
-    StringBuffer buf = new StringBuffer("WdkModel: projectId='" + projectId
-        + "'" + newline + "displayName='" + displayName + "'" + newline
-        + "introduction='" + introduction + "'");
-    buf.append(showSet("Param", paramSets));
-    buf.append(showSet("Query", querySets));
-    buf.append(showSet("RecordClass", recordClassSets));
-    buf.append(showSet("XmlRecordClass", xmlRecordClassSets));
-    buf.append(showSet("Question", questionSets));
-    buf.append(showSet("XmlQuestion", xmlQuestionSets));
-    return buf.toString();
+    return new StringBuilder("WdkModel: ")
+      .append("projectId='").append(projectId).append("'").append(NL)
+      .append("displayName='").append(displayName).append("'").append(NL)
+      .append("introduction='").append(introduction).append("'").append(NL)
+      .append(NL)
+      .append(uiConfig.toString())
+      .append(showSet("Param", paramSets))
+      .append(showSet("Query", querySets))
+      .append(showSet("RecordClass", recordClassSets))
+      .append(showSet("XmlRecordClass", xmlRecordClassSets))
+      .append(showSet("Question", questionSets))
+      .append(showSet("XmlQuestion", xmlQuestionSets))
+      .toString();
   }
 
   protected String showSet(String setType,
       Map<String, ? extends ModelSetI> setMap) {
-    StringBuffer buf = new StringBuffer();
-    String newline = System.getProperty("line.separator");
-    buf.append(newline);
-    buf.append("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
-        + newline);
-    buf.append("ooooooooooooooooooooooooooooo " + setType
-        + " Sets oooooooooooooooooooooooooo" + newline);
-    buf.append("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo"
-        + newline + newline);
+    StringBuilder buf = new StringBuilder(NL)
+      .append("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo").append(NL)
+      .append("ooooooooooooooooooooooooooooo ").append(setType)
+      .append(" Sets oooooooooooooooooooooooooo").append(NL)
+      .append("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo").append(NL).append(NL);
     for (ModelSetI set : setMap.values()) {
-      buf.append("=========================== " + set.getName()
-          + " ===============================" + newline + newline);
-      buf.append(set).append(newline);
+      buf.append("=========================== ").append(set.getName())
+         .append(" ===============================").append(NL).append(NL)
+         .append(set).append(NL);
     }
-    buf.append(newline);
-
-    return buf.toString();
+    return buf.append(NL).toString();
   }
 
   public void addQuestionSet(QuestionSet questionSet) throws WdkModelException {
@@ -1149,6 +1149,14 @@ public class WdkModel implements ConnectionContainer {
 
   public void setGusHome(String gusHome) {
     this.gusHome = gusHome;
+  }
+  
+  public void setUIConfig(UIConfig uiConfig) {
+    this.uiConfig = uiConfig;
+  }
+
+  public UIConfig getUIConfig() {
+    return uiConfig;
   }
 
   @Override

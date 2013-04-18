@@ -45,7 +45,6 @@ public class SqlQuery extends Query {
   private List<WdkModelText> sqlMacroList;
   private Map<String, String> sqlMacroMap;
   private boolean clobRow;
-  private boolean cached = false;
 
   private List<WdkModelText> dependentTableList;
   private Map<String, String> dependentTableMap;
