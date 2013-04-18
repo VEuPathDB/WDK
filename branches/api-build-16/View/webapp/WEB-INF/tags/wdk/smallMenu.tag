@@ -12,7 +12,7 @@
 	    <li><a href="${pageContext.request.contextPath}/home.do">Home</a></li>
 	    <imp:login/>
 	    <li class="nav-last no-divider">
-	      <a href="javascript:void()" class="open-dialog-contact-us">Contact Us</a>
+	      <a href="${pageContext.request.contextPath}/contact.do" class="open-window-contact-us">Contact Us</a>
 	    </li>
 	  </ul>
   </div>
