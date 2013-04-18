@@ -107,8 +107,8 @@ public abstract class AbstractEnumParam extends Param {
   protected boolean multiPick = false;
   protected boolean quote = true;
 
-  private String dependedParamRefs;
-  private Set<Param> dependedParams;
+  private String dependedParamRef;
+  private Set<String> dependedParamRefs;
   private String displayType;
 
   /**
@@ -123,15 +123,15 @@ public abstract class AbstractEnumParam extends Param {
   private boolean suppressNode = false;
 
   public AbstractEnumParam() {
-    dependedParams = new LinkedHashSet<>();
+    dependedParamRefs = new LinkedHashSet<>();
   }
 
   public AbstractEnumParam(AbstractEnumParam param) {
     super(param);
     this.multiPick = param.multiPick;
     this.quote = param.quote;
-    this.dependedParamRefs = param.dependedParamRefs;
-    this.dependedParams = new LinkedHashSet<>(param.dependedParams);
+    this.dependedParamRef = param.dependedParamRef;
+    this.dependedParamRefs = new LinkedHashSet<>(param.dependedParamRefs);
     this.displayType = param.displayType;
     this.selectMode = param.selectMode;
     this.suppressNode = param.suppressNode;
@@ -220,15 +220,29 @@ public abstract class AbstractEnumParam extends Param {
   }
 
   public boolean isDependentParam() {
-    return (dependedParams.size() > 0);
+    return (dependedParamRefs.size() > 0);
   }
 
   public Set<Param> getDependedParams() throws WdkModelException {
-    return isDependentParam() ? new LinkedHashSet<>(dependedParams) : null;
+    if (!isDependentParam())
+      return null;
+    Set<Param> dependedParams = new LinkedHashSet<>();
+    Map<String, Param> params = null;
+    if (contextQuestion != null)
+      params = contextQuestion.getParamMap();
+    else if (contextQuery != null)
+      params = contextQuery.getParamMap();
+    for (String paramRef : dependedParamRefs) {
+      String paramName = paramRef.split("\\.", 2)[1].trim();
+      Param param = (params != null) ? params.get(paramName)
+          : (Param) wdkModel.resolveReference(paramRef);
+      dependedParams.add(param);
+    }
+    return dependedParams;
   }
 
-  public void setDependedParamRef(String dependedParamRefs) {
-    this.dependedParamRefs = dependedParamRefs;
+  public void setDependedParamRef(String dependedParamRef) {
+    this.dependedParamRef = dependedParamRef;
   }
 
   /**
@@ -695,23 +709,18 @@ public abstract class AbstractEnumParam extends Param {
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     super.resolveReferences(wdkModel);
 
-    dependedParams.clear();
-    if (dependedParamRefs != null && dependedParamRefs.trim().length() > 0)
-      for (String paramRef : dependedParamRefs.split(",")) {
-        String paramName = paramRef.split("\\.")[1].trim();
-        Param param;
-        if (contextQuestion != null) {
-          param = contextQuestion.getParamMap().get(paramName);
-        } else if (contextQuery != null) {
-          param = contextQuery.getParamMap().get(paramName);
-        } else {
-          param = (Param) wdkModel.resolveReference(paramRef);
-        }
-        if (dependedParams.contains(param))
+    dependedParamRefs.clear();
+    if (dependedParamRef != null && dependedParamRef.trim().length() > 0)
+      for (String paramRef : dependedParamRef.split(",")) {
+        // make sure the param exists
+        wdkModel.resolveReference(paramRef);
+        
+        // make sure the paramRef is unique
+        if (dependedParamRefs.contains(paramRef))
           throw new WdkModelException("Duplicate depended param ["
-              + param.getFullName() + "] defined in dependent param "
+              + paramRef + "] defined in dependent param "
               + getFullName());
-        dependedParams.add(param);
+        dependedParamRefs.add(paramRef);
       }
   }
 
