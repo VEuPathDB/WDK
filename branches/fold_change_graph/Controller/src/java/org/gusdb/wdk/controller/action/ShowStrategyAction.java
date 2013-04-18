@@ -386,6 +386,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
       jsStep.put("shortDisplayType", "unknown");
       jsStep.put("displayTypePlural", "unknown");
       jsStep.put("shortDisplayTypePlural", "unknown");
+      jsStep.put("invalidQuestion", "true");
     }
 
         jsStep.put("shortName", step.getShortDisplayName());
@@ -477,7 +478,12 @@ public class ShowStrategyAction extends ShowQuestionAction {
         if (param instanceof EnumParamBean) {
         	EnumParamBean enumParam = (EnumParamBean)param;
         	if (enumParam.isDependentParam()) {
-        		enumParam.setDependedValue(getUserDependentValue(paramValues, enumParam.getDependedParam()));
+        	  Map<String, String> dependedValues = new LinkedHashMap<>();
+        	  for (ParamBean<?> dependedParam : enumParam.getDependedParams()) {
+        	    String dependedValue = getUserDependentValue(paramValues, dependedParam);
+        	    dependedValues.put(dependedParam.getName(), dependedValue);
+        	  }
+        	  enumParam.setDependedValues(dependedValues);
         	}
             return enumParam.getRawDisplayValue();
         }
@@ -492,7 +498,12 @@ public class ShowStrategyAction extends ShowQuestionAction {
                 if (param instanceof EnumParamBean) {
                     EnumParamBean enumParam = (EnumParamBean)param;
                     if (enumParam.isDependentParam()) {
-                        enumParam.setDependedValue(getUserDependentValue(paramValues, enumParam.getDependedParam()));
+                      Map<String, String> dependedValues = new LinkedHashMap<>();
+                      for (ParamBean<?> dependedParam : enumParam.getDependedParams()) {
+                        String dependedValue = getUserDependentValue(paramValues, dependedParam);
+                        dependedValues.put(dependedParam.getName(), dependedValue);
+                      }
+                      enumParam.setDependedValues(dependedValues);
                     }
                 }
                 return param.getDefault();
