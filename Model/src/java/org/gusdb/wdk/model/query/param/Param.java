@@ -3,7 +3,9 @@ package org.gusdb.wdk.model.query.param;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
@@ -114,6 +116,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   protected String help;
 
   protected String defaultValue;
+  @Deprecated
   protected String sample;
 
   protected boolean visible;
@@ -248,6 +251,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   /**
    * @return the sample
    */
+  @Deprecated
   public String getSample() {
     return this.sample;
   }
@@ -536,4 +540,11 @@ public abstract class Param extends WdkModelBase implements Cloneable {
       handlerClass = null;
     }
   }
+
+  public Set<String> getAllValues() throws WdkModelException {
+    Set<String> values = new LinkedHashSet<>();
+    values.add(getDefault());
+    return values;
+  }
+
 }

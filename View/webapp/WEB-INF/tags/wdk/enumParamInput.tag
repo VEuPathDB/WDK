@@ -1,18 +1,20 @@
-<%-- 
-Provides form input element for a given EnumParam.
-
-For a multi-selectable parameter a form element is provided as either a 
-series of checkboxes or a multiselect menu depending on number of 
-parameter options. Also, if number of options is over a threshhold, this tag
-includes a checkAll button to select all options for the parameter.
-
-Otherwise a standard select menu is used.
---%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
+
+<%--
+Provides form input element for a given EnumParam.
+
+For a multi-selectable parameter a form element is provided as either a
+series of checkboxes or a multiselect menu depending on number of
+parameter options. Also, if number of options is over a threshhold, this tag
+includes a checkAll button to select all options for the parameter.
+
+Otherwise a standard select menu is used.
+--%>
+
 
 <jsp:useBean id="idgen" class="org.gusdb.wdk.model.jspwrap.NumberUtilBean" scope="application" />
 
@@ -27,13 +29,14 @@ Otherwise a standard select menu is used.
               description="parameter name"
 %>
 
+
 <c:set var="qP" value="${qp}"/>
 <c:set var="pNam" value="${qP.name}"/>
 <c:set var="opt" value="0"/>
 <c:set var="displayType" value="${qP.displayType}"/>
-<c:set var="dependedParamObj" value="${qP.dependedParam}"/>
-<c:if test="${dependedParamObj != null}">
-  <c:set var="dependedParam" value="${dependedParamObj.name}" />
+<c:set var="dependedParams" value="${qP.dependedParamNames}"/>
+<c:if test="${dependedParams != null}">
+  <c:set var="dependedParam" value="${dependedParams}" />
   <c:set var="dependentClass" value="dependentParam" />
 </c:if>
 <%-- Setting a variable to display the items in the parameter in a horizontal layout --%>
@@ -138,7 +141,7 @@ Otherwise a standard select menu is used.
       <c:when test="${displayType eq 'radioBox'}">
          <ul>
          <c:forEach items="${qP.displayMap}" var="entity">
-           <div ${v}>
+           <li ${v}>
              <html:radio property="array(${pNam})" value="${entity.key}" /> <span>${entity.value}</span>
            </li>
          </c:forEach>
