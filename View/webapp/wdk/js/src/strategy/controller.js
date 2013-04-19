@@ -159,23 +159,26 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     });
   }
 
-  function highlightStep(str, stp, v, pagerOffset, ignoreFilters, action) {
+  function highlightStep(str, stp, v, pagerOffset, ignoreFilters, action, deferred) {
     if (!str || stp == null) {
       // don't show result, remove anything that is there,
       // and empty the result section
       NewResults(-1);
     } else {
       NewResults(str.frontId, stp.frontId, v, pagerOffset, ignoreFilters,
-          action);
+          action, deferred);
     }
   }
 
-  function updateStrategies(data, ignoreFilters) {
+  function updateStrategies(data, ignoreFilters, skipShow) {
+    var deferred = $.Deferred();
+
     ns.state = data.state;
     ns.p_state = $.json.serialize(ns.state);
     removeClosedStrategies();
     for (var st in ns.state) {
       if (st == "count") {
+        // it appears the span was removed, so this code does nothing.
         $("#mysearch span").text('My Strategies ('+ns.state[st]+')');
       } else if (st != "length") {
         var str = ns.state[st].id;
@@ -189,9 +192,13 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         }
       }
     }
-    showStrategies(data.currentView, ignoreFilters, data.state.length);
+    if (skipShow !== true) {
+      showStrategies(data.currentView, ignoreFilters, data.state.length, deferred);
+    }
+    return deferred.promise();
   }
 
+  // remove closed strategies from the strategies array @ns.strats
   function removeClosedStrategies(){
     for (var s in ns.strats) {
       if (s.indexOf(".") == -1) {
@@ -241,7 +248,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     }
   }
 
-  function showStrategies(view, ignoreFilters, besc){
+  function showStrategies(view, ignoreFilters, besc, deferred){
     $("#tab_strategy_results font.subscriptCount").text("(" + besc + ")");
     var sC = 0;
     for (var s in ns.strats) {
@@ -285,9 +292,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         var isVenn = (initStp.back_boolean_Id == view.step);
         var pagerOffset = view.pagerOffset;
         if (view.action != undefined && view.action.match("^basket")) {
-          highlightStep(initStr, initStp, isVenn, pagerOffset, ignoreFilters, view.action);
+          highlightStep(initStr, initStp, isVenn, pagerOffset, ignoreFilters, view.action, deferred);
         } else {
-          highlightStep(initStr, initStp, isVenn, pagerOffset, ignoreFilters);
+          highlightStep(initStr, initStp, isVenn, pagerOffset, ignoreFilters, null, deferred);
         }
       }
     } else {
@@ -406,7 +413,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   }
 
   function NewResults(f_strategyId, f_stepId, bool, pagerOffset, ignoreFilters,
-      action) {
+      action, deferred) {
     if (f_strategyId == -1) {
       $("#strategy_results > div.Workspace").html("");
       wdk.addStepPopup.current_Front_Strategy_Id = null;
@@ -471,6 +478,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         wdk.util.removeLoading(f_strategyId);
         wdk.basket.checkPageBasket();
         $.cookie("refresh_results", "false", { path : '/' });
+      }
+    }).then(function() {
+      wdk.load();
+      if (deferred) {
+        deferred.resolve()
       }
     });
   }
@@ -932,6 +944,28 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     });
   }
 
+  // next generation functions
+  function updateStrategyName(event, widget) {
+    var strategyId = widget.element.data("id");
+    var strategy = wdk.strategy.model.getStrategyFromBackId(strategyId);
+
+    if (this.value === widget.cachedText) {
+      return;
+    }
+    
+    strategy.name = this.value;
+
+    wdk.util.showLoading(strategy.frontId);
+
+    strategy.update().success(function(data) {
+      if (wdk.strategy.error.ErrorHandler("RenameStrategy", data, strategy, null, strategy.name, null)) {
+        updateStrategies(data);
+        $(".strategy-name").text(strategy.name);
+      }
+      wdk.util.removeLoading(strategy.frontId);
+    });
+  }
+
   ns.init = init;
   ns.AddStepToStrategy = AddStepToStrategy;
   ns.ChangeFilter = ChangeFilter;
@@ -951,4 +985,5 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   ns.setStrategyStatusCounts = setStrategyStatusCounts;
   ns.showStrategies = showStrategies;
   ns.updateStrategies = updateStrategies;
+  ns.updateStrategyName = updateStrategyName;
 });
