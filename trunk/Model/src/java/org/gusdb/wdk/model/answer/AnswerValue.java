@@ -1041,7 +1041,10 @@ public class AnswerValue {
           + "for attribute set (" + buffer + ").\n"
           + "id query: " + expected + " records\n"
           + "join(id query, attribute query): "
-          + pageRecordInstances.size() + " records");
+          + pageRecordInstances.size() + " records\n"
+          + "Check that the ID query returns no nulls or duplicates, "
+          + "and that the attribute-query join "
+          + "does not change the row count.");
     }
 
     logger.debug("Paged records initialized.");
