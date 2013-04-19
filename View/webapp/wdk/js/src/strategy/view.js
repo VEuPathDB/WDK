@@ -812,7 +812,10 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     if (strat.subStratOf == null) {
 	//		name="Unnamed";
       $(div_sn).html("<span title='Click to edit" +
-          "'>Strategy: <span style='font-style:italic;cursor:pointer'>" + name + "</span></span>" + append +
+          "'>Strategy: <span class='strategy-name wdk-editable' " +
+          "data-id='" + strat.backId + "'" +
+          "data-change='wdk.strategy.controller.updateStrategyName'" +
+          " style='font-style:italic;cursor:pointer'>" + name + "</span></span>" + append +
           "<span id='strategy_id_span' style='display: none;'>" + id +
           "</span>");
       $(div_sm).html("<span class='strategy_small_text'>" +
