@@ -1034,12 +1034,14 @@ public class AnswerValue {
       logger.debug("expected: " + expected + ", actual: "
           + pageRecordInstances.size());
       logger.debug("Paged ID SQL:\n" + sql);
-      throw new WdkModelException("The expected result size is different"
-          + " from the actual size. Please check the id query "
-          + idsQueryInstance.getQuery().getFullName() + " and the "
-          + "attribute queries that return the attributes (" + buffer
-          + "). expected size: " + expected + ", actual size: "
-          + pageRecordInstances.size());
+      throw new WdkModelException("The number of results returned "
+          + "by the id query "
+          + idsQueryInstance.getQuery().getFullName()
+          + " changes when it is joined to the query (or queries) "
+          + "for attribute set (" + buffer + ").\n"
+          + "id query: " + expected + " records\n"
+          + "join(id query, attribute query): "
+          + pageRecordInstances.size() + " records");
     }
 
     logger.debug("Paged records initialized.");
