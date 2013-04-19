@@ -506,6 +506,7 @@ div.transform a.crumb_name img{
 }
 
 .diagram div.strategy_menu {
+  top: 10px;
   margin-top: 5px;
 }
 
