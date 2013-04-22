@@ -797,7 +797,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     var rename = "<a id='rename_" + strat.frontId +
         "' href='javascript:void(0)' title='Click to rename.' " +
         // "onclick=\"wdk.history.showUpdateDialog(this, false)\">" +
-        "onclick=\"$(this).parents('.strategy-data').find('.strategy-name').editable('edit')\">" +
+        "onclick=\"$(this).parents('.strategy-data').find('.strategy-name').editable('show')\">" +
         "<b style='font-size:120%'>Rename</b></a>";
 
     var deleteStrat = "<a id='delete_" + strat.frontId +
@@ -815,7 +815,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       $(div_sn).html("<span title='Click to edit" +
           "'>Strategy: <span class='strategy-name wdk-editable' " +
           "data-id='" + strat.backId + "'" +
-          "data-change='wdk.strategy.controller.updateStrategyName'" +
+          "data-save='wdk.strategy.controller.updateStrategyName'" +
           " style='font-style:italic;cursor:pointer'>" + name + "</span></span>" + append +
           "<span id='strategy_id_span' style='display: none;'>" + id +
           "</span>");

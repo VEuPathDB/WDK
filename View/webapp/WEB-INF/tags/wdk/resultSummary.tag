@@ -35,7 +35,7 @@
 			<span 
           class="wdk-editable strategy-name" 
           data-id="${strategy.strategyId}"
-          data-change="wdk.strategy.controller.updateStrategyName" 
+          data-save="wdk.strategy.controller.updateStrategyName" 
           id="text_strategy_number" 
           title="Click to edit">
 				${strategy.name}</span>

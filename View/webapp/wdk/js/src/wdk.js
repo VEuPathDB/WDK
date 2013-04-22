@@ -468,22 +468,27 @@ function getWebAppUrl() {
   };
 
   var registerEditable = function() {
-    // all elements with className wdk-editable
+    // all elements with className wdk-editable, eg:
+    //   <span class="wdk-editable"
+    //       data-change="someFunction">edit me</span>
+
     $(".wdk-editable").each(function(idx, element) {
       if ($(element).data("rendered")) return;
 
-      var change = $(element).data("change");
-      if (typeof change === "string") {
+      var save = $(element).data("save");
+
+      if (typeof save === "string") {
         try {
-          change = (0, eval)("(" + change + ")");
+          save = (0, eval)("(" + save + ")");
         } catch (e) {
           if (console && console.log) {
             console.log(e);
           }
         }
       }
+
       $(element).editable({
-        change: typeof change === "function" ? change : function() {return true;}
+        save: typeof save === "function" ? save : function(){return true;}
       });
 
       $(element).data("rendered", true);
