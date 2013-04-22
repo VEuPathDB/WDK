@@ -796,7 +796,8 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
     var rename = "<a id='rename_" + strat.frontId +
         "' href='javascript:void(0)' title='Click to rename.' " +
-        "onclick=\"wdk.history.showUpdateDialog(this, false)\">" +
+        // "onclick=\"wdk.history.showUpdateDialog(this, false)\">" +
+        "onclick=\"$(this).parents('.strategy-data').find('.strategy-name').editable('edit')\">" +
         "<b style='font-size:120%'>Rename</b></a>";
 
     var deleteStrat = "<a id='delete_" + strat.frontId +
