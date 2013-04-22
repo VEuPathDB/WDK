@@ -76,9 +76,7 @@
       </c:forEach>
 
 <%--
-      <td>
-        <img id="img_${strategyId}" class="plus-minus plus" src="<c:url value='/wdk/images/sqr_bullet_plus.png'/>" alt="" onclick="wdk.history.toggleSteps2(${strategyId})"/>
-      </td>
+      <td><img id="img_${strategyId}" class="plus-minus plus" src="<c:url value='/wdk/images/sqr_bullet_plus.png'/>" alt="" onclick="wdk.history.toggleSteps2(${strategyId})"/></td>
 --%>
 
       <c:set var="dispNam" value="${strategy.name}"/>
@@ -163,20 +161,12 @@
             <option value="wdk.strategy.controller.copyStrategy('${strategyId}', true);">Duplicate</option>
             <option value="${saveAction}">Save As</option>
             <option value="${shareAction}">Share</option>
-      <!--      <option value="deleteStrategy(${strategyId}, true)">Delete</option> -->
-<!-- I think we should remove the delete option here -->
-      <option value="wdk.history.handleBulkStrategies('delete',${strategyId})">Delete</option>
+			      <option value="wdk.history.handleBulkStrategies('delete',${strategyId})">Delete</option>
          </select>
       </td>
       <td nowrap style="padding:0 2px 0 2px;">${fn:substring(strategy.createdTimeFormatted, 0, 10)}</td>
       <td nowrap style="padding:0 2px 0 2px;">${fn:substring(strategy.lastModifiedTimeFormatted, 0, 10)}</td>
-<%--       <td nowrap  style="padding:0 2px;text-align:right">${strategy.lastRunTimeFormatted}</td> --%>
-      <td nowrap style="text-align:center">
-        <c:choose>
-          <c:when test="${strategy.version == null || strategy.version eq ''}">${wdkModel.version}</c:when>
-          <c:otherwise>${strategy.version}</c:otherwise>
-        </c:choose>
-      </td>
+      <td nowrap style="text-align:center">${strategy.version}</td>
       <td nowrap style="text-align:right">${strategy.estimateSize}&nbsp;</td>
 
     </tr>
