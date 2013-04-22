@@ -944,16 +944,12 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     });
   }
 
-  // next generation functions
+  // to be bound to wdk.editable change event
   function updateStrategyName(event, widget) {
     var strategyId = widget.element.data("id");
     var strategy = wdk.strategy.model.getStrategyFromBackId(strategyId);
 
-    if (this.value === widget.cachedText) {
-      return;
-    }
-    
-    strategy.name = this.value;
+    strategy.name = widget.value;
 
     wdk.util.showLoading(strategy.frontId);
 
