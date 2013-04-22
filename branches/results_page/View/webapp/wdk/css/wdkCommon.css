@@ -152,6 +152,27 @@ td {
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   =Plugin styling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+.wdk-editable {
+  /*color: black;*/
+  font-style: italic;
+  font-weight: normal;
+  padding: 4px;
+  cursor: pointer;
+  display: inline-block;
+}
+.wdk-editable:hover {
+  /* 	border-bottom:1px dashed black; */
+  /*  outline: 1px solid blue; */
+   background-color:#EDEDED;
+}
+
+.wdk-editable input {
+  width: 200px;
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     =Styling for the Login pop-up box 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
