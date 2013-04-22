@@ -4,13 +4,20 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
   // The "editable" plugin provides inline-edit functionality
   //  
   // It can be used in the following way:
-  // $("selector").editable({
-  //   change: function(event, widget) {
-  //     var input = this;
-  //     var user_text = this.value;
-  //     // do some stuff...
-  //   }
-  // })
+  //
+  //   $("selector").editable({
+  //     change: function(event, widget) {
+  //       var input = this;
+  //       var user_text = this.value;
+  //       // do some stuff...
+  //     }
+  //   })
+  //
+  //
+  // The widget has one public function: edit.
+  // It can be used in the following way to trigger the input box:
+  //
+  //   $("selector").editable("edit")
 
 
   $.widget("wdk.editable", {
@@ -33,17 +40,20 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
       var widget = this,
           $this = widget.element;
 
-      // cache original value
-      widget.cachedText = $this.text();
-
       if ($this.children('input').length == 0) {
+        var $inputbox;
 
-        var $inputbox = $("<input/>")
+        // cache original value
+        widget.cachedText = $this.text();
+
+        $inputbox = $("<input/>")
         .attr("type", "text")
         .val(widget.cachedText);
 
         $this.html($inputbox);
+
         $inputbox.select();
+
         $inputbox.on("blur keyup", function(e) {
           if (e.type === "blur" || e.which === 13) {
             var value = $inputbox.val();
