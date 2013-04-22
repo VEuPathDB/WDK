@@ -6,7 +6,7 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
   // It can be used in the following way:
   //
   //   $("selector").editable({
-  //     change: function(event, widget) {
+  //     save: function(event, widget) {
   //       var input = this;
   //       var user_text = this.value;
   //       // do some stuff...
@@ -17,12 +17,18 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
   // The widget has one public function: edit.
   // It can be used in the following way to trigger the input box:
   //
-  //   $("selector").editable("edit")
+  //   $("selector").editable("show")
 
 
   $.widget("wdk.editable", {
     options: {
-      change: function() {}
+      // event handler
+      save: function() {},
+      // event handler
+      show: function() {},
+      // event handler
+      hide: function() {},
+      help: "ENTER to save; ESC to cancel"
     },
 
     // initialization code
@@ -30,45 +36,64 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
 
       var widget = this;
 
-      this.element.click(function() {
-        widget.edit.call(widget);
+      // input box
+      widget.$input = $("<input/>")
+      .attr("type", "text");
+
+      // attach handlers
+      widget.element.on("editableshow", widget.options.show);
+      widget.element.on("editablehide", widget.options.hide);
+      widget.element.on("editablesave", widget.options.save);
+
+      widget.element.click(function() {
+        widget.show.call(widget);
       });
     },
 
-    // public function - create input box
-    edit: function() {
-      var widget = this,
-          $this = widget.element;
+    // show input box
+    show: function() {
+      var widget = this;
 
-      if ($this.children('input').length == 0) {
-        var $inputbox;
-
+      if (widget.element.children('input').length == 0) {
         // cache original value
-        widget.cachedText = $this.text();
+        widget.value = widget.element.text();
 
-        $inputbox = $("<input/>")
-        .attr("type", "text")
-        .val(widget.cachedText);
+        widget.$input.val(widget.value);
 
-        $this.html($inputbox);
+        widget.element.html(widget.$input);
 
-        $inputbox.select();
+        widget.$input.select();
 
-        $inputbox.on("blur keyup", function(e) {
+        // TODO - replace blur with click outside of element
+        //    this will prevent accidental closing
+        widget.$input.on("blur keyup", function(e) {
           if (e.type === "blur" || e.which === 13) {
-            var value = $inputbox.val();
-            $this.text(value);
-            if (typeof widget.options.change === "function") {
-              // TODO - determine what the object context should be
-              // currently it is the input element (which is probably correct)
-              // TODO - make this return a promise?
-              widget.options.change.call(this, e, widget);
-            }
+            // ENTER pressed - save
+            widget.save.call(widget);
           } else if (e.which === 27) {
-            // ESC entered - cancel
-            $this.text(widget.cachedText);
+            // ESC pressed - cancel
+            widget.hide.call(widget);
           }
         });
+        widget.element.trigger("editableshow", [widget]);
+      }
+    },
+
+    // hide input box
+    hide: function() {
+      var widget = this;
+      widget.element.text(widget.value);
+      widget.element.trigger("editablehide", [widget]);
+    },
+
+    // save text in input box to DOM element
+    save: function() {
+      var widget = this;
+      widget.oldValue = widget.value;
+      widget.value = widget.$input.val();
+      widget.element.text(widget.value);
+      if (widget.value !== widget.oldValue) {
+        widget.element.trigger("editablesave", [widget]);
       }
     }
 
