@@ -534,7 +534,15 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
                       }, 800)
                     });
 
-                    title.find(".wdk-editable").editable("show");
+                    title.find(".wdk-editable").editable("show").find("input").qtip({
+                      content: {
+                        text: "Give your strategy a custom name to help identify it later."
+                      },
+                      position: {
+                        my: "left center",
+                        at: "right center"
+                      }
+                    }).qtip("show");
                   }
                 });
 
