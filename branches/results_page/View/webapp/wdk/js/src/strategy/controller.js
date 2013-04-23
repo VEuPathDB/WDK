@@ -61,6 +61,21 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     initStrategyPanels();
     wdk.addStepPopup.showPanel(chooseStrategyTab());
     initDisplay();
+
+    // strategyselect event fired when a step in a strategy is selected
+    $("#Strategies").on("strategyselect", ".diagram", function(e, strategy) {
+      // hide editable strategy names and reset trigger
+      $(e.delegateTarget).find(".strategy-name.wdk-editable")
+      .editable("hide")
+      .editable("option", "trigger", "click");
+
+      if (!strategy.hasCustomName()) {
+        // show and turn off trigger
+        $(this).find(".strategy-name.wdk-editable")
+        .editable("show")
+        .editable("option", "trigger", "manual");
+      }
+    });
   }
 
   function setStrategyStatusCounts(myAllCount, myOpenCount) {
@@ -438,7 +453,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       d.pager = {};
       d.pager.offset = pagerOffset;    
     }
-    $.ajax({
+    return $.ajax({
       url: url,
       dataType: "html",
       type: "post",
@@ -447,12 +462,16 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         wdk.util.showLoading(f_strategyId);
       },
       success: function(data) {
+        var $Strategies = $("#Strategies");
+        var oldSelectedStrategyId = $Strategies.find(".diagram").has(".selected").attr("id");
+        var oldSelectedStepId = $Strategies.find(".selected").attr("id");
+
         step.isSelected = true;
         if (wdk.strategy.error.ErrorHandler("Results", data, strategy,
             $("#diagram_" + strategy.frontId + " step_" + step.frontId +
                 "_sub div.crumb_details div.crumb_menu a.edit_step_link"))
         ) {
-          $("#Strategies div").removeClass("selected");
+          $Strategies.find(".selected").removeClass("selected");
           var init_view_strat = strategy.backId;
           var init_view_step;
           if (bool) {
@@ -474,6 +493,19 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           if (linkToClick.length > 0) {
             linkToClick.click();
           }
+
+          // trigger custom events
+          var $selectedStrategy = $("#Strategies .diagram").has(".selected");
+          var $selectedStep = $("#Strategies .diagram").find(".selected");
+
+          if ($selectedStrategy.attr("id") !== oldSelectedStrategyId) {
+            $selectedStrategy.trigger("strategyselect", [strategy])
+          }
+
+          if ($selectedStep.attr("id") !== oldSelectedStepId) {
+            $selectedStep.trigger("stepselect", [step]);
+          }
+
         }
         wdk.util.removeLoading(f_strategyId);
         wdk.basket.checkPageBasket();
@@ -481,6 +513,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       }
     }).then(function() {
       wdk.load();
+
       if (deferred) {
         deferred.resolve()
       }
