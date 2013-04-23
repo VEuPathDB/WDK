@@ -120,6 +120,10 @@ public class StepFactory {
         Map<String, Boolean> sortingAttributes = user.getSortingAttributes(questionName);
 
         // create answer
+				logger.debug("\n\n\n*********before creating answervalue******: filter is: ");
+				if (filter != null) {logger.debug(filter.getName());}
+				logger.debug("\n\n\n\n");
+
         AnswerValue answerValue = question.makeAnswerValue(user,
                 dependentValues, pageStart, pageEnd, sortingAttributes, filter,
                 validate, assignedWeight);
@@ -573,6 +577,8 @@ public class StepFactory {
         Step step = stepCache.getStep(user.getUserId(), displayId);
         if (step != null) return step;
 
+ logger.debug("\n\n\n\n\n\nStepFactory: loadStep()\n\n\n\n\n");
+
         // load Step info
         int stepId = rsStep.getInt(COLUMN_STEP_INTERNAL_ID);
         String questionName = rsStep.getString(AnswerFactory.COLUMN_QUESTION_NAME);
@@ -624,6 +630,7 @@ public class StepFactory {
         //if (!step.isValid()) setStepValidFlag(step);
         
         //stepCache.addStep(step);
+ logger.debug("\n\n\n\n\n\nStepFactory: finished loading Step()\n\n\n\n\n");
         return step;
     }
 
