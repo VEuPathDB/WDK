@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.DatabaseMetaData;
 
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dbms.SqlUtils;
@@ -88,11 +89,13 @@ public abstract class AbstractDBInfo {
   public void populateServernameDataMap(HashMap<String, String> servernameDataMap) {
     String sql = getServerNameSql();
     if (sql == null) return;
-
+    
     ResultSet rs = null;
     PreparedStatement ps = null;
     logger.debug("querying database for servername information");    
+
     try {
+      String dbVendor = datasource.getConnection().getMetaData().getDatabaseProductName();
       ps = SqlUtils.getPreparedStatement(datasource, sql);
       rs = ps.executeQuery();
      if (rs.next()) {
@@ -103,8 +106,16 @@ public abstract class AbstractDBInfo {
           servernameDataMap.put(columnName, rs.getString(columnName) );
         }
       }
-    } catch (WdkModelException | SQLException sqle) {
-      logger.error(sqle);
+      if (dbVendor.equals("Oracle")) {
+        // if no SQLException was caught then an ACL for UTL_INADDR must be in place.
+        servernameDataMap.put("allowed_oracle_utl_inaddr", "true");
+      }
+    } catch (WdkModelException | SQLException e) {
+        if ( e.getMessage().startsWith("ORA-24247") ) {
+          // oracle user needs an ACL for UTL_INADDR
+          servernameDataMap.put("allowed_oracle_utl_inaddr", "false");
+        }
+        logger.error("Failed attempting\n" + sql + "\n" + e);
     } finally {
         SqlUtils.closeResultSetAndStatement(rs);
     }  
