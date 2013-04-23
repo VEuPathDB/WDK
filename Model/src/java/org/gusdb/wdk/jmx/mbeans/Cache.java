@@ -23,10 +23,12 @@ import javax.sql.DataSource;
 public class Cache extends BeanBase implements CacheMBean   {
 
   DataSource dataSource;
+  String platformName;
   
   public Cache() {
     super();
     DBPlatform platform = wdkModel.getQueryPlatform();
+    platformName = platform.getClass().getSimpleName();
     dataSource = platform.getDataSource();
   }
 
@@ -44,14 +46,28 @@ public class Cache extends BeanBase implements CacheMBean   {
    * </pre>
    */
   public String getcache_table_count() {
-    StringBuffer sql = new StringBuffer();
+    String sql = cacheTableCountSql();
+    if (sql == null) return "unsupported database platform: " + platformName;
+    return query(sql);
+  }
 
-    sql.append(" select                                ");
-    sql.append(" count(table_name) cache_count         ");
-    sql.append(" from user_tables                      ");
-    sql.append(" where table_name like 'QUERYRESULT%'  ");
-    
-    return query(sql.toString());
+  private String cacheTableCountSql() {
+    StringBuffer sql = new StringBuffer();
+    if (platformName.toLowerCase().startsWith("oracle")) {
+      sql.append(" select                                ");
+      sql.append(" count(table_name) cache_count         ");
+      sql.append(" from user_tables                      ");
+      sql.append(" where table_name like 'QUERYRESULT%'  ");
+    } else if (platformName.toLowerCase().startsWith("postgre")) {
+      sql.append(" select                                              ");
+      sql.append(" count(table_name) cache_count                       ");
+      sql.append(" from information_schema.tables                      ");
+      sql.append(" where lower(table_name) like lower('QUERYRESULT%')  "); 
+    } else {
+      return null;
+    }
+
+    return sql.toString();
   }
 
   /**
