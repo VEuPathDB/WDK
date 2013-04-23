@@ -956,7 +956,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     strategy.update().success(function(data) {
       if (wdk.strategy.error.ErrorHandler("RenameStrategy", data, strategy, null, strategy.name, null)) {
         updateStrategies(data);
-        $(".strategy-name").text(strategy.name);
+        $(".strategy-name[data-id='" + strategyId + "']").text(strategy.name);
       }
       wdk.util.removeLoading(strategy.frontId);
     });
