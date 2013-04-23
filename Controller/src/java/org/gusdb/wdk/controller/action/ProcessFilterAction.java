@@ -39,7 +39,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        logger.debug("Entering ProcessFilterAction...");
+        logger.debug("\n\n\n\n\n\n\nEntering ProcessFilterAction...");
 
         logger.debug("strategy: " + request.getParameter("strategy") + ", step: " + request.getParameter("step"));
 
