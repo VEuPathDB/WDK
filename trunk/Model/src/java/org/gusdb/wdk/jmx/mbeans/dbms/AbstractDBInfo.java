@@ -108,12 +108,12 @@ public abstract class AbstractDBInfo {
       }
       if (dbVendor.equals("Oracle")) {
         // if no SQLException was caught then an ACL for UTL_INADDR must be in place.
-        servernameDataMap.put("allowed_oracle_utl_inaddr", "true");
+        servernameDataMap.put("is_allowed_utl_inaddr", "true");
       }
     } catch (WdkModelException | SQLException e) {
         if ( e.getMessage().startsWith("ORA-24247") ) {
           // oracle user needs an ACL for UTL_INADDR
-          servernameDataMap.put("allowed_oracle_utl_inaddr", "false");
+          servernameDataMap.put("is_allowed_utl_inaddr", "false");
         }
         logger.error("Failed attempting\n" + sql + "\n" + e);
     } finally {
