@@ -209,6 +209,15 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
         state: wdk.strategy.controller.p_state
       }
     });
+  };
+
+  // does the strategy have a custom name?
+  Strategy.prototype.hasCustomName = function() {
+    if (this.JSON.steps.length === 0) return false;
+
+    var stepName = this.JSON.steps[1].customName;
+    var regex = new RegExp("^" + stepName + "(\\(\\d+\\))?$");
+    return !regex.test(this.name);
   }
 
   /****************************************************
