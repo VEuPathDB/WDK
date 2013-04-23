@@ -39,7 +39,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        logger.debug("\n\n\n\n\n\n\nEntering ProcessFilterAction...");
+        logger.debug("\nEntering ProcessFilterAction...");
 
         logger.debug("strategy: " + request.getParameter("strategy") + ", step: " + request.getParameter("step"));
 
@@ -413,7 +413,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
             ActionForward forward = new ActionForward(url.toString());
             forward.setRedirect(true);
-            logger.debug("Leaving ProcessFilterAction...");
+            logger.debug("\nLeaving ProcessFilterAction...\n");
             return forward;
         } catch (Exception ex) {
             logger.error(ex);
