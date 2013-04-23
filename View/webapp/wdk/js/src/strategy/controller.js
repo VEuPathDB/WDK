@@ -73,7 +73,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         // show and turn off trigger
         $(this).find(".strategy-name.wdk-editable")
         .editable("show")
-        .editable("option", "trigger", "manual");
+        .editable("option", "trigger", "manual")
+        .on("editablehide", function() {
+          console.log(this);
+          $(this).editable("option", "trigger", "click");
+        });;
       }
     });
   }
