@@ -495,7 +495,7 @@ div.transform a.crumb_name img{
   right: 0px;
   font-size: 12pt;
   margin-right: 18px;
-  top: 0;
+  top: 1em;
   text-align: right;
 }
 
@@ -506,7 +506,7 @@ div.transform a.crumb_name img{
 }
 
 .diagram div.strategy_menu {
-  top: 10px;
+  top: 2em;
   margin-top: 5px;
 }
 
