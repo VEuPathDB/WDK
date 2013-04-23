@@ -519,32 +519,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
                   $("#errors"))) {
                 closeAll();
 
-                wdk.strategy.controller.updateStrategies(data).then(function() {
-                  var stepName = strategy.JSON.steps[1].customName;
-                  var regex = new RegExp("^" + stepName + "(\\(\\d+\\))?$");
-                  if (strategy.Steps.length === 2 && regex.test(strategy.name)) {
-
-                    var title = $("#title-links tr:first td:first");
-
-                    title.animate({
-                      "background-color": "#ffffa0"
-                    }, 800).promise().done(function() {
-                      $(this).animate({
-                        "background-color": "white"
-                      }, 800)
-                    });
-
-                    title.find(".wdk-editable").editable("show").find("input").qtip({
-                      content: {
-                        text: "Give your strategy a custom name to help identify it later."
-                      },
-                      position: {
-                        my: "left center",
-                        at: "right center"
-                      }
-                    }).qtip("show");
-                  }
-                });
+                wdk.strategy.controller.updateStrategies(data);
 
               } else {
                 WizardLoading(false);
