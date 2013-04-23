@@ -570,6 +570,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     private int getSize(AnswerValueBean answerValue, String filterName)
             throws NoSuchAlgorithmException, WdkModelException, JSONException,
             WdkUserException, SQLException {
+  logger.debug("\n\n\n\n\ngetSize: filtername: " + filterName);
         String key = answerValue.getChecksum();
         if (filterName != null) key += ":" + filterName;
 

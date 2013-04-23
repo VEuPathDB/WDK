@@ -74,6 +74,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
         if (childStep != null) {
             attributes.put(ATTR_IMPORT_STEP, childStep.getStepId());
         }
+  logger.debug("\n\n\nLeaving BooleanStageHandler...\n\n\n");
         return attributes;
     }
 

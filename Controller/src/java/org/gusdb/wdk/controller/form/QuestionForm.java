@@ -42,7 +42,7 @@ public class QuestionForm extends MapActionForm {
    * return an ActionErrors object that encapsulates any validation errors
    */
   public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
-    logger.debug("start form validation...");
+    logger.debug("\n\n\n\n\n\nstart form validation...");
     ActionErrors errors = super.validate(mapping, request);
     if (errors == null)
       errors = new ActionErrors();
@@ -136,7 +136,7 @@ public class QuestionForm extends MapActionForm {
       }
     }
 
-    logger.debug("finish validation...");
+    logger.debug("finish validation...\n\n\n\n\n");
     return errors;
   }
 
