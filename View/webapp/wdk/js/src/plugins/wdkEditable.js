@@ -19,16 +19,38 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
   //
   //   $("selector").editable("show")
 
+  var triggers = ['click', 'hover', 'focus'];
+
+  // incremented for each widget created
+  var widgetId = 1;
+
+  function attachTrigger(widget, trigger) {
+
+  }
 
   $.widget("wdk.editable", {
+
     options: {
       // event handler
       save: function() {},
+
       // event handler
       show: function() {},
+
       // event handler
       hide: function() {},
+
+      // events trigger - can be click | hover | focus | manual
+      //   * multiple events can be passed as a space separated list
+      //   * manual will turn off all triggers
+      trigger: "click",
+
+      // select text on show
+      selectOnShow: true,
+
+      // help text
       help: "ENTER to save; ESC to cancel"
+
     },
 
     // initialization code
@@ -36,17 +58,53 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
 
       var widget = this;
 
+      widget._id = widgetId++;
+      widget._ns = ".editable_" + widget._id;
       // input box
       widget.$input = $("<input/>")
       .attr("type", "text");
+
+      // attach triggers
+      widget._attachTrigger(widget.options.trigger);
 
       // attach handlers
       widget.element.on("editableshow", widget.options.show);
       widget.element.on("editablehide", widget.options.hide);
       widget.element.on("editablesave", widget.options.save);
 
-      widget.element.click(function() {
+    },
+
+    _setOption: function(key, value) {
+      if (key === "trigger") {
+        this.options.trigger = value;
+        this._attachTrigger(value);
+      }
+    },
+
+    _attachTrigger: function(trigger) {
+      var widget = this;
+
+      widget.element.off(widget._ns);
+      $("body").off(widget._ns);
+
+      // no trigger
+      if (trigger === "manual") return;
+
+      // namespace triggers
+      var triggerNS = $.map(this.options.trigger.split(/\s+/), function(a) {
+        return a + widget._ns;
+      }).join(" ");
+
+      widget.element.on(triggerNS, function() {
         widget.show.call(widget);
+      });
+
+      // hide if trigger is outside of widget
+      $("body").on(triggerNS, function(e) {
+        if (!widget.element.is(e.target) &&
+            widget.element.has(e.target).length === 0) {
+          widget.hide.call(widget);
+        }
       });
     },
 
@@ -54,7 +112,14 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
     show: function() {
       var widget = this;
 
-      if (widget.element.children('input').length == 0) {
+      // already shown
+      if (widget.element.has('input').length !== 0) return;
+
+      var e = $.Event("editableshow");
+
+      widget.element.trigger(e, [widget]);
+
+      if (!e.isDefaultPrevented()) {
         // cache original value
         widget.value = widget.element.text();
 
@@ -64,10 +129,9 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
 
         widget.$input.select();
 
-        // TODO - replace blur with click outside of element
-        //    this will prevent accidental closing
-        widget.$input.on("blur keyup", function(e) {
-          if (e.type === "blur" || e.which === 13) {
+        // save on ENTER, hide on ESC
+        widget.$input.on("keyup", function(e) {
+          if (e.which === 13) {
             // ENTER pressed - save
             widget.save.call(widget);
           } else if (e.which === 27) {
@@ -75,15 +139,21 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
             widget.hide.call(widget);
           }
         });
-        widget.element.trigger("editableshow", [widget]);
       }
     },
 
     // hide input box
     hide: function() {
       var widget = this;
-      widget.element.text(widget.value);
-      widget.element.trigger("editablehide", [widget]);
+
+      // already hidden
+      if (widget.element.has("input").length === 0) return;
+
+      var e = $.Event("editablehide");
+      widget.element.trigger(e, [widget]);
+      if (!e.isDefaultPrevented()) {
+        widget.element.text(widget.value);
+      }
     },
 
     // save text in input box to DOM element
