@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 
 <modelConfig modelName="templateModel"
-             webServiceUrl="http://localhost:8080/wdk/services/WsfService"
+             webServiceUrl="http://<serverName>/<webappName>/services/WsfService"
              smtpServer="127.0.0.1"
-             supportEmail="support@your-site.com"
+             supportEmail="<supportEmail>"
              >
 
     <appDb login="<dbLogin>"
@@ -31,7 +31,7 @@
       <![CDATA[
           <p>Thank you for registering at Strategies WDK Template Site.</p>
           <p>Your temporary password is: $$PASSWORD$$</p>
-          <p>You may now login to <a href="http://localhost:8080/wdk">Strategies WDK Template</a>.</p>
+          <p>You may now login to <a href="http://<serverName>/<webappName>">Strategies WDK Template</a>.</p>
           <p>Thanks,</p>
           <p>WDK Development Team</p>
       ]]>
