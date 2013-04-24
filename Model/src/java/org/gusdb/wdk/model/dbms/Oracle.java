@@ -332,4 +332,10 @@ public class Oracle extends DBPlatform {
         return " FROM dual";
     }
 
+    @Override
+    public String getResizeColumnSql(String tableName, String column, int size) {
+      return "ALTER TABLE " + tableName + " MODIFY (" + column
+          + " varchar(" + size + ") )";
+    }
+
 }

@@ -1290,8 +1290,10 @@ public class User /* implements Serializable */{
             question = rightStep.getQuestion();
         }
         AnswerFilterInstance filter = null;
-        if (filterName != null)
+				RecordClass recordClass = question.getRecordClass();
+        if (filterName != null) {
             filter = question.getRecordClass().getFilter(filterName);
+				} else filter = recordClass.getDefaultFilter();
         return createBooleanStep(leftStep, rightStep, operator,
                 useBooleanFilter, filter);
     }
