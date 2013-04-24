@@ -7,12 +7,17 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wdk.model.WdkException;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -216,6 +221,9 @@ public class ResultFactory {
 
     public void createCacheTableIndex(Connection connection, String cacheTable,
             String[] indexColumns) throws WdkModelException {
+        // resize the index columns first
+        resizeIndexColumns(connection, cacheTable, indexColumns);
+      
         // create index on query instance id
         StringBuffer sqlId = new StringBuffer("CREATE INDEX ");
         sqlId.append(cacheTable).append("_idx01 ON ").append(cacheTable);
@@ -256,7 +264,65 @@ public class ResultFactory {
             SqlUtils.closeQuietly(stmt);
         }
     }
+    
+    /**
+     * Resize the index columns to the max size defined in the model config 
+     * file. Please note, only varchar columns are resized.
+     *  
+     * @param connection
+     * @param cacheTable
+     * @param indexColumns
+     * @throws SQLException 
+     */
+  private void resizeIndexColumns(Connection connection, String cacheTable,
+      String[] indexColumns) throws WdkModelException {
+    // get the type of the columns
+    Statement statement = null;
+    try {
+      statement = connection.createStatement();
+      ResultSet resultSet = statement.executeQuery("SELECT * FROM "
+          + cacheTable);
+      ResultSetMetaData metaData = resultSet.getMetaData();
+      Map<String, Integer> columnSizes = new LinkedHashMap<>();
+      for (int i = 1; i <= metaData.getColumnCount(); i++) {
+        String column = metaData.getColumnName(i).toLowerCase();
+        String type = metaData.getColumnTypeName(i).toLowerCase();
+        if (type.contains("char"))
+          columnSizes.put(column, metaData.getColumnDisplaySize(i));
+      }
+      metaData = null;
+      resultSet.close();
 
+      // resize columns
+      int maxSize = wdkModel.getModelConfig().getAppDB().getMaxPkColumnWidth();
+      for (String column : indexColumns) {
+        column = column.toLowerCase();
+        if (!columnSizes.containsKey(column)) continue;
+//          throw new WdkModelException("The required index column '" + column
+//              + "' doesn't exist in the cache table: " + cacheTable
+//              + ". Please look up the query in 'Query' table that generates " +
+//              "this cache table, and make sure it returns the index column.");
+
+        
+        String sql = platform.getResizeColumnSql(cacheTable, column, maxSize);
+        statement.executeUpdate(sql);
+      }
+    } catch (SQLException ex) {
+      throw new WdkModelException("Failed to alter the sizes of index columns"
+          + " '" + Utilities.fromArray(indexColumns) + "' on cache table "
+          + cacheTable + ". Please look up the query in 'Query' table that "
+          + "creates this cache, and make sure the maxPkColumnWidth property "
+          + "defined in the model-config.xml is the same or bigger than the "
+          + "size of primary key columns from that query.", ex);
+    } finally {
+      try {
+        if (statement != null) statement.close();
+      } catch (SQLException ex) {
+        throw new WdkModelException(ex);
+      }
+    }
+  }
+    
     private void addCacheInstance(Connection connection, QueryInfo queryInfo,
             QueryInstance instance, int instanceId, String checksum)
     		throws WdkModelException {
