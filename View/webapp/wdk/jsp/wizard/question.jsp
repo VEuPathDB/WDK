@@ -4,6 +4,8 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
+<%@ page contentType="text/html;charset=iso-8859-1" %>
+
 <c:set var="wdkQuestion" value="${requestScope.question}"/>
 <c:set var="spanOnly" value="false"/>
 <c:set var="checked" value=""/>
