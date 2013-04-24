@@ -69,7 +69,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       .editable("hide")
       .editable("option", "trigger", "click");
 
-      if (!strategy.hasCustomName()) {
+      if (strategy.Steps.length > 1 && !strategy.hasCustomName()) {
         // show and turn off trigger
         $(this).find(".strategy-name.wdk-editable")
         .editable("show")
