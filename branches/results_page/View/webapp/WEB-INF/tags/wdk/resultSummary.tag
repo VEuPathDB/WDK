@@ -29,9 +29,9 @@
 
 
 <td class="h3left" style="vertical-align:middle;padding-bottom:7px;">
-  <span id="text_step_count">${wdkAnswer.resultSize} </span><span id="text_data_type">${recordName}</span>&nbsp;from<br>
+  <span id="text_step_count">${wdkAnswer.resultSize} </span><span id="text_data_type">${recordName}</span>&nbsp;from
   <c:if test="${strategy != null}">
-    Step <span id="text_step_number">${strategy.length}</span> of Strategy:	
+    Step <span id="text_step_number">${strategy.length}</span> <br/> of Strategy:	
 			<span 
           class="wdk-editable strategy-name" 
           data-id="${strategy.strategyId}"
