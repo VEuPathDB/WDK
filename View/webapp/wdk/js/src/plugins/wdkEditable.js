@@ -129,6 +129,8 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
 
         widget.$input.select();
 
+        widget.element.addClass(widget.widgetBaseClass + "-show");
+
         // save on ENTER, hide on ESC
         widget.$input.on("keyup", function(e) {
           if (e.which === 13) {
@@ -153,6 +155,7 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
       widget.element.trigger(e, [widget]);
       if (!e.isDefaultPrevented()) {
         widget.element.text(widget.value);
+        widget.element.removeClass(widget.widgetBaseClass + "-show");
       }
     },
 
