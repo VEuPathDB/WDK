@@ -36,6 +36,11 @@
 
                 <element name="appDb">
                     <attribute name="userDbLink" />
+                    <optional>
+                        <attribute name="maxPkColumnWidth">
+                            <data type="unsignedShort" />
+                        </attribute>
+                    </optional>
                     <ref name="DBBaseContent" />
                 </element>
                 

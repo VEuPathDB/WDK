@@ -77,10 +77,8 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
             .html("<a onclick='wdk.strategy.controller.closeStrategy(" +
                 strat.frontId + ")' href='javascript:void(0)'>"+
                 "<img alt='Click here to close the strategy (it will only be " +
-                "removed from the display)' src='wdk/images/Close-X.png' " +
-                "title='Click here to close the strategy (it will only be " +
-                "removed from the display)' height='15' width='15' " +
-                "src='wdk/images/Close-X.png'/></a>");
+                "removed from the display)' src='wdk/images/close.gif' " +
+                "title='Click here to close the strategy (you can open it from the All tab)'/></a>");
         $(div_strat).append(close_span);
 
         var stratNameMenu = createStrategyName(strat);
@@ -572,11 +570,11 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         insertRecName + "\");'>Insert Step Before</a>&nbsp;|&nbsp;";
     var customMenu = "";
 
-    // this code (function in html/assets/js/customStrategy.js)  adds the ortholog link 
+    // this code (function in wdkCustomization/js/customStrategy.js)  adds the ortholog link 
     try {
       customMenu = customCreateDetails(jsonStep, modelstep, strat);
     } catch(err) {
-      // Do nothing?
+      alert("view.js: a backend error occurred.");
     }
 
     var delete_strat = '';
@@ -778,7 +776,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "<span class='h3left'>" + sTitle + "</span>" + 
         "</div>"+ 
         "<a class='close_window' href='javascript:wdk.addStepPopup.closeModal()'>"+
-        "<img alt='Close' src='wdk/images/Close-X.png' height='16' />" +
+        "<img alt='Close' src='wdk/images/close.gif' />" +
         "</a>"+
         "</div>"+
         "<form id='save_strat_form' onsubmit='return wdk.addStepPopup.validateSaveForm(this);'" +

@@ -47,7 +47,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           try {
             customShowError();
           } catch(e) {
-            alert("An error occurred.");
+            alert("controller.js: a backend error occurred.");
           }
           if (this.url.indexOf("showSummary.do") != -1) {
             wdk.util.removeLoading();
