@@ -5,8 +5,9 @@ wdk.util.namespace("window.wdk.plugin", function(ns, $) {
     return this.each(function() {
       var $this = $(this),
           sorting = $this.data("sorting"),
-          aoColumns = [],
           dataTableOpts = {
+            aoColumns: null,
+            sScrollX: "100%",
             sScrollY: "600px",
             bScrollCollapse: true,
             bPaginate: false,
@@ -19,12 +20,19 @@ wdk.util.namespace("window.wdk.plugin", function(ns, $) {
       if ($this.length === 0) return;
 
       if (sorting) {
-        aoColumns = $.map(sorting, function(s) {
-          var types = ['string', 'numeric', 'data', 'html'];
-          return {
-            "bSortable" : Boolean(s),
-            "sType" : types.join("@~@").indexOf(s) > -1 ? s : [null]
+        dataTableOpts.aoColumns = $.map(sorting, function(s) {
+          var column = {},
+              types = ['string', 'numeric', 'data', 'html'];
+          if (s === true) {
+            // if true, use defaults -- map wants [null]
+            column = [null];
+          } else {
+            // bSortable must be a Boolean
+            column.bSortable = Boolean(s);
+            // only set sType if a valid type
+            if (types.join("@~@").indexOf(s) > -1) column.sType = s;
           };
+          return column;
         });
       }
 

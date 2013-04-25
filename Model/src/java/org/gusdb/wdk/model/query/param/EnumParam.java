@@ -2,7 +2,10 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
+import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
@@ -42,11 +45,12 @@ public class EnumParam extends AbstractEnumParam {
   // ///////////////////////////////////////////////////////////////////
 
   @Override
-  protected EnumParamCache createEnumParamCache(String dependedValue)
-      throws WdkModelException {
-    logger.trace("Entering createEnumParamCache(" + dependedValue + ")");
-    Param dependedParam = getDependedParam();
-    EnumParamCache cache = new EnumParamCache(this, dependedValue);
+  protected EnumParamCache createEnumParamCache(
+      Map<String, String> dependedParamValues) throws WdkModelException {
+    logger.trace("Entering createEnumParamCache("
+        + Utilities.print(dependedParamValues) + ")");
+    Set<Param> dependedParams = getDependedParams();
+    EnumParamCache cache = new EnumParamCache(this, dependedParamValues);
     EnumItem[] enumItems = enumItemList.getEnumItems();
     for (EnumItem item : enumItems) {
       String term = item.getTerm();
@@ -58,7 +62,7 @@ public class EnumParam extends AbstractEnumParam {
       // term = term.replaceAll("[,]", "_");
       // if (parentTerm != null)
       // parentTerm = parentTerm.replaceAll("[,]", "_");
-      if (term.indexOf(',') >= 0 && dependedParam != null)
+      if (term.indexOf(',') >= 0 && dependedParams != null)
         throw new WdkModelException(this.getFullName()
             + ": The term cannot contain comma: '" + term + "'");
       if (parentTerm != null && parentTerm.indexOf(',') >= 0)
@@ -69,8 +73,7 @@ public class EnumParam extends AbstractEnumParam {
       if (isDependentParam()) {
         // if this is a dependent param, only include items that are
         // valid for the current depended value
-        String[] dependedValues = dependedValue.split(",");
-        skip = !item.isValidFor(dependedValues);
+        skip = !item.isValidFor(dependedParamValues);
       }
 
       if (!skip) {
@@ -84,7 +87,8 @@ public class EnumParam extends AbstractEnumParam {
 
     initTreeMap(cache);
     applySelectMode(cache);
-    logger.trace("Leaving createEnumParamCache(" + dependedValue + ")");
+    logger.trace("Leaving createEnumParamCache("
+        + Utilities.print(dependedParamValues) + ")");
     return cache;
   }
 

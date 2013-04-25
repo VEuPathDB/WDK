@@ -141,9 +141,10 @@ public class ShowQuestionAction extends Action {
         EnumParamBean enumParam = (EnumParamBean) param;
 
         if (enumParam.isDependentParam()
-            && enumParam.getDependedValue() == null) {
+            && enumParam.getDependedValues().size() == 0) {
           // value not previously set (e.g. by getVocabAction)
-          ParamBean<?> dependedParam = enumParam.getDependedParam();
+          Map<String, String> dependedValues = new LinkedHashMap<>();
+          for (ParamBean<?> dependedParam : enumParam.getDependedParams()) {
           String currentDependedValue = paramValues.get(dependedParam.getName());
           if (currentDependedValue == null) {
             // no previous value supplied; use default value
@@ -160,7 +161,9 @@ public class ShowQuestionAction extends Action {
               currentDependedValue = dependedParam.getDefault();
             }
           }
-          enumParam.setDependedValue(currentDependedValue);
+          dependedValues.put(dependedParam.getName(), currentDependedValue);
+          }
+          enumParam.setDependedValues(dependedValues);
         }
 
         String[] terms = enumParam.getVocab();

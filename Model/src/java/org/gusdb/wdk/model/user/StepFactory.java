@@ -573,6 +573,8 @@ public class StepFactory {
         Step step = stepCache.getStep(user.getUserId(), displayId);
         if (step != null) return step;
 
+				logger.debug("\nStepFactory: loadStep()\n");
+
         // load Step info
         int stepId = rsStep.getInt(COLUMN_STEP_INTERNAL_ID);
         String questionName = rsStep.getString(AnswerFactory.COLUMN_QUESTION_NAME);
@@ -624,6 +626,7 @@ public class StepFactory {
         //if (!step.isValid()) setStepValidFlag(step);
         
         //stepCache.addStep(step);
+				logger.debug("\nStepFactory: finished loading Step()\n");
         return step;
     }
 

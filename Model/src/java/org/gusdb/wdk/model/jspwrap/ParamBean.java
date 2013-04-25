@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
@@ -191,5 +192,9 @@ public abstract class ParamBean<T extends Param> {
 
     public String getType() {
         return param.getClass().getSimpleName();
+    }
+
+    public Set<String> getAllValues() throws WdkModelException {
+      return param.getAllValues();
     }
 }
