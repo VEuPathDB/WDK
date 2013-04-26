@@ -206,7 +206,9 @@ function getWebAppUrl() {
       var show = $(this).attr("show");
       var active = (show == "true") ? 0 : false;
       $(this).accordion({
-        autoHeight: false,
+        // autoHeight: false,  // deprecated option; see http://jqueryui.com/upgrade-guide/1.9/#deprecated-autoheight-clearstyle-and-fillspace-options-merged-into-heightstyle
+        heightStyle: "content",
+        animate: "swing",
         collapsible: true,
         active: active
       });
