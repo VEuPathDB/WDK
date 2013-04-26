@@ -61,7 +61,7 @@
 	  </div>
 	</div>
 	<div>
-	  <form id="error-submission-form" method="post" action="contactUs.do">
+	  <form id="error-submission-form" method="post" action="mailto:${supportEmail}">
 	    <input type="hidden" name="subject" value="WDK Error Submission From User"/>
 	    <input type="hidden" name="reply" value=""/>
 	    <input type="hidden" name="addCc" value=""/>

@@ -70,6 +70,7 @@ public class LoginForm extends ActionForm {
 
     public ActionErrors validate(ActionMapping mapping,
             HttpServletRequest request) {
-      throw new NullPointerException("Test exception");
+      // do nothing
+      return null;
     }
 }
