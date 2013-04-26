@@ -276,6 +276,8 @@ public class ResultFactory {
      */
   private void resizeIndexColumns(Connection connection, String cacheTable,
       String[] indexColumns) throws WdkModelException {
+    if (indexColumns == null || indexColumns.length == 0) return;
+
     // get the type of the columns
     Statement statement = null;
     try {
