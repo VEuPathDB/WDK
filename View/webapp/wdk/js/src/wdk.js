@@ -574,7 +574,7 @@ function getWebAppUrl() {
     setUpDialogs();
     setUpPopups();
     load();
-    $("body").ajaxSuccess(load);
+    $(document).ajaxSuccess(load);
   }
 
 
