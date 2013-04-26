@@ -18,6 +18,7 @@ package org.gusdb.wdk.model.config;
 public class ModelConfigAppDB extends ModelConfigDB {
 
   private String userDbLink;
+  private short maxPkColumnWidth = 150;
 
   /**
    * @return the userDbLink
@@ -35,4 +36,21 @@ public class ModelConfigAppDB extends ModelConfigDB {
       userDbLink = "@" + userDbLink;
     this.userDbLink = userDbLink;
   }
+
+  /**
+   * Get the max width for the primaryKey column. The primary key columns in the
+   * cache table will be resized to this given size. If the the value of the
+   * columns is larger than this size, an exception will be thrown, and this
+   * exception should be caught and resolved during sanity test.
+   * 
+   * @return
+   */
+  public short getMaxPkColumnWidth() {
+    return maxPkColumnWidth;
+  }
+
+  public void setMaxPkColumnWidth(short maxPkColumnWidth) {
+    this.maxPkColumnWidth = maxPkColumnWidth;
+  }
+
 }

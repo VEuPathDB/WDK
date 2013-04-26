@@ -18,6 +18,8 @@
     margin: 2px;
 }
 
+.filter-layout td { padding:0px; }
+
 .filter-layout .layout-detail td, .filter-layout .layout-detail th {
     text-align: center;
     border: 1px solid black;
@@ -31,7 +33,7 @@
 .filter-instance {
     text-align: center;
     vertical-align: middle;
-    padding: 0px;
+    padding: 4px;
     margin: 0px;
 }
 
