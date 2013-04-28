@@ -47,7 +47,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           try {
             customShowError();
           } catch(e) {
-            alert("An error occurred.");
+            alert("controller.js: a backend error occurred.");
           }
           if (this.url.indexOf("showSummary.do") != -1) {
             wdk.util.removeLoading();
@@ -389,7 +389,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     ns.strats[ord] = strat;
     strat.initSteps(strategy.steps, ord);
     strat.dataType = strategy.steps[strategy.steps.length].dataType;
-    strat.displayType = strategy.steps[strategy.steps.length].displayType;
+    strat.displayType = strategy.steps[strategy.steps.length].displayType; //corresponds with record displayName in model e.g. Metabolic Pathway (singular always)
     strat.nonTransformLength = strategy.steps.nonTransformLength;
     strat.DIV = wdk.strategy.view.displayModel(strat);
     return strat.frontId;

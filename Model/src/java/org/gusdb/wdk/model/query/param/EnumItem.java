@@ -2,11 +2,18 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import javax.script.ScriptException;
+
+import org.gusdb.fgputil.JavaScript;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
+import org.json.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONException;
 
 /**
  * This class represent a display/term/internal tuplet of an enumParam value. An
@@ -29,7 +36,8 @@ public class EnumItem extends WdkModelBase {
   private String term;
   private String internal;
   private String parentTerm;
-  private List<String> dependedValues;
+  private List<WdkModelText> dependedExpressions;
+  private String dependedExpression;
   /**
    * If true, the current enum item will be used as the default value of the
    * param.
@@ -40,7 +48,7 @@ public class EnumItem extends WdkModelBase {
    * default constructor called by digester
    */
   public EnumItem() {
-    dependedValues = new ArrayList<String>();
+    dependedExpressions = new ArrayList<>();
   }
 
   /**
@@ -54,7 +62,8 @@ public class EnumItem extends WdkModelBase {
     this.internal = enumItem.internal;
     this.isDefault = enumItem.isDefault;
     this.parentTerm = enumItem.parentTerm;
-    this.dependedValues = enumItem.dependedValues;
+    this.dependedExpressions = new ArrayList<>(enumItem.dependedExpressions);
+    this.dependedExpression = enumItem.dependedExpression;
   }
 
   /**
@@ -109,8 +118,27 @@ public class EnumItem extends WdkModelBase {
    * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
    */
   @Override
-  public void excludeResources(String projectId) {
-    // do nothing
+  public void excludeResources(String projectId) throws WdkModelException {
+    // exclude depended values. the depended values in the model are defined in
+    // a form such as name:value,name:value,name:value
+    for (WdkModelText exp : dependedExpressions) {
+      if (exp.include(projectId)) {
+        if (dependedExpression != null) {
+          // the expression has already been set, can have only one.
+          throw new WdkModelException("More than one depended expression "
+              + "defined for term '" + term + "'");
+        }
+        dependedExpression = exp.getText();
+        // validate the expression
+        JavaScript jsLibrary = new JavaScript();
+        if (!jsLibrary.isValidBooleanExpression(dependedExpression)) {
+          // the expression is invalid
+          throw new WdkModelException("The depended expression is invalid: "
+              + dependedExpression);
+        }
+      }
+    }
+    dependedExpressions.clear();
   }
 
   /*
@@ -140,13 +168,11 @@ public class EnumItem extends WdkModelBase {
   }
 
   public void addDependedValue(WdkModelText dependedValue) {
-    if (!dependedValues.contains(dependedValue.getText())) {
-      dependedValues.add(dependedValue.getText());
-    }
+    dependedExpressions.add(dependedValue);
   }
 
-  public List<String> getDependedValues() {
-    return dependedValues;
+  public String getDependedExpression() {
+    return dependedExpression;
   }
 
   /**
@@ -155,13 +181,27 @@ public class EnumItem extends WdkModelBase {
    * 
    * @param dependedValues
    * @return
+   * @throws WdkModelException
    */
-  public boolean isValidFor(String[] dependedValues) {
-    for (String dependedValue : dependedValues) {
-      if (this.dependedValues.contains(dependedValue)) {
-        return true;
+  public boolean isValidFor(Map<String, String> dependedParamValues)
+      throws WdkModelException {
+    // convert the map into a JSON
+    try {
+      JSONObject jsValues = new JSONObject();
+      for(String name : dependedParamValues.keySet()) {
+        String values = dependedParamValues.get(name);
+        JSONArray array = new JSONArray();
+        for (String value : values.split(",")) {
+          array.put(value);
+        }
+        jsValues.put(name, array);
       }
+
+      JavaScript jsLibrary = new JavaScript();
+      return jsLibrary.evaluateBooleanExpression(dependedExpression,
+          jsValues.toString());
+    } catch (ScriptException | JSONException ex) {
+      throw new WdkModelException(ex);
     }
-    return false;
   }
 }

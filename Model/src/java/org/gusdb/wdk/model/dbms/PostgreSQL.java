@@ -166,22 +166,25 @@ public class PostgreSQL extends DBPlatform {
         return commit ? ps.executeUpdate() : 0;
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Check the existence of a table. If the schema is null or empty, the 
+     * schema will will be ignored, and will look up the table in the public 
+     * schema.
      * 
      * @see org.gusdb.wdk.model.dbms.DBPlatform#isTableExisted(java.lang.String)
      */
     @Override
     public boolean checkTableExists(String schema, String tableName)
             throws WdkModelException {
-        if (schema == null || schema.length() == 0) schema = defaultSchema;
+        if (schema == null || schema.trim().length() == 0) schema = "";
         if (schema.endsWith("."))
             schema = schema.substring(0, schema.length() - 1);
         tableName = tableName.toLowerCase();
 
         StringBuffer sql = new StringBuffer("SELECT count(*) FROM pg_tables ");
         sql.append("WHERE tablename = '").append(tableName).append("'");
-        sql.append(" AND schemaname = '").append(schema).append("'");
+        if (!schema.equals(""))
+          sql.append(" AND schemaname = '").append(schema).append("'");
         long count = (Long) SqlUtils.executeScalar(wdkModel, dataSource,
                 sql.toString(), "wdk-check-table-exist");
         return (count > 0);
@@ -278,5 +281,11 @@ public class PostgreSQL extends DBPlatform {
     @Override
     public String getDummyTable() {
         return " ";
+    }
+
+    @Override
+    public String getResizeColumnSql(String tableName, String column, int size) {
+      return "ALTER TABLE " + tableName + " ALTER COLUMN " + column
+          + " TYPE varchar(" + size + ")";
     }
 }

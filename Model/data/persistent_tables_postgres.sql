@@ -268,6 +268,7 @@ CREATE TABLE wdkuser.strategies
      last_modify_time TIMESTAMP DEFAULT NOW(),
      description varchar(4000),
      signature varchar(40),
+     version varchar(100),
      name varchar(200) NOT NULL,
      saved_name varchar(200),
      is_deleted BOOLEAN,

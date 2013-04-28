@@ -23,7 +23,7 @@
         <c:forEach begin="${startIndex}" end="${endIndex}" varStatus="array">
           <c:if test="${endIndex lt numAttribs}">
             <c:set var="attrib" value="${attributes[array.index]}"/>
-            <input type="checkbox" name="o-fields" value="${attrib.name}"/>
+            <input type="checkbox" name="selectedFields" value="${attrib.name}"/>
             ${empty attrib.displayName ? attrib.name : attrib.displayName}
             <c:if test="${attrib.name eq 'primaryKey'}">ID</c:if>
             <br/>

@@ -9,6 +9,7 @@
               description="Page calling this tag. The list of WDK recognized refer values are: home, question, summary, record"/>
 
   <jsp:directive.attribute name="min"
+      type="java.lang.Boolean"
       required="false"/>
 
   <c:set var="urlBase" value="${pageContext.request.contextPath}"/>
@@ -38,7 +39,7 @@
   <!-- WDK js and css -->
 
   <c:choose>
-    <c:when test="${param._js eq 'min' or min eq 'true'}">
+    <c:when test="${param._js eq 'min' or min}">
       <!-- minified files -->
       <script src="${urlBase}/wdk/js/wdk-min.js"><jsp:text/></script>
     </c:when>
@@ -66,6 +67,7 @@
       <script src="${urlBase}/wdk/js/src/tooltips.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/user.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/util.js"><jsp:text/></script>
+      <script src="${urlBase}/wdk/js/src/reporter.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/wdk.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/wordCloud.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/plugins/wdkDataTables.js"><jsp:text/></script>

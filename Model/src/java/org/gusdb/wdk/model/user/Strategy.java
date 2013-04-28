@@ -60,8 +60,8 @@ public class Strategy {
     }
 
     public String getVersion() {
-        if (latestStep != null)
-            version = latestStep.getAnswer().getProjectVersion();
+				// if (latestStep != null)
+				//  version = latestStep.getAnswer().getProjectVersion();
         return version;
     }
 
