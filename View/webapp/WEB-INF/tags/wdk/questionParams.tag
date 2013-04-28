@@ -55,9 +55,9 @@
       </c:when>
 
       <c:otherwise>  <!-- REGULAR SET OF PARAMS -->
-        <%-- if displayType is empty, then don't make collapsible --%>
+        <%-- if displayType is empty, then do not make collapsible --%>
         <c:set var="paramClass" value=""/>
-        <c:set var="groupDisplay" value="block"/>
+        <c:set var="groupDisplay" value=""/>
 
         <c:choose>
           <%-- hide group if not visible -- based on visible attribute of params --%>
@@ -70,19 +70,20 @@
           </c:when>
           <c:otherwise>  <-- REGULAR SET OF PARAMS -->
             <c:if test="${group.visible ne true}">
-              <c:set var="groupDisplay" value="none"/>
+              <c:set var="groupDisplay" value="hidden"/>
             </c:if>
             <div name="${wdkQuestion.name}_${group.name}" class="param-group ${displayType} collapsible content-pane">
               <div class="group-title h4left" title="Click to expand or collapse">${groupName}</div>
           </c:otherwise>
         </c:choose>
 
-          <div class="group-detail" style="display:${groupDisplay};">
-        
+          <div class="group-detail ${groupDisplay}">
+
           <c:set var="paramCount" value="${fn:length(paramGroup)}"/>
+
           <%-- display parameter list --%>
           <imp:questionParamGroup paramGroup="${paramGroup}" />
-        
+
           </div> <%-- end of group-detail div --%>
 
         </div> <%-- end of param-group div --%>

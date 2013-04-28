@@ -173,6 +173,8 @@ public abstract class DBPlatform {
             throws WdkModelException;
     
     public abstract String getDummyTable();
+    
+    public abstract String getResizeColumnSql(String tableName, String column, int size);
 
     // #########################################################################
     // Common methods are platform independent
@@ -274,4 +276,5 @@ public abstract class DBPlatform {
     public void close() throws Exception {
         connectionPool.close();
     }
+    
 }

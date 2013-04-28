@@ -22,6 +22,7 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.GroupBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -370,11 +371,24 @@ public class ShowStrategyAction extends ShowQuestionAction {
         // the root of the sub-strategy should not be collapsed
         jsStep.put("isCollapsed", step.getIsCollapsible() && showSubStrategy);
         jsStep.put("isUncollapsible", step.isUncollapsible());
-        jsStep.put("dataType", step.getRecordClass().getFullName());
-        jsStep.put("displayType", step.getRecordClass().getDisplayName());
-        jsStep.put("shortDisplayType", step.getRecordClass().getShortDisplayName());
-        jsStep.put("displayTypePlural", step.getRecordClass().getDisplayNamePlural());
-        jsStep.put("shortDisplayTypePlural", step.getRecordClass().getShortDisplayNamePlural());
+
+    try {
+      RecordClassBean recordClass = step.getRecordClass();
+      jsStep.put("dataType", recordClass.getFullName());
+      jsStep.put("displayType", recordClass.getDisplayName());
+      jsStep.put("shortDisplayType", recordClass.getShortDisplayName());
+      jsStep.put("displayTypePlural", recordClass.getDisplayNamePlural());
+      jsStep.put("shortDisplayTypePlural",
+          recordClass.getShortDisplayNamePlural());
+    } catch (WdkModelException ex) {
+      jsStep.put("dataType", "unknown");
+      jsStep.put("displayType", "unknown");
+      jsStep.put("shortDisplayType", "unknown");
+      jsStep.put("displayTypePlural", "unknown");
+      jsStep.put("shortDisplayTypePlural", "unknown");
+      jsStep.put("invalidQuestion", "true");
+    }
+
         jsStep.put("shortName", step.getShortDisplayName());
         jsStep.put("results", step.getEstimateSize());
         jsStep.put("questionName", step.getQuestionName());
@@ -464,7 +478,12 @@ public class ShowStrategyAction extends ShowQuestionAction {
         if (param instanceof EnumParamBean) {
         	EnumParamBean enumParam = (EnumParamBean)param;
         	if (enumParam.isDependentParam()) {
-        		enumParam.setDependedValue(getUserDependentValue(paramValues, enumParam.getDependedParam()));
+        	  Map<String, String> dependedValues = new LinkedHashMap<>();
+        	  for (ParamBean<?> dependedParam : enumParam.getDependedParams()) {
+        	    String dependedValue = getUserDependentValue(paramValues, dependedParam);
+        	    dependedValues.put(dependedParam.getName(), dependedValue);
+        	  }
+        	  enumParam.setDependedValues(dependedValues);
         	}
             return enumParam.getRawDisplayValue();
         }
@@ -479,7 +498,12 @@ public class ShowStrategyAction extends ShowQuestionAction {
                 if (param instanceof EnumParamBean) {
                     EnumParamBean enumParam = (EnumParamBean)param;
                     if (enumParam.isDependentParam()) {
-                        enumParam.setDependedValue(getUserDependentValue(paramValues, enumParam.getDependedParam()));
+                      Map<String, String> dependedValues = new LinkedHashMap<>();
+                      for (ParamBean<?> dependedParam : enumParam.getDependedParams()) {
+                        String dependedValue = getUserDependentValue(paramValues, dependedParam);
+                        dependedValues.put(dependedParam.getName(), dependedValue);
+                      }
+                      enumParam.setDependedValues(dependedValues);
                     }
                 }
                 return param.getDefault();

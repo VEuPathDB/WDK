@@ -51,6 +51,8 @@
 
           <ref name="constant" />
           
+          <ref name="uiConfig" />
+          
         </choice>
       </oneOrMore>
     </element>
@@ -122,6 +124,11 @@
 					</choice>
 			  </attribute>
 	    </optional>
+      <optional>
+        <attribute name="flattenInMenu">
+          <data type="boolean" />
+        </attribute>
+      </optional>
 	    <ref name="IncludeExclude"/>
 	    <zeroOrMore>
 	      <element name="questionRef">
@@ -1395,6 +1402,22 @@
           <text />
         </element>
       </zeroOrMore>
+  </define>
+  
+  <define name="uiConfig">
+    <element name="uiConfig">
+      <ref name="IncludeExclude"/>
+      <zeroOrMore>
+        <element name="extraLogoutCookies">
+          <zeroOrMore>
+            <element name="cookie">
+              <attribute name="name"/>
+              <attribute name="path"/>
+            </element>
+          </zeroOrMore>
+        </element>
+      </zeroOrMore>
+    </element>
   </define>
 
 </grammar>
