@@ -93,11 +93,9 @@ public class StepFactory {
     private final DBPlatform userPlatform;
     private final DataSource dataSource;
     
-    private final StepCache stepCache;
 
     public StepFactory(WdkModel wdkModel) {
         this.wdkModel = wdkModel;
-        this.stepCache = new StepCache();
         this.userPlatform = wdkModel.getUserPlatform();
         dataSource = userPlatform.getDataSource();
 
@@ -163,6 +161,7 @@ public class StepFactory {
                 userId);
         sqlMaxId.append(" AND s.").append(answerIdColumn);
         sqlMaxId.append(" = a.").append(answerIdColumn);
+        // sqlMaxId.append(" AND a.project_id = '" + answer.getProjectId() + "'");
 
         StringBuffer sqlInsertStep = new StringBuffer("INSERT INTO ");
         sqlInsertStep.append(userSchema).append(TABLE_STEP).append(" (");
@@ -527,9 +526,6 @@ public class StepFactory {
 
     // get left child id, right child id in here
     Step loadStep(User user, int displayId) throws WdkModelException {
-        Step step = stepCache.getStep(user.getUserId(), displayId);
-        if (step != null) return step;
-        
         String answerIdColumn = AnswerFactory.COLUMN_ANSWER_ID;
         ResultSet rsStep = null;
         String sql = "SELECT h.*, a." + AnswerFactory.COLUMN_ANSWER_CHECKSUM
@@ -570,8 +566,6 @@ public class StepFactory {
     private Step loadStep(User user, ResultSet rsStep)
             throws WdkModelException, SQLException, JSONException {
         int displayId = rsStep.getInt(COLUMN_DISPLAY_ID);
-        Step step = stepCache.getStep(user.getUserId(), displayId);
-        if (step != null) return step;
 
 				logger.debug("\nStepFactory: loadStep()\n");
 
@@ -579,7 +573,7 @@ public class StepFactory {
         int stepId = rsStep.getInt(COLUMN_STEP_INTERNAL_ID);
         String questionName = rsStep.getString(AnswerFactory.COLUMN_QUESTION_NAME);
 
-        step = new Step(this, user, displayId, stepId);
+        Step step = new Step(this, user, displayId, stepId);
         step.setCreatedTime(rsStep.getTimestamp(COLUMN_CREATE_TIME));
         step.setLastRunTime(rsStep.getTimestamp(COLUMN_LAST_RUN_TIME));
         step.setCustomName(rsStep.getString(COLUMN_CUSTOM_NAME));
