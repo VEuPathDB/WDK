@@ -361,12 +361,13 @@ public final class SqlUtils {
   private static void logQueryTime(WdkModel wdkModel, String sql, String name,
 				   long startTime, long firstPageTime, boolean isLeak) {
     // verify the name
-    if (name.length() > 100 || name.indexOf('\n') >= 0) {
-      StringWriter writer = new StringWriter();
-      new Exception().printStackTrace(new PrintWriter(writer));
-      logger.warn("The name of the sql is suspicious, name: '" + name
-		  + "', trace:\n" + writer.toString());
-    }
+    // we now have long dataset names, the length validation isn't appropriate now.
+//    if (name.length() > 100 || name.indexOf('\n') >= 0) {
+//      StringWriter writer = new StringWriter();
+//      new Exception().printStackTrace(new PrintWriter(writer));
+//      logger.warn("The name of the sql is suspicious, name: '" + name
+//		  + "', trace:\n" + writer.toString());
+//    }
 
     double lastPageSeconds = (System.currentTimeMillis() - startTime) / 1000D;
     double firstPageSeconds = firstPageTime < 0? lastPageSeconds : (firstPageTime - startTime) / 1000D;
