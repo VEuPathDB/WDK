@@ -1,7 +1,7 @@
 wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   "use strict";
 
-  var dependedParams;
+  var dependedParams = {};
   var dependedValues;
   var displayTermMap;
   var oldValues;
@@ -53,24 +53,42 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       var dependedNames = $(this).attr('dependson').split(",");
       for (var i=0; i < dependedNames.length; i++) {
           var dependedName = dependedNames[i];
-          var dependedParam = $("#" + dependedName + 
-              "aaa input[name='array(" + dependedName + ")'], #" + 
-              dependedName + "aaa select[name='array(" + dependedName + 
-              ")']");
-          dependedParam.change(function() {
-            updateDependentParam(name).then(function() {
-              wdk.event.publish("questionchange");
-              dependedParam.parents("form").change();
-            });
-          });
-      }
-      if ($(this).has('input.typeAhead').length > 0) {
-        dependedParam.change();
+          var dependentList = dependedParams[dependedName] ? dependedParams[dependedName] : [];
+          dependentList.push(name);
+          dependedParams[dependedName] = dependentList;
       }
 
       $('input, select', this).attr('disabled',false);
     });
-    
+
+      // register change event to dependedParam only once
+      for (var dependedName in dependedParams) {
+           var dependedParam = $("div.param[name='" + dependedName + "']");
+          dependedParam.change(function() {
+              var dependedName = $(this).attr("name");
+              // set ready flag to false on all its dependent params
+              var dependentList = dependedParams[dependedName];
+              for (var i = 0; i < dependentList.length; i++) {
+                  $(".dependentParam[name='" + dependentList[i] + "']").find("input, select").prop("disabled", true);
+              }
+              // fire update event
+              var changed = false;
+              for (var i = 0; i <  dependentList.length; i++) {
+                  var dependentName = dependentList[i];
+                  var result =  updateDependentParam(dependentName);
+                  if (result)
+                    result.then(function() {
+                      wdk.event.publish("questionchange");
+                      dependedParam.parents("form").change();
+                    });
+              }
+          });
+
+          if (dependedParam.has('input.typeAhead').length > 0) {
+              dependedParam.change();
+          }
+      }
+
     //If revising, store all of the old param values before triggering the depended 
     //   param's change function.
     if (isEdit) {
@@ -189,6 +207,13 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     // get the current param
     var dependentParam = $("div.dependentParam[name='" + paramName + "']");
     var dependedNames = dependentParam.attr('dependson').split(",");
+
+    // check if all the depended params are ready
+    for (var i=0; i < dependedNames.length; i++) {
+        var dependedName = dependedNames[i];
+        var notReady = $(".param[name='" + dependedName + "']").find("input, select").prop("disabled");
+        if (notReady) return;
+    }
   
     var dependedValues = {};
     var hasValue = false;
@@ -239,6 +264,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
           dataType: "xml",
           success: function(data) {
             $('input',dependentParam).removeAttr('disabled');
+            $(".param[name='" + paramName + "']").attr("ready", "");
             createAutoComplete(data, paramName);
           }
         });
@@ -269,6 +295,8 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
               }
               oldValues[name] = null;
             }
+            $(".param[name='" + paramName + "']").attr("ready", "");
+            dependentParam.change();
           },
           error: function (jqXHR, textStatus, errorThrown) {
             alert("Error retrieving dependent param: " + textStatus + "\n" + errorThrown);
