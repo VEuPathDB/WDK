@@ -4,8 +4,6 @@
 package org.gusdb.wdk.model.dbms;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,12 +12,12 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Wrapper;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Collections;
 
 import javax.sql.DataSource;
 
@@ -41,8 +39,8 @@ public final class SqlUtils {
   private static Map<ResultSet, QueryLogInfo> queryLogInfos = Collections.synchronizedMap(new HashMap<ResultSet, QueryLogInfo>());
 
   /**
-   * Close the resultSet and the underlying statement, connection.
-   * Log the query.
+   * Close the resultSet and the underlying statement, connection. Log the
+   * query.
    * 
    * @param resultSet
    * @throws SQLException
@@ -57,7 +55,7 @@ public final class SqlUtils {
           try {
             stmt = resultSet.getStatement();
           } finally {
-	      closeResultSetOnly(resultSet);
+            closeResultSetOnly(resultSet);
           }
         } finally {
           closeStatement(stmt);
@@ -69,8 +67,7 @@ public final class SqlUtils {
   }
 
   /**
-   * Close the resultSet but not its statement.
-   * Log the query.
+   * Close the resultSet but not its statement. Log the query.
    * 
    * @param resultSet
    * @throws SQLException
@@ -81,33 +78,37 @@ public final class SqlUtils {
 
       // close our resultSet,remove from hash and write to log
       if (resultSet != null) {
-	QueryLogInfo info = queryLogInfos.get(resultSet);
-	queryLogInfos.remove(resultSet);
-	resultSet.close();
-	if (info != null) logQueryTime(info.wdkModel, info.sql, info.name, info.startTime, info.firstPageTime, false);
+        QueryLogInfo info = queryLogInfos.get(resultSet);
+        queryLogInfos.remove(resultSet);
+        resultSet.close();
+        if (info != null)
+          logQueryTime(info.wdkModel, info.sql, info.name, info.startTime,
+              info.firstPageTime, false);
       }
 
       // log orphaned result sets, ie, those that are closed but still in hash
-      Map<ResultSet,QueryLogInfo> closedResultSets = null; 
-      synchronized (SqlUtils.class ){
-	if (queryLogInfos.size() != 0) {
-	  closedResultSets = new HashMap<ResultSet, QueryLogInfo>(); 
-	  Set<ResultSet> resultSets = new HashSet<ResultSet>(queryLogInfos.keySet()); 
-	  for (ResultSet rs : resultSets) {
-	    QueryLogInfo info = queryLogInfos.get(rs);
-	    // consider a leak if open for more than an hour
-	    if (System.currentTimeMillis() - info.startTime > 1000 * 3600) {
-	      closedResultSets.put(rs, queryLogInfos.get(rs));
-	      queryLogInfos.remove(rs);
-	    }
-	  }
-	}
-      } 
+      Map<ResultSet, QueryLogInfo> closedResultSets = null;
+      synchronized (queryLogInfos) {
+        if (queryLogInfos.size() != 0) {
+          closedResultSets = new HashMap<ResultSet, QueryLogInfo>();
+          Set<ResultSet> resultSets = new HashSet<ResultSet>(
+              queryLogInfos.keySet());
+          for (ResultSet rs : resultSets) {
+            QueryLogInfo info = queryLogInfos.get(rs);
+            // consider a leak if open for more than an hour
+            if (System.currentTimeMillis() - info.startTime > 1000 * 3600) {
+              closedResultSets.put(rs, queryLogInfos.get(rs));
+              queryLogInfos.remove(rs);
+            }
+          }
+        }
+      }
       if (closedResultSets != null) {
-	for (ResultSet rs : closedResultSets.keySet()) {
-	  QueryLogInfo info = closedResultSets.get(rs);
-	  logQueryTime(info.wdkModel, info.sql, info.name, info.startTime, info.firstPageTime, true);
-	}
+        for (ResultSet rs : closedResultSets.keySet()) {
+          QueryLogInfo info = closedResultSets.get(rs);
+          logQueryTime(info.wdkModel, info.sql, info.name, info.startTime,
+              info.firstPageTime, true);
+        }
       }
 
     } catch (SQLException ex) {
@@ -338,40 +339,48 @@ public final class SqlUtils {
     return value.replaceAll("%", "{%}").replaceAll("_", "{_}");
   }
 
-  /** 
-   * Call this version to track and log query time if you are using a ResultSet.  Call it after the execute but before iterating through the resultSet.
-   * When done with the result set use one of SqlUtil's close methods that take a ResulSet argument to close it.
+  /**
+   * Call this version to track and log query time if you are using a ResultSet.
+   * Call it after the execute but before iterating through the resultSet. When
+   * done with the result set use one of SqlUtil's close methods that take a
+   * ResulSet argument to close it.
    */
   public static void verifyTime(WdkModel wdkModel, String sql, String name,
-				long startTime, ResultSet resultSet) throws WdkModelException {
-    QueryLogInfo info = new QueryLogInfo(wdkModel, sql, name, startTime, System.currentTimeMillis());
-    queryLogInfos.put(resultSet,info);
+      long startTime, ResultSet resultSet) throws WdkModelException {
+    QueryLogInfo info = new QueryLogInfo(wdkModel, sql, name, startTime,
+        System.currentTimeMillis());
+    queryLogInfos.put(resultSet, info);
   }
 
-
-  /** 
-   * Call this version to track and log query time if you do not have a resultSet, eg, for an update or insert.  Call it after the execute.
+  /**
+   * Call this version to track and log query time if you do not have a
+   * resultSet, eg, for an update or insert. Call it after the execute.
    */
   public static void verifyTime(WdkModel wdkModel, String sql, String name,
-				long startTime) throws WdkModelException {
+      long startTime) throws WdkModelException {
 
     logQueryTime(wdkModel, sql, name, startTime, -1, false);
   }
 
   private static void logQueryTime(WdkModel wdkModel, String sql, String name,
-				   long startTime, long firstPageTime, boolean isLeak) {
+      long startTime, long firstPageTime, boolean isLeak) {
     // verify the name
-    if (name.length() > 100 || name.indexOf('\n') >= 0) {
-      StringWriter writer = new StringWriter();
-      new Exception().printStackTrace(new PrintWriter(writer));
-      logger.warn("The name of the sql is suspicious, name: '" + name
-		  + "', trace:\n" + writer.toString());
-    }
+    // we now have long dataset names, the length validation isn't appropriate
+    // now.
+    // if (name.length() > 100 || name.indexOf('\n') >= 0) {
+    // StringWriter writer = new StringWriter();
+    // new Exception().printStackTrace(new PrintWriter(writer));
+    // logger.warn("The name of the sql is suspicious, name: '" + name
+    // + "', trace:\n" + writer.toString());
+    // }
 
     double lastPageSeconds = (System.currentTimeMillis() - startTime) / 1000D;
-    double firstPageSeconds = firstPageTime < 0? lastPageSeconds : (firstPageTime - startTime) / 1000D;
- 
-    String details = " [" + name + "] execute: " + firstPageSeconds + " last page: " + lastPageSeconds + " seconds" + (isLeak? " LEAK " : "");
+    double firstPageSeconds = firstPageTime < 0 ? lastPageSeconds
+        : (firstPageTime - startTime) / 1000D;
+
+    String details = " [" + name + "] execute: " + firstPageSeconds
+        + " last page: " + lastPageSeconds + " seconds"
+        + (isLeak ? " LEAK " : "");
     if (lastPageSeconds < 0 || firstPageSeconds < 0) {
       logger.error("code error, negative exec time:");
       new Exception().printStackTrace();
@@ -380,19 +389,19 @@ public final class SqlUtils {
     // convert the time to seconds
     // log time & sql for slow query. goes to warn log
     if (lastPageSeconds >= monitor.getSlow() && !monitor.isIgnoredSlow(sql)) {
-      logger.warn("SLOW QUERY LOG" + details + "\n"
-          + sql);
+      logger.warn("SLOW QUERY LOG" + details + "\n" + sql);
     }
 
     // log time for baseline query, and only sql for the first time. goes to
     // info log
-    else if (lastPageSeconds >= monitor.getBaseline() && !monitor.isIgnoredBaseline(sql)) {
+    else if (lastPageSeconds >= monitor.getBaseline()
+        && !monitor.isIgnoredBaseline(sql)) {
       logger.warn("QUERY LOG" + details);
 
       synchronized (queryNames) {
         if (!queryNames.contains(name)) {
           queryNames.add(name);
-	  SqlExampleLog.logger.info("EXAMPLE QUERY" + details + "\n" + sql);
+          SqlExampleLog.logger.info("EXAMPLE QUERY" + details + "\n" + sql);
         }
       }
     }
