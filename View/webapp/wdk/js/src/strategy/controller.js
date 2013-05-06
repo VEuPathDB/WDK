@@ -189,7 +189,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     }
   }
 
-  function updateStrategies(data, ignoreFilters, skipShow) {
+  function updateStrategies(data, ignoreFilters) {
     var deferred = $.Deferred();
 
     ns.state = data.state;
@@ -211,9 +211,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         }
       }
     }
-    if (skipShow !== true) {
-      showStrategies(data.currentView, ignoreFilters, data.state.length, deferred);
-    }
+    showStrategies(data.currentView, ignoreFilters, data.state.length, deferred);
     return deferred.promise();
   }
 
