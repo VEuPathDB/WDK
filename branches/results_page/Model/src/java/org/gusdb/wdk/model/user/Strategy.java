@@ -38,6 +38,7 @@ public class Strategy {
     private String version;
     private boolean valid = true;
     private Date lastRunTime;
+    private RecordClass recordClass;
 
     Strategy(StepFactory factory, User user, int displayId, int internalId) {
         this.stepFactory = factory;
@@ -178,6 +179,7 @@ public class Strategy {
     }
 
     public RecordClass getRecordClass() throws WdkModelException {
+        if (latestStep == null && recordClass != null) return recordClass;
         return getLatestStep().getRecordClass();
     }
 
@@ -514,6 +516,10 @@ public class Strategy {
 
     void setEstimateSize(int estimateSize) {
         this.estimateSize = estimateSize;
+    }
+
+    public void setRecordClass(RecordClass recordClass) {
+      this.recordClass = recordClass;
     }
 
 }
