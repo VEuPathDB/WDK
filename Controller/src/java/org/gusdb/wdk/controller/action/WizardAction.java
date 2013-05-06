@@ -115,7 +115,7 @@ public class WizardAction extends Action {
                 }
 
                 int strategyId = wizardForm.getStrategyId();
-                if (Integer.toString(strategyId) != user.getViewStrategyId()) {
+                if (!Integer.toString(strategyId).equals(user.getViewStrategyId())) {
                   // set view results to last step of strategy being revised
                   StrategyBean strategy = user.getStrategy(strategyId);
                   int stepId = strategy.getLatestStepId();

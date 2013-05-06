@@ -127,7 +127,7 @@ public class ShowRecordAction extends Action {
         }
 
         long end = System.currentTimeMillis();
-        logger.info("showRecord took total: " + ((end - start) / 1000F)
+        logger.info("showRecord took total: " + ((end - start) / 1000D)
                 + " seconds.");
 
         // generate a page id

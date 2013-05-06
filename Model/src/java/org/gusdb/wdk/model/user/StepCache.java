@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+@Deprecated
 public class StepCache implements Runnable {
 
     /**
