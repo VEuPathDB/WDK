@@ -512,13 +512,15 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
             $(".crumb_details").unblock();
 
             if (data.indexOf("{") == 0) {
-              data = eval("("+data+")");
+              data = (0, eval)("("+data+")"); // use indirect eval
               // before close, check if json is success or error, if error, display 
               // it in the current qf_content
               if (wdk.strategy.error.ErrorHandler("Wizard", data, strategy,
                   $("#errors"))) {
                 closeAll();
+
                 wdk.strategy.controller.updateStrategies(data);
+
               } else {
                 WizardLoading(false);
               }
