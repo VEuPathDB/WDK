@@ -477,25 +477,25 @@ public class User /* implements Serializable */{
     }
 
     public synchronized Strategy createStrategy(Step step, boolean saved)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         return createStrategy(step, null, null, saved, null, false);
     }
 
     public synchronized Strategy createStrategy(Step step, boolean saved,
-            boolean hidden) throws WdkModelException {
+            boolean hidden) throws WdkModelException, WdkUserException {
         return createStrategy(step, null, null, saved, null, hidden);
     }
 
     // Transitional method...how to handle savedName properly?
     // Probably by expecting it if a name is given?
     public synchronized Strategy createStrategy(Step step, String name,
-            boolean saved) throws WdkModelException {
+            boolean saved) throws WdkModelException, WdkUserException {
         return createStrategy(step, name, null, saved, null, false);
     }
 
     public synchronized Strategy createStrategy(Step step, String name,
             String savedName, boolean saved, String description, boolean hidden)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         Strategy strategy = stepFactory.createStrategy(this, step, name,
                 savedName, saved, description, hidden);
 
@@ -516,8 +516,9 @@ public class User /* implements Serializable */{
      * 
      * @param user
      * @throws WdkModelException
+     * @throws WdkUserException 
      */
-    public void mergeUser(User user) throws WdkModelException {
+    public void mergeUser(User user) throws WdkModelException, WdkUserException {
         // TEST
         logger.debug("Merging user #" + user.getUserId() + " into user #"
                 + userId + "...");
@@ -662,7 +663,7 @@ public class User /* implements Serializable */{
     }
 
     public Map<String, List<Strategy>> getActiveStrategiesByCategory()
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         Strategy[] strategies = getActiveStrategies();
         List<Strategy> list = new ArrayList<Strategy>();
         for (Strategy strategy : strategies)
@@ -751,12 +752,12 @@ public class User /* implements Serializable */{
         return stepFactory.loadStep(this, displayId);
     }
 
-    public Strategy getStrategy(int userStrategyId) throws WdkModelException {
+    public Strategy getStrategy(int userStrategyId) throws WdkModelException, WdkUserException {
         return getStrategy(userStrategyId, true);
     }
 
     public Strategy getStrategy(int userStrategyId, boolean allowDeleted)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         return stepFactory.loadStrategy(this, userStrategyId, allowDeleted);
     }
 
@@ -1154,7 +1155,7 @@ public class User /* implements Serializable */{
     }
 
     public synchronized Strategy importStrategy(String strategyKey)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         Strategy oldStrategy;
         String[] parts = strategyKey.split(":");
         if (parts.length == 1) {
@@ -1171,7 +1172,7 @@ public class User /* implements Serializable */{
     }
 
     public synchronized Strategy importStrategy(Strategy oldStrategy,
-            Map<Integer, Integer> stepIdsMap) throws WdkModelException {
+            Map<Integer, Integer> stepIdsMap) throws WdkModelException, WdkUserException {
         Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy,
                 stepIdsMap);
         // highlight the imported strategy
@@ -1181,7 +1182,7 @@ public class User /* implements Serializable */{
         return newStrategy;
     }
 
-    public Strategy[] getActiveStrategies() throws WdkModelException {
+    public Strategy[] getActiveStrategies() throws WdkModelException, WdkUserException {
         int[] ids = activeStrategyFactory.getRootStrategies();
         List<Strategy> strategies = new ArrayList<Strategy>();
         for (int id : ids) {
@@ -1203,7 +1204,7 @@ public class User /* implements Serializable */{
     }
 
     public void addActiveStrategy(String strategyKey)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         activeStrategyFactory.openActiveStrategy(strategyKey);
         int pos = strategyKey.indexOf('_');
         if (pos >= 0) strategyKey = strategyKey.substring(0, pos);
@@ -1217,7 +1218,7 @@ public class User /* implements Serializable */{
     }
 
     public void replaceActiveStrategy(int oldStrategyId, int newStrategyId,
-            Map<Integer, Integer> stepIdsMap) throws WdkModelException {
+            Map<Integer, Integer> stepIdsMap) throws WdkModelException, WdkUserException {
         activeStrategyFactory.replaceStrategy(this, oldStrategyId,
                 newStrategyId, stepIdsMap);
     }
@@ -1357,13 +1358,13 @@ public class User /* implements Serializable */{
     }
 
     public Strategy copyStrategy(Strategy strategy)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         Strategy copy = stepFactory.copyStrategy(strategy);
         return copy;
     }
 
     public Strategy copyStrategy(Strategy strategy, int stepId)
-            throws WdkModelException {
+            throws WdkModelException, WdkUserException {
         Strategy copy = stepFactory.copyStrategy(strategy, stepId);
         return copy;
     }

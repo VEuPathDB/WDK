@@ -58,7 +58,7 @@ class ActiveStrategyFactory {
         return ids;
     }
 
-    synchronized void openActiveStrategy(String strategyKey) throws WdkModelException {
+    synchronized void openActiveStrategy(String strategyKey) throws WdkModelException, WdkUserException {
         logger.debug("Opening strategy: " + strategyKey);
         if (getStrategy(strategyKey) != null) return;
 
@@ -110,7 +110,7 @@ class ActiveStrategyFactory {
     }
 
     synchronized void replaceStrategy(User user, int oldId, int newId,
-            Map<Integer, Integer> stepMap) throws WdkModelException {
+            Map<Integer, Integer> stepMap) throws WdkModelException, WdkUserException {
         ActiveStrategy oldStrategy = root.children.get(Integer.toString(oldId));
         // if the old strategy is not opened, do nothing.
         if (oldStrategy == null) return;
@@ -151,7 +151,7 @@ class ActiveStrategyFactory {
         root.children.clear();
     }
 
-    private String getParentKey(String strategyKey) throws WdkModelException {
+    private String getParentKey(String strategyKey) throws WdkModelException, WdkUserException {
         int pos = strategyKey.indexOf('_');
         if (pos < 0) return null;
         int strategyId = Integer.parseInt(strategyKey.substring(0, pos));
