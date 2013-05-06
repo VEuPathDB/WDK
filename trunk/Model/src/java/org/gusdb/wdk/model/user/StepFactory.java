@@ -902,6 +902,15 @@ public class StepFactory {
         strategy.setVersion(resultSet.getString(COLUMN_VERSION));
         if (resultSet.getObject(COLUMN_IS_VALID) != null)
             strategy.setValid(resultSet.getBoolean(COLUMN_IS_VALID));
+        
+        // load recordClass for the strategy
+        String questionName = resultSet.getString(AnswerFactory.COLUMN_QUESTION_NAME);
+        try {
+          Question question = wdkModel.getQuestion(questionName);
+          strategy.setRecordClass(question.getRecordClass());
+        } catch (WdkModelException ex) {    // the question doesn't exist
+          strategy.setValid(false);
+        }
 
         String signature = strategy.getSignature();
         if (signature == null || signature.trim().length() == 0) {
@@ -1064,8 +1073,7 @@ public class StepFactory {
         String answerColumn = AnswerFactory.COLUMN_ANSWER_ID;
         StringBuffer sql = new StringBuffer("SELECT sr.*, ");
         sql.append(" sp." + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID
-                + ", a."
-                + AnswerFactory.COLUMN_QUESTION_NAME);
+                + ", a." + AnswerFactory.COLUMN_QUESTION_NAME);
         sql.append(" FROM " + userSchema + TABLE_STRATEGY + " sr, "
                 + userSchema + TABLE_STEP + " sp, " + wdkSchema
                 + AnswerFactory.TABLE_ANSWER + " a");
