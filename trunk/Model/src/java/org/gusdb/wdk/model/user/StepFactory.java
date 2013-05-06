@@ -909,7 +909,9 @@ public class StepFactory {
           Question question = wdkModel.getQuestion(questionName);
           strategy.setRecordClass(question.getRecordClass());
         } catch (WdkModelException ex) {    // the question doesn't exist
-          strategy.setValid(false);
+          // skip such strategies for now
+          continue;
+          // strategy.setValid(false);
         }
 
         String signature = strategy.getSignature();
