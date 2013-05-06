@@ -37,6 +37,11 @@
   </c:when>
   <c:otherwise>
 
+<!-- ================ RESULTS TITLE AND LINKS TO BASKET AND DOWNLOADS   =============== -->
+
+<imp:resultSummary strategy="${wdkStrategy}" step="${wdkStep}"/>
+
+
 <!-- ================ FILTERS DEFINED IN MODEL.XML =============== -->
 
 <c:if test="${strategy != null}">
@@ -46,9 +51,7 @@
 </c:if>
 
 
-<!-- ================ RESULTS TITLE AND LINKS TO BASKET AND DOWNLOADS   =============== -->
 
-<imp:resultSummary strategy="${wdkStrategy}" step="${wdkStep}"/>
 
 
 

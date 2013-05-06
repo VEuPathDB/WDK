@@ -467,6 +467,34 @@ function getWebAppUrl() {
     });
   };
 
+  var registerEditable = function() {
+    // all elements with className wdk-editable, eg:
+    //   <span class="wdk-editable"
+    //       data-change="someFunction">edit me</span>
+
+    $(".wdk-editable").each(function(idx, element) {
+      if ($(element).data("rendered")) return;
+
+      var save = $(element).data("save");
+
+      if (typeof save === "string") {
+        try {
+          save = (0, eval)("(" + save + ")");
+        } catch (e) {
+          if (console && console.log) {
+            console.log(e);
+          }
+        }
+      }
+
+      $(element).editable({
+        save: typeof save === "function" ? save : function(){return true;}
+      });
+
+      $(element).data("rendered", true);
+    })
+  };
+
   var setUpNavDropDowns = function() {
     var timer;
     $("#nav-top > li").hoverIntent({
@@ -565,6 +593,7 @@ function getWebAppUrl() {
     registerCollapsible();
     registerSnippet();
     registerTruncate();
+    registerEditable();
     $(".button").button();
   }
 
@@ -579,6 +608,7 @@ function getWebAppUrl() {
 
 
   ns.init = init;
+  ns.load = load;
   ns.exportBaseURL = exportBaseURL;
   ns.modelName = modelName;
   ns.readCookie = readCookie;

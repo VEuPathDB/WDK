@@ -499,7 +499,15 @@ div.transform a.crumb_name img{
   text-align: right;
 }
 
+.diagram div.strategy_name {
+	cursor:pointer;
+	font-size:14px;
+	font-weight:bold;
+  right: 1em;
+}
+
 .diagram div.strategy_menu {
+  top: 1em;
   margin-top: 5px;
 }
 
