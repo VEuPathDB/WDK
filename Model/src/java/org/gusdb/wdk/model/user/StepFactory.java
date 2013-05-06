@@ -1263,7 +1263,7 @@ public class StepFactory {
                     return loadStrategy(user,
                             rsCheckName.getInt(COLUMN_DISPLAY_ID), false);
             } else {// otherwise, generate default name
-                name = getNextName(user, root.getCustomName(), saved);
+								name = getNextName(user, root.getCustomName(), saved);
             }
         }
         catch (SQLException e) {
