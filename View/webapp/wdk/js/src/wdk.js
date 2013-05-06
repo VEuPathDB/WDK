@@ -594,7 +594,6 @@ function getWebAppUrl() {
     registerSnippet();
     registerTruncate();
     registerEditable();
-		wdk.util.registerEditStrategyName();
     $(".button").button();
   }
 
