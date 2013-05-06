@@ -39,10 +39,15 @@ public class OrganismUpdater {
      */
     public static void main(String[] args) throws WdkModelException,
             SQLException, IOException, JSONException {
+
+				//the format of the mapping file is:
+				//       old_name=new_name
+				//one for each line
         if (args.length != 2) {
             System.err.println("Usage: organismUpdater <project_id> <map_file>");
             System.exit(-1);
         }
+
         OrganismUpdater updater = new OrganismUpdater(args[0], args[1]);
         updater.update();
     }
