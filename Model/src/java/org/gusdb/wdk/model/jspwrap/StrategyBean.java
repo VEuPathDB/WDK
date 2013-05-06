@@ -234,5 +234,8 @@ public class StrategyBean {
     public int getEstimateSize() {
         return strategy.getEstimateSize();
     }
-    
+
+    public RecordClassBean getRecordClass() throws WdkModelException {
+        return new RecordClassBean(strategy.getRecordClass());
+    }    
 }

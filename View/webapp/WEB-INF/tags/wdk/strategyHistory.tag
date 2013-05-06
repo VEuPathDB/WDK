@@ -61,7 +61,7 @@ $(function() {
           <c:set var="strat" value="${savedStratList[0]}" />
         </c:otherwise>
       </c:choose>
-      <c:set var="recDispName" value="${strat.latestStep.recordClass.displayNamePlural}"/>
+      <c:set var="recDispName" value="${strat.recordClass.displayNamePlural}"/>
       <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
       <li>
         <a id="tab_${recTabName}" 
@@ -107,7 +107,7 @@ $(function() {
 <c:forEach items="${unsavedStrategiesMap}" var="strategyEntry">
   <c:set var="type" value="${strategyEntry.key}"/>
   <c:set var="strategies" value="${strategyEntry.value}"/>
-  <c:set var="recDispName" value="${strategies[0].latestStep.recordClass.displayNamePlural}"/>
+  <c:set var="recDispName" value="${strategies[0].recordClass.displayNamePlural}"/>
   <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
 
   <c:if test="${fn:length(strategies) > 0}">
@@ -122,7 +122,7 @@ $(function() {
 <c:forEach items="${savedStrategiesMap}" var="strategyEntry">
   <c:set var="type" value="${strategyEntry.key}"/>
   <c:set var="strategies" value="${strategyEntry.value}"/>
-  <c:set var="recDispName" value="${strategies[0].latestStep.recordClass.displayNamePlural}"/>
+  <c:set var="recDispName" value="${strategies[0].recordClass.displayNamePlural}"/>
   <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
 
   <c:if test="${fn:length(strategies) > 0}">
