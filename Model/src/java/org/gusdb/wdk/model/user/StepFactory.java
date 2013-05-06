@@ -787,14 +787,13 @@ public class StepFactory {
         sql.append(" AND sr.").append(userColumn).append(" = ?");
         sql.append(" AND sr." + userColumn + " = sp." + userColumn);
         sql.append(" AND sr.").append(COLUMN_PROJECT_ID).append(" = ?");
-        sql.append(" AND sr.").append(COLUMN_IS_DELETED + " = false");
+        sql.append(" AND sr.").append(COLUMN_IS_DELETED + " = 0");
         sql.append(" ORDER BY sr." + COLUMN_LAST_VIEWED_TIME + " DESC");
         try {
             long start = System.currentTimeMillis();
             psStrategyIds = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             psStrategyIds.setInt(1, user.getUserId());
             psStrategyIds.setString(2, wdkModel.getProjectId());
-            psStrategyIds.setBoolean(3, false);
             rsStrategyIds = psStrategyIds.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql.toString(),
 				"wdk-step-factory-load-all-strategies", start, rsStrategyIds);
