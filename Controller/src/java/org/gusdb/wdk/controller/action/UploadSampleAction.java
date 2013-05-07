@@ -63,7 +63,7 @@ public class UploadSampleAction extends WdkAction {
       }
     }
     return new ActionResult(ResponseType.json)
-      .setStream(getStreamFromString(result.toString(2)))
+      .setStream(IoUtil.getStreamFromString(result.toString(2)))
       .setFileName("uploadedFileData." + _dateFormat.format(new Date()) + ".json");
   }
   

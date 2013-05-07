@@ -3,6 +3,7 @@ package org.gusdb.wdk.controller.action.services;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.IoUtil;
 import org.gusdb.wdk.controller.LoginCookieFactory;
 import org.gusdb.wdk.controller.LoginCookieFactory.LoginCookieParts;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
@@ -55,7 +56,7 @@ public class LoginCookieValidationService extends WdkAction {
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
     try {
       return new ActionResult(ResponseType.json)
-        .setStream(getStreamFromString(
+        .setStream(IoUtil.getStreamFromString(
             getJsonResult(getUsername(params))));
     }
     catch (Exception e) { LOG.error(e); throw e; }
