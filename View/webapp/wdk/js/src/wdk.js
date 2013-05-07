@@ -565,14 +565,17 @@ function getWebAppUrl() {
           windowLeft = screen.width/2 - windowWidth/2,
           windowTop = screen.height/2 - windowHeight/2,
           defaultFeatures = {
-            location:   "no",
-            menubar:    "no",
-            resizable:  "yes",
-            status:     "no",
-            width:      windowWidth,
-            height:     windowHeight,
-            top:        windowTop,
-            left:       windowLeft
+            location:    "no",
+            menubar:     "no",
+            toolbar:     "no",
+            personalbar: "no",
+            resizable:   "yes",
+            scrollbars:  "yes",
+            status:      "yes",
+            width:       windowWidth,
+            height:      windowHeight,
+            top:         windowTop,
+            left:        windowLeft
           };
 
       // in the future, allow spefied data attributes to override features
