@@ -152,6 +152,35 @@ td {
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   =Plugin styling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+.wdk-editable {
+  /*color: black;*/
+  font-style: italic;
+  font-weight: normal;
+  padding: 4px;
+  cursor: pointer;
+  display: inline-block;
+}
+.wdk-editable:hover {
+  /* 	border-bottom:1px dashed black; */
+  /*  outline: 1px solid blue; */
+   background-color:#EDEDED;
+}
+
+.wdk-editable-show {
+  padding: 0px 4px;
+}
+
+.wdk-editable-show:hover {
+  background-color: inherit;
+}
+
+.wdk-editable input {
+  width: 200px;
+}
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     =Styling for the Login pop-up box 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
@@ -667,6 +696,21 @@ a.button { padding: 2px 5px; line-height:30px; margin: 3px; }
 	padding-top: 1em;
 }
 
+#text_strategy_number {
+	color:black;
+/* wdk-editable does this
+  font-style:italic;
+	font-weight:normal;
+  padding:4px;
+  cursor:pointer;
+*/
+}
+
+/* span.wdk-editable:hover { */
+  /* 	border-bottom:1px dashed black; */
+  /*  outline: 1px solid blue; */
+  /* background-color:#EDEDED; */
+/* } */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      = Advanced Paging Pop Up initial style
