@@ -1,18 +1,18 @@
 package org.gusdb.wdk.jmx.mbeans.dbms;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import org.apache.log4j.Logger;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.DatabaseMetaData;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
+import javax.sql.DataSource;
+
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dbms.SqlUtils;
-import javax.sql.DataSource;
 
 /**
   * Abstract class for collecting information about databases used by
