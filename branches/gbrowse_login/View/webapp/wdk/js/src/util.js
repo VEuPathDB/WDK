@@ -252,7 +252,6 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
         "Show Details" : "Hide Details");
   }
 
-
   ns.getDisplayType = getDisplayType;
   ns.initShowHide = initShowHide;
   ns.parseUrlUtil = parseUrlUtil;

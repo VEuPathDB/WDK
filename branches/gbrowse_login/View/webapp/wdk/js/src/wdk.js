@@ -467,6 +467,34 @@ function getWebAppUrl() {
     });
   };
 
+  var registerEditable = function() {
+    // all elements with className wdk-editable, eg:
+    //   <span class="wdk-editable"
+    //       data-change="someFunction">edit me</span>
+
+    $(".wdk-editable").each(function(idx, element) {
+      if ($(element).data("rendered")) return;
+
+      var save = $(element).data("save");
+
+      if (typeof save === "string") {
+        try {
+          save = (0, eval)("(" + save + ")");
+        } catch (e) {
+          if (console && console.log) {
+            console.log(e);
+          }
+        }
+      }
+
+      $(element).editable({
+        save: typeof save === "function" ? save : function(){return true;}
+      });
+
+      $(element).data("rendered", true);
+    })
+  };
+
   var setUpNavDropDowns = function() {
     var timer;
     $("#nav-top > li").hoverIntent({
@@ -537,14 +565,17 @@ function getWebAppUrl() {
           windowLeft = screen.width/2 - windowWidth/2,
           windowTop = screen.height/2 - windowHeight/2,
           defaultFeatures = {
-            location:   "no",
-            menubar:    "no",
-            resizable:  "yes",
-            status:     "no",
-            width:      windowWidth,
-            height:     windowHeight,
-            top:        windowTop,
-            left:       windowLeft
+            location:    "no",
+            menubar:     "no",
+            toolbar:     "no",
+            personalbar: "no",
+            resizable:   "yes",
+            scrollbars:  "yes",
+            status:      "yes",
+            width:       windowWidth,
+            height:      windowHeight,
+            top:         windowTop,
+            left:        windowLeft
           };
 
       // in the future, allow spefied data attributes to override features
@@ -565,6 +596,7 @@ function getWebAppUrl() {
     registerCollapsible();
     registerSnippet();
     registerTruncate();
+    registerEditable();
     $(".button").button();
   }
 
@@ -579,6 +611,7 @@ function getWebAppUrl() {
 
 
   ns.init = init;
+  ns.load = load;
   ns.exportBaseURL = exportBaseURL;
   ns.modelName = modelName;
   ns.readCookie = readCookie;

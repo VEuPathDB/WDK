@@ -787,14 +787,13 @@ public class StepFactory {
         sql.append(" AND sr.").append(userColumn).append(" = ?");
         sql.append(" AND sr." + userColumn + " = sp." + userColumn);
         sql.append(" AND sr.").append(COLUMN_PROJECT_ID).append(" = ?");
-        sql.append(" AND sr.").append(COLUMN_IS_DELETED + " = false");
+        sql.append(" AND sr.").append(COLUMN_IS_DELETED + " = 0");
         sql.append(" ORDER BY sr." + COLUMN_LAST_VIEWED_TIME + " DESC");
         try {
             long start = System.currentTimeMillis();
             psStrategyIds = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             psStrategyIds.setInt(1, user.getUserId());
             psStrategyIds.setString(2, wdkModel.getProjectId());
-            psStrategyIds.setBoolean(3, false);
             rsStrategyIds = psStrategyIds.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql.toString(),
 				"wdk-step-factory-load-all-strategies", start, rsStrategyIds);
@@ -903,6 +902,17 @@ public class StepFactory {
         strategy.setVersion(resultSet.getString(COLUMN_VERSION));
         if (resultSet.getObject(COLUMN_IS_VALID) != null)
             strategy.setValid(resultSet.getBoolean(COLUMN_IS_VALID));
+        
+        // load recordClass for the strategy
+        String questionName = resultSet.getString(AnswerFactory.COLUMN_QUESTION_NAME);
+        try {
+          Question question = wdkModel.getQuestion(questionName);
+          strategy.setRecordClass(question.getRecordClass());
+        } catch (WdkModelException ex) {    // the question doesn't exist
+          // skip such strategies for now
+          continue;
+          // strategy.setValid(false);
+        }
 
         String signature = strategy.getSignature();
         if (signature == null || signature.trim().length() == 0) {
@@ -1065,8 +1075,7 @@ public class StepFactory {
         String answerColumn = AnswerFactory.COLUMN_ANSWER_ID;
         StringBuffer sql = new StringBuffer("SELECT sr.*, ");
         sql.append(" sp." + COLUMN_ESTIMATE_SIZE + ", sp." + COLUMN_IS_VALID
-                + ", a."
-                + AnswerFactory.COLUMN_QUESTION_NAME);
+                + ", a." + AnswerFactory.COLUMN_QUESTION_NAME);
         sql.append(" FROM " + userSchema + TABLE_STRATEGY + " sr, "
                 + userSchema + TABLE_STEP + " sp, " + wdkSchema
                 + AnswerFactory.TABLE_ANSWER + " a");
@@ -1254,7 +1263,7 @@ public class StepFactory {
                     return loadStrategy(user,
                             rsCheckName.getInt(COLUMN_DISPLAY_ID), false);
             } else {// otherwise, generate default name
-                name = getNextName(user, root.getCustomName(), saved);
+								name = getNextName(user, root.getCustomName(), saved);
             }
         }
         catch (SQLException e) {

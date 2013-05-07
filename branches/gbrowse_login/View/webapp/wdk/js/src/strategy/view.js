@@ -797,7 +797,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
     var rename = "<a id='rename_" + strat.frontId +
         "' href='javascript:void(0)' title='Click to rename.' " +
-        "onclick=\"wdk.history.showUpdateDialog(this, false)\">" +
+        "onclick=\"$(this).parents('.strategy-data').find('.strategy-name').editable('show')\">" +
         "<b style='font-size:120%'>Rename</b></a>";
 
     var deleteStrat = "<a id='delete_" + strat.frontId +
@@ -811,9 +811,12 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     $(div_sm).attr("class","strategy_menu");
 
     if (strat.subStratOf == null) {
-      $(div_sn).html("<span style='font-size:14px;font-weight:bold' " +
-          "title='Name of this strategy. The (*) indicates this strategy is " +
-          "NOT saved.'>" + name + "</span>" + append +
+    //		name="Unnamed";
+      $(div_sn).html("<span title='Click to edit" +
+          "'>Strategy: <span class='strategy-name wdk-editable' " +
+          "data-id='" + strat.backId + "'" +
+          "data-save='wdk.strategy.controller.updateStrategyName'" +
+          " style='font-style:italic;cursor:pointer'>" + name + "</span></span>" + append +
           "<span id='strategy_id_span' style='display: none;'>" + id +
           "</span>");
       $(div_sm).html("<span class='strategy_small_text'>" +
