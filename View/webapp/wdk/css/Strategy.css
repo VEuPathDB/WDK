@@ -509,6 +509,7 @@ div.transform a.crumb_name img{
 .diagram div.strategy_menu {
   top: 1em;
   margin-top: 5px;
+  right: -7px;
 }
 
 .diagram div.strategy_menu span.strategy_small_text {
@@ -654,7 +655,7 @@ b.strat_help_title > span {
 	position: absolute;
 	left:140px; 
 	top:140px;
-  width:80%;
+  min-width:80%;
 /* 	min-width: 600px; 
 	max-width: 78%;  */
 	background-color: #FFFFFF;
