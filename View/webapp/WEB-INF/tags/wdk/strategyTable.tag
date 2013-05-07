@@ -36,7 +36,7 @@
     <th class="sortable" scope="col" style="min-width:16em;">
       <c:if test="${prefix != null}">${prefix}&nbsp;</c:if>Strategies&nbsp;(${fn:length(strategies)})
     </th>
-    <th class = "sortable" style="width:5em;" scope="col">#Steps</th>
+    <%-- <th class = "sortable" style="width:5em;" scope="col">#Steps</th> --%>
     <th scope="col">Description</th>
     <th scope="col" style="width:12em;">Actions</th>
     <th class="sortable" style="width:9em;" scope="col">Created</th>
@@ -101,7 +101,7 @@
 
       </td>
 
-			<td style="text-align:center">${strategy.length}</td>
+      <%-- <td style="text-align:center">${strategy.length}</td> --%>
 
       <td class="strategy_description">
       <c:choose>
