@@ -71,6 +71,7 @@
       <script src="${urlBase}/wdk/js/src/wdk.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/wordCloud.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/plugins/wdkDataTables.js"><jsp:text/></script>
+      <script src="${urlBase}/wdk/js/src/plugins/wdkEditable.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/strategy/controller.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/strategy/error.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/strategy/model.js"><jsp:text/></script>

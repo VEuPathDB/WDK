@@ -189,6 +189,37 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
     this.Steps = arr;
   };
 
+  // Returns a Promise
+  Strategy.prototype.update = function() {
+    var checksum = (this.subStratOf != null) ?
+        getStrategy(this.subStratOf).checksum :
+        this.checksum;
+
+    return $.ajax({
+      url: "renameStrategy.do",
+      type: "POST",
+      dataType: "json",
+      data: {
+        strategy: this.backId,
+        name: this.name,
+        description: this.description,
+        checkName: true,
+        save: false,
+        strategy_checksum: checksum,
+        state: wdk.strategy.controller.p_state
+      }
+    });
+  };
+
+  // does the strategy have a custom name?
+  Strategy.prototype.hasCustomName = function() {
+    if (this.JSON.steps.length === 0) return false;
+
+    var stepName = this.JSON.steps[1].customName;
+    var regex = new RegExp("^" + stepName + "(\\(\\d+\\))?$");
+    return !regex.test(this.name);
+  }
+
   /****************************************************
   Step Object and Functions
   ****************************************************/

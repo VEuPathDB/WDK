@@ -46,21 +46,22 @@ public class GetVocabAction extends Action {
       String paramName = request.getParameter("name");
 
       // the dependent values are a JSON representation of {name: [values], name: [values],...}
-      String values = request.getParameter("dependedValue");
-      JSONObject jsValues = new JSONObject(values);
       Map<String, String> dependedValues = new LinkedHashMap<>();
-      Iterator<String> keys = jsValues.keys();
-      while (keys.hasNext()) {
-        String pName = keys.next();
-        
-        JSONArray jsArray = jsValues.getJSONArray(pName);
-        StringBuilder buffer = new StringBuilder();
-        for (int i = 0; i < jsArray.length(); i++) {
-          if (buffer.length() > 0) buffer.append(",");
-          buffer.append(jsArray.getString(i));
+      String values = request.getParameter("dependedValue");
+      if (values != null && values.length() > 0) {
+        JSONObject jsValues = new JSONObject(values);
+        Iterator<String> keys = jsValues.keys();
+        while (keys.hasNext()) {
+          String pName = keys.next();
+          
+          JSONArray jsArray = jsValues.getJSONArray(pName);
+          StringBuilder buffer = new StringBuilder();
+          for (int i = 0; i < jsArray.length(); i++) {
+            if (buffer.length() > 0) buffer.append(",");
+            buffer.append(jsArray.getString(i));
+          }
+          dependedValues.put(pName, buffer.toString());
         }
-        dependedValues.put(pName, buffer.toString());
-
       }
 
       boolean getXml = Boolean.valueOf(request.getParameter("xml"));
