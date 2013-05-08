@@ -1,5 +1,6 @@
 package org.gusdb.wdk.jmx.mbeans.dbms;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -90,12 +91,14 @@ public abstract class AbstractDBInfo {
     String sql = getServerNameSql();
     if (sql == null) return;
     
+    Connection connection = null;
     ResultSet rs = null;
     PreparedStatement ps = null;
     logger.debug("querying database for servername information");    
 
     try {
-      String dbVendor = datasource.getConnection().getMetaData().getDatabaseProductName();
+      connection = datasource.getConnection();
+      String dbVendor = connection.getMetaData().getDatabaseProductName();
       ps = SqlUtils.getPreparedStatement(datasource, sql);
       rs = ps.executeQuery();
      if (rs.next()) {
@@ -118,6 +121,11 @@ public abstract class AbstractDBInfo {
         logger.error("Failed attempting\n" + sql + "\n" + e);
     } finally {
         SqlUtils.closeResultSetAndStatement(rs);
+        try {
+            if (connection != null) connection.close();
+        } catch(SQLException ex) {
+            logger.error(ex);
+        }
     }  
   }
 
