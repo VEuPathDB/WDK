@@ -1,0 +1,156 @@
+#!/usr/bin/perl
+use strict;
+use Getopt::Long;
+use Time::Local;
+
+my ($threshold, $genepage, $notgenepage, $width_filter, $time_filter, $sort_column, $plotOutputFile);
+$sort_column=2;
+&GetOptions('s=s' => \$threshold,
+            'g' => \$genepage,
+            't=s' => \$time_filter,
+            'c=s' => \$sort_column,
+            'p=s' => \$plotOutputFile,
+            );
+
+
+usage() unless $threshold;
+
+print "filtering by timestamp to include only queries run since " . localtime($time_filter) . "\n"
+  if $time_filter;
+
+my ($time_min, $time_max);
+if ($time_filter) {
+  ($time_min, $time_max) = split(/,\s*/, $time_filter);
+  print "\nTime filter start: " . localtime($time_min) . " ($time_min)\n";
+  print   "Time filter end:   " . localtime($time_max) . " ($time_max)\n" if $time_max;
+  print "\n";
+}
+# 89468376 [WARN ] org.gusdb.wdk.model.dbms.SqlUtils:324 - 130.91.178.191 - [27/Sep/2010:11:24:05 -0400] SLOW SQL [GeneVQ.DomainDatabase-uncached-result]: 11.295 seconds.
+
+# example log records:
+# 37597 [INFO ] org.gusdb.wdk.controller.action.ShowRecordAction:135 - 128.91.232.67 - [18/Feb/2011:16:04:29 -0500] wdk-record-page-id=2101769459 --- start page loading.
+# 46998 [INFO ] org.gusdb.wdk.controller.action.LoggingAction:23 - 128.91.232.67 - [18/Feb/2011:16:04:39 -0500] wdk-record-page-id=2101769459 --- finished gene page loading.
+
+my $h;
+my (%startTime, %finishTime, %recordType);
+my ($duplicateStart, $duplicateFinish, $startWithoutFinish);
+
+if ($plotOutputFile) {
+  open(P, ">$plotOutputFile") || die "Can't open plot output file '$plotOutputFile'\n";
+}
+
+my $min_absolute_time = 1000000000000000;
+my $max_absolute_time = 0;
+while(<STDIN>) {
+  next unless /wdk-record-page-id=/;
+  next if /\=\=/;  # some lines in the log are mangled, with missing newlines
+                   # the symptom is that the next log entry is mashed in
+                   # these are delimited by ========, so dodge that
+
+  my ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $id, $recordType, $seconds, $absoluteTime);
+  if (/(\d+) \[INFO \] (.*):(\d+) - ([0-9.]*) - \[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d) (.+)\] .*wdk-record-page-id=([0-9.]*) --- start page loading./) {
+    ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $id) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12);
+    # print "START! digits=$digits class=$class line=$line ip=$ip day=$day mon=$mon year=$year hour=$hour min=$min sec=$sec tz=$tz id=$id\n";
+
+    my $monthNumber = index("JanFebMarAprMayJunJulAugSepOctNovDec", $mon) / 3;
+    $absoluteTime = timegm($sec, $min, $hour, $day, $monthNumber, $year - 1900);
+    next if ($time_min && $absoluteTime < $time_min);
+    next if ($time_max && $absoluteTime > $time_max);
+
+    $recordType{$id} = $recordType;
+    if ($startTime{$id}) {
+      $duplicateStart++;
+      $startTime{$id} = $absoluteTime if $absoluteTime < $startTime{$id};
+    } else {
+      $startTime{$id} = $absoluteTime;
+    }
+  } elsif (/(\d+) \[INFO \] (.*):(\d+) - ([0-9.]*) - \[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d) (.+)\] .*wdk-record-page-id=([0-9.]*) --- finished (.*) loading./) {
+    ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $id, $recordType) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
+    # print "FINISH! digits=$digits class=$class line=$line ip=$ip day=$day mon=$mon year=$year hour=$hour min=$min sec=$sec tz=$tz id=$id recordType=$recordType\n";
+
+    my $monthNumber = index("JanFebMarAprMayJunJulAugSepOctNovDec", $mon) / 3;
+    $absoluteTime = timegm($sec, $min, $hour, $day, $monthNumber, $year - 1900);
+    next if ($time_min && $absoluteTime < $time_min);
+    next if ($time_max && $absoluteTime > $time_max);
+
+    if ($finishTime{$id}) {
+      $duplicateFinish++;
+      $finishTime{$id} = $absoluteTime if $absoluteTime > $finishTime{$id};
+    } else {
+      $finishTime{$id} = $absoluteTime;
+    }
+  } else {
+    next;
+  }
+
+  $min_absolute_time = $absoluteTime if $absoluteTime < $min_absolute_time;  # the first time we have included
+  $max_absolute_time = $absoluteTime if $absoluteTime > $max_absolute_time;  # the latest time we have included
+}
+
+foreach my $id (keys(%startTime)) {
+  my $recordType = $recordType{$id};
+  next if $genepage && $recordType != "gene page";
+
+  if (! $finishTime{$id}) {
+    $startWithoutFinish++;
+    next;
+  }
+
+  my $seconds = $finishTime{$id} - $startTime{$id};
+
+  if (!$h->{$recordType}) {
+    $h->{$recordType} = [$recordType, 0, 0, 0, 0, 0];
+  }
+  $h->{$recordType}->[1] += $seconds;      # total secs
+  $h->{$recordType}->[2] += 1;             # count
+  if ($seconds > $threshold) {
+    $h->{$recordType}->[3] += $seconds;    # total secs over threshold
+    $h->{$recordType}->[4] += 1;           # count over threshold
+  }
+  $h->{$recordType}->[5] = $seconds if ($seconds > $h->{$recordType}->[5]); # max secs
+
+  # we are generating a plot data file too
+  if ($plotOutputFile) {
+    print P $startTime{$id} . "\t$seconds\t$recordType\n";
+  }
+}
+
+close(P) if ($plotOutputFile);
+
+my @sorted = sort {$b->[$sort_column-1] <=> $a->[$sort_column-1]} values(%$h);
+
+
+# name total_secs count avg_secs total_secs_over count_over  worst_secs
+  print sprintf("%50s%12s%8s%10s%12s%8s%7s\n",('Name','TotSecs','#','AvgSecs','SlowSecs','Slow_#','Worst'));
+
+foreach my $a (@sorted) {
+  my $avg = $a->[1] / $a->[2];
+  print sprintf("%50s%12.2f%8d%10.2f%12.2f%8d%7.2f\n",($a->[0],$a->[1],$a->[2],$avg,$a->[3],$a->[4],$a->[5]));
+}
+
+print "\nFirst time included: " . localtime($min_absolute_time) . " ($min_absolute_time)\n";
+print   "Last time included:  " . localtime($max_absolute_time) . " ($max_absolute_time)\n\n";
+print "IDs with start but not finish time: $startWithoutFinish\n";
+print "IDs with multiple start times: $duplicateStart\n";
+print "IDs with multiple finish times: $duplicateFinish\n";
+
+sub usage {
+  print STDERR "
+
+Print a report summarizing the model slow query logs.
+
+Takes one or more logs on standard input.
+
+usage:  wdkSlowRecordPageReport -s secs [-g] [-s starttime[,endtime]] [-c colnum] [-p plotOutputFile]
+
+where:
+  -s:  slowness threshold in seconds.  run times over secs are reported in Slow columns
+  -g:  show only gene record times
+  -t:  time filter (use seconds since epoch, which is a column in model log)
+  -c:  column to sort on (default is 2, the total time)
+  -p:  optional output file: a tab delimited file to pass as input
+        to wdkSlowQueryPlot.  Used to visualize the query durations over time.
+
+";
+  exit(1);
+}
