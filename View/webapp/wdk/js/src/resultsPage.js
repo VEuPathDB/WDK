@@ -107,7 +107,8 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   }
 
   function updateSummary(command) {
-    var info = $("#Summary_Views");
+    // var info = workspace("#Summary_Views");
+    var info = wdl.findActiveView();
     var url = info.attr("updateUrl");
     var strategyId = info.attr("strategy");
     var stepId = info.attr("step");
