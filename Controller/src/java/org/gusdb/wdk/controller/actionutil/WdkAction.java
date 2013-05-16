@@ -1,11 +1,9 @@
 package org.gusdb.wdk.controller.actionutil;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -568,31 +566,6 @@ public abstract class WdkAction implements SecondaryValidator {
       .append(CConstants.WDK_PAGES_DIR)
       .append(File.separator)
       .toString();
-  }
-
-  /**
-   * Converts binary data into an input stream.  This can be used if the result
-   * type is a stream, and the content to be returned already exists in memory
-   * as a string.  This is simply a wrapper around the ByteArrayInputStream
-   * constructor.
-   * 
-   * @param data data to be converted
-   * @return stream representing the data
-   */
-  public static InputStream getStreamFromBytes(byte[] data) {
-    return new ByteArrayInputStream(data);
-  }
-  
-  /**
-   * Converts a string into an open input stream.  This can be used if the
-   * result type is a stream, and the content to be returned already exists in
-   * memory as a string.
-   * 
-   * @param str string to be converted
-   * @return input stream representing the string
-   */
-  public static InputStream getStreamFromString(String str) {
-    return getStreamFromBytes(str.getBytes(Charset.defaultCharset()));
   }
   
   /**

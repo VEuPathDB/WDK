@@ -1,18 +1,19 @@
 package org.gusdb.wdk.jmx.mbeans.dbms;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import org.apache.log4j.Logger;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.DatabaseMetaData;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
+import javax.sql.DataSource;
+
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.dbms.SqlUtils;
-import javax.sql.DataSource;
 
 /**
   * Abstract class for collecting information about databases used by
@@ -90,12 +91,14 @@ public abstract class AbstractDBInfo {
     String sql = getServerNameSql();
     if (sql == null) return;
     
+    Connection connection = null;
     ResultSet rs = null;
     PreparedStatement ps = null;
     logger.debug("querying database for servername information");    
 
     try {
-      String dbVendor = datasource.getConnection().getMetaData().getDatabaseProductName();
+      connection = datasource.getConnection();
+      String dbVendor = connection.getMetaData().getDatabaseProductName();
       ps = SqlUtils.getPreparedStatement(datasource, sql);
       rs = ps.executeQuery();
      if (rs.next()) {
@@ -118,6 +121,11 @@ public abstract class AbstractDBInfo {
         logger.error("Failed attempting\n" + sql + "\n" + e);
     } finally {
         SqlUtils.closeResultSetAndStatement(rs);
+        try {
+            if (connection != null) connection.close();
+        } catch(SQLException ex) {
+            logger.error(ex);
+        }
     }  
   }
 
