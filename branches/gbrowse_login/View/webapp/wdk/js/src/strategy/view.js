@@ -454,7 +454,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           "<input type='submit' value='Revise' /></div>";
       params_table = oform + stage_input + params_table + button + cform;
     } else if (jsonStep.isCollapsed) {
-      params_table = "<div>The nested strategy is opened below.</div>";
+      params_table = "<div>The nested strategy gets opened below.</div>";
     } else if (params != undefined && params.length != 0) {
       params_table = createParameters(params, modelstep.isSpan && jsonStep.id ==
           modelstep.back_boolean_Id);

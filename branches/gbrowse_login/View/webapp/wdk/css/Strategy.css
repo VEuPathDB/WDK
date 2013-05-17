@@ -653,6 +653,7 @@ b.strat_help_title > span {
 
 #query_form {
 	position: absolute;
+/*	right:140px; affects colocation */
 	left:140px; 
 	top:140px;
   min-width:80%;
