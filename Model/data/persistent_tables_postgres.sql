@@ -1,6 +1,6 @@
+/*
 DROP SEQUENCE IF EXISTS wdkengine.migration_pkseq;
 DROP SEQUENCE IF EXISTS wdkengine.dataset_indices_pkseq;
-DROP SEQUENCE IF EXISTS wdkengine.answers_pkseq;
 
 DROP SEQUENCE IF EXISTS wdkuser.migration_pkseq;
 DROP SEQUENCE IF EXISTS wdkuser.favorites_pkseq;
@@ -21,10 +21,11 @@ DROP TABLE IF EXISTS wdkuser.preferences;
 DROP TABLE IF EXISTS wdkuser.user_roles;
 DROP TABLE IF EXISTS wdkuser.users;
 
-DROP TABLE IF EXISTS wdkengine.answers;
 DROP TABLE IF EXISTS wdkengine.clob_values;
 DROP TABLE IF EXISTS wdkengine.dataset_values;
 DROP TABLE IF EXISTS wdkengine.dataset_indices;
+*/
+
 
 /* =========================================================================
    create schemas ("schemata"?)
