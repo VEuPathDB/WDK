@@ -417,7 +417,7 @@ public class CacheFactory {
         }
     }
 
-    public synchronized QueryInfo getQueryInfo(Query query)
+    public QueryInfo getQueryInfo(Query query)
             throws WdkModelException {
 
     	String checksum = query.getChecksum(true);

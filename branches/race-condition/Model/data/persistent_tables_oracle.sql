@@ -1,6 +1,6 @@
+/*
 DROP SEQUENCE wdkengine.migration_pkseq;
 DROP SEQUENCE wdkengine.dataset_indices_pkseq;
-DROP SEQUENCE wdkengine.answers_pkseq;
 
 DROP SEQUENCE wdkuser.favorites_pkseq;
 DROP SEQUENCE wdkuser.user_baskets_pkseq;
@@ -21,11 +21,10 @@ DROP TABLE wdkuser.preferences;
 DROP TABLE wdkuser.user_roles;
 DROP TABLE wdkuser.users;
 
-DROP TABLE wdkengine.answers;
 DROP TABLE wdkengine.clob_values;
 DROP TABLE wdkengine.dataset_values;
 DROP TABLE wdkengine.dataset_indices;
-
+*/
 
 
 /* =========================================================================
@@ -214,6 +213,10 @@ CREATE TABLE wdkuser.steps
   invalid_message VARCHAR(2000),
   assigned_weight NUMBER(12),
   migration NUMBER(12),
+  project_id VARCHAR(50) NOT NULL,
+  project_version VARCHAR(50) NOT NULL,
+  question_name VARCHAR(200) NOT NULL,
+  result_message CLOB,
   CONSTRAINT "steps_pk" PRIMARY KEY (step_id),
   CONSTRAINT "steps_uq01" UNIQUE (user_id, display_id),
   CONSTRAINT "steps_fk01" FOREIGN KEY (user_id)
