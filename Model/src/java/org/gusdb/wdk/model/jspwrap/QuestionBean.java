@@ -213,6 +213,10 @@ public class QuestionBean {
         return question.getQuestionSetName();
     }
 
+    public String getQueryName() {
+      return question.getQueryName();
+    }
+
     public String getDisplayName() {
         return question.getDisplayName();
     }

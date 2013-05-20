@@ -475,6 +475,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     return questionSet.getName();
   }
 
+  public String getQueryName() {
+    return this.query.getName();
+  }
+
   public String toString() {
     String newline = System.getProperty("line.separator");
 
