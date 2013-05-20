@@ -4,7 +4,6 @@
 package org.gusdb.wdk.model.query;
 
 import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -44,11 +43,10 @@ import org.json.JSONObject;
  */
 public abstract class QueryInstance {
 
-  public abstract void createCache(Connection connection, String tableName,
-      int instanceId, String[] indexColumns) throws WdkModelException;
+  public abstract void createCache(String tableName, int instanceId) throws WdkModelException;
 
-  public abstract void insertToCache(Connection connection, String tableName,
-      int instanceId) throws WdkModelException;
+  public abstract void insertToCache(String tableName, int instanceId)
+      throws WdkModelException;
 
   public abstract String getSql() throws WdkModelException;
 
@@ -60,7 +58,7 @@ public abstract class QueryInstance {
   private static final Logger logger = Logger.getLogger(QueryInstance.class);
 
   protected User user;
-  private Integer instanceId;
+  private int instanceId;
   protected Query query;
   protected WdkModel wdkModel;
   protected Map<String, String> values;
@@ -98,12 +96,7 @@ public abstract class QueryInstance {
    * @throws NoSuchAlgorithmException
    * @throws WdkUserException
    */
-  public Integer getInstanceId() throws WdkModelException {
-    if (instanceId == null) {
-      ResultFactory resultFactory = wdkModel.getResultFactory();
-      String[] indexColumns = query.getIndexColumns();
-      instanceId = resultFactory.getInstanceId(this, indexColumns);
-    }
+  public int getInstanceId() throws WdkModelException {
     return instanceId;
   }
 
@@ -111,7 +104,7 @@ public abstract class QueryInstance {
    * @param instanceId
    *          the instanceId to set
    */
-  public void setInstanceId(Integer instanceId) {
+  public void setInstanceId(int instanceId) {
     this.instanceId = instanceId;
   }
 
