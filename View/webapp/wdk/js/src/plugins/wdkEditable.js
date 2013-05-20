@@ -91,29 +91,35 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
       if (trigger === "manual") return;
 
       // namespace triggers
-      var triggerNS = $.map(this.options.trigger.split(/\s+/), function(a) {
+      widget._nsTriggers = $.map(this.options.trigger.split(/\s+/), function(a) {
         return a + widget._ns;
       }).join(" ");
 
-      widget.element.on(triggerNS, function() {
+      widget.element.on(widget._nsTriggers, function() {
         widget.show.call(widget);
       });
 
-      // hide if trigger is outside of widget
-      $("body").on(triggerNS, function(e) {
-        if (!widget.element.is(e.target) &&
-            widget.element.has(e.target).length === 0) {
-          widget.hide.call(widget);
-        }
-      });
     },
 
     // show input box
     show: function() {
       var widget = this;
+      $("body").off(widget._ns);
+      // hide if trigger is outside of widget
+      setTimeout(function() {
+        $("body").on(widget._nsTriggers, function(e) {
+          if (!widget.element.is(e.target) &&
+              widget.element.has(e.target).length === 0) {
+            widget.hide.call(widget);
+          }
+        });
+      }, 0);
 
       // already shown
-      if (widget.element.has('input').length !== 0) return;
+      if (widget.element.has('input').length !== 0) {
+        widget.$input.select();
+        return;
+      }
 
       var e = $.Event("editableshow");
 
