@@ -295,10 +295,7 @@ public class CacheFactory {
     sql.append(COLUMN_TABLE_NAME).append(" ");
     sql.append(platform.getStringDataType(30)).append(" NOT NULL, ");
     sql.append(" CONSTRAINT PK_").append(COLUMN_QUERY_ID);
-    sql.append(" PRIMARY KEY (").append(COLUMN_QUERY_ID).append("), ");
-    sql.append(" CONSTRAINT UK_").append(COLUMN_QUERY_NAME);
-    sql.append(" UNIQUE (").append(COLUMN_QUERY_NAME).append(", ");
-    sql.append(COLUMN_QUERY_CHECKSUM).append(") )");
+    sql.append(" PRIMARY KEY (").append(COLUMN_QUERY_ID).append(") )");
     try {
       SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
           "wdk-cache-create-query");
@@ -333,12 +330,7 @@ public class CacheFactory {
     sql.append(" CONSTRAINT FK_").append(COLUMN_QUERY_ID);
     sql.append(" FOREIGN KEY (").append(COLUMN_QUERY_ID).append(")");
     sql.append(" REFERENCES ").append(TABLE_QUERY);
-    sql.append("(").append(COLUMN_QUERY_ID).append("), ");
-
-    // define unique constraint to (query_id, instance_checksum) tuple
-    sql.append(" CONSTRAINT UK_").append(COLUMN_QUERY_ID);
-    sql.append(" UNIQUE (").append(COLUMN_QUERY_ID).append(", ");
-    sql.append(COLUMN_INSTANCE_CHECKSUM).append(") )");
+    sql.append("(").append(COLUMN_QUERY_ID).append(") )");
     try {
       SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
           "wdk-cache-create-instance");
