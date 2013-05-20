@@ -1357,6 +1357,7 @@
         <attribute name="displayType">
             <choice>
               <value>empty</value>
+              <value>dynamic</value>
               <value>ShowHide</value>
             </choice>
         </attribute>
