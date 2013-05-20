@@ -770,7 +770,7 @@ public class StepFactory {
         Map<Integer, Strategy> userStrategies = new LinkedHashMap<Integer, Strategy>();
 
         PreparedStatement psStrategyIds = null;
-        ResultSet rsStrategyIds = null;
+        ResultSet rsStrategies = null;
         String userColumn = Utilities.COLUMN_USER_ID;
         String answerColumn = AnswerFactory.COLUMN_ANSWER_ID;
         StringBuffer sql = new StringBuffer("SELECT DISTINCT sr.* ");
@@ -794,10 +794,10 @@ public class StepFactory {
             psStrategyIds = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             psStrategyIds.setInt(1, user.getUserId());
             psStrategyIds.setString(2, wdkModel.getProjectId());
-            rsStrategyIds = psStrategyIds.executeQuery();
+            rsStrategies = psStrategyIds.executeQuery();
             SqlUtils.verifyTime(wdkModel, sql.toString(),
-				"wdk-step-factory-load-all-strategies", start, rsStrategyIds);
-            List<Strategy> strategies = loadStrategies(user, rsStrategyIds);
+				"wdk-step-factory-load-all-strategies", start, rsStrategies);
+            List<Strategy> strategies = loadStrategies(user, rsStrategies);
             for (Strategy strategy : strategies) {
               userStrategies.put(strategy.getStrategyId(), strategy);
               if (!strategy.isValid()) 
@@ -810,7 +810,7 @@ public class StepFactory {
         }
         finally {
             SqlUtils.closeStatement(psStrategyIds);
-            SqlUtils.closeResultSetAndStatement(rsStrategyIds);
+            SqlUtils.closeResultSetAndStatement(rsStrategies);
         }
     }
 
