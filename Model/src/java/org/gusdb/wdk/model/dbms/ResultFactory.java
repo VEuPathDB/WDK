@@ -41,7 +41,7 @@ public class ResultFactory {
     return cacheFactory;
   }
 
-  public ResultList getCachedResults(QueryInstance queryInstance)
+  public String getCachedSql(QueryInstance queryInstance)
       throws WdkModelException {
     // get query info
     Query query = queryInstance.getQuery();
@@ -75,12 +75,18 @@ public class ResultFactory {
     sql.append(" FROM ").append(queryInfo.getCacheTable());
     sql.append(" WHERE ").append(CacheFactory.COLUMN_INSTANCE_ID);
     sql.append(" = ").append(instanceId);
+    return sql.toString();
+  }
 
+  public ResultList getCachedResults(QueryInstance queryInstance)
+      throws WdkModelException {
+    String sql = getCachedSql(queryInstance);
     // get the resultList
     try {
       DataSource dataSource = platform.getDataSource();
       ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
-          sql.toString(), queryInfo.getQueryName() + "__select-cache");
+          sql.toString(), queryInstance.getQuery().getFullName()
+              + "__select-cache");
       return new SqlResultList(resultSet);
     } catch (SQLException e) {
       throw new WdkModelException("Unable to retrieve cached results.", e);
