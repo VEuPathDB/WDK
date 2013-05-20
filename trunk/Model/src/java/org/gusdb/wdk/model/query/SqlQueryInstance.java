@@ -4,10 +4,8 @@
 package org.gusdb.wdk.model.query;
 
 import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -18,7 +16,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
@@ -101,8 +98,8 @@ public class SqlQueryInstance extends QueryInstance {
    * java.lang.String)
    */
   @Override
-  public void insertToCache(Connection connection, String tableName,
-      int instanceId) throws WdkModelException {
+  public void insertToCache(String tableName, int instanceId)
+      throws WdkModelException {
     String idColumn = CacheFactory.COLUMN_INSTANCE_ID;
     Map<String, Column> columns = query.getColumnMap();
     StringBuffer columnList = new StringBuffer();
@@ -125,26 +122,9 @@ public class SqlQueryInstance extends QueryInstance {
     buffer.append(instanceId + " AS " + idColumn + columnList);
     buffer.append(" FROM (").append(sql).append(") f");
 
-    Statement stmt = null;
-    try {
-      long start = System.currentTimeMillis();
-
-      stmt = connection.createStatement();
-      stmt.execute(buffer.toString());
-
-      SqlUtils.verifyTime(wdkModel, buffer.toString(), query.getFullName()
-          + "__insert-cache", start);
-    } catch (SQLException ex) {
-      logger.error("Fail to run SQL:\n" + buffer);
-      throw new WdkModelException("Could not insert values into cache.", ex);
-    } finally {
-      if (stmt != null)
-        try {
-          stmt.close();
-        } catch (SQLException e) {
-          logger.error("Could not close Statement!", e);
-        }
-    }
+    DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+    SqlUtils.executeUpdate(wdkModel, dataSource, buffer.toString(),
+        query.getFullName() + "__insert-cache");
   }
 
   public String getUncachedSql() throws WdkModelException {
@@ -205,8 +185,9 @@ public class SqlQueryInstance extends QueryInstance {
    * java.lang.String, int)
    */
   @Override
-  public void createCache(Connection connection, String tableName,
-      int instanceId, String[] indexColumns) throws WdkModelException {
+  public void createCache(String tableName, int instanceId)
+      throws WdkModelException {
+    logger.debug("creating cache table for query " + query.getFullName());
     // get the sql with param values applied.
     String sql = getUncachedSql();
 
@@ -215,22 +196,8 @@ public class SqlQueryInstance extends QueryInstance {
     buffer.append(instanceId + " AS " + CacheFactory.COLUMN_INSTANCE_ID);
     buffer.append(", f.* FROM (").append(sql).append(") f");
 
-    Statement stmt = null;
-    try {
-      long start = System.currentTimeMillis();
-      stmt = connection.createStatement();
-      stmt.execute(buffer.toString());
-
-      SqlUtils.verifyTime(wdkModel, buffer.toString(), query.getFullName() + "__create-cache",
-          start);
-
-      ResultFactory resultFactory = wdkModel.getResultFactory();
-      resultFactory.createCacheTableIndex(connection, tableName, indexColumns);
-    } catch (SQLException ex) {
-      logger.error("Fail to run SQL:\n" + buffer);
-      throw new WdkModelException("Unable to create cache.", ex);
-    } finally {
-      SqlUtils.closeQuietly(stmt);
-    }
+    DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+    SqlUtils.executeUpdate(wdkModel, dataSource, buffer.toString(),
+        query.getFullName() + "__create-cache");
   }
 }
