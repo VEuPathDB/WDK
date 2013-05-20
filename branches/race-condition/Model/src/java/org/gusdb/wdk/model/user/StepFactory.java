@@ -1084,6 +1084,7 @@ public class StepFactory {
                 + answerColumn + " AND sr." + userColumn + " = sp."
                 + userColumn + " AND sr." + COLUMN_PROJECT_ID + " = a."
                 + COLUMN_PROJECT_ID);
+        sql.append(" AND sr.is_deleted = 0 ");
         sql.append(" AND sr.").append(COLUMN_SIGNATURE).append(" = ? ");
         sql.append(" AND sr.").append(COLUMN_PROJECT_ID).append(" = ?");
         sql.append(" ORDER BY sr.").append(COLUMN_LAST_MODIFIED_TIME).append(
