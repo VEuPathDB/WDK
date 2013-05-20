@@ -17,8 +17,6 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.CacheFactory;
-import org.gusdb.wdk.model.dbms.QueryInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlUtils;
@@ -240,17 +238,8 @@ public abstract class QueryInstance {
   }
 
   protected String getCachedSql() throws WdkModelException {
-    CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
-    QueryInfo queryInfo = cacheFactory.getQueryInfo(getQuery());
-
-    String cacheTable = queryInfo.getCacheTable();
-    int instanceId = getInstanceId();
-
-    StringBuffer sql = new StringBuffer("SELECT * FROM ");
-    sql.append(cacheTable).append(" WHERE ");
-    sql.append(CacheFactory.COLUMN_INSTANCE_ID);
-    sql.append(" = ").append(instanceId);
-    return sql.toString();
+    ResultFactory resultFactory = wdkModel.getResultFactory();
+    return resultFactory.getCachedSql(this);
   }
 
   private void validateValues(User user, Map<String, String> values)
