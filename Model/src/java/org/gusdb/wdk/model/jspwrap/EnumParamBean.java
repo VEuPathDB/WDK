@@ -269,4 +269,8 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
         + rawOrDependentValue + ", dependedValue=" + Utilities.print(_dependedValues));
     param.validateValue(user.getUser(), rawOrDependentValue, _dependedValues);
   }
+
+  public boolean isSuppressNode() {
+    return ((AbstractEnumParam)param).isSuppressNode();
+  }
 }
