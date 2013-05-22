@@ -492,7 +492,7 @@ div.transform a.crumb_name img{
 .diagram div.strategy_name {
   border: none;
   position: absolute;
-  right: 14px; /* make room for hidden scrollbars in OS X >= 10.7 */
+  right: 0px; /* make room for hidden scrollbars in OS X >= 10.7 */
   font-size: 12pt;
   margin-right: 18px;
   top: 0;
@@ -509,7 +509,6 @@ div.transform a.crumb_name img{
 .diagram div.strategy_menu {
   top: 1em;
   margin-top: 5px;
-  right: -7px;
 }
 
 .diagram div.strategy_menu span.strategy_small_text {
@@ -525,7 +524,7 @@ div.transform a.crumb_name img{
 span.closeStrategy {
   position: absolute;
   top: 1px;
-  right: 12px; /* make room for hidden scrollbars in OS X >= 10.7 */
+  right: 1px;
 }
 
 
