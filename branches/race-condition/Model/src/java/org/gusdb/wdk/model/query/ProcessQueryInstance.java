@@ -7,16 +7,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
 import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javax.sql.DataSource;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.log4j.Logger;
@@ -26,8 +25,8 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ArrayResultList;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
@@ -88,8 +87,8 @@ public class ProcessQueryInstance extends QueryInstance {
    * java.lang.String)
    */
   @Override
-  public void insertToCache(Connection connection, String tableName,
-      int instanceId) throws WdkModelException {
+  public void insertToCache(String tableName, int instanceId)
+      throws WdkModelException {
     logger.debug("inserting process query result to cache...");
     Map<String, Column> columns = query.getColumnMap();
     String weightColumn = Utilities.COLUMN_WEIGHT;
@@ -117,7 +116,8 @@ public class ProcessQueryInstance extends QueryInstance {
     DBPlatform platform = query.getWdkModel().getQueryPlatform();
     PreparedStatement ps = null;
     try {
-      ps = connection.prepareStatement(sql.toString());
+      DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+      ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
       ResultList resultList = getUncachedResults();
       int rowId = 0;
       while (resultList.next()) {
@@ -322,8 +322,8 @@ public class ProcessQueryInstance extends QueryInstance {
    * java.lang.String, int)
    */
   @Override
-  public void createCache(Connection connection, String tableName,
-      int instanceId, String[] indexColumns) throws WdkModelException {
+  public void createCache(String tableName, int instanceId)
+      throws WdkModelException {
     logger.debug("creating process query cache...");
     DBPlatform platform = query.getWdkModel().getQueryPlatform();
     Column[] columns = query.getColumns();
@@ -370,26 +370,12 @@ public class ProcessQueryInstance extends QueryInstance {
     }
     sqlTable.append(")");
 
-    Statement stmt = null;
-    try {
-      stmt = connection.createStatement();
-      stmt.execute(sqlTable.toString());
+    DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+    SqlUtils.executeUpdate(wdkModel, dataSource, sqlTable.toString(),
+        query.getFullName() + "__create-cache-table");
 
-      ResultFactory resultFactory = wdkModel.getResultFactory();
-      resultFactory.createCacheTableIndex(connection, tableName, indexColumns);
-
-      // also insert the result into the cache
-      insertToCache(connection, tableName, instanceId);
-    } catch (SQLException e) {
-      throw new WdkModelException("Unable to create cache.", e);
-    } finally {
-      if (stmt != null)
-        try {
-          stmt.close();
-        } catch (SQLException e) {
-          logger.error("Unable to close Statement!", e);
-        }
-    }
+    // also insert the result into the cache
+    insertToCache(tableName, instanceId);
   }
 
   /*
