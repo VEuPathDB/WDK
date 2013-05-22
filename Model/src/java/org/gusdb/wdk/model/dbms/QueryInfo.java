@@ -9,10 +9,18 @@ package org.gusdb.wdk.model.dbms;
  */
 public class QueryInfo {
 
+  private final String queryName;
+  private final String queryChecksum;
+  
     private int queryId;
-    private String queryName;
-    private String queryChecksum;
     private String cacheTable;
+    
+    private boolean exist = false;
+    
+    public QueryInfo(String queryName, String checksum) {
+      this.queryName = queryName;
+      this.queryChecksum = checksum;
+    }
 
     /**
      * @return the queryId
@@ -37,14 +45,6 @@ public class QueryInfo {
     }
 
     /**
-     * @param queryName
-     *            the queryName to set
-     */
-    public void setQueryName(String queryName) {
-        this.queryName = queryName;
-    }
-
-    /**
      * @return the cacheTable
      */
     public String getCacheTable() {
@@ -66,11 +66,11 @@ public class QueryInfo {
         return queryChecksum;
     }
 
-    /**
-     * @param queryChecksum
-     *            the queryChecksum to set
-     */
-    public void setQueryChecksum(String queryChecksum) {
-        this.queryChecksum = queryChecksum;
+    public boolean isExist() {
+      return exist;
+    }
+
+    public void setExist(boolean exist) {
+      this.exist = exist;
     }
 }
