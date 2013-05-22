@@ -97,7 +97,7 @@
   position: relative;
   left:    0em;
   background-color: #EDEDED;
-  height:   135px;
+  height:   141px;
   border-color: #ffffff #cccccc #666677 #aaaaaa;
   border-style: ridge;
   border-width: 4px;
@@ -137,11 +137,11 @@ div.sub_diagram {
 
 /* Rows, columns, heights, widths, and sizes. */
 .row1 { 
-  top: 17px;
+  top: 0px;
 }
 
 .row2 { 
-  top: 65px;
+  top: 48px;
 }
 
 .arrow {
@@ -261,7 +261,7 @@ a.operation img {
 
 span.stepNumber {
   position: absolute;
-  top:9em;
+  top:89px;
   left:2.7em;
   font-weight:bold;
   white-space:nowrap;
@@ -326,7 +326,7 @@ h6.resultCount {
   background-color: #EDEDED;
   height: 37px;
   background-repeat: no-repeat;
-  top:25px;
+  top:8px;
 }
 
 .diagram div.simple.selected,.diagram div.operation.selected {
@@ -487,28 +487,51 @@ div.transform a.crumb_name img{
 /*  color: #08438F; */
   font-weight:bold;
   text-decoration:none;
+  top: 0px;
+  z-index: 1;
 }
 .diagram div.strategy_menu,
 .diagram div.strategy_name {
+  /*
   border: none;
   position: absolute;
-  right: 0px; /* make room for hidden scrollbars in OS X >= 10.7 */
+  right: 0px;
   font-size: 12pt;
   margin-right: 18px;
   top: 0;
   text-align: right;
+  */
 }
 
 .diagram div.strategy_name {
+  position: relative;
+  float: right;
 	cursor:pointer;
 	font-size:14px;
 	font-weight:bold;
-  right: 1em;
+  right: 3em;
+  z-index: 1;
 }
 
+/*
+.diagram .strategy-name.wdk-editable {
+  padding-bottom: 5px;
+}
+.diagram .strategy-name.wdk-editable-show {
+  padding-bottom: 1px;
+}
+.diagram .strategy-name.wdk-editable input {
+  margin: 1px;
+  padding: 0;
+}
+*/
+
 .diagram div.strategy_menu {
-  top: 1em;
-  margin-top: 5px;
+  clear: both;
+  float: right;
+  text-align: right;
+  margin-right: 2em;
+  position: relative;
 }
 
 .diagram div.strategy_menu span.strategy_small_text {
@@ -525,6 +548,7 @@ span.closeStrategy {
   position: absolute;
   top: 1px;
   right: 1px;
+  z-index: 1;
 }
 
 
@@ -961,18 +985,26 @@ table.history_controls {
   display:none;
 }
 
+.diagram-wrapper {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
 .diagram .diagramSection.scrollableSteps {
   height: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   margin-right: 12px;
-  max-width: 86%;
+  max-width: 78%;
+  position: relative;
+  top: 0px;
 }
 
 .diagram .diagramSection, .diagram .diagramSection .stepBox {
   border: none;
   float: left;
   position: relative;
+  top: 2em;
 }
 
 .diagram .stepBox {
@@ -986,6 +1018,12 @@ table.history_controls {
 }
 
 .diagram .stepBox div, .diagram .stepWrapper {
+  position: relative;
+}
+
+.diagram .addStepButton {
+  float: left;
+  top: 72px;
   position: relative;
 }
 
