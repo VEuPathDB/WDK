@@ -138,7 +138,7 @@ ${Question_Header}
 </div><%-- end of filter operators --%>
 
 <div id="boolean_button" class="filter-button">
-    <html:submit property="questionSubmit" value="${buttonVal}"/>
+    <html:submit property="questionSubmit" styleClass="btn btn-primary" value="${buttonVal}"/>
 </div>
 
 <imp:nameStep/>
