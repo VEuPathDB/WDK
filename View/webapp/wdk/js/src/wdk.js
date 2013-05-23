@@ -208,6 +208,7 @@ function getWebAppUrl() {
       $(this).accordion({
         autoHeight: false,
         collapsible: true,
+        navigation: false,
         active: active
       });
     });
@@ -215,10 +216,16 @@ function getWebAppUrl() {
     // register expand/collapse links
     // data-container is a selector for a container element
     // data-show is a boolean to show or hide toggles
+    // data-animated overrides the built-in animation
     $(".wdk-toggle-group").click(function(e) {
       var $this = $(this);
       var container = $this.closest($this.data("container"));
       var $toggles = container.find(".wdk-toggle");
+      var animCache = $this.accordion("option", "animated");
+      var anim = typeof $this.data("animated") !== "undefined" ? $this.data("animated") : animCache;
+      var scrollTop = $(document).scrollTop();
+
+      $toggles.accordion("option", "animated", anim);
 
       if ($this.data("show")) {
         $toggles.each(function() {
@@ -230,6 +237,10 @@ function getWebAppUrl() {
       } else {
         $toggles.accordion("option", "active", false);
       }
+
+      $toggles.accordion("option", "animated", animCache);
+
+      $(document).scrollTop(scrollTop);
 
       e.preventDefault();
     });
