@@ -161,6 +161,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
 
     } else if (type == "page") {
       currentDiv.find(".Results_Div div.primaryKey").each(function(){
+        var o =  { };
         $("span",this).each(function(){
           o[$(this).attr("key")] = $(this).text();
         });

@@ -225,7 +225,7 @@
 
 <div id="sentence" style="text-align:center;font-size:150%"><br><hr></div><br>
 
-<div class="filter-button"><html:submit property="questionSubmit" value="Run Step" styleClass="btn btn-primary" styleId="submitButton"/></div>
+<div class="filter-button"><html:submit property="questionSubmit" value="Run Step" styleId="submitButton"/></div>
 </html:form>
 
 <script>
