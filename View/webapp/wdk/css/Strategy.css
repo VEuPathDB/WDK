@@ -506,7 +506,6 @@ div.transform a.crumb_name img{
 .diagram div.strategy_name {
   position: relative;
   float: right;
-	cursor:pointer;
 	font-size:14px;
 	font-weight:bold;
   right: 3em;
@@ -531,7 +530,9 @@ div.transform a.crumb_name img{
   float: right;
   text-align: right;
   margin-right: 2em;
-  position: relative;
+  position: absolute;
+  top: 16px;
+  right: 0px;
 }
 
 .diagram div.strategy_menu span.strategy_small_text {

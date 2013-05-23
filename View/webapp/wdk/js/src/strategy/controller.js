@@ -66,18 +66,18 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     $("#Strategies").on("strategyselect", ".diagram", function(e, strategy) {
       // hide editable strategy names and reset trigger
       $(e.delegateTarget).find(".strategy-name.wdk-editable")
-      .editable("hide")
-      .editable("option", "trigger", "click");
+      .editable("hide");
+      // .editable("option", "trigger", "click");
 
       if (strategy.Steps.length > 1 && !strategy.hasCustomName()) {
         // show and turn off trigger
         $(this).find(".strategy-name.wdk-editable")
-        .editable("show")
-        .editable("option", "trigger", "manual")
-        .on("editablehide", function() {
-          console.log(this);
-          $(this).editable("option", "trigger", "click");
-        });;
+        .editable("show");
+        // .editable("option", "trigger", "manual")
+        // .on("editablehide", function() {
+        //   console.log(this);
+        //   $(this).editable("option", "trigger", "click");
+        // });;
       }
     });
   }
