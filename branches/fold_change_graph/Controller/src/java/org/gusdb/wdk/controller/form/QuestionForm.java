@@ -90,6 +90,7 @@ public class QuestionForm extends MapActionForm {
             logger.debug("param=" + param.getFullName()
                 + ", set dependedValues=" + Utilities.print(dependedValues));
           } catch (WdkModelException ex) {
+            ex.printStackTrace();
             ActionMessage message = new ActionMessage("mapped.properties",
                 param.getPrompt(), ex.getMessage());
             errors.add(ActionErrors.GLOBAL_MESSAGE, message);
