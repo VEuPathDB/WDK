@@ -385,7 +385,7 @@ h6.resultCount {
   border:none;
   height:42px;
   position:absolute;
-  top:10px;
+  top:-7px;
   left:4px;
   width:102px;
   z-index:0;
