@@ -282,16 +282,18 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     $("#strategy_results .resizable-wrapper:has(#Strategies)").show();
     $("#Strategies").html($(s2).html());
     var height = wdk.stratTabCookie.getCurrentTabCookie('strategyWindow');
+    var wrapper = $("#strategy_results .resizable-wrapper:has(#Strategies)");
     if (!height && $("#Strategies").parent().parent().height() > 330) {
-      $("#Strategies").parent().parent().height(330);
+      // unless otherwise specified, don't allow height > 330
+      wrapper.height(330);
     } else if (height) {
       height = parseInt(height, 10);
-      if ($("#strategy_results .resizable-wrapper:has(#Strategies)").height() > height) {
-        $("#strategy_results .resizable-wrapper:has(#Strategies)").height(height);
-      } else if ($("#Strategies").height() + 10 <
-          $("#strategy_results .resizable-wrapper:has(#Strategies)").height()) {
-        $("#strategy_results .resizable-wrapper:has(#Strategies)")
-            .height($("#Strategies").height() + 10);
+      if (wrapper.resizable("option", "minHeight") <= height) {
+        // shrink wrapper to specified height only if no less than minHeight
+        wrapper.height(height);
+      } else if ($("#Strategies").height() + 10 < wrapper.height()) {
+        // shrink wrapper to fit Strategies
+        wrapper.height($("#Strategies").height() + 10);
       }
     }
     if (view.action != undefined) {
