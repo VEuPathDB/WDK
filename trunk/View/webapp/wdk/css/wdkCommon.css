@@ -182,11 +182,12 @@ td {
 
 .wdk-toggle-name {
   margin-bottom: 1em;
+  margin-left: 1em;
   cursor: pointer;
 }
 
 .wdk-toggle-content {
-  margin: 1em 0em 1em 2em;
+  margin: 1em 0em 1em 2.6em;
   display: none;
 }
 

@@ -30,6 +30,13 @@
 
       var widget = this;
 
+      // data-attr options
+      var dataOptions = widget.element.data();
+
+      widget.options.show = typeof dataOptions.show !== "undefined" ?
+          dataOptions.show : widget.options.show;
+
+
       // add shown/hidden icons
       $("<span/>").addClass("wdk-toggle-shown-icon ui-icon ui-icon-triangle-1-s")
         .prependTo(widget.element.find(".wdk-toggle-name"));
