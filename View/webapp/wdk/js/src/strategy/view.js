@@ -326,7 +326,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
   function getEditImage(isBoolean) {
       var style = isBoolean ? "display:inline-block;position:relative;top:3px" : "";
-      return "<img width='17px' style='"+style+"' src='wdk/images/edit-step.png'/>";
+      return "<img class='edit-step' width='17px' style='"+style+"' src='wdk/images/edit-step.png'/>";
   }
 
   //Creates all steps that are on the bottom line only ie. this first step and transform steps
