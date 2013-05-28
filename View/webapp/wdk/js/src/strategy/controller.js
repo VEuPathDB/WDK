@@ -66,18 +66,18 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     $("#Strategies").on("strategyselect", ".diagram", function(e, strategy) {
       // hide editable strategy names and reset trigger
       $(e.delegateTarget).find(".strategy-name.wdk-editable")
-      .editable("hide")
-      .editable("option", "trigger", "click");
+      .editable("hide");
+      // .editable("option", "trigger", "click");
 
       if (strategy.Steps.length > 1 && !strategy.hasCustomName()) {
         // show and turn off trigger
         $(this).find(".strategy-name.wdk-editable")
-        .editable("show")
-        .editable("option", "trigger", "manual")
-        .on("editablehide", function() {
-          console.log(this);
-          $(this).editable("option", "trigger", "click");
-        });;
+        .editable("show");
+        // .editable("option", "trigger", "manual")
+        // .on("editablehide", function() {
+        //   console.log(this);
+        //   $(this).editable("option", "trigger", "click");
+        // });;
       }
     });
   }
@@ -282,16 +282,18 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     $("#strategy_results .resizable-wrapper:has(#Strategies)").show();
     $("#Strategies").html($(s2).html());
     var height = wdk.stratTabCookie.getCurrentTabCookie('strategyWindow');
+    var wrapper = $("#strategy_results .resizable-wrapper:has(#Strategies)");
     if (!height && $("#Strategies").parent().parent().height() > 330) {
-      $("#Strategies").parent().parent().height(330);
+      // unless otherwise specified, don't allow height > 330
+      wrapper.height(330);
     } else if (height) {
       height = parseInt(height, 10);
-      if ($("#strategy_results .resizable-wrapper:has(#Strategies)").height() > height) {
-        $("#strategy_results .resizable-wrapper:has(#Strategies)").height(height);
-      } else if ($("#Strategies").height() + 10 <
-          $("#strategy_results .resizable-wrapper:has(#Strategies)").height()) {
-        $("#strategy_results .resizable-wrapper:has(#Strategies)")
-            .height($("#Strategies").height() + 10);
+      if (wrapper.resizable("option", "minHeight") <= height) {
+        // shrink wrapper to specified height only if no less than minHeight
+        wrapper.height(height);
+      } else if ($("#Strategies").height() + 10 < wrapper.height()) {
+        // shrink wrapper to fit Strategies
+        wrapper.height($("#Strategies").height() + 10);
       }
     }
     if (view.action != undefined) {

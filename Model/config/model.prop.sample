@@ -1,0 +1,30 @@
+#----------------------------------------------------------
+# Project Identifiers
+#----------------------------------------------------------
+
+# PROJECT_ID is set to the model name, such as "TemplateDB"
+PROJECT_ID=<modelName>
+SERVER_NAME=localhost:8080
+
+#----------------------------------------------------------
+# External Database Ids (as referenced in appDb)
+#----------------------------------------------------------
+
+# ENTREZ_GENE_XBDR_ID=
+
+#----------------------------------------------------------
+# Internal Identifiers (as referenced in appDb)
+#----------------------------------------------------------
+
+PROTEIN_TABLE=180
+
+#----------------------------------------------------------
+# URLS
+#----------------------------------------------------------
+
+EST_URL=http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=search&db=nucleotide&term=$$source_id$$
+TAXON_URL=http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?name=$$taxon_name$$
+
+# ALLGENES is defunct
+# DOTS_URL=http://www.allgenes.org/allgenes/servlet?page=rna&id=$$source_id$$
+
