@@ -1190,3 +1190,11 @@ img#step_5{
   top: 35px;
 }
 
+.edit-step {
+  padding-left: 10px;
+  padding-bottom: 10px;
+  opacity: 0.7;
+}
+.edit-step:hover {
+  opacity: 1;
+}
