@@ -103,9 +103,5 @@
 
 <html:hidden property="stage" styleId="stage" value="${nextStage}" />
 
-  <div id="boolean_button" class="filter-button">
-    <html:submit property="questionSubmit"
-      styleClass="btn btn-primary"
-      value="${buttonVal}"/>
-    </div>
+<div id="boolean_button" class="filter-button"><html:submit property="questionSubmit" value="${buttonVal}"/></div>
 </html:form>
