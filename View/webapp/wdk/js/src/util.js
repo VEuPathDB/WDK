@@ -181,7 +181,7 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
           /* Node is not an object in IE < 9 */ context.nodeType)) {
         return ns[func].apply(context, args);
       } else {
-        if (typeof console === "object") {
+        if (console && console.error) {
           console.error("Reference error: " + functionName + " is not a function");
         }
         return false;
