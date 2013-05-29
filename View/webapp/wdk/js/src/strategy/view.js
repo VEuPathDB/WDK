@@ -609,7 +609,9 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         customMenu = customCreateDetails(jsonStep, modelstep, strat);
       }
     } catch(err) {
-      console.log(err);
+      if (console && console.log) {
+        console.log(err);
+      }
       alert("view.js: a backend error occurred.");
     }
 
