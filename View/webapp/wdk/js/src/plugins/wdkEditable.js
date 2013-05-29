@@ -45,7 +45,7 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
       //   * manual will turn off all triggers
       trigger: "click",
 
-      // select text on show
+      // select text on show -- NOT BEING USED!
       selectOnShow: true,
 
       // help text
@@ -91,34 +91,45 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
       if (trigger === "manual") return;
 
       // namespace triggers
-      var triggerNS = $.map(this.options.trigger.split(/\s+/), function(a) {
+      widget._nsTriggers = $.map(this.options.trigger.split(/\s+/), function(a) {
         return a + widget._ns;
       }).join(" ");
 
-      widget.element.on(triggerNS, function() {
-        widget.show.call(widget);
-      });
-
-      // hide if trigger is outside of widget
-      $("body").on(triggerNS, function(e) {
-        if (!widget.element.is(e.target) &&
-            widget.element.has(e.target).length === 0) {
-          widget.hide.call(widget);
+      widget.element.on(widget._nsTriggers, function(e) {
+        if (!widget.$input.is(e.target)) {
+          // we can assume it's shown AND we dont' want to select it
+          // "show" is somewhat synonmous with "select" ... to a point
+          widget.show.call(widget);
         }
       });
+
     },
 
-    // show input box
+    // show input box and select content
     show: function() {
       var widget = this;
+      $("body").off(widget._ns);
+      // hide if trigger is outside of widget
+      setTimeout(function() {
+        $("body").on(widget._nsTriggers, function(e) {
+          if (!widget.element.is(e.target) &&
+              widget.element.has(e.target).length === 0) {
+            widget.save.call(widget);
+          }
+        });
+      }, 0);
 
-      // already shown
-      if (widget.element.has('input').length !== 0) return;
+      // already shown, so select content and move on
+      if (widget.element.has('input').length !== 0) {
+        widget.$input.select();
+        return;
+      }
 
       var e = $.Event("editableshow");
 
       widget.element.trigger(e, [widget]);
 
+      // event has not been prevented
       if (!e.isDefaultPrevented()) {
         // cache original value
         widget.value = widget.element.text();
@@ -153,6 +164,8 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
 
       var e = $.Event("editablehide");
       widget.element.trigger(e, [widget]);
+
+      // event has not been prevented
       if (!e.isDefaultPrevented()) {
         widget.element.text(widget.value);
         widget.element.removeClass(widget.widgetBaseClass + "-show");
@@ -162,45 +175,23 @@ wdk.util.namespace("wdk.plugin", function(ns, $) {
     // save text in input box to DOM element
     save: function() {
       var widget = this;
+      var e = $.Event("editablesave");
+
+      // save off value to allow comparison with new value
       widget.oldValue = widget.value;
+      // set value to input content
       widget.value = widget.$input.val();
-      widget.element.text(widget.value);
+
       if (widget.value !== widget.oldValue) {
+        // only trigger save if content differs
         widget.element.trigger("editablesave", [widget]);
+      }
+
+      if (!e.isDefaultPrevented()) {
+        widget.hide.call(widget);
       }
     }
 
   });
-
-  /***********************************
-  Results page: edit strategy name
-  by Ben Thomas, modified
-  http://www.unleashed-technologies.com/
-  **************************************/
-  // $.fn.wdkEditable = function(opts) {
-  //   return this.each(function() {
-
-  //     var $this = $(this),
-  //         dataOpts = $this.data();
-
-  //     $this.click(function() {
-  //       // cache original value
-  //       var text = $this.text();
-  //       if ($this.children('input').length == 0) {
-
-  //         var $inputbox = $("<input/>")
-  //         .attr("type", "text")
-  //         .val(text);
-
-  //         $(this).html($inputbox);
-  //         $inputbox.focus();
-  //         $inputbox.blur(function() {
-  //           var value = $inputbox.val();
-  //           $this.text(value);
-  //         });
-  //       }
-  //     });
-  //   });
-  // };
 
 });

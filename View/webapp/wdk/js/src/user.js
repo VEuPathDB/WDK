@@ -46,7 +46,7 @@ wdk.util.namespace("window.wdk.user", function(ns, $) {
   };
 
   ns.logout = function() {
-    if (confirm("Do you want to logout as " + ns.name() + "?")) {
+    if (confirm("Do you want to log out as " + ns.name() + "?")) {
       $("#user-control form[name=logoutForm]").submit();
     }
   };
