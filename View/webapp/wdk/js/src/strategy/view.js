@@ -114,11 +114,15 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
             .attr("title",addStepTooltip)
             .html("<span>Add Step</span>");
         var buttonDiv = document.createElement('div');
-        buttonDiv.setAttribute('class','diagramSection row2');
+        var diagramWrapper = document.createElement('div');
+        buttonDiv.setAttribute('class','addStepButton');
         $(buttonDiv).append(button);
         $(div_steps_section).append(div_steps);
-        $(div_strat).append(div_steps_section);
-        $(div_strat).append(buttonDiv);
+        $(diagramWrapper)
+          .append(div_steps_section)
+          .append(buttonDiv)
+          .appendTo(div_strat)
+          .addClass("diagram-wrapper");
 
         if (has_invalid) {
           $(div_strat).append(createInvalidText());
