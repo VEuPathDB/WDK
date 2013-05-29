@@ -201,38 +201,60 @@ function getWebAppUrl() {
 
   var registerToggle = function() {
     // register toggles
-    $(".wdk-toggle").each(function() {
-      // check if the section should be displayed by default
-      var show = $(this).attr("show");
-      var active = (show == "true") ? 0 : false;
-      $(this).accordion({
-        autoHeight: false,
-        collapsible: true,
-        active: active
-      });
-    });
+    $(".wdk-toggle").simpleToggle();
 
     // register expand/collapse links
     // data-container is a selector for a container element
     // data-show is a boolean to show or hide toggles
+    // data-animated overrides the built-in animation
     $(".wdk-toggle-group").click(function(e) {
       var $this = $(this);
       var container = $this.closest($this.data("container"));
       var $toggles = container.find(".wdk-toggle");
 
-      if ($this.data("show")) {
-        $toggles.each(function() {
-          var $toggle = $(this);
-          if ($toggle.accordion("option", "active") !== 0) {
-            $toggle.accordion("option", "active", 0);
-          }
-        });
-      } else {
-        $toggles.accordion("option", "active", false);
-      }
+      $toggles.simpleToggle("toggle", $this.data("show"));
 
       e.preventDefault();
     });
+
+    //  // register toggles
+    //  $(".wdk-toggle").each(function() {
+    //    // check if the section should be displayed by default
+    //    var show = $(this).attr("show");
+    //    var active = (show == "true") ? 0 : false;
+    //    $(this).accordion({
+    //      autoHeight: false,
+    //      collapsible: true,
+    //      navigation: false,
+    //      active: active
+    //    });
+    //  });
+
+    //  // register expand/collapse links
+    //  // data-container is a selector for a container element
+    //  // data-show is a boolean to show or hide toggles
+    //  // data-animated overrides the built-in animation
+    //  $(".wdk-toggle-group").click(function(e) {
+    //    var $this = $(this);
+    //    var container = $this.closest($this.data("container"));
+    //    var $toggles = container.find(".wdk-toggle");
+    //    var scrollTop = $(document).scrollTop();
+
+    //    if ($this.data("show")) {
+    //      $toggles.each(function() {
+    //        var $toggle = $(this);
+    //        if ($toggle.accordion("option", "active") !== 0) {
+    //          $toggle.accordion("option", "active", 0);
+    //        }
+    //      });
+    //    } else {
+    //      $toggles.accordion("option", "active", false);
+    //    }
+
+    //    $(document).scrollTop(scrollTop);
+
+    //    e.preventDefault();
+    //  });
 
   };
 
