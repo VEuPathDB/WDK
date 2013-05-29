@@ -123,7 +123,9 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       if (isEdit) {
         oldValues[paramName] = $(this).val();
       }
-      if (!$(this).parent('div').hasClass('dependentParam')) {
+      if ($(this).parent('div').hasClass('dependentParam')) {
+        updateDependentParam(paramName);
+      } else {
         $("#" + paramName + "_display").val('Loading options...');
         var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&xml=true';
         $.ajax({
