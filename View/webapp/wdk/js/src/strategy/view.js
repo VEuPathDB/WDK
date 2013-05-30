@@ -15,7 +15,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       "Alternatively, you could obtain the orthologs to your current result or run another available transform.";
   var stepBoxTooltip = "CLICK to show these results in the area below.";
   var stepEditIconBottomRowTT = function(stepName) { return "CLICK to make changes to the " + stepName + " step."; };
-  var stepEditIconTopRowTT = function(stepName) { return "CLICK to make changes to the " + step.name + " step and/or how it is combined with the previous step."; };
+  var stepEditIconTopRowTT = function(stepName) { return "CLICK to make changes to the " + stepName + " step and/or how it is combined with the previous step."; };
   var booleanEditIconTT = "CLICK to modify this operation.";
 
   //Popup messages
@@ -184,7 +184,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     if (jsonStep.filtered) {
       filterImg = "<span class='filterImg' onmouseover='event.stopPropagation();' title='Step is filtered on " +
           jsonStep.filterName + "'><img src='wdk/images/filter-short.png' " +
-          "style='height:14px;position:relative;top:-2px'/></span>";
+          "style='height:10px;position:relative;top:-2px'/></span>";
     }
 
     var displayType = (jsonStep.results > 1) ? jsonStep.shortDisplayTypePlural : jsonStep.shortDisplayType;
@@ -241,7 +241,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     if (childStp.filtered) {
       childfilterImg = "<span class='filterImg' title='Step is filtered on " +
           childStp.filterName + "'><img src='wdk/images/filter-short.png' " +
-          "style='height:14px;position:relative;top:-2px'/></span>";
+          "style='height:10px;position:relative;top:-2px'/></span>";
     }
 
     var childinner = ""+
@@ -332,7 +332,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     if (jsonStep.filtered) {
       filterImg = "<span class='filterImg' title='Step is filtered on " +
           jsonStep.filterName + "'><img src='wdk/images/filter-short.png' " +
-          "style='height:14px;position:relative;top:-2px'/></span>";
+          "style='height:10px;position:relative;top:-2px'/></span>";
     }
 
     var editIconOffset = modelstep.isTransform ? "right:-1px;top:-5px" : "right:-9px;top:-9px";
