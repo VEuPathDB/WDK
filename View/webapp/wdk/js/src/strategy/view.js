@@ -78,7 +78,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
         var div_steps = document.createElement("div");
         div_steps.setAttribute('class','stepWrapper');
-        $(div_steps).css({"width":(118 * strat.Steps.length) + "px"});
+        $(div_steps).css({"width":(120 * strat.Steps.length) + "px"});
 
         var close_span = document.createElement('span');
         $(close_span)
