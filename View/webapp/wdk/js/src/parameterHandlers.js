@@ -64,7 +64,8 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       // register change event to dependedParam only once
       for (var dependedName in dependedParams) {
            var dependedParam = $("div.param[name='" + dependedName + "']");
-          dependedParam.change(function() {
+          dependedParam.change(function(e) {
+            e.stopPropagation();
               var dependedName = $(this).attr("name");
               // set ready flag to false on all its dependent params
               var dependentList = dependedParams[dependedName];
@@ -78,8 +79,8 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
                   var result =  updateDependentParam(dependentName);
                   if (result)
                     result.then(function() {
-                      wdk.event.publish("questionchange");
-                      dependedParam.parents("form").change();
+                      // wdk.event.publish("questionchange");
+                      // dependedParam.parents("form").change();
                     });
               }
           });
