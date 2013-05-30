@@ -688,7 +688,8 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     tlimit = $("div#contentwrapper").offset().top;
     $(e).draggable({
       handle: handle,
-      containment: [0, tlimit, rlimit, blimit]
+      // containment: [0, tlimit, rlimit, blimit]
+      containment: "document"
     });
   }
 
