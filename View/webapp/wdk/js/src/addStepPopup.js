@@ -503,7 +503,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
           data: wdk.util.parseInputs() + "&state=" + wdk.strategy.controller.p_state,
 
           beforeSend: function() {
-            $(".crumb_details").block( {message: "Loading..."} );
+            //$(".crumb_details").block( {message: "Loading..."} );
             WizardLoading(true);
           },
 
@@ -546,12 +546,17 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
           data: d,
 
           beforeSend: function(jqXHR, data) {
-            $(".crumb_details").block( {message: "Loading..."} );
+            $("#query_form").block({
+              message: "Loading...",
+              overlayCSS: {
+                marginTop: "25px"
+              }
+            });
           },
 
           success: function(data) {
             wdk.step.hideDetails();
-            $(".crumb_details").unblock();
+            $("#query_form").unblock();
 
             if (data.indexOf("{") == 0) {
               wdk.strategy.controller.updateStrategies(data);
