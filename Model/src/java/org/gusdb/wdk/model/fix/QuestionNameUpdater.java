@@ -83,11 +83,10 @@ public class QuestionNameUpdater {
     }
 
     public void update() throws SQLException, JSONException, WdkModelException {
-        Set<String> clobKeys = new HashSet<String>();
-        updateQuestionNames(clobKeys);
+        updateQuestionNames();
     }
 
-    private void updateQuestionNames(Set<String> clobKeys) throws SQLException,
+    private void updateQuestionNames() throws SQLException,
             JSONException, WdkModelException {
         logger.info("Checking question names...");
 
@@ -95,7 +94,7 @@ public class QuestionNameUpdater {
         DataSource dataSource = platform.getDataSource();
         PreparedStatement psSelect = null, psUpdate = null;
         ResultSet resultSet = null;
-        String select = "SELECT a.question_name           "
+        String select = "SELECT a.answer_id,a.question_name           "
                 + " FROM " + userSchema + "users u, " + userSchema
                 + "steps s, " + wdkSchema + "answers a "
                 + " WHERE u.is_guest = 0 AND u.user_id = s.user_id "
@@ -105,37 +104,39 @@ public class QuestionNameUpdater {
                 + " SET question_name = ? WHERE answer_id = ?";
 				logger.info("UPDATE:   " + update + "\n\n");
 
-				/*
+
         try {
             psSelect = SqlUtils.getPreparedStatement(dataSource, select);
             psUpdate = SqlUtils.getPreparedStatement(dataSource, update);
             psSelect.setString(1, projectId);
             resultSet = psSelect.executeQuery();
             int count = 0;
-            int stepCount = 0;
+            int answerCount = 0;
             while (resultSet.next()) {
-                stepCount++;
-                if (stepCount % 1000 == 0) {
-                    logger.debug(stepCount + " steps read");
+                answerCount++;
+                if (answerCount % 1000 == 0) {
+                    logger.debug(answerCount + " answers read");
                 }
 
-                int stepId = resultSet.getInt("step_id");
-                String content = platform.getClobData(resultSet,
-                        "display_params");
+                int answerId = resultSet.getInt("answer_id");
+                String content = resultSet.getString("question_name");
                 if (content == null || content.trim().length() == 0) continue;
-                if (content.replaceAll("\\s", "").equals("{}")) continue;
+								//  if (content.replaceAll("\\s", "").equals("{}")) continue;
                 
-                JSONObject jsParams = new JSONObject(content);
-                if (changeParams(jsParams, clobKeys)) {
-                    content = jsParams.toString();
-                    platform.setClobData(psUpdate, 1, content, false);
-                    psUpdate.setInt(2, stepId);
+								if (mappings.containsKey(content)) {
+										logger.info("old question:" + content + "\n");
+										content = mappings.get(content);
+										logger.info("new question:" + content + "\n\n");
+										// platform.setClobData(psUpdate, 1, content, false);
+										psUpdate.setString(1, content);
+                    psUpdate.setInt(2, answerId);
                     psUpdate.addBatch();
                     count++;
                     if (count % 100 == 0) psUpdate.executeBatch();
                 }
                 if (count % 100 != 0) psUpdate.executeBatch();
             }
+						logger.info("THE END:   " + count + " answers modified\n\n");
         }
         catch (SQLException ex) {
             logger.error(ex);
@@ -145,36 +146,8 @@ public class QuestionNameUpdater {
             SqlUtils.closeResultSetAndStatement(resultSet);
             SqlUtils.closeStatement(psUpdate);
         }
-				*/
-    }
-		/*
-    private boolean changeParams(JSONObject jsParams, Set<String> clobKeys)
-            throws JSONException {
-        boolean updated = false;
-        for (String name : JSONObject.getNames(jsParams)) {
-            if (name.equals(PARAM_ORGANISM)) {
-                String organisms = jsParams.getString(name);
-                if (organisms.startsWith("[C]")) { // compressed values
-                    String clobKey = organisms.substring(3);
-                    clobKeys.add(clobKey);
-                } else { // uncompressed values
-                    StringBuilder buffer = new StringBuilder();
-                    for (String organism : organisms.split("\\s*,\\s*")) {
-                        if (mappings.containsKey(organism)) {
-                            organism = mappings.get(organism);
-                            updated = true;
-                        }
-                        if (buffer.length() > 0) buffer.append(',');
-                        buffer.append(organism);
-                    }
-                    jsParams.put(name, buffer.toString());
-                }
-            }
-        }
-        return updated;
-    }
 
-		*/
+    }
 
 
 }
