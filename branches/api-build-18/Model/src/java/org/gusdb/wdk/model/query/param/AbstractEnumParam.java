@@ -755,11 +755,11 @@ public abstract class AbstractEnumParam extends Param {
         try {
           values.addAll(aeParam.getVocabMap(dependedValue).keySet());
         } catch (WdkRuntimeException ex) {
-          if (ex.getMessage().startsWith("No item returned by")) {
+          // if (ex.getMessage().startsWith("No item returned by")) {
             // the enum param doeesn't return any row, ignore it.
             continue;
-          } else
-            throw ex;
+          // } else
+          //   throw ex;
         }
       }
     } else {
