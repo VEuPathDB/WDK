@@ -1,0 +1,92 @@
+#!/usr/bin/perl
+
+use lib "$ENV{GUS_HOME}/lib/perl";
+
+use strict;
+use Getopt::Long;
+use Time::Local;
+use FgpUtil::Util::SlowQueryReport;
+
+usage() unless scalar(@ARGV);
+my ($threshold, $genepage, $notgenepage, $time_filter, $sort_column, $plotOutputFile, $logTailSize, $logDeathImmunity, $debug, $tabfile, $brief);
+
+$sort_column=2;
+&GetOptions('s=s' => \$threshold,
+	    'g' => \$genepage,
+	    'n' => \$notgenepage,
+	    't=s' => \$time_filter,
+	    'c=s' => \$sort_column,
+	    'p=s' => \$plotOutputFile,
+	    'l=s' => \$logTailSize,
+	    'i' => \$logDeathImmunity,
+            'd' => \$debug,
+            'b' => \$brief,
+            'f=s' => \$tabfile,
+	   );
+
+
+my $parseLogRecord = sub {
+  my ($logRecord) = @_;
+
+  my $reject = 0;
+
+# 7177906 [WARN ] org.gusdb.wdk.model.dbms.SqlUtils:390 - 130.91.178.191 - [06/Mar/2013:12:21:10 -0500] QUERY LOG [HelperAttributes.Counts__insert-cache] execute: 0.43 last page: 0.43 seconds
+
+  $reject = 1 unless $logRecord =~ /QUERY LOG/;
+  $reject = 1 if $logRecord =~ /\=\=/;  # some lines in the log are mangled, with missing newlines
+                                        # the symptom is that the next log entry is mashed in
+                                        # these are delimited by ========, so dodge that
+  $reject = 1 if ($genepage && !$logRecord =~ /GeneTables/);
+  $reject = 1 if ($notgenepage && $logRecord =~ /GeneTables/);
+  chomp($logRecord);
+
+  my ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $seconds, $timestamp);
+  if (/(\d+) \[WARN \] (.*):(\d+) - ([0-9.]*) - \[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d) (.+)\] .*QUERY LOG \[(.*)\] execute: ([0-9.]*) last page: ([0-9.]*) seconds/) {
+    ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $seconds) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
+
+    my $monthNumber = index("JanFebMarAprMayJunJulAugSepOctNovDec", $mon) / 3;
+    $timestamp = timegm($sec, $min, $hour, $day, $monthNumber, $year - 1900);
+  } else {
+    $reject = 1;
+  }
+
+  return ($reject, $timestamp, $seconds, $name);
+};
+
+FgpUtil::Util::SlowQueryReport::makeReport($parseLogRecord, $time_filter, $plotOutputFile, $sort_column, $logTailSize, $logDeathImmunity, $threshold, $debug, $tabfile, $brief);
+
+sub usage {
+  print STDERR "
+
+Print a report summarizing the WDK slow query logs.
+
+Takes one or more tomcat logs on standard input.
+
+usage:  wdkSlowQueryReport -s secs [-g] [-n] [-t starttime[,endtime]] [-c colnum] [-p plotOutputFile] [-f tabOutputFile] [-d] [-i] [-b]
+
+where:
+  -s:  slowness threshold in seconds.  run times over secs are reported in Slow columns
+  -g:  genepage only flag. only include queries logged with \"GENEPAGE\"
+  -n:  not-genepage flag. complementary to -g flag (only non-genepage queries)
+  -t:  time filter (use seconds since epoch, which is a column in gbrowse log)
+  -c:  column to sort on (default is 2, the total time)
+  -p:  optional output file: a tab delimited file to pass as input
+        to wdkSlowQueryPlot.  Used to visualize the query durations over time.
+  -l:  log tail size -- number of records of access log to analyze for
+  -d:  print debugging info
+  -b:  brief output: skip last two columns (server and log file) so that output doesn't wrap
+  -i:  immunity from log death: don't die if the log file doesn't cover the period of interest
+  -f:  optional file name to write the report in tab-delimited format (for import to excel)
+
+Stdin must contain one or more lines specifying log files.   Each line has three columns, tab delimited:
+  - server name
+  - log file glob
+  - access log file name
+
+wdkSlowQueryReport uses ssh to login into that server and read all the log files implied by the log file glob.
+
+The access log is used to get a count of pages, which are shown in the page-requests column in the Statistics section at the bottom of the report.  This is useful if we know that certain queries only happen on that page.  Right now this is hard coded to look for EuPathDB gene pages.  It is useful for the gbrowseSlowQueryReport which tags queries as belonging to the gene page.
+
+";
+  exit(1);
+}
