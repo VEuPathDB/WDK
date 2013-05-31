@@ -69,6 +69,11 @@ public abstract class AbstractEnumParam extends Param {
    */
     private static final long serialVersionUID = 8058527840525499401L;
 
+
+    public ParamValueMap() {
+      super();
+    }
+
     public ParamValueMap(Map<? extends String, ? extends String> m) {
       super(m);
     }
@@ -733,6 +738,7 @@ public abstract class AbstractEnumParam extends Param {
       // param values.
       Set<Param> dependedParams = aeParam.getDependedParams();
       Set<ParamValueMap> dependedValues = new LinkedHashSet<>();
+      dependedValues.add(new ParamValueMap());
       for (Param dependedParam : dependedParams) {
         Set<String> subValues = dependedParam.getAllValues();
         Set<ParamValueMap> newDependedValues = new LinkedHashSet<>();
