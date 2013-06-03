@@ -40,20 +40,39 @@ my $parseLogRecord = sub {
   $reject = 1 if ($notgenepage && $logRecord =~ /GeneTables/);
   chomp($logRecord);
 
-  my ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $seconds, $timestamp);
+  my ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $execSeconds, $lastSeconds, $timestamp);
   if (/(\d+) \[WARN \] (.*):(\d+) - ([0-9.]*) - \[(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d) (.+)\] .*QUERY LOG \[(.*)\] execute: ([0-9.]*) last page: ([0-9.]*) seconds/) {
-    ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $seconds) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13);
+    ($digits, $class, $line, $ip, $day, $mon, $year, $hour, $min, $sec, $tz, $name, $execSeconds, $lastSeconds) = ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14);
 
     my $monthNumber = index("JanFebMarAprMayJunJulAugSepOctNovDec", $mon) / 3;
-    $timestamp = timegm($sec, $min, $hour, $day, $monthNumber, $year - 1900);
+    $timestamp = timelocal($sec, $min, $hour, $day, $monthNumber, $year - 1900);
   } else {
     $reject = 1;
   }
 
-  return ($reject, $timestamp, $seconds, $name);
+  return ($reject, $timestamp, $lastSeconds, $name);
 };
 
+# allow human readable or machine readable timestamps
+# (if human readable will have a : char)
+if ($time_filter && $time_filter =~ /\:/) {
+  my ($startTime, $endTime) = split(/,\s*/, $time_filter);
+  $startTime =~ /(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d)/ || die "Can't parse start time filter $time_filter.  Must be in 02/Jun/2013:23:41:28 format.\n";
+  my ($day, $mon, $year, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
+  my $monthNumber = index("JanFebMarAprMayJunJulAugSepOctNovDec", $mon) / 3;
+  my $new_time_filter = timelocal($sec, $min, $hour, $day, $monthNumber, $year - 1900);
+
+  if ($endTime) {
+    $endTime =~ /(\d+)\/(.+)\/(\d+):(\d\d):(\d\d):(\d\d)/ || die "Can't parse end time filter $time_filter.  Must be in 02/Jun/2013:23:41:28 format.\n";
+    ($day, $mon, $year, $hour, $min, $sec) = ($1, $2, $3, $4, $5, $6);
+    $monthNumber = index("JanFebMarAprMayJunJulAugSepOctNovDec", $mon) / 3;
+    $new_time_filter = "$new_time_filter," . timelocal($sec, $min, $hour, $day, $monthNumber, $year - 1900);
+  }
+  $time_filter = $new_time_filter;
+}
+
 FgpUtil::Util::SlowQueryReport::makeReport($parseLogRecord, $time_filter, $plotOutputFile, $sort_column, $logTailSize, $logDeathImmunity, $threshold, $debug, $tabfile, $brief);
+
 
 sub usage {
   print STDERR "
@@ -68,7 +87,7 @@ where:
   -s:  slowness threshold in seconds.  run times over secs are reported in Slow columns
   -g:  genepage only flag. only include queries logged with \"GENEPAGE\"
   -n:  not-genepage flag. complementary to -g flag (only non-genepage queries)
-  -t:  time filter (use seconds since epoch, which is a column in gbrowse log)
+  -t:  time filter.  Use the time format as found in the WDK slow query log, eg, 02/Jun/2013:23:41:28, or milliseconds since epoch.
   -c:  column to sort on (default is 2, the total time)
   -p:  optional output file: a tab delimited file to pass as input
         to wdkSlowQueryPlot.  Used to visualize the query durations over time.
