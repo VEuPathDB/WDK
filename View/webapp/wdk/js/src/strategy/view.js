@@ -117,7 +117,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
             .attr("onclick","this.blur()")
             .attr("onmouseover","jQuery(this).find('span').css('color','pink')")
             .attr("onmouseout","jQuery(this).find('span').css('color','white')")
-            .addClass("filter_link redbutton")
+            .addClass("filter_link redbutton step-elem")
             .attr("title",addStepTooltip)
             .html("<span>Add Step</span>");
         var buttonDiv = document.createElement('div');
