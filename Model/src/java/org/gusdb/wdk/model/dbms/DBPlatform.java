@@ -237,9 +237,7 @@ public abstract class DBPlatform {
     this.name = name;
     this.dbConfig = dbConfig;
     
-    String url = dbConfig.getConnectionUrl();
-    url = url.split("@", 2)[1];
-    logger.info("DB Connection [" + name + "]: " + url);
+    logger.info("DB Connection [" + name + "]: " + dbConfig.getConnectionUrl());
 
     connectionPool = new GenericObjectPool(null);
     ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
