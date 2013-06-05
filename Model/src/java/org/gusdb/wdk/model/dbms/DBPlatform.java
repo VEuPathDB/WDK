@@ -236,6 +236,10 @@ public abstract class DBPlatform {
     this.wdkModel = wdkModel;
     this.name = name;
     this.dbConfig = dbConfig;
+    
+    String url = dbConfig.getConnectionUrl();
+    url = url.split("@", 2)[1];
+    logger.info("DB Connection [" + name + "]: " + url);
 
     connectionPool = new GenericObjectPool(null);
     ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
