@@ -62,7 +62,7 @@ public class ThreadMonitor implements Runnable {
           blockedThreads.add(thread);
       }
       String stateText = printStates(states, threads.length);
-      logger.info(stateText);
+      logger.debug(stateText);
 
       if (blockedThreads.size() >= threshold) {
         // enough blocked threads reached
