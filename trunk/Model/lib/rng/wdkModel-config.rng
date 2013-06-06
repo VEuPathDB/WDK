@@ -25,11 +25,11 @@
                 <attribute name="monitorThreads">
                     <data type="boolean" />
                 </attribute>
-                <optional>
-                    <attribute name="blockedThreshold">
-                        <data type="unsignedShort" />
-                    </attribute>
-                </optional>
+            </optional>
+            <optional>
+                <attribute name="blockedThreshold">
+                    <data type="unsignedShort" />
+                </attribute>
             </optional>
             
             <interleave>
