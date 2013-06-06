@@ -21,6 +21,16 @@
                     <data type="boolean" />
                 </attribute>
             </optional>
+            <optional>
+                <attribute name="monitorThreads">
+                    <data type="boolean" />
+                </attribute>
+                <optional>
+                    <attribute name="blockedThreshold">
+                        <data type="unsignedShort" />
+                    </attribute>
+                </optional>
+            </optional>
             
             <interleave>
             
