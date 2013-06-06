@@ -29,8 +29,13 @@ public class ThreadMonitor implements Runnable {
     monitor = new ThreadMonitor(wdkModel);
     new Thread(monitor).start();
   }
+  
+  public static void shutdown() {
+    if (monitor != null) monitor.stop();
+  }
 
   private final WdkModel wdkModel;
+  private boolean running;
 
   private ThreadMonitor(WdkModel wdkModel) {
     this.wdkModel = wdkModel;
@@ -39,9 +44,10 @@ public class ThreadMonitor implements Runnable {
   @Override
   public void run() {
     logger.info("Thread monitor started.");
+    running = true;
     int threshold = wdkModel.getModelConfig().getBlockedThreshold();
     long lastReport = 0;
-    while (true) {
+    while (running) {
       // get all threads
       Thread[] threads = getAllThreads();
 
@@ -71,6 +77,10 @@ public class ThreadMonitor implements Runnable {
         Thread.sleep(SLEEP_INTERVAL);
       } catch (InterruptedException ex) {}
     }
+  }
+  
+  private void stop() {
+    running = false;
   }
 
   private Thread[] getAllThreads() {
