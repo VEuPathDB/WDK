@@ -115,15 +115,15 @@ public class ThreadMonitor implements Runnable {
         + blockedThreads.size();
 
     // get content
-    StringBuilder content = new StringBuilder(stateText);
-    content.append("\n\nToo many blocked threads detected.\n\n");
+    StringBuilder content = new StringBuilder("<p>" + stateText + "</p><br/>");
+    content.append("<p>Too many blocked threads detected.<p>");
     for (Thread thread : blockedThreads) {
-      content.append("Thread#" + thread.getId() + " - " + thread.getName()
-          + "\n");
+      content.append("<div>Thread#" + thread.getId() + " - " + thread.getName());
+      content.append("<ol>");
       for (StackTraceElement element : thread.getStackTrace()) {
-        content.append("\t" + element.toString() + "\n");
+        content.append("<li>" + element.toString() + "</li>");
       }
-      content.append("\n\n");
+      content.append("</ol></div><br/>");
     }
 
     try {
