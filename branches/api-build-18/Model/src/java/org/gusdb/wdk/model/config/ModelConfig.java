@@ -72,7 +72,7 @@ public class ModelConfig {
   /**
    * turn on thread monitor process if set to true
    */
-  private boolean monitorThreads = true;
+  private boolean monitorThreads = false;
 
   /**
    * if blocked
