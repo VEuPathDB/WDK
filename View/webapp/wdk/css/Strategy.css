@@ -510,7 +510,7 @@ div.transform a.crumb_name img{
   float: right;
 	font-size:14px;
 	font-weight:bold;
-  right: 3em;
+  right: 4em;
   z-index: 1;
 }
 
@@ -682,9 +682,8 @@ b.strat_help_title > span {
 /*	right:140px; affects colocation */
 	left:140px; 
 	top:140px;
-  min-width:80%;
-/* 	min-width: 600px; 
-	max-width: 78%;  */
+	min-width: 600px; 
+	max-width: 78%; 
 	background-color: #FFFFFF;
 	background-repeat: repeat-x;
 	background-position: 0 26px;  
@@ -845,6 +844,7 @@ b.strat_help_title > span {
 }
 
 .filter.params {
+  overflow-x: auto;
 }
 
 .filter.operators {

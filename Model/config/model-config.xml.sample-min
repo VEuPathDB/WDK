@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 
-<modelConfig modelName="templateModel"
+<modelConfig modelName="<modelName>"
              webServiceUrl="http://<serverName>/<webappName>/services/WsfService"
              smtpServer="127.0.0.1"
              supportEmail="<supportEmail>"
