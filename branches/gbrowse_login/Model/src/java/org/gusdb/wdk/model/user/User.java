@@ -433,7 +433,7 @@ public class User /* implements Serializable */{
      * @throws WdkUserException
      * @throws NoSuchAlgorithmException
      */
-    synchronized Step createStep(AnswerValue answerValue, boolean deleted,
+    Step createStep(AnswerValue answerValue, boolean deleted,
             int assignedWeight) throws WdkModelException {
         Question question = answerValue.getQuestion();
         Map<String, String> paramValues = answerValue.getIdsQueryInstance().getValues();
@@ -445,7 +445,7 @@ public class User /* implements Serializable */{
                 deleted, true, assignedWeight);
     }
 
-    public synchronized Step createStep(Question question,
+    public Step createStep(Question question,
             Map<String, String> paramValues, String filterName,
             boolean deleted, boolean validate, int assignedWeight)
             throws WdkModelException {
@@ -458,7 +458,7 @@ public class User /* implements Serializable */{
                 assignedWeight);
     }
 
-    public synchronized Step createStep(Question question,
+    public Step createStep(Question question,
             Map<String, String> paramValues, AnswerFilterInstance filter,
             boolean deleted, boolean validate, int assignedWeight)
             throws WdkModelException {
@@ -476,19 +476,19 @@ public class User /* implements Serializable */{
         return step;
     }
 
-    public synchronized Strategy createStrategy(Step step, boolean saved)
+    public Strategy createStrategy(Step step, boolean saved)
             throws WdkModelException, WdkUserException {
         return createStrategy(step, null, null, saved, null, false);
     }
 
-    public synchronized Strategy createStrategy(Step step, boolean saved,
+    public Strategy createStrategy(Step step, boolean saved,
             boolean hidden) throws WdkModelException, WdkUserException {
         return createStrategy(step, null, null, saved, null, hidden);
     }
 
     // Transitional method...how to handle savedName properly?
     // Probably by expecting it if a name is given?
-    public synchronized Strategy createStrategy(Step step, String name,
+    public Strategy createStrategy(Step step, String name,
             boolean saved) throws WdkModelException, WdkUserException {
         return createStrategy(step, name, null, saved, null, false);
     }
@@ -1154,7 +1154,7 @@ public class User /* implements Serializable */{
                     "Remote login failed. The remote key is expired.");
     }
 
-    public synchronized Strategy importStrategy(String strategyKey)
+    public Strategy importStrategy(String strategyKey)
             throws WdkModelException, WdkUserException {
         Strategy oldStrategy;
         String[] parts = strategyKey.split(":");
