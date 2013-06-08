@@ -202,13 +202,13 @@ public class ResultFactory {
       return;
 
     // get the type of the columns
+    DataSource dataSource = platform.getDataSource();
+    Map<String, Integer> columnSizes = new LinkedHashMap<>();
     ResultSet resultSet = null;
     try {
-      DataSource dataSource = platform.getDataSource();
       resultSet = SqlUtils.executeQuery(wdkModel, dataSource, "SELECT * FROM "
           + cacheTable, cacheTable + "__ge-cache-metadata");
       ResultSetMetaData metaData = resultSet.getMetaData();
-      Map<String, Integer> columnSizes = new LinkedHashMap<>();
       for (int i = 1; i <= metaData.getColumnCount(); i++) {
         String column = metaData.getColumnName(i).toLowerCase();
         String type = metaData.getColumnTypeName(i).toLowerCase();
@@ -216,8 +216,13 @@ public class ResultFactory {
           columnSizes.put(column, metaData.getColumnDisplaySize(i));
       }
       metaData = null;
-      resultSet.close();
+    } catch (SQLException ex) {
+      throw new WdkModelException(ex);
+    } finally {
+      SqlUtils.closeResultSetAndStatement(resultSet);
+    }
 
+    try {
       // resize columns
       int maxSize = wdkModel.getModelConfig().getAppDB().getMaxPkColumnWidth();
       for (String column : indexColumns) {
@@ -233,15 +238,13 @@ public class ResultFactory {
         SqlUtils.executeUpdate(wdkModel, dataSource, sql, cacheTable
             + "__change-column-size");
       }
-    } catch (SQLException ex) {
+    } catch (WdkModelException ex) {
       throw new WdkModelException("Failed to alter the sizes of index columns"
           + " '" + Utilities.fromArray(indexColumns) + "' on cache table "
           + cacheTable + ". Please look up the query in 'Query' table that "
           + "creates this cache, and make sure the maxPkColumnWidth property "
           + "defined in the model-config.xml is the same or bigger than the "
           + "size of primary key columns from that query.", ex);
-    } finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
     }
   }
 

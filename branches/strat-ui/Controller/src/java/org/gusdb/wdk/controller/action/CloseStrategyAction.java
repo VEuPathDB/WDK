@@ -35,14 +35,29 @@ public class CloseStrategyAction extends Action {
             String strStratKeys = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
             String[] stratIdstr = (strStratKeys == null || strStratKeys.length() == 0) ?
                 new String[0] : strStratKeys.split(",");
+            String currentStrategyKey = wdkUser.getViewStrategyId();
+            boolean changeViewStrategy = false;
 
             if (stratIdstr.length != 0) {
                 for (int i = 0; i < stratIdstr.length; ++i) {
-		    logger.debug("closing strategy: '" + stratIdstr[i] + "'");
-		    wdkUser.removeActiveStrategy(stratIdstr[i]);
+                    logger.debug("closing strategy: '" + stratIdstr[i] + "'");
+                    wdkUser.removeActiveStrategy(stratIdstr[i]);
+                    if (!changeViewStrategy && currentStrategyKey.equals(stratIdstr[i])) {
+                        changeViewStrategy = true;
+                    }
                 }
             } else {
                 throw new Exception("No strategy specified to close!");
+            }
+
+            String firstStrategyKey = "";
+
+            if (changeViewStrategy) {
+                int[] activeStrategyIds = wdkUser.getActiveStrategyIds();
+                if (activeStrategyIds.length > 0) {
+                    int firstStrategyId = activeStrategyIds[activeStrategyIds.length - 1];
+                    firstStrategyKey = Integer.toString(firstStrategyId);
+                }
             }
 
             ActionForward showStrategy = mapping.findForward(CConstants.SHOW_STRATEGY_MAPKEY);
@@ -50,6 +65,8 @@ public class CloseStrategyAction extends Action {
             url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
             // reset the strategy id, otherwise it will be opened again by showStrategy.do
             url.append("&" + CConstants.WDK_STRATEGY_ID_KEY + "=");
+            // open first active strategy, if there is one
+            url.append(firstStrategyKey);
             ActionForward forward = new ActionForward(url.toString());
             forward.setRedirect(false);
 

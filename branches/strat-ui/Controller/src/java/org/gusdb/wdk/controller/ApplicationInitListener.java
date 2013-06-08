@@ -14,6 +14,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.gusdb.wdk.controller.wizard.Wizard;
+import org.gusdb.wdk.model.ThreadMonitor;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -46,6 +47,7 @@ public class ApplicationInitListener implements ServletContextListener {
     public void contextDestroyed(ServletContextEvent sce) {
         try {
             DBPlatform.closeAllPlatforms();
+            ThreadMonitor.shutdown();
         }
         catch (Exception ex) {
             throw new RuntimeException(ex);
