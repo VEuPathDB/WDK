@@ -1,8 +1,8 @@
 package org.gusdb.wdk.model.config;
 
 /**
- * An object representaion of the {@code model-config.xml} file. It holds all the
- * configuration information for the WDK system.
+ * An object representaion of the {@code model-config.xml} file. It holds all
+ * the configuration information for the WDK system.
  * 
  * @author Jerric
  * @modified Jan 6, 2006 - Jerric add a property for the name of query history
@@ -68,6 +68,44 @@ public class ModelConfig {
    * default regex used by all the stringParams
    */
   private String paramRegex;
+
+  /**
+   * turn on thread monitor process if set to true
+   */
+  private boolean monitorThreads = true;
+
+  /**
+   * if blocked
+   */
+  private int blockedThreshold = 4;
+
+  /**
+   * If it returns true, a monitoring thread will be turned on when webapp is
+   * initialized.
+   * 
+   * @return
+   */
+  public boolean isMonitorThreads() {
+    return monitorThreads;
+  }
+
+  public void setMonitorThreads(boolean monitorThreads) {
+    this.monitorThreads = monitorThreads;
+  }
+
+  /**
+   * An report will be fired when the number of blocked threads reaches the
+   * threshold.
+   * 
+   * @return
+   */
+  public int getBlockedThreshold() {
+    return blockedThreshold;
+  }
+
+  public void setBlockedThreshold(int blockedThreshold) {
+    this.blockedThreshold = blockedThreshold;
+  }
 
   /**
    * @return the projectId

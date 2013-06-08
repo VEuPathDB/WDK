@@ -12,7 +12,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
 
   // var stage = null;
 
-  // deprecated?
+  /*
+   * @deprecated Use wdk.history.showUpdateDialog()
+   */
   function showExportLink(stratId) {
      closeModal();
      var exportLink = $("div#export_link_div_" + stratId);
@@ -76,6 +78,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     $(".strategy-description.qtip").qtip("hide");
   }
 
+  /**
+   * @deprecated Use wdk.history.showUpdateDialog()
+   */
   function showSaveForm(stratId, save, share) {
     closeModal();
     $("div.save_strat_div").addClass("hidden");
@@ -114,10 +119,16 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     $("input[name='name']", saveForm).focus().select();
   }
 
+  /**
+   * @deprecated Use jQueryUI dialogs
+   */
   function closeModal() {
     $("div.modal_div").hide();
   }
 
+  /**
+   * @deprecated See wdk.history.showUpdateDialog()
+   */
   function validateSaveForm(form) {
     var strat = wdk.strategy.model.getStrategyFromBackId(form.strategy.value);
     var message;
@@ -143,6 +154,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     return true;
   }
 
+  /**
+   * Not sure what this does. It's called in queryList.tag
+   */
   function formatFilterForm(params, data, edit, reviseStep, hideQuery, hideOp, isOrtholog) {
     //edit = 0 ::: adding a new step
     //edit = 1 ::: editing a current step
@@ -360,6 +374,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     }
   }
 
+  /**
+   * called in formatFilterForm -- deprecated?
+   */
   function validateAndCall(type, url, proto, rs){
     var valid = false;
 
@@ -390,11 +407,17 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
   }
 
   // the dtype is never used, ignored.
+  /**
+   * opens initial addstep popup list
+   */
   function openFilter(dtype,strat_id,step_id,isAdd) {
     // open the default stage
     openStage(strat_id, step_id, isAdd, '');
   }
 
+  /**
+   * opens initial addstep popup list
+   */
   function openStage(strat_id,step_id,isAdd, stage) {
     var stp;
     global_isAdd = isAdd;
@@ -462,6 +485,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     });
   }
 
+  /**
+   * display loading gif on form
+   */
   function WizardLoading(boo) {
     if (boo) {
       var i = $("img#wizard-busy-image").clone();
@@ -503,7 +529,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
           data: wdk.util.parseInputs() + "&state=" + wdk.strategy.controller.p_state,
 
           beforeSend: function() {
-            $(".crumb_details").block( {message: "Loading..."} );
+            //$(".crumb_details").block( {message: "Loading..."} );
             WizardLoading(true);
           },
 
@@ -546,12 +572,17 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
           data: d,
 
           beforeSend: function(jqXHR, data) {
-            $(".crumb_details").block( {message: "Loading..."} );
+            $("#query_form").block({
+              message: "Loading...",
+              overlayCSS: {
+                marginTop: "25px"
+              }
+            });
           },
 
           success: function(data) {
             wdk.step.hideDetails();
-            $(".crumb_details").unblock();
+            $("#query_form").unblock();
 
             if (data.indexOf("{") == 0) {
               wdk.strategy.controller.updateStrategies(data);
@@ -614,14 +645,18 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     // updateStepNumberReferences();
   }
 
-// deprecated
+  /**
+   * @deprecated
+   */
   function openAddStrategy(strat_id) {
     original_Query_Form_Text = $("#query_form").html();
     OpenOperationBox(strat_id, (global_isAdd ? undefined : step_id));
     return false;
   }
 
-  // deprecated -- to close the old question form
+  /**
+   * @deprecated to close the old question form
+   */
   function close(ele){
     cd = $("#query_form");
     $(cd).html(original_Query_Form_Text);
@@ -688,7 +723,8 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     tlimit = $("div#contentwrapper").offset().top;
     $(e).draggable({
       handle: handle,
-      containment: [0, tlimit, rlimit, blimit]
+      // containment: [0, tlimit, rlimit, blimit]
+      containment: "document"
     });
   }
 
@@ -741,6 +777,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     $(".filter-button input[name='questionSubmit']").attr("value",v);
   }
 
+  /**
+   * Don't allow form to submit unless an operation is selected
+   */
   function validateOperations(e) {
     var $this = $(this);
     var bools = $this.find("input[name='boolean']");
