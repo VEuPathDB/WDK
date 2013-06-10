@@ -77,7 +77,10 @@ public class DeleteStepAction extends ProcessFilterAction {
             if (wdkUser.getViewStrategyId() != null
                     && wdkUser.getViewStrategyId().equals(strategyKey)
                     && wdkUser.getViewStepId() == Integer.parseInt(deleteStep)) {
-                wdkUser.resetViewResults();
+                //wdkUser.resetViewResults();
+                wdkUser.setViewResults(strategyKey,
+                    strategy.getLatestStep().getFrontId(),
+                    wdkUser.getViewPagerOffset());
             }
 
             Map<Integer, Integer> stepIdsMap = strategy.deleteStep(
