@@ -236,6 +236,8 @@ public abstract class DBPlatform {
     this.wdkModel = wdkModel;
     this.name = name;
     this.dbConfig = dbConfig;
+    
+    logger.info("DB Connection [" + name + "]: " + dbConfig.getConnectionUrl());
 
     connectionPool = new GenericObjectPool(null);
     ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(

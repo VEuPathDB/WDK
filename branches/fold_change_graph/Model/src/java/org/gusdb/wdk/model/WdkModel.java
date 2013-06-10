@@ -83,7 +83,7 @@ public class WdkModel implements ConnectionContainer {
     try {
       ModelXmlParser parser = new ModelXmlParser(gusHome);
       WdkModel wdkModel = parser.parseModel(projectId);
-
+      ThreadMonitor.setup(wdkModel);
       logger.debug("Model ready to use.");
       return wdkModel;
     } catch (Exception ex) {
