@@ -77,7 +77,7 @@ public class ModelConfig {
   /**
    * if blocked
    */
-  private int blockedThreshold = 4;
+  private int blockedThreshold = 20;
 
   /**
    * If it returns true, a monitoring thread will be turned on when webapp is
