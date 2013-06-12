@@ -23,7 +23,7 @@ public class ThreadMonitor implements Runnable {
   public synchronized static void setup(WdkModel wdkModel) {
     if (monitor != null)
       return;
-    if (!wdkModel.getModelConfig().isMonitorThreads())
+    if (!wdkModel.getModelConfig().isMonitorBlockedThreads())
       return;
 
     monitor = new ThreadMonitor(wdkModel);
