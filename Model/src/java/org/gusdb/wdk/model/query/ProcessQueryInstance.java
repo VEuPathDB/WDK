@@ -159,14 +159,7 @@ public class ProcessQueryInstance extends QueryInstance {
     } catch (SQLException e) {
       throw new WdkModelException("Unable to insert record into cache.", e);
     } finally {
-      // close the statement manually, since we need to keep the
-      // connection open to finish the transaction.
-      if (ps != null)
-        try {
-          ps.close();
-        } catch (SQLException e) {
-          logger.error("Unable to close PreparedStatement!");
-        }
+      SqlUtils.closeStatement(ps);
     }
     logger.debug("process query cache insertion finished.");
   }
