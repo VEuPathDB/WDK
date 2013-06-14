@@ -787,7 +787,7 @@ public class StepFactory {
         sql.append(" AND sr.").append(userColumn).append(" = ?");
         sql.append(" AND sr." + userColumn + " = sp." + userColumn);
         sql.append(" AND sr.").append(COLUMN_PROJECT_ID).append(" = ?");
-        sql.append(" AND sr.").append(COLUMN_IS_DELETED + " = 0");
+        sql.append(" AND sr.").append(COLUMN_IS_DELETED + " = " + userPlatform.convertBoolean(false));
         sql.append(" ORDER BY sr." + COLUMN_LAST_VIEWED_TIME + " DESC");
         try {
             long start = System.currentTimeMillis();

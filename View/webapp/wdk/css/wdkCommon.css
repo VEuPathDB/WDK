@@ -180,6 +180,39 @@ td {
   width: 200px;
 }
 
+.wdk-toggle-name {
+  margin-bottom: 1em;
+  margin-left: 1em;
+  cursor: pointer;
+}
+
+.wdk-toggle-content {
+  margin: 1em 0em 1em 2.6em;
+  display: none;
+}
+
+.wdk-toggle-shown-icon {
+  display: none;
+  vertical-align: middle;
+}
+
+.wdk-toggle-hidden-icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.wdk-toggle-show .wdk-toggle-content {
+  display: block;
+}
+
+.wdk-toggle-show .wdk-toggle-shown-icon {
+  display: inline-block;
+}
+
+.wdk-toggle-show .wdk-toggle-hidden-icon {
+  display: none;
+}
+
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     =Styling for the Login pop-up box 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
