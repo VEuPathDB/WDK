@@ -1141,6 +1141,10 @@ tr.headerRow > td,th {
 .fixed {font-family:courier, fixed-width, monospace; font-size:10pt; color:#000000;}
 
 
+#basket-control {
+    margin: 5px;
+    text-align: center;
+}
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
