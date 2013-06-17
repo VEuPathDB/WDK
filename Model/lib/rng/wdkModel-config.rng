@@ -131,6 +131,11 @@
             </attribute>
         </optional>
         <optional>
+            <attribute name="driverInitClass">
+                <data type="string" />
+            </attribute>
+        </optional>
+        <optional>
             <group>
                 <attribute name="showConnections">
                     <data type="boolean" />
