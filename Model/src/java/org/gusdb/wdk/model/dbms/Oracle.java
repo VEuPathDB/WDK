@@ -7,14 +7,12 @@ import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.jdbc.driver.OracleDriver;
 import oracle.sql.CLOB;
 
 import org.apache.commons.dbcp.DelegatingConnection;
@@ -22,19 +20,23 @@ import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author Jerric Gao
- * 
  */
 public class Oracle extends DBPlatform {
 
-  public Oracle() throws ClassNotFoundException, SQLException {
-    super("SELECT 'ok' FROM dual");
-    // register the driver
-    Class.forName("oracle.jdbc.driver.OracleDriver");
-
-    DriverManager.registerDriver(new OracleDriver());
-    System.setProperty("jdbc.drivers", "oracle.jdbc.driver.OracleDriver");
+  public Oracle() {
+    super();
   }
 
+  @Override
+  protected String getDriverClassName() {
+    return "oracle.jdbc.driver.OracleDriver";
+  }
+
+  @Override
+  protected String getValidationQuery() {
+    return "SELECT 'ok' FROM dual";
+  }
+  
   /*
    * (non-Javadoc)
    * 
