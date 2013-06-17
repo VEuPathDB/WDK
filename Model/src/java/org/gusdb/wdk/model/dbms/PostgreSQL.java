@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.dbms;
 
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -14,20 +13,23 @@ import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author Jerric Gao
- * 
  */
 public class PostgreSQL extends DBPlatform {
 
-  public PostgreSQL() throws SQLException, ClassNotFoundException {
-    super("SELECT 'ok'");
-
-    // register the driver
-    Class.forName("org.postgresql.Driver");
-
-    DriverManager.registerDriver(new org.postgresql.Driver());
-    System.setProperty("jdbc.drivers", "org.postgresql.Driver");
+  public PostgreSQL() {
+    super();
   }
 
+  @Override
+  protected String getDriverClassName() {
+    return "org.postgresql.Driver";
+  }
+
+  @Override
+  protected String getValidationQuery() {
+    return "SELECT 'ok'";
+  }
+  
   /*
    * (non-Javadoc)
    * 
