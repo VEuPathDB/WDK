@@ -17,7 +17,6 @@
         <td class="label">${fieldVal.displayName}: </td>
         <td>
           <!-- need to know if fieldVal should be hot linked -->
-
           <c:choose>
             <c:when test="${fieldVal.class.name eq 'org.gusdb.wdk.model.record.attribute.LinkAttributeValue'}">
               <a href="${fieldVal.url}">${fieldVal.displayText}</a>

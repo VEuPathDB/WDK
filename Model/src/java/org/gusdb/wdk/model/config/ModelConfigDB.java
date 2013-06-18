@@ -18,6 +18,7 @@ public abstract class ModelConfigDB {
   private String password;
   private String connectionUrl;
   private String platform;
+  private String driverInitClass;
 
   // optional properties
   private short maxActive = 20;
@@ -158,6 +159,20 @@ public abstract class ModelConfigDB {
    */
   public void setMaxWait(short maxWait) {
     this.maxWait = maxWait;
+  }
+
+  /**
+   * @param driverInitClass implementation class to initialize DB driver
+   */
+  public void setDriverInitClass(String driverInitClass) {
+	this.driverInitClass = driverInitClass;
+  }
+  
+  /**
+   * @return implementation class to initialize DB driver
+   */
+  public String getDriverInitClass() {
+	  return driverInitClass;
   }
 
   /**
