@@ -253,7 +253,7 @@ public abstract class DBPlatform {
     
     ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectionUrl, props);
 
-    // create abandoned configuration
+    // link connection factory to connection pool with assigned settings
     boolean defaultReadOnly = false;
     boolean defaultAutoCommit = true;
     new PoolableConnectionFactory(connectionFactory, connectionPool, null,
