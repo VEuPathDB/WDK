@@ -241,24 +241,8 @@ public abstract class DBPlatform {
     
     logger.info("DB Connection [" + name + "]: " + dbConfig.getConnectionUrl());
 
-    connectionPool = new GenericObjectPool(null);
-    String connectionUrl = dbConfig.getConnectionUrl();
+    connectionPool = createConnectionPool(dbConfig);
     
-    Properties props = new Properties();
-    props.put("user", dbConfig.getLogin());
-    props.put("password", dbConfig.getPassword());
-    
-    // initialize DB driver; (possibly modified) url will be returned, connection properties may also be modified
-    connectionUrl = initializeDbDriver(dbConfig.getDriverInitClass(), props, connectionUrl);
-    
-    ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectionUrl, props);
-
-    // link connection factory to connection pool with assigned settings
-    boolean defaultReadOnly = false;
-    boolean defaultAutoCommit = true;
-    new PoolableConnectionFactory(connectionFactory, connectionPool, null,
-        getValidationQuery(), defaultReadOnly, defaultAutoCommit);
-
     // configure the connection pool
     connectionPool.setMaxWait(dbConfig.getMaxWait());
     connectionPool.setMaxIdle(dbConfig.getMaxIdle());
@@ -278,6 +262,31 @@ public abstract class DBPlatform {
     // start the connection monitor if needed
     if (dbConfig.isShowConnections())
       (new Thread(new DisplayConnections(this))).start();
+  }
+
+  private GenericObjectPool createConnectionPool(ModelConfigDB dbConfig) throws WdkModelException {
+  
+    GenericObjectPool connectionPool = new GenericObjectPool(null);
+
+    Properties props = new Properties();
+    props.put("user", dbConfig.getLogin());
+    props.put("password", dbConfig.getPassword());
+
+    // initialize DB driver; (possibly modified) url will be returned, connection properties may also be modified
+    String connectionUrl = initializeDbDriver(dbConfig.getDriverInitClass(), props, dbConfig.getConnectionUrl());
+
+    ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectionUrl, props);
+
+    // link connection factory to connection pool with assigned settings
+    boolean defaultReadOnly = false;
+    boolean defaultAutoCommit = true;
+    
+    @SuppressWarnings("unused")  // object is created only to link factory and pool
+    PoolableConnectionFactory poolableConnectionFactory =
+        new PoolableConnectionFactory(connectionFactory, connectionPool, null,
+            getValidationQuery(), defaultReadOnly, defaultAutoCommit);
+  
+    return connectionPool;
   }
 
   private String initializeDbDriver(String driverInitClassName, Properties props,
