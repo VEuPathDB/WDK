@@ -349,9 +349,8 @@ public class Oracle extends DBPlatform {
   }
 
   @Override
-  public String getResizeColumnSql(String tableName, String column, int size) {
-    return "ALTER TABLE " + tableName + " MODIFY (" + column + " varchar("
-        + size + ") )";
+  public String getAlterColumnKeyword() {
+    return " MODIFY ";
   }
 
 }

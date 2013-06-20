@@ -195,8 +195,6 @@ public class Migrator1_12To1_13 implements Migrator {
 
   @Override
   public void declareOptions(Options options) {
-    Options options = new Options();
-
     Option option = new Option("model", true,
         "the name of the model.  This is used to find the Model XML "
             + "file ($GUS_HOME/config/model_name.xml) the Model "
@@ -206,6 +204,5 @@ public class Migrator1_12To1_13 implements Migrator {
     option.setRequired(true);
     option.setArgName("model");
     options.addOption(option);
-    return options;
   }
 }
