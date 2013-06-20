@@ -45,8 +45,6 @@ import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.TabularReporter;
-import org.gusdb.wdk.model.user.Answer;
-import org.gusdb.wdk.model.user.AnswerFactory;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 
@@ -123,7 +121,6 @@ public class AnswerValue {
   // ------------------------------------------------------------------
 
   private User user;
-  private Answer answer;
 
   private ResultFactory resultFactory;
   private Question question;
@@ -200,7 +197,6 @@ public class AnswerValue {
     this.endIndex = endIndex;
 
     this.user = answerValue.user;
-    this.answer = answerValue.answer;
     this.idsQueryInstance = answerValue.idsQueryInstance;
     this.question = answerValue.question;
     this.resultFactory = answerValue.resultFactory;
@@ -359,6 +355,10 @@ public class AnswerValue {
   public RecordInstance getRecordInstance(PrimaryKeyAttributeValue primaryKey) {
     return pageRecordInstances.get(primaryKey);
   }
+  
+  public String getQueryChecksum(boolean extra) throws WdkModelException {
+    return idsQueryInstance.getQuery().getChecksum(extra);
+  }
 
   /**
    * the checksum of the iq query, filter info is not included in it.
@@ -367,7 +367,9 @@ public class AnswerValue {
    * @throws WdkModelException
    */
   public String getChecksum() throws WdkModelException {
-    return idsQueryInstance.getChecksum();
+    String checksum = idsQueryInstance.getChecksum();
+    if (filter != null) checksum += ":" + filter.getName();
+    return checksum;
   }
 
   /**
@@ -1221,17 +1223,6 @@ public class AnswerValue {
     return ids;
   }
 
-  public Answer getAnswer() throws WdkModelException {
-    if (answer == null) {
-      AnswerFactory answerFactory = question.getWdkModel().getAnswerFactory();
-      String questionName = question.getFullName();
-      answer = answerFactory.getAnswer(questionName, getChecksum());
-      if (answer == null)
-        answer = answerFactory.saveAnswerValue(this);
-    }
-    return answer;
-  }
-
   public int getFilterSize(String filterName) throws WdkModelException {
     Integer size = resultSizesByFilter.get(filterName);
     if (size != null && idsQueryInstance.isCached()) {
@@ -1289,10 +1280,6 @@ public class AnswerValue {
   public void setFilter(AnswerFilterInstance filter) {
     this.filter = filter;
     reset();
-  }
-
-  public void setAnswer(Answer answer) {
-    this.answer = answer;
   }
 
   private void reset() {

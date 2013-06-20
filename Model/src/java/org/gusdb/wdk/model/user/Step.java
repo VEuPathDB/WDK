@@ -41,10 +41,12 @@ public class Step {
   private Date createdTime;
   private Date lastRunTime;
   private String customName;
-  private Answer answer = null;
   private boolean deleted = false;
   private boolean collapsible = false;
   private String collapsedName = null;
+
+  private String projectVersion;
+  private String questionName;
 
   private Step nextStep = null;
   private Step previousStep = null;
@@ -255,12 +257,7 @@ public class Step {
     try {
       return getQuestion().getDisplayName();
     } catch (WdkModelException ex) {
-      if (customName != null)
-        return customName;
-      else if (answer != null)
-        return answer.getQuestionName();
-      else
-        return null;
+      return (customName != null) ? customName : questionName;
     }
   }
 
@@ -284,32 +281,6 @@ public class Step {
    */
   public int getInternalId() {
     return internalId;
-  }
-
-  /**
-   * @param answer
-   *          The answer to set.
-   */
-  public void setAnswer(Answer answer) {
-    this.answer = answer;
-    String questionName = answer.getQuestionName();
-    try {
-      user.getWdkModel().getQuestion(questionName);
-    } catch (WdkModelException ex) {
-      this.valid = false;
-      this.revisable = false;
-    }
-  }
-
-  /**
-   * @return Returns the answer.
-   */
-  public Answer getAnswer() {
-    return answer;
-  }
-
-  public int getAnswerId() {
-    return answer.getAnswerId();
   }
 
   /**
@@ -490,7 +461,23 @@ public class Step {
   }
 
   public String getQuestionName() {
-    return (answer != null) ? answer.getQuestionName() : null;
+    return questionName;
+  }
+
+  
+  
+  public void setQuestionName(String questionName) {
+    this.questionName = questionName;
+  }
+  
+  
+
+  public String getProjectVersion() {
+    return projectVersion;
+  }
+
+  public void setProjectVersion(String projectVersion) {
+    this.projectVersion = projectVersion;
   }
 
   /* functions for navigating/manipulating step tree */
@@ -767,12 +754,13 @@ public class Step {
 
     jsStep.put("id", this.displayId);
     jsStep.put("customName", this.customName);
+    jsStep.put("question", this.questionName);
+    jsStep.put("projectVersion", this.projectVersion);
+    jsStep.put("filter", this.filterName);
     try {
-      jsStep.put("answer", this.answer.getAnswerChecksum());
       jsStep.put("collapsed", this.isCollapsible());
       jsStep.put("collapsedName", this.getCollapsedName());
     } catch (WdkModelException ex) { // the question is invalid
-      jsStep.put("answer", "");
       jsStep.put("collapsed", false);
       jsStep.put("collapsedName", "");
     }
@@ -798,7 +786,6 @@ public class Step {
   }
 
   public Question getQuestion() throws WdkModelException {
-    String questionName = answer.getQuestionName();
     WdkModel wdkModel = user.getWdkModel();
     return (Question) wdkModel.resolveReference(questionName);
   }
@@ -840,13 +827,6 @@ public class Step {
     return answerValue;
   }
 
-  public String getAnswerKey() {
-    String key = answer.getAnswerChecksum();
-    if (filterName != null)
-      key += ":" + filterName;
-    return key;
-  }
-
   public boolean isUseBooleanFilter() throws NoSuchAlgorithmException,
       WdkModelException, JSONException, WdkUserException, SQLException {
     if (!isBoolean())
@@ -857,7 +837,7 @@ public class Step {
     return Boolean.parseBoolean(strBooleanFlag);
   }
 
-  void setAnswerValue(AnswerValue answerValue) {
+  public void setAnswerValue(AnswerValue answerValue) {
     this.answerValue = answerValue;
   }
 

@@ -237,8 +237,7 @@ public class Migrator1_17To1_18 implements Migrator {
     }
 
     @Override
-    public Options declareOptions() {
-      // TODO Auto-generated method stub
-      return null;
+    public void declareOptions(Options options) {
+      // no option used
     }
 }

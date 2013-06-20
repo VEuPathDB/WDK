@@ -32,7 +32,6 @@ import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.question.SearchCategory;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
-import org.gusdb.wdk.model.user.AnswerFactory;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.user.FavoriteFactory;
@@ -136,8 +135,6 @@ public class WdkModel implements ConnectionContainer {
   private Set<String> perlMacroSet = new LinkedHashSet<String>();
 
   private ResultFactory resultFactory;
-
-  private AnswerFactory answerFactory;
 
   private Map<String, String> properties;
   
@@ -478,7 +475,6 @@ public class WdkModel implements ConnectionContainer {
     stepFactory = new StepFactory(this);
     datasetFactory = new DatasetFactory(this);
     queryFactory = new QueryFactory(this);
-    answerFactory = new AnswerFactory(this);
     basketFactory = new BasketFactory(this);
     favoriteFactory = new FavoriteFactory(this);
 
@@ -976,10 +972,6 @@ public class WdkModel implements ConnectionContainer {
 
   public QueryFactory getQueryFactory() {
     return queryFactory;
-  }
-
-  public AnswerFactory getAnswerFactory() {
-    return answerFactory;
   }
 
   public String getProjectId() {

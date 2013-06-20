@@ -904,15 +904,6 @@ public class User /* implements Serializable */{
         save();
     }
 
-    public void updateStep(Step step, String expression,
-            boolean useBooleanFilter) throws WdkModelException {
-        // get a new hidden step, in order to get the new answer
-        Step newStep = combineStep(expression, useBooleanFilter, true);
-        step.setAnswer(newStep.getAnswer());
-        stepFactory.deleteStep(this, newStep.getDisplayId());
-        stepFactory.updateStep(this, step, true);
-    }
-
     public Step combineStep(String expression) throws WdkModelException {
         return combineStep(expression, false, false);
     }
