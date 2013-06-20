@@ -139,8 +139,8 @@ public class QueryTester {
 
         else if (param instanceof StringParam) {
             StringParam stringParam = (StringParam) param;
-            if (stringParam.getSample() != null)
-                prompt += " (" + stringParam.getSample() + ")";
+            if (stringParam.getPrompt() != null)
+                prompt += " (" + stringParam.getPrompt() + ")";
             prompt += ":";
         }
 

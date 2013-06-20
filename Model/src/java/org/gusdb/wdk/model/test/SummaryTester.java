@@ -143,7 +143,7 @@ public class SummaryTester {
                 System.out.println("Total # of records: "
                         + answerValue.getResultSize());
                 System.out.println("Answer Checksum: "
-                        + answerValue.getAnswer().getAnswerChecksum());
+                        + answerValue.getChecksum());
 
                 AnswerValueBean answerValueBean = new AnswerValueBean(
                         answerValue);

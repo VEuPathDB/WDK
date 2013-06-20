@@ -286,8 +286,7 @@ public class PostgreSQL extends DBPlatform {
   }
 
   @Override
-  public String getResizeColumnSql(String tableName, String column, int size) {
-    return "ALTER TABLE " + tableName + " ALTER COLUMN " + column
-        + " TYPE varchar(" + size + ")";
+  public String getAlterColumnKeyword() {
+    return " ALTER COLUMN ";
   }
 }

@@ -151,10 +151,6 @@ public class StepBean {
         return new AnswerValueBean(step.getAnswerValue(validate));
     }
 
-    public int getAnswerId() {
-        return step.getAnswerId();
-    }
-
     public int getStepId() {
         return step.getDisplayId();
     }
@@ -162,7 +158,7 @@ public class StepBean {
     public void setAnswerValue(AnswerValueBean answer)
             throws NoSuchAlgorithmException, SQLException, WdkModelException,
             JSONException, WdkUserException {
-        step.setAnswer(answer.getAnswerValue().getAnswer());
+        step.setAnswerValue(answer.getAnswerValue());
     }
 
     public int getEstimateSize() throws NoSuchAlgorithmException,
@@ -211,11 +207,11 @@ public class StepBean {
     }
 
     public String getQueryChecksum() throws WdkModelException {
-        return step.getAnswer().getQueryChecksum();
+        return step.getAnswerValue().getQueryChecksum(true);
     }
 
     public String getChecksum() throws WdkModelException {
-        return step.getAnswer().getAnswerChecksum();
+        return step.getAnswerValue().getChecksum();
     }
 
     public void update(boolean updateTime) throws WdkUserException,

@@ -234,7 +234,9 @@ public class ResultFactory {
         // + ". Please look up the query in 'Query' table that generates " +
         // "this cache table, and make sure it returns the index column.");
 
-        String sql = platform.getResizeColumnSql(cacheTable, column, maxSize);
+        String sql = "ALTER TABLE " + cacheTable
+            + platform.getAlterColumnKeyword() + column + " varchar(" + maxSize
+            + ")";
         SqlUtils.executeUpdate(wdkModel, dataSource, sql, cacheTable
             + "__change-column-size");
       }

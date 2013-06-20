@@ -178,8 +178,7 @@ public abstract class DBPlatform {
 
   public abstract String getDummyTable();
 
-  public abstract String getResizeColumnSql(String tableName, String column,
-      int size);
+  public abstract String getAlterColumnKeyword();
 
   // #########################################################################
   // Common methods are platform independent
