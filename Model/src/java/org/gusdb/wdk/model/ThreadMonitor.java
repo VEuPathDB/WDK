@@ -23,17 +23,18 @@ public class ThreadMonitor implements Runnable {
   public synchronized static void setup(WdkModel wdkModel) {
     if (monitor != null)
       return;
-    if (!wdkModel.getModelConfig().isMonitorThreads())
+    if (!wdkModel.getModelConfig().isMonitorBlockedThreads())
       return;
 
     monitor = new ThreadMonitor(wdkModel);
     new Thread(monitor).start();
   }
-  
+
   public static void shutdown() {
-    if (monitor == null) return;
+    if (monitor == null)
+      return;
     monitor.stop();
-    while(!monitor.isStopped()) {
+    while (!monitor.isStopped()) {
       try {
         Thread.sleep(100);
       } catch (InterruptedException ex) {}
@@ -93,7 +94,7 @@ public class ThreadMonitor implements Runnable {
     logger.info("Thread monitor stopped on " + Thread.currentThread().getName());
     stopped = true;
   }
-  
+
   private void stop() {
     running = false;
   }
@@ -140,22 +141,26 @@ public class ThreadMonitor implements Runnable {
         + blockedThreads.size();
 
     // get content
-    StringBuilder content = new StringBuilder("<p>" + stateText + "</p><br/>");
-    content.append("<p>Too many blocked threads detected.<p>");
+    StringBuilder buffer = new StringBuilder("<p>" + stateText + "</p><br/>\n");
+    buffer.append("<p>Too many blocked threads detected.<p>\n");
     for (Thread thread : blockedThreads) {
-      content.append("<div>Thread#" + thread.getId() + " - " + thread.getName());
-      content.append("<ol>");
+      buffer.append("<div>Thread#" + thread.getId() + " - " + thread.getName()
+          + "\n");
+      buffer.append("<ol>");
       for (StackTraceElement element : thread.getStackTrace()) {
-        content.append("<li>" + element.toString() + "</li>");
+        buffer.append("\t<li>" + element.toString() + "</li>\n");
       }
-      content.append("</ol></div><br/>");
+      buffer.append("</ol></div><br/>\n\n");
     }
+    String content = buffer.toString();
+    logger.warn(content.replaceAll("<[^<>]+>", " "));
 
     try {
-      Utilities.sendEmail(wdkModel, email, email, subject, content.toString());
+      Utilities.sendEmail(wdkModel, email, email, subject, content);
     } catch (WdkModelException ex) {
       ex.printStackTrace();
-      throw new WdkRuntimeException(ex);
+      // ignore the exception here, it might be caused by an unconfigured admin
+      // email.
     }
   }
 }

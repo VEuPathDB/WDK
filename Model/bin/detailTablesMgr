@@ -69,7 +69,7 @@ sub parseConfig {
   while(<CONFIG>) {
 
     chomp;
-    s/#.*//;
+##    s/#.*//;
     next if ($_ =~ /^\s*$/);
 
     s/\s*=\s*/=/g;
@@ -299,11 +299,11 @@ sub runFullRecordFile{
 
     my $subDir =  $orgHsh->{$org}->{$type}->{'dir'} =~ /none/i ? '' : $orgHsh->{$org}->{$type}->{'dir'};
 
-    my $dir = "$downloadFileDir/$project/release-${release}/$subDir/txt/data";
+    my $dir = "$downloadFileDir/$project/$release/real/downloadSite/$project/release-CURRENT/$subDir/txt/data";
 
     `mkdir -p $dir`;
 
-    my $cmd = "createFullRecordFile -record ${ucType}RecordClasses.${ucType}RecordClass -sqlFile $sqlDir/tmp_${type}.sql -cacheTable $table -model $project  --dumpFile ${dir}/${project}-${release}_${organism}${ucType}.txt >${organism}${ucType}File.out  2> ${organism}${ucType}File.err";
+    my $cmd = "createFullRecordFile -record ${ucType}RecordClasses.${ucType}RecordClass -sqlFile $sqlDir/tmp_${type}.sql -cacheTable $table -model $project  --dumpFile ${dir}/${project}-CURRENT_${organism}${ucType}.txt >${organism}${ucType}File.out  2> ${organism}${ucType}File.err";
 
     print STDERR "Running cmd:\t$cmd\n\n";
 
