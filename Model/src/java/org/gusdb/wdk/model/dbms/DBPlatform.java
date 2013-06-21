@@ -1,13 +1,13 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.dbms;
 
+import java.io.StringReader;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import javax.sql.DataSource;
 
@@ -28,6 +28,8 @@ import org.gusdb.wdk.model.config.ModelConfigDB;
  */
 public abstract class DBPlatform {
 
+  private static final Logger LOG = Logger.getLogger(DBPlatform.class);
+
   private class DisplayConnections implements Runnable {
 
     private DBPlatform platform;
@@ -41,6 +43,7 @@ public abstract class DBPlatform {
      * 
      * @see java.lang.Runnable#run()
      */
+    @Override
     public void run() {
       long interval = dbConfig.getShowConnectionsInterval();
       long duration = dbConfig.getShowConnectionsDuration();
@@ -113,7 +116,6 @@ public abstract class DBPlatform {
   private GenericObjectPool connectionPool;
   private String name;
   private ModelConfigDB dbConfig;
-  private String validationQuery;
 
   // #########################################################################
   // the Abstract methods that are platform dependent
@@ -141,9 +143,6 @@ public abstract class DBPlatform {
   public abstract void createSequence(String sequence, int start, int increment)
       throws WdkModelException;
 
-  public abstract int setClobData(PreparedStatement ps, int columnIndex,
-      String content, boolean commit) throws SQLException;
-
   public abstract String getClobData(ResultSet rs, String columnName)
       throws SQLException;
 
@@ -160,6 +159,10 @@ public abstract class DBPlatform {
   public abstract void disableStatistics(String schema, String tableName)
       throws WdkModelException, SQLException;
 
+  protected abstract String getDriverClassName();
+  
+  protected abstract String getValidationQuery();
+  
   /**
    * @param schema
    *          the schema cannot be empty. if you are searching in a local
@@ -182,8 +185,7 @@ public abstract class DBPlatform {
   // Common methods are platform independent
   // #########################################################################
 
-  public DBPlatform(String validationQuery) {
-    this.validationQuery = validationQuery;
+  public DBPlatform() {
     platforms.add(this);
   }
 
@@ -232,24 +234,15 @@ public abstract class DBPlatform {
    * @param maxWait
    * @param maxActive
    */
-  public void initialize(WdkModel wdkModel, String name, ModelConfigDB dbConfig) {
+  public void initialize(WdkModel wdkModel, String name, ModelConfigDB dbConfig) throws WdkModelException {
     this.wdkModel = wdkModel;
     this.name = name;
     this.dbConfig = dbConfig;
     
     logger.info("DB Connection [" + name + "]: " + dbConfig.getConnectionUrl());
 
-    connectionPool = new GenericObjectPool(null);
-    ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(
-        dbConfig.getConnectionUrl(), dbConfig.getLogin(),
-        dbConfig.getPassword());
-
-    // create abandoned configuration
-    boolean defaultReadOnly = false;
-    boolean defaultAutoCommit = true;
-    new PoolableConnectionFactory(connectionFactory, connectionPool, null,
-        validationQuery, defaultReadOnly, defaultAutoCommit);
-
+    connectionPool = createConnectionPool(dbConfig);
+    
     // configure the connection pool
     connectionPool.setMaxWait(dbConfig.getMaxWait());
     connectionPool.setMaxIdle(dbConfig.getMaxIdle());
@@ -271,6 +264,62 @@ public abstract class DBPlatform {
       (new Thread(new DisplayConnections(this))).start();
   }
 
+  private GenericObjectPool createConnectionPool(ModelConfigDB dbConfig) throws WdkModelException {
+  
+    GenericObjectPool connectionPool = new GenericObjectPool(null);
+
+    Properties props = new Properties();
+    props.put("user", dbConfig.getLogin());
+    props.put("password", dbConfig.getPassword());
+
+    // initialize DB driver; (possibly modified) url will be returned, connection properties may also be modified
+    String connectionUrl = initializeDbDriver(dbConfig.getDriverInitClass(), props, dbConfig.getConnectionUrl());
+
+    ConnectionFactory connectionFactory = new DriverManagerConnectionFactory(connectionUrl, props);
+
+    // link connection factory to connection pool with assigned settings
+    boolean defaultReadOnly = false;
+    boolean defaultAutoCommit = true;
+    
+    @SuppressWarnings("unused")  // object is created only to link factory and pool
+    PoolableConnectionFactory poolableConnectionFactory =
+        new PoolableConnectionFactory(connectionFactory, connectionPool, null,
+            getValidationQuery(), defaultReadOnly, defaultAutoCommit);
+  
+    return connectionPool;
+  }
+
+  private String initializeDbDriver(String driverInitClassName, Properties props,
+      String connectionUrl) throws WdkModelException {
+    try {
+      // check to see if user provided custom driver initializer
+      if (driverInitClassName == null || driverInitClassName.isEmpty() ||
+          driverInitClassName.equals(DefaultDbDriverInitializer.class.getName())) {
+        // if none provided (or default), use the default WDK driver initializer
+        DbDriverInitializer initClassInstance = new DefaultDbDriverInitializer();
+        LOG.debug("Initializing driver " + getDriverClassName() + " using default WDK initializer.");
+        return initClassInstance.initializeDriver(getDriverClassName(), connectionUrl, props);
+      }
+      else {
+        // otherwise, try to instantiate user-provided implementation and call
+        Class<?> initClass = Class.forName(driverInitClassName);
+        if (!DbDriverInitializer.class.isAssignableFrom(initClass)) {
+          throw new WdkModelException("Value for driverInitClass in Model Config " +
+              "is not an implementation of " + DbDriverInitializer.class.getName());
+        }
+        // provided class is the correct type; instantiate and call initialize method
+        @SuppressWarnings("unchecked") // checked above
+        DbDriverInitializer initClassInstance = ((Class<? extends DbDriverInitializer>)initClass).newInstance();
+        LOG.debug("Initializing driver " + getDriverClassName() + " using custom WDK initializer: " + driverInitClassName);
+        return initClassInstance.initializeDriver(getDriverClassName(), connectionUrl, props);
+      }
+    }
+    catch (ClassNotFoundException | InstantiationException | IllegalAccessException e) {
+      throw new WdkModelException("Unable to instantiate custom DB Driver Initializer " +
+          "class with name " + driverInitClassName, e);
+    }
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -279,5 +328,20 @@ public abstract class DBPlatform {
   public void close() throws Exception {
     connectionPool.close();
   }
+  
+  //#########################################################################
+  // Common methods are platform independent
+  //#########################################################################
 
+  public int setClobData(PreparedStatement ps, int columnIndex,
+      String content, boolean commit) throws SQLException {
+    if (content == null) {
+      ps.setNull(columnIndex, Types.CLOB);
+    }
+    else {
+      StringReader reader = new StringReader(content);
+      ps.setCharacterStream(columnIndex, reader, content.length());
+    }
+    return (commit ? ps.executeUpdate() : 0);
+  }
 }
