@@ -511,14 +511,14 @@ ul.menubar {
 
 .param-item label {
   float: left;
-  width: 320px;   /* 300px; */
+  width: 35%;  /*  320px; */   /* 300px; */
   /* clear: both; */
   text-align: right;
   padding-top: 4px;
 }
 
 .param-control {
-  margin-left: 330px; /*310px; */
+  margin-left: 36%;    /*330px;*/ /*310px; */
 }
 
 .param-control td {
@@ -1141,6 +1141,10 @@ tr.headerRow > td,th {
 .fixed {font-family:courier, fixed-width, monospace; font-size:10pt; color:#000000;}
 
 
+#basket-control {
+    margin: 5px;
+    text-align: center;
+}
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
