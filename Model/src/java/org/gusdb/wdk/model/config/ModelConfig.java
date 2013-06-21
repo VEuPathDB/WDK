@@ -72,12 +72,12 @@ public class ModelConfig {
   /**
    * turn on thread monitor process if set to true
    */
-  private boolean monitorThreads = true;
+  private boolean monitorBlockedThreads = true;
 
   /**
    * if blocked
    */
-  private int blockedThreshold = 4;
+  private int blockedThreshold = 20;
 
   /**
    * If it returns true, a monitoring thread will be turned on when webapp is
@@ -85,12 +85,12 @@ public class ModelConfig {
    * 
    * @return
    */
-  public boolean isMonitorThreads() {
-    return monitorThreads;
+  public boolean isMonitorBlockedThreads() {
+    return monitorBlockedThreads;
   }
 
-  public void setMonitorThreads(boolean monitorThreads) {
-    this.monitorThreads = monitorThreads;
+  public void setMonitorBlockedThreads(boolean monitorBlockedThreads) {
+    this.monitorBlockedThreads = monitorBlockedThreads;
   }
 
   /**

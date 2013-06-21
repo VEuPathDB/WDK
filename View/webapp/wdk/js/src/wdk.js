@@ -262,7 +262,7 @@ function getWebAppUrl() {
     $(".collapsible").each(function() {
       var $this = $(this);
 
-      if ($this.data("rendered")) {
+      if ($this.attr("rendered")) {
         return;
       }
 
@@ -291,7 +291,8 @@ function getWebAppUrl() {
         $arrowSpan.toggleClass("wdk-icon-minus", !$this.hasClass("collapsed"));
       });
 
-      $this.data("rendered", true);
+      $this.attr("rendered", true);
+
     });
   }
 
