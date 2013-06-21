@@ -30,7 +30,7 @@ $(function() {
 
 <c:set var="recordName" value="${step.question.recordClass.displayName}" />
 
-<div class="h2center">Download ${step.estimateSize} ${recordName} from the search:</div>
+<div class="h2center">Download ${step.estimateSize} ${recordName}s from the search:</div>
 
 <i><div class="h3center">${step.displayName}</div></i>
 

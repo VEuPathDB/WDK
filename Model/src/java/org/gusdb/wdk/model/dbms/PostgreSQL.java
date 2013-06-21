@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model.dbms;
 
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -14,20 +12,23 @@ import org.gusdb.wdk.model.WdkModelException;
 
 /**
  * @author Jerric Gao
- * 
  */
 public class PostgreSQL extends DBPlatform {
 
-  public PostgreSQL() throws SQLException, ClassNotFoundException {
-    super("SELECT 'ok'");
-
-    // register the driver
-    Class.forName("org.postgresql.Driver");
-
-    DriverManager.registerDriver(new org.postgresql.Driver());
-    System.setProperty("jdbc.drivers", "org.postgresql.Driver");
+  public PostgreSQL() {
+    super();
   }
 
+  @Override
+  protected String getDriverClassName() {
+    return "org.postgresql.Driver";
+  }
+
+  @Override
+  protected String getValidationQuery() {
+    return "SELECT 'ok'";
+  }
+  
   /*
    * (non-Javadoc)
    * 
@@ -150,19 +151,6 @@ public class PostgreSQL extends DBPlatform {
    */
   public String getStringDataType(int size) {
     return "VARCHAR(" + size + ")";
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.gusdb.wdk.model.dbms.DBPlatform#updateClobData(java.sql.PreparedStatement
-   * , int, java.lang.String, boolean)
-   */
-  public int setClobData(PreparedStatement ps, int columnIndex, String content,
-      boolean commit) throws SQLException {
-    ps.setString(columnIndex, content);
-    return commit ? ps.executeUpdate() : 0;
   }
 
   /**
