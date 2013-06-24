@@ -843,17 +843,14 @@ public class AnswerValue {
     // always append primary key columns as the last sorting columns,
     // otherwise Oracle may generate unstable results through pagination
     // when the sorted columns are not unique.
-    sql.append(" ORDER BY ");
-    for (String clause : orderClauses) {
-      sql.append(clause).append(", ");
-    }
-    firstClause = true;
-    for (String column : pkColumns) {
-      if (firstClause)
-        firstClause = false;
-      else
-        sql.append(", ");
-      sql.append("idq.").append(column);
+    if (orderClauses.size() > 0) {
+      sql.append(" ORDER BY ");
+      firstClause = true;
+      for (String clause : orderClauses) {
+        if (firstClause) firstClause = false;
+        else sql.append(", ");
+        sql.append(clause);
+      }
     }
     sortedIdSql = sql.toString();
 
