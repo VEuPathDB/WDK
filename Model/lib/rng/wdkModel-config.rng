@@ -22,7 +22,7 @@
                 </attribute>
             </optional>
             <optional>
-                <attribute name="monitorThreads">
+                <attribute name="monitorBlockedThreads">
                     <data type="boolean" />
                 </attribute>
             </optional>
