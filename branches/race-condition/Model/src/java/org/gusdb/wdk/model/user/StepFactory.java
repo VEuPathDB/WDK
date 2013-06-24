@@ -223,6 +223,7 @@ public class StepFactory {
     }
     // create the Step
     Step step = new Step(this, user, displayId, stepId);
+    step.setQuestionName(questionName);
     step.setCreatedTime(createTime);
     step.setLastRunTime(lastRunTime);
     step.setDeleted(deleted);
@@ -231,7 +232,6 @@ public class StepFactory {
     step.setEstimateSize(estimateSize);
     step.setAssignedWeight(assignedWeight);
     step.setException(exception);
-    step.setQuestionName(questionName);
     step.setProjectVersion(wdkModel.getVersion());
 
     // stepCache.addStep(step);
