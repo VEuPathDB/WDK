@@ -13,6 +13,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
@@ -28,6 +29,8 @@ public abstract class Reporter implements Iterable<AnswerValue> {
     public static final String FIELD_FORMAT = "downloadType";
     private static final String PROPERTY_PAGE_SIZE = "page_size";
 
+    private static final int SORTING_THRESHOLD = 100;
+
     private final static Logger logger = Logger.getLogger(Reporter.class);
 
     protected class PageAnswerIterator implements Iterator<AnswerValue> {
@@ -36,6 +39,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         private int endIndex;
         private int startIndex;
         private int maxPageSize;
+        private int resultSize;
 
         public PageAnswerIterator(AnswerValue answerValue, int startIndex,
                 int endIndex, int maxPageSize) throws WdkModelException,
@@ -45,7 +49,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
             // determine the end index, which should be no bigger result size,
             // since the index starts from 1
-            int resultSize = baseAnswer.getResultSize();
+            this.resultSize = baseAnswer.getResultSize();
             this.endIndex = Math.min(endIndex, resultSize);
             this.startIndex = startIndex;
             this.maxPageSize = maxPageSize;
@@ -65,6 +69,15 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
             AnswerValue answerValue = new AnswerValue(baseAnswer, startIndex,
                     pageEndIndex);
+
+            // disable sorting if the total size is bigger than threshold
+            try {
+              if (resultSize > SORTING_THRESHOLD)
+                answerValue.setSortingMap(new LinkedHashMap<String, Boolean>());
+            } catch(WdkModelException ex) {
+              throw new WdkRuntimeException(ex);
+            }
+
             // update the current index
             startIndex = pageEndIndex + 1;
             return answerValue;
