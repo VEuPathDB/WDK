@@ -157,7 +157,7 @@ public class ThreadMonitor implements Runnable {
       String email = wdkModel.getModelConfig().getAdminEmail();
       if (email != null) {
         // get the first email as reply
-        String reply = email.split("", 2)[0].trim();
+        String reply = email.split(",", 2)[0].trim();
         Utilities.sendEmail(wdkModel, email, reply, subject, content);
       }
     } catch (WdkModelException ex) {
