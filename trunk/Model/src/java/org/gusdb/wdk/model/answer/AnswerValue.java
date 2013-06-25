@@ -167,8 +167,7 @@ public class AnswerValue {
    */
   public AnswerValue(User user, Question question,
       QueryInstance idsQueryInstance, int startIndex, int endIndex,
-      Map<String, Boolean> sortingMap, AnswerFilterInstance filter)
-      throws WdkModelException {
+      Map<String, Boolean> sortingMap, AnswerFilterInstance filter) {
     this.user = user;
     this.question = question;
     this.resultFactory = question.getWdkModel().getResultFactory();
@@ -230,14 +229,12 @@ public class AnswerValue {
     return this.user;
   }
 
-  public int getPageSize() throws WdkModelException, NoSuchAlgorithmException,
-      SQLException, JSONException, WdkUserException {
+  public int getPageSize() throws WdkModelException {
     initPageRecordInstances();
     return pageRecordInstances.size();
   }
 
-  public int getPageCount() throws WdkModelException, NoSuchAlgorithmException,
-      SQLException, JSONException, WdkUserException {
+  public int getPageCount() throws WdkModelException {
     int total = getResultSize();
     int pageSize = endIndex - startIndex + 1;
     int pageCount = (int) Math.round(Math.ceil((float) total / pageSize));
@@ -260,9 +257,7 @@ public class AnswerValue {
     return resultSize;
   }
 
-  public Map<String, Integer> getResultSizesByProject()
-      throws WdkModelException, NoSuchAlgorithmException, SQLException,
-      JSONException, WdkUserException {
+  public Map<String, Integer> getResultSizesByProject() throws WdkModelException {
     if (resultSizesByProject == null) {
       resultSizesByProject = new LinkedHashMap<String, Integer>();
 
@@ -347,8 +342,7 @@ public class AnswerValue {
     return idsQueryInstance;
   }
 
-  public RecordInstance[] getRecordInstances() throws WdkModelException,
-      NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+  public RecordInstance[] getRecordInstances() throws WdkModelException {
     initPageRecordInstances();
 
     RecordInstance[] array = new RecordInstance[pageRecordInstances.size()];
@@ -576,57 +570,54 @@ public class AnswerValue {
 
     String sql = getPagedAttributeSql(attributeQuery);
     int count = 0;
-    try {
-      // get and run the paged attribute query sql
-      DBPlatform platform = wdkModel.getQueryPlatform();
-      DataSource dataSource = platform.getDataSource();
-      ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-          attributeQuery.getFullName() + "__attr-paged");
-      ResultList resultList = new SqlResultList(resultSet);
+    
+    // get and run the paged attribute query sql
+    DBPlatform platform = wdkModel.getQueryPlatform();
+    DataSource dataSource = platform.getDataSource();
+    ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+            attributeQuery.getFullName() + "__attr-paged");
+    ResultList resultList = new SqlResultList(resultSet);
 
-      // fill in the column attributes
-      PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
-      Map<String, AttributeField> fields = question.getAttributeFieldMap();
-      while (resultList.next()) {
+    // fill in the column attributes
+    PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
+    Map<String, AttributeField> fields = question.getAttributeFieldMap();
+    while (resultList.next()) {
         // get primary key
         Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
         for (String column : pkField.getColumnRefs()) {
-          pkValues.put(column, resultList.get(column));
+            pkValues.put(column, resultList.get(column));
         }
         PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
-            pkField, pkValues);
+                pkField, pkValues);
         RecordInstance record = pageRecordInstances.get(primaryKey);
 
         if (record == null) {
-          StringBuffer error = new StringBuffer();
-          error.append("Paged attribute query [");
-          error.append(attributeQuery.getFullName());
-          error.append("] returns rows that doesn't match the paged ");
-          error.append("records. (");
-          for (String pkName : pkValues.keySet()) {
-            error.append(pkName).append(" = ");
-            error.append(pkValues.get(pkName)).append(", ");
-          }
-          error.append(").\nPaged Attribute SQL:\n").append(sql);
-          error.append("\n").append("Paged ID SQL:\n").append(getPagedIdSql());
-          throw new WdkModelException(error.toString());
+            StringBuffer error = new StringBuffer();
+            error.append("Paged attribute query [");
+            error.append(attributeQuery.getFullName());
+            error.append("] returns rows that doesn't match the paged ");
+            error.append("records. (");
+            for (String pkName : pkValues.keySet()) {
+                error.append(pkName).append(" = ");
+                error.append(pkValues.get(pkName)).append(", ");
+            }
+            error.append(").\nPaged Attribute SQL:\n").append(sql);
+            error.append("\n").append("Paged ID SQL:\n").append(getPagedIdSql());
+            throw new WdkModelException(error.toString());
         }
 
         // fill in the column attributes
         for (String columnName : attributeQuery.getColumnMap().keySet()) {
-          AttributeField field = fields.get(columnName);
-          if (field != null && (field instanceof ColumnAttributeField)) {
-            // valid attribute field, fill it in
-            Object objValue = resultList.get(columnName);
-            ColumnAttributeValue value = new ColumnAttributeValue(
-                (ColumnAttributeField) field, objValue);
-            record.addAttributeValue(value);
-          }
+            AttributeField field = fields.get(columnName);
+            if (field != null && (field instanceof ColumnAttributeField)) {
+                // valid attribute field, fill it in
+                Object objValue = resultList.get(columnName);
+                ColumnAttributeValue value = new ColumnAttributeValue(
+                        (ColumnAttributeField) field, objValue);
+                record.addAttributeValue(value);
+            }
         }
         count++;
-      }
-    } catch (SQLException e) {
-      throw new WdkModelException("Unable to get record instances.", e);
     }
 
     if (count != pageRecordInstances.size()) {
@@ -688,59 +679,53 @@ public class AnswerValue {
 
     // get and run the paged attribute query sql
     String sql = getPagedTableSql(tableQuery);
-    try {
-      DBPlatform platform = wdkModel.getQueryPlatform();
-      DataSource dataSource = platform.getDataSource();
-      ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-          tableQuery.getFullName() + "_table-paged");
-      ResultList resultList = new SqlResultList(resultSet);
+    DBPlatform platform = wdkModel.getQueryPlatform();
+    DataSource dataSource = platform.getDataSource();
+    ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+        tableQuery.getFullName() + "_table-paged");
+    ResultList resultList = new SqlResultList(resultSet);
 
-      // initialize table values
-      for (RecordInstance record : pageRecordInstances.values()) {
+    // initialize table values
+    for (RecordInstance record : pageRecordInstances.values()) {
         PrimaryKeyAttributeValue primaryKey = record.getPrimaryKey();
-        TableValue tableValue = new TableValue(user, primaryKey, tableField,
-            true);
+        TableValue tableValue = new TableValue(user, primaryKey, tableField, true);
         record.addTableValue(tableValue);
-      }
-
-      // make table values
-      PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
-      while (resultList.next()) {
-        // get primary key
-        Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
-        for (String column : pkField.getColumnRefs()) {
-          pkValues.put(column, resultList.get(column));
-        }
-        PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
-            pkField, pkValues);
-        RecordInstance record = pageRecordInstances.get(primaryKey);
-
-        if (record == null) {
-          StringBuffer error = new StringBuffer();
-          error.append("Paged table query [" + tableQuery.getFullName());
-          error.append("] returned rows that doesn't match the paged ");
-          error.append("records. (");
-          for (String pkName : pkValues.keySet()) {
-            Object pkValue = pkValues.get(pkName);
-            error.append(pkName + " = " + pkValue + ", ");
-          }
-          error.append(").\nPaged table SQL:\n" + sql);
-          error.append("\n" + "Paged ID SQL:\n" + getPagedIdSql());
-          throw new WdkModelException(error.toString());
-        }
-
-        TableValue tableValue = record.getTableValue(tableField.getName());
-        // initialize a row in table value
-        tableValue.initializeRow(resultList);
-      }
-      logger.debug("Table query [" + tableQuery.getFullName() + "] integrated.");
-    } catch (SQLException e) {
-      throw new WdkUserException("Unable to integrate table query", e);
     }
+
+    // make table values
+    PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
+    while (resultList.next()) {
+      // get primary key
+      Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+      for (String column : pkField.getColumnRefs()) {
+        pkValues.put(column, resultList.get(column));
+      }
+      PrimaryKeyAttributeValue primaryKey = new PrimaryKeyAttributeValue(
+          pkField, pkValues);
+      RecordInstance record = pageRecordInstances.get(primaryKey);
+
+      if (record == null) {
+        StringBuffer error = new StringBuffer();
+        error.append("Paged table query [" + tableQuery.getFullName());
+        error.append("] returned rows that doesn't match the paged ");
+        error.append("records. (");
+        for (String pkName : pkValues.keySet()) {
+          Object pkValue = pkValues.get(pkName);
+          error.append(pkName + " = " + pkValue + ", ");
+        }
+        error.append(").\nPaged table SQL:\n" + sql);
+        error.append("\n" + "Paged ID SQL:\n" + getPagedIdSql());
+        throw new WdkModelException(error.toString());
+      }
+
+      TableValue tableValue = record.getTableValue(tableField.getName());
+      // initialize a row in table value
+      tableValue.initializeRow(resultList);
+    }
+    logger.debug("Table query [" + tableQuery.getFullName() + "] integrated.");
   }
 
-  private String getPagedTableSql(Query tableQuery) throws WdkModelException,
-      WdkUserException {
+  private String getPagedTableSql(Query tableQuery) throws WdkModelException {
     // get the paged SQL of id query
     String idSql = getPagedIdSql();
 
@@ -990,32 +975,28 @@ public class AnswerValue {
     this.pageRecordInstances = new LinkedHashMap<PrimaryKeyAttributeValue, RecordInstance>();
 
     String sql = getPagedIdSql();
-    try {
-      WdkModel wdkModel = question.getWdkModel();
-      DBPlatform platform = wdkModel.getQueryPlatform();
-      DataSource dataSource = platform.getDataSource();
-      ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-          idsQueryInstance.getQuery().getFullName() + "__id-paged");
-      ResultList resultList = new SqlResultList(resultSet);
-      RecordClass recordClass = question.getRecordClass();
-      PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
-      while (resultList.next()) {
-        // get primary key. the primary key is supposed to be translated to
-        // the current ones from the id query, and no more translation
-        // needed.
-        //
-        // If this assumption is false, then we need to join the alias query
-        // into the paged id query as well.
-        Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
-        for (String column : pkField.getColumnRefs()) {
-          Object value = resultList.get(column);
-          pkValues.put(column, value);
-        }
-        RecordInstance record = new RecordInstance(this, pkValues);
-        pageRecordInstances.put(record.getPrimaryKey(), record);
+    WdkModel wdkModel = question.getWdkModel();
+    DBPlatform platform = wdkModel.getQueryPlatform();
+    DataSource dataSource = platform.getDataSource();
+    ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+        idsQueryInstance.getQuery().getFullName() + "__id-paged");
+    ResultList resultList = new SqlResultList(resultSet);
+    RecordClass recordClass = question.getRecordClass();
+    PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
+    while (resultList.next()) {
+      // get primary key. the primary key is supposed to be translated to
+      // the current ones from the id query, and no more translation
+      // needed.
+      //
+      // If this assumption is false, then we need to join the alias query
+      // into the paged id query as well.
+      Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
+      for (String column : pkField.getColumnRefs()) {
+        Object value = resultList.get(column);
+        pkValues.put(column, value);
       }
-    } catch (SQLException e) {
-      throw new WdkModelException("Unable to get record instances.", e);
+      RecordInstance record = new RecordInstance(this, pkValues);
+      pageRecordInstances.put(record.getPrimaryKey(), record);
     }
 
     // check if the number of records is expected
@@ -1064,8 +1045,7 @@ public class AnswerValue {
     return startIndex;
   }
 
-  public String getResultMessage() throws NoSuchAlgorithmException,
-      SQLException, WdkModelException, JSONException, WdkUserException {
+  public String getResultMessage() throws WdkModelException {
     return idsQueryInstance.getResultMessage();
   }
 
@@ -1139,18 +1119,16 @@ public class AnswerValue {
     return displayAttributes;
   }
 
-  public TreeNode getDisplayableAttributeTree() throws WdkModelException,
-      WdkUserException {
+  public TreeNode getDisplayableAttributeTree() throws WdkModelException {
     return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.NON_INTERNAL));
   }
 
-  public TreeNode getReportMakerAttributeTree() throws WdkModelException,
-      WdkUserException {
+  public TreeNode getReportMakerAttributeTree() throws WdkModelException {
     return convertAttributeTree(question.getAttributeCategoryTree(FieldScope.REPORT_MAKER));
   }
 
   private TreeNode convertAttributeTree(AttributeCategoryTree rawAttributeTree)
-      throws WdkModelException, WdkUserException {
+      throws WdkModelException {
     TreeNode root = rawAttributeTree.toTreeNode("category root",
         "Attribute Categories");
     List<String> currentlySelectedFields = new ArrayList<String>();

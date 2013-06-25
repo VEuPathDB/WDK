@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.dbms;
 
 import java.sql.ResultSet;
@@ -25,16 +22,19 @@ public class SqlResultList implements ResultList {
      */
     @Override
     protected void finalize() throws Throwable {
-        SqlUtils.closeResultSetAndStatement(resultSet);
-        // TODO Auto-generated method stub
+        if (!resultSetClosed) {
+            logger.warn("ResultSet in SqlResultList has not been closed!  This may be a resource leak!");
+        }
         super.finalize();
     }
 
     private Set<String> columns;
     private ResultSet resultSet;
+    private boolean resultSetClosed = false;
 
-    public SqlResultList(ResultSet resultSet) throws SQLException {
+    public SqlResultList(ResultSet resultSet) {
         this.resultSet = resultSet;
+        resultSetClosed = false;
     }
 
     /*
@@ -42,8 +42,10 @@ public class SqlResultList implements ResultList {
      * 
      * @see org.gusdb.wdk.model.dbms.ResultList#close()
      */
+    @Override
     public void close() throws WdkModelException {
         SqlUtils.closeResultSetAndStatement(resultSet);
+        resultSetClosed = true;
     }
 
     /*
@@ -51,6 +53,7 @@ public class SqlResultList implements ResultList {
      * 
      * @see org.gusdb.wdk.model.dbms.ResultList#contains(java.lang.String)
      */
+    @Override
     public boolean contains(String columnName) throws WdkModelException {
         try {
             if (columns == null) columns = SqlUtils.getColumnNames(resultSet);
@@ -65,6 +68,7 @@ public class SqlResultList implements ResultList {
      * 
      * @see org.gusdb.wdk.model.dbms.ResultList#get(java.lang.String)
      */
+    @Override
     public Object get(String columnName) throws WdkModelException {
         try {
             return resultSet.getObject(columnName);
@@ -79,6 +83,7 @@ public class SqlResultList implements ResultList {
      * 
      * @see org.gusdb.wdk.model.dbms.ResultList#next()
      */
+    @Override
     public boolean next() throws WdkModelException {
         try {
             boolean hasNext = resultSet.next();
