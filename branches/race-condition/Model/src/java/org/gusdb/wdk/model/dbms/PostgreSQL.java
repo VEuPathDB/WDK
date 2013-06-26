@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.dbms;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -152,19 +151,6 @@ public class PostgreSQL extends DBPlatform {
    */
   public String getStringDataType(int size) {
     return "VARCHAR(" + size + ")";
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.gusdb.wdk.model.dbms.DBPlatform#updateClobData(java.sql.PreparedStatement
-   * , int, java.lang.String, boolean)
-   */
-  public int setClobData(PreparedStatement ps, int columnIndex, String content,
-      boolean commit) throws SQLException {
-    ps.setString(columnIndex, content);
-    return commit ? ps.executeUpdate() : 0;
   }
 
   /**
