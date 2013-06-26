@@ -78,16 +78,12 @@ public class SqlQueryInstance extends QueryInstance {
    */
   @Override
   protected ResultList getUncachedResults() throws WdkModelException {
-    try {
-      String sql = getUncachedSql();
-      DBPlatform platform = query.getWdkModel().getQueryPlatform();
-      DataSource dataSource = platform.getDataSource();
-      ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-          query.getFullName() + "__select-uncached");
-      return new SqlResultList(resultSet);
-    } catch (SQLException e) {
-      throw new WdkModelException("Could not get uncached results from DB.", e);
-    }
+    String sql = getUncachedSql();
+    DBPlatform platform = query.getWdkModel().getQueryPlatform();
+    DataSource dataSource = platform.getDataSource();
+    ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+        query.getFullName() + "__select-uncached");
+    return new SqlResultList(resultSet);
   }
 
   /*
