@@ -62,8 +62,8 @@ public class ThreadMonitor implements Runnable {
 
   @Override
   public void run() {
-    logger.info("Thread monitor started at " + Thread.currentThread().getName()
-        + " - " + siteInfo);
+    logger.info("Thread monitor started at Thread#"
+        + Thread.currentThread().getId() + " - " + siteInfo);
     running = true;
     stopped = false;
     int threshold = wdkModel.getModelConfig().getBlockedThreshold();
@@ -99,8 +99,8 @@ public class ThreadMonitor implements Runnable {
         Thread.sleep(SLEEP_INTERVAL);
       } catch (InterruptedException ex) {}
     }
-    logger.info("Thread monitor stopped on " + Thread.currentThread().getName()
-        + " - " + siteInfo);
+    logger.info("Thread monitor stopped on Thread#"
+        + Thread.currentThread().getId() + " - " + siteInfo);
     stopped = true;
   }
 
