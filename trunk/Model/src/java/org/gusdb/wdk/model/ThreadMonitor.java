@@ -155,11 +155,9 @@ public class ThreadMonitor implements Runnable {
     try {
       // get admin email
       String email = wdkModel.getModelConfig().getAdminEmail();
-      if (email != null) {
-        // get the first email as reply
-        String reply = email.split(",", 2)[0].trim();
-        Utilities.sendEmail(wdkModel, email, reply, subject, content);
-      }
+      if (email != null)
+        Utilities.sendEmail(wdkModel, email, email, subject, content);
+
     } catch (WdkModelException ex) {
       ex.printStackTrace();
       // ignore the exception here, it might be caused by an unconfigured admin
