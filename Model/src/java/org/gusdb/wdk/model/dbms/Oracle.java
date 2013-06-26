@@ -7,15 +7,11 @@ import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import oracle.sql.CLOB;
-
-import org.apache.commons.dbcp.DelegatingConnection;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
@@ -151,23 +147,6 @@ public class Oracle extends DBPlatform {
     if (messageClob == null)
       return null;
     return messageClob.getSubString(1, (int) messageClob.length());
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.gusdb.wdk.model.dbms.DBPlatform#updateClobData(java.sql.PreparedStatement
-   * , int, java.lang.String, boolean)
-   */
-  @Override
-  public int setClobData(PreparedStatement ps, int columnIndex, String content,
-      boolean commit) throws SQLException {
-    Connection connection = ((DelegatingConnection) ps.getConnection()).getInnermostDelegate();
-    CLOB clob = CLOB.createTemporary(connection, false, CLOB.DURATION_SESSION);
-    clob.setString(1, content);
-    ps.setClob(columnIndex, clob);
-    return commit ? ps.executeUpdate() : 0;
   }
 
   /*
