@@ -71,6 +71,7 @@ public class ThreadMonitor implements Runnable {
     int blockedCycles = 0;
     long lastReport = 0;
     ThreadMXBean thbean = ManagementFactory.getThreadMXBean();
+    thbean.setThreadContentionMonitoringEnabled(true);
     while (running) {
       // get all threads
       Thread[] threads = getAllThreads(thbean);
