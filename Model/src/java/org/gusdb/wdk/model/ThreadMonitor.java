@@ -16,6 +16,7 @@ public class ThreadMonitor implements Runnable {
 
   private static final long REPORT_INTERVAL = 3600 * 1000;
   private static final long SLEEP_INTERVAL = 10 * 1000;
+  private static final long MIN_BLOCKED_CYCLES = 10;
 
   private static final Logger logger = Logger.getLogger(ThreadMonitor.class);
 
@@ -67,6 +68,7 @@ public class ThreadMonitor implements Runnable {
     running = true;
     stopped = false;
     int threshold = wdkModel.getModelConfig().getBlockedThreshold();
+    int blockedCycles = 0;
     long lastReport = 0;
     ThreadMXBean thbean = ManagementFactory.getThreadMXBean();
     while (running) {
@@ -83,16 +85,21 @@ public class ThreadMonitor implements Runnable {
         if (state == State.BLOCKED)
           blockedThreads.add(thread);
       }
-      String stateText = printStates(states, threads.length);
+      String stateText = printStates(states, threads.length, blockedCycles);
       logger.debug(stateText);
 
       if (blockedThreads.size() >= threshold) {
-        // enough blocked threads reached
-        if (System.currentTimeMillis() - lastReport > REPORT_INTERVAL) {
-          report(thbean, stateText, blockedThreads);
-          lastReport = System.currentTimeMillis();
+        blockedCycles++;
+        // enough blocked cycles reached
+        if (blockedCycles >= MIN_BLOCKED_CYCLES) {
+          // enough blocked threads reached
+          if (System.currentTimeMillis() - lastReport > REPORT_INTERVAL) {
+            report(thbean, stateText, blockedThreads);
+            lastReport = System.currentTimeMillis();
+          }
         }
-      }
+      } else
+        blockedCycles = 0; // reset the cycle
 
       // sleep for a while
       try {
@@ -127,7 +134,8 @@ public class ThreadMonitor implements Runnable {
     return Arrays.copyOf(threads, n);
   }
 
-  private String printStates(Map<State, Integer> states, int total) {
+  private String printStates(Map<State, Integer> states, int total,
+      int blockedCycles) {
     StringBuilder buffer = new StringBuilder("Current Threads - ");
     buffer.append("Total: " + total);
     State[] keys = states.keySet().toArray(new State[0]);
@@ -136,6 +144,7 @@ public class ThreadMonitor implements Runnable {
       buffer.append(", " + state);
       buffer.append(": " + states.get(state));
     }
+    buffer.append(", blocked cycle: " + blockedCycles);
     return buffer.toString();
   }
 
