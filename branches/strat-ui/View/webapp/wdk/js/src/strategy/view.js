@@ -204,7 +204,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "  <a href='javascript:void(0)' class='edit-icon step-elem' style='display:inline;position:absolute;top:-8px;right:2px' " +
         "     onclick='event.stopPropagation(); wdk.step.showDetails(this)'>" + getEditImage(true)+"</a><br/>"+
         "  <div class='crumb_details'></div>" +
-        "  <h6 class='resultCount' style='top:2px'>" +
+        "  <h6 class='resultCount' style='top:1px'>" +
         "    <span class='operation'>" + jsonStep.results + "&nbsp;" + displayType + "</span>" +
         "  </h6>" +
            filterImg +
@@ -257,7 +257,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
 	//"        <div style='position:absolute;top:-6px;right:-8px;width:19px;height:19px;'></div>"+
       "        <a href='javascript:void(0)'"+
-      "           class='edit-icon step-elem' onclick='event.stopPropagation(); wdk.step.showDetails(this)' id='stepId_" + modelstep.frontId + "' style='display:inline;position:absolute;right:1px;top:-7px'>"+
+      "           class='edit-icon step-elem' onclick='event.stopPropagation(); wdk.step.showDetails(this)' id='stepId_" + modelstep.frontId + "' style='display:inline;position:absolute;right:-6px;top:-7px'>"+
       getEditImage(false)+"</a>"+
       "        <div class='crumb_details'></div>"+
       "      </h4>"+
@@ -342,7 +342,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           "style='height:10px;position:relative;top:1px"+filterImgOffset+"'/></span>";
     }
 
-    var editIconOffset = modelstep.isTransform ? "right:10px;top:-5px" : "right:1px;top:-7px";
+    var editIconOffset = modelstep.isTransform ? "right:6px;top:-5px" : "right:-6px;top:-7px";
     //var editIconWinOffset = modelstep.isTransform ? "right:0px;top:-4px" : "right:-8px;top:-8px";
     var inner = ""+
       "    <div style='cursor:pointer' title=\""+stepBoxTooltip(jsonStep.filterName)+"\" class='results_link crumb_name divlink step-elem' "+
