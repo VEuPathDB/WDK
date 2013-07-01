@@ -69,7 +69,7 @@
   <div id="strategy_messages">
   </div>
   <div class="resizable-wrapper">
-    <div class="scrollable-wrapper">
+    <div class="scrollable-wrapper edit-step-pane">
       <div id="Strategies" ${newStrat}>
       </div>
     </div> 

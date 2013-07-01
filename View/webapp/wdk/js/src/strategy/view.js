@@ -142,6 +142,14 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     return null;
   }
 
+  // controls visibility of step box edit icons
+  function setEditIconToggling() {
+    $('.edit-step-pane')
+      .mouseenter(function(){
+        $('.edit-step').css('display','inline-block'); })
+      .mouseleave(function(){
+        $('.edit-step').css('display','none'); });
+  }
 
   // HANDLES THE CREATION OF THE STEP BOX --
   // This function could be broken down to smaller bites
@@ -169,6 +177,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       $(div_strat).append(stepdiv);
       zIndex--; // DO NOT DELETE, needed for correct display in IE7.
     }
+    setEditIconToggling();
   }
 
   //Creates the boolean Step and the operand step displayed above it
@@ -316,7 +325,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   }
 
   function getEditImage(isBoolean) {
-      var style = isBoolean ? "display:inline-block;position:relative;top:3px" : "";
+      var style = isBoolean ? "display:none;position:relative;top:3px" : "display:none";
       return "<img class='edit-step' style='width:24px;"+style+"' src='wdk/images/edit-step-word-large.png' "+
         "onmouseover=\"jQuery(this).attr('src','wdk/images/edit-step-word-large-yel.png')\" " +
         "onmouseout=\"jQuery(this).attr('src','wdk/images/edit-step-word-large.png')\"/>";
