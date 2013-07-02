@@ -8,12 +8,12 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wsf.util.BaseCLI;
 
 public class BackupUser extends BaseCLI {
@@ -164,13 +164,13 @@ public class BackupUser extends BaseCLI {
     private void executeByBatch(WdkModel wdkModel, String name, String dmlSql,
             String selectSql) throws SQLException, WdkUserException,
             WdkModelException {
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
         Connection connection = null;
         PreparedStatement psInsert = null;
         ResultSet resultSet = null;
 
         try {
-            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, selectSql,
+            resultSet = SqlUtils.executeQuery(dataSource, selectSql,
                     "wdk-backup-" + name);
 
             connection = dataSource.getConnection();

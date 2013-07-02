@@ -11,12 +11,13 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wsf.util.BaseCLI;
@@ -116,7 +117,7 @@ public class QuestionChecksumUpdater extends BaseCLI {
         sql.append("answers SET old_query_checksum = query_checksum, ");
         sql.append(" query_checksum = ? WHERE question_name = ? ");
         sql.append(" AND project_id = ? AND old_query_checksum IS NULL");
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
         return SqlUtils.getPreparedStatement(dataSource, sql.toString());
     }
 
@@ -124,11 +125,12 @@ public class QuestionChecksumUpdater extends BaseCLI {
             WdkUserException, WdkModelException {
         PreparedStatement psUpdate = null;
         ResultSet rsHistory = null;
-        DBPlatform platform = wdkModel.getUserPlatform();
-        DataSource dataSource = platform.getDataSource();
+        DatabaseInstance database = wdkModel.getUserDb();
+        DBPlatform platform = database.getPlatform();
+        DataSource dataSource = database.getDataSource();
 
         try {
-            rsHistory = SqlUtils.executeQuery(wdkModel, dataSource, "SELECT "
+            rsHistory = SqlUtils.executeQuery(dataSource, "SELECT "
                     + "     h.history_id, h.user_id, a.params "
                     + "FROM userlogins3.histories h, userlogins3.users u, "
                     + "     wdkstorage.answer a  "

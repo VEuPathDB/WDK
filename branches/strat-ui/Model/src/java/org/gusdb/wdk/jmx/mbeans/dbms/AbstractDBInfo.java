@@ -12,8 +12,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.fgputil.db.SqlUtils;
 
 /**
   * Abstract class for collecting information about databases used by
@@ -80,7 +79,7 @@ public abstract class AbstractDBInfo {
           metaDataMap.put(columnName, rs.getString(columnName) );
         }
       }
-    } catch (WdkModelException | SQLException sqle) {
+    } catch (SQLException sqle) {
       logger.error(sqle);
     } finally {
         SqlUtils.closeResultSetAndStatement(rs);
@@ -113,7 +112,7 @@ public abstract class AbstractDBInfo {
         // if no SQLException was caught then an ACL for UTL_INADDR must be in place.
         servernameDataMap.put("is_allowed_utl_inaddr", "true");
       }
-    } catch (WdkModelException | SQLException e) {
+    } catch (SQLException e) {
         if ( e.getMessage().startsWith("ORA-24247") ) {
           // oracle user needs an ACL for UTL_INADDR
           servernameDataMap.put("is_allowed_utl_inaddr", "false");

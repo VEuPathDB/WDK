@@ -25,12 +25,12 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.util.BaseCLI;
@@ -213,10 +213,10 @@ public class StepCountUpdater extends BaseCLI {
                 + " WHERE u.is_guest = 0 AND u.user_id = s.user_id "
                 + " AND s.is_deleted = 0";
         this.userIds = new Stack<Integer>();
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
         ResultSet resultSet = null;
         try {
-            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+            resultSet = SqlUtils.executeQuery(dataSource, sql,
                     "wdk-select-users");
             while (resultSet.next()) {
                 int userId = resultSet.getInt("user_id");
