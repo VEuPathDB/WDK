@@ -9,11 +9,11 @@ import java.util.regex.Matcher;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.SqlQuery;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -186,10 +186,10 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
                 .getPrimaryKeyAttributeField();
         String[] pkColumns = pkField.getColumnRefs();
         String sql = getAttributeSql();
-        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getAppDb().getDataSource();
         ResultSet resultSet = null;
         try {
-            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+            resultSet = SqlUtils.executeQuery(dataSource, sql,
                     step.getQuestion().getQuery().getFullName() + "__attribute-plugin-combined", 5000);
             while (resultSet.next()) {
                 Map<String, Object> pkValues = new LinkedHashMap<String, Object>();
