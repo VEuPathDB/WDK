@@ -13,13 +13,13 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
@@ -217,15 +217,20 @@ public abstract class QueryInstance {
   }
 
   public int getResultSize() throws WdkModelException {
-    logger.debug("start getting query size");
-    StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
-    sql.append(getSql()).append(") f");
-    DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-    Object objSize = SqlUtils.executeScalar(wdkModel, dataSource,
-        sql.toString(), query.getFullName() + "__count");
-    int resultSize = Integer.parseInt(objSize.toString());
-    logger.debug("end getting query size");
-    return resultSize;
+    try {
+      logger.debug("start getting query size");
+      StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
+      sql.append(getSql()).append(") f");
+      DataSource dataSource = wdkModel.getAppDb().getDataSource();
+      Object objSize = SqlUtils.executeScalar(dataSource,
+          sql.toString(), query.getFullName() + "__count");
+      int resultSize = Integer.parseInt(objSize.toString());
+      logger.debug("end getting query size");
+      return resultSize;
+    }
+    catch (SQLException e) {
+      throw new WdkModelException(e);
+    }
   }
 
   public Map<String, String> getValues() {

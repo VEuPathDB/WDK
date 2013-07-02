@@ -4,6 +4,7 @@
 package org.gusdb.wdk.model.answer;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -11,6 +12,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
@@ -18,7 +20,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
@@ -290,10 +291,14 @@ public class AnswerFilterInstance extends WdkModelBase {
     String sql = idInstance.getSql();
     int assignedWeight = idInstance.getAssignedWeight();
     sql = applyFilter(answerValue.getUser(), sql, assignedWeight);
-    DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-    ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-        idInstance.getQuery().getFullName() + "__" + name + "-filtered");
-    return new SqlResultList(resultSet);
+    DataSource dataSource = wdkModel.getAppDb().getDataSource();
+    try {
+      ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
+          idInstance.getQuery().getFullName() + "__" + name + "-filtered");
+      return new SqlResultList(resultSet);
+    } catch (SQLException e) {
+      throw new WdkModelException("Could not get answer results.", e);
+    }
   }
 
   public String applyFilter(User user, String sql, int assignedWeight)

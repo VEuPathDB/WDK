@@ -9,12 +9,12 @@ import java.sql.ResultSet;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wsf.util.BaseCLI;
 
 /**
@@ -107,7 +107,7 @@ public class InvalidStepReporter extends BaseCLI {
             throws SQLException, WdkUserException, WdkModelException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
         String sql = "SELECT count(*) count, a.project_id, a.question_name"
                 + " FROM " + answer + " a,"
@@ -119,7 +119,7 @@ public class InvalidStepReporter extends BaseCLI {
                 + " group by a.project_id, a.question_name"
                 + " order by a.project_id, a.question_name";
 
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
                 "wdk-invalid-report-questions");
         System.out.println("----------- Invalid Question Name ------------");
         System.out.println("");
@@ -144,7 +144,7 @@ public class InvalidStepReporter extends BaseCLI {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
         String sql = "SELECT count(*) count, a.project_id, a.question_name, "
                 + "sp.param_name" + " FROM step_params sp, "
@@ -178,7 +178,7 @@ public class InvalidStepReporter extends BaseCLI {
                 + "      group by a.project_id, a.question_name, sp.param_name"
                 + "      order by a.project_id, a.question_name, sp.param_name";
 
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
                 "wdk-invalid-report-params");
         System.out.println("----------- Invalid Param Name ------------");
         System.out.println("");
@@ -205,7 +205,7 @@ public class InvalidStepReporter extends BaseCLI {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
         String sql = "SELECT count(*) count, a.project_id, a.question_name, "
                 + "sp.param_name, d.param_value" + " FROM step_params sp, "
@@ -259,7 +259,7 @@ public class InvalidStepReporter extends BaseCLI {
         System.out.println("");
         System.out.println("count\tproject_id\tquestion_name\tparam_name\tparam_value");
 
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
                 "wdk-invalid-report-param-values");
         try {
             while (resultSet.next()) {

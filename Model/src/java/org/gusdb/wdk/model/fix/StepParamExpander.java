@@ -14,13 +14,13 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wsf.util.BaseCLI;
@@ -74,12 +74,12 @@ public class StepParamExpander extends BaseCLI {
                     .getUserSchema();
             resultSet = prepareSelect(wdkModel, schema);
             psInsert = prepareInsert(wdkModel);
-            DBPlatform platform = wdkModel.getUserPlatform();
+            DatabaseInstance database = wdkModel.getUserDb();
 
             int count = 0;
             while (resultSet.next()) {
                 int stepId = resultSet.getInt("step_id");
-                String clob = platform.getClobData(resultSet, "display_params");
+                String clob = database.getPlatform().getClobData(resultSet, "display_params");
 
                 if (clob == null)
                     continue;
@@ -114,23 +114,23 @@ public class StepParamExpander extends BaseCLI {
 
     private void createParamTable(WdkModel wdkModel) throws SQLException,
             WdkModelException, WdkUserException {
-        DBPlatform platform = wdkModel.getUserPlatform();
-        DataSource dataSource = platform.getDataSource();
+        DatabaseInstance database = wdkModel.getUserDb();
+        DataSource dataSource = database.getDataSource();
 
         // check if table exists
         String schema = "";
         int length = schema.length();
-        String s = (length == 0) ? null : schema.substring(0, length - 1);
-        if (platform.checkTableExists(s, "step_params"))
+        String s = (length == 0) ? database.getDefaultSchema() : schema.substring(0, length - 1);
+        if (database.getPlatform().checkTableExists(dataSource, s, "step_params"))
             return;
 
-        SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE TABLE " + schema
+        SqlUtils.executeUpdate(dataSource, "CREATE TABLE " + schema
                 + "step_params ( step_id NUMBER(12) NOT NULL, "
                 + " param_name VARCHAR(200) NOT NULL, "
                 + " param_value VARCHAR(4000), migration NUMBER(12))",
                 "wdk-create-param-table");
 
-        SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX " + schema
+        SqlUtils.executeUpdate(dataSource, "CREATE INDEX " + schema
                 + "step_params_idx02 ON step_params (step_id, param_name)",
                 "wdk-create-param-indx");
     }
@@ -153,8 +153,8 @@ public class StepParamExpander extends BaseCLI {
         sql.append("   AND s.answer_id = a.answer_id) sp ");
         sql.append(" WHERE s.step_id = sp.step_id ");
 
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
-        return SqlUtils.executeQuery(wdkModel, dataSource, sql.toString(),
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
+        return SqlUtils.executeQuery(dataSource, sql.toString(),
                 "wdk-select-step-params");
     }
 
@@ -166,7 +166,7 @@ public class StepParamExpander extends BaseCLI {
         sql.append(" (step_id, param_name, param_value) "
                 + "  VALUES (?, ?, ?)");
 
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
         return SqlUtils.getPreparedStatement(dataSource, sql.toString());
     }
 

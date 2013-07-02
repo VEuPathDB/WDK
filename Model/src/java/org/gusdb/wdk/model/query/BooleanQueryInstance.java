@@ -5,11 +5,11 @@ import java.sql.SQLException;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
-import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -74,7 +74,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
     // parse operator
     String operator = InternalValues.get(booleanQuery.getOperatorParam().getName());
     BooleanOperator op = BooleanOperator.parse(operator);
-    DBPlatform platform = wdkModel.getQueryPlatform();
+    DBPlatform platform = wdkModel.getAppDb().getPlatform();
     operator = op.getOperator(platform);
 
     // construct the filter query for the first child

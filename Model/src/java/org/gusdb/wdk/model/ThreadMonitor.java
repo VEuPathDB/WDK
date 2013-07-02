@@ -2,6 +2,7 @@ package org.gusdb.wdk.model;
 
 import java.lang.Thread.State;
 import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +16,7 @@ public class ThreadMonitor implements Runnable {
 
   private static final long REPORT_INTERVAL = 3600 * 1000;
   private static final long SLEEP_INTERVAL = 10 * 1000;
+  private static final long MIN_BLOCKED_CYCLES = 10;
 
   private static final Logger logger = Logger.getLogger(ThreadMonitor.class);
 
@@ -45,9 +47,14 @@ public class ThreadMonitor implements Runnable {
   private final WdkModel wdkModel;
   private boolean running;
   private boolean stopped;
+  private String siteInfo;
 
   private ThreadMonitor(WdkModel wdkModel) {
     this.wdkModel = wdkModel;
+    // get process & host name
+    String host = ManagementFactory.getRuntimeMXBean().getName();
+    siteInfo = wdkModel.getProjectId() + " v" + wdkModel.getVersion() + ", "
+        + host;
   }
 
   public boolean isStopped() {
@@ -56,14 +63,18 @@ public class ThreadMonitor implements Runnable {
 
   @Override
   public void run() {
-    logger.info("Thread monitor started at " + Thread.currentThread().getName());
+    logger.info("Thread monitor started at Thread#"
+        + Thread.currentThread().getId() + " - " + siteInfo);
     running = true;
     stopped = false;
     int threshold = wdkModel.getModelConfig().getBlockedThreshold();
+    int blockedCycles = 0;
     long lastReport = 0;
+    ThreadMXBean thbean = ManagementFactory.getThreadMXBean();
+    thbean.setThreadContentionMonitoringEnabled(true);
     while (running) {
       // get all threads
-      Thread[] threads = getAllThreads();
+      Thread[] threads = getAllThreads(thbean);
 
       // summarize the states
       Map<State, Integer> states = new HashMap<State, Integer>();
@@ -75,23 +86,29 @@ public class ThreadMonitor implements Runnable {
         if (state == State.BLOCKED)
           blockedThreads.add(thread);
       }
-      String stateText = printStates(states, threads.length);
+      String stateText = printStates(states, threads.length, blockedCycles);
       logger.debug(stateText);
 
       if (blockedThreads.size() >= threshold) {
-        // enough blocked threads reached
-        if (System.currentTimeMillis() - lastReport > REPORT_INTERVAL) {
-          report(stateText, blockedThreads);
-          lastReport = System.currentTimeMillis();
+        blockedCycles++;
+        // enough blocked cycles reached
+        if (blockedCycles >= MIN_BLOCKED_CYCLES) {
+          // enough blocked threads reached
+          if (System.currentTimeMillis() - lastReport > REPORT_INTERVAL) {
+            report(thbean, stateText, blockedThreads);
+            lastReport = System.currentTimeMillis();
+          }
         }
-      }
+      } else
+        blockedCycles = 0; // reset the cycle
 
       // sleep for a while
       try {
         Thread.sleep(SLEEP_INTERVAL);
       } catch (InterruptedException ex) {}
     }
-    logger.info("Thread monitor stopped on " + Thread.currentThread().getName());
+    logger.info("Thread monitor stopped on Thread#"
+        + Thread.currentThread().getId() + " - " + siteInfo);
     stopped = true;
   }
 
@@ -99,7 +116,7 @@ public class ThreadMonitor implements Runnable {
     running = false;
   }
 
-  private Thread[] getAllThreads() {
+  private Thread[] getAllThreads(ThreadMXBean thbean) {
     // get root thread group
     ThreadGroup group = Thread.currentThread().getThreadGroup();
     ThreadGroup parent;
@@ -107,7 +124,6 @@ public class ThreadMonitor implements Runnable {
       group = parent;
 
     // get all threads
-    ThreadMXBean thbean = ManagementFactory.getThreadMXBean();
     int count = thbean.getThreadCount();
     int n = 0;
     Thread[] threads;
@@ -119,7 +135,8 @@ public class ThreadMonitor implements Runnable {
     return Arrays.copyOf(threads, n);
   }
 
-  private String printStates(Map<State, Integer> states, int total) {
+  private String printStates(Map<State, Integer> states, int total,
+      int blockedCycles) {
     StringBuilder buffer = new StringBuilder("Current Threads - ");
     buffer.append("Total: " + total);
     State[] keys = states.keySet().toArray(new State[0]);
@@ -128,21 +145,38 @@ public class ThreadMonitor implements Runnable {
       buffer.append(", " + state);
       buffer.append(": " + states.get(state));
     }
+    buffer.append(", blocked cycle: " + blockedCycles);
     return buffer.toString();
   }
 
-  private void report(String stateText, List<Thread> blockedThreads) {
+  private void report(ThreadMXBean thbean, String stateText,
+      List<Thread> blockedThreads) {
     // get title
-    String subject = "[" + wdkModel.getProjectId() + " v"
-        + wdkModel.getVersion() + "] WARNING - Too many blocked threads: "
+    String subject = "[" + siteInfo + "] WARNING - Too many blocked threads: "
         + blockedThreads.size();
 
+    // get thread infos
+    long[] ids = new long[blockedThreads.size()];
+    for (int i = 0; i < ids.length; i++) {
+      ids[i] = blockedThreads.get(i).getId();
+    }
+    ThreadInfo[] infos = thbean.getThreadInfo(ids);
+
     // get content
-    StringBuilder buffer = new StringBuilder("<p>" + stateText + "</p><br/>\n");
+    StringBuilder buffer = new StringBuilder();
+    buffer.append("<p>" + siteInfo + "</p>");
+    buffer.append("<p>" + stateText + "</p><br/>\n");
     buffer.append("<p>Too many blocked threads detected.<p>\n");
-    for (Thread thread : blockedThreads) {
-      buffer.append("<div>Thread#" + thread.getId() + " - " + thread.getName()
-          + "\n");
+    for (int i = 0; i < ids.length; i++) {
+      Thread thread = blockedThreads.get(i);
+      ThreadInfo info = infos[i];
+      if (info == null)
+        continue;
+
+      buffer.append("<div><div>Thread id=" + thread.getId() + ", name='"
+          + thread.getName() + "'</div>\n");
+      buffer.append("<div>\tblocked count=" + info.getBlockedCount()
+          + ", blocked time=" + info.getBlockedTime() + "</div>\n");
       buffer.append("<ol>");
       for (StackTraceElement element : thread.getStackTrace()) {
         buffer.append("\t<li>" + element.toString() + "</li>\n");
@@ -150,16 +184,14 @@ public class ThreadMonitor implements Runnable {
       buffer.append("</ol></div><br/>\n\n");
     }
     String content = buffer.toString();
-    logger.warn(content.replaceAll("<[^<>]+>", " "));
+    logger.warn(subject + "\n" + content.replaceAll("<[^<>]+>", " "));
 
     try {
       // get admin email
       String email = wdkModel.getModelConfig().getAdminEmail();
-      if (email != null) {
-        // get the first email as reply
-        String reply = email.split(",", 2)[0].trim();
-        Utilities.sendEmail(wdkModel, email, reply, subject, content);
-      }
+      if (email != null)
+        Utilities.sendEmail(wdkModel, email, email, subject, content);
+
     } catch (WdkModelException ex) {
       ex.printStackTrace();
       // ignore the exception here, it might be caused by an unconfigured admin
