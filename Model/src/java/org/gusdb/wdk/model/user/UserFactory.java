@@ -23,14 +23,15 @@ import java.util.regex.Matcher;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.QueryLogger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.json.JSONException;
 
 /**
@@ -84,7 +85,7 @@ public class UserFactory {
   // -------------------------------------------------------------------------
   // member variables
   // -------------------------------------------------------------------------
-  private DBPlatform platform;
+  private DatabaseInstance userDb;
   private DataSource dataSource;
 
   private String userSchema;
@@ -97,8 +98,8 @@ public class UserFactory {
 
   public UserFactory(WdkModel wdkModel) {
     this.wdkModel = wdkModel;
-    this.platform = wdkModel.getUserPlatform();
-    this.dataSource = platform.getDataSource();
+    this.userDb = wdkModel.getUserDb();
+    this.dataSource = userDb.getDataSource();
     this.projectId = wdkModel.getProjectId();
 
     ModelConfig modelConfig = wdkModel.getModelConfig();
@@ -153,7 +154,7 @@ public class UserFactory {
             + "' has already been registered. " + "Please choose another one.");
 
       // get a new userId
-      int userId = platform.getNextId(userSchema, "users");
+      int userId = userDb.getPlatform().getNextId(dataSource, userSchema, "users");
       String signature = encrypt(userId + "_" + email);
       Date registerTime = new Date();
 
@@ -185,7 +186,7 @@ public class UserFactory {
       psUser.setString(17, signature);
       // psUser.setString(18, openId);
       psUser.executeUpdate();
-      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-register", start);
+      QueryLogger.logEndStatementExecution(sql, "wdk-user-register", start);
 
       // create user object
       User user = new User(wdkModel, userId, email, signature);
@@ -237,7 +238,7 @@ public class UserFactory {
     PreparedStatement psUser = null;
     try {
       // get a new user id
-      int userId = platform.getNextId(userSchema, "users");
+      int userId = userDb.getPlatform().getNextId(dataSource, userSchema, "users");
       String email = GUEST_USER_PREFIX + userId;
       Date registerTime = new Date();
       Date lastActiveTime = new Date();
@@ -257,7 +258,7 @@ public class UserFactory {
       psUser.setString(6, firstName);
       psUser.setString(7, signature);
       psUser.executeUpdate();
-      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-create-guest", start);
+      QueryLogger.logEndStatementExecution(sql, "wdk-user-create-guest", start);
 
       User user = new User(wdkModel, userId, email, signature);
       user.setFirstName(firstName);
@@ -384,7 +385,7 @@ public class UserFactory {
         ps.setString((i / 2) + 1, fieldMap[i + 1]);
       }
       rs = ps.executeQuery();
-      SqlUtils.verifyTime(wdkModel, sql.toString(), queryName, start);
+      QueryLogger.logEndStatementExecution(sql.toString(), queryName, start);
       if (!rs.next()) {
         logger.warn("Unable to get user given the following params: "
             + toParamString(fieldMap));
@@ -459,7 +460,7 @@ public class UserFactory {
       PreparedStatement psUser = SqlUtils.getPreparedStatement(dataSource, sql);
       psUser.setInt(1, userId);
       rsUser = psUser.executeQuery();
-      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-get-user-by-id", start);
+      QueryLogger.logEndStatementExecution(sql, "wdk-user-get-user-by-id", start);
       if (!rsUser.next()) {
         throw new WdkModelException("Invalid user id: " + userId);
       }
@@ -513,7 +514,7 @@ public class UserFactory {
     List<User> users = new ArrayList<User>();
     ResultSet rs = null;
     try {
-      rs = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+      rs = SqlUtils.executeQuery(dataSource, sql,
           "wdk-user-query-users-by-email");
       while (rs.next()) {
         int userId = rs.getInt("user_id");
@@ -535,14 +536,14 @@ public class UserFactory {
     PreparedStatement psUser = null;
     try {
       // update user's register time
-      int count = SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE "
+      int count = SqlUtils.executeUpdate(dataSource, "UPDATE "
           + userSchema + "users SET register_time = last_active "
           + "WHERE register_time is null", "wdk-user-update-register-time");
       System.out.println(count + " users with empty register_time have "
           + "been updated");
 
       // update history's is_delete field
-      count = SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE "
+      count = SqlUtils.executeUpdate(dataSource, "UPDATE "
           + userSchema + "histories SET is_deleted = 0 "
           + "WHERE is_deleted is null", "wdk-user-update-deleted");
       System.out.println(count + " histories with empty is_deleted have "
@@ -552,7 +553,7 @@ public class UserFactory {
       String sql = "Update " + userSchema
           + "users SET signature = ? WHERE user_id = ?";
       psUser = SqlUtils.getPreparedStatement(dataSource, sql);
-      rs = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+      rs = SqlUtils.executeQuery(dataSource, sql,
           "wdk-user-update-signature");
       while (rs.next()) {
         int userId = rs.getInt("user_id");
@@ -585,7 +586,7 @@ public class UserFactory {
       PreparedStatement psRole = SqlUtils.getPreparedStatement(dataSource, sql);
       psRole.setInt(1, user.getUserId());
       rsRole = psRole.executeQuery();
-      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-get-roles", start, rsRole);
+      QueryLogger.logStartResultsProcessing(sql, "wdk-user-get-roles", start, rsRole);
       while (rsRole.next()) {
         roles.add(rsRole.getString("user_role"));
       }
@@ -631,7 +632,7 @@ public class UserFactory {
         psDelete.addBatch();
       }
       psDelete.executeBatch();
-      SqlUtils.verifyTime(wdkModel, sqlDelete, "wdk-user-delete-roles", start);
+      QueryLogger.logEndStatementExecution(sqlDelete, "wdk-user-delete-roles", start);
 
       // insert roles
       start = System.currentTimeMillis();
@@ -641,7 +642,7 @@ public class UserFactory {
         psInsert.addBatch();
       }
       psInsert.executeBatch();
-      SqlUtils.verifyTime(wdkModel, sqlInsert, "wdk-user-insert-roles", start);
+      QueryLogger.logEndStatementExecution(sqlInsert, "wdk-user-insert-roles", start);
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
@@ -692,7 +693,7 @@ public class UserFactory {
       // psUser.setString(16, user.getOpenId());
       psUser.setInt(16, userId);
       psUser.executeUpdate();
-      SqlUtils.verifyTime(wdkModel, sqlUser, "wdk-user-update-user", start);
+      QueryLogger.logEndStatementExecution(sqlUser, "wdk-user-update-user", start);
 
       // save user's roles
       // saveUserRoles(user);
@@ -724,7 +725,7 @@ public class UserFactory {
       psUser.setTimestamp(1, new Timestamp(lastActiveTime.getTime()));
       psUser.setInt(2, user.getUserId());
       int result = psUser.executeUpdate();
-      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-update-user-last-active",
+      QueryLogger.logEndStatementExecution(sql, "wdk-user-update-user-last-active",
           start);
       if (result == 0)
         throw new WdkUserException("User " + user.getEmail()
@@ -751,7 +752,7 @@ public class UserFactory {
       PreparedStatement psUser = SqlUtils.getPreparedStatement(dataSource, sql);
       psUser.setTimestamp(1, timestamp);
       rsUser = psUser.executeQuery();
-      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-select-expired-user", start, rsUser);
+      QueryLogger.logStartResultsProcessing(sql, "wdk-user-select-expired-user", start, rsUser);
       int count = 0;
       while (rsUser.next()) {
         deleteUser(rsUser.getString("email"));
@@ -819,7 +820,7 @@ public class UserFactory {
         psDelete.addBatch();
       }
       psDelete.executeBatch();
-      SqlUtils.verifyTime(wdkModel, sqlDelete, "wdk-user-delete-preference",
+      QueryLogger.logEndStatementExecution(sqlDelete, "wdk-user-delete-preference",
           start);
 
       // insert preferences
@@ -837,7 +838,7 @@ public class UserFactory {
         psInsert.addBatch();
       }
       psInsert.executeBatch();
-      SqlUtils.verifyTime(wdkModel, sqlInsert, "wdk-user-insert-preference",
+      QueryLogger.logEndStatementExecution(sqlInsert, "wdk-user-insert-preference",
           start);
 
       // update preferences
@@ -855,7 +856,7 @@ public class UserFactory {
         psUpdate.addBatch();
       }
       psUpdate.executeBatch();
-      SqlUtils.verifyTime(wdkModel, sqlUpdate, "wdk-user-update-preference",
+      QueryLogger.logEndStatementExecution(sqlUpdate, "wdk-user-update-preference",
           start);
     } catch (SQLException e) {
       throw new WdkModelException("Unable to update user (id=" + userId
@@ -890,7 +891,7 @@ public class UserFactory {
       psSelect = SqlUtils.getPreparedStatement(dataSource, sql);
       psSelect.setInt(1, userId);
       resultSet = psSelect.executeQuery();
-      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-select-preference", start, resultSet);
+      QueryLogger.logStartResultsProcessing(sql, "wdk-user-select-preference", start, resultSet);
       while (resultSet.next()) {
         String projectId = resultSet.getString("project_id");
         String prefName = resultSet.getString("preference_name");
@@ -990,7 +991,7 @@ public class UserFactory {
       ps.setString(1, email);
       ps.setString(2, oldPassword);
       rs = ps.executeQuery();
-      SqlUtils.verifyTime(wdkModel, sql,
+      QueryLogger.logEndStatementExecution(sql,
           "wdk-user-count-user-by-email-password", start);
       rs.next();
       int count = rs.getInt(1);
@@ -1022,7 +1023,7 @@ public class UserFactory {
       ps.setString(1, encrypted);
       ps.setString(2, email);
       ps.executeUpdate();
-      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-update-password", start);
+      QueryLogger.logEndStatementExecution(sql, "wdk-user-update-password", start);
     } catch (SQLException ex) {
       throw new WdkUserException(ex);
     } finally {
@@ -1043,7 +1044,7 @@ public class UserFactory {
       PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, sql);
       ps.setString(1, email);
       rs = ps.executeQuery();
-      SqlUtils.verifyTime(wdkModel, sql, "wdk-user-select-user-by-email", start);
+      QueryLogger.logEndStatementExecution(sql, "wdk-user-select-user-by-email", start);
       rs.next();
       int count = rs.getInt(1);
       return (count > 0);
@@ -1054,32 +1055,36 @@ public class UserFactory {
     }
   }
 
-  public void deleteUser(String email) throws WdkUserException,
-      WdkModelException {
-    // get user id
-    User user = getUserByEmail(email);
-    if (user == null) {
-      throw new WdkUserException("Unable to find user with email: " + email);
+  public void deleteUser(String email) throws WdkUserException, WdkModelException {
+    try {
+      // get user id
+      User user = getUserByEmail(email);
+      if (user == null) {
+        throw new WdkUserException("Unable to find user with email: " + email);
+      }
+  
+      // delete strategies and steps from all projects
+      user.deleteStrategies(true);
+      user.deleteSteps(true);
+  
+      String where = " WHERE user_id = " + user.getUserId();
+  
+      // delete preference
+      String sql = "DELETE FROM " + userSchema + "preferences" + where;
+      SqlUtils.executeUpdate(dataSource, sql,
+          "wdk-user-delete-preference");
+  
+      // delete user roles
+      sql = "DELETE FROM " + userSchema + "user_roles" + where;
+      SqlUtils.executeUpdate(dataSource, sql, "wdk-user-delete-role");
+  
+      // delete user
+      sql = "DELETE FROM " + userSchema + "users" + where;
+      SqlUtils.executeUpdate(dataSource, sql, "wdk-user-delete-user");
     }
-
-    // delete strategies and steps from all projects
-    user.deleteStrategies(true);
-    user.deleteSteps(true);
-
-    String where = " WHERE user_id = " + user.getUserId();
-
-    // delete preference
-    String sql = "DELETE FROM " + userSchema + "preferences" + where;
-    SqlUtils.executeUpdate(wdkModel, dataSource, sql,
-        "wdk-user-delete-preference");
-
-    // delete user roles
-    sql = "DELETE FROM " + userSchema + "user_roles" + where;
-    SqlUtils.executeUpdate(wdkModel, dataSource, sql, "wdk-user-delete-role");
-
-    // delete user
-    sql = "DELETE FROM " + userSchema + "users" + where;
-    SqlUtils.executeUpdate(wdkModel, dataSource, sql, "wdk-user-delete-user");
+    catch (SQLException e) {
+      throw new WdkModelException(e);
+    }
   }
 
   public WdkModel getWdkModel() {

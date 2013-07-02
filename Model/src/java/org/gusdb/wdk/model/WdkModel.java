@@ -16,12 +16,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.QueryLogger;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigAppDB;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.config.QueryMonitor;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
-import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.QuerySet;
@@ -96,8 +97,9 @@ public class WdkModel implements ConnectionContainer {
   private ModelConfig modelConfig;
   private String projectId;
 
-  private DBPlatform queryPlatform;
-  private DBPlatform userPlatform;
+  private DatabaseInstance appDb;
+  private DatabaseInstance userDb;
+  private static List<DatabaseInstance> dbInstanceList = new ArrayList<>();
 
   private List<QuerySet> querySetList = new ArrayList<QuerySet>();
   private Map<String, QuerySet> querySets = new LinkedHashMap<String, QuerySet>();
@@ -462,16 +464,20 @@ public class WdkModel implements ConnectionContainer {
           + "empty, and cannot have single quote in it: " + projectId);
     this.projectId = projectId;
     this.modelConfig = modelConfig;
-    ModelConfigAppDB appDB = modelConfig.getAppDB();
-    ModelConfigUserDB userDB = modelConfig.getUserDB();
+    ModelConfigAppDB appDbConfig = modelConfig.getAppDB();
+    ModelConfigUserDB userDbConfig = modelConfig.getUserDB();
+    QueryLogger.initialize(modelConfig.getQueryMonitor());
 
     // initialize authentication factory
     // set the max active as half of the model's configuration
 
-    queryPlatform = (DBPlatform) Class.forName(appDB.getPlatformClass()).newInstance();
-    queryPlatform.initialize(this, "APP", appDB);
-    userPlatform = (DBPlatform) Class.forName(userDB.getPlatformClass()).newInstance();
-    userPlatform.initialize(this, "USER", userDB);
+    appDb = new DatabaseInstance("APP", appDbConfig);
+    appDb.initialize();
+    dbInstanceList.add(appDb);
+    
+    userDb = new DatabaseInstance("USER", userDbConfig);
+    userDb.initialize();
+    dbInstanceList.add(userDb);
 
     resultFactory = new ResultFactory(this);
     userFactory = new UserFactory(this);
@@ -503,6 +509,18 @@ public class WdkModel implements ConnectionContainer {
     createBooleanQuestions();
   }
 
+  public static final void closeDbInstances() {
+    for (DatabaseInstance db : dbInstanceList) {
+      try {
+        db.close();
+      }
+      catch (Exception e) {
+        logger.error("Exception caught while trying to shut down DB instance " +
+        		"with name '" + db.getName() + "'.  Ignoring.", e);
+      }
+    }
+  }
+  
   private void addBasketReferences() throws WdkModelException,
       NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
     for (RecordClassSet rcSet : recordClassSets.values()) {
@@ -521,13 +539,12 @@ public class WdkModel implements ConnectionContainer {
     return modelConfig;
   }
 
-  public DBPlatform getQueryPlatform() {
-    return queryPlatform;
+  public DatabaseInstance getAppDb() {
+    return appDb;
   }
 
-  // Function Added by Cary P. Feb 7, 2008
-  public DBPlatform getUserPlatform() {
-    return userPlatform;
+  public DatabaseInstance getUserDb() {
+    return userDb;
   }
 
   public UserFactory getUserFactory() {
@@ -1085,7 +1102,7 @@ public class WdkModel implements ConnectionContainer {
           return null;
 
         InputStream fis = new FileInputStream(secretKeyFileLoc);
-        StringBuffer contents = new StringBuffer();
+        StringBuilder contents = new StringBuilder();
         int chr;
         while ((chr = fis.read()) != -1) {
           contents.append((char) chr);
@@ -1163,9 +1180,9 @@ public class WdkModel implements ConnectionContainer {
   public Connection getConnection(String key) throws WdkModelException,
       SQLException {
     if (key.equals(CONNECTION_APP)) {
-      return queryPlatform.getDataSource().getConnection();
+      return appDb.getDataSource().getConnection();
     } else if (key.equals(CONNECTION_USER)) {
-      return userPlatform.getDataSource().getConnection();
+      return userDb.getDataSource().getConnection();
     } else { // unknown
       throw new WdkModelException("Invalid DB Connection key.");
     }

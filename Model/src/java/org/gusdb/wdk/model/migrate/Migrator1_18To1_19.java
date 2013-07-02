@@ -21,13 +21,14 @@ import java.util.regex.Pattern;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -156,8 +157,9 @@ public class Migrator1_18To1_19 extends Migrator {
     @Override
     public void migrate() throws WdkModelException, WdkUserException,
             NoSuchAlgorithmException, SQLException, JSONException {
-        DBPlatform platform = wdkModel.getUserPlatform();
-        int migrateId = platform.getNextId("apidb", "migration");
+        DatabaseInstance userDb = wdkModel.getUserDb();
+        int migrateId = userDb.getPlatform().getNextId(
+            userDb.getDataSource(), "apidb", "migration");
 
         copyClobValues(migrateId);
         copyDatasetIndices(migrateId);
@@ -188,8 +190,8 @@ public class Migrator1_18To1_19 extends Migrator {
         sql.append("   SELECT clob_checksum FROM " + cvn + ") cvm ");
         sql.append("WHERE cvo.clob_checksum = cvm.clob_checksum ");
 
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
-        int count = SqlUtils.executeUpdate(wdkModel, dataSource,
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
+        int count = SqlUtils.executeUpdate(dataSource,
                 sql.toString(), "wdk-migrate-clob");
         logger.debug(count + " clob_value rows inserted");
     }
@@ -224,8 +226,8 @@ public class Migrator1_18To1_19 extends Migrator {
         sql.append("      WHERE d.dataset_id = ud.dataset_id ");
         sql.append("        AND d.dataset_checksum = dm.dataset_checksum)");
 
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
-        int count = SqlUtils.executeUpdate(wdkModel, dataSource,
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
+        int count = SqlUtils.executeUpdate(dataSource,
                 sql.toString(), "wdk-migrate-dataset-index");
         logger.debug(count + " dataset index rows inserted");
     }
@@ -251,8 +253,8 @@ public class Migrator1_18To1_19 extends Migrator {
         sql.append("  AND di.dataset_id NOT IN ");
         sql.append("    (SELECT dataset_id FROM ").append(dvn).append(")");
 
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
-        int count = SqlUtils.executeUpdate(wdkModel, dataSource,
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
+        int count = SqlUtils.executeUpdate(dataSource,
                 sql.toString(), "wdk-migrate-dataset-value");
         logger.debug(count + " dataset value rows inserted");
     }
@@ -267,7 +269,7 @@ public class Migrator1_18To1_19 extends Migrator {
             WdkUserException, WdkModelException {
         logger.debug("Copying answers...");
         String newWdkSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
         String ao = oldWdkSchema + "answer";
         String an = newWdkSchema + "answers";
         StringBuffer sql = new StringBuffer("INSERT INTO " + an);
@@ -293,7 +295,7 @@ public class Migrator1_18To1_19 extends Migrator {
         sql.append("     AND ao.answer_checksum = an.answer_checksum) af ");
         sql.append("WHERE a.answer_id = af.answer_id ");
 
-        int count = SqlUtils.executeUpdate(wdkModel, dataSource,
+        int count = SqlUtils.executeUpdate(dataSource,
                 sql.toString(), "wdk-migrate-answers");
         logger.debug(count + " answer rows inserted");
     }
@@ -338,8 +340,8 @@ public class Migrator1_18To1_19 extends Migrator {
         sql.append("  AND din.dataset_checksum = dio.dataset_checksum ");
         sql.append("  AND dio.dataset_id = udo.dataset_id ");
 
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
-        int count = SqlUtils.executeUpdate(wdkModel, dataSource,
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
+        int count = SqlUtils.executeUpdate(dataSource,
                 sql.toString(), "wdk-migrate-user-dataset");
         logger.debug(count + " user dataset rows inserted");
     }
@@ -379,11 +381,12 @@ public class Migrator1_18To1_19 extends Migrator {
         sql.append(" AND an.project_id = '").append(newProject).append("' ");
 
         Map<UserProject, Map<Integer, HistoryInfo>> users = new LinkedHashMap<UserProject, Map<Integer, HistoryInfo>>();
-        DBPlatform platform = wdkModel.getUserPlatform();
-        DataSource dataSource = platform.getDataSource();
+        DatabaseInstance userDb = wdkModel.getUserDb();
+        DBPlatform platform = userDb.getPlatform();
+        DataSource dataSource = userDb.getDataSource();
         ResultSet resultSet = null;
         try {
-            resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
+            resultSet = SqlUtils.executeQuery(dataSource,
                     sql.toString(), "wdk-migrate-steps");
             int count = 0;
             while (resultSet.next()) {
@@ -456,15 +459,15 @@ public class Migrator1_18To1_19 extends Migrator {
                 stepMap.put(history.historyId, stepId);
 
                 // mark the history to be done
-                DataSource source = wdkModel.getUserPlatform().getDataSource();
-                SqlUtils.executeUpdate(wdkModel, source, "UPDATE "
+                DataSource source = wdkModel.getUserDb().getDataSource();
+                SqlUtils.executeUpdate(source, "UPDATE "
                         + oldUserSchema + "histories SET migration_id = "
                         + migrateId + " WHERE user_id = " + history.userId
                         + " AND history_id = " + history.historyId,
                         "wdk-migrate-update-id");
 
                 String newSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
-                SqlUtils.executeUpdate(wdkModel, source, "UPDATE " + newSchema
+                SqlUtils.executeUpdate(source, "UPDATE " + newSchema
                         + "steps " + " SET prev_step_id = " + history.historyId
                         + ", migration_id = " + migrateId + " WHERE user_id = "
                         + history.userId + " AND display_id = " + stepId,
@@ -479,11 +482,11 @@ public class Migrator1_18To1_19 extends Migrator {
             UserProject user) throws SQLException, WdkUserException,
             WdkModelException {
         ResultSet resultSet = null;
-        DataSource source = wdkModel.getUserPlatform().getDataSource();
+        DataSource source = wdkModel.getUserDb().getDataSource();
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         Map<Integer, Integer> stepMap = new LinkedHashMap<Integer, Integer>();
         try {
-            resultSet = SqlUtils.executeQuery(wdkModel, source, "SELECT "
+            resultSet = SqlUtils.executeQuery(source, "SELECT "
                     + "    s.display_id, s.prev_step_id  FROM "
                     + userDB.getUserSchema() + "steps s, "
                     + userDB.getWdkEngineSchema() + "answers a "
@@ -535,7 +538,7 @@ public class Migrator1_18To1_19 extends Migrator {
             if (paramClob.startsWith("{")) {
                 Question question = (Question) wdkModel.resolveReference(history.questionName);
                 JSONObject jsParams = new JSONObject(paramClob);
-                DataSource source = wdkModel.getUserPlatform().getDataSource();
+                DataSource source = wdkModel.getUserDb().getDataSource();
                 for (Param param : question.getParams()) {
                     if (!(param instanceof AnswerParam)) continue;
                     String parent = (String) jsParams.get(param.getName());
@@ -546,7 +549,7 @@ public class Migrator1_18To1_19 extends Migrator {
                         parentId = Integer.parseInt(parent);
                     } else { // history is an answer checksum
                         BigInteger result = (BigInteger) SqlUtils.executeScalar(
-                                wdkModel, source, "SELECT history_id FROM "
+                                        source, "SELECT history_id FROM "
                                         + oldUserSchema + "histories h, "
                                         + oldWdkSchema + "answer a WHERE "
                                         + "  a.answer_checksum = '" + parent
@@ -641,18 +644,23 @@ public class Migrator1_18To1_19 extends Migrator {
             String checksum = value;
             if (value.length() == 65)
                 checksum = value.substring(value.indexOf(':') + 1);
-            DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+            DataSource dataSource = wdkModel.getUserDb().getDataSource();
             ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
             String userSchema = userDB.getUserSchema();
             String wdkSchema = userDB.getWdkEngineSchema();
-            Object result = SqlUtils.executeScalar(wdkModel, dataSource,
+            try {
+              Object result = SqlUtils.executeScalar(dataSource,
                     "SELECT user_dataset_id                              "
                             + "FROM " + userSchema + "  user_datasets2 ud, "
                             + wdkSchema + "  dataset_indices di "
                             + "WHERE ud.dataset_id = di.dataset_id "
                             + "  AND di.dataset_checksum = '" + checksum + "'",
                     "wdk-migrate-select-user-dataset");
-            return (Integer) result;
+              return (Integer) result;
+            }
+            catch (SQLException e) {
+              throw new WdkModelException(e);
+            }
         } else { // the value is raw value, create a dataset from it.
             RecordClass recordClass = param.getRecordClass();
             Dataset dataset = user.createDataset(recordClass, null, value);
@@ -703,14 +711,15 @@ public class Migrator1_18To1_19 extends Migrator {
           throw new WdkModelException("Could not insert raw step.", e);
         }
 
-        DBPlatform platform = wdkModel.getUserPlatform();
-        DataSource dataSource = platform.getDataSource();
+        DatabaseInstance userDb = wdkModel.getUserDb();
+        DBPlatform platform = userDb.getPlatform();
+        DataSource dataSource = userDb.getDataSource();
         PreparedStatement ps = null;
 
         try {
             ps = SqlUtils.getPreparedStatement(dataSource, sql);
-            int stepId = platform.getNextId(schema, "steps");
-            BigDecimal display = (BigDecimal) SqlUtils.executeScalar(wdkModel,
+            int stepId = platform.getNextId(dataSource, schema, "steps");
+            BigDecimal display = (BigDecimal) SqlUtils.executeScalar(
                     dataSource, "" + "SELECT max(display_id) + 1 FROM "
                             + schema + "steps WHERE user_id = "
                             + history.userId, "wdk-migrate-max-step-id");
