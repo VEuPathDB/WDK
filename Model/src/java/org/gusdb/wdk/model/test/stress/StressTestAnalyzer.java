@@ -18,11 +18,11 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.test.CommandHelper;
 import org.gusdb.wdk.model.test.stress.StressTestTask.ResultType;
 import org.json.JSONException;
@@ -72,7 +72,7 @@ public class StressTestAnalyzer {
         // load WdkModel
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
         wdkModel = WdkModel.construct(modelName, gusHome);
-        dataSource = wdkModel.getQueryPlatform().getDataSource();
+        dataSource = wdkModel.getAppDb().getDataSource();
     }
 
     public long getTaskCount() throws SQLException, WdkModelException,
@@ -80,7 +80,7 @@ public class StressTestAnalyzer {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
-        return (Long) SqlUtils.executeScalar(wdkModel, dataSource,
+        return (Long) SqlUtils.executeScalar(dataSource,
                 sb.toString(), "wdk-stress-result-count");
     }
 
@@ -90,7 +90,7 @@ public class StressTestAnalyzer {
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND task_type = '" + taskType + "'");
-        return (Long) SqlUtils.executeScalar(wdkModel, dataSource,
+        return (Long) SqlUtils.executeScalar(dataSource,
                 sb.toString(), "wdk-stress-result-count-by-type");
     }
 
@@ -100,7 +100,7 @@ public class StressTestAnalyzer {
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
-        return (Long) SqlUtils.executeScalar(wdkModel, dataSource,
+        return (Long) SqlUtils.executeScalar(dataSource,
                 sb.toString(), "wdk-stress-result-count-by-type");
     }
 
@@ -111,7 +111,7 @@ public class StressTestAnalyzer {
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
         sb.append(" AND task_type = '" + taskType + "'");
-        return (Long) SqlUtils.executeScalar(wdkModel, dataSource,
+        return (Long) SqlUtils.executeScalar(dataSource,
                 sb.toString(), "wdk-stress-result-count-by-type");
     }
 
@@ -121,7 +121,7 @@ public class StressTestAnalyzer {
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type != '" + ResultType.Succeeded.name() + "'");
-        return (Long) SqlUtils.executeScalar(wdkModel, dataSource,
+        return (Long) SqlUtils.executeScalar(dataSource,
                 sb.toString(), "wdk-stress-result-count-by-type");
     }
 
@@ -132,7 +132,7 @@ public class StressTestAnalyzer {
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type != '" + ResultType.Succeeded.name() + "'");
         sb.append(" AND task_type = '" + taskType + "'");
-        return (Long) SqlUtils.executeScalar(wdkModel, dataSource,
+        return (Long) SqlUtils.executeScalar(dataSource,
                 sb.toString(), "wdk-stress-result-count-by-type");
     }
 
@@ -142,7 +142,7 @@ public class StressTestAnalyzer {
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + resultType.name() + "'");
-        return (Long) SqlUtils.executeScalar(wdkModel, dataSource,
+        return (Long) SqlUtils.executeScalar(dataSource,
                 sb.toString(), "wdk-stress-result-count-by-type");
     }
 
@@ -153,7 +153,7 @@ public class StressTestAnalyzer {
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + resultType.name() + "'");
         sb.append(" AND task_type = '" + taskType + "'");
-        return (Long) SqlUtils.executeScalar(wdkModel, dataSource,
+        return (Long) SqlUtils.executeScalar(dataSource,
                 sb.toString(), "wdk-stress-result-count-by-type");
     }
 
@@ -177,7 +177,7 @@ public class StressTestAnalyzer {
         sb.append("SELECT sum(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
+        ResultSet rs = SqlUtils.executeQuery(dataSource,
                 sb.toString(), "wdk-stress-response-time");
         rs.next();
         long sum = rs.getLong(1);
@@ -192,7 +192,7 @@ public class StressTestAnalyzer {
                 + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND task_type = '" + taskType + "'");
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
+        ResultSet rs = SqlUtils.executeQuery(dataSource,
                 sb.toString(), "wdk-stress-response-time-by-type");
         rs.next();
         long sum = rs.getLong(1);
@@ -206,7 +206,7 @@ public class StressTestAnalyzer {
         sb.append("SELECT avg(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
+        ResultSet rs = SqlUtils.executeQuery(dataSource,
                 sb.toString(), "wdk-stress-response");
         rs.next();
         float average = rs.getFloat(1);
@@ -221,7 +221,7 @@ public class StressTestAnalyzer {
                 + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND task_type = '" + taskType + "'");
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
+        ResultSet rs = SqlUtils.executeQuery(dataSource,
                 sb.toString(), "wdk-stress-response-time-by-type");
         rs.next();
         float average = rs.getFloat(1);
@@ -236,7 +236,7 @@ public class StressTestAnalyzer {
                 + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
+        ResultSet rs = SqlUtils.executeQuery(dataSource,
                 sb.toString(), "wdk-stress-response-time-by-type");
         rs.next();
         long sum = rs.getLong(1);
@@ -252,7 +252,7 @@ public class StressTestAnalyzer {
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
         sb.append(" AND task_type = '" + taskType + "'");
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
+        ResultSet rs = SqlUtils.executeQuery(dataSource,
                 sb.toString(), "wdk-stress-response-time-by-type");
         rs.next();
         long sum = rs.getLong(1);
@@ -267,7 +267,7 @@ public class StressTestAnalyzer {
                 + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
+        ResultSet rs = SqlUtils.executeQuery(dataSource,
                 sb.toString(), "wdk-stress-response-time-by-type");
         rs.next();
         float average = rs.getFloat(1);
@@ -283,7 +283,7 @@ public class StressTestAnalyzer {
         sb.append(" WHERE test_tag = " + testTag);
         sb.append(" AND result_type = '" + ResultType.Succeeded.name() + "'");
         sb.append(" AND task_type = '" + taskType + "'");
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
+        ResultSet rs = SqlUtils.executeQuery(dataSource,
                 sb.toString(), "wdk-stress-response-time-by-type");
         rs.next();
         float average = rs.getFloat(1);

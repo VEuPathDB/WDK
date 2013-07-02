@@ -1,6 +1,6 @@
 package org.gusdb.wdk.model.config;
 
-import org.gusdb.wdk.model.dbms.DBPlatform;
+import org.gusdb.fgputil.db.platform.DBPlatform;
 
 /**
  * An object representation of the {@code <userDB>} tag in the
