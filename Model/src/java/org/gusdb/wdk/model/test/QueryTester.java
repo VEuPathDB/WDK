@@ -138,10 +138,11 @@ public class QueryTester {
         }
 
         else if (param instanceof StringParam) {
-            StringParam stringParam = (StringParam) param;
-            if (stringParam.getSample() != null)
-                prompt += " (" + stringParam.getSample() + ")";
-            prompt += ":";
+            // TODO: make decision on getSample deprecation and remove
+            //StringParam stringParam = (StringParam) param;
+            //if (stringParam.getSample() != null)
+            //    prompt += " (" + stringParam.getSample() + ")";
+            //prompt += ":";
         }
 
         else {

@@ -834,6 +834,8 @@ td.linesalt {
 	padding: 4px;
 }
 
+.result-message { width:75%; margin:5px auto; padding:10px; color:#990000; font-weight:bold; text-align:center; line-height:20px; }
+
 table.results {
 	margin-top: 6px;
 }

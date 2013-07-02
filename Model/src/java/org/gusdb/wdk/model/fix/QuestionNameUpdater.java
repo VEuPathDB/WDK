@@ -8,21 +8,18 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 public class QuestionNameUpdater {
 
@@ -82,16 +79,15 @@ public class QuestionNameUpdater {
         return mappings;
     }
 
-    public void update() throws SQLException, JSONException, WdkModelException {
+    public void update() throws SQLException {
         updateQuestionNames();
     }
 
-    private void updateQuestionNames() throws SQLException,
-            JSONException, WdkModelException {
+    private void updateQuestionNames() throws SQLException {
         logger.info("Checking question names...");
 
-        DBPlatform platform = wdkModel.getUserPlatform();
-        DataSource dataSource = platform.getDataSource();
+        DatabaseInstance userDb = wdkModel.getUserDb();
+        DataSource dataSource = userDb.getDataSource();
         PreparedStatement psSelect = null, psUpdate = null;
         ResultSet resultSet = null;
         String select = "SELECT a.answer_id,a.question_name           "

@@ -174,7 +174,7 @@ public class MBeanRegistration {
     } catch (IllegalAccessException iae) {
         logger.warn(iae);
     } catch (InvocationTargetException ite) {
-        logger.warn(ite);
+        logger.warn("InvocationTargetException thrown with the following cause:", ite.getCause());
     } catch (NoSuchMethodException nsme) {
         logger.warn(nsme);
     }

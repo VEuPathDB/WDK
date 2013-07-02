@@ -19,14 +19,14 @@ import javax.sql.DataSource;
 import javax.xml.rpc.ServiceException;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ArrayResultList;
 import org.gusdb.wdk.model.dbms.CacheFactory;
-import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
@@ -113,10 +113,10 @@ public class ProcessQueryInstance extends QueryInstance {
       sql.append(", " + assignedWeight);
     sql.append(")");
 
-    DBPlatform platform = query.getWdkModel().getQueryPlatform();
+    DBPlatform platform = query.getWdkModel().getAppDb().getPlatform();
     PreparedStatement ps = null;
     try {
-      DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+      DataSource dataSource = wdkModel.getAppDb().getDataSource();
       ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
       ResultList resultList = getUncachedResults();
       int rowId = 0;
@@ -318,7 +318,7 @@ public class ProcessQueryInstance extends QueryInstance {
   public void createCache(String tableName, int instanceId)
       throws WdkModelException {
     logger.debug("creating process query cache...");
-    DBPlatform platform = query.getWdkModel().getQueryPlatform();
+    DBPlatform platform = query.getWdkModel().getAppDb().getPlatform();
     Column[] columns = query.getColumns();
 
     StringBuffer sqlTable = new StringBuffer("CREATE TABLE ");
@@ -363,10 +363,14 @@ public class ProcessQueryInstance extends QueryInstance {
     }
     sqlTable.append(")");
 
-    DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-    SqlUtils.executeUpdate(wdkModel, dataSource, sqlTable.toString(),
-        query.getFullName() + "__create-cache-table");
-
+    try {
+      DataSource dataSource = wdkModel.getAppDb().getDataSource();
+      SqlUtils.executeUpdate(dataSource, sqlTable.toString(),
+          query.getFullName() + "__create-cache-table");
+    }
+    catch (SQLException e) {
+      throw new WdkModelException("Unable to create cache table.", e);
+    }
     // also insert the result into the cache
     insertToCache(tableName, instanceId);
   }
