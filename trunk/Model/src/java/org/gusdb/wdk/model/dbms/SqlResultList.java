@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModelException;
 
 /**
