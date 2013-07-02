@@ -34,12 +34,12 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
@@ -145,7 +145,7 @@ public class StressTester {
 
         // load the model
         WdkModel wdkModel = WdkModel.construct(modelName, gusHome);
-        dataSource = wdkModel.getQueryPlatform().getDataSource();
+        dataSource = wdkModel.getAppDb().getDataSource();
 
         // initialize the stress-test result table
         try {
@@ -167,12 +167,12 @@ public class StressTester {
             WdkUserException, WdkModelException {
         // check if result table exists
         try {
-            ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
+            ResultSet rs = SqlUtils.executeQuery(dataSource,
                     "SELECT * FROM " + TABLE_STRESS_RESULT, "wdk-stress-result");
             SqlUtils.closeResultSetAndStatement(rs);
-        } catch (WdkModelException e) {
+        } catch (SQLException e) {
             // table doesn't exist, create it
-            DBPlatform platform = wdkModel.getQueryPlatform();
+            DBPlatform platform = wdkModel.getAppDb().getPlatform();
             String numericType = platform.getNumberDataType(20);
             String textType = platform.getClobDataType();
 
@@ -189,7 +189,7 @@ public class StressTester {
             sb.append(" PRIMARY KEY(test_tag, task_id))");
 
             // create the result table
-            SqlUtils.executeUpdate(wdkModel, dataSource, sb.toString(),
+            SqlUtils.executeUpdate(dataSource, sb.toString(),
                     "wdk-create-stress-test-table");
         }
         // initialize update prepared statement
@@ -204,7 +204,7 @@ public class StressTester {
 
     private long getNewTestTag(WdkModel wdkModel) throws SQLException,
             WdkUserException, WdkModelException {
-        ResultSet rs = SqlUtils.executeQuery(wdkModel, dataSource,
+        ResultSet rs = SqlUtils.executeQuery(dataSource,
                 "SELECT count(0), max(test_tag) FROM " + TABLE_STRESS_RESULT,
                 "wdk-stress-next-tag");
         long testTag = 0;

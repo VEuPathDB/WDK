@@ -23,14 +23,14 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.ProcessQuery;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -211,10 +211,10 @@ public class SanityTester {
                 System.out.println(BANNER_LINE_bot + newline);
 
             // check the connection usage
-            DBPlatform platform = wdkModel.getQueryPlatform();
-            if (platform.getActiveCount() > 0) {
+            DatabaseInstance database = wdkModel.getAppDb();
+            if (database.getActiveCount() > 0) {
                 System.err.println("Connection leak ("
-                        + platform.getActiveCount() + ") for question: "
+                        + database.getActiveCount() + ") for question: "
                         + question.getFullName());
             }
         }
@@ -238,8 +238,8 @@ public class SanityTester {
                 // discover number of entities expected in each attribute query
                 String testRowCountSql = querySet.getTestRowCountSql();
                 if (testRowCountSql != null) {
-                    ResultSet rs = SqlUtils.executeQuery(wdkModel, wdkModel
-                            .getQueryPlatform().getDataSource(),
+                    ResultSet rs = SqlUtils.executeQuery(wdkModel
+                            .getAppDb().getDataSource(),
                             testRowCountSql, querySet.getName()
                                     + "__sanity-test-row-count");
                     rs.next();
@@ -386,8 +386,8 @@ public class SanityTester {
                 + paramValuesSet.getNamesAsString() + " from ("
                 + instance.getUncachedSql() + ") f1) f2";
 
-        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+        DataSource dataSource = wdkModel.getAppDb().getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
                 query.getFullName() + "__sanity-test-count");
         resultSet.next();
         int count = resultSet.getInt(1);
@@ -409,8 +409,8 @@ public class SanityTester {
         String sql = "select * from (" + instance.getUncachedSql() + ") f "
                 + paramValuesSet.getWhereClause();
 
-        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+        DataSource dataSource = wdkModel.getAppDb().getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
                 query.getFullName() + "__sanity-test-time");
         if (count > 0 && !resultSet.next()) {
             String msg = "no row returned for " + query.getFullName()
@@ -435,8 +435,8 @@ public class SanityTester {
 
         String sql = instance.getUncachedSql();
 
-        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+        DataSource dataSource = wdkModel.getAppDb().getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
                 query.getFullName() + "__sanity-test-total-time");
         int count = 0;
         while (resultSet.next())
@@ -685,7 +685,7 @@ public class SanityTester {
                 testFilterString, failuresOnly, indexOnly, skipWebSvcQueries);
 
         String dbConnectionUrl = sanityTester.wdkModel
-                .getQueryPlatform().getDbConfig().getConnectionUrl();                
+                .getAppDb().getConfig().getConnectionUrl();                
 
         System.out.println("Sanity Test: ");
         System.out.println(" [Database] " + dbConnectionUrl);
