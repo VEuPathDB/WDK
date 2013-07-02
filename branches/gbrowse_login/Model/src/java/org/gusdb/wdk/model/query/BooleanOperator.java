@@ -6,8 +6,8 @@ package org.gusdb.wdk.model.query;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
 
 /**
  * Since we no longer offer boolean expressions, this class might be deprecated

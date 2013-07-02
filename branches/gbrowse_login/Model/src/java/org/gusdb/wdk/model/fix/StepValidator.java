@@ -16,13 +16,14 @@ import java.util.Calendar;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wsf.util.BaseCLI;
 
 /**
@@ -119,7 +120,7 @@ public class StepValidator extends BaseCLI {
         String userSchema = userDB.getUserSchema();
         String wdkSchema = userDB.getWdkEngineSchema();
 
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
         // <ADD-AG 042911>
         resetByBatch(wdkModel, dataSource, "UPDATE " + wdkSchema + "answers "
@@ -140,7 +141,7 @@ public class StepValidator extends BaseCLI {
 
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
-        DataSource source = wdkModel.getUserPlatform().getDataSource();
+        DataSource source = wdkModel.getUserDb().getDataSource();
 
         // <ADD-AG 042911> ----------------------------------------------------
         String sql = "UPDATE " + answer
@@ -165,7 +166,7 @@ public class StepValidator extends BaseCLI {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
-        DataSource source = wdkModel.getUserPlatform().getDataSource();
+        DataSource source = wdkModel.getUserDb().getDataSource();
 
         // <ADD-AG 042911> ----------------------------------------------------
         String sql = "UPDATE " + answer
@@ -200,7 +201,7 @@ public class StepValidator extends BaseCLI {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
-        DataSource source = wdkModel.getUserPlatform().getDataSource();
+        DataSource source = wdkModel.getUserDb().getDataSource();
 
         // <ADD-AG 042911> ----------------------------------------------------
         String sql = "UPDATE " + answer
@@ -246,7 +247,7 @@ public class StepValidator extends BaseCLI {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
-        DataSource source = wdkModel.getUserPlatform().getDataSource();
+        DataSource source = wdkModel.getUserDb().getDataSource();
 
         String sql = "UPDATE " + step + " SET is_valid = 0 "
                 + "WHERE (is_valid IS NULL OR is_valid = 1) "
@@ -266,7 +267,7 @@ public class StepValidator extends BaseCLI {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String step = userDB.getUserSchema() + "steps";
         String answer = userDB.getWdkEngineSchema() + "answers";
-        DataSource source = wdkModel.getUserPlatform().getDataSource();
+        DataSource source = wdkModel.getUserDb().getDataSource();
 
         String tempTable = "wdk_part_steps";
    
@@ -279,7 +280,7 @@ public class StepValidator extends BaseCLI {
                 + "    AND a.project_id IN " + projects
                 + "    AND s.user_id IN  (SELECT user_id FROM " + step
                 + "                     WHERE is_valid = 0) )";
-        SqlUtils.executeUpdate(wdkModel, source, sql,
+        SqlUtils.executeUpdate(source, sql,
                 "wdk-invalidate-create-part-steps");
 
         // add a hint to use filter in CONNECT BY, which improves from 1368 
@@ -308,7 +309,7 @@ public class StepValidator extends BaseCLI {
 
         }   finally {
              String sql = "DROP TABLE " + tempTable + " PURGE";
-	     SqlUtils.executeUpdate(wdkModel, source, sql, "wdk-invalidate-drop-part-steps");
+	     SqlUtils.executeUpdate(source, sql, "wdk-invalidate-drop-part-steps");
 		} 
     }
 
@@ -321,14 +322,13 @@ public class StepValidator extends BaseCLI {
         sql.append("step_params WHERE step_id NOT IN ");
         sql.append("(SELECT step_id FROM " + userSchema + "steps)");
 
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
+        SqlUtils.executeUpdate(dataSource, sql.toString(),
                 "wdk-delete-invalid-step-params");
     }
 
     private void dropDanglingSteps(WdkModel wdkModel, String projects)
-            throws WdkUserException, WdkModelException, SQLException,
-            IOException {
+            throws WdkUserException, WdkModelException, SQLException, IOException {
         logger.info("drop dangling steps table and related resources...");
 
         String stepTable = "wdk_dangle_steps";
@@ -336,13 +336,16 @@ public class StepValidator extends BaseCLI {
         String strategyTable = "wdk_dangle_strategies";
 
         // drop the temp tables if exist
-        DBPlatform platform = wdkModel.getUserPlatform();
-        if (platform.checkTableExists(null, stepTable))
-            platform.dropTable(null, stepTable, true);
-        if (platform.checkTableExists(null, parentTable))
-            platform.dropTable(null, parentTable, true);
-        if (platform.checkTableExists(null, strategyTable))
-            platform.dropTable(null, strategyTable, true);
+        DatabaseInstance userDb = wdkModel.getUserDb();
+        DBPlatform platform = userDb.getPlatform();
+        DataSource ds = userDb.getDataSource();
+        String defaultSchema = userDb.getDefaultSchema();
+        if (platform.checkTableExists(ds, defaultSchema, stepTable))
+            platform.dropTable(ds, null, stepTable, true);
+        if (platform.checkTableExists(ds, defaultSchema, parentTable))
+            platform.dropTable(ds, null, parentTable, true);
+        if (platform.checkTableExists(ds, defaultSchema, strategyTable))
+            platform.dropTable(ds, null, strategyTable, true);
 
         String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
         if (schema.length() > 0 && !schema.endsWith(".")) schema += ".";
@@ -400,8 +403,8 @@ public class StepValidator extends BaseCLI {
         sql.append("   AND s.answer_id = a.answer_id");
         sql.append("   AND a.project_id IN " + projects + ")");
 
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
+        SqlUtils.executeUpdate(dataSource, sql.toString(),
                 "wdk-create-dangling-step");
     }
 
@@ -423,8 +426,8 @@ public class StepValidator extends BaseCLI {
         sql.append("          OR PRIOR s.display_id = s.right_child_id) ");
         sql.append("  )");
 
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
+        SqlUtils.executeUpdate(dataSource, sql.toString(),
                 "wdk-create-parent-step");
     }
 
@@ -452,8 +455,8 @@ public class StepValidator extends BaseCLI {
         sql.append("        AND sr.project_id IN " + projects + ") ");
         sql.append("  )"); // <MOD-AG 050511>
 
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
+        SqlUtils.executeUpdate(dataSource, sql.toString(),
                 "wdk-create-dangling-strategies");
     }
 
@@ -480,10 +483,10 @@ public class StepValidator extends BaseCLI {
                 + " WHERE d.strategy_id = s.strategy_id "
                 + "   AND s.user_id = u.user_id "
                 + " ORDER BY s.user_id ASC, s.strategy_id ASC";
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
         ResultSet resultSet = null;
         try {
-            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+            resultSet = SqlUtils.executeQuery(dataSource, sql,
                     "wdk-get-dangling-strats", 100);
             while (resultSet.next()) {
                 writer.print(resultSet.getInt("user_id"));
@@ -524,7 +527,7 @@ public class StepValidator extends BaseCLI {
         sql.append(" WHERE strategy_id IN ");
         sql.append("(SELECT strategy_id FROM " + strategyTable + ")");
 
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
         // <ADD-AG 050511>
         executeByBatch(wdkModel, dataSource, sql.toString(),
@@ -542,7 +545,7 @@ public class StepValidator extends BaseCLI {
         sql.append(" WHERE step_id IN (SELECT step_id FROM " + parentTable
                 + ")");
 
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
         executeByBatch(wdkModel, dataSource, sql.toString(),
                 "STEPS:wdk-delete-dangling-step", null, null); // <ADD-AG
@@ -574,7 +577,7 @@ public class StepValidator extends BaseCLI {
         ResultSet resultSet = null;
 
         try {
-            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, selectSql,
+            resultSet = SqlUtils.executeQuery(dataSource, selectSql,
                     "wdk-backup-" + name);
 
             connection = dataSource.getConnection();
@@ -618,7 +621,7 @@ public class StepValidator extends BaseCLI {
         int totalAffected = 0;
 
         while (rowsAffected > 0) {
-            rowsAffected = SqlUtils.executeUpdate(wdkModel, dataSource, sql,
+            rowsAffected = SqlUtils.executeUpdate(dataSource, sql,
                     name);
 
             totalAffected += rowsAffected;

@@ -127,11 +127,12 @@ public class StringParam extends Param {
 
   public String toString() {
     String newline = System.getProperty("line.separator");
-    StringBuffer buf = new StringBuffer(super.toString() + "  sample='"
-        + sample + "'" + newline + "  regex='" + regex + "'" + newline
-        + "  length='" + length + "'" + newline + "  multiLine='" + multiLine
-        + "'");
-    return buf.toString();
+    return new StringBuilder(super.toString())
+      //.append("  sample='").append(sample).append("'").append(newline)
+      .append("  regex='").append(regex).append("'").append(newline)
+      .append("  length='").append(length).append("'").append(newline)
+      .append("  multiLine='").append(multiLine).append("'")
+      .toString();
   }
 
   // ///////////////////////////////////////////////////////////////
