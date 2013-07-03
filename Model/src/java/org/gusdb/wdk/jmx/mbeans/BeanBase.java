@@ -19,7 +19,6 @@ public abstract class BeanBase {
   // Controller classes are not available until after Model is compiled;
   // so, not available for import here.
   public final static String WDK_MODEL_KEY = "wdkModel";
-  protected static final Logger logger = Logger.getLogger(BeanBase.class);
   
   public BeanBase() {
     context = ContextThreadLocal.get();

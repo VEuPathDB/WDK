@@ -6,14 +6,12 @@ package org.gusdb.wdk.model.user;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.query.BooleanOperator;
-import org.gusdb.wdk.model.user.Step;
-import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,12 +36,12 @@ public class StepTest {
   }
 
   private WdkModel wdkModel;
-  private DBPlatform platform;
+    private DatabaseInstance appDb;
   private User user;
 
   public StepTest() throws Exception {
     wdkModel = UnitTestHelper.getModel();
-    platform = wdkModel.getQueryPlatform();
+        appDb = wdkModel.getAppDb();
     this.user = UnitTestHelper.getRegisteredUser();
   }
 
@@ -72,7 +70,7 @@ public class StepTest {
     int rightId = rightOperand.getStepId();
     int leftSize = leftOperand.getResultSize();
     int rightSize = rightOperand.getResultSize();
-    String operator = BooleanOperator.UNION.getOperator(platform);
+        String operator = BooleanOperator.UNION.getOperator(appDb.getPlatform());
 
     String expression = leftId + " " + operator + " " + rightId;
 
@@ -97,7 +95,7 @@ public class StepTest {
     int size1 = operand1.getResultSize();
     int size2 = operand2.getResultSize();
     int size3 = operand3.getResultSize();
-    String operator = " " + BooleanOperator.INTERSECT.getOperator(platform)
+        String operator = " " + BooleanOperator.INTERSECT.getOperator(appDb.getPlatform())
         + " ";
 
     String expression = id1 + operator + "(" + id2 + operator + id3 + ")";

@@ -1,6 +1,5 @@
 package org.gusdb.wdk.jmx.mbeans;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -18,9 +17,11 @@ import javax.management.MBeanOperationInfo;
 import javax.management.ReflectionException;
 import javax.sql.DataSource;
 
-import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.platform.SupportedPlatform;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.jmx.mbeans.dbms.AbstractDBInfo;
-import org.gusdb.wdk.model.dbms.DBPlatform;
+import org.gusdb.wdk.jmx.mbeans.dbms.DBInfoFactory;
+import org.gusdb.wdk.model.WdkModel;
 
 public abstract class AbstractDB extends BeanBase implements DynamicMBean {
 
@@ -29,62 +30,44 @@ public abstract class AbstractDB extends BeanBase implements DynamicMBean {
   HashMap<String, String> metaDataMap;
   HashMap<String, String> servernameDataMap;
   ArrayList<Map<String, String>> dblinkList;
+  DatabaseInstance database;
   DataSource datasource;
-  DBPlatform platform;
   private static final String DBLINKLISTKEY = "DblinkList";
-  private static final Logger logger = Logger.getLogger(AbstractDB.class);
 
   /**
     ServletContext sc
-    String type - QueryPlatform or UserPlatform, to match the getter method
-                  in WdkModel.
                   
     platformName is derived from the WDK DBPlatform classname minus the package name. A corresponding utility
     DBInfo class is used to generate mbean attributes. For example, when WDK DBPlatform of class
     org.gusdb.wdk.model.dbms.Oracle is found a OracleDBinfo is needed to provide mbean attributes.
-  **/
-  public AbstractDB(String type) {
+  */
+  public AbstractDB() {
     super();
-    platform = getPlatform(type);
-    datasource = platform.getDataSource();
+    database = getDb(wdkModel);
+    datasource = database.getDataSource();
     init();
   }
 
+  protected abstract DatabaseInstance getDb(WdkModel model);
+  
   private void init() {
-    String platformName = platform.getClass().getSimpleName();
     dbAttrs = new HashMap<String, String>();
     dblinkList = new ArrayList<Map<String, String>>();
-    dbAttrs.put("platform", platformName);
+    SupportedPlatform platform = database.getConfig().getPlatformEnum();
+    dbAttrs.put("platform", platform.name());
     
-    AbstractDBInfo dbinfo = initDbInfoClass(platformName);
-    if (dbinfo == null) {
-        dbAttrs.put("WARN", "no MBean support for this database platform");
-        return;
-    }
-
-    dbinfo.setDatasource(datasource);
-    dbinfo.populateDatabaseMetaDataMap(dbAttrs);
-    dbinfo.populateServernameDataMap(dbAttrs);
-    dbinfo.populateDblinkList(dblinkList);
-  }
-
-  /**
-    initialize a suitable DBInfo class for the given platformName (e.g. Oracle or PostgreSQL)
-  */
-  private AbstractDBInfo initDbInfoClass(String platformName) {
-    AbstractDBInfo dbinfo = null;
     try {
-     dbinfo = (AbstractDBInfo) Class.forName("org.gusdb.wdk.jmx.mbeans.dbms." + platformName + "DBInfo").newInstance();
-    } catch (ClassNotFoundException cfe) {
-        logger.warn("Class org.gusdb.wdk.jmx.mbeans.dbms." + platformName + "DBInfo expected but not found.");
-    } catch (InstantiationException ie) {
-        logger.error("InstantiationException " + ie);
-    } catch (IllegalAccessException iae) {
-        logger.error("IllegalAccessException " + iae);
-    } catch (Exception e) {
-        logger.error("Exception " + e);
+      AbstractDBInfo dbinfo = DBInfoFactory.getDbInfo(platform);
+      dbinfo.setDatasource(datasource);
+      dbinfo.populateDatabaseMetaDataMap(dbAttrs);
+      dbinfo.populateServernameDataMap(dbAttrs);
+      dbinfo.populateDblinkList(dblinkList);
     }
-    return dbinfo;
+    catch (IllegalArgumentException e) {
+      // No DBInfo implementation created yet for this vendor
+      dbAttrs.put("WARN", "no MBean support for this database platform");
+    }
+
   }
 
   public AttributeList getAttributes(String[] names) {
@@ -196,36 +179,8 @@ public abstract class AbstractDB extends BeanBase implements DynamicMBean {
     throw new ReflectionException(new NoSuchMethodException(name));
   }
 
-
   public void refresh() { init(); }
 
   public ArrayList<Map<String,String>> getDblinkList() { return dblinkList; }
-
- 
-  private DBPlatform getPlatform(String type) {
-    java.lang.reflect.Method method = null;
-    DBPlatform platform = null;
-    String methodName = "get" + type;
-    try {
-      method = wdkModel.getClass().getMethod(methodName);
-    } catch (SecurityException se) {
-      logger.error(se);
-    } catch (NoSuchMethodException nsme) {
-      logger.error(nsme);
-    }
-
-    try {
-      platform = (DBPlatform)method.invoke(wdkModel);
-    } catch (IllegalArgumentException iae) {
-      logger.error(iae);
-    } catch (IllegalAccessException iae) {
-      logger.error(iae);
-    } catch (InvocationTargetException ite) {
-      logger.error(ite);
-    }
-    
-    return platform;
-  }
-
 
 }

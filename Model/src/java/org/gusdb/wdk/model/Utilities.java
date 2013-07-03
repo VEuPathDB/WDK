@@ -22,7 +22,6 @@ import javax.mail.MessagingException;
 import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.Transport;
-import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -259,12 +258,12 @@ public class Utilities {
     return result;
   }
 
-  public static void sendEmail(WdkModel wdkModel, String email, String reply,
-      String subject, String content, String ccAddresses, DataHandler[] attachments)
-      throws WdkModelException {
+  public static void sendEmail(WdkModel wdkModel, String sendTos, String reply,
+      String subject, String content, String ccAddresses,
+      DataHandler[] attachments) throws WdkModelException {
     String smtpServer = wdkModel.getModelConfig().getSmtpServer();
 
-    logger.debug("Sending message to: " + email + ", reply: " + reply
+    logger.debug("Sending message to: " + sendTos + ", reply: " + reply
         + ", using SMPT: " + smtpServer);
 
     // create properties and get the session
@@ -276,9 +275,12 @@ public class Utilities {
     // instantiate a message
     Message message = new MimeMessage(session);
     try {
-      message.setFrom(new InternetAddress(reply + "<" + reply + ">", true));
-      message.setReplyTo(new Address[] { new InternetAddress(reply) });
-      message.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
+      Address[] replyAddresses = InternetAddress.parse(reply, true);
+      message.setFrom(replyAddresses[0]);
+      message.setReplyTo(replyAddresses);
+      message.setRecipients(Message.RecipientType.TO,
+          InternetAddress.parse(sendTos));
+      
       // add Cc addresses
       if (ccAddresses != null && !ccAddresses.isEmpty()) {
         message.setRecipients(Message.RecipientType.CC,
@@ -304,25 +306,25 @@ public class Utilities {
       }
 
       message.setContent(multipart);
-      //message.setDataHandler(new DataHandler(new ByteArrayDataSource(content.getBytes(), "text/plain")));
+      // message.setDataHandler(new DataHandler(new
+      // ByteArrayDataSource(content.getBytes(), "text/plain")));
 
       // send email
       Transport.send(message);
-    } catch (AddressException ex) {
-      throw new WdkModelException(ex);
     } catch (MessagingException ex) {
       throw new WdkModelException(ex);
     }
   }
 
-  public static void sendEmail(WdkModel wdkModel, String email, String reply,
-      String subject, String content, String ccAddresses) throws WdkModelException {
-    sendEmail(wdkModel, email, reply, subject, content, ccAddresses, null);
+  public static void sendEmail(WdkModel wdkModel, String sendTos, String reply,
+      String subject, String content, String ccAddresses)
+      throws WdkModelException {
+    sendEmail(wdkModel, sendTos, reply, subject, content, ccAddresses, null);
   }
 
-  public static void sendEmail(WdkModel wdkModel, String email, String reply,
+  public static void sendEmail(WdkModel wdkModel, String sendTos, String reply,
       String subject, String content) throws WdkModelException {
-    sendEmail(wdkModel, email, reply, subject, content, null, null);
+    sendEmail(wdkModel, sendTos, reply, subject, content, null, null);
   }
 
   public static byte[] readFile(File file) throws IOException {
@@ -332,11 +334,12 @@ public class Utilities {
     stream.close();
     return buffer;
   }
-  
+
   public static String print(Map<?, ?> map) {
     StringBuilder buffer = new StringBuilder("{");
-    for (Object key: map.keySet()) {
-      if (buffer.length() > 1) buffer.append(";");
+    for (Object key : map.keySet()) {
+      if (buffer.length() > 1)
+        buffer.append(";");
       buffer.append(key).append(":").append(map.get(key));
     }
     buffer.append("}");

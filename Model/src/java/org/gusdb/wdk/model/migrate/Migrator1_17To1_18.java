@@ -16,13 +16,13 @@ import java.util.regex.Pattern;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.cli.CommandLine;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -51,8 +51,9 @@ public class Migrator1_17To1_18 implements Migrator {
     public void migrate(WdkModel wdkModel, CommandLine commandLine)
         throws WdkModelException, WdkUserException, NoSuchAlgorithmException,
         SQLException, JSONException {
-        DBPlatform userPlatform = wdkModel.getUserPlatform();
-        DataSource dataSource = userPlatform.getDataSource();
+        DatabaseInstance userDb = wdkModel.getUserDb();
+        DBPlatform platform = userDb.getPlatform();
+        DataSource dataSource = userDb.getDataSource();
 
         System.out.println("Loading existing histories...");
         loadHistories(wdkModel, dataSource);
@@ -79,7 +80,7 @@ public class Migrator1_17To1_18 implements Migrator {
             int estimateSize = histories.getInt("estimate_size");
             boolean isBoolean = histories.getBoolean("is_boolean");
             boolean isDeleted = histories.getBoolean("is_deleted");
-            String params = userPlatform.getClobData(histories, "params");
+            String params = platform.getClobData(histories, "params");
             String convertedParams = convertParams(params, isBoolean);
 
             // check if history exists
@@ -92,14 +93,14 @@ public class Migrator1_17To1_18 implements Migrator {
 
             if (answerId == null) {
                 // answer doesn't exist, save new answer
-                answerId = insertAnswer(userPlatform, answerChecksum,
+                answerId = insertAnswer(dataSource, platform, answerChecksum,
                         projectId, questionName, queryChecksum, convertedParams);
                 answerKeys.put(answerKey, answerId);
             }
 
             // save history
             String displayParams = isBoolean ? params : convertedParams;
-            insertHistory(userPlatform, userId, historyId, answerId,
+            insertHistory(dataSource, platform, userId, historyId, answerId,
                     createTime, lastRunTime, estimateSize, customName,
                     isBoolean, isDeleted, displayParams);
             historyKeys.add(historyKey);
@@ -150,7 +151,7 @@ public class Migrator1_17To1_18 implements Migrator {
         sql.append("WHERE u3.prev_user_id = h2.user_id ");
         sql.append("ORDER BY h2.create_time DESC");
 
-        return SqlUtils.executeQuery(wdkModel, dataSource, sql.toString(),
+        return SqlUtils.executeQuery(dataSource, sql.toString(),
                 "wdk-migrate-select-histories");
     }
 
@@ -159,7 +160,7 @@ public class Migrator1_17To1_18 implements Migrator {
         StringBuffer sql = new StringBuffer("SELECT user_id, history_id FROM ");
         sql.append(NEW_USER_SCHEMA).append("histories ");
         historyKeys = new LinkedHashSet<String>();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource,
                 sql.toString(), "wdk-migrate-select-history-ids");
         while (resultSet.next()) {
             int userId = resultSet.getInt("user_id");
@@ -176,7 +177,7 @@ public class Migrator1_17To1_18 implements Migrator {
                 "SELECT answer_id, answer_checksum,");
         sql.append(" project_id FROM ").append(NEW_WDK_SCHEMA).append("answer ");
         answerKeys = new LinkedHashMap<String, Integer>();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource,
                 sql.toString(), "wdk-migrate-select-answer-ids");
         while (resultSet.next()) {
             int answerId = resultSet.getInt("answer_id");
@@ -204,11 +205,11 @@ public class Migrator1_17To1_18 implements Migrator {
         return jsParams.toString();
     }
 
-    private int insertAnswer(DBPlatform platform, String answerChecksum,
+    private int insertAnswer(DataSource dataSource, DBPlatform platform, String answerChecksum,
             String projectId, String questionName, String queryChecksum,
             String params) throws SQLException, WdkModelException,
             WdkUserException {
-        int answerId = platform.getNextId(NEW_WDK_SCHEMA, "answer");
+        int answerId = platform.getNextId(dataSource, NEW_WDK_SCHEMA, "answer");
 
         psInsertAnswer.setInt(1, answerId);
         psInsertAnswer.setString(2, answerChecksum);
@@ -220,7 +221,7 @@ public class Migrator1_17To1_18 implements Migrator {
         return answerId;
     }
 
-    private void insertHistory(DBPlatform platform, int userId, int historyId,
+    private void insertHistory(DataSource dataSource, DBPlatform platform, int userId, int historyId,
             int answerId, Date createTime, Date lastRunTime, int estimateSize,
             String customName, boolean isBoolean, boolean isDeleted,
             String displayParams) throws SQLException {

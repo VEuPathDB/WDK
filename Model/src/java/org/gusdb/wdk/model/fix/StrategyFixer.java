@@ -11,10 +11,10 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.user.StepFactory;
 import org.gusdb.wsf.util.BaseCLI;
 
@@ -101,7 +101,7 @@ public class StrategyFixer extends BaseCLI {
         StepFactory factory = wdkModel.getStepFactory();
         ResultSet resultSet = null;
         PreparedStatement psSelect = null, psUpdate = null;
-        DataSource src = wdkModel.getUserPlatform().getDataSource();
+        DataSource src = wdkModel.getUserDb().getDataSource();
         try {
             psSelect = SqlUtils.getPreparedStatement(src, sqlSelect.toString());
             psUpdate = SqlUtils.getPreparedStatement(src, sqlUpdate.toString());

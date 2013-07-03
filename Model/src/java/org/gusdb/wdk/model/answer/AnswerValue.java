@@ -14,16 +14,16 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.TreeNode;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.BooleanQueryInstance;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -574,10 +574,16 @@ public class AnswerValue {
     int count = 0;
     
     // get and run the paged attribute query sql
-    DBPlatform platform = wdkModel.getQueryPlatform();
+    DatabaseInstance platform = wdkModel.getAppDb();
     DataSource dataSource = platform.getDataSource();
-    ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+    
+    ResultSet resultSet = null;
+    try {
+      resultSet = SqlUtils.executeQuery(dataSource, sql,
             attributeQuery.getFullName() + "__attr-paged");
+    } catch (SQLException e) {
+      throw new WdkModelException(e);
+    }
     ResultList resultList = new SqlResultList(resultSet);
 
     // fill in the column attributes
@@ -681,10 +687,16 @@ public class AnswerValue {
 
     // get and run the paged attribute query sql
     String sql = getPagedTableSql(tableQuery);
-    DBPlatform platform = wdkModel.getQueryPlatform();
+
+    DatabaseInstance platform = wdkModel.getAppDb();
     DataSource dataSource = platform.getDataSource();
-    ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+    ResultSet resultSet = null;
+    try {
+      resultSet = SqlUtils.executeQuery(dataSource, sql,
         tableQuery.getFullName() + "_table-paged");
+    } catch (SQLException e) {
+        throw new WdkModelException(e);
+    }
     ResultList resultList = new SqlResultList(resultSet);
 
     // initialize table values
@@ -850,8 +862,8 @@ public class AnswerValue {
 
   private String getPagedIdSql() throws WdkModelException {
     String sortedIdSql = getSortedIdSql();
-    DBPlatform platform = question.getWdkModel().getQueryPlatform();
-    String sql = platform.getPagedSql(sortedIdSql, startIndex, endIndex);
+    DatabaseInstance platform = question.getWdkModel().getAppDb();
+    String sql = platform.getPlatform().getPagedSql(sortedIdSql, startIndex, endIndex);
 
     // add comments to the sql
     sql = " /* a page of sorted ids */ " + sql;
@@ -978,10 +990,15 @@ public class AnswerValue {
 
     String sql = getPagedIdSql();
     WdkModel wdkModel = question.getWdkModel();
-    DBPlatform platform = wdkModel.getQueryPlatform();
+    DatabaseInstance platform = wdkModel.getAppDb();
     DataSource dataSource = platform.getDataSource();
-    ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+    ResultSet resultSet;
+    try {
+      resultSet = SqlUtils.executeQuery(dataSource, sql,
         idsQueryInstance.getQuery().getFullName() + "__id-paged");
+    } catch (SQLException e) {
+      throw new WdkModelException(e);
+    }
     ResultList resultList = new SqlResultList(resultSet);
     RecordClass recordClass = question.getRecordClass();
     PrimaryKeyAttributeField pkField = recordClass.getPrimaryKeyAttributeField();
@@ -1221,8 +1238,8 @@ public class AnswerValue {
       sql.append("(").append(innerSql).append(") f");
 
       WdkModel wdkModel = question.getWdkModel();
-      DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-      Object result = SqlUtils.executeScalar(wdkModel, dataSource,
+      DataSource dataSource = wdkModel.getAppDb().getDataSource();
+      Object result = SqlUtils.executeScalar(dataSource,
           sql.toString(), idsQueryInstance.getQuery().getFullName() + "__"
               + filterName + "-filter-size");
       size = Integer.parseInt(result.toString());
@@ -1230,7 +1247,7 @@ public class AnswerValue {
       resultSizesByFilter.put(filterName, size);
 
       return size;
-    } catch (WdkModelException e) {
+    } catch (SQLException | WdkModelException e) {
       throw new WdkModelException("Unable to get filter size for filter "
           + filterName, e);
     }
@@ -1290,10 +1307,10 @@ public class AnswerValue {
     String[] pkColumns = pkField.getColumnRefs();
     List<String[]> pkValues = new ArrayList<String[]>();
     WdkModel wdkModel = question.getWdkModel();
-    DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
+    DataSource dataSource = wdkModel.getAppDb().getDataSource();
     ResultSet resultSet = null;
     try {
-      resultSet = SqlUtils.executeQuery(wdkModel, dataSource, idSql,
+      resultSet = SqlUtils.executeQuery(dataSource, idSql,
           idsQueryInstance.getQuery().getFullName() + "__all-ids");
       while (resultSet.next()) {
         String[] values = new String[pkColumns.length];

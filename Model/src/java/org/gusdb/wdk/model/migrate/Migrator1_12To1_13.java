@@ -15,12 +15,12 @@ import javax.sql.DataSource;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 
 /**
  * @author Jerric
@@ -127,15 +127,15 @@ public class Migrator1_12To1_13 implements Migrator {
       throws WdkModelException, WdkUserException, NoSuchAlgorithmException,
       SQLException {
     // update histories
-    DBPlatform platform = wdkModel.getUserPlatform();
-    DataSource dataSource = platform.getDataSource();
+    DBPlatform platform = wdkModel.getUserDb().getPlatform();
+    DataSource dataSource = wdkModel.getUserDb().getDataSource();
     String newSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
 
     List<HistoryItem> histories = new ArrayList<HistoryItem>();
 
     ResultSet rsHistory = null;
     try {
-      rsHistory = SqlUtils.executeQuery(wdkModel, dataSource, "SELECT "
+      rsHistory = SqlUtils.executeQuery(dataSource, "SELECT "
           + "user_id, project_id, history_id, params FROM " + newSchema
           + "histories WHERE query_instance_checksum IS " + "NULL",
           "wdk-migrate-select-history");

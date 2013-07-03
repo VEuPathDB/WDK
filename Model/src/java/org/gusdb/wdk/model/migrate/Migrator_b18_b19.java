@@ -11,10 +11,10 @@ import javax.sql.DataSource;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 
 /**
  * @author jerric
@@ -38,18 +38,22 @@ public class Migrator_b18_b19 implements Migrator {
   @Override
   public void migrate(WdkModel wdkModel, CommandLine commandLine)
       throws WdkModelException {
-    DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+    DataSource dataSource = wdkModel.getUserDb().getDataSource();
 
-    // addColumns(wdkModel, dataSource);
-    fixDisplayIds(wdkModel, dataSource);
-    // fixStrategyIds(wdkModel, dataSource);
-    addConstraints(wdkModel, dataSource);
-    addIndexes(wdkModel, dataSource);
-    // dropColumns(wdkModel, dataSource);
+    try {
+      // addColumns(wdkModel, dataSource);
+      fixDisplayIds(wdkModel, dataSource);
+      // fixStrategyIds(wdkModel, dataSource);
+      addConstraints(wdkModel, dataSource);
+      addIndexes(wdkModel, dataSource);
+      // dropColumns(wdkModel, dataSource);
+    } catch (SQLException ex) {
+      throw new WdkModelException(ex);
+    }
   }
 
   private void addColumns(WdkModel wdkModel, DataSource dataSource)
-      throws WdkModelException {
+      throws WdkModelException, SQLException {
     logger.debug("adding columns...");
 
     ModelConfigUserDB config = wdkModel.getModelConfig().getUserDB();
@@ -58,17 +62,17 @@ public class Migrator_b18_b19 implements Migrator {
 
     // add project_id, project_version and queston_name columns onto steps
     // table.
-    SqlUtils.executeUpdate(wdkModel, dataSource, "ALTER TABLE " + userSchema
+    SqlUtils.executeUpdate(dataSource, "ALTER TABLE " + userSchema
         + "steps ADD project_id VARCHAR(50)", "wdk-add-column");
-    SqlUtils.executeUpdate(wdkModel, dataSource, "ALTER TABLE " + userSchema
+    SqlUtils.executeUpdate(dataSource, "ALTER TABLE " + userSchema
         + "steps ADD project_version VARCHAR(50)", "wdk-add-column");
-    SqlUtils.executeUpdate(wdkModel, dataSource, "ALTER TABLE " + userSchema
+    SqlUtils.executeUpdate(dataSource, "ALTER TABLE " + userSchema
         + "steps ADD question_name VARCHAR(200)", "wdk-add-column");
-    SqlUtils.executeUpdate(wdkModel, dataSource, "ALTER TABLE " + userSchema
+    SqlUtils.executeUpdate(dataSource, "ALTER TABLE " + userSchema
         + "steps ADD strategy_id NUMBER(12)", "wdk-add-column");
 
     // fill in the project_id and question names
-    SqlUtils.executeUpdate(wdkModel, dataSource,
+    SqlUtils.executeUpdate(dataSource,
         "UPDATE (SELECT s.project_id, s.project_version, s.question_name, "
             + "         a.project_id AS a_project_id, "
             + "         a.project_version AS a_project_version, "
@@ -82,7 +86,7 @@ public class Migrator_b18_b19 implements Migrator {
   }
 
   private void addConstraints(WdkModel wdkModel, DataSource dataSource)
-      throws WdkModelException {
+      throws WdkModelException, SQLException {
     logger.debug("adding constraints...");
 
     String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
@@ -91,37 +95,37 @@ public class Migrator_b18_b19 implements Migrator {
         userSchema, "steps");
     // drop constraints
     if (stepConstraints.contains("steps_answer_id_fk"))
-      SqlUtils.executeUpdate(wdkModel, dataSource, "ALTER TABLE " + userSchema
+      SqlUtils.executeUpdate(dataSource, "ALTER TABLE " + userSchema
           + "steps DROP CONSTRAINT steps_answer_id_fk", "wdk-drop-constraint");
 
     Set<String> strategyConstraints = getConstraints(wdkModel, dataSource,
         userSchema, "strategies");
     if (strategyConstraints.contains("strategies_unique"))
-      SqlUtils.executeUpdate(wdkModel, dataSource, "ALTER TABLE " + userSchema
+      SqlUtils.executeUpdate(dataSource, "ALTER TABLE " + userSchema
           + "strategies DROP CONSTRAINT strategies_unique",
           "wdk-drop-constraint");
     if (strategyConstraints.contains("strategies_user_id_fk"))
-      SqlUtils.executeUpdate(wdkModel, dataSource, "ALTER TABLE " + userSchema
+      SqlUtils.executeUpdate(dataSource, "ALTER TABLE " + userSchema
           + "strategies DROP CONSTRAINT strategies_user_id_fk",
           "wdk-drop-constraint");
 
     // add constraints
-    // SqlUtils.executeUpdate(wdkModel, dataSource, "ALTER TABLE " + userSchema
+    // SqlUtils.executeUpdate(dataSource, "ALTER TABLE " + userSchema
     // + "steps " + alterKeyword + " project_id varchar(50) NOT NULL",
     // "wdk-add-constraint");
-    // SqlUtils.executeUpdate(wdkModel, dataSource, "ALTER TABLE " + userSchema
+    // SqlUtils.executeUpdate(dataSource, "ALTER TABLE " + userSchema
     // + "steps " + alterKeyword + " project_version varchar(50) NOT NULL",
     // "wdk-add-constraint");
-    // SqlUtils.executeUpdate(wdkModel, dataSource, "ALTER TABLE " + userSchema
+    // SqlUtils.executeUpdate(dataSource, "ALTER TABLE " + userSchema
     // + "steps " + alterKeyword + " question_name varchar(200) NOT NULL",
     // "wdk-add-constraint");
 
     // cannot add fk constraint, since some of the ids cannot be mapped.
-    // SqlUtils.executeUpdate(wdkModel, dataSource, "ALTER TABLE " + userSchema
+    // SqlUtils.executeUpdate(dataSource, "ALTER TABLE " + userSchema
     // + "strategies " + alterKeyword + " ADD CONSTRAINT strategies_fk01 "
     // + " FOREIGN KEY (root_step_id) REFERENCES " + userSchema
     // + "steps (step_id)", "wdk-add-constraint");
-    SqlUtils.executeUpdate(wdkModel, dataSource,
+    SqlUtils.executeUpdate(dataSource,
         "ALTER TABLE " + userSchema + "strategies"
             + " ADD CONSTRAINT strategies_fk02 "
             + " FOREIGN KEY (user_id) REFERENCES " + userSchema
@@ -154,13 +158,13 @@ public class Migrator_b18_b19 implements Migrator {
   }
 
   private void addIndexes(WdkModel wdkModel, DataSource dataSource)
-      throws WdkModelException {
+      throws WdkModelException, SQLException {
     logger.debug("adding indexes...");
 
     String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
 
     // drop reference constraint
-    SqlUtils.executeUpdate(wdkModel, dataSource, "ALTER TABLE " + userSchema
+    SqlUtils.executeUpdate(dataSource, "ALTER TABLE " + userSchema
         + "steps DROP CONSTRAINT steps_unique", "wdk-drop-constraint");
 
     // drop indexes from steps
@@ -168,24 +172,24 @@ public class Migrator_b18_b19 implements Migrator {
         "steps");
     for (String index : stepIndexes) {
       if (index.endsWith("_pk")) continue;
-      SqlUtils.executeUpdate(wdkModel, dataSource, "DROP INDEX " + userSchema
-          + index, "wdk-drop-index");
+      SqlUtils.executeUpdate(dataSource, "DROP INDEX " + userSchema + index,
+          "wdk-drop-index");
     }
 
     // add indexes
-    SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX " + userSchema
+    SqlUtils.executeUpdate(dataSource, "CREATE INDEX " + userSchema
         + "steps_idx01 ON " + userSchema + "steps "
         + "(user_id, left_child_id, right_child_id)", "wdk-create-index");
-    SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX " + userSchema
+    SqlUtils.executeUpdate(dataSource, "CREATE INDEX " + userSchema
         + "steps_idx02 ON " + userSchema + "steps "
         + "(project_id, question_name, user_id)", "wdk-create-index");
-    SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX " + userSchema
+    SqlUtils.executeUpdate(dataSource, "CREATE INDEX " + userSchema
         + "steps_idx03 ON " + userSchema + "steps "
         + "(is_deleted, user_id, project_id)", "wdk-create-index");
-    SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX " + userSchema
+    SqlUtils.executeUpdate(dataSource, "CREATE INDEX " + userSchema
         + "steps_idx04 ON " + userSchema + "steps "
         + "(is_valid, user_id, project_id)", "wdk-create-index");
-    SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX " + userSchema
+    SqlUtils.executeUpdate(dataSource, "CREATE INDEX " + userSchema
         + "steps_idx05 ON " + userSchema + "steps "
         + "(last_run_time, user_id, project_id)", "wdk-create-index");
 
@@ -194,22 +198,22 @@ public class Migrator_b18_b19 implements Migrator {
         userSchema, "strategies");
     for (String index : strategiesIndexes) {
       if (index.endsWith("_pk")) continue;
-      SqlUtils.executeUpdate(wdkModel, dataSource, "DROP INDEX " + userSchema
-          + index, "wdk-drop-index");
+      SqlUtils.executeUpdate(dataSource, "DROP INDEX " + userSchema + index,
+          "wdk-drop-index");
     }
 
     // add indexes to strategies table
-    SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX " + userSchema
+    SqlUtils.executeUpdate(dataSource, "CREATE INDEX " + userSchema
         + "strategies_idx01 ON " + userSchema + "strategies "
         + "(signature, project_id)", "wdk-create-index");
-    SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX " + userSchema
+    SqlUtils.executeUpdate(dataSource, "CREATE INDEX " + userSchema
         + "strategies_idx02 ON " + userSchema + "strategies "
         + "(user_id, project_id, is_deleted, is_saved)", "wdk-create-index");
-    SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX " + userSchema
+    SqlUtils.executeUpdate(dataSource, "CREATE INDEX " + userSchema
         + "strategies_idx03 ON " + userSchema + "strategies "
         + "(project_id, root_step_id, user_id, is_saved, is_deleted)",
         "wdk-create-index");
-    SqlUtils.executeUpdate(wdkModel, dataSource, "CREATE INDEX " + userSchema
+    SqlUtils.executeUpdate(dataSource, "CREATE INDEX " + userSchema
         + "strategies_idx04 ON " + userSchema + "strategies "
         + "(is_deleted, is_saved, name, project_id, user_id)",
         "wdk-create-index");
@@ -247,6 +251,7 @@ public class Migrator_b18_b19 implements Migrator {
    * @param wdkModel
    * @param dataSource
    * @throws WdkModelException
+   * @throws SQLException
    */
   // private void fixStrategyIds(WdkModel wdkModel, DataSource dataSource)
   // throws WdkModelException {
@@ -256,7 +261,7 @@ public class Migrator_b18_b19 implements Migrator {
   //
   // // set the strategy_id for the root steps
   // logger.debug("updating root steps...");
-  // SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE " + userSchema
+  // SqlUtils.executeUpdate(dataSource, "UPDATE " + userSchema
   // + "steps sp SET sp.strategy_id = ("
   // + "     SELECT max(sr.strategy_id)                      "
   // + "     FROM " + userSchema + "strategies sr   "
@@ -266,7 +271,7 @@ public class Migrator_b18_b19 implements Migrator {
   //
   // // create a temp table with the strategy_id from root
   // logger.debug("creating nested steps...");
-  // SqlUtils.executeUpdate(wdkModel, dataSource,
+  // SqlUtils.executeUpdate(dataSource,
   // "CREATE TABLE wdk_nested_steps AS SELECT step_id, root_id"
   // + "  FROM (SELECT step_id, strategy_id, "
   // + "               CONNECT_BY_ROOT strategy_id AS root_id "
@@ -279,31 +284,31 @@ public class Migrator_b18_b19 implements Migrator {
   // + "  WHERE strategy_id IS NULL", "wdk-create-nested-steps");
   //
   // logger.debug("adding index...");
-  // SqlUtils.executeUpdate(wdkModel, dataSource,
+  // SqlUtils.executeUpdate(dataSource,
   // "ALTER TABLE wdk_nested_steps ADD CONSTRAINT "
   // + " wdk_nested_steps_pk PRIMARY KEY (step_id)",
   // "wdk-nested-steps-index");
   //
   // logger.debug("updating nested steps...");
-  // SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE ("
+  // SqlUtils.executeUpdate(dataSource, "UPDATE ("
   // + "    SELECT s.step_id, s.strategy_id, n.root_id"
   // + "    FROM " + userSchema + "steps s, wdk_nested_steps n"
   // + "    WHERE s.step_id = n.step_id)" + "  SET strategy_id = root_id",
   // "wdk-update-nested-steps");
   //
-  // SqlUtils.executeUpdate(wdkModel, dataSource,
+  // SqlUtils.executeUpdate(dataSource,
   // "DROP TABLE wdk_nested_steps", "wdk-drop-nested-steps");
   // }
 
   private void fixDisplayIds(WdkModel wdkModel, DataSource dataSource)
-      throws WdkModelException {
+      throws WdkModelException, SQLException {
     logger.debug("updating display ids...");
 
     String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
 
     // set the strategy_id for the root steps
     logger.debug("updating root step ids...");
-    SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE "
+    SqlUtils.executeUpdate(dataSource, "UPDATE "
         + "  (SELECT sr.root_step_id, sp.step_id" + "   FROM " + userSchema
         + "steps sp, " + userSchema + "strategies sr"
         + "   WHERE sp.user_id = sr.user_id"
@@ -313,7 +318,7 @@ public class Migrator_b18_b19 implements Migrator {
 
     // set the left & right child ids
     logger.debug("updating left and right child ids...");
-    SqlUtils.executeUpdate(wdkModel, dataSource, "UPDATE userlogins3.steps s1"
+    SqlUtils.executeUpdate(dataSource, "UPDATE userlogins3.steps s1"
         + "  SET s1.left_child_id = (SELECT s2.step_id "
         + "                          FROM " + userSchema + "steps s2 "
         + "                          WHERE s2.display_id = s1.left_child_id"
@@ -328,19 +333,19 @@ public class Migrator_b18_b19 implements Migrator {
   }
 
   private void dropColumns(WdkModel wdkModel, DataSource dataSource)
-      throws WdkModelException {
+      throws WdkModelException, SQLException {
     logger.debug("dropping columns...");
 
     String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
 
     // drop unused columns
-    SqlUtils.executeUpdate(wdkModel, dataSource, "ALTER TABLE " + userSchema
+    SqlUtils.executeUpdate(dataSource, "ALTER TABLE " + userSchema
         + "steps DROP COLUMN answer_id", "wdk-drop-column");
 
-    SqlUtils.executeUpdate(wdkModel, dataSource, "ALTER TABLE " + userSchema
+    SqlUtils.executeUpdate(dataSource, "ALTER TABLE " + userSchema
         + "steps DROP COLUMN display_id", "wdk-drop-column");
 
-    SqlUtils.executeUpdate(wdkModel, dataSource, "ALTER TABLE " + userSchema
+    SqlUtils.executeUpdate(dataSource, "ALTER TABLE " + userSchema
         + "strategies DROP COLUMN display_id", "wdk-drop-column");
   }
 }
