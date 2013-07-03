@@ -83,8 +83,8 @@ public class Bug4446Test {
         Step leftOperand = UnitTestHelper.createNormalStep(user);
         Step rightOperand = UnitTestHelper.createNormalStep(user);
 
-        int leftId = leftOperand.getDisplayId();
-        int rightId = rightOperand.getDisplayId();
+        int leftId = leftOperand.getStepId();
+        int rightId = rightOperand.getStepId();
         String operator = BooleanOperator.UNION.getOperator(platform);
 
         String expression = leftId + " " + operator + " " + rightId;
@@ -112,7 +112,7 @@ public class Bug4446Test {
         Param[] params = question.getParams();
         for (Param param : params) {
             if (param instanceof AnswerParam) {
-                String inputValue = Integer.toString(inputStep.getDisplayId());
+                String inputValue = Integer.toString(inputStep.getStepId());
                 values.put(param.getName(), inputValue);
             }
         }

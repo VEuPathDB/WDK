@@ -603,7 +603,7 @@ public class Migrator1_18To1_19 implements Migrator {
     } else {
       User user = wdkModel.getUserFactory().getUser(history.userId);
       Step step = user.combineStep(paramClob, false, history.isDeleted);
-      stepId = step.getDisplayId();
+      stepId = step.getStepId();
     }
     return stepId;
   }
