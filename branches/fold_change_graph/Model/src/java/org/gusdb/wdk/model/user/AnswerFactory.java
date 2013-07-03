@@ -11,18 +11,18 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.db.QueryLogger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.question.Question;
 import org.json.JSONObject;
 
 /**
  * @author xingao
- * 
  */
 public class AnswerFactory {
 
@@ -37,7 +37,7 @@ public class AnswerFactory {
     // private static final String COLUMN_PARAMS = "params";
 
     private WdkModel wdkModel;
-    private DBPlatform userPlatform;
+    private DatabaseInstance userDb;
     private String wdkSchema;
 
     /**
@@ -49,12 +49,13 @@ public class AnswerFactory {
 
     public AnswerFactory(WdkModel wdkModel) throws SQLException {
         this.wdkModel = wdkModel;
-        this.userPlatform = wdkModel.getUserPlatform();
+        this.userDb = wdkModel.getUserDb();
         this.wdkSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
         this.answers = new HashMap<Answer, Answer>();
     }
 
     public Answer saveAnswerValue(AnswerValue answerValue) throws WdkModelException {
+      try {
         // use transaction
         String questionName = answerValue.getQuestion().getFullName();
         String answerChecksum = answerValue.getChecksum();
@@ -64,7 +65,7 @@ public class AnswerFactory {
         if (answer == null) {
             Question question = answerValue.getQuestion();
             // the answer hasn't been stored, create an answerInfo, and save it
-            int answerId = userPlatform.getNextId(wdkSchema, TABLE_ANSWER);
+            int answerId = userDb.getPlatform().getNextId(userDb.getDataSource(), wdkSchema, TABLE_ANSWER);
             answer = new Answer(answerId);
             answer.setAnswerChecksum(answerValue.getChecksum());
             answer.setProjectId(wdkModel.getProjectId());
@@ -78,6 +79,10 @@ public class AnswerFactory {
         }
         answerValue.setAnswer(answer);
         return answer;
+      }
+      catch (SQLException e) {
+        throw new WdkModelException(e);
+      }
     }
 
     /**
@@ -105,7 +110,7 @@ public class AnswerFactory {
 
         ResultSet resultSet = null;
         try {
-            DataSource dataSource = userPlatform.getDataSource();
+            DataSource dataSource = userDb.getDataSource();
             long start = System.currentTimeMillis();
             PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource,
                     sql);
@@ -113,7 +118,7 @@ public class AnswerFactory {
             ps.setString(2, questionName);
             ps.setString(3, answerChecksum);
             resultSet = ps.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql,
+            QueryLogger.logEndStatementExecution(sql,
                     "wdk-answer-factory-answer-by-checksum", start);
 
             if (resultSet.next()) {
@@ -149,7 +154,7 @@ public class AnswerFactory {
 
         PreparedStatement ps = null;
         try {
-            DataSource dataSource = userPlatform.getDataSource();
+            DataSource dataSource = userDb.getDataSource();
             long start = System.currentTimeMillis();
             ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
             ps.setInt(1, answer.getAnswerId());
@@ -160,7 +165,7 @@ public class AnswerFactory {
             ps.setString(6, answer.getQueryChecksum());
 
             ps.executeUpdate();
-            SqlUtils.verifyTime(wdkModel, sql.toString(),
+            QueryLogger.logEndStatementExecution(sql.toString(),
                     "wdk-answer-factory-insert", start);
         }
         catch (SQLException e) {
