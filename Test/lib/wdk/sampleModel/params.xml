@@ -10,8 +10,8 @@
         <stringParam name="primaryKey" prompt="Primary Key" number="false" includeProjects="SampleDB">
             <help excludeProjects="ToyDB">primary key</help>
             <help includeProjects="ToyDB">Toy DB Primary key</help>
-            <suggest sample="Sample Primary Key" default="25" allowEmpty="false" excludeProjects="toyDB"/>
-            <suggest sample="ToyDB Primary Key" default="5" allowEmpty="false" includeProjects="toyDB"/>
+            <suggest default="25" allowEmpty="false" excludeProjects="toyDB"/>
+            <suggest default="5" allowEmpty="false" includeProjects="toyDB"/>
         </stringParam>
         
         <stringParam name="primaryKey" prompt="Primary Key" number="false" excludeProjects="SampleDB"/>
@@ -30,8 +30,8 @@
                      prompt="a list of query ids">
             <help excludeProjects="toyDB">input a list of query ids</help>
             <help includeProjects="toyDB">input a list of query ids</help>
-            <suggest sample="PF11_0344, PF11_0345"  excludeProjects="toyDB"/>
-            <suggest sample="PF11_0344, PF11_0345"  includeProjects="toyDB"/>
+            <suggest default="PF11_0344, PF11_0345" excludeProjects="toyDB"/>
+            <suggest default="PF11_0344, PF11_0345" includeProjects="toyDB"/>
         </datasetParam>
 
         <answerParam name="history_id"
