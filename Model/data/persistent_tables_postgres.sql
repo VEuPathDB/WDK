@@ -48,9 +48,6 @@ CREATE SEQUENCE wdkengine.migration_pkseq INCREMENT BY 1 START WITH 1;
 CREATE SEQUENCE wdkengine.dataset_indices_pkseq INCREMENT BY 1 START WITH 1;
 
 
-CREATE SEQUENCE wdkengine.answers_pkseq INCREMENT BY 1 START WITH 1;
-
-
 CREATE SEQUENCE wdkuser.users_pkseq INCREMENT BY 1 START WITH 1;
 
 
@@ -79,28 +76,6 @@ CREATE SEQUENCE wdkuser.favorites_pkseq INCREMENT BY 1 START WITH 1;
 /* =========================================================================
    tables in wdk engine schema
    ========================================================================= */
-
-
-CREATE TABLE wdkengine.answers
-(
-  answer_id NUMERIC(12) NOT NULL,
-  answer_checksum VARCHAR(40) NOT NULL,
-  project_id VARCHAR(50) NOT NULL,
-  project_version VARCHAR(50) NOT NULL,
-  question_name VARCHAR(200) NOT NULL,
-  query_checksum  VARCHAR(40) NOT NULL,
-  old_query_checksum  VARCHAR(40),
-  params TEXT,
-  result_message TEXT,
-  prev_answer_id NUMERIC(12),
-  migration NUMERIC(12),
-  CONSTRAINT "answers_pk" PRIMARY KEY (answer_id),
-  CONSTRAINT "answers_uq01" UNIQUE (project_id, question_name, answer_checksum)
-);
-
-CREATE INDEX answers_idx01 ON wdkengine.answers (prev_answer_id);
-CREATE INDEX answers_idx02 ON wdkengine.answers (old_query_checksum);
-
 
 CREATE TABLE wdkengine.dataset_indices
 (
@@ -202,7 +177,6 @@ CREATE TABLE wdkuser.preferences
 CREATE TABLE wdkuser.steps
 (
   step_id NUMERIC(12) NOT NULL,
-  display_id NUMERIC(12) NOT NULL,
   user_id NUMERIC(12) NOT NULL,
   answer_id NUMERIC(12) NOT NULL,
   left_child_id NUMERIC(12),
@@ -222,21 +196,15 @@ CREATE TABLE wdkuser.steps
   assigned_weight NUMERIC(12),
   migration NUMERIC(12),
   CONSTRAINT "steps_pk" PRIMARY KEY (step_id),
-  CONSTRAINT "steps_uq01" UNIQUE (user_id, display_id),
   CONSTRAINT "steps_fk01" FOREIGN KEY (user_id)
-      REFERENCES wdkuser.users (user_id),
-  CONSTRAINT "steps_fk02" FOREIGN KEY (answer_id)
-      REFERENCES wdkengine.answers (answer_id)
+      REFERENCES wdkuser.users (user_id)
 );
 
-CREATE INDEX steps_idx01 ON wdkuser.steps (answer_id, user_id, left_child_id);
-CREATE INDEX steps_idx02 ON wdkuser.steps (user_id, answer_id, right_child_id);
-CREATE INDEX steps_idx03 ON wdkuser.steps (user_id, display_id, last_run_time);
-CREATE INDEX steps_idx04 ON wdkuser.steps (user_id, answer_id, is_deleted);
-CREATE INDEX steps_idx05 ON wdkuser.steps (display_id, user_id, answer_id);
-CREATE INDEX steps_idx06 ON wdkuser.steps (is_valid, user_id, display_id);
-CREATE INDEX steps_idx07 ON wdkuser.steps (left_child_id, user_id);
-CREATE INDEX steps_idx08 ON wdkuser.steps (right_child_id, user_id);
+CREATE INDEX steps_idx01 ON wdkuser.steps (user_id, left_child_id, right_child_id);
+CREATE INDEX steps_idx02 ON wdkuser.steps (project_id, question_name, user_id);
+CREATE INDEX steps_idx03 ON wdkuser.steps (is_deleted, user_id, project_id);
+CREATE INDEX steps_idx04 ON wdkuser.steps (is_valid, user_id, project_id);
+CREATE INDEX steps_idx05 ON wdkuser.steps (last_run_time, user_id, project_id);
 
 
 /* 
@@ -259,7 +227,6 @@ CREATE INDEX step_params_idx02 ON wdkuser.step_params (step_id, param_name);
 CREATE TABLE wdkuser.strategies
 (
      strategy_id NUMERIC(12) NOT NULL,
-     display_id NUMERIC(12) NOT NULL,
      user_id NUMERIC(12) NOT NULL,
      root_step_id NUMERIC(12) NOT NULL,
      project_id varchar(50) NOT NULL,
@@ -276,18 +243,17 @@ CREATE TABLE wdkuser.strategies
      prev_strategy_id NUMERIC(12),
      migration NUMERIC(12),
      CONSTRAINT "strategies_pk" PRIMARY KEY (strategy_id),
-     CONSTRAINT "strategies_uq01" UNIQUE (user_id, display_id, project_id),
-     CONSTRAINT "strategies_fk01" FOREIGN KEY (user_id, root_step_id)
-         REFERENCES wdkuser.steps (user_id, display_id),
+     CONSTRAINT "strategies_fk01" FOREIGN KEY (root_step_id)
+         REFERENCES wdkuser.steps (step_id),
      CONSTRAINT "strategies_fk02" FOREIGN KEY (user_id)
          REFERENCES wdkuser.users (user_id)
 );
 
 
 CREATE INDEX strategies_idx01 ON wdkuser.strategies (signature, project_id);
-CREATE INDEX strategies_idx02 ON wdkuser.strategies (project_id, user_id, display_id, is_deleted);
-CREATE INDEX strategies_idx03 ON wdkuser.strategies (user_id, project_id, root_step_id, is_deleted, is_saved);
-CREATE INDEX strategies_idx04 ON wdkuser.strategies (project_id, user_id, is_deleted, is_saved, name);
+CREATE INDEX strategies_idx02 ON wdkuser.strategies (user_id, project_id, is_deleted, is_saved);
+CREATE INDEX strategies_idx03 ON wdkuser.strategies (project_id, root_step_id, user_id, is_saved, is_deleted);
+CREATE INDEX strategies_idx04 ON wdkuser.strategies (is_deleted, is_saved, name, project_id, user_id);
 
 
 CREATE TABLE wdkuser.user_datasets2
