@@ -308,12 +308,14 @@ function getWebAppUrl() {
 
   var registerTooltips = function() {
     // register elements with fancy tooltips
-    $(".wdk-tooltip").not(".qtip").qtip({
-      position: {
-        my: "top center",
-        at: "bottom center"
-      }
-    });
+    // $(".wdk-tooltip").not(".qtip").qtip({
+    //   position: {
+    //     my: "top center",
+    //     at: "bottom center",
+    //     viewport: $(window)
+    //   }
+    // });
+    $(".wdk-tooltip").not(".qtip").wdkTooltip();
   };
 
   var registerSnippet = function() {
@@ -610,6 +612,29 @@ function getWebAppUrl() {
     });
   };
 
+  var invokeControllers = function invokeControllers() {
+    $("[data-controller]").each(function(idx, element) {
+      var $element, $attrs, controller;
+      $element = $(element);
+      $attrs = $element.data();
+      controller = $attrs.controller;
+
+      // convert some-name -> someName
+      controller = controller.replace(/-(\w)/, function(hyphenLetter) {
+        return hyphenLetter.replace(/-/, '').toUpperCase();
+      });
+
+      // only invoke once
+      if ($attrs._invoked) return;
+
+      // TODO add support for namespaces
+      if (typeof window[controller] === "function") {
+        window[controller].call(window, $element, $attrs);
+        $attrs._invoked = true;
+      }
+    });
+  };
+
   // when a portion (or all) of the DOM is loaded...
   function load() {
     wdk.util.executeOnloadFunctions("body");
@@ -621,6 +646,7 @@ function getWebAppUrl() {
     registerTruncate();
     registerEditable();
     $(".button").button();
+    invokeControllers();
   }
 
   // On all pages, check that cookies are enabled.
