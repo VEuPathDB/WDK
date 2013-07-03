@@ -100,10 +100,6 @@ public class StrategyBean {
         return strategy.getStrategyId();
     }
 
-    public int getInternalId() {
-        return strategy.getInternalId();
-    }
-
     public StepBean getStep(int index) throws WdkUserException,
             WdkModelException, SQLException, JSONException {
         return new StepBean(user, strategy.getStep(index));

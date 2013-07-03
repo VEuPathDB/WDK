@@ -27,10 +27,8 @@ public class StepTest {
   public static void compareStep(Step expectedStep, Step actualStep)
       throws NoSuchAlgorithmException, WdkUserException, WdkModelException,
       JSONException, SQLException {
-    Assert.assertEquals("internal id", expectedStep.getInternalId(),
-        actualStep.getInternalId());
-    Assert.assertEquals("display id", expectedStep.getDisplayId(),
-        actualStep.getDisplayId());
+    Assert.assertEquals("step id", expectedStep.getStepId(),
+        actualStep.getStepId());
     Assert.assertEquals("valid", expectedStep.isValid(), actualStep.isValid());
     Assert.assertEquals("custom name", expectedStep.getCustomName(),
         actualStep.getCustomName());
@@ -57,7 +55,7 @@ public class StepTest {
 
     Assert.assertEquals("step count", stepCount + 1, user.getStepCount());
 
-    Assert.assertTrue("stepId should be positive", step.getDisplayId() > 0);
+    Assert.assertTrue("stepId should be positive", step.getStepId() > 0);
     Assert.assertFalse("Step shouldn't be deleted", step.isDeleted());
     Assert.assertFalse("This is not combined", step.isCombined());
     Assert.assertFalse("This is not transform", step.isTransform());
@@ -70,8 +68,8 @@ public class StepTest {
     Step leftOperand = UnitTestHelper.createNormalStep(user);
     Step rightOperand = UnitTestHelper.createNormalStep(user);
 
-    int leftId = leftOperand.getDisplayId();
-    int rightId = rightOperand.getDisplayId();
+    int leftId = leftOperand.getStepId();
+    int rightId = rightOperand.getStepId();
     int leftSize = leftOperand.getResultSize();
     int rightSize = rightOperand.getResultSize();
     String operator = BooleanOperator.UNION.getOperator(platform);
@@ -93,9 +91,9 @@ public class StepTest {
     Step operand2 = UnitTestHelper.createNormalStep(user);
     Step operand3 = UnitTestHelper.createNormalStep(user);
 
-    int id1 = operand1.getDisplayId();
-    int id2 = operand2.getDisplayId();
-    int id3 = operand3.getDisplayId();
+    int id1 = operand1.getStepId();
+    int id2 = operand2.getStepId();
+    int id3 = operand3.getStepId();
     int size1 = operand1.getResultSize();
     int size2 = operand2.getResultSize();
     int size3 = operand3.getResultSize();
@@ -114,7 +112,7 @@ public class StepTest {
 
     // compose the result step by step
     Step result2 = user.combineStep(id2 + operator + id3);
-    Step result3 = user.combineStep(id1 + operator + result2.getDisplayId());
+    Step result3 = user.combineStep(id1 + operator + result2.getStepId());
 
     // the result of result1 and result3 should be identical
     Assert.assertEquals("Size equal", resultSize1, result3.getResultSize());
@@ -130,7 +128,7 @@ public class StepTest {
 
     boolean hasStep = false;
     for (Step loadedStep : steps) {
-      if (loadedStep.getInternalId() == step.getInternalId()) {
+      if (loadedStep.getStepId() == step.getStepId()) {
         compareStep(step, loadedStep);
 
         hasStep = true;
@@ -145,7 +143,7 @@ public class StepTest {
     // create a step
     Step step = UnitTestHelper.createNormalStep(user);
 
-    Step loadedStep = user.getStep(step.getDisplayId());
+    Step loadedStep = user.getStep(step.getStepId());
 
     compareStep(step, loadedStep);
   }
@@ -165,14 +163,14 @@ public class StepTest {
     Step step = UnitTestHelper.createNormalStep(user);
 
     int stepCount = user.getStepCount();
-    user.deleteStep(step.getDisplayId());
+    user.deleteStep(step.getStepId());
 
     Assert.assertEquals("step count ", stepCount - 1, user.getStepCount());
 
     // now check if the step is really deleted; a WdkUserException should be
     // thrown
     try {
-      user.getStep(step.getDisplayId());
+      user.getStep(step.getStepId());
       Assert.assertTrue("step is not deleted", false);
     } catch (WdkModelException ex) {
       // do nothing, expected

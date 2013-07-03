@@ -152,7 +152,7 @@ public class StepBean {
     }
 
     public int getStepId() {
-        return step.getDisplayId();
+        return step.getStepId();
     }
 
     public void setAnswerValue(AnswerValueBean answer)
