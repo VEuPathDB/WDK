@@ -10,11 +10,12 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.db.QueryLogger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 
 public class QueryFactory {
 
@@ -28,13 +29,13 @@ public class QueryFactory {
 
     private WdkModel wdkModel;
     private String wdkSchema;
-    private DBPlatform userPlatform;
+    private DatabaseInstance userDb;
     private DataSource dataSource;
 
     public QueryFactory(WdkModel wdkModel) {
         this.wdkModel = wdkModel;
-        this.userPlatform = this.wdkModel.getUserPlatform();
-        this.dataSource = userPlatform.getDataSource();
+        this.userDb = this.wdkModel.getUserDb();
+        this.dataSource = userDb.getDataSource();
         this.wdkSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
     }
 
@@ -69,7 +70,7 @@ public class QueryFactory {
             psInsert.setString(1, checksum);
             psInsert.setString(2, summaryContent);
             psInsert.execute();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-insert-clob",
+            QueryLogger.logEndStatementExecution(sql, "wdk-query-factory-insert-clob",
                     start);
             return checksum;
         } catch (SQLException ex) {
@@ -91,7 +92,7 @@ public class QueryFactory {
                     dataSource, sql);
             psSelect.setString(1, summaryChecksum);
             rsSelect = psSelect.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-select-clob",
+            QueryLogger.logEndStatementExecution(sql, "wdk-query-factory-select-clob",
                     start);
             if (!rsSelect.next()) return null;
 
@@ -142,7 +143,7 @@ public class QueryFactory {
             psInsert.setString(1, checksum);
             psInsert.setString(2, columnsContent);
             psInsert.execute();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-insert-clob",
+            QueryLogger.logEndStatementExecution(sql, "wdk-query-factory-insert-clob",
                     start);
             return checksum;
         } catch (SQLException ex) {
@@ -164,7 +165,7 @@ public class QueryFactory {
                     dataSource, sql);
             psSelect.setString(1, sortingChecksum);
             rsSelect = psSelect.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-select-clob",
+            QueryLogger.logEndStatementExecution(sql, "wdk-query-factory-select-clob",
                     start);
 
             if (!rsSelect.next()) return null;
@@ -212,7 +213,7 @@ public class QueryFactory {
             psInsert.setString(1, checksum);
             psInsert.setString(2, paramValue);
             psInsert.execute();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-insert-clob",
+            QueryLogger.logEndStatementExecution(sql, "wdk-query-factory-insert-clob",
                     start);
 
             return checksum;
@@ -234,11 +235,11 @@ public class QueryFactory {
                     sql);
             ps.setString(1, paramChecksum);
             rs = ps.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-select-clob",
+            QueryLogger.logEndStatementExecution(sql, "wdk-query-factory-select-clob",
                     start);
             if (!rs.next()) return null;
 
-            String clobValue = userPlatform.getClobData(rs, COLUMN_CLOB_VALUE);
+            String clobValue = userDb.getPlatform().getClobData(rs, COLUMN_CLOB_VALUE);
             return clobValue;
         } catch (SQLException ex) {
             throw new WdkModelException(ex);

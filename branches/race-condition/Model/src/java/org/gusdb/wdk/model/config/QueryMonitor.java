@@ -7,6 +7,8 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.gusdb.fgputil.db.QueryLogConfig;
+
 /**
  * An object representation of the <queryMonitor> tag in the model-config.xml.
  * it controls the logging of slow queries & broken queries.
@@ -18,7 +20,7 @@ import java.util.regex.Pattern;
  * @author xingao
  * 
  */
-public class QueryMonitor {
+public class QueryMonitor implements QueryLogConfig {
 
   private double baseline = 0.1;
   private double slow = 5;

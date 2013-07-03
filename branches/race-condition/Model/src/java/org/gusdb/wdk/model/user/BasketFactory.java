@@ -14,12 +14,13 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.QueryLogger;
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QuerySet;
@@ -116,7 +117,7 @@ public class BasketFactory {
             sqlCount += " AND " + Utilities.COLUMN_PK_PREFIX + i + " = ?";
         }
         sqlInsert += ") VALUES (?, ?, ?" + sqlValues + ")";
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
         PreparedStatement psInsert = null, psCount = null;
         try {
             psInsert = SqlUtils.getPreparedStatement(dataSource, sqlInsert);
@@ -135,7 +136,7 @@ public class BasketFactory {
                 try {
                     long start = System.currentTimeMillis();
                     resultSet = psCount.executeQuery();
-                    SqlUtils.verifyTime(wdkModel, sqlCount,
+                    QueryLogger.logEndStatementExecution(sqlCount,
                             "wdk-basket-factory-count", start);
                     if (resultSet.next()) {
                         int rsCount = resultSet.getInt(1);
@@ -155,14 +156,14 @@ public class BasketFactory {
                 if (count % 100 == 0) {
                     long start = System.currentTimeMillis();
                     psInsert.executeBatch();
-                    SqlUtils.verifyTime(wdkModel, sqlInsert,
+                    QueryLogger.logEndStatementExecution(sqlInsert,
                             "wdk-basket-factory-insert", start);
                 }
             }
             if (count % 100 != 0) {
                 long start = System.currentTimeMillis();
                 psInsert.executeBatch();
-                SqlUtils.verifyTime(wdkModel, sqlInsert,
+                QueryLogger.logEndStatementExecution(sqlInsert,
                         "wdk-basket-factory-insert", start);
             }
             // check the remote table to solve out-dated db-link issue with
@@ -198,7 +199,7 @@ public class BasketFactory {
             sqlDelete += " AND " + Utilities.COLUMN_PK_PREFIX + i + " = ?";
         }
 
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
         PreparedStatement psDelete = null;
         try {
             psDelete = SqlUtils.getPreparedStatement(dataSource, sqlDelete);
@@ -215,14 +216,14 @@ public class BasketFactory {
                 if (count % 100 == 0) {
                     long start = System.currentTimeMillis();
                     psDelete.executeBatch();
-                    SqlUtils.verifyTime(wdkModel, sqlDelete,
+                    QueryLogger.logEndStatementExecution(sqlDelete,
                             "wdk-basket-factory-delete", start);
                 }
             }
             if (count % 100 != 0) {
                 long start = System.currentTimeMillis();
                 psDelete.executeBatch();
-                SqlUtils.verifyTime(wdkModel, sqlDelete,
+                QueryLogger.logEndStatementExecution(sqlDelete,
                         "wdk-basket-factory-delete", start);
             }
             // check the remote table to solve out-dated db-link issue with
@@ -243,7 +244,7 @@ public class BasketFactory {
                 + COLUMN_USER_ID + "= ? AND " + COLUMN_PROJECT_ID + " = ? AND "
                 + COLUMN_RECORD_CLASS + " = ?";
 
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
         PreparedStatement psDelete = null;
         try {
             long start = System.currentTimeMillis();
@@ -252,7 +253,7 @@ public class BasketFactory {
             psDelete.setString(2, projectId);
             psDelete.setString(3, rcName);
             psDelete.executeUpdate();
-            SqlUtils.verifyTime(wdkModel, sqlDelete,
+            QueryLogger.logEndStatementExecution(sqlDelete,
                     "wdk-basket-factory-delete-all", start);
 
             // check the remote table to solve out-dated db-link issue with
@@ -282,7 +283,7 @@ public class BasketFactory {
                 + " FROM (SELECT DISTINCT * FROM " + schema + TABLE_BASKET
                 + " WHERE " + COLUMN_USER_ID + " = ? AND " + COLUMN_PROJECT_ID
                 + " = ?) t " + " GROUP BY " + COLUMN_RECORD_CLASS;
-        DataSource ds = wdkModel.getUserPlatform().getDataSource();
+        DataSource ds = wdkModel.getUserDb().getDataSource();
         ResultSet rs = null;
         try {
             PreparedStatement ps = SqlUtils.getPreparedStatement(ds, sql);
@@ -324,7 +325,7 @@ public class BasketFactory {
         for (int i = 1; i <= pkColumns.length; i++) {
             sqlCount += " AND " + Utilities.COLUMN_PK_PREFIX + i + " = ?";
         }
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
         PreparedStatement psCount = null;
         try {
             psCount = SqlUtils.getPreparedStatement(dataSource, sqlCount);
@@ -342,7 +343,7 @@ public class BasketFactory {
                 try {
                     long start = System.currentTimeMillis();
                     resultSet = psCount.executeQuery();
-                    SqlUtils.verifyTime(wdkModel, sqlCount,
+                    QueryLogger.logEndStatementExecution(sqlCount,
                             "wdk-basket-factory-count", start);
                     if (resultSet.next()) {
                         int rsCount = resultSet.getInt(1);
@@ -372,7 +373,7 @@ public class BasketFactory {
         String sql = "SELECT * FROM " + schema + TABLE_BASKET + " WHERE "
                 + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_USER_ID
                 + " = ? AND " + COLUMN_RECORD_CLASS + " =?";
-        DataSource ds = wdkModel.getUserPlatform().getDataSource();
+        DataSource ds = wdkModel.getUserDb().getDataSource();
         ResultSet rs = null;
         try {
             long start = System.currentTimeMillis();
@@ -382,7 +383,7 @@ public class BasketFactory {
             ps.setInt(2, user.getUserId());
             ps.setString(3, recordClass.getFullName());
             rs = ps.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-basket-factory-select-all",
+            QueryLogger.logEndStatementExecution(sql, "wdk-basket-factory-select-all",
                     start);
 
             StringBuffer buffer = new StringBuffer();
@@ -737,8 +738,8 @@ public class BasketFactory {
         sql.append(schema).append(TABLE_BASKET).append(dblink);
 
         // execute this dummy sql to make sure the remote table is sync-ed.
-        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        SqlUtils.executeScalar(wdkModel, dataSource, sql.toString(),
+        DataSource dataSource = wdkModel.getAppDb().getDataSource();
+        SqlUtils.executeScalar(dataSource, sql.toString(),
                 "wdk-remote-basket-dummy");
     }
 }

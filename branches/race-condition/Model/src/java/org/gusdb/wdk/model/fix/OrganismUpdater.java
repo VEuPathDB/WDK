@@ -15,12 +15,13 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -94,8 +95,9 @@ public class OrganismUpdater {
             JSONException, WdkModelException {
         logger.info("Checking step params...");
 
-        DBPlatform platform = wdkModel.getUserPlatform();
-        DataSource dataSource = platform.getDataSource();
+        DatabaseInstance database = wdkModel.getUserDb();
+        DBPlatform platform = database.getPlatform();
+        DataSource dataSource = database.getDataSource();
         PreparedStatement psSelect = null, psUpdate = null;
         ResultSet resultSet = null;
         String select = "SELECT s.step_id, s.display_params            "
@@ -174,8 +176,9 @@ public class OrganismUpdater {
 
     private void updateClobValues(Set<String> clobKeys) throws SQLException, WdkModelException {
         logger.info("Checking clob values...");
-        DBPlatform platform = wdkModel.getUserPlatform();
-        DataSource dataSource = platform.getDataSource();
+        DatabaseInstance database = wdkModel.getUserDb();
+        DBPlatform platform = database.getPlatform();
+        DataSource dataSource = database.getDataSource();
         PreparedStatement psSelect = null, psUpdate = null;
         String select = "SELECT clob_value FROM " + wdkSchema + "clob_values "
                 + " WHERE clob_checksum = ?";

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.dbms;
 
 import java.sql.PreparedStatement;
@@ -13,6 +10,9 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -27,14 +27,16 @@ public class ResultFactory {
 
   private Logger logger = Logger.getLogger(ResultFactory.class);
 
+  private DatabaseInstance database;
   private DBPlatform platform;
   private CacheFactory cacheFactory;
   private WdkModel wdkModel;
 
   public ResultFactory(WdkModel wdkModel) throws SQLException {
-    this.platform = wdkModel.getQueryPlatform();
-    this.cacheFactory = new CacheFactory(wdkModel, platform);
-    this.wdkModel = platform.getWdkModel();
+    this.database = wdkModel.getAppDb();
+    this.platform = database.getPlatform();
+    this.cacheFactory = new CacheFactory(wdkModel, database);
+    this.wdkModel = wdkModel;
   }
 
   public CacheFactory getCacheFactory() {
@@ -82,10 +84,15 @@ public class ResultFactory {
       throws WdkModelException {
     String sql = getCachedSql(queryInstance);
     // get the resultList
-    DataSource dataSource = platform.getDataSource();
-    ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
-        sql.toString(), queryInstance.getQuery().getFullName() + "__select-cache");
+    try {
+      DataSource dataSource = database.getDataSource();
+      ResultSet resultSet = SqlUtils.executeQuery(dataSource,
+          sql.toString(), queryInstance.getQuery().getFullName()
+              + "__select-cache");
     return new SqlResultList(resultSet);
+    } catch (SQLException e) {
+      throw new WdkModelException("Unable to retrieve cached results.", e);
+  }
   }
 
   private int getInstanceId(QueryInfo queryInfo, QueryInstance instance)
@@ -102,10 +109,10 @@ public class ResultFactory {
     sql.append(" = '").append(checksum).append("'");
     sql.append(" ORDER BY " + CacheFactory.COLUMN_INSTANCE_ID);
 
-    DataSource dataSource = platform.getDataSource();
+    DataSource dataSource = database.getDataSource();
     ResultSet resultSet = null;
     try {
-      resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql.toString(),
+      resultSet = SqlUtils.executeQuery(dataSource, sql.toString(),
           "wdk-check-instance-exist");
 
       int instanceId = 0;
@@ -125,16 +132,17 @@ public class ResultFactory {
 
   private int createCache(QueryInfo queryInfo, QueryInstance instance)
       throws WdkModelException, SQLException {
-    int instanceId = platform.getNextId(null, CacheFactory.TABLE_INSTANCE);
+    DataSource dataSource = database.getDataSource();
+    int instanceId = platform.getNextId(dataSource, null, CacheFactory.TABLE_INSTANCE);
 
     // check whether need to create the cache;
     String cacheTable = queryInfo.getCacheTable();
-    if (!platform.checkTableExists(null, cacheTable)) {
+    if (!platform.checkTableExists(dataSource, database.getDefaultSchema(), cacheTable)) {
       // create the cache using the result of the first query
       instance.createCache(cacheTable, instanceId);
       // disable the stats on the new cache table
-      String schema = platform.getWdkModel().getModelConfig().getAppDB().getLogin();
-      platform.disableStatistics(schema, cacheTable);
+      String schema = wdkModel.getModelConfig().getAppDB().getLogin();
+      platform.disableStatistics(dataSource, schema, cacheTable);
       createCacheTableIndex(queryInfo.getCacheTable(), instance.getQuery());
     } else {// insert result into existing cache table
       instance.insertToCache(cacheTable, instanceId);
@@ -172,13 +180,18 @@ public class ResultFactory {
       sqlOther.append(")");
     }
 
-    DataSource dataSource = platform.getDataSource();
-    SqlUtils.executeUpdate(wdkModel, dataSource, sqlId.toString(),
+    try {
+      DataSource dataSource = database.getDataSource();
+      SqlUtils.executeUpdate(dataSource, sqlId.toString(),
         query.getFullName() + "__create-cache-index01");
 
     if (indexColumns != null) {
-      SqlUtils.executeUpdate(wdkModel, dataSource, sqlOther.toString(),
+        SqlUtils.executeUpdate(dataSource, sqlOther.toString(),
           query.getFullName() + "__create-cache-index02");
+    }
+  }
+    catch (SQLException e) {
+      throw new WdkModelException("Could not create cache table index.", e);
     }
   }
 
@@ -197,11 +210,11 @@ public class ResultFactory {
       return;
 
     // get the type of the columns
-    DataSource dataSource = platform.getDataSource();
+    DataSource dataSource = database.getDataSource();
     Map<String, Integer> columnSizes = new LinkedHashMap<>();
     ResultSet resultSet = null;
     try {
-      resultSet = SqlUtils.executeQuery(wdkModel, dataSource, "SELECT * FROM "
+      resultSet = SqlUtils.executeQuery(dataSource, "SELECT * FROM "
           + cacheTable, cacheTable + "__ge-cache-metadata");
       ResultSetMetaData metaData = resultSet.getMetaData();
       for (int i = 1; i <= metaData.getColumnCount(); i++) {
@@ -229,13 +242,11 @@ public class ResultFactory {
         // + ". Please look up the query in 'Query' table that generates " +
         // "this cache table, and make sure it returns the index column.");
 
-        String sql = "ALTER TABLE " + cacheTable
-            + platform.getAlterColumnKeyword() + column + " varchar(" + maxSize
-            + ")";
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql, cacheTable
+        String sql = platform.getResizeColumnSql(cacheTable, column, maxSize);
+        SqlUtils.executeUpdate(dataSource, sql, cacheTable
             + "__change-column-size");
       }
-    } catch (WdkModelException ex) {
+    } catch (SQLException ex) {
       throw new WdkModelException("Failed to alter the sizes of index columns"
           + " '" + Utilities.fromArray(indexColumns) + "' on cache table "
           + cacheTable + ". Please look up the query in 'Query' table that "
@@ -257,7 +268,7 @@ public class ResultFactory {
 
     PreparedStatement ps = null;
     try {
-      DataSource dataSource = platform.getDataSource();
+      DataSource dataSource = database.getDataSource();
       ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
       ps.setInt(1, instanceId);
       ps.setInt(2, queryInfo.getQueryId());
