@@ -12,11 +12,11 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 
 /**
  * @author Jerric
@@ -135,15 +135,15 @@ public class Migrator1_12To1_13 extends Migrator {
      */
     private void updateHistories() throws WdkUserException, WdkModelException,
             NoSuchAlgorithmException, SQLException {
-        DBPlatform platform = wdkModel.getUserPlatform();
-        DataSource dataSource = platform.getDataSource();
+        DatabaseInstance database = wdkModel.getUserDb();
+        DataSource dataSource = database.getDataSource();
         String newSchema = getNewUserSchema();
 
         List<HistoryItem> histories = new ArrayList<HistoryItem>();
 
         ResultSet rsHistory = null;
         try {
-            rsHistory = SqlUtils.executeQuery(wdkModel, dataSource, "SELECT "
+            rsHistory = SqlUtils.executeQuery(dataSource, "SELECT "
                     + "user_id, project_id, history_id, params FROM "
                     + newSchema + "histories WHERE query_instance_checksum IS "
                     + "NULL", "wdk-migrate-select-history");
@@ -152,7 +152,7 @@ public class Migrator1_12To1_13 extends Migrator {
                 int userId = rsHistory.getInt("user_id");
                 String projectId = rsHistory.getString("project_id");
                 int historyId = rsHistory.getInt("history_id");
-                String params = platform.getClobData(rsHistory, "params");
+                String params = database.getPlatform().getClobData(rsHistory, "params");
 
                 // params = params.replaceAll("--WDK_PARAM_DIVIDER--",
                 // Utilities.DATA_DIVIDER);
@@ -182,7 +182,7 @@ public class Migrator1_12To1_13 extends Migrator {
             int count = 0;
             for (HistoryItem item : histories) {
                 psHistory.setString(1, item.getChecksum());
-                platform.setClobData(psHistory, 2, item.getParams(), false);
+                database.getPlatform().setClobData(psHistory, 2, item.getParams(), false);
                 psHistory.setInt(3, item.getUserId());
                 psHistory.setString(4, item.getProjectId());
                 psHistory.setInt(5, item.getHistoryId());

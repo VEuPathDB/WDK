@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.answer;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -13,15 +12,14 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQuery;
@@ -30,7 +28,6 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 
 /**
  * An object representation of {@code <answerFilter>/<instance>}; object. This
@@ -288,22 +285,19 @@ public class AnswerFilterInstance extends WdkModelBase {
     resolved = true;
   }
 
-  public ResultList getResults(AnswerValue answerValue) throws SQLException,
-      NoSuchAlgorithmException, WdkModelException, JSONException,
-      WdkUserException {
+  public ResultList getResults(AnswerValue answerValue) throws WdkModelException {
     // use only the id query sql as input
     QueryInstance idInstance = answerValue.getIdsQueryInstance();
     String sql = idInstance.getSql();
     int assignedWeight = idInstance.getAssignedWeight();
     sql = applyFilter(answerValue.getUser(), sql, assignedWeight);
-    DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-    ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-        idInstance.getQuery().getFullName() + "__" + name + "-filtered");
+    DataSource dataSource = wdkModel.getAppDb().getDataSource();
     try {
+      ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
+          idInstance.getQuery().getFullName() + "__" + name + "-filtered");
       return new SqlResultList(resultSet);
-    } catch (SQLException ex) {
-      SqlUtils.closeResultSetOnly(resultSet);
-      throw ex;
+    } catch (SQLException e) {
+      throw new WdkModelException("Could not get answer results.", e);
     }
   }
 

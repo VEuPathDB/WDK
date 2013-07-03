@@ -1,7 +1,8 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.config;
+
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.platform.SupportedPlatform;
+import org.gusdb.fgputil.db.pool.ConnectionPoolConfig;
 
 /**
  * It defines the properties that are common in both {@code <appDB>} and
@@ -11,8 +12,10 @@ package org.gusdb.wdk.model.config;
  * @author xingao
  * 
  */
-public abstract class ModelConfigDB {
+public abstract class ModelConfigDB implements ConnectionPoolConfig {
 
+  private static final Logger LOG = Logger.getLogger(ModelConfigDB.class);
+	
   // required properties
   private String login;
   private String password;
@@ -87,20 +90,26 @@ public abstract class ModelConfigDB {
   }
 
   /**
-   * @return the platform
-   */
-  public String getPlatformClass() {
-    return "org.gusdb.wdk.model.dbms." + platform;
-  }
-
-  /**
    * @param platform
    *          the platform to set
+   * @throws UnsupportedPlatformException if platform is not supported
    */
   public void setPlatform(String platform) {
+	LOG.info("Setting platform " + platform);
     this.platform = platform;
   }
-
+  
+  /**
+   * @return DB platform string for this configuration
+   */
+  public String getPlatform() {
+	return platform;
+  }
+  public SupportedPlatform getPlatformEnum() {
+	return (platform == null ? null :
+      SupportedPlatform.toPlatform(platform.toUpperCase()));
+  }
+  
   /**
    * @return the maxActive
    */

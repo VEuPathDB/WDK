@@ -11,14 +11,14 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
-import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -80,9 +80,9 @@ public class SqlQueryInstance extends QueryInstance {
   protected ResultList getUncachedResults() throws WdkModelException {
     try {
       String sql = getUncachedSql();
-      DBPlatform platform = query.getWdkModel().getQueryPlatform();
+      DatabaseInstance platform = query.getWdkModel().getAppDb();
       DataSource dataSource = platform.getDataSource();
-      ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
+      ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
           query.getFullName() + "__select-uncached");
       return new SqlResultList(resultSet);
     } catch (SQLException e) {
@@ -122,9 +122,14 @@ public class SqlQueryInstance extends QueryInstance {
     buffer.append(instanceId + " AS " + idColumn + columnList);
     buffer.append(" FROM (").append(sql).append(") f");
 
-    DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-    SqlUtils.executeUpdate(wdkModel, dataSource, buffer.toString(),
-        query.getFullName() + "__insert-cache");
+    try {
+      DataSource dataSource = wdkModel.getAppDb().getDataSource();
+      SqlUtils.executeUpdate(dataSource, buffer.toString(),
+          query.getFullName() + "__insert-cache");
+    }
+    catch (SQLException e) {
+      throw new WdkModelException("Unable to insert record into cache.", e);
+    }
   }
 
   public String getUncachedSql() throws WdkModelException {
@@ -196,8 +201,13 @@ public class SqlQueryInstance extends QueryInstance {
     buffer.append(instanceId + " AS " + CacheFactory.COLUMN_INSTANCE_ID);
     buffer.append(", f.* FROM (").append(sql).append(") f");
 
-    DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-    SqlUtils.executeUpdate(wdkModel, dataSource, buffer.toString(),
-        query.getFullName() + "__create-cache");
+    try {
+      DataSource dataSource = wdkModel.getAppDb().getDataSource();
+      SqlUtils.executeUpdate(dataSource, buffer.toString(),
+          query.getFullName() + "__create-cache");
+    }
+    catch (SQLException e) {
+      throw new WdkModelException("Unable to create cache.", e);
+    }
   }
 }
