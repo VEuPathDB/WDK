@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -21,7 +22,6 @@ import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 import org.gusdb.wdk.model.answer.ReporterRef;
 import org.gusdb.wdk.model.answer.SummaryView;
-import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.ColumnType;
@@ -161,7 +161,7 @@ public class RecordClass extends WdkModelBase implements
           idqBuilder.append(", ");
         idqBuilder.append("SUBSTR($$" + column + "$$, 1, 4000) AS " + column);
       }
-      DBPlatform platform = wdkModel.getQueryPlatform();
+      DBPlatform platform = wdkModel.getAppDb().getPlatform();
       idqBuilder.append(platform.getDummyTable());
       idqBuilder.append(")");
 

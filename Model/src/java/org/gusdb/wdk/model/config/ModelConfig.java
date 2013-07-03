@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.config;
 
+
 /**
  * An object representaion of the {@code model-config.xml} file. It holds all
  * the configuration information for the WDK system.
