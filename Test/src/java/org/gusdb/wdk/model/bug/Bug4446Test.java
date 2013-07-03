@@ -9,11 +9,11 @@ import java.util.Random;
 import junit.framework.Assert;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -41,13 +41,13 @@ public class Bug4446Test {
     private static final Logger logger = Logger.getLogger(Bug4446Test.class);
 
     private WdkModel wdkModel;
-    private DBPlatform platform;
+    private DatabaseInstance appDb;
     private User user;
     private Random random = UnitTestHelper.getRandom();
 
     public Bug4446Test() throws Exception {
         wdkModel = UnitTestHelper.getModel();
-        platform = wdkModel.getQueryPlatform();
+        appDb = wdkModel.getAppDb();
         user = UnitTestHelper.getRegisteredUser();
     }
 
@@ -85,7 +85,7 @@ public class Bug4446Test {
 
         int leftId = leftOperand.getStepId();
         int rightId = rightOperand.getStepId();
-        String operator = BooleanOperator.UNION.getOperator(platform);
+        String operator = BooleanOperator.UNION.getOperator(appDb.getPlatform());
 
         String expression = leftId + " " + operator + " " + rightId;
 
