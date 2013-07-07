@@ -9,5 +9,6 @@
 	<classpathentry kind="lib" path="/WSF Service/lib/java/not-deployed/servlet-api-2.5.jar"/>
 	<classpathentry kind="lib" path="/WSF Plugin/lib/java/junit-4.10.jar"/>
 	<classpathentry kind="lib" path="/WSF Plugin/lib/java/log4j-1.2.17.jar"/>
+	<classpathentry kind="lib" path="/WSF Plugin/lib/java/org.json-chargebee-1.0.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
