@@ -358,7 +358,7 @@ public abstract class AbstractEnumParam extends Param {
   // /////////// Protected properties ////////////////////////////////////
   // ///////////////////////////////////////////////////////////////////
 
-  protected void initTreeMap(EnumParamCache cache) throws WdkModelException {
+  protected void initTreeMap(EnumParamCache cache) {
 
     // construct index
     Map<String, EnumParamTermNode> indexMap = new LinkedHashMap<String, EnumParamTermNode>();
@@ -622,9 +622,6 @@ public abstract class AbstractEnumParam extends Param {
 
   /**
    * Builds the default value of the "current" enum values
-   * 
-   * @throws WdkUserException
-   * @throws WdkModelException
    */
   protected void applySelectMode(EnumParamCache cache) throws WdkModelException {
     logger.debug("applySelectMode(): select mode: '" + selectMode
@@ -732,11 +729,10 @@ public abstract class AbstractEnumParam extends Param {
   @Override
   public Set<String> getAllValues() throws WdkModelException {
     Set<String> values = new LinkedHashSet<>();
-    AbstractEnumParam aeParam = (AbstractEnumParam) this;
-    if (aeParam.isDependentParam()) {
+    if (isDependentParam()) {
       // dependent param, need to get all the combinations of the depended
       // param values.
-      Set<Param> dependedParams = aeParam.getDependedParams();
+      Set<Param> dependedParams = getDependedParams();
       Set<ParamValueMap> dependedValues = new LinkedHashSet<>();
       dependedValues.add(new ParamValueMap());
       for (Param dependedParam : dependedParams) {
@@ -754,7 +750,7 @@ public abstract class AbstractEnumParam extends Param {
       // now for each dependedValue tuplet, get the possible values
       for (Map<String, String> dependedValue : dependedValues) {
         try {
-          values.addAll(aeParam.getVocabMap(dependedValue).keySet());
+          values.addAll(getVocabMap(dependedValue).keySet());
         } catch (WdkRuntimeException ex) {
 //          if (ex.getMessage().startsWith("No item returned by")) {
             // the enum param doeesn't return any row, ignore it.
@@ -764,7 +760,7 @@ public abstract class AbstractEnumParam extends Param {
         }
       }
     } else {
-      values.addAll(aeParam.getVocabMap().keySet());
+      values.addAll(getVocabMap().keySet());
     }
     return values;
   }

@@ -69,8 +69,9 @@ public class TabularReporter extends Reporter {
         }
     }
 
+    @Override
     public String getConfigInfo() {
-	return "This reporter does not have config info yet.";
+	    return "This reporter does not have config info yet.";
     }
 
     /*
@@ -136,7 +137,7 @@ public class TabularReporter extends Reporter {
         }
     }
 
-    private Set<AttributeField> validateColumns() throws WdkModelException, WdkUserException {
+    private Set<AttributeField> validateColumns() throws WdkModelException {
         // the config map contains a list of column names;
         Map<String, AttributeField> summary = getSummaryAttributes();
         Set<AttributeField> columns = new LinkedHashSet<AttributeField>();
@@ -160,8 +161,7 @@ public class TabularReporter extends Reporter {
     }
 
     private void format2Text(Set<AttributeField> fields, PrintWriter writer)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         // print the header
         if (hasHeader) {
             for (AttributeField field : fields) {
@@ -188,8 +188,7 @@ public class TabularReporter extends Reporter {
     }
 
     private void format2PDF(Set<AttributeField> fields, OutputStream out)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         logger.info("format2PDF>>>");
         Document document = new Document(PageSize.LETTER.rotate());
         try {
@@ -257,8 +256,7 @@ public class TabularReporter extends Reporter {
     }
 
     private void format2Excel(Set<AttributeField> fields, PrintWriter writer)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         int count = 0;
         String header = "<table border=\"1\">";
         writer.println(header);

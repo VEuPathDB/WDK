@@ -3,15 +3,11 @@
  */
 package org.gusdb.wdk.model.record.attribute;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
 
 /**
  * The text attribute value represents the actual text of the text attribute
@@ -69,8 +65,7 @@ public class TextAttributeValue extends AttributeValue {
   }
 
   @Override
-  public String getDisplay() throws WdkModelException,
-      NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+  public String getDisplay() throws WdkModelException {
     if (this.display == null) {
       String content = field.getDisplay();
       Map<String, AttributeField> subFields = field.parseFields(content);

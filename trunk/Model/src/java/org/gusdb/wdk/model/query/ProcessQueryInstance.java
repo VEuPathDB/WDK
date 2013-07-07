@@ -6,7 +6,6 @@ package org.gusdb.wdk.model.query;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -23,7 +22,6 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ArrayResultList;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
@@ -54,11 +52,6 @@ public class ProcessQueryInstance extends QueryInstance {
   /**
    * @param query
    * @param values
-   * @throws WdkModelException
-   * @throws WdkUserException
-   * @throws JSONException
-   * @throws SQLException
-   * @throws NoSuchAlgorithmException
    */
   public ProcessQueryInstance(User user, ProcessQuery query,
       Map<String, String> values, boolean validate, int assignedWeight,
@@ -240,7 +233,7 @@ public class ProcessQueryInstance extends QueryInstance {
   }
 
   private WsfResponse getResponse(WsfRequest request, boolean local)
-      throws WdkModelException, ServiceException, MalformedURLException,
+      throws ServiceException, MalformedURLException,
       RemoteException, JSONException {
 
     String serviceUrl = query.getWebServiceUrl();

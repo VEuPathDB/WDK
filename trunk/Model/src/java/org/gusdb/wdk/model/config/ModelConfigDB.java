@@ -1,7 +1,7 @@
 package org.gusdb.wdk.model.config;
 
-import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.platform.SupportedPlatform;
+import org.gusdb.fgputil.db.platform.UnsupportedPlatformException;
 import org.gusdb.fgputil.db.pool.ConnectionPoolConfig;
 
 /**
@@ -13,8 +13,6 @@ import org.gusdb.fgputil.db.pool.ConnectionPoolConfig;
  * 
  */
 public abstract class ModelConfigDB implements ConnectionPoolConfig {
-
-  private static final Logger LOG = Logger.getLogger(ModelConfigDB.class);
 	
   // required properties
   private String login;
@@ -47,6 +45,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   /**
    * @return the login
    */
+  @Override
   public String getLogin() {
     return login;
   }
@@ -62,6 +61,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   /**
    * @return the password
    */
+  @Override
   public String getPassword() {
     return password;
   }
@@ -77,6 +77,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   /**
    * @return the connectionUrl
    */
+  @Override
   public String getConnectionUrl() {
     return connectionUrl;
   }
@@ -95,7 +96,6 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
    * @throws UnsupportedPlatformException if platform is not supported
    */
   public void setPlatform(String platform) {
-	LOG.info("Setting platform " + platform);
     this.platform = platform;
   }
   
@@ -105,6 +105,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   public String getPlatform() {
 	return platform;
   }
+  @Override
   public SupportedPlatform getPlatformEnum() {
 	return (platform == null ? null :
       SupportedPlatform.toPlatform(platform.toUpperCase()));
@@ -113,6 +114,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   /**
    * @return the maxActive
    */
+  @Override
   public short getMaxActive() {
     return maxActive;
   }
@@ -128,6 +130,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   /**
    * @return the maxIdle
    */
+  @Override
   public short getMaxIdle() {
     return maxIdle;
   }
@@ -143,6 +146,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   /**
    * @return the minIdle
    */
+  @Override
   public short getMinIdle() {
     return minIdle;
   }
@@ -158,6 +162,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   /**
    * @return the maxWait
    */
+  @Override
   public short getMaxWait() {
     return maxWait;
   }
@@ -180,6 +185,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   /**
    * @return implementation class to initialize DB driver
    */
+  @Override
   public String getDriverInitClass() {
 	  return driverInitClass;
   }
@@ -187,6 +193,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   /**
    * @return the showConnections
    */
+  @Override
   public boolean isShowConnections() {
     return showConnections;
   }
@@ -202,6 +209,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   /**
    * @return the showConnectionsInterval
    */
+  @Override
   public long getShowConnectionsInterval() {
     return showConnectionsInterval;
   }
@@ -217,6 +225,7 @@ public abstract class ModelConfigDB implements ConnectionPoolConfig {
   /**
    * @return the showConnectionsDuration
    */
+  @Override
   public long getShowConnectionsDuration() {
     return showConnectionsDuration;
   }

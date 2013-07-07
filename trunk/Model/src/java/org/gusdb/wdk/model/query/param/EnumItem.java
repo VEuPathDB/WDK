@@ -181,7 +181,6 @@ public class EnumItem extends WdkModelBase {
    * 
    * @param dependedValues
    * @return
-   * @throws WdkModelException
    */
   public boolean isValidFor(Map<String, String> dependedParamValues)
       throws WdkModelException {

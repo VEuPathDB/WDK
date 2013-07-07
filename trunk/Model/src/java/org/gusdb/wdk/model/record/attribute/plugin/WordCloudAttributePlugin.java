@@ -55,6 +55,7 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
      * 
      * @see org.gusdb.wdk.model.AttributePlugin#process()
      */
+    @Override
     public Map<String, Object> process() {
         loadTags();
 
@@ -213,6 +214,7 @@ public class WordCloudAttributePlugin extends AbstractAttributePlugin implements
     // }
     // }
 
+    @Override
     public String getDownloadContent() {
         loadTags();
 

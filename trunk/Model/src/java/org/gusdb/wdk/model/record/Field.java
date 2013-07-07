@@ -69,6 +69,7 @@ public abstract class Field extends WdkModelBase implements ScopedField {
    * 
    * @return Returns the inReportMaker.
    */
+  @Override
   public boolean isInReportMaker() {
     return this.inReportMaker;
   }
@@ -87,6 +88,7 @@ public abstract class Field extends WdkModelBase implements ScopedField {
    * 
    * @return Returns the internal.
    */
+  @Override
   public boolean isInternal() {
     return this.internal;
   }

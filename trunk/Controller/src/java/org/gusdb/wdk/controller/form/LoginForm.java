@@ -68,6 +68,7 @@ public class LoginForm extends ActionForm {
         this.refererUrl = refererUrl;
     }
 
+    @Override
     public ActionErrors validate(ActionMapping mapping,
             HttpServletRequest request) {
       // do nothing

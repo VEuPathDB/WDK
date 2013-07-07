@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -32,7 +31,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
-import org.json.JSONException;
 
 /**
  * @author xingao
@@ -301,8 +299,7 @@ public class UserFactory {
   }
 
   public User login(User guest, String email, String password)
-      throws WdkUserException, WdkModelException, NoSuchAlgorithmException,
-      SQLException, JSONException {
+      throws WdkUserException, WdkModelException {
     // make sure the guest is really a guest
     if (!guest.isGuest())
       throw new WdkUserException("User has been logged in.");
@@ -367,8 +364,7 @@ public class UserFactory {
    * @param queryName
    *          name of this query (for logging)
    * @return User that meets the criteria, or null if none exists
-   * @throws WdkModelException
-   *           if problem occurs accessing database
+   * @throws WdkModelException if problem occurs accessing database
    */
   private User getUserByFields(String[] fieldMap, String queryName)
       throws WdkModelException {
@@ -444,8 +440,7 @@ public class UserFactory {
    * @param userId
    *          user ID
    * @return user object
-   * @throws WdkModelException
-   *           if user cannot be found or error occurs
+   * @throws WdkModelException if user cannot be found or error occurs
    */
   public User getUser(int userId) throws WdkModelException {
     ResultSet rsUser = null;
@@ -531,7 +526,7 @@ public class UserFactory {
     return array;
   }
 
-  public void checkConsistancy() throws WdkUserException, WdkModelException {
+  public void checkConsistancy() throws WdkUserException {
     ResultSet rs = null;
     PreparedStatement psUser = null;
     try {
@@ -574,8 +569,7 @@ public class UserFactory {
     }
   }
 
-  private Set<String> getUserRoles(User user) throws WdkUserException,
-      WdkModelException {
+  private Set<String> getUserRoles(User user) throws WdkUserException {
     Set<String> roles = new LinkedHashSet<String>();
     ResultSet rsRole = null;
     String sql = "SELECT user_role from " + userSchema + "user_roles "
@@ -598,8 +592,7 @@ public class UserFactory {
     return roles;
   }
 
-  private void saveUserRoles(User user) throws WdkUserException,
-      WdkModelException {
+  private void saveUserRoles(User user) throws WdkUserException {
     // get a list of original roles, and find the roles to be deleted and
     // added
     Set<String> oldRoles = getUserRoles(user);
@@ -655,8 +648,6 @@ public class UserFactory {
    * Save the basic information of a user
    * 
    * @param user
-   * @throws WdkUserException
-   * @throws WdkModelException
    */
   void saveUser(User user) throws WdkModelException {
     int userId = user.getUserId();
@@ -711,10 +702,8 @@ public class UserFactory {
    * update the time stamp of the activity
    * 
    * @param user
-   * @throws WdkUserException
-   * @throws WdkModelException
    */
-  private void updateUser(User user) throws WdkUserException, WdkModelException {
+  private void updateUser(User user) throws WdkUserException {
     PreparedStatement psUser = null;
     String sql = "UPDATE " + userSchema
         + "users SET last_active = ? WHERE user_id = ?";
@@ -872,9 +861,6 @@ public class UserFactory {
    * @param user
    * @return a list of 2 elements, the first is a map of global preferences, the
    *         second is a map of project-specific preferences.
-   * @throws WdkUserException
-   * @throws WdkModelException
-   * @throws SQLException
    */
   private List<Map<String, String>> getPreferences(User user)
       throws WdkModelException {
@@ -966,7 +952,7 @@ public class UserFactory {
   }
 
   void changePassword(String email, String oldPassword, String newPassword,
-      String confirmPassword) throws WdkUserException, WdkModelException {
+      String confirmPassword) throws WdkUserException {
     email = email.trim();
 
     if (newPassword == null || newPassword.trim().length() == 0)
@@ -1010,7 +996,7 @@ public class UserFactory {
   }
 
   public void savePassword(String email, String password)
-      throws WdkUserException, WdkModelException {
+      throws WdkUserException {
     email = email.trim();
     PreparedStatement ps = null;
     String sql = "UPDATE " + userSchema
@@ -1031,8 +1017,7 @@ public class UserFactory {
     }
   }
 
-  private boolean isExist(String email) throws WdkUserException,
-      WdkModelException {
+  private boolean isExist(String email) throws WdkUserException {
     email = email.trim();
     // check if user exists in the database. if not, fail and ask to create
     // the user first

@@ -54,7 +54,6 @@ public class AttributeQueryReference extends Reference {
 
   /**
    * @param twoPartName
-   * @throws WdkModelException
    */
   public AttributeQueryReference(String twoPartName) throws WdkModelException {
     super(twoPartName);
