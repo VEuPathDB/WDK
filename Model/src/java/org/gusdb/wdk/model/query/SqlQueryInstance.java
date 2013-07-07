@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.query;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
@@ -15,13 +14,11 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.dbms.SqlResultList;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -41,15 +38,6 @@ public class SqlQueryInstance extends QueryInstance {
   /**
    * @param query
    * @param values
-   * @throws WdkModelException
-   * @throws WdkUserException
-   * @throws JSONException
-   * @throws SQLException
-   * @throws NoSuchAlgorithmException
-   * @throws SQLException
-   * @throws JSONException
-   * @throws WdkUserException
-   * @throws NoSuchAlgorithmException
    */
   protected SqlQueryInstance(User user, SqlQuery query,
       Map<String, String> values, boolean validate, int assignedWeight,

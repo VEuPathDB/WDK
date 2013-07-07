@@ -9,7 +9,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -20,22 +19,16 @@ import java.util.Set;
 import java.util.Stack;
 
 import javax.sql.DataSource;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.util.BaseCLI;
-import org.json.JSONException;
-import org.xml.sax.SAXException;
 
 /**
  * @author xingao
@@ -48,10 +41,6 @@ public class StepCountUpdater extends BaseCLI {
 
     private static final Logger logger = Logger.getLogger(StepCountUpdater.class);
 
-    /**
-     * @param args
-     * @throws Exception
-     */
     public static void main(String[] args) throws Exception {
         String cmdName = System.getProperty("cmdName");
         StepCountUpdater updater = new StepCountUpdater(cmdName);
@@ -100,8 +89,7 @@ public class StepCountUpdater extends BaseCLI {
         }
 
         private void updateSteps(WdkModel wdkModel, User user)
-                throws WdkUserException, NoSuchAlgorithmException,
-                WdkModelException, SQLException, JSONException {
+                throws WdkModelException {
             Map<Integer, Step> steps = user.getStepsMap();
             for (Step step : steps.values()) {
                 int internalId = step.getInternalId();
@@ -204,8 +192,7 @@ public class StepCountUpdater extends BaseCLI {
         reader.close();
     }
 
-    private void loadUserIds(WdkModel wdkModel) throws SQLException,
-            WdkUserException, WdkModelException {
+    private void loadUserIds(WdkModel wdkModel) throws SQLException {
         ModelConfigUserDB userDb = wdkModel.getModelConfig().getUserDB();
         String userSchema = userDb.getUserSchema();
         String sql = "SELECT DISTINCT u.user_id FROM " + userSchema
@@ -228,12 +215,7 @@ public class StepCountUpdater extends BaseCLI {
         this.totalUsers = userIds.size();
     }
 
-    private void loadModels() throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException, IOException, SAXException, SQLException,
-            JSONException, InstantiationException, IllegalAccessException,
-            ClassNotFoundException {
+    private void loadModels() throws WdkModelException {
         String projectIds = (String) getOptionValue(ARG_PROJECT_ID);
         String[] projects = projectIds.split(",");
 

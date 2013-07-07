@@ -56,18 +56,12 @@ public class GroupTest {
         }
     }
 
-    /**
-     * @throws WdkModelException
-     */
     @Test(expected = WdkModelException.class)
     public void testGetInvalidGroupSet() throws WdkModelException {
         String gsetName = "NonexistGroupSet";
         wdkModel.getGroupSet(gsetName);
     }
 
-    /**
-     * @throws WdkModelException
-     */
     @Test
     public void testGetGroup() throws WdkModelException {
         for (GroupSet groupSet : wdkModel.getAllGroupSets()) {
@@ -84,9 +78,6 @@ public class GroupTest {
         }
     }
 
-    /**
-     * @throws WdkModelException
-     */
     @Test(expected = WdkModelException.class)
     public void testGetInvalidGroup() throws WdkModelException {
         String gName = "NonexistGroup";
@@ -98,9 +89,6 @@ public class GroupTest {
         }
     }
 
-    /**
-     * @throws WdkModelException
-     */
     @Test(expected = WdkModelException.class)
     public void testGetInvalidGroupByFullName() throws WdkModelException {
         String fullName = "NonexistGroupSet.NonexistGroup";

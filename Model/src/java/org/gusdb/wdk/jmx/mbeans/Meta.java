@@ -12,34 +12,42 @@ public class Meta extends BeanBase implements MetaMBean   {
     super();
   }
 
+  @Override
   public String getModelVersion() {
     return wdkModel.getVersion();
   }
-  
+
+  @Override
   public String getDisplayName() {
     return wdkModel.getDisplayName();
   }
-  
+
+  @Override
   public String getIntroduction() {
     return wdkModel.getIntroduction();
   }
 
+  @Override
   public String getProjectId() {
       return wdkModel.getProjectId();
   }
 
+  @Override
   public String getName() {
       return wdkModel.getProjectId();
   }
 
+  @Override
   public String getReleaseDate() {
       return wdkModel.getReleaseDate();
   }
 
+  @Override
   public String getBuildNumber() {
       return wdkModel.getBuildNumber();
   }
 
+  @Override
   public String getGusHome() {
       return wdkModel.getGusHome();
   }

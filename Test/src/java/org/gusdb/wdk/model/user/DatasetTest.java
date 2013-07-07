@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -13,7 +11,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -26,11 +23,7 @@ public class DatasetTest {
     private User user;
     private RecordClass recordClass;
 
-    /**
-     * @throws Exception
-     * 
-     */
-    public DatasetTest() throws Exception {
+    public DatasetTest() throws WdkModelException, WdkUserException {
         this.user = UnitTestHelper.getRegisteredUser();
         WdkModel wdkModel = UnitTestHelper.getModel();
         recordClass = wdkModel.getAllRecordClassSets()[0].getRecordClasses()[0];
@@ -91,8 +84,7 @@ public class DatasetTest {
     }
 
     private void compareDatasets(Dataset expected, Dataset actual)
-            throws WdkUserException, SQLException, WdkModelException,
-            NoSuchAlgorithmException, JSONException {
+            throws WdkModelException {
         Assert.assertEquals(expected.getChecksum(), actual.getChecksum());
         Assert.assertEquals(expected.getSummary(), actual.getSummary());
         Assert.assertEquals(expected.getUploadFile(), actual.getUploadFile());

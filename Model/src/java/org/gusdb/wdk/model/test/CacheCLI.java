@@ -25,10 +25,6 @@ public class CacheCLI extends BaseCLI {
     private static final String ARG_NO_SCHEMA = "noSchemaOutput";
     private static final String ARG_SHOW = "show";
 
-    /**
-     * @param args
-     * @throws Exception
-     */
     public static void main(String[] args) throws Exception {
         String cmdName = System.getProperty("cmdName");
         CacheCLI cacher = new CacheCLI(cmdName);

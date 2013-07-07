@@ -20,7 +20,8 @@ public class ArrayResultList<T> implements ResultList {
 
     /**
      * @param columns
-     * @throws WdkModelException
+     * @throws WdkModelException if the result has fewer columns than the
+     * column definition
      */
     public ArrayResultList(Map<String, Integer> columns, T[][] result)
             throws WdkModelException {
@@ -39,6 +40,7 @@ public class ArrayResultList<T> implements ResultList {
      * 
      * @see org.gusdb.wdk.model.dbms.ResultList#close()
      */
+    @Override
     public void close() {
         // move the current index out of the boundary
         rowIndex = result.length;
@@ -49,6 +51,7 @@ public class ArrayResultList<T> implements ResultList {
      * 
      * @see org.gusdb.wdk.model.dbms.ResultList#contains(java.lang.String)
      */
+    @Override
     public boolean contains(String columnName) {
         return columns.containsKey(columnName);
     }
@@ -58,6 +61,7 @@ public class ArrayResultList<T> implements ResultList {
      * 
      * @see org.gusdb.wdk.model.dbms.ResultList#get(java.lang.String)
      */
+    @Override
     public Object get(String columnName) throws WdkModelException {
         if (!contains(columnName))
             throw new WdkModelException(
@@ -74,6 +78,7 @@ public class ArrayResultList<T> implements ResultList {
      * 
      * @see org.gusdb.wdk.model.dbms.ResultList#next()
      */
+    @Override
     public boolean next() {
         rowIndex++;
         return (rowIndex < result.length);
