@@ -24,7 +24,6 @@ public class GroupSetBean {
     /**
      * @param name
      * @return
-     * @throws WdkModelException
      * @see org.gusdb.wdk.model.GroupSet#getGroup(java.lang.String)
      */
     public GroupBean getGroup( String name ) throws WdkModelException {

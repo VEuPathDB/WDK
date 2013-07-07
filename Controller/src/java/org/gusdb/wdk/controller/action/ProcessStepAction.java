@@ -3,7 +3,6 @@ package org.gusdb.wdk.controller.action;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -113,7 +112,7 @@ public class ProcessStepAction extends Action {
   }
 
   private StrategyBean getStrategy(HttpServletRequest request, UserBean user)
-      throws NoSuchAlgorithmException, WdkModelException, WdkUserException,
+      throws WdkModelException, WdkUserException,
       JSONException, SQLException {
 
     // get current strategy
@@ -137,8 +136,7 @@ public class ProcessStepAction extends Action {
   }
 
   private StepBean getRootStep(HttpServletRequest request, UserBean user,
-      StrategyBean strategy) throws WdkUserException, WdkModelException,
-      SQLException, JSONException {
+      StrategyBean strategy) throws WdkUserException, WdkModelException {
     String strategyKey = request.getParameter(PARAM_STRATEGY);
     if (strategyKey == null || strategyKey.length() == 0)
       throw new WdkUserException("No strategy was specified for "
@@ -161,8 +159,7 @@ public class ProcessStepAction extends Action {
       QuestionForm form, WdkModelBean wdkModel, UserBean user,
       StrategyBean strategy, StepBean step, String customName)
       throws NumberFormatException, WdkUserException, WdkModelException,
-      NoSuchAlgorithmException, SQLException, JSONException,
-      FileNotFoundException, IOException {
+      SQLException, JSONException, FileNotFoundException, IOException {
     logger.debug("Revising step...");
 
     // current step has to exist for revise
@@ -219,7 +216,7 @@ public class ProcessStepAction extends Action {
   private Map<Integer, Integer> insertStep(HttpServletRequest request,
       QuestionForm form, WdkModelBean wdkModel, UserBean user,
       StrategyBean strategy, StepBean step, String customName)
-      throws WdkUserException, WdkModelException, NoSuchAlgorithmException,
+      throws WdkUserException, WdkModelException,
       SQLException, JSONException, FileNotFoundException, IOException {
     logger.debug("Inserting step...");
 
@@ -281,7 +278,7 @@ public class ProcessStepAction extends Action {
   private Map<Integer, Integer> addStep(HttpServletRequest request,
       QuestionForm form, WdkModelBean wdkModel, UserBean user,
       StrategyBean strategy, String customName) throws WdkUserException,
-      NumberFormatException, WdkModelException, NoSuchAlgorithmException,
+      NumberFormatException, WdkModelException,
       SQLException, JSONException, FileNotFoundException, IOException {
     logger.debug("Adding step...");
 

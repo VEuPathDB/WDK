@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model.query.param;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -14,9 +12,6 @@ import junit.framework.Assert;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.query.param.Param;
-import org.gusdb.wdk.model.query.param.ParamSet;
 import org.json.JSONException;
 import org.junit.Test;
 
@@ -33,8 +28,7 @@ public class ParamTest {
     }
 
     @Test
-    public void testClone() throws NoSuchAlgorithmException, WdkModelException,
-            SQLException, JSONException, WdkUserException {
+    public void testClone() throws WdkModelException, JSONException {
         List<Param> params = new ArrayList<Param>();
         for (ParamSet paramSet : wdkModel.getAllParamSets()) {
             for (Param param : paramSet.getParams()) {
@@ -67,8 +61,7 @@ public class ParamTest {
     }
 
     @Test
-    public void testReplaceSql() throws NoSuchAlgorithmException, SQLException,
-            WdkModelException, JSONException, WdkUserException {
+    public void testReplaceSql() throws WdkModelException {
         for (ParamSet paramSet : wdkModel.getAllParamSets()) {
             for (Param param : paramSet.getParams()) {
                 String defaultValue = param.getDefault();
@@ -87,8 +80,7 @@ public class ParamTest {
     }
 
     @Test
-    public void testCompress() throws NoSuchAlgorithmException,
-            WdkModelException, WdkUserException {
+    public void testCompress() throws WdkModelException {
         // generate random input
         StringBuffer buffer = new StringBuffer();
         Random rand = UnitTestHelper.getRandom();

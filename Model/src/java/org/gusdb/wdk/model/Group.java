@@ -163,11 +163,12 @@ public class Group extends WdkModelBase {
     this.displayType = displayType;
   }
 
+  @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     // do nothing
   }
 
-  public void setResources(WdkModel model) throws WdkModelException {
+  public void setResources(WdkModel model) {
     // do nothing
   }
 

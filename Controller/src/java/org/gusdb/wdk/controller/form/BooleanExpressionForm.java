@@ -11,9 +11,8 @@ import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
- * form bean for holding the boolean expression string fro queryStep.jsp page
+ * form bean for holding the boolean expression string for queryStep.jsp page
  */
-
 public class BooleanExpressionForm extends ActionForm {
 
     private static final long serialVersionUID = -6371621860440022826L;
@@ -60,6 +59,7 @@ public class BooleanExpressionForm extends ActionForm {
      * validate the properties that have been sent from the HTTP request, and
      * return an ActionErrors object that encapsulates any validation errors
      */
+    @Override
     public ActionErrors validate(ActionMapping mapping,
             HttpServletRequest request) {
         ActionErrors errors = new ActionErrors();

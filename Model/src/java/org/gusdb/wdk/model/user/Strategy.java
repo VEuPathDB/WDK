@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
@@ -108,7 +107,7 @@ public class Strategy {
         return latestStep;
     }
 
-    public void setLatestStep(Step step) throws WdkModelException {
+    public void setLatestStep(Step step) {
         this.latestStep = step;
         // also update the cached info
         latestStepId = step.getDisplayId();
@@ -173,8 +172,7 @@ public class Strategy {
     }
 
     public void update(boolean overwrite) throws WdkUserException,
-            WdkModelException, SQLException, JSONException,
-            NoSuchAlgorithmException {
+            WdkModelException, SQLException {
         stepFactory.updateStrategy(user, this, overwrite);
     }
 
@@ -185,13 +183,13 @@ public class Strategy {
 
     public Map<Integer, Integer> addStep(int targetStepId, Step step)
             throws WdkModelException, WdkUserException, JSONException,
-            NoSuchAlgorithmException, SQLException {
+            SQLException {
         return updateStepTree(targetStepId, step);
     }
 
     public Map<Integer, Integer> editOrInsertStep(int targetStepId, Step step)
             throws WdkModelException, WdkUserException, JSONException,
-            NoSuchAlgorithmException, SQLException {
+            SQLException {
         logger.debug("Edit/Insert - target: " + targetStepId + ", new step: "
                 + step.getDisplayId());
 
@@ -200,7 +198,7 @@ public class Strategy {
 
     public Map<Integer, Integer> deleteStep(int stepId, boolean isBranch)
             throws WdkModelException, WdkUserException, JSONException,
-            NoSuchAlgorithmException, SQLException {
+            SQLException {
         Step step = getStepById(stepId);
         int targetStepId = step.getDisplayId();
 
@@ -250,7 +248,7 @@ public class Strategy {
 
     public Map<Integer, Integer> moveStep(int moveFromId, int moveToId,
             String branch) throws WdkModelException, WdkUserException,
-            JSONException, NoSuchAlgorithmException, SQLException {
+            JSONException, SQLException {
         Step targetStep;
         if (branch == null) {
             targetStep = getLatestStep();
@@ -319,7 +317,7 @@ public class Strategy {
 
     private Map<Integer, Integer> updateStepTree(int targetStepId, Step newStep)
             throws WdkModelException, WdkUserException, JSONException,
-            NoSuchAlgorithmException, SQLException {
+            SQLException {
         logger.debug("update step tree - target=" + targetStepId + ", newStep="
                 + newStep.getDisplayId());
         Map<Integer, Integer> stepIdsMap = new HashMap<Integer, Integer>();
@@ -378,8 +376,7 @@ public class Strategy {
         return stepIdsMap;
     }
 
-    public Step getFirstStep() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public Step getFirstStep() throws WdkModelException {
         return getLatestStep().getFirstStep();
     }
 
@@ -390,13 +387,8 @@ public class Strategy {
      * when the strategies properties are changed.
      * 
      * @return
-     * @throws JSONException
-     * @throws NoSuchAlgorithmException
-     * @throws WdkModelException
-     * @throws SQLException
-     * @throws WdkUserException
      */
-    public String getChecksum() throws JSONException, NoSuchAlgorithmException,
+    public String getChecksum() throws JSONException,
             WdkModelException, WdkUserException, SQLException {
         JSONObject jsStrategy = getJSONContent();
         // exclude version, since it will be updated whenever a strategy is opened.
@@ -429,10 +421,6 @@ public class Strategy {
 
     /**
      * @return the valid
-     * @throws JSONException
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
      */
     public boolean isValid() throws WdkModelException {
         if (latestStep != null) valid = latestStep.isValid();

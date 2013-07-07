@@ -24,7 +24,7 @@ public class PropertyListTest {
     }
 
     @Test
-    public void testGetPropertyList() throws WdkModelException {
+    public void testGetPropertyList() {
         Map<String, String[]> defaultPropertyList = wdkModel.getDefaultPropertyLists();
 
         for (QuestionSet questionSet : wdkModel.getAllQuestionSets()) {

@@ -29,6 +29,7 @@ public class ParamSet extends WdkModelBase implements ModelSetI {
         this.name = name;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -41,6 +42,7 @@ public class ParamSet extends WdkModelBase implements ModelSetI {
         return q;
     }
 
+    @Override
     public Object getElement(String name) {
         return paramMap.get(name);
     }
@@ -55,7 +57,7 @@ public class ParamSet extends WdkModelBase implements ModelSetI {
         return paramMap.containsKey(paramName);
     }
 
-    public void addParam(Param param) throws WdkModelException {
+    public void addParam(Param param) {
         param.setParamSet(this);
         if (paramList != null) paramList.add(param);
         else paramMap.put(param.getName(), param);
@@ -69,18 +71,21 @@ public class ParamSet extends WdkModelBase implements ModelSetI {
         return useTermOnly;
     }
 
+    @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
         for (Param param : paramMap.values()) {
             param.resolveReferences(model);
         }
     }
 
+    @Override
     public void setResources(WdkModel model) throws WdkModelException {
         for (Param param : paramMap.values()) {
             param.setResources(model);
         }
     }
 
+    @Override
     public String toString() {
         String newline = System.getProperty("line.separator");
         StringBuffer buf = new StringBuffer("ParamSet: name='" + name + "'");

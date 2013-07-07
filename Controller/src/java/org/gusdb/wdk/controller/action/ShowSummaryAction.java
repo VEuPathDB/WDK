@@ -3,8 +3,6 @@ package org.gusdb.wdk.controller.action;
 import java.io.File;
 import java.io.PrintWriter;
 import java.net.URLDecoder;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -35,7 +33,6 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -54,6 +51,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
     private static Logger logger = Logger.getLogger(ShowSummaryAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -118,7 +116,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
                 return new ActionForward(path, true);
             } else if (!noSkip && answerValue.getResultSize() == 1
                     && answerValue.getQuestion().isNoSummaryOnSingleRecord()) {
-                RecordBean rec = (RecordBean) answerValue.getRecords().next();
+                RecordBean rec = answerValue.getRecords().next();
                 forward = mapping.findForward(CConstants.SKIPTO_RECORD_MAPKEY);
                 String path = forward.getPath() + "?name="
                         + rec.getRecordClass().getFullName();
@@ -244,8 +242,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     }
 
     private StepBean getStep(HttpServletRequest request, UserBean wdkUser,
-            ActionForm form) throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            ActionForm form) throws WdkModelException, WdkUserException {
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         QuestionForm qForm = (QuestionForm) form;
         StepBean step;
@@ -319,9 +316,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     }
 
     private ActionForward getForward(HttpServletRequest request, StepBean step,
-            ActionMapping mapping) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+            ActionMapping mapping) throws WdkModelException {
         logger.debug("start getting forward");
 
         AnswerValueBean answerValue = step.getAnswerValue();
@@ -362,8 +357,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     }
 
     public static StepBean summaryPaging(HttpServletRequest request,
-            StepBean step) throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            StepBean step) throws WdkModelException {
         QuestionBean question = step.getQuestion();
         Map<String, String> paramValues = step.getParams();
         String filterName = step.getFilterName();
@@ -375,8 +369,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     public static StepBean summaryPaging(HttpServletRequest request,
             QuestionBean question, Map<String, String> params,
             String filterName, boolean deleted, int assignedWeight)
-            throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            throws WdkModelException {
         logger.debug("start summary paging...");
 
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
@@ -493,8 +486,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     }
 
     private static void prepareAttributes(HttpServletRequest request,
-            UserBean user, StepBean step) throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, JSONException, SQLException {
+            UserBean user, StepBean step) throws WdkModelException {
         AnswerValueBean answerValue = step.getAnswerValue();
         int start = getPageStart(request);
         int pageSize = getPageSize(request, step.getQuestion(), user);
@@ -533,9 +525,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     }
 
     private boolean updateSortingSummary(HttpServletRequest request,
-            UserBean wdkUser, String questionName)
-            throws NoSuchAlgorithmException, WdkModelException,
-            WdkUserException {
+            UserBean wdkUser, String questionName) {
         // update sorting key, if have
         String sortingChecksum = request.getParameter(CConstants.WDK_SORTING_KEY);
         boolean updated = false;
@@ -561,15 +551,9 @@ public class ShowSummaryAction extends ShowQuestionAction {
      * @param answerValue
      * @param filterName
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws WdkModelException
-     * @throws JSONException
-     * @throws WdkUserException
-     * @throws SQLException
      */
     private int getSize(AnswerValueBean answerValue, String filterName)
-            throws NoSuchAlgorithmException, WdkModelException, JSONException,
-            WdkUserException, SQLException {
+            throws WdkModelException {
 
         String key = answerValue.getChecksum();
         if (filterName != null) key += ":" + filterName;
@@ -610,8 +594,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
     }
 
     public static int getPageSize(HttpServletRequest request,
-            QuestionBean question, UserBean user) throws WdkUserException,
-            WdkModelException {
+            QuestionBean question, UserBean user) throws WdkModelException {
         int pageSize = user.getItemsPerPage();
         // check if the question is supposed to make answers containing all
         // records in one page

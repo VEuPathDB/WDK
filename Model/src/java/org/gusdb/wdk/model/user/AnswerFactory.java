@@ -16,7 +16,6 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
 import org.json.JSONObject;
@@ -47,7 +46,7 @@ public class AnswerFactory {
      */
     private Map<Answer, Answer> answers;
 
-    public AnswerFactory(WdkModel wdkModel) throws SQLException {
+    public AnswerFactory(WdkModel wdkModel) {
         this.wdkModel = wdkModel;
         this.userDb = wdkModel.getUserDb();
         this.wdkSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
@@ -89,9 +88,6 @@ public class AnswerFactory {
      * @param answerChecksum
      * @return an AnswerInfo object if the answer has been saved; otherwise,
      *         return null.
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
      */
     public Answer getAnswer(String questionName, String answerChecksum) throws WdkModelException {
         String projectId = wdkModel.getProjectId();

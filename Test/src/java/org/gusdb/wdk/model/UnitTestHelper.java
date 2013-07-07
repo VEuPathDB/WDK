@@ -47,26 +47,22 @@ public class UnitTestHelper {
         return random;
     }
 
-    public synchronized static WdkModel getModel() throws Exception {
+    public synchronized static WdkModel getModel() throws WdkModelException {
         if (wdkModel == null) {
             logger.info("Loading model...");
             String projectId = System.getProperty(Utilities.ARGUMENT_PROJECT_ID);
             String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
-            try {
-                wdkModel = WdkModel.construct(projectId, gusHome);
+            wdkModel = WdkModel.construct(projectId, gusHome);
 
-                // reset the cache
-                logger.info("resetting cache...");
-                CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
-                cacheFactory.resetCache(true, true);
-            } catch (Exception ex) {
-                throw ex;
-            }
+            // reset the cache
+            logger.info("resetting cache...");
+            CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
+            cacheFactory.resetCache(true, true);
         }
         return wdkModel;
     }
 
-    public synchronized static User getGuest() throws Exception {
+    public synchronized static User getGuest() throws WdkModelException {
         if (guest == null) {
             WdkModel wdkModel = getModel();
             guest = wdkModel.getUserFactory().createGuestUser();
@@ -76,7 +72,7 @@ public class UnitTestHelper {
         return guest;
     }
 
-    public synchronized static User getRegisteredUser() throws Exception {
+    public synchronized static User getRegisteredUser() throws WdkModelException, WdkUserException {
         if (registeredUser == null) {
             WdkModel wdkModel = getModel();
             UserFactory userFactory = wdkModel.getUserFactory();
@@ -101,19 +97,18 @@ public class UnitTestHelper {
      * answerParam nor datasetParam
      * 
      * @return
-     * @throws Exception
      */
-    public static Question getNormalQuestion() throws Exception {
+    public static Question getNormalQuestion() throws WdkModelException {
         if (normalQuestions == null) loadQuestions();
         return normalQuestions.get(random.nextInt(normalQuestions.size()));
     }
 
-    public static Question getDatasetParamQuestion() throws Exception {
+    public static Question getDatasetParamQuestion() throws WdkModelException {
         if (datasetQuestions == null) loadQuestions();
         return datasetQuestions.get(random.nextInt(datasetQuestions.size()));
     }
 
-    public static Step createNormalStep(User user) throws Exception {
+    public static Step createNormalStep(User user) throws WdkModelException {
         Question question = getNormalQuestion();
         List<ParamValuesSet> paramValueSets = question.getQuery().getParamValuesSets();
         ParamValuesSet paramValueSet = paramValueSets.get(random.nextInt(paramValueSets.size()));
@@ -121,7 +116,7 @@ public class UnitTestHelper {
         return user.createStep(question, params, (String) null, false, false, 0);
     }
 
-    private static void loadQuestions() throws Exception {
+    private static void loadQuestions() throws WdkModelException {
         WdkModel wdkModel = getModel();
         Map<String, List<Question>> allNormalQuestions = new HashMap<String, List<Question>>();
         Map<String, List<Question>> allAnswerQuestions = new HashMap<String, List<Question>>();
