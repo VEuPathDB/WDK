@@ -1,7 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -25,7 +23,6 @@ import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.json.JSONException;
 
 public class ShowSummaryViewAction extends Action {
 
@@ -37,6 +34,7 @@ public class ShowSummaryViewAction extends Action {
 
     private static final Logger logger = Logger.getLogger(ShowSummaryViewAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -90,8 +88,7 @@ public class ShowSummaryViewAction extends Action {
     }
 
     private void ProcessPaging(HttpServletRequest request, StepBean step)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
+            throws WdkModelException {
         int start = ShowSummaryAction.getPageStart(request);
         int pageSize = ShowSummaryAction.getPageSize(request,
                 step.getQuestion(), step.getUser());

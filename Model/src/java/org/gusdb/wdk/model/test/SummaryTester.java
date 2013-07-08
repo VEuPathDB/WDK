@@ -219,8 +219,7 @@ public class SummaryTester {
     }
 
     private static String getLowLevelQuery(AnswerValue answerValue)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         // QueryInstance instance = answer.getAttributesQueryInstance();
         QueryInstance instance = answerValue.getIdsQueryInstance();
         String query = (instance instanceof SqlQueryInstance) ? ((SqlQueryInstance) instance).getUncachedSql()

@@ -40,6 +40,7 @@ public class AttributeFieldBean extends FieldBean {
      * @return
      * @see org.gusdb.wdk.model.record.Field#getHelp()
      */
+    @Override
     public String getHelp() {
         return attributeField.getHelp();
     }

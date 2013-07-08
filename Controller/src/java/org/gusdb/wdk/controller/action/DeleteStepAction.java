@@ -25,8 +25,10 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  **/
 
 public class DeleteStepAction extends ProcessFilterAction {
-    private static final Logger logger = Logger.getLogger(DeleteStepAction.class);
 
+	private static final Logger logger = Logger.getLogger(DeleteStepAction.class);
+
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {

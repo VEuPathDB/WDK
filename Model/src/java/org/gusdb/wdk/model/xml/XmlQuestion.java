@@ -156,7 +156,7 @@ public class XmlQuestion extends WdkModelBase {
      * <sanityXmlQuestion ref="XmlQuestions.News" pageStart="1" pageEnd="20"
      * minOutputLength="1" maxOutputLength="100"/>
      */
-    public String getSanityTestSuggestion() throws WdkModelException {
+    public String getSanityTestSuggestion() {
         String indent = "    ";
         String newline = System.getProperty("line.separator");
         StringBuffer buf =
@@ -179,6 +179,7 @@ public class XmlQuestion extends WdkModelBase {
         this.recordClassRef = recordClassRef;
     }
 
+    @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
         // resolve the reference to XmlRecordClass
         recordClass = (XmlRecordClass) model.resolveReference(recordClassRef);

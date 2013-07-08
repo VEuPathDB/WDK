@@ -32,7 +32,7 @@ public enum BooleanOperator {
    * 
    * @param name
    * @return
-   * @throws WdkModelException
+   * @throws WdkModelException if invalid operator value
    */
   public static BooleanOperator parse(String name) throws WdkModelException {
     if (unions.size() == 0)

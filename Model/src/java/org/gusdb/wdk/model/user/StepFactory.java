@@ -967,9 +967,7 @@ public class StepFactory {
   }
 
   // This function only updates the strategies table
-  void updateStrategy(User user, Strategy strategy, boolean overwrite)
-      throws WdkUserException, WdkModelException, SQLException, JSONException,
-      NoSuchAlgorithmException {
+  void updateStrategy(User user, Strategy strategy, boolean overwrite) throws SQLException, WdkModelException, WdkUserException {
     logger.debug("Updating strategy internal#=" + strategy.getStrategyId()
         + ", overwrite=" + overwrite);
 

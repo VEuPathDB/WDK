@@ -11,7 +11,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.Step;
@@ -161,7 +160,6 @@ public class BooleanExpression {
    * 
    * @param block
    * @return
-   * @throws WdkUserException
    */
   private String[] getTriplet(String block) throws WdkModelException {
     int pos;
@@ -170,7 +168,7 @@ public class BooleanExpression {
     if (block.charAt(block.length() - 1) == ')') {
       int parenthese = 1;
       pos = block.length() - 2;
-      // find the paired closing parenthese
+      // find the paired closing parentheses
       while (pos >= 0 && parenthese > 0) {
         if (block.charAt(pos) == '(')
           parenthese--;
@@ -182,11 +180,11 @@ public class BooleanExpression {
       }
       if (parenthese != 0)
         throw new WdkModelException("Bad parentheses: " + orgExp);
-    } else { // no parenthese, then must be separated with space
+    } else { // no parentheses, then must be separated with space
       pos = block.lastIndexOf(" ");
     }
     String right = block.substring(pos).trim();
-    // remove parenthese if necessary
+    // remove parentheses if necessary
     int bound = right.length() - 1;
     if (right.charAt(0) == '(' && right.charAt(bound) == ')')
       right = right.substring(1, bound).trim();
@@ -204,7 +202,7 @@ public class BooleanExpression {
 
     // grab left piece
     String left = remain.substring(0, start).trim();
-    // remove parenthese if necessary
+    // remove parentheses if necessary
     bound = left.length() - 1;
     if (left.charAt(0) == '(' && left.charAt(bound) == ')')
       left = left.substring(1, bound).trim();

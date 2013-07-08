@@ -12,11 +12,10 @@
   // opts are sent to qtip. Data opts win
 
   $.fn.wdkTooltip = function(opts) {
-    var settings = $.extend(true, $.fn.wdkTooltip.defaults, opts);
-
-    return this.each(function() {
-      var $this = $(this);
-      var $data = $this.data();
+    return this.each(function(idx, node) {
+      var settings = $.extend(true, {}, $.fn.wdkTooltip.defaults, opts);
+      var $node = $(node);
+      var $data = $node.data();
       var dataOpts = {};
 
       if ($data.at) {
@@ -29,13 +28,13 @@
       }
       if ($data.content) {
         dataOpts.content = {
-          text: $this.find($data.content)
+          text: $node.find($data.content)
         };
       }
 
       var dataSettings = $.extend(true, settings, dataOpts);
 
-      $this.qtip(dataSettings);
+      $node.qtip(dataSettings);
     });
   };
 
