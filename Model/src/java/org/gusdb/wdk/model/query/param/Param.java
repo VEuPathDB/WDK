@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -65,6 +63,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
 
   protected static Logger logger = Logger.getLogger(Param.class);
 
+  @Override
   public abstract Param clone();
 
   /**
@@ -74,8 +73,6 @@ public abstract class Param extends WdkModelBase implements Cloneable {
    * @param user
    * @param rawValue
    * @return
-   * @throws WdkModelException
-   * @throws WdkUserException
    */
   public abstract String rawOrDependentValueToDependentValue(User user,
       String rawValue) throws WdkModelException;
@@ -96,11 +93,6 @@ public abstract class Param extends WdkModelBase implements Cloneable {
    * 
    * @param user
    * @param rawOrDependentValue
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
-   * @throws SQLException
-   * @throws JSONException
-   * @throws WdkUserException
    */
   protected abstract void validateValue(User user, String rawOrDependentValue)
       throws WdkModelException, WdkUserException;
@@ -116,8 +108,6 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   protected String help;
 
   protected String defaultValue;
-  @Deprecated
-  protected String sample;
 
   protected boolean visible;
   protected boolean readonly;
@@ -164,7 +154,6 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     this.prompt = param.prompt;
     this.help = param.help;
     this.defaultValue = param.defaultValue;
-    this.sample = param.sample;
     this.visible = param.visible;
     this.readonly = param.readonly;
     this.group = param.group;
@@ -242,18 +231,13 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     this.defaultValue = defaultValue;
   }
 
+  /**
+   * @throws WdkModelException if unable to retrieve default value
+   */
   public String getDefault() throws WdkModelException {
     if (defaultValue != null && defaultValue.length() == 0)
       defaultValue = null;
     return defaultValue;
-  }
-
-  /**
-   * @return the sample
-   */
-  @Deprecated
-  public String getSample() {
-    return this.sample;
   }
 
   /**
@@ -333,6 +317,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     this.suggestions.add(suggest);
   }
 
+  @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
     String classnm = this.getClass().getName();
@@ -378,7 +363,6 @@ public abstract class Param extends WdkModelBase implements Cloneable {
 
         suggest.excludeResources(projectId);
         defaultValue = suggest.getDefault();
-        sample = suggest.getSample();
         allowEmpty = suggest.isAllowEmpty();
         emptyValue = suggest.getEmptyValue();
 
@@ -447,20 +431,22 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     return jsParam;
   }
 
+  /**
+   * @throws WdkModelException if unable to load resources from model 
+   */
   public void setResources(WdkModel model) throws WdkModelException {
     this.wdkModel = model;
     this.queryFactory = model.getQueryFactory();
   }
 
-  public String replaceSql(String sql, String internalValue)
-      throws WdkModelException {
+  public final String replaceSql(String sql, String internalValue) {
     String regex = "\\$\\$" + name + "\\$\\$";
     // escape all single quotes in the value
     return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
   }
 
   public void validate(User user, String dependentValue)
-      throws WdkModelException, SQLException, JSONException, WdkUserException {
+      throws WdkModelException, WdkUserException {
     // handle the empty case
     if (dependentValue == null || dependentValue.length() == 0) {
       if (!allowEmpty)

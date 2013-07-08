@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.bug;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -13,7 +11,6 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -23,7 +20,6 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 import org.junit.Test;
 
 /**
@@ -92,9 +88,7 @@ public class Bug4446Test {
         return user.combineStep(expression);
     }
 
-    private Step createTransformStep(Step inputStep) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
+    private Step createTransformStep(Step inputStep) throws WdkModelException {
         // look for a transform question
         RecordClass recordClass = inputStep.getQuestion().getRecordClass();
         Question[] questions = recordClass.getTransformQuestions(true);

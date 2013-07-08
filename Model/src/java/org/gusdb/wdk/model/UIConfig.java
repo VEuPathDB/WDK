@@ -28,7 +28,8 @@ public class UIConfig extends WdkModelBase {
   public List<WdkCookie> getExtraLogoutCookies() {
     return extraLogoutCookies;
   }
-  
+
+  @Override
   public String toString() {
     return new StringBuilder()
       .append("UIConfig {").append(NL)

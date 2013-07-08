@@ -97,6 +97,7 @@ public class FullRecordCachedReporter extends Reporter {
         }
     }
 
+    @Override
     public String getConfigInfo() {
         return "This reporter does not have config info yet.";
     }
@@ -159,7 +160,7 @@ public class FullRecordCachedReporter extends Reporter {
         writer.flush();
     }
 
-    private Set<Field> validateColumns() throws WdkModelException {
+    private Set<Field> validateColumns() {
         // get a map of report maker fields
         Map<String, Field> fieldMap = getQuestion().getFields(
                 FieldScope.REPORT_MAKER);
@@ -184,8 +185,7 @@ public class FullRecordCachedReporter extends Reporter {
 
     private void formatRecord2Text(Set<AttributeField> attributes,
             Set<TableField> tables, PrintWriter writer)
-            throws WdkModelException, SQLException, NoSuchAlgorithmException,
-            JSONException, WdkUserException {
+            throws WdkModelException, SQLException {
         logger.debug("Include empty table: " + hasEmptyTable);
 
         // construct in clause

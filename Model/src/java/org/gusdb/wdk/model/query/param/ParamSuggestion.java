@@ -12,17 +12,9 @@ import org.gusdb.wdk.model.WdkModelException;
  * defined in this tag.
  * 
  * @author Jerric
- * 
  */
 public class ParamSuggestion extends WdkModelBase {
 
-  /**
-   * The sample provides a text display of possible values a param can take.
-   * However, since the information can be put into default value, and param's
-   * description, the sample is no longer needed.
-   */
-  @Deprecated
-  private String sample;
   private String defaultValue;
   /**
    * The allowEmpty & emptyValue is mainly used by stringParam. default, user
@@ -53,7 +45,6 @@ public class ParamSuggestion extends WdkModelBase {
    * the copy constructor is used by the clone methods
    */
   public ParamSuggestion(ParamSuggestion suggestion) {
-    this.sample = suggestion.sample;
     this.defaultValue = suggestion.defaultValue;
     this.allowEmpty = suggestion.allowEmpty;
     this.emptyValue = suggestion.emptyValue;
@@ -90,23 +81,6 @@ public class ParamSuggestion extends WdkModelBase {
   public void setDefault(String defaultValue) {
     this.defaultValue = (defaultValue.trim().length() == 0) ? null
         : defaultValue;
-  }
-
-  /**
-   * @return the sample
-   */
-  @Deprecated
-  public String getSample() {
-    return this.sample;
-  }
-
-  /**
-   * @param sample
-   *          the sample to set
-   */
-  @Deprecated
-  public void setSample(String sample) {
-    this.sample = sample;
   }
 
   /*

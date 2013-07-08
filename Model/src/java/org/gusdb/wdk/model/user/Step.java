@@ -201,7 +201,7 @@ public class Step {
    * @throws WdkModelException
    * @throws NoSuchAlgorithmException
    */
-  public String getCustomName() throws WdkModelException {
+  public String getCustomName() {
     String name = customName;
     if (name == null || name.length() == 0) {
       try {
@@ -224,13 +224,8 @@ public class Step {
   /**
    * @return Returns the custom name, if it is set. Otherwise, returns the short
    *         display name for the underlying question.
-   * @throws WdkModelException
-   * @throws SQLException
-   * @throws JSONException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
    */
-  public String getShortDisplayName() throws WdkModelException {
+  public String getShortDisplayName() {
     /*
      * String name = customName;
      * 
@@ -396,7 +391,7 @@ public class Step {
     this.collapsible = isCollapsible;
   }
 
-  public String getCollapsedName() throws WdkModelException {
+  public String getCollapsedName() {
     if (collapsedName == null && isCollapsible()) return getCustomName();
     return collapsedName;
   }
@@ -459,26 +454,23 @@ public class Step {
   }
 
   /* functions for navigating/manipulating step tree */
-  public Step getStep(int index) throws WdkUserException, WdkModelException,
-      SQLException, JSONException {
+  public Step getStep(int index) throws WdkModelException {
     Step[] steps = getAllSteps();
     return steps[index];
   }
 
-  public Step[] getAllSteps() throws WdkUserException, WdkModelException,
-      SQLException, JSONException {
+  public Step[] getAllSteps() throws WdkModelException {
     ArrayList<Step> allSteps = new ArrayList<Step>();
     allSteps = buildAllStepsArray(allSteps, this);
     return allSteps.toArray(new Step[allSteps.size()]);
   }
 
-  public int getLength() throws WdkUserException, WdkModelException,
-      SQLException, JSONException {
+  public int getLength() throws WdkModelException {
     return getAllSteps().length;
   }
 
   private ArrayList<Step> buildAllStepsArray(ArrayList<Step> array, Step step)
-      throws WdkUserException, WdkModelException, SQLException, JSONException {
+      throws WdkModelException {
     if (step.isFirstStep()) {
       array.add(step);
     } else {
@@ -515,8 +507,7 @@ public class Step {
     return null;
   }
 
-  public Step getStepByChildId(int childId) throws WdkUserException,
-      WdkModelException, SQLException, JSONException {
+  public Step getStepByChildId(int childId) throws WdkModelException {
     logger.debug("gettting step by child id. current=" + this + ", input="
         + childId);
     Step target;
@@ -540,8 +531,7 @@ public class Step {
     return null;
   }
 
-  public Step getStepByPreviousId(int previousId) throws WdkUserException,
-      WdkModelException, SQLException, JSONException {
+  public Step getStepByPreviousId(int previousId) throws WdkModelException {
     logger.debug("gettting step by prev id. current=" + this + ", input="
         + previousId);
     Step target;
@@ -596,7 +586,7 @@ public class Step {
   }
 
   public int getIndexFromId(int stepId) throws WdkUserException,
-      WdkModelException, SQLException, JSONException {
+      WdkModelException {
     Step[] steps = getAllSteps();
     for (int i = 0; i < steps.length; ++i) {
       if (steps[i].getStepId() == stepId
@@ -608,16 +598,14 @@ public class Step {
   }
 
   public Step createStep(String filterName, int assignedWeight)
-      throws NoSuchAlgorithmException, WdkModelException, JSONException,
-      WdkUserException, SQLException {
+      throws WdkModelException {
     RecordClass recordClass = getQuestion().getRecordClass();
     AnswerFilterInstance filter = recordClass.getFilter(filterName);
     return createStep(filter, assignedWeight);
   }
 
   public Step createStep(AnswerFilterInstance filter, int assignedWeight)
-      throws NoSuchAlgorithmException, WdkModelException, JSONException,
-      WdkUserException, SQLException {
+      throws WdkModelException {
     AnswerFilterInstance oldFilter = getFilter();
     if (filter == null && oldFilter == null
         && this.assignedWeight == assignedWeight) return this;
@@ -682,8 +670,7 @@ public class Step {
     return step;
   }
 
-  public boolean isFiltered() throws NoSuchAlgorithmException,
-      WdkModelException, JSONException, WdkUserException, SQLException {
+  public boolean isFiltered() {
     AnswerFilterInstance filter = getFilter();
     if (filter == null) return false;
 
@@ -700,14 +687,12 @@ public class Step {
     return (!defaultFilter.getName().equals(filter.getName()));
   }
 
-  public String getFilterDisplayName() throws NoSuchAlgorithmException,
-      WdkModelException, JSONException, WdkUserException, SQLException {
+  public String getFilterDisplayName() {
     AnswerFilterInstance filter = getFilter();
     return (filter != null) ? filter.getDisplayName() : filterName;
   }
 
-  public Step getFirstStep() throws WdkUserException, WdkModelException,
-      SQLException, JSONException {
+  public Step getFirstStep() throws WdkModelException {
     Step step = this;
     while (step.getPreviousStep() != null)
       step = step.getPreviousStep();
@@ -722,38 +707,36 @@ public class Step {
     }
   }
 
-  public JSONObject getJSONContent(int strategyId) throws JSONException,
-      WdkUserException, WdkModelException, SQLException {
+  public JSONObject getJSONContent(int strategyId) throws WdkModelException {
     JSONObject jsStep = new JSONObject();
 
-    jsStep.put("id", this.stepId);
-    jsStep.put("customName", this.customName);
-    jsStep.put("question", this.questionName);
-    jsStep.put("projectVersion", this.projectVersion);
-    jsStep.put("filter", this.filterName);
     try {
+      jsStep.put("id", this.stepId);
+      jsStep.put("customName", this.customName);
+      jsStep.put("question", this.questionName);
+      jsStep.put("projectVersion", this.projectVersion);
+      jsStep.put("filter", this.filterName);
       jsStep.put("collapsed", this.isCollapsible());
       jsStep.put("collapsedName", this.getCollapsedName());
-    } catch (WdkModelException ex) { // the question is invalid
-      jsStep.put("collapsed", false);
-      jsStep.put("collapsedName", "");
-    }
 
-    jsStep.put("deleted", deleted);
-    jsStep.put("size", this.estimateSize);
-    Step prevStep = getPreviousStep();
-    if (prevStep != null) {
-      jsStep.put("previous", prevStep.getJSONContent(strategyId));
-    }
-    Step childStep = getChildStep();
-    if (childStep != null) {
-      jsStep.put("child", childStep.getJSONContent(strategyId));
-    }
-    if (this.isCollapsible()) { // a sub-strategy, needs to get order number
-      String subStratId = strategyId + "_" + this.stepId;
-      Integer order = user.getStrategyOrder(subStratId);
-      if (order == null) order = 0; // the sub-strategy is not displayed
-      jsStep.put("order", order);
+      jsStep.put("deleted", deleted);
+      jsStep.put("size", this.estimateSize);
+      Step prevStep = getPreviousStep();
+      if (prevStep != null) {
+        jsStep.put("previous", prevStep.getJSONContent(strategyId));
+      }
+      Step childStep = getChildStep();
+      if (childStep != null) {
+        jsStep.put("child", childStep.getJSONContent(strategyId));
+      }
+      if (this.isCollapsible()) { // a sub-strategy, needs to get order number
+        String subStratId = strategyId + "_" + this.stepId;
+        Integer order = user.getStrategyOrder(subStratId);
+        if (order == null) order = 0; // the sub-strategy is not displayed
+        jsStep.put("order", order);
+      }
+    } catch (JSONException ex) {
+      throw new WdkModelException(ex);
     }
     return jsStep;
   }
@@ -800,8 +783,7 @@ public class Step {
     return answerValue;
   }
 
-  public boolean isUseBooleanFilter() throws NoSuchAlgorithmException,
-      WdkModelException, JSONException, WdkUserException, SQLException {
+  public boolean isUseBooleanFilter() throws WdkModelException {
     if (!isBoolean()) return false;
     BooleanQuery query = (BooleanQuery) getQuestion().getQuery();
     String paramName = query.getUseBooleanFilter().getName();
@@ -968,7 +950,7 @@ public class Step {
     return stepId + " (" + previousStepId + ", " + childStepId + ")";
   }
 
-  public boolean isUncollapsible() throws WdkModelException {
+  public boolean isUncollapsible() {
     // if the step hasn't been collapsed, it cannot be uncollapsed.
     if (!collapsible) return false;
 

@@ -67,8 +67,7 @@ public class JSONReporter extends Reporter {
      * @see org.gusdb.wdk.model.report.Reporter#setProperties(java.util.Map)
      */
     @Override
-    public void setProperties(Map<String, String> properties)
-            throws WdkModelException {
+    public void setProperties(Map<String, String> properties) throws WdkModelException {
         super.setProperties(properties);
 
         tableCache = properties.get(PROPERTY_TABLE_CACHE);
@@ -98,6 +97,7 @@ public class JSONReporter extends Reporter {
         }
     }
 
+    @Override
     public String getConfigInfo() {
         return "This reporter does not have config info yet.";
     }
@@ -296,8 +296,7 @@ public class JSONReporter extends Reporter {
 
     private void formatAttributes(RecordInstance record,
             Set<AttributeField> attributes, PrintWriter writer)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         // print out attributes of the record first
         if (attributes.size() > 0) writer.print(", \"fields\":[");
         int c = 0;
@@ -317,8 +316,7 @@ public class JSONReporter extends Reporter {
     private void formatTables(RecordInstance record, Set<TableField> tables,
             PrintWriter writer, AnswerValue answerValue,
             PreparedStatement psInsert, PreparedStatement psQuery)
-            throws WdkModelException, SQLException, NoSuchAlgorithmException,
-            JSONException, WdkUserException {
+            throws WdkModelException, SQLException, WdkUserException {
         DBPlatform platform = getQuestion().getWdkModel().getAppDb().getPlatform();
         RecordClass recordClass = record.getRecordClass();
         String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();

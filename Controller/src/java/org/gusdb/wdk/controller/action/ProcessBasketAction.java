@@ -4,8 +4,6 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.PrintWriter;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,6 +85,7 @@ public class ProcessBasketAction extends Action {
     
     private static final Logger logger = Logger.getLogger(ProcessBasketAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -146,15 +145,14 @@ public class ProcessBasketAction extends Action {
     }
 
     private RecordClassBean getRecordClass(HttpServletRequest request,
-            WdkModelBean wdkModel) throws WdkUserException, WdkModelException {
+            WdkModelBean wdkModel) throws WdkModelException {
         // get recordClass
         String type = request.getParameter(PARAM_TYPE);
         return wdkModel.findRecordClass(type);
     }
 
     private StepBean getStep(HttpServletRequest request, UserBean user)
-            throws WdkUserException, NoSuchAlgorithmException,
-            WdkModelException, SQLException, JSONException {
+            throws WdkUserException, WdkModelException {
         // get the step from step id
         String data = request.getParameter(PARAM_DATA);
         if (data == null || !data.matches("^\\d+$"))

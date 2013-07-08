@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.query;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -17,7 +16,6 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
@@ -88,13 +86,8 @@ public abstract class QueryInstance {
 
   /**
    * @return the instanceId
-   * @throws JSONException
-   * @throws WdkModelException
-   * @throws SQLException
-   * @throws NoSuchAlgorithmException
-   * @throws WdkUserException
    */
-  public int getInstanceId() throws WdkModelException {
+  public int getInstanceId() {
     return instanceId;
   }
 
@@ -136,7 +129,7 @@ public abstract class QueryInstance {
     checksum = null;
   }
 
-  public String getResultMessage() throws WdkModelException {
+  public String getResultMessage() {
     // make sure the result message is loaded by getting instance id
     getInstanceId();
     return resultMessage;

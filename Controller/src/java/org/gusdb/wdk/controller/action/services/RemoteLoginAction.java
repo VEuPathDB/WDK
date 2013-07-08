@@ -29,6 +29,7 @@ public class RemoteLoginAction extends Action {
 
     private static final Logger logger = Logger.getLogger(RemoteLoginAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {

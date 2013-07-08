@@ -68,8 +68,6 @@ public class XmlRecordClassTest {
 
     /**
      * get record class
-     * 
-     * @throws WdkModelException
      */
     @Test
     public void testGetXmlRecordClass() throws WdkModelException {

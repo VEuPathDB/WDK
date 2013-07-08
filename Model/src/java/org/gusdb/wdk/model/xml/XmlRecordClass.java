@@ -162,6 +162,7 @@ public class XmlRecordClass extends WdkModelBase {
         this.recordClassSet = recordClassSet;
     }
 
+    @Override
     public void resolveReferences(WdkModel model) {
     // do nothing at this time
     }

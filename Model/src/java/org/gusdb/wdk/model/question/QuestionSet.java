@@ -38,6 +38,7 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
         this.name = name;
     }
 
+    @Override
     public String getName() {
         return name;
     }
@@ -86,6 +87,7 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
         return questionMap.containsKey(questionName);
     }
 
+    @Override
     public Object getElement(String name) {
         return questionMap.get(name);
     }
@@ -119,22 +121,25 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
         return questionArraysByCategory;
     }
 
-    public void addQuestion(Question question) throws WdkModelException {
+    public void addQuestion(Question question) {
         question.setQuestionSet(this);
         if (questionList != null) questionList.add(question);
         else questionMap.put(question.getName(), question);
     }
 
+    @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
         for (Question question : questionMap.values()) {
             question.resolveReferences(model);
         }
     }
 
+    @Override
     public void setResources(WdkModel model) throws WdkModelException {
     // do nothing
     }
 
+    @Override
     public String toString() {
         String newline = System.getProperty("line.separator");
         StringBuffer buf = new StringBuffer("QuestionSet: name='" + getName()
