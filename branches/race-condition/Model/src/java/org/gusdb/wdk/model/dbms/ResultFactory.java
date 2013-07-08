@@ -32,7 +32,7 @@ public class ResultFactory {
   private CacheFactory cacheFactory;
   private WdkModel wdkModel;
 
-  public ResultFactory(WdkModel wdkModel) throws SQLException {
+  public ResultFactory(WdkModel wdkModel) {
     this.database = wdkModel.getAppDb();
     this.platform = database.getPlatform();
     this.cacheFactory = new CacheFactory(wdkModel, database);
@@ -202,7 +202,6 @@ public class ResultFactory {
    * @param connection
    * @param cacheTable
    * @param indexColumns
-   * @throws SQLException
    */
   private void resizeIndexColumns(String cacheTable, String[] indexColumns)
       throws WdkModelException {

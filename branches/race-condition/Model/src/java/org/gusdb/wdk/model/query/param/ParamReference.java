@@ -156,11 +156,9 @@ public class ParamReference extends Reference {
 
   /**
    * @param twoPartName
-   * @throws WdkModelException
    */
   public ParamReference(String twoPartName) throws WdkModelException {
     super(twoPartName);
-    // TODO Auto-generated constructor stub
   }
 
   /**

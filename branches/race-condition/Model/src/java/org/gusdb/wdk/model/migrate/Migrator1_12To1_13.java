@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.migrate;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,7 +19,6 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * @author Jerric
@@ -124,8 +122,7 @@ public class Migrator1_12To1_13 implements Migrator {
    */
   @Override
   public void migrate(WdkModel wdkModel, CommandLine commandLine)
-      throws WdkModelException, WdkUserException, NoSuchAlgorithmException,
-      SQLException {
+      throws WdkModelException, SQLException {
     // update histories
     DBPlatform platform = wdkModel.getUserDb().getPlatform();
     DataSource dataSource = wdkModel.getUserDb().getDataSource();

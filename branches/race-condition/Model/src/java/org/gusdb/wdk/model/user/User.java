@@ -114,7 +114,7 @@ public class User /* implements Serializable */{
    * @param wdkModel
    * @throws WdkUserException
    */
-  public void setWdkModel(WdkModel wdkModel) throws WdkUserException {
+  public void setWdkModel(WdkModel wdkModel) {
     this.wdkModel = wdkModel;
     this.userFactory = wdkModel.getUserFactory();
     this.stepFactory = wdkModel.getStepFactory();
@@ -847,7 +847,7 @@ public class User /* implements Serializable */{
   }
 
   public void changePassword(String oldPassword, String newPassword,
-      String confirmPassword) throws WdkUserException, WdkModelException {
+      String confirmPassword) throws WdkUserException {
     userFactory.changePassword(email, oldPassword, newPassword, confirmPassword);
   }
 
@@ -876,6 +876,8 @@ public class User /* implements Serializable */{
   /**
    * set this method synchronized to make sure the preferences are not updated
    * at the same time.
+   * 
+   * @throws WdkModelException
    */
   public synchronized void save() throws WdkModelException {
     userFactory.saveUser(this);
@@ -887,8 +889,7 @@ public class User /* implements Serializable */{
     return itemsPerPage;
   }
 
-  public void setItemsPerPage(int itemsPerPage) throws WdkUserException,
-      WdkModelException {
+  public void setItemsPerPage(int itemsPerPage) throws WdkModelException {
     if (itemsPerPage <= 0) itemsPerPage = 20;
     else if (itemsPerPage > 1000) itemsPerPage = 1000;
     setGlobalPreference(User.PREF_ITEMS_PER_PAGE,
@@ -960,7 +961,7 @@ public class User /* implements Serializable */{
   }
 
   public Map<String, Boolean> getSortingAttributesByChecksum(
-      String sortingChecksum) throws WdkUserException, WdkModelException {
+      String sortingChecksum) throws WdkModelException {
     if (sortingChecksum == null) return null;
     QueryFactory queryFactory = wdkModel.getQueryFactory();
     return queryFactory.getSortingAttributes(sortingChecksum);
@@ -1086,7 +1087,7 @@ public class User /* implements Serializable */{
    * @throws NoSuchAlgorithmException
    */
   public void applySummaryChecksum(String questionFullName,
-      String summaryChecksum) throws WdkModelException {
+      String summaryChecksum) {
     String summaryKey = questionFullName + SUMMARY_ATTRIBUTES_SUFFIX;
     projectPreferences.put(summaryKey, summaryChecksum);
   }
@@ -1164,8 +1165,7 @@ public class User /* implements Serializable */{
     return newStrategy;
   }
 
-  public Strategy[] getActiveStrategies() throws WdkModelException,
-      WdkUserException {
+  public Strategy[] getActiveStrategies() throws WdkUserException {
     int[] ids = activeStrategyFactory.getRootStrategies();
     List<Strategy> strategies = new ArrayList<Strategy>();
     for (int id : ids) {
@@ -1195,7 +1195,7 @@ public class User /* implements Serializable */{
     stepFactory.updateStrategyViewTime(strategyId);
   }
 
-  public void removeActiveStrategy(String strategyKey) throws WdkUserException {
+  public void removeActiveStrategy(String strategyKey) {
     activeStrategyFactory.closeActiveStrategy(strategyKey);
   }
 
@@ -1464,7 +1464,7 @@ public class User /* implements Serializable */{
   }
 
   public void setCurrentSummaryView(Question question, SummaryView summaryView)
-      throws WdkUserException, WdkModelException {
+      throws WdkModelException {
     String key = SUMMARY_VIEW_PREFIX + question.getFullName();
     if (summaryView == null) { // remove the current summary view
       projectPreferences.remove(key);
@@ -1489,7 +1489,7 @@ public class User /* implements Serializable */{
   }
 
   public void setCurrentRecordView(RecordClass recordClass,
-      RecordView recordView) throws WdkUserException, WdkModelException {
+      RecordView recordView) throws WdkModelException {
     String key = RECORD_VIEW_PREFIX + recordClass.getFullName();
     if (recordView == null) { // remove the current record view
       projectPreferences.remove(key);

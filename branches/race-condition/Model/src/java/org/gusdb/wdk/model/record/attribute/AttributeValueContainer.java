@@ -54,8 +54,8 @@ public abstract class AttributeValueContainer implements AttributeValueMap {
    * 
    * @see org.gusdb.wdk.model.record.attribute.AttributeValueMap#getAttributeValue(java.lang.String)
    */
-  public AttributeValue getAttributeValue(String fieldName)
-      throws WdkModelException {
+  @Override
+  public AttributeValue getAttributeValue(String fieldName) throws WdkModelException {
     // get the field from the cache; primary key always exists in the cache
     Map<String, AttributeField> fields = getAttributeFieldMap();
     AttributeField field = fields.get(fieldName);
@@ -105,6 +105,7 @@ public abstract class AttributeValueContainer implements AttributeValueMap {
    * 
    * @see org.gusdb.wdk.model.record.attribute.AttributeValueMap#addAttributeValue(org.gusdb.wdk.model.record.attribute.AttributeValue)
    */
+  @Override
   public void addAttributeValue(AttributeValue value) {
     attributeValueCache.put(value.getAttributeField().getName(), value);
   }

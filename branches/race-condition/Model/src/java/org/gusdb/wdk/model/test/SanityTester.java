@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.test;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -11,9 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.sql.DataSource;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -28,7 +23,6 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.ProcessQuery;
@@ -44,8 +38,6 @@ import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
-import org.xml.sax.SAXException;
 
 /**
  * SanityTester.java " [-project project_id]" +
@@ -91,11 +83,7 @@ public class SanityTester {
 
     public SanityTester(String modelName, boolean verbose,
             String testFilterString, boolean failuresOnly, boolean indexOnly,
-            boolean skipWebSvcQueries) throws WdkModelException,
-            WdkUserException, NoSuchAlgorithmException,
-            ParserConfigurationException, TransformerException, IOException,
-            SAXException, SQLException, JSONException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+            boolean skipWebSvcQueries) throws WdkModelException {
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
         this.wdkModel = WdkModel.construct(modelName, gusHome);
         this.verbose = verbose;
@@ -112,8 +100,7 @@ public class SanityTester {
     // Private Methods
     // ------------------------------------------------------------------
 
-    private void testQuestionSets() throws SQLException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, WdkUserException {
+    private void testQuestionSets() throws WdkModelException {
 
         System.out.println("Sanity Test:  Checking questions" + newline);
 
@@ -221,8 +208,7 @@ public class SanityTester {
     }
 
     private void testQuerySets(String queryType) throws SQLException,
-            WdkModelException, NoSuchAlgorithmException, JSONException,
-            WdkUserException {
+            WdkModelException {
 
         System.out.println("Sanity Test:  Checking " + queryType + " queries"
                 + newline);
@@ -347,9 +333,7 @@ public class SanityTester {
     }
 
     private int testNonAttributeQuery(QuerySet querySet, Query query,
-            ParamValuesSet paramValuesSet) throws SQLException,
-            WdkModelException, NoSuchAlgorithmException, JSONException,
-            WdkUserException {
+            ParamValuesSet paramValuesSet) throws WdkModelException {
 
         int count = 0;
 
@@ -366,8 +350,7 @@ public class SanityTester {
     }
 
     private int testAttributeQuery_Count(Query query,
-            ParamValuesSet paramValuesSet) throws NoSuchAlgorithmException,
-            SQLException, WdkModelException, JSONException, WdkUserException {
+            ParamValuesSet paramValuesSet) throws SQLException, WdkModelException {
         // put user id into the param
         Map<String, String> params = new LinkedHashMap<String, String>();
         
@@ -397,8 +380,7 @@ public class SanityTester {
 
     private void testAttributeQuery_Time(Query query,
             ParamValuesSet paramValuesSet, int count)
-            throws NoSuchAlgorithmException, SQLException, WdkModelException,
-            JSONException, WdkUserException {
+            throws SQLException, WdkModelException {
         // put user id into the param
         Map<String, String> params = new LinkedHashMap<String, String>();
 //        params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
@@ -418,14 +400,12 @@ public class SanityTester {
                     + ")";
             throw new WdkModelException(msg);
         }
-        while (resultSet.next())
-            ; // bring full result over to test speed
+        while (resultSet.next()) {} // bring full result over to test speed
         SqlUtils.closeResultSetAndStatement(resultSet);
     }
 
     private int testTableQuery_TotalTime(Query query)
-            throws NoSuchAlgorithmException, SQLException, WdkModelException,
-            JSONException, WdkUserException {
+            throws SQLException, WdkModelException {
         // put user id into the param
         Map<String, String> params = new LinkedHashMap<String, String>();
         //params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
@@ -445,8 +425,7 @@ public class SanityTester {
         return count;
     }
 
-    private void testRecordSets() throws SQLException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, WdkUserException {
+    private void testRecordSets() {
 
         System.out.println("Sanity Test:  Checking records" + newline);
 
@@ -658,12 +637,7 @@ public class SanityTester {
 
     // private static Logger logger = Logger.getLogger(SanityTester.class);
 
-    public static void main(String[] args) throws WdkModelException,
-            SAXException, IOException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            InstantiationException, IllegalAccessException, WdkUserException,
-            ClassNotFoundException {
+    public static void main(String[] args) throws WdkModelException, SQLException {
         String cmdName = System.getProperty("cmdName");
 
         Options options = declareOptions();

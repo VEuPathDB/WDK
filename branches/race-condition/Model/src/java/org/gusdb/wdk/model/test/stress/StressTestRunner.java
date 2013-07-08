@@ -60,7 +60,7 @@ public class StressTestRunner implements Runnable {
      * @param task
      * @param delay
      *            delay in seconds before starting the task
-     * @throws InvalidStatusException
+     * @throws InvalidStatusException if runner is in invalid state
      */
     public synchronized void assignTask( StressTestTask task, int delay )
             throws InvalidStatusException {
@@ -99,6 +99,7 @@ public class StressTestRunner implements Runnable {
      * 
      * @see java.lang.Runnable#run()
      */
+    @Override
     public void run() {
         running = true;
         stopped = false;

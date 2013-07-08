@@ -3,16 +3,11 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanOperator;
-import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -22,18 +17,18 @@ import org.junit.Test;
  */
 public class StepTest {
 
-  public static void compareStep(Step expectedStep, Step actualStep)
-      throws NoSuchAlgorithmException, WdkUserException, WdkModelException,
-      JSONException, SQLException {
-    Assert.assertEquals("step id", expectedStep.getStepId(),
-        actualStep.getStepId());
-    Assert.assertEquals("valid", expectedStep.isValid(), actualStep.isValid());
-    Assert.assertEquals("custom name", expectedStep.getCustomName(),
-        actualStep.getCustomName());
-    Assert.assertEquals("answer checksum",
-        expectedStep.getAnswerValue().getChecksum(),
-        actualStep.getAnswerValue().getChecksum());
-  }
+    public static void compareStep(Step expectedStep, Step actualStep)
+            throws WdkModelException {
+        Assert.assertEquals("step id", expectedStep.getStepId(),
+                actualStep.getStepId());
+        Assert.assertEquals("valid", expectedStep.isValid(),
+                actualStep.isValid());
+        Assert.assertEquals("custom name", expectedStep.getCustomName(),
+                actualStep.getCustomName());
+        Assert.assertEquals("answer checksum",
+                expectedStep.getAnswerValue().getChecksum(),
+                actualStep.getAnswerValue().getChecksum());
+    }
 
   private WdkModel wdkModel;
     private DatabaseInstance appDb;

@@ -2,7 +2,6 @@ package org.gusdb.wdk.model.answer;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -46,7 +45,6 @@ import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.report.TabularReporter;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 
 /**
  * <p>
@@ -160,7 +158,6 @@ public class AnswerValue {
    * @param endIndex
    *          The index of the last <code>RecordInstance</code> in the page,
    *          inclusive.
-   * @throws WdkUserException
    */
   public AnswerValue(User user, Question question,
       QueryInstance idsQueryInstance, int startIndex, int endIndex,
@@ -358,7 +355,6 @@ public class AnswerValue {
    * the checksum of the iq query, filter info is not included in it.
    * 
    * @return
-   * @throws WdkModelException
    */
   public String getChecksum() throws WdkModelException {
     String checksum = idsQueryInstance.getChecksum();
@@ -370,7 +366,6 @@ public class AnswerValue {
    * the answer's key is the checksum of the answer, plus the filter, if any.
    * 
    * @return
-   * @throws WdkModelException
    */
   public String getAnswerStringKey() throws WdkModelException {
     String key = getChecksum();
@@ -383,8 +378,7 @@ public class AnswerValue {
   // print methods
   // ///////////////////////////////////////////////////////////////////
 
-  public String printAsRecords() throws WdkModelException, WdkUserException,
-      NoSuchAlgorithmException, SQLException, JSONException {
+  public String printAsRecords() throws WdkModelException, WdkUserException {
     String newline = System.getProperty("line.separator");
     StringBuffer buf = new StringBuffer();
 
@@ -400,12 +394,8 @@ public class AnswerValue {
   /**
    * print summary attributes, one per line Note: not sure why this is needed
    * 
-   * @throws JSONException
-   * @throws SQLException
-   * @throws NoSuchAlgorithmException
    */
-  public String printAsSummary() throws WdkModelException, WdkUserException,
-      NoSuchAlgorithmException, SQLException, JSONException {
+  public String printAsSummary() throws WdkModelException {
     StringBuffer buf = new StringBuffer();
 
     initPageRecordInstances();
@@ -419,12 +409,8 @@ public class AnswerValue {
   /**
    * print summary attributes in tab delimited table with header of attr. names
    * 
-   * @throws JSONException
-   * @throws SQLException
-   * @throws NoSuchAlgorithmException
    */
-  public String printAsTable() throws WdkModelException, WdkUserException,
-      NoSuchAlgorithmException, SQLException, JSONException {
+  public String printAsTable() throws WdkModelException {
     String newline = System.getProperty("line.separator");
     StringBuffer buf = new StringBuffer();
 
@@ -462,15 +448,9 @@ public class AnswerValue {
    * @param reporterName
    * @param config
    * @return
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
-   * @throws SQLException
-   * @throws JSONException
-   * @throws WdkUserException
    */
   public Reporter createReport(String reporterName, Map<String, String> config)
-      throws WdkModelException, NoSuchAlgorithmException, SQLException,
-      JSONException, WdkUserException {
+      throws WdkModelException {
     // get the full answer
     int endI = getResultSize();
     return createReport(reporterName, config, 1, endI);
@@ -522,14 +502,8 @@ public class AnswerValue {
    * by an AnswerValue object.
    * 
    * @return
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
-   * @throws WdkUserException
-   * @throws SQLException
-   * @throws JSONException
    */
-  public Iterable<AnswerValue> getFullAnswers() throws WdkModelException,
-      NoSuchAlgorithmException, WdkUserException, SQLException, JSONException {
+  public Iterable<AnswerValue> getFullAnswers() throws WdkModelException {
     // user tabular reporter as answer iterator
     int resultSize = this.getResultSize();
     TabularReporter reporter = new TabularReporter(this, 1, resultSize);
@@ -547,11 +521,6 @@ public class AnswerValue {
    * 
    * The query is obtained from Column, and the query should not be modified.
    * 
-   * @throws SQLException
-   * @throws JSONException
-   * @throws NoSuchAlgorithmException
-   * @throws WdkModelException
-   * @throws WdkUserException
    */
   public void integrateAttributesQuery(Query attributeQuery)
       throws WdkModelException {
@@ -975,11 +944,6 @@ public class AnswerValue {
    * each with its id (either just primary key or that and project, if using a
    * federated data source).
    * 
-   * @throws JSONException
-   * @throws SQLException
-   * @throws NoSuchAlgorithmException
-   * @throws WdkModelException
-   * @throws WdkUserException
    */
   private void initPageRecordInstances() throws WdkModelException {
     if (pageRecordInstances != null)
@@ -1064,7 +1028,7 @@ public class AnswerValue {
     return startIndex;
   }
 
-  public String getResultMessage() throws WdkModelException {
+  public String getResultMessage() {
     return idsQueryInstance.getResultMessage();
   }
 
@@ -1076,10 +1040,8 @@ public class AnswerValue {
    * Set a new sorting map
    * 
    * @param sortingMap
-   * @throws WdkModelException
    */
-  public void setSortingMap(Map<String, Boolean> sortingMap)
-      throws WdkModelException {
+  public void setSortingMap(Map<String, Boolean> sortingMap) {
     if (sortingMap == null) {
       sortingMap = question.getSortingAttributeMap();
     }
@@ -1189,14 +1151,8 @@ public class AnswerValue {
    * them.
    * 
    * @return returns a list of all primary key values.
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
-   * @throws SQLException
-   * @throws JSONException
-   * @throws WdkUserException
    */
-  public Object[][] getPrimaryKeyValues() throws WdkModelException,
-      NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+  public Object[][] getPrimaryKeyValues() throws WdkModelException {
     String[] columns = question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
     List<Object[]> buffer = new ArrayList<Object[]>();
 
@@ -1260,7 +1216,7 @@ public class AnswerValue {
     return filter;
   }
 
-  public void setFilter(String filterName) throws WdkModelException {
+  public void setFilter(String filterName) {
     if (filterName != null) {
       RecordClass recordClass = question.getRecordClass();
       setFilter(recordClass.getFilter(filterName));
@@ -1294,14 +1250,8 @@ public class AnswerValue {
    * either one of them.
    * 
    * @return
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
-   * @throws SQLException
-   * @throws JSONException
-   * @throws WdkUserException
    */
-  public List<String[]> getAllIds() throws WdkModelException,
-      NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+  public List<String[]> getAllIds() throws WdkModelException, SQLException {
     String idSql = getSortedIdSql();
     PrimaryKeyAttributeField pkField = question.getRecordClass().getPrimaryKeyAttributeField();
     String[] pkColumns = pkField.getColumnRefs();

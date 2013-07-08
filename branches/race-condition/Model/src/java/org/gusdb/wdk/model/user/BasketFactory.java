@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,7 +18,6 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.Query;
@@ -36,7 +34,6 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
-import org.json.JSONException;
 
 /**
  * @author xingao
@@ -77,8 +74,7 @@ public class BasketFactory {
     }
 
     public void addToBasket(User user, Step step)
-            throws NoSuchAlgorithmException, WdkModelException, JSONException,
-            WdkUserException, SQLException {
+            throws WdkModelException, SQLException {
         logger.debug("adding to basket from step...");
 
         AnswerValue answerValue = step.getAnswerValue();
@@ -93,13 +89,9 @@ public class BasketFactory {
      * @param pkValues
      *            a list of primary key values. the inner map is a primary-key
      *            column-value map.
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
      */
     public void addToBasket(User user, RecordClass recordClass,
-            List<String[]> pkValues) throws SQLException, WdkUserException,
-            WdkModelException {
+            List<String[]> pkValues) throws SQLException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -177,8 +169,7 @@ public class BasketFactory {
     }
 
     public void removeFromBasket(User user, Step step)
-            throws NoSuchAlgorithmException, WdkModelException, JSONException,
-            WdkUserException, SQLException {
+            throws WdkModelException, SQLException {
         AnswerValue answerValue = step.getAnswerValue();
         RecordClass recordClass = answerValue.getQuestion().getRecordClass();
         List<String[]> pkValues = answerValue.getAllIds();
@@ -186,8 +177,7 @@ public class BasketFactory {
     }
 
     public void removeFromBasket(User user, RecordClass recordClass,
-            List<String[]> pkValues) throws SQLException, WdkUserException,
-            WdkModelException {
+            List<String[]> pkValues) throws SQLException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -236,7 +226,7 @@ public class BasketFactory {
     }
 
     public void clearBasket(User user, RecordClass recordClass)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
         int userId = user.getUserId();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -368,8 +358,7 @@ public class BasketFactory {
     }
 
     public String getBasket(User user, RecordClass recordClass)
-            throws WdkUserException, WdkModelException, SQLException,
-            NoSuchAlgorithmException, JSONException {
+            throws SQLException {
         String sql = "SELECT * FROM " + schema + TABLE_BASKET + " WHERE "
                 + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_USER_ID
                 + " = ? AND " + COLUMN_RECORD_CLASS + " =?";
@@ -423,15 +412,9 @@ public class BasketFactory {
      * the method has to be called before the recordClasses are resolved.
      * 
      * @param recordClass
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
-     * @throws SQLException
-     * @throws JSONException
-     * @throws WdkUserException
      */
     public void createSnapshotBasketQuestion(RecordClass recordClass)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         // check if the basket question already exists
         String qname = recordClass.getFullName().replace('.', '_')
                 + SNAPSHOT_BASKET_QUESTION_SUFFIX;
@@ -451,8 +434,7 @@ public class BasketFactory {
     }
 
     private Query getBasketSnapshotIdQuery(RecordClass recordClass)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
 
@@ -520,15 +502,9 @@ public class BasketFactory {
      * the method has to be called before the recordClasses are resolved.
      * 
      * @param recordClass
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
-     * @throws SQLException
-     * @throws JSONException
-     * @throws WdkUserException
      */
     public void createRealtimeBasketQuestion(RecordClass recordClass)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         // check if the basket question already exists
         String qname = recordClass.getFullName().replace('.', '_')
                 + REALTIME_BASKET_QUESTION_SUFFIX;
@@ -548,8 +524,7 @@ public class BasketFactory {
     }
 
     private Query getBasketRealtimeIdQuery(RecordClass recordClass)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         String dbLink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -619,15 +594,9 @@ public class BasketFactory {
      * 
      * @param recordClass
      * @return
-     * @throws WdkModelException
-     * @throws WdkUserException
-     * @throws JSONException
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
      */
     public void createBasketAttributeQuery(RecordClass recordClass)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         String dbLink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
         String projectId = wdkModel.getProjectId();
         String rcName = recordClass.getFullName();
@@ -688,7 +657,6 @@ public class BasketFactory {
      * this method has to be called before resolving the mdoel.
      * 
      * @param recordClass
-     * @throws WdkModelException
      */
     public void createAttributeQueryRef(RecordClass recordClass)
             throws WdkModelException {
@@ -726,13 +694,8 @@ public class BasketFactory {
      * synchronized at the end of a remote query, precede each remote query with
      * a dummy remote query to the same site (such as select * from
      * dual@remote)."
-     * 
-     * @throws WdkModelException
-     * @throws WdkUserException
-     * @throws SQLException
      */
-    private void checkRemoteTable() throws WdkModelException, WdkUserException,
-            SQLException {
+    private void checkRemoteTable() throws SQLException {
         String dblink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
         StringBuilder sql = new StringBuilder("SELECT count(*) FROM ");
         sql.append(schema).append(TABLE_BASKET).append(dblink);

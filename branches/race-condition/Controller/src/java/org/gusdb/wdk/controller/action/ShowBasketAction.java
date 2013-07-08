@@ -35,6 +35,7 @@ public class ShowBasketAction extends Action {
 
     private static Logger logger = Logger.getLogger(ShowBasketAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {

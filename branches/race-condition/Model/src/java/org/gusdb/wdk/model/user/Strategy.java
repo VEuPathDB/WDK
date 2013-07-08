@@ -104,7 +104,7 @@ public class Strategy {
     return latestStep;
   }
 
-  public void setLatestStep(Step step) throws WdkModelException {
+  public void setLatestStep(Step step) {
     this.latestStep = step;
     // also update the cached info
     latestStepId = step.getStepId();
@@ -160,8 +160,8 @@ public class Strategy {
     return getLatestStep().getStepByDisplayId(id);
   }
 
-  public void update(boolean overwrite) throws WdkUserException,
-      WdkModelException, SQLException, JSONException, NoSuchAlgorithmException {
+  public void update(boolean overwrite) throws WdkModelException,
+      WdkUserException, SQLException {
     stepFactory.updateStrategy(user, this, overwrite);
   }
 
@@ -171,14 +171,12 @@ public class Strategy {
   }
 
   public Map<Integer, Integer> addStep(int targetStepId, Step step)
-      throws WdkModelException, WdkUserException, JSONException,
-      NoSuchAlgorithmException, SQLException {
+      throws WdkModelException, WdkUserException, SQLException {
     return updateStepTree(targetStepId, step);
   }
 
   public Map<Integer, Integer> editOrInsertStep(int targetStepId, Step step)
-      throws WdkModelException, WdkUserException, JSONException,
-      NoSuchAlgorithmException, SQLException {
+      throws WdkModelException, WdkUserException, SQLException {
     logger.debug("Edit/Insert - target: " + targetStepId + ", new step: "
         + step.getStepId());
 
@@ -186,8 +184,7 @@ public class Strategy {
   }
 
   public Map<Integer, Integer> deleteStep(int stepId, boolean isBranch)
-      throws WdkModelException, WdkUserException, JSONException,
-      NoSuchAlgorithmException, SQLException {
+      throws WdkModelException, WdkUserException, SQLException {
     Step step = getStepById(stepId);
     int targetStepId = step.getStepId();
 
@@ -235,8 +232,7 @@ public class Strategy {
   }
 
   public Map<Integer, Integer> moveStep(int moveFromId, int moveToId,
-      String branch) throws WdkModelException, WdkUserException, JSONException,
-      NoSuchAlgorithmException, SQLException {
+      String branch) throws WdkModelException, WdkUserException, SQLException {
     Step targetStep;
     if (branch == null) {
       targetStep = getLatestStep();
@@ -300,8 +296,7 @@ public class Strategy {
   }
 
   private Map<Integer, Integer> updateStepTree(int targetStepId, Step newStep)
-      throws WdkModelException, WdkUserException, JSONException,
-      NoSuchAlgorithmException, SQLException {
+      throws WdkModelException, WdkUserException, SQLException {
     logger.debug("update step tree - target=" + targetStepId + ", newStep="
         + newStep.getStepId());
     Map<Integer, Integer> stepIdsMap = new HashMap<Integer, Integer>();
@@ -360,8 +355,7 @@ public class Strategy {
     return stepIdsMap;
   }
 
-  public Step getFirstStep() throws WdkUserException, WdkModelException,
-      SQLException, JSONException {
+  public Step getFirstStep() throws WdkModelException {
     return getLatestStep().getFirstStep();
   }
 
@@ -378,8 +372,7 @@ public class Strategy {
    * @throws SQLException
    * @throws WdkUserException
    */
-  public String getChecksum() throws JSONException, NoSuchAlgorithmException,
-      WdkModelException, WdkUserException, SQLException {
+  public String getChecksum() throws WdkModelException {
     JSONObject jsStrategy = getJSONContent();
     // exclude version, since it will be updated whenever a strategy is opened.
     jsStrategy.remove("version");
@@ -390,22 +383,26 @@ public class Strategy {
     return Utilities.encrypt(jsStrategy.toString());
   }
 
-  public JSONObject getJSONContent() throws JSONException, WdkUserException,
-      WdkModelException, SQLException {
+  public JSONObject getJSONContent() throws WdkModelException {
     JSONObject jsStrategy = new JSONObject();
-    jsStrategy.put("id", this.strategyId);
-    jsStrategy.put("name", this.name);
-    jsStrategy.put("savedName", this.savedName);
-    jsStrategy.put("description", this.description);
-    jsStrategy.put("saved", this.isSaved);
-    jsStrategy.put("deleted", this.isDeleted);
-    jsStrategy.put("valid", isValid());
-    jsStrategy.put("resultSize", getEstimateSize());
-    jsStrategy.put("version", getVersion());
-    jsStrategy.put("type", getRecordClass().getFullName());
 
-    JSONObject stepContent = getLatestStep().getJSONContent(this.strategyId);
-    jsStrategy.put("latestStep", stepContent);
+    try {
+      jsStrategy.put("id", this.strategyId);
+      jsStrategy.put("name", this.name);
+      jsStrategy.put("savedName", this.savedName);
+      jsStrategy.put("description", this.description);
+      jsStrategy.put("saved", this.isSaved);
+      jsStrategy.put("deleted", this.isDeleted);
+      jsStrategy.put("valid", isValid());
+      jsStrategy.put("resultSize", getEstimateSize());
+      jsStrategy.put("version", getVersion());
+      jsStrategy.put("type", getRecordClass().getFullName());
+
+      JSONObject stepContent = getLatestStep().getJSONContent(this.strategyId);
+      jsStrategy.put("latestStep", stepContent);
+    } catch (JSONException ex) {
+      throw new WdkModelException(ex);
+    }
     return jsStrategy;
   }
 

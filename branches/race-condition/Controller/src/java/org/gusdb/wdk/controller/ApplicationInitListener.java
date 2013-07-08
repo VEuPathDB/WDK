@@ -3,13 +3,10 @@ package org.gusdb.wdk.controller;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.controller.wizard.Wizard;
@@ -17,10 +14,8 @@ import org.gusdb.wdk.model.ThreadMonitor;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wsf.service.WsfService;
-import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 /**
@@ -78,9 +73,7 @@ public class ApplicationInitListener implements ServletContextListener {
 
     private void initMemberVars(ServletContext servletContext, String projectId,
             String gusHome, String alwaysGoToSummary, String loginUrl)
-            throws WdkModelException, NoSuchAlgorithmException,
-            TransformerFactoryConfigurationError, IOException, SAXException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException, IOException, SAXException {
         
         logger.info("Initializing model...");
         WdkModel wdkModelRaw = WdkModel.construct(projectId, gusHome);

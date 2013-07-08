@@ -28,6 +28,7 @@ public class QueryMonitor implements QueryLogConfig {
   private Set<Pattern> ignoreSlowRegexes = new LinkedHashSet<Pattern>();
   private Set<Pattern> ignoreBaselineRegexes = new LinkedHashSet<Pattern>();
 
+  @Override
   public double getBaseline() {
     return baseline;
   }
@@ -36,7 +37,7 @@ public class QueryMonitor implements QueryLogConfig {
     this.baseline = baseline;
   }
 
-  
+  @Override
   public double getSlow() {
     return slow;
   }
@@ -53,6 +54,7 @@ public class QueryMonitor implements QueryLogConfig {
     ignoreBaselineRegexes.add(Pattern.compile(regex));
   }
 
+  @Override
   public boolean isIgnoredSlow(String sql) {
     for (Pattern pattern : ignoreSlowRegexes) {
       if (pattern.matcher(sql).find())
@@ -61,6 +63,7 @@ public class QueryMonitor implements QueryLogConfig {
     return false;
   }
 
+  @Override
   public boolean isIgnoredBaseline(String sql) {
     for (Pattern pattern : ignoreBaselineRegexes) {
       if (pattern.matcher(sql).find())

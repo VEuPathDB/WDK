@@ -144,6 +144,7 @@ public class SearchCategory extends WdkModelBase {
     }
   }
 
+  @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     this.wdkModel = wdkModel;
     // get the base recordClass
