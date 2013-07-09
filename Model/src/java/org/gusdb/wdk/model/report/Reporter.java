@@ -13,7 +13,6 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
@@ -42,9 +41,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         private int resultSize;
 
         public PageAnswerIterator(AnswerValue answerValue, int startIndex,
-                int endIndex, int maxPageSize) throws WdkModelException,
-                NoSuchAlgorithmException, SQLException, JSONException,
-                WdkUserException {
+                int endIndex, int maxPageSize) throws WdkModelException {
             this.baseAnswer = answerValue;
 
             // determine the end index, which should be no bigger result size,
@@ -55,11 +52,13 @@ public abstract class Reporter implements Iterable<AnswerValue> {
             this.maxPageSize = maxPageSize;
         }
 
+        @Override
         public boolean hasNext() {
             // if the current
             return (startIndex <= endIndex);
         }
 
+        @Override
         public AnswerValue next() {
             // decide the new end index for the page answer
             int pageEndIndex = Math.min(endIndex, startIndex + maxPageSize - 1);
@@ -71,19 +70,15 @@ public abstract class Reporter implements Iterable<AnswerValue> {
                     pageEndIndex);
 
             // disable sorting if the total size is bigger than threshold
-            try {
-              if (resultSize > SORTING_THRESHOLD)
+            if (resultSize > SORTING_THRESHOLD)
                 answerValue.setSortingMap(new LinkedHashMap<String, Boolean>());
-            } catch(WdkModelException ex) {
-              throw new WdkRuntimeException(ex);
-            }
-
 
             // update the current index
             startIndex = pageEndIndex + 1;
             return answerValue;
         }
 
+        @Override
         public void remove() {
             throw new UnsupportedOperationException("This functionality is not implemented.");
         }
@@ -134,16 +129,16 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         config = new LinkedHashMap<String, String>();
     }
 
-    public void setProperties(Map<String, String> properties)
-            throws WdkModelException {
+    /**
+	 * @throws WdkModelException if error while setting properties on reporter 
+	 */
+    public void setProperties(Map<String, String> properties) throws WdkModelException {
         this.properties = properties;
         if (properties.containsKey(PROPERTY_PAGE_SIZE))
             maxPageSize = Integer.valueOf(properties.get(PROPERTY_PAGE_SIZE));
     }
 
-    public int getResultSize() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public int getResultSize() throws WdkModelException {
         return this.baseAnswer.getResultSize();
     }
 
@@ -164,7 +159,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
     /**
      * Hook used to perform any setup needed before calling the write method.
      * 
-     * @throws SQLException
+     * @throws WdkModelException if error while initializing reporter
      */
     protected abstract void initialize() throws WdkModelException;
 
@@ -201,28 +196,16 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         return baseAnswer.getQuestion();
     }
 
-    /**
-     * @return
-     * @throws WdkUserException 
-     * @throws WdkModelException 
-     */
-    protected Map<String, AttributeField> getSummaryAttributes() throws WdkModelException, WdkUserException {
+    protected Map<String, AttributeField> getSummaryAttributes() throws WdkModelException {
         return baseAnswer.getSummaryAttributeFieldMap();
     }
 
+    @Override
     public Iterator<AnswerValue> iterator() {
         try {
             return new PageAnswerIterator(baseAnswer, startIndex, endIndex,
                     maxPageSize);
         } catch (WdkModelException ex) {
-            throw new RuntimeException(ex);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new RuntimeException(ex);
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        } catch (JSONException ex) {
-            throw new RuntimeException(ex);
-        } catch (WdkUserException ex) {
             throw new RuntimeException(ex);
         }
     }

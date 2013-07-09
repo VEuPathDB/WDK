@@ -48,6 +48,7 @@ public class Cache extends BeanBase implements CacheMBean   {
    * }
    * </pre>
    */
+  @Override
   public String getcache_table_count() {
     String sql = cacheTableCountSql();
     if (sql == null) return "unsupported database platform: " + platformName;
@@ -108,6 +109,7 @@ public class Cache extends BeanBase implements CacheMBean   {
    *
    * @see org.gusdb.wdk.model.dbms.CacheFactory#resetCache
    */
+  @Override
   public void resetWdkCache() {
     try {
       CacheFactory factory = wdkModel.getResultFactory().getCacheFactory();      

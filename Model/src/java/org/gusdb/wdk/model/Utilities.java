@@ -129,20 +129,24 @@ public class Utilities {
 
     // Return html string in an InputStream.
     // A new stream must be returned each time.
+    @Override
     public InputStream getInputStream() throws IOException {
       if (html == null)
         throw new IOException("Null HTML");
       return new ByteArrayInputStream(html.getBytes());
     }
 
+    @Override
     public OutputStream getOutputStream() throws IOException {
       throw new IOException("This DataHandler cannot write HTML");
     }
 
+    @Override
     public String getContentType() {
       return "text/html";
     }
 
+    @Override
     public String getName() {
       return "JAF text/html dataSource to send e-mail only";
     }

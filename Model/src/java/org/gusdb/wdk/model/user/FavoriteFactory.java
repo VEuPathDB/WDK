@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,12 +19,10 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeValue;
-import org.json.JSONException;
 
 public class FavoriteFactory {
 
@@ -52,11 +49,6 @@ public class FavoriteFactory {
      * @param recordIds
      *            a list of primary key values. the inner map is a primary-key
      *            column-value map.
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
-     * @throws JSONException
-     * @throws NoSuchAlgorithmException
      */
     public void addToFavorite(User user, RecordClass recordClass,
             List<Map<String, Object>> recordIds) throws WdkModelException {
@@ -266,7 +258,7 @@ public class FavoriteFactory {
             Map<RecordClass, List<Favorite>> favorites = new LinkedHashMap<RecordClass, List<Favorite>>();
             while (rs.next()) {
                 String rcName = rs.getString(COLUMN_RECORD_CLASS);
-                RecordClass recordClass = (RecordClass) wdkModel.getRecordClass(rcName);
+                RecordClass recordClass = wdkModel.getRecordClass(rcName);
                 List<Favorite> list;
                 if (favorites.containsKey(recordClass)) {
                     list = favorites.get(recordClass);

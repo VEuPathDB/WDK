@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
@@ -262,8 +261,7 @@ public class StrategyTest {
   }
 
   @Test
-  public void testLoadSavedStrategy() throws NoSuchAlgorithmException,
-      WdkModelException, JSONException, WdkUserException, SQLException {
+  public void testLoadSavedStrategy() throws WdkModelException {
     Map<String, List<Strategy>> strategies = user.getSavedStrategiesByCategory();
     for (String category : strategies.keySet()) {
       for (Strategy strategy : strategies.get(category)) {
@@ -275,8 +273,7 @@ public class StrategyTest {
   }
 
   @Test
-  public void testLoadUnsavedStrategy() throws NoSuchAlgorithmException,
-      WdkModelException, JSONException, WdkUserException, SQLException {
+  public void testLoadUnsavedStrategy() throws WdkModelException {
     Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
     for (String category : strategies.keySet()) {
       for (Strategy strategy : strategies.get(category)) {
@@ -290,8 +287,7 @@ public class StrategyTest {
   }
 
   @Test
-  public void testRecentSavedStrategy() throws NoSuchAlgorithmException,
-      WdkModelException, JSONException, WdkUserException, SQLException {
+  public void testRecentSavedStrategy() throws WdkModelException {
     Calendar calender = Calendar.getInstance();
     calender.add(Calendar.DATE, -1);
     Date threshold = calender.getTime();
@@ -377,7 +373,7 @@ public class StrategyTest {
   }
 
   static void compareStrategy(Strategy expected, Strategy actual)
-      throws NoSuchAlgorithmException, WdkModelException, JSONException,
+      throws WdkModelException, JSONException,
       WdkUserException, SQLException {
     Assert.assertEquals("internal strategy id", expected.getInternalId(),
         actual.getInternalId());

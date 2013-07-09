@@ -84,6 +84,7 @@ public class ProcessFavoriteAction extends Action {
 
     private static final Logger logger = Logger.getLogger(ProcessFavoriteAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -137,7 +138,7 @@ public class ProcessFavoriteAction extends Action {
     }
 
     private RecordClassBean getRecordClass(HttpServletRequest request,
-            WdkModelBean wdkModel) throws WdkUserException, WdkModelException {
+            WdkModelBean wdkModel) throws WdkModelException {
         // get recordClass
         String type = request.getParameter(PARAM_TYPE);
         return wdkModel.findRecordClass(type);

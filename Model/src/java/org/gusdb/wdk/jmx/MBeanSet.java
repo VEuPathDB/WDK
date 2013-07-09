@@ -44,7 +44,7 @@ public class MBeanSet {
     Enumeration<?> e = props.propertyNames();
     while (e.hasMoreElements()) {
       String key = (String) e.nextElement();
-      map.put(key, (String)props.getProperty(key));
+      map.put(key, props.getProperty(key));
     }
 
     return Collections.unmodifiableMap(map);

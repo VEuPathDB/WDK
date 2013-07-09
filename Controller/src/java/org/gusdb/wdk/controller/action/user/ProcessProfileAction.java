@@ -8,7 +8,7 @@ import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 
 /**
@@ -85,7 +85,7 @@ public class ProcessProfileAction extends WdkAction {
           // Update profile succeed
           result.setRequestAttribute("profileSucceed", true);
         }
-        catch (WdkUserException ex) {
+        catch (WdkModelException ex) {
           // email exists, notify the user to input again
           result.setRequestAttribute(CConstants.WDK_PROFILE_ERROR_KEY, ex.getMessage());
         }

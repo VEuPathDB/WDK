@@ -23,6 +23,7 @@ public final class JmxInitListener implements ServletContextListener {
   private static final Logger logger = Logger.getLogger(JmxInitListener.class);
   MBeanRegistration registration;
   
+  @Override
   public void contextInitialized(ServletContextEvent sce) {
     ContextThreadLocal.set(sce.getServletContext());
     registration = new MBeanRegistration();
@@ -31,6 +32,7 @@ public final class JmxInitListener implements ServletContextListener {
 
   }
 
+  @Override
   public void contextDestroyed(ServletContextEvent sce) {
     registration.destroy();
   }

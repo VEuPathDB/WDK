@@ -27,10 +27,6 @@ public class WsfClientCLI extends BaseCLI {
     private static final String ARG_PARAMS = "params";
     private static final String ARG_COLUMNS = "columns";
 
-    /**
-     * @param args
-     * @throws Exception
-     */
     public static void main(String[] args) throws Exception {
         String cmdName = System.getProperty("cmdName");
         WsfClientCLI client = new WsfClientCLI(cmdName,
