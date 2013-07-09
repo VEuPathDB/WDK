@@ -151,7 +151,7 @@ public abstract class WdkModelBase {
    * project
    * 
    * @param projectId
-   * @throws WdkModelException
+   * @throws WdkModelException if error occurs excluding resources
    */
   public void excludeResources(String projectId) throws WdkModelException {
     // exclude property lists
@@ -172,6 +172,9 @@ public abstract class WdkModelBase {
 
   }
 
+  /**
+   * @throws WdkModelException if error occurs resolving references
+   */
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     this.wdkModel = wdkModel;
   }

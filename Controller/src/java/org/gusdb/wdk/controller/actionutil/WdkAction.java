@@ -180,7 +180,7 @@ public abstract class WdkAction implements SecondaryValidator {
   
   @SuppressWarnings("rawtypes")
   private Map<String, String[]> getTypedParamMap(Map parameterMap) {
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "cast" })
     Map<String, String[]> parameters = (Map<String, String[]>) (parameterMap == null ?
         new HashMap<>() : new HashMap<>((Map<String, String[]>)parameterMap));
     return parameters;
@@ -387,7 +387,7 @@ public abstract class WdkAction implements SecondaryValidator {
    * the session.
    * 
    * @return the current user (logged in or guest)
-   * @throws WdkModelException
+   * @throws WdkModelException if guest user is needed but unable to create guest user
    */
   protected UserBean getCurrentUser() throws WdkModelException {
     UserBean user = (UserBean)getSessionAttribute(CConstants.WDK_USER_KEY);

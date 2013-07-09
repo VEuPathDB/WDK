@@ -3,17 +3,10 @@
  */
 package org.gusdb.wdk.model.test.stress;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.InvalidPropertiesFormatException;
 
 import javax.sql.DataSource;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
@@ -22,11 +15,8 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.test.CommandHelper;
 import org.gusdb.wdk.model.test.stress.StressTestTask.ResultType;
-import org.json.JSONException;
-import org.xml.sax.SAXException;
 
 /**
  * @author: Jerric
@@ -43,28 +33,8 @@ public class StressTestAnalyzer {
     private WdkModel wdkModel;
     private DataSource dataSource;
 
-    /**
-     * @throws WdkModelException
-     * @throws ClassNotFoundException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws WdkUserException
-     * @throws JSONException
-     * @throws SQLException
-     * @throws SAXException
-     * @throws IOException
-     * @throws TransformerException
-     * @throws TransformerFactoryConfigurationError
-     * @throws ParserConfigurationException
-     * @throws NoSuchAlgorithmException
-     * 
-     */
     public StressTestAnalyzer(long testTag, String modelName)
-            throws WdkModelException, NoSuchAlgorithmException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException, IOException, SAXException, SQLException,
-            JSONException, WdkUserException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+            throws WdkModelException {
         logger.info("Initializing stress test analyzer on " + modelName
                 + " with test_tag=" + testTag);
         this.testTag = testTag;
@@ -75,8 +45,7 @@ public class StressTestAnalyzer {
         dataSource = wdkModel.getAppDb().getDataSource();
     }
 
-    public long getTaskCount() throws SQLException, WdkModelException,
-            WdkUserException {
+    public long getTaskCount() throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
@@ -84,8 +53,7 @@ public class StressTestAnalyzer {
                 sb.toString(), "wdk-stress-result-count");
     }
 
-    public long getTaskCount(String taskType) throws SQLException,
-            WdkModelException, WdkUserException {
+    public long getTaskCount(String taskType) throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
@@ -94,8 +62,7 @@ public class StressTestAnalyzer {
                 sb.toString(), "wdk-stress-result-count-by-type");
     }
 
-    public long getSucceededTaskCount() throws SQLException, WdkModelException,
-            WdkUserException {
+    public long getSucceededTaskCount() throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
@@ -104,8 +71,7 @@ public class StressTestAnalyzer {
                 sb.toString(), "wdk-stress-result-count-by-type");
     }
 
-    public long getSucceededTaskCount(String taskType) throws SQLException,
-            WdkModelException, WdkUserException {
+    public long getSucceededTaskCount(String taskType) throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
@@ -115,8 +81,7 @@ public class StressTestAnalyzer {
                 sb.toString(), "wdk-stress-result-count-by-type");
     }
 
-    public long getFailedTaskCount() throws SQLException, WdkModelException,
-            WdkUserException {
+    public long getFailedTaskCount() throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
@@ -125,8 +90,7 @@ public class StressTestAnalyzer {
                 sb.toString(), "wdk-stress-result-count-by-type");
     }
 
-    public long getFailedTaskCount(String taskType) throws SQLException,
-            WdkModelException, WdkUserException {
+    public long getFailedTaskCount(String taskType) throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
@@ -136,8 +100,7 @@ public class StressTestAnalyzer {
                 sb.toString(), "wdk-stress-result-count-by-type");
     }
 
-    public long getTaskCount(ResultType resultType) throws SQLException,
-            WdkModelException, WdkUserException {
+    public long getTaskCount(ResultType resultType) throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
@@ -147,7 +110,7 @@ public class StressTestAnalyzer {
     }
 
     public long getTaskCount(ResultType resultType, String taskType)
-            throws SQLException, WdkModelException, WdkUserException {
+            throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT count(*) FROM " + StressTester.TABLE_STRESS_RESULT);
         sb.append(" WHERE test_tag = " + testTag);
@@ -157,22 +120,19 @@ public class StressTestAnalyzer {
                 sb.toString(), "wdk-stress-result-count-by-type");
     }
 
-    public float getTaskSuccessRatio() throws SQLException, WdkModelException,
-            WdkUserException {
+    public float getTaskSuccessRatio() throws SQLException {
         long total = getTaskCount();
         long succeeded = getSucceededTaskCount();
         return ((float) succeeded / total);
     }
 
-    public float getTaskSuccessRatio(String taskType) throws SQLException,
-            WdkModelException, WdkUserException {
+    public float getTaskSuccessRatio(String taskType) throws SQLException {
         long total = getTaskCount(taskType);
         long succeeded = getSucceededTaskCount(taskType);
         return (total == 0) ? 0 : ((float) succeeded / total);
     }
 
-    public float getTotalResponseTime() throws SQLException, WdkUserException,
-            WdkModelException {
+    public float getTotalResponseTime() throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT sum(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
@@ -185,8 +145,7 @@ public class StressTestAnalyzer {
         return (sum / 1000F);
     }
 
-    public float getTotalResponseTime(String taskType) throws SQLException,
-            WdkUserException, WdkModelException {
+    public float getTotalResponseTime(String taskType) throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT sum(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
@@ -200,8 +159,7 @@ public class StressTestAnalyzer {
         return (sum / 1000F);
     }
 
-    public float getAverageResponseTime() throws SQLException,
-            WdkUserException, WdkModelException {
+    public float getAverageResponseTime() throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT avg(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
@@ -214,8 +172,7 @@ public class StressTestAnalyzer {
         return (average / 1000F);
     }
 
-    public float getAverageResponseTime(String taskType) throws SQLException,
-            WdkUserException, WdkModelException {
+    public float getAverageResponseTime(String taskType) throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT avg(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
@@ -229,8 +186,7 @@ public class StressTestAnalyzer {
         return (average / 1000F);
     }
 
-    public float getTotalSucceededResponseTime() throws SQLException,
-            WdkUserException, WdkModelException {
+    public float getTotalSucceededResponseTime() throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT sum(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
@@ -245,7 +201,7 @@ public class StressTestAnalyzer {
     }
 
     public float getTotalSucceededResponseTime(String taskType)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT sum(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
@@ -260,8 +216,7 @@ public class StressTestAnalyzer {
         return (sum / 1000F);
     }
 
-    public float getAverageSucceededResponseTime() throws SQLException,
-            WdkUserException, WdkModelException {
+    public float getAverageSucceededResponseTime() throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT avg(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
@@ -276,7 +231,7 @@ public class StressTestAnalyzer {
     }
 
     public float getAverageSucceededResponseTime(String taskType)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
         StringBuffer sb = new StringBuffer();
         sb.append("SELECT avg(end_time - start_time) FROM "
                 + StressTester.TABLE_STRESS_RESULT);
@@ -291,8 +246,7 @@ public class StressTestAnalyzer {
         return (average / 1000F);
     }
 
-    public void print() throws SQLException, WdkModelException,
-            WdkUserException {
+    public void print() throws SQLException {
         // print out results
 
         // print out all types results
@@ -361,30 +315,9 @@ public class StressTestAnalyzer {
 
     /**
      * @param args
-     * @throws WdkModelException
-     * @throws IOException
-     * @throws InvalidPropertiesFormatException
-     * @throws URISyntaxException
-     * @throws WdkUserException
-     * @throws SQLException
-     * @throws ClassNotFoundException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws JSONException
-     * @throws SAXException
-     * @throws TransformerException
-     * @throws TransformerFactoryConfigurationError
-     * @throws ParserConfigurationException
-     * @throws NoSuchAlgorithmException
      */
     public static void main(String[] args)
-            throws InvalidPropertiesFormatException, IOException,
-            WdkModelException, URISyntaxException, WdkUserException,
-            SQLException, NoSuchAlgorithmException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException, SAXException, JSONException,
-            InstantiationException, IllegalAccessException,
-            ClassNotFoundException {
+            throws WdkModelException, SQLException {
         String cmdName = System.getProperty("cmdName");
 
         // process args

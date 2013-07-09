@@ -6,6 +6,7 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.Date;
 import java.util.List;
 
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Dataset;
 
 /**
@@ -70,30 +71,20 @@ public class DatasetBean {
 
     /**
      * @return
-     * @throws Exception
+     * @throws WdkModelException 
      * @see org.gusdb.wdk.model.user.Dataset#getValues()
      */
-    public List<String> getValues() throws Exception {
-        try {
-            return dataset.getValues();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw ex;
-        }
+    public List<String> getValues() throws WdkModelException {
+      return dataset.getValues();
     }
 
     /**
      * @return
-     * @throws Exception
+     * @throws WdkModelException 
      * @see org.gusdb.wdk.model.user.Dataset#getValue()
      */
-    public String getValue() throws Exception {
-        try {
-            return dataset.getValue();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw ex;
-        }
+    public String getValue() throws WdkModelException {
+      return dataset.getValue();
     }
 
     /**

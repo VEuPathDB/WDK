@@ -21,8 +21,6 @@ import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wsf.util.BaseCLI;
 
@@ -39,10 +37,6 @@ public class StepValidator extends BaseCLI {
 
     private static final Logger logger = Logger.getLogger(StepValidator.class);
 
-    /**
-     * @param args
-     * @throws Exception
-     */
     public static void main(String[] args) throws Exception {
         String cmdName = System.getProperty("cmdName");
         StepValidator validator = new StepValidator(cmdName);
@@ -114,7 +108,7 @@ public class StepValidator extends BaseCLI {
     }
 
     private void resetFlags(WdkModel wdkModel, String projects)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
         logger.debug("resetting is_valid flags...");
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String userSchema = userDB.getUserSchema();
@@ -136,7 +130,7 @@ public class StepValidator extends BaseCLI {
     }
 
     private void detectQuestions(WdkModel wdkModel, String projects)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
         logger.debug("detecting invalid questions...");
 
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
@@ -160,7 +154,7 @@ public class StepValidator extends BaseCLI {
     }
 
     private void detectParams(WdkModel wdkModel, String projects)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
         logger.debug("detecting invalid params...");
 
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
@@ -195,7 +189,7 @@ public class StepValidator extends BaseCLI {
     }
 
     private void detectEnumParams(WdkModel wdkModel, String projects)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
         logger.debug("detecting invalid enum params...");
 
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
@@ -241,7 +235,7 @@ public class StepValidator extends BaseCLI {
     }
 
     private void flagSteps(WdkModel wdkModel, String projects)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
         logger.debug("flagging invalid steps...");
 
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
@@ -261,7 +255,7 @@ public class StepValidator extends BaseCLI {
     }
 
     private void flagDependentSteps(WdkModel wdkModel, String projects)
-            throws WdkUserException, WdkModelException, SQLException {
+            throws SQLException {
         logger.debug("Flagging invalid dependent steps. These are any steps other than leave steps: boolean, transforms,... Here the root of the strategy will get marked, which will translate into an invalid icon by the strategy.");
 
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
@@ -314,7 +308,7 @@ public class StepValidator extends BaseCLI {
     }
 
     private void deleteInvalidParams(WdkModel wdkModel)
-            throws WdkUserException, WdkModelException, SQLException {
+            throws SQLException {
         logger.info("Deleting params which doesn't have a valid step...");
         String userSchema = wdkModel.getModelConfig().getUserDB().getUserSchema();
 
@@ -328,7 +322,7 @@ public class StepValidator extends BaseCLI {
     }
 
     private void dropDanglingSteps(WdkModel wdkModel, String projects)
-            throws WdkUserException, WdkModelException, SQLException, IOException {
+            throws SQLException, IOException {
         logger.info("drop dangling steps table and related resources...");
 
         String stepTable = "wdk_dangle_steps";
@@ -372,8 +366,7 @@ public class StepValidator extends BaseCLI {
     }
 
     private void selectDanglingSteps(WdkModel wdkModel, String schema,
-            String danglingTable, String projects) throws WdkUserException,
-            WdkModelException, SQLException {
+            String danglingTable, String projects) throws SQLException {
         logger.debug("looking for dangling steps...");
 
         String stepTable = schema + "steps";
@@ -409,8 +402,7 @@ public class StepValidator extends BaseCLI {
     }
 
     private void selectParentSteps(WdkModel wdkModel, String schema,
-            String danglingTable, String parentTable) throws WdkUserException,
-            WdkModelException, SQLException {
+            String danglingTable, String parentTable) throws SQLException {
         logger.debug("looking for parents of dangling steps...");
 
         String stepTable = schema + "steps";
@@ -433,7 +425,7 @@ public class StepValidator extends BaseCLI {
 
     private void selectDanglingStrategies(WdkModel wdkModel, String schema,
             String strategyTable, String parentTable, String projects)
-            throws WdkUserException, WdkModelException, SQLException {
+            throws SQLException {
         logger.debug("Selecting dangling strategies...");
 
         String stratTable = schema + "strategies";
@@ -461,8 +453,7 @@ public class StepValidator extends BaseCLI {
     }
 
     private void reportDanglingStrategies(WdkModel wdkModel,
-            String strategyTable) throws WdkUserException, WdkModelException,
-            SQLException, IOException {
+            String strategyTable) throws SQLException, IOException {
         // determine the file name
         Calendar now = Calendar.getInstance();
         String name = "dangling-strategies_" + now.get(Calendar.YEAR) + "-"
@@ -517,8 +508,7 @@ public class StepValidator extends BaseCLI {
     }
 
     private void deleteDanglingStrategies(WdkModel wdkModel, String schema,
-            String strategyTable) throws WdkUserException, WdkModelException,
-            SQLException {
+            String strategyTable) throws SQLException {
         logger.debug("Deleting dangling strategies...");
 
         String stratTable = schema + "strategies";
@@ -535,8 +525,7 @@ public class StepValidator extends BaseCLI {
     }
 
     private void deleteDanglingSteps(WdkModel wdkModel, String schema,
-            String parentTable) throws WdkUserException, WdkModelException,
-            SQLException {
+            String parentTable) throws SQLException {
         logger.debug("Deleting dangling steps...");
 
         String stepTable = schema + "steps";
@@ -560,7 +549,7 @@ public class StepValidator extends BaseCLI {
 
     private void executeByBatch(WdkModel wdkModel, DataSource dataSource,
             String sql, String name, String dmlSql, String selectSql)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
 
         if ((dmlSql == null) || (selectSql == null)) {
             dmlSql = sql.substring(0, sql.indexOf("IN ", 0)) + " = ?";
@@ -612,8 +601,7 @@ public class StepValidator extends BaseCLI {
     // ---------------------------------------------------------------------------
 
     private void resetByBatch(WdkModel wdkModel, DataSource dataSource,
-            String sql, String name) throws SQLException, WdkUserException,
-            WdkModelException {
+            String sql, String name) throws SQLException {
 
         sql = sql + " AND is_valid is not NULL and rownum < 1000";
 

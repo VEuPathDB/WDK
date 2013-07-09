@@ -55,8 +55,6 @@ public class XmlQuestionTest {
     /**
      * The question set belongs to toy db, not sample db; although it is defined
      * in the same model
-     * 
-     * @throws WdkModelException
      */
     @org.junit.Test(expected = WdkModelException.class)
     public void testGetInvalidXmlQuestionSet() throws WdkModelException {
@@ -66,8 +64,6 @@ public class XmlQuestionTest {
 
     /**
      * get a known question, and verify its description
-     * 
-     * @throws WdkModelException
      */
     @org.junit.Test
     public void testGetXmlQuestionSet() throws WdkModelException {
@@ -80,8 +76,6 @@ public class XmlQuestionTest {
 
     /**
      * Test getting question and its properties
-     * 
-     * @throws WdkModelException
      */
     @org.junit.Test
     public void testGetXmlQuestion() throws WdkModelException {
@@ -100,8 +94,6 @@ public class XmlQuestionTest {
 
     /**
      * the question is excluded from the Sample DB
-     * 
-     * @throws WdkModelException
      */
     @org.junit.Test(expected = WdkModelException.class)
     public void testGetInvalidXmlQuestion() throws WdkModelException {
@@ -113,8 +105,6 @@ public class XmlQuestionTest {
 
     /**
      * the question is excluded from the Sample DB
-     * 
-     * @throws WdkModelException
      */
     @org.junit.Test(expected = WdkModelException.class)
     public void testGetInvalidXmlQuestionByFull() throws WdkModelException {

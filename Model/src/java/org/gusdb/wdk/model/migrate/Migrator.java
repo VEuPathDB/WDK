@@ -3,14 +3,6 @@
  */
 package org.gusdb.wdk.model.migrate;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -21,9 +13,6 @@ import org.apache.commons.cli.ParseException;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
-import org.xml.sax.SAXException;
 
 /**
  * @author Jerric
@@ -48,25 +37,9 @@ public class Migrator {
      * is migrated from
      * 
      * @param args
-     * @throws WdkModelException
-     * @throws WdkUserException
-     * @throws ClassNotFoundException
-     * @throws IllegalAccessException
-     * @throws InstantiationException
-     * @throws JSONException
-     * @throws SQLException
-     * @throws SAXException
-     * @throws IOException
-     * @throws TransformerException
-     * @throws TransformerFactoryConfigurationError
-     * @throws ParserConfigurationException
-     * @throws NoSuchAlgorithmException
      */
     public static void main(String[] args) throws WdkModelException,
-            WdkUserException, NoSuchAlgorithmException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException, IOException, SAXException, SQLException,
-            JSONException, InstantiationException, IllegalAccessException,
+            InstantiationException, IllegalAccessException,
             ClassNotFoundException {
         // determine which version of the migrator to be used
         Migrator migrator = new Migrator();
@@ -106,12 +79,7 @@ public class Migrator {
         declareOptions();
     }
 
-    public void parseOptions(String[] args) throws WdkModelException,
-            NoSuchAlgorithmException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException,
-            IOException, SAXException, SQLException, JSONException,
-            WdkUserException, InstantiationException, IllegalAccessException,
-            ClassNotFoundException {
+    public void parseOptions(String[] args) throws WdkModelException {
         commandName = System.getProperty("cmdName", "migrate");
 
         CommandLineParser parser = new BasicParser();
@@ -152,11 +120,11 @@ public class Migrator {
         return oldWdkSchema;
     }
 
-    public String getNewUserSchema() throws WdkUserException {
+    public String getNewUserSchema() {
         return wdkModel.getModelConfig().getUserDB().getUserSchema();
     }
 
-    public String getNewWdkSchema() throws WdkUserException {
+    public String getNewWdkSchema() {
         return wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
     }
 
@@ -225,12 +193,9 @@ public class Migrator {
     /**
      * start migration. This method will be overridden by sub-classes
      * 
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
-     * @throws JSONException 
+     * @throws WdkModelException if error occurs during migration
      */
-    public void migrate() throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+    public void migrate() throws WdkModelException {
         throw new UnsupportedOperationException("The subclass must implement"
                 + " this method.");
     }

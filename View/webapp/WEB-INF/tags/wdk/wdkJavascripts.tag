@@ -73,6 +73,7 @@
       <script src="${urlBase}/wdk/js/src/plugins/wdkDataTables.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/plugins/wdkEditable.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/plugins/wdkSimpleToggle.js"><jsp:text/></script>
+      <script src="${urlBase}/wdk/js/src/plugins/wdkTooltip.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/strategy/controller.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/strategy/error.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/strategy/model.js"><jsp:text/></script>

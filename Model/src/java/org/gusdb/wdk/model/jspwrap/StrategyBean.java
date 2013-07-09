@@ -1,7 +1,6 @@
 package org.gusdb.wdk.model.jspwrap;
 
 import java.sql.SQLException;
-import java.security.NoSuchAlgorithmException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -87,8 +86,7 @@ public class StrategyBean {
         return strategy.getLastModifiedTime();
     }
 
-    public StepBean getLatestStep() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public StepBean getLatestStep() throws WdkModelException {
         return new StepBean(user, strategy.getLatestStep());
     }
     
@@ -120,13 +118,11 @@ public class StrategyBean {
     // strategy.addStep(step.step);
     // }
 
-    public void setLatestStep(StepBean step) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+    public void setLatestStep(StepBean step) {
         strategy.setLatestStep(step.step);
     }
 
-    public StepBean getStepById(int stepId) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+    public StepBean getStepById(int stepId) throws WdkModelException {
         Step target = strategy.getStepById(stepId);
         if (target != null) {
             return new StepBean(user, target);
@@ -140,46 +136,43 @@ public class StrategyBean {
     }
 
     public void update(boolean overwrite) throws WdkUserException,
-            WdkModelException, SQLException, JSONException,
-            NoSuchAlgorithmException {
+            WdkModelException, SQLException {
         strategy.update(overwrite);
     }
 
     public Map<Integer, Integer> addStep(int targetStepId, StepBean step)
             throws WdkModelException, WdkUserException, JSONException,
-            NoSuchAlgorithmException, SQLException {
+            SQLException {
         return strategy.addStep(targetStepId, step.step);
     }
 
     public Map<Integer, Integer> editOrInsertStep(int targetStepId,
             StepBean step) throws WdkModelException, WdkUserException,
-            JSONException, NoSuchAlgorithmException, SQLException {
+            JSONException, SQLException {
         return strategy.editOrInsertStep(targetStepId, step.step);
     }
 
     public Map<Integer, Integer> moveStep(int moveFromId, int moveToId,
             String branch) throws WdkModelException, WdkUserException,
-            JSONException, NoSuchAlgorithmException, SQLException {
+            JSONException, SQLException {
         return strategy.moveStep(moveFromId, moveToId, branch);
     }
 
     public Map<Integer, Integer> deleteStep(int stepId, boolean isBranch)
             throws WdkModelException, WdkUserException, JSONException,
-            NoSuchAlgorithmException, SQLException {
+            SQLException {
         return strategy.deleteStep(stepId, isBranch);
     }
 
-    public String getImportId() throws NoSuchAlgorithmException, JSONException,
-            WdkModelException {
+    public String getImportId() {
         return strategy.getSignature();
     }
 
-    public StepBean getFirstStep() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public StepBean getFirstStep() throws WdkModelException {
         return new StepBean(user, strategy.getFirstStep());
     }
 
-    public String getChecksum() throws NoSuchAlgorithmException, JSONException,
+    public String getChecksum() throws JSONException,
             WdkModelException, WdkUserException, SQLException {
         return strategy.getChecksum();
     }
@@ -216,14 +209,9 @@ public class StrategyBean {
 
     /**
      * @return
-     * @throws JSONException
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
      * @see org.gusdb.wdk.model.user.Strategy#isValid()
      */
-    public boolean isValid() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public boolean isValid() throws WdkModelException {
         return strategy.isValid();
     }
 

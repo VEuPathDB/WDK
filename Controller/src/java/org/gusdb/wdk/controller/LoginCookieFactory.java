@@ -42,6 +42,8 @@ public class LoginCookieFactory {
     public String getUsername() { return _username; }
     public boolean isRemember() { return _remember; }
     public String getChecksum() { return _checksum; }
+
+    @Override
     public String toString() { return "{ " + _username + ", " + _remember + ", " + _checksum + " }"; }
   }
   
@@ -94,7 +96,7 @@ public class LoginCookieFactory {
    * 
    * @param cookieValue value of a WDK auth cookie
    * @return object representing parsed cookie parts
-   * @throws WdkModelException 
+   * @throws WdkModelException if unable to decode cookie string using UTF-8 encoding
    * @throws IllegalArgumentException if cookie value is malformed
    */
   public static LoginCookieParts parseCookieValue(String cookieValue) throws WdkModelException {

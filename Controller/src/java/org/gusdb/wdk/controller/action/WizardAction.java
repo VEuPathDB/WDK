@@ -1,8 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,7 +24,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.json.JSONException;
 
 public class WizardAction extends Action {
 
@@ -139,8 +136,7 @@ public class WizardAction extends Action {
 
     private void loadStrategy(HttpServletRequest request,
             WizardForm wizardForm, UserBean user) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, JSONException,
-            SQLException {
+            WdkModelException {
         int stratId = wizardForm.getStrategyId();
         StrategyBean strategy = user.getStrategy(stratId);
 
