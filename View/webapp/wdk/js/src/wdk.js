@@ -315,7 +315,7 @@ function getWebAppUrl() {
     //     viewport: $(window)
     //   }
     // });
-    $(".wdk-tooltip").not(".qtip").wdkTooltip();
+    $(".wdk-tooltip").wdkTooltip();
   };
 
   var registerSnippet = function() {
