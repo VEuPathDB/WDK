@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.fix;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,10 +30,6 @@ public class StrategyFixer extends BaseCLI {
 
     private static final Logger logger = Logger.getLogger(StrategyFixer.class);
 
-    /**
-     * @param args
-     * @throws Exception
-     */
     public static void main(String[] args) throws Exception {
         String cmdName = System.getProperty("cmdName");
         StrategyFixer fixer = new StrategyFixer(cmdName);
@@ -86,7 +81,7 @@ public class StrategyFixer extends BaseCLI {
     }
 
     private void generateSignatures(WdkModel wdkModel) throws SQLException,
-            NoSuchAlgorithmException, WdkModelException {
+            WdkModelException {
         String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
 
         StringBuffer sqlSelect = new StringBuffer(

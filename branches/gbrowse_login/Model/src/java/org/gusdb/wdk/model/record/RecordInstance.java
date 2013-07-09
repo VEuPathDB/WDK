@@ -54,11 +54,6 @@ public class RecordInstance extends AttributeValueContainer {
    * 
    * @param recordClass
    * @param primaryKey
-   * @throws WdkModelException
-   * @throws WdkUserException
-   * @throws JSONException
-   * @throws SQLException
-   * @throws NoSuchAlgorithmException
    */
   public RecordInstance(User user, RecordClass recordClass,
       Map<String, Object> pkValues) throws WdkModelException {
@@ -79,16 +74,7 @@ public class RecordInstance extends AttributeValueContainer {
     setPrimaryKey(primaryKey);
   }
 
-  /**
-   * @throws WdkUserException
-   * @throws JSONException
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
-   * 
-   */
-  public RecordInstance(AnswerValue answerValue, Map<String, Object> pkValues)
-      throws WdkModelException {
+  public RecordInstance(AnswerValue answerValue, Map<String, Object> pkValues) {
     this.answerValue = answerValue;
     this.recordClass = answerValue.getQuestion().getRecordClass();
     this.isValidRecord = true;
@@ -214,6 +200,7 @@ public class RecordInstance extends AttributeValueContainer {
     return attributeFields.get(fieldName);
   }
 
+  @Override
   public PrimaryKeyAttributeValue getPrimaryKey() {
     return primaryKey;
   }
@@ -244,14 +231,8 @@ public class RecordInstance extends AttributeValueContainer {
 
   /**
    * @return Map of tableName -> TableFieldValue
-   * @throws JSONException
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
-   * @throws WdkUserException
    */
-  public Map<String, TableValue> getTables() throws NoSuchAlgorithmException,
-      WdkModelException, SQLException, JSONException, WdkUserException {
+  public Map<String, TableValue> getTables() throws WdkModelException, WdkUserException {
     Map<String, TableValue> values = new LinkedHashMap<String, TableValue>();
     for (TableField field : recordClass.getTableFields()) {
       String name = field.getName();
@@ -263,31 +244,19 @@ public class RecordInstance extends AttributeValueContainer {
 
   /**
    * @return Map of attributeName -> AttributeFieldValue
-   * @throws JSONException
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
-   * @throws WdkUserException
    */
 
   public Map<String, AttributeValue> getAttributeValueMap()
-      throws NoSuchAlgorithmException, WdkModelException, SQLException,
-      JSONException, WdkUserException {
+      throws WdkModelException {
     return getAttributeValueMap(FieldScope.ALL);
   }
 
   /**
    * @param scope
    * @return
-   * @throws NoSuchAlgorithmException
-   * @throws WdkModelException
-   * @throws SQLException
-   * @throws JSONException
-   * @throws WdkUserException
    */
   public Map<String, AttributeValue> getAttributeValueMap(FieldScope scope)
-      throws NoSuchAlgorithmException, WdkModelException, SQLException,
-      JSONException, WdkUserException {
+      throws WdkModelException {
     Map<String, AttributeField> fields = getAttributeFieldMap(scope);
     Map<String, AttributeValue> values = new LinkedHashMap<String, AttributeValue>();
 
@@ -300,8 +269,7 @@ public class RecordInstance extends AttributeValueContainer {
 
   // change name of method?
   public Map<String, RecordInstance> getNestedRecordInstances()
-      throws WdkModelException, WdkUserException, NoSuchAlgorithmException,
-      SQLException, JSONException {
+      throws WdkModelException {
 
     Map<String, RecordInstance> riMap = new LinkedHashMap<String, RecordInstance>();
     Question nq[] = this.recordClass.getNestedRecordQuestions();
@@ -330,8 +298,7 @@ public class RecordInstance extends AttributeValueContainer {
   }
 
   public Map<String, RecordInstance[]> getNestedRecordInstanceLists()
-      throws WdkModelException, WdkUserException, NoSuchAlgorithmException,
-      SQLException, JSONException {
+      throws WdkModelException {
 
     Question nql[] = this.recordClass.getNestedRecordListQuestions();
     Map<String, RecordInstance[]> riListMap = new LinkedHashMap<String, RecordInstance[]>();
@@ -349,8 +316,7 @@ public class RecordInstance extends AttributeValueContainer {
   }
 
   private AnswerValue getNestedRecordAnswer(Question question)
-      throws WdkModelException, WdkUserException, NoSuchAlgorithmException,
-      SQLException, JSONException {
+      throws WdkModelException {
     Map<String, String> params = primaryKey.getValues();
     int pageStart = 1;
     int pageEnd = Utilities.MAXIMUM_RECORD_INSTANCES;
@@ -372,8 +338,7 @@ public class RecordInstance extends AttributeValueContainer {
    * nrVector; }
    */
 
-  public String print() throws WdkModelException, WdkUserException,
-      NoSuchAlgorithmException, SQLException, JSONException {
+  public String print() throws WdkModelException, WdkUserException {
 
     String newline = System.getProperty("line.separator");
     StringBuffer buf = new StringBuffer();
@@ -421,8 +386,7 @@ public class RecordInstance extends AttributeValueContainer {
     return buf.toString();
   }
 
-  public String printSummary() throws WdkModelException,
-      NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+  public String printSummary() throws WdkModelException {
 
     StringBuffer buf = new StringBuffer();
 
@@ -503,8 +467,7 @@ public class RecordInstance extends AttributeValueContainer {
   }
 
   public Map<String, AttributeValue> getSummaryAttributeValueMap()
-      throws NoSuchAlgorithmException, WdkModelException, SQLException,
-      JSONException, WdkUserException {
+      throws WdkModelException {
     return getAttributeValueMap(FieldScope.NON_INTERNAL);
   }
 
@@ -538,8 +501,7 @@ public class RecordInstance extends AttributeValueContainer {
   }
 
   private void printAtts_Aux(StringBuffer buf,
-      Map<String, AttributeValue> attributes) throws NoSuchAlgorithmException,
-      WdkModelException, SQLException, JSONException, WdkUserException {
+      Map<String, AttributeValue> attributes) throws WdkModelException {
     String newline = System.getProperty("line.separator");
     for (String attributeName : attributes.keySet()) {
       AttributeValue attribute = attributes.get(attributeName);

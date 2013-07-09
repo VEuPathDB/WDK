@@ -71,6 +71,7 @@ public class GroupBean {
      * @return
      * @see java.lang.Object#equals(java.lang.Object)
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof GroupBean) {
             GroupBean groupBean = (GroupBean) obj;
@@ -83,6 +84,7 @@ public class GroupBean {
      * @return
      * @see java.lang.Object#hashCode()
      */
+    @Override
     public int hashCode() {
         return group.getFullName().hashCode();
     }

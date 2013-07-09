@@ -3,14 +3,12 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
 
 /**
  * @author xingao
@@ -44,10 +42,6 @@ class ActiveStrategyFactory {
      * computed later.
      * 
      * @return
-     * @throws SQLException
-     * @throws JSONException
-     * @throws WdkModelException
-     * @throws WdkUserException
      */
     int[] getRootStrategies() {
         int[] ids = new int[root.children.size()];
@@ -83,7 +77,6 @@ class ActiveStrategyFactory {
      * @param strategyKeys
      *            the strategies in the array should all share the same parents;
      *            that is, they should siblings.
-     * @throws WdkUserException
      */
     synchronized void orderActiveStrategies(String[] strategyKeys)
             throws WdkUserException {

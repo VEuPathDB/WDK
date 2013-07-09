@@ -1,14 +1,9 @@
 package org.gusdb.wdk.model.record.attribute;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.RecordInstance;
-import org.json.JSONException;
 
 /**
  * The AttributeValue holds the actual value of an {@link AttributeField} in a
@@ -52,8 +47,7 @@ public abstract class AttributeValue {
     return field.getName();
   }
 
-  public String getBriefDisplay() throws WdkModelException,
-      NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+  public String getBriefDisplay() throws WdkModelException {
     String display = getDisplay();
     int truncateTo = field.getTruncateTo();
     switch (truncateTo) {
@@ -68,8 +62,7 @@ public abstract class AttributeValue {
     }
   }
 
-  public String getDisplay() throws WdkModelException,
-      NoSuchAlgorithmException, WdkUserException, SQLException, JSONException {
+  public String getDisplay() throws WdkModelException {
     Object value = getValue();
     return (value != null) ? value.toString() : "";
   }

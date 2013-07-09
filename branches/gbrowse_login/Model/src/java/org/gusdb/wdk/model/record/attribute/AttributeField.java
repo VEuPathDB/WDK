@@ -46,9 +46,6 @@ public abstract class AttributeField extends Field {
 
   /**
    * The dependent fields are the ones that are embedded in the current field.
-   * 
-   * @return
-   * @throws WdkModelException
    */
   protected abstract Collection<AttributeField> getDependents()
       throws WdkModelException;
@@ -180,10 +177,8 @@ public abstract class AttributeField extends Field {
    * 
    * @param text
    * @return
-   * @throws WdkModelException
    */
-  protected Map<String, AttributeField> parseFields(String text)
-      throws WdkModelException {
+  protected Map<String, AttributeField> parseFields(String text) {
     Map<String, AttributeField> children = new LinkedHashMap<String, AttributeField>();
     Map<String, AttributeField> fields = container.getAttributeFieldMap();
 
@@ -254,8 +249,7 @@ public abstract class AttributeField extends Field {
    * @param attribute
    *          the attribute to be checked
    * @param path
-   *          the path from root to the attribute (attribute is not included
-   * @throws WdkModelException
+   *          the path from root to the attribute (attribute is not included)
    */
   private void traverseDependeny(AttributeField attribute, Stack<String> path)
       throws WdkModelException {

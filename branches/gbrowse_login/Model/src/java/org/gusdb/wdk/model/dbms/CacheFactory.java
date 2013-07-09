@@ -19,7 +19,6 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
 
 /**
@@ -50,8 +49,7 @@ public class CacheFactory {
   private DBPlatform platform;
   private DataSource dataSource;
 
-  public CacheFactory(WdkModel wdkModel, DatabaseInstance database)
-      throws SQLException {
+  public CacheFactory(WdkModel wdkModel, DatabaseInstance database) {
     this.wdkModel = wdkModel;
     this.platform = database.getPlatform();
     this.dataSource = database.getDataSource();
@@ -187,8 +185,7 @@ public class CacheFactory {
     }
   }
 
-  public void dropCache(String queryName, boolean purge)
-      throws WdkUserException, WdkModelException {
+  public void dropCache(String queryName, boolean purge) {
     String cacheTable;
     try {
       Query query = (Query) wdkModel.resolveReference(queryName);
@@ -246,8 +243,7 @@ public class CacheFactory {
     } finally {}
   }
 
-  public void showCache() throws SQLException, WdkModelException,
-      WdkUserException {
+  public void showCache() throws SQLException {
     // get query instance summary
     StringBuffer sqlInstance = new StringBuffer("SELECT ");
     sqlInstance.append("i.").append(COLUMN_QUERY_ID).append(", ");
@@ -457,7 +453,7 @@ public class CacheFactory {
     return queryInfo;
   }
 
-  public void createQueryInfo(QueryInfo queryInfo) throws WdkModelException {
+  public void createQueryInfo(QueryInfo queryInfo) {
     // query already exists don't need to create
     if (queryInfo.isExist()) return;
     

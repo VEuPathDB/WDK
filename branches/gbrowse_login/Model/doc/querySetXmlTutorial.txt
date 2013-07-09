@@ -15,7 +15,6 @@
           name="GoTerm"
           prompt="Go Term"
           help="You know what it is"
-          sample="GO:0001233"
           default="GO:"
           regex="GO:\d+"/>
 
@@ -70,7 +69,6 @@
      <stringParam
        name="TaxonId"
        prompt="Taxon Id"
-       sample="8"
        regex="\d+"/>
 
      <sql>

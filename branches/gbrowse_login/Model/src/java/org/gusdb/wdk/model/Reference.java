@@ -74,6 +74,7 @@ public class Reference extends WdkModelBase {
         return groupRef;
     }
 
+    @Override
     public String toString() {
         return "Reference: "+twoPartName;
     }

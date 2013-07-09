@@ -44,6 +44,7 @@ public abstract class AbstractConfig extends BeanBase implements DynamicMBean {
   /**
    * implementation of DynamicMBean interface method
    */
+  @Override
   public AttributeList getAttributes(String[] names) {
     AttributeList list = new AttributeList();
     for (String name : names) {
@@ -57,6 +58,7 @@ public abstract class AbstractConfig extends BeanBase implements DynamicMBean {
   /**
    * implementation of DynamicMBean interface method
    */
+  @Override
   public String getAttribute(String name) throws AttributeNotFoundException {
     String value = props.get(name);
     if (value != null)
@@ -68,6 +70,7 @@ public abstract class AbstractConfig extends BeanBase implements DynamicMBean {
   /**
    * implementation of DynamicMBean interface method
    */
+  @Override
   public AttributeList setAttributes(AttributeList list) {
     AttributeList retlist = new AttributeList();
     Iterator<?> itr = list.iterator();
@@ -86,6 +89,7 @@ public abstract class AbstractConfig extends BeanBase implements DynamicMBean {
   /**
    * implementation of DynamicMBean interface method
    */
+  @Override
   public void setAttribute(Attribute attribute) 
             throws InvalidAttributeValueException, MBeanException, 
                    AttributeNotFoundException {
@@ -103,6 +107,7 @@ public abstract class AbstractConfig extends BeanBase implements DynamicMBean {
   /**
    * implementation of DynamicMBean interface method
    */
+  @Override
   public MBeanInfo getMBeanInfo() {
     ArrayList<String> names = new ArrayList<String>();
     for (Object name : props.keySet()) {
@@ -142,6 +147,7 @@ public abstract class AbstractConfig extends BeanBase implements DynamicMBean {
   /**
    * implementation of DynamicMBean interface method
    */
+  @Override
   public Object invoke(String name, Object[] args, String[] sig) 
   throws MBeanException, ReflectionException {
     if (name.equals("reload") &&

@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.fix;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,7 +18,6 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.StepFactory;
@@ -62,8 +60,7 @@ public class StepParamExpander extends BaseCLI {
     }
 
     public void expand(WdkModel wdkModel) throws SQLException,
-            NoSuchAlgorithmException, JSONException, WdkModelException,
-            WdkUserException {
+            JSONException, WdkModelException {
 
         ResultSet resultSet = null;
         PreparedStatement psInsert = null;
@@ -112,8 +109,7 @@ public class StepParamExpander extends BaseCLI {
         }
     }
 
-    private void createParamTable(WdkModel wdkModel) throws SQLException,
-            WdkModelException, WdkUserException {
+    private void createParamTable(WdkModel wdkModel) throws SQLException {
         DatabaseInstance database = wdkModel.getUserDb();
         DataSource dataSource = database.getDataSource();
 
@@ -136,7 +132,7 @@ public class StepParamExpander extends BaseCLI {
     }
 
     private ResultSet prepareSelect(WdkModel wdkModel, String schema)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String user = userDB.getUserSchema() + "users";
         String step = userDB.getUserSchema() + "steps";
@@ -159,7 +155,7 @@ public class StepParamExpander extends BaseCLI {
     }
 
     private PreparedStatement prepareInsert(WdkModel wdkModel)
-            throws SQLException, WdkModelException {
+            throws SQLException {
         String schema = "";
         StringBuffer sql = new StringBuffer("INSERT INTO ");
         sql.append(schema + "step_params ");
@@ -171,8 +167,7 @@ public class StepParamExpander extends BaseCLI {
     }
 
     private List<String[]> parseClob(WdkModel wdkModel, String clob)
-            throws JSONException, NoSuchAlgorithmException, WdkModelException,
-            WdkUserException, SQLException {
+            throws JSONException, WdkModelException {
         StepFactory stepFactory = wdkModel.getStepFactory();
         QueryFactory queryFactory = wdkModel.getQueryFactory();
         Map<String, String> values = stepFactory.parseParamContent(clob);
