@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model.query;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -16,7 +14,6 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
@@ -136,6 +133,7 @@ public abstract class Query extends WdkModelBase {
       Map<String, String> values, boolean validate, int assignedWeight,
       Map<String, String> context) throws WdkModelException;
 
+  @Override
   public abstract Query clone();
 
   public abstract void resolveQueryReferences(WdkModel wdkModel)
@@ -313,12 +311,12 @@ public abstract class Query extends WdkModelBase {
     paramValuesSets.add(paramValuesSet);
   }
 
-  public List<ParamValuesSet> getParamValuesSets() throws WdkModelException,
-      NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+  public List<ParamValuesSet> getParamValuesSets() throws WdkModelException {
     updateParamValuesSetsWithDefaults();
     return paramValuesSets;
   }
 
+  @Override
   public WdkModel getWdkModel() {
     return wdkModel;
   }
@@ -333,11 +331,10 @@ public abstract class Query extends WdkModelBase {
   }
 
   /**
-   * @param extra
-   *          , if extra is true, then column names are also includes, plus the
-   *          extra info from param.
+   * @param extra if extra is true, then column names are also includes, plus
+   *          the extra info from param.
    * @return
-   * @throws JSONException
+   * @throws JSONException if unable to create JSON object
    */
   private JSONObject getJSONContent(boolean extra) throws JSONException {
     // use JSON to construct the string content
@@ -422,6 +419,7 @@ public abstract class Query extends WdkModelBase {
     paramValuesSets = tempList;
   }
 
+  @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     // logger.debug("Resolving " + getFullName() + " - " + resolved);
     if (resolved)
@@ -479,8 +477,7 @@ public abstract class Query extends WdkModelBase {
     resolved = true;
   }
 
-  private void updateParamValuesSetsWithDefaults() throws WdkModelException,
-      NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+  private void updateParamValuesSetsWithDefaults() throws WdkModelException {
     ParamValuesSet querySetDefaults = querySet.getDefaultParamValuesSet();
     if (paramValuesSets.isEmpty()) {
       paramValuesSets.add(new ParamValuesSet());
@@ -552,8 +549,7 @@ public abstract class Query extends WdkModelBase {
   }
 
   public Map<String, String> rawOrDependentValuesToDependentValues(User user,
-      Map<String, String> rawValues) throws NoSuchAlgorithmException,
-      WdkModelException, WdkUserException, SQLException, JSONException {
+      Map<String, String> rawValues) throws WdkModelException {
     Map<String, String> dependentValues = new LinkedHashMap<String, String>();
     for (String paramName : rawValues.keySet()) {
       Param param = paramMap.get(paramName);

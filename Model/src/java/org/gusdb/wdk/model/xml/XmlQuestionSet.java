@@ -37,6 +37,7 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI {
      * 
      * @see org.gusdb.wdk.model.ModelSetI#getName()
      */
+    @Override
     public String getName() {
         return name;
     }
@@ -113,6 +114,7 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI {
      * 
      * @see org.gusdb.wdk.model.ModelSetI#getElement(java.lang.String)
      */
+    @Override
     public Object getElement(String elementName) {
         return questions.get(elementName);
     }
@@ -122,6 +124,7 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI {
      * 
      * @see org.gusdb.wdk.model.ModelSetI#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
+    @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
         // resolve the references of questions
         for (XmlQuestion question : questions.values()) {
@@ -134,6 +137,7 @@ public class XmlQuestionSet extends WdkModelBase implements ModelSetI {
      * 
      * @see org.gusdb.wdk.model.ModelSetI#setResources(org.gusdb.wdk.model.WdkModel)
      */
+    @Override
     public void setResources(WdkModel model) throws WdkModelException {
         // set resources for questions
         for (XmlQuestion question : questions.values()) {

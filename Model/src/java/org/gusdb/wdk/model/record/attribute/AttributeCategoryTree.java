@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.record.attribute;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -11,10 +9,8 @@ import org.gusdb.wdk.model.TreeNode;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.json.JSONException;
 
 /**
  * Represent the tree structure of the attributes in a {@link RecordClass}. you can
@@ -99,12 +95,6 @@ public class AttributeCategoryTree extends WdkModelBase {
 
   /**
    * Builds out a map from category name to category
-   * 
-   * @throws WdkModelException
-   * @throws JSONException
-   * @throws SQLException
-   * @throws WdkUserException
-   * @throws NoSuchAlgorithmException
    */
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
@@ -120,8 +110,7 @@ public class AttributeCategoryTree extends WdkModelBase {
    * 
    * @param cat
    *          category to add
-   * @throws WdkModelException
-   *           if any categories' names are duplicated
+   * @throws WdkModelException if any categories' names are duplicated
    */
   private void addCategoryToMap(AttributeCategory cat) throws WdkModelException {
     if (categoryMap.containsKey(cat.getName())) {
@@ -134,6 +123,7 @@ public class AttributeCategoryTree extends WdkModelBase {
     }
   }
 
+  @Override
   public String toString() {
     StringBuilder str = new StringBuilder().append("uncategorized (").append(
         topLevelAttributes.size()).append(")").append(newline);

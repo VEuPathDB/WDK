@@ -1,9 +1,9 @@
 package org.gusdb.wdk.controller;
 
 public class CConstants {
-    private CConstants() {
-	; // no-op
-    }
+    
+	private CConstants() { }
+    
     //key for objects in cache, used in Action/ActionForm classes and maybe jsp pages
     public static final String WDK_RESULTFACTORY_KEY = "wdkResultFactory";
     public static final String WDK_MODEL_KEY = "wdkModel";

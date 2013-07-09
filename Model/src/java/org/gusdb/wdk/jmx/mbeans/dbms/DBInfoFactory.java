@@ -15,7 +15,7 @@ public class DBInfoFactory {
         switch (platform) {
         case ORACLE:
             return new OracleDBInfo();
-        case POSTGRES:
+        case POSTGRESQL:
             return new PostgreSQLDBInfo();
         default:
             throw new IllegalArgumentException("No DBInfo class for this platform.");
