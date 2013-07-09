@@ -70,6 +70,7 @@ public abstract class AbstractDB extends BeanBase implements DynamicMBean {
 
   }
 
+  @Override
   public AttributeList getAttributes(String[] names) {
       AttributeList list = new AttributeList();
       for (String name : names) {
@@ -84,6 +85,7 @@ public abstract class AbstractDB extends BeanBase implements DynamicMBean {
       return list;
   }
 
+  @Override
   public void setAttribute(Attribute attribute) 
   throws InvalidAttributeValueException, MBeanException, AttributeNotFoundException {
     String name = attribute.getName();
@@ -97,8 +99,7 @@ public abstract class AbstractDB extends BeanBase implements DynamicMBean {
     dbAttrs.put(name, (String) value);
   }
 
-
-
+  @Override
   public Object getAttribute(String name) throws AttributeNotFoundException {
     if (name.equals(DBLINKLISTKEY)) {
         return dblinkList;
@@ -110,6 +111,7 @@ public abstract class AbstractDB extends BeanBase implements DynamicMBean {
       throw new AttributeNotFoundException("No such attribute: " + name);
   }
 
+  @Override
   public AttributeList setAttributes(AttributeList list) {
     AttributeList retlist = new AttributeList();
     Iterator<?> itr = list.iterator();
@@ -125,6 +127,7 @@ public abstract class AbstractDB extends BeanBase implements DynamicMBean {
     return retlist;
   }
 
+  @Override
   public MBeanInfo getMBeanInfo() {
     ArrayList<String> names = new ArrayList<String>();
 
@@ -164,6 +167,7 @@ public abstract class AbstractDB extends BeanBase implements DynamicMBean {
             null);  // notifications
   }
 
+  @Override
   public Object invoke(String name, Object[] args, String[] sig) 
   throws MBeanException, ReflectionException {
     if (name.equals("reload") &&

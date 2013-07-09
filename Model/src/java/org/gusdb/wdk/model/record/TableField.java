@@ -79,6 +79,7 @@ public class TableField extends Field implements AttributeFieldContainer {
    * 
    * @see org.gusdb.wdk.model.AttributeFieldContainer#getAttributeFieldMap()
    */
+  @Override
   public Map<String, AttributeField> getAttributeFieldMap() {
     return getAttributeFieldMap(FieldScope.ALL);
   }
@@ -140,6 +141,7 @@ public class TableField extends Field implements AttributeFieldContainer {
    * 
    * @see org.gusdb.wdk.model.FieldI#getTruncateTo()
    */
+  @Override
   public int getTruncateTo() {
     throw new RuntimeException("getTruncate does not apply to TableField");
   }

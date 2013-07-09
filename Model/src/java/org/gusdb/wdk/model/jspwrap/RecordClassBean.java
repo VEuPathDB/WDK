@@ -1,13 +1,10 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerFilterLayout;
 import org.gusdb.wdk.model.answer.ReporterRef;
@@ -16,7 +13,6 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordView;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.json.JSONException;
 
 /**
  * A wrapper on a {@link RecordClass} that provides simplified access for
@@ -148,8 +144,7 @@ public class RecordClassBean {
         return beans;
     }
 
-    public AnswerFilterInstanceBean getFilter(String filterName)
-            throws WdkModelException {
+    public AnswerFilterInstanceBean getFilter(String filterName) {
         AnswerFilterInstance instance = recordClass.getFilter(filterName);
         return new AnswerFilterInstanceBean(instance);
     }
@@ -222,16 +217,10 @@ public class RecordClassBean {
      * @param user
      * @param pkValues
      * @return
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
-     * @throws WdkUserException
-     * @throws SQLException
-     * @throws JSONException
      * @see org.gusdb.wdk.model.RecordClass#hasMultipleRecords(org.gusdb.wdk.model.user.User, java.util.Map)
      */
     public boolean hasMultipleRecords(UserBean user, Map<String, Object> pkValues)
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
+            throws WdkModelException {
         return recordClass.hasMultipleRecords(user.getUser(), pkValues);
     }
     

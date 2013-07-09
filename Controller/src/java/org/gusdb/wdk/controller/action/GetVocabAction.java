@@ -19,9 +19,8 @@ import org.gusdb.wdk.controller.form.QuestionForm;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.query.param.WdkEmptyEnumListException;
-import org.json.JSONObject;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class GetVocabAction extends Action {
 
@@ -50,7 +49,8 @@ public class GetVocabAction extends Action {
       String values = request.getParameter("dependedValue");
       if (values != null && values.length() > 0) {
         JSONObject jsValues = new JSONObject(values);
-        Iterator<String> keys = jsValues.keys();
+        @SuppressWarnings("unchecked")
+		Iterator<String> keys = jsValues.keys();
         while (keys.hasNext()) {
           String pName = keys.next();
           
@@ -71,14 +71,8 @@ public class GetVocabAction extends Action {
 
       param.setDependedValues(dependedValues);
 
-      // try the dependent value, and ignore empty list exception, since
-      // it may be caused by the choices on the depended param.
-      try {
-        param.getDisplayMap();
-      } catch (WdkEmptyEnumListException ex) {
-        // do nothing.
-        logger.debug("the choice of the depended param cause this: " + ex);
-      }
+      // try the dependent value; runtime exception may be thrown here
+      param.getDisplayMap();
 
       request.setAttribute("vocabParam", param);
 
