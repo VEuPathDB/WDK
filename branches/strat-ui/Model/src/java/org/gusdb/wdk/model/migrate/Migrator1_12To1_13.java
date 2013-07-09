@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.migrate;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,7 +15,6 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 
 /**
  * @author Jerric
@@ -113,28 +111,15 @@ public class Migrator1_12To1_13 extends Migrator {
     /**
      * (non-Javadoc)
      * 
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
-     * 
      * @see org.gusdb.wdk.model.migrate.Migrator#migrate()
      */
     @Override
-    public void migrate() throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException {
+    public void migrate() throws WdkModelException {
         // update histories
         updateHistories();
     }
 
-    /**
-     * @throws WdkUserException
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
-     * @throws SQLException
-     * 
-     * 
-     */
-    private void updateHistories() throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException {
+    private void updateHistories() throws WdkModelException {
         DatabaseInstance database = wdkModel.getUserDb();
         DataSource dataSource = database.getDataSource();
         String newSchema = getNewUserSchema();
@@ -168,6 +153,8 @@ public class Migrator1_12To1_13 extends Migrator {
                 item.setUserId(userId);
                 histories.add(item);
             }
+        } catch (SQLException e) {
+        	throw new WdkModelException(e);
         } finally {
             SqlUtils.closeResultSetAndStatement(rsHistory);
         }

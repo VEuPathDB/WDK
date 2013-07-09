@@ -28,6 +28,7 @@ public class ShowBasketStageHandler implements StageHandler {
 
     private static final Logger logger = Logger.getLogger(ShowBasketStageHandler.class);
 
+    @Override
     public Map<String, Object> execute(ActionServlet servlet,
             HttpServletRequest request, HttpServletResponse response,
             WizardForm wizardForm) throws Exception {

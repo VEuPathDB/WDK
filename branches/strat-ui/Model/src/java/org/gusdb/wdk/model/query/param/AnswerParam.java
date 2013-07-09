@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.query.param;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -147,8 +145,7 @@ public class AnswerParam extends Param {
   }
 
   public AnswerValue getAnswerValue(User user, String dependentValue)
-      throws WdkModelException, SQLException, NoSuchAlgorithmException,
-      JSONException, WdkUserException {
+      throws WdkModelException {
 
     // check format
     int stepId = Integer.parseInt(dependentValue);

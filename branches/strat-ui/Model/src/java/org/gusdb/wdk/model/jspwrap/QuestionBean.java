@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -23,7 +21,6 @@ import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
-import org.json.JSONException;
 
 /**
  * A wrapper on a {@link Question} that provides simplified access for
@@ -234,15 +231,11 @@ public class QuestionBean {
      *            Index of the first record to include in the answer
      * @param end
      *            Index of the last record to include in the answer
-     * @throws JSONException
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
      */
     public AnswerValueBean makeAnswerValue(UserBean user,
             Map<String, String> paramValues, int pageStart, int pageEnd,
             Map<String, Boolean> sortingMap, String filterName, boolean validate,
-            int assignedWeight) throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            int assignedWeight) throws WdkModelException {
         AnswerFilterInstance filter = null;
         if (filterName != null) {
             RecordClass recordClass = question.getRecordClass();
@@ -292,17 +285,11 @@ public class QuestionBean {
      * 
      * @param paramErrors
      * @return
-     * @throws WdkUserException
-     * @throws WdkModelException
-     * @throws JSONException
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
      * @see org.gusdb.wdk.model.Question#makeAnswer(java.util.Map)
      */
     public AnswerValueBean makeAnswerValue(UserBean user,
             Map<String, String> paramValues, boolean validate, int assignedWeight)
-            throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            throws WdkModelException {
         return new AnswerValueBean(question.makeAnswerValue(user.getUser(),
                 paramValues, validate, assignedWeight));
     }
@@ -364,7 +351,7 @@ public class QuestionBean {
         params.put(name, value);
     }
 
-    public void setUser(UserBean user) throws SQLException {
+    public void setUser(UserBean user) {
         this.user = user;
     }
 
@@ -372,9 +359,7 @@ public class QuestionBean {
         this.weight = weight;
     }
 
-    public AnswerValueBean getAnswerValue() throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+    public AnswerValueBean getAnswerValue() throws WdkModelException {
       try {
         if (user == null)
           throw new WdkUserException("User is not set. Please set user to "
@@ -406,10 +391,9 @@ public class QuestionBean {
 
     /**
      * @return
-     * @throws WdkModelException
      * @see org.gusdb.wdk.model.Question#getDefaultSummaryView()
      */
-    public SummaryView getDefaultSummaryView() throws WdkModelException {
+    public SummaryView getDefaultSummaryView() {
         return question.getDefaultSummaryView();
     }
     

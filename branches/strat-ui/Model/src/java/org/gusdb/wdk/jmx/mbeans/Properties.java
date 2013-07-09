@@ -26,6 +26,7 @@ private static final Logger logger = Logger.getLogger(Properties.class.getName()
     init();
   }
 
+  @Override
   public AttributeList getAttributes(String[] names) {
       AttributeList list = new AttributeList();
       for (String name : names) {
@@ -36,6 +37,7 @@ private static final Logger logger = Logger.getLogger(Properties.class.getName()
       return list;
   }
 
+  @Override
   public String getAttribute(String name) throws AttributeNotFoundException {
     String value = props.get(name);
     if (value != null)
@@ -44,6 +46,7 @@ private static final Logger logger = Logger.getLogger(Properties.class.getName()
       throw new AttributeNotFoundException("No such property: " + name);
   }
 
+  @Override
   public AttributeList setAttributes(AttributeList list) {
     AttributeList retlist = new AttributeList();
     Iterator<?> itr = list.iterator();
@@ -59,6 +62,7 @@ private static final Logger logger = Logger.getLogger(Properties.class.getName()
     return retlist;
   }
 
+  @Override
   public void setAttribute(Attribute attribute) 
   throws InvalidAttributeValueException, MBeanException, AttributeNotFoundException {
     String name = attribute.getName();
@@ -72,6 +76,7 @@ private static final Logger logger = Logger.getLogger(Properties.class.getName()
     props.put(name, (String) value);
   }
 
+  @Override
   public MBeanInfo getMBeanInfo() {
     ArrayList<String> names = new ArrayList<String>();
     for (Object name : props.keySet()) {
@@ -108,6 +113,7 @@ private static final Logger logger = Logger.getLogger(Properties.class.getName()
             null); // notifications
   }
 
+  @Override
   public Object invoke(String name, Object[] args, String[] sig) 
   throws MBeanException, ReflectionException {
     if (name.equals("reload") &&

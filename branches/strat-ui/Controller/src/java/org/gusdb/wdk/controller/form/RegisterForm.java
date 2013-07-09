@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.controller.form;
 
-
-
 /**
  * @author xingao
  * 
@@ -20,6 +18,7 @@ public class RegisterForm extends ProfileForm {
     /**
      * @return Returns the email.
      */
+    @Override
     public String getEmail() {
         return email;
     }
@@ -28,6 +27,7 @@ public class RegisterForm extends ProfileForm {
      * @param email
      *            The email to set.
      */
+    @Override
     public void setEmail(String email) {
         this.email = email;
     }

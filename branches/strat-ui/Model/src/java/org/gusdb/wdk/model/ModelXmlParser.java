@@ -7,8 +7,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -24,7 +22,6 @@ import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
@@ -94,7 +91,6 @@ import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClass;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 import org.gusdb.wdk.model.xml.XmlTableField;
-import org.json.JSONException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -188,11 +184,8 @@ public class ModelXmlParser extends XmlParser {
   }
 
   public WdkModel parseModel(String projectId)
-      throws ParserConfigurationException,
-      TransformerFactoryConfigurationError, TransformerException, IOException,
-      SAXException, WdkModelException, NoSuchAlgorithmException, SQLException,
-      JSONException, WdkUserException, InstantiationException,
-      IllegalAccessException, ClassNotFoundException, URISyntaxException {
+      throws ParserConfigurationException, TransformerException, IOException,
+      SAXException, WdkModelException, URISyntaxException {
     logger.debug("Loading configuration...");
 
     // get model config
@@ -254,19 +247,11 @@ public class ModelXmlParser extends XmlParser {
    * @param properties
    * @param replacedMacros
    * @return
-   * @throws SAXException
-   * @throws IOException
-   * @throws ParserConfigurationException
-   * @throws WdkModelException
-   * @throws TransformerFactoryConfigurationError
-   * @throws TransformerException
-   * @throws URISyntaxException
    */
   private Document buildMasterDocument(String projectId, URL wdkModelURL,
       Map<String, String> properties, Set<String> replacedMacros)
       throws SAXException, IOException, ParserConfigurationException,
-      WdkModelException, TransformerFactoryConfigurationError,
-      TransformerException, URISyntaxException {
+      WdkModelException, URISyntaxException {
     // load constants from master file
     Map<String, String> constants = loadConstants(projectId, wdkModelURL);
 
@@ -321,11 +306,6 @@ public class ModelXmlParser extends XmlParser {
    * @param projectId
    * @param modelXmlURL
    * @return
-   * @throws IOException
-   * @throws SAXException
-   * @throws WdkModelException
-   * @throws ParserConfigurationException
-   * @throws URISyntaxException
    */
   private Map<String, String> loadConstants(String projectId, URL modelXmlURL)
       throws IOException, SAXException, WdkModelException,
@@ -385,20 +365,11 @@ public class ModelXmlParser extends XmlParser {
    * @param replacedMacros
    * @param constants
    * @return
-   * @throws SAXException
-   * @throws IOException
-   * @throws ParserConfigurationException
-   * @throws WdkModelException
-   * @throws TransformerFactoryConfigurationError
-   * @throws TransformerException
-   * @throws URISyntaxException
    */
   private Document loadDocument(URL modelXmlURL,
       Map<String, String> properties, Set<String> replacedMacros,
       Map<String, String> constants) throws SAXException, IOException,
-      ParserConfigurationException, WdkModelException,
-      TransformerFactoryConfigurationError, TransformerException,
-      URISyntaxException {
+      ParserConfigurationException, WdkModelException, URISyntaxException {
     // validate the sub-model
     validate(modelXmlURL);
 
@@ -446,9 +417,7 @@ public class ModelXmlParser extends XmlParser {
   }
 
   private String substituteConstants(String content,
-      Map<String, String> constants)
-      throws TransformerFactoryConfigurationError, TransformerException,
-      WdkModelException, URISyntaxException {
+      Map<String, String> constants) {
     Matcher matcher = CONSTANT_PATTERN.matcher(content);
 
     // search and substitute the property macros
@@ -474,9 +443,7 @@ public class ModelXmlParser extends XmlParser {
   }
 
   private String substituteProps(String content,
-      Map<String, String> properties, Set<String> replacedMacros)
-      throws TransformerFactoryConfigurationError, TransformerException,
-      WdkModelException, URISyntaxException {
+      Map<String, String> properties, Set<String> replacedMacros) {
     Matcher matcher = PROPERTY_PATTERN.matcher(content);
 
     // search and substitute the property macros
@@ -503,6 +470,7 @@ public class ModelXmlParser extends XmlParser {
     return buffer.toString();
   }
 
+  @Override
   protected Digester configureDigester() {
     Digester digester = new Digester();
     digester.setValidating(false);
@@ -1007,11 +975,8 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies/cookie", WdkCookie.class, "add");
   }
   
-  public static void main(String[] args) throws SAXException, IOException,
-      ParserConfigurationException, TransformerFactoryConfigurationError,
-      TransformerException, WdkModelException, NoSuchAlgorithmException,
-      SQLException, JSONException, WdkUserException, InstantiationException,
-      IllegalAccessException, ClassNotFoundException {
+  public static void main(String[] args)
+      throws WdkModelException {
     String cmdName = System.getProperty("cmdName");
 
     // process args
