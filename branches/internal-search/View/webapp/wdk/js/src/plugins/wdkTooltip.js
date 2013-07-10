@@ -45,7 +45,8 @@
       viewport: $(window)
     },
     hide: {
-     fixed: true
+     fixed: true,
+     delay: 400
     }
   };
 
