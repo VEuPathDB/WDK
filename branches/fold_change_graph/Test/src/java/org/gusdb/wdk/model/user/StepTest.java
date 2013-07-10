@@ -3,16 +3,11 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-
 import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.BooleanOperator;
-import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -23,8 +18,7 @@ import org.junit.Test;
 public class StepTest {
 
     public static void compareStep(Step expectedStep, Step actualStep)
-            throws NoSuchAlgorithmException, WdkUserException,
-            WdkModelException, JSONException, SQLException {
+            throws WdkModelException {
         Assert.assertEquals("internal id", expectedStep.getInternalId(),
                 actualStep.getInternalId());
         Assert.assertEquals("display id", expectedStep.getDisplayId(),

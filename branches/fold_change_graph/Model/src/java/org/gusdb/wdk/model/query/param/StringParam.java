@@ -125,6 +125,7 @@ public class StringParam extends Param {
     return multiLine;
   }
 
+  @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
     return new StringBuilder(super.toString())
@@ -139,6 +140,7 @@ public class StringParam extends Param {
   // protected methods
   // ///////////////////////////////////////////////////////////////
 
+  @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
     if (regex == null)
@@ -150,6 +152,7 @@ public class StringParam extends Param {
    * 
    * @see java.lang.Object#clone()
    */
+  @Override
   public Param clone() {
     return new StringParam(this);
   }

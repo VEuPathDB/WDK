@@ -56,6 +56,7 @@ public class FilterForm extends BooleanExpressionForm {
      * validate the properties that have been sent from the HTTP request, and
      * return an ActionErrors object that encapsulates any validation errors
      */
+    @Override
     public ActionErrors validate(ActionMapping mapping,
             HttpServletRequest request) {
         UserBean user = ActionUtility.getUser(servlet, request);
@@ -123,7 +124,7 @@ public class FilterForm extends BooleanExpressionForm {
                 // System.out.println("===== Validated " + p.getName() + ": '" +
                 // errMsg + "'");
             }
-            catch (WdkModelException exp) {
+            catch (Exception exp) {
                 errors.add(ActionErrors.GLOBAL_MESSAGE, new ActionMessage(
                         "mapped.properties", p.getPrompt(), exp.getMessage()));
                 request.setAttribute(CConstants.QUESTIONFORM_KEY, this);
@@ -162,11 +163,9 @@ public class FilterForm extends BooleanExpressionForm {
             WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
                     CConstants.WDK_MODEL_KEY);
 
-            QuestionSetBean wdkQuestionSet = (QuestionSetBean) wdkModel.getQuestionSetsMap().get(
-                    qSetName);
+            QuestionSetBean wdkQuestionSet = wdkModel.getQuestionSetsMap().get(qSetName);
             if (wdkQuestionSet == null) return null;
-            question = (QuestionBean) wdkQuestionSet.getQuestionsMap().get(
-                    qName);
+            question = wdkQuestionSet.getQuestionsMap().get(qName);
         }
         return question;
     }
@@ -211,7 +210,7 @@ public class FilterForm extends BooleanExpressionForm {
         myProps.put(key, vals);
     }
 
-    public String getMyProp(String key) throws WdkModelException {
+    public String getMyProp(String key) {
         Object value = getMyProps().get(key);
         if (value == null) return null;
         if (value instanceof String[]) {
@@ -221,24 +220,24 @@ public class FilterForm extends BooleanExpressionForm {
         } else return (String) value;
     }
 
-    public String[] getMyMultiProp(String key) throws WdkModelException {
+    public String[] getMyMultiProp(String key) {
         Object value = getMyProps().get(key);
         if (value == null) return null;
         if (value instanceof String[]) return (String[]) value;
         else return new String[] { (String) value };
     }
 
-    public Object getMyPropObject(String key) throws WdkModelException {
+    public Object getMyPropObject(String key) {
         return myPropObjects.get(key);
     }
 
     /* returns a list of labels for a select box */
-    public String[] getLabels(String key) throws WdkModelException {
+    public String[] getLabels(String key) {
         return (String[]) getMyLabels().get(key);
     }
 
     /* returns a list of values for a select box */
-    public String[] getValues(String key) throws WdkModelException {
+    public String[] getValues(String key) {
         // System.out.println("DEBUG: QuestionSetForm:getValues for: " + key +
         // ": " + getMyValues().get(key));
 

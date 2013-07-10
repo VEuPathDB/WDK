@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
@@ -10,7 +9,6 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.TreeNode;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.BooleanQuery;
@@ -24,7 +22,6 @@ import org.gusdb.wdk.model.record.TableField;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 
 /**
  * A wrapper on a {@link AnswerValue} that provides simplified access for
@@ -46,6 +43,7 @@ public class AnswerValueBean {
          * 
          * @see java.util.Iterator#hasNext()
          */
+        @Override
         public boolean hasNext() {
             return position < instances.length;
         }
@@ -55,6 +53,7 @@ public class AnswerValueBean {
          * 
          * @see java.util.Iterator#next()
          */
+        @Override
         public RecordBean next() {
             return new RecordBean(answerValue.getUser(), instances[position++]);
         }
@@ -64,6 +63,7 @@ public class AnswerValueBean {
          * 
          * @see java.util.Iterator#remove()
          */
+        @Override
         public void remove() {
             throw new UnsupportedOperationException("Not supported");
         }
@@ -96,9 +96,7 @@ public class AnswerValueBean {
         return answerValue.getIdsQueryInstance().getValues();
     }
 
-    public String getChecksum() throws WdkModelException,
-            NoSuchAlgorithmException, JSONException, WdkUserException,
-            SQLException {
+    public String getChecksum() throws WdkModelException {
         return answerValue.getChecksum();
     }
 
@@ -117,15 +115,9 @@ public class AnswerValueBean {
     /**
      * @return first child answer for boolean answer, null if it is an answer
      *         for a simple question.
-     * @throws SQLException
-     * @throws WdkUserException
-     * @throws JSONException
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
      */
     public AnswerValueBean getFirstChildAnswer()
-            throws NoSuchAlgorithmException, WdkModelException, JSONException,
-            WdkUserException, SQLException {
+            throws WdkModelException {
         if (!getIsCombined()) {
             throw new RuntimeException("getFirstChildAnswer can not be called"
                     + " on simple AnswerBean");
@@ -155,15 +147,9 @@ public class AnswerValueBean {
     /**
      * @return second child answer for boolean answer, null if it is an answer
      *         for a simple question.
-     * @throws SQLException
-     * @throws WdkUserException
-     * @throws JSONException
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
      */
     public AnswerValueBean getSecondChildAnswer()
-            throws NoSuchAlgorithmException, WdkModelException, JSONException,
-            WdkUserException, SQLException {
+            throws WdkModelException {
         if (!getIsBoolean()) {
             throw new RuntimeException("getSecondChildAnswer can not be called"
                     + " on simple AnswerBean");
@@ -176,26 +162,20 @@ public class AnswerValueBean {
         return new AnswerValueBean(param.getAnswerValue(user, dependentValue));
     }
 
-    public int getPageSize() throws NoSuchAlgorithmException,
-            WdkModelException, SQLException, JSONException, WdkUserException {
+    public int getPageSize() throws WdkModelException {
         return answerValue.getPageSize();
     }
 
-    public int getPageCount() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public int getPageCount() throws WdkModelException {
         return answerValue.getPageCount();
     }
 
-    public int getResultSize() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public int getResultSize() throws WdkModelException {
         return answerValue.getResultSize();
     }
 
     public Map<String, Integer> getResultSizesByProject()
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         return answerValue.getResultSizesByProject();
     }
 
@@ -221,27 +201,16 @@ public class AnswerValueBean {
 
     /**
      * @return A list of {@link RecordBean}s.
-     * @throws WdkUserException
-     * @throws JSONException
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
      */
-    public Iterator<RecordBean> getRecords() throws Exception {
-        try {
-            return new RecordBeanList(answerValue.getRecordInstances());
-        } catch (Exception ex) {
-            logger.error(ex);
-            ex.printStackTrace();
-            throw ex;
-        }
+    public Iterator<RecordBean> getRecords() throws WdkModelException {
+    	return new RecordBeanList(answerValue.getRecordInstances());
     }
 
     public void setDownloadConfigMap(Map<?, ?> downloadConfigMap) {
         this.downloadConfigMap = downloadConfigMap;
     }
 
-    public AttributeFieldBean[] getSummaryAttributes() throws WdkModelException, WdkUserException {
+    public AttributeFieldBean[] getSummaryAttributes() throws WdkModelException {
         Map<String, AttributeField> attribs = answerValue.getSummaryAttributeFieldMap();
         AttributeFieldBean[] beans = new AttributeFieldBean[attribs.size()];
         int index = 0;
@@ -252,7 +221,7 @@ public class AnswerValueBean {
         return beans;
     }
 
-    public String[] getSummaryAttributeNames() throws WdkModelException, WdkUserException {
+    public String[] getSummaryAttributeNames() throws WdkModelException {
         AttributeFieldBean[] sumAttribs = getSummaryAttributes();
         String[] names = new String[sumAttribs.length];
         for (int i = 0; i < sumAttribs.length; i++) {
@@ -261,7 +230,7 @@ public class AnswerValueBean {
         return names;
     }
 
-    public AttributeFieldBean[] getDownloadAttributes() throws WdkModelException, WdkUserException {
+    public AttributeFieldBean[] getDownloadAttributes() throws WdkModelException {
         AttributeFieldBean[] sumAttribs = getSummaryAttributes();
         if (downloadConfigMap == null || downloadConfigMap.size() == 0) {
             return sumAttribs;
@@ -314,7 +283,7 @@ public class AnswerValueBean {
         return rmTables;
     }
 
-    public String[] getDownloadAttributeNames() throws WdkModelException, WdkUserException {
+    public String[] getDownloadAttributeNames() throws WdkModelException {
         AttributeFieldBean[] downloadAttribs = getDownloadAttributes();
         Vector<String> v = new Vector<String>();
         for (int i = 0; i < downloadAttribs.length; i++) {
@@ -361,8 +330,7 @@ public class AnswerValueBean {
      * 
      * @see org.gusdb.wdk.model.Answer#getResultMessage()
      */
-    public String getResultMessage() throws NoSuchAlgorithmException,
-            SQLException, WdkModelException, JSONException, WdkUserException {
+    public String getResultMessage() {
         String message = answerValue.getResultMessage();
         System.out.println("Result message from AnswerBean: " + message);
         return message;
@@ -372,27 +340,19 @@ public class AnswerValueBean {
      * @param reporterName
      * @param config
      * @return
-     * @throws WdkModelException
-     * @throws WdkUserException
-     * @throws JSONException
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
      * @see org.gusdb.wdk.model.AnswerValue#getReport(java.lang.String,
      *      java.util.Map)
      */
     public Reporter createReport(String reporterName, Map<String, String> config)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         return answerValue.createReport(reporterName, config);
     }
 
     /**
      * @return
-     * @throws WdkModelException 
-     * @throws WdkUserException 
      * @see org.gusdb.wdk.model.AnswerValue#getSortingAttributeNames()
      */
-    public String[] getSortingAttributeNames() throws WdkUserException, WdkModelException {
+    public String[] getSortingAttributeNames() {
         Map<String, Boolean> sortingFields = answerValue.getSortingMap();
         String[] array = new String[sortingFields.size()];
         sortingFields.keySet().toArray(array);
@@ -401,11 +361,9 @@ public class AnswerValueBean {
 
     /**
      * @return
-     * @throws WdkModelException 
-     * @throws WdkUserException 
      * @see org.gusdb.wdk.model.AnswerValue#getSortingAttributeOrders()
      */
-    public boolean[] getSortingAttributeOrders() throws WdkUserException, WdkModelException {
+    public boolean[] getSortingAttributeOrders() {
         Map<String, Boolean> sortingFields = answerValue.getSortingMap();
         boolean[] array = new boolean[sortingFields.size()];
         int index = 0;
@@ -426,21 +384,20 @@ public class AnswerValueBean {
         return fieldBeans;
     }
 
-    public TreeNode getDisplayableAttributeTree() throws WdkModelException, WdkUserException {
+    public TreeNode getDisplayableAttributeTree() throws WdkModelException {
     	return answerValue.getDisplayableAttributeTree();
     }
 
-    public TreeNode getReportMakerAttributeTree() throws WdkModelException, WdkUserException {
+    public TreeNode getReportMakerAttributeTree() throws WdkModelException {
     	return answerValue.getReportMakerAttributeTree();
     }
 
-    public void setFilter(String filterName) throws WdkModelException {
+    public void setFilter(String filterName) {
         answerValue.setFilter(filterName);
     }
 
     public int getFilterSize(String filterName)
-            throws NoSuchAlgorithmException, SQLException, WdkModelException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         return answerValue.getFilterSize(filterName);
     }
 
@@ -450,24 +407,15 @@ public class AnswerValueBean {
         return new AnswerFilterInstanceBean(filter);
     }
 
-    public List<String[]> getAllIds() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public List<String[]> getAllIds() throws WdkModelException, SQLException {
         return answerValue.getAllIds();
     }
 
     /**
      * @return
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
-     * @throws SQLException
-     * @throws JSONException
-     * @throws WdkUserException
      * @see org.gusdb.wdk.model.AnswerValue#getAllPkValues()
      */
-    public String getAllIdList() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public String getAllIdList() throws WdkModelException, SQLException {
         List<String[]> pkValues = answerValue.getAllIds();
         StringBuffer buffer = new StringBuffer();
         for (String[] pkValue : pkValues) {

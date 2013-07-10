@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.Map;
 import java.util.Random;
 
@@ -33,8 +31,7 @@ public class UserTest {
     }
 
     @Test
-    public void testCreateGuest() throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, SQLException {
+    public void testCreateGuest() throws WdkModelException {
         User guest1 = userFactory.createGuestUser();
         Assert.assertTrue("guest1", guest1.isGuest());
 
@@ -50,7 +47,7 @@ public class UserTest {
 
     @Test
     public void testCreateRegisteredUser() throws WdkUserException,
-            WdkModelException, SQLException {
+            WdkModelException {
         String email = "wdk-test@email";
         String firstName = "Test";
         String lastName = "User";
@@ -86,8 +83,7 @@ public class UserTest {
     }
 
     @Test
-    public void testDeleteUser() throws WdkUserException, WdkModelException,
-            SQLException {
+    public void testDeleteUser() throws WdkUserException, WdkModelException {
         String email = "wdk-test@email";
         User user = userFactory.getUserByEmail(email);
         if (user == null) {

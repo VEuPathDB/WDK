@@ -1,14 +1,7 @@
 package org.gusdb.wdk.model.test;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -22,7 +15,6 @@ import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.QueryInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
@@ -35,25 +27,20 @@ import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
-import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
-import org.xml.sax.SAXException;
 
 public class QueryTester {
 
     WdkModel wdkModel;
     User user;
 
-    public QueryTester(WdkModel wdkModel) throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException {
+    public QueryTester(WdkModel wdkModel) throws WdkModelException {
         this.wdkModel = wdkModel;
         user = wdkModel.getSystemUser();
     }
 
     private String showSql(Query query, Map<String, String> paramHash)
-            throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            throws WdkModelException {
         QueryInstance instance = query.makeInstance(user, paramHash, true, 0, new LinkedHashMap<String, String>());
         if (instance instanceof SqlQueryInstance) {
             return ((SqlQueryInstance) instance).getUncachedSql();
@@ -61,8 +48,7 @@ public class QueryTester {
     }
 
     private String showResultTable(Query query, Map<String, String> paramHash)
-            throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            throws WdkModelException {
         QueryInstance instance = query.makeInstance(user, paramHash, true, 0, new LinkedHashMap<String, String>());
         ResultFactory resultFactory = wdkModel.getResultFactory();
         CacheFactory cacheFactory = resultFactory.getCacheFactory();
@@ -76,9 +62,7 @@ public class QueryTester {
     // /////////// protected methods //////////////////////////////////
     // ////////////////////////////////////////////////////////////////////
 
-    private void displayParams(Query query) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    private void displayParams(Query query) {
         String newline = System.getProperty("line.separator");
         System.out.println(newline + "Query: " + query.getFullName() + newline);
 
@@ -93,9 +77,7 @@ public class QueryTester {
     }
 
     static Map<String, String> parseParamArgs(String[] params,
-            boolean useDefaults, Query query) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+            boolean useDefaults, Query query) throws WdkModelException {
 
         Map<String, String> h = new LinkedHashMap<String, String>();
 
@@ -118,9 +100,7 @@ public class QueryTester {
         return h;
     }
 
-    private String formatParamPrompt(Param param) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    private String formatParamPrompt(Param param) {
         String newline = System.getProperty("line.separator");
 
         String prompt = "  " + param.getPrompt();
@@ -136,15 +116,6 @@ public class QueryTester {
                 prompt += newline + "    " + term + " (" + internal + ")";
             }
         }
-
-        else if (param instanceof StringParam) {
-            // TODO: make decision on getSample deprecation and remove
-            //StringParam stringParam = (StringParam) param;
-            //if (stringParam.getSample() != null)
-            //    prompt += " (" + stringParam.getSample() + ")";
-            //prompt += ":";
-        }
-
         else {
             prompt = param.getPrompt() + ":";
         }
@@ -156,12 +127,7 @@ public class QueryTester {
     // /////////// static methods /////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////
 
-    public static void main(String[] args) throws WdkModelException,
-            WdkUserException, NoSuchAlgorithmException, SQLException,
-            JSONException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException,
-            IOException, SAXException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+    public static void main(String[] args) throws WdkModelException {
         String cmdName = System.getProperty("cmdName");
 
         // process args

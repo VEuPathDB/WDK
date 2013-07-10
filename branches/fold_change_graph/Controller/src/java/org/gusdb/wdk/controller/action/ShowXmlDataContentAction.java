@@ -26,6 +26,8 @@ import org.gusdb.wdk.model.jspwrap.XmlQuestionSetBean;
  */
 
 public class ShowXmlDataContentAction extends Action {
+
+	@Override
     public ActionForward execute(ActionMapping mapping,
 				 ActionForm form,
 				 HttpServletRequest request,
@@ -45,8 +47,8 @@ public class ShowXmlDataContentAction extends Action {
 	//WdkModelBean wdkModel = (WdkModelBean)getServlet().getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
   WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
 	
-	XmlQuestionSetBean wdkQuestionSet = (XmlQuestionSetBean)wdkModel.getXmlQuestionSetsMap().get(qSetName);
-	XmlQuestionBean wdkQuestion = (XmlQuestionBean)wdkQuestionSet.getQuestionsMap().get(qName);
+	XmlQuestionSetBean wdkQuestionSet = wdkModel.getXmlQuestionSetsMap().get(qSetName);
+	XmlQuestionBean wdkQuestion = wdkQuestionSet.getQuestionsMap().get(qName);
 	return wdkQuestion;
     }
 

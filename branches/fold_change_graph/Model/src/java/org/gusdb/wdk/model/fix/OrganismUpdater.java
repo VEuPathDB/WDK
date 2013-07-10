@@ -31,13 +31,6 @@ public class OrganismUpdater {
 
     private static final Logger logger = Logger.getLogger(OrganismUpdater.class);
 
-    /**
-     * @param args
-     * @throws WdkModelException
-     * @throws SQLException
-     * @throws IOException
-     * @throws JSONException
-     */
     public static void main(String[] args) throws WdkModelException,
             SQLException, IOException, JSONException {
 
@@ -85,14 +78,14 @@ public class OrganismUpdater {
         return mappings;
     }
 
-    public void update() throws SQLException, JSONException, WdkModelException {
+    public void update() throws SQLException, JSONException {
         Set<String> clobKeys = new HashSet<String>();
         updateStepParams(clobKeys);
         updateClobValues(clobKeys);
     }
 
     private void updateStepParams(Set<String> clobKeys) throws SQLException,
-            JSONException, WdkModelException {
+            JSONException {
         logger.info("Checking step params...");
 
         DatabaseInstance database = wdkModel.getUserDb();
@@ -174,7 +167,7 @@ public class OrganismUpdater {
         return updated;
     }
 
-    private void updateClobValues(Set<String> clobKeys) throws SQLException, WdkModelException {
+    private void updateClobValues(Set<String> clobKeys) throws SQLException {
         logger.info("Checking clob values...");
         DatabaseInstance database = wdkModel.getUserDb();
         DBPlatform platform = database.getPlatform();

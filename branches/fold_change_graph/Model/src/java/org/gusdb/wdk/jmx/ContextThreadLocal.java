@@ -21,6 +21,6 @@ public class ContextThreadLocal {
   }
 
   public static ServletContext get() {
-    return (ServletContext)wdkThreadLocal.get();
+    return wdkThreadLocal.get();
   }
 }

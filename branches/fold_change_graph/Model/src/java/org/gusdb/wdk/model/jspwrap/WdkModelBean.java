@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -13,7 +12,6 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -75,7 +73,7 @@ public class WdkModelBean implements ConnectionContainer {
      * used by the controller
      */
     public RecordClassBean findRecordClass(String recClassRef)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         return new RecordClassBean(wdkModel.getRecordClass(recClassRef));
     }
 
@@ -238,7 +236,7 @@ public class WdkModelBean implements ConnectionContainer {
         return rcBeans;
     }
 
-    public UserFactoryBean getUserFactory() throws WdkModelException {
+    public UserFactoryBean getUserFactory() {
         return new UserFactoryBean(wdkModel.getUserFactory());
     }
 
@@ -270,7 +268,6 @@ public class WdkModelBean implements ConnectionContainer {
 
     /**
      * @return
-     * @throws WdkModelException
      * @see org.gusdb.wdk.model.WdkModel#getSecretKey()
      */
     public String getSecretKey() throws WdkModelException  {
@@ -281,8 +278,7 @@ public class WdkModelBean implements ConnectionContainer {
         return wdkModel.getUseWeights();
     }
 
-    public UserBean getSystemUser() throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException {
+    public UserBean getSystemUser() throws WdkModelException {
         return new UserBean(wdkModel.getSystemUser());
     }
 
@@ -295,7 +291,7 @@ public class WdkModelBean implements ConnectionContainer {
     }
 
     public QuestionBean getQuestion(String questionFullName)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         return new QuestionBean(wdkModel.getQuestion(questionFullName));
     }
 

@@ -24,7 +24,7 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
   private Map<String, Object> pkValues;
 
   public PrimaryKeyAttributeValue(PrimaryKeyAttributeField field,
-      Map<String, Object> pkValues) throws WdkModelException {
+      Map<String, Object> pkValues) {
     super(field);
     this.field = field;
     this.pkValues = new LinkedHashMap<String, Object>(pkValues);
@@ -39,6 +39,7 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
     return values;
   }
 
+  @Override
   public Object getValue() throws WdkModelException {
     if (value == null)
       value = Utilities.replaceMacros(field.getText(), pkValues);
@@ -50,6 +51,7 @@ public class PrimaryKeyAttributeValue extends AttributeValue {
    * @return
    * @see java.lang.Object#equals(java.lang.Object)
    */
+  @Override
   public boolean equals(Object obj) {
     if (obj instanceof PrimaryKeyAttributeValue) {
       PrimaryKeyAttributeValue pk = (PrimaryKeyAttributeValue) obj;

@@ -1,13 +1,5 @@
 package org.gusdb.wdk.model.test;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
@@ -16,23 +8,15 @@ import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.xml.XmlAnswerValue;
 import org.gusdb.wdk.model.xml.XmlQuestion;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
-import org.json.JSONException;
-import org.xml.sax.SAXException;
 
 public class XmlQuestionTester {
 
     static Logger logger = Logger.getRootLogger();
 
-    public static void main(String[] args) throws WdkModelException,
-            SAXException, IOException, NoSuchAlgorithmException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException, SQLException, JSONException,
-            WdkUserException, InstantiationException, IllegalAccessException,
-            ClassNotFoundException {
+    public static void main(String[] args) throws WdkModelException {
         String cmdName = System.getProperty("cmdName");
 
         // process args

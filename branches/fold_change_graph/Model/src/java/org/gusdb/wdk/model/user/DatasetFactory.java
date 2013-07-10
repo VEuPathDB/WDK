@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -31,7 +30,6 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
@@ -153,9 +151,6 @@ public class DatasetFactory {
 
             return dataset;
         }
-        catch (NoSuchAlgorithmException e) {
-        	throw new WdkRuntimeException(e);
-        }
         catch (SQLException e) {
         	try {
         		if (connection != null) connection.rollback();
@@ -184,11 +179,8 @@ public class DatasetFactory {
      * @param user
      * @param userDatasetId
      * @return
-     * @throws SQLException
-     * @throws WdkModelException
-     *             throws if the userDatasetId doesn't exist or doesn't belong
-     *             to the given user.
-     * @throws WdkUserException
+     * @throws WdkModelException if the userDatasetId doesn't exist or doesn't
+     *             belong to the given user.
      */
     public Dataset getDataset(User user, int userDatasetId)
             throws WdkModelException {
@@ -233,10 +225,7 @@ public class DatasetFactory {
      * @param user
      * @param datasetChecksum
      * @return
-     * @throws SQLException
-     * @throws WdkModelException
-     *             throws if the dataset doesn't exist;
-     * @throws WdkUserException
+     * @throws WdkModelException if the dataset doesn't exist
      */
     public Dataset getDataset(User user, String datasetChecksum)
             throws WdkModelException {
@@ -354,11 +343,7 @@ public class DatasetFactory {
      * @param connection
      * @param datasetChecksum
      * @return returns dataset Id.
-     * @throws WdkModelException
-     *             the dataset does not exist
-     * @throws SQLException
-     *             the database or query failure
-     * @throws WdkUserException
+     * @throws WdkModelException if the dataset does not exist
      */
     private int getDatasetId(Connection connection, String datasetChecksum)
             throws WdkModelException {
@@ -382,11 +367,7 @@ public class DatasetFactory {
      * @param connection
      * @param datasetId
      * @return the user-dataset-id.
-     * @throws WdkModelException
-     *             the userDataset does not exist
-     * @throws SQLException
-     *             the database or query failure
-     * @throws WdkUserException
+     * @throws WdkModelException if the userDataset does not exist
      */
     public int getUserDatasetId(Connection connection, User user, int datasetId)
             throws WdkModelException {
@@ -491,7 +472,7 @@ public class DatasetFactory {
     }
 
     private void insertUserDataset(Connection connection, Dataset dataset)
-            throws SQLException, WdkModelException {
+            throws SQLException {
         // get new user dataset id
         int userDatasetId = userDb.getPlatform().getNextId(dataSource, userSchema,
                 TABLE_USER_DATASET);
@@ -588,9 +569,10 @@ public class DatasetFactory {
     }
 
     private String getChecksum(List<String[]> values)
-            throws NoSuchAlgorithmException, WdkModelException {
+            throws WdkModelException {
         // sort the value list
         Collections.sort(values, new Comparator<String[]>() {
+            @Override
             public int compare(String[] o1, String[] o2) {
                 int limit = Math.min(o1.length, o2.length);
                 for (int i = 0; i < limit; i++) {
@@ -665,10 +647,6 @@ public class DatasetFactory {
      * synchronized at the end of a remote query, precede each remote query with
      * a dummy remote query to the same site (such as select * from
      * dual@remote)."
-     * 
-     * @throws WdkModelException
-     * @throws WdkUserException
-     * @throws SQLException
      */
     private void checkRemoteTable() throws WdkModelException {
       try {
