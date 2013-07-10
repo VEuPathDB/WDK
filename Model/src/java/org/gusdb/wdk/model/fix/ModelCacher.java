@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.fix;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Set;
@@ -17,7 +16,6 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
@@ -25,7 +23,6 @@ import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wsf.util.BaseCLI;
-import org.json.JSONException;
 
 /**
  * @author xingao
@@ -37,10 +34,6 @@ public class ModelCacher extends BaseCLI {
 
     private static final Logger logger = Logger.getLogger(ModelCacher.class);
 
-    /**
-     * @param args
-     * @throws Exception
-     */
     public static void main(String[] args) throws Exception {
         String cmdName = System.getProperty("cmdName");
         ModelCacher cacher = new ModelCacher(cmdName);
@@ -131,8 +124,7 @@ public class ModelCacher extends BaseCLI {
     }
 
     public void expand(WdkModel wdkModel, String schema) throws SQLException,
-            NoSuchAlgorithmException, JSONException, WdkModelException,
-            WdkUserException {
+            WdkModelException {
         // need to reset the cache first
         wdkModel.getResultFactory().getCacheFactory().resetCache(false, true);
         
@@ -204,7 +196,7 @@ public class ModelCacher extends BaseCLI {
     }
 
     public void createTables(WdkModel wdkModel, String schema)
-            throws SQLException, WdkModelException, WdkUserException {
+            throws SQLException {
         DatabaseInstance database = wdkModel.getUserDb();
         DBPlatform platform = database.getPlatform();
         DataSource dataSource = database.getDataSource();
@@ -221,8 +213,7 @@ public class ModelCacher extends BaseCLI {
     }
 
     private void createQuestionTable(WdkModel wdkModel, DataSource dataSource,
-            String schema) throws SQLException, WdkUserException,
-            WdkModelException {
+            String schema) throws SQLException {
         // create sequence
         String sql = "CREATE SEQUENCE " + schema + "wdk_questions_pkseq "
                 + "INCREMENT BY 1 START WITH 1";
@@ -248,8 +239,7 @@ public class ModelCacher extends BaseCLI {
     }
 
     private void createParamTable(WdkModel wdkModel, DataSource dataSource,
-            String schema) throws SQLException, WdkUserException,
-            WdkModelException {
+            String schema) throws SQLException {
         // create sequence
         String sql = "CREATE SEQUENCE " + schema + "wdk_params_pkseq "
                 + "INCREMENT BY 1 START WITH 1";
@@ -277,8 +267,7 @@ public class ModelCacher extends BaseCLI {
     }
 
     private void createEnumParamTable(WdkModel wdkModel, DataSource dataSource,
-            String schema) throws SQLException, WdkUserException,
-            WdkModelException {
+            String schema) throws SQLException {
         // create table
         String sql = "CREATE TABLE " + schema + "wdk_enum_params ( "
                 + "param_id NUMBER(12) NOT NULL, "
@@ -294,7 +283,7 @@ public class ModelCacher extends BaseCLI {
     }
 
     private void deleteCache(DataSource dataSource, String projectId,
-            String schema) throws SQLException, WdkModelException {
+            String schema) throws SQLException {
         // delete enum_param values
         PreparedStatement psEnums = null, psParams = null, psQuestions = null;
         try {
@@ -332,8 +321,7 @@ public class ModelCacher extends BaseCLI {
 
     private void saveQuestion(Question question, PreparedStatement psQuestion,
             PreparedStatement psParam, PreparedStatement psEnum,
-            String schemaWithoutDot) throws NoSuchAlgorithmException,
-            JSONException, WdkModelException, SQLException, WdkUserException {
+            String schemaWithoutDot) throws WdkModelException, SQLException {
         logger.debug("Caching question [" + question.getFullName() + "]...");
         WdkModel wdkModel = question.getWdkModel();
         DatabaseInstance userDb = wdkModel.getUserDb();
@@ -358,8 +346,7 @@ public class ModelCacher extends BaseCLI {
     private void saveParam(WdkModel wdkModel, Question question, Param param,
             int questionId, PreparedStatement psParam,
             PreparedStatement psEnum, String schemaWithoutDot)
-            throws SQLException, WdkModelException, NoSuchAlgorithmException,
-            JSONException, WdkUserException {
+            throws SQLException, WdkModelException {
         DatabaseInstance database = wdkModel.getUserDb();
 
         String recordClass = null;
@@ -390,8 +377,7 @@ public class ModelCacher extends BaseCLI {
 
   private void saveEnums(Question question, AbstractEnumParam param,
           int paramId, PreparedStatement psEnum)
-          throws NoSuchAlgorithmException, WdkModelException, SQLException,
-          JSONException, WdkUserException {
+          throws WdkModelException, SQLException {
       // need to handle dependent params
     Set<String> paramValues = param.getAllValues();
     for (String paramValue : paramValues) {

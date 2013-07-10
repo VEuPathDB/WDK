@@ -25,6 +25,7 @@ public class ShowStrategyStageHandler implements StageHandler {
 
     private static final Logger logger = Logger.getLogger(ShowStrategyStageHandler.class);
 
+    @Override
     public Map<String, Object> execute(ActionServlet servlet,
             HttpServletRequest request, HttpServletResponse response,
             WizardForm wizardForm) throws Exception {

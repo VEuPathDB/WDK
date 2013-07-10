@@ -33,9 +33,7 @@ public class ColumnAttributeField extends AttributeField {
   }
 
   /**
-   * @param column
-   *          The column to set.
-   * @throws WdkModelException
+   * @param column The column to set.
    */
   public void setColumn(Column column) {
     this.column = column;

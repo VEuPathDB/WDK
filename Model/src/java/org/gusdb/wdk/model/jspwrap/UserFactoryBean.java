@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.Map;
 
 import org.gusdb.wdk.model.Utilities;
@@ -12,7 +10,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
-import org.json.JSONException;
 
 /**
  * @author: Jerric
@@ -98,8 +95,7 @@ public class UserFactoryBean {
      * java.lang.String)
      */
     public UserBean login(UserBean guest, String email, String password)
-            throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            throws WdkModelException, WdkUserException {
         User user = userFactory.login(guest.getUser(), email, password);
         return new UserBean(user);
     }
@@ -111,8 +107,7 @@ public class UserFactoryBean {
      * java.lang.String)
      */
     public UserBean login(UserBean guest, String openid)
-            throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+            throws WdkModelException, WdkUserException {
         User user = userFactory.login(guest.getUser(), openid);
         if (user == null) return null;
         return new UserBean(user);
@@ -125,7 +120,7 @@ public class UserFactoryBean {
      * java.lang.String, java.lang.String, java.lang.String)
      */
     public void sendEmail(String email, String reply, String subject,
-            String content) throws WdkUserException, WdkModelException  {
+            String content) throws WdkModelException  {
         Utilities.sendEmail(userFactory.getWdkModel(), email, reply, subject,
                 content);
     }
@@ -172,12 +167,9 @@ public class UserFactoryBean {
     /**
      * @param signature
      * @return
-     * @throws WdkUserException
-     * @throws WdkModelException
      * @see org.gusdb.wdk.model.user.UserFactory#loadUserBySignature(java.lang.String)
      */
-    public UserBean getUser(String signature) throws WdkUserException,
-            WdkModelException {
+    public UserBean getUser(String signature) throws WdkModelException {
         User user = userFactory.getUser(signature);
         return new UserBean(user);
     }
@@ -187,8 +179,7 @@ public class UserFactoryBean {
      * 
      * @see org.gusdb.wdk.model.user.UserFactory#loadUser(int)
      */
-    public UserBean getUser(int userId) throws WdkUserException,
-            WdkModelException, SQLException {
+    public UserBean getUser(int userId) throws WdkModelException {
         User user = userFactory.getUser(userId);
         return new UserBean(user);
     }
@@ -197,7 +188,7 @@ public class UserFactoryBean {
         this.signature = signature;
     }
 
-    public UserBean getUser() throws WdkUserException, WdkModelException {
+    public UserBean getUser() throws WdkModelException {
         return (signature == null) ? null : getUser(signature);
     }
 }

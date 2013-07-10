@@ -3,8 +3,8 @@
  */
 package org.gusdb.wdk.model.fix;
 
-import java.sql.SQLException;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import javax.sql.DataSource;
 
@@ -12,8 +12,6 @@ import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wsf.util.BaseCLI;
 
@@ -29,10 +27,6 @@ public class InvalidStepReporter extends BaseCLI {
     private static final Logger logger = Logger.getLogger(StepValidator.class);
     private static final String ARG_ALREADY_INVALID = "alreadyInvalid";
 
-    /**
-     * @param args
-     * @throws Exception
-     */
     public static void main(String[] args) throws Exception {
         String cmdName = System.getProperty("cmdName");
         InvalidStepReporter reporter = new InvalidStepReporter(cmdName);
@@ -87,7 +81,7 @@ public class InvalidStepReporter extends BaseCLI {
     }
 
     private void report(WdkModel wdkModel, boolean alreadyInvalid)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
         // not previously marked invalid
         String s = alreadyInvalid ? "" : "NOT ";
         System.out.println("=== Reporting on invalid steps that are " + s
@@ -104,7 +98,7 @@ public class InvalidStepReporter extends BaseCLI {
     }
 
     private void questionNames(WdkModel wdkModel, String flag)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         DataSource dataSource = wdkModel.getUserDb().getDataSource();
@@ -140,7 +134,7 @@ public class InvalidStepReporter extends BaseCLI {
     }
 
     private void paramNames(WdkModel wdkModel, String flag)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";
@@ -201,7 +195,7 @@ public class InvalidStepReporter extends BaseCLI {
     }
 
     private void paramValues(WdkModel wdkModel, String type, String flag)
-            throws SQLException, WdkUserException, WdkModelException {
+            throws SQLException {
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String answer = userDB.getWdkEngineSchema() + "answers";
         String step = userDB.getUserSchema() + "steps";

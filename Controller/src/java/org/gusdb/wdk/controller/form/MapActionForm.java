@@ -75,6 +75,7 @@ public abstract class MapActionForm extends ActionForm {
         values.clear();
     }
 
+    @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
         builder.append("Printing out mapped form:\n");

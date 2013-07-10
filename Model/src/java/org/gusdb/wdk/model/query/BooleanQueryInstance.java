@@ -1,20 +1,16 @@
 package org.gusdb.wdk.model.query;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.StringParam;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 
 /**
  * BooleanQueryInstance.java
@@ -37,15 +33,6 @@ public class BooleanQueryInstance extends SqlQueryInstance {
   /**
    * @param query
    * @param values
-   * @throws WdkModelException
-   * @throws WdkUserException
-   * @throws JSONException
-   * @throws SQLException
-   * @throws NoSuchAlgorithmException
-   * @throws SQLException
-   * @throws JSONException
-   * @throws WdkUserException
-   * @throws NoSuchAlgorithmException
    */
   protected BooleanQueryInstance(User user, BooleanQuery query,
       Map<String, String> values, boolean validate, int assignedWeight,
@@ -79,11 +66,11 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 
     // construct the filter query for the first child
     AnswerParam leftParam = booleanQuery.getLeftOperandParam();
-    String leftSubSql = (String) InternalValues.get(leftParam.getName());
+    String leftSubSql = InternalValues.get(leftParam.getName());
     String leftSql = constructOperandSql(leftSubSql, booleanFlag);
 
     AnswerParam rightParam = booleanQuery.getRightOperandParam();
-    String rightSubSql = (String) InternalValues.get(rightParam.getName());
+    String rightSubSql = InternalValues.get(rightParam.getName());
     String rightSql = constructOperandSql(rightSubSql, booleanFlag);
 
     String sql;
@@ -136,7 +123,7 @@ public class BooleanQueryInstance extends SqlQueryInstance {
 
   public boolean isUseBooleanFilter() {
     StringParam useBooleanFilter = booleanQuery.getUseBooleanFilter();
-    String strBooleanFlag = (String) values.get(useBooleanFilter.getName());
+    String strBooleanFlag = values.get(useBooleanFilter.getName());
     return Boolean.parseBoolean(strBooleanFlag);
   }
 
