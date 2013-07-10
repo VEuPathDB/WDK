@@ -1,8 +1,5 @@
 package org.gusdb.wdk.controller.wizard;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -15,7 +12,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.json.JSONException;
 
 public class StageHandlerUtility {
    
@@ -31,8 +27,7 @@ public class StageHandlerUtility {
 
     public static StepBean getRootStep(ActionServlet servlet,
             HttpServletRequest request, WizardForm wizardForm)
-            throws WdkUserException, NumberFormatException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
+            throws WdkUserException, NumberFormatException, WdkModelException {
         // get current strategy
         String strategyKey = wizardForm.getStrategy();
         if (strategyKey == null || strategyKey.length() == 0)
@@ -64,8 +59,7 @@ public class StageHandlerUtility {
 
     public static StepBean getPreviousStep(ActionServlet servlet,
             HttpServletRequest request, WizardForm wizardForm)
-            throws NumberFormatException, WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, SQLException {
+            throws NumberFormatException, WdkUserException, WdkModelException {
         StepBean previousStep;
         String action = wizardForm.getAction();
         if (action.equals(WizardForm.ACTION_ADD)) {

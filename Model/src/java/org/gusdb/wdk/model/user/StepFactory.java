@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -575,7 +574,7 @@ public class StepFactory {
     }
 
     private Step loadStep(User user, ResultSet rsStep)
-            throws WdkModelException, SQLException, JSONException {
+            throws SQLException, JSONException {
         int displayId = rsStep.getInt(COLUMN_DISPLAY_ID);
 
 				logger.debug("\nStepFactory: loadStep()\n");
@@ -722,11 +721,6 @@ public class StepFactory {
      * 
      * @param user
      * @param step
-     * @throws WdkUserException
-     * @throws SQLException
-     * @throws JSONException
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
      */
     void updateStep(User user, Step step, boolean updateTime)
             throws WdkModelException {
@@ -878,6 +872,7 @@ public class StepFactory {
             SqlUtils.closeResultSetAndStatement(resultSet);
         }
         Collections.sort(strategies, new Comparator<Strategy>() {
+            @Override
             public int compare(Strategy o1, Strategy o2) {
                 return o2.getLastRunTime().compareTo(o1.getLastRunTime());
             }
@@ -1131,8 +1126,7 @@ public class StepFactory {
 
     // This function only updates the strategies table
     void updateStrategy(User user, Strategy strategy, boolean overwrite)
-            throws WdkUserException, WdkModelException, SQLException,
-            JSONException, NoSuchAlgorithmException {
+            throws WdkUserException, WdkModelException, SQLException {
         logger.debug("Updating strategy internal#=" + strategy.getInternalId()
                 + ", overwrite=" + overwrite);
 
@@ -1462,11 +1456,6 @@ public class StepFactory {
      * 
      * @param strategy
      * @return
-     * @throws JSONException
-     * @throws WdkModelException
-     * @throws WdkUserException
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
      */
     Strategy copyStrategy(Strategy strategy) throws WdkModelException, WdkUserException {
         User user = strategy.getUser();
@@ -1484,11 +1473,6 @@ public class StepFactory {
      * @param strategy
      * @param stepId
      * @return
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
-     * @throws JSONException
-     * @throws WdkUserException
      */
     Strategy copyStrategy(Strategy strategy, int stepId) throws WdkModelException, WdkUserException {
         User user = strategy.getUser();
@@ -1583,8 +1567,7 @@ public class StepFactory {
         return Utilities.encrypt(content, true);
     }
 
-    void setStepValidFlag(Step step) throws SQLException, WdkUserException,
-            WdkModelException, JSONException {
+    void setStepValidFlag(Step step) throws SQLException, WdkModelException {
         String sql = "UPDATE " + userSchema + TABLE_STEP + " SET "
                 + COLUMN_IS_VALID + " = ? WHERE step_id = ?";
         PreparedStatement psUpdate = null;

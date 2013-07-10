@@ -25,6 +25,7 @@ public class ShowFavoriteAction extends Action {
 
     private static Logger logger = Logger.getLogger(ShowFavoriteAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {

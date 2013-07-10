@@ -108,7 +108,7 @@ public class XmlAnswerValue {
         }
     }
 
-    public void setResources(WdkModel model) throws WdkModelException {
+    public void setResources(WdkModel model) {
         // create summary attribute index
         XmlAttributeField[] sumArray = question.getSummaryAttributes();
         Map<String, XmlAttributeField> summaries = new LinkedHashMap<String, XmlAttributeField>();

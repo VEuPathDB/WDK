@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.question;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,7 +34,6 @@ import org.gusdb.wdk.model.record.attribute.AttributeCategoryTree;
 import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.record.attribute.AttributeFieldContainer;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 
 /**
  * A class representing a binding between a RecordClass and a Query. On the
@@ -237,9 +234,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       return (currentBuild.equals(reviseBuild));
   }
 
-  /**
-   * @return
-   */
+  @Override
   public WdkModel getWdkModel() {
     return this.wdkModel;
   }
@@ -319,16 +314,10 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    * 
    * @param paramErrors
    * @return
-   * @throws WdkModelException
-   * @throws WdkUserException
-   * @throws JSONException
-   * @throws SQLException
-   * @throws NoSuchAlgorithmException
    */
   public AnswerValue makeAnswerValue(User user,
       Map<String, String> dependentValues, boolean validate, int assignedWeight)
-      throws WdkUserException, WdkModelException, NoSuchAlgorithmException,
-      SQLException, JSONException {
+      throws WdkModelException {
     int pageStart = 1;
     int pageEnd = Utilities.DEFAULT_PAGE_SIZE;
     Map<String, Boolean> sortingMap = new LinkedHashMap<String, Boolean>(
@@ -352,11 +341,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    * @param j
    * @param sortingAttributes
    * @return
-   * @throws WdkUserException
-   * @throws WdkModelException
-   * @throws JSONException
-   * @throws SQLException
-   * @throws NoSuchAlgorithmException
    */
   public AnswerValue makeAnswerValue(User user,
       Map<String, String> dependentValues, int pageStart, int pageEnd,
@@ -479,6 +463,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     return this.query.getName();
   }
 
+  @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
 
@@ -584,6 +569,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     return attributeFields;
   }
 
+  @Override
   public Map<String, AttributeField> getAttributeFieldMap() {
     return getAttributeFieldMap(FieldScope.ALL);
   }
@@ -714,7 +700,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     resolved = true;
   }
 
-  public void setQuestionSet(QuestionSet questionSet) throws WdkModelException {
+  public void setQuestionSet(QuestionSet questionSet) {
     this.questionSet = questionSet;
   }
 
@@ -726,7 +712,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    * This method is use to clone the question, excluding dynamic attributes
    * 
    * @return
-   * @throws WdkModelException
    */
   public Map<String, Boolean> getSortingAttributeMap() {
     Map<String, Boolean> map = new LinkedHashMap<String, Boolean>();
@@ -902,7 +887,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    * 
    * @param wdkModel
    * @return
-   * @throws WdkModelException
    */
   private Query createDynamicAttributeQuery(WdkModel wdkModel)
       throws WdkModelException {
@@ -996,7 +980,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     return recordClass.getSummaryView(viewName);
   }
 
-  public SummaryView getDefaultSummaryView() throws WdkModelException {
+  public SummaryView getDefaultSummaryView() {
     // first look for default in the views defined in question
     for (SummaryView view : summaryViewMap.values()) {
       if (view.isDefault())

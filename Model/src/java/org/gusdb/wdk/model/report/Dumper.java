@@ -3,8 +3,6 @@ package org.gusdb.wdk.model.report;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -18,13 +16,11 @@ import org.apache.commons.cli.ParseException;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 
 /**
  * @author Charles Treatman
@@ -101,8 +97,7 @@ public class Dumper {
     }
 
     static void fillInParams(Map<String, String> params, Question question)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         Query query = question.getQuery();
         if (!query.getParamValuesSets().isEmpty()) {
             ParamValuesSet pvs = query.getParamValuesSets().get(0);
@@ -215,9 +210,7 @@ public class Dumper {
     }
 
     static Map<String, String> parseListArgs(String argName,
-            String[] inputValues) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+            String[] inputValues) {
         Map<String, String> argValues = new LinkedHashMap<String, String>();
 
         if (inputValues.length % 2 != 0) {

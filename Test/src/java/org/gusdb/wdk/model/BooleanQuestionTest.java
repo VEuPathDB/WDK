@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -18,7 +16,6 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,9 +58,7 @@ public class BooleanQuestionTest {
     }
 
     @Test
-    public void testOrOperator() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void testOrOperator() throws WdkModelException {
         Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
         BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
@@ -93,9 +88,7 @@ public class BooleanQuestionTest {
     }
 
     @Test
-    public void testAndOperator() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void testAndOperator() throws WdkModelException {
         Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
         BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
@@ -125,9 +118,7 @@ public class BooleanQuestionTest {
     }
 
     @Test
-    public void testLeftMinusOperator() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void testLeftMinusOperator() throws WdkModelException {
         Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
         BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
@@ -155,9 +146,7 @@ public class BooleanQuestionTest {
     }
 
     @Test
-    public void testRightMinueOperator() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void testRightMinueOperator() throws WdkModelException {
         Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
         BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
         Map<String, String> paramValues = new LinkedHashMap<String, String>();

@@ -1,7 +1,6 @@
 package org.gusdb.wdk.controller.wizard;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +24,6 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.json.JSONException;
 
 public class ProcessBooleanStageHandler implements StageHandler {
 
@@ -37,6 +35,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
 
     private static final Logger logger = Logger.getLogger(ProcessBooleanStageHandler.class);
 
+    @Override
     public Map<String, Object> execute(ActionServlet servlet,
             HttpServletRequest request, HttpServletResponse response,
             WizardForm wizardForm) throws Exception {
@@ -79,8 +78,8 @@ public class ProcessBooleanStageHandler implements StageHandler {
 
     private StepBean createStepFromQuestion(ActionServlet servlet,
             HttpServletRequest request, WizardForm wizardForm,
-            String questionName, UserBean user, WdkModelBean wdkModel) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, IOException, SQLException, JSONException {
+            String questionName, UserBean user, WdkModelBean wdkModel)
+                throws WdkUserException, WdkModelException, IOException, SQLException {
         logger.debug("creating step from question: " + questionName);
 
         // get the assigned weight
@@ -110,8 +109,7 @@ public class ProcessBooleanStageHandler implements StageHandler {
     }
 
     private StepBean createStepFromStrategy(UserBean user, int strategyId)
-            throws NoSuchAlgorithmException, WdkModelException,
-            WdkUserException, JSONException, SQLException {
+            throws WdkModelException, WdkUserException {
         logger.debug("creating step from strategy: " + strategyId);
         StrategyBean strategy = user.getStrategy(strategyId);
         StepBean step = strategy.getLatestStep();

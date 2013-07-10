@@ -13,6 +13,7 @@ public class OracleDBInfo extends AbstractDBInfo {
     databaseAttributes.put("servicename", "booya");
   }
 
+  @Override
   protected String getMetaDataSql() {
     StringBuffer sql = new StringBuffer();
     
@@ -38,7 +39,7 @@ public class OracleDBInfo extends AbstractDBInfo {
     return sql.toString();
   }
 
-
+  @Override
   protected String getServerNameSql() {
     StringBuffer sql = new StringBuffer();
     sql.append(" select                                     ");
@@ -48,6 +49,7 @@ public class OracleDBInfo extends AbstractDBInfo {
     return sql.toString();
   }
 
+  @Override
   protected String getDblinkSql() {
     StringBuffer sql = new StringBuffer();
 

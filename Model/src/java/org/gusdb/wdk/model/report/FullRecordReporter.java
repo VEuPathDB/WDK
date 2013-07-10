@@ -108,6 +108,7 @@ public class FullRecordReporter extends Reporter {
         }
     }
 
+    @Override
     public String getConfigInfo() {
         return "This reporter does not have config info yet.";
     }
@@ -251,7 +252,7 @@ public class FullRecordReporter extends Reporter {
         }
     }
 
-    private Set<Field> validateColumns() throws WdkModelException {
+    private Set<Field> validateColumns() {
         // get a map of report maker fields
         Map<String, Field> fieldMap = getQuestion().getFields(
                 FieldScope.REPORT_MAKER);
@@ -276,8 +277,7 @@ public class FullRecordReporter extends Reporter {
 
     private void formatAttributes(RecordInstance record,
             Set<AttributeField> attributes, PrintWriter writer)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         // print out attributes of the record first
         for (AttributeField field : attributes) {
             AttributeValue value = record.getAttributeValue(field.getName());
@@ -291,8 +291,7 @@ public class FullRecordReporter extends Reporter {
     private void formatTables(RecordInstance record, Set<TableField> tables,
             PrintWriter writer, AnswerValue answerValue,
             PreparedStatement psInsert, PreparedStatement psQuery)
-            throws WdkModelException, SQLException, NoSuchAlgorithmException,
-            JSONException, WdkUserException {
+            throws WdkModelException, SQLException, WdkUserException {
         DBPlatform platform = getQuestion().getWdkModel().getAppDb().getPlatform();
         RecordClass recordClass = record.getRecordClass();
         String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
@@ -368,7 +367,6 @@ public class FullRecordReporter extends Reporter {
 
     private void formatRecord2PDF(Set<AttributeField> attributes,
             Set<TableField> tables, OutputStream out) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
 
         logger.info("format2PDF>>>");

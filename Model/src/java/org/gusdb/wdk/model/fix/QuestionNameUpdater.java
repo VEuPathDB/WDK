@@ -19,21 +19,13 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
-import org.json.JSONException;
 
 public class QuestionNameUpdater {
 
     private static final Logger logger = Logger.getLogger(OrganismUpdater.class);
 
-    /**
-     * @param args
-     * @throws WdkModelException
-     * @throws SQLException
-     * @throws IOException
-     * @throws JSONException
-     */
     public static void main(String[] args) throws WdkModelException,
-            SQLException, IOException, JSONException {
+            SQLException, IOException {
 
 				//the format of the mapping file is:
 				//       old_name=new_name

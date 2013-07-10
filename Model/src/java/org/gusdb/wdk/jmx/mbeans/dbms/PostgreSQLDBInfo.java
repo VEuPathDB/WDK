@@ -13,6 +13,7 @@ public class PostgreSQLDBInfo extends AbstractDBInfo {
     databaseAttributes.put("servicename", "booya");
   }
 
+  @Override
   protected String getMetaDataSql() {
     StringBuffer sql = new StringBuffer(); 
     // column names will be lower-cased keys in metaDataMap
@@ -25,7 +26,7 @@ public class PostgreSQLDBInfo extends AbstractDBInfo {
     return sql.toString();
   }
 
-
+  @Override
   protected String getServerNameSql() {
     StringBuffer sql = new StringBuffer();
     sql.append(" select                         ");
@@ -33,6 +34,7 @@ public class PostgreSQLDBInfo extends AbstractDBInfo {
     return sql.toString();
   }
 
+  @Override
   protected String getDblinkSql() {
     // not implemented
     return null;
