@@ -64,11 +64,11 @@
           <c:when test="${displayType eq 'hidden'}">
             <div name="${wdkQuestion.name}_${group.name}" class="param-group ${displayType}">
           </c:when>
-          <c:when test="${displayType eq 'empty'}">
+          <c:when test="${displayType eq 'empty' or displayType eq 'dynamic'}">
             <div name="${wdkQuestion.name}_${group.name}" class="param-group ${displayType} content-pane">
               <!-- <div class="group-title h4left">Parameters</div> -->
           </c:when>
-          <c:otherwise>  <-- REGULAR SET OF PARAMS -->
+          <c:otherwise>  <%-- REGULAR SET OF PARAMS --%>
             <c:if test="${group.visible ne true}">
               <c:set var="groupDisplay" value="hidden"/>
             </c:if>
@@ -81,8 +81,15 @@
 
           <c:set var="paramCount" value="${fn:length(paramGroup)}"/>
 
-          <%-- display parameter list --%>
-          <imp:questionParamGroup paramGroup="${paramGroup}" />
+            <%-- display parameter list --%>
+            <c:choose>
+              <c:when test="${displayType eq 'dynamic'}">
+                <imp:dynamicParamGroup paramGroup="${paramGroup}" />
+              </c:when>
+              <c:otherwise>
+                <imp:questionParamGroup paramGroup="${paramGroup}" />
+              </c:otherwise>
+            </c:choose>
 
           </div> <%-- end of group-detail div --%>
 

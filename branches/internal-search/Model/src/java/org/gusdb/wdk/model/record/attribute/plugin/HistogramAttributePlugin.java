@@ -35,6 +35,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
      * 
      * @see org.gusdb.wdk.model.AttributePlugin#process()
      */
+    @Override
     public Map<String, Object> process() {
         loadSummaries();
         
@@ -48,6 +49,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
         return result;
     }
 
+    @Override
     public String getDownloadContent() {
         loadSummaries();
         

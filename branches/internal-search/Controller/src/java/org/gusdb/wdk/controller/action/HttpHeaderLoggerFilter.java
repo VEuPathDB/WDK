@@ -40,7 +40,8 @@ public class HttpHeaderLoggerFilter implements Filter {
 
   private static final Logger LOG = Logger.getLogger(HttpHeaderLoggerFilter.class.getName());
   private static final String NL = System.getProperty("line.separator");
-  
+
+  @Override
   public void doFilter(ServletRequest request, final ServletResponse response, FilterChain chain)
       throws IOException, ServletException {
     

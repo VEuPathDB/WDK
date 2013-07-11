@@ -107,6 +107,7 @@ public class Column extends WdkModelBase {
     return jsColumn;
   }
 
+  @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
     String classnm = this.getClass().getSimpleName();

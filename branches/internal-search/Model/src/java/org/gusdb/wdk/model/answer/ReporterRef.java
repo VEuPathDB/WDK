@@ -34,6 +34,7 @@ public class ReporterRef extends WdkModelBase {
 
   private WdkModel wdkModel;
 
+  @Override
   public WdkModel getWdkModel() {
     return wdkModel;
   }

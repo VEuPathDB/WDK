@@ -47,6 +47,7 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
     this.name = name;
   }
 
+  @Override
   public String getName() {
     return name;
   }
@@ -81,6 +82,7 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
     return q;
   }
 
+  @Override
   public Object getElement(String name) {
     return queries.get(name);
   }
@@ -128,7 +130,7 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
     return queries.containsKey(queryName);
   }
 
-  public void addQuery(Query query) throws WdkModelException {
+  public void addQuery(Query query) {
     query.setQuerySet(this);
     if (queryList != null)
       queryList.add(query);
@@ -140,6 +142,7 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
     }
   }
 
+  @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     for (Query query : queries.values()) {
       query.resolveReferences(model);
@@ -152,8 +155,10 @@ public class QuerySet extends WdkModelBase implements ModelSetI {
    * @see
    * org.gusdb.wdk.model.ModelSetI#setResources(org.gusdb.wdk.model.WdkModel)
    */
+  @Override
   public void setResources(WdkModel model) throws WdkModelException {}
 
+  @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
     StringBuffer buf = new StringBuffer("QuerySet: name='" + name + "'");

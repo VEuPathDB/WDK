@@ -1,19 +1,12 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.jspwrap;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 
 /**
  * @author xingao
@@ -25,9 +18,7 @@ public class AnswerParamBean extends ParamBean<AnswerParam> {
         super(answerParam);
     }
 
-    public StepBean[] getSteps(UserBean user) throws WdkUserException,
-            WdkModelException, SQLException, JSONException,
-            NoSuchAlgorithmException {
+    public StepBean[] getSteps(UserBean user) throws WdkModelException {
         // only get the steps for the first record class
         Map<String, RecordClass> recordClasses = param.getRecordClasses();
         RecordClass recordClass = recordClasses.values().iterator().next();

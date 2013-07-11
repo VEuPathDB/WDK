@@ -26,6 +26,7 @@ public class GroupSet extends WdkModelBase implements ModelSetI {
    * 
    * @see org.gusdb.wdk.model.ModelSetI#getName()
    */
+  @Override
   public String getName() {
     return name;
   }
@@ -51,6 +52,7 @@ public class GroupSet extends WdkModelBase implements ModelSetI {
    * 
    * @see org.gusdb.wdk.model.ModelSetI#getElement(java.lang.String)
    */
+  @Override
   public Object getElement(String elementName) {
     return groupMap.get(elementName);
   }
@@ -61,7 +63,7 @@ public class GroupSet extends WdkModelBase implements ModelSetI {
     return array;
   }
 
-  public void addGroup(Group group) throws WdkModelException {
+  public void addGroup(Group group) {
     groupList.add(group);
   }
 
@@ -72,6 +74,7 @@ public class GroupSet extends WdkModelBase implements ModelSetI {
    * org.gusdb.wdk.model.ModelSetI#resolveReferences(org.gusdb.wdk.model.WdkModel
    * )
    */
+  @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     for (Group group : groupMap.values()) {
       group.resolveReferences(model);
@@ -84,12 +87,14 @@ public class GroupSet extends WdkModelBase implements ModelSetI {
    * @see
    * org.gusdb.wdk.model.ModelSetI#setResources(org.gusdb.wdk.model.WdkModel)
    */
+  @Override
   public void setResources(WdkModel model) throws WdkModelException {
     for (Group group : groupMap.values()) {
       group.setResources(model);
     }
   }
 
+  @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
     StringBuffer buf = new StringBuffer("GroupSet: name='" + name + "'");
