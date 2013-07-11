@@ -29,6 +29,7 @@ public class ProcessRenameStrategyAction extends Action {
 
     private static Logger logger = Logger.getLogger(ProcessRenameStrategyAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {

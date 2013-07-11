@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.record.attribute.plugin;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
@@ -12,7 +11,6 @@ import javax.sql.DataSource;
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Column;
 import org.gusdb.wdk.model.query.SqlQuery;
@@ -24,7 +22,6 @@ import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.record.attribute.TextAttributeField;
 import org.gusdb.wdk.model.user.Step;
-import org.json.JSONException;
 
 public abstract class AbstractAttributePlugin implements AttributePlugin {
 
@@ -40,18 +37,22 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
     protected AttributeField attributeField;
     private Step step;
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public void setName(String name) {
         this.name = name;
     }
 
+    @Override
     public String getDisplay() {
         return (display == null) ? name : display;
     }
 
+    @Override
     public void setDisplay(String display) {
         this.display = display;
     }
@@ -59,6 +60,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
     /**
      * @return the description
      */
+    @Override
     public String getDescription() {
         return this.description;
     }
@@ -66,6 +68,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
     /**
      * @param description the description to set
      */
+    @Override
     public void setDescription(String description) {
         this.description = description;
     }
@@ -73,6 +76,7 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
     /**
      * @return the view
      */
+    @Override
     public String getView() {
         return this.view;
     }
@@ -80,10 +84,12 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
     /**
      * @param view the view to set
      */
+    @Override
     public void setView(String view) {
         this.view = view;
     }
 
+    @Override
     public void setProperties(Map<String, String> properties) {
         this.properties = properties;
     }
@@ -96,10 +102,12 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
         return properties.get(key);
     }
 
+    @Override
     public void setAttributeField(AttributeField attribute) {
         this.attributeField = attribute;
     }
 
+    @Override
     public void setStep(Step step) {
         this.step = step;
         this.wdkModel = step.getUser().getWdkModel();
@@ -118,15 +126,8 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
      *         PrimaryKeyAttributeField of the RecordClass), as well as a column
      *         for the associated attribute, the name of the column is defined
      *         as AbstractAttributePlugin.ATTRIBUTE_COLUMN.
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
-     * @throws WdkUserException
-     * @throws SQLException
-     * @throws JSONException
      */
-    protected String getAttributeSql() throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
+    protected String getAttributeSql() throws WdkModelException {
         // format the display of the attribute in sql
         Map<String, String> queries = new LinkedHashMap<String, String>();
         String column = formatColumn(attributeField, queries);
@@ -170,16 +171,10 @@ public abstract class AbstractAttributePlugin implements AttributePlugin {
 
     /**
      * @return the values of the associated attribute. the key of the map is the
-     *         primary key of a Orecord instance.
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
-     * @throws WdkUserException
-     * @throws SQLException
-     * @throws JSONException
+     *         primary key of a record instance.
      */
     protected Map<PrimaryKeyAttributeValue, Object> getAttributeValues()
-            throws WdkModelException, NoSuchAlgorithmException,
-            WdkUserException, SQLException, JSONException {
+            throws WdkModelException, SQLException {
         Map<PrimaryKeyAttributeValue, Object> values = new LinkedHashMap<PrimaryKeyAttributeValue, Object>();
         RecordClass recordClass = step.getQuestion().getRecordClass();
         PrimaryKeyAttributeField pkField = recordClass

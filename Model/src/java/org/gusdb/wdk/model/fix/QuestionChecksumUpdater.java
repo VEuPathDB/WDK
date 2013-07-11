@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.fix;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,11 +16,9 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wsf.util.BaseCLI;
-import org.json.JSONException;
 
 /**
  * @author xingao
@@ -89,7 +86,7 @@ public class QuestionChecksumUpdater extends BaseCLI {
     }
 
     public void updateChecksum(WdkModel wdkModel)
-            throws NoSuchAlgorithmException, JSONException, WdkModelException,
+            throws WdkModelException,
             SQLException {
         PreparedStatement psUpdate = null;
         try {
@@ -111,7 +108,7 @@ public class QuestionChecksumUpdater extends BaseCLI {
     }
 
     private PreparedStatement prepareUpdate(WdkModel wdkModel)
-            throws SQLException, WdkModelException {
+            throws SQLException {
         StringBuffer sql = new StringBuffer("UPDATE ");
         sql.append(wdkModel.getModelConfig().getUserDB().getWdkEngineSchema());
         sql.append("answers SET old_query_checksum = query_checksum, ");
@@ -121,8 +118,7 @@ public class QuestionChecksumUpdater extends BaseCLI {
         return SqlUtils.getPreparedStatement(dataSource, sql.toString());
     }
 
-    public void copyParams(WdkModel wdkModel) throws SQLException,
-            WdkUserException, WdkModelException {
+    public void copyParams(WdkModel wdkModel) throws SQLException {
         PreparedStatement psUpdate = null;
         ResultSet rsHistory = null;
         DatabaseInstance database = wdkModel.getUserDb();

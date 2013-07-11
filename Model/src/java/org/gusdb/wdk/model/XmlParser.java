@@ -110,9 +110,6 @@ public abstract class XmlParser {
    * 
    * @param content
    * @return
-   * @throws IOException
-   * @throws SAXException
-   * @throws ParserConfigurationException
    */
   protected Document loadDocument(String content) throws SAXException,
       IOException, ParserConfigurationException {
@@ -129,17 +126,20 @@ public abstract class XmlParser {
     builder.setErrorHandler(new org.xml.sax.ErrorHandler() {
 
       // ignore fatal errors (an exception is guaranteed)
+      @Override
       public void fatalError(SAXParseException exception) throws SAXException {
         exception.printStackTrace(System.err);
       }
 
       // treat validation errors as fatal
+      @Override
       public void error(SAXParseException e) throws SAXParseException {
         e.printStackTrace(System.err);
         throw e;
       }
 
       // dump warnings too
+      @Override
       public void warning(SAXParseException err) throws SAXParseException {
         System.err.println("** Warning" + ", line " + err.getLineNumber()
             + ", uri " + err.getSystemId());

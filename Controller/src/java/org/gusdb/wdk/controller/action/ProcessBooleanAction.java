@@ -1,7 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Map;
 
@@ -103,7 +102,7 @@ public class ProcessBooleanAction extends Action {
   }
 
   private StrategyBean getStrategy(HttpServletRequest request, UserBean user)
-      throws NoSuchAlgorithmException, WdkModelException, WdkUserException,
+      throws WdkModelException, WdkUserException,
       JSONException, SQLException {
     // get current strategy
     String strategyKey = request.getParameter(PARAM_STRATEGY);
@@ -126,7 +125,7 @@ public class ProcessBooleanAction extends Action {
   }
 
   private StepBean getRootStep(HttpServletRequest request, StrategyBean strategy)
-      throws WdkUserException, WdkModelException, SQLException, JSONException {
+      throws WdkUserException, WdkModelException {
     // get current strategy
     String strategyKey = request.getParameter(PARAM_STRATEGY);
     if (strategyKey == null || strategyKey.length() == 0)
@@ -150,7 +149,7 @@ public class ProcessBooleanAction extends Action {
   private Map<Integer, Integer> reviseBoolean(HttpServletRequest request,
       UserBean user, StrategyBean strategy, String operator, StepBean step)
       throws NumberFormatException, WdkUserException, WdkModelException,
-      NoSuchAlgorithmException, SQLException, JSONException {
+      SQLException, JSONException {
     logger.debug("Revising boolean...");
 
     // current step has to exist for revise
@@ -204,8 +203,7 @@ public class ProcessBooleanAction extends Action {
 
   private Map<Integer, Integer> insertBoolean(HttpServletRequest request,
       UserBean user, StrategyBean strategy, String operator, StepBean step)
-      throws WdkUserException, WdkModelException, NoSuchAlgorithmException,
-      SQLException, JSONException {
+      throws WdkUserException, WdkModelException, SQLException, JSONException {
     logger.debug("Inserting boolean...");
 
     // current step has to exist for insert
@@ -252,7 +250,7 @@ public class ProcessBooleanAction extends Action {
   private Map<Integer, Integer> addBoolean(HttpServletRequest request,
       UserBean user, StrategyBean strategy, String operator)
       throws WdkUserException, NumberFormatException, WdkModelException,
-      NoSuchAlgorithmException, SQLException, JSONException {
+      SQLException, JSONException {
     logger.debug("Adding boolean...");
 
     // get root step

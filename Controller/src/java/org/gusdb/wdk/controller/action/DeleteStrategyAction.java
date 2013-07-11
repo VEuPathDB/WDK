@@ -20,8 +20,10 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
  */
 
 public class DeleteStrategyAction extends Action {
-    private static final Logger logger = Logger.getLogger(DeleteStrategyAction.class);
 
+	private static final Logger logger = Logger.getLogger(DeleteStrategyAction.class);
+
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {

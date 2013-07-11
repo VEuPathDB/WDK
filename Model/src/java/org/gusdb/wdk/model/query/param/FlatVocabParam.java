@@ -7,8 +7,6 @@ import java.util.Set;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.query.Query;
@@ -142,14 +140,16 @@ public class FlatVocabParam extends AbstractEnumParam {
    * 
    * @see org.gusdb.wdk.model.query.param.AbstractEnumParam#initVocabMap()
    */
+  @Override
   protected EnumParamCache createEnumParamCache(
       Map<String, String> dependedParamValues) throws WdkModelException {
-    logger.trace("Entering createEnumParamCache("
+      logger.trace("Entering createEnumParamCache("
         + Utilities.print(dependedParamValues) + ")");
-    String errorStr = "Could not retrieve flat vocab values for param "
-        + getName() + " using depended value "
-        + Utilities.print(dependedParamValues);
-    try {
+    
+      //String errorStr = "Could not retrieve flat vocab values for param "
+      //    + getName() + " using depended value "
+      //    + Utilities.print(dependedParamValues);
+    
       Set<Param> dependedParams = getDependedParams();
       EnumParamCache cache = new EnumParamCache(this, dependedParamValues);
 
@@ -243,9 +243,6 @@ public class FlatVocabParam extends AbstractEnumParam {
       logger.trace("Leaving createEnumParamCache("
           + Utilities.print(dependedParamValues) + ")");
       return cache;
-    } catch (WdkUserException e) {
-      throw new WdkRuntimeException(errorStr, e);
-    }
   }
 
   /*
