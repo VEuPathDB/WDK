@@ -2,8 +2,6 @@ package org.gusdb.wdk.controller.wizard;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,7 +13,6 @@ import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 public class Wizard extends WdkModelBase {
@@ -26,9 +23,7 @@ public class Wizard extends WdkModelBase {
     private static final Logger logger = Logger.getLogger(Wizard.class);
 
     public static Wizard loadWizard(String gusHome, WdkModelBean wdkModel)
-            throws SAXException, IOException, WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException { 
+            throws SAXException, IOException, WdkModelException { 
         WizardParser parser = new WizardParser(gusHome);
         
         // load default wizard
@@ -77,7 +72,7 @@ public class Wizard extends WdkModelBase {
      * The merge has to occur before the exclusion.
      * 
      * @param wizard
-     * @throws WdkModelException
+     * @throws WdkModelException if unable to merge
      */
     private void merge(Wizard wizard) throws WdkModelException {
         if (stageMap == null || defaultStage != null)

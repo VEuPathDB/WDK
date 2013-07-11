@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.record;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -43,7 +41,6 @@ import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.FavoriteReference;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 
 /**
  * <p>
@@ -281,6 +278,7 @@ public class RecordClass extends WdkModelBase implements
   // Called at model creation time
   // ////////////////////////////////////////////////////////////////////
 
+  @Override
   public WdkModel getWdkModel() {
     return wdkModel;
   }
@@ -365,8 +363,7 @@ public class RecordClass extends WdkModelBase implements
     attributesQueryRefList.add(attributesQueryRef);
   }
 
-  public void addAttributeField(AttributeField attributeField)
-      throws WdkModelException {
+  public void addAttributeField(AttributeField attributeField) {
     attributeField.setRecordClass(this);
     attributeField.setContainer(this);
     attributeFieldList.add(attributeField);
@@ -452,6 +449,7 @@ public class RecordClass extends WdkModelBase implements
     return array;
   }
 
+  @Override
   public Map<String, AttributeField> getAttributeFieldMap() {
     return getAttributeFieldMap(FieldScope.ALL);
   }
@@ -519,6 +517,7 @@ public class RecordClass extends WdkModelBase implements
     return attributeCategoryTree.getTrimmedCopy(scope);
   }
 
+  @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
     StringBuffer buf = new StringBuffer("Record: name='" + name + "'").append(newline);
@@ -544,7 +543,7 @@ public class RecordClass extends WdkModelBase implements
    * <sanityRecord ref="GeneRecordClasses.GeneRecordClass"
    * primaryKey="PF11_0344"/>
    */
-  public String getSanityTestSuggestion() throws WdkModelException {
+  public String getSanityTestSuggestion() {
     String indent = "    ";
     String newline = System.getProperty("line.separator");
     StringBuffer buf = new StringBuffer(newline + newline + indent
@@ -1245,8 +1244,7 @@ public class RecordClass extends WdkModelBase implements
     return instances;
   }
 
-  public AnswerFilterInstance getFilter(String filterName)
-      throws WdkModelException {
+  public AnswerFilterInstance getFilter(String filterName) {
     if (filterName == null)
       return null;
     AnswerFilterInstance instance = filterMap.get(filterName);
@@ -1510,8 +1508,7 @@ public class RecordClass extends WdkModelBase implements
   }
 
   public boolean hasMultipleRecords(User user, Map<String, Object> pkValues)
-      throws WdkModelException, NoSuchAlgorithmException, WdkUserException,
-      SQLException, JSONException {
+      throws WdkModelException {
     List<Map<String, Object>> records = lookupPrimaryKeys(user, pkValues);
     return records.size() > 1;
   }

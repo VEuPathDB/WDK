@@ -30,6 +30,7 @@ public class ShowRecordViewAction extends Action {
 
     private static final Logger logger = Logger.getLogger(ShowRecordViewAction.class.getName());
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {

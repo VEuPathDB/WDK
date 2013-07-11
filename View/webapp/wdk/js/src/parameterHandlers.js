@@ -63,8 +63,10 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
       // register change event to dependedParam only once
       for (var dependedName in dependedParams) {
-           var dependedParam = $("div.param[name='" + dependedName + "']");
-          dependedParam.change(function() {
+          var dependedParam = $("div.param[name='" + dependedName + "']");
+          var dependentDeferreds = [];
+          dependedParam.change(function(e) {
+            e.stopPropagation();
               var dependedName = $(this).attr("name");
               // set ready flag to false on all its dependent params
               var dependentList = dependedParams[dependedName];
@@ -76,12 +78,21 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
               for (var i = 0; i <  dependentList.length; i++) {
                   var dependentName = dependentList[i];
                   var result =  updateDependentParam(dependentName);
-                  if (result)
-                    result.then(function() {
-                      wdk.event.publish("questionchange");
-                      dependedParam.parents("form").change();
-                    });
+                  if (result) {
+                    // result.then(function() {
+                    //   wdk.event.publish("questionchange");
+                    //   dependedParam.parents("form").change();
+                    // });
+
+                    // stash promises returned by $.ajax
+                    dependentDeferreds.push(result);
+                  }
               }
+              // trigger form.change only when all deferreds are resolved
+              $.when.apply($, dependentDeferreds).then(function() {
+                wdk.event.publish("questionchange");
+                dependedParam.closest("form").change();
+              });
           });
 
           if (dependedParam.has('input.typeAhead').length > 0) {

@@ -56,6 +56,7 @@ public class LoggerManagement implements DynamicMBean {
 	return loggerMap;
   }
 
+  @Override
   public AttributeList getAttributes(String[] loggerNames) {
     logger.debug("getAttributes ");
     
@@ -72,7 +73,8 @@ public class LoggerManagement implements DynamicMBean {
     }
     return attrs;
   }
-  
+
+  @Override
   public String getAttribute(String loggerName) throws AttributeNotFoundException {
     logger.debug("getAttribute " + loggerName);
     String value = managedLoggers.get(loggerName);
@@ -81,7 +83,8 @@ public class LoggerManagement implements DynamicMBean {
     else
       throw new AttributeNotFoundException("No such property: " + loggerName);  
   }
-  
+
+  @Override
   public MBeanInfo getMBeanInfo() {
     logger.debug("getMBeanInfo ");
 
@@ -132,7 +135,8 @@ public class LoggerManagement implements DynamicMBean {
             null); // notifications
     
   }
-  
+
+  @Override
   public Object invoke(String name, Object[] args, String[] sig) 
   throws MBeanException, ReflectionException {
     // convert string array to string
@@ -158,7 +162,8 @@ public class LoggerManagement implements DynamicMBean {
     }
     throw new ReflectionException(new NoSuchMethodException(name));
   }
-  
+
+  @Override
   public void setAttribute(Attribute attribute)
   throws InvalidAttributeValueException, MBeanException, AttributeNotFoundException {
 
@@ -182,7 +187,8 @@ public class LoggerManagement implements DynamicMBean {
     thisLogger.setLevel(newLevel);
     managedLoggers = getManagedLoggers();
   }
-  
+
+  @Override
   public AttributeList setAttributes(AttributeList list) {
     logger.debug("setAttributes ");
 

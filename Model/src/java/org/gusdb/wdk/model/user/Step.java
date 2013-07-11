@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -197,13 +196,8 @@ public class Step {
    * @return Returns the customName. If no custom name set before, it will
    *         return the default name provided by the underline AnswerValue - a
    *         combination of question's full name, parameter names and values.
-   * @throws WdkModelException
-   * @throws SQLException
-   * @throws JSONException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
    */
-  public String getCustomName() throws WdkModelException {
+  public String getCustomName() {
     String name = customName;
     if (name == null || name.length() == 0) {
       try {
@@ -228,13 +222,8 @@ public class Step {
   /**
    * @return Returns the custom name, if it is set. Otherwise, returns the short
    *         display name for the underlying question.
-   * @throws WdkModelException
-   * @throws SQLException
-   * @throws JSONException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
    */
-  public String getShortDisplayName() throws WdkModelException {
+  public String getShortDisplayName() {
     /*
      * String name = customName;
      * 
@@ -314,16 +303,6 @@ public class Step {
 
   /**
    * @return Returns the estimateSize.
-   * @throws WdkUserException
-   * @throws JSONException
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
-   * @throws WdkUserException
-   * @throws JSONException
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
    */
   public int getEstimateSize() {
     return estimateSize;
@@ -354,12 +333,6 @@ public class Step {
 
   /**
    * @return Returns the isBoolean.
-   * @throws WdkModelException
-   * @throws SQLException
-   * @throws WdkUserException
-   * @throws JSONException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
    */
   public boolean isCombined() {
     try {
@@ -371,12 +344,6 @@ public class Step {
 
   /**
    * @return Returns whether this Step is a transform
-   * @throws WdkModelException
-   * @throws SQLException
-   * @throws WdkUserException
-   * @throws JSONException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
    */
   public boolean isTransform() {
     try {
@@ -439,7 +406,7 @@ public class Step {
     this.collapsible = isCollapsible;
   }
 
-  public String getCollapsedName() throws WdkModelException {
+  public String getCollapsedName() {
     if (collapsedName == null && isCollapsible())
       return getCustomName();
     return collapsedName;
@@ -451,10 +418,6 @@ public class Step {
 
   /**
    * @return the isValid
-   * @throws JSONException
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws WdkUserException
    */
   public boolean isValid() throws WdkModelException {
     if (!valid)
@@ -523,7 +486,7 @@ public class Step {
     return array;
   }
 
-  public void addStep(Step step) throws WdkUserException {
+  public void addStep(Step step) {
     step.setPreviousStep(this);
     this.setNextStep(step);
   }
@@ -643,16 +606,14 @@ public class Step {
   }
 
   public Step createStep(String filterName, int assignedWeight)
-      throws NoSuchAlgorithmException, WdkModelException, JSONException,
-      WdkUserException, SQLException {
+      throws WdkModelException {
     RecordClass recordClass = getQuestion().getRecordClass();
     AnswerFilterInstance filter = recordClass.getFilter(filterName);
     return createStep(filter, assignedWeight);
   }
 
   public Step createStep(AnswerFilterInstance filter, int assignedWeight)
-      throws NoSuchAlgorithmException, WdkModelException, JSONException,
-      WdkUserException, SQLException {
+      throws WdkModelException {
     AnswerFilterInstance oldFilter = getFilter();
     if (filter == null && oldFilter == null
         && this.assignedWeight == assignedWeight)
@@ -679,12 +640,6 @@ public class Step {
   /**
    * deep clone a step, the step will get a new id, and if the step contains
    * other sub-steps, all those sub steps are cloned recursively.
-   * 
-   * @throws SQLException
-   * @throws WdkUserException
-   * @throws JSONException
-   * @throws WdkModelException
-   * @throws NoSuchAlgorithmException
    * 
    */
   public Step deepClone() throws WdkModelException {
@@ -719,8 +674,7 @@ public class Step {
     return step;
   }
 
-  public boolean isFiltered() throws NoSuchAlgorithmException,
-      WdkModelException, JSONException, WdkUserException, SQLException {
+  public boolean isFiltered() {
     AnswerFilterInstance filter = getFilter();
     if (filter == null)
       return false;
@@ -739,14 +693,12 @@ public class Step {
     return (!defaultFilter.getName().equals(filter.getName()));
   }
 
-  public String getFilterDisplayName() throws NoSuchAlgorithmException,
-      WdkModelException, JSONException, WdkUserException, SQLException {
+  public String getFilterDisplayName() {
     AnswerFilterInstance filter = getFilter();
     return (filter != null) ? filter.getDisplayName() : filterName;
   }
 
-  public Step getFirstStep() throws WdkUserException, WdkModelException,
-      SQLException, JSONException {
+  public Step getFirstStep() throws WdkModelException {
     Step step = this;
     while (step.getPreviousStep() != null)
       step = step.getPreviousStep();
@@ -767,18 +719,12 @@ public class Step {
 
     jsStep.put("id", this.displayId);
     jsStep.put("customName", this.customName);
-    try {
-      jsStep.put("answer", this.answer.getAnswerChecksum());
-      jsStep.put("collapsed", this.isCollapsible());
-      jsStep.put("collapsedName", this.getCollapsedName());
-    } catch (WdkModelException ex) { // the question is invalid
-      jsStep.put("answer", "");
-      jsStep.put("collapsed", false);
-      jsStep.put("collapsedName", "");
-    }
-
+    jsStep.put("answer", this.answer.getAnswerChecksum());
+    jsStep.put("collapsed", this.isCollapsible());
+    jsStep.put("collapsedName", this.getCollapsedName());
     jsStep.put("deleted", deleted);
     jsStep.put("size", this.estimateSize);
+    
     Step prevStep = getPreviousStep();
     if (prevStep != null) {
       jsStep.put("previous", prevStep.getJSONContent(strategyId));
@@ -847,13 +793,12 @@ public class Step {
     return key;
   }
 
-  public boolean isUseBooleanFilter() throws NoSuchAlgorithmException,
-      WdkModelException, JSONException, WdkUserException, SQLException {
+  public boolean isUseBooleanFilter() throws WdkModelException {
     if (!isBoolean())
       return false;
     BooleanQuery query = (BooleanQuery) getQuestion().getQuery();
     String paramName = query.getUseBooleanFilter().getName();
-    String strBooleanFlag = (String) paramValues.get(paramName);
+    String strBooleanFlag = paramValues.get(paramName);
     return Boolean.parseBoolean(strBooleanFlag);
   }
 
@@ -869,12 +814,6 @@ public class Step {
    * Validate a step and all the children steps it depends on. the result of
    * validation will also be stored in "valid" variable. If a step was already
    * invalid it will stay invalid.
-   * 
-   * @return
-   * @throws SQLException
-   * @throws WdkModelException
-   * @throws WdkUserException
-   * @throws JSONException
    */
   public boolean validate() throws SQLException, WdkUserException,
       WdkModelException, JSONException {
@@ -974,7 +913,6 @@ public class Step {
    * The previous step param is always the first answerParam.
    * 
    * @return
-   * @throws WdkModelException
    */
   public String getPreviousStepParam() throws WdkModelException {
     Param[] params = getQuestion().getParams();
@@ -1018,11 +956,12 @@ public class Step {
     return frontId;
   }
 
+  @Override
   public String toString() {
     return displayId + " (" + previousStepId + ", " + childStepId + ")";
   }
 
-  public boolean isUncollapsible() throws WdkModelException {
+  public boolean isUncollapsible() {
     // if the step hasn't been collapsed, it cannot be uncollapsed.
     if (!collapsible)
       return false;

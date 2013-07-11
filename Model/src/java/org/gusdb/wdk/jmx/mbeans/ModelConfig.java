@@ -18,7 +18,8 @@ public class ModelConfig extends AbstractConfig {
     super();
     init();
   }
-  
+
+  @Override
   protected void init() {
     org.gusdb.wdk.model.config.ModelConfig       modelConfig       = wdkModel.getModelConfig();
     org.gusdb.wdk.model.config.QueryMonitor      queryMonitor      = modelConfig.getQueryMonitor();

@@ -5,7 +5,6 @@ package org.gusdb.wdk.model.migrate;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -27,7 +26,6 @@ import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.Query;
@@ -57,10 +55,12 @@ public class Migrator1_18To1_19 extends Migrator {
             this.projectId = projectId;
         }
 
+        @Override
         public int hashCode() {
             return (userId + projectId).hashCode();
         }
 
+        @Override
         public boolean equals(Object obj) {
             if (obj != null && obj instanceof UserProject) {
                 UserProject up = (UserProject) obj;
@@ -104,6 +104,7 @@ public class Migrator1_18To1_19 extends Migrator {
          * 
          * @see java.lang.Comparable#compareTo(java.lang.Object)
          */
+        @Override
         public int compareTo(HistoryInfo history) {
             if (ancesterOf(history)) return -1;
             else if (history.ancesterOf(this)) return 1;
@@ -155,8 +156,8 @@ public class Migrator1_18To1_19 extends Migrator {
      * @see org.gusdb.wdk.model.migrate.Migrator#migrate()
      */
     @Override
-    public void migrate() throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+    public void migrate() throws WdkModelException {
+      try {
         DatabaseInstance userDb = wdkModel.getUserDb();
         int migrateId = userDb.getPlatform().getNextId(
             userDb.getDataSource(), "apidb", "migration");
@@ -167,16 +168,12 @@ public class Migrator1_18To1_19 extends Migrator {
         copyUserDatasets(migrateId);
         copyAnswers(migrateId);
         copySteps(migrateId);
+      } catch (SQLException | JSONException e) {
+        throw new WdkModelException(e);
+      }
     }
 
-    /**
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
-     * 
-     */
-    private void copyClobValues(int migrateId) throws SQLException,
-            WdkUserException, WdkModelException {
+    private void copyClobValues(int migrateId) throws SQLException {
         logger.debug("Copying clob values...");
         String newWdkSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
         String cvo = oldWdkSchema + "clob_values";
@@ -195,15 +192,8 @@ public class Migrator1_18To1_19 extends Migrator {
                 sql.toString(), "wdk-migrate-clob");
         logger.debug(count + " clob_value rows inserted");
     }
-
-    /**
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
-     * 
-     */
-    private void copyDatasetIndices(int migrateId) throws SQLException,
-            WdkUserException, WdkModelException {
+    
+    private void copyDatasetIndices(int migrateId) throws SQLException {
         logger.debug("Copying dataset indices...");
         String newWdkSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
         String dio = oldWdkSchema + "dataset_indices";
@@ -232,14 +222,7 @@ public class Migrator1_18To1_19 extends Migrator {
         logger.debug(count + " dataset index rows inserted");
     }
 
-    /**
-     * 
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
-     */
-    private void copyDatasetValues(int migrateId) throws SQLException,
-            WdkUserException, WdkModelException {
+    private void copyDatasetValues(int migrateId) throws SQLException {
         logger.debug("Copying dataset values...");
         String newWdkSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
         String dvo = oldWdkSchema + "dataset_values";
@@ -259,14 +242,7 @@ public class Migrator1_18To1_19 extends Migrator {
         logger.debug(count + " dataset value rows inserted");
     }
 
-    /**
-     * 
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
-     */
-    private void copyAnswers(int migrateId) throws SQLException,
-            WdkUserException, WdkModelException {
+    private void copyAnswers(int migrateId) throws SQLException {
         logger.debug("Copying answers...");
         String newWdkSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
         DataSource dataSource = wdkModel.getUserDb().getDataSource();
@@ -300,14 +276,7 @@ public class Migrator1_18To1_19 extends Migrator {
         logger.debug(count + " answer rows inserted");
     }
 
-    /**
-     * 
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
-     */
-    private void copyUserDatasets(int migrateId) throws SQLException,
-            WdkUserException, WdkModelException {
+    private void copyUserDatasets(int migrateId) throws SQLException {
         logger.debug("Copying user datasets...");
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String newWdkSchema = userDB.getWdkEngineSchema();
@@ -346,17 +315,7 @@ public class Migrator1_18To1_19 extends Migrator {
         logger.debug(count + " user dataset rows inserted");
     }
 
-    /**
-     * 
-     * @throws SQLException
-     * @throws SQLException
-     * @throws JSONException
-     * @throws WdkUserException
-     * @throws WdkModelException
-     * @throws NoSuchAlgorithmException
-     */
-    private void copySteps(int migrateId) throws SQLException, JSONException,
-            NoSuchAlgorithmException, WdkModelException, WdkUserException {
+    private void copySteps(int migrateId) throws SQLException, JSONException {
         logger.debug("Copying steps...");
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         String newWdkSchema = userDB.getWdkEngineSchema();
@@ -436,8 +395,7 @@ public class Migrator1_18To1_19 extends Migrator {
 
     private void createSteps(WdkModel wdkModel, int migrateId,
             UserProject user, Map<Integer, HistoryInfo> histories)
-            throws JSONException, SQLException, WdkUserException,
-            WdkModelException {
+            throws JSONException, SQLException {
         for (HistoryInfo history : histories.values()) {
             normalizeParams(history);
             Set<Integer> parents = parseParents(wdkModel, history);
@@ -479,8 +437,7 @@ public class Migrator1_18To1_19 extends Migrator {
     }
 
     private Map<Integer, Integer> loadStepMap(WdkModel wdkModel,
-            UserProject user) throws SQLException, WdkUserException,
-            WdkModelException {
+            UserProject user) throws SQLException {
         ResultSet resultSet = null;
         DataSource source = wdkModel.getUserDb().getDataSource();
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
@@ -531,7 +488,7 @@ public class Migrator1_18To1_19 extends Migrator {
     }
 
     private Set<Integer> parseParents(WdkModel wdkModel, HistoryInfo history)
-            throws JSONException, SQLException, WdkUserException {
+            throws JSONException, SQLException {
         Set<Integer> parents = new LinkedHashSet<Integer>();
         String paramClob = history.paramClob;
         try {
@@ -580,7 +537,7 @@ public class Migrator1_18To1_19 extends Migrator {
     }
 
     private int addStep(WdkModel wdkModel, HistoryInfo history,
-            Map<Integer, Integer> stepMap) throws WdkModelException, WdkUserException {
+            Map<Integer, Integer> stepMap) throws WdkModelException {
         String paramClob = prepareParams(wdkModel, history, stepMap);
         int stepId;
         if (paramClob.startsWith("{")) {
@@ -594,7 +551,7 @@ public class Migrator1_18To1_19 extends Migrator {
     }
 
     private String prepareParams(WdkModel wdkModel, HistoryInfo history,
-            Map<Integer, Integer> stepMap) throws WdkModelException, WdkUserException {
+            Map<Integer, Integer> stepMap) throws WdkModelException {
       try {
         String paramClob = history.paramClob;
         if (paramClob.startsWith("{")) {
@@ -669,7 +626,7 @@ public class Migrator1_18To1_19 extends Migrator {
     }
 
     private int insertRawStep(WdkModel wdkModel, HistoryInfo history,
-            String paramClob) throws WdkModelException, WdkUserException {
+            String paramClob) throws WdkModelException {
         String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
         String sql = "INSERT INTO " + schema + "steps (step_id, display_id, "
                 + "user_id, answer_id, left_child_id, right_child_id, "

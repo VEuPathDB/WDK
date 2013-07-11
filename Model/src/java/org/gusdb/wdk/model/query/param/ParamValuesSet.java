@@ -78,8 +78,10 @@ public class ParamValuesSet extends WdkModelBase {
     }
   }
 
+  @Override
   public void excludeResources(String projectId) throws WdkModelException {}
 
+  @Override
   public String toString() {
     return paramValues.toString();
   }
@@ -112,5 +114,6 @@ public class ParamValuesSet extends WdkModelBase {
     return buf.toString();
   }
 
+  @Override
   public void resolveReferences(WdkModel wodkModel) throws WdkModelException {}
 }

@@ -28,12 +28,14 @@ public class CheckLoginFilter implements Filter {
     private ServletContext context = null;
     private static Logger logger = Logger.getLogger(CheckLoginFilter.class);
 
+    @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         this.config = filterConfig;
         this.context = config.getServletContext();
         this.context.log("Filter CheckLoginFilter initialized.");
     }
 
+    @Override
     public void doFilter(ServletRequest request, ServletResponse response,
             FilterChain chain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
@@ -102,6 +104,7 @@ public class CheckLoginFilter implements Filter {
         chain.doFilter(request, response);
     }
 
+    @Override
     public void destroy() {
         this.context = null;
         this.config = null;

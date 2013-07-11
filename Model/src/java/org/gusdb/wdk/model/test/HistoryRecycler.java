@@ -4,15 +4,8 @@
 package org.gusdb.wdk.model.test;
 
 import java.io.File;
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -21,8 +14,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.user.UserFactory;
-import org.json.JSONException;
-import org.xml.sax.SAXException;
 
 /**
  * @author xingao
@@ -46,6 +37,7 @@ public class HistoryRecycler implements Runnable {
      * 
      * @see java.lang.Runnable#run()
      */
+    @Override
     public void run() {
         while (!isStopping()) {
             try {
@@ -77,12 +69,7 @@ public class HistoryRecycler implements Runnable {
         return stopFile.exists();
     }
 
-    private void recycle() throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, JSONException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException, IOException, SAXException, SQLException,
-            InstantiationException, IllegalAccessException,
-            ClassNotFoundException {
+    private void recycle() throws WdkModelException, WdkUserException {
         System.out.println("========== Start recycling histories on "
                 + modelName + " ==========");
         // construct model

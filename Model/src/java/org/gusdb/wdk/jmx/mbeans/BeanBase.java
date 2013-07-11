@@ -1,10 +1,10 @@
 package org.gusdb.wdk.jmx.mbeans;
 
+import javax.servlet.ServletContext;
+
+import org.gusdb.wdk.jmx.ContextThreadLocal;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.jmx.ContextThreadLocal;
-import javax.servlet.ServletContext;
-import org.apache.log4j.Logger;
 
 /**
   * Parent abstract class for most WDK-related MBeans. Provides

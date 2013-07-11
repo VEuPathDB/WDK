@@ -26,6 +26,7 @@ public class ShowApplicationAction extends ShowSummaryAction {
 
     private static final Logger logger = Logger.getLogger(ShowApplicationAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {

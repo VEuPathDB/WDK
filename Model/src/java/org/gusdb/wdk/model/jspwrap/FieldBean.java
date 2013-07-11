@@ -78,6 +78,7 @@ public abstract class FieldBean {
      * @return
      * @see org.gusdb.wdk.model.record.Field#toString()
      */
+    @Override
     public String toString() {
         return field.toString();
     }
