@@ -46,7 +46,7 @@
     },
     hide: {
      fixed: true,
-     delay: 400
+     delay: 250
     }
   };
 
