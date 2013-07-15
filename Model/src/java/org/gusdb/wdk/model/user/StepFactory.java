@@ -967,7 +967,8 @@ public class StepFactory {
   }
 
   // This function only updates the strategies table
-  void updateStrategy(User user, Strategy strategy, boolean overwrite) throws SQLException, WdkModelException, WdkUserException {
+  void updateStrategy(User user, Strategy strategy, boolean overwrite)
+      throws SQLException, WdkModelException, WdkUserException {
     logger.debug("Updating strategy internal#=" + strategy.getStrategyId()
         + ", overwrite=" + overwrite);
 
@@ -1186,7 +1187,7 @@ public class StepFactory {
     }
   }
 
-  private String getParamContent(Map<String, String> params)
+  public String getParamContent(Map<String, String> params)
       throws JSONException {
     JSONObject json = new JSONObject();
     for (String paramName : params.keySet()) {
@@ -1335,8 +1336,7 @@ public class StepFactory {
     }
   }
 
-  void updateStrategyViewTime(int strategyId)
-      throws WdkModelException {
+  void updateStrategyViewTime(int strategyId) throws WdkModelException {
     StringBuffer sql = new StringBuffer("UPDATE ");
     sql.append(userSchema).append(TABLE_STRATEGY);
     sql.append(" SET ").append(COLUMN_LAST_VIEWED_TIME + " = ?, ");
