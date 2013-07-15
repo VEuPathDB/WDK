@@ -326,3 +326,22 @@ SELECT sr.strategy_id, sr.user_id, sp.step_id,
 FROM userlogins4.users u, userlogins3.strategies sr, userlogins3.steps sp
 WHERE u.user_id = sr.user_id AND sr.user_id = sp.user_id
   AND sr.root_step_id = sp.display_id;
+
+  
+GRANT select ON userlogins4.users TO GUS_R;
+GRANT select ON userlogins4.user_roles TO GUS_R;
+GRANT select ON userlogins4.preferences TO GUS_R;
+GRANT select ON userlogins4.steps TO GUS_R;
+GRANT select ON userlogins4.strategies TO GUS_R;
+GRANT select ON userlogins4.user_datasets2 TO GUS_R;
+GRANT select ON userlogins4.user_baskets TO GUS_R;
+GRANT select ON userlogins4.favorites TO GUS_R;
+
+GRANT select, insert, update, delete ON userlogins4.users TO GUS_W;
+GRANT select, insert, update, delete ON userlogins4.user_roles TO GUS_W;
+GRANT select, insert, update, delete ON userlogins4.preferences TO GUS_W;
+GRANT select, insert, update, delete ON userlogins4.steps TO GUS_W;
+GRANT select, insert, update, delete ON userlogins4.strategies TO GUS_W;
+GRANT select, insert, update, delete ON userlogins4.user_datasets2 TO GUS_W;
+GRANT select, insert, update, delete ON userlogins4.user_baskets TO GUS_W;
+GRANT select, insert, update, delete ON userlogins4.favorites TO GUS_W;
