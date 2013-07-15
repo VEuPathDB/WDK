@@ -938,6 +938,7 @@ public class StepFactory {
     sql.append(" AND sr.").append(COLUMN_SIGNATURE).append(" = ? ");
     sql.append(" AND sr.").append(COLUMN_PROJECT_ID).append(" = ?");
     sql.append(" ORDER BY sr." + COLUMN_LAST_MODIFIED_TIME + " DESC");
+    logger.debug(sql);
     ResultSet resultSet = null;
     PreparedStatement ps = null;
     try {
@@ -1132,7 +1133,7 @@ public class StepFactory {
           + ", " + COLUMN_SAVED_NAME + ", " + COLUMN_PROJECT_ID + ", "
           + COLUMN_IS_DELETED + ", " + COLUMN_SIGNATURE + ", "
           + COLUMN_DESCRIPTION + ", " + COLUMN_VERSION
-          + ") VALUES ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+          + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
       long start = System.currentTimeMillis();
       psStrategy = SqlUtils.getPreparedStatement(dataSource, sql);
       psStrategy.setInt(1, strategyId);
@@ -1341,17 +1342,14 @@ public class StepFactory {
     sql.append(userSchema).append(TABLE_STRATEGY);
     sql.append(" SET ").append(COLUMN_LAST_VIEWED_TIME + " = ?, ");
     sql.append(COLUMN_VERSION + " = ? ");
-    sql.append(" WHERE ").append(COLUMN_PROJECT_ID).append(" = ? ");
-    sql.append(" AND ").append(Utilities.COLUMN_USER_ID).append(" = ? ");
-    sql.append(" AND ").append(COLUMN_STRATEGY_ID).append(" = ?");
+    sql.append(" WHERE ").append(COLUMN_STRATEGY_ID).append(" = ?");
     PreparedStatement psUpdate = null;
     try {
       long start = System.currentTimeMillis();
       psUpdate = SqlUtils.getPreparedStatement(dataSource, sql.toString());
       psUpdate.setTimestamp(1, new Timestamp(new Date().getTime()));
       psUpdate.setString(2, wdkModel.getVersion());
-      psUpdate.setString(3, wdkModel.getProjectId());
-      psUpdate.setInt(4, strategyId);
+      psUpdate.setInt(3, strategyId);
       psUpdate.executeUpdate();
       QueryLogger.logEndStatementExecution(sql.toString(),
           "wdk-step-factory-update-strategy-time", start);
