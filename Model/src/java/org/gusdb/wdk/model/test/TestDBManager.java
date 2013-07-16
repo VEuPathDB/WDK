@@ -103,7 +103,7 @@ public class TestDBManager extends BaseCLI {
             SqlUtils.executeUpdate(database.getDataSource(),
                     dropTable, "wdk-drop-test-table");
         }
-      }
+    }
       catch (SQLException e) {
         throw new WdkModelException(e);
       }

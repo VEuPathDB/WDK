@@ -91,12 +91,12 @@ public class MergeUserTest {
 
         Step step2 = UnitTestHelper.createNormalStep(guest);
         Step boolean2 = guest.createBooleanStep(step1, step2, "OR", false, null);
-        strategy.addStep(step1.getDisplayId(), boolean2);
+        strategy.addStep(step1.getStepId(), boolean2);
 
         Step step3 = UnitTestHelper.createNormalStep(guest);
         Step boolean3 = guest.createBooleanStep(boolean2, step3, "OR", false,
                 null);
-        strategy.addStep(boolean2.getDisplayId(), boolean3);
+        strategy.addStep(boolean2.getStepId(), boolean3);
         strategy.update(true);
 
         User registeredUser = UnitTestHelper.getRegisteredUser();
