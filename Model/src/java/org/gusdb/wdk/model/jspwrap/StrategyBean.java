@@ -98,10 +98,6 @@ public class StrategyBean {
         return strategy.getStrategyId();
     }
 
-    public int getInternalId() {
-        return strategy.getInternalId();
-    }
-
     public StepBean getStep(int index) throws WdkUserException,
             WdkModelException, SQLException, JSONException {
         return new StepBean(user, strategy.getStep(index));
@@ -140,27 +136,22 @@ public class StrategyBean {
         strategy.update(overwrite);
     }
 
-    public Map<Integer, Integer> addStep(int targetStepId, StepBean step)
-            throws WdkModelException, WdkUserException, JSONException,
-            SQLException {
+    public Map<Integer, Integer> addStep(int targetStepId, StepBean step) throws WdkModelException, WdkUserException, SQLException {
         return strategy.addStep(targetStepId, step.step);
     }
 
     public Map<Integer, Integer> editOrInsertStep(int targetStepId,
-            StepBean step) throws WdkModelException, WdkUserException,
-            JSONException, SQLException {
+            StepBean step) throws WdkModelException, WdkUserException, SQLException  {
         return strategy.editOrInsertStep(targetStepId, step.step);
     }
 
     public Map<Integer, Integer> moveStep(int moveFromId, int moveToId,
-            String branch) throws WdkModelException, WdkUserException,
-            JSONException, SQLException {
+            String branch) throws WdkModelException, WdkUserException, SQLException  {
         return strategy.moveStep(moveFromId, moveToId, branch);
     }
 
-    public Map<Integer, Integer> deleteStep(int stepId, boolean isBranch)
-            throws WdkModelException, WdkUserException, JSONException,
-            SQLException {
+    public Map<Integer, Integer> deleteStep(int stepId, boolean isBranch) throws WdkModelException, WdkUserException, SQLException
+             {
         return strategy.deleteStep(stepId, isBranch);
     }
 

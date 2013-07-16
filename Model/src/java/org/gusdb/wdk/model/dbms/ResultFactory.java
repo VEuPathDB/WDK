@@ -89,10 +89,10 @@ public class ResultFactory {
       ResultSet resultSet = SqlUtils.executeQuery(dataSource,
           sql.toString(), queryInstance.getQuery().getFullName()
               + "__select-cache");
-      return new SqlResultList(resultSet);
+    return new SqlResultList(resultSet);
     } catch (SQLException e) {
       throw new WdkModelException("Unable to retrieve cached results.", e);
-    }
+  }
   }
 
   private int getInstanceId(QueryInfo queryInfo, QueryInstance instance)
@@ -185,13 +185,13 @@ public class ResultFactory {
     try {
       DataSource dataSource = database.getDataSource();
       SqlUtils.executeUpdate(dataSource, sqlId.toString(),
-          query.getFullName() + "__create-cache-index01");
+        query.getFullName() + "__create-cache-index01");
 
-      if (indexColumns != null) {
+    if (indexColumns != null) {
         SqlUtils.executeUpdate(dataSource, sqlOther.toString(),
-            query.getFullName() + "__create-cache-index02");
-      }
+          query.getFullName() + "__create-cache-index02");
     }
+  }
     catch (SQLException e) {
       throw new WdkModelException("Could not create cache table index.", e);
     }
