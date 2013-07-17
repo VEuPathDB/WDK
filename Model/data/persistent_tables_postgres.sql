@@ -149,8 +149,8 @@ CREATE TABLE wdkuser.users
 );
 
 
-CREATE INDEX wdkuser.users_idx01 ON wdkuser.users (is_guest);
-CREATE INDEX wdkuser.users_idx02 ON wdkuser.users (prev_user_id);
+CREATE INDEX users_idx01 ON wdkuser.users (is_guest);
+CREATE INDEX users_idx02 ON wdkuser.users (prev_user_id);
 
 
 CREATE TABLE wdkuser.user_roles
@@ -198,7 +198,7 @@ CREATE TABLE wdkuser.steps
   project_id VARCHAR(50) NOT NULL,
   project_version VARCHAR(50) NOT NULL,
   question_name VARCHAR(200) NOT NULL,
-  strategy_id NUMBER(12),
+  strategy_id NUMERIC(12),
   display_params TEXT,
   result_message TEXT,
   CONSTRAINT "steps_pk" PRIMARY KEY (step_id),
