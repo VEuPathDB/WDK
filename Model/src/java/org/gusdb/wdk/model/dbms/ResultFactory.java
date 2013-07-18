@@ -137,13 +137,11 @@ public class ResultFactory {
 
     // check whether need to create the cache;
     String cacheTable = queryInfo.getCacheTable();
-    // do not pass default schema, since in postgreSQL, the default is public, 
-    // not the current login.
-    if (!platform.checkTableExists(dataSource, null, cacheTable)) {
+    String schema = database.getDefaultSchema();
+    if (!platform.checkTableExists(dataSource, schema, cacheTable)) {
       // create the cache using the result of the first query
       instance.createCache(cacheTable, instanceId);
       // disable the stats on the new cache table
-      String schema = wdkModel.getModelConfig().getAppDB().getLogin();
       platform.disableStatistics(dataSource, schema, cacheTable);
       createCacheTableIndex(queryInfo.getCacheTable(), instance.getQuery());
     } else {// insert result into existing cache table
