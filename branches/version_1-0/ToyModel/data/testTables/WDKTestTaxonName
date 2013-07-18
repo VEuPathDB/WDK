@@ -1,4 +1,0 @@
-taxon_name_id number(10) not null,	taxon_id number(10) not null,	name varchar(255) not null
-117577	1124	Eimeria tenella
-183088	2892	Neospora caninum
-224678	12996	Sarcocystis neurona

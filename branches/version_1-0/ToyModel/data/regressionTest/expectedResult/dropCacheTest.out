@@ -1,5 +1,0 @@
-Attempting to drop 3 results tables
-Succeeded in dropping 3
-Deleting all rows from RTQueryInstance
-Dropping table RTQueryInstance
-Dropping sequence RTQueryInstance_pkseq

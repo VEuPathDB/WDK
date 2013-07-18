@@ -1,9 +1,0 @@
-#!/bin/csh
-
-
-setenv CLASSPATH "$GUS_HOME/lib/java/commons-digester-1.5.jar:$GUS_HOME/lib/java/GUS-WebDevKit.jar:$GUS_HOME/lib/java/commons-beanutils.jar:$GUS_HOME/lib/java/commons-collections.jar:$GUS_HOME/lib/java/commons-logging-api.jar:$GUS_HOME/lib/java/xercesImpl.jar:$GUS_HOME/lib/java/oracle-classes12.jar:$GUS_HOME/lib/java/commons-dbcp-1.1.jar:$GUS_HOME/lib/java/commons-pool-1.1.jar:$GUS_HOME/lib/java/commons-cli-1.0.jar:$GUS_HOME/lib/java/isorelax-20030108.jar:$GUS_HOME/lib/java/jing-20030619.jar" 
-
-java -Djdbc.drivers=oracle.jdbc.driver.OracleDriver -DschemaFile=$GUS_HOME/lib/rng/wdkModel.rng -DcmdName=wdkRecord -classpath $CLASSPATH org.gusdb.gus.wdk.model.test.RecordTester $argv
-
-
-
