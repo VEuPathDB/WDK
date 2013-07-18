@@ -1217,7 +1217,7 @@ public class StepFactory {
   boolean checkNameExists(Strategy strategy, String name, boolean saved)
       throws WdkModelException {
     ResultSet rsCheckName = null;
-    String sql = "SELECT display_id FROM " + userSchema + TABLE_STRATEGY
+    String sql = "SELECT strategy_id FROM " + userSchema + TABLE_STRATEGY
         + " WHERE " + Utilities.COLUMN_USER_ID + " = ? AND "
         + COLUMN_PROJECT_ID + " = ? AND " + COLUMN_NAME + " = ? AND "
         + COLUMN_IS_SAVED + " = ? AND " + COLUMN_IS_DELETED + " = ? AND "
