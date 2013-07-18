@@ -195,10 +195,10 @@ CREATE TABLE wdkuser.steps
       REFERENCES wdkuser.users (user_id)
 );
 
-CREATE INDEX wdkuser.steps_idx01 ON wdkuser.steps (user_id, left_child_id, right_child_id);
+CREATE INDEX wdkuser.steps_idx01 ON wdkuser.steps (left_child_id, right_child_id, user_id);
 CREATE INDEX wdkuser.steps_idx02 ON wdkuser.steps (project_id, question_name, user_id);
 CREATE INDEX wdkuser.steps_idx03 ON wdkuser.steps (is_deleted, user_id, project_id);
-CREATE INDEX wdkuser.steps_idx04 ON wdkuser.steps (is_valid, user_id, project_id);
+CREATE INDEX wdkuser.steps_idx04 ON wdkuser.steps (is_valid, project_id, user_id);
 CREATE INDEX wdkuser.steps_idx05 ON wdkuser.steps (last_run_time, user_id, project_id);
 CREATE INDEX wdkuser.steps_idx06 ON wdkuser.steps (strategy_id, user_id, project_id);
 

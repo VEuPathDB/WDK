@@ -302,7 +302,7 @@ public class StepFactory {
     }
   }
 
-  public void deleteStrategy(int displayId) throws WdkModelException {
+  public void deleteStrategy(int strategyId) throws WdkModelException {
     PreparedStatement psStrategy = null;
     String sql = "UPDATE " + userSchema + TABLE_STRATEGY + " SET "
         + COLUMN_IS_DELETED + " = ? WHERE " + COLUMN_STRATEGY_ID + " = ?";
@@ -322,12 +322,12 @@ public class StepFactory {
       long start = System.currentTimeMillis();
       psStrategy = SqlUtils.getPreparedStatement(dataSource, sql);
       psStrategy.setBoolean(1, true);
-      psStrategy.setInt(2, displayId);
+      psStrategy.setInt(2, strategyId);
       int result = psStrategy.executeUpdate();
       QueryLogger.logEndStatementExecution(sql,
           "wdk-step-factory-delete-strategy", start);
       if (result == 0)
-        throw new WdkModelException("The strategy #" + displayId
+        throw new WdkModelException("The strategy #" + strategyId
             + " cannot be found.");
     } catch (SQLException e) {
       throw new WdkModelException("Could not delete strategy", e);
@@ -442,19 +442,19 @@ public class StepFactory {
   }
 
   // get left child id, right child id in here
-  Step loadStep(User user, int displayId) throws WdkModelException {
+  Step loadStep(User user, int stepId) throws WdkModelException {
     ResultSet rsStep = null;
     String sql = "SELECT * FROM " + userSchema + TABLE_STEP + " WHERE "
         + COLUMN_STEP_ID + " = ?";
     try {
       long start = System.currentTimeMillis();
       PreparedStatement psStep = SqlUtils.getPreparedStatement(dataSource, sql);
-      psStep.setInt(1, displayId);
+      psStep.setInt(1, stepId);
       rsStep = psStep.executeQuery();
       QueryLogger.logEndStatementExecution(sql, "wdk-step-factory-load-step",
           start);
       if (!rsStep.next())
-        throw new WdkModelException("The Step #" + displayId + " of user "
+        throw new WdkModelException("The Step #" + stepId + " of user "
             + user.getEmail() + " doesn't exist.");
 
       return loadStep(user, rsStep);
@@ -900,7 +900,7 @@ public class StepFactory {
         throw new WdkUserException("The strategy " + strategyId
             + " does not exist " + "for user " + user.getEmail());
       } else if (strategies.size() > 1) {
-        throw new WdkModelException("More than one strategy of display_id "
+        throw new WdkModelException("More than one strategy of id "
             + strategyId + " exists.");
       }
 
