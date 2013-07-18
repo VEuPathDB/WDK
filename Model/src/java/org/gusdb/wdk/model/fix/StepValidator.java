@@ -237,7 +237,7 @@ public class StepValidator extends BaseCLI {
           + "(SELECT step_id, user_id, left_child_id, right_child_id, is_valid"
           + " FROM                       " + steps
           + " WHERE project_id IN     " + projects
-          + "   AND user_id IN  (SELECT user_id FROM " + steps
+          + "   AND user_id IN  (SELECT DISTINCT user_id FROM " + steps
           + "                    WHERE is_valid = 0) )";
       SqlUtils.executeUpdate(source, sql, "wdk-invalidate-create-part-steps");
 
@@ -248,7 +248,6 @@ public class StepValidator extends BaseCLI {
           + "  AND step_id IN (SELECT DISTINCT step_id FROM " + tempTable
           + "                  START WITH is_valid = 0 "
           + "                  CONNECT BY prior user_id = user_id "
-          + "                    AND prior project_id = project_id "
           + "                    AND (   prior step_id = right_child_id "
           + "                         OR prior step_id = left_child_id) "
           + "                 )";
