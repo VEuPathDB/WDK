@@ -23,11 +23,13 @@ public class ProcessPasswordAction extends WdkAction {
     private static final String OLD_PASSWORD_KEY = "oldPassword";
     private static final String NEW_PASSWORD_KEY = "newPassword";
     private static final String CONFIRM_PASSWORD_KEY = "confirmPassword";
+    private static final String CHANGE_BUTTON_KEY = "changeButton";
   
     private static final Map<String, ParamDef> PARAM_DEFS = new ParamDefMapBuilder()
       .addParam(OLD_PASSWORD_KEY, new ParamDef(Required.REQUIRED))
       .addParam(NEW_PASSWORD_KEY, new ParamDef(Required.REQUIRED))
-      .addParam(CONFIRM_PASSWORD_KEY, new ParamDef(Required.REQUIRED)).toMap();
+      .addParam(CONFIRM_PASSWORD_KEY, new ParamDef(Required.REQUIRED))
+      .addParam(CHANGE_BUTTON_KEY, new ParamDef(Required.REQUIRED)).toMap();
 
     @Override
     protected boolean shouldValidateParams() {

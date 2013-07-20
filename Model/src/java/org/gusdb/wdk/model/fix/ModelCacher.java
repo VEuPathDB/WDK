@@ -201,14 +201,13 @@ public class ModelCacher extends BaseCLI {
         DBPlatform platform = database.getPlatform();
         DataSource dataSource = database.getDataSource();
 
-        int length = schema.length();
-        String s = (length == 0) ? database.getDefaultSchema() : schema.substring(0, length - 1);
+        if (schema.length() == 0) schema = database.getDefaultSchema();
 
-        if (!platform.checkTableExists(dataSource, s, "wdk_questions"))
+        if (!platform.checkTableExists(dataSource, schema, "wdk_questions"))
             createQuestionTable(wdkModel, dataSource, schema);
-        if (!platform.checkTableExists(dataSource, s, "wdk_params"))
+        if (!platform.checkTableExists(dataSource, schema, "wdk_params"))
             createParamTable(wdkModel, dataSource, schema);
-        if (!platform.checkTableExists(dataSource, s, "wdk_enum_params"))
+        if (!platform.checkTableExists(dataSource, schema, "wdk_enum_params"))
             createEnumParamTable(wdkModel, dataSource, schema);
     }
 
