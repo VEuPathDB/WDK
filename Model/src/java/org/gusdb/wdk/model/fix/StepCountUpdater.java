@@ -92,8 +92,8 @@ public class StepCountUpdater extends BaseCLI {
                 throws WdkModelException {
             Map<Integer, Step> steps = user.getStepsMap();
             for (Step step : steps.values()) {
-                int internalId = step.getInternalId();
-                if (completedSteps.contains(internalId)) continue;
+                int stepId = step.getStepId();
+                if (completedSteps.contains(stepId)) continue;
 
                 // just need to process valid steps
                 if (step.isValid()) {
@@ -105,7 +105,7 @@ public class StepCountUpdater extends BaseCLI {
                         step.update(false);
                     }
                 }
-                updater.recordStep(internalId);
+                updater.recordStep(stepId);
             }
         }
     }

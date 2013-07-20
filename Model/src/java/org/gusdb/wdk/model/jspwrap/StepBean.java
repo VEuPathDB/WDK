@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.util.Date;
@@ -88,7 +89,7 @@ public class StepBean {
         return step.getBaseCustomName();
     }
 
-    public String getCustomName() {
+    public String getCustomName() throws WdkModelException {
         return step.getCustomName();
     }
 
@@ -131,17 +132,13 @@ public class StepBean {
         return new AnswerValueBean(step.getAnswerValue(validate));
     }
 
-    public int getAnswerId() {
-        return step.getAnswerId();
-    }
-
     public int getStepId() {
-        return step.getDisplayId();
+        return step.getStepId();
     }
 
     public void setAnswerValue(AnswerValueBean answer)
             throws WdkModelException {
-        step.setAnswer(answer.getAnswerValue().getAnswer());
+        step.setAnswerValue(answer.getAnswerValue());
     }
 
     public int getEstimateSize() {
@@ -186,12 +183,12 @@ public class StepBean {
         step.setBooleanExpression(booleanExpression);
     }
 
-    public String getQueryChecksum() {
-        return step.getAnswer().getQueryChecksum();
+    public String getQueryChecksum() throws WdkModelException {
+        return step.getAnswerValue().getQueryChecksum(true);
     }
 
-    public String getChecksum() {
-        return step.getAnswer().getAnswerChecksum();
+    public String getChecksum() throws WdkModelException {
+        return step.getAnswerValue().getChecksum();
     }
 
     public void update(boolean updateTime) throws WdkModelException {
@@ -293,7 +290,7 @@ public class StepBean {
         return step.getLength();
     }
 
-    public void addStep(StepBean next) {
+    public void addStep(StepBean next) throws WdkUserException {
         step.addStep(next.step);
     }
 
@@ -313,10 +310,14 @@ public class StepBean {
     /**
      * @param filterName
      * @return
+     * @throws WdkModelException 
+     * @throws SQLException 
+     * @throws JSONException 
+     * @throws WdkUserException 
+     * @throws NoSuchAlgorithmException 
      * @see org.gusdb.wdk.model.user.Step#createStep(org.gusdb.wdk.model.AnswerFilterInstance)
      */
-    public StepBean createStep(String filterName, int assignedWeight)
-            throws WdkModelException {
+    public StepBean createStep(String filterName, int assignedWeight) throws WdkModelException  {
         return new StepBean(user, step.createStep(filterName, assignedWeight));
     }
 
