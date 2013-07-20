@@ -72,7 +72,7 @@ public class StrategyTest {
 
     boolean hasStrategy = false;
     for (Strategy loadedStrategy : strategies) {
-      if (strategy.getInternalId() == loadedStrategy.getInternalId()) {
+      if (strategy.getStrategyId() == loadedStrategy.getStrategyId()) {
         compareStrategy(strategy, loadedStrategy);
 
         hasStrategy = true;
@@ -123,7 +123,7 @@ public class StrategyTest {
     Step booleanStep = user.createBooleanStep(step1, step2, operator, false,
         null);
 
-    strategy.addStep(step1.getDisplayId(), booleanStep);
+    strategy.addStep(step1.getStepId(), booleanStep);
     Step rootStep = strategy.getLatestStep();
     StepTest.compareStep(booleanStep, rootStep);
     StepTest.compareStep(step1, rootStep.getPreviousStep());
@@ -145,7 +145,7 @@ public class StrategyTest {
     BooleanOperator operator = BooleanOperator.UNION;
     AnswerFilterInstance filter = recordClass.getDefaultFilter();
     Step oldStep = user.createBooleanStep(step1, step2, operator, false, filter);
-    strategy.addStep(step1.getDisplayId(), oldStep);
+    strategy.addStep(step1.getStepId(), oldStep);
 
     AnswerFilterInstance newFilter = null;
     do {
@@ -155,7 +155,7 @@ public class StrategyTest {
 
     Step newStep = oldStep.createStep(newFilter, 0);
 
-    strategy.editOrInsertStep(oldStep.getDisplayId(), newStep);
+    strategy.editOrInsertStep(oldStep.getStepId(), newStep);
     StepTest.compareStep(newStep, strategy.getLatestStep());
   }
 
@@ -179,7 +179,7 @@ public class StrategyTest {
 
     Step newStep = oldStep.createStep(newFilter, 0);
 
-    strategy.editOrInsertStep(oldStep.getDisplayId(), newStep);
+    strategy.editOrInsertStep(oldStep.getStepId(), newStep);
     StepTest.compareStep(newStep, strategy.getLatestStep());
   }
 
@@ -199,7 +199,7 @@ public class StrategyTest {
     AnswerFilterInstance booleanFilter = recordClass.getDefaultFilter();
     Step oldBooleanStep = user.createBooleanStep(step1, step2, operator, false,
         booleanFilter);
-    strategy.addStep(step1.getDisplayId(), oldBooleanStep);
+    strategy.addStep(step1.getStepId(), oldBooleanStep);
 
     AnswerFilterInstance newFilter = null;
     do {
@@ -211,7 +211,7 @@ public class StrategyTest {
     Step newBooleanStep = user.createBooleanStep(step1, step2, operator, false,
         booleanFilter);
 
-    strategy.editOrInsertStep(oldBooleanStep.getDisplayId(), newBooleanStep);
+    strategy.editOrInsertStep(oldBooleanStep.getStepId(), newBooleanStep);
     StepTest.compareStep(newBooleanStep, strategy.getLatestStep());
     StepTest.compareStep(step2, strategy.getLatestStep().getChildStep());
   }
@@ -232,13 +232,13 @@ public class StrategyTest {
     BooleanOperator operator = BooleanOperator.UNION;
     Step middleStep1 = user.createBooleanStep(step1, step2, operator, false,
         booleanFilter);
-    strategy.addStep(step1.getDisplayId(), middleStep1);
+    strategy.addStep(step1.getStepId(), middleStep1);
 
     // create the third node
     Step step3 = UnitTestHelper.createNormalStep(user);
     Step middleStep2 = user.createBooleanStep(middleStep1, step3, operator,
         false, booleanFilter);
-    strategy.addStep(middleStep1.getDisplayId(), middleStep2);
+    strategy.addStep(middleStep1.getStepId(), middleStep2);
 
     AnswerFilterInstance filter = step2.getFilter();
     AnswerFilterInstance newFilter = null;
@@ -251,7 +251,7 @@ public class StrategyTest {
     step2 = step2.createStep(newFilter, 0);
     Step newMiddleStep1 = user.createBooleanStep(step1, step2, operator, false,
         booleanFilter);
-    strategy.editOrInsertStep(middleStep1.getDisplayId(), newMiddleStep1);
+    strategy.editOrInsertStep(middleStep1.getStepId(), newMiddleStep1);
 
     Step root = strategy.getLatestStep();
     StepTest.compareStep(newMiddleStep1, root.getPreviousStep());
@@ -320,18 +320,18 @@ public class StrategyTest {
     BooleanOperator operator = BooleanOperator.UNION;
     Step middleStep1 = user.createBooleanStep(step1, step2, operator, false,
         booleanFilter);
-    strategy.addStep(step1.getDisplayId(), middleStep1);
+    strategy.addStep(step1.getStepId(), middleStep1);
 
     // create the third node
     Step step3 = UnitTestHelper.createNormalStep(user);
     Step middleStep2 = user.createBooleanStep(middleStep1, step3, operator,
         false, booleanFilter);
-    strategy.addStep(middleStep1.getDisplayId(), middleStep2);
+    strategy.addStep(middleStep1.getStepId(), middleStep2);
 
     Step step4 = UnitTestHelper.createNormalStep(user);
     Step middleStep3 = user.createBooleanStep(middleStep1, step4, operator,
         false, booleanFilter);
-    strategy.editOrInsertStep(middleStep1.getDisplayId(), middleStep3);
+    strategy.editOrInsertStep(middleStep1.getStepId(), middleStep3);
 
     Step root = strategy.getLatestStep();
     StepTest.compareStep(step3, root.getChildStep());
@@ -359,13 +359,13 @@ public class StrategyTest {
     BooleanOperator operator = BooleanOperator.UNION;
     Step middleStep1 = user.createBooleanStep(step1, step2, operator, false,
         booleanFilter);
-    strategy.addStep(step1.getDisplayId(), middleStep1);
+    strategy.addStep(step1.getStepId(), middleStep1);
 
     // create the third node
     Step step3 = UnitTestHelper.createNormalStep(user);
     Step middleStep2 = user.createBooleanStep(middleStep1, step3, operator,
         false, booleanFilter);
-    strategy.addStep(middleStep1.getDisplayId(), middleStep2);
+    strategy.addStep(middleStep1.getStepId(), middleStep2);
 
     User guest = UnitTestHelper.getGuest();
     Strategy newStrategy = guest.importStrategy(strategy.getChecksum());
@@ -375,8 +375,6 @@ public class StrategyTest {
   static void compareStrategy(Strategy expected, Strategy actual)
       throws WdkModelException, JSONException,
       WdkUserException, SQLException {
-    Assert.assertEquals("internal strategy id", expected.getInternalId(),
-        actual.getInternalId());
     Assert.assertEquals("strategy id", expected.getStrategyId(),
         actual.getStrategyId());
     Assert.assertEquals("strategy length", expected.getLength(),

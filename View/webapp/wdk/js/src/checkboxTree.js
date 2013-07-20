@@ -44,6 +44,10 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
           checkboxTree.configured = true;
           $('#'+treeId).show();
         })
+        // hack to bubble change event up to containing form
+        .bind("change_state.jstree", function(event, data) {
+          $(this).trigger("change");
+        })
         .jstree({
           "plugins" : [ "html_data", "themes", "types", "checkbox" ],
           "core" : { "initially_open" : [ "root" ] },
