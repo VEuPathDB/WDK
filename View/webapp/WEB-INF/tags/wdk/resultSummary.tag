@@ -64,11 +64,3 @@
 </td>
 </tr></table>
 
-
-
-<c:set var="message" value="${wdkAnswer.resultMessage}" />
-<c:if test="${message != null}">
-  <div class="result-message ui-state-default ui-corner-all">
-    ${message}
-  </div>
-</c:if>

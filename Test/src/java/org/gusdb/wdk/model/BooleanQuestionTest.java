@@ -50,8 +50,8 @@ public class BooleanQuestionTest {
         Step left = UnitTestHelper.createNormalStep(user);
         Step right = UnitTestHelper.createNormalStep(user);
 
-        leftStepId = Integer.toString(left.getDisplayId());
-        rightStepId = Integer.toString(right.getDisplayId());
+        leftStepId = Integer.toString(left.getStepId());
+        rightStepId = Integer.toString(right.getStepId());
         leftAnswerValue = left.getAnswerValue();
         rightAnswerValue = right.getAnswerValue();
         recordClass = left.getQuestion().getRecordClass();
