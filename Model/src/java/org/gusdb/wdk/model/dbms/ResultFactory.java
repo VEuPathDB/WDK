@@ -89,10 +89,10 @@ public class ResultFactory {
       ResultSet resultSet = SqlUtils.executeQuery(dataSource,
           sql.toString(), queryInstance.getQuery().getFullName()
               + "__select-cache");
-      return new SqlResultList(resultSet);
+    return new SqlResultList(resultSet);
     } catch (SQLException e) {
       throw new WdkModelException("Unable to retrieve cached results.", e);
-    }
+  }
   }
 
   private int getInstanceId(QueryInfo queryInfo, QueryInstance instance)
@@ -137,11 +137,11 @@ public class ResultFactory {
 
     // check whether need to create the cache;
     String cacheTable = queryInfo.getCacheTable();
-    if (!platform.checkTableExists(dataSource, database.getDefaultSchema(), cacheTable)) {
+    String schema = database.getDefaultSchema();
+    if (!platform.checkTableExists(dataSource, schema, cacheTable)) {
       // create the cache using the result of the first query
       instance.createCache(cacheTable, instanceId);
       // disable the stats on the new cache table
-      String schema = wdkModel.getModelConfig().getAppDB().getLogin();
       platform.disableStatistics(dataSource, schema, cacheTable);
       createCacheTableIndex(queryInfo.getCacheTable(), instance.getQuery());
     } else {// insert result into existing cache table
@@ -183,13 +183,13 @@ public class ResultFactory {
     try {
       DataSource dataSource = database.getDataSource();
       SqlUtils.executeUpdate(dataSource, sqlId.toString(),
-          query.getFullName() + "__create-cache-index01");
+        query.getFullName() + "__create-cache-index01");
 
-      if (indexColumns != null) {
+    if (indexColumns != null) {
         SqlUtils.executeUpdate(dataSource, sqlOther.toString(),
-            query.getFullName() + "__create-cache-index02");
-      }
+          query.getFullName() + "__create-cache-index02");
     }
+  }
     catch (SQLException e) {
       throw new WdkModelException("Could not create cache table index.", e);
     }

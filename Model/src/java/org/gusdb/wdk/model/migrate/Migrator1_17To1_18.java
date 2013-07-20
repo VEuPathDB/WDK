@@ -3,6 +3,7 @@
  */
 package org.gusdb.wdk.model.migrate;
 
+import java.security.NoSuchAlgorithmException;
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,8 +18,11 @@ import javax.sql.DataSource;
 
 import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.fgputil.db.platform.DBPlatform;
-import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Options;
+import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,7 +30,7 @@ import org.json.JSONObject;
  * @author xingao
  * 
  */
-public class Migrator1_17To1_18 extends Migrator {
+public class Migrator1_17To1_18 implements Migrator {
 
     private static final String OLD_USER_SCHEMA = "userlogins2.";
     private static final String NEW_USER_SCHEMA = "userlogins3.";
@@ -44,26 +48,23 @@ public class Migrator1_17To1_18 extends Migrator {
      * @see org.gusdb.wdk.model.migrate.Migrator#migrate()
      */
     @Override
-    public void migrate() throws WdkModelException {
-        migrateHistories();
-    }
-
-    private void migrateHistories() throws WdkModelException {
-      try {
+    public void migrate(WdkModel wdkModel, CommandLine commandLine)
+        throws WdkModelException, WdkUserException, NoSuchAlgorithmException,
+        SQLException, JSONException {
         DatabaseInstance userDb = wdkModel.getUserDb();
         DBPlatform platform = userDb.getPlatform();
         DataSource dataSource = userDb.getDataSource();
 
         System.out.println("Loading existing histories...");
-        loadHistories(dataSource);
+        loadHistories(wdkModel, dataSource);
 
         System.out.println("Loading existing answers...");
-        loadAnswers(dataSource);
+        loadAnswers(wdkModel, dataSource);
 
         System.out.println("Loading old histories...");
         prepareStatements(dataSource);
 
-        ResultSet histories = getHistories(dataSource);
+        ResultSet histories = getHistories(wdkModel, dataSource);
         int count = 0;
         System.out.println("Migrating old histories...");
         while (histories.next()) {
@@ -114,12 +115,9 @@ public class Migrator1_17To1_18 extends Migrator {
         SqlUtils.closeResultSetAndStatement(histories);
         SqlUtils.closeStatement(psInsertAnswer);
         SqlUtils.closeStatement(psInsertHistory);
-      } catch (SQLException | JSONException e) {
-    	  throw new WdkModelException(e);
-      }
     }
 
-    private void prepareStatements(DataSource dataSource) throws SQLException {
+    private void prepareStatements(DataSource dataSource) throws SQLException, WdkModelException {
         // prepare insert answer statement
         StringBuffer sqlInsertAnswer = new StringBuffer("INSERT INTO ");
         sqlInsertAnswer.append(NEW_WDK_SCHEMA).append("answer (");
@@ -141,7 +139,8 @@ public class Migrator1_17To1_18 extends Migrator {
                 sqlInsertHistory.toString());
     }
 
-    private ResultSet getHistories(DataSource dataSource) throws SQLException {
+    private ResultSet getHistories(WdkModel wdkModel, DataSource dataSource) throws SQLException,
+            WdkUserException, WdkModelException {
         StringBuffer sql = new StringBuffer("SELECT u3.user_id, ");
         sql.append("h2.history_id, h2.project_id, h2.query_instance_checksum,");
         sql.append(" h2.question_name, h2.query_signature, h2.create_time, ");
@@ -156,7 +155,8 @@ public class Migrator1_17To1_18 extends Migrator {
                 "wdk-migrate-select-histories");
     }
 
-    private void loadHistories(DataSource dataSource) throws SQLException {
+    private void loadHistories(WdkModel wdkModel, DataSource dataSource) throws SQLException,
+            WdkUserException, WdkModelException {
         StringBuffer sql = new StringBuffer("SELECT user_id, history_id FROM ");
         sql.append(NEW_USER_SCHEMA).append("histories ");
         historyKeys = new LinkedHashSet<String>();
@@ -171,7 +171,8 @@ public class Migrator1_17To1_18 extends Migrator {
         SqlUtils.closeResultSetAndStatement(resultSet);
     }
 
-    private void loadAnswers(DataSource dataSource) throws SQLException {
+    private void loadAnswers(WdkModel wdkModel, DataSource dataSource) throws SQLException,
+            WdkUserException, WdkModelException {
         StringBuffer sql = new StringBuffer(
                 "SELECT answer_id, answer_checksum,");
         sql.append(" project_id FROM ").append(NEW_WDK_SCHEMA).append("answer ");
@@ -206,7 +207,8 @@ public class Migrator1_17To1_18 extends Migrator {
 
     private int insertAnswer(DataSource dataSource, DBPlatform platform, String answerChecksum,
             String projectId, String questionName, String queryChecksum,
-            String params) throws SQLException {
+            String params) throws SQLException, WdkModelException,
+            WdkUserException {
         int answerId = platform.getNextId(dataSource, NEW_WDK_SCHEMA, "answer");
 
         psInsertAnswer.setInt(1, answerId);
@@ -233,5 +235,10 @@ public class Migrator1_17To1_18 extends Migrator {
         psInsertHistory.setBoolean(8, isBoolean);
         psInsertHistory.setBoolean(9, isDeleted);
         platform.setClobData(psInsertHistory, 10, displayParams, true);
+    }
+
+    @Override
+    public void declareOptions(Options options) {
+      // no option used
     }
 }

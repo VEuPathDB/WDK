@@ -44,7 +44,7 @@ public class AnswerParamTest {
     public void testGetAnswerValue() throws WdkModelException, WdkUserException {
         User user = UnitTestHelper.getRegisteredUser();
         Step step = UnitTestHelper.createNormalStep(user);
-        String paramValue = Integer.toString(step.getDisplayId());
+        String paramValue = Integer.toString(step.getStepId());
 
         for (Param param : question.getParams()) {
             if (param instanceof AnswerParam) {
@@ -64,7 +64,7 @@ public class AnswerParamTest {
             String paramValue;
             if (param instanceof AnswerParam) {
                 Step step = UnitTestHelper.createNormalStep(user);
-                paramValue = Integer.toString(step.getDisplayId());
+                paramValue = Integer.toString(step.getStepId());
             } else paramValue = param.getDefault();
             paramValues.put(param.getName(), paramValue);
         }
