@@ -156,7 +156,7 @@ class ActiveStrategyFactory {
         }
         // check if the parent is top level
         if (parent.getParentStep() == null) return Integer.toString(strategyId);
-        else return strategyId + "_" + parent.getDisplayId();
+        else return strategyId + "_" + parent.getStepId();
     }
 
     private ActiveStrategy getStrategy(String strategyKey) {

@@ -52,8 +52,8 @@
       No results are retrieved
     </c:when>
     <c:otherwise>
-  
-      <!-- pager -->
+
+      <%-- pager --%>
       <pg:pager isOffset="true"
                 scope="request"
                 items="${wdk_paging_total}"
@@ -71,8 +71,8 @@
           <pg:param name="sort" id="pager" />
         </c:if>
 
- <!--  debuging line:       <pg:page> ${pageNumber} </pg:page> -->
-    
+ <%--  debuging line:       <pg:page> ${pageNumber} </pg:page> --%>
+
         <%--------- PAGING TOP BAR ----------%>
         <c:url var="commandUrl" value="/processSummaryView.do?step=${step.stepId}&view=${wdkView.name}&pager.offset=${offset}" />
         <table  width="100%">
@@ -87,17 +87,17 @@
         </table>
         <%--------- END OF PAGING TOP BAR ----------%>
 
-        <!-- content of current page -->
+        <%-- content of current page --%>
         <c:set var="sortingAttrNames" value="${wdkAnswer.sortingAttributeNames}" />
         <c:set var="sortingAttrOrders" value="${wdkAnswer.sortingAttributeOrders}" />
-        
+
         <%--------- RESULTS  ----------%>
 
        <div class="Results_Div flexigrid">
           <div class="bDiv">
             <div class="bDivBox">
 
-              <table  width="100%" class="Results_Table" step="${step.stepId}">
+              <table  style="width:100%" class="Results_Table" step="${step.stepId}">
                 <thead>
                   <tr class="headerrow">
                     <c:if test="${recHasBasket}">
@@ -196,7 +196,7 @@
                 <tbody class="rootBody">
                   <c:set var="i" value="0"/>
 
-<!-- FOR EACH ROW -->
+<%-- FOR EACH ROW --%>
                   <c:forEach items="${answerRecords}" var="record">
                     <c:set value="${record.primaryKey}" var="primaryKey"/>
                     <c:set var="recNam" value="${record.recordClass.fullName}"/>
@@ -227,7 +227,7 @@
                       </c:if>
                       <c:set var="j" value="0"/>
 
-<!-- FOR EACH COLUMN -->
+<%-- FOR EACH COLUMN --%>
                       <c:forEach items="${wdkAnswer.summaryAttributeNames}" var="sumAttrName">
                         <c:set value="${record.summaryAttributes[sumAttrName]}" var="recAttr"/>
 
@@ -260,7 +260,7 @@
 
 
         <%--------- PAGING BOTTOM BAR ----------%>
-        <table width="100%">
+        <table style="width:100%">
           <tr class="subheaderrow">
             <th style="text-align:left;white-space:nowrap;"> 
               <imp:pager wdkAnswer="${wdkAnswer}" pager_id="bottom"/> 

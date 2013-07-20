@@ -1,5 +1,6 @@
 package org.gusdb.wdk.model.user;
 
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,15 +36,16 @@ public class Step {
 
   private StepFactory stepFactory;
   private User user;
-  private int displayId;
-  private int internalId;
+  private int stepId;
   private Date createdTime;
   private Date lastRunTime;
   private String customName;
-  private Answer answer = null;
   private boolean deleted = false;
   private boolean collapsible = false;
   private String collapsedName = null;
+
+  private String projectVersion;
+  private String questionName;
 
   private Step nextStep = null;
   private Step previousStep = null;
@@ -69,11 +71,10 @@ public class Step {
   private boolean revisable = true;
   private Exception exception;
 
-  Step(StepFactory stepFactory, User user, int displayId, int internalId) {
+  Step(StepFactory stepFactory, User user, int stepId) {
     this.stepFactory = stepFactory;
     this.user = user;
-    this.displayId = displayId;
-    this.internalId = internalId;
+    this.stepId = stepId;
     deleted = false;
     assignedWeight = 0;
   }
@@ -135,7 +136,7 @@ public class Step {
     this.parentStep = parentStep;
     if (parentStep != null) {
       parentStep.childStep = this;
-      parentStep.childStepId = displayId;
+      parentStep.childStepId = stepId;
     }
   }
 
@@ -143,16 +144,15 @@ public class Step {
     this.childStep = childStep;
     if (childStep != null) {
       childStep.parentStep = this;
-      childStepId = childStep.getDisplayId();
-    } else
-      childStepId = 0;
+      childStepId = childStep.getStepId();
+    } else childStepId = 0;
   }
 
   public void setNextStep(Step nextStep) {
     this.nextStep = nextStep;
     if (nextStep != null) {
       nextStep.previousStep = this;
-      nextStep.previousStepId = displayId;
+      nextStep.previousStepId = stepId;
     }
   }
 
@@ -160,9 +160,8 @@ public class Step {
     this.previousStep = previousStep;
     if (previousStep != null) {
       previousStep.nextStep = this;
-      previousStepId = previousStep.getDisplayId();
-    } else
-      previousStepId = 0;
+      previousStepId = previousStep.getStepId();
+    } else previousStepId = 0;
   }
 
   public boolean isFirstStep() {
@@ -196,6 +195,11 @@ public class Step {
    * @return Returns the customName. If no custom name set before, it will
    *         return the default name provided by the underline AnswerValue - a
    *         combination of question's full name, parameter names and values.
+   * @throws WdkModelException
+   * @throws SQLException
+   * @throws JSONException
+   * @throws WdkModelException
+   * @throws NoSuchAlgorithmException
    */
   public String getCustomName() {
     String name = customName;
@@ -206,15 +210,13 @@ public class Step {
         name = null;
       }
     }
-    if (name == null)
-      name = getQuestionName();
+    if (name == null) name = getQuestionName();
     if (name != null) {
       // remove script injections
       name = name.replaceAll("<.+?>", " ");
       name = name.replaceAll("[\"]", " ");
       name = name.trim().replaceAll("\\s+", " ");
-      if (name.length() > 4000)
-        name = name.substring(0, 4000);
+      if (name.length() > 4000) name = name.substring(0, 4000);
     }
     return name;
   }
@@ -244,12 +246,7 @@ public class Step {
     try {
       return getQuestion().getDisplayName();
     } catch (WdkModelException ex) {
-      if (customName != null)
-        return customName;
-      else if (answer != null)
-        return answer.getQuestionName();
-      else
-        return null;
+      return (customName != null) ? customName : questionName;
     }
   }
 
@@ -262,47 +259,24 @@ public class Step {
   }
 
   /**
-   * @return Returns the displayId.
-   */
-  public int getDisplayId() {
-    return displayId;
-  }
-
-  /**
    * @return Returns the stepId.
    */
-  public int getInternalId() {
-    return internalId;
-  }
-
-  /**
-   * @param answer
-   *          The answer to set.
-   */
-  public void setAnswer(Answer answer) {
-    this.answer = answer;
-    String questionName = answer.getQuestionName();
-    try {
-      user.getWdkModel().getQuestion(questionName);
-    } catch (WdkModelException ex) {
-      this.valid = false;
-      this.revisable = false;
-    }
-  }
-
-  /**
-   * @return Returns the answer.
-   */
-  public Answer getAnswer() {
-    return answer;
-  }
-
-  public int getAnswerId() {
-    return answer.getAnswerId();
+  public int getStepId() {
+    return stepId;
   }
 
   /**
    * @return Returns the estimateSize.
+   * @throws WdkUserException
+   * @throws JSONException
+   * @throws SQLException
+   * @throws WdkModelException
+   * @throws NoSuchAlgorithmException
+   * @throws WdkUserException
+   * @throws JSONException
+   * @throws SQLException
+   * @throws WdkModelException
+   * @throws NoSuchAlgorithmException
    */
   public int getEstimateSize() {
     return estimateSize;
@@ -333,6 +307,12 @@ public class Step {
 
   /**
    * @return Returns the isBoolean.
+   * @throws WdkModelException
+   * @throws SQLException
+   * @throws WdkUserException
+   * @throws JSONException
+   * @throws WdkModelException
+   * @throws NoSuchAlgorithmException
    */
   public boolean isCombined() {
     try {
@@ -344,6 +324,12 @@ public class Step {
 
   /**
    * @return Returns whether this Step is a transform
+   * @throws WdkModelException
+   * @throws SQLException
+   * @throws WdkUserException
+   * @throws JSONException
+   * @throws WdkModelException
+   * @throws NoSuchAlgorithmException
    */
   public boolean isTransform() {
     try {
@@ -396,8 +382,7 @@ public class Step {
   }
 
   public boolean isCollapsible() {
-    if (collapsible)
-      return true;
+    if (collapsible) return true;
     // it is true if the step is a branch
     return (getParentStep() != null && isCombined());
   }
@@ -407,8 +392,7 @@ public class Step {
   }
 
   public String getCollapsedName() {
-    if (collapsedName == null && isCollapsible())
-      return getCustomName();
+    if (collapsedName == null && isCollapsible()) return getCustomName();
     return collapsedName;
   }
 
@@ -418,19 +402,20 @@ public class Step {
 
   /**
    * @return the isValid
+   * @throws JSONException
+   * @throws SQLException
+   * @throws WdkModelException
+   * @throws WdkUserException
    */
   public boolean isValid() throws WdkModelException {
-    if (!valid)
-      return false;
+    if (!valid) return false;
     Step prevStep = getPreviousStep();
     if (prevStep != null) {
-      if (!prevStep.isValid())
-        return false;
+      if (!prevStep.isValid()) return false;
     }
     Step childStep = getChildStep();
     if (childStep != null) {
-      if (!childStep.isValid())
-        return false;
+      if (!childStep.isValid()) return false;
     }
     return true;
   }
@@ -453,30 +438,39 @@ public class Step {
   }
 
   public String getQuestionName() {
-    return (answer != null) ? answer.getQuestionName() : null;
+    return questionName;
+  }
+
+  public void setQuestionName(String questionName) {
+    this.questionName = questionName;
+  }
+
+  public String getProjectVersion() {
+    return projectVersion;
+  }
+
+  public void setProjectVersion(String projectVersion) {
+    this.projectVersion = projectVersion;
   }
 
   /* functions for navigating/manipulating step tree */
-  public Step getStep(int index) throws WdkUserException, WdkModelException,
-      SQLException, JSONException {
+  public Step getStep(int index) throws WdkModelException {
     Step[] steps = getAllSteps();
     return steps[index];
   }
 
-  public Step[] getAllSteps() throws WdkUserException, WdkModelException,
-      SQLException, JSONException {
+  public Step[] getAllSteps() throws WdkModelException {
     ArrayList<Step> allSteps = new ArrayList<Step>();
     allSteps = buildAllStepsArray(allSteps, this);
     return allSteps.toArray(new Step[allSteps.size()]);
   }
 
-  public int getLength() throws WdkUserException, WdkModelException,
-      SQLException, JSONException {
+  public int getLength() throws WdkModelException {
     return getAllSteps().length;
   }
 
   private ArrayList<Step> buildAllStepsArray(ArrayList<Step> array, Step step)
-      throws WdkUserException, WdkModelException, SQLException, JSONException {
+      throws WdkModelException {
     if (step.isFirstStep()) {
       array.add(step);
     } else {
@@ -486,14 +480,14 @@ public class Step {
     return array;
   }
 
-  public void addStep(Step step) {
+  public void addStep(Step step) throws WdkUserException {
     step.setPreviousStep(this);
     this.setNextStep(step);
   }
 
   public Step getStepByDisplayId(int displayId) throws WdkModelException {
     Step target;
-    if (this.displayId == displayId) {
+    if (this.stepId == displayId) {
       return this;
     }
     Step childStep = getChildStep();
@@ -513,8 +507,7 @@ public class Step {
     return null;
   }
 
-  public Step getStepByChildId(int childId) throws WdkUserException,
-      WdkModelException, SQLException, JSONException {
+  public Step getStepByChildId(int childId) throws WdkModelException {
     logger.debug("gettting step by child id. current=" + this + ", input="
         + childId);
     Step target;
@@ -538,8 +531,7 @@ public class Step {
     return null;
   }
 
-  public Step getStepByPreviousId(int previousId) throws WdkUserException,
-      WdkModelException, SQLException, JSONException {
+  public Step getStepByPreviousId(int previousId) throws WdkModelException {
     logger.debug("gettting step by prev id. current=" + this + ", input="
         + previousId);
     Step target;
@@ -593,12 +585,12 @@ public class Step {
     return getQuestion().getRecordClass();
   }
 
-  public int getIndexFromId(int displayId) throws WdkUserException,
-      WdkModelException, SQLException, JSONException {
+  public int getIndexFromId(int stepId) throws WdkUserException,
+      WdkModelException {
     Step[] steps = getAllSteps();
     for (int i = 0; i < steps.length; ++i) {
-      if (steps[i].getDisplayId() == displayId
-          || (steps[i].getChildStep() != null && steps[i].getChildStep().getDisplayId() == displayId)) {
+      if (steps[i].getStepId() == stepId
+          || (steps[i].getChildStep() != null && steps[i].getChildStep().getStepId() == stepId)) {
         return i;
       }
     }
@@ -616,12 +608,10 @@ public class Step {
       throws WdkModelException {
     AnswerFilterInstance oldFilter = getFilter();
     if (filter == null && oldFilter == null
-        && this.assignedWeight == assignedWeight)
-      return this;
+        && this.assignedWeight == assignedWeight) return this;
     if (filter != null && oldFilter != null
         && filter.getName().equals(oldFilter.getName())
-        && this.assignedWeight == assignedWeight)
-      return this;
+        && this.assignedWeight == assignedWeight) return this;
 
     // create new steps
     Question question = getQuestion();
@@ -641,6 +631,12 @@ public class Step {
    * deep clone a step, the step will get a new id, and if the step contains
    * other sub-steps, all those sub steps are cloned recursively.
    * 
+   * @throws SQLException
+   * @throws WdkUserException
+   * @throws JSONException
+   * @throws WdkModelException
+   * @throws NoSuchAlgorithmException
+   * 
    */
   public Step deepClone() throws WdkModelException {
     Step step;
@@ -657,7 +653,7 @@ public class Step {
         if (param instanceof AnswerParam) {
           Step child = user.getStep(Integer.parseInt(paramValue));
           child = child.deepClone();
-          paramValue = Integer.toString(child.getDisplayId());
+          paramValue = Integer.toString(child.getStepId());
         }
         paramValues.put(paramName, paramValue);
       }
@@ -676,8 +672,7 @@ public class Step {
 
   public boolean isFiltered() {
     AnswerFilterInstance filter = getFilter();
-    if (filter == null)
-      return false;
+    if (filter == null) return false;
 
     Question question;
     try {
@@ -687,8 +682,7 @@ public class Step {
     }
     RecordClass recordClass = question.getRecordClass();
     AnswerFilterInstance defaultFilter = recordClass.getDefaultFilter();
-    if (defaultFilter == null)
-      return true;
+    if (defaultFilter == null) return true;
 
     return (!defaultFilter.getName().equals(filter.getName()));
   }
@@ -713,38 +707,41 @@ public class Step {
     }
   }
 
-  public JSONObject getJSONContent(int strategyId) throws JSONException,
-      WdkUserException, WdkModelException, SQLException {
+  public JSONObject getJSONContent(int strategyId) throws WdkModelException {
     JSONObject jsStep = new JSONObject();
 
-    jsStep.put("id", this.displayId);
-    jsStep.put("customName", this.customName);
-    jsStep.put("answer", this.answer.getAnswerChecksum());
-    jsStep.put("collapsed", this.isCollapsible());
-    jsStep.put("collapsedName", this.getCollapsedName());
-    jsStep.put("deleted", deleted);
-    jsStep.put("size", this.estimateSize);
-    
-    Step prevStep = getPreviousStep();
-    if (prevStep != null) {
-      jsStep.put("previous", prevStep.getJSONContent(strategyId));
-    }
-    Step childStep = getChildStep();
-    if (childStep != null) {
-      jsStep.put("child", childStep.getJSONContent(strategyId));
-    }
-    if (this.isCollapsible()) { // a sub-strategy, needs to get order number
-      String subStratId = strategyId + "_" + this.displayId;
-      Integer order = user.getStrategyOrder(subStratId);
-      if (order == null)
-        order = 0; // the sub-strategy is not displayed
-      jsStep.put("order", order);
+    try {
+      jsStep.put("id", this.stepId);
+      jsStep.put("customName", this.customName);
+      jsStep.put("question", this.questionName);
+      jsStep.put("projectVersion", this.projectVersion);
+      jsStep.put("filter", this.filterName);
+      jsStep.put("collapsed", this.isCollapsible());
+      jsStep.put("collapsedName", this.getCollapsedName());
+
+      jsStep.put("deleted", deleted);
+      jsStep.put("size", this.estimateSize);
+      Step prevStep = getPreviousStep();
+      if (prevStep != null) {
+        jsStep.put("previous", prevStep.getJSONContent(strategyId));
+      }
+      Step childStep = getChildStep();
+      if (childStep != null) {
+        jsStep.put("child", childStep.getJSONContent(strategyId));
+      }
+      if (this.isCollapsible()) { // a sub-strategy, needs to get order number
+        String subStratId = strategyId + "_" + this.stepId;
+        Integer order = user.getStrategyOrder(subStratId);
+        if (order == null) order = 0; // the sub-strategy is not displayed
+        jsStep.put("order", order);
+      }
+    } catch (JSONException ex) {
+      throw new WdkModelException(ex);
     }
     return jsStep;
   }
 
   public Question getQuestion() throws WdkModelException {
-    String questionName = answer.getQuestionName();
     WdkModel wdkModel = user.getWdkModel();
     return (Question) wdkModel.resolveReference(questionName);
   }
@@ -786,23 +783,15 @@ public class Step {
     return answerValue;
   }
 
-  public String getAnswerKey() {
-    String key = answer.getAnswerChecksum();
-    if (filterName != null)
-      key += ":" + filterName;
-    return key;
-  }
-
   public boolean isUseBooleanFilter() throws WdkModelException {
-    if (!isBoolean())
-      return false;
+    if (!isBoolean()) return false;
     BooleanQuery query = (BooleanQuery) getQuestion().getQuery();
     String paramName = query.getUseBooleanFilter().getName();
-    String strBooleanFlag = paramValues.get(paramName);
+    String strBooleanFlag = (String) paramValues.get(paramName);
     return Boolean.parseBoolean(strBooleanFlag);
   }
 
-  void setAnswerValue(AnswerValue answerValue) {
+  public void setAnswerValue(AnswerValue answerValue) {
     this.answerValue = answerValue;
   }
 
@@ -814,6 +803,12 @@ public class Step {
    * Validate a step and all the children steps it depends on. the result of
    * validation will also be stored in "valid" variable. If a step was already
    * invalid it will stay invalid.
+   * 
+   * @return
+   * @throws SQLException
+   * @throws WdkModelException
+   * @throws WdkUserException
+   * @throws JSONException
    */
   public boolean validate() throws SQLException, WdkUserException,
       WdkModelException, JSONException {
@@ -822,8 +817,7 @@ public class Step {
     Step prevStep = getPreviousStep();
     Step childStep = getChildStep();
     if (childStep == null && prevStep == null) {
-      if (!valid)
-        return valid;
+      if (!valid) return valid;
       try {
         getAnswerValue();
       } catch (Exception ex) {
@@ -832,16 +826,13 @@ public class Step {
       }
     } else {
       if (childStep != null) {
-        if (!childStep.validate())
-          this.valid = false;
+        if (!childStep.validate()) this.valid = false;
       } else if (prevStep != null) {
-        if (!prevStep.validate())
-          this.valid = false;
+        if (!prevStep.validate()) this.valid = false;
       }
     }
     // set the invalid flag
-    if (!valid)
-      stepFactory.setStepValidFlag(this);
+    if (!valid) stepFactory.setStepValidFlag(this);
     return valid;
   }
 
@@ -913,6 +904,7 @@ public class Step {
    * The previous step param is always the first answerParam.
    * 
    * @return
+   * @throws WdkModelException
    */
   public String getPreviousStepParam() throws WdkModelException {
     Param[] params = getQuestion().getParams();
@@ -936,8 +928,7 @@ public class Step {
     for (Param param : params) {
       if (param instanceof AnswerParam) {
         index++;
-        if (index == 2)
-          return param.getName();
+        if (index == 2) return param.getName();
       }
     }
     return null;
@@ -947,8 +938,7 @@ public class Step {
       SQLException, JSONException {
     int frontId;
     Step previousStep = getPreviousStep();
-    if (previousStep == null)
-      frontId = 1;
+    if (previousStep == null) frontId = 1;
     else {
       frontId = previousStep.getFrontId();
       frontId++;
@@ -956,19 +946,16 @@ public class Step {
     return frontId;
   }
 
-  @Override
   public String toString() {
-    return displayId + " (" + previousStepId + ", " + childStepId + ")";
+    return stepId + " (" + previousStepId + ", " + childStepId + ")";
   }
 
   public boolean isUncollapsible() {
     // if the step hasn't been collapsed, it cannot be uncollapsed.
-    if (!collapsible)
-      return false;
+    if (!collapsible) return false;
 
     // if the step is a combined step, it cannot be uncollapsed
-    if (isCombined())
-      return false;
+    if (isCombined()) return false;
 
     return true;
   }
