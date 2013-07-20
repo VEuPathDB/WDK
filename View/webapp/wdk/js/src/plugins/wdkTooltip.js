@@ -43,6 +43,10 @@
       my: "top center",
       at: "bottom center",
       viewport: $(window)
+    },
+    hide: {
+     fixed: true,
+     delay: 250
     }
   };
 
