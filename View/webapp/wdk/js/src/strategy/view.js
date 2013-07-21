@@ -11,18 +11,13 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   var operandClasses = "box row1 arrowgrey simple";
 
   //Tooltips for step boxes
-  var addStepTooltip = "Click to add a step to your search strategy. The results "+
+  var addStepTooltip = "Add a step to your search strategy. The results "+
       "of the new step will be combined with your current result. The step can be "+
-      "a search or a transform (such as to find orthologs).";
+      "a search or a transform (e.g. to find orthologs).";
   var stepBoxTooltip = function(filterName) {
       var filterText = (!filterName || filterName == "" ||
-            filterName == 'All Results') ? "" : " (filtered by " + filterName + ")";
+          filterName == 'All Results') ? "" : " (filtered by " + filterName + ")";
       return "Show Results" + filterText + ".  Click Edit to make changes."; };
-
-  //var stepBoxTooltip = "CLICK to show these results in the area below.";
-  //var stepEditIconBottomRowTT = function(stepName) { return "CLICK to make changes to the " + stepName + " step."; };
-  //var stepEditIconTopRowTT = function(stepName) { return "CLICK to make changes to the " + stepName + " step and/or how it is combined with the previous step."; };
-  //var booleanEditIconTT = "CLICK to modify this operation.";
 
   //Popup messages
   var insert_popup = "Insert a new step to the left of this one, by either " +
@@ -325,10 +320,23 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
   // type can be: 'top', 'bottom', 'transform', or 'boolean'
   function getEditImage(type) {
-      var style = (type == 'boolean') ? "display:none;position:relative;top:3px" : "display:none";
-      return "<img class='edit-step' style='width:24px;"+style+"' src='wdk/images/edit-step-word-large.png' "+
-        "onmouseover=\"jQuery(this).attr('src','wdk/images/edit-step-word-large-yel.png')\" " +
-        "onmouseout=\"jQuery(this).attr('src','wdk/images/edit-step-word-large.png')\"/>";
+    var boxStyle = 'display:none; position:relative; width:24px; height:10px; background-color:white;' +
+        'text-align:center;color:black;border:1px solid black;border-radius:4px;';
+    var spanStyle = 'font-size:10px;';
+
+    if (type == 'boolean') { boxStyle += "top:3px"; }
+    if (type == 'top') { spanStyle += "position:relative; top:-5px"; }
+
+    return "<div class='edit-step' style='" + boxStyle + "'" +
+      "onmouseover=\"jQuery(this).css('background-color','#FFFFA0')\" " +
+      "onmouseout=\"jQuery(this).css('background-color','white')\" " +
+      "><span style='"+spanStyle+"'>Edit</span></div>";
+    
+    /* Old style with Edit icon being swapped images (left in for easy revert) */
+    //var style = (type == 'boolean') ? "display:none;position:relative;top:3px" : "display:none";
+    //return "<img class='edit-step' style='width:24px;"+style+"' src='wdk/images/edit-step-word-large.png' "+
+    //  "onmouseover=\"jQuery(this).attr('src','wdk/images/edit-step-word-large-yel.png')\" " +
+    //  "onmouseout=\"jQuery(this).attr('src','wdk/images/edit-step-word-large.png')\"/>";
   }
 
   //Creates all steps that are on the bottom line only ie. this first step and transform steps
