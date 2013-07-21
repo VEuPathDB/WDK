@@ -14,11 +14,10 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   var addStepTooltip = "Click to add a step to your search strategy. The results "+
       "of the new step will be combined with your current result. The step can be "+
       "a search or a transform (such as to find orthologs).";
-  var stepBoxTooltip = function(filterName) { return ""+
-      "Click on this step to show its results in the table below.<br/>"+
-      "Click the Edit icon to make changes to this step or how it is combined with the previous step."+
-      ((!filterName || filterName == "") ? "" :
-       "<br/>Note: This step is filtered by '"+filterName+"'."); };
+  var stepBoxTooltip = function(filterName) {
+      var filterText = (!filterName || filterName == "" ||
+            filterName == 'All Results') ? "" : " (filtered by " + filterName + ")";
+      return "Show Results" + filterText + ".  Click Edit to make changes."; };
 
   //var stepBoxTooltip = "CLICK to show these results in the area below.";
   //var stepEditIconBottomRowTT = function(stepName) { return "CLICK to make changes to the " + stepName + " step."; };
@@ -211,7 +210,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "  <img style='width:50px;height:26px' src='wdk/images/transparent1.gif'>" +
         "  <div style='position:absolute;top:-9px;right:10px;width:19px;height:19px;'></div>"+
         "  <a href='javascript:void(0)' class='edit-icon step-elem' style='display:inline;position:absolute;top:-8px;right:2px' " +
-        "     onclick='event.stopPropagation(); wdk.step.showDetails(this)'>" + getEditImage(true)+"</a><br/>"+
+        "     onclick='event.stopPropagation(); wdk.step.showDetails(this)'>" + getEditImage('boolean')+"</a><br/>"+
         "  <div class='crumb_details'></div>" +
         "  <h6 class='resultCount' style='top:1px'>" +
         "    <span class='operation'>" + jsonStep.results + "&nbsp;" + displayType + "</span>" +
@@ -267,7 +266,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 	//"        <div style='position:absolute;top:-6px;right:-8px;width:19px;height:19px;'></div>"+
       "        <a href='javascript:void(0)'"+
       "           class='edit-icon step-elem' onclick='event.stopPropagation(); wdk.step.showDetails(this)' id='stepId_" + modelstep.frontId + "' style='display:inline;position:absolute;right:-6px;top:-7px'>"+
-      getEditImage(false)+"</a>"+
+      getEditImage('top')+"</a>"+
       "        <div class='crumb_details'></div>"+
       "      </h4>"+
       "      <h6 class='resultCount'>" + childStp.results + "&nbsp;" + wdk.util.getDisplayType(childStp) + "</h6>"+
@@ -324,8 +323,9 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     return stepbox;
   }
 
-  function getEditImage(isBoolean) {
-      var style = isBoolean ? "display:none;position:relative;top:3px" : "display:none";
+  // type can be: 'top', 'bottom', 'transform', or 'boolean'
+  function getEditImage(type) {
+      var style = (type == 'boolean') ? "display:none;position:relative;top:3px" : "display:none";
       return "<img class='edit-step' style='width:24px;"+style+"' src='wdk/images/edit-step-word-large.png' "+
         "onmouseover=\"jQuery(this).attr('src','wdk/images/edit-step-word-large-yel.png')\" " +
         "onmouseout=\"jQuery(this).attr('src','wdk/images/edit-step-word-large.png')\"/>";
@@ -352,6 +352,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     }
 
     var editIconOffset = modelstep.isTransform ? "right:6px;top:-5px" : "right:-6px;top:-7px";
+    var boxType = modelstep.isTransform ? 'transform' : 'bottom';
     //var editIconWinOffset = modelstep.isTransform ? "right:0px;top:-4px" : "right:-8px;top:-8px";
     var inner = ""+
       "    <div style='cursor:pointer' title=\""+stepBoxTooltip(jsonStep.filterName)+"\" class='results_link crumb_name divlink step-elem' "+
@@ -360,7 +361,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       //"      <div style='position:absolute;"+editIconWinOffset+";width:19px;height:19px;'></div>"+
       "      <a href='javascript:void(0)' class='edit-icon step-elem'"+
       "           onclick='event.stopPropagation(); wdk.step.showDetails(this)' id='stepId_" + modelstep.frontId + "' " +
-      "           style='display:inline;position:absolute;"+editIconOffset+"'>"+getEditImage(false)+"</a>"+
+      "           style='display:inline;position:absolute;"+editIconOffset+"'>"+getEditImage(boxType)+"</a>"+
       "      <h4>"+
       "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
       "        <div class='crumb_details'></div>"+
