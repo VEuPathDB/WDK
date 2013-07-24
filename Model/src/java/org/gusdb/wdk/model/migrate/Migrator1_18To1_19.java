@@ -63,10 +63,12 @@ public class Migrator1_18To1_19 implements Migrator {
       this.projectId = projectId;
     }
 
+    @Override
     public int hashCode() {
       return (userId + projectId).hashCode();
     }
 
+    @Override
     public boolean equals(Object obj) {
       if (obj != null && obj instanceof UserProject) {
         UserProject up = (UserProject) obj;
@@ -110,6 +112,7 @@ public class Migrator1_18To1_19 implements Migrator {
      * 
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
+    @Override
     public int compareTo(HistoryInfo history) {
       if (ancesterOf(history)) return -1;
       else if (history.ancesterOf(this)) return 1;
@@ -446,8 +449,7 @@ public class Migrator1_18To1_19 implements Migrator {
 
   private void createSteps(WdkModel wdkModel, String oldUserSchema,
       String oldWdkSchema, int migrateId, UserProject user,
-      Map<Integer, HistoryInfo> histories) throws JSONException, SQLException,
-      WdkUserException, WdkModelException {
+      Map<Integer, HistoryInfo> histories) throws JSONException, SQLException {
     for (HistoryInfo history : histories.values()) {
       normalizeParams(history);
       Set<Integer> parents = parseParents(wdkModel, oldUserSchema,
@@ -488,7 +490,7 @@ public class Migrator1_18To1_19 implements Migrator {
   }
 
   private Map<Integer, Integer> loadStepMap(WdkModel wdkModel, UserProject user)
-      throws SQLException, WdkUserException, WdkModelException {
+      throws SQLException {
     ResultSet resultSet = null;
     DataSource source = wdkModel.getUserDb().getDataSource();
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
@@ -538,7 +540,7 @@ public class Migrator1_18To1_19 implements Migrator {
 
   private Set<Integer> parseParents(WdkModel wdkModel, String oldUserSchema,
       String oldWdkSchema, HistoryInfo history) throws JSONException,
-      SQLException, WdkUserException {
+      SQLException {
     Set<Integer> parents = new LinkedHashSet<Integer>();
     String paramClob = history.paramClob;
     try {
@@ -584,7 +586,7 @@ public class Migrator1_18To1_19 implements Migrator {
   }
 
   private int addStep(WdkModel wdkModel, HistoryInfo history,
-      Map<Integer, Integer> stepMap) throws WdkModelException, WdkUserException {
+      Map<Integer, Integer> stepMap) throws WdkModelException {
     String paramClob = prepareParams(wdkModel, history, stepMap);
     int stepId;
     if (paramClob.startsWith("{")) {
@@ -598,7 +600,7 @@ public class Migrator1_18To1_19 implements Migrator {
   }
 
   private String prepareParams(WdkModel wdkModel, HistoryInfo history,
-      Map<Integer, Integer> stepMap) throws WdkModelException, WdkUserException {
+      Map<Integer, Integer> stepMap) throws WdkModelException {
     try {
       String paramClob = history.paramClob;
       if (paramClob.startsWith("{")) {
@@ -669,7 +671,7 @@ public class Migrator1_18To1_19 implements Migrator {
   }
 
   private int insertRawStep(WdkModel wdkModel, HistoryInfo history,
-      String paramClob) throws WdkModelException, WdkUserException {
+      String paramClob) throws WdkModelException {
     String schema = wdkModel.getModelConfig().getUserDB().getUserSchema();
     String sql = "INSERT INTO " + schema + "steps (step_id, display_id, "
         + "user_id, answer_id, left_child_id, right_child_id, "
