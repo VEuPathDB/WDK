@@ -10,6 +10,15 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   var transformClasses = "row2 transform"; 
   var operandClasses = "box row1 arrowgrey simple";
 
+  //Tooltips for step boxes
+  var addStepTooltip = "Add a step to your search strategy. The results "+
+      "of the new step will be combined with your current result. The step can be "+
+      "a search or a transform (e.g. to find orthologs).";
+  var stepBoxTooltip = function(filterName) {
+      var filterText = (!filterName || filterName == "" ||
+          filterName == 'All Results') ? "" : " (filtered by " + filterName + ")";
+      return "Show Results" + filterText + ".  Click Edit to make changes."; };
+
   //Popup messages
   var insert_popup = "Insert a new step to the left of this one, by either " +
       "running a new query or choosing an existing strategy";
@@ -31,7 +40,8 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       "combine operation";
   var ss_expand_popup = "Expand this step in a new panel to add nested steps." +
       " (Use this to build a non-linear strategy)";
-    //Substrategies
+
+  //Substrategies
   var sub_edit_expand_openned = "Revise the nested strategy in the open " +
       "panel below";  
   var sub_rename_popup = "Rename this nested strategy";             
@@ -99,10 +109,10 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
             .attr("href","javascript:wdk.addStepPopup.openFilter('" + dType + "'," +
                 strat.frontId + "," + lsn + ",true)")
             .attr("onclick","this.blur()")
-            .addClass("filter_link redbutton")
-            .attr("title","CLICK to run a new query and combine its result " +
-                "with your current result. Alternatively, you could obtain " +
-                "the orthologs to your current result or run another available transform.")
+            .attr("onmouseover","jQuery(this).find('span').css('color','pink')")
+            .attr("onmouseout","jQuery(this).find('span').css('color','white')")
+            .addClass("filter_link redbutton step-elem")
+            .attr("title",addStepTooltip)
             .html("<span>Add Step</span>");
         var buttonDiv = document.createElement('div');
         var diagramWrapper = document.createElement('div');
@@ -126,6 +136,14 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     return null;
   }
 
+  // controls visibility of step box edit icons
+  function setEditIconToggling() {
+    $('.edit-step-pane')
+      .mouseenter(function(){
+        $('.edit-step').css('display','inline-block'); })
+      .mouseleave(function(){
+        $('.edit-step').css('display','none'); });
+  }
 
   // HANDLES THE CREATION OF THE STEP BOX --
   // This function could be broken down to smaller bites
@@ -153,6 +171,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       $(div_strat).append(stepdiv);
       zIndex--; // DO NOT DELETE, needed for correct display in IE7.
     }
+    setEditIconToggling();
   }
 
   //Creates the boolean Step and the operand step displayed above it
@@ -173,23 +192,27 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     }
 
     if (jsonStep.filtered) {
-      filterImg = "<span class='filterImg' title='Step is filtered on " +
-          jsonStep.filterName + "'><img src='wdk/images/filter.gif' " +
-          "height='12px' width='12px'/></span>";
+      filterImg = "<span class='filterImg'><img src='wdk/images/filter-short.png' " +
+          "style='height:10px;position:relative;top:0px'/></span>";
     }
 
     var displayType = (jsonStep.results > 1) ? jsonStep.shortDisplayTypePlural : jsonStep.shortDisplayType;
-
-    var boolinner = "<a id='" + sid + "|" + modelstep.back_boolean_Id + "|" +
-        jsonStep.operation + "' title='CLICK to modify this operation.' " +
-        "class='operation' href='javascript:void(0)' onclick='wdk.step.showDetails(this)'>"+
-        "<img src='wdk/images/transparent1.gif'></a>"+
-        "<div class='crumb_details'></div><h6 class='resultCount'>"+
-        "<a title='CLICK to show these results in the area below.' " +
-        "class='operation' onclick='" + bool_link +
-        "' href='javascript:void(0)'>" + jsonStep.results + "&nbsp;" +
-        displayType + "</a>" + "</h6>" + filterImg;
-
+    
+    var boolinner = ""+
+        "<div id='" + sid + "|" + modelstep.back_boolean_Id + "|" + jsonStep.operation + "' class='divlink step-elem' "+
+        "     title=\""+stepBoxTooltip(jsonStep.filterName)+"\" href='javascript:void(0)' style='cursor:pointer' onclick='" + bool_link + "'> " +
+        //"     onmouseover=\"jQuery(this).find('.edit-icon').css('display','inline')\" onmouseout=\"jQuery(this).find('.edit-icon').css('display','inline')\">" +
+        "  <img style='width:50px;height:26px' src='wdk/images/transparent1.gif'>" +
+        "  <div style='position:absolute;top:-9px;right:10px;width:19px;height:19px;'></div>"+
+        "  <a href='javascript:void(0)' class='edit-icon step-elem' style='display:inline;position:absolute;top:-8px;right:2px' " +
+        "     onclick='event.stopPropagation(); wdk.step.showDetails(this)'>" + getEditImage('boolean')+"</a><br/>"+
+        "  <div class='crumb_details'></div>" +
+        "  <h6 class='resultCount' style='top:1px'>" +
+        "    <span class='operation'>" + jsonStep.results + "&nbsp;" + displayType + "</span>" +
+        "  </h6>" +
+           filterImg +
+        "</div>";
+    
     if (!modelstep.isLast) {
       if (modelstep.nextStepType == "transform") {
         boolinner = boolinner + "<div class='arrow right size3'></div>";
@@ -199,13 +222,14 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     }
 
     var boolDiv = document.createElement('div');
-    $(boolDiv).attr("id","step_" + modelstep.frontId)
+    $(boolDiv).attr("id","step_" + modelstep.frontId).attr("style","border-radius:8px")
         .addClass(booleanClasses + jsonStep.operation).html(boolinner);
 
     $(".crumb_details", boolDiv)
         .replaceWith(createDetails(modelstep, prevjsonstep, jsonStep, sid));
     var stepNumber = document.createElement('span');
     $(stepNumber).addClass('stepNumber').text("Step " + modelstep.frontId);
+
     //Create the operand Step Box
     var childStp = jsonStep.step;  
     var uname = "";
@@ -224,23 +248,25 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     var childfilterImg = "";
 
     if (childStp.filtered) {
-      childfilterImg = "<span class='filterImg' title='Step is filtered on " +
-          childStp.filterName + "'><img src='wdk/images/filter.gif' " +
-          "height='12px' width='12px'/></span>";
+      childfilterImg = "<span class='filterImg'><img src='wdk/images/filter-short.png' " +
+          "style='height:10px;position:relative;top:1px'/></span>";
     }
 
     var childinner = ""+
-      "    <h4>"+
-      "      <a style='text-decoration:underline' title='CLICK to make changes to the \"" + childStp.name + "\" step and/or how it is combined with the previous step' id='stepId_" + modelstep.frontId + "' class='crumb_name' onclick='wdk.step.showDetails(this)' href='javascript:void(0)'>"+
-      "        <span id='name'>"+uname+"</span>"+
-      "        <img src='wdk/images/plus.gif' width='13' height='13'/>"+
-      "        <span class='collapsible' style='display: none;'>false</span>"+
-      "      </a>"+
-      "      <span id='fullStepName' style='display: none;'>" + fullName + "</span>"+
-      "      <div class='crumb_details'></div>"+
-      "    </h4>"+
-      "    <h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='wdk.strategy.controller.NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + childStp.results + "&nbsp;" + wdk.util.getDisplayType(childStp) + "</a></h6>"+
+    "    <div style='cursor:pointer' title=\""+stepBoxTooltip(childStp.filterName)+"\" class='results_link crumb_name divlink step-elem' "+
+      "         href='javascript:void(0)' onclick='wdk.strategy.controller.NewResults(" + sid + "," + modelstep.frontId + ", false)'>"+
+	//"         onmouseover=\"jQuery(this).find('.edit-icon').css('display','inline')\" onmouseout=\"jQuery(this).find('.edit-icon').css('display','inline')\">"+
+      "      <h4>"+
+      "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
+	//"        <div style='position:absolute;top:-6px;right:-8px;width:19px;height:19px;'></div>"+
+      "        <a href='javascript:void(0)'"+
+      "           class='edit-icon step-elem' onclick='event.stopPropagation(); wdk.step.showDetails(this)' id='stepId_" + modelstep.frontId + "' style='display:inline;position:absolute;right:-6px;top:-7px'>"+
+      getEditImage('top')+"</a>"+
+      "        <div class='crumb_details'></div>"+
+      "      </h4>"+
+      "      <h6 class='resultCount'>" + childStp.results + "&nbsp;" + wdk.util.getDisplayType(childStp) + "</h6>"+
       childfilterImg +
+      "    </div>"+
       "<img class='arrow down' src='wdk/images/arrow_chain_down2.png' alt='equals'>";
 
     var child_invalid = null;
@@ -292,6 +318,27 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     return stepbox;
   }
 
+  // type can be: 'top', 'bottom', 'transform', or 'boolean'
+  function getEditImage(type) {
+    var boxStyle = 'display:none; position:relative; width:24px; height:10px; background-color:white;' +
+        'text-align:center;color:black;border:1px solid black;border-radius:4px;';
+    var spanStyle = 'font-size:10px;';
+
+    if (type == 'boolean') { boxStyle += "top:3px"; }
+    if (type == 'top') { spanStyle += "position:relative; top:-5px"; }
+
+    return "<div class='edit-step' style='" + boxStyle + "'" +
+      "onmouseover=\"jQuery(this).css('background-color','#FFFFA0')\" " +
+      "onmouseout=\"jQuery(this).css('background-color','white')\" " +
+      "><span style='"+spanStyle+"'>Edit</span></div>";
+    
+    /* Old style with Edit icon being swapped images (left in for easy revert) */
+    //var style = (type == 'boolean') ? "display:none;position:relative;top:3px" : "display:none";
+    //return "<img class='edit-step' style='width:24px;"+style+"' src='wdk/images/edit-step-word-large.png' "+
+    //  "onmouseover=\"jQuery(this).attr('src','wdk/images/edit-step-word-large-yel.png')\" " +
+    //  "onmouseout=\"jQuery(this).attr('src','wdk/images/edit-step-word-large.png')\"/>";
+  }
+
   //Creates all steps that are on the bottom line only ie. this first step and transform steps
   function singleStep(modelstep, prevjsonstep, jsonStep, sid) {
     var uname = "";
@@ -307,22 +354,29 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
     var filterImg = "";
     if (jsonStep.filtered) {
-      filterImg = "<span class='filterImg' title='Step is filtered on " +
-          jsonStep.filterName + "'><img src='wdk/images/filter.gif' " +
-          "height='12px' width='12px'/></span>";
+      var filterImgOffset = modelstep.isTransform ? ";right:5px" : "";
+      filterImg = "<span class='filterImg'><img src='wdk/images/filter-short.png' " +
+          "style='height:10px;position:relative;top:1px"+filterImgOffset+"'/></span>";
     }
+
+    var editIconOffset = modelstep.isTransform ? "right:6px;top:-5px" : "right:-6px;top:-7px";
+    var boxType = modelstep.isTransform ? 'transform' : 'bottom';
+    //var editIconWinOffset = modelstep.isTransform ? "right:0px;top:-4px" : "right:-8px;top:-8px";
     var inner = ""+
-      "    <h4>"+
-      "      <a style='text-decoration:underline' title='CLICK to make changes to the \"" + jsonStep.name + "\" step.' id='stepId_" + modelstep.frontId + "' class='crumb_name' onclick='wdk.step.showDetails(this)' href='javascript:void(0)'>"+
-      "        <span id='name'>"+uname+"</span>"+
-      "        <img src='wdk/images/plus.gif' width='13' height='13'/>"+
-      "        <span class='collapsible' style='display: none;'>false</span>"+
-      "      </a>"+ 
-      "      <span id='fullStepName' style='display: none;'>" + fullName + "</span>"+
-      "      <div class='crumb_details'></div>"+
-      "    </h4>"+
-      "    <h6 class='resultCount'><a title='CLICK to show these results in the area below.' class='results_link' href='javascript:void(0)' onclick='wdk.strategy.controller.NewResults(" + sid + "," + modelstep.frontId + ", false)'> " + jsonStep.results + "&nbsp;" + wdk.util.getDisplayType(jsonStep) + "</a></h6>"+
-       filterImg;
+      "    <div style='cursor:pointer' title=\""+stepBoxTooltip(jsonStep.filterName)+"\" class='results_link crumb_name divlink step-elem' "+
+      "         href='javascript:void(0)' onclick='wdk.strategy.controller.NewResults(" + sid + "," + modelstep.frontId + ", false)'> "+
+      //"         onmouseover=\"jQuery(this).find('.edit-icon img').attr('src','wdk/images/edit-step-word.png')\" onmouseout=\"jQuery(this).find('.edit-icon img').attr('src','wdk/images/edit-step.png')\">"+
+      //"      <div style='position:absolute;"+editIconWinOffset+";width:19px;height:19px;'></div>"+
+      "      <a href='javascript:void(0)' class='edit-icon step-elem'"+
+      "           onclick='event.stopPropagation(); wdk.step.showDetails(this)' id='stepId_" + modelstep.frontId + "' " +
+      "           style='display:inline;position:absolute;"+editIconOffset+"'>"+getEditImage(boxType)+"</a>"+
+      "      <h4>"+
+      "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
+      "        <div class='crumb_details'></div>"+
+      "      </h4>"+
+      "      <h6 class='resultCount'>" + jsonStep.results + "&nbsp;" + wdk.util.getDisplayType(jsonStep) + "</h6>"+
+      filterImg +
+      "    </div>";
 
     if (!modelstep.isLast) {
       if (modelstep.isTransform) {
