@@ -143,12 +143,12 @@ public class ProcessLoginAction extends WdkAction {
         }
         else {
           UserBean user = factory.login(guest, email, password);
-          addLoginCookie(user, remember, getWdkModel(), this);
+          int wdkCookieMaxAge = addLoginCookie(user, remember, getWdkModel(), this);
           setCurrentUser(user);
           setSessionAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
           // go back to user's original page after successful login
           String redirectPage = getOriginalReferrer(params, getRequestData());
-          return getSuccessfulLoginResult(redirectPage);
+          return getSuccessfulLoginResult(redirectPage, wdkCookieMaxAge);
         }
       }
       catch (WdkUserException | WdkModelException ex) {
@@ -173,7 +173,7 @@ public class ProcessLoginAction extends WdkAction {
     }
   }
 
-  protected ActionResult getSuccessfulLoginResult(String redirectUrl) {
+  protected ActionResult getSuccessfulLoginResult(String redirectUrl, int wdkCookieMaxAge) {
     return new ActionResult().setRedirect(true).setViewPath(redirectUrl);
   }
   
@@ -212,17 +212,19 @@ public class ProcessLoginAction extends WdkAction {
     }
   }
   
-  static void addLoginCookie(UserBean user, boolean remember, WdkModelBean model, WdkAction wdkAction) {
+  static int addLoginCookie(UserBean user, boolean remember, WdkModelBean model, WdkAction wdkAction) {
     try {
       // Create & send cookie
       LoginCookieFactory auth = new LoginCookieFactory(model.getModel().getSecretKey());
       Cookie loginCookie = auth.createLoginCookie(user.getEmail(), remember);
       wdkAction.addCookieToResponse(loginCookie);
+      return loginCookie.getMaxAge();
     }
     catch (WdkModelException e) {
       // This is a recoverable exception since this is not the session cookie, just
       //   one to remember the user.  An error, but not one we need to advertise
       LOG.error("Unable to add user cookie to response on login!", e);
+      return -1;
     }
   }
 }
