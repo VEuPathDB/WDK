@@ -322,6 +322,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     if (sC == 0) showInstructions();
     // add fancy tooltips
     wdk.tooltips.assignTooltips(".filterImg", 0);
+    wdk.tooltips.assignTooltips(".step-elem", 0);
   }
 
   function displayOpenSubStrategies(s, d) {
