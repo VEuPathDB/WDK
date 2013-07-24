@@ -10,7 +10,6 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
-import org.json.JSONException;
 
 public class StrategyBean {
 
@@ -98,13 +97,11 @@ public class StrategyBean {
         return strategy.getStrategyId();
     }
 
-    public StepBean getStep(int index) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+    public StepBean getStep(int index) throws WdkModelException {
         return new StepBean(user, strategy.getStep(index));
     }
 
-    public StepBean[] getAllSteps() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public StepBean[] getAllSteps() throws WdkModelException {
         StepBean latestStep = new StepBean(user, strategy.getLatestStep());
         return latestStep.getAllSteps();
     }
@@ -126,8 +123,7 @@ public class StrategyBean {
         return null;
     }
 
-    public int getLength() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public int getLength() throws WdkModelException {
         return getAllSteps().length;
     }
 
@@ -163,8 +159,7 @@ public class StrategyBean {
         return new StepBean(user, strategy.getFirstStep());
     }
 
-    public String getChecksum() throws JSONException,
-            WdkModelException, WdkUserException, SQLException {
+    public String getChecksum() throws WdkModelException {
         return strategy.getChecksum();
     }
 

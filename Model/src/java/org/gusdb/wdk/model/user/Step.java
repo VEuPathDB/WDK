@@ -480,7 +480,7 @@ public class Step {
     return array;
   }
 
-  public void addStep(Step step) throws WdkUserException {
+  public void addStep(Step step) {
     step.setPreviousStep(this);
     this.setNextStep(step);
   }
@@ -787,7 +787,7 @@ public class Step {
     if (!isBoolean()) return false;
     BooleanQuery query = (BooleanQuery) getQuestion().getQuery();
     String paramName = query.getUseBooleanFilter().getName();
-    String strBooleanFlag = (String) paramValues.get(paramName);
+    String strBooleanFlag = paramValues.get(paramName);
     return Boolean.parseBoolean(strBooleanFlag);
   }
 
@@ -946,6 +946,7 @@ public class Step {
     return frontId;
   }
 
+  @Override
   public String toString() {
     return stepId + " (" + previousStepId + ", " + childStepId + ")";
   }

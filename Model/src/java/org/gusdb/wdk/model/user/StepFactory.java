@@ -730,6 +730,7 @@ public class StepFactory {
       SqlUtils.closeResultSetAndStatement(resultSet);
     }
     Collections.sort(strategies, new Comparator<Strategy>() {
+      @Override
       public int compare(Strategy o1, Strategy o2) {
         return o2.getLastRunTime().compareTo(o1.getLastRunTime());
       }
@@ -1370,8 +1371,7 @@ public class StepFactory {
     return Utilities.encrypt(content, true);
   }
 
-  void setStepValidFlag(Step step) throws SQLException, WdkUserException,
-      WdkModelException, JSONException {
+  void setStepValidFlag(Step step) throws SQLException, WdkModelException {
     String sql = "UPDATE " + userSchema + TABLE_STEP + " SET "
         + COLUMN_IS_VALID + " = ? WHERE " + COLUMN_STEP_ID + " = ?";
     PreparedStatement psUpdate = null;

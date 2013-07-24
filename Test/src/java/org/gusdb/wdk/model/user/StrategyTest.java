@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -11,11 +10,9 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerFilterInstance;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.record.RecordClass;
-import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -373,8 +370,7 @@ public class StrategyTest {
   }
 
   static void compareStrategy(Strategy expected, Strategy actual)
-      throws WdkModelException, JSONException,
-      WdkUserException, SQLException {
+      throws WdkModelException {
     Assert.assertEquals("strategy id", expected.getStrategyId(),
         actual.getStrategyId());
     Assert.assertEquals("strategy length", expected.getLength(),

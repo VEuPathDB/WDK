@@ -27,7 +27,6 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.json.JSONException;
 
 public class ProcessStepAction extends Action {
 
@@ -112,8 +111,7 @@ public class ProcessStepAction extends Action {
   }
 
   private StrategyBean getStrategy(HttpServletRequest request, UserBean user)
-      throws WdkModelException, WdkUserException,
-      JSONException, SQLException {
+      throws WdkModelException, WdkUserException {
 
     // get current strategy
     String strategyKey = request.getParameter(PARAM_STRATEGY);
@@ -159,7 +157,7 @@ public class ProcessStepAction extends Action {
       QuestionForm form, WdkModelBean wdkModel, UserBean user,
       StrategyBean strategy, StepBean step, String customName)
       throws NumberFormatException, WdkUserException, WdkModelException,
-      SQLException, JSONException, FileNotFoundException, IOException {
+      SQLException, FileNotFoundException, IOException {
     logger.debug("Revising step...");
 
     // current step has to exist for revise
@@ -217,7 +215,7 @@ public class ProcessStepAction extends Action {
       QuestionForm form, WdkModelBean wdkModel, UserBean user,
       StrategyBean strategy, StepBean step, String customName)
       throws WdkUserException, WdkModelException,
-      SQLException, JSONException, FileNotFoundException, IOException {
+      SQLException, FileNotFoundException, IOException {
     logger.debug("Inserting step...");
 
     // current step has to exist for insert
@@ -279,7 +277,7 @@ public class ProcessStepAction extends Action {
       QuestionForm form, WdkModelBean wdkModel, UserBean user,
       StrategyBean strategy, String customName) throws WdkUserException,
       NumberFormatException, WdkModelException,
-      SQLException, JSONException, FileNotFoundException, IOException {
+      SQLException, FileNotFoundException, IOException {
     logger.debug("Adding step...");
 
     // get root step

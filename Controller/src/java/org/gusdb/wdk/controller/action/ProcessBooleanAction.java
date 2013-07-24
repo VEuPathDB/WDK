@@ -23,7 +23,6 @@ import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wdk.model.query.BooleanQuery;
-import org.json.JSONException;
 
 public class ProcessBooleanAction extends Action {
 
@@ -102,8 +101,7 @@ public class ProcessBooleanAction extends Action {
   }
 
   private StrategyBean getStrategy(HttpServletRequest request, UserBean user)
-      throws WdkModelException, WdkUserException,
-      JSONException, SQLException {
+      throws WdkModelException, WdkUserException {
     // get current strategy
     String strategyKey = request.getParameter(PARAM_STRATEGY);
     if (strategyKey == null || strategyKey.length() == 0)
@@ -149,7 +147,7 @@ public class ProcessBooleanAction extends Action {
   private Map<Integer, Integer> reviseBoolean(HttpServletRequest request,
       UserBean user, StrategyBean strategy, String operator, StepBean step)
       throws NumberFormatException, WdkUserException, WdkModelException,
-      SQLException, JSONException {
+      SQLException {
     logger.debug("Revising boolean...");
 
     // current step has to exist for revise
@@ -203,7 +201,7 @@ public class ProcessBooleanAction extends Action {
 
   private Map<Integer, Integer> insertBoolean(HttpServletRequest request,
       UserBean user, StrategyBean strategy, String operator, StepBean step)
-      throws WdkUserException, WdkModelException, SQLException, JSONException {
+      throws WdkUserException, WdkModelException, SQLException {
     logger.debug("Inserting boolean...");
 
     // current step has to exist for insert
@@ -250,7 +248,7 @@ public class ProcessBooleanAction extends Action {
   private Map<Integer, Integer> addBoolean(HttpServletRequest request,
       UserBean user, StrategyBean strategy, String operator)
       throws WdkUserException, NumberFormatException, WdkModelException,
-      SQLException, JSONException {
+      SQLException {
     logger.debug("Adding boolean...");
 
     // get root step

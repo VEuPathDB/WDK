@@ -157,7 +157,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
     public static void outputErrorJSON(UserBean user,
             HttpServletResponse response, Exception ex) throws JSONException,
             IOException, WdkUserException,
-            WdkModelException, SQLException {
+            WdkModelException {
         logger.debug("output JSON error message: " + ex);
 
         JSONObject jsMessage = new JSONObject();
@@ -255,14 +255,13 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
     static private void outputCommon(UserBean user, JSONObject jsMessage)
             throws JSONException, WdkUserException,
-            WdkModelException, SQLException {
+            WdkModelException {
         outputState(user, jsMessage);
         outputCurrentView(user, jsMessage);
     }
 
     static void outputState(UserBean user, JSONObject jsMessage)
-            throws WdkUserException, WdkModelException, JSONException,
-            SQLException {
+            throws WdkUserException, WdkModelException, JSONException {
         JSONObject jsState = new JSONObject();
         StrategyBean[] openedStrategies = user.getActiveStrategies();
 

@@ -89,7 +89,7 @@ public class StepBean {
         return step.getBaseCustomName();
     }
 
-    public String getCustomName() throws WdkModelException {
+    public String getCustomName() {
         return step.getCustomName();
     }
 
@@ -136,8 +136,7 @@ public class StepBean {
         return step.getStepId();
     }
 
-    public void setAnswerValue(AnswerValueBean answer)
-            throws WdkModelException {
+    public void setAnswerValue(AnswerValueBean answer) {
         step.setAnswerValue(answer.getAnswerValue());
     }
 
@@ -262,13 +261,11 @@ public class StepBean {
     }
 
     /* functions for navigating/manipulating step tree */
-    public StepBean getStep(int index) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+    public StepBean getStep(int index) throws WdkModelException {
         return new StepBean(user, step.getStep(index));
     }
 
-    public StepBean[] getAllSteps() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public StepBean[] getAllSteps() throws WdkModelException {
         Step[] steps = step.getAllSteps();
         StepBean[] beans = new StepBean[steps.length];
         for (int i = 0; i < steps.length; ++i) {
@@ -285,12 +282,11 @@ public class StepBean {
         return null;
     }
 
-    public int getLength() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public int getLength() throws WdkModelException {
         return step.getLength();
     }
 
-    public void addStep(StepBean next) throws WdkUserException {
+    public void addStep(StepBean next) {
         step.addStep(next.step);
     }
 
@@ -303,7 +299,7 @@ public class StepBean {
     }
 
     public int getIndexFromId(int stepId) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+            WdkModelException {
         return step.getIndexFromId(stepId);
     }
 
