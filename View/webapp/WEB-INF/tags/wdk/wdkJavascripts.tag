@@ -34,7 +34,7 @@
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jstree/jquery.jstree.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/qtip2/jquery.qtip.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/json.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/handlebars-1.0.0.beta.6.js"><jsp:text/></script>
+  <script type="text/javascript" src="${urlBase}/wdk/js/lib/handlebars.js"><jsp:text/></script>
 
   <!-- WDK js and css -->
 
