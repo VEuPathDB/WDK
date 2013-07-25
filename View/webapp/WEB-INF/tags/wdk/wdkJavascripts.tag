@@ -108,8 +108,10 @@
   <c:if test="${refer == 'summary'}">
 
     <!-- JQuery Drag And Drop Plugin -->
+    <!--
     <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.multiSelect.js"><jsp:text/></script>
     <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.form.js"><jsp:text/></script>
+    -->
 
     <!-- Results Page  -->
     <script type="text/javascript" src="${urlBase}/wdk/js/lib/flexigrid.js"><jsp:text/></script>
