@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkModelText;
 
 /**
  * The SearchCategory is used to group questions into tree structure, and it is
@@ -30,16 +31,22 @@ public class SearchCategory extends WdkModelBase {
   private WdkModel wdkModel;
   private String name;
   private String displayName;
+  private String shortDisplayName;
+  private String description;
   private boolean flattenInMenu;
   private String parentRef;
   private SearchCategory parent;
   private String usedBy;
   private Map<String, SearchCategory> children;
-  private List<CategoryQuestionRef> questionRefs;
+  private List<CategoryQuestionRef> questionRefList;
+  private Map<String, CategoryQuestionRef> questionRefMap;
+  private List<WdkModelText> descriptions;
 
   public SearchCategory() {
-    questionRefs = new ArrayList<CategoryQuestionRef>();
+    questionRefList = new ArrayList<CategoryQuestionRef>();
+    questionRefMap = new LinkedHashMap<>();
     children = new LinkedHashMap<String, SearchCategory>();
+    descriptions = new ArrayList<>();
     flattenInMenu = false;
   }
 
@@ -59,6 +66,14 @@ public class SearchCategory extends WdkModelBase {
     this.displayName = displayName;
   }
 
+  public String getShortDisplayName() {
+    return (shortDisplayName != null) ? shortDisplayName : getDisplayName();
+  }
+
+  public void setShortDisplayName(String shortDisplayName) {
+    this.shortDisplayName = shortDisplayName;
+  }
+
   public void setFlattenInMenu(boolean flattenInMenu) {
     this.flattenInMenu = flattenInMenu;
   }
@@ -67,8 +82,20 @@ public class SearchCategory extends WdkModelBase {
     return this.flattenInMenu;
   }
 
+  public String getDescription() {
+    return description;
+  }
+
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public void addDescription(WdkModelText description) {
+    descriptions.add(description);
+  }
+
   public void addQuestionRef(CategoryQuestionRef questionRef) {
-    this.questionRefs.add(questionRef);
+    this.questionRefList.add(questionRef);
   }
 
   public Question[] getWebsiteQuestions() throws WdkModelException {
@@ -81,11 +108,10 @@ public class SearchCategory extends WdkModelBase {
 
   private Question[] getQuestions(String usedBy) throws WdkModelException {
     List<Question> questions = new ArrayList<Question>();
-    for (CategoryQuestionRef questionRef : questionRefs) {
-      String qusedBy = questionRef.getUsedBy();
-      if (usedBy == null || qusedBy == null || qusedBy.equalsIgnoreCase(usedBy)) {
-        String ref = questionRef.getText();
-        Question question = (Question) wdkModel.resolveReference(ref);
+    for (CategoryQuestionRef questionRef : questionRefMap.values()) {
+      if (questionRef.isUsedBy(usedBy)) {
+        String questionName = questionRef.getQuestionFullName();
+        Question question = (Question) wdkModel.resolveReference(questionName);
         questions.add(question);
       }
     }
@@ -133,24 +159,42 @@ public class SearchCategory extends WdkModelBase {
 
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
-    // exclude questionRefs
-    for (int i = questionRefs.size() - 1; i >= 0; i--) {
-      CategoryQuestionRef ref = questionRefs.get(i);
+    for (CategoryQuestionRef ref : questionRefList) {
       if (ref.include(projectId)) {
+        String questionName = ref.getQuestionFullName();
+        if (questionRefMap.containsKey(questionName))
+          throw new WdkModelException("Duplicate question reference '"
+              + questionName + "' detected in searchCategory '" + getName()
+              + "'");
         ref.excludeResources(projectId);
-      } else {
-        questionRefs.remove(i);
+        questionRefMap.put(questionName, ref);
       }
     }
+    questionRefList.clear();
+    questionRefList = null;
+
+    // exclude descriptions
+    for (WdkModelText text : descriptions) {
+      if (text.include(projectId)) {
+        if (description != null)
+          throw new WdkModelException("Duplicated descriptions detected in "
+              + "searchCategory '" + getName() + "'");
+        text.excludeResources(projectId);
+        description = text.getText();
+      }
+    }
+    descriptions.clear();
+    descriptions = null;
   }
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
     this.wdkModel = wdkModel;
-    // get the base recordClass
-    for (int i = questionRefs.size() - 1; i >= 0; i--) {
-      CategoryQuestionRef ref = questionRefs.get(i);
-      String questionName = ref.getText().trim();
+    // get try resolving the question
+    List<String> toRemove = new ArrayList<>();
+    for (String key : questionRefMap.keySet()) {
+      CategoryQuestionRef ref = questionRefMap.get(key);
+      String questionName = ref.getQuestionFullName();
       try {
         wdkModel.resolveReference(questionName);
       } catch (WdkModelException ex) {
@@ -158,8 +202,11 @@ public class SearchCategory extends WdkModelBase {
         logger.debug("The question [" + questionName + "] is defined "
             + "in category [" + name + "], but doesn't exist in "
             + "the model.");
-        questionRefs.remove(i);
+        toRemove.add(key);
       }
+    }
+    for (String key : toRemove) {
+      questionRefMap.remove(key);
     }
 
     // resolve the parent
@@ -207,5 +254,16 @@ public class SearchCategory extends WdkModelBase {
 
   public void setUsedBy(String usedBy) {
     this.usedBy = usedBy;
+  }
+
+  public boolean isUsedBy(String usedBy) {
+    return (usedBy == null || this.usedBy == null || this.usedBy.equalsIgnoreCase(usedBy));
+  }
+
+  public boolean hasQuestion(String questionFullName, String usedBy) {
+    CategoryQuestionRef ref = questionRefMap.get(questionFullName);
+    if (ref == null)
+      return false;
+    return ref.isUsedBy(usedBy);
   }
 }
