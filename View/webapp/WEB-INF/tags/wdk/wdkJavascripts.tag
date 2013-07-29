@@ -26,7 +26,7 @@
   
 
   <script type="text/javascript" src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/underscore-min.js"><jsp:text/></script>
+  <script type="text/javascript" src="${urlBase}/wdk/js/lib/es5-shim.min.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.blockUI.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.cookie.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.dataTables-1.9.0.min.js"><jsp:text/></script>
