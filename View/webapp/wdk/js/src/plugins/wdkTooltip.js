@@ -47,6 +47,9 @@
     hide: {
      fixed: true,
      delay: 250
+    },
+    show: {
+      solo: true
     }
   };
 
