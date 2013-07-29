@@ -746,8 +746,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     e.preventDefault();
     e.stopPropagation();
     if (bools.length) {
-      var boolChecked = _.reduce(bools.toArray(),
-          function(memo, input) { return memo || input.checked; }, false);
+      var boolChecked = bools.toArray().reduce(function(memo, input) {
+        return memo || input.checked; 
+      }, false);
       if (!boolChecked) {
         if ($this.find(".wdk-error").length === 0) {
           $("<div>Please choose an operation below</div>")
