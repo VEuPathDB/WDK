@@ -655,7 +655,9 @@ function getWebAppUrl() {
     setUpDialogs();
     setUpPopups();
     load();
-    $(document).ajaxSuccess(load);
+    $(document).ajaxSuccess(function() {
+      setTimeout(load, 0);
+      });
   }
 
 
