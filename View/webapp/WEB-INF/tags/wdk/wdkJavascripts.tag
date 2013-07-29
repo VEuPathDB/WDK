@@ -35,7 +35,7 @@
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jstree/jquery.jstree.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/qtip2/jquery.qtip.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/json.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/handlebars-1.0.0.beta.6.js"><jsp:text/></script>
+  <script type="text/javascript" src="${urlBase}/wdk/js/lib/handlebars.js"><jsp:text/></script>
 
   <!-- WDK js and css -->
 
@@ -72,6 +72,9 @@
       <script src="${urlBase}/wdk/js/src/wdk.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/wordCloud.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/plugins/wdkDataTables.js"><jsp:text/></script>
+      <script src="${urlBase}/wdk/js/src/plugins/wdkEditable.js"><jsp:text/></script>
+      <script src="${urlBase}/wdk/js/src/plugins/wdkSimpleToggle.js"><jsp:text/></script>
+      <script src="${urlBase}/wdk/js/src/plugins/wdkTooltip.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/strategy/controller.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/strategy/error.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/strategy/model.js"><jsp:text/></script>
@@ -106,8 +109,10 @@
   <c:if test="${refer == 'summary'}">
 
     <!-- JQuery Drag And Drop Plugin -->
+    <!--
     <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.multiSelect.js"><jsp:text/></script>
     <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.form.js"><jsp:text/></script>
+    -->
 
     <!-- Results Page  -->
     <script type="text/javascript" src="${urlBase}/wdk/js/lib/flexigrid.js"><jsp:text/></script>

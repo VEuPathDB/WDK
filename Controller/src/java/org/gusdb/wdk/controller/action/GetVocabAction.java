@@ -19,9 +19,8 @@ import org.gusdb.wdk.controller.form.QuestionForm;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.query.param.WdkEmptyEnumListException;
-import org.json.JSONObject;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class GetVocabAction extends Action {
 
@@ -46,21 +45,23 @@ public class GetVocabAction extends Action {
       String paramName = request.getParameter("name");
 
       // the dependent values are a JSON representation of {name: [values], name: [values],...}
-      String values = request.getParameter("dependedValue");
-      JSONObject jsValues = new JSONObject(values);
       Map<String, String> dependedValues = new LinkedHashMap<>();
-      Iterator<String> keys = jsValues.keys();
-      while (keys.hasNext()) {
-        String pName = keys.next();
-        
-        JSONArray jsArray = jsValues.getJSONArray(pName);
-        StringBuilder buffer = new StringBuilder();
-        for (int i = 0; i < jsArray.length(); i++) {
-          if (buffer.length() > 0) buffer.append(",");
-          buffer.append(jsArray.getString(i));
+      String values = request.getParameter("dependedValue");
+      if (values != null && values.length() > 0) {
+        JSONObject jsValues = new JSONObject(values);
+        @SuppressWarnings("unchecked")
+		Iterator<String> keys = jsValues.keys();
+        while (keys.hasNext()) {
+          String pName = keys.next();
+          
+          JSONArray jsArray = jsValues.getJSONArray(pName);
+          StringBuilder buffer = new StringBuilder();
+          for (int i = 0; i < jsArray.length(); i++) {
+            if (buffer.length() > 0) buffer.append(",");
+            buffer.append(jsArray.getString(i));
+          }
+          dependedValues.put(pName, buffer.toString());
         }
-        dependedValues.put(pName, buffer.toString());
-
       }
 
       boolean getXml = Boolean.valueOf(request.getParameter("xml"));
@@ -70,14 +71,8 @@ public class GetVocabAction extends Action {
 
       param.setDependedValues(dependedValues);
 
-      // try the dependent value, and ignore empty list exception, since
-      // it may be caused by the choices on the depended param.
-      try {
-        param.getDisplayMap();
-      } catch (WdkEmptyEnumListException ex) {
-        // do nothing.
-        logger.debug("the choice of the depended param cause this: " + ex);
-      }
+      // try the dependent value; runtime exception may be thrown here
+      param.getDisplayMap();
 
       request.setAttribute("vocabParam", param);
 

@@ -13,16 +13,14 @@ $(document).ready(function() {
         "bScrollCollapse": true,
         "aoColumns": [ { "bSortable": false }, 
                        null, 
+                       // null, 
                        { "bSortable": false },
-                       // { "bSortable": false },
-                       // { "bSortable": false },
                        { "bSortable": false },
                        null, 
                        null, 
                        null, 
-                       null, 
-                       { "bSortable": false } ],
-        "aaSorting": [[ 5, "desc" ]]
+                       null  ],
+        "aaSorting": [[ 6, "desc" ]]
     } );
 } );
 </script>

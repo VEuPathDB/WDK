@@ -21,6 +21,16 @@
                     <data type="boolean" />
                 </attribute>
             </optional>
+            <optional>
+                <attribute name="monitorBlockedThreads">
+                    <data type="boolean" />
+                </attribute>
+            </optional>
+            <optional>
+                <attribute name="blockedThreshold">
+                    <data type="unsignedShort" />
+                </attribute>
+            </optional>
             
             <interleave>
             
@@ -118,6 +128,11 @@
         <optional>
             <attribute name="maxWait">
                 <data type="unsignedShort" />
+            </attribute>
+        </optional>
+        <optional>
+            <attribute name="driverInitClass">
+                <data type="string" />
             </attribute>
         </optional>
         <optional>

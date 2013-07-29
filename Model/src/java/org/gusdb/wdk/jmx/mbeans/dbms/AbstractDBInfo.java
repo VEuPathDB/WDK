@@ -1,18 +1,18 @@
 package org.gusdb.wdk.jmx.mbeans.dbms;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import org.apache.log4j.Logger;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.DatabaseMetaData;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import javax.sql.DataSource;
+
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
 
 /**
   * Abstract class for collecting information about databases used by
@@ -79,7 +79,7 @@ public abstract class AbstractDBInfo {
           metaDataMap.put(columnName, rs.getString(columnName) );
         }
       }
-    } catch (WdkModelException | SQLException sqle) {
+    } catch (SQLException sqle) {
       logger.error(sqle);
     } finally {
         SqlUtils.closeResultSetAndStatement(rs);
@@ -90,12 +90,14 @@ public abstract class AbstractDBInfo {
     String sql = getServerNameSql();
     if (sql == null) return;
     
+    Connection connection = null;
     ResultSet rs = null;
     PreparedStatement ps = null;
     logger.debug("querying database for servername information");    
 
     try {
-      String dbVendor = datasource.getConnection().getMetaData().getDatabaseProductName();
+      connection = datasource.getConnection();
+      String dbVendor = connection.getMetaData().getDatabaseProductName();
       ps = SqlUtils.getPreparedStatement(datasource, sql);
       rs = ps.executeQuery();
      if (rs.next()) {
@@ -110,7 +112,7 @@ public abstract class AbstractDBInfo {
         // if no SQLException was caught then an ACL for UTL_INADDR must be in place.
         servernameDataMap.put("is_allowed_utl_inaddr", "true");
       }
-    } catch (WdkModelException | SQLException e) {
+    } catch (SQLException e) {
         if ( e.getMessage().startsWith("ORA-24247") ) {
           // oracle user needs an ACL for UTL_INADDR
           servernameDataMap.put("is_allowed_utl_inaddr", "false");
@@ -118,6 +120,11 @@ public abstract class AbstractDBInfo {
         logger.error("Failed attempting\n" + sql + "\n" + e);
     } finally {
         SqlUtils.closeResultSetAndStatement(rs);
+        try {
+            if (connection != null) connection.close();
+        } catch(SQLException ex) {
+            logger.error(ex);
+        }
     }  
   }
 

@@ -37,6 +37,7 @@ public class ModelConfigParser extends XmlParser {
     return modelConfig;
   }
 
+  @Override
   protected Digester configureDigester() {
 
     Digester digester = new Digester();

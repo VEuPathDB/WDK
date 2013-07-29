@@ -7,6 +7,8 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.gusdb.fgputil.db.QueryLogConfig;
+
 /**
  * An object representation of the <queryMonitor> tag in the model-config.xml.
  * it controls the logging of slow queries & broken queries.
@@ -18,7 +20,7 @@ import java.util.regex.Pattern;
  * @author xingao
  * 
  */
-public class QueryMonitor {
+public class QueryMonitor implements QueryLogConfig {
 
   private double baseline = 0.1;
   private double slow = 5;
@@ -26,6 +28,7 @@ public class QueryMonitor {
   private Set<Pattern> ignoreSlowRegexes = new LinkedHashSet<Pattern>();
   private Set<Pattern> ignoreBaselineRegexes = new LinkedHashSet<Pattern>();
 
+  @Override
   public double getBaseline() {
     return baseline;
   }
@@ -34,7 +37,7 @@ public class QueryMonitor {
     this.baseline = baseline;
   }
 
-  
+  @Override
   public double getSlow() {
     return slow;
   }
@@ -51,6 +54,7 @@ public class QueryMonitor {
     ignoreBaselineRegexes.add(Pattern.compile(regex));
   }
 
+  @Override
   public boolean isIgnoredSlow(String sql) {
     for (Pattern pattern : ignoreSlowRegexes) {
       if (pattern.matcher(sql).find())
@@ -59,6 +63,7 @@ public class QueryMonitor {
     return false;
   }
 
+  @Override
   public boolean isIgnoredBaseline(String sql) {
     for (Pattern pattern : ignoreBaselineRegexes) {
       if (pattern.matcher(sql).find())

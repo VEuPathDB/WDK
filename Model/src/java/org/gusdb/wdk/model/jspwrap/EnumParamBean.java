@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -18,7 +16,6 @@ import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.EnumParamTermNode;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 
 /**
  * A wrapper on a {@link AbstractEnumParam} that provides simplified access for
@@ -93,13 +90,13 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   @Override
-  public String getDefault() throws WdkUserException, WdkModelException {
+  public String getDefault() throws WdkModelException {
     return getCache().getDefaultValue();
   }
 
   // NOTE: not threadsafe! This class is expected only to be used in a single
   // thread
-  private EnumParamCache getCache() throws WdkModelException {
+  private EnumParamCache getCache() {
     if (_cache == null || _dependedValueChanged) {
       _cache = param.getValueCache(_dependedValues);
       _dependedValueChanged = false;
@@ -107,30 +104,27 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     return _cache;
   }
 
-  public String[] getVocabInternal() throws WdkModelException {
+  public String[] getVocabInternal() {
     return getCache().getVocabInternal();
   }
 
-  public String[] getVocab() throws WdkModelException, WdkUserException {
+  public String[] getVocab() {
     return getCache().getVocab();
   }
 
-  public Map<String, String> getVocabMap() throws WdkModelException,
-      WdkUserException {
+  public Map<String, String> getVocabMap() {
     return getCache().getVocabMap();
   }
 
-  public String[] getDisplays() throws WdkModelException, WdkUserException {
+  public String[] getDisplays() {
     return getCache().getDisplays();
   }
 
-  public Map<String, String> getDisplayMap() throws WdkModelException,
-      WdkUserException {
+  public Map<String, String> getDisplayMap() {
     return getCache().getDisplayMap();
   }
 
-  public Map<String, String> getParentMap() throws WdkModelException,
-      WdkUserException {
+  public Map<String, String> getParentMap() {
     return getCache().getParentMap();
   }
 
@@ -162,16 +156,15 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     return buffer.toString();
   }
 
-  public EnumParamTermNode[] getVocabTreeRoots() throws Exception {
+  public EnumParamTermNode[] getVocabTreeRoots() {
     return getCache().getVocabTreeRoots();
   }
 
-  public String[] getTerms(String termList) throws NoSuchAlgorithmException,
-      WdkModelException, SQLException, JSONException, WdkUserException {
+  public String[] getTerms(String termList) {
     return param.getTerms(termList);
   }
 
-  public String getRawDisplayValue() throws WdkModelException, WdkUserException {
+  public String getRawDisplayValue() throws WdkModelException {
     String rawValue = getRawValue();
     if (rawValue == null)
       rawValue = "";
@@ -208,9 +201,8 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
    * whether each value is currently selected or not.
    * 
    * @return map from value to selection status
-   * @throws Exception
    */
-  public Map<String, Boolean> getCurrentValues() throws Exception {
+  public Map<String, Boolean> getCurrentValues() {
     if (currentValues == null)
       return new LinkedHashMap<String, Boolean>();
     Map<String, Boolean> values = new LinkedHashMap<String, Boolean>();
@@ -232,9 +224,8 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
    * "currently selected" values checked
    * 
    * @return up-to-date tree of this param
-   * @throws Exception
    */
-  public TreeNode getParamTree() throws Exception {
+  public TreeNode getParamTree() {
     TreeNode root = new TreeNode(getName(), "top");
     for (EnumParamTermNode paramNode : getVocabTreeRoots()) {
       if (paramNode.getChildren().length == 0) {
@@ -268,5 +259,9 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     logger.debug("Validating param=" + getName() + ", value="
         + rawOrDependentValue + ", dependedValue=" + Utilities.print(_dependedValues));
     param.validateValue(user.getUser(), rawOrDependentValue, _dependedValues);
+  }
+
+  public boolean isSuppressNode() {
+    return param.isSuppressNode();
   }
 }

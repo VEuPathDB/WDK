@@ -3,14 +3,12 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
 
 /**
  * @author xingao
@@ -44,10 +42,6 @@ class ActiveStrategyFactory {
      * computed later.
      * 
      * @return
-     * @throws SQLException
-     * @throws JSONException
-     * @throws WdkModelException
-     * @throws WdkUserException
      */
     int[] getRootStrategies() {
         int[] ids = new int[root.children.size()];
@@ -58,7 +52,7 @@ class ActiveStrategyFactory {
         return ids;
     }
 
-    synchronized void openActiveStrategy(String strategyKey) throws WdkModelException {
+    synchronized void openActiveStrategy(String strategyKey) throws WdkModelException, WdkUserException {
         logger.debug("Opening strategy: " + strategyKey);
         if (getStrategy(strategyKey) != null) return;
 
@@ -83,7 +77,6 @@ class ActiveStrategyFactory {
      * @param strategyKeys
      *            the strategies in the array should all share the same parents;
      *            that is, they should siblings.
-     * @throws WdkUserException
      */
     synchronized void orderActiveStrategies(String[] strategyKeys)
             throws WdkUserException {
@@ -110,7 +103,7 @@ class ActiveStrategyFactory {
     }
 
     synchronized void replaceStrategy(User user, int oldId, int newId,
-            Map<Integer, Integer> stepMap) throws WdkModelException {
+            Map<Integer, Integer> stepMap) throws WdkModelException, WdkUserException {
         ActiveStrategy oldStrategy = root.children.get(Integer.toString(oldId));
         // if the old strategy is not opened, do nothing.
         if (oldStrategy == null) return;
@@ -151,7 +144,7 @@ class ActiveStrategyFactory {
         root.children.clear();
     }
 
-    private String getParentKey(String strategyKey) throws WdkModelException {
+    private String getParentKey(String strategyKey) throws WdkModelException, WdkUserException {
         int pos = strategyKey.indexOf('_');
         if (pos < 0) return null;
         int strategyId = Integer.parseInt(strategyKey.substring(0, pos));
@@ -163,7 +156,7 @@ class ActiveStrategyFactory {
         }
         // check if the parent is top level
         if (parent.getParentStep() == null) return Integer.toString(strategyId);
-        else return strategyId + "_" + parent.getDisplayId();
+        else return strategyId + "_" + parent.getStepId();
     }
 
     private ActiveStrategy getStrategy(String strategyKey) {

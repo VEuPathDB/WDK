@@ -32,8 +32,7 @@ public class StepBean {
         return step;
     }
 
-    public StepBean getPreviousStep() throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+    public StepBean getPreviousStep() throws WdkModelException {
         if (step.getPreviousStep() != null) {
             return new StepBean(user, step.getPreviousStep());
         }
@@ -45,7 +44,7 @@ public class StepBean {
         return (nextStep == null) ? null : new StepBean(user, nextStep);
     }
 
-    public void setNextStep(StepBean next) throws WdkUserException {
+    public void setNextStep(StepBean next) {
         if (next != null) step.setNextStep(next.step);
         else {
             Step nextStep = null;
@@ -63,8 +62,7 @@ public class StepBean {
         return (nextStep == null) ? null : new StepBean(user, nextStep);
     }
 
-    public StepBean getChildStep() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public StepBean getChildStep() throws WdkModelException {
         if (step.getChildStep() != null) {
             return new StepBean(user, step.getChildStep());
         }
@@ -87,13 +85,11 @@ public class StepBean {
         }
     }
 
-    public String getBaseCustomName() throws WdkUserException {
+    public String getBaseCustomName() {
         return step.getBaseCustomName();
     }
 
-    public String getCustomName() throws WdkUserException,
-            NoSuchAlgorithmException, WdkModelException, JSONException,
-            SQLException {
+    public String getCustomName() {
         return step.getCustomName();
     }
 
@@ -105,68 +101,46 @@ public class StepBean {
         return new RecordClassBean(step.getRecordClass());
     }
 
-    public String getShortDisplayName() throws WdkModelException,
-            WdkUserException, NoSuchAlgorithmException, JSONException,
-            SQLException {
+    public String getShortDisplayName() {
         return step.getShortDisplayName();
     }
 
     /**
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws WdkModelException
-     * @throws JSONException
-     * @throws WdkUserException
-     * @throws SQLException
      * @see org.gusdb.wdk.model.user.Step#getDisplayName()
      */
-    public String getDisplayName() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public String getDisplayName() {
         return step.getDisplayName();
     }
 
-    public int getResultSize() throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+    public int getResultSize() {
         return step.getResultSize();
     }
 
-    public String getOperation() throws WdkUserException,
-            NoSuchAlgorithmException, WdkModelException, JSONException,
-            SQLException {
+    public String getOperation() throws WdkUserException, WdkModelException {
         return step.getOperation();
     }
 
     public boolean getIsFirstStep() {
         return step.isFirstStep();
     }
-    public AnswerValueBean getAnswerValue() throws WdkUserException,
-            NoSuchAlgorithmException, WdkModelException, JSONException,
-            SQLException {
+    public AnswerValueBean getAnswerValue() throws WdkModelException {
         return getAnswerValue(true);
     }
 
-    public AnswerValueBean getAnswerValue(boolean validate) throws WdkUserException,
-            NoSuchAlgorithmException, WdkModelException, JSONException,
-            SQLException {
+    public AnswerValueBean getAnswerValue(boolean validate) throws WdkModelException {
         return new AnswerValueBean(step.getAnswerValue(validate));
     }
 
-    public int getAnswerId() {
-        return step.getAnswerId();
-    }
-
     public int getStepId() {
-        return step.getDisplayId();
+        return step.getStepId();
     }
 
-    public void setAnswerValue(AnswerValueBean answer)
-            throws NoSuchAlgorithmException, SQLException, WdkModelException,
-            JSONException, WdkUserException {
-        step.setAnswer(answer.getAnswerValue().getAnswer());
+    public void setAnswerValue(AnswerValueBean answer) {
+        step.setAnswerValue(answer.getAnswerValue());
     }
 
-    public int getEstimateSize() throws NoSuchAlgorithmException,
-            WdkModelException, SQLException, JSONException, WdkUserException {
+    public int getEstimateSize() {
         return step.getEstimateSize();
     }
 
@@ -192,13 +166,11 @@ public class StepBean {
         return step.getCreatedTime();
     }
 
-    public boolean getIsBoolean() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public boolean getIsBoolean() {
         return step.isBoolean();
     }
 
-    public boolean getIsTransform() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public boolean getIsTransform() {
         return step.isTransform();
     }
 
@@ -211,21 +183,18 @@ public class StepBean {
     }
 
     public String getQueryChecksum() throws WdkModelException {
-        return step.getAnswer().getQueryChecksum();
+        return step.getAnswerValue().getQueryChecksum(true);
     }
 
     public String getChecksum() throws WdkModelException {
-        return step.getAnswer().getAnswerChecksum();
+        return step.getAnswerValue().getChecksum();
     }
 
-    public void update(boolean updateTime) throws WdkUserException,
-            NoSuchAlgorithmException, SQLException, WdkModelException,
-            JSONException {
+    public void update(boolean updateTime) throws WdkModelException {
         step.update(updateTime);
     }
 
-    public String getDescription() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public String getDescription() {
         return step.getDescription();
     }
 
@@ -244,7 +213,7 @@ public class StepBean {
         step.setDeleted(isDeleted);
     }
 
-    public boolean getIsCollapsible() throws WdkModelException {
+    public boolean getIsCollapsible() {
         return step.isCollapsible();
     }
 
@@ -252,7 +221,7 @@ public class StepBean {
         step.setCollapsible(isCollapsible);
     }
 
-    public String getCollapsedName() throws WdkModelException {
+    public String getCollapsedName() {
         return step.getCollapsedName();
     }
 
@@ -262,13 +231,8 @@ public class StepBean {
 
     /**
      * @return the isValid
-     * @throws JSONException
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
      */
-    public boolean getIsValid() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public boolean getIsValid() throws WdkModelException {
         return step.isValid();
     }
 
@@ -284,13 +248,11 @@ public class StepBean {
         step.setParamValues(params);
     }
 
-    public Map<String, String> getParams() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public Map<String, String> getParams() {
         return step.getParamValues();
     }
 
-    public Map<String, String> getParamNames() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public Map<String, String> getParamNames() throws WdkModelException {
         return step.getParamNames();
     }
 
@@ -299,13 +261,11 @@ public class StepBean {
     }
 
     /* functions for navigating/manipulating step tree */
-    public StepBean getStep(int index) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+    public StepBean getStep(int index) throws WdkModelException {
         return new StepBean(user, step.getStep(index));
     }
 
-    public StepBean[] getAllSteps() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public StepBean[] getAllSteps() throws WdkModelException {
         Step[] steps = step.getAllSteps();
         StepBean[] beans = new StepBean[steps.length];
         for (int i = 0; i < steps.length; ++i) {
@@ -314,8 +274,7 @@ public class StepBean {
         return beans;
     }
 
-    public StepBean getStepByDisplayId(int stepId) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+    public StepBean getStepByDisplayId(int stepId) throws WdkModelException {
         Step target = step.getStepByDisplayId(stepId);
         if (target != null) {
             return new StepBean(user, target);
@@ -323,12 +282,11 @@ public class StepBean {
         return null;
     }
 
-    public int getLength() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public int getLength() throws WdkModelException {
         return step.getLength();
     }
 
-    public void addStep(StepBean next) throws WdkUserException {
+    public void addStep(StepBean next) {
         step.addStep(next.step);
     }
 
@@ -341,71 +299,53 @@ public class StepBean {
     }
 
     public int getIndexFromId(int stepId) throws WdkUserException,
-            WdkModelException, SQLException, JSONException {
+            WdkModelException {
         return step.getIndexFromId(stepId);
     }
 
     /**
      * @param filterName
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws WdkModelException
-     * @throws JSONException
-     * @throws WdkUserException
-     * @throws SQLException
+     * @throws WdkModelException 
+     * @throws SQLException 
+     * @throws JSONException 
+     * @throws WdkUserException 
+     * @throws NoSuchAlgorithmException 
      * @see org.gusdb.wdk.model.user.Step#createStep(org.gusdb.wdk.model.AnswerFilterInstance)
      */
-    public StepBean createStep(String filterName, int assignedWeight)
-            throws NoSuchAlgorithmException, WdkModelException, JSONException,
-            WdkUserException, SQLException {
+    public StepBean createStep(String filterName, int assignedWeight) throws WdkModelException  {
         return new StepBean(user, step.createStep(filterName, assignedWeight));
     }
 
     /**
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws WdkModelException
-     * @throws JSONException
-     * @throws WdkUserException
-     * @throws SQLException
      * @see org.gusdb.wdk.model.user.Step#isCombined()
      */
-    public boolean isCombined() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public boolean isCombined() {
         return step.isCombined();
     }
 
-    public boolean isUseBooleanFilter() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public boolean isUseBooleanFilter() throws WdkModelException {
         return step.isUseBooleanFilter();
     }
 
-    public boolean isFiltered() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public boolean isFiltered() {
         return step.isFiltered();
     }
 
-    public String getFilterDisplayName() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public String getFilterDisplayName() {
         return step.getFilterDisplayName();
     }
 
-    public StepBean getFirstStep() throws WdkUserException, WdkModelException,
-            SQLException, JSONException {
+    public StepBean getFirstStep() throws WdkModelException {
         return new StepBean(user, step.getFirstStep());
     }
 
     /**
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws WdkModelException
-     * @throws JSONException
-     * @throws WdkUserException
-     * @throws SQLException
      * @see org.gusdb.wdk.model.user.Step#deepClone()
      */
-    public StepBean deepClone() throws NoSuchAlgorithmException,
-            WdkModelException, JSONException, WdkUserException, SQLException {
+    public StepBean deepClone() throws WdkModelException {
         return new StepBean(user, step.deepClone());
     }
 
@@ -509,10 +449,6 @@ public class StepBean {
 
     /**
      * @return
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
-     * @throws JSONException
      * @see org.gusdb.wdk.model.user.Step#validate()
      */
     public boolean validate() throws SQLException, WdkUserException,
@@ -537,17 +473,14 @@ public class StepBean {
     }
     /**
      * @return
-     * @throws WdkUserException
-     * @throws WdkModelException
      * @see org.gusdb.wdk.model.user.Step#getChildrenCount()
      */
-    public int getAnswerParamCount() throws WdkUserException, WdkModelException {
+    public int getAnswerParamCount() {
         return step.getAnswerParamCount();
     }
 
     /**
      * @return
-     * @throws WdkModelException
      * @see org.gusdb.wdk.model.user.Step#getChildStepParam()
      */
     public String getChildStepParam() throws WdkModelException {
@@ -556,7 +489,6 @@ public class StepBean {
 
     /**
      * @return
-     * @throws WdkModelException
      * @see org.gusdb.wdk.model.user.Step#getPreviousStepParam()
      */
     public String getPreviousStepParam() throws WdkModelException {
@@ -565,10 +497,6 @@ public class StepBean {
 
     /**
      * @return
-     * @throws WdkUserException
-     * @throws WdkModelException
-     * @throws SQLException
-     * @throws JSONException
      * @see org.gusdb.wdk.model.user.Step#getFrontId()
      */
     public int getFrontId() throws WdkUserException, WdkModelException,
@@ -576,16 +504,16 @@ public class StepBean {
         return step.getFrontId();
     }
 
+    @Override
     public String toString() {
         return step.toString();
     }
 
     /**
      * @return
-     * @throws WdkModelException
      * @see org.gusdb.wdk.model.user.Step#isUncollapsible()
      */
-    public boolean isUncollapsible() throws WdkModelException {
+    public boolean isUncollapsible() {
         return step.isUncollapsible();
     }
     

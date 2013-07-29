@@ -8,12 +8,10 @@ import java.sql.SQLException;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wsf.util.BaseCLI;
 
 public class BackupUser extends BaseCLI {
@@ -23,10 +21,6 @@ public class BackupUser extends BaseCLI {
 
     private static final Logger logger = Logger.getLogger(BackupUser.class);
 
-    /**
-     * @param args
-     * @throws Exception
-     */
     public static void main(String[] args) throws Exception {
         String cmdName = System.getProperty("cmdName");
         BackupUser backup = new BackupUser(cmdName);
@@ -123,8 +117,7 @@ public class BackupUser extends BaseCLI {
     }
 
     public void backupGuestUsers(String userSchema, String wdkSchema,
-            String backupSchema, String cutoffDate) throws WdkUserException,
-            WdkModelException, SQLException {
+            String backupSchema, String cutoffDate) throws SQLException {
         // copy tables from user schema
         copyUsers();
         copyRows(roleColumns, "user_roles");
@@ -162,15 +155,14 @@ public class BackupUser extends BaseCLI {
     // -----------------------------------------------------------
 
     private void executeByBatch(WdkModel wdkModel, String name, String dmlSql,
-            String selectSql) throws SQLException, WdkUserException,
-            WdkModelException {
-        DataSource dataSource = wdkModel.getUserPlatform().getDataSource();
+            String selectSql) throws SQLException {
+        DataSource dataSource = wdkModel.getUserDb().getDataSource();
         Connection connection = null;
         PreparedStatement psInsert = null;
         ResultSet resultSet = null;
 
         try {
-            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, selectSql,
+            resultSet = SqlUtils.executeQuery(dataSource, selectSql,
                     "wdk-backup-" + name);
 
             connection = dataSource.getConnection();
@@ -205,8 +197,7 @@ public class BackupUser extends BaseCLI {
     // </ADD-AG 042111>
     // ----------------------------------------------------------
 
-    private void copyUsers() throws WdkUserException, WdkModelException,
-            SQLException {
+    private void copyUsers() throws SQLException {
         logger.debug("Copying from users...");
 
         String fromTable = userSchema + "users";
@@ -228,12 +219,9 @@ public class BackupUser extends BaseCLI {
      * 
      * @param columns
      * @param table
-     * @throws WdkUserException
-     * @throws WdkModelException
-     * @throws SQLException
      */
     private void copyRows(String columns, String table)
-            throws WdkUserException, WdkModelException, SQLException {
+            throws SQLException {
         logger.debug("Copying from " + table + "...");
 
         String fromTable = userSchema + table;
@@ -252,8 +240,7 @@ public class BackupUser extends BaseCLI {
         executeByBatch(wdkModel, table, dmSql, selectSql);
     }
 
-    private void copyUserDatasetRows() throws WdkUserException,
-            WdkModelException, SQLException {
+    private void copyUserDatasetRows() throws SQLException {
         logger.debug("Copying from user_datasets2...");
 
         String fromTable = userSchema + "user_datasets2";
@@ -270,8 +257,7 @@ public class BackupUser extends BaseCLI {
         executeByBatch(wdkModel, "user_datasets2", dmSql, selectSql);
     }
 
-    private void copyStepRows() throws WdkUserException, WdkModelException,
-            SQLException {
+    private void copyStepRows() throws SQLException {
         logger.debug("Copying from steps...");
 
         String fromTable = userSchema + "steps";
@@ -288,8 +274,7 @@ public class BackupUser extends BaseCLI {
         executeByBatch(wdkModel, "steps", dmSql, selectSql);
     }
 
-    private void copyStrategyRows() throws WdkUserException, WdkModelException,
-            SQLException {
+    private void copyStrategyRows() throws SQLException {
         logger.debug("Copying from strategies...");
 
         String fromTable = userSchema + "strategies";
@@ -307,7 +292,7 @@ public class BackupUser extends BaseCLI {
     }
 
     private void deleteRows(String selectSql, String tableName)
-            throws WdkUserException, WdkModelException, SQLException {
+            throws SQLException {
         logger.debug("deleting from " + tableName + "...");
 
         String dmSql = "DELETE FROM " + userSchema + tableName
@@ -319,13 +304,8 @@ public class BackupUser extends BaseCLI {
 
     /**
      * copy answers that are not used by steps
-     * 
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws WdkUserException
      */
-    private void copyAnswerRows() throws WdkUserException, WdkModelException,
-            SQLException {
+    private void copyAnswerRows() throws SQLException {
         logger.debug("copying answer rows...");
 
         // <ADD-AG 042211>
@@ -342,8 +322,7 @@ public class BackupUser extends BaseCLI {
         executeByBatch(wdkModel, "ANSWERS", dmlSql, selectSql);
     }
 
-    private void copyDatasetIndexRows() throws WdkUserException,
-            WdkModelException, SQLException {
+    private void copyDatasetIndexRows() throws SQLException {
         logger.debug("copying dataset index rows...");
 
         // <ADD-AG 042311>
@@ -361,8 +340,7 @@ public class BackupUser extends BaseCLI {
         executeByBatch(wdkModel, "DATASET_INDICES", dmlSql, selectSql);
     }
 
-    private void copyDatasetValueRows() throws WdkUserException,
-            WdkModelException, SQLException {
+    private void copyDatasetValueRows() throws SQLException {
         logger.debug("copying dataset value rows...");
 
         // <ADD-AG 042511>
@@ -379,8 +357,7 @@ public class BackupUser extends BaseCLI {
         executeByBatch(wdkModel, "DATASET_VALUES", dmlSql, selectSql);
     }
 
-    private void deleteAnswerRows() throws WdkUserException, WdkModelException,
-            SQLException {
+    private void deleteAnswerRows() throws SQLException {
         logger.debug("deleting answer rows...");
 
         // <ADD-AG 042311>
@@ -398,8 +375,7 @@ public class BackupUser extends BaseCLI {
         executeByBatch(wdkModel, "ANSWERS", dmlSql, selectSql);
     }
 
-    private void deleteDatasetIndexRows() throws WdkUserException,
-            WdkModelException, SQLException {
+    private void deleteDatasetIndexRows() throws SQLException {
         logger.debug("deleting dataset index rows...");
 
         // <ADD-AG 042311>
@@ -418,8 +394,7 @@ public class BackupUser extends BaseCLI {
         executeByBatch(wdkModel, "DATASET_INDICES", dmlSql, selectSql);
     }
 
-    private void deleteDatasetValueRows() throws WdkUserException,
-            WdkModelException, SQLException {
+    private void deleteDatasetValueRows() throws SQLException {
         logger.debug("deleting dataset value rows...");
 
         // <ADD-AG 042511>

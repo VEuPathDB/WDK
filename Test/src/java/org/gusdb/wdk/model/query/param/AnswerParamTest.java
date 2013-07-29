@@ -8,6 +8,8 @@ import java.util.Map;
 
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.question.QuestionSet;
@@ -25,11 +27,7 @@ public class AnswerParamTest {
     private User user;
     Question question;
 
-    /**
-     * @throws Exception
-     * 
-     */
-    public AnswerParamTest() throws Exception {
+    public AnswerParamTest() throws WdkModelException, WdkUserException {
         user = UnitTestHelper.getRegisteredUser();
         WdkModel wdkModel = UnitTestHelper.getModel();
         for(QuestionSet questionSet : wdkModel.getAllQuestionSets()) {
@@ -43,10 +41,10 @@ public class AnswerParamTest {
     }
 
     @Test
-    public void testGetAnswerValue() throws Exception {
+    public void testGetAnswerValue() throws WdkModelException, WdkUserException {
         User user = UnitTestHelper.getRegisteredUser();
         Step step = UnitTestHelper.createNormalStep(user);
-        String paramValue = Integer.toString(step.getDisplayId());
+        String paramValue = Integer.toString(step.getStepId());
 
         for (Param param : question.getParams()) {
             if (param instanceof AnswerParam) {
@@ -66,7 +64,7 @@ public class AnswerParamTest {
             String paramValue;
             if (param instanceof AnswerParam) {
                 Step step = UnitTestHelper.createNormalStep(user);
-                paramValue = Integer.toString(step.getDisplayId());
+                paramValue = Integer.toString(step.getStepId());
             } else paramValue = param.getDefault();
             paramValues.put(param.getName(), paramValue);
         }

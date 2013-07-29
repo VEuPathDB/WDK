@@ -143,7 +143,7 @@ public class SummaryTester {
                 System.out.println("Total # of records: "
                         + answerValue.getResultSize());
                 System.out.println("Answer Checksum: "
-                        + answerValue.getAnswer().getAnswerChecksum());
+                        + answerValue.getChecksum());
 
                 AnswerValueBean answerValueBean = new AnswerValueBean(
                         answerValue);
@@ -219,8 +219,7 @@ public class SummaryTester {
     }
 
     private static String getLowLevelQuery(AnswerValue answerValue)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         // QueryInstance instance = answer.getAttributesQueryInstance();
         QueryInstance instance = answerValue.getIdsQueryInstance();
         String query = (instance instanceof SqlQueryInstance) ? ((SqlQueryInstance) instance).getUncachedSql()

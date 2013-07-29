@@ -1,8 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.File;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -33,7 +31,6 @@ import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.json.JSONException;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is requested.
@@ -109,8 +106,7 @@ public class ShowQuestionAction extends Action {
 
   public static void prepareQuestionForm(QuestionBean wdkQuestion,
       ActionServlet servlet, HttpServletRequest request, QuestionForm qForm)
-      throws WdkUserException, WdkModelException, NoSuchAlgorithmException,
-      SQLException, JSONException {
+      throws WdkUserException, WdkModelException {
     logger.trace("Entering prepareQustionForm()");
 
     // get the current user
@@ -149,18 +145,21 @@ public class ShowQuestionAction extends Action {
           if (currentDependedValue == null) {
             // no previous value supplied; use default value
             currentDependedValue = dependedParam.getDefault();
-          } else {
-            // need to check if the current value is still valid
-            try {
-              dependedParam.validate(user, currentDependedValue);
-              logger.debug("PASS validating depended param " + dependedParam.getName() + "=" + currentDependedValue);
-            } catch (Exception ex) {
-              logger.debug("FAIL validating depended param " + dependedParam.getName() + "=" 
-                    + currentDependedValue + ", use " +  dependedParam.getDefault() + " instead");
-              // the stored depended value is no longer valid, reset to default.
-              currentDependedValue = dependedParam.getDefault();
-            }
           }
+          // cannot validate a value now since not all the depended values are loaded yet.
+//          } else {
+//            // need to check if the current value is still valid
+//            try {
+//              dependedParam.validate(user, currentDependedValue);
+//              logger.debug("PASS validating depended param " + dependedParam.getName() + "=" + currentDependedValue);
+//            } catch (Exception ex) {
+//              logger.debug("FAIL validating depended param " + dependedParam.getName() + "=" 
+//                    + currentDependedValue + ", use " +  dependedParam.getDefault() + " instead");
+//              // the stored depended value is no longer valid, reset to default.
+//              currentDependedValue = dependedParam.getDefault();
+//            }
+//          }
+
           dependedValues.put(dependedParam.getName(), currentDependedValue);
           }
           enumParam.setDependedValues(dependedValues);

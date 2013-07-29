@@ -48,6 +48,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
     private static final Logger logger = Logger.getLogger(ProcessFilterAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -120,9 +121,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     private static Map<Integer, StrategyBean> getModifiedStrategies(
-            UserBean user, String state) throws JSONException,
-            NoSuchAlgorithmException, WdkModelException, WdkUserException,
-            SQLException {
+            UserBean user, String state) throws JSONException, WdkUserException {
         logger.debug("previous state: '" + state + "'");
 
         if (state == null || state.length() == 0) state = null;
@@ -157,8 +156,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
     public static void outputErrorJSON(UserBean user,
             HttpServletResponse response, Exception ex) throws JSONException,
-            IOException, NoSuchAlgorithmException, WdkUserException,
-            WdkModelException, SQLException {
+            IOException, WdkUserException,
+            WdkModelException {
         logger.debug("output JSON error message: " + ex);
 
         JSONObject jsMessage = new JSONObject();
@@ -255,15 +254,14 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     static private void outputCommon(UserBean user, JSONObject jsMessage)
-            throws JSONException, NoSuchAlgorithmException, WdkUserException,
-            WdkModelException, SQLException {
+            throws JSONException, WdkUserException,
+            WdkModelException {
         outputState(user, jsMessage);
         outputCurrentView(user, jsMessage);
     }
 
     static void outputState(UserBean user, JSONObject jsMessage)
-            throws WdkUserException, WdkModelException, JSONException,
-            SQLException, NoSuchAlgorithmException {
+            throws WdkUserException, WdkModelException, JSONException {
         JSONObject jsState = new JSONObject();
         StrategyBean[] openedStrategies = user.getActiveStrategies();
 
@@ -367,7 +365,6 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("name", step.getDisplayName());
         jsStep.put("customName", step.getCustomName());
         jsStep.put("id", step.getStepId());
-        jsStep.put("answerId", step.getAnswerId());
         // the root of the sub-strategy should not be collapsed
         jsStep.put("isCollapsed", step.getIsCollapsible() && showSubStrategy);
         jsStep.put("isUncollapsible", step.isUncollapsible());
@@ -434,8 +431,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     static private void outputParams(UserBean user, StepBean step,
-            JSONObject jsStep) throws NoSuchAlgorithmException, JSONException,
-            WdkModelException, WdkUserException, SQLException {
+            JSONObject jsStep) throws JSONException, WdkUserException {
 
         JSONArray jsParams = new JSONArray();
         try {

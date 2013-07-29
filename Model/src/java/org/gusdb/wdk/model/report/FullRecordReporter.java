@@ -18,12 +18,13 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.QueryLogger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -107,6 +108,7 @@ public class FullRecordReporter extends Reporter {
         }
     }
 
+    @Override
     public String getConfigInfo() {
         return "This reporter does not have config info yet.";
     }
@@ -178,8 +180,6 @@ public class FullRecordReporter extends Reporter {
 
         // get the formatted result
         WdkModel wdkModel = getQuestion().getWdkModel();
-        DBPlatform platform = wdkModel.getQueryPlatform();
-
         RecordClass recordClass = getQuestion().getRecordClass();
         String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
 
@@ -190,8 +190,8 @@ public class FullRecordReporter extends Reporter {
             sqlInsert.append(column).append(", ");
         }
         sqlInsert.append(" table_name, row_count, content) VALUES (");
-        sqlInsert.append(wdkModel.getUserPlatform().getNextIdSqlExpression(
-                "apidb", "wdkTable"));
+        sqlInsert.append(wdkModel.getUserDb().getPlatform()
+            .getNextIdSqlExpression("apidb", "wdkTable"));
         sqlInsert.append(", ");
         for (int i = 0; i < pkColumns.length; i++) {
             sqlInsert.append("?, ");
@@ -214,7 +214,7 @@ public class FullRecordReporter extends Reporter {
         try {
             if (tableCache != null) {
                 // want to cache the table content
-                DataSource dataSource = platform.getDataSource();
+                DataSource dataSource = wdkModel.getAppDb().getDataSource();
                 psInsert = SqlUtils.getPreparedStatement(dataSource,
                         sqlInsert.toString());
                 psQuery = SqlUtils.getPreparedStatement(dataSource,
@@ -252,7 +252,7 @@ public class FullRecordReporter extends Reporter {
         }
     }
 
-    private Set<Field> validateColumns() throws WdkModelException {
+    private Set<Field> validateColumns() {
         // get a map of report maker fields
         Map<String, Field> fieldMap = getQuestion().getFields(
                 FieldScope.REPORT_MAKER);
@@ -277,8 +277,7 @@ public class FullRecordReporter extends Reporter {
 
     private void formatAttributes(RecordInstance record,
             Set<AttributeField> attributes, PrintWriter writer)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         // print out attributes of the record first
         for (AttributeField field : attributes) {
             AttributeValue value = record.getAttributeValue(field.getName());
@@ -292,9 +291,8 @@ public class FullRecordReporter extends Reporter {
     private void formatTables(RecordInstance record, Set<TableField> tables,
             PrintWriter writer, AnswerValue answerValue,
             PreparedStatement psInsert, PreparedStatement psQuery)
-            throws WdkModelException, SQLException, NoSuchAlgorithmException,
-            JSONException, WdkUserException {
-        DBPlatform platform = getQuestion().getWdkModel().getQueryPlatform();
+            throws WdkModelException, SQLException, WdkUserException {
+        DBPlatform platform = getQuestion().getWdkModel().getAppDb().getPlatform();
         RecordClass recordClass = record.getRecordClass();
         String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
 
@@ -334,7 +332,7 @@ public class FullRecordReporter extends Reporter {
                 }
                 psQuery.setString(pkColumns.length + 1, table.getName());
                 ResultSet rs = psQuery.executeQuery();
-                SqlUtils.verifyTime(wdkModel, sqlQuery,
+                QueryLogger.logEndStatementExecution(sqlQuery,
                         "wdk-report-full-select-count", start);
                 rs.next();
                 int count = rs.getInt("cache_count");
@@ -363,14 +361,12 @@ public class FullRecordReporter extends Reporter {
         if (tableCache != null && needUpdate) {
             long start = System.currentTimeMillis();
             psInsert.executeBatch();
-            SqlUtils.verifyTime(wdkModel, sqlInsert, "wdk-report-full-insert",
-                    start);
+            QueryLogger.logEndStatementExecution(sqlInsert, "wdk-report-full-insert", start);
         }
     }
 
     private void formatRecord2PDF(Set<AttributeField> attributes,
             Set<TableField> tables, OutputStream out) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
             WdkUserException {
 
         logger.info("format2PDF>>>");

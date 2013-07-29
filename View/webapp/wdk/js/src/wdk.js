@@ -201,40 +201,60 @@ function getWebAppUrl() {
 
   var registerToggle = function() {
     // register toggles
-    $(".wdk-toggle").each(function() {
-      // check if the section should be displayed by default
-      var show = $(this).attr("show");
-      var active = (show == "true") ? 0 : false;
-      $(this).accordion({
-        // autoHeight: false,  // deprecated option; see http://jqueryui.com/upgrade-guide/1.9/#deprecated-autoheight-clearstyle-and-fillspace-options-merged-into-heightstyle
-        heightStyle: "content",
-        animate: "swing",
-        collapsible: true,
-        active: active
-      });
-    });
+    $(".wdk-toggle").simpleToggle();
 
     // register expand/collapse links
     // data-container is a selector for a container element
     // data-show is a boolean to show or hide toggles
+    // data-animated overrides the built-in animation
     $(".wdk-toggle-group").click(function(e) {
       var $this = $(this);
       var container = $this.closest($this.data("container"));
       var $toggles = container.find(".wdk-toggle");
 
-      if ($this.data("show")) {
-        $toggles.each(function() {
-          var $toggle = $(this);
-          if ($toggle.accordion("option", "active") !== 0) {
-            $toggle.accordion("option", "active", 0);
-          }
-        });
-      } else {
-        $toggles.accordion("option", "active", false);
-      }
+      $toggles.simpleToggle("toggle", $this.data("show"));
 
       e.preventDefault();
     });
+
+    //  // register toggles
+    //  $(".wdk-toggle").each(function() {
+    //    // check if the section should be displayed by default
+    //    var show = $(this).attr("show");
+    //    var active = (show == "true") ? 0 : false;
+    //    $(this).accordion({
+    //      autoHeight: false,
+    //      collapsible: true,
+    //      navigation: false,
+    //      active: active
+    //    });
+    //  });
+
+    //  // register expand/collapse links
+    //  // data-container is a selector for a container element
+    //  // data-show is a boolean to show or hide toggles
+    //  // data-animated overrides the built-in animation
+    //  $(".wdk-toggle-group").click(function(e) {
+    //    var $this = $(this);
+    //    var container = $this.closest($this.data("container"));
+    //    var $toggles = container.find(".wdk-toggle");
+    //    var scrollTop = $(document).scrollTop();
+
+    //    if ($this.data("show")) {
+    //      $toggles.each(function() {
+    //        var $toggle = $(this);
+    //        if ($toggle.accordion("option", "active") !== 0) {
+    //          $toggle.accordion("option", "active", 0);
+    //        }
+    //      });
+    //    } else {
+    //      $toggles.accordion("option", "active", false);
+    //    }
+
+    //    $(document).scrollTop(scrollTop);
+
+    //    e.preventDefault();
+    //  });
 
   };
 
@@ -242,7 +262,7 @@ function getWebAppUrl() {
     $(".collapsible").each(function() {
       var $this = $(this);
 
-      if ($this.data("rendered")) {
+      if ($this.attr("rendered")) {
         return;
       }
 
@@ -271,7 +291,8 @@ function getWebAppUrl() {
         $arrowSpan.toggleClass("wdk-icon-minus", !$this.hasClass("collapsed"));
       });
 
-      $this.data("rendered", true);
+      $this.attr("rendered", true);
+
     });
   }
 
@@ -287,12 +308,14 @@ function getWebAppUrl() {
 
   var registerTooltips = function() {
     // register elements with fancy tooltips
-    $(".wdk-tooltip").not(".qtip").qtip({
-      position: {
-        my: "top center",
-        at: "bottom center"
-      }
-    });
+    // $(".wdk-tooltip").not(".qtip").qtip({
+    //   position: {
+    //     my: "top center",
+    //     at: "bottom center",
+    //     viewport: $(window)
+    //   }
+    // });
+    $(".wdk-tooltip").wdkTooltip();
   };
 
   var registerSnippet = function() {
@@ -469,6 +492,34 @@ function getWebAppUrl() {
     });
   };
 
+  var registerEditable = function() {
+    // all elements with className wdk-editable, eg:
+    //   <span class="wdk-editable"
+    //       data-change="someFunction">edit me</span>
+
+    $(".wdk-editable").each(function(idx, element) {
+      if ($(element).data("rendered")) return;
+
+      var save = $(element).data("save");
+
+      if (typeof save === "string") {
+        try {
+          save = (0, eval)("(" + save + ")");
+        } catch (e) {
+          if (console && console.log) {
+            console.log(e);
+          }
+        }
+      }
+
+      $(element).editable({
+        save: typeof save === "function" ? save : function(){return true;}
+      });
+
+      $(element).data("rendered", true);
+    })
+  };
+
   var setUpNavDropDowns = function() {
     var timer;
     $("#nav-top > li").hoverIntent({
@@ -539,14 +590,17 @@ function getWebAppUrl() {
           windowLeft = screen.width/2 - windowWidth/2,
           windowTop = screen.height/2 - windowHeight/2,
           defaultFeatures = {
-            location:   "no",
-            menubar:    "no",
-            resizable:  "yes",
-            status:     "no",
-            width:      windowWidth,
-            height:     windowHeight,
-            top:        windowTop,
-            left:       windowLeft
+            location:    "no",
+            menubar:     "no",
+            toolbar:     "no",
+            personalbar: "no",
+            resizable:   "yes",
+            scrollbars:  "yes",
+            status:      "yes",
+            width:       windowWidth,
+            height:      windowHeight,
+            top:         windowTop,
+            left:        windowLeft
           };
 
       // in the future, allow spefied data attributes to override features
@@ -554,6 +608,29 @@ function getWebAppUrl() {
       if (match) {
         windowName = "wdk-window-" + match[1];
         window.open(windowUrl, windowName.replace(/-/g, "_"), windowFeatures).focus();
+      }
+    });
+  };
+
+  var invokeControllers = function invokeControllers() {
+    $("[data-controller]").each(function(idx, element) {
+      var $element, $attrs, controller;
+      $element = $(element);
+      $attrs = $element.data();
+      controller = $attrs.controller;
+
+      // convert some-name -> someName
+      controller = controller.replace(/-(\w)/, function(hyphenLetter) {
+        return hyphenLetter.replace(/-/, '').toUpperCase();
+      });
+
+      // only invoke once
+      if ($attrs._invoked) return;
+
+      // TODO add support for namespaces
+      if (typeof window[controller] === "function") {
+        window[controller].call(window, $element, $attrs);
+        $attrs._invoked = true;
       }
     });
   };
@@ -567,7 +644,9 @@ function getWebAppUrl() {
     registerCollapsible();
     registerSnippet();
     registerTruncate();
+    registerEditable();
     $(".button").button();
+    invokeControllers();
   }
 
   // On all pages, check that cookies are enabled.
@@ -581,6 +660,7 @@ function getWebAppUrl() {
 
 
   ns.init = init;
+  ns.load = load;
   ns.exportBaseURL = exportBaseURL;
   ns.modelName = modelName;
   ns.readCookie = readCookie;

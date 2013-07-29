@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -16,12 +15,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.QueryLogger;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.config.ModelConfigAppDB;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
 import org.gusdb.wdk.model.config.QueryMonitor;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
-import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.QuerySet;
@@ -32,7 +32,6 @@ import org.gusdb.wdk.model.question.QuestionSet;
 import org.gusdb.wdk.model.question.SearchCategory;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.RecordClassSet;
-import org.gusdb.wdk.model.user.AnswerFactory;
 import org.gusdb.wdk.model.user.BasketFactory;
 import org.gusdb.wdk.model.user.DatasetFactory;
 import org.gusdb.wdk.model.user.FavoriteFactory;
@@ -42,7 +41,6 @@ import org.gusdb.wdk.model.user.User;
 import org.gusdb.wdk.model.user.UserFactory;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
-import org.json.JSONException;
 
 /**
  * The top level WdkModel object provides a facade to access all the resources
@@ -68,7 +66,7 @@ public class WdkModel implements ConnectionContainer {
    * Convenience method for constructing a model from the configuration
    * information.
    * 
-   * @throws WdkModelException
+   * @throws WdkModelException if unable to construct model
    */
   public static WdkModel construct(String projectId, String gusHome)
       throws WdkModelException {
@@ -83,7 +81,7 @@ public class WdkModel implements ConnectionContainer {
     try {
       ModelXmlParser parser = new ModelXmlParser(gusHome);
       WdkModel wdkModel = parser.parseModel(projectId);
-
+      ThreadMonitor.setup(wdkModel);
       logger.debug("Model ready to use.");
       return wdkModel;
     } catch (Exception ex) {
@@ -96,8 +94,9 @@ public class WdkModel implements ConnectionContainer {
   private ModelConfig modelConfig;
   private String projectId;
 
-  private DBPlatform queryPlatform;
-  private DBPlatform userPlatform;
+  private DatabaseInstance appDb;
+  private DatabaseInstance userDb;
+  private static List<DatabaseInstance> dbInstanceList = new ArrayList<>();
 
   private List<QuerySet> querySetList = new ArrayList<QuerySet>();
   private Map<String, QuerySet> querySets = new LinkedHashMap<String, QuerySet>();
@@ -137,8 +136,6 @@ public class WdkModel implements ConnectionContainer {
 
   private ResultFactory resultFactory;
 
-  private AnswerFactory answerFactory;
-
   private Map<String, String> properties;
   
   private UIConfig uiConfig = new UIConfig();
@@ -174,8 +171,6 @@ public class WdkModel implements ConnectionContainer {
   /**
    * @param initRecordClassList
    * @return
-   * @throws WdkUserException
-   * @throws WdkModelException
    */
   public Question getQuestion(String questionFullName) throws WdkModelException {
     Reference r = new Reference(questionFullName);
@@ -275,7 +270,7 @@ public class WdkModel implements ConnectionContainer {
 
       throw new WdkModelException(err);
     }
-    return (RecordClassSet) recordClassSets.get(recordClassSetName);
+    return recordClassSets.get(recordClassSetName);
   }
 
   public RecordClassSet[] getAllRecordClassSets() {
@@ -292,7 +287,7 @@ public class WdkModel implements ConnectionContainer {
           + " does not contain a query set with name " + setName;
       throw new WdkModelException(err);
     }
-    return (QuerySet) querySets.get(setName);
+    return querySets.get(setName);
   }
 
   public boolean hasQuerySet(String setName) {
@@ -318,7 +313,7 @@ public class WdkModel implements ConnectionContainer {
           + " does not contain a Question set with name " + setName;
       throw new WdkModelException(err);
     }
-    return (QuestionSet) questionSets.get(setName);
+    return questionSets.get(setName);
   }
 
   public boolean hasQuestionSet(String setName) {
@@ -328,7 +323,7 @@ public class WdkModel implements ConnectionContainer {
   public Map<String, QuestionSet> getQuestionSets() {
     Map<String, QuestionSet> sets = new LinkedHashMap<String, QuestionSet>();
     for (String setName : questionSets.keySet()) {
-      sets.put(setName, (QuestionSet) questionSets.get(setName));
+      sets.put(setName, questionSets.get(setName));
     }
     return sets;
   }
@@ -339,7 +334,7 @@ public class WdkModel implements ConnectionContainer {
           + " does not contain a param set with name " + setName;
       throw new WdkModelException(err);
     }
-    return (ParamSet) paramSets.get(setName);
+    return paramSets.get(setName);
   }
 
   public ParamSet[] getAllParamSets() {
@@ -355,7 +350,7 @@ public class WdkModel implements ConnectionContainer {
   }
 
   public GroupSet getGroupSet(String setName) throws WdkModelException {
-    GroupSet groupSet = (GroupSet) groupSets.get(setName);
+    GroupSet groupSet = groupSets.get(setName);
     if (groupSet == null)
       throw new WdkModelException("The Model does not "
           + "have a groupSet named " + setName);
@@ -440,20 +435,8 @@ public class WdkModel implements ConnectionContainer {
   /**
    * This method should happen after the resolveReferences, since projectId is
    * set by this method from modelConfig
-   * 
-   * @param gusHome
-   * @throws WdkModelException
-   * @throws JSONException
-   * @throws SQLException
-   * @throws NoSuchAlgorithmException
-   * @throws WdkUserException
-   * @throws ClassNotFoundException
-   * @throws IllegalAccessException
-   * @throws InstantiationException
    */
-  public void configure(ModelConfig modelConfig) throws WdkModelException,
-      NoSuchAlgorithmException, SQLException, JSONException, WdkUserException,
-      InstantiationException, IllegalAccessException, ClassNotFoundException {
+  public void configure(ModelConfig modelConfig) throws WdkModelException {
 
     // assign projectId
     String projectId = modelConfig.getProjectId().trim();
@@ -462,23 +445,26 @@ public class WdkModel implements ConnectionContainer {
           + "empty, and cannot have single quote in it: " + projectId);
     this.projectId = projectId;
     this.modelConfig = modelConfig;
-    ModelConfigAppDB appDB = modelConfig.getAppDB();
-    ModelConfigUserDB userDB = modelConfig.getUserDB();
+    ModelConfigAppDB appDbConfig = modelConfig.getAppDB();
+    ModelConfigUserDB userDbConfig = modelConfig.getUserDB();
+    QueryLogger.initialize(modelConfig.getQueryMonitor());
 
     // initialize authentication factory
     // set the max active as half of the model's configuration
 
-    queryPlatform = (DBPlatform) Class.forName(appDB.getPlatformClass()).newInstance();
-    queryPlatform.initialize(this, "APP", appDB);
-    userPlatform = (DBPlatform) Class.forName(userDB.getPlatformClass()).newInstance();
-    userPlatform.initialize(this, "USER", userDB);
+    appDb = new DatabaseInstance("APP", appDbConfig);
+    appDb.initialize();
+    dbInstanceList.add(appDb);
+    
+    userDb = new DatabaseInstance("USER", userDbConfig);
+    userDb.initialize();
+    dbInstanceList.add(userDb);
 
     resultFactory = new ResultFactory(this);
     userFactory = new UserFactory(this);
     stepFactory = new StepFactory(this);
     datasetFactory = new DatasetFactory(this);
     queryFactory = new QueryFactory(this);
-    answerFactory = new AnswerFactory(this);
     basketFactory = new BasketFactory(this);
     favoriteFactory = new FavoriteFactory(this);
 
@@ -503,8 +489,19 @@ public class WdkModel implements ConnectionContainer {
     createBooleanQuestions();
   }
 
-  private void addBasketReferences() throws WdkModelException,
-      NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+  public static final void closeDbInstances() {
+    for (DatabaseInstance db : dbInstanceList) {
+      try {
+        db.close();
+      }
+      catch (Exception e) {
+        logger.error("Exception caught while trying to shut down DB instance " +
+        		"with name '" + db.getName() + "'.  Ignoring.", e);
+      }
+    }
+  }
+  
+  private void addBasketReferences() throws WdkModelException {
     for (RecordClassSet rcSet : recordClassSets.values()) {
       for (RecordClass recordClass : rcSet.getRecordClasses()) {
         if (recordClass.isUseBasket()) {
@@ -521,13 +518,12 @@ public class WdkModel implements ConnectionContainer {
     return modelConfig;
   }
 
-  public DBPlatform getQueryPlatform() {
-    return queryPlatform;
+  public DatabaseInstance getAppDb() {
+    return appDb;
   }
 
-  // Function Added by Cary P. Feb 7, 2008
-  public DBPlatform getUserPlatform() {
-    return userPlatform;
+  public DatabaseInstance getUserDb() {
+    return userDb;
   }
 
   public UserFactory getUserFactory() {
@@ -547,7 +543,7 @@ public class WdkModel implements ConnectionContainer {
     String setName = reference.getSetName();
     String elementName = reference.getElementName();
 
-    ModelSetI set = (ModelSetI) allModelSets.get(setName);
+    ModelSetI set = allModelSets.get(setName);
 
     if (set == null) {
       String s3 = s + " There is no set called '" + setName + "'";
@@ -565,14 +561,8 @@ public class WdkModel implements ConnectionContainer {
   /**
    * Some elements within the set may refer to others by name. Resolve those
    * references into real object references.
-   * 
-   * @throws JSONException
-   * @throws SQLException
-   * @throws NoSuchAlgorithmException
-   * @throws WdkUserException
    */
-  private void resolveReferences() throws WdkModelException,
-      NoSuchAlgorithmException, SQLException, JSONException, WdkUserException {
+  private void resolveReferences() throws WdkModelException {
     // Since we use Map here, the order of the sets in allModelSets are
     // random. However, if QuestionSet is resolved before a RecordSet, and
     // it goes down to resolve: QuestionSet -> Question -> RecordClass, and
@@ -772,8 +762,6 @@ public class WdkModel implements ConnectionContainer {
 
   /**
    * this method has be to called after the excluding, but before resolving.
-   * 
-   * @throws WdkModelException
    */
   private void createInternalSets() throws WdkModelException {
     // create a param set to hold all internal params, that is, the params
@@ -828,8 +816,7 @@ public class WdkModel implements ConnectionContainer {
     }
   }
 
-  private void createBooleanQuestions() throws NoSuchAlgorithmException,
-      WdkModelException, SQLException, JSONException, WdkUserException {
+  private void createBooleanQuestions() throws WdkModelException {
     for (RecordClassSet recordClassSet : getAllRecordClassSets()) {
       for (RecordClass recordClass : recordClassSet.getRecordClasses()) {
         getBooleanQuestion(recordClass);
@@ -837,6 +824,7 @@ public class WdkModel implements ConnectionContainer {
     }
   }
 
+  @Override
   public String toString() {
     return new StringBuilder("WdkModel: ")
       .append("projectId='").append(projectId).append("'").append(NL)
@@ -932,7 +920,7 @@ public class WdkModel implements ConnectionContainer {
 
   public XmlQuestionSet getXmlQuestionSet(String setName)
       throws WdkModelException {
-    XmlQuestionSet qset = (XmlQuestionSet) xmlQuestionSets.get(setName);
+    XmlQuestionSet qset = xmlQuestionSets.get(setName);
     if (qset == null)
       throw new WdkModelException("WDK Model " + projectId
           + " does not contain an Xml Question set with name " + setName);
@@ -947,7 +935,7 @@ public class WdkModel implements ConnectionContainer {
 
   public XmlRecordClassSet getXmlRecordClassSet(String setName)
       throws WdkModelException {
-    XmlRecordClassSet rcset = (XmlRecordClassSet) xmlRecordClassSets.get(setName);
+    XmlRecordClassSet rcset = xmlRecordClassSets.get(setName);
     if (rcset == null)
       throw new WdkModelException("WDK Model " + projectId
           + " does not contain an Xml Record Class set with name " + setName);
@@ -976,10 +964,6 @@ public class WdkModel implements ConnectionContainer {
 
   public QueryFactory getQueryFactory() {
     return queryFactory;
-  }
-
-  public AnswerFactory getAnswerFactory() {
-    return answerFactory;
   }
 
   public String getProjectId() {
@@ -1063,7 +1047,7 @@ public class WdkModel implements ConnectionContainer {
 
   public String queryParamDisplayName(String paramName) {
     for (String paramSetName : paramSets.keySet()) {
-      ParamSet paramSet = (ParamSet) paramSets.get(paramSetName);
+      ParamSet paramSet = paramSets.get(paramSetName);
       for (Param param : paramSet.getParams()) {
         if (param.getName().equals(paramName))
           return param.getPrompt();
@@ -1085,7 +1069,7 @@ public class WdkModel implements ConnectionContainer {
           return null;
 
         InputStream fis = new FileInputStream(secretKeyFileLoc);
-        StringBuffer contents = new StringBuffer();
+        StringBuilder contents = new StringBuilder();
         int chr;
         while ((chr = fis.read()) != -1) {
           contents.append((char) chr);
@@ -1103,7 +1087,7 @@ public class WdkModel implements ConnectionContainer {
     return modelConfig.getUseWeights();
   }
 
-  public User getSystemUser() throws WdkUserException, WdkModelException {
+  public User getSystemUser() throws WdkModelException {
     if (systemUser == null)
       systemUser = userFactory.createGuestUser();
     return systemUser;
@@ -1163,9 +1147,9 @@ public class WdkModel implements ConnectionContainer {
   public Connection getConnection(String key) throws WdkModelException,
       SQLException {
     if (key.equals(CONNECTION_APP)) {
-      return queryPlatform.getDataSource().getConnection();
+      return appDb.getDataSource().getConnection();
     } else if (key.equals(CONNECTION_USER)) {
-      return userPlatform.getDataSource().getConnection();
+      return userDb.getDataSource().getConnection();
     } else { // unknown
       throw new WdkModelException("Invalid DB Connection key.");
     }

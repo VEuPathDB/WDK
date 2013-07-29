@@ -366,10 +366,12 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     hideName(overStepId);
   }
 
-  function showDescriptionDialog(el, save, fromHist) {
+  function showDescriptionDialog(el, save, fromHist, canEdit) {
     var dialog_container = $("#wdk-dialog-strat-desc"),
         row = $(el).parents("tr"),
         strat = row.data();
+
+    canEdit = typeof canEdit === "undefined" ? true : canEdit;
 
     dialog_container.find(".description").html(
       strat.description
@@ -382,13 +384,16 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     dialog_container.dialog("option", "title", strat.name);
     dialog_container.dialog("option", "width", 600);
 
-    dialog_container.find(".edit a").click(function(e) {
-      e.preventDefault();
-      dialog_container.dialog("close");
-      showUpdateDialog(el, save, fromHist);
-      $(this).unbind("click");
-
-    });
+    if (canEdit) {
+      dialog_container.find(".edit a").click(function(e) {
+        e.preventDefault();
+        dialog_container.dialog("close");
+        showUpdateDialog(el, save, fromHist);
+        $(this).unbind("click");
+      }).show();
+    } else {
+      dialog_container.find(".edit a").hide();
+    }
     dialog_container.dialog("open");
   }
 

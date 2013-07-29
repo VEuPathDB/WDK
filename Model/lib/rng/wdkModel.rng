@@ -271,9 +271,6 @@
                 <element name="suggest">
                     <ref name="SuggestContent" />
                     <optional>
-                      <attribute name="sample" />
-                    </optional>
-                    <optional>
                       <attribute name="default" />
                     </optional>
                 </element>
@@ -325,9 +322,6 @@
             <ref name="ParamBaseTags" />
             <element name="suggest">
               <ref name="SuggestContent" />
-              <optional>
-                <attribute name="sample" />
-              </optional>
               <optional>
                 <attribute name="default" />
               </optional>
@@ -1357,6 +1351,7 @@
         <attribute name="displayType">
             <choice>
               <value>empty</value>
+              <value>dynamic</value>
               <value>ShowHide</value>
             </choice>
         </attribute>

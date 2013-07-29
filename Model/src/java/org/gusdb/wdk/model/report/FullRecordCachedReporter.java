@@ -16,11 +16,12 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.QueryLogger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.record.Field;
 import org.gusdb.wdk.model.record.FieldScope;
 import org.gusdb.wdk.model.record.RecordClass;
@@ -96,6 +97,7 @@ public class FullRecordCachedReporter extends Reporter {
         }
     }
 
+    @Override
     public String getConfigInfo() {
         return "This reporter does not have config info yet.";
     }
@@ -158,7 +160,7 @@ public class FullRecordCachedReporter extends Reporter {
         writer.flush();
     }
 
-    private Set<Field> validateColumns() throws WdkModelException {
+    private Set<Field> validateColumns() {
         // get a map of report maker fields
         Map<String, Field> fieldMap = getQuestion().getFields(
                 FieldScope.REPORT_MAKER);
@@ -183,8 +185,7 @@ public class FullRecordCachedReporter extends Reporter {
 
     private void formatRecord2Text(Set<AttributeField> attributes,
             Set<TableField> tables, PrintWriter writer)
-            throws WdkModelException, SQLException, NoSuchAlgorithmException,
-            JSONException, WdkUserException {
+            throws WdkModelException, SQLException {
         logger.debug("Include empty table: " + hasEmptyTable);
 
         // construct in clause
@@ -208,10 +209,10 @@ public class FullRecordCachedReporter extends Reporter {
         }
 
         // get the result from database
-        DBPlatform platform = getQuestion().getWdkModel().getQueryPlatform();
+        DatabaseInstance appDb = getQuestion().getWdkModel().getAppDb();
         PreparedStatement ps = null;
         try {
-            ps = SqlUtils.getPreparedStatement(platform.getDataSource(),
+            ps = SqlUtils.getPreparedStatement(appDb.getDataSource(),
                     sql.toString());
 
             // get page based answers with a maximum size (defined in
@@ -238,8 +239,8 @@ public class FullRecordCachedReporter extends Reporter {
                         ps.setObject(index + 1, value);
                     }
                     ResultSet resultSet = ps.executeQuery();
-                    SqlUtils.verifyTime(wdkModel, sql.toString(),
-					"wdk-report-full-select-cache", start, resultSet);
+                    QueryLogger.logStartResultsProcessing(sql.toString(),
+                        "wdk-report-full-select-cache", start, resultSet);
                     Map<String, String> tableValues = new LinkedHashMap<String, String>();
                     while (resultSet.next()) {
                         // check if display empty tables
@@ -247,7 +248,7 @@ public class FullRecordCachedReporter extends Reporter {
                         if (!hasEmptyTable && size == 0) continue;
 
                         String tableName = resultSet.getString("table_name");
-                        String content = platform.getClobData(resultSet,
+                        String content = appDb.getPlatform().getClobData(resultSet,
                                 "content");
                         tableValues.put(tableName, content);
                     }

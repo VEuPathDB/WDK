@@ -38,6 +38,7 @@ public class ShowRecordAction extends Action {
 
     private static Logger logger = Logger.getLogger(ShowRecordAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -93,15 +94,7 @@ public class ShowRecordAction extends Action {
             Iterator<String> names = attributes.keySet().iterator();
             names.next();
             String fieldName = names.next();
-            try {
-                wdkRecord.getAttributes().get(fieldName);
-            }
-            catch (WdkModelException ex) {
-                // most likely user provided an invalid record id, the record
-                // has been marked as invalid, and ex can be ignored.
-                logger.info(ex);
-                ex.printStackTrace();
-            }
+            wdkRecord.getAttributes().get(fieldName);
         }
 
         request.setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
@@ -127,7 +120,7 @@ public class ShowRecordAction extends Action {
         }
 
         long end = System.currentTimeMillis();
-        logger.info("showRecord took total: " + ((end - start) / 1000F)
+        logger.info("showRecord took total: " + ((end - start) / 1000D)
                 + " seconds.");
 
         // generate a page id

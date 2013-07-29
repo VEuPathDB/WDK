@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.bug;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -9,11 +7,10 @@ import java.util.Random;
 import junit.framework.Assert;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.Param;
@@ -23,7 +20,6 @@ import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.Strategy;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 import org.junit.Test;
 
 /**
@@ -41,13 +37,13 @@ public class Bug4446Test {
     private static final Logger logger = Logger.getLogger(Bug4446Test.class);
 
     private WdkModel wdkModel;
-    private DBPlatform platform;
+    private DatabaseInstance appDb;
     private User user;
     private Random random = UnitTestHelper.getRandom();
 
     public Bug4446Test() throws Exception {
         wdkModel = UnitTestHelper.getModel();
-        platform = wdkModel.getQueryPlatform();
+        appDb = wdkModel.getAppDb();
         user = UnitTestHelper.getRegisteredUser();
     }
 
@@ -83,18 +79,16 @@ public class Bug4446Test {
         Step leftOperand = UnitTestHelper.createNormalStep(user);
         Step rightOperand = UnitTestHelper.createNormalStep(user);
 
-        int leftId = leftOperand.getDisplayId();
-        int rightId = rightOperand.getDisplayId();
-        String operator = BooleanOperator.UNION.getOperator(platform);
+        int leftId = leftOperand.getStepId();
+        int rightId = rightOperand.getStepId();
+        String operator = BooleanOperator.UNION.getOperator(appDb.getPlatform());
 
         String expression = leftId + " " + operator + " " + rightId;
 
         return user.combineStep(expression);
     }
 
-    private Step createTransformStep(Step inputStep) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException, SQLException,
-            JSONException {
+    private Step createTransformStep(Step inputStep) throws WdkModelException {
         // look for a transform question
         RecordClass recordClass = inputStep.getQuestion().getRecordClass();
         Question[] questions = recordClass.getTransformQuestions(true);
@@ -112,7 +106,7 @@ public class Bug4446Test {
         Param[] params = question.getParams();
         for (Param param : params) {
             if (param instanceof AnswerParam) {
-                String inputValue = Integer.toString(inputStep.getDisplayId());
+                String inputValue = Integer.toString(inputStep.getStepId());
                 values.put(param.getName(), inputValue);
             }
         }
