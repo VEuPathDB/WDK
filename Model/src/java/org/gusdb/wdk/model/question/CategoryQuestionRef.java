@@ -20,4 +20,12 @@ public class CategoryQuestionRef extends WdkModelText {
   public void setUsedBy(String usedBy) {
     this.usedBy = usedBy;
   }
+
+  public String getQuestionFullName() {
+    return getText().trim();
+  }
+
+  public boolean isUsedBy(String usedBy) {
+    return (usedBy == null || this.usedBy == null || this.usedBy.equalsIgnoreCase(usedBy));
+  }
 }

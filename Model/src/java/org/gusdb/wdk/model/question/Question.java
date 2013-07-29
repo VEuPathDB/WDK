@@ -84,8 +84,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
   protected RecordClass recordClass;
 
-  private String category;
-
   /**
    * if set to true, the result won't be paged, and all the records will be
    * displayed on the summary page. default false.
@@ -165,7 +163,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
    */
   public Question(Question question) {
     super(question);
-    this.category = question.category;
     this.description = question.description;
     this.displayName = question.displayName;
 
@@ -274,10 +271,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
-  }
-
-  public void setCategory(String category) {
-    this.category = category;
   }
 
   public void setCustomJavascript(String customJavascript) {
@@ -421,13 +414,6 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
 
   public String getCustomJavascript() {
     return customJavascriptFile;
-  }
-
-  /**
-   * @deprecated
-   */
-  public String getCategory() {
-    return (category == null) ? "" : category;
   }
 
   public RecordClass getRecordClass() {
@@ -1009,4 +995,16 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       summaryViewList.add(view);
   }
 
+  public Map<String, SearchCategory> getCategories(String usedBy) {
+    Map<String, SearchCategory> categories = wdkModel.getCategories(usedBy);
+    Map<String, SearchCategory> map = new LinkedHashMap<>();
+    String questionName = getFullName();
+    for (String name : categories.keySet()) {
+      SearchCategory category = categories.get(name);
+      if (category.hasQuestion(questionName, usedBy)) {
+        map.put(name, category);
+      }
+    }
+    return map;
+  }
 }
