@@ -3,25 +3,19 @@ package org.gusdb.wdk.controller;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.controller.wizard.Wizard;
+import org.gusdb.wdk.model.ThreadMonitor;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.gusdb.wsf.service.WsfService;
-import org.json.JSONException;
 import org.xml.sax.SAXException;
 
 /**
@@ -31,6 +25,8 @@ import org.xml.sax.SAXException;
  */
 public class ApplicationInitListener implements ServletContextListener {
 
+    private static final Logger logger = Logger.getLogger(ApplicationInitListener.class);
+    
     public static boolean resourceExists(String path,
             ServletContext servletContext) {
         try {
@@ -43,17 +39,21 @@ public class ApplicationInitListener implements ServletContextListener {
         }
     }
 
+    @Override
     public void contextDestroyed(ServletContextEvent sce) {
         try {
-            DBPlatform.closeAllPlatforms();
+            WdkModel.closeDbInstances();
+            ThreadMonitor.shutdown();
         }
         catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
+    @Override
     public void contextInitialized(ServletContextEvent sce) {
 
+        logger.info("Initializing WDK web application");
         ServletContext servletContext = sce.getServletContext();
 
         String projectId = servletContext.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
@@ -73,27 +73,23 @@ public class ApplicationInitListener implements ServletContextListener {
 
     private void initMemberVars(ServletContext servletContext, String projectId,
             String gusHome, String alwaysGoToSummary, String loginUrl)
-            throws WdkModelException, NoSuchAlgorithmException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException, IOException, SAXException, SQLException,
-            JSONException, WdkUserException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+            throws WdkModelException, IOException, SAXException {
+        
+        logger.info("Initializing model...");
         WdkModel wdkModelRaw = WdkModel.construct(projectId, gusHome);
-
         WdkModelBean wdkModel = new WdkModelBean(wdkModelRaw);
+        logger.info("Initialized model object.  Setting on servlet context.");
+        servletContext.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
 
         // load wizard
         Wizard wizard = Wizard.loadWizard(gusHome, wdkModel);
-
-        servletContext.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
         servletContext.setAttribute(CConstants.WDK_WIZARD_KEY, wizard);
         servletContext.setAttribute(CConstants.WDK_ALWAYSGOTOSUMMARY_KEY,
                 alwaysGoToSummary);
         servletContext.setAttribute(CConstants.WDK_LOGIN_URL_KEY, loginUrl);
         servletContext.setAttribute(CConstants.GUS_HOME_KEY, gusHome);
 
-        // set the context to WsfService so that it can be accessed in the local
-        // mode.
+        // set the context to WsfService so that it can be accessed in the local mode.
         WsfService.SERVLET_CONTEXT = servletContext;
     }
 }

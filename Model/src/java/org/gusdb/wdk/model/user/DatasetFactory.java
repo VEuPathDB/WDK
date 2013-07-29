@@ -3,7 +3,6 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,14 +23,14 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.QueryLogger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfigUserDB;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeField;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
@@ -67,15 +66,15 @@ public class DatasetFactory {
     private static Logger logger = Logger.getLogger(DatasetFactory.class);
 
     private WdkModel wdkModel;
-    private DBPlatform userPlatform;
+    private DatabaseInstance userDb;
     private DataSource dataSource;
     private String userSchema;
     private String wdkSchema;
 
     public DatasetFactory(WdkModel wdkModel) {
         this.wdkModel = wdkModel;
-        this.userPlatform = this.wdkModel.getUserPlatform();
-        this.dataSource = userPlatform.getDataSource();
+        this.userDb = this.wdkModel.getUserDb();
+        this.dataSource = userDb.getDataSource();
 
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         this.userSchema = userDB.getUserSchema();
@@ -102,7 +101,7 @@ public class DatasetFactory {
             removeDuplicates(values);
         
             String checksum = getChecksum(values);
-            connection = userPlatform.getDataSource().getConnection();
+            connection = userDb.getDataSource().getConnection();
             Dataset dataset;
             connection.setAutoCommit(false);
 
@@ -152,9 +151,6 @@ public class DatasetFactory {
 
             return dataset;
         }
-        catch (NoSuchAlgorithmException e) {
-        	throw new WdkRuntimeException(e);
-        }
         catch (SQLException e) {
         	try {
         		if (connection != null) connection.rollback();
@@ -183,11 +179,8 @@ public class DatasetFactory {
      * @param user
      * @param userDatasetId
      * @return
-     * @throws SQLException
-     * @throws WdkModelException
-     *             throws if the userDatasetId doesn't exist or doesn't belong
-     *             to the given user.
-     * @throws WdkUserException
+     * @throws WdkModelException if the userDatasetId doesn't exist or doesn't
+     *             belong to the given user.
      */
     public Dataset getDataset(User user, int userDatasetId)
             throws WdkModelException {
@@ -199,10 +192,10 @@ public class DatasetFactory {
 	        sql.append(" AND ").append(COLUMN_USER_DATASET_ID);
 	        sql.append(" = ").append(userDatasetId);
 	
-	        DataSource dataSource = userPlatform.getDataSource();
+	        DataSource dataSource = userDb.getDataSource();
 	        Connection connection = null;
 	        try {
-	        	Object result = SqlUtils.executeScalar(wdkModel, dataSource,
+	        	Object result = SqlUtils.executeScalar(dataSource,
 	        			sql.toString(), "wdk-dataset-factory-dataset-by-user-dataset");
 	        	int datasetId = Integer.parseInt(result.toString());
 	
@@ -232,10 +225,7 @@ public class DatasetFactory {
      * @param user
      * @param datasetChecksum
      * @return
-     * @throws SQLException
-     * @throws WdkModelException
-     *             throws if the dataset doesn't exist;
-     * @throws WdkUserException
+     * @throws WdkModelException if the dataset doesn't exist
      */
     public Dataset getDataset(User user, String datasetChecksum)
             throws WdkModelException {
@@ -255,7 +245,7 @@ public class DatasetFactory {
 	            PreparedStatement psQuery = SqlUtils.getPreparedStatement(dataSource, sql);
 	            psQuery.setString(1, datasetChecksum);
 	            resultSet = psQuery.executeQuery();
-	            SqlUtils.verifyTime(wdkModel, sql,
+	            QueryLogger.logEndStatementExecution(sql,
 	                    "wdk-dataset-factory-dataset-by-checksum", start);
 	            if (!resultSet.next())
 	                throw new WdkModelException("The dataset with checksum '"
@@ -315,9 +305,9 @@ public class DatasetFactory {
         sql.append(" = ").append(dataset.getDatasetId());
 
         ResultSet resultSet = null;
-        DataSource dataSource = userPlatform.getDataSource();
+        DataSource dataSource = userDb.getDataSource();
         try {
-            resultSet = SqlUtils.executeQuery(wdkModel, dataSource,
+            resultSet = SqlUtils.executeQuery(dataSource,
                     sql.toString(), "wdk-dataset-factory-dataset-by-id");
 
             RecordClass recordClass = dataset.getRecordClass();
@@ -353,37 +343,35 @@ public class DatasetFactory {
      * @param connection
      * @param datasetChecksum
      * @return returns dataset Id.
-     * @throws WdkModelException
-     *             the dataset does not exist
-     * @throws SQLException
-     *             the database or query failure
-     * @throws WdkUserException
+     * @throws WdkModelException if the dataset does not exist
      */
     private int getDatasetId(Connection connection, String datasetChecksum)
             throws WdkModelException {
+      try {
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(COLUMN_DATASET_ID);
         sql.append(" FROM ").append(wdkSchema).append(TABLE_DATASET_INDEX);
         sql.append(" WHERE ").append(COLUMN_DATASET_CHECKSUM);
         sql.append(" = '").append(datasetChecksum).append("'");
 
-        Object result = SqlUtils.executeScalar(wdkModel, dataSource,
+        Object result = SqlUtils.executeScalar(dataSource,
                 sql.toString(), "wdk-dataset-factory-id-by-checksum");
         return Integer.parseInt(result.toString());
+      }
+      catch (SQLException e) {
+        throw new WdkModelException(e);
+      }
     }
 
     /**
      * @param connection
      * @param datasetId
      * @return the user-dataset-id.
-     * @throws WdkModelException
-     *             the userDataset does not exist
-     * @throws SQLException
-     *             the database or query failure
-     * @throws WdkUserException
+     * @throws WdkModelException if the userDataset does not exist
      */
     public int getUserDatasetId(Connection connection, User user, int datasetId)
             throws WdkModelException {
+      try {
         StringBuffer sql = new StringBuffer("SELECT ");
         sql.append(COLUMN_USER_DATASET_ID);
         sql.append(" FROM ").append(userSchema).append(TABLE_USER_DATASET);
@@ -392,39 +380,46 @@ public class DatasetFactory {
         sql.append(" AND ").append(Utilities.COLUMN_USER_ID).append(" = ").append(
                 user.getUserId());
 
-        Object result = SqlUtils.executeScalar(wdkModel, dataSource,
+        Object result = SqlUtils.executeScalar(dataSource,
                 sql.toString(), "wdk-dataset-factory-user-dataset-id");
         return Integer.parseInt(result.toString());
+      }
+      catch (SQLException e) {
+        throw new WdkModelException(e);
+      }
     }
 
     private Dataset insertDatasetIndex(RecordClass recordClass,
             Connection connection, String checksum, List<String[]> values)
             throws WdkModelException {
-        // get a new dataset id
-        int datasetId = userPlatform.getNextId(wdkSchema, TABLE_DATASET_INDEX);
-        Dataset dataset = new Dataset(this, datasetId);
-        dataset.setChecksum(checksum);
-        dataset.setRecordClass(recordClass);
-
-        // set summary
-        dataset.setSummary(values);
-
-        StringBuffer sql = new StringBuffer("INSERT INTO ");
-        sql.append(wdkSchema).append(TABLE_DATASET_INDEX).append(" (");
-        sql.append(COLUMN_DATASET_ID).append(", ");
-        sql.append(COLUMN_DATASET_CHECKSUM).append(", ");
-        sql.append(COLUMN_DATASET_SIZE).append(", ");
-        sql.append(COLUMN_RECORD_CLASS).append(", ");
-        sql.append(COLUMN_SUMMARY).append(") VALUES (?, ?, ?, ?, ?)");
         PreparedStatement psInsert = null;
         try {
+          // get a new dataset id
+          int datasetId = userDb.getPlatform().getNextId(dataSource, wdkSchema, TABLE_DATASET_INDEX);
+          Dataset dataset = new Dataset(this, datasetId);
+          dataset.setChecksum(checksum);
+          dataset.setRecordClass(recordClass);
+  
+          // set summary
+          dataset.setSummary(values);
+  
+          StringBuffer sql = new StringBuffer("INSERT INTO ");
+          sql.append(wdkSchema).append(TABLE_DATASET_INDEX).append(" (");
+          sql.append(COLUMN_DATASET_ID).append(", ");
+          sql.append(COLUMN_DATASET_CHECKSUM).append(", ");
+          sql.append(COLUMN_DATASET_SIZE).append(", ");
+          sql.append(COLUMN_RECORD_CLASS).append(", ");
+          sql.append(COLUMN_SUMMARY).append(") VALUES (?, ?, ?, ?, ?)");
+          
         	psInsert = connection.prepareStatement(sql.toString());
-            psInsert.setInt(1, datasetId);
-            psInsert.setString(2, checksum);
-            psInsert.setInt(3, dataset.getSize());
-            psInsert.setString(4, recordClass.getFullName());
-            psInsert.setString(5, dataset.getSummary());
-            psInsert.execute();
+          psInsert.setInt(1, datasetId);
+          psInsert.setString(2, checksum);
+          psInsert.setInt(3, dataset.getSize());
+          psInsert.setString(4, recordClass.getFullName());
+          psInsert.setString(5, dataset.getSummary());
+          psInsert.execute();
+
+          return dataset;
         }
         catch (SQLException e) {
         	throw new WdkModelException("Could not insert dataset index.", e);
@@ -432,7 +427,6 @@ public class DatasetFactory {
         finally {
             SqlUtils.closeQuietly(psInsert);
         }
-        return dataset;
     }
 
     private void insertDatasetValues(RecordClass recordClass,
@@ -478,9 +472,9 @@ public class DatasetFactory {
     }
 
     private void insertUserDataset(Connection connection, Dataset dataset)
-            throws SQLException, WdkModelException {
+            throws SQLException {
         // get new user dataset id
-        int userDatasetId = userPlatform.getNextId(userSchema,
+        int userDatasetId = userDb.getPlatform().getNextId(dataSource, userSchema,
                 TABLE_USER_DATASET);
 
         logger.debug("Inserting new user dataset id: " + userDatasetId);
@@ -575,9 +569,10 @@ public class DatasetFactory {
     }
 
     private String getChecksum(List<String[]> values)
-            throws NoSuchAlgorithmException, WdkModelException {
+            throws WdkModelException {
         // sort the value list
         Collections.sort(values, new Comparator<String[]>() {
+            @Override
             public int compare(String[] o1, String[] o2) {
                 int limit = Math.min(o1.length, o2.length);
                 for (int i = 0; i < limit; i++) {
@@ -652,19 +647,20 @@ public class DatasetFactory {
      * synchronized at the end of a remote query, precede each remote query with
      * a dummy remote query to the same site (such as select * from
      * dual@remote)."
-     * 
-     * @throws WdkModelException
-     * @throws WdkUserException
-     * @throws SQLException
      */
     private void checkRemoteTable() throws WdkModelException {
+      try {
         String dblink = wdkModel.getModelConfig().getAppDB().getUserDbLink();
         StringBuilder sql = new StringBuilder("SELECT count(*) FROM ");
         sql.append(wdkSchema).append(TABLE_DATASET_VALUE).append(dblink);
 
         // execute this dummy sql to make sure the remote table is sync-ed.
-        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        SqlUtils.executeScalar(wdkModel, dataSource, sql.toString(),
+        DataSource dataSource = wdkModel.getAppDb().getDataSource();
+        SqlUtils.executeScalar(dataSource, sql.toString(),
                 "wdk-remote-dataset-dummy");
+      }
+      catch (SQLException e) {
+        throw new WdkModelException(e);
+      }
     }
 }

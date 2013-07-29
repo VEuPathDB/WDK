@@ -17,7 +17,9 @@
 
   <!-- styles for JS libraries -->
   <link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.10.2/themes/smoothness/jquery-ui.css"/>
+  <!--
   <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/jquery.multiSelect.css"/>
+  -->
   <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/datatables.css"/>
   <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/js/lib/qtip2/jquery.qtip.css"/>
   <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/wdkCommon.css"/>

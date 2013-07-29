@@ -10,7 +10,7 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.fgputil.db.SqlUtils;
 
 /**
  * @author jerric
@@ -35,6 +35,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
      * 
      * @see org.gusdb.wdk.model.AttributePlugin#process()
      */
+    @Override
     public Map<String, Object> process() {
         loadSummaries();
         
@@ -48,6 +49,7 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
         return result;
     }
 
+    @Override
     public String getDownloadContent() {
         loadSummaries();
         
@@ -71,8 +73,8 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
             String attributeColumn = AbstractAttributePlugin.ATTRIBUTE_COLUMN;
             String attributeSql = getAttributeSql();
             String summarySql = composeSql(attributeColumn, attributeSql);
-            DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-            resultSet = SqlUtils.executeQuery(wdkModel, dataSource, summarySql,
+            DataSource dataSource = wdkModel.getAppDb().getDataSource();
+            resultSet = SqlUtils.executeQuery(dataSource, summarySql,
                 attributeField.getName() + "__attribute-histogram");
             while (resultSet.next()) {
                 String column = resultSet.getString(attributeColumn);

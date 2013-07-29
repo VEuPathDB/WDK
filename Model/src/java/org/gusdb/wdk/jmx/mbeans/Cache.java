@@ -6,11 +6,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
-import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.dbms.CacheFactory;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import javax.sql.DataSource;
+
+import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
+import org.gusdb.wdk.model.dbms.CacheFactory;
 
 /**
  * MBean representing the WDK database cache.
@@ -18,16 +19,18 @@ import javax.sql.DataSource;
  * Performs SQL queries of the cache tables. Uses the WDK's
  * queryPlatform (the application database).
  *
- * @see org.gusdb.wdk.model.WdkModel#getQueryPlatform()
+ * @see org.gusdb.wdk.model.WdkModel#getAppDb()
  */
 public class Cache extends BeanBase implements CacheMBean   {
 
+  private static final Logger logger = Logger.getLogger(Cache.class);
+	
   DataSource dataSource;
   String platformName;
   
   public Cache() {
     super();
-    DBPlatform platform = wdkModel.getQueryPlatform();
+    DatabaseInstance platform = wdkModel.getAppDb();
     platformName = platform.getClass().getSimpleName();
     dataSource = platform.getDataSource();
   }
@@ -45,6 +48,7 @@ public class Cache extends BeanBase implements CacheMBean   {
    * }
    * </pre>
    */
+  @Override
   public String getcache_table_count() {
     String sql = cacheTableCountSql();
     if (sql == null) return "unsupported database platform: " + platformName;
@@ -91,7 +95,7 @@ public class Cache extends BeanBase implements CacheMBean   {
           value = rs.getString(columnName);
         }
       }
-    } catch (WdkModelException | SQLException sqle) {
+    } catch (SQLException sqle) {
       logger.fatal(sqle);
     } finally {
         SqlUtils.closeResultSetAndStatement(rs);
@@ -105,6 +109,7 @@ public class Cache extends BeanBase implements CacheMBean   {
    *
    * @see org.gusdb.wdk.model.dbms.CacheFactory#resetCache
    */
+  @Override
   public void resetWdkCache() {
     try {
       CacheFactory factory = wdkModel.getResultFactory().getCacheFactory();      

@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.record;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -14,7 +12,6 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
@@ -25,7 +22,6 @@ import org.gusdb.wdk.model.record.attribute.ColumnAttributeField;
 import org.gusdb.wdk.model.record.attribute.ColumnAttributeValue;
 import org.gusdb.wdk.model.record.attribute.PrimaryKeyAttributeValue;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 
 /**
  * A TableValue object represents the values of the table that are associated
@@ -67,6 +63,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
        * 
        * @see java.util.Map.Entry#getKey()
        */
+      @Override
       public String getKey() {
         return name;
       }
@@ -76,6 +73,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
        * 
        * @see java.util.Map.Entry#getValue()
        */
+      @Override
       public AttributeValue getValue() {
         return value;
       }
@@ -85,6 +83,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
        * 
        * @see java.util.Map.Entry#setValue(java.lang.Object)
        */
+      @Override
       public AttributeValue setValue(AttributeValue value) {
         this.value = value;
         return value;
@@ -115,6 +114,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
      * 
      * @see java.util.Map#clear()
      */
+    @Override
     public void clear() {
       throw new UnsupportedOperationException("Not supported");
     }
@@ -124,6 +124,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
      * 
      * @see java.util.Map#containsKey(java.lang.Object)
      */
+    @Override
     public boolean containsKey(Object key) {
       return fields.containsKey(key);
     }
@@ -133,6 +134,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
      * 
      * @see java.util.Map#containsValue(java.lang.Object)
      */
+    @Override
     public boolean containsValue(Object value) {
       for (String name : fields.keySet()) {
 
@@ -148,6 +150,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
      * 
      * @see java.util.Map#entrySet()
      */
+    @Override
     public Set<Entry<String, AttributeValue>> entrySet() {
       Set<Entry<String, AttributeValue>> entries = new LinkedHashSet<Entry<String, AttributeValue>>();
       for (String name : fields.keySet()) {
@@ -162,6 +165,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
      * 
      * @see java.util.Map#get(java.lang.Object)
      */
+    @Override
     public AttributeValue get(Object key) {
       try {
         return getAttributeValue((String) key);
@@ -175,6 +179,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
      * 
      * @see java.util.Map#isEmpty()
      */
+    @Override
     public boolean isEmpty() {
       return fields.isEmpty();
     }
@@ -184,6 +189,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
      * 
      * @see java.util.Map#keySet()
      */
+    @Override
     public Set<String> keySet() {
       return fields.keySet();
     }
@@ -193,6 +199,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
      * 
      * @see java.util.Map#put(java.lang.Object, java.lang.Object)
      */
+    @Override
     public AttributeValue put(String key, AttributeValue value) {
       throw new UnsupportedOperationException("Not supported");
     }
@@ -202,6 +209,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
      * 
      * @see java.util.Map#putAll(java.util.Map)
      */
+    @Override
     public void putAll(Map<? extends String, ? extends AttributeValue> values) {
       throw new UnsupportedOperationException("Not supported");
     }
@@ -211,6 +219,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
      * 
      * @see java.util.Map#remove(java.lang.Object)
      */
+    @Override
     public AttributeValue remove(Object key) {
       throw new UnsupportedOperationException("Not supported");
     }
@@ -220,6 +229,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
      * 
      * @see java.util.Map#size()
      */
+    @Override
     public int size() {
       return fields.size();
     }
@@ -229,6 +239,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
      * 
      * @see java.util.Map#values()
      */
+    @Override
     public Collection<AttributeValue> values() {
       List<AttributeValue> values = new ArrayList<AttributeValue>();
       for (String name : fields.keySet()) {
@@ -272,12 +283,9 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
    *          case, the values cannot be accessed from table value. the caller
    *          is responsible for combining the table query with sorted & paged
    *          id query, and read the values directly.
-   * @throws WdkModelException
-   * @throws WdkUserException
    */
   public TableValue(User user, PrimaryKeyAttributeValue primaryKey,
-      TableField tableField, boolean bulk) throws WdkModelException,
-      WdkUserException {
+      TableField tableField, boolean bulk) throws WdkModelException {
     // this.user = user;
     this.primaryKey = primaryKey;
     this.tableField = tableField;
@@ -307,6 +315,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
     return tableField.getDisplayName();
   }
 
+  @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
     String classnm = this.getClass().getName();
@@ -317,7 +326,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
     return buf.toString();
   }
 
-  public void write(StringBuffer buf) throws WdkModelException {
+  public void write(StringBuffer buf) {
     String newline = System.getProperty("line.separator");
     // display the headers of the table
     AttributeField[] fields = tableField.getAttributeFields();
@@ -339,8 +348,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
     }
   }
 
-  public void toXML(StringBuffer buf, String rowTag, String ident)
-      throws WdkModelException {
+  public void toXML(StringBuffer buf, String rowTag, String ident) {
     String newline = System.getProperty("line.separator");
     for (Map<String, AttributeValue> row : this) {
       buf.append(ident + "<" + rowTag + ">" + newline);
@@ -360,6 +368,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
    * 
    * @see java.util.Collection#add(java.lang.Object)
    */
+  @Override
   public boolean add(Map<String, AttributeValue> e) {
     throw new UnsupportedOperationException("Not supported");
   }
@@ -369,6 +378,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
    * 
    * @see java.util.Collection#addAll(java.util.Collection)
    */
+  @Override
   public boolean addAll(Collection<? extends Map<String, AttributeValue>> c) {
     throw new UnsupportedOperationException("Not supported");
   }
@@ -378,6 +388,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
    * 
    * @see java.util.Collection#clear()
    */
+  @Override
   public void clear() {
     throw new UnsupportedOperationException("Not supported");
   }
@@ -387,6 +398,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
    * 
    * @see java.util.Collection#contains(java.lang.Object)
    */
+  @Override
   public boolean contains(Object o) {
     try {
       initializeRows();
@@ -402,6 +414,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
    * 
    * @see java.util.Collection#containsAll(java.util.Collection)
    */
+  @Override
   public boolean containsAll(Collection<?> c) {
     try {
       initializeRows();
@@ -417,6 +430,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
    * 
    * @see java.util.Collection#isEmpty()
    */
+  @Override
   public boolean isEmpty() {
     try {
       initializeRows();
@@ -432,6 +446,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
    * 
    * @see java.util.Collection#remove(java.lang.Object)
    */
+  @Override
   public boolean remove(Object o) {
     throw new UnsupportedOperationException("Not supported");
   }
@@ -441,6 +456,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
    * 
    * @see java.util.Collection#removeAll(java.util.Collection)
    */
+  @Override
   public boolean removeAll(Collection<?> c) {
     throw new UnsupportedOperationException("Not supported");
   }
@@ -450,6 +466,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
    * 
    * @see java.util.Collection#retainAll(java.util.Collection)
    */
+  @Override
   public boolean retainAll(Collection<?> c) {
     throw new UnsupportedOperationException("Not supported");
   }
@@ -459,6 +476,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
    * 
    * @see java.util.Collection#size()
    */
+  @Override
   public int size() {
     try {
       initializeRows();
@@ -474,6 +492,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
    * 
    * @see java.util.Collection#toArray()
    */
+  @Override
   public Object[] toArray() {
     try {
       initializeRows();
@@ -489,6 +508,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
    * 
    * @see java.util.Collection#toArray(T[])
    */
+  @Override
   public <T> T[] toArray(T[] a) {
     try {
       initializeRows();
@@ -499,8 +519,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
     }
   }
 
-  private void initializeRows() throws NoSuchAlgorithmException, SQLException,
-      WdkModelException, JSONException, WdkUserException {
+  private void initializeRows() throws WdkModelException {
     if (rows != null)
       return;
 
@@ -538,6 +557,7 @@ public class TableValue implements Collection<Map<String, AttributeValue>> {
    * 
    * @see java.util.Collection#iterator()
    */
+  @Override
   public Iterator<Map<String, AttributeValue>> iterator() {
     try {
       initializeRows();

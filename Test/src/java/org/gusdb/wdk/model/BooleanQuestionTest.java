@@ -3,13 +3,11 @@
  */
 package org.gusdb.wdk.model;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.answer.AnswerValue;
-import org.gusdb.wdk.model.dbms.DBPlatform;
 import org.gusdb.wdk.model.query.BooleanOperator;
 import org.gusdb.wdk.model.query.BooleanQuery;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -18,7 +16,6 @@ import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Step;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,7 +28,7 @@ public class BooleanQuestionTest {
 
     private WdkModel wdkModel;
     private User user;
-    private DBPlatform platform;
+    private DatabaseInstance appDb;
 
     private RecordClass recordClass;
     private AnswerValue leftAnswerValue;
@@ -44,7 +41,7 @@ public class BooleanQuestionTest {
         wdkModel = UnitTestHelper.getModel();
         //user = UnitTestHelper.getRegisteredUser();
         user = UnitTestHelper.getGuest();
-        platform = wdkModel.getQueryPlatform();
+        appDb = wdkModel.getAppDb();
     }
 
     @Before
@@ -53,17 +50,15 @@ public class BooleanQuestionTest {
         Step left = UnitTestHelper.createNormalStep(user);
         Step right = UnitTestHelper.createNormalStep(user);
 
-        leftStepId = Integer.toString(left.getDisplayId());
-        rightStepId = Integer.toString(right.getDisplayId());
+        leftStepId = Integer.toString(left.getStepId());
+        rightStepId = Integer.toString(right.getStepId());
         leftAnswerValue = left.getAnswerValue();
         rightAnswerValue = right.getAnswerValue();
         recordClass = left.getQuestion().getRecordClass();
     }
 
     @Test
-    public void testOrOperator() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void testOrOperator() throws WdkModelException {
         Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
         BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
@@ -77,7 +72,7 @@ public class BooleanQuestionTest {
 
         StringParam operator = booleanQuery.getOperatorParam();
         paramValues.put(operator.getName(),
-                BooleanOperator.UNION.getOperator(platform));
+                BooleanOperator.UNION.getOperator(appDb.getPlatform()));
 
         StringParam expansion = booleanQuery.getUseBooleanFilter();
         paramValues.put(expansion.getName(), "false");
@@ -93,9 +88,7 @@ public class BooleanQuestionTest {
     }
 
     @Test
-    public void testAndOperator() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void testAndOperator() throws WdkModelException {
         Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
         BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
@@ -109,7 +102,7 @@ public class BooleanQuestionTest {
 
         StringParam operator = booleanQuery.getOperatorParam();
         paramValues.put(operator.getName(),
-                BooleanOperator.INTERSECT.getOperator(platform));
+                BooleanOperator.INTERSECT.getOperator(appDb.getPlatform()));
 
         StringParam expansion = booleanQuery.getUseBooleanFilter();
         paramValues.put(expansion.getName(), "false");
@@ -125,9 +118,7 @@ public class BooleanQuestionTest {
     }
 
     @Test
-    public void testLeftMinusOperator() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void testLeftMinusOperator() throws WdkModelException {
         Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
         BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
@@ -141,7 +132,7 @@ public class BooleanQuestionTest {
 
         StringParam operator = booleanQuery.getOperatorParam();
         paramValues.put(operator.getName(),
-                BooleanOperator.LEFT_MINUS.getOperator(platform));
+                BooleanOperator.LEFT_MINUS.getOperator(appDb.getPlatform()));
 
         StringParam expansion = booleanQuery.getUseBooleanFilter();
         paramValues.put(expansion.getName(), "false");
@@ -155,9 +146,7 @@ public class BooleanQuestionTest {
     }
 
     @Test
-    public void testRightMinueOperator() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void testRightMinueOperator() throws WdkModelException {
         Question booleanQuestion = wdkModel.getBooleanQuestion(recordClass);
         BooleanQuery booleanQuery = (BooleanQuery) booleanQuestion.getQuery();
         Map<String, String> paramValues = new LinkedHashMap<String, String>();
@@ -171,7 +160,7 @@ public class BooleanQuestionTest {
 
         StringParam operator = booleanQuery.getOperatorParam();
         paramValues.put(operator.getName(),
-                BooleanOperator.INTERSECT.getOperator(platform));
+                BooleanOperator.INTERSECT.getOperator(appDb.getPlatform()));
 
         StringParam expansion = booleanQuery.getUseBooleanFilter();
         paramValues.put(expansion.getName(), "false");

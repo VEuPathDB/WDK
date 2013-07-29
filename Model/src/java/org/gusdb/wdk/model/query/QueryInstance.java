@@ -3,8 +3,6 @@
  */
 package org.gusdb.wdk.model.query;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -14,15 +12,12 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.CacheFactory;
-import org.gusdb.wdk.model.dbms.QueryInfo;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.user.User;
@@ -44,11 +39,10 @@ import org.json.JSONObject;
  */
 public abstract class QueryInstance {
 
-  public abstract void createCache(Connection connection, String tableName,
-      int instanceId, String[] indexColumns) throws WdkModelException;
+  public abstract void createCache(String tableName, int instanceId) throws WdkModelException;
 
-  public abstract void insertToCache(Connection connection, String tableName,
-      int instanceId) throws WdkModelException;
+  public abstract void insertToCache(String tableName, int instanceId)
+      throws WdkModelException;
 
   public abstract String getSql() throws WdkModelException;
 
@@ -60,7 +54,7 @@ public abstract class QueryInstance {
   private static final Logger logger = Logger.getLogger(QueryInstance.class);
 
   protected User user;
-  private Integer instanceId;
+  private int instanceId;
   protected Query query;
   protected WdkModel wdkModel;
   protected Map<String, String> values;
@@ -92,18 +86,8 @@ public abstract class QueryInstance {
 
   /**
    * @return the instanceId
-   * @throws JSONException
-   * @throws WdkModelException
-   * @throws SQLException
-   * @throws NoSuchAlgorithmException
-   * @throws WdkUserException
    */
-  public Integer getInstanceId() throws WdkModelException {
-    if (instanceId == null) {
-      ResultFactory resultFactory = wdkModel.getResultFactory();
-      String[] indexColumns = query.getIndexColumns();
-      instanceId = resultFactory.getInstanceId(this, indexColumns);
-    }
+  public int getInstanceId() {
     return instanceId;
   }
 
@@ -111,7 +95,7 @@ public abstract class QueryInstance {
    * @param instanceId
    *          the instanceId to set
    */
-  public void setInstanceId(Integer instanceId) {
+  public void setInstanceId(int instanceId) {
     this.instanceId = instanceId;
   }
 
@@ -145,7 +129,7 @@ public abstract class QueryInstance {
     checksum = null;
   }
 
-  public String getResultMessage() throws WdkModelException {
+  public String getResultMessage() {
     // make sure the result message is loaded by getting instance id
     getInstanceId();
     return resultMessage;
@@ -226,15 +210,20 @@ public abstract class QueryInstance {
   }
 
   public int getResultSize() throws WdkModelException {
-    logger.debug("start getting query size");
-    StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
-    sql.append(getSql()).append(") f");
-    DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-    Object objSize = SqlUtils.executeScalar(wdkModel, dataSource,
-        sql.toString(), query.getFullName() + "__count");
-    int resultSize = Integer.parseInt(objSize.toString());
-    logger.debug("end getting query size");
-    return resultSize;
+    try {
+      logger.debug("start getting query size");
+      StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
+      sql.append(getSql()).append(") f");
+      DataSource dataSource = wdkModel.getAppDb().getDataSource();
+      Object objSize = SqlUtils.executeScalar(dataSource,
+          sql.toString(), query.getFullName() + "__count");
+      int resultSize = Integer.parseInt(objSize.toString());
+      logger.debug("end getting query size");
+      return resultSize;
+    }
+    catch (SQLException e) {
+      throw new WdkModelException(e);
+    }
   }
 
   public Map<String, String> getValues() {
@@ -247,17 +236,8 @@ public abstract class QueryInstance {
   }
 
   protected String getCachedSql() throws WdkModelException {
-    CacheFactory cacheFactory = wdkModel.getResultFactory().getCacheFactory();
-    QueryInfo queryInfo = cacheFactory.getQueryInfo(getQuery());
-
-    String cacheTable = queryInfo.getCacheTable();
-    int instanceId = getInstanceId();
-
-    StringBuffer sql = new StringBuffer("SELECT * FROM ");
-    sql.append(cacheTable).append(" WHERE ");
-    sql.append(CacheFactory.COLUMN_INSTANCE_ID);
-    sql.append(" = ").append(instanceId);
-    return sql.toString();
+    ResultFactory resultFactory = wdkModel.getResultFactory();
+    return resultFactory.getCachedSql(this);
   }
 
   private void validateValues(User user, Map<String, String> values)

@@ -41,6 +41,7 @@ public class QuestionForm extends MapActionForm {
    * validate the properties that have been sent from the HTTP request, and
    * return an ActionErrors object that encapsulates any validation errors
    */
+  @Override
   public ActionErrors validate(ActionMapping mapping, HttpServletRequest request) {
     logger.debug("\n\n\n\n\n\nstart form validation...");
     ActionErrors errors = super.validate(mapping, request);
@@ -90,6 +91,7 @@ public class QuestionForm extends MapActionForm {
             logger.debug("param=" + param.getFullName()
                 + ", set dependedValues=" + Utilities.print(dependedValues));
           } catch (WdkModelException ex) {
+            ex.printStackTrace();
             ActionMessage message = new ActionMessage("mapped.properties",
                 param.getPrompt(), ex.getMessage());
             errors.add(ActionErrors.GLOBAL_MESSAGE, message);
@@ -165,11 +167,10 @@ public class QuestionForm extends MapActionForm {
       WdkModelBean wdkModel = (WdkModelBean) getServlet().getServletContext().getAttribute(
           CConstants.WDK_MODEL_KEY);
 
-      QuestionSetBean wdkQuestionSet = (QuestionSetBean) wdkModel.getQuestionSetsMap().get(
-          qSetName);
+      QuestionSetBean wdkQuestionSet = wdkModel.getQuestionSetsMap().get(qSetName);
       if (wdkQuestionSet == null)
         return null;
-      question = (QuestionBean) wdkQuestionSet.getQuestionsMap().get(qName);
+      question = wdkQuestionSet.getQuestionsMap().get(qName);
     }
     return question;
   }

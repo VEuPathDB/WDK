@@ -76,7 +76,6 @@ public class CategoryBean {
 
     /**
      * @return
-     * @throws WdkModelException
      * @see org.gusdb.wdk.model.question.SearchCategory#getQuestions()
      */
     public QuestionBean[] getWebsiteQuestions() throws WdkModelException {
@@ -90,7 +89,6 @@ public class CategoryBean {
 
     /**
      * @return
-     * @throws WdkModelException
      * @see org.gusdb.wdk.model.question.SearchCategory#getQuestions()
      */
     public QuestionBean[] getWebserviceQuestions() throws WdkModelException {

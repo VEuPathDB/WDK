@@ -27,6 +27,7 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
     this.name = name;
   }
 
+  @Override
   public String getName() {
     return name;
   }
@@ -39,6 +40,7 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
     return s;
   }
 
+  @Override
   public Object getElement(String name) {
     return recordClassMap.get(name);
   }
@@ -58,6 +60,7 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
     recordClassList.add(recordClass);
   }
 
+  @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
     StringBuffer buf = new StringBuffer("RecordClassSet: name='" + name + "'");
@@ -86,6 +89,7 @@ public class RecordClassSet extends WdkModelBase implements ModelSetI {
     }
   }
 
+  @Override
   public void setResources(WdkModel model) throws WdkModelException {
     for (RecordClass recordClass : recordClassMap.values()) {
       recordClass.setResources(model);

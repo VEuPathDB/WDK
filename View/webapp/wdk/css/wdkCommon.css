@@ -14,6 +14,7 @@ body {
 	font-size: 12px;
 	white-space: normal;
 	background-repeat: repeat-x;
+  min-width: 1000px;
 }
 
 h1 {
@@ -150,6 +151,68 @@ td {
 	text-align: center;
 }
 
+
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   =Plugin styling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+.wdk-editable {
+  /*color: black;*/
+  font-style: italic;
+  font-weight: normal;
+  padding: 4px;
+  cursor: pointer;
+  display: inline-block;
+}
+.wdk-editable:hover {
+  /* 	border-bottom:1px dashed black; */
+  /*  outline: 1px solid blue; */
+   background-color:#EDEDED;
+}
+
+.wdk-editable-show {
+  padding: 0px 4px;
+}
+
+.wdk-editable-show:hover {
+  background-color: inherit;
+}
+
+.wdk-editable input {
+  width: 200px;
+}
+
+.wdk-toggle-name {
+  margin-bottom: 1em;
+  margin-left: 1em;
+  cursor: pointer;
+}
+
+.wdk-toggle-content {
+  margin: 1em 0em 1em 2.6em;
+  display: none;
+}
+
+.wdk-toggle-shown-icon {
+  display: none;
+  vertical-align: middle;
+}
+
+.wdk-toggle-hidden-icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.wdk-toggle-show .wdk-toggle-content {
+  display: block;
+}
+
+.wdk-toggle-show .wdk-toggle-shown-icon {
+  display: inline-block;
+}
+
+.wdk-toggle-show .wdk-toggle-hidden-icon {
+  display: none;
+}
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     =Styling for the Login pop-up box 
@@ -449,14 +512,14 @@ ul.menubar {
 
 .param-item label {
   float: left;
-  width: 320px;   /* 300px; */
+  width: 35%;  /*  320px; */   /* 300px; */
   /* clear: both; */
   text-align: right;
   padding-top: 4px;
 }
 
 .param-control {
-  margin-left: 330px; /*310px; */
+  margin-left: 36%;    /*330px;*/ /*310px; */
 }
 
 .param-control td {
@@ -667,6 +730,21 @@ a.button { padding: 2px 5px; line-height:30px; margin: 3px; }
 	padding-top: 1em;
 }
 
+#text_strategy_number {
+	color:black;
+/* wdk-editable does this
+  font-style:italic;
+	font-weight:normal;
+  padding:4px;
+  cursor:pointer;
+*/
+}
+
+/* span.wdk-editable:hover { */
+  /* 	border-bottom:1px dashed black; */
+  /*  outline: 1px solid blue; */
+  /* background-color:#EDEDED; */
+/* } */
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      = Advanced Paging Pop Up initial style
@@ -756,6 +834,8 @@ td.linesalt {
 	background-color: #EEEEEE;
 	padding: 4px;
 }
+
+.result-message { width:75%; margin:5px auto; padding:10px; color:#990000; font-weight:bold; text-align:center; line-height:20px; }
 
 table.results {
 	margin-top: 6px;
@@ -967,7 +1047,11 @@ table.recordTable {
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 .toggle {display: none;}
-.boggle {margin: 6px 20px 20px 20px; display: none;}
+.boggle {
+	margin: 6px 20px 20px 20px; 
+	display: none;
+	overflow-x: scroll;
+}
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1060,6 +1144,10 @@ tr.headerRow > td,th {
 .fixed {font-family:courier, fixed-width, monospace; font-size:10pt; color:#000000;}
 
 
+#basket-control {
+    margin: 5px;
+    text-align: center;
+}
 
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

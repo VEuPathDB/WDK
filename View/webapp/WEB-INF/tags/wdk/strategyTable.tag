@@ -26,6 +26,9 @@
 <c:set var="request_uri" value="${fn:substringBefore(request_uri, '/')}" />
 <c:set var="exportBaseUrl" value = "${scheme}://${serverName}/${request_uri}/im.do?s=" />
 
+
+<!-- adding/removing columns: update datatable config in strategyHistory.jsp -->
+
 <table class="datatables" border="0" cellpadding="5" cellspacing="0">
   <thead>
   <tr class="headerrow">
@@ -33,6 +36,7 @@
     <th class="sortable" scope="col" style="min-width:16em;">
       <c:if test="${prefix != null}">${prefix}&nbsp;</c:if>Strategies&nbsp;(${fn:length(strategies)})
     </th>
+    <%-- <th class = "sortable" style="width:5em;" scope="col">#Steps</th> --%>
     <th scope="col">Description</th>
     <th scope="col" style="width:12em;">Actions</th>
     <th class="sortable" style="width:9em;" scope="col">Created</th>
@@ -44,7 +48,7 @@
     </th>
     <th class="sortable" scope="col" style="width: 6em" title="It refers to the Website Version. See the Version number of this current release on the top left side of the header, on the right of the site name">Version</th>
     <th class="sortable" scope="col" style="width: 4em;text-align:right">Size</th>
-    <th style="width:1em;">&nbsp;&nbsp;</th>
+
   </tr>
   </thead>
 
@@ -96,6 +100,8 @@
         </div> 
 
       </td>
+
+      <%-- <td style="text-align:center">${strategy.length}</td> --%>
 
       <td class="strategy_description">
       <c:choose>
@@ -161,8 +167,8 @@
       <td nowrap style="padding:0 2px 0 2px;">${fn:substring(strategy.createdTimeFormatted, 0, 10)}</td>
       <td nowrap style="padding:0 2px 0 2px;">${fn:substring(strategy.lastModifiedTimeFormatted, 0, 10)}</td>
       <td nowrap style="text-align:center">${strategy.version}</td>
-      <td nowrap style="text-align:right">${strategy.estimateSize}</td>
-      <td>&nbsp;&nbsp;</td>
+      <td nowrap style="text-align:right">${strategy.estimateSize}&nbsp;</td>
+
     </tr>
 
     <c:set var="i" value="${i+1}"/>

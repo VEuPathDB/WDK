@@ -3,13 +3,9 @@
  */
 package org.gusdb.wdk.model.query.param;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.config.ModelConfig;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.gusdb.wdk.model.user.Dataset;
@@ -198,10 +194,6 @@ public class DatasetParam extends Param {
    * @param uploadFile
    * @param rawValue
    * @return
-   * @throws NoSuchAlgorithmException
-   * @throws WdkUserException
-   * @throws WdkModelException
-   * @throws SQLException
    */
   public String rawValueToDependentValue(User user, String uploadFile,
       String rawValue) throws WdkModelException {

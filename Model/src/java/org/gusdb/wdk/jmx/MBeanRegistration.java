@@ -132,7 +132,7 @@ public class MBeanRegistration {
    * @see MBeanSet
    */
   private void registerMBean(Object pObject, ObjectName pName)
-    throws MalformedObjectNameException, MBeanRegistrationException, InstanceAlreadyExistsException, NotCompliantMBeanException {
+    throws MBeanRegistrationException, InstanceAlreadyExistsException, NotCompliantMBeanException {
     logger.debug("registering mbean " + pName.toString());
     server.registerMBean(pObject, pName);
     registeredMBeans.add(pName);
@@ -174,7 +174,7 @@ public class MBeanRegistration {
     } catch (IllegalAccessException iae) {
         logger.warn(iae);
     } catch (InvocationTargetException ite) {
-        logger.warn(ite);
+        logger.warn("InvocationTargetException thrown with the following cause:", ite.getCause());
     } catch (NoSuchMethodException nsme) {
         logger.warn(nsme);
     }

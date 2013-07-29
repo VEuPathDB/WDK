@@ -1,7 +1,8 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.config;
+
+import org.gusdb.fgputil.db.platform.SupportedPlatform;
+import org.gusdb.fgputil.db.platform.UnsupportedPlatformException;
+import org.gusdb.fgputil.db.pool.ConnectionPoolConfig;
 
 /**
  * It defines the properties that are common in both {@code <appDB>} and
@@ -11,13 +12,14 @@ package org.gusdb.wdk.model.config;
  * @author xingao
  * 
  */
-public abstract class ModelConfigDB {
-
+public abstract class ModelConfigDB implements ConnectionPoolConfig {
+	
   // required properties
   private String login;
   private String password;
   private String connectionUrl;
   private String platform;
+  private String driverInitClass;
 
   // optional properties
   private short maxActive = 20;
@@ -43,6 +45,7 @@ public abstract class ModelConfigDB {
   /**
    * @return the login
    */
+  @Override
   public String getLogin() {
     return login;
   }
@@ -58,6 +61,7 @@ public abstract class ModelConfigDB {
   /**
    * @return the password
    */
+  @Override
   public String getPassword() {
     return password;
   }
@@ -73,6 +77,7 @@ public abstract class ModelConfigDB {
   /**
    * @return the connectionUrl
    */
+  @Override
   public String getConnectionUrl() {
     return connectionUrl;
   }
@@ -86,23 +91,30 @@ public abstract class ModelConfigDB {
   }
 
   /**
-   * @return the platform
-   */
-  public String getPlatformClass() {
-    return "org.gusdb.wdk.model.dbms." + platform;
-  }
-
-  /**
    * @param platform
    *          the platform to set
+   * @throws UnsupportedPlatformException if platform is not supported
    */
   public void setPlatform(String platform) {
     this.platform = platform;
   }
-
+  
+  /**
+   * @return DB platform string for this configuration
+   */
+  public String getPlatform() {
+	return platform;
+  }
+  @Override
+  public SupportedPlatform getPlatformEnum() {
+	return (platform == null ? null :
+      SupportedPlatform.toPlatform(platform.toUpperCase()));
+  }
+  
   /**
    * @return the maxActive
    */
+  @Override
   public short getMaxActive() {
     return maxActive;
   }
@@ -118,6 +130,7 @@ public abstract class ModelConfigDB {
   /**
    * @return the maxIdle
    */
+  @Override
   public short getMaxIdle() {
     return maxIdle;
   }
@@ -133,6 +146,7 @@ public abstract class ModelConfigDB {
   /**
    * @return the minIdle
    */
+  @Override
   public short getMinIdle() {
     return minIdle;
   }
@@ -148,6 +162,7 @@ public abstract class ModelConfigDB {
   /**
    * @return the maxWait
    */
+  @Override
   public short getMaxWait() {
     return maxWait;
   }
@@ -161,8 +176,24 @@ public abstract class ModelConfigDB {
   }
 
   /**
+   * @param driverInitClass implementation class to initialize DB driver
+   */
+  public void setDriverInitClass(String driverInitClass) {
+	this.driverInitClass = driverInitClass;
+  }
+  
+  /**
+   * @return implementation class to initialize DB driver
+   */
+  @Override
+  public String getDriverInitClass() {
+	  return driverInitClass;
+  }
+
+  /**
    * @return the showConnections
    */
+  @Override
   public boolean isShowConnections() {
     return showConnections;
   }
@@ -178,6 +209,7 @@ public abstract class ModelConfigDB {
   /**
    * @return the showConnectionsInterval
    */
+  @Override
   public long getShowConnectionsInterval() {
     return showConnectionsInterval;
   }
@@ -193,6 +225,7 @@ public abstract class ModelConfigDB {
   /**
    * @return the showConnectionsDuration
    */
+  @Override
   public long getShowConnectionsDuration() {
     return showConnectionsDuration;
   }

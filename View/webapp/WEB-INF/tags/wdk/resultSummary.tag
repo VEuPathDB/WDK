@@ -22,32 +22,24 @@
 <c:set var="recordClass" value="${wdkAnswer.question.recordClass}" />
 <c:set var="recordName" value="${recordClass.fullName}" />
 <c:set var="recHasBasket" value="${recordClass.useBasket}" />
-
 <c:set var="recordName" value="${wdkStep.recordClass.displayNamePlural}"/>
-
-
 
 <!-- ================ RESULTS TITLE AND LINKS TO BASKET AND DOWNLOADS   =============== -->
 <table id = "title-links" width="100%"><tr>
 
-<!--
-<td class="h3left" style="vertical-align:middle;padding-bottom:7px;">
-  <span title="${step.displayName}">
-    <c:if test="${strategy != null}">
-        <span title="The strategy whch has the yellow step; you are looking at the results of that step.">Strategy:</span> <i style="font-weight:normal"><span id="text_strategy_number">${strategy.name}</span></i><br>Step <span id="text_step_number">${strategy.length}</span> Results: 
-    </c:if>
-    <i style="font-weight:normal"><span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${recordName}</span></i>
-  </span>
-</td>
--->
-<td class="h3left" style="vertical-align:middle;padding-bottom:7px;">
-  <span title="${step.displayName}">
-    <c:if test="${strategy != null}">
-        <span id="text_strategy_number">${strategy.name}</span> 
-        - step <span id="text_step_number">${strategy.length}</span> - 
-    </c:if>
-    <span id="text_step_count">${wdkAnswer.resultSize}</span> <span id="text_data_type">${recordName}</span>
-  </span>
+
+<td class="h3left" style="vertical-align:middle;padding-bottom:3px;">
+  <span id="text_step_count">${wdkAnswer.resultSize} </span><span id="text_data_type">${recordName}</span>
+  <c:if test="${strategy != null}">
+    &nbsp;from Step <span id="text_step_number">${strategy.length}</span> <br/>Strategy:	
+			<span 
+          class="wdk-editable strategy-name" 
+          data-id="${strategy.strategyId}"
+          data-save="wdk.strategy.controller.updateStrategyName" 
+          id="text_strategy_number" 
+          title="Click to edit">
+				${strategy.name}</span>
+  </c:if>
 </td>
 
 <td  style="vertical-align:middle;text-align:right;white-space:nowrap;">

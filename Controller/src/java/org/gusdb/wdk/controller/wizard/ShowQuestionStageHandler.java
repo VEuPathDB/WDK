@@ -29,6 +29,7 @@ public class ShowQuestionStageHandler implements StageHandler {
     private static final Logger logger = Logger
             .getLogger(ShowQuestionStageHandler.class);
 
+    @Override
     public Map<String, Object> execute(ActionServlet servlet,
             HttpServletRequest request, HttpServletResponse response,
             WizardForm wizardForm) throws Exception {

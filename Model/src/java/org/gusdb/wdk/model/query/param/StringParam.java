@@ -125,19 +125,22 @@ public class StringParam extends Param {
     return multiLine;
   }
 
+  @Override
   public String toString() {
     String newline = System.getProperty("line.separator");
-    StringBuffer buf = new StringBuffer(super.toString() + "  sample='"
-        + sample + "'" + newline + "  regex='" + regex + "'" + newline
-        + "  length='" + length + "'" + newline + "  multiLine='" + multiLine
-        + "'");
-    return buf.toString();
+    return new StringBuilder(super.toString())
+      //.append("  sample='").append(sample).append("'").append(newline)
+      .append("  regex='").append(regex).append("'").append(newline)
+      .append("  length='").append(length).append("'").append(newline)
+      .append("  multiLine='").append(multiLine).append("'")
+      .toString();
   }
 
   // ///////////////////////////////////////////////////////////////
   // protected methods
   // ///////////////////////////////////////////////////////////////
 
+  @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
     if (regex == null)
@@ -149,6 +152,7 @@ public class StringParam extends Param {
    * 
    * @see java.lang.Object#clone()
    */
+  @Override
   public Param clone() {
     return new StringParam(this);
   }

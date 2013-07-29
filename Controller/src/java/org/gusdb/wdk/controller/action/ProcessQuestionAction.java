@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +35,6 @@ import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.json.JSONException;
 
 /**
  * This Action is called by the ActionServlet when a WDK question is asked. It
@@ -51,7 +49,7 @@ public class ProcessQuestionAction extends Action {
     public static Map<String, String> prepareParams(UserBean user,
             HttpServletRequest request, QuestionForm qform)
             throws WdkModelException, WdkUserException, FileNotFoundException,
-            IOException, NoSuchAlgorithmException, SQLException, JSONException {
+            IOException, SQLException {
         Map<String, String> paramValues = new HashMap<String, String>();
         QuestionBean question = qform.getQuestion();
         if (question == null)
@@ -111,6 +109,7 @@ public class ProcessQuestionAction extends Action {
         return paramValues;
     }
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {

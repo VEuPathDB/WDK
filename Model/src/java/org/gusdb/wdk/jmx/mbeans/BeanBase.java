@@ -1,10 +1,10 @@
 package org.gusdb.wdk.jmx.mbeans;
 
+import javax.servlet.ServletContext;
+
+import org.gusdb.wdk.jmx.ContextThreadLocal;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.jmx.ContextThreadLocal;
-import javax.servlet.ServletContext;
-import org.apache.log4j.Logger;
 
 /**
   * Parent abstract class for most WDK-related MBeans. Provides
@@ -19,7 +19,6 @@ public abstract class BeanBase {
   // Controller classes are not available until after Model is compiled;
   // so, not available for import here.
   public final static String WDK_MODEL_KEY = "wdkModel";
-  protected static final Logger logger = Logger.getLogger(BeanBase.class);
   
   public BeanBase() {
     context = ContextThreadLocal.get();

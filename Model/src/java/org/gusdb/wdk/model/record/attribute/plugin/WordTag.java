@@ -46,6 +46,7 @@ public class WordTag implements Comparable<WordTag> {
     // this.score = score;
     // }
 
+    @Override
     public int compareTo(WordTag tag) {
         int diff = tag.count - count;
         return (diff != 0) ? diff : (word.compareTo(tag.word));
