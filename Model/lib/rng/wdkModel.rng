@@ -134,6 +134,7 @@
       </optional>
 	    <ref name="IncludeExclude"/>
 	    <zeroOrMore>
+	      <choice>
 	      <element name="description">
 	        <ref name="IncludeExclude"/>
 	        <text/>
@@ -150,6 +151,7 @@
 			    </optional>
 			    <text/>
         </element>
+         </choice>
       </zeroOrMore>
     </element>
   </define>
