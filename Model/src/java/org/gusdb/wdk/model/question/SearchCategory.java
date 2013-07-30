@@ -163,7 +163,7 @@ public class SearchCategory extends WdkModelBase {
       if (ref.include(projectId)) {
         String questionName = ref.getQuestionFullName();
         if (questionRefMap.containsKey(questionName))
-          throw new WdkModelException("Duplicate question reference '"
+          logger.warn("Duplicate question reference '"
               + questionName + "' detected in searchCategory '" + getName()
               + "'");
         ref.excludeResources(projectId);
