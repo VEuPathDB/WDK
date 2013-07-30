@@ -99,7 +99,8 @@ import org.xml.sax.SAXException;
 
 /**
  * <p>
- * The XML parser is used to parse the WDK model file and all its sub-model files.
+ * The XML parser is used to parse the WDK model file and all its sub-model
+ * files.
  * </p>
  * 
  * <p>
@@ -222,7 +223,7 @@ public class ModelXmlParser extends XmlParser {
     model.configure(config);
     model.setResources();
     model.setProperties(properties, replacedMacros);
-    
+
     // HACK - resolve adminEmail from prop
     if (config.getAdminEmail() == null)
       config.setAdminEmail(properties.get("SITE_ADMIN_EMAIL"));
@@ -502,7 +503,7 @@ public class ModelXmlParser extends XmlParser {
     configureAttributeFields(digester);
 
     configureCommonNodes(digester);
-    
+
     configureUiConfig(digester);
 
     return digester;
@@ -531,6 +532,10 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/searchCategory/questionRef",
         CategoryQuestionRef.class, "addQuestionRef");
     digester.addCallMethod("wdkModel/searchCategory/questionRef", "setText", 0);
+
+    configureNode(digester, "wdkModel/searchCategory/description",
+        WdkModelText.class, "addDescription");
+    digester.addCallMethod("wdkModel/searchCategory/description", "setText", 0);
 
     // configure property macros
     configureNode(digester, "wdkModel/declaredMacro", MacroDeclaration.class,
@@ -971,12 +976,13 @@ public class ModelXmlParser extends XmlParser {
 
   private void configureUiConfig(Digester digester) {
     configureNode(digester, "wdkModel/uiConfig", UIConfig.class, "setUIConfig");
-    configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies", ExtraLogoutCookies.class, "setExtraLogoutCookies");
-    configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies/cookie", WdkCookie.class, "add");
+    configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies",
+        ExtraLogoutCookies.class, "setExtraLogoutCookies");
+    configureNode(digester, "wdkModel/uiConfig/extraLogoutCookies/cookie",
+        WdkCookie.class, "add");
   }
-  
-  public static void main(String[] args)
-      throws WdkModelException {
+
+  public static void main(String[] args) throws WdkModelException {
     String cmdName = System.getProperty("cmdName");
 
     // process args
