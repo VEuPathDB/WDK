@@ -657,7 +657,7 @@ function getWebAppUrl() {
     load();
     $(document).ajaxSuccess(function() {
       setTimeout(load, 0);
-      });
+    });
   }
 
 
