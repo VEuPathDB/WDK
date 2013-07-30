@@ -1009,6 +1009,9 @@
         <attribute name="customJavascript" />
       </optional>
       <optional>
+        <attribute name="searchCategory" />
+      </optional>      
+      <optional>
         <attribute name="fullAnswer">
           <data type="boolean" />
         </attribute>
