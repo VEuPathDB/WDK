@@ -124,8 +124,8 @@ wdk.util.namespace("window.wdk.tooltips", function(ns, $) {
       },
       events: {
         show: function(event, api) {
-          // qtip2 assigns an ID of "ui-tooltip-<id>" to the tooltip div
-          var tipSelector = '#ui-tooltip-' + api.get('id');
+          // qtip2 assigns an ID of "qtip-<id>" to the tooltip div
+          var tipSelector = '#qtip-' + api.get('id');
 
           // reach into the qtip attributes to retrieve the target element
           var target = $(this).closest('.qtip').data('qtip').options.position.target;

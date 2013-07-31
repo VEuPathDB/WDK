@@ -21,11 +21,12 @@
   <!-- JS libraries -->
   <!-- comment out the production code. need to revert this on check in -->
 
-  <!--<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.js"><jsp:text/></script>-->
-  <script type="text/javascript" src='${urlBase}/wdk/js/lib/jquery-1.7.min.js'><jsp:text/></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"><jsp:text/></script>
+  <!-- <script src="http://code.jquery.com/jquery-migrate-1.1.1.js"><jsp:text/></script> -->
+  
 
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery-ui-1.8.16.custom.min.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/underscore-min.js"><jsp:text/></script>
+  <script type="text/javascript" src="http://code.jquery.com/ui/1.10.2/jquery-ui.js"><jsp:text/></script>
+  <script type="text/javascript" src="${urlBase}/wdk/js/lib/es5-shim.min.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.blockUI.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.cookie.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.dataTables-1.9.0.min.js"><jsp:text/></script>

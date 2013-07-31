@@ -651,11 +651,14 @@ function getWebAppUrl() {
 
   // On all pages, check that cookies are enabled.
   function init() {
+    $.blockUI.defaults.overlayCSS.opacity = 0.2;
     cookieTest();
     setUpDialogs();
     setUpPopups();
     load();
-    $("body").ajaxSuccess(load);
+    $(document).ajaxSuccess(function() {
+      setTimeout(load, 0);
+    });
   }
 
 
