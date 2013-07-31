@@ -76,7 +76,7 @@
                 return;
               }
 
-              ui.tab.find("span").append('<img style="height:14px; margin-left:4px; position: relative; top:2px;" src="wdk/images/filterLoading.gif"/>');
+              ui.tab.find("span").append('<img style="margin-left:4px; position: relative; top:2px;" src="wdk/images/filterLoading.gif"/>');
 
               ui.jqXHR.success(function() {
                 ui.tab.data("loaded", true);
