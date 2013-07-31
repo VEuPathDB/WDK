@@ -39,6 +39,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
 
         load: function(event, ui) {
           createFlexigridFromTable(ui.panel.find(".Results_Table"));
+          wdk.load();
         }
       });
     });
