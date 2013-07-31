@@ -69,7 +69,6 @@ public abstract class AbstractEnumParam extends Param {
    */
     private static final long serialVersionUID = 8058527840525499401L;
 
-
     public ParamValueMap() {
       super();
     }
@@ -716,12 +715,11 @@ public abstract class AbstractEnumParam extends Param {
       for (String paramRef : dependedParamRef.split(",")) {
         // make sure the param exists
         wdkModel.resolveReference(paramRef);
-        
+
         // make sure the paramRef is unique
         if (dependedParamRefs.contains(paramRef))
-          throw new WdkModelException("Duplicate depended param ["
-              + paramRef + "] defined in dependent param "
-              + getFullName());
+          throw new WdkModelException("Duplicate depended param [" + paramRef
+              + "] defined in dependent param " + getFullName());
         dependedParamRefs.add(paramRef);
       }
   }
@@ -752,11 +750,11 @@ public abstract class AbstractEnumParam extends Param {
         try {
           values.addAll(getVocabMap(dependedValue).keySet());
         } catch (WdkRuntimeException ex) {
-//          if (ex.getMessage().startsWith("No item returned by")) {
-            // the enum param doeesn't return any row, ignore it.
-            continue;
-//          } else
-//            throw ex;
+          // if (ex.getMessage().startsWith("No item returned by")) {
+          // the enum param doeesn't return any row, ignore it.
+          continue;
+          // } else
+          // throw ex;
         }
       }
     } else {
@@ -765,4 +763,45 @@ public abstract class AbstractEnumParam extends Param {
     return values;
   }
 
+  /**
+   * Fix the param value in the given list. If the value is valid with given
+   * context, it will remain unchanged; if the value is invalid, it will be
+   * replaced by the default value.
+   * 
+   * @param values
+   * @throws WdkModelException
+   */
+  public void fixValue(Map<String, String> values) throws WdkModelException {
+    // if it's a dependent param, we need to fix the depended value first
+    for (Param dependedParam : getDependedParams()) {
+      if (dependedParam instanceof AbstractEnumParam) {
+        ((AbstractEnumParam) dependedParam).fixValue(values);
+      }
+    }
+    String value = values.get(name);
+    String defaultValue = getDefault(values);
+    if (value == null) { // don't have value, assign default to it
+      values.put(name, defaultValue);
+    } else {
+      String[] terms = getTerms(rawOrDependentValueToDependentValue(null, value));
+      Set<String> validTerms = new LinkedHashSet<>();
+      Map<String, String> vocabs = getVocabMap(values);
+      for (String term : terms) {
+        if (vocabs.containsKey(terms)) {
+          validTerms.add(term);
+        }
+      }
+      if (validTerms.size() == 0) { // no valid term found, use default
+        values.put(name, defaultValue);
+      } else {
+        StringBuilder buffer = new StringBuilder();
+        for (String term : validTerms) {
+          if (buffer.length() > 0)
+            buffer.append(',');
+          buffer.append(term);
+        }
+        values.put(name, buffer.toString());
+      }
+    }
+  }
 }
