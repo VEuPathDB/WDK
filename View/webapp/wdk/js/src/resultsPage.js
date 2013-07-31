@@ -19,16 +19,26 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       // var currentTab = parseInt(summaryViews.children("ul").attr("currentTab"), 10);  
       var currentTab = 0;
       summaryViews.tabs({
-        selected : currentTab,
-        cache: true,
-        spinner: '<img style="height:14px; margin-left:4px" src="wdk/images/loading.gif"/>',
-        ajaxOptions: {
-          success: function(data) {
-            createFlexigridFromTable(summaryViews.find(".Results_Table"));
-          },
-          error: function( xhr, status, index, anchor ) {
-            // alert( "Couldn't load this tab. Please try again later." + status );
+
+        active : currentTab,
+
+        beforeLoad: function(event, ui) {
+
+          if (ui.tab.data("loaded")) {
+            event.preventDefault();
+            return;
           }
+
+          ui.tab.find("span").append('<img style="height:14px; margin-left:4px; position: relative; top:2px;" src="wdk/images/filterLoading.gif"/>');
+
+          ui.jqXHR.success(function() {
+            ui.tab.data("loaded", true);
+            ui.tab.find("img").remove();
+          });
+        },
+
+        load: function(event, ui) {
+          createFlexigridFromTable(ui.panel.find(".Results_Table"));
         }
       });
     });
