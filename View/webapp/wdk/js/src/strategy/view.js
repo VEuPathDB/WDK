@@ -137,6 +137,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
   }
 
   // controls visibility of step box edit icons
+  /* using css now - see Strategy.css
   function setEditIconToggling() {
     $('.edit-step-pane')
       .mouseenter(function(){
@@ -144,6 +145,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       .mouseleave(function(){
         $('.edit-step').css('display','none'); });
   }
+  */
 
   // HANDLES THE CREATION OF THE STEP BOX --
   // This function could be broken down to smaller bites
@@ -171,7 +173,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       $(div_strat).append(stepdiv);
       zIndex--; // DO NOT DELETE, needed for correct display in IE7.
     }
-    setEditIconToggling();
+    //setEditIconToggling();
   }
 
   //Creates the boolean Step and the operand step displayed above it
@@ -256,12 +258,12 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     "    <div style='cursor:pointer' title=\""+stepBoxTooltip(childStp.filterName)+"\" class='results_link crumb_name divlink step-elem' "+
       "         href='javascript:void(0)' onclick='wdk.strategy.controller.NewResults(" + sid + "," + modelstep.frontId + ", false)'>"+
 	//"         onmouseover=\"jQuery(this).find('.edit-icon').css('display','inline')\" onmouseout=\"jQuery(this).find('.edit-icon').css('display','inline')\">"+
-      "      <h4>"+
-      "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
-	//"        <div style='position:absolute;top:-6px;right:-8px;width:19px;height:19px;'></div>"+
       "        <a href='javascript:void(0)'"+
       "           class='edit-icon step-elem' onclick='event.stopPropagation(); wdk.step.showDetails(this)' id='stepId_" + modelstep.frontId + "' style='display:inline;position:absolute;right:-6px;top:-7px'>"+
       getEditImage('top')+"</a>"+
+      "      <h4>"+
+      "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
+	//"        <div style='position:absolute;top:-6px;right:-8px;width:19px;height:19px;'></div>"+
       "        <div class='crumb_details'></div>"+
       "      </h4>"+
       "      <h6 class='resultCount'>" + childStp.results + "&nbsp;" + wdk.util.getDisplayType(childStp) + "</h6>"+
@@ -320,6 +322,9 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
   // type can be: 'top', 'bottom', 'transform', or 'boolean'
   function getEditImage(type) {
+    return '<div class="edit-step"><span>Edit</span></div>';
+
+    /* replaced styles with css (see Strategy.css)
     var boxStyle = 'display:none; position:relative; width:24px; height:10px; background-color:white;' +
         'text-align:center;color:black;border:1px solid black;border-radius:4px;';
     var spanStyle = 'font-size:10px;';
@@ -331,6 +336,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       "onmouseover=\"jQuery(this).css('background-color','#FFFFA0')\" " +
       "onmouseout=\"jQuery(this).css('background-color','white')\" " +
       "><span style='"+spanStyle+"'>Edit</span></div>";
+    */
     
     /* Old style with Edit icon being swapped images (left in for easy revert) */
     //var style = (type == 'boolean') ? "display:none;position:relative;top:3px" : "display:none";
