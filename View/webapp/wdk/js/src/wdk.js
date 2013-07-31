@@ -108,7 +108,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
           // determine the default top level tab
           section = tabs.children("#selected").children("a").attr("id");
           if (section == "tab_basket") { // on basket tab
-              section = $("#basket #basket-menu > ul > li.ui-tabs-selected > a").attr("href");
+              section = $("#basket #basket-menu > ul > li.ui-tabs-active > a").attr("href");
               section = "#basket #basket-menu > " + section;
           } else { // on open strategies tab
               section = "#" + section.substring(4) + " .Workspace";
@@ -126,8 +126,8 @@ wdk.util.namespace("window.wdk", function(ns, $) {
       if (views.length == 0) { // no sumamry views, get record views
           views = workspace.find("#Record_Views");
       }
-      var section = views.children("ul").children("li.ui-tabs-selected").children("a").attr("href");
-      return views.find(section);
+      var section = views.children("ul").children("li.ui-tabs-active").attr("aria-controls");
+      return views.find(document.getElementById(section));
   }
 
 

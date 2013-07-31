@@ -67,7 +67,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     }
     // build url.
     var info = $("#Summary_Views");
-    var view = $("#Summary_Views > ul > li.ui-tabs-selected").attr("id");
+    var view = $("#Summary_Views > ul > li.ui-tabs-active").attr("id");
     var url = info.attr("updateUrl") +
         "?strategy=" + strat + "&step=" + step + "&command=arrange" +
         "&attribute=" + attr + "&left=" + left + "&view=" + view;
@@ -124,7 +124,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     var strategyId = info.attr("strategy");
     var stepId = info.attr("step");
     var strategy = wdk.strategy.model.getStrategyFromBackId(strategyId);
-    var view = $("#Summary_Views > ul > li.ui-tabs-selected").attr("id");
+    var view = $("#Summary_Views > ul > li.ui-tabs-active").attr("id");
     url += "?strategy=" + strategyId + "&strategy_checksum=" +
         strategy.checksum + "&step=" + stepId + "&view=" + view + "&" + command;
     GetResultsPage(url, true, true, true);
