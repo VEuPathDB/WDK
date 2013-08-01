@@ -43,7 +43,7 @@ public class Group extends WdkModelBase {
    * 
    * @return
    */
-  public synchronized static Group Empty() {
+  public static Group Empty() {
     if (empty == null) {
       empty = new Group();
       empty.displayType = DISPLAY_EMPTY;
@@ -57,7 +57,7 @@ public class Group extends WdkModelBase {
    * 
    * @return
    */
-  public synchronized static Group Hidden() {
+  public static Group Hidden() {
     if (hidden == null) {
       hidden = new Group();
       hidden.displayType = DISPLAY_HIDDEN;
