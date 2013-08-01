@@ -465,7 +465,7 @@ public class User /* implements Serializable */{
         validate, assignedWeight);
   }
 
-  public synchronized Step createStep(Question question,
+  public Step createStep(Question question,
       Map<String, String> paramValues, AnswerFilterInstance filter,
       int pageStart, int pageEnd, boolean deleted, boolean validate,
       int assignedWeight) throws WdkModelException {
@@ -491,7 +491,7 @@ public class User /* implements Serializable */{
     return createStrategy(step, name, null, saved, null, false);
   }
 
-  public synchronized Strategy createStrategy(Step step, String name,
+  public Strategy createStrategy(Step step, String name,
       String savedName, boolean saved, String description, boolean hidden)
       throws WdkModelException, WdkUserException {
     Strategy strategy = stepFactory.createStrategy(this, step, name, savedName,
@@ -878,7 +878,7 @@ public class User /* implements Serializable */{
    * 
    * @throws WdkModelException
    */
-  public synchronized void save() throws WdkModelException {
+  public void save() throws WdkModelException {
     userFactory.saveUser(this);
   }
 
@@ -1152,7 +1152,7 @@ public class User /* implements Serializable */{
     return importStrategy(oldStrategy, null);
   }
 
-  public synchronized Strategy importStrategy(Strategy oldStrategy,
+  public Strategy importStrategy(Strategy oldStrategy,
       Map<Integer, Integer> stepIdsMap) throws WdkModelException,
       WdkUserException {
     Strategy newStrategy = stepFactory.importStrategy(this, oldStrategy,
