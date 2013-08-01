@@ -114,16 +114,19 @@
       <attribute name="name"/>
       <attribute name="displayName"/>
       <optional>
+        <attribute name="shortDisplayName" />
+      </optional>
+      <optional>
         <attribute name="parentRef" />
       </optional>
       <optional>
         <attribute name="usedBy">
           <choice>
             <value>website</value>
-						<value>webservice</value>
-					</choice>
-			  </attribute>
-	    </optional>
+            <value>webservice</value>
+          </choice>
+        </attribute>
+	  </optional>
       <optional>
         <attribute name="flattenInMenu">
           <data type="boolean" />
@@ -131,6 +134,11 @@
       </optional>
 	    <ref name="IncludeExclude"/>
 	    <zeroOrMore>
+	      <choice>
+	      <element name="description">
+	        <ref name="IncludeExclude"/>
+	        <text/>
+	      </element>
 	      <element name="questionRef">
 	        <ref name="IncludeExclude"/>
 			    <optional>
@@ -143,6 +151,7 @@
 			    </optional>
 			    <text/>
         </element>
+         </choice>
       </zeroOrMore>
     </element>
   </define>
@@ -994,14 +1003,14 @@
       <attribute name="queryRef" />
       <ref name="IncludeExclude" />
       <optional>
-        <attribute name="searchCategory" />
-      </optional>
-      <optional>
         <attribute name="shortDisplayName" />
       </optional>
       <optional>
         <attribute name="customJavascript" />
       </optional>
+      <optional>
+        <attribute name="searchCategory" />
+      </optional>      
       <optional>
         <attribute name="fullAnswer">
           <data type="boolean" />

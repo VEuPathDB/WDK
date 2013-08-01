@@ -2,7 +2,7 @@
 # Properties defined here can be referenced in model XML files.
 # For example, this line:
 NAME=value
-# will cause the WDK to replace  all occurrences of "$$NAME$$" in the model XML with "value".
+# will cause the WDK to replace  all occurrences of "@@NAME@@" in the model XML with "value".
 
 #----------------------------------------------------------
 # Project Identifiers

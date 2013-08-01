@@ -474,8 +474,8 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
           $("#query_form h1#query_form_title").html("Insert&nbsp;Step");
         }
         setDraggable($("#query_form"), ".dragHandle");
-        $("#query_form").css("z-index", 9001);
-        $("#query_form_overlay").css("z-index", 9000).height($("body").height());
+        $("#query_form").css("z-index", 100);
+        $("#query_form_overlay").css("z-index", 100).height($("body").height());
       },
       error: function() {
         alert("Error getting the needed information from the server \n" +
@@ -557,8 +557,8 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
               setPopupContent(data);
             }
 
-            $("#query_form").css("z-index", 9001);
-            $("#query_form_overlay").css("z-index", 9000).height($("body").height());
+            $("#query_form").css("z-index", 100);
+            $("#query_form_overlay").css("z-index", 100).height($("body").height());
           }
         });
         break;
@@ -609,8 +609,8 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
                 showNewSection(ele,id,sec);
               }
             }
-            $("#query_form").css("z-index", 9001);
-            $("#query_form_overlay").css("z-index", 9000).height($("body").height());
+            $("#query_form").css("z-index", 100);
+            $("#query_form_overlay").css("z-index", 100).height($("body").height());
 
             // attach submit handler to check that a boolean/span operation is selected
             var $form = $("#query_form").find("#form_question");
@@ -787,8 +787,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     e.preventDefault();
     e.stopPropagation();
     if (bools.length) {
-      var boolChecked = _.reduce(bools.toArray(),
-          function(memo, input) { return memo || input.checked; }, false);
+      var boolChecked = bools.toArray().reduce(function(memo, input) {
+        return memo || input.checked; 
+      }, false);
       if (!boolChecked) {
         if ($this.find(".wdk-error").length === 0) {
           $("<div>Please choose an operation below</div>")

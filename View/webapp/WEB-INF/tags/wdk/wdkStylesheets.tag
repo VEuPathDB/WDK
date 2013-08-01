@@ -16,10 +16,12 @@
   <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
   <!-- styles for JS libraries -->
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/ui-custom/custom-theme/jquery-ui-1.8.16.custom.css"/>
+  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/jquery-ui.css"/>
+  <!--
   <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/jquery.multiSelect.css"/>
+  -->
   <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/datatables.css"/>
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/js/lib/qtip2/jquery.qtip.mod.css"/>
+  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/js/lib/qtip2/jquery.qtip.css"/>
   <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/wdkCommon.css"/>
 
 

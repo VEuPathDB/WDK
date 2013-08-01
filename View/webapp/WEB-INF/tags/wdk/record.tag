@@ -66,14 +66,13 @@
   $(function() {
     var currentTab = parseInt(jQuery("#Record_Views > ul").attr("currentTab"));
     jQuery( "#Record_Views" )
-        .tabs({
-            selected : currentTab,
-            cache: true,
-            spinner: '<img style="height:14px; margin-left:4px" src="wdk/images/loading.gif"/>',
-            load: function(event, ui) {
-              wdk.event.publish("recordload", ui.panel);
-            }
-        });
+      .tabs({
+          active : currentTab,
+          load: function(event, ui) {
+            wdk.event.publish("recordload", ui.panel);
+            wdk.load();
+          }
+      });
   });
 </script>
 

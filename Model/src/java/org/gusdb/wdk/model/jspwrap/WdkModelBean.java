@@ -79,7 +79,7 @@ public class WdkModelBean implements ConnectionContainer {
 
     public Map<String, CategoryBean> getWebsiteRootCategories() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        Map<String, SearchCategory> roots = wdkModel.getRooCategories(SearchCategory.USED_BY_WEBSITE);
+        Map<String, SearchCategory> roots = wdkModel.getRootCategories(SearchCategory.USED_BY_WEBSITE);
         for (SearchCategory category : roots.values()) {
             CategoryBean bean = new CategoryBean(category);
             beans.put(category.getName(), bean);
@@ -89,7 +89,7 @@ public class WdkModelBean implements ConnectionContainer {
 
     public Map<String, CategoryBean> getWebserviceRootCategories() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        Map<String, SearchCategory> roots = wdkModel.getRooCategories(SearchCategory.USED_BY_WEBSERVICE);
+        Map<String, SearchCategory> roots = wdkModel.getRootCategories(SearchCategory.USED_BY_WEBSERVICE);
         for (SearchCategory category : roots.values()) {
             CategoryBean bean = new CategoryBean(category);
             beans.put(category.getName(), bean);

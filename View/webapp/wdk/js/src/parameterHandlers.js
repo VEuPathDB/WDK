@@ -195,11 +195,11 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
       select: function(event, ui){
         if(ui.item.value === noMatch || ui.item.value === wildCard) return false;
       }
-    }).data( "autocomplete" )._renderItem = function( ul, item ) {
+    }).data( "ui-autocomplete" )._renderItem = function( ul, item ) {
       // only change here was to replace .text() with .html()
       // and indenting 
       var content = $( "<li></li>" )
-          .data( "item.autocomplete", item )
+          .data( "ui-autocomplete-item", item )
           .append("<a>" + item.label + "</a>")
           .appendTo( ul );
       if (!odd) content.addClass("even");

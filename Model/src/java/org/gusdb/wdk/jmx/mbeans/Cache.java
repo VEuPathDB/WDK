@@ -31,7 +31,7 @@ public class Cache extends BeanBase implements CacheMBean   {
   public Cache() {
     super();
     DatabaseInstance platform = wdkModel.getAppDb();
-    platformName = platform.getClass().getSimpleName();
+    platformName = platform.getPlatform().getClass().getSimpleName();
     dataSource = platform.getDataSource();
   }
 

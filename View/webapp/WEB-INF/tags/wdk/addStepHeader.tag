@@ -4,6 +4,7 @@
 			  required="false"
 			  description="Title to appear in the header"
 %>
+<div id="query_form_overlay" class="ui-widget-overlay"></div>
 <div id="query_form" style="min-height:140px;">
 <span class="dragHandle">
 	<div class="modal_name">

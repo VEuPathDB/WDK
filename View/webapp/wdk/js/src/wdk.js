@@ -108,7 +108,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
           // determine the default top level tab
           section = tabs.children("#selected").children("a").attr("id");
           if (section == "tab_basket") { // on basket tab
-              section = $("#basket #basket-menu > ul > li.ui-tabs-selected > a").attr("href");
+              section = $("#basket #basket-menu > ul > li.ui-tabs-active > a").attr("href");
               section = "#basket #basket-menu > " + section;
           } else { // on open strategies tab
               section = "#" + section.substring(4) + " .Workspace";
@@ -126,8 +126,8 @@ wdk.util.namespace("window.wdk", function(ns, $) {
       if (views.length == 0) { // no sumamry views, get record views
           views = workspace.find("#Record_Views");
       }
-      var section = views.children("ul").children("li.ui-tabs-selected").children("a").attr("href");
-      return views.find(section);
+      var section = views.children("ul").children("li.ui-tabs-active").attr("aria-controls");
+      return views.find(document.getElementById(section));
   }
 
 
@@ -651,11 +651,49 @@ function getWebAppUrl() {
 
   // On all pages, check that cookies are enabled.
   function init() {
+    $.blockUI.defaults.overlayCSS.opacity = 0.2;
+
+    // Override jQueryUI tabs defaults
+    //
+    // We add two pieces of functionality:
+    // 1. Spinner
+    // 2. Cache content (when successfully loaded
+    $.extend($.ui.tabs.prototype.options, {
+      beforeLoad: function(event, ui) {
+        if (ui.tab.data("loaded")) {
+          event.stopPropagation();
+          return;
+        }
+
+        ui.tab.find("span").append('<img style="margin-left:4px; ' +
+          'position: relative; top:2px;" src="wdk/images/filterLoading.gif"/>');
+
+        ui.jqXHR.done(function() {
+          ui.tab.data("loaded", true);
+
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+          ui.panel.html(
+            '<p style="padding:1em;">Unable to load tab content: ' +
+            '<i>' + errorThrown + '</i></p>');
+
+        }).always(function() {
+          ui.tab.find("img").remove();
+        });
+      },
+      load: load
+    });
+
     cookieTest();
     setUpDialogs();
     setUpPopups();
     load();
-    $("body").ajaxSuccess(load);
+
+    // This is wrong:
+    //   1. This gets called before tab data is loaded (as of jQuery UI 1.9?)
+    //   2. This gets called for _all_ ajax requests, which is unecessary.
+    $(document).ajaxSuccess(function(event, xhr, ajaxOptions) {
+      xhr.done(load);
+    });
   }
 
 

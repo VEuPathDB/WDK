@@ -19,16 +19,11 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       // var currentTab = parseInt(summaryViews.children("ul").attr("currentTab"), 10);  
       var currentTab = 0;
       summaryViews.tabs({
-        selected : currentTab,
-        cache: true,
-        spinner: '<img style="height:14px; margin-left:4px" src="wdk/images/loading.gif"/>',
-        ajaxOptions: {
-          success: function(data) {
-            createFlexigridFromTable(summaryViews.find(".Results_Table"));
-          },
-          error: function( xhr, status, index, anchor ) {
-            // alert( "Couldn't load this tab. Please try again later." + status );
-          }
+
+        active : currentTab,
+        load: function(event, ui) {
+          wdk.load();
+          createFlexigridFromTable(ui.panel.find(".Results_Table"));
         }
       });
     });
@@ -56,7 +51,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     }
     // build url.
     var info = $("#Summary_Views");
-    var view = $("#Summary_Views > ul > li.ui-tabs-selected").attr("id");
+    var view = $("#Summary_Views > ul > li.ui-tabs-active").attr("id");
     var url = info.attr("updateUrl") +
         "?strategy=" + strat + "&step=" + step + "&command=arrange" +
         "&attribute=" + attr + "&left=" + left + "&view=" + view;
@@ -113,7 +108,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
     var strategyId = info.attr("strategy");
     var stepId = info.attr("step");
     var strategy = wdk.strategy.model.getStrategyFromBackId(strategyId);
-    var view = $("#Summary_Views > ul > li.ui-tabs-selected").attr("id");
+    var view = $("#Summary_Views > ul > li.ui-tabs-active").attr("id");
     url += "?strategy=" + strategyId + "&strategy_checksum=" +
         strategy.checksum + "&step=" + stepId + "&view=" + view + "&" + command;
     GetResultsPage(url, true, true, true);

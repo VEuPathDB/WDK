@@ -92,8 +92,7 @@ public class User /* implements Serializable */{
   private Integer frontStrategy = null;
   private Integer frontStep = null;
 
-  User(WdkModel model, int userId, String email, String signature)
-      throws WdkUserException {
+  User(WdkModel model, int userId, String email, String signature) {
     this.userId = userId;
     this.email = email;
     this.signature = signature;
@@ -1451,7 +1450,7 @@ public class User /* implements Serializable */{
   }
 
   public SummaryView getCurrentSummaryView(Question question)
-      throws WdkModelException, WdkUserException {
+      throws WdkUserException {
     String key = SUMMARY_VIEW_PREFIX + question.getFullName();
     String viewName = projectPreferences.get(key);
     SummaryView view;

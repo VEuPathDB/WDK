@@ -133,18 +133,15 @@ public class Strategy {
     this.createdTime = createdTime;
   }
 
-  public Step getStep(int index) throws WdkUserException, WdkModelException,
-      SQLException, JSONException {
+  public Step getStep(int index) throws WdkModelException {
     return getLatestStep().getStep(index);
   }
 
-  public Step[] getAllSteps() throws WdkUserException, WdkModelException,
-      SQLException, JSONException {
+  public Step[] getAllSteps() throws WdkModelException {
     return getLatestStep().getAllSteps();
   }
 
-  public int getLength() throws WdkUserException, WdkModelException,
-      SQLException, JSONException {
+  public int getLength() throws WdkModelException {
     return getLatestStep().getLength();
   }
 

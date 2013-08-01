@@ -45,15 +45,15 @@ public class ProcessOpenIdAction extends WdkAction {
 		  // we should already have verified that a user exists with this OpenID
 		  throw new WdkModelException("Previously discovered User cannot be found with OpenId " + openIdUser.getOpenId());
 		}
-		ProcessLoginAction.addLoginCookie(user, auth.rememberUser(), getWdkModel(), this);
+		int wdkCookieMaxAge = ProcessLoginAction.addLoginCookie(user, auth.rememberUser(), getWdkModel(), this);
 		setCurrentUser(user);
 		setSessionAttribute(CConstants.WDK_LOGIN_ERROR_KEY, "");
 		
 		// go back to user's original page after successful login
-		return getSuccessfulLoginResult(auth.getReferringUrl());
+		return getSuccessfulLoginResult(auth.getReferringUrl(), wdkCookieMaxAge);
 	}
 
-  protected ActionResult getSuccessfulLoginResult(String redirectUrl) {
+  protected ActionResult getSuccessfulLoginResult(String redirectUrl, int wdkCookieMaxAge) {
     return new ActionResult().setRedirect(true).setViewPath(redirectUrl);
   }
 }

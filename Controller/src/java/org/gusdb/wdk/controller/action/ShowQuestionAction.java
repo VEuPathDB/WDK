@@ -135,6 +135,9 @@ public class ShowQuestionAction extends Action {
       // handle the additional information
       if (param instanceof EnumParamBean) {
         EnumParamBean enumParam = (EnumParamBean) param;
+        
+        // replace invalid value with valid value.
+        enumParam.fixValue(paramValues);
 
         if (enumParam.isDependentParam()
             && enumParam.getDependedValues().size() == 0) {

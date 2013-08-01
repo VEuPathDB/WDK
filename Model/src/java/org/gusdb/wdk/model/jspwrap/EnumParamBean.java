@@ -264,4 +264,9 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   public boolean isSuppressNode() {
     return param.isSuppressNode();
   }
+
+  public void fixValue(Map<String, String> values) throws WdkModelException {
+    ((AbstractEnumParam)param).fixValue(values);
+  }
+
 }
