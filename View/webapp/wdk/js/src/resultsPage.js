@@ -21,25 +21,9 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       summaryViews.tabs({
 
         active : currentTab,
-
-        beforeLoad: function(event, ui) {
-
-          if (ui.tab.data("loaded")) {
-            event.preventDefault();
-            return;
-          }
-
-          ui.tab.find("span").append('<img style="margin-left:4px; position: relative; top:2px;" src="wdk/images/filterLoading.gif"/>');
-
-          ui.jqXHR.success(function() {
-            ui.tab.data("loaded", true);
-            ui.tab.find("img").remove();
-          });
-        },
-
         load: function(event, ui) {
-          createFlexigridFromTable(ui.panel.find(".Results_Table"));
           wdk.load();
+          createFlexigridFromTable(ui.panel.find(".Results_Table"));
         }
       });
     });

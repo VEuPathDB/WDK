@@ -652,6 +652,37 @@ function getWebAppUrl() {
   // On all pages, check that cookies are enabled.
   function init() {
     $.blockUI.defaults.overlayCSS.opacity = 0.2;
+
+    // Override jQueryUI tabs defaults
+    //
+    // We add two pieces of functionality:
+    // 1. Spinner
+    // 2. Cache content (when successfully loaded
+    $.extend($.ui.tabs.prototype.options, {
+      beforeLoad: function(event, ui) {
+        if (ui.tab.data("loaded")) {
+          event.stopPropagation();
+          return;
+        }
+
+        ui.tab.find("span").append('<img style="margin-left:4px; ' +
+          'position: relative; top:2px;" src="wdk/images/filterLoading.gif"/>');
+
+        ui.jqXHR.done(function() {
+          ui.tab.data("loaded", true);
+
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+          ui.panel.html(
+            '<p style="padding:1em;">Unable to load tab content: ' +
+            '<i>' + errorThrown + '</i></p>');
+
+        }).always(function() {
+          ui.tab.find("img").remove();
+        });
+      },
+      load: load
+    });
+
     cookieTest();
     setUpDialogs();
     setUpPopups();

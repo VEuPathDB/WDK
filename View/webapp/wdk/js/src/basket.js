@@ -8,13 +8,10 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
     var index = (tab.length > 0) ? parseInt(tab.attr("tab-index"), 10) : 0;
 
     $("#basket-menu").tabs({
-      selected: index,
-      load: basketTabSelected,
-      cache: true,
-      ajaxOptions: {
-        error: function( xhr, status, index, anchor ) {
-          // alert( "Couldn't load this tab. Please try again later." + status );
-        }
+      active: index,
+      load: function(event, ui) {
+        basketTabSelected(event, ui);
+        wdk.load();
       }
     });
   }
@@ -300,7 +297,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
   }
 
   function getCurrentBasketTab() {
-    var index = $("#basket #basket-menu").tabs("option", "selected");
+    var index = $("#basket #basket-menu").tabs("option", "active");
     return $("#basket-menu > ul > li[tab-index=" + index + "]");
   }
 
