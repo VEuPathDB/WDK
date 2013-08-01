@@ -773,9 +773,11 @@ public abstract class AbstractEnumParam extends Param {
    */
   public void fixValue(Map<String, String> values) throws WdkModelException {
     // if it's a dependent param, we need to fix the depended value first
-    for (Param dependedParam : getDependedParams()) {
-      if (dependedParam instanceof AbstractEnumParam) {
-        ((AbstractEnumParam) dependedParam).fixValue(values);
+    if (isDependentParam()) {    
+      for (Param dependedParam : getDependedParams()) {
+        if (dependedParam instanceof AbstractEnumParam) {
+          ((AbstractEnumParam) dependedParam).fixValue(values);
+        }
       }
     }
     String value = values.get(name);
