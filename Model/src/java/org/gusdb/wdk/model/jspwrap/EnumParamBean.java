@@ -266,7 +266,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   public void fixValue(Map<String, String> values) throws WdkModelException {
-    ((AbstractEnumParam)param).fixValue(values);
+    param.fixValue(values);
   }
 
 }
