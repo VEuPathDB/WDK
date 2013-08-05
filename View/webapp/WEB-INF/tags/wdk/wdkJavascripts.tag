@@ -34,6 +34,13 @@
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/json.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/handlebars.js"><jsp:text/></script>
 
+  <script>
+    less = {
+      env: 'development'
+    };
+  </script>
+  <script type="text/javascript" src="${urlBase}/wdk/js/lib/less-1.4.1.min.js"><jsp:text/></script>
+
   <!-- WDK js and css -->
 
   <c:choose>
