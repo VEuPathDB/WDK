@@ -31,6 +31,10 @@ public class Migrator_b18_b19 implements Migrator {
 
   private static final int UPDATE_PAGE = 100;
 
+  private static final String[] LEFT_MAP = { "gene_result", "span_result",
+      "sequence_result", "compound_result", "pathway_result", "group_answer",
+      "sequence_answer", "htsIsolateList" };
+
   private static final Logger logger = Logger.getLogger(Migrator_b18_b19.class);
 
   @Override
@@ -52,13 +56,16 @@ public class Migrator_b18_b19 implements Migrator {
       psUpdate = SqlUtils.getPreparedStatement(dataSource, "UPDATE " + schema
           + "steps SET display_params = ? WHERE step_id = ?");
       rsSteps = SqlUtils.executeQuery(dataSource,
-          "SELECT step_id, display_params, left_child_id, right_child_id "
+          "SELECT step_id, display_params, left_child_id, right_child_id, question_name "
               + " FROM " + schema + "steps "
               + " WHERE left_child_id IS NOT NULL  "
               + "    OR right_child_id IS NOT NULL ",
           "wdk-migrate-select-steps", 5000);
       int count = 0;
       while (rsSteps.next()) {
+        // test getting question name, and fail is we are still on old schema
+        rsSteps.getString("question_name");
+
         // get step info
         int stepId = rsSteps.getInt("step_id");
         int leftChildId = rsSteps.getInt("left_child_id");
@@ -67,7 +74,7 @@ public class Migrator_b18_b19 implements Migrator {
         // update params
         String paramContent = platform.getClobData(rsSteps, "display_params");
         Map<String, String> params = stepFactory.parseParamContent(paramContent);
-        updateParams(params, leftChildId, rightChildId);
+        updateParams(stepId, params, leftChildId, rightChildId);
         paramContent = stepFactory.getParamContent(params);
 
         // save changes
@@ -92,14 +99,34 @@ public class Migrator_b18_b19 implements Migrator {
     }
   }
 
-  private void updateParams(Map<String, String> params, int leftChildId,
+  private void updateParams(int stepId, Map<String, String> params, int leftChildId,
       int rightChildId) {
     String[] names = params.keySet().toArray(new String[0]);
+    boolean leftFound = false, rightFound = false;
     for (String name : names) {
-      if (name.startsWith("bq_left_op_")) params.put(name,
-          Integer.toString(leftChildId));
-      else if (name.startsWith("bq_right_op_"))
+      if (name.startsWith("bq_left_op_")) {
+        params.put(name, Integer.toString(leftChildId));
+        leftFound = true;
+      } else if (name.startsWith("bq_right_op_")) {
         params.put(name, Integer.toString(rightChildId));
+        rightFound = true;
+      }
+    }
+    if (!leftFound && !rightFound) {
+      if (rightChildId == 0) { // only left child has value
+        for (String name : LEFT_MAP) {
+          if (params.containsKey(name))
+            params.put(name, Integer.toString(leftChildId));
+        }
+      } else { // both left and right child have values
+        if (params.containsKey("span_a"))
+          params.put("span_a)", Integer.toString(leftChildId));
+        if (params.containsKey("span_b"))
+          params.put("span_b)", Integer.toString(rightChildId));
+      }
+    }
+    if (!leftFound && !rightFound) {
+      System.err.println("Couldn't find step param to update in step: #" + stepId);
     }
   }
 }
