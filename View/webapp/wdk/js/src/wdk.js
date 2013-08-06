@@ -661,7 +661,7 @@ function getWebAppUrl() {
     $.extend($.ui.tabs.prototype.options, {
       beforeLoad: function(event, ui) {
         if (ui.tab.data("loaded")) {
-          event.stopPropagation();
+          event.preventDefault();
           return;
         }
 
