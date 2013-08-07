@@ -37,46 +37,6 @@
   </c:when>
   <c:otherwise>
 
-    <script>
-      $(function() {
-          var activeTab = document.getElementById("tab_" +
-              wdk.stratTabCookie.getCurrentTabCookie('browse'));
-          var active = activeTab ? $("#history-menu > ul > li").index(activeTab) : 0;
-
-        $( "#history-menu" ).tabs({
-          active: active,
-
-          cache: false,
-
-          load: function(event, ui) {
-            wdk.history.selectNoneHist();
-            wdk.stratTabCookie.setCurrentTabCookie('application', 'search_history');
-            wdk.stratTabCookie.setCurrentTabCookie('browse', ui.tab.data("name"));
-
-            ui.panel.find("table.datatables").dataTable({
-              "bAutoWidth": false,
-              "bJQueryUI": true,
-              "bScrollCollapse": true,
-              "aoColumns": [
-                { "bSortable": false }, 
-                null, 
-                // null, 
-                { "bSortable": false },
-                { "bSortable": false },
-                null, 
-                null, 
-                null, 
-                null
-              ],
-              "aaSorting": [[ 6, "desc" ]]
-            });
-            ui.panel.removeClass("ui-widget ui-widget-content");
-            wdk.load();
-          }
-        }).removeClass("ui-widget ui-widget-content");
-      });
-    </script>
-
     <div style="border:0;" id="history-menu" class="tabs">
       <ul>
 

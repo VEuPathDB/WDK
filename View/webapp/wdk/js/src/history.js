@@ -10,6 +10,9 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
   var update_hist = true;
   var queryhistloaded = false;
 
+  /*
+   * @deprecated Url return 500 status
+   */
   function updateQueryHistory() {
     $.ajax({
       url: "showQueryHistory.do?type=step",
@@ -34,11 +37,47 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
         url: "showQueryHistory.do",
         dataType: "html",
         success: function(data) {
-          $("#search_history").html(data);
+          var activeTab = document.getElementById("tab_" +
+              wdk.stratTabCookie.getCurrentTabCookie('browse'));
+          var active = activeTab ? $("#history-menu > ul > li").index(activeTab) : 0;
+
+          $("#search_history").html(data)
+          .find( "#history-menu" ).tabs({
+            active: active,
+
+            cache: false,
+
+            load: function(event, ui) {
+              wdk.history.selectNoneHist();
+              wdk.stratTabCookie.setCurrentTabCookie('application', 'search_history');
+              wdk.stratTabCookie.setCurrentTabCookie('browse', ui.tab.data("name"));
+
+              ui.panel.find("table.datatables").dataTable({
+                "bAutoWidth": false,
+                "bJQueryUI": true,
+                "bScrollCollapse": true,
+                "aoColumns": [
+                  { "bSortable": false }, 
+                  null, 
+                  // null, 
+                  { "bSortable": false },
+                  { "bSortable": false },
+                  null, 
+                  null, 
+                  null, 
+                  null
+                ],
+                "aaSorting": [[ 6, "desc" ]]
+              });
+              ui.panel.removeClass("ui-widget ui-widget-content");
+              wdk.load();
+            }
+          }).removeClass("ui-widget ui-widget-content");
+
           $("#strategy_tabs li a#tab_search_history font.subscriptCount")
               .html("(" + $("#search_history span#totalStrategyCount").html() +
                   ")");
-          initDisplayType();
+          //initDisplayType(); // deprecated
           $("body").unblock();
         },
         error: function(data, msg, e) {
@@ -50,10 +89,13 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
       });
 
     } else {
-      initDisplayType();
+      //initDisplayType(); // deprecated
     }
   }
 
+  /*
+   * @deprecated Uses jQuery UI tab API
+   */
   function initDisplayType() {
     var currentPanel = wdk.stratTabCookie.getCurrentTabCookie('browse');
 
@@ -73,6 +115,9 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     }
   }
 
+  /*
+   * @deprecated
+   */
   function toggleSteps(strat) {
     var img = $("img#img_" + strat);
 
@@ -93,6 +138,9 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     }
   }
 
+  /*
+   * @deprecated
+   */
   function toggleSteps2(strat) {
     var img = $("img#img_" + strat);
 
@@ -120,6 +168,9 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     }
   }
 
+  /*
+   * @deprecated
+   */
   function showHistSave(ele, stratId, save,share) {
     var perm_popup = $("div#hist_save_rename");
     var stratName = $("div#text_" + stratId + " span").text();
@@ -203,6 +254,9 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     selected = [];
   }
 
+  /*
+   * @deprecated - uses jQuery tab API now
+   */
   function displayHist(type) {
     $("#search_history .menubar .selected_type").removeClass("selected_type");
     $(".history_panel").hide();
@@ -347,6 +401,9 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     stratTD = undefined;
   }
 
+  /*
+   * @deprecated No references
+   */
   function displayName(histId) {
     if (overStepId != histId) {
       hideAnyName();
@@ -358,11 +415,17 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     $('#div_' + histId).show();
   }
 
+  /*
+   * @deprecated No references
+   */
   function hideName(histId) {
     if (overStepId == 0) return;
     $('#div_' + histId).hide();
   }
 
+  /*
+   * @deprecated No references
+   */
   function hideAnyName() {
     hideName(overStepId);
   }
