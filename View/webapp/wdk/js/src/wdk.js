@@ -108,15 +108,14 @@ wdk.util.namespace("window.wdk", function(ns, $) {
           // determine the default top level tab
           section = tabs.children("#selected").children("a").attr("id");
           if (section == "tab_basket") { // on basket tab
-              section = $("#basket #basket-menu > ul > li.ui-tabs-active > a").attr("href");
-              section = "#basket #basket-menu > " + section;
+              section = $("#basket #basket-menu > ul > li.ui-tabs-active > a").attr("aria-controls");
           } else { // on open strategies tab
               section = "#" + section.substring(4) + " .Workspace";
           }
       } else { // not on strategy page, just get the general workspace
          section = ".Workspace";
       }
-      return $(section);
+      return $(document.getElementById(section));
   }
 
   var findActiveView = function() {
@@ -659,8 +658,10 @@ function getWebAppUrl() {
     // 1. Spinner
     // 2. Cache content (when successfully loaded
     $.extend($.ui.tabs.prototype.options, {
+      cache: true,
       beforeLoad: function(event, ui) {
-        if (ui.tab.data("loaded")) {
+        var $this = $(this);
+        if (ui.tab.data("loaded") && $this.tabs("option", "cache")) {
           event.preventDefault();
           return;
         }

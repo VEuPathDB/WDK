@@ -57,7 +57,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
   function initDisplayType() {
     var currentPanel = wdk.stratTabCookie.getCurrentTabCookie('browse');
 
-    if ($("#search_history .menubar").length > 0) {
+    if ($("#search_history #history-menu > ul").length > 0) {
       if (currentPanel == undefined ||
           $("#search_history .menubar #tab_" + currentPanel).length == 0) {
         var typeTab = $("#search_history .menubar a:first");
@@ -216,6 +216,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
       }
     });
 
+    // deprecated - was for everything
     if (type == 'cmplt') {
       if (!queryhistloaded) {
         updateQueryHistory();
