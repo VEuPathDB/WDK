@@ -52,7 +52,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
           if (this.url.indexOf("showSummary.do") != -1) {
             wdk.util.removeLoading();
           } else {
-            initDisplay();
+            //initDisplay();
           }
         }
       }

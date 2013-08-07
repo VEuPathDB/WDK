@@ -73,6 +73,7 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
 
 
         countUrl = countUrl.replace(/\s/, "");
+
         $.get(countUrl, '', function (data) {
           if (data.match(/^\d+$/g) != null) {
             if (data == '0') {
@@ -88,7 +89,19 @@ wdk.util.namespace("window.wdk.filter", function(ns, $) {
             link.text("error");
           }
           wdkFilter.loadFilterCount();
-        }, "text");
+        }, "text")
+
+        .fail(function() {
+          var error = $("<span>Error</span>")
+              .addClass("link-url")
+              .attr("id", link.attr("id"))
+              .css({
+                color: "red",
+                "font-style": "italic"
+              });
+          link.replaceWith(error);
+        });
+
       });
     };
   }
