@@ -37,172 +37,82 @@
   </c:when>
   <c:otherwise>
 
-<script>
-$(function() {
-	$( ".tabs" ).tabs();
-});
-</script>
+    <script>
+      $(function() {
+          var activeTab = document.getElementById("tab_" +
+              wdk.stratTabCookie.getCurrentTabCookie('browse'));
+          var active = activeTab ? $("#history-menu > ul > li").index(activeTab) : 0;
 
-<div style="border:0;" id="history-menu" class="tabs">
-<ul class="menubar">
+        $( "#history-menu" ).tabs({
+          active: active,
 
-<!-- the order of tabs is determined in apicommonmodel.xml -->
-<c:forEach items="${unsavedStrategiesMap}" var="strategyEntry">
-    <c:set var="type" value="${strategyEntry.key}"/>
-    <c:set var="unsavedStratList" value="${strategyEntry.value}"/>
-    <c:set var="savedStratList" value="${savedStrategiesMap[type]}" />
-	  <c:set var="totalStratsCount" value="${fn:length(savedStratList) + fn:length(unsavedStratList)}"/>
-    <c:if test="${fn:length(unsavedStratList) > 0 || fn:length(savedStratList) > 0}">
-      <c:choose>
-        <c:when test="${fn:length(unsavedStratList) > 0}">
-          <c:set var="strat" value="${unsavedStratList[0]}" />
-        </c:when>
-        <c:otherwise>
-          <c:set var="strat" value="${savedStratList[0]}" />
-        </c:otherwise>
-      </c:choose>
-      <c:set var="recDispName" value="${strat.recordClass.displayNamePlural}"/>
-      <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
-      <li>
-        <a id="tab_${recTabName}" 
-	   onclick="wdk.history.displayHist('${recTabName}')"
-           href=".tab_${recTabName}">
-		${recDispName} (${totalStratsCount})
-	</a>
-      </li>
-    </c:if>
-</c:forEach>
+          cache: false,
 
-  <c:if test="${fn:length(invalidStrategies) > 0}">
-    <li>
-      <a id="tab_invalid" onclick="wdk.history.displayHist('invalid')"
-       href="javascript:void(0)">Invalid&nbsp;Strategies</a></li>
-  </c:if>
+          load: function(event, ui) {
+            wdk.history.selectNoneHist();
+            wdk.stratTabCookie.setCurrentTabCookie('application', 'search_history');
+            wdk.stratTabCookie.setCurrentTabCookie('browse', ui.tab.data("name"));
 
-  </ul>
+            ui.panel.find("table.datatables").dataTable({
+              "bAutoWidth": false,
+              "bJQueryUI": true,
+              "bScrollCollapse": true,
+              "aoColumns": [
+                { "bSortable": false }, 
+                null, 
+                // null, 
+                { "bSortable": false },
+                { "bSortable": false },
+                null, 
+                null, 
+                null, 
+                null
+              ],
+              "aaSorting": [[ 6, "desc" ]]
+            });
+            ui.panel.removeClass("ui-widget ui-widget-content");
+            wdk.load();
+          }
+        }).removeClass("ui-widget ui-widget-content");
+      });
+    </script>
 
-</div>
+    <div style="border:0;" id="history-menu" class="tabs">
+      <ul>
 
+      <!-- the order of tabs is determined in apicommonmodel.xml -->
+      <c:forEach items="${unsavedStrategiesMap}" var="strategyEntry">
+        <c:set var="type" value="${strategyEntry.key}"/>
+        <c:set var="unsavedStratList" value="${strategyEntry.value}"/>
+        <c:set var="savedStratList" value="${savedStrategiesMap[type]}" />
+        <c:set var="totalStratsCount" value="${fn:length(savedStratList) + fn:length(unsavedStratList)}"/>
+        <c:if test="${fn:length(unsavedStratList) > 0 || fn:length(savedStratList) > 0}">
+          <c:choose>
+            <c:when test="${fn:length(unsavedStratList) > 0}">
+              <c:set var="strat" value="${unsavedStratList[0]}" />
+            </c:when>
+            <c:otherwise>
+              <c:set var="strat" value="${savedStratList[0]}" />
+            </c:otherwise>
+          </c:choose>
+          <c:set var="recDispName" value="${strat.recordClass.displayNamePlural}"/>
+          <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
+          <li id="tab_${recTabName}" data-name="${recTabName}">
+            <a href="showQueryHistory.do?recordType=${type}">
+              ${recDispName} (${totalStratsCount}) <span></span></a>
+          </li>
+        </c:if>
+      </c:forEach>
 
-<table class="history_controls clear" width="100%">
-<tr>
-      <td style="vertical-align:middle" width="30%">Select:&nbsp;<a class="check_toggle" onclick="wdk.history.selectAllHist()" href="javascript:void(0)">All</a>&nbsp|&nbsp;
-                  <a class="check_toggle" onclick="wdk.history.selectAllHist('saved')" href="javascript:void(0)">Saved</a>&nbsp|&nbsp;
-                  <a class="check_toggle" onclick="wdk.history.selectAllHist('unsaved')" href="javascript:void(0)">Unsaved</a>&nbsp|&nbsp;
-                  <a class="check_toggle" onclick="wdk.history.selectNoneHist()" href="javascript:void(0)">None</a>
-      </td>
-      <td style="vertical-align:middle" width="20%" class="medium">
-         <input type="button" value="Open" onclick="wdk.history.handleBulkStrategies('open')"/>
-         <input type="button" value="Close" onclick="wdk.history.handleBulkStrategies('close')"/>
-         <input type="button" value="Delete" onclick="wdk.history.handleBulkStrategies('delete')"/>
-      </td>
- 
-      <td width="50%" style="text-align:right">
-        <div class="strat-legend"><imp:verbiage key="note.strat-legend.content"/></div>
-      </td>
-</tr>
-</table>
+      <c:if test="${fn:length(invalidStrategies) > 0}">
+        <li>
+          <a id="tab_invalid" onclick="wdk.history.displayHist('invalid')"
+           href="javascript:void(0)">Invalid&nbsp;Strategies</a></li>
+      </c:if>
 
-<!-- begin creating history sections to display strategies -->
-<c:forEach items="${unsavedStrategiesMap}" var="strategyEntry">
-  <c:set var="type" value="${strategyEntry.key}"/>
-  <c:set var="strategies" value="${strategyEntry.value}"/>
-  <c:set var="recDispName" value="${strategies[0].recordClass.displayNamePlural}"/>
-  <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
+      </ul>
 
-  <c:if test="${fn:length(strategies) > 0}">
-    <div class="tab_${recTabName} panel_${recTabName} history_panel unsaved-strategies">
-      <imp:strategyTable strategies="${strategies}" wdkUser="${wdkUser}" prefix="Unsaved" />
     </div>
-  </c:if>
-</c:forEach>
-<!-- end of showing strategies grouped by RecordTypes -->
-<br/>
-<!-- begin creating history sections to display strategies -->
-<c:forEach items="${savedStrategiesMap}" var="strategyEntry">
-  <c:set var="type" value="${strategyEntry.key}"/>
-  <c:set var="strategies" value="${strategyEntry.value}"/>
-  <c:set var="recDispName" value="${strategies[0].recordClass.displayNamePlural}"/>
-  <c:set var="recTabName" value="${fn:replace(recDispName, ' ', '_')}"/>
-
-  <c:if test="${fn:length(strategies) > 0}">
-    <div class="tab_${recTabName} panel_${recTabName} history_panel saved-strategies">
-      <imp:strategyTable strategies="${strategies}" wdkUser="${wdkUser}" prefix="Saved" />
-    </div>
-  </c:if>
-</c:forEach>
-<!-- end of showing strategies grouped by RecordTypes -->
-
-<c:set var="scheme" value="${pageContext.request.scheme}" />
-<c:set var="serverName" value="${pageContext.request.serverName}" />
-<c:set var="request_uri" value="${requestScope['javax.servlet.forward.request_uri']}" />
-<c:set var="request_uri" value="${fn:substringAfter(request_uri, '/')}" />
-<c:set var="request_uri" value="${fn:substringBefore(request_uri, '/')}" />
-<c:set var="exportBaseUrl" value = "${scheme}://${serverName}/${request_uri}/im.do?s=" />
-
-<!-- popups for save/rename/share forms -->
-<!-- (though share does not need a form, just a span with the url) -->
-
-    <div class='modal_div save_strat' id="hist_save_rename">
-      <div class='dragHandle'>
-        <div class="modal_name">
-          <span id='popup-title' class='h3left'></span>
-        </div>
-        <a class='close_window' href='javascript:wdk.addStepPopup.closeModal()'>
-        <img alt='Close' src="<c:url value='/wdk/images/Close-X.png'/>"  height='16'/>
-        </a>
-      </div>
-      <form id='save_strat_form_hist' onsubmit='return wdk.addStepPopup.validateSaveForm(this);'>
-        <input type='hidden' value="" name='strategy'/>
-        <input type='text' value="" name='name' maxlength='200'/>
-        <input  style='margin-left:5px;' type='submit' value='Save'/>
-      </form>
-    </div>
-
-
-<%-- invalid strategies, if any --%>
-<c:if test="${fn:length(invalidStrategies) > 0}">
-    <div class="panel_invalid history_panel unsaved-strategies">
-      <imp:strategyTable strategies="${user.invalidStrategies}" wdkUser="${wdkUser}" prefix="Invalid" />
-    </div>
-</c:if>
-
-<!--
-<div class="panel_cmplt history_panel">
-  <h1>All My Queries</h1>
-  <div class="loading"></div>
-</div>
--->
-
-
-<table class="history_controls clear" width="100%">
-   <tr>
-      <td style="vertical-align:middle" width="30%">Select:&nbsp;<a class="check_toggle" onclick="wdk.history.selectAllHist()" href="javascript:void(0)">All</a>&nbsp|&nbsp;
-                  <a class="check_toggle" onclick="wdk.history.selectAllHist('saved')" href="javascript:void(0)">Saved</a>&nbsp|&nbsp;
-                  <a class="check_toggle" onclick="wdk.history.selectAllHist('unsaved')" href="javascript:void(0)">Unsaved</a>&nbsp|&nbsp;
-                  <a class="check_toggle" onclick="wdk.history.selectNoneHist()" href="javascript:void(0)">None</a></td>
-      <td style="vertical-align:middle" width="20%" class="medium">
-         <input type="button" value="Open" onclick="wdk.history.handleBulkStrategies('open')"/>
-         <input type="button" value="Close" onclick="wdk.history.handleBulkStrategies('close')"/>
-         <input type="button" value="Delete" onclick="wdk.history.handleBulkStrategies('delete')"/>
-      </td>
-      <td width="50%" style="text-align:right"></td>
-   </tr>
-</table>
-
   </c:otherwise>
-</c:choose> 
-<!-- end of deciding strategy emptiness -->
-<!--end strategyHistory.tag-->
-
-
-
-<!-- save_warning is defined in view-JSON.js, where the popups for save/rename/shared in Opened tab, use it -->
-<!--  history.js prepares the form defined here, used for these popups in the All tab (history view) -->
-<!-- the form is shared by all strategies, we need to add the message only once -->
-<script type="text/javascript">
-	var myform = $("form#save_strat_form_hist");
-	myform.prepend(wdk.strategy.view.save_warning);
-	$("i,form#save_strat_form_hist").css("font-size","95%");
-</script>
+</c:choose>
 
