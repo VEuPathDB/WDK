@@ -115,7 +115,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
       } else { // not on strategy page, just get the general workspace
          section = ".Workspace";
       }
-      return $(document.getElementById(section));
+      return $(section);
   }
 
   var findActiveView = function() {
