@@ -113,8 +113,8 @@
                                          )
                                      )}">
                         <c:set var="hasBasket" value="${true}" />
-                        <c:set var="recordClass" value="${recordClasses[rcName]}" />
-                        <c:set var="rcDisplay" value="${recordClass.displayName}" />
+                        <c:set var="basketRecordClass" value="${recordClasses[rcName]}" />
+                        <c:set var="rcDisplay" value="${basketRecordClass.displayName}" />
                         <li onclick="wdk.addStepPopup.callWizard('${partialUrl}&stage=basket&recordClass=${rcName}',null,'sl_baskets',3,'next')">
 ${rcDisplay} basket
                         </li>
