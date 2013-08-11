@@ -819,7 +819,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           "SHARE it (email its URL).' href='javascript:void(0)' " +
           "onclick=\"if (confirm('Before you can share your strategy, " +
           "you need to save it. Would you like to do that now?')) { " +
-          "wdk.history.showUpdateDialog(this, true,true) }\"><b style='font-size:120%'>" +
+          "wdk.history.showUpdateDialog(this, true, true) }\"><b style='font-size:120%'>" +
           "Share</b></a>";
     }
 
@@ -835,7 +835,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     } else {
       save = "<a id='save_" + id + "' title='A saved strategy is like a " +
           "snapshot, it cannot be changed.' class='save_strat_link' " +
-          "href='javascript:void(0)' onclick=\"wdk.history.showUpdateDialog(this, true)\">" +
+          "href='javascript:void(0)' onclick=\"wdk.history.showUpdateDialog(this, true, false)\">" +
           "<b style='font-size:120%'>" + sTitle + "</b></a>";
     }
     save += "<div id='save_strat_div_" + id + "' class='modal_div save_strat'" +
@@ -944,9 +944,8 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     inval.setAttribute("class","invalidStep");
     var i = document.createElement('img');
     $(i).attr("src","wdk/images/InvalidStep.png")
-        .attr("height","36")
-        .attr("width","98")
-        .attr("onClick","wdk.strategy.view.reviseInvalidSteps(this)");
+        .attr("style","height:36;width:98;cursor:pointer")
+        .attr("onclick","wdk.strategy.view.reviseInvalidSteps(this)");
     $(inval).append(i);
     return inval;
   }
@@ -972,9 +971,10 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
   function reviseInvalidSteps(ele) {
     var iv_id = $(ele).parent().attr("id").split("_");
-    $("div#diagram_" + iv_id[0] + " div#step_" + iv_id[1] +
-        "_sub h4 a#stepId_" + iv_id[1]).click();
-    $("div#diagram_" + iv_id[0] + " div#invalid-step-text").remove();
+    var stratDiagram = $("div#diagram_" + iv_id[0])[0];
+    var stepLinkSelector = "div#step_" + iv_id[1] + "_sub a#stepId_" + iv_id[1];
+    $(stratDiagram).find(stepLinkSelector).click();
+    $(stratDiagram).find("div#invalid-step-text").remove();
   }
 
   function getSpanOperation(params) {
