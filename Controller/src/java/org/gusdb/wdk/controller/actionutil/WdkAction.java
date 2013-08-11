@@ -171,7 +171,7 @@ public abstract class WdkAction implements SecondaryValidator {
     catch (Exception e) {
       // log error here and attach to request; do not depend on MVC framework
       LOG.error("Unable to execute action " + this.getClass().getName(), e);
-      _request.setAttribute(EXCEPTION_USER, getCurrentUser());
+      _request.setAttribute(EXCEPTION_USER, getCurrentUserOrNull());
       _request.setAttribute(EXCEPTION_PAGE, getRequestData().getFullRequestUrl());
       _request.setAttribute(EXCEPTION_OBJ, e);
       return getForwardFromResult(new ActionResult().setViewName(ERROR), mapping);
@@ -180,7 +180,7 @@ public abstract class WdkAction implements SecondaryValidator {
   
   @SuppressWarnings("rawtypes")
   private Map<String, String[]> getTypedParamMap(Map parameterMap) {
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "cast" })
     Map<String, String[]> parameters = (Map<String, String[]>) (parameterMap == null ?
         new HashMap<>() : new HashMap<>((Map<String, String[]>)parameterMap));
     return parameters;
@@ -387,7 +387,7 @@ public abstract class WdkAction implements SecondaryValidator {
    * the session.
    * 
    * @return the current user (logged in or guest)
-   * @throws WdkModelException
+   * @throws WdkModelException if guest user is needed but unable to create guest user
    */
   protected UserBean getCurrentUser() throws WdkModelException {
     UserBean user = (UserBean)getSessionAttribute(CConstants.WDK_USER_KEY);
@@ -397,6 +397,15 @@ public abstract class WdkAction implements SecondaryValidator {
       setCurrentUser(user);
     }
     return user;
+  }
+  
+  protected UserBean getCurrentUserOrNull() {
+    try {
+      return getCurrentUser();
+    } catch (Exception e) {
+      LOG.error("Could not access or create user", e);
+      return null;
+    }
   }
   
   /**
