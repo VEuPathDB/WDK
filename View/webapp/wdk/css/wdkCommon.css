@@ -1155,7 +1155,19 @@ tr.headerRow > td,th {
 
 .blockMsg{
 	background-repeat: repeat-x;
-
+  z-index: 1001;
+  position: fixed;
+  padding: 10px;
+  margin: 10px;
+  width: 30%;
+  top: 40%;
+  left: 35%;
+  text-align: center;
+  color: rgb(0, 0, 0);
+  background-color: rgb(255, 255, 255);
+  border: 3px solid #aaa;
+  cursor: wait;
+  opacity: 0.9;
 }
 
 #wdk-dialog-IE-warning h2 {

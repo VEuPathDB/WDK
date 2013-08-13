@@ -651,6 +651,11 @@ function getWebAppUrl() {
   // On all pages, check that cookies are enabled.
   function init() {
     $.blockUI.defaults.overlayCSS.opacity = 0.2;
+    $.blockUI.defaults.message = '<span class="h2center">Please wait...</span>';
+    // $.blockUI.defaults.css.padding = "10px";
+    // $.blockUI.defaults.css.margin = "10px";
+    // delete $.blockUI.defaults.css.border;
+    $.blockUI.defaults.css = {};
 
     // Override jQueryUI tabs defaults
     //
