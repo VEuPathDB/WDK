@@ -108,7 +108,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
           // determine the default top level tab
           section = tabs.children("#selected").children("a").attr("id");
           if (section == "tab_basket") { // on basket tab
-              section = $("#basket #basket-menu > ul > li.ui-tabs-active > a").attr("aria-controls");
+              section = "#" + $("#basket #basket-menu > ul > li.ui-tabs-active").attr("aria-controls");
           } else { // on open strategies tab
               section = "#" + section.substring(4) + " .Workspace";
           }
