@@ -417,7 +417,11 @@ public class QuestionBean {
   }
 
   public List<CategoryBean> getWebServiceCategories() {
-    return getCategories(SearchCategory.USED_BY_WEBSITE);
+    return getCategories(SearchCategory.USED_BY_WEBSERVICE);
+  }
+
+  public List<CategoryBean> getDatasetCategories() {
+    return getCategories(SearchCategory.USED_BY_DATASET);
   }
 
   private List<CategoryBean> getCategories(String usedBy) {
