@@ -25,6 +25,7 @@ public class SearchCategory extends WdkModelBase {
 
   public static final String USED_BY_WEBSITE = "website";
   public static final String USED_BY_WEBSERVICE = "webservice";
+  public static final String USED_BY_DATASET = "dataset";
 
   private static final Logger logger = Logger.getLogger(SearchCategory.class);
 
@@ -106,6 +107,10 @@ public class SearchCategory extends WdkModelBase {
     return getQuestions(USED_BY_WEBSERVICE);
   }
 
+  public Question[] getDatasetQuestions() throws WdkModelException {
+    return getQuestions(USED_BY_DATASET);
+  }
+
   private Question[] getQuestions(String usedBy) throws WdkModelException {
     List<Question> questions = new ArrayList<Question>();
     for (CategoryQuestionRef questionRef : questionRefMap.values()) {
@@ -134,6 +139,10 @@ public class SearchCategory extends WdkModelBase {
 
   public Map<String, SearchCategory> getWebserviceChildren() {
     return getChildren(USED_BY_WEBSERVICE);
+  }
+
+  public Map<String, SearchCategory> getDatasetChildren() {
+    return getChildren(USED_BY_DATASET);
   }
 
   private Map<String, SearchCategory> getChildren(String usedBy) {

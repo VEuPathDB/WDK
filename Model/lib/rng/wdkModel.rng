@@ -124,6 +124,7 @@
           <choice>
             <value>website</value>
             <value>webservice</value>
+            <value>dataset</value>
           </choice>
         </attribute>
 	  </optional>
