@@ -18,7 +18,7 @@
   or use another browser such as Chrome or Firefox.</p>
 <p>If you are unable or not allowed to upgrade your browser, please
   <a href="${pageContext.request.contextPath}/contact.do"
-    class="open-window-contact-us">contact us</a>.
+    class="new-window" data-name="contact_us">contact us</a>.
 </p>
 <div style="text-align:center;">
   <a class="button close-dialog-IE-warning"
