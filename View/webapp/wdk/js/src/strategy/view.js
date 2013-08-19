@@ -207,7 +207,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "  <img style='width:50px;height:26px' src='wdk/images/transparent1.gif'>" +
         "  <div style='position:absolute;top:-9px;right:10px;width:19px;height:19px;'></div>"+
         "  <a href='javascript:void(0)' class='edit-icon step-elem' style='display:inline;position:absolute;top:-8px;right:2px' " +
-        "     onclick='event.stopPropagation(); wdk.step.showDetails(this)'>" + getEditImage('boolean')+"</a><br/>"+
+        "     onclick='!event.stopPropagation ? event.cancelBubble = true : event.stopPropagation(); wdk.step.showDetails(this)'>" + getEditImage('boolean')+"</a><br/>"+
         "  <div class='crumb_details'></div>" +
         "  <h6 class='resultCount' style='top:1px'>" +
         "    <span class='operation'>" + jsonStep.results + "&nbsp;" + displayType + "</span>" +
@@ -259,7 +259,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       "         href='javascript:void(0)' onclick='wdk.strategy.controller.NewResults(" + sid + "," + modelstep.frontId + ", false)'>"+
 	//"         onmouseover=\"jQuery(this).find('.edit-icon').css('display','inline')\" onmouseout=\"jQuery(this).find('.edit-icon').css('display','inline')\">"+
       "        <a href='javascript:void(0)'"+
-      "           class='edit-icon step-elem' onclick='event.stopPropagation(); wdk.step.showDetails(this)' id='stepId_" + modelstep.frontId + "' style='display:inline;position:absolute;right:-6px;top:-7px'>"+
+      "           class='edit-icon step-elem' onclick='!event.stopPropagation ? event.cancelBubble = true : event.stopPropagation(); wdk.step.showDetails(this)' id='stepId_" + modelstep.frontId + "' style='display:inline;position:absolute;right:-6px;top:-7px'>"+
       getEditImage('top')+"</a>"+
       "      <h4>"+
       "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
@@ -374,7 +374,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       //"         onmouseover=\"jQuery(this).find('.edit-icon img').attr('src','wdk/images/edit-step-word.png')\" onmouseout=\"jQuery(this).find('.edit-icon img').attr('src','wdk/images/edit-step.png')\">"+
       //"      <div style='position:absolute;"+editIconWinOffset+";width:19px;height:19px;'></div>"+
       "      <a href='javascript:void(0)' class='edit-icon step-elem'"+
-      "           onclick='event.stopPropagation(); wdk.step.showDetails(this)' id='stepId_" + modelstep.frontId + "' " +
+      "           onclick='!event.stopPropagation ? event.cancelBubble = true : event.stopPropagation(); wdk.step.showDetails(this)' id='stepId_" + modelstep.frontId + "' " +
       "           style='display:inline;position:absolute;"+editIconOffset+"'>"+getEditImage(boxType)+"</a>"+
       "      <h4>"+
       "        <span id='fullStepName' style='font-weight:bold;position:relative;top:2px'>" + fullName + "</span>"+
