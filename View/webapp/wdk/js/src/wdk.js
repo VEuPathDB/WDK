@@ -577,12 +577,11 @@ function getWebAppUrl() {
 
   var setUpPopups = function() {
     // connect window pop outs
-    $("body").on("click", "a[class^='open-window-']", function(e) {
+    $("body").on("click", "a[class='new-window']", function(e) {
       e.preventDefault();
       // regex below may be too stringent -- should allow for arbitrary identifier?
-      var windowName,
-          windowFeatures,
-          match = this.className.match(/^open-window-(\w+-\w+)$/),
+      var windowFeatures,
+          windowName = $(this).data("name") || "wdk_window",
           windowUrl = this.href,
           windowWidth = 1050,
           windowHeight = 740,
@@ -604,10 +603,7 @@ function getWebAppUrl() {
 
       // in the future, allow spefied data attributes to override features
       windowFeatures = $.map(defaultFeatures, function(v, k) { return k + "=" + v; }).join(",");
-      if (match) {
-        windowName = "wdk-window-" + match[1];
-        window.open(windowUrl, windowName.replace(/-/g, "_"), windowFeatures).focus();
-      }
+      window.open(windowUrl, windowName.replace(/-/g, "_"), windowFeatures).focus();
     });
   };
 
