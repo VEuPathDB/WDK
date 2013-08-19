@@ -22,6 +22,8 @@
   <!-- comment out the production code. need to revert this on check in -->
 
   <!--<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.js"><jsp:text/></script>-->
+
+  <!-- Replaced with RequireJS
   <script type="text/javascript" src='${urlBase}/wdk/js/lib/jquery-1.7.min.js'><jsp:text/></script>
 
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery-ui-1.8.16.custom.min.js"><jsp:text/></script>
@@ -35,6 +37,7 @@
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/qtip2/jquery.qtip.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/json.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/handlebars.js"><jsp:text/></script>
+  -->
 
   <!-- WDK js and css -->
 
@@ -45,10 +48,11 @@
     </c:when>
     <c:when test="${param._js eq 'concat'}">
       <!-- concatenated files -->
-      <script src="${urlBase}/wdk/js/wdk.js"><jsp:text/></script>
+      <script src="${urlBase}/wdk/js/wdk-main.js"><jsp:text/></script>
     </c:when>
     <c:otherwise>
       <!-- individual files -->
+      <!-- replaced with requirejs
       <script src="${urlBase}/wdk/js/src/util/namespace.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/addStepPopup.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/api.js"><jsp:text/></script>
@@ -78,14 +82,22 @@
       <script src="${urlBase}/wdk/js/src/strategy/error.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/strategy/model.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/strategy/view.js"><jsp:text/></script>
+      -->
+      <script data-main="${urlBase}/assets/js/wdk" src="${urlBase}/assets/js/lib/require.js"><jsp:text/></script>
     </c:otherwise>
   </c:choose>
 
   <!-- All pages -->
   <script>
-    jQuery(wdk.init);
-    jQuery(wdk.user.init);
-    jQuery(wdk.favorite.init);
+    //jQuery(wdk.init);
+    //jQuery(wdk.user.init);
+    //jQuery(wdk.favorite.init);
+    require(["wdk/wdk", "wdk/user", "wdk/favorite"],
+      function(wdk, user, favorite) {
+        wdk.init();
+        user.init();
+        favorite.init();
+      });
   </script>
 
   <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
@@ -117,9 +129,15 @@
     <script type="text/javascript" src="${urlBase}/wdk/js/lib/flexigrid.js"><jsp:text/></script>
 
     <script>
-      jQuery(wdk.step.init);
-      jQuery(wdk.strategy.controller.init);
-      jQuery(wdk.wordCloud.init);
+      //jQuery(wdk.step.init);
+      //jQuery(wdk.strategy.controller.init);
+      //jQuery(wdk.wordCloud.init);
+      require(["wdk/step", "wdk/strategy/controller", "wdk/wordCloud"],
+        function(step, controller, wordCloud) {
+          step.init();
+          controller.init();
+          wordCloud.init();
+        });
     </script>
 
     <jsp:text><![CDATA[
