@@ -1231,4 +1231,24 @@ img#step_5{
 .edit-step {
   padding-left: 0px;
   padding-bottom: 0px;
+  text-align:center;
+  color:black;
+  border:1px solid black;
+  border-radius:4px;
+  display:none;
+  position:relative;
+  width:24px;
+  line-height:10px;
+  background-color:white;
+  font-size: 10px;
+}
+.operation .edit-step {
+  top: 3px;
+}
+.edit-step:hover {
+  background: #ffffa0;
+}
+
+.edit-step-pane:hover .edit-step {
+  display: inline-block;
 }

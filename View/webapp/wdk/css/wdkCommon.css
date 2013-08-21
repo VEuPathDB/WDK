@@ -773,7 +773,6 @@ a.button { padding: 2px 5px; line-height:30px; margin: 3px; }
 		float:right;
 }
 
-
 td.headerrow {
 	height: 29px;
 	font-size: 15px;
@@ -1156,7 +1155,19 @@ tr.headerRow > td,th {
 
 .blockMsg{
 	background-repeat: repeat-x;
-
+  z-index: 1001;
+  position: fixed;
+  padding: 10px;
+  margin: 10px;
+  width: 30%;
+  top: 40%;
+  left: 35%;
+  text-align: center;
+  color: rgb(0, 0, 0);
+  background-color: rgb(255, 255, 255);
+  border: 3px solid #aaa;
+  cursor: wait;
+  opacity: 0.9;
 }
 
 #wdk-dialog-IE-warning h2 {
@@ -1340,7 +1351,7 @@ color:darkred;font-style:italic;font-size:95%;
     border: none;
 }
 
-#search_history .ui-tabs .ui-widget-header {
+#search_history .ui-tabs > .ui-widget-header {
     border-bottom: 1px solid;
 }
 

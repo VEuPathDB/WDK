@@ -59,14 +59,15 @@ public class WdkModel implements ConnectionContainer {
   public static final String CONNECTION_USER = "UserDB";
 
   private static final Logger logger = Logger.getLogger(WdkModel.class);
-  
+
   private static final String NL = System.getProperty("line.separator");
-  
+
   /**
    * Convenience method for constructing a model from the configuration
    * information.
    * 
-   * @throws WdkModelException if unable to construct model
+   * @throws WdkModelException
+   *           if unable to construct model
    */
   public static WdkModel construct(String projectId, String gusHome)
       throws WdkModelException {
@@ -137,9 +138,9 @@ public class WdkModel implements ConnectionContainer {
   private ResultFactory resultFactory;
 
   private Map<String, String> properties;
-  
+
   private UIConfig uiConfig = new UIConfig();
-  
+
   /**
    * xmlSchemaURL is used by the XmlQuestions. This is the only place where
    * XmlQuestion can find it.
@@ -455,7 +456,7 @@ public class WdkModel implements ConnectionContainer {
     appDb = new DatabaseInstance("APP", appDbConfig);
     appDb.initialize();
     dbInstanceList.add(appDb);
-    
+
     userDb = new DatabaseInstance("USER", userDbConfig);
     userDb.initialize();
     dbInstanceList.add(userDb);
@@ -493,14 +494,13 @@ public class WdkModel implements ConnectionContainer {
     for (DatabaseInstance db : dbInstanceList) {
       try {
         db.close();
-      }
-      catch (Exception e) {
-        logger.error("Exception caught while trying to shut down DB instance " +
-        		"with name '" + db.getName() + "'.  Ignoring.", e);
+      } catch (Exception e) {
+        logger.error("Exception caught while trying to shut down DB instance "
+            + "with name '" + db.getName() + "'.  Ignoring.", e);
       }
     }
   }
-  
+
   private void addBasketReferences() throws WdkModelException {
     for (RecordClassSet rcSet : recordClassSets.values()) {
       for (RecordClass recordClass : rcSet.getRecordClasses()) {
@@ -826,32 +826,30 @@ public class WdkModel implements ConnectionContainer {
 
   @Override
   public String toString() {
-    return new StringBuilder("WdkModel: ")
-      .append("projectId='").append(projectId).append("'").append(NL)
-      .append("displayName='").append(displayName).append("'").append(NL)
-      .append("introduction='").append(introduction).append("'").append(NL)
-      .append(NL)
-      .append(uiConfig.toString())
-      .append(showSet("Param", paramSets))
-      .append(showSet("Query", querySets))
-      .append(showSet("RecordClass", recordClassSets))
-      .append(showSet("XmlRecordClass", xmlRecordClassSets))
-      .append(showSet("Question", questionSets))
-      .append(showSet("XmlQuestion", xmlQuestionSets))
-      .toString();
+    return new StringBuilder("WdkModel: ").append("projectId='").append(
+        projectId).append("'").append(NL).append("displayName='").append(
+        displayName).append("'").append(NL).append("introduction='").append(
+        introduction).append("'").append(NL).append(NL).append(
+        uiConfig.toString()).append(showSet("Param", paramSets)).append(
+        showSet("Query", querySets)).append(
+        showSet("RecordClass", recordClassSets)).append(
+        showSet("XmlRecordClass", xmlRecordClassSets)).append(
+        showSet("Question", questionSets)).append(
+        showSet("XmlQuestion", xmlQuestionSets)).toString();
   }
 
   protected String showSet(String setType,
       Map<String, ? extends ModelSetI> setMap) {
-    StringBuilder buf = new StringBuilder(NL)
-      .append("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo").append(NL)
-      .append("ooooooooooooooooooooooooooooo ").append(setType)
-      .append(" Sets oooooooooooooooooooooooooo").append(NL)
-      .append("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo").append(NL).append(NL);
+    StringBuilder buf = new StringBuilder(NL).append(
+        "ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo").append(
+        NL).append("ooooooooooooooooooooooooooooo ").append(setType).append(
+        " Sets oooooooooooooooooooooooooo").append(NL).append(
+        "ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo").append(
+        NL).append(NL);
     for (ModelSetI set : setMap.values()) {
-      buf.append("=========================== ").append(set.getName())
-         .append(" ===============================").append(NL).append(NL)
-         .append(set).append(NL);
+      buf.append("=========================== ").append(set.getName()).append(
+          " ===============================").append(NL).append(NL).append(set).append(
+          NL);
     }
     return buf.append(NL).toString();
   }
@@ -1018,14 +1016,23 @@ public class WdkModel implements ConnectionContainer {
   }
 
   public Map<String, SearchCategory> getCategories() {
-    return new LinkedHashMap<String, SearchCategory>(categoryMap);
+    return getCategories(null);
+  }
+  
+  public Map<String, SearchCategory> getCategories(String usedBy) {
+    Map<String, SearchCategory> categories = new LinkedHashMap<>();
+    for (String name: categoryMap.keySet()) {
+      SearchCategory category = categoryMap.get(name);
+      if (category.isUsedBy(usedBy)) categories.put(name, category);
+    }
+    return categories;
   }
 
-  public Map<String, SearchCategory> getRooCategories(String usedBy) {
+  public Map<String, SearchCategory> getRootCategories(String usedBy) {
     Map<String, SearchCategory> roots = new LinkedHashMap<String, SearchCategory>();
     for (SearchCategory root : rootCategoryMap.values()) {
       String cusedBy = root.getUsedBy();
-      if (cusedBy == null || usedBy == null || cusedBy.equalsIgnoreCase(usedBy))
+      if (root.isUsedBy(cusedBy))
         roots.put(root.getName(), root);
     }
     return roots;
@@ -1134,7 +1141,7 @@ public class WdkModel implements ConnectionContainer {
   public void setGusHome(String gusHome) {
     this.gusHome = gusHome;
   }
-  
+
   public void setUIConfig(UIConfig uiConfig) {
     this.uiConfig = uiConfig;
   }

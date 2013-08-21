@@ -98,29 +98,6 @@ public class QuestionSet extends WdkModelBase implements ModelSetI {
         return array;
     }
 
-    @Deprecated
-    public Map<String, Question[]> getQuestionsByCategory() {
-        Map<String, List<Question>> questionsByCategory = new LinkedHashMap<String, List<Question>>();
-        for (Question question : questionMap.values()) {
-            String category = question.getCategory();
-            List<Question> questionList = questionsByCategory.get(category);
-            if (questionList == null) {
-                questionList = new ArrayList<Question>();
-                questionsByCategory.put(category, questionList);
-            }
-            questionList.add(question);
-        }
-
-        Map<String, Question[]> questionArraysByCategory = new LinkedHashMap<String, Question[]>();
-        for (String category : questionsByCategory.keySet()) {
-            List<Question> questionList = questionsByCategory.get(category);
-            Question[] questions = new Question[questionList.size()];
-            questionList.toArray(questions);
-            questionArraysByCategory.put(category, questions);
-        }
-        return questionArraysByCategory;
-    }
-
     public void addQuestion(Question question) {
         question.setQuestionSet(this);
         if (questionList != null) questionList.add(question);
