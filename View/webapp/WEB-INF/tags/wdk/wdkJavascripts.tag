@@ -27,8 +27,6 @@
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.blockUI.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.cookie.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.dataTables-1.9.0.min.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/FixedColumns.min.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/FixedHeader.min.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jstree/jquery.jstree.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/qtip2/jquery.qtip.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/json.js"><jsp:text/></script>
