@@ -112,17 +112,25 @@ public class Migrator_b18_b19 implements Migrator {
         rightFound = true;
       }
     }
+    params.remove("span_a)");
+    params.remove("span_b)");
     if (!leftFound && !rightFound) {
       if (rightChildId == 0) { // only left child has value
         for (String name : LEFT_MAP) {
-          if (params.containsKey(name))
+          if (params.containsKey(name)) {
             params.put(name, Integer.toString(leftChildId));
+            leftFound = true;
+          }
         }
       } else { // both left and right child have values
-        if (params.containsKey("span_a"))
-          params.put("span_a)", Integer.toString(leftChildId));
-        if (params.containsKey("span_b"))
-          params.put("span_b)", Integer.toString(rightChildId));
+        if (params.containsKey("span_a")) {
+          params.put("span_a", Integer.toString(leftChildId));
+          leftFound = true;
+        }
+        if (params.containsKey("span_b")) {
+          params.put("span_b", Integer.toString(rightChildId));
+          rightFound = true;
+        }
       }
     }
     if (!leftFound && !rightFound) {
