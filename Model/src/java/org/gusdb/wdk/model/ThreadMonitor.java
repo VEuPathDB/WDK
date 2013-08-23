@@ -20,59 +20,65 @@ public class ThreadMonitor implements Runnable {
 
   private static final Logger logger = Logger.getLogger(ThreadMonitor.class);
 
-  private static ThreadMonitor monitor;
-
-  public synchronized static void setup(WdkModel wdkModel) {
-    if (monitor != null)
-      return;
-    if (!wdkModel.getModelConfig().isMonitorBlockedThreads())
-      return;
-
-    monitor = new ThreadMonitor(wdkModel);
+  public static ThreadMonitor start(WdkModel wdkModel) {
+    ThreadMonitor monitor = new ThreadMonitor(wdkModel);
     new Thread(monitor).start();
+    return monitor;
   }
-
-  public static void shutdown() {
-    if (monitor == null)
-      return;
-    monitor.stop();
-    while (!monitor.isStopped()) {
-      try {
-        Thread.sleep(100);
-      } catch (InterruptedException ex) {}
+  
+  public static void shutDown(ThreadMonitor monitor) {
+    if (monitor != null) {
+      logger.info("Stopping thread monitor.  Will wait for shutdown.");
+      monitor.requestStop();
+      while (!monitor.isStopped()) {
+        try {
+          Thread.sleep(100);
+        }
+        catch (InterruptedException ex) {
+          logger.warn("Thread interrupted before thread monitor could be shut down.");
+          return;
+        }
+      }
+      logger.info("Thread monitor successfully stopped.");
+    } else {
+      logger.info("No thread monitor running; no need to shut down.");
     }
-    monitor = null;
   }
 
   private final WdkModel wdkModel;
-  private boolean running;
-  private boolean stopped;
   private String siteInfo;
+  private boolean running = false;
+  private boolean stopRequested = false;
 
   private ThreadMonitor(WdkModel wdkModel) {
     this.wdkModel = wdkModel;
     // get process & host name
-    String host = ManagementFactory.getRuntimeMXBean().getName();
     siteInfo = wdkModel.getProjectId() + " v" + wdkModel.getVersion() + ", "
-        + host;
+        + ManagementFactory.getRuntimeMXBean().getName();
   }
 
-  public boolean isStopped() {
-    return stopped;
+  private boolean isStopped() {
+    return !running;
   }
 
+  // This method should be private but we are forced to keep it public to
+  // maintain compliance with Runnable interface.  TODO: assess refactor??
   @Override
   public void run() {
+    if (!wdkModel.getModelConfig().isMonitorBlockedThreads()) {
+      logger.info("Thread monitor not configured to run.  Monitor returning.");
+      return; // thread monitor turned off
+    }
     logger.info("Thread monitor started at Thread#"
         + Thread.currentThread().getId() + " - " + siteInfo);
     running = true;
-    stopped = false;
+    stopRequested = false;
     int threshold = wdkModel.getModelConfig().getBlockedThreshold();
     int blockedCycles = 0;
     long lastReport = 0;
     ThreadMXBean thbean = ManagementFactory.getThreadMXBean();
     thbean.setThreadContentionMonitoringEnabled(true);
-    while (running) {
+    while (!stopRequested) {
       // get all threads
       Thread[] threads = getAllThreads(thbean);
 
@@ -105,15 +111,18 @@ public class ThreadMonitor implements Runnable {
       // sleep for a while
       try {
         Thread.sleep(SLEEP_INTERVAL);
-      } catch (InterruptedException ex) {}
+      } catch (InterruptedException ex) {
+        logger.warn("Thread Monitor interrupted during operation.  Exiting...");
+        break;
+      }
     }
     logger.info("Thread monitor stopped on Thread#"
         + Thread.currentThread().getId() + " - " + siteInfo);
-    stopped = true;
+    running = false;
   }
 
-  private void stop() {
-    running = false;
+  private void requestStop() {
+    stopRequested = true;
   }
 
   private Thread[] getAllThreads(ThreadMXBean thbean) {
