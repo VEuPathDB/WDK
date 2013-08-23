@@ -1249,7 +1249,6 @@ img#step_5{
   background: #ffffa0;
 }
 
-.edit-step-pane:hover .edit-step,
-.edit-step-pane *:hover .edit-step {
+.edit-step-pane:hover .edit-step {
   display: inline-block;
 }
