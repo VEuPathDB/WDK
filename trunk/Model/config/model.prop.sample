@@ -1,0 +1,32 @@
+# This is a template for ${GUS_HOME}/config/<model>/model.prop
+# Properties defined here can be referenced in model XML files.
+# For example, this line:
+NAME=value
+# will cause the WDK to replace  all occurrences of "@@NAME@@" in the model XML with "value".
+
+#----------------------------------------------------------
+# Project Identifiers
+#----------------------------------------------------------
+
+# PROJECT_ID is set to the model name, such as "TemplateDB"
+PROJECT_ID=<modelName>
+SERVER_NAME=localhost:8080
+
+#----------------------------------------------------------
+# External Database Ids (as referenced in appDb)
+#----------------------------------------------------------
+
+# ENTREZ_GENE_XBDR_ID=
+
+#----------------------------------------------------------
+# Internal Identifiers (as referenced in appDb)
+#----------------------------------------------------------
+
+PROTEIN_TABLE=180
+
+#----------------------------------------------------------
+# URLS
+#----------------------------------------------------------
+
+EST_URL=http://www.ncbi.nlm.nih.gov/entrez/query.fcgi?cmd=search&db=nucleotide&term=$$source_id$$
+TAXON_URL=http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?name=$$taxon_name$$
