@@ -82,7 +82,7 @@ public class WdkModel implements ConnectionContainer {
     try {
       ModelXmlParser parser = new ModelXmlParser(gusHome);
       WdkModel wdkModel = parser.parseModel(projectId);
-      ThreadMonitor.setup(wdkModel);
+      wdkModel.doAdditionalStartup();
       logger.debug("Model ready to use.");
       return wdkModel;
     } catch (Exception ex) {
@@ -97,7 +97,6 @@ public class WdkModel implements ConnectionContainer {
 
   private DatabaseInstance appDb;
   private DatabaseInstance userDb;
-  private static List<DatabaseInstance> dbInstanceList = new ArrayList<>();
 
   private List<QuerySet> querySetList = new ArrayList<QuerySet>();
   private Map<String, QuerySet> querySets = new LinkedHashMap<String, QuerySet>();
@@ -169,6 +168,13 @@ public class WdkModel implements ConnectionContainer {
 
   private String buildNumber;
 
+  private ThreadMonitor _myThreadMonitor;
+  
+  public void doAdditionalStartup() {
+    // start up thread monitor and save reference
+    _myThreadMonitor = ThreadMonitor.start(this);
+  }
+  
   /**
    * @param initRecordClassList
    * @return
@@ -455,11 +461,9 @@ public class WdkModel implements ConnectionContainer {
 
     appDb = new DatabaseInstance("APP", appDbConfig);
     appDb.initialize();
-    dbInstanceList.add(appDb);
 
     userDb = new DatabaseInstance("USER", userDbConfig);
     userDb.initialize();
-    dbInstanceList.add(userDb);
 
     resultFactory = new ResultFactory(this);
     userFactory = new UserFactory(this);
@@ -490,14 +494,19 @@ public class WdkModel implements ConnectionContainer {
     createBooleanQuestions();
   }
 
-  public static final void closeDbInstances() {
-    for (DatabaseInstance db : dbInstanceList) {
-      try {
-        db.close();
-      } catch (Exception e) {
-        logger.error("Exception caught while trying to shut down DB instance "
-            + "with name '" + db.getName() + "'.  Ignoring.", e);
-      }
+  public void releaseResources() {
+    releaseDb(appDb);
+    releaseDb(userDb);
+    ThreadMonitor.shutDown(_myThreadMonitor);
+  }
+  
+  private static void releaseDb(DatabaseInstance db) {
+    try {
+      logger.info("Releasing database resources for DB: " + db.getName());
+      db.close();
+    } catch (Exception e) {
+      logger.error("Exception caught while trying to shut down DB instance "
+          + "with name '" + db.getName() + "'.  Ignoring.", e);
     }
   }
 

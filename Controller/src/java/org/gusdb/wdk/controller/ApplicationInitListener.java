@@ -10,7 +10,6 @@ import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.controller.wizard.Wizard;
-import org.gusdb.wdk.model.ThreadMonitor;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -42,8 +41,13 @@ public class ApplicationInitListener implements ServletContextListener {
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
         try {
-            WdkModel.closeDbInstances();
-            ThreadMonitor.shutdown();
+            ServletContext context = sce.getServletContext();
+            WdkModelBean wdkModel = (WdkModelBean)context.getAttribute(CConstants.WDK_MODEL_KEY);
+            if (wdkModel != null) {
+              // insulate in case model never properly loaded
+              logger.info("Releasing resources for WDK Model.");
+              wdkModel.getModel().releaseResources();
+            }
         }
         catch (Exception ex) {
             throw new RuntimeException(ex);
