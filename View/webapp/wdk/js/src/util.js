@@ -261,6 +261,7 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
   ns.setFrontAction = setFrontAction;
   ns.showLoading = showLoading;
   ns.checkEnter = checkEnter;
+  ns.executeFunctionByName = executeFunctionByName;
   ns.executeOnloadFunctions = executeOnloadFunctions;
   ns.sendContactRequest = sendContactRequest;
   ns.playSadTrombone = playSadTrombone;

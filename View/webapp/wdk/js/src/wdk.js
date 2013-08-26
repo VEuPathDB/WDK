@@ -615,18 +615,16 @@ function getWebAppUrl() {
       controller = $attrs.controller;
 
       // convert some-name -> someName
-      controller = controller.replace(/-(\w)/, function(hyphenLetter) {
-        return hyphenLetter.replace(/-/, '').toUpperCase();
-      });
+      // controller = controller.replace(/-(\w)/, function(hyphenLetter) {
+      //   return hyphenLetter.replace(/-/, '').toUpperCase();
+      // });
 
       // only invoke once
       if ($attrs._invoked) return;
 
-      // TODO add support for namespaces
-      if (typeof window[controller] === "function") {
-        window[controller].call(window, $element, $attrs);
-        $attrs._invoked = true;
-      }
+      wdk.util.executeFunctionByName(controller, window, window, $element, $attrs);
+
+      $attrs._invoked = true;
     });
   };
 
