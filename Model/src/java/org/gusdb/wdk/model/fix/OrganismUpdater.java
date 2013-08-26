@@ -61,6 +61,7 @@ public class OrganismUpdater {
         userSchema = userDB.getUserSchema();
         wdkSchema = userDB.getWdkEngineSchema();
         mappings = loadMapFile(mapFile);
+	logger.debug("\n" + mappings + "\n\n\n");
     }
 
     private Map<String, String> loadMapFile(String fileName) throws IOException {
@@ -122,6 +123,8 @@ public class OrganismUpdater {
                 JSONObject jsParams = new JSONObject(content);
                 if (changeParams(jsParams, clobKeys)) {
                     content = jsParams.toString();
+		    logger.info("we need to update params: --" + content + "-- in step_id:" + stepId + "\n");
+
                     platform.setClobData(psUpdate, 1, content, false);
                     psUpdate.setInt(2, stepId);
                     psUpdate.addBatch();
@@ -153,7 +156,9 @@ public class OrganismUpdater {
                 } else { // uncompressed values
                     StringBuilder buffer = new StringBuilder();
                     for (String organism : organisms.split("\\s*,\\s*")) {
+			logger.debug("Organism found: --" + organism + "\n\n");
                         if (mappings.containsKey(organism)) {
+			    logger.debug("FOUND param organism uncompressed with value that needs update...");
                             organism = mappings.get(organism);
                             updated = true;
                         }
@@ -190,6 +195,7 @@ public class OrganismUpdater {
                             "clob_value");
                     StringBuilder buffer = new StringBuilder(content);
                     if (changeClobs(buffer)) {
+			logger.debug("CLOBS CHANGED...");
                         platform.setClobData(psUpdate, 1, buffer.toString(),
                                 false);
                         psUpdate.setString(2, clobKey);
@@ -228,6 +234,7 @@ public class OrganismUpdater {
             buffer.append(organism);
         }
         if (updated) content.replace(0, content.length(), buffer.toString());
+
         return updated;
     }
 }
