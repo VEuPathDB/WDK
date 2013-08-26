@@ -38,7 +38,7 @@ public class OrganismUpdater {
 				//       old_name=new_name
 				//one for each line
         if (args.length != 2) {
-            System.err.println("Usage: organismUpdater <project_id> <map_file>");
+            System.err.println("Usage: organismUpdater <project_id> <map_file>\nPlease enter one project at a time.");
             System.exit(-1);
         }
 
@@ -95,9 +95,9 @@ public class OrganismUpdater {
         ResultSet resultSet = null;
         String select = "SELECT s.step_id, s.display_params            "
                 + " FROM " + userSchema + "users u, " + userSchema
-                + "steps s, " + wdkSchema + "answers a "
+                + "steps s, "
                 + " WHERE u.is_guest = 0 AND u.user_id = s.user_id "
-                + "   AND s.answer_id = a.answer_id AND a.project_id = ?";
+                + "   AND s.project_id = ?";
         String update = "UPDATE " + userSchema + "steps "
                 + " SET display_params = ? WHERE step_id = ?";
         try {
