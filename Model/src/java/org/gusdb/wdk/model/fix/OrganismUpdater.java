@@ -95,7 +95,7 @@ public class OrganismUpdater {
         ResultSet resultSet = null;
         String select = "SELECT s.step_id, s.display_params            "
                 + " FROM " + userSchema + "users u, " + userSchema
-                + "steps s, "
+                + "steps s"
                 + " WHERE u.is_guest = 0 AND u.user_id = s.user_id "
                 + "   AND s.project_id = ?";
         String update = "UPDATE " + userSchema + "steps "
