@@ -42,7 +42,7 @@ public class QuestionNameUpdater {
     private final String projectId;
     private final WdkModel wdkModel;
     private final String userSchema;
-    private final String wdkSchema;
+    //private final String wdkSchema;
     private final Map<String, String> mappings;
 
     public QuestionNameUpdater(String projectId, String mapFile)
@@ -52,7 +52,7 @@ public class QuestionNameUpdater {
         wdkModel = WdkModel.construct(projectId, gusHome);
         ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
         userSchema = userDB.getUserSchema();
-        wdkSchema = userDB.getWdkEngineSchema();
+        //wdkSchema = userDB.getWdkEngineSchema();
         mappings = loadMapFile(mapFile);
     }
 
@@ -82,14 +82,14 @@ public class QuestionNameUpdater {
         DataSource dataSource = userDb.getDataSource();
         PreparedStatement psSelect = null, psUpdate = null;
         ResultSet resultSet = null;
-        String select = "SELECT a.answer_id,a.question_name           "
+        String select = "SELECT s.step_id, s.question_name           "
                 + " FROM " + userSchema + "users u, " + userSchema
-                + "steps s, " + wdkSchema + "answers a "
+                + "steps s "
                 + " WHERE u.is_guest = 0 AND u.user_id = s.user_id "
-                + "   AND s.answer_id = a.answer_id AND a.project_id = ?";
+                + "   AND  s.project_id = ?";
 				logger.info("SELECT:   " + select + "\n\n");
-        String update = "UPDATE " + wdkSchema + "answers "
-                + " SET question_name = ? WHERE answer_id = ?";
+        String update = "UPDATE " + userSchema + "steps "
+                + " SET question_name = ? WHERE step_id = ?";
 				logger.info("UPDATE:   " + update + "\n\n");
 
 
@@ -99,14 +99,14 @@ public class QuestionNameUpdater {
             psSelect.setString(1, projectId);
             resultSet = psSelect.executeQuery();
             int count = 0;
-            int answerCount = 0;
+            int stepCount = 0;
             while (resultSet.next()) {
-                answerCount++;
-                if (answerCount % 1000 == 0) {
-                    logger.debug(answerCount + " answers read");
+                stepCount++;
+                if (stepCount % 1000 == 0) {
+                    logger.debug(stepCount + " steps read");
                 }
 
-                int answerId = resultSet.getInt("answer_id");
+                int stepId = resultSet.getInt("step_id");
                 String content = resultSet.getString("question_name");
                 if (content == null || content.trim().length() == 0) continue;
 								//  if (content.replaceAll("\\s", "").equals("{}")) continue;
@@ -117,14 +117,14 @@ public class QuestionNameUpdater {
 										logger.info("new question:" + content + "\n\n");
 										// platform.setClobData(psUpdate, 1, content, false);
 										psUpdate.setString(1, content);
-                    psUpdate.setInt(2, answerId);
+                    psUpdate.setInt(2, stepId);
                     psUpdate.addBatch();
                     count++;
                     if (count % 100 == 0) psUpdate.executeBatch();
                 }
                 if (count % 100 != 0) psUpdate.executeBatch();
             }
-						logger.info("THE END:   " + count + " answers modified\n\n");
+						logger.info("THE END:   " + count + " steps modified\n\n");
         }
         catch (SQLException ex) {
             logger.error(ex);
