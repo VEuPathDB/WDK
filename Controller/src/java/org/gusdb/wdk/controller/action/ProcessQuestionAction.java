@@ -122,7 +122,7 @@ public class ProcessQuestionAction extends Action {
             String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
 
             // the params has been validated, and now is parsed, and if the size
-            // of the value is too long, ti will be replaced is checksum
+            // of the value is too long, it will be replaced is checksum
             Map<String, String> params = prepareParams(wdkUser, request, qForm);
             
             // get the assigned weight

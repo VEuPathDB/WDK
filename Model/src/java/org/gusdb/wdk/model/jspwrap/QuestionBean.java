@@ -432,4 +432,10 @@ public class QuestionBean {
     }
     return beans;
   }
+
+  public void fillContextParamValues(UserBean user,
+      Map<String, String> contextParamValues) throws WdkModelException {
+    question.getQuery().fillContextParamValues(user.getUser(),
+        contextParamValues);
+  }
 }

@@ -126,7 +126,7 @@ public class EnumParamCache {
 		return _termTreeList;
 	}
 
-	public Map<String, String> getDependedValue() {
+	public Map<String, String> getDependedValues() {
 		return _dependedParamValues;
 	}
 	

@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -39,7 +38,8 @@ import org.json.JSONObject;
  */
 public abstract class QueryInstance {
 
-  public abstract void createCache(String tableName, int instanceId) throws WdkModelException;
+  public abstract void createCache(String tableName, int instanceId)
+      throws WdkModelException;
 
   public abstract void insertToCache(String tableName, int instanceId)
       throws WdkModelException;
@@ -215,13 +215,12 @@ public abstract class QueryInstance {
       StringBuffer sql = new StringBuffer("SELECT count(*) FROM (");
       sql.append(getSql()).append(") f");
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
-      Object objSize = SqlUtils.executeScalar(dataSource,
-          sql.toString(), query.getFullName() + "__count");
+      Object objSize = SqlUtils.executeScalar(dataSource, sql.toString(),
+          query.getFullName() + "__count");
       int resultSize = Integer.parseInt(objSize.toString());
       logger.debug("end getting query size");
       return resultSize;
-    }
-    catch (SQLException e) {
+    } catch (SQLException e) {
       throw new WdkModelException(e);
     }
   }
@@ -259,27 +258,8 @@ public abstract class QueryInstance {
         Param param = params.get(paramName);
         prompt = param.getPrompt();
 
-        // check for dependent param
-        /*
-         * Skipping for now; since AbstractEnumParam.validateValue() only checks
-         * for empty values, it doesn't matter if the dependent value is "valid"
-         * per the depended param. We should add code to more robustly verify
-         * that the passed param value is valid.
-         */
-        if (param instanceof AbstractEnumParam
-            && ((AbstractEnumParam) param).isDependentParam()) {
-          Set<Param> dependedParams = ((AbstractEnumParam) param).getDependedParams();
-          Map<String, String> dependedParamValues = new LinkedHashMap<>();
-          for (Param dependedParam : dependedParams) {
-            String dependedValue = values.get(dependedParam.getName());
-            dependedParamValues.put(dependedParam.getName(), dependedValue);
-          }
-          // the following method must be implemented!
-          ((AbstractEnumParam) param).validateValue(user, dependentValue,
-              dependedParamValues);
-        } else { // validate param
-          param.validate(user, dependentValue);
-        }
+        // validate param
+        param.validate(user, dependentValue, values);
       } catch (Exception ex) {
         ex.printStackTrace();
         errMsg = ex.getMessage();
