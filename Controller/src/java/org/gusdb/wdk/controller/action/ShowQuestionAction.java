@@ -120,8 +120,8 @@ public class ShowQuestionAction extends Action {
     ParamBean<?>[] params = wdkQuestion.getParams();
 
     // fetch the previous values
-    Map<String, String> originalValues = getParamMapFromForm(user, params, qForm,
-        request);
+    Map<String, String> originalValues = getParamMapFromForm(user, params,
+        qForm, request);
     // prepare the context values
     Map<String, String> contextValues = new LinkedHashMap<>(originalValues);
     wdkQuestion.fillContextParamValues(user, contextValues);
@@ -145,23 +145,15 @@ public class ShowQuestionAction extends Action {
         qForm.setArray(paramName + LABELS_SUFFIX, labels);
         qForm.setArray(paramName + TERMS_SUFFIX, terms);
 
-        // if no default is assigned, use the first enum item
-        if (paramValue == null) {
-          String defaultValue = param.getDefault();
-          if (defaultValue != null)
-            paramValue = defaultValue;
-        } else {
-          paramValue = param.dependentValueToRawValue(user, paramValue);
-        }
-        if (paramValue != null) {
-          String[] values = paramValue.split(",");
-          qForm.setArray(paramName, values);
-        }
+        String[] values = paramValue.split(",");
+        qForm.setArray(paramName, values);
+
         // set the original values to the param. The original values will be
         // used to render invalid value warning on the page, if the values is
         // invalid.
         if (originalValues.containsKey(paramName)) {
           String currentValue = originalValues.get(paramName);
+          currentValue = param.dependentValueToRawValue(user, currentValue);
           String[] currentValues = currentValue.split(",");
           qForm.setArray(paramName, currentValues);
           enumParam.setCurrentValues(currentValues);

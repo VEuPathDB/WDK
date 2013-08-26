@@ -28,7 +28,14 @@ public class EnumParamCache {
 	}
 	
 	public String getDefaultValue() {
+	  if (_defaultValue != null) {
 		return _defaultValue;
+	  } else if (_termInternalMap.size() > 0) { 
+	    // no default specified, use the first term
+	    return _termDisplayMap.keySet().iterator().next();
+	  } else { // no value found
+	    return null;
+	  }
 	}
 	
 	public void setDefaultValue(String defaultValue) {
