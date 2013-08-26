@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.query.param;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -129,11 +130,10 @@ public class StringParam extends Param {
   public String toString() {
     String newline = System.getProperty("line.separator");
     return new StringBuilder(super.toString())
-      //.append("  sample='").append(sample).append("'").append(newline)
-      .append("  regex='").append(regex).append("'").append(newline)
-      .append("  length='").append(length).append("'").append(newline)
-      .append("  multiLine='").append(multiLine).append("'")
-      .toString();
+    // .append("  sample='").append(sample).append("'").append(newline)
+    .append("  regex='").append(regex).append("'").append(newline).append(
+        "  length='").append(length).append("'").append(newline).append(
+        "  multiLine='").append(multiLine).append("'").toString();
   }
 
   // ///////////////////////////////////////////////////////////////
@@ -231,8 +231,9 @@ public class StringParam extends Param {
    * @see org.gusdb.wdk.model.query.param.Param#validateValue(java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String dependentValue)
-      throws WdkUserException, WdkModelException {
+  protected void validateValue(User user, String dependentValue,
+      Map<String, String> contextValues) throws WdkUserException,
+      WdkModelException {
     String rawValue = decompressValue(dependentValue);
     if (number) {
       try {

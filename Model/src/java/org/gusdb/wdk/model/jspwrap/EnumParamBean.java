@@ -147,10 +147,12 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
 
   public String getDependedParamNames() throws WdkModelException {
     Set<Param> dependedParams = param.getDependedParams();
-    if (dependedParams == null) return null;
+    if (dependedParams == null)
+      return null;
     StringBuilder buffer = new StringBuilder();
     for (Param p : dependedParams) {
-      if (buffer.length() > 0) buffer.append(",");
+      if (buffer.length() > 0)
+        buffer.append(",");
       buffer.append(p.getName());
     }
     return buffer.toString();
@@ -161,7 +163,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   public String[] getTerms(String termList) {
-    return param.getTerms(termList);
+    return param.convertToTerms(termList);
   }
 
   public String getRawDisplayValue() throws WdkModelException {
@@ -254,19 +256,17 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   @Override
-  public void validate(UserBean user, String rawOrDependentValue)
-      throws WdkModelException, WdkUserException {
+  public void validate(UserBean user, String rawOrDependentValue,
+      Map<String, String> contextValues) throws WdkModelException,
+      WdkUserException {
     logger.debug("Validating param=" + getName() + ", value="
-        + rawOrDependentValue + ", dependedValue=" + Utilities.print(_dependedValues));
-    param.validateValue(user.getUser(), rawOrDependentValue, _dependedValues);
+        + rawOrDependentValue + ", dependedValue="
+        + Utilities.print(_dependedValues));
+    param.validate(user.getUser(), rawOrDependentValue, _dependedValues);
   }
 
   public boolean isSuppressNode() {
     return param.isSuppressNode();
-  }
-
-  public void fixValue(Map<String, String> values) throws WdkModelException {
-    param.fixValue(values);
   }
 
 }

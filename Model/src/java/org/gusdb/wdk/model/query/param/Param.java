@@ -3,6 +3,7 @@ package org.gusdb.wdk.model.query.param;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 
@@ -94,9 +95,10 @@ public abstract class Param extends WdkModelBase implements Cloneable {
    * @param user
    * @param rawOrDependentValue
    */
-  protected abstract void validateValue(User user, String rawOrDependentValue)
-      throws WdkModelException, WdkUserException;
-
+  protected abstract void validateValue(User user, String rawOrDependentValue,
+      Map<String, String> contextValues) throws WdkModelException,
+      WdkUserException;
+  
   protected abstract void appendJSONContent(JSONObject jsParam, boolean extra)
       throws JSONException;
 
@@ -232,7 +234,8 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   }
 
   /**
-   * @throws WdkModelException if unable to retrieve default value
+   * @throws WdkModelException
+   *           if unable to retrieve default value
    */
   public String getDefault() throws WdkModelException {
     if (defaultValue != null && defaultValue.length() == 0)
@@ -432,7 +435,8 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   }
 
   /**
-   * @throws WdkModelException if unable to load resources from model 
+   * @throws WdkModelException
+   *           if unable to load resources from model
    */
   public void setResources(WdkModel model) throws WdkModelException {
     this.wdkModel = model;
@@ -445,8 +449,9 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     return sql.replaceAll(regex, Matcher.quoteReplacement(internalValue));
   }
 
-  public void validate(User user, String dependentValue)
-      throws WdkModelException, WdkUserException {
+  public void validate(User user, String dependentValue,
+      Map<String, String> contextValues) throws WdkModelException,
+      WdkUserException {
     // handle the empty case
     if (dependentValue == null || dependentValue.length() == 0) {
       if (!allowEmpty)
@@ -457,7 +462,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     } else {
       // value is not empty, the sub classes will complete further
       // validation
-      validateValue(user, dependentValue);
+      validateValue(user, dependentValue, contextValues);
     }
   }
 
