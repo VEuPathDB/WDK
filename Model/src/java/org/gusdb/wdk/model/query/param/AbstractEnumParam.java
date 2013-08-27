@@ -699,10 +699,12 @@ public abstract class AbstractEnumParam extends Param {
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+    if (resolved) return;
+
     super.resolveReferences(wdkModel);
 
     dependedParamRefs.clear();
-    if (dependedParamRef != null && dependedParamRef.trim().length() > 0)
+    if (dependedParamRef != null && dependedParamRef.trim().length() > 0) {
       for (String paramRef : dependedParamRef.split(",")) {
         // make sure the param exists
         wdkModel.resolveReference(paramRef);
@@ -713,6 +715,8 @@ public abstract class AbstractEnumParam extends Param {
               + "] defined in dependent param " + getFullName());
         dependedParamRefs.add(paramRef);
       }
+    }
+    resolved = true;
   }
 
   @Override
@@ -756,9 +760,12 @@ public abstract class AbstractEnumParam extends Param {
 
   public void fetchCorrectValue(User user, Map<String, String> contextValues,
       Map<String, EnumParamCache> caches) throws WdkModelException {
+      logger.debug("Fixing value " + name + "='" + contextValues.get(name) + "'");
+
     // make sure the values for depended params are fetched first.
     if (isDependentParam()) {
       for (Param dependedParam : getDependedParams()) {
+        logger.debug (name + " depends on " + dependedParam.getName());
         if (dependedParam instanceof AbstractEnumParam) {
           ((AbstractEnumParam) dependedParam).fetchCorrectValue(user,
               contextValues, caches);
@@ -778,6 +785,7 @@ public abstract class AbstractEnumParam extends Param {
     } else { // value exists in context values, check if value is valid
       String paramValue = contextValues.get(name);
       paramValue = dependentValueToRawValue(user, paramValue);
+      logger.debug("CORRECTING " + name + "=\"" + paramValue + "\"");
       String[] terms = convertToTerms(paramValue);
       Map<String, String> termMap = cache.getVocabMap();
       Set<String> validValues = new LinkedHashSet<>();
@@ -798,6 +806,7 @@ public abstract class AbstractEnumParam extends Param {
       } else {
         contextValues.put(name, cache.getDefaultValue());
       }
+      logger.debug("Corrected " + name + "\"" + contextValues.get(name) + "\"");
     }
   }
 
