@@ -413,20 +413,20 @@ public class QuestionBean {
   }
 
   public List<CategoryBean> getWebsiteCategories() {
-    return getCategories(SearchCategory.USED_BY_WEBSITE);
+    return getCategories(SearchCategory.USED_BY_WEBSITE, false);
   }
 
   public List<CategoryBean> getWebServiceCategories() {
-    return getCategories(SearchCategory.USED_BY_WEBSERVICE);
+    return getCategories(SearchCategory.USED_BY_WEBSERVICE, false);
   }
 
   public List<CategoryBean> getDatasetCategories() {
-    return getCategories(SearchCategory.USED_BY_DATASET);
+    return getCategories(SearchCategory.USED_BY_DATASET, true);
   }
 
-  private List<CategoryBean> getCategories(String usedBy) {
+  private List<CategoryBean> getCategories(String usedBy, boolean strict) {
     List<CategoryBean> beans = new ArrayList<>();
-    Map<String, SearchCategory> categories = question.getCategories(usedBy);
+    Map<String, SearchCategory> categories = question.getCategories(usedBy, strict);
     for (SearchCategory category : categories.values()) {
       beans.add(new CategoryBean(category));
     }
