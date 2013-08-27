@@ -75,31 +75,22 @@ public class QuestionForm extends MapActionForm {
       return errors;
 
     Map<String, ParamBean<?>> params = wdkQuestion.getParamsMap();
-
-    // before validating params, need to set depended values properly.
+    
+    // get the context values first
+    Map<String, String> contextValues = new LinkedHashMap<>();
+    for (String name : params.keySet()) {
+      String value = (String) getValue(name);
+      contextValues.put(name, value);
+    }
+    
+    // assign context values to the param bean
     for (ParamBean<?> param : params.values()) {
       if (param instanceof EnumParamBean) {
-        EnumParamBean enumParam = (EnumParamBean) param;
-        if (enumParam.isDependentParam()) {
-          try {
-            Map<String, String> dependedValues = new LinkedHashMap<>();
-            for (ParamBean<?> dependedParam : enumParam.getDependedParams()) {
-              String dependedValue = (String) getValue(dependedParam.getName());
-              dependedValues.put(dependedParam.getName(), dependedValue);
-            }
-            enumParam.setDependedValues(dependedValues);
-            logger.debug("param=" + param.getFullName()
-                + ", set dependedValues=" + Utilities.print(dependedValues));
-          } catch (WdkModelException ex) {
-            ex.printStackTrace();
-            ActionMessage message = new ActionMessage("mapped.properties",
-                param.getPrompt(), ex.getMessage());
-            errors.add(ActionErrors.GLOBAL_MESSAGE, message);
-          }
-        }
+        ((EnumParamBean)param).setDependedValues(contextValues);
       }
     }
 
+    // validate params
     for (String paramName : params.keySet()) {
       String prompt = paramName;
       try {
@@ -112,7 +103,7 @@ public class QuestionForm extends MapActionForm {
 
         // cannot validate datasetParam here
         if (!(param instanceof DatasetParamBean))
-          param.validate(user, dependentValue);
+          param.validate(user, dependentValue, contextValues);
       } catch (Exception ex) {
         ex.printStackTrace();
         ActionMessage message = new ActionMessage("mapped.properties", prompt,

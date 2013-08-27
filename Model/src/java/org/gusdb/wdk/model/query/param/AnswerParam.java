@@ -218,8 +218,9 @@ public class AnswerParam extends Param {
    * .user.User, java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String dependentValue)
-      throws WdkModelException, WdkUserException {
+  protected void validateValue(User user, String dependentValue,
+      Map<String, String> contextValues) throws WdkModelException,
+      WdkUserException {
     int stepId = Integer.parseInt(dependentValue);
     Step step = user.getStep(stepId);
 

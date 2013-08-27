@@ -113,6 +113,7 @@ public abstract class AbstractEnumParam extends Param {
 
   private String dependedParamRef;
   private Set<String> dependedParamRefs;
+  private Set<Param> dependedParams;
   private String displayType;
 
   /**
@@ -145,33 +146,37 @@ public abstract class AbstractEnumParam extends Param {
       Map<String, String> dependedParamValues) throws WdkModelException;
 
   private EnumParamCache getEnumParamCache(
-      Map<String, String> dependedParamValues) {
-    if (dependedParamValues == null)
-      dependedParamValues = new LinkedHashMap<>();
-    if (isDependentParam() && dependedParamValues.size() == 0) {
+      Map<String, String> contextParamValues) {
+    if (contextParamValues == null)
+      contextParamValues = new LinkedHashMap<>();
+    if (isDependentParam() && contextParamValues.size() == 0) {
       try {
-        for (Param param : getDependedParams()) {
+        for (Param dependedParam : getDependedParams()) {
 
-          String dependedParamVal = dependedParamValues.get(param.getName());
-          if (dependedParamVal == null)
-            dependedParamVal = param.getDefault();
+          String dependedParamVal = contextParamValues.get(dependedParam.getName());
+          if (dependedParamVal == null) {
+            dependedParamVal = (dependedParam instanceof AbstractEnumParam)
+                ? ((AbstractEnumParam) dependedParam).getDefault(contextParamValues)
+                : dependedParam.getDefault();
+            contextParamValues.put(dependedParam.getName(), dependedParamVal);
+          }
           if (dependedParamVal == null)
             throw new NoDependedValueException(
-                "Attempt made to retrieve values of " + param.getName()
+                "Attempt made to retrieve values of " + dependedParam.getName()
                     + " in dependent param " + getName()
                     + " without setting depended value.");
-          dependedParamValues.put(param.getName(), dependedParamVal);
+          contextParamValues.put(dependedParam.getName(), dependedParamVal);
         }
       } catch (Exception ex) {
         throw new NoDependedValueException(ex);
       }
     }
     try {
-      return createEnumParamCache(dependedParamValues);
+      return createEnumParamCache(contextParamValues);
     } catch (WdkModelException wme) {
       throw new WdkRuntimeException(
           "Unable to create EnumParamCache for param " + getName()
-              + " with depended values " + Utilities.print(dependedParamValues),
+              + " with depended values " + Utilities.print(contextParamValues),
           wme);
     }
   }
@@ -227,20 +232,33 @@ public abstract class AbstractEnumParam extends Param {
     return (dependedParamRefs.size() > 0);
   }
 
+  /**
+   * TODO - describe why we get depended param dynamically every time.
+   * 
+   * @return
+   * @throws WdkModelException
+   */
   public Set<Param> getDependedParams() throws WdkModelException {
     if (!isDependentParam())
       return null;
-    Set<Param> dependedParams = new LinkedHashSet<>();
-    Map<String, Param> params = null;
-    if (contextQuestion != null)
-      params = contextQuestion.getParamMap();
-    else if (contextQuery != null)
-      params = contextQuery.getParamMap();
-    for (String paramRef : dependedParamRefs) {
-      String paramName = paramRef.split("\\.", 2)[1].trim();
-      Param param = (params != null) ? params.get(paramName)
-          : (Param) wdkModel.resolveReference(paramRef);
-      dependedParams.add(param);
+
+    if (!isResolved())
+      throw new WdkModelException(
+          "This method can't be called before the references for the object are resolved.");
+
+    if (dependedParams == null) {
+      dependedParams = new LinkedHashSet<>();
+      Map<String, Param> params = null;
+      if (contextQuestion != null)
+        params = contextQuestion.getParamMap();
+      else if (contextQuery != null)
+        params = contextQuery.getParamMap();
+      for (String paramRef : dependedParamRefs) {
+        String paramName = paramRef.split("\\.", 2)[1].trim();
+        Param param = (params != null) ? params.get(paramName)
+            : (Param) wdkModel.resolveReference(paramRef);
+        dependedParams.add(param);
+      }
     }
     return dependedParams;
   }
@@ -256,33 +274,18 @@ public abstract class AbstractEnumParam extends Param {
    */
   @Override
   public String getDefault() throws WdkModelException {
-    Map<String, String> dependedValues = new LinkedHashMap<>();
-    if (isDependentParam()) {
-      for (Param param : getDependedParams()) {
-        dependedValues.put(param.getName(), param.getDefault());
-      }
-      logger.debug("param=" + getFullName() + " getting default with depended="
-          + Utilities.print(dependedValues));
-    }
-    return getDefault(dependedValues);
+    return getDefault(new LinkedHashMap<String, String>());
   }
 
-  public String getDefault(Map<String, String> dependedParamValues)
+  /**
+   * @param contextParamValues
+   *          map<paramName, paramValues> of depended params and their values.
+   * @return
+   * @throws WdkModelException
+   */
+  public String getDefault(Map<String, String> contextParamValues)
       throws WdkModelException {
-    if (isDependentParam()) {
-      for (Param param : getDependedParams()) {
-        String dependedParamVal = dependedParamValues.get(param.getName());
-        if (dependedParamVal == null) {
-          logger.warn("Retrieving default value of " + param.getName()
-              + " for dependent param " + getName()
-              + " without depended param value.  Ensure this is intentional.");
-          dependedParamVal = param.getDefault();
-          dependedParamValues.put(param.getName(), dependedParamVal);
-        }
-      }
-      return getEnumParamCache(dependedParamValues).getDefaultValue();
-    }
-    return getEnumParamCache(null).getDefaultValue();
+    return getEnumParamCache(contextParamValues).getDefaultValue();
   }
 
   public EnumParamCache getValueCache() {
@@ -421,7 +424,7 @@ public abstract class AbstractEnumParam extends Param {
     }
   }
 
-  public String[] getTerms(String termList) {
+  public String[] convertToTerms(String termList) {
     // the input is a list of terms
     if (termList == null)
       return new String[0];
@@ -481,7 +484,7 @@ public abstract class AbstractEnumParam extends Param {
     if (rawValue == null || rawValue.length() == 0)
       rawValue = emptyValue;
 
-    String[] terms = getTerms(rawValue);
+    String[] terms = convertToTerms(rawValue);
     StringBuffer buf = new StringBuffer();
     for (String term : terms) {
       String internal = (isNoTranslation()) ? term : cache.getInternal(term);
@@ -554,19 +557,8 @@ public abstract class AbstractEnumParam extends Param {
    * .user.User, java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String userDependentValue)
-      throws WdkModelException, WdkUserException {
-    Map<String, String> dependedParamValues = new LinkedHashMap<>();
-    if (isDependentParam()) {
-      for (Param param : getDependedParams()) {
-        dependedParamValues.put(param.getName(), param.getDefault());
-      }
-    }
-    validateValue(user, userDependentValue, dependedParamValues);
-  }
-
-  public void validateValue(User user, String userDependentValue,
-      Map<String, String> dependedParamValues) throws WdkModelException,
+  protected void validateValue(User user, String userDependentValue,
+      Map<String, String> contextValues) throws WdkModelException,
       WdkUserException {
     // handle the empty case
     if (userDependentValue == null || userDependentValue.length() == 0) {
@@ -579,15 +571,14 @@ public abstract class AbstractEnumParam extends Param {
 
     if (!isSkipValidation()) {
       String rawValue = decompressValue(userDependentValue);
-      logger.info("param=" + getFullName() + " - validating: " + rawValue
-          + ", with dependedParamValues="
-          + Utilities.print(dependedParamValues));
+      logger.debug("param=" + getFullName() + " - validating: " + rawValue
+          + ", with dependedParamValues=" + Utilities.print(contextValues));
 
-      String[] terms = getTerms(rawValue);
+      String[] terms = convertToTerms(rawValue);
       if (terms.length == 0 && !allowEmpty)
         throw new WdkUserException("The value to enumParam/flatVocabParam "
             + getFullName() + " cannot be empty");
-      Map<String, String> map = getVocabMap(dependedParamValues);
+      Map<String, String> map = getVocabMap(contextValues);
       boolean error = false;
       StringBuilder message = new StringBuilder();
       for (String term : terms) {
@@ -708,10 +699,12 @@ public abstract class AbstractEnumParam extends Param {
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+    if (resolved) return;
+
     super.resolveReferences(wdkModel);
 
     dependedParamRefs.clear();
-    if (dependedParamRef != null && dependedParamRef.trim().length() > 0)
+    if (dependedParamRef != null && dependedParamRef.trim().length() > 0) {
       for (String paramRef : dependedParamRef.split(",")) {
         // make sure the param exists
         wdkModel.resolveReference(paramRef);
@@ -722,6 +715,8 @@ public abstract class AbstractEnumParam extends Param {
               + "] defined in dependent param " + getFullName());
         dependedParamRefs.add(paramRef);
       }
+    }
+    resolved = true;
   }
 
   @Override
@@ -763,47 +758,56 @@ public abstract class AbstractEnumParam extends Param {
     return values;
   }
 
-  /**
-   * Fix the param value in the given list. If the value is valid with given
-   * context, it will remain unchanged; if the value is invalid, it will be
-   * replaced by the default value.
-   * 
-   * @param values
-   * @throws WdkModelException
-   */
-  public void fixValue(Map<String, String> values) throws WdkModelException {
-    // if it's a dependent param, we need to fix the depended value first
-    if (isDependentParam()) {    
+  public void fetchCorrectValue(User user, Map<String, String> contextValues,
+      Map<String, EnumParamCache> caches) throws WdkModelException {
+      logger.debug("Fixing value " + name + "='" + contextValues.get(name) + "'");
+
+    // make sure the values for depended params are fetched first.
+    if (isDependentParam()) {
       for (Param dependedParam : getDependedParams()) {
+        logger.debug (name + " depends on " + dependedParam.getName());
         if (dependedParam instanceof AbstractEnumParam) {
-          ((AbstractEnumParam) dependedParam).fixValue(values);
+          ((AbstractEnumParam) dependedParam).fetchCorrectValue(user,
+              contextValues, caches);
         }
       }
     }
-    String value = values.get(name);
-    String defaultValue = getDefault(values);
-    if (value == null) { // don't have value, assign default to it
-      values.put(name, defaultValue);
-    } else {
-      String[] terms = getTerms(rawOrDependentValueToDependentValue(null, value));
-      Set<String> validTerms = new LinkedHashSet<>();
-      Map<String, String> vocabs = getVocabMap(values);
+
+    // check if the value for this param is correct
+    EnumParamCache cache = caches.get(name);
+    if (cache == null) {
+      cache = createEnumParamCache(contextValues);
+      caches.put(name, cache);
+    }
+    if (!contextValues.containsKey(name)) {
+      // value not in context values yet, will use default
+      contextValues.put(name, cache.getDefaultValue());
+    } else { // value exists in context values, check if value is valid
+      String paramValue = contextValues.get(name);
+      paramValue = dependentValueToRawValue(user, paramValue);
+      logger.debug("CORRECTING " + name + "=\"" + paramValue + "\"");
+      String[] terms = convertToTerms(paramValue);
+      Map<String, String> termMap = cache.getVocabMap();
+      Set<String> validValues = new LinkedHashSet<>();
       for (String term : terms) {
-        if (vocabs.containsKey(terms)) {
-          validTerms.add(term);
-        }
+        if (termMap.containsKey(term))
+          validValues.add(term);
       }
-      if (validTerms.size() == 0) { // no valid term found, use default
-        values.put(name, defaultValue);
-      } else {
+
+      // if no valid values exist, use default; otherwise, use valid values
+      if (validValues.size() > 0) {
         StringBuilder buffer = new StringBuilder();
-        for (String term : validTerms) {
+        for (String term : validValues) {
           if (buffer.length() > 0)
-            buffer.append(',');
+            buffer.append(",");
           buffer.append(term);
         }
-        values.put(name, buffer.toString());
+        contextValues.put(name, buffer.toString());
+      } else {
+        contextValues.put(name, cache.getDefaultValue());
       }
+      logger.debug("Corrected " + name + "\"" + contextValues.get(name) + "\"");
     }
   }
+
 }
