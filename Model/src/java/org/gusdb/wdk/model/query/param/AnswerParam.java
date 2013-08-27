@@ -98,9 +98,10 @@ public class AnswerParam extends Param {
    */
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
-    super.resolveReferences(model);
     if (resolved)
       return;
+
+    super.resolveReferences(model);
 
     // resolve recordClass ref
     for (RecordClassReference reference : recordClassRefs) {

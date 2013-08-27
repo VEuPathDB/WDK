@@ -251,9 +251,11 @@ public abstract class QueryInstance {
       String dependentValue = values.get(paramName);
       String prompt = paramName;
       try {
-        if (!params.containsKey(paramName))
-          throw new WdkModelException("The parameter '" + paramName
-              + "' doesn't exist");
+        if (!params.containsKey(paramName)) {
+          logger.warn("The parameter '" + paramName
+              + "' doesn't exist in query " + query.getFullName());
+          continue;
+        }
 
         Param param = params.get(paramName);
         prompt = param.getPrompt();
