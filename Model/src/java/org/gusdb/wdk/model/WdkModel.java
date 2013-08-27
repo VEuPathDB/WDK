@@ -1029,10 +1029,14 @@ public class WdkModel implements ConnectionContainer {
   }
   
   public Map<String, SearchCategory> getCategories(String usedBy) {
+    return getCategories(usedBy, false);
+  }
+
+  public Map<String, SearchCategory> getCategories(String usedBy, boolean strict) {
     Map<String, SearchCategory> categories = new LinkedHashMap<>();
     for (String name: categoryMap.keySet()) {
       SearchCategory category = categoryMap.get(name);
-      if (category.isUsedBy(usedBy)) categories.put(name, category);
+      if (category.isUsedBy(usedBy, strict)) categories.put(name, category);
     }
     return categories;
   }

@@ -100,21 +100,21 @@ public class SearchCategory extends WdkModelBase {
   }
 
   public Question[] getWebsiteQuestions() throws WdkModelException {
-    return getQuestions(USED_BY_WEBSITE);
+    return getQuestions(USED_BY_WEBSITE, false);
   }
 
   public Question[] getWebserviceQuestions() throws WdkModelException {
-    return getQuestions(USED_BY_WEBSERVICE);
+    return getQuestions(USED_BY_WEBSERVICE, false);
   }
 
   public Question[] getDatasetQuestions() throws WdkModelException {
-    return getQuestions(USED_BY_DATASET);
+    return getQuestions(USED_BY_DATASET, true);
   }
 
-  private Question[] getQuestions(String usedBy) throws WdkModelException {
+  private Question[] getQuestions(String usedBy, boolean strict) throws WdkModelException {
     List<Question> questions = new ArrayList<Question>();
     for (CategoryQuestionRef questionRef : questionRefMap.values()) {
-      if (questionRef.isUsedBy(usedBy)) {
+      if (questionRef.isUsedBy(usedBy, strict)) {
         String questionName = questionRef.getQuestionFullName();
         Question question = (Question) wdkModel.resolveReference(questionName);
         questions.add(question);
@@ -134,22 +134,23 @@ public class SearchCategory extends WdkModelBase {
   }
 
   public Map<String, SearchCategory> getWebsiteChildren() {
-    return getChildren(USED_BY_WEBSITE);
+    return getChildren(USED_BY_WEBSITE, false);
   }
 
   public Map<String, SearchCategory> getWebserviceChildren() {
-    return getChildren(USED_BY_WEBSERVICE);
+    return getChildren(USED_BY_WEBSERVICE, false);
   }
 
   public Map<String, SearchCategory> getDatasetChildren() {
-    return getChildren(USED_BY_DATASET);
+    return getChildren(USED_BY_DATASET, true);
   }
 
-  private Map<String, SearchCategory> getChildren(String usedBy) {
+  private Map<String, SearchCategory> getChildren(String usedBy, boolean strict) {
     Map<String, SearchCategory> categories = new LinkedHashMap<String, SearchCategory>();
     for (SearchCategory child : children.values()) {
       String cusedBy = child.getUsedBy();
-      if (usedBy == null || cusedBy == null || cusedBy.equalsIgnoreCase(usedBy)) {
+      if ((strict && usedBy != null && cusedBy != null && cusedBy.equalsIgnoreCase(usedBy)) ||
+          (usedBy == null || cusedBy == null || cusedBy.equalsIgnoreCase(usedBy))) {
         categories.put(child.getName(), child);
       }
     }
@@ -266,6 +267,12 @@ public class SearchCategory extends WdkModelBase {
   }
 
   public boolean isUsedBy(String usedBy) {
+    return isUsedBy(usedBy, false);
+  }
+
+  public boolean isUsedBy(String usedBy, boolean strict) {
+    if (strict)
+      return (usedBy != null && this.usedBy != null && this.usedBy.equalsIgnoreCase(usedBy));
     return (usedBy == null || this.usedBy == null || this.usedBy.equalsIgnoreCase(usedBy));
   }
 

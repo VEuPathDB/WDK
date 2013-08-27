@@ -995,8 +995,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       summaryViewList.add(view);
   }
 
-  public Map<String, SearchCategory> getCategories(String usedBy) {
-    Map<String, SearchCategory> categories = wdkModel.getCategories(usedBy);
+  public Map<String, SearchCategory> getCategories(String usedBy, boolean strict) {
+    Map<String, SearchCategory> categories = wdkModel.getCategories(usedBy, strict);
     Map<String, SearchCategory> map = new LinkedHashMap<>();
     String questionName = getFullName();
     for (String name : categories.keySet()) {
