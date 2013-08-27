@@ -514,6 +514,8 @@ public abstract class Param extends WdkModelBase implements Cloneable {
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+    if (resolved) return;
+
     super.resolveReferences(wdkModel);
 
     this.wdkModel = wdkModel;
@@ -530,6 +532,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
       }
       handlerClass = null;
     }
+    resolved = true;
   }
 
   public Set<String> getAllValues() throws WdkModelException {

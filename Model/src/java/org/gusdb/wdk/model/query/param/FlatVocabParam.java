@@ -145,12 +145,13 @@ public class FlatVocabParam extends AbstractEnumParam {
       Map<String, String> dependedParamValues) throws WdkModelException {
       logger.trace("Entering createEnumParamCache("
         + Utilities.print(dependedParamValues) + ")");
-    
+
+      Set<Param> dependedParams = getDependedParams();
+
       //String errorStr = "Could not retrieve flat vocab values for param "
       //    + getName() + " using depended value "
       //    + Utilities.print(dependedParamValues);
     
-      Set<Param> dependedParams = getDependedParams();
       EnumParamCache cache = new EnumParamCache(this, dependedParamValues);
 
       // check if the query has "display" column
@@ -185,7 +186,7 @@ public class FlatVocabParam extends AbstractEnumParam {
           + ((contextQuestion == null) ? "N/A" : contextQuestion.getFullName())
           + ", context Query: "
           + ((contextQuery == null) ? "N/A" : contextQuery.getFullName()));
-      QueryInstance instance = query.makeInstance(user, values, true, 0,
+      QueryInstance instance = query.makeInstance(user, values, false, 0,
           context);
 
       ResultList result = instance.getResults();
