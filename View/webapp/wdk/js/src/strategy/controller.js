@@ -884,6 +884,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         strategy: strategy.backId,
         name: strategy.name,
         description: strategy.description,
+        isPublic: strategy.isPublic,
         checkName: checkName,
         save: save,
         strategy_checksum: (strategy.subStratOf != null) ?

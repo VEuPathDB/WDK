@@ -71,6 +71,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     } else {
       if (panel == 'search_history') wdk.history.updateHistory();
       if (panel == 'basket') wdk.basket.showBasket();
+      if (panel == 'public_strat') wdk.publicStrats.showPublicStrats();
       $("body > #query_form").hide();
       $("body > .crumb_details").hide();
     }
