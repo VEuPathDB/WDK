@@ -40,8 +40,6 @@ public class ThreadMonitor implements Runnable {
         }
       }
       logger.info("Thread monitor successfully stopped.");
-    } else {
-      logger.info("No thread monitor running; no need to shut down.");
     }
   }
 
