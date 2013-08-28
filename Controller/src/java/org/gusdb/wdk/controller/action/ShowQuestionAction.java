@@ -145,8 +145,10 @@ public class ShowQuestionAction extends Action {
         qForm.setArray(paramName + LABELS_SUFFIX, labels);
         qForm.setArray(paramName + TERMS_SUFFIX, terms);
 
-        String[] values = paramValue.split(",");
-        qForm.setArray(paramName, values);
+        if (paramValue != null) {
+          String[] values = paramValue.split(",");
+          qForm.setArray(paramName, values);
+        }
 
         // set the original values to the param. The original values will be
         // used to render invalid value warning on the page, if the values is
@@ -208,7 +210,6 @@ public class ShowQuestionAction extends Action {
       } else {
         qForm.setValue(paramName, paramValue);
       }
-      contextValues.put(paramName, paramValue);
       logger.debug("param: " + paramName + "='" + paramValue + "'");
     }
 
