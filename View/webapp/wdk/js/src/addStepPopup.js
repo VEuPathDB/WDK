@@ -612,6 +612,9 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
             $("#query_form").css("z-index", 100);
             $("#query_form_overlay").css("z-index", 100).height($("body").height());
 
+            // inline-submit should be called last
+            // wdk.load() might register other submit events, so we need to call here
+            wdk.load();
             // attach submit handler to check that a boolean/span operation is selected
             var $form = $("#query_form").find("#form_question");
             $form.data("inline-submit", $form.get(0).onsubmit);
