@@ -171,9 +171,9 @@ Otherwise a standard select menu is used.
 
 
 <%-- display invalid terms, if any. --%>
-<c:set var="currentValues" value="${qP.currentValues}" />
+<c:set var="originalValues" value="${qP.originalValues}" />
 <c:set var="invalid" value="${false}" />
-<c:forEach items="${currentValues}" var="entry">
+<c:forEach items="${originalValues}" var="entry">
   <c:if test="${entry.value == false}">
     <c:set var="invalid" value="${true}" />
   </c:if>
@@ -184,7 +184,7 @@ Otherwise a standard select menu is used.
     <p>Some of the option(s) you previously selected are no longer available.</p>
     <p>Here is a list of the values you selected (unavailable options are marked in red):</p>
     <ul>
-      <c:forEach items="${currentValues}" var="entry">
+      <c:forEach items="${originalValues}" var="entry">
         <c:set var="style">
           <c:if test="${entry.value == false}">class="invalid"</c:if>
         </c:set>
