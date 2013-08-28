@@ -31,6 +31,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   private static final Logger logger = Logger.getLogger(EnumParamBean.class.getName());
 
   private String[] currentValues;
+  private String[] originalValues;
 
   // if this obj wraps a dependent param, holds depended values
   private Map<String, String> _dependedValues;
@@ -197,6 +198,10 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   public void setCurrentValues(String[] currentValues) {
     this.currentValues = currentValues;
   }
+  
+  public void setOriginalValues(String[] originalValues) {
+    this.originalValues = originalValues;
+  }
 
   /**
    * Returns map where keys are vocab values and values are booleans telling
@@ -204,9 +209,10 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
    * 
    * @return map from value to selection status
    */
-  public Map<String, Boolean> getCurrentValues() {
-    if (currentValues == null)
+  public Map<String, Boolean> getOriginalValues() {
+    if (originalValues == null)
       return new LinkedHashMap<String, Boolean>();
+    
     Map<String, Boolean> values = new LinkedHashMap<String, Boolean>();
     Map<String, String> terms = getVocabMap();
     // ignore the validation for type-ahead params.
@@ -214,7 +220,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     if (displayType == null)
       displayType = "";
     boolean typeAhead = displayType.equals(AbstractEnumParam.DISPLAY_TYPE_AHEAD);
-    for (String term : currentValues) {
+    for (String term : originalValues) {
       boolean valid = typeAhead || terms.containsKey(term);
       values.put(term, valid);
     }
