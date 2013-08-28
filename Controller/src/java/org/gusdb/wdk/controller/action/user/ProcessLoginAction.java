@@ -5,10 +5,9 @@ import java.util.Map;
 import javax.servlet.http.Cookie;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.controller.LoginCookieFactory;
 import org.gusdb.wdk.controller.AuthenticationService;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.controller.WdkValidationException;
+import org.gusdb.wdk.controller.LoginCookieFactory;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamDef.Count;
@@ -118,6 +117,9 @@ public class ProcessLoginAction extends WdkAction {
       
       // authenticate
       try {
+        // user must enter something for either openid or email/password
+        //checkExistenceOfParams(params);
+          
         if (openid != null && openid.length() > 0) {
           // first make sure we have a user with this OpenID
           openid = AuthenticationService.normalizeOpenId(openid);
@@ -197,8 +199,8 @@ public class ProcessLoginAction extends WdkAction {
     return referrer;
   }
 
-  @Override
-  public void performAdditionalValidation(ParamGroup params) throws WdkValidationException {
+  @SuppressWarnings("unused")
+  private void checkExistenceOfParams(ParamGroup params) throws WdkUserException {
     // must make sure user submitted either username/password OR openid
     String openId = params.getValue(CConstants.WDK_OPENID_KEY);
     if (openId != null && openId.length() > 0) {
@@ -208,7 +210,7 @@ public class ProcessLoginAction extends WdkAction {
     String email = params.getValue(CConstants.WDK_EMAIL_KEY);
     String password = params.getValue(CConstants.WDK_PASSWORD_KEY);
     if (email == null || email.length() == 0 || password == null || password.length() == 0) {
-      throw new WdkValidationException("You must enter either an OpenID or username/password.");
+      throw new WdkUserException("You must enter either an OpenID or username/password.");
     }
   }
   
