@@ -151,24 +151,10 @@ public class ProcessLoginAction extends WdkAction {
           return getSuccessfulLoginResult(redirectPage, wdkCookieMaxAge);
         }
       }
-      catch (WdkUserException | WdkModelException ex) {
-        LOG.info("Could not authenticate user's identity.  Exception thrown: ", ex);
-        // user authentication failed, set the error message, and the referring page
-        ActionResult result = new ActionResult()
-            .setRequestAttribute(CConstants.WDK_LOGIN_ERROR_KEY, ex.getMessage())
-            .setRequestAttribute(CConstants.WDK_REDIRECT_URL_KEY, getOriginalReferrer(params, getRequestData()));
-        
-        String customViewFile = getCustomViewDir() + CConstants.WDK_LOGIN_PAGE;
-        if (wdkResourceExists(customViewFile)) {
-          return result.setRedirect(false).setViewPath(customViewFile);
-        }
-        else {
-          return result.setViewName(INPUT);
-        }
-      }
       catch (Exception ex) {
-        ex.printStackTrace();
-        throw ex;
+        LOG.info("Could not authenticate user's identity.  Exception thrown: ", ex);
+        // user authentication failed, set the error message and the referring page
+        return getFailedLoginResult(ex);
       }
     }
   }
@@ -177,7 +163,21 @@ public class ProcessLoginAction extends WdkAction {
     return new ActionResult().setRedirect(true).setViewPath(redirectUrl);
   }
   
-  private static String getOriginalReferrer(ParamGroup params, RequestData requestData) {
+  protected ActionResult getFailedLoginResult(Exception ex) {
+    ActionResult result = new ActionResult()
+      .setRequestAttribute(CConstants.WDK_LOGIN_ERROR_KEY, ex.getMessage())
+      .setRequestAttribute(CConstants.WDK_REDIRECT_URL_KEY, getOriginalReferrer(getParams(), getRequestData()));
+  
+    String customViewFile = getCustomViewDir() + CConstants.WDK_LOGIN_PAGE;
+    if (wdkResourceExists(customViewFile)) {
+      return result.setRedirect(false).setViewPath(customViewFile);
+    }
+    else {
+      return result.setViewName(INPUT);
+    }
+  }
+  
+  public static String getOriginalReferrer(ParamGroup params, RequestData requestData) {
     
     // always prefer the param value passed to us from a previous action
     String referrerParamValue = params.getValueOrEmpty(CConstants.WDK_REDIRECT_URL_KEY);
