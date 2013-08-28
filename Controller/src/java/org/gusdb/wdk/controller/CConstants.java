@@ -2,7 +2,7 @@ package org.gusdb.wdk.controller;
 
 public class CConstants {
     
-	private CConstants() { }
+    private CConstants() { }
     
     //key for objects in cache, used in Action/ActionForm classes and maybe jsp pages
     public static final String WDK_RESULTFACTORY_KEY = "wdkResultFactory";
@@ -98,6 +98,7 @@ public class CConstants {
     public static final String WDK_OPENID_KEY = "openid";
     public static final String WDK_OPENID_AUTH_SERVICE_KEY = "openIdAuthService";
     public static final String WDK_REMEMBER_USER_KEY = "openIdRememberUser";
+    public static final String WDK_ERROR_TEXT_KEY = "errorText";
     public static final String WDK_LOGIN_ERROR_KEY = "loginError";
     public static final String WDK_REGISTER_ERROR_KEY = "registerError";
     public static final String WDK_PROFILE_ERROR_KEY = "profileError";
