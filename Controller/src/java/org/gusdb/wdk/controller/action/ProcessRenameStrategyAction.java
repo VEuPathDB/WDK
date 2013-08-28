@@ -44,6 +44,7 @@ public class ProcessRenameStrategyAction extends Action {
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
             String customName = request.getParameter("name");
             String description = request.getParameter("description");
+            boolean isPublic = Boolean.valueOf(request.getParameter("isPublic")).booleanValue();
             boolean save = Boolean.valueOf(request.getParameter("save")).booleanValue();
             boolean checkName = Boolean.valueOf(
                     request.getParameter("checkName")).booleanValue();
@@ -101,6 +102,7 @@ public class ProcessRenameStrategyAction extends Action {
                 strategy.setName(customName);
                 strategy.setSavedName(customName);
                 strategy.setDescription(description);
+                strategy.setIsPublic(isPublic);
                 strategy.update(save || strategy.getIsSaved());
 
                 try {
@@ -111,34 +113,34 @@ public class ProcessRenameStrategyAction extends Action {
                     // Adding active strat will be handled by ShowStrategyAction
                 }
 
-		// If a front end action is specified in the url, set it in the current user
-		String frontAction = request.getParameter("action");
-		Integer frontStrategy = null;
-		try {
-		    frontStrategy = Integer.valueOf(request.getParameter("actionStrat"));
-		}
-		catch (Exception ex) {
-		}
-		Integer frontStep = null;
-		try {
-		    frontStep = Integer.valueOf(request.getParameter("actionStep"));
-		}
-		catch (Exception ex) {
-		}
-
-		if (frontStrategy != null && frontStrategy.intValue() == oldStrategyId) {
-		    frontStrategy = strategy.getStrategyId();
-		}
-		System.out.println("front strategy: " + frontStrategy);
-		System.out.println("front step: " + frontStep);
-
-		wdkUser.setFrontAction(frontAction);
-		if (frontStrategy != null) {
-		    wdkUser.setFrontStrategy(frontStrategy);
-		}
-		if (frontStep != null) {
-		    wdkUser.setFrontStep(frontStep);
-		}
+                // If a front end action is specified in the url, set it in the current user
+                String frontAction = request.getParameter("action");
+                Integer frontStrategy = null;
+                try {
+                    frontStrategy = Integer.valueOf(request.getParameter("actionStrat"));
+                }
+                catch (Exception ex) {
+                }
+                Integer frontStep = null;
+                try {
+                    frontStep = Integer.valueOf(request.getParameter("actionStep"));
+                }
+                catch (Exception ex) {
+                }
+        
+                if (frontStrategy != null && frontStrategy.intValue() == oldStrategyId) {
+                    frontStrategy = strategy.getStrategyId();
+                }
+                System.out.println("front strategy: " + frontStrategy);
+                System.out.println("front step: " + frontStep);
+        
+                wdkUser.setFrontAction(frontAction);
+                if (frontStrategy != null) {
+                    wdkUser.setFrontStrategy(frontStrategy);
+                }
+                if (frontStep != null) {
+                    wdkUser.setFrontStep(frontStep);
+                }
 
                 request.setAttribute(CConstants.WDK_STEP_KEY,
                         strategy.getLatestStep());
