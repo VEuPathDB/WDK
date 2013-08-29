@@ -15,7 +15,6 @@ import org.gusdb.wdk.controller.actionutil.WdkAction;
  * finds the type of error, 3) forwards control to a jsp page specific to this
  * error type
  */
-
 public class ShowErrorPageAction extends WdkAction {
 
   private static final Logger LOG = Logger.getLogger(ShowErrorPageAction.class.getName());
@@ -28,6 +27,13 @@ public class ShowErrorPageAction extends WdkAction {
 
     Exception causingException = (Exception)
         getRequestData().getRequestAttribute(Globals.EXCEPTION_KEY);
+    
+    // Alternative mechanism to pass Exception to this action
+    //   (see CustomProcessLoginAction.java for example)
+    String errorText = params.getValue(CConstants.WDK_ERROR_TEXT_KEY);
+    if (causingException == null && errorText != null) {
+      causingException = new Exception(errorText);
+    }
     
     LOG.error("Exception received by ShowErrorPage: ", causingException);
     

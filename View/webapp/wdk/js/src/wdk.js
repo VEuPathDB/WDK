@@ -608,6 +608,8 @@ function getWebAppUrl() {
   };
 
   var invokeControllers = function invokeControllers() {
+    // TODO - Add data-action attribute
+    // controller is a misnomer here. see issue #14107
     $("[data-controller]").each(function(idx, element) {
       var $element, $attrs, controller;
       $element = $(element);

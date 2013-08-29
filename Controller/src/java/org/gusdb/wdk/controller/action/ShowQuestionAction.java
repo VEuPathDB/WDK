@@ -145,18 +145,22 @@ public class ShowQuestionAction extends Action {
         qForm.setArray(paramName + LABELS_SUFFIX, labels);
         qForm.setArray(paramName + TERMS_SUFFIX, terms);
 
-        String[] values = paramValue.split(",");
-        qForm.setArray(paramName, values);
+        // set current values to the form and the param itself.
+        if (paramValue != null) {
+          String[] values = paramValue.split(",");
+          qForm.setArray(paramName, values);
+          enumParam.setCurrentValues(values);
+        }
 
         // set the original values to the param. The original values will be
         // used to render invalid value warning on the page, if the values is
         // invalid.
         if (originalValues.containsKey(paramName)) {
-          String currentValue = originalValues.get(paramName);
-          currentValue = param.dependentValueToRawValue(user, currentValue);
-          String[] currentValues = currentValue.split(",");
-          qForm.setArray(paramName, currentValues);
-          enumParam.setCurrentValues(currentValues);
+          String originalValue = originalValues.get(paramName);
+          originalValue = param.dependentValueToRawValue(user, originalValue);
+          String[] values = originalValue.split(",");
+          qForm.setArray(paramName, values);
+          enumParam.setOriginalValues(values);
         }
       } else if (param instanceof AnswerParamBean) {
         if (paramValue == null) {
@@ -208,7 +212,6 @@ public class ShowQuestionAction extends Action {
       } else {
         qForm.setValue(paramName, paramValue);
       }
-      contextValues.put(paramName, paramValue);
       logger.debug("param: " + paramName + "='" + paramValue + "'");
     }
 

@@ -779,9 +779,10 @@ public abstract class AbstractEnumParam extends Param {
       cache = createEnumParamCache(contextValues);
       caches.put(name, cache);
     }
+    String value;
     if (!contextValues.containsKey(name)) {
       // value not in context values yet, will use default
-      contextValues.put(name, cache.getDefaultValue());
+      value = cache.getDefaultValue();
     } else { // value exists in context values, check if value is valid
       String paramValue = contextValues.get(name);
       paramValue = dependentValueToRawValue(user, paramValue);
@@ -802,12 +803,13 @@ public abstract class AbstractEnumParam extends Param {
             buffer.append(",");
           buffer.append(term);
         }
-        contextValues.put(name, buffer.toString());
+        value = buffer.toString();
       } else {
-        contextValues.put(name, cache.getDefaultValue());
+        value = cache.getDefaultValue();
       }
-      logger.debug("Corrected " + name + "\"" + contextValues.get(name) + "\"");
     }
+    if (value != null) contextValues.put(name, value);
+    logger.debug("Corrected " + name + "\"" + contextValues.get(name) + "\"");
   }
 
 }

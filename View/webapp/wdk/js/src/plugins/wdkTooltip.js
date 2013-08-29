@@ -7,6 +7,9 @@
   // API (data-{property}):
   //  my : String corner of tooltip relative to position
   //  at : String corner of element relative to position
+  //  target: String selector of element to show tooltip around
+  //  adjust-x: Number|String x-offset to position tooltip
+  //  adjust-y: Number|String y-offset to position tooltip
   //  content : String selector containing content
   //
   // opts are sent to qtip. Data opts win
@@ -25,6 +28,20 @@
       if ($data.my) {
         dataOpts.position = dataOpts.position || {};
         dataOpts.position.my = $data.my;
+      }
+      if ($data.target) {
+        dataOpts.position = dataOpts.position || {};
+        dataOpts.position.target = $data.target;
+      }
+      if ($data.adjustX) {
+        dataOpts.position = dataOpts.position || {};
+        dataOpts.position.adjust = dataOpts.position.adjust || {};
+        dataOpts.position.adjust.x = $data.adjustX;
+      }
+      if ($data.adjustY) {
+        dataOpts.position = dataOpts.position || {};
+        dataOpts.position.adjust = dataOpts.position.adjust || {};
+        dataOpts.position.adjust.y = $data.adjustY;
       }
       if ($data.content) {
         dataOpts.content = {
