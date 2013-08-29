@@ -963,12 +963,12 @@ public class UserFactory {
       throw new WdkUserException("The new password doesn't match, "
           + "please type them again. It's case sensitive.");
 
-    // encrypt password
     PreparedStatement ps = null;
     ResultSet rs = null;
     String sql = "SELECT count(*) " + "FROM " + userSchema
-        + "users WHERE email =? " + "AND passwd = ?";
+        + "users WHERE email = ? " + "AND passwd = ?";
     try {
+      // encrypt password
       oldPassword = encrypt(oldPassword);
 
       // check if the old password matches
