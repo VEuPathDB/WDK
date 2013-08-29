@@ -82,7 +82,7 @@ public class ParamGroup {
 	public boolean getSingleCheckboxValue(String key) {
 		checkValidKey(key);
 		String value = getValue(key);
-		return (value != null && value.equals("on"));
+		return (value != null && (value.equals("on") || value.equals("true")));
 	}
 	
 	public Integer getIntValue(String key) {

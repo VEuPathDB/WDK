@@ -4,7 +4,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   var xmldoc = null;
   //var exportBaseURL; now defined as function in wdkCommon.js
   var recordType= [];   //stratid, recordType which is the type of the last step
-  var ajaxTimeout = 180000;
+  var ajaxTimeout = 1000 * 60 * 5; // 5 minutes. was 180000 seconds (3 min);
   var allCount = 0;
   var openCount = 0;
 
