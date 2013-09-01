@@ -115,6 +115,7 @@ public abstract class AbstractEnumParam extends Param {
   private Set<String> dependedParamRefs;
   private Set<Param> dependedParams;
   private String displayType;
+  private int maxSelectedCount = -1;
 
   /**
    * this property is only used by abstractEnumParams, but have to be
@@ -140,6 +141,7 @@ public abstract class AbstractEnumParam extends Param {
     this.displayType = param.displayType;
     this.selectMode = param.selectMode;
     this.suppressNode = param.suppressNode;
+    this.maxSelectedCount = param.maxSelectedCount;
   }
 
   protected abstract EnumParamCache createEnumParamCache(
@@ -226,6 +228,23 @@ public abstract class AbstractEnumParam extends Param {
    */
   public void setDisplayType(String displayType) {
     this.displayType = displayType;
+  }
+
+  /**
+   * @return The maximum number of allowed values for this param; if not set
+   *   (i.e. no max), this method will return -1.
+   */
+  public int getMaxSelectedCount() {
+	return maxSelectedCount;
+  }
+
+  /**
+   * @param maxSelectedCount The maximum number of allowed values for this
+   *   param.  If not set, default is "no max"; any number of values can be
+   *   assigned.
+   */
+  public void setMaxSelectedCount(int maxSelectedCount) {
+    this.maxSelectedCount = maxSelectedCount;
   }
 
   public boolean isDependentParam() {
@@ -576,8 +595,12 @@ public abstract class AbstractEnumParam extends Param {
 
       String[] terms = convertToTerms(rawValue);
       if (terms.length == 0 && !allowEmpty)
-        throw new WdkUserException("The value to enumParam/flatVocabParam "
-            + getFullName() + " cannot be empty");
+        throw new WdkUserException("The value to enumParam/flatVocabParam " +
+            getFullName() + " cannot be empty");
+      if (maxSelectedCount > 0 && terms.length > maxSelectedCount) {
+        throw new WdkUserException("Maximum number of selected values (" +
+            maxSelectedCount + ") exceeded for parameter " + getFullName());
+      }
       Map<String, String> map = getVocabMap(contextValues);
       boolean error = false;
       StringBuilder message = new StringBuilder();

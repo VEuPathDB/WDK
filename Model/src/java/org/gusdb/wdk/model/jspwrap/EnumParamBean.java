@@ -59,6 +59,10 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     return param.getDisplayType();
   }
 
+  public int getMaxSelectedCount() {
+    return param.getMaxSelectedCount();
+  }
+  
   public Map<String, String> getDependedValues() {
     return _dependedValues;
   }

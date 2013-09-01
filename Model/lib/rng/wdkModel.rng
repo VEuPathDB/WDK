@@ -457,6 +457,11 @@
       </attribute>
     </optional>
     <optional>
+      <attribute name="maxSelectedCount">
+        <data type="unsignedShort"/>
+      </attribute>
+    </optional>
+    <optional>
       <attribute name="suppressNode">
         <data type="boolean" />
       </attribute>

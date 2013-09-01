@@ -44,12 +44,13 @@ Otherwise a standard select menu is used.
 <c:if test="${layout == 'horizontal'}">
 	<c:set var="v" value="style='display:inline'"/>
 </c:if>
-	
-
 
 <c:choose>
 <c:when test="${qP.multiPick}">
   <%-- multiPick is true, use checkboxes or scroll pane --%>
+  <c:if test="${qP.maxSelectedCount gt 0}">
+    <div style="color:blue">Note: You may only select up to ${qP.maxSelectedCount} values for this parameter.</div>
+  </c:if>
   <c:choose>
     <c:when test="${displayType eq 'checkBox' or (displayType eq null and fn:length(qP.vocab) lt 15)}"><!-- use checkboxes -->
 	 <div class="param-multiPick ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
