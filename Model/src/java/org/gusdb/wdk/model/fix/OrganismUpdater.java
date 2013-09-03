@@ -27,7 +27,7 @@ import org.json.JSONObject;
 
 public class OrganismUpdater {
 
-    private static final String PARAM_ORGANISM = "organism";
+    private static final String PARAM_ORGANISM[] = {"organism","BlastDatabaseOrganism","motif_organism","text_search_organism"};
 
     private static final Logger logger = Logger.getLogger(OrganismUpdater.class);
 
@@ -148,7 +148,8 @@ public class OrganismUpdater {
             throws JSONException {
         boolean updated = false;
         for (String name : JSONObject.getNames(jsParams)) {
-            if (name.equals(PARAM_ORGANISM)) {
+	    for (int i=0;i<4;i++) {
+            if (name.equals(PARAM_ORGANISM[i])) {
                 String organisms = jsParams.getString(name);
                 if (organisms.startsWith("[C]")) { // compressed values
                     String clobKey = organisms.substring(3);
@@ -167,7 +168,8 @@ public class OrganismUpdater {
                     }
                     jsParams.put(name, buffer.toString());
                 }
-            }
+	    }
+	    }
         }
         return updated;
     }
