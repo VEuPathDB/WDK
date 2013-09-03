@@ -156,7 +156,7 @@ public class OrganismUpdater {
                 } else { // uncompressed values
                     StringBuilder buffer = new StringBuilder();
                     for (String organism : organisms.split("\\s*,\\s*")) {
-			logger.debug("Organism found: --" + organism + "\n\n");
+			//logger.debug("Organism found: --" + organism + "\n\n");
                         if (mappings.containsKey(organism)) {
 			    logger.debug("FOUND param organism uncompressed with value that needs update...");
                             organism = mappings.get(organism);
