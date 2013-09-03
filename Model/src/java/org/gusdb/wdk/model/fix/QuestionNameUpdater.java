@@ -22,7 +22,7 @@ import org.gusdb.wdk.model.config.ModelConfigUserDB;
 
 public class QuestionNameUpdater {
 
-    private static final Logger logger = Logger.getLogger(OrganismUpdater.class);
+    private static final Logger logger = Logger.getLogger(QuestionNameUpdater.class);
 
     public static void main(String[] args) throws WdkModelException,
             SQLException, IOException {
@@ -87,16 +87,17 @@ public class QuestionNameUpdater {
                 + "steps s "
                 + " WHERE u.is_guest = 0 AND u.user_id = s.user_id "
                 + "   AND  s.project_id = ?";
-				logger.info("SELECT:   " + select + "\n\n");
+	//	logger.info("SELECT:   " + select + "\n\n");
         String update = "UPDATE " + userSchema + "steps "
                 + " SET question_name = ? WHERE step_id = ?";
-				logger.info("UPDATE:   " + update + "\n\n");
+	//	logger.info("UPDATE:   " + update + "\n\n");
 
 
         try {
             psSelect = SqlUtils.getPreparedStatement(dataSource, select);
             psUpdate = SqlUtils.getPreparedStatement(dataSource, update);
             psSelect.setString(1, projectId);
+	logger.debug("SELECT:   " + psSelect + "\n\n");
             resultSet = psSelect.executeQuery();
             int count = 0;
             int stepCount = 0;
@@ -118,6 +119,7 @@ public class QuestionNameUpdater {
 										// platform.setClobData(psUpdate, 1, content, false);
 										psUpdate.setString(1, content);
                     psUpdate.setInt(2, stepId);
+	logger.debug("UPDATE:   " + psUpdate + "\n\n");
                     psUpdate.addBatch();
                     count++;
                     if (count % 100 == 0) psUpdate.executeBatch();
