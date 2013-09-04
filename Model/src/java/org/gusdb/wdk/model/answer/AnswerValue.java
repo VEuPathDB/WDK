@@ -1203,7 +1203,7 @@ public class AnswerValue {
       resultSizesByFilter.put(filterName, size);
 
       return size;
-    } catch (SQLException | WdkModelException e) {
+    } catch (SQLException e) {
       throw new WdkModelException("Unable to get filter size for filter "
           + filterName, e);
     }
