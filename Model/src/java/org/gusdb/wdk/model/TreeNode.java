@@ -126,6 +126,10 @@ public class TreeNode {
   public String getSelectedAsList() {
     return getNamesOfLeavesWithBoolean(BoolField.SELECTED, true);
   }
+  
+  public List<TreeNode> getSelectedLeaves() {
+    return getLeafNodesWithBoolean(BoolField.SELECTED, true);
+  }
 
   public void setDefaultLeaves(String... names) {
     setBooleansToTrue(BoolField.DEFAULT, Arrays.asList(names));
@@ -187,6 +191,20 @@ public class TreeNode {
     return all;
   }
 
+  private List<TreeNode> getLeafNodesWithBoolean(BoolField fieldId, boolean value) {
+    List<TreeNode> nodeList = new ArrayList<TreeNode>();
+    if (getIsLeaf()) {
+      if (getBoolField(fieldId) == value) {
+        nodeList.add(this);
+      }
+      return nodeList;
+    }
+    for (TreeNode child : _childNodes) {
+      nodeList.addAll(child.getLeafNodesWithBoolean(fieldId, value));
+    }
+    return nodeList;
+  }
+  
   public boolean getIsAllSelected() {
     for (TreeNode node : _childNodes) {
       if (node.getIsLeaf()) {

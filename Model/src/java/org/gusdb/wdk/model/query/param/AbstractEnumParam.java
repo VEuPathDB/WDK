@@ -7,11 +7,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.gusdb.wdk.model.TreeNode;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.user.User;
 
@@ -64,9 +66,6 @@ public abstract class AbstractEnumParam extends Param {
    */
   private static class ParamValueMap extends LinkedHashMap<String, String> {
 
-    /**
-   * 
-   */
     private static final long serialVersionUID = 8058527840525499401L;
 
     public ParamValueMap() {
@@ -116,6 +115,7 @@ public abstract class AbstractEnumParam extends Param {
   private Set<Param> dependedParams;
   private String displayType;
   private int maxSelectedCount = -1;
+  private boolean countOnlyLeaves = false;
 
   /**
    * this property is only used by abstractEnumParams, but have to be
@@ -142,6 +142,7 @@ public abstract class AbstractEnumParam extends Param {
     this.selectMode = param.selectMode;
     this.suppressNode = param.suppressNode;
     this.maxSelectedCount = param.maxSelectedCount;
+    this.countOnlyLeaves = param.countOnlyLeaves;
   }
 
   protected abstract EnumParamCache createEnumParamCache(
@@ -235,7 +236,7 @@ public abstract class AbstractEnumParam extends Param {
    *   (i.e. no max), this method will return -1.
    */
   public int getMaxSelectedCount() {
-	return maxSelectedCount;
+    return maxSelectedCount;
   }
 
   /**
@@ -247,6 +248,19 @@ public abstract class AbstractEnumParam extends Param {
     this.maxSelectedCount = maxSelectedCount;
   }
 
+  /**
+   * @return true if when validating maxSelectedCount (see above) we should
+   * only count leaves towards the total selected value count, or, if false,
+   * count both leaves and branch selections
+   */
+  public boolean getCountOnlyLeaves() {
+    return countOnlyLeaves;  
+  }
+
+  public void setCountOnlyLeaves(boolean countOnlyLeaves) {
+    this.countOnlyLeaves = countOnlyLeaves;
+  }
+  
   public boolean isDependentParam() {
     return (dependedParamRefs.size() > 0);
   }
@@ -596,10 +610,12 @@ public abstract class AbstractEnumParam extends Param {
       String[] terms = convertToTerms(rawValue);
       if (terms.length == 0 && !allowEmpty)
         throw new WdkUserException("The value to enumParam/flatVocabParam " +
-            getFullName() + " cannot be empty");
-      if (maxSelectedCount > 0 && terms.length > maxSelectedCount) {
+            getName() + " cannot be empty");
+      
+      // verify that user did not select too many values for this param
+      if (maxSelectedCount > 0 && numSelectedExceedsMax(terms, contextValues)) {
         throw new WdkUserException("Maximum number of selected values (" +
-            maxSelectedCount + ") exceeded for parameter " + getFullName());
+            maxSelectedCount + ") exceeded for parameter " + getName());
       }
       Map<String, String> map = getVocabMap(contextValues);
       boolean error = false;
@@ -616,6 +632,22 @@ public abstract class AbstractEnumParam extends Param {
     } else {
       logger.debug("param=" + getFullName() + " - skip validation");
     }
+  }
+  
+  private boolean numSelectedExceedsMax(String[] terms, Map<String, String> contextValues) {
+    // if countOnlyLeaves is set, must generate original tree, set values, and count the leaves
+    logger.debug("Checking whether num selected exceeds max on param " + getFullName() + " with values" +
+        ": displayType = " + getDisplayType() +
+        ", maxSelectedCount = " + getMaxSelectedCount() +
+        ", countOnlyLeaves = " + getCountOnlyLeaves());
+    if (getDisplayType().equals("treeBox") && getCountOnlyLeaves()) {
+      EnumParamTermNode[] rootNodes = getEnumParamCache(contextValues).getVocabTreeRoots();
+      TreeNode tree = EnumParamBean.getParamTree(getName(), rootNodes);
+      EnumParamBean.populateParamTree(tree, terms);
+      return (tree.getSelectedLeaves().size() > getMaxSelectedCount());
+    }
+    // otherwise, just count up terms and compare to max
+    return (terms.length > getMaxSelectedCount());
   }
 
   /**
