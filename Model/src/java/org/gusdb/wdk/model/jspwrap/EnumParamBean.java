@@ -238,8 +238,15 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
    * @return up-to-date tree of this param
    */
   public TreeNode getParamTree() {
-    TreeNode root = new TreeNode(getName(), "top");
-    for (EnumParamTermNode paramNode : getVocabTreeRoots()) {
+    EnumParamTermNode[] rootNodes = getVocabTreeRoots();
+    TreeNode root = getParamTree(getName(), rootNodes);
+    populateParamTree(root, currentValues);
+    return root;
+  }
+  
+  public static TreeNode getParamTree(String treeName, EnumParamTermNode[] rootNodes) {
+    TreeNode root = new TreeNode(treeName, "top");
+    for (EnumParamTermNode paramNode : rootNodes) {
       if (paramNode.getChildren().length == 0) {
         root.addChildNode(new TreeNode(paramNode.getTerm(),
             paramNode.getDisplay(), paramNode.getDisplay()));
@@ -247,13 +254,15 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
         root.addChildNode(paramNode.toTreeNode());
       }
     }
-
-    if (currentValues != null && currentValues.length > 0) {
-      List<String> currentValueList = Arrays.asList(currentValues);
+    return root;
+  }
+  
+  public static void populateParamTree(TreeNode root, String[] values) {
+    if (values != null && values.length > 0) {
+      List<String> currentValueList = Arrays.asList(values);
       root.turnOnSelectedLeaves(currentValueList);
       root.setDefaultLeaves(currentValueList);
     }
-    return root;
   }
 
   /**
