@@ -114,6 +114,7 @@ public abstract class AbstractEnumParam extends Param {
   private Set<String> dependedParamRefs;
   private Set<Param> dependedParams;
   private String displayType;
+  private int minSelectedCount = -1;
   private int maxSelectedCount = -1;
   private boolean countOnlyLeaves = false;
 
@@ -141,6 +142,7 @@ public abstract class AbstractEnumParam extends Param {
     this.displayType = param.displayType;
     this.selectMode = param.selectMode;
     this.suppressNode = param.suppressNode;
+    this.minSelectedCount = param.minSelectedCount;
     this.maxSelectedCount = param.maxSelectedCount;
     this.countOnlyLeaves = param.countOnlyLeaves;
   }
@@ -232,6 +234,23 @@ public abstract class AbstractEnumParam extends Param {
   }
 
   /**
+   * @return The minimum number of allowed values for this param; if not set
+   *   (i.e. no min), this method will return -1.
+   */
+  public int getMinSelectedCount() {
+    return minSelectedCount;
+  }
+
+  /**
+   * @param maxSelectedCount The minimum number of allowed values for this
+   *   param.  If not set, default is "no min"; any number of values can be
+   *   assigned.
+   */
+  public void setMinSelectedCount(int minSelectedCount) {
+    this.minSelectedCount = minSelectedCount;
+  }
+  
+  /**
    * @return The maximum number of allowed values for this param; if not set
    *   (i.e. no max), this method will return -1.
    */
@@ -249,14 +268,20 @@ public abstract class AbstractEnumParam extends Param {
   }
 
   /**
-   * @return true if when validating maxSelectedCount (see above) we should
-   * only count leaves towards the total selected value count, or, if false,
-   * count both leaves and branch selections
+   * @return true if, when validating min- and maxSelectedCount (see above),
+   * we should only count leaves towards the total selected value count, or,
+   * if false, count both leaves and branch selections
    */
   public boolean getCountOnlyLeaves() {
     return countOnlyLeaves;  
   }
 
+  /**
+   * @param countOnlyLeaves Set to true if, when validating min- and
+   * maxSelectedCount (see above), we should only count leaves towards the
+   * total selected value count, or set to false if both leaves and branch
+   * selections should be counted
+   */
   public void setCountOnlyLeaves(boolean countOnlyLeaves) {
     this.countOnlyLeaves = countOnlyLeaves;
   }
@@ -610,13 +635,19 @@ public abstract class AbstractEnumParam extends Param {
       String[] terms = convertToTerms(rawValue);
       if (terms.length == 0 && !allowEmpty)
         throw new WdkUserException("The value to enumParam/flatVocabParam " +
-            getName() + " cannot be empty");
+            getPrompt() + " cannot be empty");
       
-      // verify that user did not select too many values for this param
-      if (maxSelectedCount > 0 && numSelectedExceedsMax(terms, contextValues)) {
-        throw new WdkUserException("Maximum number of selected values (" +
-            maxSelectedCount + ") exceeded for parameter " + getName());
+      // verify that user did not select too few or too many values for this param
+      int numSelected = getNumSelected(terms, contextValues);
+      if ((maxSelectedCount > 0 && numSelected > maxSelectedCount) ||
+          (minSelectedCount > 0 && numSelected < minSelectedCount)) {
+        String range =
+          (minSelectedCount > 0 ? "[ " + minSelectedCount : "( Inf") + ", " +
+          (maxSelectedCount > 0 ? maxSelectedCount + " ]" : "Inf )");
+        throw new WdkUserException("Number of selected values (" + numSelected +
+            ") was not in range " + range + " for parameter " + getPrompt());
       }
+      
       Map<String, String> map = getVocabMap(contextValues);
       boolean error = false;
       StringBuilder message = new StringBuilder();
@@ -634,7 +665,7 @@ public abstract class AbstractEnumParam extends Param {
     }
   }
   
-  private boolean numSelectedExceedsMax(String[] terms, Map<String, String> contextValues) {
+  private int getNumSelected(String[] terms, Map<String, String> contextValues) {
     // if countOnlyLeaves is set, must generate original tree, set values, and count the leaves
     logger.debug("Checking whether num selected exceeds max on param " + getFullName() + " with values" +
         ": displayType = " + getDisplayType() +
@@ -644,10 +675,10 @@ public abstract class AbstractEnumParam extends Param {
       EnumParamTermNode[] rootNodes = getEnumParamCache(contextValues).getVocabTreeRoots();
       TreeNode tree = EnumParamBean.getParamTree(getName(), rootNodes);
       EnumParamBean.populateParamTree(tree, terms);
-      return (tree.getSelectedLeaves().size() > getMaxSelectedCount());
+      return tree.getSelectedLeaves().size();
     }
     // otherwise, just count up terms and compare to max
-    return (terms.length > getMaxSelectedCount());
+    return terms.length;
   }
 
   /**

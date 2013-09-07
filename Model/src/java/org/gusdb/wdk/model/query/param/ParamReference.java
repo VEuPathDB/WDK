@@ -65,6 +65,10 @@ public class ParamReference extends Reference {
     String selectMode = paramRef.getSelectMode();
     String queryRef = paramRef.getQueryRef();
     Boolean suppressNode = paramRef.getSuppressNode();
+    Integer minSelectedCount = paramRef.getMinSelectedCount();
+    Integer maxSelectedCount = paramRef.getMaxSelectedCount();
+    Boolean countOnlyLeaves = paramRef.getCountOnlyLeaves();
+    
     if (param instanceof AbstractEnumParam) {
       AbstractEnumParam enumParam = (AbstractEnumParam) param;
       // check those invalid properties
@@ -103,6 +107,15 @@ public class ParamReference extends Reference {
 
       if (suppressNode != null)
         enumParam.setSuppressNode(suppressNode);
+      
+      if (minSelectedCount != null)
+        enumParam.setMinSelectedCount(minSelectedCount);
+      
+      if (maxSelectedCount != null)
+        enumParam.setMaxSelectedCount(maxSelectedCount);
+      
+      if (countOnlyLeaves != null)
+        enumParam.setCountOnlyLeaves(countOnlyLeaves);
 
     } else { // or other param types
       if (multiPick != null || quote != null || displayType != null
@@ -136,6 +149,7 @@ public class ParamReference extends Reference {
     return param;
   }
 
+  // set of overridable values
   private String defaultValue;
   private Boolean allowEmpty;
   private Boolean multiPick;
@@ -148,6 +162,9 @@ public class ParamReference extends Reference {
   private String selectMode;
   private Boolean noTranslation;
   private Boolean suppressNode;
+  private Integer minSelectedCount;
+  private Integer maxSelectedCount;
+  private Boolean countOnlyLeaves;
 
   private List<WdkModelText> helps = new ArrayList<WdkModelText>();
   private String help;
@@ -332,6 +349,38 @@ public class ParamReference extends Reference {
    */
   public void setSuppressNode(Boolean suppressNode) {
     this.suppressNode = suppressNode;
+  }
+
+  public Boolean getMultiPick() {
+    return multiPick;
+  }
+
+  public void setMultiPick(Boolean multiPick) {
+    this.multiPick = multiPick;
+  }
+
+  public Integer getMinSelectedCount() {
+    return minSelectedCount;
+  }
+
+  public void setMinSelectedCount(Integer minSelectedCount) {
+    this.minSelectedCount = minSelectedCount;
+  }
+
+  public Integer getMaxSelectedCount() {
+    return maxSelectedCount;
+  }
+
+  public void setMaxSelectedCount(Integer maxSelectedCount) {
+    this.maxSelectedCount = maxSelectedCount;
+  }
+
+  public Boolean getCountOnlyLeaves() {
+    return countOnlyLeaves;
+  }
+
+  public void setCountOnlyLeaves(Boolean countOnlyLeaves) {
+    this.countOnlyLeaves = countOnlyLeaves;
   }
 
   public void addHelp(WdkModelText help) {
