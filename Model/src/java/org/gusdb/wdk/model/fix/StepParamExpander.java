@@ -111,7 +111,6 @@ public class StepParamExpander extends BaseCLI {
       connection.rollback();
       throw ex;
     } finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
       if (resultSet != null) {
         resultSet.getStatement().close();
         resultSet.close();
@@ -140,6 +139,10 @@ public class StepParamExpander extends BaseCLI {
 
     SqlUtils.executeUpdate(dataSource, "CREATE UNIQUE INDEX step_params_ux01 "
         + "ON step_params (step_id, param_name, param_value)",
+        "wdk-create-param-indx");
+
+    SqlUtils.executeUpdate(dataSource, "CREATE INDEX step_params_ix01 "
+        + "ON step_params (step_id)",
         "wdk-create-param-indx");
   }
 
