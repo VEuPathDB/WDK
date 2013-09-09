@@ -667,11 +667,12 @@ public abstract class AbstractEnumParam extends Param {
   
   private int getNumSelected(String[] terms, Map<String, String> contextValues) {
     // if countOnlyLeaves is set, must generate original tree, set values, and count the leaves
+    String displayType = getDisplayType();
     logger.debug("Checking whether num selected exceeds max on param " + getFullName() + " with values" +
-        ": displayType = " + getDisplayType() +
+        ": displayType = " + displayType +
         ", maxSelectedCount = " + getMaxSelectedCount() +
         ", countOnlyLeaves = " + getCountOnlyLeaves());
-    if (getDisplayType().equals("treeBox") && getCountOnlyLeaves()) {
+    if (displayType != null && displayType.equals("treeBox") && getCountOnlyLeaves()) {
       EnumParamTermNode[] rootNodes = getEnumParamCache(contextValues).getVocabTreeRoots();
       TreeNode tree = EnumParamBean.getParamTree(getName(), rootNodes);
       EnumParamBean.populateParamTree(tree, terms);
