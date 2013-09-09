@@ -30,8 +30,8 @@ public class ShowErrorPageAction extends WdkAction {
     
     // Alternative mechanism to pass Exception to this action
     //   (see CustomProcessLoginAction.java for example)
-    String errorText = params.getValue(CConstants.WDK_ERROR_TEXT_KEY);
-    if (causingException == null && errorText != null) {
+    String errorText = params.getValueOrEmpty(CConstants.WDK_ERROR_TEXT_KEY);
+    if (causingException == null && !errorText.isEmpty()) {
       causingException = new Exception(errorText);
     }
     
