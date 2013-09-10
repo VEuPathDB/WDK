@@ -18,6 +18,7 @@ import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
@@ -647,7 +648,9 @@ public abstract class Query extends WdkModelBase {
         Map<String, EnumParamCache> caches = new HashMap<>();
         ((AbstractEnumParam) param).fetchCorrectValue(user, contextParamValues,
             caches);
-      } else { // for other params, just fill it with default value
+      } else if (!(param instanceof DatasetParam)) { 
+        // for other params, just fill it with default value;
+        // However, we cannot use default for datasetParam, which is just sample, not a valid value (a valid value must be a dataset id)
         if (!contextParamValues.containsKey(param.getName())) {
           contextParamValues.put(param.getName(), param.getDefault());
         }

@@ -118,7 +118,10 @@ public class ProcessQueryInstance extends QueryInstance {
     try {
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
       ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
+      long startTime = System.currentTimeMillis();
       ResultList resultList = getUncachedResults();
+      logger.info("Getting uncached results took " + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
+      startTime = System.currentTimeMillis();
       int rowId = 0;
       while (resultList.next()) {
         int columnId = 1;
@@ -165,6 +168,7 @@ public class ProcessQueryInstance extends QueryInstance {
       }
       if (rowId % 1000 != 0)
         ps.executeBatch();
+      logger.info("Inserting results to cache took " + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
     } catch (SQLException e) {
       throw new WdkModelException("Unable to insert record into cache.", e);
     } finally {
