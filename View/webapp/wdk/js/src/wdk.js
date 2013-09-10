@@ -674,9 +674,11 @@ function getWebAppUrl() {
           ui.tab.data("loaded", true);
 
         }).fail(function(jqXHR, textStatus, errorThrown) {
-          ui.panel.html(
-            '<p style="padding:1em;">Unable to load tab content: ' +
-            '<i>' + errorThrown + '</i></p>');
+          if (errorThrown != "abort") {
+            ui.panel.html(
+              '<p style="padding:1em;">Unable to load tab content: ' +
+              '<i>' + errorThrown + '</i></p>');
+          }
 
         }).always(function() {
           ui.tab.find("img").remove();
