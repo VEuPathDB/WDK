@@ -7,7 +7,7 @@ wdk.util.namespace("window.wdk.plugin", function(ns, $) {
           sorting = $this.data("sorting"),
           dataTableOpts = {
             aoColumns: null,
-            sScrollX: "100%",
+            sScrollX: "",
             sScrollY: "600px",
             bScrollCollapse: true,
             bPaginate: false,
