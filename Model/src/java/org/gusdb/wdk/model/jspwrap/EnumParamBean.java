@@ -67,6 +67,10 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     return param.getMaxSelectedCount();
   }
   
+  public boolean getCountOnlyLeaves() {
+    return param.getCountOnlyLeaves();
+  }
+  
   public Map<String, String> getDependedValues() {
     return _dependedValues;
   }
@@ -207,6 +211,10 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     this.currentValues = currentValues;
   }
   
+  public String[] getCurrentValues() {
+    return currentValues;
+  }
+  
   public void setOriginalValues(String[] originalValues) {
     this.originalValues = originalValues;
   }
@@ -267,15 +275,6 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
       root.turnOnSelectedLeaves(currentValueList);
       root.setDefaultLeaves(currentValueList);
     }
-  }
-
-  /**
-   * Temporary method to allow easy on/off of checkbox tree for value selection.
-   * 
-   * @return whether checkbox tree should be used (columns layout otherwise)
-   */
-  public boolean getUseCheckboxTree() {
-    return true;
   }
 
   @Override

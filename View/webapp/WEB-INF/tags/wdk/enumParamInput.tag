@@ -9,12 +9,11 @@ Provides form input element for a given EnumParam.
 
 For a multi-selectable parameter a form element is provided as either a
 series of checkboxes or a multiselect menu depending on number of
-parameter options. Also, if number of options is over a threshhold, this tag
+parameter options. Also, if number of options is over a threshold, this tag
 includes a checkAll button to select all options for the parameter.
 
 Otherwise a standard select menu is used.
 --%>
-
 
 <jsp:useBean id="idgen" class="org.gusdb.wdk.model.jspwrap.NumberUtilBean" scope="application" />
 
@@ -25,10 +24,9 @@ Otherwise a standard select menu is used.
 %>
 
 <%@ attribute name="layout"
-			  required="false"
+              required="false"
               description="parameter name"
 %>
-
 
 <c:set var="qP" value="${qp}"/>
 <c:set var="pNam" value="${qP.name}"/>
@@ -42,142 +40,102 @@ Otherwise a standard select menu is used.
 <%-- Setting a variable to display the items in the parameter in a horizontal layout --%>
 <c:set var="v" value=""/>
 <c:if test="${layout == 'horizontal'}">
-	<c:set var="v" value="style='display:inline'"/>
+  <c:set var="v" value="style='display:inline'"/>
 </c:if>
 
 <c:choose>
-<c:when test="${qP.multiPick}">
-  <%-- multiPick is true, use checkboxes or scroll pane --%>
-  <c:choose>
-    <c:when test="${qP.maxSelectedCount ge 0 and qP.minSelectedCount lt 0}">
-      <div style="color:blue">Note: You may only select up to ${qP.maxSelectedCount} values for this parameter.</div>
-    </c:when>
-    <c:when test="${qP.maxSelectedCount lt 0 and qP.minSelectedCount ge 0}">
-      <div style="color:blue">Note: You must select at least ${qP.minSelectedCount} values for this parameter.</div>
-    </c:when>
-    <c:when test="${qP.maxSelectedCount ge 0 and qP.minSelectedCount ge 0}">
-      <div style="color:blue">Note: You must select between ${qP.minSelectedCount} and ${qP.maxSelectedCount} values (inclusive) for this parameter.</div>
-    </c:when>
-  </c:choose>
-  <c:choose>
-    <c:when test="${displayType eq 'checkBox' or (displayType eq null and fn:length(qP.vocab) lt 15)}"><!-- use checkboxes -->
-	 <div class="param-multiPick ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
-      <c:set var="i" value="0"/>
-      <table border="1" cellspacing="0"><tr><td>
-
-      <ul>
-      <c:forEach items="${qP.displayMap}" var="entity">
-        <c:if test="${i == 0}"><c:set var="checked" value="checked"/></c:if>
-        <li>
-        <c:choose>
-        <%-- test for param labels to italicize --%>
-        <c:when test="${pNam == 'organism' or pNam == 'ecorganism'}">
-          <html:multibox property="array(${pNam})" value="${entity.key}" styleId="${pNam}" />
-          <i>${entity.value}</i>&nbsp;
-        </c:when>
-        <c:otherwise> <%-- use multiselect menu --%>
-          <html:multibox property="array(${pNam})" value="${entity.key}" styleId="${pNam}" />
-          ${entity.value}&nbsp;
-        </c:otherwise>
-        </c:choose> 
-        
-        <c:set var="i" value="${i+1}"/>
-        <c:set var="checked" value=""/>
-        </li>
-      </c:forEach>
-      </ul>
-&nbsp;<%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
-      
-      </td>
-      </tr>
-      </table>
-    </div>
-    </c:when>
-    
-    <%-- use a tree list --%>
-    <c:when test="${displayType eq 'treeBox'}">
-    
-      <c:if test="${qp.useCheckboxTree}">
-        <div class="${dependentClass}" dependson="${dependedParam}" name="${pNam}">
-          <imp:checkboxTree id="${pNam}CBT${idgen.nextId}" rootNode="${qP.paramTree}" checkboxName="array(${pNam})" buttonAlignment="left"/>
-        </div>
-      </c:if>
-      
-      <c:if test="${not qp.useCheckboxTree}">
-				<div class="${dependentClass}" dependson="${dependedParam}" name="${pNam}">
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		            <div class="param-controls">
-		            <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
-		            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, true);">expand all</a>
-		            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, false);">collapse all</a>
-		            </div>
-		        <c:set var="recurse_enum_param" value="${qP}" scope="request"/>
-		        <c:forEach items="${qP.vocabTreeRoots}" var="root">
-		            <c:set var="recurse_term_node" value="${root}" scope="request"/>
-		            <c:import url="/WEB-INF/includes/enumParamInputNode.jsp"/>
-		        </c:forEach>
-		        <c:remove var="recurse_term_node" scope="request"/>
-		        <c:remove var="recurse_enum_param" scope="request"/>
-		
-				&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-		            <div class="param-controls">
-		            <%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
-		            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, true);">expand all</a>
-		            | <a href="javascript:void(0)" onclick="expandCollapseAll(this, false);">collapse all</a>
-		            </div><br><br>
-		       </div>
-		   </c:if>
-		   
-    </c:when>
-
-    <c:otherwise>
-	  <div class="param-multiPick ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
-      <html:select  property="array(${pNam})" multiple="1" styleId="${pNam}">
-        <c:set var="opt" value="${opt+1}"/>
-        <c:set var="sel" value=""/>
-        <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-        <html:options property="array(${pNam}-values)" labelProperty="array(${pNam}-labels)" />
-      </html:select>
-  
-      <br><%@ include file="/WEB-INF/includes/selectAllParamOpt.jsp" %>
-      </div>
-    </c:otherwise>
-</c:choose>
-</c:when> <%-- end of multipick --%>
-<c:otherwise> <%-- pick single item --%>
-  <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+  <c:when test="${qP.multiPick}">
+    <%-- multiPick is true, use checkboxes or scroll pane --%>
     <c:choose>
-      <c:when test="${displayType eq 'radioBox'}">
-         <ul>
-         <c:forEach items="${qP.displayMap}" var="entity">
-           <li ${v}>
-             <html:radio property="array(${pNam})" value="${entity.key}" /> <span>${entity.value}</span>
-           </li>
-         </c:forEach>
-         </ul>
+      <c:when test="${displayType eq 'checkBox' or (displayType eq null and fn:length(qP.vocab) lt 15)}"><!-- use checkboxes -->
+        <div class="param-multiPick ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+          <c:set var="initialCount" value="${fn:length(qP.currentValues)}"/>
+          <imp:enumCountWarning enumParam="${qP}" initialCount="${initialCount}"/>
+          <c:set var="changeCode" value="window.wdk.parameterHandlers.adjustEnumCountBoxes('${qP.name}aaa')"/>
+          <c:set var="i" value="0"/>
+          <table border="1" cellspacing="0"><tr><td>
+            <ul>
+              <c:forEach items="${qP.displayMap}" var="entity">
+                <c:if test="${i == 0}"><c:set var="checked" value="checked"/></c:if>
+                <li>
+                  <html:multibox property="array(${pNam})" value="${entity.key}" styleId="${pNam}" onchange="${changeCode}"/>
+                  <c:choose>
+                    <%-- test for param labels to italicize --%>
+                    <c:when test="${pNam == 'organism' or pNam == 'ecorganism'}">
+                      <i>${entity.value}</i>&nbsp;
+                    </c:when>
+                    <c:otherwise> <%-- use multiselect menu --%>
+                      ${entity.value}&nbsp;
+                    </c:otherwise>
+                  </c:choose>
+                  <c:set var="i" value="${i+1}"/>
+                  <c:set var="checked" value=""/>
+                </li>
+              </c:forEach>
+            </ul>
+            &nbsp;<imp:selectAllParamOpt enumParam="${qP}" onchange="${changeCode}"/>
+          </td></tr></table>
+        </div>
       </c:when>
     
-      <%-- use a type ahead --%>
-      <c:when test="${displayType eq 'typeAhead'}">
-        <input type="text" id="${pNam}_display" size="50" value=""/>
-        <html:hidden styleClass="typeAhead" property="value(${pNam})" />
-        <div class="type-ahead-help">Type three characters to see suggestions.<br>Or use * as a wildcard, like this: *your-term*</div>
+      <%-- use a tree list --%>
+      <c:when test="${displayType eq 'treeBox'}">
+        <imp:enumCountWarning enumParam="${qP}" initialCount="0"/>
+        <div class="${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+          <c:set var="updateCountFunc">window.wdk.parameterHandlers.adjustEnumCountTree('${qP.name}aaa',${qP.countOnlyLeaves})</c:set>
+          <imp:checkboxTree id="${pNam}CBT${idgen.nextId}" rootNode="${qP.paramTree}" checkboxName="array(${pNam})"
+              buttonAlignment="left" onchange="${updateCountFunc}" onload="${updateCountFunc}"/>
+        </div>
       </c:when>
-
+  
+      <%-- use a multi-select box --%>
       <c:otherwise>
-        <%-- multiPick is false, use pull down menu --%>
-        <html:select  property="array(${pNam})" styleId="${pNam}">
-          <c:set var="opt" value="${opt+1}"/>
-          <c:set var="sel" value=""/>
-          <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
-          <html:options property="array(${pNam}-values)" labelProperty="array(${pNam}-labels)"/>
-        </html:select>
+        <div class="param-multiPick ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+          <c:set var="initialCount" value="${fn:length(qP.currentValues)}"/>
+          <imp:enumCountWarning enumParam="${qP}" initialCount="${initialCount}"/>
+          <c:set var="changeCode" value="window.wdk.parameterHandlers.adjustEnumCountSelect('${qP.name}aaa')"/>
+          <html:select property="array(${pNam})" multiple="1" styleId="${pNam}" onchange="${changeCode}">
+            <html:options property="array(${pNam}-values)" labelProperty="array(${pNam}-labels)" />
+          </html:select>
+          <br/><imp:selectAllParamOpt enumParam="${qP}" onchange="${changeCode}"/>
+        </div>
       </c:otherwise>
+      
     </c:choose>
-  </div>
-</c:otherwise> <%-- end of pick single item --%>
+  </c:when> <%-- end of multipick --%>
+  <c:otherwise> <%-- pick single item --%>
+    <div class="param ${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+      <c:choose>
+        <c:when test="${displayType eq 'radioBox'}">
+          <ul>
+            <c:forEach items="${qP.displayMap}" var="entity">
+              <li ${v}>
+                <html:radio property="array(${pNam})" value="${entity.key}" /> <span>${entity.value}</span>
+              </li>
+            </c:forEach>
+          </ul>
+        </c:when>
+      
+        <%-- use a type ahead --%>
+        <c:when test="${displayType eq 'typeAhead'}">
+          <input type="text" id="${pNam}_display" size="50" value=""/>
+          <html:hidden styleClass="typeAhead" property="value(${pNam})" />
+          <div class="type-ahead-help">Type three characters to see suggestions.<br>Or use * as a wildcard, like this: *your-term*</div>
+        </c:when>
+  
+        <c:otherwise>
+          <%-- multiPick is false, use pull down menu --%>
+          <html:select  property="array(${pNam})" styleId="${pNam}">
+            <c:set var="opt" value="${opt+1}"/>
+            <c:set var="sel" value=""/>
+            <c:if test="${opt == 1}"><c:set var="sel" value="selected"/></c:if>      
+            <html:options property="array(${pNam}-values)" labelProperty="array(${pNam}-labels)"/>
+          </html:select>
+        </c:otherwise>
+      </c:choose>
+    </div>
+  </c:otherwise> <%-- end of pick single item --%>
 </c:choose>
-
 
 <%-- display invalid terms, if any. --%>
 <c:set var="originalValues" value="${qP.originalValues}" />
@@ -202,4 +160,3 @@ Otherwise a standard select menu is used.
     </ul>
   </div>
 </c:if>
-
