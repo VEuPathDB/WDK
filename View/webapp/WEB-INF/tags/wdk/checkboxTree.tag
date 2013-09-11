@@ -15,6 +15,16 @@
               type="java.lang.String"
               description="name of the checkboxes indicating attribute inclusion" %>
 
+<%@ attribute name="onchange"
+              required="false"
+              type="java.lang.String"
+              description="value for onchange event on to be set on individual checkboxes" %>
+
+<%@ attribute name="onload"
+              required="false"
+              type="java.lang.String"
+              description="value for onload event to run after tree is loaded and configured" %>
+              
 <%@ attribute name="showSelectAll"
               required="false"
               type="java.lang.Boolean"
@@ -96,9 +106,12 @@
 <!-- JSTree/Checkbox configuration -->
 <script type="text/javascript">
   // configure the tree
-  wdk.checkboxTree.addTreeToPage("${id}", "${checkboxName}", ${useIcons}, ${rootNode.isAllSelected}, "<c:url value='${leafImage}'/>", [${rootNode.selectedAsList}], [${rootNode.defaultAsList}], [${initiallySetList}]);
+  wdk.checkboxTree.addTreeToPage("${id}", "${checkboxName}", ${useIcons}, 
+      ${rootNode.isAllSelected}, "<c:url value='${leafImage}'/>", 
+      [${rootNode.selectedAsList}], [${rootNode.defaultAsList}], [${initiallySetList}],
+      function(){ setTimeout(function() { ${onchange}; }, 0); }, function(){ ${onload}; });
   $(function() {
-	  wdk.checkboxTree.configureCheckboxTree("${id}");
+    wdk.checkboxTree.configureCheckboxTree("${id}");
   });
 </script>    
 
