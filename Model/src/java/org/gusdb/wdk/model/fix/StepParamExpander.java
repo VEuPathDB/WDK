@@ -3,12 +3,15 @@
  */
 package org.gusdb.wdk.model.fix;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -60,13 +63,15 @@ public class StepParamExpander extends BaseCLI {
 
   public void expand(WdkModel wdkModel) throws SQLException, JSONException,
       WdkModelException {
+    Connection connection = wdkModel.getUserDb().getDataSource().getConnection();
     ResultSet resultSet = null;
     PreparedStatement psInsert = null;
     try {
       createParamTable(wdkModel);
 
-      resultSet = prepareSelect(wdkModel);
-      psInsert = prepareInsert(wdkModel);
+      connection.setAutoCommit(false);
+      resultSet = prepareSelect(wdkModel, connection);
+      psInsert = prepareInsert(connection);
       DatabaseInstance database = wdkModel.getUserDb();
 
       int count = 0;
@@ -75,9 +80,11 @@ public class StepParamExpander extends BaseCLI {
         String clob = database.getPlatform().getClobData(resultSet,
             "display_params");
 
-        if (clob == null) continue;
+        if (clob == null)
+          continue;
         clob = clob.trim();
-        if (!clob.startsWith("{")) continue;
+        if (!clob.startsWith("{"))
+          continue;
 
         List<String[]> values = parseClob(wdkModel, clob);
 
@@ -92,14 +99,26 @@ public class StepParamExpander extends BaseCLI {
           psInsert.addBatch();
         }
         psInsert.executeBatch();
+        connection.commit();
 
         count++;
-        if (count % 100 == 0) logger.debug(count + " steps processed.");
+        if (count % 100 == 0) {
+          logger.debug(count + " steps processed.");
+        }
       }
       logger.info("Totally processed " + count + " steps.");
+    } catch (SQLException | JSONException | WdkModelException ex) {
+      connection.rollback();
+      throw ex;
     } finally {
-      SqlUtils.closeResultSetAndStatement(resultSet);
-      SqlUtils.closeStatement(psInsert);
+      if (resultSet != null) {
+        resultSet.getStatement().close();
+        resultSet.close();
+      }
+      if (psInsert != null)
+        psInsert.close();
+      connection.setAutoCommit(true);
+      connection.close();
     }
   }
 
@@ -109,7 +128,8 @@ public class StepParamExpander extends BaseCLI {
 
     // check if table exists
     if (database.getPlatform().checkTableExists(dataSource,
-        database.getDefaultSchema(), "step_params")) return;
+        database.getDefaultSchema(), "step_params"))
+      return;
 
     SqlUtils.executeUpdate(dataSource, "CREATE TABLE step_params ("
         + " step_id NUMBER(12) NOT NULL, "
@@ -117,11 +137,17 @@ public class StepParamExpander extends BaseCLI {
         + " param_value VARCHAR(4000), migration NUMBER(12))",
         "wdk-create-param-table");
 
-    SqlUtils.executeUpdate(dataSource, "CREATE INDEX step_params_idx02 "
-        + "ON step_params (step_id, param_name)", "wdk-create-param-indx");
+    SqlUtils.executeUpdate(dataSource, "CREATE UNIQUE INDEX step_params_ux01 "
+        + "ON step_params (step_id, param_name, param_value)",
+        "wdk-create-param-indx");
+
+    SqlUtils.executeUpdate(dataSource, "CREATE INDEX step_params_ix01 "
+        + "ON step_params (step_id)",
+        "wdk-create-param-indx");
   }
 
-  private ResultSet prepareSelect(WdkModel wdkModel) throws SQLException {
+  private ResultSet prepareSelect(WdkModel wdkModel, Connection connection)
+      throws SQLException {
     ModelConfigUserDB userDB = wdkModel.getModelConfig().getUserDB();
     String schema = userDB.getUserSchema();
     StringBuffer sql = new StringBuffer("SELECT s.step_id, s.display_params ");
@@ -129,18 +155,16 @@ public class StepParamExpander extends BaseCLI {
     sql.append(" WHERE s.user_id = u.user_id AND u.is_guest = 0");
     sql.append("   AND s.step_id NOT IN (SELECT step_id FROM step_params) ");
 
-    DataSource dataSource = wdkModel.getUserDb().getDataSource();
-    return SqlUtils.executeQuery(dataSource, sql.toString(),
-        "wdk-select-step-params");
+    return SqlUtils.executeQuery(connection, sql.toString(),
+        "wdk-select-step-params", 1000);
   }
 
-  private PreparedStatement prepareInsert(WdkModel wdkModel)
+  private PreparedStatement prepareInsert(Connection connection)
       throws SQLException {
     StringBuffer sql = new StringBuffer("INSERT INTO step_params ");
     sql.append(" (step_id, param_name, param_value) " + "  VALUES (?, ?, ?)");
 
-    DataSource dataSource = wdkModel.getUserDb().getDataSource();
-    return SqlUtils.getPreparedStatement(dataSource, sql.toString());
+    return connection.prepareStatement(sql.toString());
   }
 
   private List<String[]> parseClob(WdkModel wdkModel, String clob)
@@ -155,12 +179,20 @@ public class StepParamExpander extends BaseCLI {
       if (value.startsWith(prefix)) {
         String checksum = value.substring(prefix.length()).trim();
         String decompressed = queryFactory.getClobValue(checksum);
-        if (decompressed != null) value = decompressed;
+        if (decompressed != null)
+          value = decompressed;
       }
       String[] terms = value.split(",");
+      Set<String> used = new HashSet<>();
       for (String term : terms) {
-        if (term.length() > 4000) term = term.substring(0, 4000);
-        newValues.add(new String[] { paramName, term });
+        if (term.length() > 4000)
+          term = term.substring(0, 4000);
+        if (used.contains(term)) {
+          continue;
+        } else {
+          newValues.add(new String[] { paramName, term });
+          used.add(term);
+        }
       }
     }
     return newValues;

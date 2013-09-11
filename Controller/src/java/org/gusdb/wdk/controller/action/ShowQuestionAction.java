@@ -256,6 +256,7 @@ public class ShowQuestionAction extends Action {
       ActionServlet servlet = getServlet();
       QuestionForm qForm = (QuestionForm) form;
       String qFullName = getQuestionName(qForm, request);
+      ActionUtility.getWdkModel(servlet).validateQuestionFullName(qFullName);
       QuestionBean wdkQuestion = getQuestionBean(servlet, qFullName);
 
       prepareQuestionForm(wdkQuestion, servlet, request, qForm);

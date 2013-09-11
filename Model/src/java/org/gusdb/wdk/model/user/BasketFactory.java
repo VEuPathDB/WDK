@@ -458,7 +458,7 @@ public class BasketFactory {
     query.addParam(datasetParam);
 
     // make sure we create index on primary keys
-    query.setIndexColumns(pkColumns);
+    query.setIndexColumns(recordClass.getIndexColumns());
     query.setDoNotTest(true);
     query.setIsCacheable(true);
 
@@ -548,7 +548,7 @@ public class BasketFactory {
     query.addParam(getSignatureParam());
 
     // make sure we create index on primary keys
-    query.setIndexColumns(pkColumns);
+    query.setIndexColumns(recordClass.getIndexColumns());
     query.setDoNotTest(true);
     query.setIsCacheable(false);
 
@@ -621,7 +621,7 @@ public class BasketFactory {
     query.addColumn(column);
 
     // make sure we create index on primary keys
-    query.setIndexColumns(pkColumns);
+    query.setIndexColumns(recordClass.getIndexColumns());
     query.setDoNotTest(true);
     query.setIsCacheable(false); // cache the boolean query
 

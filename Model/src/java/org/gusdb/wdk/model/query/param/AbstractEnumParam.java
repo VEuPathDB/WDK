@@ -7,11 +7,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.gusdb.wdk.model.TreeNode;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkRuntimeException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.user.User;
 
@@ -64,9 +66,6 @@ public abstract class AbstractEnumParam extends Param {
    */
   private static class ParamValueMap extends LinkedHashMap<String, String> {
 
-    /**
-   * 
-   */
     private static final long serialVersionUID = 8058527840525499401L;
 
     public ParamValueMap() {
@@ -115,6 +114,9 @@ public abstract class AbstractEnumParam extends Param {
   private Set<String> dependedParamRefs;
   private Set<Param> dependedParams;
   private String displayType;
+  private int minSelectedCount = -1;
+  private int maxSelectedCount = -1;
+  private boolean countOnlyLeaves = false;
 
   /**
    * this property is only used by abstractEnumParams, but have to be
@@ -140,6 +142,9 @@ public abstract class AbstractEnumParam extends Param {
     this.displayType = param.displayType;
     this.selectMode = param.selectMode;
     this.suppressNode = param.suppressNode;
+    this.minSelectedCount = param.minSelectedCount;
+    this.maxSelectedCount = param.maxSelectedCount;
+    this.countOnlyLeaves = param.countOnlyLeaves;
   }
 
   protected abstract EnumParamCache createEnumParamCache(
@@ -228,6 +233,59 @@ public abstract class AbstractEnumParam extends Param {
     this.displayType = displayType;
   }
 
+  /**
+   * @return The minimum number of allowed values for this param; if not set
+   *   (i.e. no min), this method will return -1.
+   */
+  public int getMinSelectedCount() {
+    return minSelectedCount;
+  }
+
+  /**
+   * @param maxSelectedCount The minimum number of allowed values for this
+   *   param.  If not set, default is "no min"; any number of values can be
+   *   assigned.
+   */
+  public void setMinSelectedCount(int minSelectedCount) {
+    this.minSelectedCount = minSelectedCount;
+  }
+  
+  /**
+   * @return The maximum number of allowed values for this param; if not set
+   *   (i.e. no max), this method will return -1.
+   */
+  public int getMaxSelectedCount() {
+    return maxSelectedCount;
+  }
+
+  /**
+   * @param maxSelectedCount The maximum number of allowed values for this
+   *   param.  If not set, default is "no max"; any number of values can be
+   *   assigned.
+   */
+  public void setMaxSelectedCount(int maxSelectedCount) {
+    this.maxSelectedCount = maxSelectedCount;
+  }
+
+  /**
+   * @return true if, when validating min- and maxSelectedCount (see above),
+   * we should only count leaves towards the total selected value count, or,
+   * if false, count both leaves and branch selections
+   */
+  public boolean getCountOnlyLeaves() {
+    return countOnlyLeaves;  
+  }
+
+  /**
+   * @param countOnlyLeaves Set to true if, when validating min- and
+   * maxSelectedCount (see above), we should only count leaves towards the
+   * total selected value count, or set to false if both leaves and branch
+   * selections should be counted
+   */
+  public void setCountOnlyLeaves(boolean countOnlyLeaves) {
+    this.countOnlyLeaves = countOnlyLeaves;
+  }
+  
   public boolean isDependentParam() {
     return (dependedParamRefs.size() > 0);
   }
@@ -576,8 +634,20 @@ public abstract class AbstractEnumParam extends Param {
 
       String[] terms = convertToTerms(rawValue);
       if (terms.length == 0 && !allowEmpty)
-        throw new WdkUserException("The value to enumParam/flatVocabParam "
-            + getFullName() + " cannot be empty");
+        throw new WdkUserException("The value to enumParam/flatVocabParam " +
+            getPrompt() + " cannot be empty");
+      
+      // verify that user did not select too few or too many values for this param
+      int numSelected = getNumSelected(terms, contextValues);
+      if ((maxSelectedCount > 0 && numSelected > maxSelectedCount) ||
+          (minSelectedCount > 0 && numSelected < minSelectedCount)) {
+        String range =
+          (minSelectedCount > 0 ? "[ " + minSelectedCount : "( Inf") + ", " +
+          (maxSelectedCount > 0 ? maxSelectedCount + " ]" : "Inf )");
+        throw new WdkUserException("Number of selected values (" + numSelected +
+            ") was not in range " + range + " for parameter " + getPrompt());
+      }
+      
       Map<String, String> map = getVocabMap(contextValues);
       boolean error = false;
       StringBuilder message = new StringBuilder();
@@ -593,6 +663,23 @@ public abstract class AbstractEnumParam extends Param {
     } else {
       logger.debug("param=" + getFullName() + " - skip validation");
     }
+  }
+  
+  private int getNumSelected(String[] terms, Map<String, String> contextValues) {
+    // if countOnlyLeaves is set, must generate original tree, set values, and count the leaves
+    String displayType = getDisplayType();
+    logger.debug("Checking whether num selected exceeds max on param " + getFullName() + " with values" +
+        ": displayType = " + displayType +
+        ", maxSelectedCount = " + getMaxSelectedCount() +
+        ", countOnlyLeaves = " + getCountOnlyLeaves());
+    if (displayType != null && displayType.equals("treeBox") && getCountOnlyLeaves()) {
+      EnumParamTermNode[] rootNodes = getEnumParamCache(contextValues).getVocabTreeRoots();
+      TreeNode tree = EnumParamBean.getParamTree(getName(), rootNodes);
+      EnumParamBean.populateParamTree(tree, terms);
+      return tree.getSelectedLeaves().size();
+    }
+    // otherwise, just count up terms and compare to max
+    return terms.length;
   }
 
   /**
