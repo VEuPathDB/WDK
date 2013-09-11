@@ -843,17 +843,17 @@ public class AnswerValue {
   }
 
   public String getIdSql() throws WdkModelException {
-    // String[] pkColumns =
-    // question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
-    //
-    // StringBuffer sql = new StringBuffer("(SELECT DISTINCT ");
-    // boolean firstColumn = true;
-    // for (String column : pkColumns) {
-    // if (firstColumn) firstColumn = false;
-    // else sql.append(", ");
-    // sql.append(column);
-    // }
-    // sql.append(" FROM (");
+    String[] pkColumns =
+    question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
+   
+    StringBuffer sql = new StringBuffer("(SELECT ");
+    boolean firstColumn = true;
+    for (String column : pkColumns) {
+      if (firstColumn) firstColumn = false;
+      else sql.append(", ");
+        sql.append(column);
+    }
+    sql.append(" FROM (");
 
     String innerSql = idsQueryInstance.getSql();
 
@@ -864,12 +864,12 @@ public class AnswerValue {
     // apply filter
     if (filter != null)
       innerSql = filter.applyFilter(user, innerSql, assignedWeight);
-    return " /* filter applied on id query */ (" + innerSql + ")";
-    // sql.append(innerSql).append(") bidq)");
-    //
-    // logger.debug("id sql constructed.");
-    //
-    // return sql.toString();
+    innerSql = " /* filter applied on id query */ " + innerSql;
+    sql.append(innerSql).append(") bidq)");
+    
+    logger.debug("id sql constructed.");
+    
+    return sql.toString();
   }
 
   private void prepareSortingSqls(Map<String, String> sqls,
