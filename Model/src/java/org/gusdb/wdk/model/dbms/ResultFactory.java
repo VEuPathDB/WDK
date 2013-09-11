@@ -161,34 +161,20 @@ public class ResultFactory {
     // create index on query instance id
     StringBuffer sqlId = new StringBuffer("CREATE INDEX ");
     sqlId.append(cacheTable).append("_idx01 ON ").append(cacheTable);
-    sqlId.append(" (").append(CacheFactory.COLUMN_INSTANCE_ID).append(")");
+    sqlId.append(" (").append(CacheFactory.COLUMN_INSTANCE_ID);
 
     // create index on other columns
-    StringBuffer sqlOther = null;
     if (indexColumns != null) {
-      sqlOther = new StringBuffer("CREATE INDEX ");
-      sqlOther.append(cacheTable).append("_idx02 ON ").append(cacheTable);
-      sqlOther.append(" (");
-      boolean firstColumn = true;
       for (String column : indexColumns) {
-        if (firstColumn)
-          firstColumn = false;
-        else
-          sqlOther.append(", ");
-        sqlOther.append(column);
+          sqlId.append(", ").append(column);
       }
-      sqlOther.append(")");
     }
+    sqlId.append(")");
 
     try {
       DataSource dataSource = database.getDataSource();
       SqlUtils.executeUpdate(dataSource, sqlId.toString(),
         query.getFullName() + "__create-cache-index01");
-
-    if (indexColumns != null) {
-        SqlUtils.executeUpdate(dataSource, sqlOther.toString(),
-          query.getFullName() + "__create-cache-index02");
-    }
   }
     catch (SQLException e) {
       throw new WdkModelException("Could not create cache table index.", e);
