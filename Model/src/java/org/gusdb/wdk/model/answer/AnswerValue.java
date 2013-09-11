@@ -853,6 +853,8 @@ public class AnswerValue {
       else sql.append(", ");
         sql.append(column);
     }
+    // add weight column, since boolean queries used it here
+    sql.append(", " + Utilities.COLUMN_WEIGHT);
     sql.append(" FROM (");
 
     String innerSql = idsQueryInstance.getSql();

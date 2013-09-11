@@ -403,8 +403,7 @@ public class WdkModel implements ConnectionContainer {
       booleanQuery = new BooleanQuery(recordClass);
 
       // make sure we create index on primary keys
-      String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
-      booleanQuery.setIndexColumns(pkColumns);
+      booleanQuery.setIndexColumns(recordClass.getIndexColumns());
 
       internalQuerySet.addQuery(booleanQuery);
 
