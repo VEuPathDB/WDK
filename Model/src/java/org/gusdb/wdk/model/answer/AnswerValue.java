@@ -773,6 +773,8 @@ public class AnswerValue {
     if (sortedIdSql != null)
       return sortedIdSql;
 
+    String[] pkColumns = question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
+
     // get id sql
     String idSql = getIdSql();
 
@@ -781,9 +783,15 @@ public class AnswerValue {
     List<String> orderClauses = new ArrayList<String>();
     prepareSortingSqls(attributeSqls, orderClauses);
 
-    StringBuffer sql = new StringBuffer(
-        "/* the ID query results, sorted */ SELECT idq.* FROM ");
-    sql.append(idSql).append(" idq");
+    StringBuffer sql = new StringBuffer("/* the ID query results, sorted */ SELECT ");
+    boolean firstColumn = true;
+    for (String pkColumn : pkColumns) {
+      if (firstColumn) firstColumn = false;
+      else sql.append(", ");
+      sql.append("idq." + pkColumn);
+    }
+
+    sql.append(" FROM " + idSql + " idq");
     // add all tables involved
     for (String shortName : attributeSqls.keySet()) {
       sql.append(", (").append(attributeSqls.get(shortName)).append(") ");
@@ -791,7 +799,6 @@ public class AnswerValue {
     }
 
     // add primary key join conditions
-    String[] pkColumns = question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
     boolean firstClause = true;
     for (String shortName : attributeSqls.keySet()) {
       for (String column : pkColumns) {
@@ -843,20 +850,6 @@ public class AnswerValue {
   }
 
   public String getIdSql() throws WdkModelException {
-    String[] pkColumns =
-    question.getRecordClass().getPrimaryKeyAttributeField().getColumnRefs();
-   
-    StringBuffer sql = new StringBuffer("(SELECT ");
-    boolean firstColumn = true;
-    for (String column : pkColumns) {
-      if (firstColumn) firstColumn = false;
-      else sql.append(", ");
-        sql.append(column);
-    }
-    // add weight column, since boolean queries used it here
-    sql.append(", " + Utilities.COLUMN_WEIGHT);
-    sql.append(" FROM (");
-
     String innerSql = idsQueryInstance.getSql();
 
     // add comments to id sql
@@ -864,14 +857,15 @@ public class AnswerValue {
 
     int assignedWeight = idsQueryInstance.getAssignedWeight();
     // apply filter
-    if (filter != null)
+    if (filter != null) {
       innerSql = filter.applyFilter(user, innerSql, assignedWeight);
-    innerSql = " /* filter applied on id query */ " + innerSql;
-    sql.append(innerSql).append(") bidq)");
+      innerSql = " /* filter applied on id query */ " + innerSql;
+    }
+    innerSql = "(" + innerSql + ")";
     
     logger.debug("id sql constructed.");
     
-    return sql.toString();
+    return innerSql;
   }
 
   private void prepareSortingSqls(Map<String, String> sqls,

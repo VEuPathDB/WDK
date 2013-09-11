@@ -1563,12 +1563,8 @@ public class RecordClass extends WdkModelBase implements
 
 
   public String[] getIndexColumns() {
-    // the index columns are pk columns plus weight column
-    String[] pkColumns = primaryKeyField.getColumnRefs();
-    String[] indexColumns = new String[pkColumns.length + 1];
-    System.arraycopy(pkColumns, 0, indexColumns, 0, pkColumns.length);
-    indexColumns[indexColumns.length - 1] = Utilities.COLUMN_WEIGHT;
-    return indexColumns;
+    // only need to index the pk columns;
+    return primaryKeyField.getColumnRefs();  
   }
 
 }
