@@ -12,6 +12,7 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ConnectionContainer;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -341,5 +342,16 @@ public class WdkModelBean implements ConnectionContainer {
     public Connection getConnection(String key) 
         throws WdkModelException, SQLException {
       return wdkModel.getConnection(key);
+    }
+
+    public void validateQuestionFullName(String qFullName) throws WdkUserException {
+        String message = "Unable to find question with name: " + qFullName;
+        try {
+            if (qFullName == null || wdkModel.getQuestion(qFullName) == null) {
+                throw new WdkUserException(message);
+            }
+        } catch (WdkModelException e) {
+            throw new WdkUserException(message, e);
+        }
     }
 }

@@ -8,7 +8,7 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
 
   // takes string, boolean, url, "current" array, "default" array, "initially set" array
   function addTreeToPage(id, checkboxName, useIcons, collapseOnLoad, leafImgUrl,
-      currentList, defaultList, initiallySetList) {
+      currentList, defaultList, initiallySetList, onchange, onload) {
     var checkboxTree = checkboxTreeConfig[id];
     if ((typeof checkboxTree) == 'undefined') {
       checkboxTree = {};
@@ -22,6 +22,8 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
     checkboxTree.currentList = currentList;
     checkboxTree.defaultList = defaultList;
     checkboxTree.initiallySetList = initiallySetList;
+    checkboxTree.onchange = onchange;
+    checkboxTree.onload = onload;
     checkboxTree.configured = false;
   }
 
@@ -41,8 +43,10 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
           if (checkboxTree.collapseOnLoad) {
             cbt_collapseAll(treeId);
           }
+          $('#'+treeId).find('ins.jstree-checkbox').click(checkboxTree.onchange);
           checkboxTree.configured = true;
           $('#'+treeId).show();
+          checkboxTree.onload();
         })
         // hack to bubble change event up to containing form
         .bind("change_state.jstree", function(event, data) {
@@ -86,14 +90,20 @@ wdk.util.namespace("window.wdk.checkboxTree", function(ns, $) {
         }
       });
     }
+    // tree may have changed so call user's onchange function
+    checkboxTreeConfig[treeId].onchange();
   }
 
   function cbt_checkAll(treeId) {
     $('#' + treeId).jstree("check_all");
+    // tree may have changed so call user's onchange function
+    checkboxTreeConfig[treeId].onchange();
   }
 
   function cbt_uncheckAll(treeId) {
     $('#' + treeId).jstree("uncheck_all");
+    // tree may have changed so call user's onchange function
+    checkboxTreeConfig[treeId].onchange();
   }
 
   function cbt_expandAll(treeId) {

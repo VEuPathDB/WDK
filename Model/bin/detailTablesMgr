@@ -250,6 +250,8 @@ sub runLoadDetailTable {
 
     my $ucType = ucfirst($lcType);
 
+    if ($ucType =~ /Isolatealt/){$ucType = 'Isolate'};
+
     my $cmd = "loadDetailTable -record ${ucType}RecordClasses.${ucType}RecordClass -sqlFile $sqlDir/tmp_${type}.sql -detailTable $table -model $project ";
 
     $cmd .= " -field  $orgHsh->{$org}->{$type}->{'fields'}" if ($orgHsh->{$org}->{$type}->{'fields'} &&  $orgHsh->{$org}->{$type}->{'fields'} ne 'all');
@@ -296,6 +298,8 @@ sub runFullRecordFile{
     my $lcType = lc($type);
 
     my $ucType = ucfirst($lcType);
+
+    if ($ucType =~ /Isolatealt/){$ucType = 'Isolate'};
 
     my $subDir =  $orgHsh->{$org}->{$type}->{'dir'} =~ /none/i ? '' : $orgHsh->{$org}->{$type}->{'dir'};
 

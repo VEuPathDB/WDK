@@ -115,7 +115,7 @@ public class DynamicAttributeSet extends WdkModelBase {
       // always have weight as a dynamic attribute
       ColumnAttributeField attribute = new ColumnAttributeField();
       attribute.setName(Utilities.COLUMN_WEIGHT);
-      attribute.setDisplayName("Weight");
+      attribute.setDisplayName("Search Weight");
       attribute.setInternal(false);
       attribute.setInReportMaker(true);
       attribute.setSortable(true);

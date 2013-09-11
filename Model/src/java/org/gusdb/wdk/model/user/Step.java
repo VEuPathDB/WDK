@@ -777,7 +777,15 @@ public class Step {
       int endIndex = user.getItemsPerPage();
       answerValue = question.makeAnswerValue(user, paramValues, 1, endIndex,
           sortingMap, getFilter(), validate, assignedWeight);
-      this.estimateSize = answerValue.getResultSize();
+      try {
+        this.estimateSize = answerValue.getResultSize();
+      } catch (WdkModelException ex) {
+        // if validate is false, the error will be ignored to allow the process to continue.
+        if (validate)
+          throw ex;
+        else
+          logger.warn(ex);
+      }
       update(false);
     }
     return answerValue;

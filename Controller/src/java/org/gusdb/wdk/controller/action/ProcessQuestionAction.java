@@ -115,11 +115,13 @@ public class ProcessQuestionAction extends Action {
             throws Exception {
         logger.debug("Entering ProcessQuestionAction..");
         QuestionForm qForm = (QuestionForm) form;
+        // get question name first so it can be used in error reporting
+        String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
         try {
             UserBean wdkUser = ActionUtility.getUser(servlet, request);
 
-            // get question
-            String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+            // validate question name
+            ActionUtility.getWdkModel(servlet).validateQuestionFullName(qFullName);
 
             // the params has been validated, and now is parsed, and if the size
             // of the value is too long, it will be replaced is checksum
@@ -166,7 +168,8 @@ public class ProcessQuestionAction extends Action {
 
             ActionMessages messages = new ActionErrors();
             ActionMessage message = new ActionMessage("mapped.properties",
-                    qForm.getQuestion().getDisplayName(), ex.getMessage());
+                    (qFullName == null || qFullName.isEmpty() ? 
+                     "Unknown question name" : qFullName), ex.getMessage());
             messages.add(ActionErrors.GLOBAL_MESSAGE, message);
             saveErrors(request, messages);
             ActionForward forward = mapping.getInputForward();

@@ -128,7 +128,7 @@
                                   <td style="padding:0;">
                                     <c:choose>
                                       <c:when test="${!sumAttrib.sortable}">
-                                        <img src="<c:url value='/wdk/images/results_arrw_up_blk.png'/>" border="0" alt="Sort up"/>
+                                        <%-- img src="<c:url value='/wdk/images/results_arrw_up_blk.png'/>" border="0" alt="Sort up"/ --%>
                                       </c:when>
                                       <c:when test="${attrName eq sortingAttrNames[0] and sortingAttrOrders[0]}">
                                         <img src="<c:url value='/wdk/images/results_arrw_up_gr.png'/>"  alt="Sort up" title="Result is sorted by ${sumAttrib}" />
@@ -147,7 +147,7 @@
                                   <td style="padding:0;">
                                     <c:choose>
                                       <c:when test="${!sumAttrib.sortable}">
-                                        <img src="<c:url value='/wdk/images/results_arrw_dwn_blk.png'/>" border="0" />
+                                        <%-- img src="<c:url value='/wdk/images/results_arrw_dwn_blk.png'/>" border="0" / --%>
                                       </c:when>
                                       <c:when test="${attrName eq sortingAttrNames[0] and not sortingAttrOrders[0]}">
                                         <img src="<c:url value='/wdk/images/results_arrw_dwn_gr.png'/>" alt="Sort down" title="Result is sorted by ${sumAttrib}" />

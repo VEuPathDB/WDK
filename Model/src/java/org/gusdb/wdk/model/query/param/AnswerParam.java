@@ -165,7 +165,7 @@ public class AnswerParam extends Param {
       String dependentValue) throws WdkModelException {
     int stepId = Integer.parseInt(dependentValue);
     Step step = user.getStep(stepId);
-    return step.getAnswerValue().getChecksum();
+    return step.getAnswerValue(false).getChecksum();
   }
 
   /*

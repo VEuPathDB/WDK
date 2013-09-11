@@ -93,6 +93,8 @@ public class Dumper {
             // flush the output stream
             out.flush();
             out.close();
+            // release the model
+            wdkModel.releaseResources();
         }
     }
 

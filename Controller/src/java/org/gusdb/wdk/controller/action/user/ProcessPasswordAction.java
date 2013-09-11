@@ -23,13 +23,11 @@ public class ProcessPasswordAction extends WdkAction {
     private static final String OLD_PASSWORD_KEY = "oldPassword";
     private static final String NEW_PASSWORD_KEY = "newPassword";
     private static final String CONFIRM_PASSWORD_KEY = "confirmPassword";
-    private static final String CHANGE_BUTTON_KEY = "changeButton";
   
     private static final Map<String, ParamDef> PARAM_DEFS = new ParamDefMapBuilder()
       .addParam(OLD_PASSWORD_KEY, new ParamDef(Required.REQUIRED))
       .addParam(NEW_PASSWORD_KEY, new ParamDef(Required.REQUIRED))
-      .addParam(CONFIRM_PASSWORD_KEY, new ParamDef(Required.REQUIRED))
-      .addParam(CHANGE_BUTTON_KEY, new ParamDef(Required.REQUIRED)).toMap();
+      .addParam(CONFIRM_PASSWORD_KEY, new ParamDef(Required.REQUIRED)).toMap();
 
     @Override
     protected boolean shouldValidateParams() {
@@ -54,9 +52,9 @@ public class ProcessPasswordAction extends WdkAction {
         new ActionResult().setViewName(SUCCESS));
 
       // get user's input
-      String oldPassword = params.getValue("oldPassword");
-      String newPassword = params.getValue("newPassword");
-      String confirmPassword = params.getValue("confirmPassword");
+      String oldPassword = params.getValue(OLD_PASSWORD_KEY);
+      String newPassword = params.getValue(NEW_PASSWORD_KEY);
+      String confirmPassword = params.getValue(CONFIRM_PASSWORD_KEY);
 
       try {
         // fails if the current use is a guest
