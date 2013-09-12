@@ -874,12 +874,12 @@ tr.lines {
 
 tr.linesalt > td {
 /*	background-color: #DDDDDD; */
-	background-color: #EFEFEF;
+	background-color: #EEEEEE;
 }
 
 tr.lines td, tr.linesalt td {
 	padding: 0px 2px;
-	border-left: 1px solid #AAAAAA;
+	border-left: 1px solid #CCCCCC;
 }
 
 
