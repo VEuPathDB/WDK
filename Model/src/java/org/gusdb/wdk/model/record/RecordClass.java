@@ -1561,4 +1561,10 @@ public class RecordClass extends WdkModelBase implements
     return records;
   }
 
+
+  public String[] getIndexColumns() {
+    // only need to index the pk columns;
+    return primaryKeyField.getColumnRefs();  
+  }
+
 }

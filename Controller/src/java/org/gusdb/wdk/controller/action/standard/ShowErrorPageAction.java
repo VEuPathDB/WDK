@@ -15,7 +15,6 @@ import org.gusdb.wdk.controller.actionutil.WdkAction;
  * finds the type of error, 3) forwards control to a jsp page specific to this
  * error type
  */
-
 public class ShowErrorPageAction extends WdkAction {
 
   private static final Logger LOG = Logger.getLogger(ShowErrorPageAction.class.getName());
@@ -29,9 +28,19 @@ public class ShowErrorPageAction extends WdkAction {
     Exception causingException = (Exception)
         getRequestData().getRequestAttribute(Globals.EXCEPTION_KEY);
     
+    // Alternative mechanism to pass Exception to this action
+    //   (see CustomProcessLoginAction.java for example)
+    String errorText = params.getValueOrEmpty(CConstants.WDK_ERROR_TEXT_KEY);
+    if (causingException == null && !errorText.isEmpty()) {
+      causingException = new Exception(errorText);
+    }
+    
     LOG.error("Exception received by ShowErrorPage: ", causingException);
     
-    String type = params.getValueOrEmpty(CConstants.ERROR_TYPE_PARAM);
+    // FIXME: Should only be one type param; but have seen >1 when error occurs
+    //        in this action. For now, just take first type or empty if none.
+    String[] types = params.getValues(CConstants.ERROR_TYPE_PARAM);
+    String type = types.length == 0 ? "" : types[0];
     
     String errorPageName =
         ((!type.isEmpty() && type.equals(CConstants.ERROR_TYPE_USER)) ?

@@ -26,6 +26,12 @@ public class CategoryQuestionRef extends WdkModelText {
   }
 
   public boolean isUsedBy(String usedBy) {
+    return isUsedBy(usedBy, false);
+  }
+
+  public boolean isUsedBy(String usedBy, boolean strict) {
+    if (strict) 
+      return (usedBy != null && this.usedBy != null && this.usedBy.equalsIgnoreCase(usedBy));
     return (usedBy == null || this.usedBy == null || this.usedBy.equalsIgnoreCase(usedBy));
   }
 }

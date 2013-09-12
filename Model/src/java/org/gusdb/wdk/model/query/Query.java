@@ -5,6 +5,7 @@ package org.gusdb.wdk.model.query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,10 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.jspwrap.EnumParamCache;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
@@ -25,40 +29,51 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * <p>The query in WDK defines how the data is accessed from the resource. There
+ * <p>
+ * The query in WDK defines how the data is accessed from the resource. There
  * are currently two kinds of query, SQL based query, and web service based
  * query. The query is not exposed to the user, only the question are visible on
- * the web sites as searches.</p>
+ * the web sites as searches.
+ * </p>
  * 
- * <p>A Query holds only the definition of query, such as params, SQL template, or
+ * <p>
+ * A Query holds only the definition of query, such as params, SQL template, or
  * information about the web service etc. It can be used to create
  * QueryInstance, which will hold param values, and does the real work of
- * executing a query and retrieve data.</p>
+ * executing a query and retrieve data.
+ * </p>
  * 
- * <p>Dependending on how many answerParams a query might have, a query can be
+ * <p>
+ * Dependending on how many answerParams a query might have, a query can be
  * called as a normal query (without any answerParam), or a combined query (with
  * one or more answerParams). If a query has exactly one answerParam, it is also
  * called a transform query; in the transform query, the type of the answerParam
  * can be different from the type of the results the query returns. And there is
  * another special kind of combined query, called BooleanQuery, which has
  * exactly two answerParams, and the types of the answerParam are the same as
- * the result of the query.</p>
+ * the result of the query.
+ * </p>
  * 
- * <p>A query can be used in four contexts in WDK, as ID query, attribute query,
+ * <p>
+ * A query can be used in four contexts in WDK, as ID query, attribute query,
  * table query, and param query. and SqlQuery can be used in all four contexts,
  * but ProcessQuery (web service query) can only be used in ID and param
- * queries.</p>
+ * queries.
+ * </p>
  * 
- * <p>An ID query is a query referenced by a question, and the parameters for the
+ * <p>
+ * An ID query is a query referenced by a question, and the parameters for the
  * search (the visual name of the question) are defined in the queries. An ID
  * query should return all the primary key columns of the recordClass type the
  * associated question linked to. The the primary key values returned by ID
  * query should be unique, and cannot have duplicate rows. If duplicate primary
  * key occurs, WDK will fail when joining it with the attribute query. An ID
  * query can have other columns other than the primary key columns, and those
- * columns are usually used for the dynamic attributes.</p>
+ * columns are usually used for the dynamic attributes.
+ * </p>
  * 
- * <p>An attribute query is a query referenced by a recordClass, in the
+ * <p>
+ * An attribute query is a query referenced by a recordClass, in the
  * <attributeQueryRef> tag. An attribute query has to be SqlQuery, and it does
  * not normally have params, although you can define an internal wdk user param
  * in some rare case where the content of the result is user-dependent. The
@@ -71,9 +86,11 @@ import org.json.JSONObject;
  * values to return only one row for the record. When used in answer, the
  * attribute SQL is used for sorting the result on the columns in the attribute
  * query, and then the paged id SQL will be used to join with the attribute SQL,
- * to return a page of attributes for the records.<p>
+ * to return a page of attributes for the records.
+ * <p>
  * 
- * <p>An table query is query referenced by recordClass, in the &lt;table&gt; tag.
+ * <p>
+ * An table query is query referenced by recordClass, in the &lt;table&gt; tag.
  * A table query has to be SqlQuery, and it doesn't normally have params,
  * although you can define an internal wdk user param same way as in attribute
  * query. The table query should return the results for all possible records of
@@ -84,7 +101,8 @@ import org.json.JSONObject;
  * table query is used in the similar way as attribute query, and it will be
  * wrapped with the primary key values of the record, to get zero or more rows.
  * In the context of an answer, the table SQL can be used to be combined with
- * the paged ID SQL to get a page of the results for the records.</p>
+ * the paged ID SQL to get a page of the results for the records.
+ * </p>
  * 
  * @author Jerric Gao
  * 
@@ -138,7 +156,7 @@ public abstract class Query extends WdkModelBase {
 
   public abstract void resolveQueryReferences(WdkModel wdkModel)
       throws WdkModelException;
-  
+
   // =========================================================================
   // Constructors
   // =========================================================================
@@ -331,10 +349,12 @@ public abstract class Query extends WdkModelBase {
   }
 
   /**
-   * @param extra if extra is true, then column names are also includes, plus
-   *          the extra info from param.
+   * @param extra
+   *          if extra is true, then column names are also includes, plus the
+   *          extra info from param.
    * @return
-   * @throws JSONException if unable to create JSON object
+   * @throws JSONException
+   *           if unable to create JSON object
    */
   private JSONObject getJSONContent(boolean extra) throws JSONException {
     // use JSON to construct the string content
@@ -426,10 +446,10 @@ public abstract class Query extends WdkModelBase {
       return;
 
     this.wdkModel = wdkModel;
-    
+
     // check if we need to use querySet's cache flag
-    if (!setCache) cached = getQuerySet().isCacheable();
-    
+    if (!setCache)
+      cached = getQuerySet().isCacheable();
 
     // resolve the params
     for (ParamReference paramRef : paramRefList) {
@@ -611,4 +631,31 @@ public abstract class Query extends WdkModelBase {
   public boolean isHasWeight() {
     return hasWeight;
   }
+
+  /**
+   * for reviseStep action, validate all the values, and if it's invalid,
+   * substitute it with default. if the value doesn't exist in the map, I will
+   * add default into it.
+   * 
+   * @param contextParamValues
+   * @throws WdkModelException
+   */
+  public void fillContextParamValues(User user,
+      Map<String, String> contextParamValues) throws WdkModelException {
+    for (Param param : paramMap.values()) {
+      if (param instanceof AbstractEnumParam) {
+        // for enum/flatVocab params, call a special method to process it
+        Map<String, EnumParamCache> caches = new HashMap<>();
+        ((AbstractEnumParam) param).fetchCorrectValue(user, contextParamValues,
+            caches);
+      } else if (!(param instanceof DatasetParam)) { 
+        // for other params, just fill it with default value;
+        // However, we cannot use default for datasetParam, which is just sample, not a valid value (a valid value must be a dataset id)
+        if (!contextParamValues.containsKey(param.getName())) {
+          contextParamValues.put(param.getName(), param.getDefault());
+        }
+      }
+    }
+  }
+
 }

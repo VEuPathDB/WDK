@@ -87,6 +87,25 @@ public class FilterForm extends BooleanExpressionForm {
         if (wdkQuestion == null) return errors;
 
         ParamBean<?>[] params = wdkQuestion.getParams();
+        
+        // get context param values
+        Map<String, String> contextValues = new LinkedHashMap<>();
+        for (ParamBean<?> param : params) {
+          String[] values = getMyMultiProp(param.getName());
+          String value;
+          if (values != null) {
+            StringBuilder buffer = new StringBuilder();
+            for (String val : values) {
+              if (buffer.length() > 0) buffer.append(",");
+              buffer.append(val);
+            }
+            value = buffer.toString();
+          } else {
+            value = getMyProp(param.getName());
+          }
+          contextValues.put(param.getName(), value);
+        }
+        
         for (int i = 0; i < params.length; i++) {
         	ParamBean<?> p = params[i];
             try {
@@ -107,7 +126,7 @@ public class FilterForm extends BooleanExpressionForm {
                         String rawOrDependentValue = pVals[j];
                         String dependentValue = p.rawOrDependentValueToDependentValue(
                                 user, rawOrDependentValue);
-                        p.validate(user, dependentValue);
+                        p.validate(user, dependentValue, contextValues);
                     }
                     catch (Exception ex) {
                         ex.printStackTrace();

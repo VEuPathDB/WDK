@@ -120,8 +120,11 @@ public class ShowQuestionAction extends Action {
     ParamBean<?>[] params = wdkQuestion.getParams();
 
     // fetch the previous values
-    Map<String, String> paramValues = getParamMapFromForm(user, params, qForm,
-        request);
+    Map<String, String> originalValues = getParamMapFromForm(user, params,
+        qForm, request);
+    // prepare the context values
+    Map<String, String> contextValues = new LinkedHashMap<>(originalValues);
+    wdkQuestion.fillContextParamValues(user, contextValues);
 
     // get invalid params
     request.setAttribute("invalidParams", qForm.getInvalidParams());
@@ -129,62 +132,35 @@ public class ShowQuestionAction extends Action {
     // process each param
     for (ParamBean<?> param : params) {
       String paramName = param.getName();
-      String paramValue = paramValues.get(paramName);
+      String paramValue = contextValues.get(paramName);
 
       logger.debug("  Processing param " + paramName + "...");
       // handle the additional information
       if (param instanceof EnumParamBean) {
         EnumParamBean enumParam = (EnumParamBean) param;
-        
-        // replace invalid value with valid value.
-        enumParam.fixValue(paramValues);
-
-        if (enumParam.isDependentParam()
-            && enumParam.getDependedValues().size() == 0) {
-          // value not previously set (e.g. by getVocabAction)
-          Map<String, String> dependedValues = new LinkedHashMap<>();
-          for (ParamBean<?> dependedParam : enumParam.getDependedParams()) {
-          String currentDependedValue = paramValues.get(dependedParam.getName());
-          if (currentDependedValue == null) {
-            // no previous value supplied; use default value
-            currentDependedValue = dependedParam.getDefault();
-          }
-          // cannot validate a value now since not all the depended values are loaded yet.
-//          } else {
-//            // need to check if the current value is still valid
-//            try {
-//              dependedParam.validate(user, currentDependedValue);
-//              logger.debug("PASS validating depended param " + dependedParam.getName() + "=" + currentDependedValue);
-//            } catch (Exception ex) {
-//              logger.debug("FAIL validating depended param " + dependedParam.getName() + "=" 
-//                    + currentDependedValue + ", use " +  dependedParam.getDefault() + " instead");
-//              // the stored depended value is no longer valid, reset to default.
-//              currentDependedValue = dependedParam.getDefault();
-//            }
-//          }
-
-          dependedValues.put(dependedParam.getName(), currentDependedValue);
-          }
-          enumParam.setDependedValues(dependedValues);
-        }
+        enumParam.setDependedValues(contextValues);
 
         String[] terms = enumParam.getVocab();
         String[] labels = getLengthBoundedLabels(enumParam.getDisplays());
         qForm.setArray(paramName + LABELS_SUFFIX, labels);
         qForm.setArray(paramName + TERMS_SUFFIX, terms);
 
-        // if no default is assigned, use the first enum item
-        if (paramValue == null) {
-          String defaultValue = param.getDefault();
-          if (defaultValue != null)
-            paramValue = defaultValue;
-        } else {
-          paramValue = param.dependentValueToRawValue(user, paramValue);
-        }
+        // set current values to the form and the param itself.
         if (paramValue != null) {
-          String[] currentValues = paramValue.split(",");
-          qForm.setArray(paramName, currentValues);
-          enumParam.setCurrentValues(currentValues);
+          String[] values = paramValue.split(",");
+          qForm.setArray(paramName, values);
+          enumParam.setCurrentValues(values);
+        }
+
+        // set the original values to the param. The original values will be
+        // used to render invalid value warning on the page, if the values is
+        // invalid.
+        if (originalValues.containsKey(paramName)) {
+          String originalValue = originalValues.get(paramName);
+          originalValue = param.dependentValueToRawValue(user, originalValue);
+          String[] values = originalValue.split(",");
+          qForm.setArray(paramName, values);
+          enumParam.setOriginalValues(values);
         }
       } else if (param instanceof AnswerParamBean) {
         if (paramValue == null) {
@@ -194,14 +170,14 @@ public class ShowQuestionAction extends Action {
           if (stepId == null) {
             String strategyKey = request.getParameter("strategy");
             if (strategyKey != null) {
-            int pos = strategyKey.indexOf("_");
-            if (pos < 0) {
-              int strategyId = Integer.parseInt(strategyKey);
-              StrategyBean strategy = user.getStrategy(strategyId);
-              stepId = Integer.toString(strategy.getLatestStepId());
-            } else {
-              stepId = strategyKey.substring(pos + 1);
-            }
+              int pos = strategyKey.indexOf("_");
+              if (pos < 0) {
+                int strategyId = Integer.parseInt(strategyKey);
+                StrategyBean strategy = user.getStrategy(strategyId);
+                stepId = Integer.toString(strategy.getLatestStepId());
+              } else {
+                stepId = strategyKey.substring(pos + 1);
+              }
             }
           }
 
@@ -236,7 +212,6 @@ public class ShowQuestionAction extends Action {
       } else {
         qForm.setValue(paramName, paramValue);
       }
-      paramValues.put(paramName, paramValue);
       logger.debug("param: " + paramName + "='" + paramValue + "'");
     }
 
@@ -249,7 +224,7 @@ public class ShowQuestionAction extends Action {
 
     request.setAttribute(CConstants.QUESTIONFORM_KEY, qForm);
     request.setAttribute(CConstants.WDK_QUESTION_KEY, wdkQuestion);
-    request.setAttribute("params", paramValues);
+    request.setAttribute("params", contextValues);
     logger.trace("Leaving prepareQustionForm()");
   }
 
@@ -281,6 +256,7 @@ public class ShowQuestionAction extends Action {
       ActionServlet servlet = getServlet();
       QuestionForm qForm = (QuestionForm) form;
       String qFullName = getQuestionName(qForm, request);
+      ActionUtility.getWdkModel(servlet).validateQuestionFullName(qFullName);
       QuestionBean wdkQuestion = getQuestionBean(servlet, qFullName);
 
       prepareQuestionForm(wdkQuestion, servlet, request, qForm);

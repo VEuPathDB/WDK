@@ -42,12 +42,28 @@ public class CategoryBean {
         return beans;
     }
 
+    public Map<String, CategoryBean> getDatasetChildren() {
+        Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
+        for (SearchCategory child : category.getDatasetChildren().values()) {
+            beans.put(child.getName(), new CategoryBean(child));
+        }
+        return beans;
+    }
+
     /**
      * @return
      * @see org.gusdb.wdk.model.question.SearchCategory#getDisplayName()
      */
     public String getDisplayName() {
         return category.getDisplayName();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.question.SearchCategory#getShortDisplayName()
+     */
+    public String getShortDisplayName() {
+        return category.getShortDisplayName();
     }
 
     /**
@@ -64,6 +80,14 @@ public class CategoryBean {
      */
     public boolean isFlattenInMenu() {
         return category.isFlattenInMenu();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.question.SearchCategory#getDescription()
+     */
+    public String getDescription() {
+        return category.getDescription();
     }
 
     /**
@@ -93,6 +117,19 @@ public class CategoryBean {
      */
     public QuestionBean[] getWebserviceQuestions() throws WdkModelException {
         Question[] questions = category.getWebserviceQuestions();
+        QuestionBean[] beans = new QuestionBean[questions.length];
+        for (int i = 0; i < questions.length; i++) {
+            beans[i] = new QuestionBean(questions[i]);
+        }
+        return beans;
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.question.SearchCategory#getQuestions()
+     */
+    public QuestionBean[] getDatasetQuestions() throws WdkModelException {
+        Question[] questions = category.getDatasetQuestions();
         QuestionBean[] beans = new QuestionBean[questions.length];
         for (int i = 0; i < questions.length; i++) {
             beans[i] = new QuestionBean(questions[i]);

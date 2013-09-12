@@ -31,6 +31,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   private static final Logger logger = Logger.getLogger(EnumParamBean.class.getName());
 
   private String[] currentValues;
+  private String[] originalValues;
 
   // if this obj wraps a dependent param, holds depended values
   private Map<String, String> _dependedValues;
@@ -58,6 +59,18 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     return param.getDisplayType();
   }
 
+  public int getMinSelectedCount() {
+    return param.getMinSelectedCount();
+  }
+
+  public int getMaxSelectedCount() {
+    return param.getMaxSelectedCount();
+  }
+  
+  public boolean getCountOnlyLeaves() {
+    return param.getCountOnlyLeaves();
+  }
+  
   public Map<String, String> getDependedValues() {
     return _dependedValues;
   }
@@ -147,10 +160,12 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
 
   public String getDependedParamNames() throws WdkModelException {
     Set<Param> dependedParams = param.getDependedParams();
-    if (dependedParams == null) return null;
+    if (dependedParams == null)
+      return null;
     StringBuilder buffer = new StringBuilder();
     for (Param p : dependedParams) {
-      if (buffer.length() > 0) buffer.append(",");
+      if (buffer.length() > 0)
+        buffer.append(",");
       buffer.append(p.getName());
     }
     return buffer.toString();
@@ -161,7 +176,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   }
 
   public String[] getTerms(String termList) {
-    return param.getTerms(termList);
+    return param.convertToTerms(termList);
   }
 
   public String getRawDisplayValue() throws WdkModelException {
@@ -195,6 +210,14 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
   public void setCurrentValues(String[] currentValues) {
     this.currentValues = currentValues;
   }
+  
+  public String[] getCurrentValues() {
+    return currentValues;
+  }
+  
+  public void setOriginalValues(String[] originalValues) {
+    this.originalValues = originalValues;
+  }
 
   /**
    * Returns map where keys are vocab values and values are booleans telling
@@ -202,9 +225,10 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
    * 
    * @return map from value to selection status
    */
-  public Map<String, Boolean> getCurrentValues() {
-    if (currentValues == null)
+  public Map<String, Boolean> getOriginalValues() {
+    if (originalValues == null)
       return new LinkedHashMap<String, Boolean>();
+    
     Map<String, Boolean> values = new LinkedHashMap<String, Boolean>();
     Map<String, String> terms = getVocabMap();
     // ignore the validation for type-ahead params.
@@ -212,7 +236,7 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
     if (displayType == null)
       displayType = "";
     boolean typeAhead = displayType.equals(AbstractEnumParam.DISPLAY_TYPE_AHEAD);
-    for (String term : currentValues) {
+    for (String term : originalValues) {
       boolean valid = typeAhead || terms.containsKey(term);
       values.put(term, valid);
     }
@@ -226,8 +250,15 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
    * @return up-to-date tree of this param
    */
   public TreeNode getParamTree() {
-    TreeNode root = new TreeNode(getName(), "top");
-    for (EnumParamTermNode paramNode : getVocabTreeRoots()) {
+    EnumParamTermNode[] rootNodes = getVocabTreeRoots();
+    TreeNode root = getParamTree(getName(), rootNodes);
+    populateParamTree(root, currentValues);
+    return root;
+  }
+  
+  public static TreeNode getParamTree(String treeName, EnumParamTermNode[] rootNodes) {
+    TreeNode root = new TreeNode(treeName, "top");
+    for (EnumParamTermNode paramNode : rootNodes) {
       if (paramNode.getChildren().length == 0) {
         root.addChildNode(new TreeNode(paramNode.getTerm(),
             paramNode.getDisplay(), paramNode.getDisplay()));
@@ -235,38 +266,29 @@ public class EnumParamBean extends ParamBean<AbstractEnumParam> {
         root.addChildNode(paramNode.toTreeNode());
       }
     }
-
-    if (currentValues != null && currentValues.length > 0) {
-      List<String> currentValueList = Arrays.asList(currentValues);
+    return root;
+  }
+  
+  public static void populateParamTree(TreeNode root, String[] values) {
+    if (values != null && values.length > 0) {
+      List<String> currentValueList = Arrays.asList(values);
       root.turnOnSelectedLeaves(currentValueList);
       root.setDefaultLeaves(currentValueList);
     }
-    return root;
-  }
-
-  /**
-   * Temporary method to allow easy on/off of checkbox tree for value selection.
-   * 
-   * @return whether checkbox tree should be used (columns layout otherwise)
-   */
-  public boolean getUseCheckboxTree() {
-    return true;
   }
 
   @Override
-  public void validate(UserBean user, String rawOrDependentValue)
-      throws WdkModelException, WdkUserException {
+  public void validate(UserBean user, String rawOrDependentValue,
+      Map<String, String> contextValues) throws WdkModelException,
+      WdkUserException {
     logger.debug("Validating param=" + getName() + ", value="
-        + rawOrDependentValue + ", dependedValue=" + Utilities.print(_dependedValues));
-    param.validateValue(user.getUser(), rawOrDependentValue, _dependedValues);
+        + rawOrDependentValue + ", dependedValue="
+        + Utilities.print(_dependedValues));
+    param.validate(user.getUser(), rawOrDependentValue, _dependedValues);
   }
 
   public boolean isSuppressNode() {
     return param.isSuppressNode();
-  }
-
-  public void fixValue(Map<String, String> values) throws WdkModelException {
-    ((AbstractEnumParam)param).fixValue(values);
   }
 
 }

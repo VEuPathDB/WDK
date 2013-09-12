@@ -98,9 +98,10 @@ public class AnswerParam extends Param {
    */
   @Override
   public void resolveReferences(WdkModel model) throws WdkModelException {
-    super.resolveReferences(model);
     if (resolved)
       return;
+
+    super.resolveReferences(model);
 
     // resolve recordClass ref
     for (RecordClassReference reference : recordClassRefs) {
@@ -164,7 +165,7 @@ public class AnswerParam extends Param {
       String dependentValue) throws WdkModelException {
     int stepId = Integer.parseInt(dependentValue);
     Step step = user.getStep(stepId);
-    return step.getAnswerValue().getChecksum();
+    return step.getAnswerValue(false).getChecksum();
   }
 
   /*
@@ -218,8 +219,9 @@ public class AnswerParam extends Param {
    * .user.User, java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String dependentValue)
-      throws WdkModelException, WdkUserException {
+  protected void validateValue(User user, String dependentValue,
+      Map<String, String> contextValues) throws WdkModelException,
+      WdkUserException {
     int stepId = Integer.parseInt(dependentValue);
     Step step = user.getStep(stepId);
 

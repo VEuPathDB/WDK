@@ -671,8 +671,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       defaultSummaryAttributeNames = null;
 
       // make sure we create index on primary keys
-      String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
-      query.setIndexColumns(pkColumns);
+      query.setIndexColumns(recordClass.getIndexColumns());
 
       // resolve summary views
       for (SummaryView summaryView : summaryViewMap.values()) {
@@ -995,8 +994,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
       summaryViewList.add(view);
   }
 
-  public Map<String, SearchCategory> getCategories(String usedBy) {
-    Map<String, SearchCategory> categories = wdkModel.getCategories(usedBy);
+  public Map<String, SearchCategory> getCategories(String usedBy, boolean strict) {
+    Map<String, SearchCategory> categories = wdkModel.getCategories(usedBy, strict);
     Map<String, SearchCategory> map = new LinkedHashMap<>();
     String questionName = getFullName();
     for (String name : categories.keySet()) {

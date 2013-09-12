@@ -108,8 +108,7 @@ wdk.util.namespace("window.wdk", function(ns, $) {
           // determine the default top level tab
           section = tabs.children("#selected").children("a").attr("id");
           if (section == "tab_basket") { // on basket tab
-              section = $("#basket #basket-menu > ul > li.ui-tabs-active > a").attr("href");
-              section = "#basket #basket-menu > " + section;
+              section = "#" + $("#basket #basket-menu > ul > li.ui-tabs-active").attr("aria-controls");
           } else { // on open strategies tab
               section = "#" + section.substring(4) + " .Workspace";
           }
@@ -578,12 +577,11 @@ function getWebAppUrl() {
 
   var setUpPopups = function() {
     // connect window pop outs
-    $("body").on("click", "a[class^='open-window-']", function(e) {
+    $("body").on("click", "a[class='new-window']", function(e) {
       e.preventDefault();
       // regex below may be too stringent -- should allow for arbitrary identifier?
-      var windowName,
-          windowFeatures,
-          match = this.className.match(/^open-window-(\w+-\w+)$/),
+      var windowFeatures,
+          windowName = $(this).data("name") || "wdk_window",
           windowUrl = this.href,
           windowWidth = 1050,
           windowHeight = 740,
@@ -605,14 +603,13 @@ function getWebAppUrl() {
 
       // in the future, allow spefied data attributes to override features
       windowFeatures = $.map(defaultFeatures, function(v, k) { return k + "=" + v; }).join(",");
-      if (match) {
-        windowName = "wdk-window-" + match[1];
-        window.open(windowUrl, windowName.replace(/-/g, "_"), windowFeatures).focus();
-      }
+      window.open(windowUrl, windowName.replace(/-/g, "_"), windowFeatures).focus();
     });
   };
 
   var invokeControllers = function invokeControllers() {
+    // TODO - Add data-action attribute
+    // controller is a misnomer here. see issue #14107
     $("[data-controller]").each(function(idx, element) {
       var $element, $attrs, controller;
       $element = $(element);
@@ -620,18 +617,16 @@ function getWebAppUrl() {
       controller = $attrs.controller;
 
       // convert some-name -> someName
-      controller = controller.replace(/-(\w)/, function(hyphenLetter) {
-        return hyphenLetter.replace(/-/, '').toUpperCase();
-      });
+      // controller = controller.replace(/-(\w)/, function(hyphenLetter) {
+      //   return hyphenLetter.replace(/-/, '').toUpperCase();
+      // });
 
       // only invoke once
       if ($attrs._invoked) return;
 
-      // TODO add support for namespaces
-      if (typeof window[controller] === "function") {
-        window[controller].call(window, $element, $attrs);
-        $attrs._invoked = true;
-      }
+      wdk.util.executeFunctionByName(controller, window, window, $element, $attrs);
+
+      $attrs._invoked = true;
     });
   };
 
@@ -652,6 +647,11 @@ function getWebAppUrl() {
   // On all pages, check that cookies are enabled.
   function init() {
     $.blockUI.defaults.overlayCSS.opacity = 0.2;
+    $.blockUI.defaults.message = '<span class="h2center">Please wait...</span>';
+    // $.blockUI.defaults.css.padding = "10px";
+    // $.blockUI.defaults.css.margin = "10px";
+    // delete $.blockUI.defaults.css.border;
+    $.blockUI.defaults.css = {};
 
     // Override jQueryUI tabs defaults
     //
@@ -659,9 +659,11 @@ function getWebAppUrl() {
     // 1. Spinner
     // 2. Cache content (when successfully loaded
     $.extend($.ui.tabs.prototype.options, {
+      cache: true,
       beforeLoad: function(event, ui) {
-        if (ui.tab.data("loaded")) {
-          event.stopPropagation();
+        var $this = $(this);
+        if (ui.tab.data("loaded") && $this.tabs("option", "cache")) {
+          event.preventDefault();
           return;
         }
 
@@ -672,9 +674,11 @@ function getWebAppUrl() {
           ui.tab.data("loaded", true);
 
         }).fail(function(jqXHR, textStatus, errorThrown) {
-          ui.panel.html(
-            '<p style="padding:1em;">Unable to load tab content: ' +
-            '<i>' + errorThrown + '</i></p>');
+          if (errorThrown != "abort") {
+            ui.panel.html(
+              '<p style="padding:1em;">Unable to load tab content: ' +
+              '<i>' + errorThrown + '</i></p>');
+          }
 
         }).always(function() {
           ui.tab.find("img").remove();

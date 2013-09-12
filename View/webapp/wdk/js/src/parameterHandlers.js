@@ -340,7 +340,33 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     if (paramName) return paramName[1];
   }
 
+  function adjustEnumCountSelect(enumParamId) {
+    adjustEnumCountBox(enumParamId, 'option:selected');
+  }
+
+  function adjustEnumCountBoxes(enumParamId) {
+    adjustEnumCountBox(enumParamId, 'input[type=checkbox]:checked');
+  }
+  
+  function adjustEnumCountBox(enumParamId, onSelector) {
+    var count = 0;
+    $('#'+enumParamId).find(onSelector).each(function () {
+      count++;
+    });
+    $('#'+enumParamId).find('span.currentlySelectedCount').html(count);
+  }
+  
+  function adjustEnumCountTree(enumParamId, countOnlyLeaves) {
+    var treeElement = $('#'+enumParamId).find('.checkbox-tree')[0];
+    var itemSelector = (countOnlyLeaves ? "li.jstree-leaf.jstree-checked" : "li.jstree-checked");
+    var count = $(treeElement).find(itemSelector).length;
+    $('#'+enumParamId).find('span.currentlySelectedCount').html(count);
+  }
+  
   ns.init = init;
   ns.mapTypeAheads = mapTypeAheads;
+  ns.adjustEnumCountSelect = adjustEnumCountSelect;
+  ns.adjustEnumCountBoxes = adjustEnumCountBoxes;
+  ns.adjustEnumCountTree = adjustEnumCountTree;
 
 });

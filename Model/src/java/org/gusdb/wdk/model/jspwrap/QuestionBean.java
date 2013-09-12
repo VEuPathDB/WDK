@@ -413,19 +413,29 @@ public class QuestionBean {
   }
 
   public List<CategoryBean> getWebsiteCategories() {
-    return getCategories(SearchCategory.USED_BY_WEBSITE);
+    return getCategories(SearchCategory.USED_BY_WEBSITE, false);
   }
 
   public List<CategoryBean> getWebServiceCategories() {
-    return getCategories(SearchCategory.USED_BY_WEBSITE);
+    return getCategories(SearchCategory.USED_BY_WEBSERVICE, false);
   }
 
-  private List<CategoryBean> getCategories(String usedBy) {
+  public List<CategoryBean> getDatasetCategories() {
+    return getCategories(SearchCategory.USED_BY_DATASET, true);
+  }
+
+  private List<CategoryBean> getCategories(String usedBy, boolean strict) {
     List<CategoryBean> beans = new ArrayList<>();
-    Map<String, SearchCategory> categories = question.getCategories(usedBy);
+    Map<String, SearchCategory> categories = question.getCategories(usedBy, strict);
     for (SearchCategory category : categories.values()) {
       beans.add(new CategoryBean(category));
     }
     return beans;
+  }
+
+  public void fillContextParamValues(UserBean user,
+      Map<String, String> contextParamValues) throws WdkModelException {
+    question.getQuery().fillContextParamValues(user.getUser(),
+        contextParamValues);
   }
 }

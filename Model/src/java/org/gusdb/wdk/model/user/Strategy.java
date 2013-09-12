@@ -4,12 +4,15 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.record.RecordClass;
 import org.json.JSONException;
@@ -322,6 +325,17 @@ public class Strategy {
       // params.
       Question question = targetStep.getQuestion();
       Map<String, String> values = targetStep.getParamValues();
+
+      // filter out invalid params for the new step to use
+      Set<String> invalidParams = new LinkedHashSet<>();
+      Map<String, Param> params = question.getParamMap();
+      for (String paramName : values.keySet()) {
+        if (!params.containsKey(paramName)) invalidParams.add(paramName);
+      }
+      for (String paramName : invalidParams) {
+        values.remove(paramName);
+      }
+
       String paramName;
       if (parentStep != null) {
         paramName = targetStep.getChildStepParam();

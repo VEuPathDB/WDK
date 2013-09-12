@@ -3,6 +3,8 @@
  */
 package org.gusdb.wdk.model.query.param;
 
+import java.util.Map;
+
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
@@ -210,8 +212,8 @@ public class DatasetParam extends Param {
    * .user.User, java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String dependentValue)
-      throws WdkModelException {
+  protected void validateValue(User user, String dependentValue,
+      Map<String, String> contextValues) throws WdkModelException {
     // try to get the dataset
     int userDatasetId = Integer.parseInt(dependentValue);
     user.getDataset(userDatasetId);

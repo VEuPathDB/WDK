@@ -44,20 +44,22 @@ public class GetVocabAction extends Action {
       String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
       String paramName = request.getParameter("name");
 
-      // the dependent values are a JSON representation of {name: [values], name: [values],...}
+      // the dependent values are a JSON representation of {name: [values],
+      // name: [values],...}
       Map<String, String> dependedValues = new LinkedHashMap<>();
       String values = request.getParameter("dependedValue");
       if (values != null && values.length() > 0) {
         JSONObject jsValues = new JSONObject(values);
         @SuppressWarnings("unchecked")
-		Iterator<String> keys = jsValues.keys();
+        Iterator<String> keys = jsValues.keys();
         while (keys.hasNext()) {
           String pName = keys.next();
-          
+
           JSONArray jsArray = jsValues.getJSONArray(pName);
           StringBuilder buffer = new StringBuilder();
           for (int i = 0; i < jsArray.length(); i++) {
-            if (buffer.length() > 0) buffer.append(",");
+            if (buffer.length() > 0)
+              buffer.append(",");
             buffer.append(jsArray.getString(i));
           }
           dependedValues.put(pName, buffer.toString());
@@ -71,8 +73,17 @@ public class GetVocabAction extends Action {
 
       param.setDependedValues(dependedValues);
 
-      // try the dependent value; runtime exception may be thrown here
-      param.getDisplayMap();
+      // set the labels
+      String[] terms = param.getVocab();
+      String[] labels = ShowQuestionAction.getLengthBoundedLabels(param.getDisplays());
+      QuestionForm qForm = (QuestionForm) form;
+      qForm.setArray(paramName + ShowQuestionAction.LABELS_SUFFIX, labels);
+      qForm.setArray(paramName + ShowQuestionAction.TERMS_SUFFIX, terms);
+
+      String paramValue = param.getDefault();
+      if (paramValue != null) {
+        qForm.setArray(paramName, paramValue.split(","));
+      }
 
       request.setAttribute("vocabParam", param);
 
@@ -82,15 +93,8 @@ public class GetVocabAction extends Action {
       String htmlVocabFile = CConstants.WDK_DEFAULT_VIEW_DIR + File.separator
           + CConstants.WDK_PAGES_DIR + File.separator + "vocabHtml.jsp";
 
-      ActionForward forward;
-
-      if (getXml) {
-        forward = new ActionForward(xmlVocabFile);
-      } else {
-        ShowQuestionAction.prepareQuestionForm(wdkQuestion, getServlet(),
-            request, (QuestionForm) form);
-        forward = new ActionForward(htmlVocabFile);
-      }
+      ActionForward forward = new ActionForward(getXml ? xmlVocabFile
+          : htmlVocabFile);
 
       logger.trace("Leaving GetVocabAction...");
       return forward;

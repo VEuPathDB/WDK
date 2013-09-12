@@ -1,4 +1,19 @@
-"use strict";
+// adapted from https://github.com/semmypurewal/jermaine/blob/master/src/util/namespace.js
+//
+// Bootstrap the wdk namespace and make the namespace utility available at
+// wdk.util.namespace. Assumes that jQuery is available on the window
+// object and passes it as the second argument to the namespace closure.
+//
+// USAGE EXAMPLE
+//     The following creates the namespace 'wdk.tooltip'
+//
+//        wdk.util.namespace("wdk.tooltip", function(ns, $) {
+//          // ns resolves to "window.wdk.tooltip"
+//          // $ resolves to jQuery
+//          //
+//          // attach some functionality to the ns object
+//        });
+
 (function (ns, jQuery) {
    "use strict";
 

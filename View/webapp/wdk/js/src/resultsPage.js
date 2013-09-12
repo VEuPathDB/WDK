@@ -182,7 +182,7 @@ wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
       oldFilters.each(function() {
         var id = $(this).attr("id");
         var count = $(this).text();
-        if (count == 0) {
+        if (count == 0 || !/\d+/.test(count)) {
           $("#" + id).replaceWith(this);
         } else {
           $("#" + id).html(count);

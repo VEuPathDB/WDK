@@ -52,7 +52,7 @@ class ActiveStrategyFactory {
         return ids;
     }
 
-    synchronized void openActiveStrategy(String strategyKey) throws WdkModelException, WdkUserException {
+    void openActiveStrategy(String strategyKey) throws WdkModelException, WdkUserException {
         logger.debug("Opening strategy: " + strategyKey);
         if (getStrategy(strategyKey) != null) return;
 
@@ -65,7 +65,7 @@ class ActiveStrategyFactory {
         }
     }
 
-    synchronized void closeActiveStrategy(String strategyKey) {
+    void closeActiveStrategy(String strategyKey) {
         logger.debug("Closing strategy: " + strategyKey);
         ActiveStrategy strategy = getStrategy(strategyKey);
         if (strategy == null) return;
@@ -78,7 +78,7 @@ class ActiveStrategyFactory {
      *            the strategies in the array should all share the same parents;
      *            that is, they should siblings.
      */
-    synchronized void orderActiveStrategies(String[] strategyKeys)
+    void orderActiveStrategies(String[] strategyKeys)
             throws WdkUserException {
         if (strategyKeys.length == 0) return;
         ActiveStrategy strategy = getStrategy(strategyKeys[0]);
@@ -102,7 +102,7 @@ class ActiveStrategyFactory {
         strategy.parent.children.putAll(map);
     }
 
-    synchronized void replaceStrategy(User user, int oldId, int newId,
+    void replaceStrategy(User user, int oldId, int newId,
             Map<Integer, Integer> stepMap) throws WdkModelException, WdkUserException {
         ActiveStrategy oldStrategy = root.children.get(Integer.toString(oldId));
         // if the old strategy is not opened, do nothing.
@@ -140,7 +140,7 @@ class ActiveStrategyFactory {
         return 0;
     }
 
-    synchronized void clear() {
+    void clear() {
         root.children.clear();
     }
 

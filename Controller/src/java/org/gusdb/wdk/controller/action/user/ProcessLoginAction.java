@@ -5,10 +5,9 @@ import java.util.Map;
 import javax.servlet.http.Cookie;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.controller.LoginCookieFactory;
 import org.gusdb.wdk.controller.AuthenticationService;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.controller.WdkValidationException;
+import org.gusdb.wdk.controller.LoginCookieFactory;
 import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamDef.Count;
@@ -118,6 +117,9 @@ public class ProcessLoginAction extends WdkAction {
       
       // authenticate
       try {
+        // user must enter something for either openid or email/password
+        //checkExistenceOfParams(params);
+          
         if (openid != null && openid.length() > 0) {
           // first make sure we have a user with this OpenID
           openid = AuthenticationService.normalizeOpenId(openid);
@@ -151,24 +153,10 @@ public class ProcessLoginAction extends WdkAction {
           return getSuccessfulLoginResult(redirectPage, wdkCookieMaxAge);
         }
       }
-      catch (WdkUserException | WdkModelException ex) {
-        LOG.info("Could not authenticate user's identity.  Exception thrown: ", ex);
-        // user authentication failed, set the error message, and the referring page
-        ActionResult result = new ActionResult()
-            .setRequestAttribute(CConstants.WDK_LOGIN_ERROR_KEY, ex.getMessage())
-            .setRequestAttribute(CConstants.WDK_REDIRECT_URL_KEY, getOriginalReferrer(params, getRequestData()));
-        
-        String customViewFile = getCustomViewDir() + CConstants.WDK_LOGIN_PAGE;
-        if (wdkResourceExists(customViewFile)) {
-          return result.setRedirect(false).setViewPath(customViewFile);
-        }
-        else {
-          return result.setViewName(INPUT);
-        }
-      }
       catch (Exception ex) {
-        ex.printStackTrace();
-        throw ex;
+        LOG.info("Could not authenticate user's identity.  Exception thrown: ", ex);
+        // user authentication failed, set the error message and the referring page
+        return getFailedLoginResult(ex);
       }
     }
   }
@@ -177,7 +165,21 @@ public class ProcessLoginAction extends WdkAction {
     return new ActionResult().setRedirect(true).setViewPath(redirectUrl);
   }
   
-  private static String getOriginalReferrer(ParamGroup params, RequestData requestData) {
+  protected ActionResult getFailedLoginResult(Exception ex) {
+    ActionResult result = new ActionResult()
+      .setRequestAttribute(CConstants.WDK_LOGIN_ERROR_KEY, ex.getMessage())
+      .setRequestAttribute(CConstants.WDK_REDIRECT_URL_KEY, getOriginalReferrer(getParams(), getRequestData()));
+  
+    String customViewFile = getCustomViewDir() + CConstants.WDK_LOGIN_PAGE;
+    if (wdkResourceExists(customViewFile)) {
+      return result.setRedirect(false).setViewPath(customViewFile);
+    }
+    else {
+      return result.setViewName(INPUT);
+    }
+  }
+  
+  public static String getOriginalReferrer(ParamGroup params, RequestData requestData) {
     
     // always prefer the param value passed to us from a previous action
     String referrerParamValue = params.getValueOrEmpty(CConstants.WDK_REDIRECT_URL_KEY);
@@ -197,8 +199,8 @@ public class ProcessLoginAction extends WdkAction {
     return referrer;
   }
 
-  @Override
-  public void performAdditionalValidation(ParamGroup params) throws WdkValidationException {
+  @SuppressWarnings("unused")
+  private void checkExistenceOfParams(ParamGroup params) throws WdkUserException {
     // must make sure user submitted either username/password OR openid
     String openId = params.getValue(CConstants.WDK_OPENID_KEY);
     if (openId != null && openId.length() > 0) {
@@ -208,7 +210,7 @@ public class ProcessLoginAction extends WdkAction {
     String email = params.getValue(CConstants.WDK_EMAIL_KEY);
     String password = params.getValue(CConstants.WDK_PASSWORD_KEY);
     if (email == null || email.length() == 0 || password == null || password.length() == 0) {
-      throw new WdkValidationException("You must enter either an OpenID or username/password.");
+      throw new WdkUserException("You must enter either an OpenID or username/password.");
     }
   }
   

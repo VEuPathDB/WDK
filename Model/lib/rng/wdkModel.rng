@@ -124,6 +124,7 @@
           <choice>
             <value>website</value>
             <value>webservice</value>
+            <value>dataset</value>
           </choice>
         </attribute>
 	  </optional>
@@ -453,6 +454,22 @@
           <value>radioBox</value>
           <value>typeAhead</value>
         </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="minSelectedCount">
+        <data type="unsignedShort"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="maxSelectedCount">
+        <data type="unsignedShort"/>
+      </attribute>
+    </optional>
+    <optional>
+      <!-- only used if maxSelectedCount is > 0 and displayType = 'treeBox' -->
+      <attribute name="countOnlyLeaves">
+        <data type="boolean"/>
       </attribute>
     </optional>
     <optional>

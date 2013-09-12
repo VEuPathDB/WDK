@@ -90,9 +90,16 @@ public class ProcessQueryInstance extends QueryInstance {
     sql.append(tableName);
     sql.append(" (");
     sql.append(CacheFactory.COLUMN_INSTANCE_ID);
-    for (String column : columns.keySet()) {
-      sql.append(", " + column);
+    // have to move clobs to the end of insert
+    for (Column column : columns.values()) {
+      if (column.getType() != ColumnType.CLOB)
+        sql.append(", " + column.getName());
     }
+    for (Column column : columns.values()) {
+      if (column.getType() == ColumnType.CLOB)
+        sql.append(", " + column.getName());
+    }
+
     if (query.isHasWeight() && !columns.containsKey(weightColumn))
       sql.append(", " + weightColumn);
     sql.append(") VALUES (");
@@ -110,19 +117,24 @@ public class ProcessQueryInstance extends QueryInstance {
     try {
       DataSource dataSource = wdkModel.getAppDb().getDataSource();
       ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
+      long startTime = System.currentTimeMillis();
       ResultList resultList = getUncachedResults();
+      logger.info("Getting uncached results took " + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
+      startTime = System.currentTimeMillis();
       int rowId = 0;
       while (resultList.next()) {
         int columnId = 1;
+        // have to move clobs to the end
         for (Column column : columns.values()) {
+          ColumnType type = column.getType();
+          if (type == ColumnType.CLOB)
+            continue;
+          
           String value = (String) resultList.get(column.getName());
 
           // determine the type
-          ColumnType type = column.getType();
           if (type == ColumnType.BOOLEAN) {
             ps.setBoolean(columnId, Boolean.parseBoolean(value));
-          } else if (type == ColumnType.CLOB) {
-            platform.setClobData(ps, columnId, value, false);
           } else if (type == ColumnType.DATE) {
             ps.setTimestamp(columnId, new Timestamp(
                 Date.valueOf(value).getTime()));
@@ -140,12 +152,20 @@ public class ProcessQueryInstance extends QueryInstance {
           }
           columnId++;
         }
+        for (Column column : columns.values()) {
+          if (column.getType() == ColumnType.CLOB) {
+            String value = (String) resultList.get(column.getName());
+            platform.setClobData(ps, columnId, value, false);
+            columnId++;
+          }
+        }
         ps.addBatch();
 
         rowId++;
         if (rowId % 1000 == 0) ps.executeBatch();
       }
       if (rowId % 1000 != 0) ps.executeBatch();
+      logger.info("Inserting results to cache took " + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
     } catch (SQLException e) {
       throw new WdkModelException("Unable to insert record into cache.", e);
     } finally {
