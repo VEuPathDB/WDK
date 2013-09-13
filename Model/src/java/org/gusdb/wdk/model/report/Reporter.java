@@ -119,7 +119,7 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
     protected String format = "plain";
     private String description = null;
-    protected int maxPageSize = 1000;
+    protected int maxPageSize = 100;
 
     protected Reporter(AnswerValue answerValue, int startIndex, int endIndex) {
         this.baseAnswer = answerValue;
