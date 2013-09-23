@@ -127,7 +127,7 @@ public class ArrayResultList implements ResultList {
     if (rowIndex >= result.length) {
       pageIndex++;
       rowIndex = 0;
-      if (pageIndex < response.getCurrentPage()) {
+      if (pageIndex != response.getCurrentPage()) {
         try {
           result = response.getResult(pageIndex);
         } catch (WsfServiceException ex) {
