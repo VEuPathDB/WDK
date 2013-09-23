@@ -122,7 +122,7 @@ wdk.util.namespace("window.wdk.step", function(ns, $) {
   }
 
   function Rename_Step(ele, strat, stpId) {
-    var a_link = $("#diagram_" + strat + " div#step_" + stpId + "_sub h4 " +
+    var a_link = $("#diagram_" + strat + " div#step_" + stpId + "_sub " +
         "a#stepId_" + stpId, $(ele).parent().parent().parent());
     var old_name = $(a_link).parent().find("#fullStepName").text();
     var input = document.createElement('input');
@@ -135,7 +135,7 @@ wdk.util.namespace("window.wdk.step", function(ns, $) {
       wdk.util.checkEnter(this, event);
     }).attr("size","10");
 
-    $("#diagram_" + strat + " div#step_" + stpId + "_sub h4 a#stepId_" + stpId,
+    $("#diagram_" + strat + " div#step_" + stpId + "_sub a#stepId_" + stpId,
         $(ele).parent().parent().parent()).replaceWith(input);
     $("#new_name_box").focus();
   }
