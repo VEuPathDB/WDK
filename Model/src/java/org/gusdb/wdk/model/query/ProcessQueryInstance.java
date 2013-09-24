@@ -27,8 +27,8 @@ import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.user.User;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
-import org.gusdb.wsf.plugin.WsfServiceException;
 import org.gusdb.wsf.service.WsfRequest;
+import org.gusdb.wsf.service.WsfServiceException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -244,7 +244,8 @@ public class ProcessQueryInstance extends QueryInstance {
       result.setHasWeight(query.isHasWeight());
       result.setAssignedWeight(assignedWeight);
       return result;
-    } catch (RemoteException | MalformedURLException | ServiceException ex) {
+    } catch (RemoteException | MalformedURLException | ServiceException
+        | WsfServiceException ex) {
       throw new WdkModelException(ex);
     }
   }

@@ -3,9 +3,9 @@ package org.gusdb.wdk.model.query;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wsf.plugin.WsfServiceException;
 import org.gusdb.wsf.service.WsfResponse;
 import org.gusdb.wsf.service.WsfService;
+import org.gusdb.wsf.service.WsfServiceException;
 
 public class ServiceProcessResponse implements ProcessResponse {
 
