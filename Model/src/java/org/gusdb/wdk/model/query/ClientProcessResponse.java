@@ -5,9 +5,9 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wsf.client.WsfResponse;
 import org.gusdb.wsf.client.WsfService;
-import org.gusdb.wsf.plugin.WsfServiceException;
 
 public class ClientProcessResponse implements ProcessResponse {
 
@@ -25,11 +25,11 @@ public class ClientProcessResponse implements ProcessResponse {
   }
 
   @Override
-  public String[][] getResult(int pageId) throws WsfServiceException {
+  public String[][] getResult(int pageId) throws WdkModelException {
     try {
       return service.requestResult(response.getInvokeId(), pageId).getResult();
     } catch (RemoteException ex) {
-      throw new WsfServiceException(ex);
+      throw new WdkModelException(ex);
     }
   }
 

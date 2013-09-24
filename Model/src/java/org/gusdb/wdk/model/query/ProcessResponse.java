@@ -2,7 +2,7 @@ package org.gusdb.wdk.model.query;
 
 import java.util.Map;
 
-import org.gusdb.wsf.plugin.WsfServiceException;
+import org.gusdb.wdk.model.WdkModelException;
 
 public interface ProcessResponse {
 
@@ -20,9 +20,9 @@ public interface ProcessResponse {
    * 
    * @param pageId
    * @return
-   * @throws WsfServiceException
+   * @throws WdkModelException
    */
-  String[][] getResult(int pageId) throws WsfServiceException;
+  String[][] getResult(int pageId) throws WdkModelException;
 
   String getMessage();
 

@@ -239,8 +239,7 @@ public class ProcessQueryInstance extends QueryInstance {
       result.setHasWeight(query.isHasWeight());
       result.setAssignedWeight(assignedWeight);
       return result;
-    } catch (RemoteException | MalformedURLException | ServiceException
-        | WsfServiceException ex) {
+    } catch (RemoteException | MalformedURLException | ServiceException ex) {
       throw new WdkModelException(ex);
     }
   }
