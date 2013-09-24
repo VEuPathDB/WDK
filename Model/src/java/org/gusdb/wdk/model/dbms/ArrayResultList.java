@@ -9,7 +9,6 @@ import java.util.Map;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.ProcessResponse;
-import org.gusdb.wsf.plugin.WsfServiceException;
 
 /**
  * @author Jerric Gao
@@ -35,11 +34,7 @@ public class ArrayResultList implements ResultList {
       throws WdkModelException {
     this.response = response;
     this.columns = new LinkedHashMap<String, Integer>(columns);
-    try {
-      this.result = response.getResult(pageIndex);
-    } catch (WsfServiceException ex) {
-      throw new WdkModelException(ex);
-    }
+    this.result = response.getResult(pageIndex);
 
     // verify the columns and result
     if (result.length > 0 && result[0].length < columns.size())
@@ -127,13 +122,8 @@ public class ArrayResultList implements ResultList {
     if (rowIndex >= result.length) {
       pageIndex++;
       rowIndex = 0;
-      if (pageIndex != response.getCurrentPage()) {
-        try {
-          result = response.getResult(pageIndex);
-        } catch (WsfServiceException ex) {
-          throw new WdkModelException();
-        }
-      }
+      if (pageIndex != response.getCurrentPage())
+        result = response.getResult(pageIndex);
     }
     return hasNext();
   }

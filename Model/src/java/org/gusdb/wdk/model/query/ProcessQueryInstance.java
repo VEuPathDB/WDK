@@ -119,7 +119,8 @@ public class ProcessQueryInstance extends QueryInstance {
       ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
       long startTime = System.currentTimeMillis();
       ResultList resultList = getUncachedResults();
-      logger.info("Getting uncached results took " + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
+      logger.info("Getting uncached results took "
+          + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
       startTime = System.currentTimeMillis();
       int rowId = 0;
       while (resultList.next()) {
@@ -129,7 +130,7 @@ public class ProcessQueryInstance extends QueryInstance {
           ColumnType type = column.getType();
           if (type == ColumnType.CLOB)
             continue;
-          
+
           String value = (String) resultList.get(column.getName());
 
           // determine the type
@@ -162,10 +163,13 @@ public class ProcessQueryInstance extends QueryInstance {
         ps.addBatch();
 
         rowId++;
-        if (rowId % 1000 == 0) ps.executeBatch();
+        if (rowId % 1000 == 0)
+          ps.executeBatch();
       }
-      if (rowId % 1000 != 0) ps.executeBatch();
-      logger.info("Inserting results to cache took " + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
+      if (rowId % 1000 != 0)
+        ps.executeBatch();
+      logger.info("Inserting results to cache took "
+          + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
     } catch (SQLException e) {
       throw new WdkModelException("Unable to insert record into cache.", e);
     } finally {
@@ -203,7 +207,8 @@ public class ProcessQueryInstance extends QueryInstance {
     for (int i = 0; i < columnNames.length; i++) {
       // if the wsName is defined, reassign it to the columns
       Column column = columns.get(columnNames[i]);
-      if (column.getWsName() != null) columnNames[i] = column.getWsName();
+      if (column.getWsName() != null)
+        columnNames[i] = column.getWsName();
       indices.put(column.getName(), i);
       temp += columnNames[i] + ", ";
     }
@@ -315,7 +320,8 @@ public class ProcessQueryInstance extends QueryInstance {
     for (Column column : columns) {
       // weight column is already added to the sql.
       if (column.getName().equals(Utilities.COLUMN_WEIGHT)
-          && query.isHasWeight()) continue;
+          && query.isHasWeight())
+        continue;
 
       int width = column.getWidth();
       ColumnType type = column.getType();
@@ -367,7 +373,8 @@ public class ProcessQueryInstance extends QueryInstance {
         count++;
       }
       return count;
-    } else return super.getResultSize();
+    } else
+      return super.getResultSize();
   }
 
 }

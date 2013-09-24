@@ -3,15 +3,15 @@ package org.gusdb.wdk.model.query;
 import java.util.Map;
 
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wsf.plugin.WsfServiceException;
 import org.gusdb.wsf.service.WsfResponse;
 import org.gusdb.wsf.service.WsfService;
 
-public class ServiceProcessResponse implements
-    ProcessResponse {
+public class ServiceProcessResponse implements ProcessResponse {
 
   private final WsfService service;
   private final WsfResponse response;
-  
+
   public ServiceProcessResponse(WsfService service, WsfResponse response) {
     this.service = service;
     this.response = response;
@@ -23,8 +23,12 @@ public class ServiceProcessResponse implements
   }
 
   @Override
-  public String[][] getResult(int pageId) throws  WdkModelException {
-    return service.requestResult(response.getInvokeId(), pageId).getResult();
+  public String[][] getResult(int pageId) throws WdkModelException {
+    try {
+      return service.requestResult(response.getInvokeId(), pageId).getResult();
+    } catch (WsfServiceException ex) {
+      throw new WdkModelException(ex);
+    }
   }
 
   @Override
@@ -56,5 +60,5 @@ public class ServiceProcessResponse implements
   public Map<String, String> getAttachments() {
     return response.getAttachments();
   }
-  
+
 }
