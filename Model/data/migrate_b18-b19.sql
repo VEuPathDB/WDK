@@ -271,7 +271,7 @@ WHERE r.user_id = u.user_id;
 
 INSERT INTO userlogins4.favorites (favorite_id, user_id, project_id, record_class, 
        pk_column_1, pk_column_2, pk_column_3, record_note, record_group)
-SELECT userlogins4.favorites_pkseq.nextval AS favorite_id, 
+SELECT rownum AS favorite_id, 
        f.user_id, f.project_id, f.record_class, f.pk_column_1, f.pk_column_2, 
        f.pk_column_3, f.record_note, f.record_group
 FROM userlogins3.favorites f, userlogins4.users u
@@ -280,7 +280,7 @@ WHERE f.user_id = u.user_id;
 
 INSERT INTO userlogins4.user_baskets (basket_id, user_id, project_id,
        record_class, pk_column_1, pk_column_2, pk_column_3)
-SELECT userlogins4.user_baskets_pkseq.nextval AS basket_id,
+SELECT rownum AS basket_id,
        b.user_id, b.project_id, b.record_class, b.pk_column_1, b.pk_column_2, 
        b.pk_column_3
 FROM userlogins3.user_baskets b, userlogins4.users u
@@ -322,7 +322,7 @@ INSERT INTO userlogins4.strategies (strategy_id, user_id, root_step_id,
 SELECT sr.strategy_id, sr.user_id, sp.step_id,
        sr.project_id, sr.version, sr.is_saved, sr.create_time, sr.last_view_time, 
        sr.last_modify_time, sr.description, sr.signature, sr.name, sr.saved_name, 
-       sr.is_deleted, sr.is_public, sr.prev_strategy_id, sr.migration_id
+       sr.is_deleted, 0, sr.prev_strategy_id, sr.migration_id
 FROM userlogins4.users u, userlogins3.strategies sr, userlogins3.steps sp
 WHERE u.user_id = sr.user_id AND sr.user_id = sp.user_id
   AND sr.root_step_id = sp.display_id;

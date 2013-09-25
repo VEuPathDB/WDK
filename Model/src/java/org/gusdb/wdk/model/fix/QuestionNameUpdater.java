@@ -37,6 +37,7 @@ public class QuestionNameUpdater {
 
     QuestionNameUpdater updater = new QuestionNameUpdater(args[0], args[1]);
     updater.update();
+    System.exit(0);
   }
 
   private final String projectId;
