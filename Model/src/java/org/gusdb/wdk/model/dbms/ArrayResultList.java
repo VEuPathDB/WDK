@@ -34,7 +34,7 @@ public class ArrayResultList implements ResultList {
       throws WdkModelException {
     this.response = response;
     this.columns = new LinkedHashMap<String, Integer>(columns);
-    this.result = response.getResult(pageIndex);
+    this.result = response.getResult();
 
     // verify the columns and result
     if (result.length > 0 && result[0].length < columns.size())
@@ -122,7 +122,8 @@ public class ArrayResultList implements ResultList {
     if (rowIndex >= result.length) {
       pageIndex++;
       rowIndex = 0;
-      if (pageIndex != response.getCurrentPage())
+      result = null;
+      if (pageIndex < response.getPageCount() && pageIndex != response.getCurrentPage())
         result = response.getResult(pageIndex);
     }
     return hasNext();

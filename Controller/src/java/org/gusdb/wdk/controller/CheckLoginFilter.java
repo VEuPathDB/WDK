@@ -21,12 +21,13 @@ import org.gusdb.wdk.model.jspwrap.UserFactoryBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 public class CheckLoginFilter implements Filter {
-  
+
+    private static final String[] IGNORE_PATHS = { "/wdk/", "/wdkCustomization/", "/js/", "/css/", "/images/" }; 
+ 
     private static final Logger LOG = Logger.getLogger(CheckLoginFilter.class.getName());
   
     private FilterConfig config = null;
     private ServletContext context = null;
-    private static Logger logger = Logger.getLogger(CheckLoginFilter.class);
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -41,6 +42,14 @@ public class CheckLoginFilter implements Filter {
         HttpServletRequest req = (HttpServletRequest) request;
         HttpServletResponse res = (HttpServletResponse) response;
 
+        String servletPath = req.getServletPath();
+        for (String prefix : IGNORE_PATHS) {
+            if (servletPath.startsWith(prefix)) {
+              chain.doFilter(request, response);
+              return;
+            }
+        }
+
         // load model, user
         WdkModelBean wdkModel = (WdkModelBean) context.getAttribute(CConstants.WDK_MODEL_KEY);
         UserBean wdkUser = (UserBean) req.getSession().getAttribute(CConstants.WDK_USER_KEY);
@@ -54,7 +63,7 @@ public class CheckLoginFilter implements Filter {
               // If there's no login cookie, but a non-guest user is
               // logged in, we should log the user out.
               UserBean guest = factory.getGuestUser();
-              logger.error("Logging out non-guest user b/c no login cookie found.");
+              LOG.error("Logging out non-guest user b/c no login cookie found.");
               req.getSession().setAttribute(CConstants.WDK_USER_KEY, guest);
             }
           }
@@ -66,8 +75,8 @@ public class CheckLoginFilter implements Filter {
             LoginCookieParts cookieParts = LoginCookieFactory.parseCookieValue(loginCookie.getValue());
             
             if (!auth.isValidCookie(cookieParts)) {
-              logger.debug("Secret Value: " + wdkModel.getSecretKey());
-              logger.debug("Cookie Hash: " + cookieParts.getChecksum());
+              LOG.debug("Secret Value: " + wdkModel.getSecretKey());
+              LOG.debug("Cookie Hash: " + cookieParts.getChecksum());
               throw new Exception("Login cookie is invalid and must be deleted.");
             }
             
@@ -90,7 +99,7 @@ public class CheckLoginFilter implements Filter {
           }
         }
         catch (Exception ex) {
-          logger.error("Caught exception while checking login " + "cookie: " + ex);
+          LOG.error("Caught exception while checking login " + "cookie: " + ex);
           // tell browser to delete cookie if we had a problem
           res.addCookie(LoginCookieFactory.createLogoutCookie());
           // clear any user out of the session
