@@ -315,7 +315,11 @@ public abstract class AbstractEnumParam extends Param {
         String paramName = paramRef.split("\\.", 2)[1].trim();
         Param param = (params != null) ? params.get(paramName)
             : (Param) wdkModel.resolveReference(paramRef);
-        dependedParams.add(param);
+        if (param != null)
+          dependedParams.add(param);
+        else
+          logger.warn("missing depended param: " + paramRef + " for enum param " + getFullName());
+
       }
     }
     return dependedParams;
