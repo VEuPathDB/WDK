@@ -63,7 +63,7 @@ public class Migrator_b18_b19 implements Migrator {
           "wdk-migrate-select-steps", 5000);
       int count = 0;
       while (rsSteps.next()) {
-        // test getting question name, and fail is we are still on old schema
+        // test getting question name, and fail if we are still on old schema
         rsSteps.getString("question_name");
 
         // get step info

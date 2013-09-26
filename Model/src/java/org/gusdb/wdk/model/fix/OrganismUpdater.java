@@ -45,6 +45,7 @@ public class OrganismUpdater {
 
     OrganismUpdater updater = new OrganismUpdater(args[0], args[1]);
     updater.update();
+    System.exit(0);
   }
 
   private final String projectId;

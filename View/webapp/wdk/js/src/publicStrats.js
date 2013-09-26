@@ -86,11 +86,19 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
     window.location = "showApplication.do";
   }
   
+  function toggleSampleOnly(checkbox, authorFilterValue) {
+    var authorColumnNumber = 3;
+    // if box is checked then filter on this project's configured author; else clear filter
+    var filterVal = ($(checkbox).prop('checked') ? authorFilterValue : '');
+    $('#DataTables_Table_0').dataTable().fnFilter(filterVal,authorColumnNumber,false,true);
+  }
+  
   // make the following methods "public" (i.e. available in the namespace)
   ns.showPublicStrats = showPublicStrats;
   ns.configurePublicStratTable = configurePublicStratTable;
   ns.togglePublic = togglePublic;
   ns.goToPublicStrats = goToPublicStrats;
   ns.publicStratDescriptionWarning = publicStratDescriptionWarning;
+  ns.toggleSampleOnly = toggleSampleOnly;
   
 });
