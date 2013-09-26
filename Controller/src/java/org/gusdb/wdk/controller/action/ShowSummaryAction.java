@@ -160,15 +160,20 @@ public class ShowSummaryAction extends ShowQuestionAction {
 
                     // reload the strategy to get the changes
                     strategy = wdkUser.getStrategy(strategy.getStrategyId());
-                    String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
-                    if (!strategy.getChecksum().equals(checksum)) {
-                        logger.info("strategy checksum: "
-                                + strategy.getChecksum()
-                                + ", but the input checksum: " + checksum);
-                        ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser,
-                                response, state);
-                        return null;
-                    }
+                    
+                    // for unknown reasons, the checksum of some saved strategies are different from
+                    // the ones when the results are displayed. I disabled the check temporarily in
+                    // this branch, but need further investigation to find out the problem.
+                    // -- Jerric
+                    //String checksum = request.getParameter(CConstants.WDK_STRATEGY_CHECKSUM_KEY);
+                    //if (!strategy.getChecksum().equals(checksum)) {
+                    //    logger.info("strategy checksum: "
+                    //            + strategy.getChecksum()
+                    //            + ", but the input checksum: " + checksum);
+                    //    ShowStrategyAction.outputOutOfSyncJSON(wdkModel, wdkUser,
+                    //            response, state);
+                    //    return null;
+                    //}
                 }
                 forward = getForward(request, step, mapping);
             } else if (noStrategy) {
