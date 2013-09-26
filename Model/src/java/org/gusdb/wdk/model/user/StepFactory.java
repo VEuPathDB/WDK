@@ -1182,6 +1182,7 @@ public class StepFactory {
   Strategy createStrategy(User user, Step root, String name, String savedName,
       boolean saved, String description, boolean hidden, boolean isPublic)
       throws WdkModelException, WdkUserException {
+	logger.info("Creating new strategy with description: " + description);
     logger.debug("creating strategy, saved=" + saved);
     int userId = user.getUserId();
 
