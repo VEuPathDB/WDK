@@ -6,10 +6,14 @@
     xmlns:fn="http://java.sun.com/jsp/jstl/functions"
     xmlns:imp="urn:jsptagdir:/WEB-INF/tags/imp">
   <fmt:setLocale value="en-US"/> <!-- required for date parsing when client (e.g. curl) does not send locale -->
-  <imp:sampleStrategies/>
+  <c:set var="wdkModel" value="${applicationScope.wdkModel}"/>
+  <c:set var="project" value="${wdkModel.properties['PROJECT_ID']}"/>
+  <c:set var="sampleFilterText" value="${wdkModel.model.sampleStratsAuthor.filterText}"/>
+  <!-- No longer show sample strategies in their own table <imp:sampleStrategies/> -->
   <span id="publicStrategyCount" style="display:none">${fn:length(publicStrats)}</span>
   <div class="h2center" style="padding-top:12px">Public Strategies</div>
   <div style="text-align:center;margin:5px"><em>To make one of your strategies visible to the community, go to the All tab and click its Public checkbox.</em></div>
+  <span style="float:right"><input type="checkbox" onclick="wdk.publicStrats.toggleSampleOnly(this,'${sampleFilterText}')"/> View Only ${project} Samples</span>
   <table class="datatables" style="width:100%;margin:0 auto 0 auto" border="0" cellpadding="5" cellspacing="0">
     <thead>
       <tr class="headerrow">

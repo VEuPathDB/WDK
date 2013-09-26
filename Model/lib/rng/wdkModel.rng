@@ -18,6 +18,10 @@
             <ref name="IncludeExclude"/>
           </element>
 
+          <element name="sampleStratsAuthor">
+            <attribute name="filterText"/>
+          </element>
+
           <element name="introduction">
             <ref name="IncludeExclude"/>
             <text />

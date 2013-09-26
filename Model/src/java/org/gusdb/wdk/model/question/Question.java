@@ -60,7 +60,7 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
   private static final String DYNAMIC_QUERY_SUFFIX = "_dynamic";
 
   protected static final Logger logger = Logger.getLogger(Question.class);
-
+  
   private String recordClassRef;
 
   private String idQueryRef;

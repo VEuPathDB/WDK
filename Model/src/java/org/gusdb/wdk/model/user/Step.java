@@ -708,6 +708,12 @@ public class Step {
   }
 
   public JSONObject getJSONContent(int strategyId) throws WdkModelException {
+    return getJSONContent(strategyId, false);
+  }
+  
+  public JSONObject getJSONContent(int strategyId, boolean forChecksum) 
+      throws WdkModelException {
+
     JSONObject jsStep = new JSONObject();
 
     try {
@@ -718,16 +724,19 @@ public class Step {
       jsStep.put("filter", this.filterName);
       jsStep.put("collapsed", this.isCollapsible());
       jsStep.put("collapsedName", this.getCollapsedName());
-
       jsStep.put("deleted", deleted);
-      jsStep.put("size", this.estimateSize);
-      Step prevStep = getPreviousStep();
-      if (prevStep != null) {
-        jsStep.put("previous", prevStep.getJSONContent(strategyId));
-      }
-      Step childStep = getChildStep();
-      if (childStep != null) {
-        jsStep.put("child", childStep.getJSONContent(strategyId));
+
+      if (!forChecksum) {
+        jsStep.put("size", this.estimateSize);
+
+        Step prevStep = getPreviousStep();
+        if (prevStep != null) {
+          jsStep.put("previous", prevStep.getJSONContent(strategyId));
+        }
+        Step childStep = getChildStep();
+        if (childStep != null) {
+          jsStep.put("child", childStep.getJSONContent(strategyId));
+        }
       }
       if (this.isCollapsible()) { // a sub-strategy, needs to get order number
         String subStratId = strategyId + "_" + this.stepId;
