@@ -384,17 +384,16 @@ public class Strategy {
    * @throws WdkUserException
    */
   public String getChecksum() throws WdkModelException {
-    JSONObject jsStrategy = getJSONContent();
-    // exclude version, since it will be updated whenever a strategy is opened.
-    jsStrategy.remove("version");
-
-    // remove valid flag since it might be changed on loading
-    jsStrategy.remove("valid");
+    JSONObject jsStrategy = getJSONContent(true);
 
     return Utilities.encrypt(jsStrategy.toString());
   }
 
   public JSONObject getJSONContent() throws WdkModelException {
+    return getJSONContent(false);
+  }
+
+  public JSONObject getJSONContent(boolean forChecksum) throws WdkModelException {
     JSONObject jsStrategy = new JSONObject();
 
     try {
@@ -404,12 +403,15 @@ public class Strategy {
       jsStrategy.put("description", this.description);
       jsStrategy.put("saved", this.isSaved);
       jsStrategy.put("deleted", this.isDeleted);
-      jsStrategy.put("valid", isValid());
-      jsStrategy.put("resultSize", getEstimateSize());
-      jsStrategy.put("version", getVersion());
       jsStrategy.put("type", getRecordClass().getFullName());
 
-      JSONObject stepContent = getLatestStep().getJSONContent(this.strategyId);
+      if (!forChecksum) {
+        jsStrategy.put("valid", isValid());
+        jsStrategy.put("version", getVersion());
+        jsStrategy.put("resultSize", getEstimateSize());
+      }
+
+      JSONObject stepContent = getLatestStep().getJSONContent(this.strategyId, forChecksum);
       jsStrategy.put("latestStep", stepContent);
     } catch (JSONException ex) {
       throw new WdkModelException(ex);
