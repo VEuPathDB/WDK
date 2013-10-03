@@ -1006,4 +1006,8 @@ public class Question extends WdkModelBase implements AttributeFieldContainer {
     }
     return map;
   }
+
+  public Map<String, Boolean> geDefaultSortingMap() {
+    return defaultSortingMap;
+  }
 }

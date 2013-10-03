@@ -2,6 +2,7 @@ package org.gusdb.wdk.model.jspwrap;
 
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -467,5 +468,20 @@ public class AnswerValueBean {
      */
     public boolean getUseCheckboxTree() {
     	return true;
+    }
+
+    public void setSortingString(String sortingString) {
+        String[] columns = sortingString.split(",");
+        Map<String, Boolean> sortMap = new LinkedHashMap<>();
+        for (String column : columns) {
+            String[] parts = column.split(" ", 2);
+            String columnName = parts[0];
+            boolean ascend = true;
+            if (parts.length == 2 && parts[1].equalsIgnoreCase("desc")) {
+                ascend = false;
+            }
+            sortMap.put(columnName, ascend);
+        }
+        answerValue.setSortingMap(sortMap);
     }
 }

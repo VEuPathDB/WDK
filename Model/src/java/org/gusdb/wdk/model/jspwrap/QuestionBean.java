@@ -438,4 +438,14 @@ public class QuestionBean {
     question.getQuery().fillContextParamValues(user.getUser(),
         contextParamValues);
   }
+
+  public String getSortingString() {
+    Map<String, Boolean> map = question.geDefaultSortingMap();
+    StringBuilder buffer = new StringBuilder();
+    for (String column : map.keySet()) {
+      if (buffer.length() > 0) buffer.append(',');
+      buffer.append(column).append(map.get(column) ? " asc" : " desc");
+    }
+    return buffer.toString();
+  }
 }
