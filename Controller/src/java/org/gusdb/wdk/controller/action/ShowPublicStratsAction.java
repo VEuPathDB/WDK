@@ -7,6 +7,7 @@ import org.gusdb.wdk.controller.actionutil.ActionResult;
 import org.gusdb.wdk.controller.actionutil.ParamDef;
 import org.gusdb.wdk.controller.actionutil.ParamGroup;
 import org.gusdb.wdk.controller.actionutil.WdkAction;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.user.Strategy;
 
 public class ShowPublicStratsAction extends WdkAction {
@@ -18,6 +19,15 @@ public class ShowPublicStratsAction extends WdkAction {
   protected ActionResult handleRequest(ParamGroup params) throws Exception {
     List<Strategy> publicStrats = getWdkModel().getModel().getStepFactory().loadPublicStrategies();
     return new ActionResult().setViewName(SUCCESS)
-        .setRequestAttribute("publicStrats", publicStrats);
+        .setRequestAttribute("publicStrats", publicStrats)
+        .setRequestAttribute("numValidPublicStrats", getNumValid(publicStrats));
+  }
+
+  private int getNumValid(List<Strategy> stratList) throws WdkModelException {
+	int numValid = 0;
+	for (Strategy strat : stratList) {
+      if (strat.isValid()) numValid++;
+	}
+	return numValid;
   }
 }

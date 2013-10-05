@@ -36,14 +36,20 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
         "bAutoWidth": false,
         "bJQueryUI": true,
         "bScrollCollapse": true,
-        "aoColumns": [ null,
+        "sScrollY": "300px",
+		"bPaginate": false,
+        "aoColumns": [ { "bSearchable": false, "bVisible": false },
+                       null,
                        null,
                        { "bSortable": false },
                        null,
                        null,
                        null],
-        "aaSorting": [[ 5, "desc" ]]
+        "aaSorting": [[0, "desc"], [ 6, "desc" ]]
     });
+    // make search textbox appear where we want
+    $('#public_strat table.datatables').parent().parent().parent().find('.dataTables_filter')
+       .css("display","inline-block").css("margin","0").css("padding","5px 0 0 0");
   }
   
   function togglePublic(checkbox, stratId) {
@@ -87,10 +93,18 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
   }
   
   function toggleSampleOnly(checkbox, authorFilterValue) {
-    var authorColumnNumber = 3;
+    var authorColumnNumber = 4;
     // if box is checked then filter on this project's configured author; else clear filter
     var filterVal = ($(checkbox).prop('checked') ? authorFilterValue : '');
-    $('#DataTables_Table_0').dataTable().fnFilter(filterVal,authorColumnNumber,false,true);
+    getDataTable(checkbox).fnFilter(filterVal,authorColumnNumber,false,true);
+  }
+  
+  function sortSampleToTop(atag) {
+    getDataTable(atag).fnSort([[0, 'desc']]);
+  }
+  
+  function getDataTable(elem) {
+    return $(elem).parent().parent().find('.dataTables_scrollBody>table').dataTable();
   }
   
   // make the following methods "public" (i.e. available in the namespace)
@@ -100,5 +114,6 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
   ns.goToPublicStrats = goToPublicStrats;
   ns.publicStratDescriptionWarning = publicStratDescriptionWarning;
   ns.toggleSampleOnly = toggleSampleOnly;
+  ns.sortSampleToTop = sortSampleToTop;
   
 });
