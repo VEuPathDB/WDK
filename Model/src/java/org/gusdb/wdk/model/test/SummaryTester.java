@@ -18,20 +18,20 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.AnswerFilterInstance;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.Reference;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerFilterInstance;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
-import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.Query;
+import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.question.QuestionSet;
+import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.report.Reporter;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
@@ -102,6 +102,9 @@ public class SummaryTester {
             if (cmdLine.hasOption(ARG_FILTER)) {
                 String filterName = cmdLine.getOptionValue(ARG_FILTER);
                 filter = question.getRecordClass().getFilter(filterName);
+                if (filter == null)
+                    throw new WdkUserException(
+                            "Given filter name doesn't exist: " + filterName);
             }
 
             User user = wdkModel.getSystemUser();
@@ -124,7 +127,7 @@ public class SummaryTester {
 
                 AnswerValue answerValue = question.makeAnswerValue(user,
                         paramValues, nextStartRow, nextEndRow, sortingMap,
-                        filter, 0);
+                        filter, true, 0);
 
                 // this is wrong. it only shows one attribute query, not
                 // all. Fix this in Answer by saving a list of attribute
@@ -140,7 +143,7 @@ public class SummaryTester {
                 System.out.println("Total # of records: "
                         + answerValue.getResultSize());
                 System.out.println("Answer Checksum: "
-                        + answerValue.getAnswer().getAnswerChecksum());
+                        + answerValue.getChecksum());
 
                 AnswerValueBean answerValueBean = new AnswerValueBean(
                         answerValue);
@@ -158,7 +161,8 @@ public class SummaryTester {
 
                 pageCount++;
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             ex.printStackTrace();
             // System.exit(-1);
         }
@@ -195,10 +199,10 @@ public class SummaryTester {
         Map<String, Boolean> sortingMap = question.getSortingAttributeMap();
 
         AnswerValue answerValue = question.makeAnswerValue(user, paramValues,
-                1, 2, sortingMap, filter, 0);
+                1, 2, sortingMap, filter, true, 0);
         int resultSize = answerValue.getResultSize();
         answerValue = question.makeAnswerValue(user, paramValues, 1,
-                resultSize, sortingMap, filter, 0);
+                resultSize, sortingMap, filter, false, 0);
         FileWriter fw = new FileWriter(new File(xmlFile), false);
 
         String newline = System.getProperty("line.separator");
@@ -215,12 +219,10 @@ public class SummaryTester {
     }
 
     private static String getLowLevelQuery(AnswerValue answerValue)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         // QueryInstance instance = answer.getAttributesQueryInstance();
         QueryInstance instance = answerValue.getIdsQueryInstance();
-        String query = (instance instanceof SqlQueryInstance)
-                ? ((SqlQueryInstance) instance).getUncachedSql()
+        String query = (instance instanceof SqlQueryInstance) ? ((SqlQueryInstance) instance).getUncachedSql()
                 : instance.getSql();
         String newline = System.getProperty("line.separator");
         String newlineQuery = query.replaceAll("^\\s\\s\\s", newline);
@@ -309,7 +311,8 @@ public class SummaryTester {
         try {
             // parse the command line arguments
             cmdLine = parser.parse(options, args);
-        } catch (ParseException exp) {
+        }
+        catch (ParseException exp) {
             // oops, something went wrong
             System.err.println("");
             System.err.println("Parsing failed.  Reason: " + exp.getMessage());

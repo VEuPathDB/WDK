@@ -21,6 +21,16 @@
                     <data type="boolean" />
                 </attribute>
             </optional>
+            <optional>
+                <attribute name="monitorBlockedThreads">
+                    <data type="boolean" />
+                </attribute>
+            </optional>
+            <optional>
+                <attribute name="blockedThreshold">
+                    <data type="unsignedShort" />
+                </attribute>
+            </optional>
             
             <interleave>
             
@@ -36,6 +46,11 @@
 
                 <element name="appDb">
                     <attribute name="userDbLink" />
+                    <optional>
+                        <attribute name="maxPkColumnWidth">
+                            <data type="unsignedShort" />
+                        </attribute>
+                    </optional>
                     <ref name="DBBaseContent" />
                 </element>
                 
@@ -61,22 +76,22 @@
     <define name="queryMonitor">
         <element name="queryMonitor">
           <optional>
-            <attribute name="slowQueryThreshold">
-              <data type="unsignedLong" />
+            <attribute name="baseline">
+              <data type="float" />
             </attribute>
           </optional>
           <optional>
-            <attribute name="brokenQueryThreshold">
-              <data type="unsignedLong" />
+            <attribute name="slow">
+              <data type="float" />
             </attribute>
           </optional>
           
           <zeroOrMore>
             <choice>
-              <element name="ignoreSlowQueryRegex">
+              <element name="ignoreSlowRegex">
                 <text />
               </element>
-              <element name="ignoreBrokenQueryRegex">
+              <element name="ignoreBaselineRegex">
                 <text />
               </element>
             </choice>
@@ -113,6 +128,11 @@
         <optional>
             <attribute name="maxWait">
                 <data type="unsignedShort" />
+            </attribute>
+        </optional>
+        <optional>
+            <attribute name="driverInitClass">
+                <data type="string" />
             </attribute>
         </optional>
         <optional>

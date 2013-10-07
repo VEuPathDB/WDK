@@ -8,8 +8,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionServlet;
-import org.gusdb.wdk.controller.action.ActionUtility;
-import org.gusdb.wdk.controller.action.WizardForm;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.form.WizardForm;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
@@ -25,6 +25,7 @@ public class ShowStrategyStageHandler implements StageHandler {
 
     private static final Logger logger = Logger.getLogger(ShowStrategyStageHandler.class);
 
+    @Override
     public Map<String, Object> execute(ActionServlet servlet,
             HttpServletRequest request, HttpServletResponse response,
             WizardForm wizardForm) throws Exception {
@@ -55,8 +56,8 @@ public class ShowStrategyStageHandler implements StageHandler {
             previousStep = StageHandlerUtility.getCurrentStep(request);
 
         // check if boolean is allowed
-        String childType = childStep.getType();
-        boolean allowBoolean = childType.equals(previousStep.getType());
+        String childType = childStep.getRecordClass().getFullName();
+        boolean allowBoolean = childType.equals(previousStep.getRecordClass().getFullName());
         attributes.put(ATTR_ALLOW_BOOLEAN, allowBoolean);
 
         logger.debug("Leaving StrategyStageHandler....");

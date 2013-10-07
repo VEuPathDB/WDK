@@ -11,6 +11,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
@@ -24,8 +25,10 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
  **/
 
 public class DeleteStepAction extends ProcessFilterAction {
-    private static final Logger logger = Logger.getLogger(DeleteStepAction.class);
 
+	private static final Logger logger = Logger.getLogger(DeleteStepAction.class);
+
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -76,7 +79,10 @@ public class DeleteStepAction extends ProcessFilterAction {
             if (wdkUser.getViewStrategyId() != null
                     && wdkUser.getViewStrategyId().equals(strategyKey)
                     && wdkUser.getViewStepId() == Integer.parseInt(deleteStep)) {
-                wdkUser.resetViewResults();
+                //wdkUser.resetViewResults();
+                wdkUser.setViewResults(strategyKey,
+                    strategy.getLatestStep().getFrontId(),
+                    wdkUser.getViewPagerOffset());
             }
 
             Map<Integer, Integer> stepIdsMap = strategy.deleteStep(

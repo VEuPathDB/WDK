@@ -16,6 +16,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -31,6 +32,7 @@ public class ShowResultSizeAction extends Action {
 
     private static Logger logger = Logger.getLogger(ShowResultSizeAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -45,12 +47,13 @@ public class ShowResultSizeAction extends Action {
 
         // load cache
         ServletContext application = servlet.getServletContext();
-        Object cache = application.getAttribute(KEY_SIZE_CACHE_MAP);
-        Map<String, Integer> sizeCache;
-        if (cache == null || !(cache instanceof Map)) {
+        
+        @SuppressWarnings("unchecked")
+        Map<String, Integer> sizeCache = (Map<String, Integer>)application.getAttribute(KEY_SIZE_CACHE_MAP);
+        if (sizeCache == null) {
             sizeCache = new LinkedHashMap<String, Integer>();
             application.setAttribute(KEY_SIZE_CACHE_MAP, sizeCache);
-        } else sizeCache = (Map<String, Integer>) cache;
+        }
 
         // check if the size value has been cached
         int size;
@@ -59,7 +62,7 @@ public class ShowResultSizeAction extends Action {
         } else {// size is not cached get it and cache it
             UserBean user = ActionUtility.getUser(servlet, request);
             StepBean step = user.getStep(Integer.parseInt(stepId));
-            AnswerValueBean answerValue = step.getAnswerValue();
+            AnswerValueBean answerValue = step.getAnswerValue(false);
             size = (filterName == null) ? answerValue.getResultSize()
                     : answerValue.getFilterSize(filterName);
 

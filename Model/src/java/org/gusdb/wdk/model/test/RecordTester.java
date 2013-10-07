@@ -1,14 +1,7 @@
 package org.gusdb.wdk.model.test;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -17,15 +10,13 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordInstance;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
-import org.xml.sax.SAXException;
 
 public class RecordTester {
 
@@ -34,11 +25,7 @@ public class RecordTester {
     // ////////////////////////////////////////////////////////////////////
 
     public static void main(String[] args) throws WdkModelException,
-            WdkUserException, NoSuchAlgorithmException, SQLException,
-            JSONException, SAXException, IOException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+            WdkUserException {
         String cmdName = System.getProperty("cmdName");
 
         // process args

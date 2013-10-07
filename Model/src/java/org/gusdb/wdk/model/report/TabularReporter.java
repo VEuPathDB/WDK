@@ -14,13 +14,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.AttributeValue;
-import org.gusdb.wdk.model.FieldScope;
-import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.record.FieldScope;
+import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.json.JSONException;
 
 import com.lowagie.text.Document;
@@ -69,8 +69,9 @@ public class TabularReporter extends Reporter {
         }
     }
 
+    @Override
     public String getConfigInfo() {
-	return "This reporter does not have config info yet.";
+	    return "This reporter does not have config info yet.";
     }
 
     /*
@@ -151,23 +152,16 @@ public class TabularReporter extends Reporter {
             String[] fields = fieldsList.split(",");
             for (String column : fields) {
                 column = column.trim();
-                if (column.equalsIgnoreCase("default")) {
-                    columns.clear();
-                    columns.addAll(summary.values());
-                    break;
+                if (attributes.containsKey(column)) {
+                	columns.add(attributes.get(column));
                 }
-                if (!attributes.containsKey(column))
-                    throw new WdkModelException("The column '" + column
-                            + "' cannot included in the report");
-                columns.add(attributes.get(column));
             }
         }
         return columns;
     }
 
     private void format2Text(Set<AttributeField> fields, PrintWriter writer)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         // print the header
         if (hasHeader) {
             for (AttributeField field : fields) {
@@ -194,8 +188,7 @@ public class TabularReporter extends Reporter {
     }
 
     private void format2PDF(Set<AttributeField> fields, OutputStream out)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         logger.info("format2PDF>>>");
         Document document = new Document(PageSize.LETTER.rotate());
         try {
@@ -263,8 +256,7 @@ public class TabularReporter extends Reporter {
     }
 
     private void format2Excel(Set<AttributeField> fields, PrintWriter writer)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         int count = 0;
         String header = "<table border=\"1\">";
         writer.println(header);
@@ -329,7 +321,7 @@ public class TabularReporter extends Reporter {
     }
 
     @Override
-    protected void initialize() throws SQLException {
+    protected void initialize() throws WdkModelException {
         // do nothing
     }
 }

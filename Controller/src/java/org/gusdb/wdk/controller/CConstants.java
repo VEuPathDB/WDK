@@ -1,9 +1,9 @@
 package org.gusdb.wdk.controller;
 
 public class CConstants {
-    private CConstants() {
-	; // no-op
-    }
+    
+    private CConstants() { }
+    
     //key for objects in cache, used in Action/ActionForm classes and maybe jsp pages
     public static final String WDK_RESULTFACTORY_KEY = "wdkResultFactory";
     public static final String WDK_MODEL_KEY = "wdkModel";
@@ -77,6 +77,7 @@ public class CConstants {
     public static final String WDK_OPEN_KEY = "open";
     public static final String WDK_NEW_STRATEGY_KEY = "newStrategy";
     public static final String WDK_ASSIGNED_WEIGHT_KEY = "weight";
+    public static final String WDK_RESPONSE_TYPE_KEY = "responseType";
 
     // params used in the url
     public static final String WDK_STEP_ID_PARAM = "step";
@@ -94,13 +95,17 @@ public class CConstants {
     public static final String WDK_USER_KEY = "wdkUser";
     public static final String WDK_EMAIL_KEY = "email";
     public static final String WDK_PASSWORD_KEY = "password";
+    public static final String WDK_OPENID_KEY = "openid";
+    public static final String WDK_OPENID_AUTH_SERVICE_KEY = "openIdAuthService";
+    public static final String WDK_REMEMBER_USER_KEY = "openIdRememberUser";
+    public static final String WDK_ERROR_TEXT_KEY = "errorText";
     public static final String WDK_LOGIN_ERROR_KEY = "loginError";
     public static final String WDK_REGISTER_ERROR_KEY = "registerError";
     public static final String WDK_PROFILE_ERROR_KEY = "profileError";
     public static final String WDK_CHANGE_PASSWORD_ERROR_KEY = "changePasswordError";
     public static final String WDK_RESET_PASSWORD_ERROR_KEY = "resetPasswordError";
-    public static final String WDK_REFERER_URL_KEY = "refererUrl";
-    public static final String WDK_ORIGIN_URL_KEY = "originUrl";
+    public static final String WDK_REFERRER_URL_KEY = "referrerUrl";
+    public static final String WDK_REDIRECT_URL_KEY = "redirectUrl";
     public static final String WDK_PREFERENCE_GLOBAL_KEY = "preference_global_";
     public static final String WDK_PREFERENCE_PROJECT_KEY = "preference_project_";
     public static final String WDK_SUMMARY_COMMAND_KEY = "command";
@@ -141,7 +146,6 @@ public class CConstants {
     public static final String SHOW_XMLDATA_CONTENT_MAPKEY = "show_xmldata_content";
     public static final String SHOW_ERRORPAGE_USER_MAPKEY = "show_error_page_user";
     public static final String SHOW_ERRORPAGE_MODEL_MAPKEY = "show_error_page_model";
-    public static final String SHOW_LOGIN_MAPKEY = "show_login_page";
     public static final String SHOW_REGISTER_MAPKEY = "show_register";
     public static final String SHOW_PROFILE_MAPKEY = "show_profile";
     public static final String SHOW_PASSWORD_MAPKEY = "show_password";
@@ -184,7 +188,6 @@ public class CConstants {
     public static final String NEXT_BOOLEAN_OPERATION_SUFFIX = "_nextBooleanOperation"; //match WEB-INF/includes/booleanQuestionNode.jsp
 
     //keys for WDK cookies
-    public static final String WDK_LOGIN_COOKIE_KEY = "wdk_check_auth";
     public static final String WDK_TAB_STATE_COOKIE = "wdk_tab_state";
 
     //name of webapp init params, from web.xml, used in ApplicationInitListener.java

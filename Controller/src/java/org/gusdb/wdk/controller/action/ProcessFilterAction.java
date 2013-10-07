@@ -1,8 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +12,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.form.QuestionForm;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -23,7 +23,6 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.json.JSONException;
 
 /**
  * This Action is called by the ActionServlet when a WDK filter is requested. It
@@ -32,12 +31,14 @@ import org.json.JSONException;
  * adds/inserts/edits step in strategy 5) forwards to application page
  */
 public class ProcessFilterAction extends ProcessQuestionAction {
-    private static final Logger logger = Logger.getLogger(ProcessFilterAction.class);
 
+	private static final Logger logger = Logger.getLogger(ProcessFilterAction.class);
+
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        logger.debug("Entering ProcessFilterAction...");
+        logger.debug("\nEntering ProcessFilterAction...");
 
         logger.debug("strategy: " + request.getParameter("strategy") + ", step: " + request.getParameter("step"));
 
@@ -411,7 +412,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
 
             ActionForward forward = new ActionForward(url.toString());
             forward.setRedirect(true);
-            logger.debug("Leaving ProcessFilterAction...");
+            logger.debug("\nLeaving ProcessFilterAction...\n");
             return forward;
         } catch (Exception ex) {
             logger.error(ex);
@@ -422,9 +423,7 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     }
 
     protected StepBean updateTransform(UserBean wdkUser, StepBean step,
-            int newStepId, int assignedWeight) throws WdkModelException,
-            WdkUserException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+            int newStepId, int assignedWeight) throws WdkModelException {
         // Get question
         QuestionBean wdkQuestion = step.getQuestion();
         // Get internal params

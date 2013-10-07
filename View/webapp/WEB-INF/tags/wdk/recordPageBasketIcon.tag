@@ -26,14 +26,14 @@
 <span class="wdk-record" recordClass="${wdkRecord.recordClass.fullName}">
     <c:choose>
         <c:when test="${wdkUser.guest}">
-          <c:if test="${wdkRecord.recordClass.hasBasket}">
-          <a class="basket" href="javascript:void(0)" onClick="popLogin();setFrontAction('${basketId}');"> Add to Basket
+          <c:if test="${wdkRecord.recordClass.useBasket}">
+          <a class="basket" href="javascript:void(0)" onclick="wdk.user.login();"> Add to Basket
             <img src="<c:url value='/wdk/images/basket_gray.png'/>" width='${imagesize}' value="0" title="Please log in to access the basket."/>
           </a>
           &nbsp;&nbsp;&nbsp;&nbsp;
           </c:if>
 
-          <a class="favorite" href="javascript:void(0)" onClick="popLogin();setFrontAction('${favoriteId}');">Add to Favorites
+          <a class="favorite" href="javascript:void(0)" onclick="wdk.user.login();">Add to Favorites
             <img src="<c:url value='/wdk/images/favorite_gray.gif'/>" width='${imagesize}' value="0" title="Please log in to access the favorites."/>
           </a>
          </c:when>
@@ -45,10 +45,10 @@
             <c:set var="imagetitle" value="${wdkRecord.inBasket ? 'Click to remove this item from the basket.' : 'Click to add this item to the basket.'}"/>
 
 <%--This block must remain together--%>
-          <c:if test="${wdkRecord.recordClass.hasBasket}">
+          <c:if test="${wdkRecord.recordClass.useBasket}">
             <a href="javascript:void(0)" onclick="jQuery(this).next().click();" id="basketrp">${action} Basket</a>
 	    <a id="${basketId}" class="basket" href="javascript:void(0)" 
-		onClick="updateBasket(this, 'recordPage', '${id}', '${pid}', '${wdkRecord.recordClass.fullName}')">
+		onClick="wdk.basket.updateBasket(this, 'recordPage', '${id}', '${pid}', '${wdkRecord.recordClass.fullName}')">
             <img src="<c:url value='/wdk/images/basket_${image}.png' />" width='${imagesize}' value="${imagevalue}" title="${imagetitle}"/>
             </a>
             &nbsp;&nbsp;&nbsp;&nbsp;
@@ -63,7 +63,7 @@
  <%-- This block must remain together --%>
            <a href="javascript:void(0)" onclick="jQuery(this).next().click()" id="favoritesrp">${actionWritten} Favorites</a> 
 	    <img id="${favoriteId}" class="clickable" src="<c:url value='/wdk/images/favorite_${image}.gif'/>"  width='${imagesize}' 
-                 title="${imagetitle}" onClick="updateFavorite(this, '${action}')" />
+                 title="${imagetitle}" onClick="wdk.favorite.updateFavorite(this, '${action}')" />
 <%-- End block--%>
         </c:otherwise>
     </c:choose>

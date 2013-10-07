@@ -17,20 +17,21 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.AttributeValue;
-import org.gusdb.wdk.model.Field;
-import org.gusdb.wdk.model.FieldScope;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordInstance;
-import org.gusdb.wdk.model.TableField;
-import org.gusdb.wdk.model.TableValue;
+import org.gusdb.fgputil.db.QueryLogger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.record.Field;
+import org.gusdb.wdk.model.record.FieldScope;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.TableField;
+import org.gusdb.wdk.model.record.TableValue;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.json.JSONException;
 
 /**
@@ -99,6 +100,7 @@ public class XMLReporter extends Reporter {
         }
     }
 
+    @Override
     public String getConfigInfo() {
         return "This reporter does not have config info yet.";
     }
@@ -162,8 +164,6 @@ public class XMLReporter extends Reporter {
 
         // get the formatted result
         WdkModel wdkModel = getQuestion().getWdkModel();
-        DBPlatform platform = wdkModel.getQueryPlatform();
-
         RecordClass recordClass = getQuestion().getRecordClass();
         String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
 
@@ -174,8 +174,8 @@ public class XMLReporter extends Reporter {
             sqlInsert.append(column).append(", ");
         }
         sqlInsert.append(" table_name, row_count, content) VALUES (");
-        sqlInsert.append(wdkModel.getUserPlatform().getNextIdSqlExpression(
-                "apidb", "wdkTable"));
+        sqlInsert.append(wdkModel.getUserDb().getPlatform()
+            .getNextIdSqlExpression("apidb", "wdkTable"));
         sqlInsert.append(", ");
         for (int i = 0; i < pkColumns.length; i++) {
             sqlInsert.append("?, ");
@@ -198,7 +198,7 @@ public class XMLReporter extends Reporter {
         try {
             if (tableCache != null) {
                 // want to cache the table content
-                DataSource dataSource = platform.getDataSource();
+                DataSource dataSource = wdkModel.getAppDb().getDataSource();
                 psInsert = SqlUtils.getPreparedStatement(dataSource,
                         sqlInsert.toString());
                 psQuery = SqlUtils.getPreparedStatement(dataSource,
@@ -212,7 +212,7 @@ public class XMLReporter extends Reporter {
             writer.println("<response>");
             writer.println("<recordset id='" + av.getChecksum() + "' count='"
                     + this.getResultSize() + "' type='"
-                    + av.getQuestion().getRecordClass().getType() + "'>");
+                    + av.getQuestion().getRecordClass().getDisplayName() + "'>");
             for (AnswerValue pageAnswer : this) {
                 for (RecordInstance record : pageAnswer.getRecordInstances()) {
                     writer.println("<record id='" + record.getPrimaryKey()
@@ -234,7 +234,8 @@ public class XMLReporter extends Reporter {
             writer.println("</response>");
             writer.flush();
             logger.info("Totally " + recordCount + " records dumped");
-        } finally {
+        }
+        finally {
             SqlUtils.closeStatement(psQuery);
             SqlUtils.closeStatement(psInsert);
         }
@@ -268,10 +269,9 @@ public class XMLReporter extends Reporter {
                 String[] fields = fieldsList.split(",");
                 for (String column : fields) {
                     column = column.trim();
-                    if (!fieldMap.containsKey(column))
-                        throw new WdkModelException("The column '" + column
-                                + "' cannot be included in the report");
-                    columns.add(fieldMap.get(column));
+                    if (fieldMap.containsKey(column)) {
+                        columns.add(fieldMap.get(column));
+                    }
                 }
             }
             if (tablesList.equals("all")) {
@@ -296,8 +296,7 @@ public class XMLReporter extends Reporter {
 
     private void formatAttributes(RecordInstance record,
             Set<AttributeField> attributes, PrintWriter writer)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         // print out attributes of the record first
         for (AttributeField field : attributes) {
             AttributeValue value = record.getAttributeValue(field.getName());
@@ -313,9 +312,8 @@ public class XMLReporter extends Reporter {
     private void formatTables(RecordInstance record, Set<TableField> tables,
             PrintWriter writer, AnswerValue answerValue,
             PreparedStatement psInsert, PreparedStatement psQuery)
-            throws WdkModelException, SQLException, NoSuchAlgorithmException,
-            JSONException, WdkUserException {
-        DBPlatform platform = getQuestion().getWdkModel().getQueryPlatform();
+            throws WdkModelException, SQLException, WdkUserException {
+        DBPlatform platform = getQuestion().getWdkModel().getAppDb().getPlatform();
         RecordClass recordClass = record.getRecordClass();
         String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
 
@@ -324,8 +322,7 @@ public class XMLReporter extends Reporter {
         for (TableField table : tables) {
             TableValue tableValue = record.getTableValue(table.getName());
 
-            // AttributeField[] fields =
-            // table.getAttributeFields(FieldScope.REPORT_MAKER);
+            AttributeField[] fields = table.getAttributeFields(FieldScope.REPORT_MAKER);
 
             // output table header
             StringBuffer sb = new StringBuffer();
@@ -335,7 +332,8 @@ public class XMLReporter extends Reporter {
             for (Map<String, AttributeValue> row : tableValue) {
                 tableSize++;
                 sb.append("<row>" + NEW_LINE);
-                for (String fieldName : row.keySet()) {
+                for (AttributeField field : fields) {
+                    String fieldName = field.getName();
                     AttributeValue value = row.get(fieldName);
                     sb.append("<field name='" + fieldName + "'><![CDATA["
                             + value.getValue() + "]]></field>" + NEW_LINE);
@@ -354,8 +352,8 @@ public class XMLReporter extends Reporter {
                 }
                 psQuery.setString(pkColumns.length + 1, table.getName());
                 ResultSet rs = psQuery.executeQuery();
-                SqlUtils.verifyTime(wdkModel, sqlQuery,
-                        "wdk-report-xml-select-count", start);
+                QueryLogger.logStartResultsProcessing(sqlQuery,
+                    "wdk-report-xml-select-count", start, rs);
                 rs.next();
                 int count = rs.getInt("cache_count");
                 if (count == 0) {
@@ -371,7 +369,7 @@ public class XMLReporter extends Reporter {
                     psInsert.addBatch();
                     needUpdate = true;
                 }
-                rs.close();
+                SqlUtils.closeResultSetOnly(rs);
             }
 
             // write to the stream
@@ -383,18 +381,17 @@ public class XMLReporter extends Reporter {
         if (tableCache != null && needUpdate) {
             long start = System.currentTimeMillis();
             psInsert.executeBatch();
-            SqlUtils.verifyTime(wdkModel, sqlInsert, "wdk-report-xml-insert",
-                    start);
+            QueryLogger.logEndStatementExecution(sqlInsert, "wdk-report-xml-insert", start);
         }
     }
 
     @Override
     protected void complete() {
-    // do nothing
+        // do nothing
     }
 
     @Override
-    protected void initialize() throws SQLException {
-    // do nothing
+    protected void initialize() throws WdkModelException {
+        // do nothing
     }
 }

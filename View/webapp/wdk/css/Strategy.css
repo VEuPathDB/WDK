@@ -3,6 +3,7 @@
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       = Strategy Styles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
+#stage-stack { display: none; }
 
 #strategy_workspace {
   margin-top:-27px;
@@ -23,6 +24,7 @@
   position: relative;
   border: 1px solid #000;
   height: 100%;
+  min-height: 150px;
 }
 
 #strategy_results .ui-resizable-handle.ui-resizable-s {
@@ -95,7 +97,7 @@
   position: relative;
   left:    0em;
   background-color: #EDEDED;
-  height:   135px;
+  height:   141px;
   border-color: #ffffff #cccccc #666677 #aaaaaa;
   border-style: ridge;
   border-width: 4px;
@@ -112,14 +114,17 @@ div.sub_diagram {
   position: relative;
 }
   
+/*  what is this for??
 .diagram div li {
   position: absolute;
   margin:   0.8em;
   padding:  0;
 }
+*/
+
 
 /* State names will be centered within their boxes. */
-.diagram h3 {
+.diagram h4 {
   margin:      0;
   padding:     0;
   font-size:   1em;
@@ -132,11 +137,11 @@ div.sub_diagram {
 
 /* Rows, columns, heights, widths, and sizes. */
 .row1 { 
-  top: 17px;
+  top: 0px;
 }
 
 .row2 { 
-  top: 65px;
+  top: 48px;
 }
 
 .arrow {
@@ -148,7 +153,7 @@ div.sub_diagram {
   background: url(../images/rightarrow92.png) no-repeat scroll 100% 0;
   border: none;
   height: 11px;
-  top: -1.6em
+  top: -2.3em
 }
 
 .arrow.right.size1 {
@@ -178,7 +183,7 @@ div.sub_diagram {
 }
     
 .arrow.down {
-  top: 1.2em;
+  top: 0.35em;
   left: 4em;  
 }
   
@@ -256,7 +261,7 @@ a.operation img {
 
 span.stepNumber {
   position: absolute;
-  top:9em;
+  top:89px;
   left:2.7em;
   font-weight:bold;
   white-space:nowrap;
@@ -279,8 +284,8 @@ h6.resultCount {
   font-weight: bold;
   text-align:center;
   width:100%;
-  position: absolute;
-  bottom: 0;
+  bottom: 2px;
+  position: relative;
 }
 
 .operation.SPAN {
@@ -322,7 +327,7 @@ h6.resultCount {
   background-color: #EDEDED;
   height: 37px;
   background-repeat: no-repeat;
-  top:25px;
+  top:8px;
 }
 
 .diagram div.simple.selected,.diagram div.operation.selected {
@@ -373,7 +378,8 @@ h6.resultCount {
 }
 
 .diagram div.transform h6.resultCount {
-  bottom: 4px;
+  bottom: 2px;
+  position: relative;
 }
 
 .diagram .stepBox div.expandedStep {
@@ -381,7 +387,7 @@ h6.resultCount {
   border:none;
   height:42px;
   position:absolute;
-  top:10px;
+  top:-7px;
   left:4px;
   width:102px;
   z-index:0;
@@ -416,10 +422,11 @@ div.transform a.crumb_name img{
   color: #000000;
   border: solid black;
   position:absolute;
-  z-index: 495;  //1000; so menubar menus appear on top
+  z-index: 495;  /*  1000; so menubar menus appear on top */
   text-align: center;
   padding-bottom: 5px;
   min-width: 550px;   /* this allows for some space between Delete and X */
+  overflow: auto; /* make sure long param strings are within the popup, with horizontal scroll bar if needed. */
 }
 
 .crumb_details div.crumb_menu {
@@ -438,8 +445,11 @@ div.transform a.crumb_name img{
 }
 
 .crumb_menu span, .crumb_menu a.close_link {
-  position: absolute;
-  right: 6px;
+  float: right;
+  position: relative;
+  top: -3px;
+  right: 3px;
+  padding-left: 10px;
 }
 
 #bread_crumb_div td {
@@ -479,9 +489,12 @@ div.transform a.crumb_name img{
 /*  color: #08438F; */
   font-weight:bold;
   text-decoration:none;
+  top: 0px;
+  z-index: 1;
 }
 .diagram div.strategy_menu,
 .diagram div.strategy_name {
+  /*
   border: none;
   position: absolute;
   right: 0px;
@@ -489,10 +502,39 @@ div.transform a.crumb_name img{
   margin-right: 18px;
   top: 0;
   text-align: right;
+  */
 }
 
+.diagram div.strategy_name {
+  position: relative;
+  float: right;
+	font-size:14px;
+	font-weight:bold;
+  right: 4em;
+  z-index: 1;
+}
+
+/*
+.diagram .strategy-name.wdk-editable {
+  padding-bottom: 5px;
+}
+.diagram .strategy-name.wdk-editable-show {
+  padding-bottom: 1px;
+}
+.diagram .strategy-name.wdk-editable input {
+  margin: 1px;
+  padding: 0;
+}
+*/
+
 .diagram div.strategy_menu {
-  margin-top: 5px;
+  clear: both;
+  float: right;
+  text-align: right;
+  margin-right: 2em;
+  position: absolute;
+  top: 16px;
+  right: 0px;
 }
 
 .diagram div.strategy_menu span.strategy_small_text {
@@ -500,11 +542,16 @@ div.transform a.crumb_name img{
   color: #888;
 
 }
+.diagram div.strategy_menu span.strategy_small_text div{
+  color: black;
+
+}
 
 span.closeStrategy {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 1px;
+  right: 1px;
+  z-index: 1;
 }
 
 
@@ -563,7 +610,7 @@ span.closeStrategy {
   position: absolute;
   right: 5em;
   top: 4em;
-  width: 23em;
+/*   width: 23em;  */
 }
 
 .save_strat .dragHandle .modal_name {
@@ -588,8 +635,8 @@ span.closeStrategy {
 .diagram .filterImg {
   position:relative;
   float:right;
-  right:3px;
-  top:-10px;
+  right:1px;
+  top:-11px;
 }
 
 .disabled {
@@ -631,24 +678,18 @@ b.strat_help_title > span {
 }
 
 #query_form {
-	/*display: none;*/
 	position: absolute;
+/*	right:140px; affects colocation */
 	left:140px; 
 	top:140px;
-	min-width: 600px;
-	max-width: 78%;
-/*	min-width: 700px; */
-/* decrease to remove the 5th column in Finder 885px;*/  
-/*  increase to accommodate gene basket 775px; */ 
-/* increase to accommodate blast data type options   741px; */
-/*	max-width: 78%;  */ 
-/* increase to accommodate the basket */
+	min-width: 600px; 
+	max-width: 78%; 
 	background-color: #FFFFFF;
 	background-repeat: repeat-x;
-	background-position: 0 26px;   /* was 36px, decreased to have Add Step title thiner */
+	background-position: 0 26px;  
 	border: 1px solid #888888;	
 	padding: 0 8px 8px 8px;
-	z-index: 490;  //  999; ; so menubar menus appear on top, but under Details box
+	z-index: 490; 
 }
 
 #query_form form {
@@ -803,6 +844,7 @@ b.strat_help_title > span {
 }
 
 .filter.params {
+  overflow-x: auto;
 }
 
 .filter.operators {
@@ -890,56 +932,11 @@ div.bottom-close{
   text-align: left;
 }
 
-/* -----------------------------------------------------------------------------
-      = Styles for All Strategies Tab
- * -------------------------------------------------------------------------- */
-
-ul.menubar {
-    border-bottom: 1px solid;
-    list-style-image:none;
-    list-style-position:outside;
-    list-style-type:none;
-    float:left;
-    display:inline-block;
-    margin:0 0 5px;
-    padding:0 10px;
-    width: 98%;
-}
-
-.menubar li {;
-    float:left;
-    padding:0.24em 0;
-    margin:0;
-}
-
-.menubar li a {
-    color:black;
-    display:inline-block;
-    padding:0.24em 1em;
-    text-align:center;
-    text-decoration:none;
-}
-
-.menubar li a:hover {
-    color:black;
-    font-weight:bold;
-    padding:0.24em 0.8em;
-    position:relative;
-}
-
-.menubar .selected_type {
-    background-color: #FFFFA0;
-}
-
-.menubar .selected_type a {
-    color:black;
-    padding:0.24em 0.8em;
-    font-weight:bold;
-    position:relative;
-}
-
+/*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      = strategies All Tab
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 .history_panel {
-    display: none;
+    /*display: none;*/
 }
 
 .history_panel.enabled {
@@ -949,6 +946,9 @@ ul.menubar {
 .history_panel table {
   width: 100%;
   margin: 0;
+  border-left: 1px solid black;
+  border-right: 1px solid black;
+  table-layout: fixed;
 }
 
 .history_panel table td {
@@ -965,40 +965,48 @@ ul.menubar {
 }
 
 table.history_controls {
-  display:inline-block;
+   font-size:130%;
+   font-weight:bold;
 }
 #invalid-step-text{
   background-color:#FFFFFF;
   padding:5px;
   position:absolute;
-  right:200px;
-  top:28px;
-  width:200px;
+  right:95px;
+  top:25px;
+  width:260px;
+  border-color:grey;
+  z-index: 85; /* show above step glyphs, yet below model_div */
 }
-#invalid-legend{
-  position:relative;
-  float:right;
-  right:13px;
-  top:4px;
-  display:inline;
+.strat-legend{
+    font-weight:normal;
+    font-size:72%;font-style:italic;color:darkred;
 }
 #strategy_messages {
   min-height:100px;
   display:none;
 }
 
+.diagram-wrapper {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+}
 .diagram .diagramSection.scrollableSteps {
   height: 100%;
   overflow-x: auto;
   overflow-y: hidden;
   margin-right: 12px;
-  max-width: 86%;
+  max-width: 78%;
+  position: relative;
+  top: 0px;
 }
 
 .diagram .diagramSection, .diagram .diagramSection .stepBox {
   border: none;
   float: left;
   position: relative;
+  top: 2em;
 }
 
 .diagram .stepBox {
@@ -1015,6 +1023,12 @@ table.history_controls {
   position: relative;
 }
 
+.diagram .addStepButton {
+  float: left;
+  top: 72px;
+  position: relative;
+}
+
 div#step_type{
 	margin-left:-10px;
 }
@@ -1026,12 +1040,83 @@ div#sections td{
 	vertical-align: top;
 }
 
+.strategy_description div {
+    /*
+    padding: 0em .4em !important;
+    height: 1em;
+    display: inline-block;
+    */
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.strategy_description div.empty, .strategy_description div.unsaved {
+    font-style: italic;
+    color: #AAA;
+}
+
+.strategy_description div.full * {
+    display: inline;
+}
+
+#wdk-dialog-strat-desc .edit {
+  text-align: right;
+  margin-top: 4em;
+}
+
+#wdk-dialog-update-strat dt {
+    margin-top: 1em;
+    font-weight: bold;
+}
+
+#wdk-dialog-update-strat textarea,
+#wdk-dialog-update-strat input[type="text"],
+#wdk-dialog-update-strat div {
+    width: 570px;
+}
+
+#wdk-dialog-update-strat ul, #wdk-dialog-share-strat ul {
+    list-style: disc;
+    padding-left: 1em;
+}
+
+#wdk-dialog-update-strat li, #wdk-dialog-share-strat li {
+    margin: .4em 0;
+}
+
+#wdk-dialog-update-strat .important, #wdk-dialog-share-strat .important {
+    font-weight: bold;
+}
+
+#wdk-dialog-update-strat .count.warn {
+    color: red;
+}
+
+#wdk-dialog-share-strat .share_url {
+    margin: 40px auto;
+    text-align: center;
+}
+
+#wdk-dialog-share-strat input {
+  width: 570px;
+}
+
+.strategy-description.ui-tooltip {
+    max-width: 35em;
+}
+
 /**************************************************
  ******* CSS for AddStep PopUp ********************
  *************************************************/
 .menu_section {
    text-indent:-5px; 
    margin-left:3px;
+}
+.menu_section li {
+  padding-left: 6px;
+  margin-left: -5px;
 }
 .qf_section{
 	height:190px;
@@ -1052,7 +1137,7 @@ div#sections td{
 }
 
 .qf_section ul li.category{
-	background:url("/assets/images/menu_arrow.png") no-repeat scroll 100% 0 transparent;
+	background:url("../images/menu_arrow.png") no-repeat scroll 100% 0 transparent;
 }
 
 #process-crumbs{
@@ -1142,3 +1227,27 @@ img#step_5{
   top: 35px;
 }
 
+.edit-step {
+  padding-left: 0px;
+  padding-bottom: 0px;
+  text-align:center;
+  color:black;
+  border:1px solid black;
+  border-radius:4px;
+  display:none;
+  position:relative;
+  width:24px;
+  line-height:10px;
+  background-color:white;
+  font-size: 10px;
+}
+.operation .edit-step {
+  top: 3px;
+}
+.edit-step:hover {
+  background: #ffffa0;
+}
+
+.edit-step-pane:hover .edit-step {
+  display: inline-block;
+}

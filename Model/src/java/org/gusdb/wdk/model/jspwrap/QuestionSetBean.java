@@ -1,12 +1,11 @@
 package org.gusdb.wdk.model.jspwrap;
 
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.Map;
-import java.util.Set;
 
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.QuestionSet;
+import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.question.QuestionSet;
 
 /**
  * A wrapper on a {@link QuestionSet} that provides simplified access for
@@ -20,7 +19,7 @@ public class QuestionSetBean {
         this.questionSet = questionSet;
     }
 
-    public QuestionBean[] getQuestions() {
+    public QuestionBean[] getQuestions() throws WdkModelException {
         Question[] questions = questionSet.getQuestions();
         QuestionBean[] questionBeans = new QuestionBean[questions.length];
         for (int i = 0; i < questions.length; i++) {
@@ -29,7 +28,7 @@ public class QuestionSetBean {
         return questionBeans;
     }
 
-    public Map<String, QuestionBean> getQuestionsMap() {
+    public Map<String, QuestionBean> getQuestionsMap() throws WdkModelException {
         LinkedHashMap<String, QuestionBean> map = new LinkedHashMap<String, QuestionBean>();
         QuestionBean[] questions = getQuestions();
         for (int i = 0; i < questions.length; i++) {
@@ -52,22 +51,5 @@ public class QuestionSetBean {
 
     public String getDescription() {
         return questionSet.getDescription();
-    }
-
-    @Deprecated
-    public Map<String, Set<QuestionBean>> getQuestionsByCategory() {
-        Map<String, Set<QuestionBean>> questions = new LinkedHashMap<String, Set<QuestionBean>>();
-        Question[] qs = questionSet.getQuestions();
-        for (Question q : qs) {
-            String category = q.getCategory();
-            if (category == null || category.length() == 0) category = " ";
-            Set<QuestionBean> subqs = questions.get(category);
-            if (subqs == null) {
-                subqs = new LinkedHashSet<QuestionBean>();
-                questions.put(category, subqs);
-            }
-            subqs.add(new QuestionBean(q));
-        }
-        return questions;
     }
 }

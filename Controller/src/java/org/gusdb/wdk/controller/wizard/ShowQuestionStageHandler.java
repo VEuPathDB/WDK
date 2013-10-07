@@ -8,10 +8,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionServlet;
-import org.gusdb.wdk.controller.action.ActionUtility;
-import org.gusdb.wdk.controller.action.QuestionForm;
 import org.gusdb.wdk.controller.action.ShowQuestionAction;
-import org.gusdb.wdk.controller.action.WizardForm;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.form.QuestionForm;
+import org.gusdb.wdk.controller.form.WizardForm;
 import org.gusdb.wdk.model.jspwrap.AnswerParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
@@ -29,6 +29,7 @@ public class ShowQuestionStageHandler implements StageHandler {
     private static final Logger logger = Logger
             .getLogger(ShowQuestionStageHandler.class);
 
+    @Override
     public Map<String, Object> execute(ActionServlet servlet,
             HttpServletRequest request, HttpServletResponse response,
             WizardForm wizardForm) throws Exception {
@@ -63,7 +64,7 @@ public class ShowQuestionStageHandler implements StageHandler {
 
         // set the previous step value
         String paramName = null;
-        for (ParamBean param : question.getParams()) {
+        for (ParamBean<?> param : question.getParams()) {
             // the previous step should be stored in the value of first
             // answer param.
             if (param instanceof AnswerParamBean) {
@@ -86,6 +87,7 @@ public class ShowQuestionStageHandler implements StageHandler {
         // prepare question form
         logger.debug("Preparing form for question: " + questionName);
         QuestionForm questionForm = new QuestionForm();
+        questionForm.copyFrom(wizardForm);
         ShowQuestionAction.prepareQuestionForm(question, servlet, request,
                 questionForm);
         wizardForm.copyFrom(questionForm);
@@ -95,7 +97,7 @@ public class ShowQuestionStageHandler implements StageHandler {
         String importType = question.getRecordClass().getFullName();
         boolean allowBoolean = true;
         if (previousStep != null)
-            allowBoolean = importType.equals(previousStep.getType());
+            allowBoolean = importType.equals(previousStep.getRecordClass().getFullName());
         logger.debug("allow boolean: " + allowBoolean);
         attributes.put(ATTR_ALLOW_BOOLEAN, allowBoolean);
 

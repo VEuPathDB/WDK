@@ -14,6 +14,7 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
@@ -28,6 +29,7 @@ public class ProcessRenameStrategyAction extends Action {
 
     private static Logger logger = Logger.getLogger(ProcessRenameStrategyAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -41,6 +43,7 @@ public class ProcessRenameStrategyAction extends Action {
 
             String strStratId = request.getParameter(CConstants.WDK_STRATEGY_ID_KEY);
             String customName = request.getParameter("name");
+            String description = request.getParameter("description");
             boolean save = Boolean.valueOf(request.getParameter("save")).booleanValue();
             boolean checkName = Boolean.valueOf(
                     request.getParameter("checkName")).booleanValue();
@@ -96,7 +99,8 @@ public class ProcessRenameStrategyAction extends Action {
 
                 // whether its a save or rename, set new name specified by user.
                 strategy.setName(customName);
-		strategy.setSavedName(customName);
+                strategy.setSavedName(customName);
+                strategy.setDescription(description);
                 strategy.update(save || strategy.getIsSaved());
 
                 try {
@@ -150,6 +154,8 @@ public class ProcessRenameStrategyAction extends Action {
             url.append("?state=" + URLEncoder.encode(state, "UTF-8"));
             if (!opened)
                 url.append("&").append(CConstants.WDK_OPEN_KEY).append("=false");
+            url.append("&").append(CConstants.WDK_STRATEGY_ID_KEY).append("=")
+                .append(strategy.getStrategyId());
 
             ActionForward forward = new ActionForward(url.toString(), true);
             return forward;

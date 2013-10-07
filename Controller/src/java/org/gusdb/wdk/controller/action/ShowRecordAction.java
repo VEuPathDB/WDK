@@ -18,6 +18,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.AttributeFieldBean;
 import org.gusdb.wdk.model.jspwrap.RecordBean;
@@ -34,9 +35,10 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 public class ShowRecordAction extends Action {
 
     private static final String ATTR_PAGE_ID = "wdkPageId";
-    
+
     private static Logger logger = Logger.getLogger(ShowRecordAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -92,23 +94,16 @@ public class ShowRecordAction extends Action {
             Iterator<String> names = attributes.keySet().iterator();
             names.next();
             String fieldName = names.next();
-            try {
-                wdkRecord.getAttributes().get(fieldName);
-            } catch (WdkModelException ex) {
-                // most likely user provided an invalid record id, the record
-                // has been marked as invalid, and ex can be ignored.
-                logger.info(ex);
-                ex.printStackTrace();
-            }
+            wdkRecord.getAttributes().get(fieldName);
         }
 
         request.setAttribute(CConstants.WDK_RECORD_KEY, wdkRecord);
 
-	String frontAction = user.getFrontAction();
-	if (frontAction != null) {
-	    request.setAttribute("action", frontAction);
-	}
-	user.resetFrontAction();
+        String frontAction = user.getFrontAction();
+        if (frontAction != null) {
+            request.setAttribute("action", frontAction);
+        }
+        user.resetFrontAction();
 
         String defaultViewFile = customViewDir + File.separator
                 + CConstants.WDK_RECORD_PAGE;
@@ -125,7 +120,7 @@ public class ShowRecordAction extends Action {
         }
 
         long end = System.currentTimeMillis();
-        logger.info("showRecord took total: " + ((end - start) / 1000F)
+        logger.info("showRecord took total: " + ((end - start) / 1000D)
                 + " seconds.");
 
         // generate a page id
@@ -133,7 +128,7 @@ public class ShowRecordAction extends Action {
         int pageId = random.nextInt(Integer.MAX_VALUE);
         request.setAttribute(ATTR_PAGE_ID, pageId);
         logger.info("wdk-record-page-id=" + pageId + " --- start page loading.");
-                
+
         return forward;
     }
 }

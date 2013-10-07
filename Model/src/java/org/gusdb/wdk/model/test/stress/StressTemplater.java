@@ -6,16 +6,10 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -25,20 +19,17 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordClassSet;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.param.AnswerParam;
 import org.gusdb.wdk.model.query.param.DatasetParam;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
-import org.json.JSONException;
-import org.xml.sax.SAXException;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.question.QuestionSet;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordClassSet;
 
 public class StressTemplater {
 
@@ -110,9 +101,7 @@ public class StressTemplater {
         recordItems = new LinkedHashMap<String, RecordItem>();
     }
 
-    public void makeTemplate(File file) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void makeTemplate(File file) throws WdkModelException {
         // load the info from the model
         logger.info("Loading info from the model...");
         loadFromModel();
@@ -132,9 +121,7 @@ public class StressTemplater {
         generateTemplate(file);
     }
 
-    private void loadFromModel() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    private void loadFromModel() throws WdkModelException {
         // get questions
         QuestionSet[] qsets = wdkModel.getAllQuestionSets();
         for (QuestionSet qset : qsets) {
@@ -323,12 +310,7 @@ public class StressTemplater {
     // /////////// static methods /////////////////////////////////////
     // ////////////////////////////////////////////////////////////////////
 
-    public static void main(String[] args) throws IOException,
-            WdkModelException, NoSuchAlgorithmException,
-            ParserConfigurationException, TransformerFactoryConfigurationError,
-            TransformerException, SAXException, SQLException, JSONException,
-            WdkUserException, InstantiationException, IllegalAccessException,
-            ClassNotFoundException {
+    public static void main(String[] args) throws WdkModelException {
 
         String cmdName = System.getProperty("cmdName");
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);

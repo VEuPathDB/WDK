@@ -3,20 +3,20 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
 
 /**
  * @author xingao
  * 
  */
 class ActiveStrategyFactory {
+
+    private static final Logger logger = Logger.getLogger(ActiveStrategyFactory.class);
 
     /**
      * newly opened strategies is always at the end, which means it has the
@@ -42,10 +42,6 @@ class ActiveStrategyFactory {
      * computed later.
      * 
      * @return
-     * @throws SQLException
-     * @throws JSONException
-     * @throws WdkModelException
-     * @throws WdkUserException
      */
     int[] getRootStrategies() {
         int[] ids = new int[root.children.size()];
@@ -56,9 +52,8 @@ class ActiveStrategyFactory {
         return ids;
     }
 
-    synchronized void openActiveStrategy(String strategyKey)
-            throws NumberFormatException, WdkUserException, WdkModelException,
-            JSONException, SQLException, NoSuchAlgorithmException {
+    void openActiveStrategy(String strategyKey) throws WdkModelException, WdkUserException {
+        logger.debug("Opening strategy: " + strategyKey);
         if (getStrategy(strategyKey) != null) return;
 
         String parentKey = getParentKey(strategyKey);
@@ -70,19 +65,20 @@ class ActiveStrategyFactory {
         }
     }
 
-    synchronized void closeActiveStrategy(String strategyKey) {
+    void closeActiveStrategy(String strategyKey) {
+        logger.debug("Closing strategy: " + strategyKey);
         ActiveStrategy strategy = getStrategy(strategyKey);
         if (strategy == null) return;
-        strategy.parent.children.remove(strategyKey);
+        strategy = strategy.parent.children.remove(strategyKey);
+        logger.debug("strategy " + strategy.strategyKey + " closed.");
     }
 
     /**
      * @param strategyKeys
      *            the strategies in the array should all share the same parents;
      *            that is, they should siblings.
-     * @throws WdkUserException
      */
-    synchronized void orderActiveStrategies(String[] strategyKeys)
+    void orderActiveStrategies(String[] strategyKeys)
             throws WdkUserException {
         if (strategyKeys.length == 0) return;
         ActiveStrategy strategy = getStrategy(strategyKeys[0]);
@@ -106,10 +102,8 @@ class ActiveStrategyFactory {
         strategy.parent.children.putAll(map);
     }
 
-    synchronized void replaceStrategy(User user, int oldId, int newId,
-            Map<Integer, Integer> stepMap) throws WdkUserException,
-            WdkModelException, JSONException, SQLException,
-            NoSuchAlgorithmException {
+    void replaceStrategy(User user, int oldId, int newId,
+            Map<Integer, Integer> stepMap) throws WdkModelException, WdkUserException {
         ActiveStrategy oldStrategy = root.children.get(Integer.toString(oldId));
         // if the old strategy is not opened, do nothing.
         if (oldStrategy == null) return;
@@ -136,7 +130,7 @@ class ActiveStrategyFactory {
         ActiveStrategy strategy = getStrategy(strategyKey);
         if (strategy == null || strategy.strategyKey == null) return 0;
         int order = 1;
-        System.out.println("current: " + strategyKey + ", parent: "
+        logger.debug("current: " + strategyKey + ", parent: "
                 + strategy.parent.strategyKey + ", children: "
                 + strategy.parent.children.size());
         for (ActiveStrategy sibling : strategy.parent.children.values()) {
@@ -146,13 +140,11 @@ class ActiveStrategyFactory {
         return 0;
     }
 
-    synchronized void clear() {
+    void clear() {
         root.children.clear();
     }
 
-    private String getParentKey(String strategyKey) throws WdkUserException,
-            WdkModelException, JSONException, SQLException,
-            NoSuchAlgorithmException {
+    private String getParentKey(String strategyKey) throws WdkModelException, WdkUserException {
         int pos = strategyKey.indexOf('_');
         if (pos < 0) return null;
         int strategyId = Integer.parseInt(strategyKey.substring(0, pos));
@@ -164,7 +156,7 @@ class ActiveStrategyFactory {
         }
         // check if the parent is top level
         if (parent.getParentStep() == null) return Integer.toString(strategyId);
-        else return strategyId + "_" + parent.getDisplayId();
+        else return strategyId + "_" + parent.getStepId();
     }
 
     private ActiveStrategy getStrategy(String strategyKey) {
@@ -174,18 +166,18 @@ class ActiveStrategyFactory {
 
     private void replaceStrategy(Strategy strategy, ActiveStrategy oldStrategy,
             ActiveStrategy newStrategy, Map<Integer, Integer> stepMap) {
-        System.out.println("current view: " + viewStrategyKey + ", "
+        logger.debug("current view: " + viewStrategyKey + ", "
                 + viewStepId);
-        System.out.println("replace old: " + oldStrategy.strategyKey
+        logger.debug("replace old: " + oldStrategy.strategyKey
                 + ", new: " + newStrategy.strategyKey);
         for (int old : stepMap.keySet()) {
-            System.out.println("step " + old + "->" + stepMap.get(old));
+            logger.debug("step " + old + "->" + stepMap.get(old));
         }
         for (ActiveStrategy oldChild : oldStrategy.children.values()) {
             String oldKey = oldChild.strategyKey;
             int oldId = Integer.parseInt(oldKey.substring(oldKey.indexOf('_') + 1));
             Integer newId = stepMap.get(oldId);
-            System.out.println("convert step " + oldId + "->" + newId);
+            logger.debug("convert step " + oldId + "->" + newId);
             if (newId == null) {
                 Step step;
                 try {
@@ -193,7 +185,7 @@ class ActiveStrategyFactory {
                     if (step == null) throw new WdkModelException();
                     newId = oldId;
                 } catch (Exception ex) { // step no longer exist
-                    System.out.println("step #" + oldId + " has been deleted");
+                    logger.debug("step #" + oldId + " has been deleted");
                     continue; // skip this branch
                 }
             }
@@ -234,6 +226,17 @@ class ActiveStrategyFactory {
      */
     public int getViewStepId() {
         if (getViewStrategyKey() == null) return 0;
+
+        // check if the viewStepId belongs to the current strategy
+        try {
+            ActiveStrategy activeStrategy = getStrategy(viewStrategyKey);
+            Strategy strategy = user.getStrategy(activeStrategy.strategyId);
+            Step step = strategy.getStepById(viewStepId);
+        if (step == null) viewStepId = strategy.getLatestStepId();
+        } catch (Exception ex) {
+            return 0;
+        }
+
         return viewStepId;
     }
 

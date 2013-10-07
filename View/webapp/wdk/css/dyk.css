@@ -5,7 +5,7 @@
 	height:87px;
 	top:200px;
 	left:313px;
-	z-index:182;
+	z-index:98;
 	border:1px solid #888888;
 	-webkit-border-bottom-left-radius:10px;
 	-webkit-border-bottom-right-radius:10px;
@@ -22,7 +22,7 @@ div#dyk-shadow{
 	left:319px;
 	opacity:0.2;
 	top:206px;
-	z-index:180;
+	z-index:97;
 }
 
 
@@ -37,7 +37,7 @@ div#dyk-box div#dyk-text{
 div#dyk-box div#closing-items{
 	bottom:1px;
 	position:absolute;
-	right:8px;
+	right:16px;
 }
 
 div#dyk-box ul.tip-box{

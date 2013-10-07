@@ -3,15 +3,16 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.gusdb.wdk.model.AnswerFilterInstance;
-import org.gusdb.wdk.model.AnswerFilterLayout;
-import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.ReporterRef;
-import org.gusdb.wdk.model.TableField;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.answer.AnswerFilterInstance;
+import org.gusdb.wdk.model.answer.AnswerFilterLayout;
+import org.gusdb.wdk.model.answer.ReporterRef;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordView;
+import org.gusdb.wdk.model.record.TableField;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
 
 /**
  * A wrapper on a {@link RecordClass} that provides simplified access for
@@ -30,8 +31,8 @@ public class RecordClassBean {
         return recordClass.getFullName();
     }
 
-    public String getType() {
-        return recordClass.getType();
+    public String getName() {
+        return recordClass.getName();
     }
 
     /**
@@ -60,7 +61,7 @@ public class RecordClassBean {
         return fieldBeans;
     }
 
-    public QuestionBean[] getQuestions() {
+    public QuestionBean[] getQuestions() throws WdkModelException {
         WdkModel wdkModel = recordClass.getWdkModel();
         Question questions[] = wdkModel.getQuestions(recordClass);
         QuestionBean[] questionBeans = new QuestionBean[questions.length];
@@ -81,6 +82,10 @@ public class RecordClassBean {
         return reporters;
     }
 
+    public PrimaryKeyAttributeFieldBean getPrimaryKeyAttribute() {
+    	return new PrimaryKeyAttributeFieldBean(recordClass.getPrimaryKeyAttributeField());
+    }
+    
     public String[] getPrimaryKeyColumns() {
         return recordClass.getPrimaryKeyAttributeField().getColumnRefs();
     }
@@ -139,8 +144,7 @@ public class RecordClassBean {
         return beans;
     }
 
-    public AnswerFilterInstanceBean getFilter(String filterName)
-            throws WdkModelException {
+    public AnswerFilterInstanceBean getFilter(String filterName) {
         AnswerFilterInstance instance = recordClass.getFilter(filterName);
         return new AnswerFilterInstanceBean(instance);
     }
@@ -153,11 +157,11 @@ public class RecordClassBean {
         return new QuestionBean(recordClass.getSnapshotBasketQuestion());
     }
 
-    public boolean getHasBasket() {
-        return recordClass.hasBasket();
+    public boolean isUseBasket() {
+        return recordClass.isUseBasket();
     }
 
-    public QuestionBean[] getTransformQuestions() {
+    public QuestionBean[] getTransformQuestions() throws WdkModelException {
         Question[] questions = recordClass.getTransformQuestions(changeType);
         QuestionBean[] beans = new QuestionBean[questions.length];
         for (int i = 0; i < questions.length; i++) {
@@ -185,5 +189,40 @@ public class RecordClassBean {
     public String getShortDisplayName() {
         return recordClass.getShortDisplayName();
     }
+    
+    
+    
+
+    public String getDisplayNamePlural() {
+      return recordClass.getDisplayNamePlural();
+    }
+
+    public String getShortDisplayNamePlural() {
+      return recordClass.getShortDisplayNamePlural();
+    }
+
+    public RecordView getDefaultRecordView() {
+        return recordClass.getDefaultRecordView();
+    }   
+
+    public Map<String, RecordView> getRecordViews() {
+        return recordClass.getRecordViews();
+    } 
+
+    public AttributeFieldBean getFavoriteNoteField() {
+        return new AttributeFieldBean(recordClass.getFavoriteNoteField());
+    }
+
+    /**
+     * @param user
+     * @param pkValues
+     * @return
+     * @see org.gusdb.wdk.model.RecordClass#hasMultipleRecords(org.gusdb.wdk.model.user.User, java.util.Map)
+     */
+    public boolean hasMultipleRecords(UserBean user, Map<String, Object> pkValues)
+            throws WdkModelException {
+        return recordClass.hasMultipleRecords(user.getUser(), pkValues);
+    }
+    
     
 }

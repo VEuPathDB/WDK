@@ -14,10 +14,12 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 
 /**
  * This Action is process the download of AnswerValues on queryStep.jsp page.
@@ -26,8 +28,9 @@ import org.gusdb.wdk.model.jspwrap.UserBean;
 
 public class DownloadStepAnswerValueAction extends Action {
     
-    private static Logger logger = Logger.getLogger( DownloadStepAnswerValueAction.class );
-    
+    private static final Logger logger = Logger.getLogger( DownloadStepAnswerValueAction.class );
+
+    @Override
     public ActionForward execute( ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response )
             throws Exception {
@@ -96,9 +99,16 @@ public class DownloadStepAnswerValueAction extends Action {
             int stepId = Integer.parseInt( stepIdstr );
             request.setAttribute( "step_id", stepId );
             request.setAttribute( "history_id", stepId );
-            
-            UserBean wdkUser = ( UserBean ) request.getSession().getAttribute(
-                    CConstants.WDK_USER_KEY );
+
+            // check if we need to get user by signature
+            String signature = request.getParameter("signature");
+            UserBean wdkUser;
+            if (signature != null && signature.length() > 0) {
+                WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
+                wdkUser = wdkModel.getUserFactory().getUser(signature);
+            } else {
+                wdkUser = ActionUtility.getUser(servlet, request);
+            }
             
             StepBean step = wdkUser.getStep( stepId );
             

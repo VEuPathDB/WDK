@@ -3,70 +3,66 @@
  */
 package org.gusdb.wdk.model;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-
-import org.json.JSONException;
-
 /**
+ * This class is a super class for any classes that represents a tag in the WDK
+ * model file, and that tag can have CDATA text in it.
+ * 
  * @author Jerric
  * 
  */
 public class WdkModelText extends WdkModelBase {
 
-    protected String name;
-    private String text;
+  protected String name;
+  private String text;
 
-    /**
-     * @return the name
-     */
-    public String getName() {
-        return name;
-    }
+  /**
+   * @return the name
+   */
+  public String getName() {
+    return name;
+  }
 
-    /**
-     * @param name
-     *            the name to set
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
+  /**
+   * @param name
+   *          the name to set
+   */
+  public void setName(String name) {
+    this.name = name;
+  }
 
-    /**
-     * @return the text
-     */
-    public String getText() {
-        return this.text;
-    }
+  /**
+   * @return the text
+   */
+  public String getText() {
+    return this.text;
+  }
 
-    /**
-     * @param text
-     *            the text to set
-     */
-    public void setText(String text) {
-        this.text = text;
-    }
+  /**
+   * @param text
+   *          the text to set
+   */
+  public void setText(String text) {
+    this.text = text;
+  }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
-     */
-    @Override
-    public void excludeResources(String projectId) {
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
+   */
+  @Override
+  public void excludeResources(String projectId) {
     // no resource held by it, do nothing
-    }
+  }
 
-    /*
-     * (non-Javadoc)
-     * 
-     * @see
-     * org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
-     * .WdkModel)
-     */
-    @Override
-    public void resolveReferences(WdkModel wodkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException {
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.gusdb.wdk.model.WdkModelBase#resolveReferences(org.gusdb.wdk.model
+   * .WdkModel)
+   */
+  @Override
+  public void resolveReferences(WdkModel wodkModel) {
     // have nothing to do
-    }
+  }
 }

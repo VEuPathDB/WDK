@@ -1,15 +1,12 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 <%@ taglib prefix="nested" uri="http://jakarta.apache.org/struts/tags-nested" %>
-
 
 <c:set value="${requestScope.wdkStep}" var="step"/>
 <c:set var="step_id" value="${requestScope.step_id}"/>
-
 <c:set var="formats" value="${requestScope.wdkReportFormats}"/>
 <c:set var="format" value="${requestScope.wdkReportFormat}"/>
-
 
 <script language="JavaScript" type="text/javascript">
 <!-- //
@@ -18,52 +15,50 @@ function changeFormat(e)
     document.formatForm.submit();
     return true;
 }
+
+$(function() {
+  "use strict";
+  $(document.forms.downloadConfigForm).submit(function(e) {
+    e.preventDefault();
+    this.target = $("input[name='downloadType'][value='plain']", this)
+        .is(":checked") ? "_blank" : "_self";
+    this.submit();
+  });
+});
 //-->
 </script>
 
-<c:set var="type" value="${step.question.recordClass.type}" />
+<c:set var="recordName" value="${step.question.recordClass.displayName}" />
 
-<!-- display question and param values and result size for step -->
-<%-- wdk:showParams step="${step}" / --%>
+<div class="h2center">Download ${step.estimateSize} ${recordName}s from the search:</div>
 
-<c:if test="${fn:contains(type, 'Assem') && (step.estimateSize > 1)  }">
-        <c:set var="type" value="Assemblie" />
-</c:if>
+<i><div class="h3center">${step.displayName}</div></i>
 
-<hr>
-
-<h2><center>Download ${type}s from the ${step.displayName} search:</center></h2> 
-<p><center>${step.question.displayName}, ${step.estimateSize} ${type}(s)</center></p>
-
+<br><br>
+<b>Please select a format from the dropdown list to create the download report. </b>
+<br><i>**Note:  ${type} IDs will automatically be included in the report.</i>
 <!-- handle empty result set situation -->
 <c:choose>
 <c:when test='${step.estimateSize != 0}'>
 
-<br />
+<br /><br />
 <!-- the supported format -->
 <form name="formatForm" method="get" action="<c:url value='/downloadStep.do' />">
-  <table>
-    <tr>
-      <td>
-        <b>Format:</b>
-        <input type="hidden" name="step_id" value="${step_id}"/>
-      </td>
-      <td>
-        <select name="wdkReportFormat" onChange="return changeFormat();">
-          <option value="">--- select a format ---</option>
-          <c:forEach items="${formats}" var="fmt">
-             <option value="${fmt.key}" ${(fmt.key == format) ? "selected" : ""}>${fmt.value}</option>
-          </c:forEach>
+	<input type="hidden" name="step_id" value="${step_id}"/>
+	<select name="wdkReportFormat" onChange="return changeFormat();">
+          	<option value="">--- Select a format ---</option>
+          	<c:forEach items="${formats}" var="fmt">
+             		<option value="${fmt.key}" ${(fmt.key == format) ? "selected" : ""}>${fmt.value}</option>
+          	</c:forEach>
         </select>
-      </td>
-    </tr>
-  </table>
+        <c:if test="${param.signature != null}">
+           <input type="hidden" name="signature" value="${param.signature}" />
+        </c:if>
 </form>
-
 <hr>
-
 </c:when> <%-- end of ${step.estimateSize != 0} --%>
+
 <c:otherwise>
-  The step doesn't contain any result.
+  	This search doesn't contain any result.
 </c:otherwise>
 </c:choose>

@@ -12,6 +12,9 @@
             <optional>
                 <attribute name="releaseDate"/>
             </optional>
+            <optional>
+                <attribute name="buildNumber" />
+            </optional>
             <ref name="IncludeExclude"/>
           </element>
 
@@ -42,9 +45,13 @@
 
           <ref name="xmlRecordClassSet" />
 
-          <ref name="category" />
+          <ref name="searchCategory" />
 
           <ref name="declaredMacro" />
+
+          <ref name="constant" />
+          
+          <ref name="uiConfig" />
           
         </choice>
       </oneOrMore>
@@ -59,6 +66,15 @@
     <optional>
       <attribute name="excludeProjects" />
     </optional>
+  </define>
+
+  <!-- define constants -->
+  <define name="constant">
+    <element name="constant">
+      <attribute name="name" />
+      <ref name="IncludeExclude"/>
+      <text />
+    </element>
   </define>
 
   <!-- define base property list content -->
@@ -92,11 +108,14 @@
     </element>
   </define>
 
-  <!-- define category list -->
-  <define name="category">
-    <element name="category">
+  <!-- define search category list -->
+  <define name="searchCategory">
+    <element name="searchCategory">
       <attribute name="name"/>
       <attribute name="displayName"/>
+      <optional>
+        <attribute name="shortDisplayName" />
+      </optional>
       <optional>
         <attribute name="parentRef" />
       </optional>
@@ -104,28 +123,51 @@
         <attribute name="usedBy">
           <choice>
             <value>website</value>
-			<value>webservice</value>
-		  </choice>
-	    </attribute>
+            <value>webservice</value>
+            <value>dataset</value>
+          </choice>
+        </attribute>
+	  </optional>
+      <optional>
+        <attribute name="flattenInMenu">
+          <data type="boolean" />
+        </attribute>
       </optional>
-      <ref name="IncludeExclude"/>
-      <zeroOrMore>
-        <element name="questionRef">
-          <ref name="IncludeExclude"/>
-		  <optional>
-			<attribute name="usedBy">
-			  <choice>
-				<value>website</value>
-				<value>webservice</value>
-			  </choice>
-			</attribute>
-		  </optional>
-		  <text />
+	    <ref name="IncludeExclude"/>
+	    <zeroOrMore>
+	      <choice>
+	      <element name="description">
+	        <ref name="IncludeExclude"/>
+	        <text/>
+	      </element>
+	      <element name="questionRef">
+	        <ref name="IncludeExclude"/>
+			    <optional>
+				    <attribute name="usedBy">
+				      <choice>
+					      <value>website</value>
+					      <value>webservice</value>
+				      </choice>
+				    </attribute>
+			    </optional>
+			    <text/>
         </element>
+         </choice>
       </zeroOrMore>
     </element>
   </define>
-
+  
+  <!-- define attribute category list -->
+  <define name="attributeCategory">
+    <element name="attributeCategory">
+      <attribute name="name"/>
+      <attribute name="displayName"/>
+      <zeroOrMore>
+        <ref name="attributeCategory"/>
+      </zeroOrMore>
+    </element>
+  </define>
+  
   <!-- Attribute List -->
   <define name="attributesList">
     <element name="attributesList">
@@ -181,6 +223,9 @@
     <optional>
       <attribute name="default" />
     </optional>
+    <optional>
+      <attribute name="handlerClass" />
+    </optional>
   </define>
 
   <define name="ParamBaseTags">
@@ -221,6 +266,11 @@
             <data type="positiveInteger" />
           </attribute>
         </optional>
+        <optional>
+          <attribute name="multiLine">
+            <data type="boolean"/>
+          </attribute>
+        </optional>
         <zeroOrMore>
             <choice>
                 <ref name="ParamBaseTags" />
@@ -230,9 +280,6 @@
                 </element>
                 <element name="suggest">
                     <ref name="SuggestContent" />
-                    <optional>
-                      <attribute name="sample" />
-                    </optional>
                     <optional>
                       <attribute name="default" />
                     </optional>
@@ -285,9 +332,6 @@
             <ref name="ParamBaseTags" />
             <element name="suggest">
               <ref name="SuggestContent" />
-              <optional>
-                <attribute name="sample" />
-              </optional>
               <optional>
                 <attribute name="default" />
               </optional>
@@ -412,6 +456,27 @@
         </choice>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="minSelectedCount">
+        <data type="unsignedShort"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="maxSelectedCount">
+        <data type="unsignedShort"/>
+      </attribute>
+    </optional>
+    <optional>
+      <!-- only used if maxSelectedCount is > 0 and displayType = 'treeBox' -->
+      <attribute name="countOnlyLeaves">
+        <data type="boolean"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="suppressNode">
+        <data type="boolean" />
+      </attribute>
+    </optional>
   </define>
 
   <define name="SelectModeContents">
@@ -493,11 +558,6 @@
     <attribute name="name" />
     <optional>
       <attribute name="displayName" />
-    </optional>
-    <optional>
-      <attribute name="isCacheable">
-        <data type="boolean" />
-      </attribute>
     </optional>
     <optional>
       <attribute name="doNotTest">
@@ -582,6 +642,12 @@
             </choice>
           </attribute>
         </optional>
+        <zeroOrMore>
+          <element name="help">
+            <ref name="IncludeExclude" />
+            <text />
+          </element>
+        </zeroOrMore>
       </element>
   </define>
 
@@ -599,6 +665,9 @@
           <value>summary</value>
           <value>vocab</value>
         </choice>
+      </attribute>
+      <attribute name="isCacheable">
+        <data type="boolean" />
       </attribute>
       <optional>
         <attribute name="doNotTest">
@@ -681,6 +750,11 @@
   <define name="sqlQuery">
     <element name="sqlQuery">
       <ref name="QueryBaseContents" />
+    <optional>
+      <attribute name="isCacheable">
+        <data type="boolean" />
+      </attribute>
+    </optional>
       <optional>
         <attribute name="clobRow">
           <data type="boolean" />
@@ -743,12 +817,17 @@
   <define name="recordClass">
     <element name="recordClass">
       <attribute name="name" />
-      <attribute name="type" />
       <optional>
         <attribute name="displayName" />
       </optional>
       <optional>
+        <attribute name="displayNamePlural" />
+      </optional>
+      <optional>
         <attribute name="shortDisplayName" />
+      </optional>
+      <optional>
+        <attribute name="shortDisplayNamePlural" />
       </optional>
       <optional>
         <attribute name="doNotTest">
@@ -756,7 +835,9 @@
         </attribute>
       </optional>
       <optional>
-        <attribute name="allRecordsQueryRef" />
+        <attribute name="useBasket">
+          <data type="boolean" />
+        </attribute>
       </optional>
       <ref name="IncludeExclude" />
       <optional>
@@ -765,7 +846,13 @@
       <optional>
         <attribute name="summaryAttributesList" />
       </optional>
-
+      <optional>
+        <element name="attributeCategories">
+          <zeroOrMore>
+            <ref name="attributeCategory"/>
+          </zeroOrMore>
+        </element>
+      </optional>
       <zeroOrMore>
         <choice>
 
@@ -774,6 +861,9 @@
           <ref name="linkAttribute" />
           <ref name="table" />
           <ref name="attributesList" />
+          <ref name="summaryView" />
+          <ref name="recordView" />
+
 
           <!-- define the default note field for the recordClass -->
           <element name="favorite">
@@ -930,11 +1020,14 @@
       <attribute name="queryRef" />
       <ref name="IncludeExclude" />
       <optional>
-        <attribute name="category" />
-      </optional>
-      <optional>
         <attribute name="shortDisplayName" />
       </optional>
+      <optional>
+        <attribute name="customJavascript" />
+      </optional>
+      <optional>
+        <attribute name="searchCategory" />
+      </optional>      
       <optional>
         <attribute name="fullAnswer">
           <data type="boolean" />
@@ -944,6 +1037,12 @@
         <attribute name="noSummaryOnSingleRecord">
           <data type="boolean" />
         </attribute>
+      </optional>
+      <optional>
+        <choice>
+          <attribute name="newBuild" />
+          <attribute name="reviseBuild" />
+        </choice>
       </optional>
 
       <zeroOrMore>
@@ -981,11 +1080,35 @@
           <ref name="paramRef" />
 		  
 		  <ref name="sqlParamValue" />
+          
+          <ref name="summaryView" />
 
         </choice>
       </zeroOrMore>
 
     </element>
+  </define>
+  
+  <define name="plugin">
+	<element name="plugin">
+	  <ref name="IncludeExclude" />
+	  <attribute name="name" />
+	  <attribute name="implementation" />
+	  <attribute name="view" />
+      <optional>
+        <attribute name="display" />
+      </optional>
+      <optional>
+        <attribute name="description" />
+      </optional>
+	  <zeroOrMore>
+		<element name="property">
+		  <ref name="IncludeExclude" />
+		  <attribute name="name" />
+		  <text />
+		</element>
+	  </zeroOrMore>
+	</element>
   </define>
 
   <!-- Schema subtype shared elements -->
@@ -1016,7 +1139,7 @@
     </optional>
   </define>
 
-  <define name="AttributeFieldCotent">
+  <define name="AttributeFieldContent">
     <ref name="FieldBaseContents" />
     <optional>
       <attribute name="align">
@@ -1042,11 +1165,17 @@
         <data type="boolean" />
       </attribute>
     </optional>
+    <optional>
+      <attribute name="attributeCategory"/>
+    </optional>
+    <zeroOrMore>
+      <ref name="plugin" />
+    </zeroOrMore>
   </define>
 
   <define name="primaryKeyAttribute">
     <element name="primaryKeyAttribute">
-      <ref name="AttributeFieldCotent" />
+      <ref name="AttributeFieldContent" />
       <optional>
         <attribute name="aliasQueryRef" />
       </optional>
@@ -1067,20 +1196,20 @@
 
   <define name="columnAttribute">
     <element name="columnAttribute">
-      <ref name="AttributeFieldCotent" />
+      <ref name="AttributeFieldContent" />
     </element>
   </define>
 
   <define name ="textAttribute">
     <element name="textAttribute">
-      <ref name="AttributeFieldCotent" />
+      <ref name="AttributeFieldContent" />
       <zeroOrMore>
 	    <choice>
 			<element name="display">
 			  <ref name="IncludeExclude" />
 			  <text />
 			</element>
-			 <element name="text">
+			<element name="text">
 			  <ref name="IncludeExclude" />
 			  <text />
 			</element>
@@ -1091,7 +1220,12 @@
 
   <define name ="linkAttribute">
     <element name="linkAttribute">
-      <ref name="AttributeFieldCotent" />
+      <ref name="AttributeFieldContent" />
+      <optional>
+        <attribute name="newWindow">
+          <data type="boolean" />
+        </attribute>
+      </optional>
       <oneOrMore>
         <choice>
           <element name="displayText">
@@ -1243,6 +1377,7 @@
         <attribute name="displayType">
             <choice>
               <value>empty</value>
+              <value>dynamic</value>
               <value>ShowHide</value>
             </choice>
         </attribute>
@@ -1251,6 +1386,56 @@
         <element name="description">
           <ref name="IncludeExclude" />
           <text />
+        </element>
+      </zeroOrMore>
+    </element>
+  </define>
+
+
+  <define name="summaryView">
+    <element name="summaryView">
+      <ref name="ViewBaseContent" />
+    </element>
+  </define>
+
+  <define name="recordView">
+    <element name="recordView">
+      <ref name="ViewBaseContent" />
+    </element>
+  </define>
+
+  <define name="ViewBaseContent">
+      <attribute name="name" />
+      <attribute name="display" />
+      <attribute name="jsp" />
+      <ref name="IncludeExclude" />
+      <optional>
+          <attribute name="default">
+            <data type="boolean" />
+          </attribute>
+      </optional>
+      <optional>
+          <attribute name="handlerClass" />
+      </optional>
+      <zeroOrMore>
+        <element name="description">
+          <ref name="IncludeExclude" />
+          <text />
+        </element>
+      </zeroOrMore>
+  </define>
+  
+  <define name="uiConfig">
+    <element name="uiConfig">
+      <ref name="IncludeExclude"/>
+      <zeroOrMore>
+        <element name="extraLogoutCookies">
+          <zeroOrMore>
+            <element name="cookie">
+              <attribute name="name"/>
+              <attribute name="path"/>
+            </element>
+          </zeroOrMore>
         </element>
       </zeroOrMore>
     </element>

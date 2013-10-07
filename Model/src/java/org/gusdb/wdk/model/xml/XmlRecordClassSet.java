@@ -29,6 +29,7 @@ public class XmlRecordClassSet extends WdkModelBase implements ModelSetI {
      * 
      * @see org.gusdb.wdk.model.ModelSetI#getName()
      */
+    @Override
     public String getName() {
         return name;
     }
@@ -60,6 +61,7 @@ public class XmlRecordClassSet extends WdkModelBase implements ModelSetI {
      * 
      * @see org.gusdb.wdk.model.ModelSetI#getElement(java.lang.String)
      */
+    @Override
     public Object getElement(String elementName) {
         return recordClasses.get(elementName);
     }
@@ -69,6 +71,7 @@ public class XmlRecordClassSet extends WdkModelBase implements ModelSetI {
      * 
      * @see org.gusdb.wdk.model.ModelSetI#setResources(org.gusdb.wdk.model.WdkModel)
      */
+    @Override
     public void setResources(WdkModel model) throws WdkModelException {
         for (XmlRecordClass recordClass : recordClasses.values()) {
             recordClass.setRecordClassSet(this);
@@ -80,6 +83,7 @@ public class XmlRecordClassSet extends WdkModelBase implements ModelSetI {
      * 
      * @see org.gusdb.wdk.model.ModelSetI#resolveReferences(org.gusdb.wdk.model.WdkModel)
      */
+    @Override
     public void resolveReferences(WdkModel model) throws WdkModelException {
         for (XmlRecordClass recordClass : recordClasses.values()) {
             recordClass.resolveReferences(model);

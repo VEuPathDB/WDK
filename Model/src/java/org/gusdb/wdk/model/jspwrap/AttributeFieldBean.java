@@ -3,11 +3,14 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.AttributeField;
+import java.util.Map;
+
+import org.gusdb.wdk.model.record.attribute.AttributeField;
+import org.gusdb.wdk.model.record.attribute.plugin.AttributePluginReference;
 
 public class AttributeFieldBean extends FieldBean {
 
-    private AttributeField attributeField;
+    protected AttributeField attributeField;
 
     /**
      * 
@@ -19,7 +22,7 @@ public class AttributeFieldBean extends FieldBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AttributeField#isSortable()
+     * @see org.gusdb.wdk.model.record.attribute.AttributeField#isSortable()
      */
     public boolean isSortable() {
         return attributeField.isSortable();
@@ -27,7 +30,7 @@ public class AttributeFieldBean extends FieldBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AttributeField#getAlign()
+     * @see org.gusdb.wdk.model.record.attribute.AttributeField#getAlign()
      */
     public String getAlign() {
         return attributeField.getAlign();
@@ -35,17 +38,22 @@ public class AttributeFieldBean extends FieldBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.Field#getHelp()
+     * @see org.gusdb.wdk.model.record.Field#getHelp()
      */
+    @Override
     public String getHelp() {
         return attributeField.getHelp();
     }
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.AttributeField#isRemovable()
+     * @see org.gusdb.wdk.model.record.attribute.AttributeField#isRemovable()
      */
     public boolean isRemovable() {
         return attributeField.isRemovable();
+    }
+
+    public Map<String, AttributePluginReference> getAttributePlugins() {
+        return attributeField.getAttributePlugins();
     }
 }

@@ -10,6 +10,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.controller.ApplicationInitListener;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
@@ -25,6 +26,8 @@ import org.gusdb.wdk.model.jspwrap.XmlQuestionSetBean;
  */
 
 public class ShowXmlDataContentAction extends Action {
+
+	@Override
     public ActionForward execute(ActionMapping mapping,
 				 ActionForm form,
 				 HttpServletRequest request,
@@ -41,10 +44,11 @@ public class ShowXmlDataContentAction extends Action {
 	String qSetName = qFullName.substring(0, dotI);
 	String qName = qFullName.substring(dotI+1, qFullName.length());
 
-	WdkModelBean wdkModel = (WdkModelBean)getServlet().getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
+	//WdkModelBean wdkModel = (WdkModelBean)getServlet().getServletContext().getAttribute(CConstants.WDK_MODEL_KEY);
+  WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
 	
-	XmlQuestionSetBean wdkQuestionSet = (XmlQuestionSetBean)wdkModel.getXmlQuestionSetsMap().get(qSetName);
-	XmlQuestionBean wdkQuestion = (XmlQuestionBean)wdkQuestionSet.getQuestionsMap().get(qName);
+	XmlQuestionSetBean wdkQuestionSet = wdkModel.getXmlQuestionSetsMap().get(qSetName);
+	XmlQuestionBean wdkQuestion = wdkQuestionSet.getQuestionsMap().get(qName);
 	return wdkQuestion;
     }
 

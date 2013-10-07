@@ -1,19 +1,30 @@
 package org.gusdb.wdk.model.jspwrap;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.Vector;
 
-import org.gusdb.wdk.model.Category;
-import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordClassSet;
+import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.dbms.ConnectionContainer;
+import org.gusdb.wdk.model.query.param.AbstractEnumParam;
+import org.gusdb.wdk.model.query.param.AnswerParam;
+import org.gusdb.wdk.model.query.param.DatasetParam;
+import org.gusdb.wdk.model.query.param.Param;
+import org.gusdb.wdk.model.query.param.ParamSet;
+import org.gusdb.wdk.model.query.param.StringParam;
+import org.gusdb.wdk.model.query.param.TimestampParam;
+import org.gusdb.wdk.model.question.QuestionSet;
+import org.gusdb.wdk.model.question.SearchCategory;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordClassSet;
 import org.gusdb.wdk.model.xml.XmlQuestionSet;
 import org.gusdb.wdk.model.xml.XmlRecordClassSet;
 
@@ -21,9 +32,13 @@ import org.gusdb.wdk.model.xml.XmlRecordClassSet;
  * A wrapper on a {@link WdkModel} that provides simplified access for
  * consumption by a view
  */
-public class WdkModelBean {
+public class WdkModelBean implements ConnectionContainer {
+
+    private static final Logger logger = Logger.getLogger(WdkModelBean.class.getName());
 
     WdkModel wdkModel;
+
+    private String questionName;
 
     public WdkModelBean(WdkModel wdkModel) {
         this.wdkModel = wdkModel;
@@ -59,14 +74,14 @@ public class WdkModelBean {
      * used by the controller
      */
     public RecordClassBean findRecordClass(String recClassRef)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         return new RecordClassBean(wdkModel.getRecordClass(recClassRef));
     }
 
     public Map<String, CategoryBean> getWebsiteRootCategories() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        Map<String, Category> roots = wdkModel.getRooCategories(Category.USED_BY_WEBSITE);
-        for (Category category : roots.values()) {
+        Map<String, SearchCategory> roots = wdkModel.getRootCategories(SearchCategory.USED_BY_WEBSITE);
+        for (SearchCategory category : roots.values()) {
             CategoryBean bean = new CategoryBean(category);
             beans.put(category.getName(), bean);
         }
@@ -75,12 +90,58 @@ public class WdkModelBean {
 
     public Map<String, CategoryBean> getWebserviceRootCategories() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        Map<String, Category> roots = wdkModel.getRooCategories(Category.USED_BY_WEBSERVICE);
-        for (Category category : roots.values()) {
+        Map<String, SearchCategory> roots = wdkModel.getRootCategories(SearchCategory.USED_BY_WEBSERVICE);
+        for (SearchCategory category : roots.values()) {
             CategoryBean bean = new CategoryBean(category);
             beans.put(category.getName(), bean);
         }
         return beans;
+    }
+
+    public Map<QuestionBean, CategoryBean> getWebsiteQuestions()
+            throws WdkModelException {
+        Map<QuestionBean, CategoryBean> questions = new LinkedHashMap<QuestionBean, CategoryBean>();
+        Map<String, CategoryBean> categories = getWebsiteRootCategories();
+        Stack<CategoryBean> stack = new Stack<CategoryBean>();
+        stack.addAll(categories.values());
+        while (!stack.isEmpty()) {
+            CategoryBean category = stack.pop();
+            for (QuestionBean question : category.getWebsiteQuestions()) {
+                questions.put(question, category);
+            }
+            // add the children in reversed order to make sure they have the
+            // correct order when popping out from stack.
+            List<CategoryBean> children = new ArrayList<CategoryBean>(
+                    category.getWebsiteChildren().values());
+            for (int i = children.size() - 1; i >= 0; i--) {
+                stack.push(children.get(i));
+            }
+        }
+        return questions;
+    }
+
+    // getWebsiteQuestions does not include all expression questions included in an internal page
+    // we need this for the searchesLookup table
+ public Map<QuestionBean, CategoryBean> getAllQuestions()
+            throws WdkModelException {
+        Map<QuestionBean, CategoryBean> questions = new LinkedHashMap<QuestionBean, CategoryBean>();
+        Map<String, CategoryBean> categories = getWebserviceRootCategories();
+        Stack<CategoryBean> stack = new Stack<CategoryBean>();
+        stack.addAll(categories.values());
+        while (!stack.isEmpty()) {
+            CategoryBean category = stack.pop();
+            for (QuestionBean question : category.getWebserviceQuestions()) {
+                questions.put(question, category);
+            }
+            // add the children in reversed order to make sure they have the
+            // correct order when popping out from stack.
+            List<CategoryBean> children = new ArrayList<CategoryBean>(
+                    category.getWebserviceChildren().values());
+            for (int i = children.size() - 1; i >= 0; i--) {
+                stack.push(children.get(i));
+            }
+        }
+        return questions;
     }
 
     /**
@@ -137,11 +198,11 @@ public class WdkModelBean {
         return recordClassMap;
     }
 
-    public Map<String, String> getRecordClassTypes() {
+    public Map<String, String> getRecordClassDisplayNames() {
         RecordClassBean[] recClasses = getRecordClasses();
         Map<String, String> types = new LinkedHashMap<String, String>();
         for (RecordClassBean r : recClasses) {
-            types.put(r.getFullName(), r.getType());
+            types.put(r.getFullName(), r.getDisplayName());
         }
         return types;
     }
@@ -176,7 +237,7 @@ public class WdkModelBean {
         return rcBeans;
     }
 
-    public UserFactoryBean getUserFactory() throws WdkUserException {
+    public UserFactoryBean getUserFactory() {
         return new UserFactoryBean(wdkModel.getUserFactory());
     }
 
@@ -208,22 +269,17 @@ public class WdkModelBean {
 
     /**
      * @return
-     * @throws NoSuchAlgorithmException
-     * @throws WdkModelException
-     * @throws IOException
      * @see org.gusdb.wdk.model.WdkModel#getSecretKey()
      */
-    public String getSecretKey() throws NoSuchAlgorithmException,
-            WdkModelException, IOException {
+    public String getSecretKey() throws WdkModelException  {
         return wdkModel.getSecretKey();
     }
 
     public boolean getUseWeights() {
-	return wdkModel.getUseWeights();
+        return wdkModel.getUseWeights();
     }
 
-    public UserBean getSystemUser() throws NoSuchAlgorithmException,
-            WdkUserException, WdkModelException, SQLException {
+    public UserBean getSystemUser() throws WdkModelException {
         return new UserBean(wdkModel.getSystemUser());
     }
 
@@ -236,7 +292,66 @@ public class WdkModelBean {
     }
 
     public QuestionBean getQuestion(String questionFullName)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         return new QuestionBean(wdkModel.getQuestion(questionFullName));
+    }
+
+    public Map<String, ParamBean<?>> getParams() throws WdkModelException {
+        Map<String, ParamBean<?>> params = new LinkedHashMap<String, ParamBean<?>>();
+        for (ParamSet paramSet : wdkModel.getAllParamSets()) {
+            for (Param param : paramSet.getParams()) {
+                ParamBean<?> bean;
+                if (param instanceof AbstractEnumParam) {
+                    bean = new EnumParamBean((AbstractEnumParam) param);
+                } else if (param instanceof AnswerParam) {
+                    bean = new AnswerParamBean((AnswerParam) param);
+                } else if (param instanceof DatasetParam) {
+                    bean = new DatasetParamBean((DatasetParam) param);
+                } else if (param instanceof TimestampParam) {
+                    bean = new TimestampParamBean((TimestampParam) param);
+                } else if (param instanceof StringParam) {
+                    bean = new StringParamBean((StringParam) param);
+                } else {
+                    throw new WdkModelException("Unknown param type:"
+                            + param.getClass().getName());
+                }
+                params.put(param.getFullName(), bean);
+            }
+        }
+        return params;
+    }
+    
+    public RecordClassBean getRecordClass(String rcName) throws WdkModelException {
+        return new RecordClassBean(wdkModel.getRecordClass(rcName));
+    }
+
+    public void setQuestionName(String questionName) {
+        this.questionName = questionName;
+    }
+
+    public QuestionBean getQuestion() {
+        try {
+            return new QuestionBean(wdkModel.getQuestion(questionName));
+        } catch (Exception ex) {
+            logger.error(ex);
+            return null;
+        }
+    }
+
+    @Override
+    public Connection getConnection(String key) 
+        throws WdkModelException, SQLException {
+      return wdkModel.getConnection(key);
+    }
+
+    public void validateQuestionFullName(String qFullName) throws WdkUserException {
+        String message = "Unable to find question with name: " + qFullName;
+        try {
+            if (qFullName == null || wdkModel.getQuestion(qFullName) == null) {
+                throw new WdkUserException(message);
+            }
+        } catch (WdkModelException e) {
+            throw new WdkUserException(message, e);
+        }
     }
 }

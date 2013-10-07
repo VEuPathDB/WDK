@@ -2,8 +2,6 @@ package org.gusdb.wdk.controller.wizard;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,35 +12,46 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
+import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 import org.xml.sax.SAXException;
 
 public class Wizard extends WdkModelBase {
 
     private static final String WIZARD_PATH = "/lib/wdk/wizard/";
+    private static final String DEFAULT_FILE = "default.xml";
+    private static final String CUSTOM_FILE = "custom.xml";
     private static final Logger logger = Logger.getLogger(Wizard.class);
 
-    public static Wizard loadWizard(String gusHome) throws SAXException,
-            IOException, WdkModelException {
-        // load all the wizards
+    public static Wizard loadWizard(String gusHome, WdkModelBean wdkModel)
+            throws SAXException, IOException, WdkModelException { 
         WizardParser parser = new WizardParser(gusHome);
-        Wizard wizard = null;
+        
+        // load default wizard
+        Wizard defaultWizard = loadWizard(wdkModel, parser, gusHome + WIZARD_PATH + DEFAULT_FILE);
+        
+        // load custom wizard
+        Wizard customWizard = loadWizard(wdkModel, parser, gusHome + WIZARD_PATH + CUSTOM_FILE);
 
-        File dir = new File(gusHome + WIZARD_PATH);
-        logger.debug("wizard-dir: " + dir.getAbsolutePath());
-        File[] files = dir.listFiles();
-        if (files != null) {
-
-            for (File file : dir.listFiles()) {
-                logger.debug("wizard-file: " + file.getAbsolutePath());
-                String fileName = file.getName().toLowerCase();
-                if (!fileName.endsWith(".xml")) continue;
-
-                Wizard w = parser.parseWizard(file.getAbsolutePath());
-                if (wizard == null) wizard = w;
-                else wizard.merge(w);
-            }
+        // merge wizards
+        if (customWizard != null) {
+            customWizard.merge(defaultWizard);
+        } else {
+            customWizard = defaultWizard;
         }
+        
+        customWizard.resolveReferences(wdkModel.getModel());
+        return customWizard;
+    }
+
+    private static Wizard loadWizard(WdkModelBean wdkModel, WizardParser parser,
+            String fileName) throws WdkModelException, SAXException,
+            IOException {
+        File file = new File(fileName);
+        if (!file.exists()) return null;
+
+        logger.debug("Loading wizard-file: " + fileName);
+        Wizard wizard = parser.parseWizard(file.getAbsolutePath());
+        wizard.excludeResources(wdkModel.getProjectId());
         return wizard;
     }
 
@@ -53,23 +62,33 @@ public class Wizard extends WdkModelBase {
     private List<Stage> stageList = new ArrayList<Stage>();
     private Map<String, Stage> stageMap;
 
+    private String file;
+
+    public void setFile(String file) {
+        this.file = file;
+    }
+
     /**
      * The merge has to occur before the exclusion.
      * 
      * @param wizard
-     * @throws WdkModelException
+     * @throws WdkModelException if unable to merge
      */
-    void merge(Wizard wizard) throws WdkModelException {
-        if (defaultStage != null || stageMap != null)
+    private void merge(Wizard wizard) throws WdkModelException {
+        if (stageMap == null || defaultStage != null)
             throw new WdkModelException("Merging of wizards has to occur "
-                    + "before the wizard being excluded or resolved.");
+                    + "after the wizard being excluded, but before resolve "
+                    + "reference.");
 
-        for (StageReference reference : wizard.defaultStageReferenceList) {
-            defaultStageReferenceList.add(reference);
+        for (String name : wizard.stageMap.keySet()) {
+            if (!stageMap.containsKey(name)) {
+                Stage stage = wizard.stageMap.get(name);
+                stageMap.put(name, stage);
+            }
         }
-        for (Stage stage : wizard.stageList) {
-            stageList.add(stage);
-        }
+
+        if (defaultStageName == null)
+            defaultStageName = wizard.defaultStageName;
     }
 
     public Stage[] getStages() {
@@ -87,8 +106,9 @@ public class Wizard extends WdkModelBase {
         stageList.add(stage);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * this method determines if there are duplicate stage or default within a
+     * given file. It should be called before merging.
      * 
      * @see org.gusdb.wdk.model.WdkModelBase#excludeResources(java.lang.String)
      */
@@ -100,16 +120,12 @@ public class Wizard extends WdkModelBase {
                 stage.excludeResources(projectId);
                 String name = stage.getName();
                 if (stageMap.containsKey(name))
-                    throw new WdkModelException("More than one stage '" + name
-                            + "' exist in the wizard.");
+                    throw new WdkModelException("Stage name '" + name
+                            + "' duplicated in file: " + file);
                 stageMap.put(name, stage);
             }
         }
         stageList = null;
-
-        if (stageMap.size() == 0)
-            throw new WdkModelException("The wizard does not contain any "
-                    + "stage.");
 
         for (StageReference reference : defaultStageReferenceList) {
             if (reference.include(projectId)) {
@@ -117,16 +133,13 @@ public class Wizard extends WdkModelBase {
                 if (defaultStageName != null)
                     throw new WdkModelException("More than one  "
                             + "defaultStageReferences exist: ["
-                            + defaultStageName + "] and [" + stageName + "]");
+                            + defaultStageName + "] and [" + stageName
+                            + "], in file: " + file);
                 reference.excludeResources(projectId);
                 defaultStageName = stageName;
             }
         }
         defaultStageReferenceList = null;
-
-        if (defaultStageName == null)
-            throw new WdkModelException("Required defaultStageReference "
-                    + " is not defined");
 
         super.excludeResources(projectId);
     }
@@ -139,12 +152,19 @@ public class Wizard extends WdkModelBase {
      * .WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
+
+        if (stageMap.size() == 0)
+            throw new WdkModelException("The wizard does not contain any "
+                    + "stage.");
+
         for (Stage stage : stageMap.values()) {
             stage.resolveReferences(wdkModel);
         }
+
+        if (defaultStageName == null)
+            throw new WdkModelException("Required defaultStageReference "
+                    + " is not defined");
 
         defaultStage = stageMap.get(defaultStageName);
         if (defaultStage == null)

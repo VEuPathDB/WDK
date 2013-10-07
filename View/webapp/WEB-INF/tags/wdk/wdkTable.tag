@@ -1,5 +1,5 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <%@ attribute name="tblName"
               description="name of table attribute"
@@ -13,6 +13,10 @@
               description="Dataset name, for attribution"
 %>
 
+<%@ attribute name="preamble"
+              description="Text to go above the table and description"
+%>
+
 <%@ attribute name="postscript"
               description="Text to go below the table"
 %>
@@ -24,6 +28,11 @@
 <%@ attribute name="suppressDisplayName"
               description="Should the display name be skipped?"
 %>
+
+<%@ attribute name="dataTable"
+              description="Should the table use dataTables?"
+              type="java.lang.Boolean"
+%>
 <c:catch var="tableError">
 <c:set value="${requestScope.wdkRecord}" var="wdkRecord"/>
 <c:set value="${wdkRecord.tables[tblName]}" var="tbl"/>
@@ -32,8 +41,17 @@
 </c:if>
 <c:set var="noData" value="false"/>
 
+<c:set var="tableClassName">
+  <c:choose>
+    <c:when test="${dataTable eq true}">recordTable wdk-data-table</c:when> 
+    <c:otherwise>recordTable</c:otherwise> 
+  </c:choose>
+</c:set>
+
 
 <c:set var="tblContent">
+
+<div class="table-preamble">${preamble}</div>
 
 <%-- display the description --%>
 <div class="table-description">${tbl.tableField.description}</div>
@@ -46,14 +64,15 @@
 <c:set var="projectId" value="${pkValues['project_id']}" />
 <c:set var="id" value="${pkValues['source_id']}" />
 
-	<table title="Click to go to the comments page"  style="cursor:pointer" onclick="window.location='<c:url value="/showComment.do?projectId=${projectId}&stableId=${id}&commentTargetId=gene"/>';">
+	<table class="${tableClassName}" title="Click to go to the comments page"  style="cursor:pointer" onclick="window.location='<c:url value="/showComment.do?projectId=${projectId}&stableId=${id}&commentTargetId=gene"/>';">
 </c:when>
 <c:otherwise>
-	<table>
+	<table class="${tableClassName}">
 </c:otherwise>
 </c:choose>
 
 <c:if test="${suppressColumnHeaders == null || !suppressColumnHeaders}">
+  <thead>
     <c:set var="h" value="0"/>
     <tr class="headerRow">
         <c:forEach var="hCol" items="${tbl.tableField.attributeFields}">
@@ -63,8 +82,10 @@
            </c:if>
         </c:forEach>
     </tr>
+  </thead>
 </c:if>
 
+  <tbody>
     <%-- table rows --%>
     <c:set var="i" value="0"/>
     <c:forEach var="row" items="${tbl}">
@@ -76,32 +97,17 @@
 
         <c:set var="j" value="0"/>
         <c:forEach var="rColEntry" items="${row}">
-          <c:set var="rCol" value="${rColEntry.value}"/>
-          <c:if test="${rCol.attributeField.internal == false}">
+          <c:set var="attributeValue" value="${rColEntry.value}"/>
+          <c:if test="${attributeValue.attributeField.internal == false}">
             <c:set var="j" value="${j+1}"/>
-
-            <%-- need to know if value should be hot linked --%>
-            <c:set var="align" value="align='${rCol.attributeField.align}'" />
-            <c:set var="nowrap">
-                <c:if test="${rCol.attributeField.nowrap}">nowrap</c:if>
-            </c:set>
-        
-            <td ${align} ${nowrap}>
-                <c:choose>
-                    <c:when test="${rCol.class.name eq 'org.gusdb.wdk.model.LinkAttributeValue'}">
-                        <a href="${rCol.url}">${rCol.displayText}</a>
-                    </c:when>
-                    <c:otherwise>
-                        ${rCol.value}
-                    </c:otherwise>
-                </c:choose>
-            </td>
+            <imp:wdkAttribute attributeValue="${attributeValue}" truncate="false" />
           </c:if>
         </c:forEach>
 
         </tr>
         <c:set var="i" value="${i +  1}"/>
     </c:forEach>
+  </tbody>
 </table>
 
 <c:if test="${i == 0}">
@@ -118,6 +124,6 @@ ${postscript}
     <c:set var="tblContent" value="<i>Error. Data is temporarily unavailable</i>"/>
 </c:if>
 
-<wdk:toggle name="${tblName}" displayName="${tableDisplayName}"
+<imp:toggle name="${tblName}" displayName="${tableDisplayName}"
              content="${tblContent}" isOpen="${isOpen}" noData="${noData}"
              attribution="${attribution}"/>

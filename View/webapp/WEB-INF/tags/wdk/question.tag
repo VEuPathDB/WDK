@@ -1,4 +1,4 @@
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
@@ -11,33 +11,32 @@
 
 <%-- display page header with wdkQuestion displayName as banner --%>
 <c:set var="wdkModel" value="${applicationScope.wdkModel}"/>
-<c:set var="recordType" value="${wdkQuestion.recordClass.type}"/>
+<c:set var="recordName" value="${wdkQuestion.recordClass.displayNamePlural}"/>
 <c:set var="showParams" value="${requestScope.showParams}"/>
-
-<c:if test="${fn:endsWith(recordType,'y')}">
-	<c:set var="recordType" value="${fn:substring(recordType,0,fn:length(recordType)-1)}ie" />
-</c:if>
 
 <%-- show all params of question, collect help info along the way --%>
 <c:set value="Help for question: ${wdkQuestion.displayName}" var="fromAnchorQ"/>
 <jsp:useBean id="helpQ" class="java.util.LinkedHashMap"/>
 
-<input type="hidden" name="questionFullName" value="${wdkQuestion.fullName}"/>
+<input id="questionFullName" type="hidden" name="questionFullName" value="${wdkQuestion.fullName}"/>
+<div id="questionName" style="display:none" name="${wdkQuestion.name}"></div>
 
 <!-- show error messages, if any -->
-<wdk:errors/>
+<imp:errors/>
 
 <%-- the js has to be included here in order to appear in the step form --%>
-<script type="text/javascript" src='<c:url value="/wdk/js/wdkQuestion.js"/>'></script>
+<script type="text/javascript">
+$(document).ready(function() {
+    wdk.question.init();
 
 <c:if test="${showParams == null}">
-	<script type="text/javascript">
-		$(document).ready(function() { initParamHandlers(); });
-	</script>
+    wdk.parameterHandlers.init();
 </c:if>
+});
+</script>
 
 <div class="params">
-    <wdk:questionParams />
+    <imp:questionParams />
 </div> <!-- end of params div -->
 
 

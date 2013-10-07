@@ -1,4 +1,4 @@
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
@@ -30,19 +30,18 @@
   <div id="complete_history">
     <table width="100%">
        <tr class="headerrow">
-          <th onmouseover="hideAnyName()" style="width: 2em;">ID</th>
-          <th onmouseover="hideAnyName()">Query</th>
-          <th onmouseover="hideAnyName()" style="width: 5em;">Type</th>
-          <th onmouseover="hideAnyName()" style="width: 5em;">Date</th>
-          <th onmouseover="hideAnyName()" style="width: 5em;">Version</th>
+          <th onmouseover="wdk.history.hideAnyName()" style="width: 2em;">ID</th>
+          <th onmouseover="wdk.history.hideAnyName()">Query</th>
+          <th onmouseover="wdk.history.hideAnyName()" style="width: 5em;">Type</th>
+          <th onmouseover="wdk.history.hideAnyName()" style="width: 5em;">Date</th>
+          <th onmouseover="wdk.history.hideAnyName()" style="width: 5em;">Version</th>
           <th align="right" style="width: 5em;">Size</th>
-          <th onmouseover="hideAnyName()" style="width: 5em;">&nbsp;</th>
-          <th onmouseover="hideAnyName()" style="width: 5em;">&nbsp;</th>
+          <th onmouseover="wdk.history.hideAnyName()" style="width: 5em;">&nbsp;</th>
+          <th onmouseover="wdk.history.hideAnyName()" style="width: 5em;">&nbsp;</th>
        </tr>
        <c:forEach items="${steps}" var="step">
-         <c:set var="type" value="${step.dataType}"/>
-         <c:set var="recDispName" value="${step.question.recordClass.type}"/>
-         <c:set var="recTabName" value="${fn:substring(recDispName, 0, fn:indexOf(recDispName, ' ')-1)}"/>
+         <c:set var="type" value="${step.recordClass.fullName}"/>
+         <c:set var="recDispName" value="${step.question.recordClass.displayNamePlural}"/>
          <c:choose>
            <c:when test="${i % 2 == 0}"><tr class="lines"></c:when>
            <c:otherwise><tr class="linesalt"></c:otherwise>
@@ -50,32 +49,32 @@
             <td>${step.stepId}
                <div id="div_${step.stepId}" class="medium"
                  style="display:none;font-size:8pt;width:610px;position:absolute;left:0;top:0;"
-                 onmouseover="hideAnyName()">
+                 onmouseover="wdk.history.hideAnyName()">
                  <table cellpadding="2" cellspacing="0" border="0" style="background-color:#ffffcc;">
                             <tr>
                                 <td>
                                     <%-- simple question --%>
-                                    <wdk:showParams step="${step}" />
+                                    <imp:showParams step="${step}" />
                                 </td>
                             </tr>
                  </table>
                </div>
             </td>
-            <td onmouseover="displayName('${step.stepId}')" onmouseout="hideAnyName()">${step.customName}
+            <td onmouseover="displayName('${step.stepId}')" onmouseout="wdk.history.hideAnyName()">${step.customName}
               <c:if test="${step.isValid == false}"><img width="12" src="<c:url value='/wdk/images/invalidIcon.png'/>"/></c:if>
             </td>
-            <td onmouseover="hideAnyName()">${recDispName}</td>
-	    <td onmouseover="hideAnyName()" nowrap>${step.createdTimeFormatted}</td>
-	    <td onmouseover="hideAnyName()" nowrap>
+            <td onmouseover="wdk.history.hideAnyName()">${recDispName}</td>
+	    <td onmouseover="wdk.history.hideAnyName()" nowrap>${step.createdTimeFormatted}</td>
+	    <td onmouseover="wdk.history.hideAnyName()" nowrap>
 	    <c:choose>
 	      <c:when test="${step.version == null || step.version eq ''}">${wdkModel.version}</c:when>
               <c:otherwise>${step.version}</c:otherwise>
             </c:choose>
             </td>
-            <td onmouseover="hideAnyName()" align='right' nowrap>${step.estimateSize}</td>
+            <td onmouseover="wdk.history.hideAnyName()" align='right' nowrap>${step.estimateSize}</td>
             <c:set value="${step.question.fullName}" var="qName" />
-            <td onmouseover="hideAnyName()" style="text-align:center;" nowrap><a onclick="setCurrentTabCookie('strategy_results', false);" href="showSummary.do?questionFullName=${qName}${step.summaryUrlParams}">view</a></td>
-            <td onmouseover="hideAnyName()" nowrap><a href="downloadStep.do?step_id=${step.stepId}">download</a></td>
+            <td onmouseover="wdk.history.hideAnyName()" style="text-align:center;" nowrap><a onclick="wdk.stratTabCookie.setCurrentTabCookie('strategy_results', false);" href="showSummary.do?questionFullName=${qName}${step.summaryUrlParams}">view</a></td>
+            <td onmouseover="wdk.history.hideAnyName()" nowrap><a href="downloadStep.do?step_id=${step.stepId}">download</a></td>
          </tr>
          <c:set var="i" value="${i+1}"/>
        </c:forEach>

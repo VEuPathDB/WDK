@@ -10,8 +10,6 @@ import org.gusdb.wdk.model.jspwrap.ParamBean;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.QuestionSetBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.param.Param;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -58,18 +56,12 @@ public class GroupTest {
         }
     }
 
-    /**
-     * @throws WdkModelException
-     */
     @Test(expected = WdkModelException.class)
     public void testGetInvalidGroupSet() throws WdkModelException {
         String gsetName = "NonexistGroupSet";
         wdkModel.getGroupSet(gsetName);
     }
 
-    /**
-     * @throws WdkModelException
-     */
     @Test
     public void testGetGroup() throws WdkModelException {
         for (GroupSet groupSet : wdkModel.getAllGroupSets()) {
@@ -86,9 +78,6 @@ public class GroupTest {
         }
     }
 
-    /**
-     * @throws WdkModelException
-     */
     @Test(expected = WdkModelException.class)
     public void testGetInvalidGroup() throws WdkModelException {
         String gName = "NonexistGroup";
@@ -100,9 +89,6 @@ public class GroupTest {
         }
     }
 
-    /**
-     * @throws WdkModelException
-     */
     @Test(expected = WdkModelException.class)
     public void testGetInvalidGroupByFullName() throws WdkModelException {
         String fullName = "NonexistGroupSet.NonexistGroup";
@@ -116,10 +102,10 @@ public class GroupTest {
         WdkModelBean wdkModelBean = new WdkModelBean(wdkModel);
         for (QuestionSetBean questionSet : wdkModelBean.getQuestionSets()) {
             for(QuestionBean question : questionSet.getQuestions()) {
-                Map<String, ParamBean> params = question.getParamsMap();
+                Map<String, ParamBean<?>> params = question.getParamsMap();
                 if (params.size() == 0) continue;
                 
-                Map<GroupBean, Map<String, ParamBean>> groups = question.getParamMapByGroups();
+                Map<GroupBean, Map<String, ParamBean<?>>> groups = question.getParamMapByGroups();
                 Assert.assertTrue(groups.size() > 0); 
             }
         }

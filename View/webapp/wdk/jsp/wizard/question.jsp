@@ -2,8 +2,9 @@
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
-<%@ taglib prefix="site" tagdir="/WEB-INF/tags/site" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
+
+<%@ page contentType="text/html;charset=iso-8859-1" %>
 
 <c:set var="wdkQuestion" value="${requestScope.question}"/>
 <c:set var="spanOnly" value="false"/>
@@ -14,7 +15,7 @@
 <c:set var="allowBoolean" value="${requestScope.allowBoolean}"/>
 <c:set var="action" value="${requestScope.action}"/>
 
-<c:if test="${wdkQuestion.recordClass.fullName != wdkStep.dataType}">
+<c:if test="${wdkQuestion.recordClass.fullName != wdkStep.recordClass.fullName}">
 	<c:set var="checked" value="checked=''"/>
 	<c:set var="buttonVal" value="Continue...."/>
 	<c:set var="spanOnly" value="true"/>
@@ -53,10 +54,8 @@
 <c:set var="currentStepId" value="${newStepId - 1}" />
 
 
-<wdk:parameterScript />
 
-
-<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
+<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="wdk.addStepPopup.callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
 
 <html:hidden property="stage" styleId="stage" value="${nextStage}" />
 
@@ -76,9 +75,8 @@
 </c:set>
 
 <c:if test="${param.stage ne 'basket'}">
-<c:set var="Question_Footer" scope="request">
-	<%-- displays question description, use site tag until we know how to override a wdk tag by the custom one --%>
-   	<site:questionDescription />
+<c:set var="Question_Details" scope="request">
+    <imp:questionDescription />
 </c:set>
 </c:if>
 
@@ -102,7 +100,10 @@ ${Question_Header}
   </span>
   <br><br>
 
-  <wdk:questionForm />
+<%--   ${Question_Details} 
+--%>
+
+  <imp:questionForm />
 </div>
 
 
@@ -122,12 +123,12 @@ ${Question_Header}
       <c:if test="${wdkStep.previousStep != null && action == 'revise'}">
         <c:set var="wdkStep" value="${wdkStep.previousStep}" />
       </c:if>
-      <span class="h2center">Combine ${wdkStep.displayType}s in Step <span class="current_step_num">${currentStepId}</span> with ${wdkQuestion.recordClass.displayName}s in Step <span class="new_step_num">${newStepId}</span>:</span>
+      <span class="h2center">Combine ${wdkStep.recordClass.displayNamePlural} in Step <span class="current_step_num">${currentStepId}</span> with ${wdkQuestion.recordClass.displayNamePlural} in Step <span class="new_step_num">${newStepId}</span>:</span>
 
       <div style="text-align:center" id="operations">
 
 <%-- operators table --%>
-<wdk:operators  allowSpan="${allowSpan}"
+<imp:operators  allowSpan="${allowSpan}"
 		operation="${param.operation}"
                 spanStage="span_from_question"
 />
@@ -140,9 +141,10 @@ ${Question_Header}
     <html:submit property="questionSubmit" value="${buttonVal}"/>
 </div>
 
+<imp:nameStep/>
+
 </c:if> <%-- End of hideOperation --%>
 
 </html:form>
 
-
-${Question_Footer}
+${Question_Details} 

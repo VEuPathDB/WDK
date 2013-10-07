@@ -1,6 +1,5 @@
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,12 +10,12 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.db.QueryLogger;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
 
 public class QueryFactory {
 
@@ -30,19 +29,18 @@ public class QueryFactory {
 
     private WdkModel wdkModel;
     private String wdkSchema;
-    private DBPlatform userPlatform;
+    private DatabaseInstance userDb;
     private DataSource dataSource;
 
     public QueryFactory(WdkModel wdkModel) {
         this.wdkModel = wdkModel;
-        this.userPlatform = this.wdkModel.getUserPlatform();
-        this.dataSource = userPlatform.getDataSource();
+        this.userDb = this.wdkModel.getUserDb();
+        this.dataSource = userDb.getDataSource();
         this.wdkSchema = wdkModel.getModelConfig().getUserDB().getWdkEngineSchema();
     }
 
     public String makeSummaryChecksum(String[] summaryAttributes)
-            throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException {
+            throws WdkModelException {
         Set<String> usedAttributes = new HashSet<String>();
         // create checksum for config columns
         StringBuffer sb = new StringBuffer();
@@ -72,18 +70,18 @@ public class QueryFactory {
             psInsert.setString(1, checksum);
             psInsert.setString(2, summaryContent);
             psInsert.execute();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-insert-clob",
+            QueryLogger.logEndStatementExecution(sql, "wdk-query-factory-insert-clob",
                     start);
             return checksum;
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
+            throw new WdkModelException(ex);
         } finally {
             SqlUtils.closeStatement(psInsert);
         }
     }
 
     public String[] getSummaryAttributes(String summaryChecksum)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         ResultSet rsSelect = null;
         try {
             String sql = "SELECT " + COLUMN_CLOB_VALUE + " FROM " + wdkSchema
@@ -94,7 +92,7 @@ public class QueryFactory {
                     dataSource, sql);
             psSelect.setString(1, summaryChecksum);
             rsSelect = psSelect.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-select-clob",
+            QueryLogger.logEndStatementExecution(sql, "wdk-query-factory-select-clob",
                     start);
             if (!rsSelect.next()) return null;
 
@@ -108,20 +106,17 @@ public class QueryFactory {
             }
             return attributes;
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
+            throw new WdkModelException("Unable to get summary attributes for checksum " + summaryChecksum, ex);
         } finally {
-            SqlUtils.closeResultSet(rsSelect);
+            SqlUtils.closeResultSetAndStatement(rsSelect);
         }
     }
 
-    public String makeSortingChecksum(Map<String, Boolean> columns)
-            throws WdkModelException, WdkUserException,
-            NoSuchAlgorithmException {
+    public String makeSortingChecksum(Map<String, Boolean> columns) throws WdkModelException {
         // create checksum for sorting columns
         StringBuffer sb = new StringBuffer();
         int i = 0;
         for (String colName : columns.keySet()) {
-            i++;
             // only use a limit number of attribtues in sorting
             if (i >= Utilities.SORTING_LEVEL) break;
 
@@ -129,6 +124,7 @@ public class QueryFactory {
             if (sb.length() > 0) sb.append(", ");
             sb.append(colName);
             sb.append(ascend ? " ASC" : " DESC");
+            i++;
         }
         String columnsContent = sb.toString();
         String checksum = Utilities.encrypt(columnsContent);
@@ -147,18 +143,18 @@ public class QueryFactory {
             psInsert.setString(1, checksum);
             psInsert.setString(2, columnsContent);
             psInsert.execute();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-insert-clob",
+            QueryLogger.logEndStatementExecution(sql, "wdk-query-factory-insert-clob",
                     start);
             return checksum;
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
+            throw new WdkModelException(ex);
         } finally {
             SqlUtils.closeStatement(psInsert);
         }
     }
 
     public Map<String, Boolean> getSortingAttributes(String sortingChecksum)
-            throws WdkUserException, WdkModelException {
+            throws WdkModelException {
         ResultSet rsSelect = null;
         try {
             String sql = "SELECT " + COLUMN_CLOB_VALUE + " FROM " + wdkSchema
@@ -169,7 +165,7 @@ public class QueryFactory {
                     dataSource, sql);
             psSelect.setString(1, sortingChecksum);
             rsSelect = psSelect.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-select-clob",
+            QueryLogger.logEndStatementExecution(sql, "wdk-query-factory-select-clob",
                     start);
 
             if (!rsSelect.next()) return null;
@@ -184,7 +180,7 @@ public class QueryFactory {
                 // validate the format of the pair
                 if (pair.length != 2
                         || (!"ASC".equalsIgnoreCase(pair[1]) && !"DESC".equalsIgnoreCase(pair[1])))
-                    throw new WdkUserException(
+                    throw new WdkModelException(
                             "Invalid sorting attribute format: '" + sortingPair
                                     + "'");
                 String attribute = pair[0];
@@ -193,14 +189,13 @@ public class QueryFactory {
             }
             return attributes;
         } catch (SQLException ex) {
-            throw new WdkUserException(ex);
+            throw new WdkModelException(ex);
         } finally {
-            SqlUtils.closeResultSet(rsSelect);
+            SqlUtils.closeResultSetAndStatement(rsSelect);
         }
     }
 
-    public String makeClobChecksum(String paramValue) throws WdkModelException,
-            NoSuchAlgorithmException, WdkUserException {
+    public String makeClobChecksum(String paramValue) throws WdkModelException {
         // make the checksum
         String checksum = Utilities.encrypt(paramValue);
 
@@ -218,7 +213,7 @@ public class QueryFactory {
             psInsert.setString(1, checksum);
             psInsert.setString(2, paramValue);
             psInsert.execute();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-insert-clob",
+            QueryLogger.logEndStatementExecution(sql, "wdk-query-factory-insert-clob",
                     start);
 
             return checksum;
@@ -229,8 +224,7 @@ public class QueryFactory {
         }
     }
 
-    public String getClobValue(String paramChecksum) throws WdkModelException,
-            WdkUserException {
+    public String getClobValue(String paramChecksum) throws WdkModelException {
         ResultSet rs = null;
         try {
             long start = System.currentTimeMillis();
@@ -241,16 +235,16 @@ public class QueryFactory {
                     sql);
             ps.setString(1, paramChecksum);
             rs = ps.executeQuery();
-            SqlUtils.verifyTime(wdkModel, sql, "wdk-query-factory-select-clob",
+            QueryLogger.logEndStatementExecution(sql, "wdk-query-factory-select-clob",
                     start);
             if (!rs.next()) return null;
 
-            String clobValue = userPlatform.getClobData(rs, COLUMN_CLOB_VALUE);
+            String clobValue = userDb.getPlatform().getClobData(rs, COLUMN_CLOB_VALUE);
             return clobValue;
         } catch (SQLException ex) {
             throw new WdkModelException(ex);
         } finally {
-            SqlUtils.closeResultSet(rs);
+            SqlUtils.closeResultSetAndStatement(rs);
         }
 
     }

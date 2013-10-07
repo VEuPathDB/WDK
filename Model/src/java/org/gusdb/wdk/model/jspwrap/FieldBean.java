@@ -3,7 +3,7 @@
  */
 package org.gusdb.wdk.model.jspwrap;
 
-import org.gusdb.wdk.model.Field;
+import org.gusdb.wdk.model.record.Field;
 
 
 /**
@@ -20,7 +20,7 @@ public abstract class FieldBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.Field#getDisplayName()
+     * @see org.gusdb.wdk.model.record.Field#getDisplayName()
      */
     public String getDisplayName() {
         return field.getDisplayName();
@@ -28,7 +28,7 @@ public abstract class FieldBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.Field#getHelp()
+     * @see org.gusdb.wdk.model.record.Field#getHelp()
      */
     public String getHelp() {
         return field.getHelp();
@@ -36,7 +36,7 @@ public abstract class FieldBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.Field#getInReportMaker()
+     * @see org.gusdb.wdk.model.record.Field#getInReportMaker()
      */
     public boolean isInReportMaker() {
         return field.isInReportMaker();
@@ -44,7 +44,7 @@ public abstract class FieldBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.Field#getInternal()
+     * @see org.gusdb.wdk.model.record.Field#getInternal()
      */
     public boolean isInternal() {
         return field.isInternal();
@@ -52,7 +52,7 @@ public abstract class FieldBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.Field#getName()
+     * @see org.gusdb.wdk.model.record.Field#getName()
      */
     public String getName() {
         return field.getName();
@@ -60,7 +60,7 @@ public abstract class FieldBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.Field#getTruncateTo()
+     * @see org.gusdb.wdk.model.record.Field#getTruncateTo()
      */
     public int getTruncateTo() {
         return field.getTruncateTo();
@@ -68,7 +68,7 @@ public abstract class FieldBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.Field#getType()
+     * @see org.gusdb.wdk.model.record.Field#getType()
      */
     public String getType() {
         return field.getType();
@@ -76,8 +76,9 @@ public abstract class FieldBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.Field#toString()
+     * @see org.gusdb.wdk.model.record.Field#toString()
      */
+    @Override
     public String toString() {
         return field.toString();
     }
