@@ -1,7 +1,7 @@
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <c:set var="wdkModel" value="${applicationScope.wdkModel}" />
 <c:set var="wdkUser" value="${sessionScope.wdkUser}" />
 
-<wdk:stepHistory model="${wdkModel}" user="${wdkUser}" />
+<imp:stepHistory model="${wdkModel}" user="${wdkUser}" />

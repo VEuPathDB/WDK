@@ -8,11 +8,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionServlet;
-import org.gusdb.wdk.controller.action.ActionUtility;
-import org.gusdb.wdk.controller.action.QuestionForm;
 import org.gusdb.wdk.controller.action.ShowQuestionAction;
 import org.gusdb.wdk.controller.action.WizardAction;
-import org.gusdb.wdk.controller.action.WizardForm;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.form.QuestionForm;
+import org.gusdb.wdk.controller.form.WizardForm;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.QuestionBean;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
@@ -28,6 +28,7 @@ public class ShowBasketStageHandler implements StageHandler {
 
     private static final Logger logger = Logger.getLogger(ShowBasketStageHandler.class);
 
+    @Override
     public Map<String, Object> execute(ActionServlet servlet,
             HttpServletRequest request, HttpServletResponse response,
             WizardForm wizardForm) throws Exception {
@@ -68,7 +69,7 @@ public class ShowBasketStageHandler implements StageHandler {
 
         // check if boolean is allowed
         String importType = question.getRecordClass().getFullName();
-        boolean allowBoolean = importType.equals(inputStep.getType());
+        boolean allowBoolean = importType.equals(inputStep.getRecordClass().getFullName());
         attributes.put(ATTR_ALLOW_BOOLEAN, allowBoolean);
 
         logger.debug("Leaving BasketStageHandler....");

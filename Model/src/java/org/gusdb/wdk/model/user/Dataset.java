@@ -3,16 +3,12 @@
  */
 package org.gusdb.wdk.model.user;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 
-import org.gusdb.wdk.model.RecordClass;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
+import org.gusdb.wdk.model.record.RecordClass;
 
 /**
  * @author xingao
@@ -144,20 +140,13 @@ public class Dataset {
 
     /**
      * @return
-     * @throws WdkUserException
-     * @throws SQLException
-     * @throws WdkModelException
-     * @throws JSONException 
-     * @throws NoSuchAlgorithmException 
      */
-    public List<String> getValues() throws WdkUserException, SQLException,
-            WdkModelException, NoSuchAlgorithmException, JSONException {
+    public List<String> getValues() throws WdkModelException {
         return factory.getDatasetValues(this);
     }
 
-    public String getValue() throws WdkUserException, SQLException,
-            WdkModelException, NoSuchAlgorithmException, JSONException {
-        List<String> values =factory.getDatasetValues(this);
+    public String getValue() throws WdkModelException {
+        List<String> values = factory.getDatasetValues(this);
         StringBuffer sb = new StringBuffer();
         for (String value : values) {
             if (sb.length() > 0) sb.append(DatasetFactory.RECORD_DIVIDER + " ");

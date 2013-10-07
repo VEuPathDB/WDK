@@ -5,19 +5,14 @@ package org.gusdb.wdk.model.user;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordClassSet;
-import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.UnitTestHelper;
-import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordInstance;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -30,31 +25,15 @@ public class FavoriteTest {
     private static final int POOL_SIZE = 10;
     static final int OPEARTION_SIZE = 5;
 
-    private WdkModel wdkModel;
-    private List<RecordClass> recordClasses;
+    private RecordClass recordClass;
 
     public FavoriteTest() throws Exception {
-        wdkModel = UnitTestHelper.getModel();
-
-        recordClasses = new ArrayList<RecordClass>();
-        for (RecordClassSet rcSet : wdkModel.getAllRecordClassSets()) {
-            for (RecordClass rc : rcSet.getRecordClasses()) {
-                recordClasses.add(rc);
-            }
-        }
+        recordClass = UnitTestHelper.getNormalQuestion().getRecordClass();
     }
 
     @Test
     public void testAddToFavorite() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
-        int index = UnitTestHelper.getRandom().nextInt(recordClasses.size());
-        RecordClass recordClass = recordClasses.get(index);
-        for (RecordClass rc : recordClasses) {
-            if (rc.getFavoriteNoteField() != null) {
-                recordClass = rc;
-                break;
-            }
-        }
 
         user.clearFavorite();
         List<Map<String, Object>> added = addSomeRecords(user, recordClass);
@@ -71,8 +50,6 @@ public class FavoriteTest {
 
     @Test
     public void testRemoveFromFavorite() throws Exception {
-        int index = UnitTestHelper.getRandom().nextInt(recordClasses.size());
-        RecordClass recordClass = recordClasses.get(index);
         User user = UnitTestHelper.getRegisteredUser();
 
         List<Map<String, Object>> added = addSomeRecords(user, recordClass);
@@ -100,8 +77,6 @@ public class FavoriteTest {
 
     @Test
     public void testClearFavorite() throws Exception {
-        int index = UnitTestHelper.getRandom().nextInt(recordClasses.size());
-        RecordClass recordClass = recordClasses.get(index);
         User user = UnitTestHelper.getRegisteredUser();
 
         addSomeRecords(user, recordClass);
@@ -116,19 +91,8 @@ public class FavoriteTest {
         User user = UnitTestHelper.getRegisteredUser();
         user.clearFavorite();
 
-        int index = UnitTestHelper.getRandom().nextInt(recordClasses.size());
-        RecordClass recordClass = recordClasses.get(index);
         List<Map<String, Object>> added1 = addSomeRecords(user, recordClass);
 
-        // now add some records of other record types
-        while (true) {
-            int idx = UnitTestHelper.getRandom().nextInt(recordClasses.size());
-            if (idx != index) {
-                index = idx;
-                break;
-            }
-        }
-        recordClass = recordClasses.get(index);
         List<Map<String, Object>> added2 = addSomeRecords(user, recordClass);
 
         int expected = added1.size() + added2.size();
@@ -138,8 +102,6 @@ public class FavoriteTest {
     @Test
     public void testSetNote() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
-        int index = UnitTestHelper.getRandom().nextInt(recordClasses.size());
-        RecordClass recordClass = recordClasses.get(index);
 
         user.clearFavorite();
 
@@ -159,8 +121,6 @@ public class FavoriteTest {
     @Test
     public void testSetGroup() throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
-        int index = UnitTestHelper.getRandom().nextInt(recordClasses.size());
-        RecordClass recordClass = recordClasses.get(index);
 
         user.clearFavorite();
 
@@ -180,15 +140,14 @@ public class FavoriteTest {
     private List<Map<String, Object>> addSomeRecords(User user,
             RecordClass recordClass) throws Exception {
         // get a list of record ids
-        List<Map<String, Object>> ids = getIds(recordClass, POOL_SIZE);
+        List<Map<String, Object>> ids = getIds(POOL_SIZE);
         // randomly pick up 5 ids from the list, and add them into basket
         Map<Integer, Map<String, Object>> selected = new HashMap<Integer, Map<String, Object>>();
         Random random = UnitTestHelper.getRandom();
         int count = 0;
         while (count < OPEARTION_SIZE) {
             int i = random.nextInt(ids.size());
-            if (selected.containsKey(i))
-                continue;
+            if (selected.containsKey(i)) continue;
             selected.put(i, ids.get(i));
             count++;
         }
@@ -198,40 +157,23 @@ public class FavoriteTest {
         return list;
     }
 
-    static List<Map<String, Object>> getIds(RecordClass recordClass, int limit)
-            throws Exception {
+    static List<Map<String, Object>> getIds(int limit) throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
         List<Map<String, Object>> ids = new ArrayList<Map<String, Object>>();
-        Query query = recordClass.getAllRecordsQuery();
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
-                .getColumnRefs();
+        Step step = UnitTestHelper.createNormalStep(user);
+        AnswerValue answerValue = step.getAnswerValue();
+
         int count = 0;
-        if (query != null) {
-            Map<String, String> params = new HashMap<String, String>();
-            QueryInstance instance = query.makeInstance(user, params, true, 0,
-                    new LinkedHashMap<String, String>());
-            ResultList results = instance.getResults();
-            while (results.next()) {
-                Map<String, Object> values = new HashMap<String, Object>();
-                for (int i = 0; i < pkColumns.length; i++) {
-                    String value = results.get(pkColumns[i]).toString();
-                    values.put(pkColumns[i], value);
-                }
-                ids.add(values);
-                count++;
-                if (count >= limit)
-                    break;
+        for (RecordInstance instance : answerValue.getRecordInstances()) {
+            Map<String, String> valueMap = instance.getPrimaryKey().getValues();
+            Map<String, Object> values = new HashMap<String, Object>(
+                    valueMap.size());
+            for (String key : valueMap.keySet()) {
+                values.put(key, valueMap.get(key));
             }
-            results.close();
-        } else {
-            for (; count < limit; count++) {
-                Map<String, Object> values = new HashMap<String, Object>();
-                for (int i = 0; i < pkColumns.length; i++) {
-                    String value = UnitTestHelper.getRandom().nextInt() + "";
-                    values.put(pkColumns[i], value);
-                }
-                ids.add(values);
-            }
+            ids.add(values);
+            count++;
+            if (count >= limit) break;
         }
         return ids;
     }

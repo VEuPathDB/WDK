@@ -1,7 +1,6 @@
 package org.gusdb.wdk.controller.wizard;
 
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,11 +11,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.apache.struts.action.ActionServlet;
 import org.gusdb.wdk.controller.CConstants;
-import org.gusdb.wdk.controller.action.ActionUtility;
 import org.gusdb.wdk.controller.action.ProcessBooleanAction;
 import org.gusdb.wdk.controller.action.ProcessQuestionAction;
-import org.gusdb.wdk.controller.action.QuestionForm;
-import org.gusdb.wdk.controller.action.WizardForm;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.form.QuestionForm;
+import org.gusdb.wdk.controller.form.WizardForm;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
@@ -25,7 +24,6 @@ import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
 import org.gusdb.wdk.model.jspwrap.WdkModelBean;
-import org.json.JSONException;
 
 public class ProcessBooleanStageHandler implements StageHandler {
 
@@ -37,16 +35,14 @@ public class ProcessBooleanStageHandler implements StageHandler {
 
     private static final Logger logger = Logger.getLogger(ProcessBooleanStageHandler.class);
 
-    private UserBean user;
-    private WdkModelBean wdkModel;
-
+    @Override
     public Map<String, Object> execute(ActionServlet servlet,
             HttpServletRequest request, HttpServletResponse response,
             WizardForm wizardForm) throws Exception {
         logger.debug("Entering BooleanStageHandler...");
 
-        this.user = ActionUtility.getUser(servlet, request);
-        this.wdkModel = ActionUtility.getWdkModel(servlet);
+        UserBean user = ActionUtility.getUser(servlet, request);
+        WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
 
         StepBean childStep = null;
 
@@ -56,12 +52,12 @@ public class ProcessBooleanStageHandler implements StageHandler {
         if (questionName != null && questionName.length() > 0) {
             // a question name specified, create a step from it
             childStep = createStepFromQuestion(servlet, request, wizardForm,
-                    questionName);
+                    questionName, user, wdkModel);
         } else if (strStrategyId != null && strStrategyId.length() > 0) {
             // a step specified, it must come from an insert strategy. make a
             // copy of it, and mark it as collapsable.
             int strategyId = Integer.valueOf(strStrategyId);
-            childStep = createStepFromStrategy(strategyId);
+            childStep = createStepFromStrategy(user, strategyId);
         }
         
         String customName = request.getParameter(PARAM_CUSTOM_NAME);
@@ -82,8 +78,8 @@ public class ProcessBooleanStageHandler implements StageHandler {
 
     private StepBean createStepFromQuestion(ActionServlet servlet,
             HttpServletRequest request, WizardForm wizardForm,
-            String questionName) throws WdkUserException, WdkModelException,
-            NoSuchAlgorithmException, IOException, SQLException, JSONException {
+            String questionName, UserBean user, WdkModelBean wdkModel)
+                throws WdkUserException, WdkModelException, IOException, SQLException {
         logger.debug("creating step from question: " + questionName);
 
         // get the assigned weight
@@ -112,9 +108,8 @@ public class ProcessBooleanStageHandler implements StageHandler {
         return user.createStep(question, params, null, false, true, weight);
     }
 
-    private StepBean createStepFromStrategy(int strategyId)
-            throws NoSuchAlgorithmException, WdkModelException,
-            WdkUserException, JSONException, SQLException {
+    private StepBean createStepFromStrategy(UserBean user, int strategyId)
+            throws WdkModelException, WdkUserException {
         logger.debug("creating step from strategy: " + strategyId);
         StrategyBean strategy = user.getStrategy(strategyId);
         StepBean step = strategy.getLatestStep();

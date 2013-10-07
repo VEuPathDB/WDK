@@ -2,6 +2,12 @@
 
 .filter-layout .layout-info > .handle {
     cursor: pointer;
+    position:relative;
+    top:6px;
+}
+
+.filter-layout .layout-detail {
+    overflow-x:auto;
 }
 
 .filter-layout .layout-detail .description {
@@ -11,6 +17,8 @@
 .filter-layout .layout-detail table {
     margin: 2px;
 }
+
+.filter-layout td { padding:0px; }
 
 .filter-layout .layout-detail td, .filter-layout .layout-detail th {
     text-align: center;
@@ -25,7 +33,7 @@
 .filter-instance {
     text-align: center;
     vertical-align: middle;
-    padding: 0px;
+    padding: 4px;
     margin: 0px;
 }
 
@@ -45,7 +53,7 @@
     display: none;
     overflow: visible;
     position: absolute;
-    border: 3px double #997733;
+    border: 1px solid grey;
     background-color: #DEEEFF;
     padding: 3px;
     min-width: 200px;

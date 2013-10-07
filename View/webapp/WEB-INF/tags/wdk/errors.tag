@@ -2,6 +2,7 @@
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="logic" uri="http://jakarta.apache.org/struts/tags-logic" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
+
 <%@ attribute name="showStackTrace" required="false" %>
 
 <c:set var="err" scope="request" value="${requestScope['org.apache.struts.action.ERROR']}"/>
@@ -13,21 +14,21 @@
 <!-- html:errors/ -->
 
 <logic:messagesPresent> 
-<EM><b>Please correct the following error(s): </b></EM><br>
+<em><b>Please correct the following error(s):</b></em><br/>
 
-    <UL>
-        <html:messages id="error" message="false">
-            <LI><bean:write name="error"/></LI>
-        </html:messages>
-    </UL>
+<ul>
+  <html:messages id="error" message="false">
+    <li><bean:write name="error"/></li>
+  </html:messages>
+</ul>
 
 </logic:messagesPresent>
 
 <c:set var="site" value="${initParam.wdkDevelopmentSite}" />
-<c:if test="${(site eq 'Yes' || site eq 'yes' || site eq 'YES' || 
-     showStackTrace eq 'true') && showStackTrace ne 'false'}">
+<c:if test="${(site eq 'Yes' or site eq 'yes' or site eq 'YES' || 
+     showStackTrace eq 'true') and showStackTrace ne 'false'}">
   
-  <c:if test="${pex != null}">
+  <c:if test="${pex ne null}">
     <b>${pex.message}</b><br>
      Stacktrace: <br>
      <c:forEach items="${pex.stackTrace}" var="st" >
@@ -36,7 +37,7 @@
     <br><br>
   </c:if>
   
-  <c:if test="${exp != null}">
+  <c:if test="${exp ne null}">
        <b>${exp}</b><br>
        Stacktrace: <br>
        <c:forEach items="${exp.stackTrace}" var="st">

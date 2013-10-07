@@ -6,8 +6,8 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.TableField;
+import org.gusdb.wdk.model.record.TableField;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
 
 /**
  * @author Jerric

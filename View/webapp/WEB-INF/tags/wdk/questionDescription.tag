@@ -1,4 +1,4 @@
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
@@ -18,4 +18,4 @@
 <c:set var="descripId" value="query-description-section"/>
 
 <%-- display description for wdkQuestion --%>
-<div id="${descripId}"><b>Query description: </b>${wdkQuestion.description}</div>
+<div class="search-section" id="${descripId}"><b>Query description: </b>${wdkQuestion.description}</div>

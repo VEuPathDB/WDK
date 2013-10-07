@@ -15,6 +15,7 @@ import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.jspwrap.AnswerFilterInstanceBean;
 import org.gusdb.wdk.model.jspwrap.AnswerValueBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -26,6 +27,7 @@ import org.gusdb.wdk.model.jspwrap.WdkModelBean;
 public class GetFilterLinkAction extends Action {
     private static Logger logger = Logger.getLogger(GetFilterLinkAction.class);
 
+    @Override
     @SuppressWarnings("unchecked")
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
@@ -56,8 +58,9 @@ public class GetFilterLinkAction extends Action {
 
         int size = answerValue.getFilterSize(filterName);
 
-        String description = step.getQuestion().getRecordClass().getFilter(
-                filterName).getDescription();
+        AnswerFilterInstanceBean filter = step.getQuestion().getRecordClass().getFilter(
+                filterName);
+        String description = (filter == null) ? "" : filter.getDescription();
 
         // need to build link to summary page for specified filter
         ActionForward showSummary = mapping.findForward(CConstants.SHOW_SUMMARY_MAPKEY);

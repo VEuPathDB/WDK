@@ -1,7 +1,5 @@
 package org.gusdb.wdk.controller.wizard;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,8 +7,6 @@ import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkModelText;
-import org.gusdb.wdk.model.WdkUserException;
-import org.json.JSONException;
 
 public class Stage extends WdkModelBase {
 
@@ -150,16 +146,14 @@ public class Stage extends WdkModelBase {
      * .WdkModel)
      */
     @Override
-    public void resolveReferences(WdkModel wdkModel) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
         // resolve the handler
         if (handlerClass != null) {
             try {
                 Class<?> hClass = Class.forName(handlerClass);
                 this.handler = (StageHandler) hClass.newInstance();
             } catch (Exception ex) {
-                new WdkModelException("The flow stage handler is not of type: "
+                throw new WdkModelException("The flow stage handler is not of type: "
                         + StageHandler.class + ". stage: " + name, ex);
             }
         }

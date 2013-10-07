@@ -11,15 +11,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.json.JSONException;
-
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * @author xingao
@@ -30,6 +28,8 @@ public abstract class Reporter implements Iterable<AnswerValue> {
     public static final String FIELD_FORMAT = "downloadType";
     private static final String PROPERTY_PAGE_SIZE = "page_size";
 
+    private static final int SORTING_THRESHOLD = 100;
+
     private final static Logger logger = Logger.getLogger(Reporter.class);
 
     protected class PageAnswerIterator implements Iterator<AnswerValue> {
@@ -38,26 +38,27 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         private int endIndex;
         private int startIndex;
         private int maxPageSize;
+        private int resultSize;
 
         public PageAnswerIterator(AnswerValue answerValue, int startIndex,
-                int endIndex, int maxPageSize) throws WdkModelException,
-                NoSuchAlgorithmException, SQLException, JSONException,
-                WdkUserException {
+                int endIndex, int maxPageSize) throws WdkModelException {
             this.baseAnswer = answerValue;
 
             // determine the end index, which should be no bigger result size,
             // since the index starts from 1
-            int resultSize = baseAnswer.getResultSize();
+            resultSize = baseAnswer.getResultSize();
             this.endIndex = Math.min(endIndex, resultSize);
             this.startIndex = startIndex;
             this.maxPageSize = maxPageSize;
         }
 
+        @Override
         public boolean hasNext() {
             // if the current
             return (startIndex <= endIndex);
         }
 
+        @Override
         public AnswerValue next() {
             // decide the new end index for the page answer
             int pageEndIndex = Math.min(endIndex, startIndex + maxPageSize - 1);
@@ -67,13 +68,19 @@ public abstract class Reporter implements Iterable<AnswerValue> {
 
             AnswerValue answerValue = new AnswerValue(baseAnswer, startIndex,
                     pageEndIndex);
+
+            // disable sorting if the total size is bigger than threshold
+            if (resultSize > SORTING_THRESHOLD)
+                answerValue.setSortingMap(new LinkedHashMap<String, Boolean>());
+
             // update the current index
             startIndex = pageEndIndex + 1;
             return answerValue;
         }
 
+        @Override
         public void remove() {
-            throw new NotImplementedException();
+            throw new UnsupportedOperationException("This functionality is not implemented.");
         }
 
     }
@@ -122,22 +129,20 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         config = new LinkedHashMap<String, String>();
     }
 
-    public void setProperties(Map<String, String> properties)
-            throws WdkModelException {
+    /**
+	 * @throws WdkModelException if error while setting properties on reporter 
+	 */
+    public void setProperties(Map<String, String> properties) throws WdkModelException {
         this.properties = properties;
         if (properties.containsKey(PROPERTY_PAGE_SIZE))
             maxPageSize = Integer.valueOf(properties.get(PROPERTY_PAGE_SIZE));
     }
 
-    public int getResultSize() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public int getResultSize() throws WdkModelException {
         return this.baseAnswer.getResultSize();
     }
 
-    public AnswerValue getAnswerValue() throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+    public AnswerValue getAnswerValue() {
         return this.baseAnswer;
     }
 
@@ -154,9 +159,9 @@ public abstract class Reporter implements Iterable<AnswerValue> {
     /**
      * Hook used to perform any setup needed before calling the write method.
      * 
-     * @throws SQLException
+     * @throws WdkModelException if error while initializing reporter
      */
-    protected abstract void initialize() throws SQLException;
+    protected abstract void initialize() throws WdkModelException;
 
     /**
      * Hook used to perform any teardown needed after calling the write method.
@@ -191,26 +196,16 @@ public abstract class Reporter implements Iterable<AnswerValue> {
         return baseAnswer.getQuestion();
     }
 
-    /**
-     * @return
-     */
-    protected Map<String, AttributeField> getSummaryAttributes() {
+    protected Map<String, AttributeField> getSummaryAttributes() throws WdkModelException {
         return baseAnswer.getSummaryAttributeFieldMap();
     }
 
+    @Override
     public Iterator<AnswerValue> iterator() {
         try {
             return new PageAnswerIterator(baseAnswer, startIndex, endIndex,
                     maxPageSize);
         } catch (WdkModelException ex) {
-            throw new RuntimeException(ex);
-        } catch (NoSuchAlgorithmException ex) {
-            throw new RuntimeException(ex);
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        } catch (JSONException ex) {
-            throw new RuntimeException(ex);
-        } catch (WdkUserException ex) {
             throw new RuntimeException(ex);
         }
     }

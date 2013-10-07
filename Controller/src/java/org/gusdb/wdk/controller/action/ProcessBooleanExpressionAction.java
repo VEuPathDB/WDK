@@ -1,8 +1,5 @@
 package org.gusdb.wdk.controller.action;
 
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -12,12 +9,12 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.form.BooleanExpressionForm;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.json.JSONException;
 
 /**
  * This Action is process boolean expression on queryStep.jsp page.
@@ -28,6 +25,7 @@ public class ProcessBooleanExpressionAction extends Action {
 
     private static Logger logger = Logger.getLogger(ProcessBooleanExpressionAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -60,8 +58,7 @@ public class ProcessBooleanExpressionAction extends Action {
 
     private StrategyBean processBooleanExpression(HttpServletRequest request,
             BooleanExpressionForm beForm) throws WdkModelException,
-            WdkUserException, NoSuchAlgorithmException, SQLException,
-            JSONException {
+            WdkUserException {
         UserBean wdkUser = (UserBean) request.getSession().getAttribute(
                 CConstants.WDK_USER_KEY);
         String expression = beForm.getBooleanExpression();

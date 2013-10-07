@@ -1,3 +1,3 @@
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
-<wdk:addStepHeader title="Revise Step"/>
-<wdk:addStepFooter/>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
+<imp:addStepHeader title="Revise Step"/>
+<imp:addStepFooter/>

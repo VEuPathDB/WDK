@@ -4,8 +4,6 @@
 package org.gusdb.wdk.controller.action;
 
 import java.io.PrintWriter;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +15,7 @@ import org.apache.struts.action.Action;
 import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.RecordClassBean;
@@ -37,6 +36,7 @@ import org.json.JSONObject;
  *         <li>add-all: add all records from a step into basket;</li>
  *         <li>remove-all:: remove all records from a step into basket;</li>
  *         <li>clear: remove all records from basket of a given type;</li>
+ *         <li>check: check if given record is already in basket and return boolean;</li>
  *         </ul>
  */
 public class ProcessBasketAction extends Action {
@@ -81,8 +81,11 @@ public class ProcessBasketAction extends Action {
      */
     private static final String ACTION_CLEAR = "clear";
 
+    private static final String ACTION_CHECK = "check";
+    
     private static final Logger logger = Logger.getLogger(ProcessBasketAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -92,6 +95,7 @@ public class ProcessBasketAction extends Action {
         UserBean user = ActionUtility.getUser(servlet, request);
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         String action = request.getParameter(PARAM_ACTION);
+        int numProcessed = 0;
         if (action.equalsIgnoreCase(ACTION_ADD)) {
             // need type & data params, where data is a JSON list of record ids
             RecordClassBean recordClass = getRecordClass(request, wdkModel);
@@ -114,6 +118,10 @@ public class ProcessBasketAction extends Action {
             // only need the type param, and it is the recordClass full name
             RecordClassBean recordClass = getRecordClass(request, wdkModel);
             user.clearBasket(recordClass);
+        } else if (action.equalsIgnoreCase(ACTION_CHECK)) {
+        	RecordClassBean recordClass = getRecordClass(request, wdkModel);
+        	List<String[]> records = getRecords(request, recordClass);
+        	numProcessed = user.getBasketCount(records, recordClass);
         } else {
             throw new WdkUserException("Unknown Basket operation: '" + action
                     + "'.");
@@ -123,6 +131,7 @@ public class ProcessBasketAction extends Action {
         int count = user.getBasketCount();
         JSONObject jsMessage = new JSONObject();
         jsMessage.put("count", count);
+        jsMessage.put("countProcessed", numProcessed);
         PrintWriter writer = response.getWriter();
         writer.print(jsMessage.toString());
 
@@ -136,15 +145,14 @@ public class ProcessBasketAction extends Action {
     }
 
     private RecordClassBean getRecordClass(HttpServletRequest request,
-            WdkModelBean wdkModel) throws WdkUserException, WdkModelException {
+            WdkModelBean wdkModel) throws WdkModelException {
         // get recordClass
         String type = request.getParameter(PARAM_TYPE);
         return wdkModel.findRecordClass(type);
     }
 
     private StepBean getStep(HttpServletRequest request, UserBean user)
-            throws WdkUserException, NoSuchAlgorithmException,
-            WdkModelException, SQLException, JSONException {
+            throws WdkUserException, WdkModelException {
         // get the step from step id
         String data = request.getParameter(PARAM_DATA);
         if (data == null || !data.matches("^\\d+$"))

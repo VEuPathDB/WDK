@@ -1,4 +1,7 @@
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
-<wdk:results strategy="${wdkStrategy}"/>
+<c:set var="wdkStrategy" value="${requestScope.wdkStrategy}" />
+<c:set var="wdkStep" value="${requestScope.wdkStep}" />
+<imp:results strategy="${wdkStrategy}" step="${wdkStep}"/>
 

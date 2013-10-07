@@ -16,11 +16,13 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.GroupBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
+import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
@@ -46,6 +48,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
     private static final Logger logger = Logger.getLogger(ProcessFilterAction.class);
 
+    @Override
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
@@ -118,9 +121,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     private static Map<Integer, StrategyBean> getModifiedStrategies(
-            UserBean user, String state) throws JSONException,
-            NoSuchAlgorithmException, WdkModelException, WdkUserException,
-            SQLException {
+            UserBean user, String state) throws JSONException, WdkUserException {
         logger.debug("previous state: '" + state + "'");
 
         if (state == null || state.length() == 0) state = null;
@@ -143,11 +144,11 @@ public class ShowStrategyAction extends ShowQuestionAction {
             if (!oldState.containsKey(strategyId)) {
                 strategies.put(strategyId, strategy);
             } else {
-                String oldChecksum = oldState.get(strategy.getStrategyId());
-                String newChecksum = strategy.getChecksum();
-                if (!newChecksum.equals(oldChecksum)) {
+                //String oldChecksum = oldState.get(strategy.getStrategyId());
+                //String newChecksum = strategy.getChecksum();
+                // if (!newChecksum.equals(oldChecksum)) {
                     strategies.put(strategyId, strategy);
-                }
+                // }
             }
         }
         return strategies;
@@ -155,8 +156,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
 
     public static void outputErrorJSON(UserBean user,
             HttpServletResponse response, Exception ex) throws JSONException,
-            IOException, NoSuchAlgorithmException, WdkUserException,
-            WdkModelException, SQLException {
+            IOException, WdkUserException,
+            WdkModelException {
         logger.debug("output JSON error message: " + ex);
 
         JSONObject jsMessage = new JSONObject();
@@ -253,19 +254,24 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     static private void outputCommon(UserBean user, JSONObject jsMessage)
-            throws JSONException, NoSuchAlgorithmException, WdkUserException,
-            WdkModelException, SQLException {
+            throws JSONException, WdkUserException,
+            WdkModelException {
         outputState(user, jsMessage);
         outputCurrentView(user, jsMessage);
     }
 
     static void outputState(UserBean user, JSONObject jsMessage)
-            throws WdkUserException, WdkModelException, JSONException,
-            SQLException, NoSuchAlgorithmException {
+            throws WdkUserException, WdkModelException, JSONException {
         JSONObject jsState = new JSONObject();
         StrategyBean[] openedStrategies = user.getActiveStrategies();
+
+        logger.debug("PRINTING STATE for " + openedStrategies.length + " strategies");
+   
         for (int order = 0; order < openedStrategies.length; order++) {
             StrategyBean strat = openedStrategies[order];
+
+            logger.debug("#" + strat.getStrategyId() + " - " + strat.getChecksum());
+
             int stratId = strat.getStrategyId();
             JSONObject jsStrategy = new JSONObject();
             jsStrategy.put("id", stratId);
@@ -304,7 +310,13 @@ public class ShowStrategyAction extends ShowQuestionAction {
             throws JSONException, NoSuchAlgorithmException, WdkModelException,
             WdkUserException, SQLException {
         JSONObject jsStrategies = new JSONObject();
+
+        logger.debug("PRINTING DETAIL for " + strategies.size() + " strategies");
+
         for (StrategyBean strategy : strategies.values()) {
+
+            logger.debug("#" + strategy.getStrategyId() + " - " + strategy.getChecksum());
+
             JSONObject jsStrategy = outputStrategy(model, user, strategy);
             System.out.println("ID: " + strategy.getStrategyId());
             System.out.println("Checksum: " + strategy.getChecksum());
@@ -323,6 +335,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStrategy.put("id", Integer.toString(strategy.getStrategyId()));
         jsStrategy.put("saved", strategy.getIsSaved());
         jsStrategy.put("savedName", strategy.getSavedName());
+        jsStrategy.put("description", strategy.getDescription());
         jsStrategy.put("importId", strategy.getImportId());
         jsStrategy.put("isValid", strategy.isValid());
 
@@ -352,16 +365,31 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStep.put("name", step.getDisplayName());
         jsStep.put("customName", step.getCustomName());
         jsStep.put("id", step.getStepId());
-        jsStep.put("answerId", step.getAnswerId());
         // the root of the sub-strategy should not be collapsed
         jsStep.put("isCollapsed", step.getIsCollapsible() && showSubStrategy);
-        jsStep.put("dataType", step.getDataType());
-        jsStep.put("displayType", step.getDisplayType());
-        jsStep.put("shortDisplayType", step.getShortDisplayType());
+        jsStep.put("isUncollapsible", step.isUncollapsible());
+
+    try {
+      RecordClassBean recordClass = step.getRecordClass();
+      jsStep.put("dataType", recordClass.getFullName());
+      jsStep.put("displayType", recordClass.getDisplayName());
+      jsStep.put("shortDisplayType", recordClass.getShortDisplayName());
+      jsStep.put("displayTypePlural", recordClass.getDisplayNamePlural());
+      jsStep.put("shortDisplayTypePlural",
+          recordClass.getShortDisplayNamePlural());
+    } catch (WdkModelException ex) {
+      jsStep.put("dataType", "unknown");
+      jsStep.put("displayType", "unknown");
+      jsStep.put("shortDisplayType", "unknown");
+      jsStep.put("displayTypePlural", "unknown");
+      jsStep.put("shortDisplayTypePlural", "unknown");
+      jsStep.put("invalidQuestion", "true");
+    }
+
         jsStep.put("shortName", step.getShortDisplayName());
         jsStep.put("results", step.getEstimateSize());
         jsStep.put("questionName", step.getQuestionName());
-        jsStep.put("displayName", step.getQuestion().getDisplayName());
+        jsStep.put("displayName", step.getDisplayName());
         jsStep.put("isboolean", step.getIsBoolean());
         jsStep.put("istransform", step.getIsTransform());
         jsStep.put("filtered", step.isFiltered());
@@ -403,19 +431,17 @@ public class ShowStrategyAction extends ShowQuestionAction {
     }
 
     static private void outputParams(UserBean user, StepBean step,
-            JSONObject jsStep) throws NoSuchAlgorithmException, JSONException,
-            WdkModelException, WdkUserException, SQLException {
+            JSONObject jsStep) throws JSONException, WdkUserException {
 
         JSONArray jsParams = new JSONArray();
-        Map<GroupBean, Map<String, ParamBean>> groups = step.getQuestion().getParamMapByGroups();
+        try {
+        Map<GroupBean, Map<String, ParamBean<?>>> groups = step.getQuestion().getParamMapByGroups();
         Map<String, String> paramValues = step.getParams();
         for (GroupBean group : groups.keySet()) {
-            Map<String, ParamBean> params = groups.get(group);
+            Map<String, ParamBean<?>> params = groups.get(group);
             for (String paramName : params.keySet()) {
-                ParamBean param = params.get(paramName);
-                String dependentValue = paramValues.containsKey(paramName) ? paramValues.get(paramName)
-                        : param.getDefault();
-
+            	ParamBean<?> param = params.get(paramName);
+                String dependentValue = getUserDependentValue(paramValues, param);
                 JSONObject jsParam = new JSONObject();
                 jsParam.put("name", paramName);
                 if (param != null) {
@@ -426,12 +452,8 @@ public class ShowStrategyAction extends ShowQuestionAction {
                     param.setUser(user);
                     param.setTruncateLength(TRUNCATE_LENGTH);
                     try {
-                        String rawValue;
-                        if (param instanceof EnumParamBean) {
-                            rawValue = ((EnumParamBean) param).getRawDisplayValue();
-                        } else rawValue = param.getBriefRawValue();
-                        jsParam.put("value", rawValue);
-			jsParam.put("internal",param.getRawValue());
+                        jsParam.put("value", getRawValue(paramValues, param));
+                        jsParam.put("internal",param.getRawValue());
                     } catch (Exception ex) {
                         throw new WdkModelException(ex);
                     }
@@ -441,10 +463,50 @@ public class ShowStrategyAction extends ShowQuestionAction {
                 jsParams.put(jsParam);
             }
         }
+        } catch(WdkModelException ex) {
+            // ignore the invalid question name
+        }
         jsStep.put("params", jsParams);
     }
 
-    static private void outputSubStrategy(WdkModelBean model, UserBean user,
+    private static String getRawValue(Map<String, String> paramValues, ParamBean<?> param)
+    		throws WdkUserException, WdkModelException {
+        if (param instanceof EnumParamBean) {
+        	EnumParamBean enumParam = (EnumParamBean)param;
+        	if (enumParam.isDependentParam()) {
+        	  Map<String, String> dependedValues = new LinkedHashMap<>();
+        	  for (ParamBean<?> dependedParam : enumParam.getDependedParams()) {
+        	    String dependedValue = getUserDependentValue(paramValues, dependedParam);
+        	    dependedValues.put(dependedParam.getName(), dependedValue);
+        	  }
+        	  enumParam.setDependedValues(dependedValues);
+        	}
+            return enumParam.getRawDisplayValue();
+        }
+        return param.getBriefRawValue();
+	}
+
+	private static String getUserDependentValue(Map<String, String> paramValues, ParamBean<?> param)
+    		throws WdkUserException, WdkModelException {
+    	    if (paramValues.containsKey(param.getName())) {
+    	        return paramValues.get(param.getName());
+            } else {
+                if (param instanceof EnumParamBean) {
+                    EnumParamBean enumParam = (EnumParamBean)param;
+                    if (enumParam.isDependentParam()) {
+                      Map<String, String> dependedValues = new LinkedHashMap<>();
+                      for (ParamBean<?> dependedParam : enumParam.getDependedParams()) {
+                        String dependedValue = getUserDependentValue(paramValues, dependedParam);
+                        dependedValues.put(dependedParam.getName(), dependedValue);
+                      }
+                      enumParam.setDependedValues(dependedValues);
+                    }
+                }
+                return param.getDefault();
+            }
+	}
+
+	static private void outputSubStrategy(WdkModelBean model, UserBean user,
             StepBean step, JSONObject jsStep, int strategyId)
             throws NoSuchAlgorithmException, JSONException, WdkModelException,
             WdkUserException, SQLException {

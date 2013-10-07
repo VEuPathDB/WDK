@@ -6,9 +6,9 @@ package org.gusdb.wdk.model.jspwrap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.gusdb.wdk.model.Category;
-import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.question.SearchCategory;
 
 /**
  * @author xingao
@@ -16,19 +16,19 @@ import org.gusdb.wdk.model.WdkModelException;
  */
 public class CategoryBean {
 
-    private Category category;
+    private SearchCategory category;
 
-    public CategoryBean(Category category) {
+    public CategoryBean(SearchCategory category) {
         this.category = category;
     }
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.Category#getChildren()
+     * @see org.gusdb.wdk.model.question.SearchCategory#getChildren()
      */
     public Map<String, CategoryBean> getWebsiteChildren() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        for (Category child : category.getWebsiteChildren().values()) {
+        for (SearchCategory child : category.getWebsiteChildren().values()) {
             beans.put(child.getName(), new CategoryBean(child));
         }
         return beans;
@@ -36,7 +36,15 @@ public class CategoryBean {
 
     public Map<String, CategoryBean> getWebserviceChildren() {
         Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
-        for (Category child : category.getWebserviceChildren().values()) {
+        for (SearchCategory child : category.getWebserviceChildren().values()) {
+            beans.put(child.getName(), new CategoryBean(child));
+        }
+        return beans;
+    }
+
+    public Map<String, CategoryBean> getDatasetChildren() {
+        Map<String, CategoryBean> beans = new LinkedHashMap<String, CategoryBean>();
+        for (SearchCategory child : category.getDatasetChildren().values()) {
             beans.put(child.getName(), new CategoryBean(child));
         }
         return beans;
@@ -44,7 +52,7 @@ public class CategoryBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.Category#getDisplayName()
+     * @see org.gusdb.wdk.model.question.SearchCategory#getDisplayName()
      */
     public String getDisplayName() {
         return category.getDisplayName();
@@ -52,7 +60,15 @@ public class CategoryBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.Category#getName()
+     * @see org.gusdb.wdk.model.question.SearchCategory#getShortDisplayName()
+     */
+    public String getShortDisplayName() {
+        return category.getShortDisplayName();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.question.SearchCategory#getName()
      */
     public String getName() {
         return category.getName();
@@ -60,7 +76,23 @@ public class CategoryBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.Category#getParent()
+     * @see org.gusdb.wdk.model.question.SearchCategory#isFlattenInMenu()
+     */
+    public boolean isFlattenInMenu() {
+        return category.isFlattenInMenu();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.question.SearchCategory#getDescription()
+     */
+    public String getDescription() {
+        return category.getDescription();
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.question.SearchCategory#getParent()
      */
     public CategoryBean getParent() {
         return new CategoryBean(category.getParent());
@@ -68,8 +100,7 @@ public class CategoryBean {
 
     /**
      * @return
-     * @throws WdkModelException
-     * @see org.gusdb.wdk.model.Category#getQuestions()
+     * @see org.gusdb.wdk.model.question.SearchCategory#getQuestions()
      */
     public QuestionBean[] getWebsiteQuestions() throws WdkModelException {
         Question[] questions = category.getWebsiteQuestions();
@@ -82,8 +113,7 @@ public class CategoryBean {
 
     /**
      * @return
-     * @throws WdkModelException
-     * @see org.gusdb.wdk.model.Category#getQuestions()
+     * @see org.gusdb.wdk.model.question.SearchCategory#getQuestions()
      */
     public QuestionBean[] getWebserviceQuestions() throws WdkModelException {
         Question[] questions = category.getWebserviceQuestions();
@@ -96,7 +126,20 @@ public class CategoryBean {
 
     /**
      * @return
-     * @see org.gusdb.wdk.model.Category#isMutliCategory()
+     * @see org.gusdb.wdk.model.question.SearchCategory#getQuestions()
+     */
+    public QuestionBean[] getDatasetQuestions() throws WdkModelException {
+        Question[] questions = category.getDatasetQuestions();
+        QuestionBean[] beans = new QuestionBean[questions.length];
+        for (int i = 0; i < questions.length; i++) {
+            beans[i] = new QuestionBean(questions[i]);
+        }
+        return beans;
+    }
+
+    /**
+     * @return
+     * @see org.gusdb.wdk.model.question.SearchCategory#isMutliCategory()
      */
     public boolean isMultiCategory() {
         return category.isMultiCategory();

@@ -1,5 +1,5 @@
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <c:set var="question" value="${requestScope.wdkQuestion}"/>
 <c:set var="importStep" value="${requestScope.importStep}"/>
@@ -73,17 +73,17 @@
 </style>
 <c:set var="pMap" value="${question.paramsMap}"/>
 
-<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/wizard.do"  onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
+<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/wizard.do"  onsubmit="wdk.addStepPopup.callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
   
 <input type="hidden" id="stage" value="process_span" />
   
 <div id="spanLogicParams">
-	<wdk:answerParamInput qp="${pMap['span_a']}"/>
-	<wdk:answerParamInput qp="${pMap['span_b']}"/>
-	<input type="hidden" value="${wdkStep.displayType}" id="span_a_type"/>
-	<input type="hidden" value="${importStep.displayType}" id="span_b_type"/>
-	<c:set var="wdkStepRecType" value="${wdkStep.displayType}"/>
-	<c:set var="importStepRecType" value="${importStep.displayType}"/>
+	<imp:answerParamInput qp="${pMap['span_a']}"/>
+	<imp:answerParamInput qp="${pMap['span_b']}"/>
+	<input type="hidden" value="${wdkStep.recordClass.displayName}" id="span_a_type"/>
+	<input type="hidden" value="${importStep.recordClass.displayName}" id="span_b_type"/>
+	<c:set var="wdkStepRecType" value="${wdkStep.recordClass.displayName}"/>
+	<c:set var="importStepRecType" value="${importStep.recordClass.displayName}"/>
 	<c:set var="wdkStepResultSize" value="${wdkStep.resultSize}"/>
 	<c:set var="importStepResultSize" value="${importStep.resultSize}"/>
 	<c:if test="${wdkStepResultSize > 1}"><c:set var="wdkStepRecType" value="${wdkStepRecType}s"/></c:if>
@@ -105,15 +105,15 @@
     		<fieldset id="setAFields">
       		<table id="offsetOptions" cellpadding="2">
         	<tr>
-		<td style="text-align:right">begin at:</td><td><wdk:enumParamInput qp="${pMap['span_begin_a']}"/></td>
-		<td><wdk:enumParamInput qp="${pMap['span_begin_direction_a']}"/></td>
+		<td style="text-align:right">begin at:</td><td><imp:enumParamInput qp="${pMap['span_begin_a']}"/></td>
+		<td><imp:enumParamInput qp="${pMap['span_begin_direction_a']}"/></td>
 		<td align="left" valign="top">
             	<html:text styleId="span_begin_offset_a" property="value(span_begin_offset_a)" size="35" />
         	</td>
         	</tr>
         	<tr>
-		<td style="text-align:right">end at:</td><td><wdk:enumParamInput qp="${pMap['span_end_a']}"/></td>
-		<td><wdk:enumParamInput qp="${pMap['span_end_direction_a']}"/></td>
+		<td style="text-align:right">end at:</td><td><imp:enumParamInput qp="${pMap['span_end_a']}"/></td>
+		<td><imp:enumParamInput qp="${pMap['span_end_direction_a']}"/></td>
 		<td align="left" valign="top">
             		<html:text styleId="span_end_offset_a" property="value(span_end_offset_a)" size="35" />
         	</td>
@@ -142,15 +142,15 @@
     		<fieldset id="setBFields">
       		<table id="offsetOptions" cellpadding="2">
         	<tr>
-          	<td style="text-align:right">begin at:</td><td><wdk:enumParamInput qp="${pMap['span_begin_b']}"/></td>
-		<td><wdk:enumParamInput qp="${pMap['span_begin_direction_b']}"/></td>
+          	<td style="text-align:right">begin at:</td><td><imp:enumParamInput qp="${pMap['span_begin_b']}"/></td>
+		<td><imp:enumParamInput qp="${pMap['span_begin_direction_b']}"/></td>
 		<td align="left" valign="top">
 	        	<html:text styleId="span_begin_offset_b" property="value(span_begin_offset_b)" size="35" />
 	        </td>
 	        </tr>
 	        <tr>
-		<td style="text-align:right">end at:</td><td><wdk:enumParamInput qp="${pMap['span_end_b']}"/></td>
-		<td><wdk:enumParamInput qp="${pMap['span_end_direction_b']}"/></td>
+		<td style="text-align:right">end at:</td><td><imp:enumParamInput qp="${pMap['span_end_b']}"/></td>
+		<td><imp:enumParamInput qp="${pMap['span_end_direction_b']}"/></td>
 		<td align="left" valign="top">
 	        	<html:text styleId="span_end_offset_b" property="value(span_end_offset_b)" size="35" />
 	        </td>
@@ -178,7 +178,7 @@
 	<tr>
 	<td>
    		<table><tr>
-			<td><wdk:enumParamInput qp="${pMap['span_operation']}" layout="horizontal"/></td>
+			<td><imp:enumParamInput qp="${pMap['span_operation']}" layout="horizontal"/></td>
 		</tr></table>
 	</td>
 	</tr>
@@ -191,7 +191,7 @@
 	<tr>
 	<td>
 		<table><tr>
-    			<td><wdk:enumParamInput qp="${pMap['span_strand']}" layout="horizontal"/></td>
+    			<td><imp:enumParamInput qp="${pMap['span_strand']}" layout="horizontal"/></td>
 		</tr></table>
 	</td>
 	</tr>
@@ -214,7 +214,7 @@
 			<!--<td><input type="radio" name="output" value="A" ${disabled} ${selected}>Set A</input></td>
     				<td><input type="radio" name="output" value="B" ${disabled}>Set B</input></td>-->
 	
-			<wdk:enumParamInput qp="${pMap['span_output']}" layout="horizontal"/>
+			<imp:enumParamInput qp="${pMap['span_output']}" layout="horizontal"/>
 
 		</tr></table>
 	</td>

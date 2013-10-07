@@ -99,7 +99,7 @@ sub makeImageMap {
 	# IMAGEMAP AREA = entire span
 	#
 	if ($area eq 'all') {
-	    $coords = [$0, 
+	    $coords = [0, 
 		       $bbox->{y} - $bbox->{height},
 		       $sc->{x2},
 		       $bbox->{y}

@@ -1,7 +1,5 @@
 package org.gusdb.wdk.model.test;
 
-import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -11,9 +9,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.sql.DataSource;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 
 import org.apache.commons.cli.BasicParser;
 import org.apache.commons.cli.CommandLine;
@@ -23,29 +18,26 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.log4j.Logger;
-import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.AttributeField;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.QuestionSet;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordClassSet;
-import org.gusdb.wdk.model.RecordInstance;
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
-import org.gusdb.wdk.model.dbms.DBPlatform;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.dbms.ResultList;
-import org.gusdb.wdk.model.dbms.SqlUtils;
-import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.ProcessQuery;
+import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.QueryInstance;
 import org.gusdb.wdk.model.query.QuerySet;
 import org.gusdb.wdk.model.query.SqlQueryInstance;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.question.QuestionSet;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordClassSet;
+import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.attribute.AttributeField;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
-import org.xml.sax.SAXException;
 
 /**
  * SanityTester.java " [-project project_id]" +
@@ -91,11 +83,7 @@ public class SanityTester {
 
     public SanityTester(String modelName, boolean verbose,
             String testFilterString, boolean failuresOnly, boolean indexOnly,
-            boolean skipWebSvcQueries) throws WdkModelException,
-            WdkUserException, NoSuchAlgorithmException,
-            ParserConfigurationException, TransformerException, IOException,
-            SAXException, SQLException, JSONException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+            boolean skipWebSvcQueries) throws WdkModelException {
         String gusHome = System.getProperty(Utilities.SYSTEM_PROPERTY_GUS_HOME);
         this.wdkModel = WdkModel.construct(modelName, gusHome);
         this.verbose = verbose;
@@ -112,8 +100,7 @@ public class SanityTester {
     // Private Methods
     // ------------------------------------------------------------------
 
-    private void testQuestionSets() throws SQLException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, WdkUserException {
+    private void testQuestionSets() throws WdkModelException {
 
         System.out.println("Sanity Test:  Checking questions" + newline);
 
@@ -156,7 +143,7 @@ public class SanityTester {
         try {
             question.getQuery().setIsCacheable(false);
             AnswerValue answerValue = question.makeAnswerValue(user,
-                    paramValuesSet.getParamValues(), 0);
+                    paramValuesSet.getParamValues(), true, 0);
 
             int resultSize = answerValue.getResultSize();
 
@@ -211,18 +198,17 @@ public class SanityTester {
                 System.out.println(BANNER_LINE_bot + newline);
 
             // check the connection usage
-            DBPlatform platform = wdkModel.getQueryPlatform();
-            if (platform.getActiveCount() > 0) {
+            DatabaseInstance database = wdkModel.getAppDb();
+            if (database.getActiveCount() > 0) {
                 System.err.println("Connection leak ("
-                        + platform.getActiveCount() + ") for question: "
+                        + database.getActiveCount() + ") for question: "
                         + question.getFullName());
             }
         }
     }
 
     private void testQuerySets(String queryType) throws SQLException,
-            WdkModelException, NoSuchAlgorithmException, JSONException,
-            WdkUserException {
+            WdkModelException {
 
         System.out.println("Sanity Test:  Checking " + queryType + " queries"
                 + newline);
@@ -238,13 +224,13 @@ public class SanityTester {
                 // discover number of entities expected in each attribute query
                 String testRowCountSql = querySet.getTestRowCountSql();
                 if (testRowCountSql != null) {
-                    ResultSet rs = SqlUtils.executeQuery(wdkModel, wdkModel
-                            .getQueryPlatform().getDataSource(),
+                    ResultSet rs = SqlUtils.executeQuery(wdkModel
+                            .getAppDb().getDataSource(),
                             testRowCountSql, querySet.getName()
-                                    + "-test-row-count");
+                                    + "__sanity-test-row-count");
                     rs.next();
                     minRows = maxRows = rs.getInt(1);
-                    SqlUtils.closeResultSet(rs);
+                    SqlUtils.closeResultSetAndStatement(rs);
                 }
             }
 
@@ -347,104 +333,99 @@ public class SanityTester {
     }
 
     private int testNonAttributeQuery(QuerySet querySet, Query query,
-            ParamValuesSet paramValuesSet) throws SQLException,
-            WdkModelException, NoSuchAlgorithmException, JSONException,
-            WdkUserException {
+            ParamValuesSet paramValuesSet) throws WdkModelException {
 
         int count = 0;
 
         QueryInstance instance = query.makeInstance(user,
                 paramValuesSet.getParamValues(), true, 0,
                 new LinkedHashMap<String, String>());
-        ResultList rs = instance.getResults();
+        ResultList rl = instance.getResults();
 
-        while (rs.next()) {
+        while (rl.next()) {
             count++;
         }
-        rs.close();
+        rl.close();
         return count;
     }
 
     private int testAttributeQuery_Count(Query query,
-            ParamValuesSet paramValuesSet) throws NoSuchAlgorithmException,
-            SQLException, WdkModelException, JSONException, WdkUserException {
+            ParamValuesSet paramValuesSet) throws SQLException, WdkModelException {
         // put user id into the param
         Map<String, String> params = new LinkedHashMap<String, String>();
-        params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
+        
+        // since this attribute query is the original copy from model and it doesn't
+        // params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
 
         SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
                 params, true, 0, new LinkedHashMap<String, String>());
 
-        if (paramValuesSet.getParamValues().size() != 2) {
-            throw new WdkUserException(
-                    "missing <defaultTestParamValues> for querySet "
-                            + query.getQuerySet().getName());
-        }
+//        if (paramValuesSet.getParamValues().size() != 2) {
+//            throw new WdkUserException(
+//                    "missing <defaultTestParamValues> for querySet "
+//                            + query.getQuerySet().getName());
+//        }
         String sql = "select count (*) from (select distinct "
                 + paramValuesSet.getNamesAsString() + " from ("
-                + instance.getUncachedSql() + "))";
+                + instance.getUncachedSql() + ") f1) f2";
 
-        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-                query.getFullName() + "-test-count");
+        DataSource dataSource = wdkModel.getAppDb().getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
+                query.getFullName() + "__sanity-test-count");
         resultSet.next();
         int count = resultSet.getInt(1);
-        SqlUtils.closeResultSet(resultSet);
+        SqlUtils.closeResultSetAndStatement(resultSet);
         return count;
     }
 
     private void testAttributeQuery_Time(Query query,
             ParamValuesSet paramValuesSet, int count)
-            throws NoSuchAlgorithmException, SQLException, WdkModelException,
-            JSONException, WdkUserException {
+            throws SQLException, WdkModelException {
         // put user id into the param
         Map<String, String> params = new LinkedHashMap<String, String>();
-        params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
+//        params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
 
         SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
                 params, true, 0, new LinkedHashMap<String, String>());
 
-        String sql = "select * from (" + instance.getUncachedSql() + ") "
+        String sql = "select * from (" + instance.getUncachedSql() + ") f "
                 + paramValuesSet.getWhereClause();
 
-        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-                query.getFullName() + "-test-time");
+        DataSource dataSource = wdkModel.getAppDb().getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
+                query.getFullName() + "__sanity-test-time");
         if (count > 0 && !resultSet.next()) {
             String msg = "no row returned for " + query.getFullName()
                     + " using where clause (" + paramValuesSet.getWhereClause()
                     + ")";
             throw new WdkModelException(msg);
         }
-        while (resultSet.next())
-            ; // bring full result over to test speed
-        SqlUtils.closeResultSet(resultSet);
+        while (resultSet.next()) {} // bring full result over to test speed
+        SqlUtils.closeResultSetAndStatement(resultSet);
     }
 
     private int testTableQuery_TotalTime(Query query)
-            throws NoSuchAlgorithmException, SQLException, WdkModelException,
-            JSONException, WdkUserException {
+            throws SQLException, WdkModelException {
         // put user id into the param
         Map<String, String> params = new LinkedHashMap<String, String>();
-        params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
+        //params.put(Utilities.PARAM_USER_ID, Integer.toString(user.getUserId()));
 
         SqlQueryInstance instance = (SqlQueryInstance) query.makeInstance(user,
                 params, true, 0, new LinkedHashMap<String, String>());
 
         String sql = instance.getUncachedSql();
 
-        DataSource dataSource = wdkModel.getQueryPlatform().getDataSource();
-        ResultSet resultSet = SqlUtils.executeQuery(wdkModel, dataSource, sql,
-                query.getFullName() + "-test-total-time");
+        DataSource dataSource = wdkModel.getAppDb().getDataSource();
+        ResultSet resultSet = SqlUtils.executeQuery(dataSource, sql,
+                query.getFullName() + "__sanity-test-total-time");
         int count = 0;
         while (resultSet.next())
             count++; // bring full result over to test speed
-        SqlUtils.closeResultSet(resultSet);
+        SqlUtils.closeResultSetAndStatement(resultSet);
         return count;
     }
 
-    private void testRecordSets() throws SQLException, WdkModelException,
-            NoSuchAlgorithmException, JSONException, WdkUserException {
+    private void testRecordSets() {
 
         System.out.println("Sanity Test:  Checking records" + newline);
 
@@ -656,12 +637,7 @@ public class SanityTester {
 
     // private static Logger logger = Logger.getLogger(SanityTester.class);
 
-    public static void main(String[] args) throws WdkModelException,
-            SAXException, IOException, ParserConfigurationException,
-            TransformerFactoryConfigurationError, TransformerException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            InstantiationException, IllegalAccessException, WdkUserException,
-            ClassNotFoundException {
+    public static void main(String[] args) throws WdkModelException, SQLException {
         String cmdName = System.getProperty("cmdName");
 
         Options options = declareOptions();
@@ -683,7 +659,7 @@ public class SanityTester {
                 testFilterString, failuresOnly, indexOnly, skipWebSvcQueries);
 
         String dbConnectionUrl = sanityTester.wdkModel
-                .getQueryPlatform().getDbConfig().getConnectionUrl();                
+                .getAppDb().getConfig().getConnectionUrl();                
 
         System.out.println("Sanity Test: ");
         System.out.println(" [Database] " + dbConnectionUrl);
@@ -691,10 +667,12 @@ public class SanityTester {
             new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy");
         System.out.println(" [Time] " + sdFormat.format(new Date()));
         System.out.println();
-        
+
+	//System.out.println(" MODEL: " + modelName + "\n\n");
+
         sanityTester.testQuerySets(QuerySet.TYPE_VOCAB);
         sanityTester.testQuerySets(QuerySet.TYPE_ATTRIBUTE);
-        sanityTester.testQuerySets(QuerySet.TYPE_TABLE);
+        if ( !modelName.equals("EuPathDB") ) { sanityTester.testQuerySets(QuerySet.TYPE_TABLE); }
         sanityTester.testQuestionSets();
         sanityTester.testRecordSets();
         if (!indexOnly) {
@@ -702,5 +680,7 @@ public class SanityTester {
                 System.exit(1);
             }
         }
+
+
     }
 }

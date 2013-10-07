@@ -5,23 +5,20 @@ package org.gusdb.wdk.model.user;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.AttributeValue;
-import org.gusdb.wdk.model.Question;
-import org.gusdb.wdk.model.RecordClass;
-import org.gusdb.wdk.model.RecordClassSet;
-import org.gusdb.wdk.model.RecordInstance;
 import org.gusdb.wdk.model.UnitTestHelper;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.dbms.ResultList;
+import org.gusdb.wdk.model.answer.AnswerValue;
+import org.gusdb.wdk.model.jspwrap.RecordClassBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.gusdb.wdk.model.query.Query;
-import org.gusdb.wdk.model.query.QueryInstance;
+import org.gusdb.wdk.model.question.Question;
+import org.gusdb.wdk.model.record.RecordClass;
+import org.gusdb.wdk.model.record.RecordClassSet;
+import org.gusdb.wdk.model.record.RecordInstance;
+import org.gusdb.wdk.model.record.attribute.AttributeValue;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -41,17 +38,7 @@ public class BasketTest {
     public BasketTest() throws Exception {
         wdkModel = UnitTestHelper.getModel();
         basketFactory = wdkModel.getBasketFactory();
-
-        for (RecordClassSet rcSet : wdkModel.getAllRecordClassSets()) {
-            for (RecordClass rc : rcSet.getRecordClasses()) {
-                if (rc.hasBasket()) {
-                    this.recordClass = rc;
-                    break;
-                }
-            }
-            if (this.recordClass != null)
-                break;
-        }
+        recordClass = UnitTestHelper.getNormalQuestion().getRecordClass();
     }
 
     @Test
@@ -80,13 +67,12 @@ public class BasketTest {
         Question question = recordClass.getRealtimeBasketQuestion();
         Map<String, String> params = new HashMap<String, String>();
         params.put(BasketFactory.PARAM_USER_SIGNATURE, user.getSignature());
-        AnswerValue answerValue = question.makeAnswerValue(user, params, 0);
+        AnswerValue answerValue = question.makeAnswerValue(user, params, true, 0);
         Assert.assertTrue("answer size >= 5", answerValue.getResultSize() >= 5);
         // check each records
         for (RecordInstance instance : answerValue.getRecordInstances()) {
             String pkValue = (String) instance.getPrimaryKey().getValue();
-            AttributeValue attribute = instance
-                    .getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
+            AttributeValue attribute = instance.getAttributeValue(BasketFactory.BASKET_ATTRIBUTE);
             int value = Integer.parseInt(attribute.getValue().toString());
             Assert.assertEquals("record basket: " + pkValue, 1, value);
         }
@@ -95,11 +81,15 @@ public class BasketTest {
     @Test
     public void testGetCounts() throws Exception {
         UserBean user = new UserBean(UnitTestHelper.getRegisteredUser());
-        Map<String, Integer> counts = user.getBasketCounts();
+        Map<RecordClassBean, Integer> beanCounts = user.getBasketCounts();
+        Map<String, Integer> counts = new HashMap<String, Integer>();
+        for (RecordClassBean rcBean : beanCounts.keySet()) {
+        	String rcName = rcBean.getFullName();
+        	counts.put(rcName, beanCounts.get(rcBean));
+        }
         for (RecordClassSet rcSet : wdkModel.getAllRecordClassSets()) {
             for (RecordClass rc : rcSet.getRecordClasses()) {
-                if (!rc.hasBasket())
-                    continue;
+                if (!rc.isUseBasket()) continue;
                 String rcName = rc.getFullName();
                 Assert.assertTrue(counts.containsKey(rcName));
                 Assert.assertTrue(counts.get(rcName) >= 0);
@@ -109,7 +99,7 @@ public class BasketTest {
 
     private List<String[]> addSomeRecords(User user) throws Exception {
         // get a list of record ids
-        List<String[]> ids = getIds(recordClass, POOL_SIZE);
+        List<String[]> ids = getIds(POOL_SIZE);
         // randomly pick up 5 ids from the list, and add them into basket
         List<String[]> selected = new ArrayList<String[]>();
         Random random = UnitTestHelper.getRandom();
@@ -121,30 +111,26 @@ public class BasketTest {
         return selected;
     }
 
-    private List<String[]> getIds(RecordClass recordClass, int limit)
-            throws Exception {
+    private List<String[]> getIds(int limit) throws Exception {
         User user = UnitTestHelper.getRegisteredUser();
+        Step step = UnitTestHelper.createNormalStep(user);
+        AnswerValue answerValue = step.getAnswerValue();
+        RecordClass recordClass = step.getQuestion().getRecordClass();
+        String[] pkColumns = recordClass.getPrimaryKeyAttributeField().getColumnRefs();
         List<String[]> ids = new ArrayList<String[]>();
-        Query query = recordClass.getAllRecordsQuery();
-        Map<String, String> params = new HashMap<String, String>();
-        QueryInstance instance = query.makeInstance(user, params, true, 0,
-                new LinkedHashMap<String, String>());
-        String[] pkColumns = recordClass.getPrimaryKeyAttributeField()
-                .getColumnRefs();
-        ResultList results = instance.getResults();
+
         int count = 0;
-        while (results.next()) {
+        for (RecordInstance instance : answerValue.getRecordInstances()) {
+            Map<String, String> valueMap = instance.getPrimaryKey().getValues();
             String[] values = new String[pkColumns.length];
             for (int i = 0; i < pkColumns.length; i++) {
-                String value = results.get(pkColumns[i]).toString();
+                String value = valueMap.get(pkColumns[i]);
                 values[i] = value;
             }
             ids.add(values);
             count++;
-            if (count >= limit)
-                break;
+            if (count >= limit) break;
         }
-        results.close();
         return ids;
     }
 }

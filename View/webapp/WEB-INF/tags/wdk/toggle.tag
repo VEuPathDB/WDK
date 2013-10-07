@@ -72,15 +72,33 @@
 
 <c:set var="userAgent" value="${header['User-Agent']}"/>
 
-<!-- allow user's previous settings to override defaults -->
+<%-- most CSS selector characters (., >, +, ~, #, :, etc) are not valid in id attributes or tag names --%>
+<%-- but some of the names used in gene page contain . or : .......  remove or escape them \\ --%>
+<c:set var="name" value="${fn:replace(name, '.', '')}"/>
+<c:set var="name" value="${fn:replace(name, ':', '')}"/>
+
+<!-- allow user's previous setting (in cookie: section open or closed) to override default in database -->
 <c:set var="cookieKey" value="show${name}"/>
 <c:set var="userPref" value="${cookie[cookieKey].value}"/>
-<c:if test="${userPref == '1'}"><c:set var="isOpen" value="true"/></c:if>
-<c:if test="${userPref == '0'}"><c:set var="isOpen" value="false"/></c:if>
 
-<%-- <a name="${name}"> --%>
+<%-- 	- check cookie state
+	- if cookie not found, check if isOpen was specified in table (passed to tag as an attribute)
+	- otherwise isOpen will be set to false (closed section)
+--%>
+<c:choose>
+<%-- found cookie --%>
+<c:when test='${not empty userPref}'>
+	<c:if test="${userPref == '1'}"><c:set var="isOpen" value="true"/></c:if>
+	<c:if test="${userPref == '0'}"><c:set var="isOpen" value="false"/></c:if>
+</c:when>
+<%-- did not find cookie --%>
+<c:otherwise>
+	<c:if test='${empty isOpen}'>  
+		<c:set var="isOpen" value="false"/>
+	</c:if>
+</c:otherwise>
+</c:choose>
 
-<%-- <c:set var="displayNameParam" value="This%20Data%20Set"/> --%>
 <c:set var="displayNameParam">
 	<c:url value="${displayName}"/>
 </c:set>
@@ -90,23 +108,20 @@
 
 <table width="100%" class="paneltoggle"
        cellpadding="3"        
-       bgcolor="#DDDDDD"
-       
-       >
+       bgcolor="#DDDDDD">
   <tr>
     <c:choose>
       <c:when test="${noData}">
-
         <td><font size="-1" face="Arial,Helvetica"><b>${displayName}</b></font>  <i>none</i></td>
       </c:when>
       <c:otherwise>
         <td>
         <c:set var="showOnClick" value=""/>
         <c:if test="${imageId != null}">
-            <c:set var="showOnClick" value="updateImage('${imageId}', '${imageSource}')"/>
+            <c:set var="showOnClick" value="wdk.api.updateImage('${imageId}', '${imageSource}')"/>
         </c:if>
         <c:if test="${imageMapDivId != null}">
-            <c:set var="showOnClick" value="updateImageMapDiv('${imageMapDivId}', '${imageMapSource}', '${postLoadJS}')"/>
+            <c:set var="showOnClick" value="wdk.api.updateImageMapDiv('${imageMapDivId}', '${imageMapSource}', '${postLoadJS}')"/>
         </c:if>
         <c:if test="${showOnClick != ''}">
             <c:set var="showOnClick" value="${showOnClick}&amp;&amp;"/>
@@ -117,29 +132,23 @@
             <a name="${anchorName}"></a>   
         </c:if>
 
-<%-- most CSS selector characters (., >, +, ~, #, :, etc) are not valid in id attributes or tag names --%>
-<%-- but some of the names used in gene page contain . or : .......  remove or escape them \\ --%>
-<c:set var="name" value="${fn:replace(name, '.', '')}"/>
-<c:set var="name" value="${fn:replace(name, ':', '')}"/>
-
-
         <%--  Safari/IE cannot handle this way of doing it  --%>
         <c:choose>
         <c:when test="${fn:contains(userAgent, 'Firefox') || fn:contains(userAgent, 'Red Hat') }">
            <div id="toggle${name}" class="toggle-handle" name="${name}" align="left">
              <b><font size="-1" face="Arial,Helvetica">${displayName}</font></b>
-             <a href="javascript:${showOnClick}toggleLayer('${name}', 'toggle${name}')" title="Show ${displayName}" onmouseover="status='Show ${displayName}';return true" onmouseout="status='';return true">Show</a>
+             <a href="javascript:${showOnClick}wdk.api.toggleLayer('${name}', 'toggle${name}')" title="Show ${displayName}" onmouseover="status='Show ${displayName}';return true" onmouseout="status='';return true">Show</a>
            </div>
         </c:when>
 
         <%--  Netscape/Firefox cannot handle this way of doing it  --%>
         <c:otherwise>
            <div id="showToggle${name}" class="toggle" name="${name}" align="left"><b><font size="-1" face="Arial,Helvetica">${displayName}</font></b>
-             <a href="javascript:${showOnClick}showLayer('${name}')&amp;&amp;showLayer('hideToggle${name}')&amp;&amp;hideLayer('showToggle${name}')&amp;&amp;storeIntelligentCookie('show${name}',1,365)" title="Show ${displayName}" onmouseover="status='Show ${displayName}';return true" onmouseout="status='';return true">Show</a>
+             <a href="javascript:${showOnClick}wdk.api.showLayer('${name}')&amp;&amp;wdk.api.showLayer('hideToggle${name}')&amp;&amp;wdk.api.hideLayer('showToggle${name}')&amp;&amp;wdk.api.storeIntelligentCookie('show${name}',1,365)" title="Show ${displayName}" onmouseover="status='Show ${displayName}';return true" onmouseout="status='';return true">Show</a>
            </div>
 
            <div id="hideToggle${name}" class="toggle" name="${name}" align="left"><b><font size="-1" face="Arial,Helvetica">${displayName}</font></b>
-              <a href="javascript:hideLayer('${name}')&amp;&amp;showLayer('showToggle${name}')&amp;&amp;hideLayer('hideToggle${name}')&amp;&amp;storeIntelligentCookie('show${name}',0,365);" title="Hide ${displayName}" onmouseover="status='Hide ${displayName}';return true" onmouseout="status='';return true">Hide</a>
+              <a href="javascript:wdk.api.hideLayer('${name}')&amp;&amp;wdk.api.showLayer('showToggle${name}')&amp;&amp;wdk.api.hideLayer('hideToggle${name}')&amp;&amp;wdk.api.storeIntelligentCookie('show${name}',0,365);" title="Hide ${displayName}" onmouseover="status='Hide ${displayName}';return true" onmouseout="status='';return true">Hide</a>
             </div>
         </c:otherwise>
         </c:choose>
@@ -147,7 +156,7 @@
       </c:otherwise>
     </c:choose>
     </td>
-    <c:if test='${displayLink != null && displayLink != ""}'>
+    <c:if test='${displayLink ne null and displayLink ne ""}'>
       <td align="left">
          <font size="-1" face="Arial,Helvetica">
 				 ${displayLink}
@@ -156,7 +165,7 @@
     </c:if>
 
     <c:choose>
-	 <c:when  test='${dsLink != null && dsLink != ""}'>
+	 <c:when  test='${dsLink ne null and dsLink ne ""}'>
 	 <td align="right">
            <font size="-1" face="Arial,Helvetica">
            [<a href="${dsLink}">Data Sources</a>]
@@ -165,17 +174,17 @@
 	</c:when>
 	<c:otherwise>
 	<c:choose>
-      <c:when test='${attribution != null && attribution != ""}'>
+      <c:when test='${attribution ne null and attribution ne ""}'>
         <td align="right">
            <font size="-1" face="Arial,Helvetica">
-           [<a href="showXmlDataContent.do?name=XmlQuestions.DataSources&datasets=${attribution}&title=${displayNameParam}">Data Sources</a>]
+           [<a href="getDataset.do?display=detail&datasets=${attribution}&title=${displayNameParam}">Data Sources</a>]
            </font>
         </td>
       </c:when>
-      <c:when test="${name != null && name !='' && ds_ref_table != null && ds_ref_table != ''}">
+      <c:when test="${name ne null and name ne '' and ds_ref_table ne null and ds_ref_table ne ''}">
         <td align="right">
           <font size="-2" face="Arial,Helvetica">
-          [<a href="<c:url value='/getDataSource.do?recordClass=${wdkRecord.recordClass.fullName}&display=detail&target=${name}' />">Data Sources</a>]
+          [<a href="<c:url value='/getDataset.do?recordClass=${wdkRecord.recordClass.fullName}&display=detail&target=${name}' />">Data Sources</a>]
           </font>
         </td>
       </c:when>
@@ -200,7 +209,7 @@
       <c:when test="${fn:contains(userAgent, 'Firefox') || fn:contains(userAgent, 'Red Hat') }">
         <c:if test="${isOpen}"> 
            <script type="text/javascript">
-              toggleLayer('${name}', 'toggle${name}');
+              wdk.api.toggleLayer('${name}', 'toggle${name}');
             </script>
         </c:if>
      </c:when> 
@@ -211,18 +220,18 @@
           <c:when test="${isOpen}">
           <script type="text/javascript">
           <!-- //
-            showLayer("${name}");
-            showLayer("hideToggle${name}");
-            hideLayer("showToggle${name}");
+            wdk.api.showLayer("${name}");
+            wdk.api.showLayer("hideToggle${name}");
+            wdk.api.hideLayer("showToggle${name}");
           // -->
           </script>
          </c:when>
          <c:otherwise>
           <script type="text/javascript">
           <!-- //
-            hideLayer("${name}");
-            hideLayer("hideToggle${name}");
-            showLayer("showToggle${name}");
+            wdk.api.hideLayer("${name}");
+            wdk.api.hideLayer("hideToggle${name}");
+            wdk.api.showLayer("showToggle${name}");
           // -->
           </script>
          </c:otherwise>
@@ -230,18 +239,18 @@
      </c:otherwise>
      </c:choose>
 
-        <c:if test="${imageId != null && isOpen}">
+        <c:if test="${imageId ne null and isOpen}">
           <script type="text/javascript">
             <!-- //
-              updateImage('${imageId}', '${imageSource}')
+              wdk.api.updateImage('${imageId}', '${imageSource}')
             // -->
           </script>
         </c:if>
 
-        <c:if test="${imageMapDivId != null && isOpen}">
+        <c:if test="${imageMapDivId ne null and isOpen}">
           <script type="text/javascript">
             <!-- //
-              updateImageMapDiv('${imageMapDivId}', '${imageMapSource}', '${postLoadJS}')
+              wdk.api.updateImageMapDiv('${imageMapDivId}', '${imageMapSource}', '${postLoadJS}')
             // -->
           </script>
         </c:if>

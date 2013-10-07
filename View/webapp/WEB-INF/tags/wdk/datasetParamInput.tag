@@ -57,11 +57,12 @@ function chooseType(paramName, type) {
 <c:set var="dsName" value="${pNam}_dataset"/>
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="dataset" value="${requestScope[dsName]}" />  
-<c:set var="recordType" value="${qp.recordClass.type}" />
+<c:set var="recordName" value="${qp.recordClass.displayNamePlural}" />
 <c:set var="defaultType" value="${qp.defaultType}" />
 <c:set var="dataChecked"><c:if test="${defaultType == 'data'}">checked</c:if></c:set>
 <c:set var="fileChecked"><c:if test="${defaultType == 'file'}">checked</c:if></c:set>
 <c:set var="basketChecked"><c:if test="${defaultType == 'basket'}">checked</c:if></c:set>
+<c:set var="noAction" value="${requestScope.action == null || requestScope.action == ''}" />
 
 <input type="hidden" id="${pNam}_type" name="${pNam}_type" value="${defaultType}" />
 
@@ -91,20 +92,28 @@ function chooseType(paramName, type) {
     </tr>
   </c:if>
 
-    <c:if test="${qp.recordClass.hasBasket}">	
+    <c:if test="${qp.recordClass.useBasket}">	
     <!-- display option to use basket snapshot -->
     <tr>
-        <c:set var="basketCount" value="${wdkUser.basketCounts[qp.recordClass.fullName]}" />
+        <c:set var="basketCount" value="${0}" />
+        <c:forEach items="${wdkUser.basketCounts}" var="item">
+          <c:if test="${item.key.fullName eq qp.recordClass.fullName}">
+            <c:set var="basketCount" value="${item.value}" />
+          </c:if>
+        </c:forEach>
+        <c:set var="disabled">
+            <c:if test="${basketCount == 0}">disabled</c:if>
+        </c:set>
         <td colspan="2" align="left" valign="top" nowrap>
-            <input type="radio" name="${pNam}_radio" ${basketChecked}
+            <input type="radio" name="${pNam}_radio" ${basketChecked} ${disabled}
                    onclick="chooseType('${pNam}', 'basket');" />
-            Copy ${recordType}s from My Basket (${basketCount} ${recordType}s)&nbsp;
+            Copy ${recordName} from My Basket (${basketCount} ${recordName})&nbsp;
         </td>
     </tr>
     </c:if>
     
     <!-- display an existing info -->
-    <c:if test="${dataset != null && fn:length(dataset.uploadFile) > 0}">
+    <c:if test="${dataset ne null and fn:length(dataset.uploadFile) gt 0}">
         <tr>
             <td colspan="2" align="right">
                 <i>Data was uploaded from: ${dataset.uploadFile}</i>
@@ -112,7 +121,7 @@ function chooseType(paramName, type) {
         </tr>
     </c:if>
 
-    <c:if test="${defaultType != 'basket'}">
+    <c:if test="${defaultType ne 'basket' and noAction}">
         <!-- display an input box and upload file button -->
         <tr class="dataset-file">
             <td align="left" valign="top">
@@ -122,6 +131,7 @@ function chooseType(paramName, type) {
             </td>
             <td align="left">
                 <html:file styleId="${pNam}_file" styleClass="input" property="value(${pNam}_file)" disabled="true"/>
+								<div class="type-ahead-help">Maximum size: 10MB.
             </td>
         </tr>
     </c:if>

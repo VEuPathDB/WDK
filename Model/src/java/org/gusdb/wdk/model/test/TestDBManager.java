@@ -10,10 +10,12 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import org.gusdb.fgputil.db.SqlUtils;
+import org.gusdb.fgputil.db.platform.DBPlatform;
+import org.gusdb.fgputil.db.pool.DatabaseInstance;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
-import org.gusdb.wdk.model.dbms.DBPlatform;
-import org.gusdb.wdk.model.dbms.SqlUtils;
+import org.gusdb.wdk.model.WdkModelException;
 import org.gusdb.wdk.model.query.ColumnType;
 import org.gusdb.wsf.util.BaseCLI;
 
@@ -73,11 +75,11 @@ public class TestDBManager extends BaseCLI {
         try {
             // read config info
             wdkModel = WdkModel.construct(projectId, gusHome);
-            DBPlatform platform = wdkModel.getQueryPlatform();
+            DatabaseInstance appDb = wdkModel.getAppDb();
 
             long start = System.currentTimeMillis();
-            if (newCache) createTables(platform, tables);
-            else if (dropCache) dropTables(platform, tables);
+            if (newCache) createTables(appDb, tables);
+            else if (dropCache) dropTables(appDb, tables);
             long end = System.currentTimeMillis();
             System.out.println("Command succeeded in "
                     + ((end - start) / 1000.0) + " seconds");
@@ -89,26 +91,25 @@ public class TestDBManager extends BaseCLI {
         }
     }
 
-    private void dropTables(DBPlatform platform, String[] tables)
-            throws Exception {
+    private void dropTables(DatabaseInstance database, String[] tables) throws WdkModelException {
+      try {
         for (int t = 0; t < tables.length; t++) {
             File nextTable = new File(tables[t]);
             if ("CVS".equals(nextTable.getName())) continue;
 
             String tableName = nextTable.getName();
-            try {
-                System.err.println("Dropping table " + tableName);
-                String dropTable = "drop table " + tableName;
-                SqlUtils.executeUpdate(wdkModel, platform.getDataSource(),
-                        dropTable, "wdk-drop-table");
-            } catch (SQLException ex) {
-                System.err.println("Dropping table '" + tableName + "' failed.");
-                ex.printStackTrace();
-            }
+            System.err.println("Dropping table " + tableName);
+            String dropTable = "drop table " + tableName;
+            SqlUtils.executeUpdate(database.getDataSource(),
+                    dropTable, "wdk-drop-test-table");
         }
     }
+      catch (SQLException e) {
+        throw new WdkModelException(e);
+      }
+    }
 
-    private void createTables(DBPlatform platform, String[] tables)
+    private void createTables(DatabaseInstance database, String[] tables)
             throws Exception {
         for (int t = 0; t < tables.length; t++) {
             File nextTable = new File(tables[t]);
@@ -120,10 +121,14 @@ public class TestDBManager extends BaseCLI {
             BufferedReader reader = new BufferedReader(
                     new FileReader(nextTable));
             String firstLine = reader.readLine();
+            if (firstLine == null) {
+              reader.close();
+              throw new WdkModelException("File should not be empty:" + nextTable.getAbsolutePath());
+            }
 
             try {
                 Map<String, String> columnTypes = createTable(tableName,
-                        firstLine, platform);
+                        firstLine, database);
                 Map<Integer, String> columnIds = new LinkedHashMap<Integer, String>();
 
                 // prepare the statement
@@ -143,7 +148,7 @@ public class TestDBManager extends BaseCLI {
                 }
                 sql.append(") VALUES (").append(sqlPiece).append(")");
                 PreparedStatement ps = SqlUtils.getPreparedStatement(
-                        platform.getDataSource(), sql.toString());
+                        database.getDataSource(), sql.toString());
 
                 System.err.println("Loading table " + tableName
                         + " to database from file\n");
@@ -186,8 +191,9 @@ public class TestDBManager extends BaseCLI {
     }
 
     private Map<String, String> createTable(String tableName, String firstLine,
-            DBPlatform platform) throws Exception {
-        DataSource dataSource = platform.getDataSource();
+            DatabaseInstance database) throws Exception {
+        DBPlatform platform = database.getPlatform();
+        DataSource dataSource = database.getDataSource();
 
         StringBuffer sql = new StringBuffer("CREATE TABLE ");
         sql.append(tableName).append(" (");
@@ -235,8 +241,8 @@ public class TestDBManager extends BaseCLI {
 
         // System.err.println("creating test table with sql " + createTable);
 
-        SqlUtils.executeUpdate(wdkModel, dataSource, sql.toString(),
-                "wdk-create-table");
+        SqlUtils.executeUpdate(dataSource, sql.toString(),
+                "wdk-create-test-table");
 
         return columnTypes;
     }

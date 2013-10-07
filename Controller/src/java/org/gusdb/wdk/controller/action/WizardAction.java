@@ -1,8 +1,6 @@
 package org.gusdb.wdk.controller.action;
 
 import java.net.URLEncoder;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,6 +13,8 @@ import org.apache.struts.action.ActionForm;
 import org.apache.struts.action.ActionForward;
 import org.apache.struts.action.ActionMapping;
 import org.gusdb.wdk.controller.CConstants;
+import org.gusdb.wdk.controller.actionutil.ActionUtility;
+import org.gusdb.wdk.controller.form.WizardForm;
 import org.gusdb.wdk.controller.wizard.Result;
 import org.gusdb.wdk.controller.wizard.Stage;
 import org.gusdb.wdk.controller.wizard.StageHandler;
@@ -24,7 +24,6 @@ import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.StepBean;
 import org.gusdb.wdk.model.jspwrap.StrategyBean;
 import org.gusdb.wdk.model.jspwrap.UserBean;
-import org.json.JSONException;
 
 public class WizardAction extends Action {
 
@@ -49,7 +48,7 @@ public class WizardAction extends Action {
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
         logger.debug("Entering WizardAction.....");
-
+        
         UserBean user = ActionUtility.getUser(servlet, request);
         try {
             WizardForm wizardForm = (WizardForm) form;
@@ -105,11 +104,19 @@ public class WizardAction extends Action {
                 boolean first = (forward.indexOf('?') < 0);
                 for (String key : attributes.keySet()) {
                     Object value = attributes.get(key);
-                    String strValue = (value == null) ? null : value.toString();
+                    String strValue = (value == null) ? "" : value.toString();
                     builder.append(first ? "?" : "&");
                     builder.append(URLEncoder.encode(key, "utf-8") + "=");
                     builder.append(URLEncoder.encode(strValue, "utf-8"));
                     first = false;
+                }
+
+                int strategyId = wizardForm.getStrategyId();
+                if (!Integer.toString(strategyId).equals(user.getViewStrategyId())) {
+                  // set view results to last step of strategy being revised
+                  StrategyBean strategy = user.getStrategy(strategyId);
+                  int stepId = strategy.getLatestStepId();
+                  user.setViewResults(Integer.toString(strategyId), stepId, 0);
                 }
 
                 logger.debug("wizard action: " + builder);
@@ -129,8 +136,7 @@ public class WizardAction extends Action {
 
     private void loadStrategy(HttpServletRequest request,
             WizardForm wizardForm, UserBean user) throws WdkUserException,
-            WdkModelException, NoSuchAlgorithmException, JSONException,
-            SQLException {
+            WdkModelException {
         int stratId = wizardForm.getStrategyId();
         StrategyBean strategy = user.getStrategy(stratId);
 

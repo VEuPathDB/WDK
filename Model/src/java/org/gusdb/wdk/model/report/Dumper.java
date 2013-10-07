@@ -3,8 +3,6 @@ package org.gusdb.wdk.model.report;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.security.NoSuchAlgorithmException;
-import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -15,16 +13,14 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.gusdb.wdk.model.AnswerValue;
-import org.gusdb.wdk.model.Question;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
-import org.gusdb.wdk.model.WdkUserException;
+import org.gusdb.wdk.model.answer.AnswerValue;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.query.param.ParamValuesSet;
+import org.gusdb.wdk.model.question.Question;
 import org.gusdb.wdk.model.user.User;
-import org.json.JSONException;
 
 /**
  * @author Charles Treatman
@@ -82,7 +78,7 @@ public class Dumper {
         Map<String, String> config = parseListArgs("config", reporterConfig);
 
         // Get the reporter
-        AnswerValue answer = question.makeAnswerValue(user, params, 0);
+        AnswerValue answer = question.makeAnswerValue(user, params, true, 0);
         Reporter reporter = answer.createReport(reporterName, config);
 
         try {
@@ -97,12 +93,13 @@ public class Dumper {
             // flush the output stream
             out.flush();
             out.close();
+            // release the model
+            wdkModel.releaseResources();
         }
     }
 
     static void fillInParams(Map<String, String> params, Question question)
-            throws WdkModelException, NoSuchAlgorithmException, SQLException,
-            JSONException, WdkUserException {
+            throws WdkModelException {
         Query query = question.getQuery();
         if (!query.getParamValuesSets().isEmpty()) {
             ParamValuesSet pvs = query.getParamValuesSets().get(0);
@@ -215,9 +212,7 @@ public class Dumper {
     }
 
     static Map<String, String> parseListArgs(String argName,
-            String[] inputValues) throws WdkModelException,
-            NoSuchAlgorithmException, SQLException, JSONException,
-            WdkUserException {
+            String[] inputValues) {
         Map<String, String> argValues = new LinkedHashMap<String, String>();
 
         if (inputValues.length % 2 != 0) {

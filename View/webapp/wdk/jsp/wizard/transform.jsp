@@ -2,7 +2,7 @@
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
-<%@ taglib prefix="wdk" tagdir="/WEB-INF/tags/wdk" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 
 <c:set var="wdkQuestion" value="${requestScope.question}"/>
@@ -14,7 +14,7 @@
 <c:set var="allowBoolean" value="${requestScope.allowBoolean}"/>
 <c:set var="action" value="${requestScope.action}"/>
 
-<c:if test="${wdkQuestion.recordClass.fullName != wdkStep.dataType}">
+<c:if test="${wdkQuestion.recordClass.fullName != wdkStep.recordClass.fullName}">
 	<c:set var="checked" value="checked=''"/>
 	<c:set var="buttonVal" value="Continue...."/>
 	<c:set var="spanOnly" value="true"/>
@@ -24,7 +24,7 @@
 <c:set var="stage" value="${requestScope.stage}"/>
 
 
-<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
+<html:form styleId="form_question" method="post" enctype='multipart/form-data' action="/processFilter.do" onsubmit="wdk.addStepPopup.callWizard('wizard.do?action=${requestScope.action}&step=${wdkStep.stepId}&',this,null,null,'submit')">
 <span style="display:none" id="strategyId">${wdkStrategy.strategyId}</span>
 <c:choose>
     <c:when test="${wdkStep.previousStep == null || action != 'revise'}">
@@ -41,8 +41,7 @@
 </c:set>
 
 <c:set var="Question_Footer" scope="request">
-<%-- displays question description, can be overridden by the custom question form --%>
-<wdk:questionDescription />
+    <imp:questionDescription />
 </c:set>
 
 ${Question_Header}
@@ -66,7 +65,7 @@ ${Question_Header}
   </span>
    <br><br>
 
-  <wdk:questionForm />
+  <imp:questionForm />
 </div>
 
 <html:hidden property="stage" styleId="stage" value="process_question"/>

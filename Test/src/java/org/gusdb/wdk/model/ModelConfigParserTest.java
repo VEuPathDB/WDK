@@ -5,6 +5,8 @@ package org.gusdb.wdk.model;
 
 import java.io.IOException;
 
+import org.gusdb.wdk.model.config.ModelConfig;
+import org.gusdb.wdk.model.config.ModelConfigParser;
 import org.junit.Assert;
 import org.xml.sax.SAXException;
 
@@ -19,8 +21,6 @@ public class ModelConfigParserTest {
 
     /**
      * get and validate the input
-     * 
-     * @throws WdkModelException
      */
     @org.junit.Before
     public void getInput() throws WdkModelException {
@@ -40,10 +40,6 @@ public class ModelConfigParserTest {
 
     /**
      * test parsing a valid config file
-     * 
-     * @throws IOException
-     * @throws SAXException
-     * @throws WdkModelException
      */
     @org.junit.Test
     public void testParseConfig() throws SAXException, IOException,
