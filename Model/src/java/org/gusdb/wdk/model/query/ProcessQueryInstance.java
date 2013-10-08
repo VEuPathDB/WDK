@@ -26,10 +26,9 @@ import org.gusdb.wdk.model.dbms.ArrayResultList;
 import org.gusdb.wdk.model.dbms.CacheFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.user.User;
-import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
-import org.gusdb.wsf.plugin.WsfRequest;
-import org.gusdb.wsf.plugin.WsfResponse;
+import org.gusdb.wsf.service.WsfRequest;
+import org.gusdb.wsf.service.WsfServiceException;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -120,7 +119,8 @@ public class ProcessQueryInstance extends QueryInstance {
       ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
       long startTime = System.currentTimeMillis();
       ResultList resultList = getUncachedResults();
-      logger.info("Getting uncached results took " + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
+      logger.info("Getting uncached results took "
+          + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
       startTime = System.currentTimeMillis();
       int rowId = 0;
       while (resultList.next()) {
@@ -130,7 +130,7 @@ public class ProcessQueryInstance extends QueryInstance {
           ColumnType type = column.getType();
           if (type == ColumnType.CLOB)
             continue;
-          
+
           String value = (String) resultList.get(column.getName());
 
           // determine the type
@@ -168,7 +168,8 @@ public class ProcessQueryInstance extends QueryInstance {
       }
       if (rowId % 1000 != 0)
         ps.executeBatch();
-      logger.info("Inserting results to cache took " + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
+      logger.info("Inserting results to cache took "
+          + ((System.currentTimeMillis() - startTime) / 1000D) + " seconds");
     } catch (SQLException e) {
       throw new WdkModelException("Unable to insert record into cache.", e);
     } finally {
@@ -218,7 +219,7 @@ public class ProcessQueryInstance extends QueryInstance {
 
     StringBuffer resultMessage = new StringBuffer();
     try {
-      WsfResponse response = getResponse(request, query.isLocal());
+      ProcessResponse response = getResponse(request, query.isLocal());
       this.resultMessage = response.getMessage();
       this.signal = response.getSignal();
       String[][] content = response.getResult();
@@ -239,22 +240,19 @@ public class ProcessQueryInstance extends QueryInstance {
         }
       }
 
-      return new ArrayResultList<String>(indices, content);
-
-    } catch (RemoteException ex) {
-      throw new WdkModelException(ex);
-    } catch (ServiceException ex) {
-      throw new WdkModelException(ex);
-    } catch (MalformedURLException ex) {
-      throw new WdkModelException(ex);
-    } catch (JSONException ex) {
+      ArrayResultList result = new ArrayResultList(response, indices);
+      result.setHasWeight(query.isHasWeight());
+      result.setAssignedWeight(assignedWeight);
+      return result;
+    } catch (RemoteException | MalformedURLException | ServiceException
+        | WsfServiceException ex) {
       throw new WdkModelException(ex);
     }
   }
 
-  private WsfResponse getResponse(WsfRequest request, boolean local)
-      throws ServiceException, MalformedURLException, RemoteException,
-      JSONException {
+  private ProcessResponse getResponse(WsfRequest request, boolean local)
+      throws RemoteException, MalformedURLException, ServiceException,
+      WsfServiceException {
 
     String serviceUrl = query.getWebServiceUrl();
 
@@ -264,44 +262,19 @@ public class ProcessQueryInstance extends QueryInstance {
 
     String jsonRequest = request.toString();
 
-    WsfResponse response;
+    ProcessResponse response;
     if (local) { // invoke the process query locally
+      // call the service directly
       org.gusdb.wsf.service.WsfService service = new org.gusdb.wsf.service.WsfService();
-      // get the response from the local service
-      response = service.invoke(jsonRequest);
-      int packets = response.getTotalPackets();
-      if (packets > 1) {
-        StringBuffer buffer = new StringBuffer(response.getResult()[0][0]);
-        String requestId = response.getRequestId();
-        for (int i = 1; i < packets; i++) {
-          logger.debug("getting message " + requestId + " pieces: " + i + "/"
-              + packets);
-          String more = service.requestResult(requestId, i);
-          buffer.append(more);
-        }
-        String[][] content = Utilities.convertContent(buffer.toString());
-        response.setResult(content);
-      }
+      org.gusdb.wsf.service.WsfResponse wsfResponse = service.invoke(jsonRequest);
+      response = new ServiceProcessResponse(service, wsfResponse);
     } else { // invoke the process query via web service
-      // get a WSF Service client stub
+      // call the service through client
       WsfServiceServiceLocator locator = new WsfServiceServiceLocator();
-      WsfService client = locator.getWsfService(new URL(serviceUrl));
-
-      // get the response from the web service
-      response = client.invoke(jsonRequest);
-      int packets = response.getTotalPackets();
-      if (packets > 1) {
-        StringBuffer buffer = new StringBuffer(response.getResult()[0][0]);
-        String requestId = response.getRequestId();
-        for (int i = 1; i < packets; i++) {
-          logger.debug("getting message " + requestId + " pieces: " + i + "/"
-              + packets);
-          String more = client.requestResult(requestId, i);
-          buffer.append(more);
-        }
-        String[][] content = Utilities.convertContent(buffer.toString());
-        response.setResult(content);
-      }
+      org.gusdb.wsf.client.WsfService client = locator.getWsfService(new URL(
+          serviceUrl));
+      org.gusdb.wsf.client.WsfResponse wsfResponse = client.invoke(jsonRequest);
+      response = new ClientProcessResponse(client, wsfResponse);
     }
     long end = System.currentTimeMillis();
     logger.debug("Client took " + ((end - start) / 1000.0) + " seconds.");
