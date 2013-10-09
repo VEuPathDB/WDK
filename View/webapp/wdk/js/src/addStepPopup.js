@@ -27,16 +27,16 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
   // make panel object that implements show
   function showPanel(panel) {
 
-    if (panel == 'strategy_results') {
-      if ($("div#Strategies").attr("newstrategy") == 'true') {
-        wdk.dyk.initDYK(true);
-      } else {
-        wdk.dyk.initDYK(false);
-      }
+    // if (panel == 'strategy_results') {
+    //   if ($("div#Strategies").attr("newstrategy") == 'true') {
+    //     wdk.dyk.initDYK(true);
+    //   } else {
+    //     wdk.dyk.initDYK(false);
+    //   }
 
-    } else {
-      wdk.dyk.initDYK(false);
-    }
+    // } else {
+    //   wdk.dyk.initDYK(false);
+    // }
     
     $("#strategy_tabs li").each(function() {
       if ($("a", this).length > 0) {
