@@ -211,14 +211,12 @@
       <property name="project" value="WDK"/>
       <property name="component" value="View"/>
     </ant>
-    <!--
     <ant target="webinstall-javascript">
       <property name="srcDir" value="${webappTargetDir}/wdk/js/src"/>
       <property name="initialFiles" value="util/namespace.js"/>
       <property name="destDir" value="${webappTargetDir}/wdk/js"/>
       <property name="destFilename" value="wdk.js"/>
     </ant>
-    -->
   </target>  
 
   <target name="WebitePlusGusHome" depends="WDK-Installation,

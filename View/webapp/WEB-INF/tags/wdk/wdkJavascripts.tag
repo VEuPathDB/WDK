@@ -22,6 +22,7 @@
   <!-- comment out the production code. need to revert this on check in -->
 
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.js"><jsp:text/></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0-rc.2/angular.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery-ui.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/es5-shim.min.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.blockUI.js"><jsp:text/></script>
@@ -45,6 +46,9 @@
     </c:when>
     <c:otherwise>
       <!-- individual files -->
+      <!-- <script src="${urlBase}/wdk/js/wdk-all.js"><jsp:text/></script> -->
+      <script src="${urlBase}/wdk/js/wdk.js"><jsp:text/></script>
+      <!--
       <script src="${urlBase}/wdk/js/src/util/namespace.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/addStepPopup.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/api.js"><jsp:text/></script>
@@ -74,6 +78,7 @@
       <script src="${urlBase}/wdk/js/src/strategy/error.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/strategy/model.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/strategy/view.js"><jsp:text/></script>
+      -->
     </c:otherwise>
   </c:choose>
 
