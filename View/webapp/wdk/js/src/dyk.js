@@ -16,16 +16,16 @@ wdk.util.namespace("window.wdk.dyk", function(ns, $) {
       dataType: "html",
       success: function(data){
         $("div#help div.h2center").after($("div#strategyTips",data).html() + "<hr />");
-        $("div#strategyTips span[id^='tip_']",data).each(function() {
-          $("#dyk-box div#content").append(this);
-        });
-        if($("div#strategy_results").css("display") == 'none') {
-          initDYK(false);
-        } else if($("div#Strategies").attr("newstrategy") == 'true') {
-          initDYK(true);
-        } else {
-          initDYK(false);
-        }
+        // $("div#strategyTips span[id^='tip_']",data).each(function() {
+        //   $("#dyk-box div#content").append(this);
+        // });
+        // if($("div#strategy_results").css("display") == 'none') {
+        //   initDYK(false);
+        // } else if($("div#Strategies").attr("newstrategy") == 'true') {
+        //   initDYK(true);
+        // } else {
+        //   initDYK(false);
+        // }
       }
     });
   }
@@ -174,7 +174,11 @@ wdk.util.namespace("window.wdk.dyk", function(ns, $) {
   }
 
   ns.initDYK = initDYK;
-  ns.dykOpen = dykOpen;
+  //ns.dykOpen = dykOpen;
+  ns.dykOpen = function() {
+    var s = angular.element(".dyk").scope();
+    s.$apply(s.open());
+  };
   ns.dykClose = dykClose;
   ns.initHelp = initHelp;
 
