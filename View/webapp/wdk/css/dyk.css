@@ -1,10 +1,13 @@
-#dyk-box,#dyk-shadow{
-	display: none;
-	position:absolute;
+.dyk {
+	/*display: none;*/
+	position: absolute;
 	width:417px;
 	height:87px;
 	top:200px;
 	left:313px;
+}
+#dyk-box,#dyk-shadow{
+  height: 100%;
 	z-index:98;
 	border:1px solid #888888;
 	-webkit-border-bottom-left-radius:10px;
@@ -18,10 +21,12 @@ div#dyk-box{
 }
 
 div#dyk-shadow{
+  position: absolute;
 	background-color:#000000;
-	left:319px;
 	opacity:0.2;
-	top:206px;
+	left:4px;
+	top:6px;
+  width: 100%;
 	z-index:97;
 }
 
