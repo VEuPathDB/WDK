@@ -9,10 +9,10 @@ import java.util.Map;
 
 import org.apache.commons.cli.Option;
 import org.gusdb.wdk.model.Utilities;
+import org.gusdb.wsf.client.WsfResponse;
 import org.gusdb.wsf.client.WsfService;
 import org.gusdb.wsf.client.WsfServiceServiceLocator;
-import org.gusdb.wsf.plugin.WsfRequest;
-import org.gusdb.wsf.plugin.WsfResponse;
+import org.gusdb.wsf.plugin.PluginRequest;
 import org.gusdb.wsf.util.BaseCLI;
 
 /**
@@ -80,7 +80,7 @@ public class WsfClientCLI extends BaseCLI {
         String serviceUrl = (String) getOptionValue(ARG_WEB_SERVICE_URL);
         String processName = (String) getOptionValue(ARG_PROCESS_NAME);
 
-        WsfRequest request = new WsfRequest();
+        PluginRequest request = new PluginRequest();
 
         String[] contextValues = (String[]) getOptionValue(ARG_COLUMNS);
         String[] columns = (String[]) getOptionValue(ARG_COLUMNS);
@@ -131,7 +131,7 @@ public class WsfClientCLI extends BaseCLI {
     }
 
     private void printParams(String serviceUrl, String processName,
-            WsfRequest request) {
+            PluginRequest request) {
         System.out.println("============== Input ==============");
         System.out.println("Service Url:\t" + serviceUrl);
         System.out.println("Process Name:\t" + processName);
