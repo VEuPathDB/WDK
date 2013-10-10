@@ -10,23 +10,34 @@ Provides functions to support results table
 wdk.util.namespace("window.wdk.resultsPage", function(ns, $) {
   "use strict";
 
-  function configureSummaryViews(ele) {
-    var workspace = window.wdk.findActiveWorkspace(); 
-    $(".Summary_Views").each(function() {
-      var summaryViews = $(this);
-      // disable remembering current tab for now due to performance issue on
-      // loading the genomic summary view. Always use the first tab.
-      // var currentTab = parseInt(summaryViews.children("ul").attr("currentTab"), 10);  
-      var currentTab = 0;
-      summaryViews.tabs({
-
-        active : currentTab,
-        load: function(event, ui) {
-          wdk.load();
-          createFlexigridFromTable(ui.panel.find(".Results_Table"));
-        }
-      });
+  function configureSummaryViews($element, $attrs) {
+    // var currentTab = parseInt($element.children("ul").attr("currentTab"), 10);  
+    var currentTab = 0;
+    $element.tabs({
+      active : currentTab,
+      load: function(event, ui) {
+        wdk.load();
+        createFlexigridFromTable(ui.panel.find(".Results_Table"));
+      }
     });
+
+    // var workspace = window.wdk.findActiveWorkspace(); 
+
+    // $(".Summary_Views").each(function() {
+    //   var summaryViews = $(this);
+    //   // disable remembering current tab for now due to performance issue on
+    //   // loading the genomic summary view. Always use the first tab.
+    //   // var currentTab = parseInt(summaryViews.children("ul").attr("currentTab"), 10);  
+    //   var currentTab = 0;
+    //   summaryViews.tabs({
+
+    //     active : currentTab,
+    //     load: function(event, ui) {
+    //       wdk.load();
+    //       createFlexigridFromTable(ui.panel.find(".Results_Table"));
+    //     }
+    //   });
+    // });
   }
 
   function moveAttr(col_ix, table) {
