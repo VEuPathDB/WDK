@@ -71,6 +71,8 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         div_strat.setAttribute("data-name", strat.name||"");
         div_strat.setAttribute("data-description", strat.description||"");
         div_strat.setAttribute("data-back-id", strat.backId);
+        div_strat.setAttribute("data-is-public", strat.isPublic);
+        div_strat.setAttribute("data-valid", strat.isValid);
         $(div_strat).addClass("strategy-data");
         $(div_strat).attr("id","diagram_" + strat.frontId).addClass("diagram");
 
@@ -871,6 +873,18 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "onclick=\"wdk.strategy.controller.deleteStrategy('" + id +
         "', false)\"><b style='font-size:120%'>Delete</b></a>";
 
+    /* FIXME: First attempt at adding 'make public' link on right side of strategy display;
+     *        Not called and does not work!  See also publicStrats.js, search 'togglePublicFromLink'
+    var publicizeLinkText = strat.isPublic ? 'Make Private' : 'Make Public';
+    var publicizeLinkTitle = strat.isPublic ?
+        'No longer show this strategy in the "Public & Example" tab.' :
+        'Make this strategy visible to the community in the "Public & Example" tab.';
+    var publicizeStrat = "<a id='publicize_" + strat.frontId +
+        "' href='javascript:void(0)' title='" + publicizeLinkTitle +
+        "' onclick=\"wdk.publicStrats.togglePublicFromLink(this, '" + id +
+        "')\"><b style='font-size:120%'>" + publicizeLinkText + "</b></a>";
+    */
+    
     var div_sn = document.createElement("div");
     var div_sm = document.createElement("div");
     $(div_sn).attr("class","strategy_name");
@@ -889,8 +903,10 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
           "<br/>" + rename +
           "<br/>" + copy + 
           "<br/>" + save +
-          "<br/>"+ share +
-          "<br/>"+ deleteStrat + "</span>");
+          "<br/>" + share +
+          "<br/>" + deleteStrat +
+          //"<br/>" + publicizeStrat +
+          "</span>");
     }//else{
       //$(div_sn).html("<span style='font-size:14px;font-weight:bold' title='Name of this substrategy. To rename, click on the corresponding step name in the parent strategy'>" + name + "</span>" + "<span id='strategy_id_span' style='display: none;'>" + id + "</span>"); 
     //}

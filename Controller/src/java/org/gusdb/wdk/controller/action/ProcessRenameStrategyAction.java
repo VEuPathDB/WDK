@@ -131,8 +131,6 @@ public class ProcessRenameStrategyAction extends Action {
                 if (frontStrategy != null && frontStrategy.intValue() == oldStrategyId) {
                     frontStrategy = strategy.getStrategyId();
                 }
-                System.out.println("front strategy: " + frontStrategy);
-                System.out.println("front step: " + frontStep);
         
                 wdkUser.setFrontAction(frontAction);
                 if (frontStrategy != null) {

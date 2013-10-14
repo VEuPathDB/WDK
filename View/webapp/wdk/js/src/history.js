@@ -484,8 +484,8 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     form = dialog_container.find("form").get(0);
     $(form).unbind("submit");
 
-    // if passed checkPublic value is true, use it; otherwise, use value from current strategy
-    var publicCheckedInForm = (typeof checkPublic === 'undefined' || !checkPublic ? (strat.isPublic == true) : true);
+    // if passed checkPublic value is defined, use it; otherwise, use value from current strategy
+    var publicCheckedInForm = (typeof checkPublic === 'undefined' ? strat.isPublic : checkPublic);
     dialog_container.find(".public_input input").prop('checked', publicCheckedInForm);
     dialog_container.find(".desc-requirement").html(publicCheckedInForm ? 'required' : 'optional');
     dialog_container.find(".public_input input").change(function() {
