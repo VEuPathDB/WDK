@@ -57,15 +57,12 @@
 
 <!-- ================ SUMMARY VIEWS (EXTRA TABS DEFINED IN MODEL.XML)  =============== -->
 <%-- display view list --%>
-<script>
-$(function() {
-  wdk.resultsPage.configureSummaryViews(this);
-});
-</script>
 
-
-<div id="Summary_Views" class="Summary_Views" strategy="${strategy.strategyId}" step="${step.stepId}"
-     updateUrl="<c:url value='/processSummaryView.do' />">
+<div id="Summary_Views" class="Summary_Views"
+    data-controller="wdk.resultsPage.configureSummaryViews"
+    strategy="${strategy.strategyId}"
+    step="${step.stepId}"
+    updateUrl="<c:url value='/processSummaryView.do' />">
   <c:set var="question" value="${wdkStep.question}" />
   <c:set var="views" value="${question.summaryViews}" />
   <jsp:setProperty name="wdkUser" property="currentQuestion" value="${question}" />

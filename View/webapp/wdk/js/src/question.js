@@ -5,9 +5,13 @@
 wdk.util.namespace("window.wdk.question", function(ns, $) {
   "use strict";
 
-  function init() {
+  function init($element, $attrs) {
     var question = new WdkQuestion();
     question.registerGroups();
+
+    if ($attrs.showParams === true) {
+      wdk.parameterHandlers.init();
+    }
  
      // invoke the registered question events
      if (window.wdk != undefined) {

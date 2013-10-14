@@ -24,18 +24,15 @@
 <!-- show error messages, if any -->
 <imp:errors/>
 
-<%-- the js has to be included here in order to appear in the step form --%>
-<script type="text/javascript">
-$(document).ready(function() {
-    wdk.question.init();
+<c:set var="showParamsAttr">
+  <c:choose>
+    <c:when test="${showParams == null}">true</c:when>
+    <c:otherwise>false</c:otherwise>
+  </c:choose>
+</c:set>
 
-<c:if test="${showParams == null}">
-    wdk.parameterHandlers.init();
-</c:if>
-});
-</script>
-
-<div class="params">
+<div class="params" data-controller="wdk.question.init"
+    data-show-params="${showParamsAttr}">
     <imp:questionParams />
 </div> <!-- end of params div -->
 
