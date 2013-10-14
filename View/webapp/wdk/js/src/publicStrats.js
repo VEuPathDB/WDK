@@ -52,6 +52,19 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
        .css("display","inline-block").css("margin","0").css("padding","5px 0 0 0");
   }
   
+  /* FIXME: First attempt at adding 'make public' link on right side of strategy display;
+   *        Not called and does not work!  See also view.js, search 'publicizeStrat'
+  function togglePublicFromLink(atag, stratId) {
+    var stratObj = wdk.strategy.model.getStrategyOBJ(stratId);
+    var isPublic = stratObj.isPublic;
+    //var description = atag.parents('.strategy-data').data('description');
+    //wdk.history.showUpdateDialog(this, false, true, true);
+    wdk.history.showUpdateDialog(atag, false, false, !isPublic);
+    //this, false, true, true
+    //showUpdateDialog(, save, fromHist, strat.isPublic);
+  }
+  */
+  
   function togglePublic(checkbox, stratId) {
     var isPublic = $(checkbox).prop('checked');
     var description = $(checkbox).parent().parent().find('.strategy_description div').html();
@@ -111,6 +124,7 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
   ns.showPublicStrats = showPublicStrats;
   ns.configurePublicStratTable = configurePublicStratTable;
   ns.togglePublic = togglePublic;
+  //ns.togglePublicFromLink = togglePublicFromLink;
   ns.goToPublicStrats = goToPublicStrats;
   ns.publicStratDescriptionWarning = publicStratDescriptionWarning;
   ns.toggleSampleOnly = toggleSampleOnly;

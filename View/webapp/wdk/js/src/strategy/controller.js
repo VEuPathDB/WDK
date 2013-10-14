@@ -410,6 +410,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     }
     strat.JSON = strategy;
     strat.isSaved = strategy.saved;
+    strat.isPublic = strategy.isPublic;
+    strat.isValid = strategy.isValid;
     strat.name = strategy.name;
     strat.description = strategy.description;
     strat.importId = strategy.importId;
