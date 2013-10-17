@@ -11,13 +11,14 @@
   <div>
     <!-- To show sample strategies in their own table, use tag imp:sampleStrategies -->
     <span id="publicStrategyCount" style="display:none">${numValidPublicStrats}</span>
-    <div class="h2center" style="padding-top:12px">Public &amp;amp; Example Strategies</div>
+    <div class="h2center" style="padding-top:12px">Examples &amp;amp; Public Strategies</div>
     <div style="text-align:center;margin:5px"><em>To make one of your strategies visible to the community, go to the All tab and click its Public checkbox.</em></div>
     <c:if test="${not empty examplesAuthor}">
-      <span style="float:right; line-height:1.4em">
-        <input type="checkbox" onclick="wdk.publicStrats.toggleSampleOnly(this,'${examplesAuthor}')"/>
+      <span id="checkboxMarkup" style="float:right; line-height:1.4em; margin-top:9px">
+        <!--<input type="checkbox" onclick="wdk.publicStrats.toggleSampleOnly(this,'${examplesAuthor}')"/>
         <span>View ${examplesAuthor} Strategies Only</span><br/>
-        <a href="javascript:void(0)" onclick="wdk.publicStrats.sortSampleToTop(this)">Push ${examplesAuthor} Strategies To The Top</a>
+        <a href="javascript:void(0)" onclick="wdk.publicStrats.sortSampleToTop()">Push ${examplesAuthor} Strategies To The Top</a>-->
+        <input id="sampleToTopCheckbox" type="checkbox" onclick="wdk.publicStrats.toggleSampleToTop(this)"/><span>Set ${examplesAuthor} Strategies On Top</span>
       </span>
     </c:if>
     <table class="datatables" style="width:100%; margin:0 auto 0 auto" border="0" cellpadding="5" cellspacing="0">
@@ -40,8 +41,9 @@
             <c:set var="strategyDesc"><c:out value="${strategy.description}"/></c:set>
             <c:set var="displayName" value="${strategy.name}"/>
             <c:set var="isExample" value="${strategy.user.displayName eq examplesAuthor ? '1' : '0'}"/>
+            <c:set var="addtlClass" value="${isExample eq '1' ? ' exampleStratRow' : ''}"/>
             <tr id="public_strat_${strategyId}"
-                class="strategy-data"
+                class="strategy-data${addtlClass}"
                 data-back-id="${strategyId}"
                 data-name="${strategy.name}"
                 data-description="${strategyDesc}"

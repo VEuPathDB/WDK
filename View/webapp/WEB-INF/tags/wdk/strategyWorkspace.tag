@@ -55,7 +55,7 @@
    <li>
      <a id="tab_public_strat" title="View sample strategies and those made public by others"
         onclick="this.blur()" href="javascript:wdk.addStepPopup.showPanel('public_strat')">
-       Public &amp; Example <font class="subscriptCount">(${publicCount})</font>
+       Public Strategies <font class="subscriptCount">(${publicCount})</font>
      </a>
    </li>
 

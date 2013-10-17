@@ -30,22 +30,48 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
       }
     });
   }
-
+  
   function configurePublicStratTable() {
+    var drawFromSecondarySort = false;
+    // these are the initial sort params (though always put project examples at top)
+    var lastSortCol = 6;
+    var lastSortDir = "desc";
     $("#public_strat table.datatables").dataTable({
         "bAutoWidth": false,
         "bJQueryUI": true,
         "bScrollCollapse": true,
         "sScrollY": "300px",
-		"bPaginate": false,
+        "bPaginate": false,
         "aoColumns": [ { "bSearchable": false, "bVisible": false },
                        null,
                        null,
                        { "bSortable": false },
                        null,
                        null,
-                       null],
-        "aaSorting": [[0, "desc"], [ 6, "desc" ]]
+                       null ],
+        "aaSorting": [[0, "desc"], [ lastSortCol, lastSortDir ]],
+        // The purpose of the following function is to enable the "Always push to top" checkbox
+        // After the user clicks a sortable column header, we re-sort examples to top if
+        // necessary, but must also detect if this is a direction change for that column.
+        "fnDrawCallback": function() {
+          if ($('#sampleToTopCheckbox').prop('checked') && !drawFromSecondarySort) {
+            var sortSettings = getDataTable().fnSettings().aaSorting;
+            var newSortCol = sortSettings[0][0];
+            var newSortDir = sortSettings[0][1];
+            var secondarySort = undefined;
+            if (newSortCol == lastSortCol && newSortDir == lastSortDir) {
+              // set secondary sort to reverse direction of previous sort
+              newSortDir = (newSortDir == 'asc' ? 'desc' : 'asc');
+              secondarySort = [ newSortCol, newSortDir ];
+            }
+            lastSortCol = newSortCol;
+            lastSortDir = newSortDir;
+            drawFromSecondarySort = true;
+            sortSampleToTop(secondarySort);
+          } else {
+            drawFromSecondarySort = false;
+          }
+        }
     });
     // make search textbox appear where we want
     $('#public_strat table.datatables').parent().parent().parent().find('.dataTables_filter')
@@ -109,15 +135,23 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
     var authorColumnNumber = 4;
     // if box is checked then filter on this project's configured author; else clear filter
     var filterVal = ($(checkbox).prop('checked') ? authorFilterValue : '');
-    getDataTable(checkbox).fnFilter(filterVal,authorColumnNumber,false,true);
+    getDataTable().fnFilter(filterVal,authorColumnNumber,false,true);
   }
   
-  function sortSampleToTop(atag) {
-    getDataTable(atag).fnSort([[0, 'desc']]);
+  function toggleSampleToTop(checkbox) {
+    if ($(checkbox).prop('checked')) {
+      sortSampleToTop();
+    }
   }
   
-  function getDataTable(elem) {
-    return $(elem).parent().parent().find('.dataTables_scrollBody>table').dataTable();
+  function sortSampleToTop(secondarySort) {
+    var newSortArray = (typeof secondarySort === 'undefined' ?
+            [[0, 'desc']] : [[0, 'desc'], secondarySort]);
+    getDataTable().fnSort(newSortArray);
+  }
+  
+  function getDataTable() {
+    return $($("#public_strat table.datatables")[1]).dataTable();
   }
   
   // make the following methods "public" (i.e. available in the namespace)
@@ -128,6 +162,7 @@ wdk.util.namespace("window.wdk.publicStrats", function(ns, $) {
   ns.goToPublicStrats = goToPublicStrats;
   ns.publicStratDescriptionWarning = publicStratDescriptionWarning;
   ns.toggleSampleOnly = toggleSampleOnly;
+  ns.toggleSampleToTop = toggleSampleToTop;
   ns.sortSampleToTop = sortSampleToTop;
   
 });
