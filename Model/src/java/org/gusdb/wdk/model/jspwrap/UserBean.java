@@ -769,6 +769,12 @@ public class UserBean /* implements Serializable */{
         return category;
     }
 
+    public int getPublicCount() throws WdkModelException {
+        int count = user.getWdkModel().getStepFactory().getPublicStrategyCount();
+        logger.debug("Found number of public strats: " + count);
+        return count;
+    }
+    
     public List<StrategyBean> getInvalidStrategies() {
         // Strategy[] strategies = user.getInvalidStrategies();
         List<StrategyBean> beans = new ArrayList<StrategyBean>();
@@ -1009,23 +1015,23 @@ public class UserBean /* implements Serializable */{
     }
 
     public Map<String, List<StrategyBean>> getSavedStrategiesByCategory() throws WdkModelException {
-    	Map<String, List<Strategy>> strategies = user.getSavedStrategiesByCategory();
-    	return convertMap(strategies);
+        Map<String, List<Strategy>> strategies = user.getSavedStrategiesByCategory();
+        return convertMap(strategies);
     }
 
     public Map<String, List<StrategyBean>> getUnsavedStrategiesByCategory() throws WdkModelException {
-    	Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
-    	return convertMap(strategies);
+        Map<String, List<Strategy>> strategies = user.getUnsavedStrategiesByCategory();
+        return convertMap(strategies);
     }
 
     public Map<String, List<StrategyBean>> getRecentStrategiesByCategory() throws WdkModelException {
-    	Map<String, List<Strategy>> strategies = user.getRecentStrategiesByCategory();
-    	return convertMap(strategies);
+        Map<String, List<Strategy>> strategies = user.getRecentStrategiesByCategory();
+        return convertMap(strategies);
     }
 
     public Map<String, List<StrategyBean>> getActiveStrategiesByCategory() throws WdkModelException, WdkUserException {
-    	Map<String, List<Strategy>> strategies = user.getActiveStrategiesByCategory();
-    	return convertMap(strategies);
+        Map<String, List<Strategy>> strategies = user.getActiveStrategiesByCategory();
+        return convertMap(strategies);
     }
 
     /**

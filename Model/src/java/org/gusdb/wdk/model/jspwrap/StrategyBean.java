@@ -84,7 +84,15 @@ public class StrategyBean {
     public Date getLastModifiedTime() {
         return strategy.getLastModifiedTime();
     }
-
+    
+    public boolean getIsPublic() {
+        return strategy.getIsPublic();
+    }
+        
+    public void setIsPublic(boolean isPublic) {
+        strategy.setIsPublic(isPublic);
+    }
+      
     public StepBean getLatestStep() throws WdkModelException {
         return new StepBean(user, strategy.getLatestStep());
     }

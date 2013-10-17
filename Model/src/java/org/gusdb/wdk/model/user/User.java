@@ -1,6 +1,3 @@
-/**
- * 
- */
 package org.gusdb.wdk.model.user;
 
 import java.security.NoSuchAlgorithmException;
@@ -255,6 +252,19 @@ public class User /* implements Serializable */{
   }
 
   /**
+   * @return User's full name (first middle last)
+   */
+  public String getDisplayName() {
+    return (formatNamePart(getFirstName()) +
+            formatNamePart(getMiddleName()) +
+            formatNamePart(getLastName())).trim();
+  }
+  
+  private String formatNamePart(String namePart) {
+    return (namePart == null || namePart.isEmpty() ? "" : " " + namePart.trim());
+  }
+  
+  /**
    * @return Returns the organization.
    */
   public String getOrganization() {
@@ -476,26 +486,26 @@ public class User /* implements Serializable */{
 
   public Strategy createStrategy(Step step, boolean saved)
       throws WdkModelException, WdkUserException {
-    return createStrategy(step, null, null, saved, null, false);
+    return createStrategy(step, null, null, saved, null, false, false);
   }
 
   public Strategy createStrategy(Step step, boolean saved, boolean hidden)
       throws WdkModelException, WdkUserException {
-    return createStrategy(step, null, null, saved, null, hidden);
+    return createStrategy(step, null, null, saved, null, hidden, false);
   }
 
   // Transitional method...how to handle savedName properly?
   // Probably by expecting it if a name is given?
   public Strategy createStrategy(Step step, String name, boolean saved)
       throws WdkModelException, WdkUserException {
-    return createStrategy(step, name, null, saved, null, false);
+    return createStrategy(step, name, null, saved, null, false, false);
   }
 
   public Strategy createStrategy(Step step, String name,
-      String savedName, boolean saved, String description, boolean hidden)
+      String savedName, boolean saved, String description, boolean hidden, boolean isPublic)
       throws WdkModelException, WdkUserException {
     Strategy strategy = stepFactory.createStrategy(this, step, name, savedName,
-        saved, description, hidden);
+        saved, description, hidden, isPublic);
 
     // set the view to this one
     String strategyKey = Integer.toString(strategy.getStrategyId());

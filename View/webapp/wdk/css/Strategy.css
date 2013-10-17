@@ -1251,3 +1251,8 @@ img#step_5{
 .edit-step-pane:hover .edit-step {
   display: inline-block;
 }
+
+/* CSS for public strats table */
+.exampleStratRow {
+  font-weight: bold;
+}

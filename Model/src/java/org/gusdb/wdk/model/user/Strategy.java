@@ -34,6 +34,7 @@ public class Strategy {
   private String description;
   private String name;
   private String savedName = null;
+  private boolean isPublic = false;
 
   private int latestStepId = 0;
   private int estimateSize;
@@ -101,6 +102,14 @@ public class Strategy {
     return isSaved;
   }
 
+  public boolean getIsPublic() {
+    return isPublic;
+  }
+    
+  public void setIsPublic(boolean isPublic) {
+    this.isPublic = isPublic;
+  }
+    
   public Step getLatestStep() throws WdkModelException {
     if (latestStep == null && latestStepId != 0)
       setLatestStep(stepFactory.loadStep(user, latestStepId));

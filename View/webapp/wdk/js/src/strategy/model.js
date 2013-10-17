@@ -27,7 +27,7 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
    *  Steps are connected with operators (which are also Steps).
    *
    *  @class Strategy
-   *  @cosntructor
+   *  @constructor
   **/
   Strategy = function (frontId, backId, isDisplay) {
     this.frontId = frontId;
@@ -42,6 +42,8 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
   Strategy.prototype.subStratOf = null;
   Strategy.prototype.Steps = [];
   Strategy.prototype.isSaved = false;
+  Strategy.prototype.isPublic = false;
+  Strategy.prototype.isValid = null;
   Strategy.prototype.name = null;
   Strategy.prototype.savedName = null;
   Strategy.prototype.importId = null;
@@ -205,6 +207,7 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
         description: this.description,
         checkName: true,
         save: false,
+        isPublic: this.isPublic,
         strategy_checksum: checksum,
         state: wdk.strategy.controller.p_state
       }

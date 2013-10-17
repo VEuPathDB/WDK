@@ -27,6 +27,14 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     });
   }
 
+  /* Create an array with the values of all the checkboxes in a column */
+  /* This function is used to sort datatable columns by checkbox (checked vs. not) */
+  $.fn.dataTableExt.afnSortData['dom-checkbox'] = function(oSettings, iColumn) {
+    return $.map(oSettings.oApi._fnGetTrNodes(oSettings), function (tr, i) {
+      return $('td:eq('+iColumn+') input', tr).prop('checked') ? '1' : '0';
+    } );
+  };
+
   function updateHistory() {
     if (update_hist) {
       update_hist = false;
@@ -56,17 +64,15 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
                 "bAutoWidth": false,
                 "bJQueryUI": true,
                 "bScrollCollapse": true,
-                "aoColumns": [
-                  { "bSortable": false }, 
-                  null, 
-                  // null, 
-                  { "bSortable": false },
-                  { "bSortable": false },
-                  null, 
-                  null, 
-                  null, 
-                  null
-                ],
+                "aoColumns": [ { "bSortable": false },
+                               null, 
+                               { "bSortable": false },
+                               { "bSortable": false },
+                               null,
+                               null,
+                               null,
+                               null,
+                               { "sSortDataType": "dom-checkbox" } ],
                 "aaSorting": [[ 6, "desc" ]]
               });
               ui.panel.removeClass("ui-widget ui-widget-content");
@@ -235,14 +241,14 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
 
     if (type == 'saved') {
       $("div.history_panel.saved-strategies.panel_" + currentPanel +
-          " input:checkbox").attr("checked", "yes");
+          " input.strat-selector-box:checkbox").attr("checked", "yes");
 
     } else if (type == 'unsaved') {
       $("div.history_panel.unsaved-strategies.panel_" + currentPanel +
-          " input:checkbox").attr("checked", "yes");
+          " input.strat-selector-box:checkbox").attr("checked", "yes");
 
     } else {
-      $("div.history_panel.panel_" + currentPanel + " input:checkbox")
+      $("div.history_panel.panel_" + currentPanel + " input:checkbox.strat-selector-box")
           .attr("checked", "yes");
     }
 
@@ -250,7 +256,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
   }
 
   function selectNoneHist() {
-    $("div.history_panel input:checkbox").removeAttr("checked");
+    $("div.history_panel input:checkbox.strat-selector-box").removeAttr("checked");
     selected = [];
   }
 
@@ -296,7 +302,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
   function updateSelectedList() {
     selected = [];
 
-    $("div.history_panel input:checkbox").each(function (i) {
+    $("div.history_panel input:checkbox.strat-selector-box").each(function (i) {
       if ($(this).attr("checked")) {
         selected.push($(this).attr("id"));
       }
@@ -435,8 +441,6 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
         row = $(el).parents("tr"),
         strat = row.data();
 
-    canEdit = typeof canEdit === "undefined" ? true : canEdit;
-
     dialog_container.find(".description").html(
       strat.description
           .replace(/</g, "&lt;")
@@ -452,7 +456,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
       dialog_container.find(".edit a").click(function(e) {
         e.preventDefault();
         dialog_container.dialog("close");
-        showUpdateDialog(el, save, fromHist);
+        showUpdateDialog(el, save, fromHist, strat.isPublic);
         $(this).unbind("click");
       }).show();
     } else {
@@ -461,7 +465,8 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     dialog_container.dialog("open");
   }
 
-  function showUpdateDialog(el, save, fromHist) {
+  // note checkPublic is an optional param, default value false
+  function showUpdateDialog(el, save, fromHist, checkPublic) {
     var row = $(el).parents(".strategy-data"),
         strat = row.data(),
         dialog_container = $("#wdk-dialog-update-strat"),
@@ -471,14 +476,30 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
         form;
 
     dialog_container.dialog("option", "title", title)
-    .find(".download").click(function(e) {
-      e.preventDefault();
-      downloadStep(strat.stepId);
-    });
+      .find(".download").click(function(e) {
+        e.preventDefault();
+        downloadStep(strat.stepId);
+      });
 
     form = dialog_container.find("form").get(0);
     $(form).unbind("submit");
 
+    // if passed checkPublic value is defined, use it; otherwise, use value from current strategy
+    var publicCheckedInForm = (typeof checkPublic === 'undefined' ? strat.isPublic : checkPublic);
+    dialog_container.find(".public_input input").prop('checked', publicCheckedInForm);
+    dialog_container.find(".desc-requirement").html(publicCheckedInForm ? 'required' : 'optional');
+    dialog_container.find(".public_input input").change(function() {
+      var isPublicChecked = $(this).prop('checked');
+      dialog_container.find(".desc-requirement").html(isPublicChecked ? 'required' : 'optional');
+    });
+
+    // disable checkbox if strategy is invalid
+    if (strat.valid) {
+      dialog_container.find(".public_input input").removeAttr("disabled");
+    } else {
+      dialog_container.find(".public_input input").attr('disabled','disabled');
+    }
+    
     if (save) {
       dialog_container.find(".save_as_msg").show();
     } else {
@@ -488,9 +509,13 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     if (!(save || strat.saved)) {
       dialog_container.find(".desc_label").hide();
       dialog_container.find(".desc_input").hide();
+      dialog_container.find(".public_label").hide();
+      dialog_container.find(".public_input").hide();
     } else {
       dialog_container.find(".desc_label").show();
       dialog_container.find(".desc_input").show();
+      dialog_container.find(".public_label").show();
+      dialog_container.find(".public_input").show();
     }
 
     form.name.value = strat.name||"";
@@ -501,18 +526,23 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
 
     $(form).submit(function(event) {
       var strategy;
-
-      dialog_container.block();
       event.preventDefault();
 
       if (this.description.value.length > 4000) {
-        return alert("You have exceeded the 4,000 character limit. " +
+        alert("You have exceeded the 4,000 character limit. " +
             "Please revised your description.");
+        return false;
+      }
+      if ($(this.is_public).prop('checked') && this.description.value.trim().length == 0) {
+        alert(wdk.publicStrats.publicStratDescriptionWarning);
+        return false;
       }
 
+      dialog_container.block();
       // update strat row data
       row.data("name", this.name.value);
       row.data("description", this.description.value);
+      row.data("isPublic", ($(this.is_public).prop('checked') ? "true" : "false"));
 
       strategy = $.extend(wdk.strategy.model.getStrategyOBJ(strat.backId), strat);
 
@@ -526,7 +556,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
 
     dialog_container.dialog('open');
   }
-
+  
   ns.update_hist = function(bool) {
     if (typeof bool !== "undefined") {
       update_hist = Boolean(bool);
