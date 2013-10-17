@@ -55,6 +55,7 @@
       <script src="${urlBase}/wdk/js/src/favorite.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/filter.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/history.js"><jsp:text/></script>
+      <script src="${urlBase}/wdk/js/src/publicStrats.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/parameterHandlers.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/question.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/resultsPage.js"><jsp:text/></script>

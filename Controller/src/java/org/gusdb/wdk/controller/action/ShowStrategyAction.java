@@ -338,6 +338,7 @@ public class ShowStrategyAction extends ShowQuestionAction {
         jsStrategy.put("description", strategy.getDescription());
         jsStrategy.put("importId", strategy.getImportId());
         jsStrategy.put("isValid", strategy.isValid());
+        jsStrategy.put("isPublic", strategy.getIsPublic());
 
         JSONObject jsSteps = new JSONObject();
         StepBean step = strategy.getFirstStep();

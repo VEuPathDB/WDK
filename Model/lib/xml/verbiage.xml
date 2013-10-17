@@ -86,6 +86,8 @@
     <li>You are saving/sharing this strategy, not the IDs in your result.</li>
     <li>Results might change with subsequent releases of the site if the underlying data has changed.</li>
     <li>To keep a copy of your current result, please <a class="download" href="#">download your IDs</a>.</li>
+    <li>The following URL allows you to share your strategy with individuals.  If you'd like to share<br/>
+      your strategy with the entire community, visit the 'All' tab and click the 'Public' checkbox.</li>
 </ul>
             ]]>
         </attribute>

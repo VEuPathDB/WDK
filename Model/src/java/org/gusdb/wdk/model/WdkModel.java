@@ -139,6 +139,8 @@ public class WdkModel implements ConnectionContainer {
   private Map<String, String> properties;
 
   private UIConfig uiConfig = new UIConfig();
+  
+  private ExampleStratsAuthor exampleStratsAuthor;
 
   /**
    * xmlSchemaURL is used by the XmlQuestions. This is the only place where
@@ -1160,6 +1162,14 @@ public class WdkModel implements ConnectionContainer {
 
   public UIConfig getUIConfig() {
     return uiConfig;
+  }
+
+  public ExampleStratsAuthor getExampleStratsAuthor() {
+    return exampleStratsAuthor;
+  }
+
+  public void setExampleStratsAuthor(ExampleStratsAuthor exampleStratsAuthor) {
+    this.exampleStratsAuthor = exampleStratsAuthor;
   }
 
   @Override

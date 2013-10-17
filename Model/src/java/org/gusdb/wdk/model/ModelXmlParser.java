@@ -517,6 +517,8 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/modelName", WdkModelName.class,
         "addWdkModelName");
 
+    configureNode(digester, "wdkModel/exampleStratsAuthor", ExampleStratsAuthor.class, "setExampleStratsAuthor");
+    
     configureNode(digester, "wdkModel/introduction", WdkModelText.class,
         "addIntroduction");
     digester.addCallMethod("wdkModel/introduction", "setText", 0);
