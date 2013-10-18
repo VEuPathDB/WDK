@@ -356,16 +356,29 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     }
   }
 
-  function showInstructions(){
-    $("#strat-instructions").remove();
-    $("#strat-instructions-2").remove();
-    var instr = document.createElement('div');
-    var id = "strat-instructions";
-    if ($("#tab_strategy_new").length > 0) id = "strat-instructions-2"
-    $(instr).attr("id",id).html(getInstructionsHtml());
+  function showInstructions() {
+    $("#strategy_messages").empty();
+    //$("#strat-instructions").remove();
+    //$("#strat-instructions-2").remove();
+    //var instr = document.createElement('div');
+    //var id = "strat-instructions";
+    //if ($("#tab_strategy_new").length > 0) id = "strat-instructions-2"
+    //$(instr).attr("id",id).html(getSimpleInstructionsHtml());
+    var instr = getSimpleInstructionsHtml();
     $("#strategy_messages").append(instr);
     $("#strategy_results .resizable-wrapper:has(#Strategies)").hide();
     $("#strategy_messages").show();
+  }
+
+  /* FIXME: probably want to eventually fix this to use 'single-arrow' markup below to
+   *   tell users what to do if there are no open strategies AND there is no 'new' tab. */
+  function getSimpleInstructionsHtml() {
+    // if 'new' tab doesn't exist, then don't display fancy instructions with arrows
+    var openTabContents = '<div style="font-size:120%;line-height:1.2em;text-indent:10em;padding:0.5em">' +
+        'You have no open strategies.  Please run a search to start a strategy.' +
+        '<p style="text-indent:10em">To open an existing strategy, visit the ' +
+        '<a href=\"javascript:wdk.addStepPopup.showPanel(\'search_history\')">\'All\' tab</a>.</p></div>';
+    return openTabContents;
   }
 
   function getInstructionsHtml() {
