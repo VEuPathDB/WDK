@@ -96,10 +96,17 @@
     <record id="note.strat-legend">
         <attribute name="title"></attribute>
         <attribute name="content">
-        <![CDATA[
-<br><b>Strategy results are not stored</b>, only the strategy steps and parameter values are.
-<br><b>Results might change</b> with subsequent releases of the site if the underlying data has changed.
-<br><b>Strategies that require your revision</b> are marked with <a href="#" class="open-dialog-revise-search"><img style="vertical-align:bottom" src="wdk/images/invalidIcon.png" width="12"></a>. <a href="#" class="open-dialog-revise-search"> Why?</a>
+        <![CDATA[  
+        <p>The <b>unsaved strategies</b> section displays strategies that you have created but 
+        not yet saved.  They will be retained across logins. <b>Saved strategies</b> serve as 
+        snapshots that can be renamed, shared, made public, and copied to create new, unsaved 
+        strategies.</p>
+        <p><b>Strategy results are not stored</b>, only the strategy steps and parameter values
+        are.<br/><b>Results might change</b> with subsequent releases of the site if the 
+        underlying data has changed.<br/><b>Strategies that require revision</b> are marked 
+        with <a href="#" class="open-dialog-revise-search">
+        <img style="vertical-align:bottom" src="wdk/images/invalidIcon.png" width="12"></a>.
+        <a href="#" class="open-dialog-revise-search"> Why?</a></p>
         ]]>
         </attribute>
     </record>
