@@ -632,6 +632,10 @@ ul#strategy_tabs {
 	min-height: 130px;
 }
 
+#strategy_new {
+  min-height: 130px;
+}
+
 .workspace_panel {
 	clear: both;
 	position: absolute;
