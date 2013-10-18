@@ -24,8 +24,6 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
   private static final String ATTR_SUMMARY = "summary";
   private static final String ATTR_HISTOGRAM = "histogram";
 
-  private static final float DEFAULT_MAX_BAR_LENGTH = 600;
-
   private static final Logger logger = Logger.getLogger(HistogramAttributePlugin.class);
 
   private Map<String, Integer> summaries;
