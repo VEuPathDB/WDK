@@ -31,6 +31,7 @@
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/qtip2/jquery.qtip.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/json.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/handlebars.js"><jsp:text/></script>
+  <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.flot-0.8.1.min.js"><jsp:text/></script>
 
   <!-- WDK js and css -->
 
