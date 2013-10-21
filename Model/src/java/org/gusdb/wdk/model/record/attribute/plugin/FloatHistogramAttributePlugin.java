@@ -18,8 +18,7 @@ public abstract class FloatHistogramAttributePlugin extends
   private static final int DEFAULT_BIN_COUNT = 20;
 
   @Override
-  protected Map<String, Integer> getSummaries() {
-    Map<String, Integer> data = super.getSummaries();
+  protected Map<String, Integer> computeHistogram(Map<String, Integer> data) {
     if (data.size() == 0)
       return data;
 
