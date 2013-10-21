@@ -74,6 +74,10 @@ public abstract class FieldBean {
         return field.getType();
     }
 
+    public RecordClassBean getRecordClass() {
+      return new RecordClassBean(field.getRecordClass());
+    }
+
     /**
      * @return
      * @see org.gusdb.wdk.model.record.Field#toString()

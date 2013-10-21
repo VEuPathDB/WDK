@@ -9,13 +9,18 @@ import java.util.Map;
  * @author jerric
  * 
  */
-public abstract class FloatHistogramAttributePlugin extends
+public class FloatHistogramAttributePlugin extends
     HistogramAttributePlugin {
 
   private static final String PROP_BIN_SIZE = "bin-size";
   private static final String PROP_BIN_COUNT = "bin-count";
 
   private static final int DEFAULT_BIN_COUNT = 20;
+
+  @Override
+  public String getAxisMode() {
+    return "";
+  }
 
   @Override
   protected Map<String, Integer> computeHistogram(Map<String, Integer> data) {
@@ -83,7 +88,7 @@ public abstract class FloatHistogramAttributePlugin extends
     double to = from + binSize;
     while (to < value) {
       from += binSize;
-      to += binSize;
+      to = from + binSize;
     }
     return "[" + from + "-" + to + ")";
   }
