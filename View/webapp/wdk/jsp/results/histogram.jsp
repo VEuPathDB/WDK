@@ -10,32 +10,33 @@
 <c:set var="data" value="${requestScope.data}" />
 <c:set var="histogram" value="${requestScope.histogram}" />
 
-<div id="${plugin.name}" class="histogram"
+<div id="${attribute.name}-${plugin.name}" class="histogram"
      data-controller="wdk.result.histogram.init">
   <h2 align="center">${plugin.display}</h2>
 
   <ul>
-    <li><a href="#graph">Graph</li>
-    <li><a href="#data">Table</li>
+    <li><a href="#graph">Graph</a></li>
+    <li><a href="#data">Table</a></li>
   </ul>
   
   <div id="graph">
-    <div class="plot" style="width:600px; height:400px;"> </div>
+    <div class="plot"> </div>
   </div>
   
-  <div id="data">
+  <div id="data" mode="${plugin.axisMode}">
+
     <table class="datatable">
       <thead>
         <tr>
-          <th>${attribute.displayName}</th>
-          <th>#Records</th>
+          <th class="bin">${attribute.displayName}</th>
+          <th class="size"># ${attribute.recordClass.displayNamePlural}</th>
         </tr>
       </thead>
       <tbody>
         <c:forEach items="${data}" var="item">
-          <tr class="data">
-            <td class="bin">${item.key}</td>
-            <td class="size">${summary[item.key]}</td>
+          <tr>
+            <td>${item.key}</td>
+            <td>${data[item.key]}</td>
           </tr>
         </c:forEach>
       </tbody>
@@ -48,6 +49,15 @@
         </tfoot>
       </c:if>
     </table>
+
+    <div class="plot-data">
+      <c:forEach items="${histogram}" var="item">
+        <div class="data">
+          <span class="bin">${item.key}</span>
+          <span class="size">${histogram[item.key]}</span>
+        </div>
+      </c:forEach>
+    </div>
   </div>
   
 </div>

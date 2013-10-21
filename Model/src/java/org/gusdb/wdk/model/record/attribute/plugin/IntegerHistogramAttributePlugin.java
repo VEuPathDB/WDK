@@ -9,7 +9,7 @@ import java.util.Map;
  * @author jerric
  * 
  */
-public abstract class IntegerHistogramAttributePlugin extends
+public class IntegerHistogramAttributePlugin extends
     HistogramAttributePlugin {
 
   private static final String PROP_BIN_SIZE = "bin-size";
@@ -73,12 +73,12 @@ public abstract class IntegerHistogramAttributePlugin extends
   }
 
   private String getBin(int binSize, int[] range, int value) {
-    double from = range[0];
-    double to = from + binSize - 1;
+    int from = range[0];
+    int to = from + binSize - 1;
     while (value > to) {
       from += binSize;
-      to = binSize - 1;
+      to = from + binSize - 1;
     }
-    return from + "-" + to;
+    return "[" + from + "-" + to + "]";
   }
 }

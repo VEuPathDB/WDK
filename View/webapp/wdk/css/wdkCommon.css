@@ -943,10 +943,24 @@ tr.headerRow th {
     RESULTS PAGE: column summaries
    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
 
-#histogram .bar {
-    height: 12px;
-    background-image: url(../images/blue_bar.gif);
+.rotate45 {
+  -webkit-transform:rotate(45deg);
+  -moz-transform:rotate(45deg);
+  -o-transform: rotate(45deg);
 }
+
+.rotate90 {
+  -webkit-transform:rotate(90deg);
+  -moz-transform:rotate(90deg);
+  -o-transform: rotate(90deg);
+  filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
+}
+
+.histogram #graph .plot { width:700px; height:400px; margin:0px auto 10px auto; }
+.histogram .plot .flot-x-axis .flot-tick-label { margin:5px 0px 0px 0px; }
+.histogram #data .plot-data { display:none; }
+#flot-tooltip { position:absolute; display:block; border:1px solid #fdd; padding:3px; border-radius:3px; background-color:#ffe; z-index:100; }
+
 
 #word-cloud #tags, #word-cloud #word-order, #word-cloud #count-order { display: none; }
 #word-cloud .help { color: #666666; font-size: smaller; font-style:italic; text-align: center; vertical-align: top; }

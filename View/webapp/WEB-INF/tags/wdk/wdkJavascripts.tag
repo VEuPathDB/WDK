@@ -32,6 +32,7 @@
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/json.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/handlebars.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.flot-0.8.1.min.js"><jsp:text/></script>
+  <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.flot.categories-0.8.1.min.js"><jsp:text/></script>
 
   <!-- WDK js and css -->
 
@@ -68,6 +69,7 @@
       <script src="${urlBase}/wdk/js/src/reporter.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/wdk.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/wordCloud.js"><jsp:text/></script>
+      <script src="${urlBase}/wdk/js/src/histogram.js"><jsp:text/></script>      
       <script src="${urlBase}/wdk/js/src/plugins/wdkDataTables.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/plugins/wdkEditable.js"><jsp:text/></script>
       <script src="${urlBase}/wdk/js/src/plugins/wdkSimpleToggle.js"><jsp:text/></script>

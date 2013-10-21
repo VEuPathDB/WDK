@@ -47,6 +47,10 @@ public class HistogramAttributePlugin extends AbstractAttributePlugin implements
     return result;
   }
 
+  public String getAxisMode() {
+    return "categories";
+  }
+
   /**
    * The default function just return sorted data as a histogram.
    * 
