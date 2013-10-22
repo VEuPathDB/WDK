@@ -37,18 +37,25 @@ public class Reference extends WdkModelBase {
         return twoPartName;
     }
     
-    /**
-     * @param twoPartName Of the form "set.element"
-     */
-    public void setRef(String twoPartName) throws WdkModelException {
-        
+    public static boolean isTwoPartName(String twoPartName) {
+    	try { assertTwoPartName(twoPartName); return true; }
+    	catch (WdkModelException e) { return false; }
+    }
+    
+    public static void assertTwoPartName(String twoPartName) throws WdkModelException {
         if (twoPartName == null) {
             throw new WdkModelException("Error: twoPartName is null");
         }
         if (!twoPartName.matches("\\S+\\.\\S+")) {
             throw new WdkModelException("Error: Reference '" + twoPartName + "' is not in the form 'setName.elementName'");
         }
-	    
+    }
+    
+    /**
+     * @param twoPartName Of the form "set.element"
+     */
+    public void setRef(String twoPartName) throws WdkModelException {
+        assertTwoPartName(twoPartName);
         String[] parts = twoPartName.split("\\.");
         setName = parts[0];
         elementName = parts[1];

@@ -38,9 +38,8 @@ public class ProcessFilterAction extends ProcessQuestionAction {
     public ActionForward execute(ActionMapping mapping, ActionForm form,
             HttpServletRequest request, HttpServletResponse response)
             throws Exception {
-        logger.debug("\nEntering ProcessFilterAction...");
-
-        logger.debug("strategy: " + request.getParameter("strategy") + ", step: " + request.getParameter("step"));
+        logger.debug("Entering ProcessFilterAction...");
+        logger.debug("   strategy: " + request.getParameter("strategy") + ", step: " + request.getParameter("step"));
 
         WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
         UserBean wdkUser = ActionUtility.getUser(servlet, request);
