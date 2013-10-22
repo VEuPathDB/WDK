@@ -263,14 +263,10 @@ public class ShowSummaryAction extends ShowQuestionAction {
             if (wdkQuestion == null) wdkQuestion = qForm.getQuestion();
 
             String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+            ActionUtility.getWdkModel(servlet).validateQuestionFullName(qFullName);
             if (wdkQuestion == null) {
-                if (qFullName != null)
-                    wdkQuestion = wdkModel.getQuestion(qFullName);
+            	wdkQuestion = wdkModel.getQuestion(qFullName);
             }
-            if (wdkQuestion == null)
-                throw new WdkUserException("The question '" + qFullName
-                        + "' doesn't exist.");
-
             String questionName = wdkQuestion.getFullName();
 
             updated = updateSortingSummary(request, wdkUser, questionName);
