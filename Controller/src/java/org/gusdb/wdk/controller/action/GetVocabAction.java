@@ -42,6 +42,7 @@ public class GetVocabAction extends Action {
     WdkModelBean wdkModel = ActionUtility.getWdkModel(servlet);
     try {
       String qFullName = request.getParameter(CConstants.QUESTION_FULLNAME_PARAM);
+      ActionUtility.getWdkModel(servlet).validateQuestionFullName(qFullName);
       String paramName = request.getParameter("name");
 
       // the dependent values are a JSON representation of {name: [values],
