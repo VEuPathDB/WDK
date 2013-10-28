@@ -51,7 +51,9 @@ public class ShowRecordAction extends Action {
         String customViewDir = CConstants.WDK_CUSTOM_VIEW_DIR + File.separator
                 + CConstants.WDK_PAGES_DIR;
 
-        RecordClassBean wdkRecordClass = wdkModel.findRecordClass(request.getParameter("name"));
+        String recordClassName = request.getParameter("name");
+        wdkModel.validateRecordClassName(recordClassName);
+        RecordClassBean wdkRecordClass = wdkModel.findRecordClass(recordClassName);
         String[] pkColumns = wdkRecordClass.getPrimaryKeyColumns();
 
         Map<String, Object> pkValues = new LinkedHashMap<String, Object>();

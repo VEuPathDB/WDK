@@ -345,6 +345,19 @@ public class WdkModelBean implements ConnectionContainer {
       return wdkModel.getConnection(key);
     }
 
+    /**
+     * Checks for a valid question name and throws WdkUserException if param is
+     * not valid.  For now we simply check that it is a valid two-part name
+     * (i.e. \S+\.\S+), so we will still get a WdkModelException down the line
+     * if the question name is the correct format but does not actually exist.
+     * We do this because sometimes developers change question names in one
+     * place but not another and if so, then we want to know about it.  If we
+     * mask this mistake with a WdkUserException, we might see bad consequences
+     * down the line.
+     * 
+     * @param qFullName potential question name
+     * @throws WdkUserException if name is not in format *.*
+     */
     public void validateQuestionFullName(String qFullName) throws WdkUserException {
         String message = "Unable to find question with name: " + qFullName;
         try {
@@ -357,7 +370,20 @@ public class WdkModelBean implements ConnectionContainer {
             throw new WdkUserException(message, e);
         }
     }
-    
+
+    /**
+     * Checks for a valid record class name and throws WdkUserException if param
+     * is not valid.  For now we simply check that it is a valid two-part name
+     * (i.e. \S+\.\S+), so we will still get a WdkModelException down the line
+     * if the record class name is the correct format but does not actually
+     * exist.  We do this because sometimes developers change record class names
+     * in one place but not another and if so, then we want to know about it.
+     * If we mask this mistake with a WdkUserException, we might see bad
+     * consequences down the line.
+     * 
+     * @param recordClassName potential record class name
+     * @throws WdkUserException if name is not in format *.*
+     */
     public void validateRecordClassName(String recordClassName) throws WdkUserException {
         String message = "Unable to find record class with name: " + recordClassName;
         try {
