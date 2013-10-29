@@ -57,6 +57,7 @@ import org.gusdb.wdk.model.query.param.EnumParam;
 import org.gusdb.wdk.model.query.param.FlatVocabParam;
 import org.gusdb.wdk.model.query.param.Param;
 import org.gusdb.wdk.model.query.param.ParamConfiguration;
+import org.gusdb.wdk.model.query.param.ParamHandler;
 import org.gusdb.wdk.model.query.param.ParamReference;
 import org.gusdb.wdk.model.query.param.ParamSet;
 import org.gusdb.wdk.model.query.param.ParamSuggestion;
@@ -517,8 +518,9 @@ public class ModelXmlParser extends XmlParser {
     configureNode(digester, "wdkModel/modelName", WdkModelName.class,
         "addWdkModelName");
 
-    configureNode(digester, "wdkModel/exampleStratsAuthor", ExampleStratsAuthor.class, "setExampleStratsAuthor");
-    
+    configureNode(digester, "wdkModel/exampleStratsAuthor",
+        ExampleStratsAuthor.class, "setExampleStratsAuthor");
+
     configureNode(digester, "wdkModel/introduction", WdkModelText.class,
         "addIntroduction");
     digester.addCallMethod("wdkModel/introduction", "setText", 0);
@@ -793,6 +795,12 @@ public class ModelXmlParser extends XmlParser {
         "addSuggest");
     configureNode(digester, paramPath + "/noTranslation",
         ParamConfiguration.class, "addNoTranslation");
+
+    configureNode(digester, paramPath + "/handler", ParamHandler.class,
+        "addHandler");
+    configureNode(digester, paramPath + "/handler/property",
+        WdkModelText.class, "addProperty");
+    digester.addCallMethod(paramPath + "/handler/property", "setText", 0);
   }
 
   private void configureQuestionSet(Digester digester) {

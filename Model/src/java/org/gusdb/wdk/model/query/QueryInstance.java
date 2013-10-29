@@ -15,6 +15,7 @@ import org.gusdb.fgputil.db.SqlUtils;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.dbms.ResultFactory;
 import org.gusdb.wdk.model.dbms.ResultList;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
@@ -67,7 +68,7 @@ public abstract class QueryInstance {
 
   protected QueryInstance(User user, Query query, Map<String, String> values,
       boolean validate, int assignedWeight, Map<String, String> context)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     this.user = user;
     this.query = query;
     this.wdkModel = query.getWdkModel();
@@ -100,7 +101,7 @@ public abstract class QueryInstance {
   }
 
   private void setValues(Map<String, String> values, boolean validate)
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     logger.trace("----- input value for [" + query.getFullName() + "] -----");
     for (String paramName : values.keySet()) {
       logger.trace(paramName + "='" + values.get(paramName) + "'");
@@ -117,6 +118,7 @@ public abstract class QueryInstance {
     for (Param param : params.values()) {
       if (values.containsKey(param.getName())) {
         String value = values.get(param.getName());
+        value = param.processRawValue(user, value);
         value = param.rawOrDependentValueToDependentValue(user, value);
         values.put(param.getName(), value);
       }
@@ -323,7 +325,7 @@ public abstract class QueryInstance {
   }
 
   protected Map<String, String> getInternalParamValues()
-      throws WdkModelException {
+      throws WdkModelException, WdkUserException {
     // the empty & default values are filled
     Map<String, String> values = fillEmptyValues(this.values);
     Map<String, String> internalValues = new LinkedHashMap<String, String>();

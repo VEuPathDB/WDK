@@ -25,6 +25,8 @@ import org.json.JSONObject;
  * step is simply reloaded, but start a new cache when user runs a search or
  * revise a step with the same param values.
  * 
+ * the raw, reference, and internal value for a timestampParam is the same.
+ * 
  * @author xingao
  * 
  *         the four types of values are identical.
@@ -34,7 +36,9 @@ public class TimestampParam extends Param {
   /**
      * 
      */
-  public TimestampParam() {}
+  public TimestampParam() {
+    setHandler(new TimestampParamHandler());
+  }
 
   /**
    * @param param
@@ -69,57 +73,6 @@ public class TimestampParam extends Param {
   /*
    * (non-Javadoc)
    * 
-   * @see org.gusdb.wdk.model.query.param.Param#dependentValueToIndependentValue
-   * (org.gusdb.wdk.model.user.User, java.lang.String)
-   */
-  @Override
-  public String dependentValueToIndependentValue(User user,
-      String dependentValue) throws WdkModelException {
-    return dependentValue;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.gusdb.wdk.model.query.param.Param#dependentValueToInternalValue(org
-   * .gusdb.wdk.model.user.User, java.lang.String)
-   */
-  @Override
-  public String dependentValueToInternalValue(User user, String dependentValue)
-      throws WdkModelException {
-    return dependentValue;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.gusdb.wdk.model.query.param.Param#dependentValueToRawValue(org.gusdb
-   * .wdk.model.user.User, java.lang.String)
-   */
-  @Override
-  public String dependentValueToRawValue(User user, String dependentValue)
-      throws WdkModelException {
-    return dependentValue;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * org.gusdb.wdk.model.query.param.Param#rawOrDependentValueToDependentValue
-   * (org.gusdb.wdk.model.user.User, java.lang.String)
-   */
-  @Override
-  public String rawOrDependentValueToDependentValue(User user, String rawValue)
-      throws WdkModelException {
-    return rawValue;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
    * @see
    * org.gusdb.wdk.model.query.param.Param#validateValue(org.gusdb.wdk.model
    * .user.User, java.lang.String)
@@ -128,17 +81,7 @@ public class TimestampParam extends Param {
   protected void validateValue(User user, String rawOrDependentValue,
       Map<String, String> contextValues) throws WdkModelException,
       WdkUserException {
-    // the value of timestamp can be any string
-    // make sure the value is in valid time format
-    // try {
-    // Date date = DateFormat.getDateTimeInstance().parse(
-    // rawOrDependentValue);
-    // if (date == null)
-    // throw new WdkModelException("Invalid timestampParam value; '"
-    // + rawOrDependentValue + "'");
-    // } catch (ParseException ex) {
-    // throw new WdkModelException(ex);
-    // }
+    // nothing to validation. the value of timestamp can be any string
   }
 
   /**

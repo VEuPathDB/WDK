@@ -352,7 +352,7 @@ public class AnswerValue {
   }
 
   /**
-   * the checksum of the iq query, filter info is not included in it.
+   * the checksum of the iq query, plus the filter information on the answer.
    * 
    * @return
    */

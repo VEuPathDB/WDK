@@ -177,12 +177,8 @@ public class Dataset {
     void setChecksum(String checksum) {
         this.checksum = checksum;
     }
-
-    public RecordClass getRecordClass() {
-        return recordClass;
-    }
-
-    public void setRecordClass(RecordClass recordClass) {
-        this.recordClass = recordClass;
+    
+    public String getContent() {
+      
     }
 }

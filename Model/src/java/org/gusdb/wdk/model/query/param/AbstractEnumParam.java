@@ -40,15 +40,16 @@ import org.gusdb.wdk.model.user.User;
  * 
  *         The meaning of different param values, based on the processing stage:
  * 
- *         raw data: a comma separated list of terms;
+ *         raw value: a string of a comma separated list of terms;
  * 
- *         user-dependent data: same as user-independent data, can be either a
- *         comma separated list of terms or a compressed checksum;
+ *         stable value: the same as raw value, a comma separated list of
+ *         terms;
  * 
- *         user-independent data: same as user-dependent data;
- * 
- *         internal data: a comma separated list of internals, quotes are
- *         properly escaped or added
+ *         internal value: a comma separated list of internals. If noTranslation
+ *         is true, this will be a list of terms. If quoted is true, quotes are
+ *         applied to each of the individual items.
+ *         
+ *         signature: a sorted list of terms.
  * 
  *         Note about dependent params: AbstractEnumParams can be dependent on
  *         other parameter values. Thus, this class provides two versions of
@@ -129,8 +130,15 @@ public abstract class AbstractEnumParam extends Param {
    */
   private boolean suppressNode = false;
 
+  protected abstract EnumParamCache createEnumParamCache(
+      Map<String, String> dependedParamValues) throws WdkModelException;
+
   public AbstractEnumParam() {
+    super();
     dependedParamRefs = new LinkedHashSet<>();
+
+    // register handlers
+    setHandler(new EnumParamHandler());
   }
 
   public AbstractEnumParam(AbstractEnumParam param) {
@@ -146,9 +154,6 @@ public abstract class AbstractEnumParam extends Param {
     this.maxSelectedCount = param.maxSelectedCount;
     this.countOnlyLeaves = param.countOnlyLeaves;
   }
-
-  protected abstract EnumParamCache createEnumParamCache(
-      Map<String, String> dependedParamValues) throws WdkModelException;
 
   private EnumParamCache getEnumParamCache(
       Map<String, String> contextParamValues) {
@@ -235,57 +240,58 @@ public abstract class AbstractEnumParam extends Param {
 
   /**
    * @return The minimum number of allowed values for this param; if not set
-   *   (i.e. no min), this method will return -1.
+   *         (i.e. no min), this method will return -1.
    */
   public int getMinSelectedCount() {
     return minSelectedCount;
   }
 
   /**
-   * @param maxSelectedCount The minimum number of allowed values for this
-   *   param.  If not set, default is "no min"; any number of values can be
-   *   assigned.
+   * @param maxSelectedCount
+   *          The minimum number of allowed values for this param. If not set,
+   *          default is "no min"; any number of values can be assigned.
    */
   public void setMinSelectedCount(int minSelectedCount) {
     this.minSelectedCount = minSelectedCount;
   }
-  
+
   /**
    * @return The maximum number of allowed values for this param; if not set
-   *   (i.e. no max), this method will return -1.
+   *         (i.e. no max), this method will return -1.
    */
   public int getMaxSelectedCount() {
     return maxSelectedCount;
   }
 
   /**
-   * @param maxSelectedCount The maximum number of allowed values for this
-   *   param.  If not set, default is "no max"; any number of values can be
-   *   assigned.
+   * @param maxSelectedCount
+   *          The maximum number of allowed values for this param. If not set,
+   *          default is "no max"; any number of values can be assigned.
    */
   public void setMaxSelectedCount(int maxSelectedCount) {
     this.maxSelectedCount = maxSelectedCount;
   }
 
   /**
-   * @return true if, when validating min- and maxSelectedCount (see above),
-   * we should only count leaves towards the total selected value count, or,
-   * if false, count both leaves and branch selections
+   * @return true if, when validating min- and maxSelectedCount (see above), we
+   *         should only count leaves towards the total selected value count,
+   *         or, if false, count both leaves and branch selections
    */
   public boolean getCountOnlyLeaves() {
-    return countOnlyLeaves;  
+    return countOnlyLeaves;
   }
 
   /**
-   * @param countOnlyLeaves Set to true if, when validating min- and
-   * maxSelectedCount (see above), we should only count leaves towards the
-   * total selected value count, or set to false if both leaves and branch
-   * selections should be counted
+   * @param countOnlyLeaves
+   *          Set to true if, when validating min- and maxSelectedCount (see
+   *          above), we should only count leaves towards the total selected
+   *          value count, or set to false if both leaves and branch selections
+   *          should be counted
    */
   public void setCountOnlyLeaves(boolean countOnlyLeaves) {
     this.countOnlyLeaves = countOnlyLeaves;
   }
-  
+
   public boolean isDependentParam() {
     return (dependedParamRefs.size() > 0);
   }
@@ -318,7 +324,8 @@ public abstract class AbstractEnumParam extends Param {
         if (param != null)
           dependedParams.add(param);
         else
-          logger.warn("missing depended param: " + paramRef + " for enum param " + getFullName());
+          logger.warn("missing depended param: " + paramRef
+              + " for enum param " + getFullName());
       }
     }
     return dependedParams;
@@ -395,8 +402,8 @@ public abstract class AbstractEnumParam extends Param {
     return getVocabMap(null);
   }
 
-  public Map<String, String> getVocabMap(Map<String, String> dependedParamValues) {
-    return getEnumParamCache(dependedParamValues).getVocabMap();
+  public Map<String, String> getVocabMap(Map<String, String> contextValues) {
+    return getEnumParamCache(contextValues).getVocabMap();
   }
 
   public Map<String, String> getDisplayMap() {
@@ -499,115 +506,7 @@ public abstract class AbstractEnumParam extends Param {
     } else {
       terms = new String[] { termList.trim() };
     }
-
-    // disable the validation - it prevented the revising of invalid step
-    // if a strategy has more than one invalid steps.
-    // if (!isSkipValidation()) {
-    // initVocabMap(dependedParamVal);
-    // for (String term : terms) {
-    // if (!termInternalMap.containsKey(term))
-    // throw new WdkModelException(" - Invalid term '" + term
-    // + "' for parameter '" + name + "'");
-    // }
-    // }
     return terms;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#dependentValueToIndependentValue
-   * (org.gusdb.wdk.model.user.User, java.lang.String)
-   */
-  @Override
-  public String dependentValueToIndependentValue(User user,
-      String dependentValue) throws WdkModelException {
-    return dependentValue;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#independentValueToInternalValue
-   * (org.gusdb.wdk.model.user.User, java.lang.String)
-   */
-  @Override
-  public String dependentValueToInternalValue(User user, String dependedValue)
-      throws WdkModelException {
-    return dependentValueToInternalValue(user, dependedValue, null);
-  }
-
-  public String dependentValueToInternalValue(User user, String dependedValue,
-      Map<String, String> dependedParamValues) throws WdkModelException {
-    EnumParamCache cache = getEnumParamCache(dependedParamValues);
-
-    String rawValue = decompressValue(dependedValue);
-    if (rawValue == null || rawValue.length() == 0)
-      rawValue = emptyValue;
-
-    String[] terms = convertToTerms(rawValue);
-    StringBuffer buf = new StringBuffer();
-    for (String term : terms) {
-      String internal = (isNoTranslation()) ? term : cache.getInternal(term);
-      if (!cache.containsTerm(term)) {
-        // doesn't validate term, if it doesn't exist in the list, just
-        // use it as internval value. This is for wildcard support in
-        // type-ahead params.
-        if (isSkipValidation()) {
-          internal = term;
-        } else {
-          // term doesn't exists need to correct it later
-          throw new WdkModelException("param " + getFullName()
-              + " encountered an invalid term from user #" + user.getUserId()
-              + ": " + term);
-        }
-      }
-      if (quote && !(internal.startsWith("'") && internal.endsWith("'")))
-        internal = "'" + internal.replaceAll("'", "''") + "'";
-      if (buf.length() != 0)
-        buf.append(", ");
-      buf.append(internal);
-    }
-    return buf.toString();
-  }
-
-  @Override
-  public String getInternalValue(User user, String dependentValue)
-      throws WdkModelException {
-    return getInternalValue(user, dependentValue, null);
-  }
-
-  public String getInternalValue(User user, String dependentValue,
-      Map<String, String> dependedParamValues) throws WdkModelException {
-    String internalValue = dependentValueToInternalValue(user, dependentValue,
-        dependedParamValues);
-    if (handler != null)
-      internalValue = handler.transform(user, internalValue);
-    return internalValue;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#independentValueToRawValue(org.
-   * gusdb.wdk.model.user.User, java.lang.String)
-   */
-  @Override
-  public String dependentValueToRawValue(User user, String dependentValue)
-      throws WdkModelException {
-    return decompressValue(dependentValue);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#rawValueToIndependentValue(org.
-   * gusdb.wdk.model.user.User, java.lang.String)
-   */
-  @Override
-  public String rawOrDependentValueToDependentValue(User user, String rawValue)
-      throws WdkModelException {
-    return compressValue(rawValue);
   }
 
   /*
@@ -618,11 +517,11 @@ public abstract class AbstractEnumParam extends Param {
    * .user.User, java.lang.String)
    */
   @Override
-  protected void validateValue(User user, String userDependentValue,
+  protected void validateValue(User user, String storedValue,
       Map<String, String> contextValues) throws WdkModelException,
       WdkUserException {
     // handle the empty case
-    if (userDependentValue == null || userDependentValue.length() == 0) {
+    if (storedValue == null || storedValue.length() == 0) {
       if (!allowEmpty)
         throw new WdkModelException("The parameter '" + getPrompt()
             + "' does not allow empty value");
@@ -631,26 +530,28 @@ public abstract class AbstractEnumParam extends Param {
     }
 
     if (!isSkipValidation()) {
-      String rawValue = decompressValue(userDependentValue);
+      String rawValue = getRawValue(user, storedValue, contextValues);
       logger.debug("param=" + getFullName() + " - validating: " + rawValue
           + ", with dependedParamValues=" + Utilities.print(contextValues));
 
       String[] terms = convertToTerms(rawValue);
       if (terms.length == 0 && !allowEmpty)
-        throw new WdkUserException("The value to enumParam/flatVocabParam " +
-            getPrompt() + " cannot be empty");
-      
-      // verify that user did not select too few or too many values for this param
+        throw new WdkUserException("The value to enumParam/flatVocabParam "
+            + getPrompt() + " cannot be empty");
+
+      // verify that user did not select too few or too many values for this
+      // param
       int numSelected = getNumSelected(terms, contextValues);
-      if ((maxSelectedCount > 0 && numSelected > maxSelectedCount) ||
-          (minSelectedCount > 0 && numSelected < minSelectedCount)) {
-        String range =
-          (minSelectedCount > 0 ? "[ " + minSelectedCount : "( Inf") + ", " +
-          (maxSelectedCount > 0 ? maxSelectedCount + " ]" : "Inf )");
-        throw new WdkUserException("Number of selected values (" + numSelected +
-            ") was not in range " + range + " for parameter " + getPrompt());
+      if ((maxSelectedCount > 0 && numSelected > maxSelectedCount)
+          || (minSelectedCount > 0 && numSelected < minSelectedCount)) {
+        String range = (minSelectedCount > 0 ? "[ " + minSelectedCount
+            : "( Inf")
+            + ", "
+            + (maxSelectedCount > 0 ? maxSelectedCount + " ]" : "Inf )");
+        throw new WdkUserException("Number of selected values (" + numSelected
+            + ") was not in range " + range + " for parameter " + getPrompt());
       }
-      
+
       Map<String, String> map = getVocabMap(contextValues);
       boolean error = false;
       StringBuilder message = new StringBuilder();
@@ -667,15 +568,17 @@ public abstract class AbstractEnumParam extends Param {
       logger.debug("param=" + getFullName() + " - skip validation");
     }
   }
-  
+
   private int getNumSelected(String[] terms, Map<String, String> contextValues) {
-    // if countOnlyLeaves is set, must generate original tree, set values, and count the leaves
+    // if countOnlyLeaves is set, must generate original tree, set values, and
+    // count the leaves
     String displayType = getDisplayType();
-    logger.debug("Checking whether num selected exceeds max on param " + getFullName() + " with values" +
-        ": displayType = " + displayType +
-        ", maxSelectedCount = " + getMaxSelectedCount() +
-        ", countOnlyLeaves = " + getCountOnlyLeaves());
-    if (displayType != null && displayType.equals("treeBox") && getCountOnlyLeaves()) {
+    logger.debug("Checking whether num selected exceeds max on param "
+        + getFullName() + " with values" + ": displayType = " + displayType
+        + ", maxSelectedCount = " + getMaxSelectedCount()
+        + ", countOnlyLeaves = " + getCountOnlyLeaves());
+    if (displayType != null && displayType.equals("treeBox")
+        && getCountOnlyLeaves()) {
       EnumParamTermNode[] rootNodes = getEnumParamCache(contextValues).getVocabTreeRoots();
       TreeNode tree = EnumParamBean.getParamTree(getName(), rootNodes);
       EnumParamBean.populateParamTree(tree, terms);
@@ -789,7 +692,8 @@ public abstract class AbstractEnumParam extends Param {
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    if (resolved) return;
+    if (resolved)
+      return;
 
     super.resolveReferences(wdkModel);
 
@@ -849,13 +753,14 @@ public abstract class AbstractEnumParam extends Param {
   }
 
   public void fetchCorrectValue(User user, Map<String, String> contextValues,
-      Map<String, EnumParamCache> caches) throws WdkModelException {
-      logger.debug("Fixing value " + name + "='" + contextValues.get(name) + "'");
+      Map<String, EnumParamCache> caches) throws WdkModelException,
+      WdkUserException {
+    logger.debug("Fixing value " + name + "='" + contextValues.get(name) + "'");
 
     // make sure the values for depended params are fetched first.
     if (isDependentParam()) {
       for (Param dependedParam : getDependedParams()) {
-        logger.debug (name + " depends on " + dependedParam.getName());
+        logger.debug(name + " depends on " + dependedParam.getName());
         if (dependedParam instanceof AbstractEnumParam) {
           ((AbstractEnumParam) dependedParam).fetchCorrectValue(user,
               contextValues, caches);
@@ -875,7 +780,7 @@ public abstract class AbstractEnumParam extends Param {
       value = cache.getDefaultValue();
     } else { // value exists in context values, check if value is valid
       String paramValue = contextValues.get(name);
-      paramValue = dependentValueToRawValue(user, paramValue);
+      paramValue = getRawValue(user, paramValue, contextValues);
       logger.debug("CORRECTING " + name + "=\"" + paramValue + "\"");
       String[] terms = convertToTerms(paramValue);
       Map<String, String> termMap = cache.getVocabMap();
@@ -898,7 +803,8 @@ public abstract class AbstractEnumParam extends Param {
         value = cache.getDefaultValue();
       }
     }
-    if (value != null) contextValues.put(name, value);
+    if (value != null)
+      contextValues.put(name, value);
     logger.debug("Corrected " + name + "\"" + contextValues.get(name) + "\"");
   }
 

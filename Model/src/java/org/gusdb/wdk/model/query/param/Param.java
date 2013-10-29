@@ -9,7 +9,6 @@ import java.util.regex.Matcher;
 
 import org.apache.log4j.Logger;
 import org.gusdb.wdk.model.Group;
-import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
@@ -17,7 +16,6 @@ import org.gusdb.wdk.model.WdkModelText;
 import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.query.Query;
 import org.gusdb.wdk.model.question.Question;
-import org.gusdb.wdk.model.user.QueryFactory;
 import org.gusdb.wdk.model.user.User;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,19 +27,15 @@ import org.json.JSONObject;
  * 
  * The param values will go through a life cycle in a following way. First, we
  * gets the value from user input as raw value; then it is transformed into
- * user-dependent value, which means the value is only valid in the context of
- * current user; then the user-dependend value can be transformed into
- * user-independent value, so that some common resources can be shared between
- * users, such as common list of terms that many users migth choose. Then when
+ * reference value, which is used in URLs, and saved in user's steps. Then when
  * the value is used to execute a query, the user-dependent value will be
  * transformed into internal value, and is fed to the query instance.
  * 
  * If the noTranslation is set to true, the last stage of the transform will be
  * disabled, and the user-dependent value will be used as internal value.
  * 
- * You could provide your own java handler code to process the internal value
- * before is it consumed by the query instance. The handler code needs to
- * implement ParamHandler interface.
+ * You could provide your own java handler code to process the values in each
+ * stage of the life cycle of the param values.
  * 
  * @author xingao
  * 
@@ -50,15 +44,25 @@ import org.json.JSONObject;
  *         raw data: the data retrieved by processQuestion action, which can be
  *         very long, and needs to be compressed.
  * 
- *         user-dependent data: the data used in all public url, which are
- *         short, and can be compressed. User-dependent data is stored in the
- *         steps table. User-dependent data is also used in creating a query.
- * 
- *         user-independent data: It can be converted back into user-dependent
- *         data, which sometimes means to create new entities for the user.
- *         User-independent data is stored into the answers table.
+ *         stable data: the data used in URLs and saved in user's steps.
  * 
  *         Internal data: the data used in the SQL.
+ * 
+ *         signature: the data used to generate checksum, which will be used to
+ *         index a cache. The signature should not contain any user related
+ *         information to make sure the cache can be shared between used.
+ * 
+ *         We define the following transformations between value types:
+ * 
+ *         raw -> stable
+ * 
+ *         stable -> raw
+ * 
+ *         stable -> internal
+ * 
+ *         stable -> signature
+ * 
+ * 
  */
 public abstract class Param extends WdkModelBase implements Cloneable {
 
@@ -66,26 +70,6 @@ public abstract class Param extends WdkModelBase implements Cloneable {
 
   @Override
   public abstract Param clone();
-
-  /**
-   * Convert raw data to dependent data. this method needs to handle the case
-   * when the input is already dependent data.
-   * 
-   * @param user
-   * @param rawValue
-   * @return
-   */
-  public abstract String rawOrDependentValueToDependentValue(User user,
-      String rawValue) throws WdkModelException;
-
-  public abstract String dependentValueToRawValue(User user,
-      String dependentValue) throws WdkModelException;
-
-  public abstract String dependentValueToIndependentValue(User user,
-      String dependentValue) throws WdkModelException;
-
-  protected abstract String dependentValueToInternalValue(User user,
-      String dependentValue) throws WdkModelException;
 
   protected abstract void applySuggection(ParamSuggestion suggest);
 
@@ -98,7 +82,7 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   protected abstract void validateValue(User user, String rawOrDependentValue,
       Map<String, String> contextValues) throws WdkModelException,
       WdkUserException;
-  
+
   protected abstract void appendJSONContent(JSONObject jsParam, boolean extra)
       throws JSONException;
 
@@ -122,10 +106,10 @@ public abstract class Param extends WdkModelBase implements Cloneable {
 
   protected ParamSet paramSet;
 
-  protected QueryFactory queryFactory;
   protected WdkModel wdkModel;
 
   private List<ParamConfiguration> noTranslations;
+
   /**
    * if this flag is set to true, the internal value will be the same as
    * dependent value. This flag is useful when the dependent value is sent to
@@ -136,7 +120,8 @@ public abstract class Param extends WdkModelBase implements Cloneable {
   protected Question contextQuestion;
   protected Query contextQuery;
 
-  private String handlerClass;
+  private List<ParamHandlerReference> handlerReferences;
+  private ParamHandlerReference handlerReference;
   protected ParamHandler handler;
 
   public Param() {
@@ -148,9 +133,11 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     noTranslations = new ArrayList<ParamConfiguration>();
     allowEmpty = false;
     emptyValue = "";
+    handlerReferences = new ArrayList<>();
   }
 
   public Param(Param param) {
+    super(param);
     this.id = param.id;
     this.name = param.name;
     this.prompt = param.prompt;
@@ -159,17 +146,26 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     this.visible = param.visible;
     this.readonly = param.readonly;
     this.group = param.group;
-    this.queryFactory = param.queryFactory;
     this.allowEmpty = param.allowEmpty;
     this.emptyValue = param.emptyValue;
     this.paramSet = param.paramSet;
     this.wdkModel = param.wdkModel;
     this.noTranslation = param.noTranslation;
     this.resolved = param.resolved;
-    this.handlerClass = param.handlerClass;
+    if (param.handlerReferences != null) {
+      this.handlerReferences = new ArrayList<>();
+      for (ParamHandlerReference reference : param.handlerReferences) {
+        this.handlerReferences.add(new ParamHandlerReference(this, reference));
+      }
+    }
+    this.handlerReference = param.handlerReference;
     this.handler = param.handler;
     this.contextQuestion = param.contextQuestion;
     this.contextQuery = param.contextQuery;
+  }
+  
+  public WdkModel getWdkModel() {
+    return wdkModel;
   }
 
   /**
@@ -342,6 +338,9 @@ public abstract class Param extends WdkModelBase implements Cloneable {
    */
   @Override
   public void excludeResources(String projectId) throws WdkModelException {
+    super.excludeResources(projectId);
+
+    // exclude helps
     boolean hasHelp = false;
     for (WdkModelText help : helps) {
       if (help.include(projectId)) {
@@ -389,41 +388,19 @@ public abstract class Param extends WdkModelBase implements Cloneable {
       }
     }
     noTranslations = null;
-  }
 
-  public String compressValue(String value) throws WdkModelException {
-    // check if the value is already been compressed
-    if (value == null || value.trim().length() == 0)
-      return null;
-
-    value = value.trim();
-
-    if (value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX))
-      return value;
-
-    // check if the value needs to be compressed
-    if (value.length() >= Utilities.MAX_PARAM_VALUE_SIZE) {
-      String checksum = queryFactory.makeClobChecksum(value);
-      value = Utilities.PARAM_COMPRESSE_PREFIX + checksum;
+    // exclude handler references
+    for (ParamHandlerReference reference : handlerReferences) {
+      if (reference.include(projectId)) {
+        // make sure the handler is not defined more than once
+        if (handlerReference != null)
+          throw new WdkModelException("param handler is defined more than "
+              + "once for project " + projectId + " in param " + getFullName());
+        reference.excludeResources(projectId);
+        handlerReference = reference;
+      }
     }
-    return value;
-  }
-
-  public String decompressValue(String value) throws WdkModelException {
-    if (value == null || value.length() == 0)
-      return null;
-
-    // check if the value is compressed; that is, if it has a compression
-    // prefix
-    if (!value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX))
-      return value;
-
-    // decompress the value
-    String checksum = value.substring(Utilities.PARAM_COMPRESSE_PREFIX.length()).trim();
-    String decompressed = queryFactory.getClobValue(checksum);
-    if (decompressed != null)
-      value = decompressed.trim();
-    return value;
+    handlerReferences = null;
   }
 
   public JSONObject getJSONContent(boolean extra) throws JSONException {
@@ -440,7 +417,6 @@ public abstract class Param extends WdkModelBase implements Cloneable {
    */
   public void setResources(WdkModel model) throws WdkModelException {
     this.wdkModel = model;
-    this.queryFactory = model.getQueryFactory();
   }
 
   public final String replaceSql(String sql, String internalValue) {
@@ -493,46 +469,114 @@ public abstract class Param extends WdkModelBase implements Cloneable {
     this.contextQuery = query;
   }
 
-  public void setHandlerClass(String handlerClass) {
-    this.handlerClass = handlerClass;
-  }
-
-  public void setHandler(ParamHandler handler) throws WdkUserException,
-      WdkModelException {
+  public void setHandler(ParamHandler handler) {
     handler.setParam(this);
-    handler.setWdkModel(wdkModel);
     this.handler = handler;
   }
 
-  public String getInternalValue(User user, String dependentValue)
-      throws WdkModelException {
-    String internalValue = dependentValueToInternalValue(user, dependentValue);
-    if (handler != null)
-      internalValue = handler.transform(user, internalValue);
-    return internalValue;
+  /**
+   * Transform raw param value into stable value.
+   * 
+   * @param user
+   * @param rawValue
+   * @param contextValues
+   * @return
+   * @throws WdkUserException
+   * @throws WdkModelException
+   */
+  public String getStableValue(User user, String rawValue,
+      Map<String, String> contextValues) throws WdkUserException,
+      WdkModelException {
+    if (handler == null)
+      return rawValue;
+
+    return handler.toStableValue(user, rawValue, contextValues);
+  }
+
+  /**
+   * Transform stable param value back to raw value;
+   * 
+   * @param user
+   * @param stableValue
+   * @param contextValues
+   * @return
+   * @throws WdkUserException
+   * @throws WdkModelException
+   */
+  public String getRawValue(User user, String stableValue,
+      Map<String, String> contextValues) throws WdkUserException,
+      WdkModelException {
+    if (handler == null)
+      return stableValue;
+
+    return handler.toRawValue(user, stableValue, contextValues);
+  }
+
+  /**
+   * Transform stable param value into internal value. The noTranslation and
+   * quote flags should be handled by the plugin.
+   * 
+   * @param user
+   * @param stableValue
+   *          if the value is empty, and if empty is allow, the assigned empty
+   *          value will be used as stable value to be transformed into the
+   *          internal.
+   * @param contextValues
+   * @return
+   * @throws WdkUserException
+   * @throws WdkModelException
+   */
+  public String getInternalValue(User user, String stableValue,
+      Map<String, String> contextValues) throws WdkUserException,
+      WdkModelException {
+    if (stableValue == null || stableValue.length() == 0)
+      if (isAllowEmpty())
+        stableValue = getEmptyValue();
+
+    if (handler == null)
+      return stableValue;
+
+    return handler.toInternalValue(user, stableValue, contextValues);
+  }
+
+  public String getSignature(User user, String stableValue,
+      Map<String, String> contextValues) throws WdkUserException,
+      WdkModelException {
+    if (handler == null)
+      return stableValue;
+
+    return handler.toSignature(user, stableValue, contextValues);
   }
 
   @Override
   public void resolveReferences(WdkModel wdkModel) throws WdkModelException {
-    if (resolved) return;
+    if (resolved)
+      return;
 
     super.resolveReferences(wdkModel);
 
     this.wdkModel = wdkModel;
 
-    if (handlerClass != null) {
+    // resolve reference for handler
+    if (handlerReference != null) {
       try {
-        Class<? extends ParamHandler> hClass = Class.forName(handlerClass).asSubclass(
-            ParamHandler.class);
-        handler = hClass.newInstance();
-        handler.setParam(this);
-        handler.setWdkModel(wdkModel);
-      } catch (Exception ex) {
+        Class<? extends ParamHandler> handlerClass = Class.forName(
+            handlerReference.getImplementation()).asSubclass(ParamHandler.class);
+        handler = handlerClass.newInstance();
+        handler.setProperties(handlerReference.getProperties());
+      } catch (ClassNotFoundException | InstantiationException
+          | IllegalAccessException ex) {
         throw new WdkModelException(ex);
       }
-      handlerClass = null;
+      handlerReference = null;
     }
-    resolved = true;
+
+    // the handler might not be initialized from reference, it might be created
+    // by the param by default.
+    if (handler != null) {
+      handler.setParam(this);
+      handler.setWdkModel(wdkModel);
+    }
   }
 
   public Set<String> getAllValues() throws WdkModelException {

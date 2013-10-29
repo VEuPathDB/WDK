@@ -104,7 +104,7 @@ public class StepFactory {
   private final String stratBySignatureSql;
   private final String unsortedPublicStratsSql;
   private final String updatePublicStratStatusSql;
-  
+
   public StepFactory(WdkModel wdkModel) {
     this.wdkModel = wdkModel;
     this.userDb = wdkModel.getUserDb();
@@ -114,77 +114,74 @@ public class StepFactory {
     this.userSchema = userDB.getUserSchema();
 
     /* define "static" SQL statements dependent only on schema name */
-    
+
     String userColumn = Utilities.COLUMN_USER_ID;
 
     // sort options
-    modTimeSortSql = new StringBuilder(" ORDER BY sr.")
-        .append(COLUMN_LAST_MODIFIED_TIME).append(" DESC").toString();
-    
+    modTimeSortSql = new StringBuilder(" ORDER BY sr.").append(
+        COLUMN_LAST_MODIFIED_TIME).append(" DESC").toString();
+
     // basic select with required joins
-    basicStratsSql = new StringBuilder()
-        .append("SELECT sr.*")
-        .append(", sp.").append(COLUMN_ESTIMATE_SIZE)
-        .append(", sp.").append(COLUMN_IS_VALID)
-        .append(", sp.").append(COLUMN_QUESTION_NAME)
-        .append(" FROM ")
-        .append(userSchema).append(TABLE_STRATEGY).append(" sr, ")
-        .append(userSchema).append(TABLE_STEP).append(" sp")
-        .append(" WHERE sr.").append(COLUMN_ROOT_STEP_ID).append(" = sp.").append(COLUMN_STEP_ID)
-        .append(" AND sr.").append(userColumn).append(" = sp.").append(userColumn)
-        .append(" AND sr.").append(COLUMN_PROJECT_ID).append(" = sp.").append(COLUMN_PROJECT_ID)
-        .toString();
+    basicStratsSql = new StringBuilder().append("SELECT sr.*").append(", sp.").append(
+        COLUMN_ESTIMATE_SIZE).append(", sp.").append(COLUMN_IS_VALID).append(
+        ", sp.").append(COLUMN_QUESTION_NAME).append(" FROM ").append(
+        userSchema).append(TABLE_STRATEGY).append(" sr, ").append(userSchema).append(
+        TABLE_STEP).append(" sp").append(" WHERE sr.").append(
+        COLUMN_ROOT_STEP_ID).append(" = sp.").append(COLUMN_STEP_ID).append(
+        " AND sr.").append(userColumn).append(" = sp.").append(userColumn).append(
+        " AND sr.").append(COLUMN_PROJECT_ID).append(" = sp.").append(
+        COLUMN_PROJECT_ID).toString();
 
     // conditions for strategies
 
     // does not add any wildcards
-    isNotDeletedCondition = new StringBuilder(" AND sr.").append(COLUMN_IS_DELETED)
-        .append(" = ").append(userDb.getPlatform().convertBoolean(false)).toString();
+    isNotDeletedCondition = new StringBuilder(" AND sr.").append(
+        COLUMN_IS_DELETED).append(" = ").append(
+        userDb.getPlatform().convertBoolean(false)).toString();
     // adds wildcard for project ID (string)
-    byProjectCondition = new StringBuilder(" AND sr.").append(COLUMN_PROJECT_ID).append(" = ?").toString();
+    byProjectCondition = new StringBuilder(" AND sr.").append(COLUMN_PROJECT_ID).append(
+        " = ?").toString();
     // adds wildcard for user ID (integer)
-    byUserCondition = new StringBuilder(" AND sr.").append(userColumn).append(" = ?").toString();
+    byUserCondition = new StringBuilder(" AND sr.").append(userColumn).append(
+        " = ?").toString();
     // adds wildcard for strategy ID (integer)
-    byStratIdCondition = new StringBuilder(" AND sr.").append(COLUMN_STRATEGY_ID).append(" = ?").toString();
+    byStratIdCondition = new StringBuilder(" AND sr.").append(
+        COLUMN_STRATEGY_ID).append(" = ?").toString();
     // adds wildcard for isSaved (boolean)
-    isSavedCondition = new StringBuilder(" AND sr.").append(COLUMN_IS_SAVED).append(" = ?").toString();
+    isSavedCondition = new StringBuilder(" AND sr.").append(COLUMN_IS_SAVED).append(
+        " = ?").toString();
     // adds wildcard for lastViewedTime (timestamp)
-    byLastViewedCondition = new StringBuilder(" AND sr.").append(COLUMN_LAST_VIEWED_TIME).append(" >= ?").toString();
+    byLastViewedCondition = new StringBuilder(" AND sr.").append(
+        COLUMN_LAST_VIEWED_TIME).append(" >= ?").toString();
     // adds wildcard for signature (string)
-    bySignatureCondition = new StringBuilder(" AND sr.").append(COLUMN_SIGNATURE).append(" = ? ").toString();
+    bySignatureCondition = new StringBuilder(" AND sr.").append(
+        COLUMN_SIGNATURE).append(" = ? ").toString();
     // does not add any wildcards
-    isPublicCondition = new StringBuilder(" AND sr.").append(COLUMN_IS_PUBLIC).append(" = ")
-        .append(userDb.getPlatform().convertBoolean(true)).toString();
-    
+    isPublicCondition = new StringBuilder(" AND sr.").append(COLUMN_IS_PUBLIC).append(
+        " = ").append(userDb.getPlatform().convertBoolean(true)).toString();
+
     // adds wildcard for project
-    String aliveByProjectSql = new StringBuilder(basicStratsSql)
-        .append(isNotDeletedCondition)
-        .append(byProjectCondition)
-        .toString();
-    
+    String aliveByProjectSql = new StringBuilder(basicStratsSql).append(
+        isNotDeletedCondition).append(byProjectCondition).toString();
+
     // contains wildcards for project, user ID; does not contain ordering
-    stratsByUserSql = new StringBuilder(aliveByProjectSql)
-        .append(byUserCondition)
-        .toString();
-    
+    stratsByUserSql = new StringBuilder(aliveByProjectSql).append(
+        byUserCondition).toString();
+
     // contains wildcards for project, signature; contains ordering
-    stratBySignatureSql = new StringBuilder(aliveByProjectSql)
-        .append(bySignatureCondition)
-        .append(modTimeSortSql)
-        .toString();
-    
+    stratBySignatureSql = new StringBuilder(aliveByProjectSql).append(
+        bySignatureCondition).append(modTimeSortSql).toString();
+
     // contains wildcard for project; does not contain ordering
-    unsortedPublicStratsSql = new StringBuilder(aliveByProjectSql)
-        .append(isPublicCondition)
-        .toString();
-    
+    unsortedPublicStratsSql = new StringBuilder(aliveByProjectSql).append(
+        isPublicCondition).toString();
+
     // contains wildcards for is_public (boolean) and strat ID (int)
-    updatePublicStratStatusSql = new StringBuilder()
-        .append("UPDATE ").append(userSchema).append(TABLE_STRATEGY)
-        .append(" SET ").append(COLUMN_IS_PUBLIC).append(" = ?")
-        .append(" WHERE ").append(COLUMN_STRATEGY_ID).append(" = ?")
-        .toString();
-    
+    updatePublicStratStatusSql = new StringBuilder().append("UPDATE ").append(
+        userSchema).append(TABLE_STRATEGY).append(" SET ").append(
+        COLUMN_IS_PUBLIC).append(" = ?").append(" WHERE ").append(
+        COLUMN_STRATEGY_ID).append(" = ?").toString();
+
     // start the purge thread for the cache
     // new Thread(stepCache).start();
   }
@@ -218,7 +215,8 @@ public class StepFactory {
       if (filter != null) {
         filterName = filter.getName();
         estimateSize = answerValue.getFilterSize(filterName);
-      } else estimateSize = answerValue.getResultSize();
+      } else
+        estimateSize = answerValue.getResultSize();
     } catch (Exception ex) {
       estimateSize = 0;
       logger.error(ex);
@@ -515,10 +513,11 @@ public class StepFactory {
         Step step = loadStep(user, rsStep);
         int stepId = step.getStepId();
         steps.put(stepId, step);
-        if (!step.isValid()) invalidSteps.put(stepId, step);
+        if (!step.isValid())
+          invalidSteps.put(stepId, step);
       }
-    } catch (SQLException | JSONException e) {
-      throw new WdkModelException("Could not load steps for user", e);
+    } catch (SQLException ex) {
+      throw new WdkModelException("Could not load steps for user", ex);
     } finally {
       SqlUtils.closeResultSetAndStatement(rsStep);
     }
@@ -544,15 +543,15 @@ public class StepFactory {
             + user.getEmail() + " doesn't exist.");
 
       return loadStep(user, rsStep);
-    } catch (SQLException | JSONException e) {
-      throw new WdkModelException("Unable to load step.", e);
+    } catch (SQLException ex) {
+      throw new WdkModelException("Unable to load step.", ex);
     } finally {
       SqlUtils.closeResultSetAndStatement(rsStep);
     }
   }
 
   private Step loadStep(User user, ResultSet rsStep) throws WdkModelException,
-      SQLException, JSONException {
+      SQLException {
     logger.debug("\nStepFactory: loadStep()\n");
 
     // load Step info
@@ -626,7 +625,8 @@ public class StepFactory {
           AnswerParam answerParam = (AnswerParam) param;
           String stepId = displayParams.get(answerParam.getName());
           // put the first child into left, the second into right
-          if (leftStepId == 0) leftStepId = Integer.valueOf(stepId);
+          if (leftStepId == 0)
+            leftStepId = Integer.valueOf(stepId);
           else {
             rightStepId = Integer.valueOf(stepId);
             break;
@@ -634,7 +634,8 @@ public class StepFactory {
         }
       }
       customName = step.getBaseCustomName();
-    } else customName = step.getBaseCustomName();
+    } else
+      customName = step.getBaseCustomName();
 
     step.setPreviousStepId(leftStepId);
     step.setChildStepId(rightStepId);
@@ -718,7 +719,8 @@ public class StepFactory {
       step.setEstimateSize(estimateSize);
 
       // update dependencies
-      if (step.isCombined()) updateStepTree(user, step);
+      if (step.isCombined())
+        updateStepTree(user, step);
     } catch (SQLException e) {
       throw new WdkModelException("Could not update step.", e);
     } finally {
@@ -759,14 +761,16 @@ public class StepFactory {
   List<Strategy> loadStrategies(User user, boolean saved, boolean recent)
       throws WdkModelException {
     StringBuilder sql = new StringBuilder(stratsByUserSql).append(isSavedCondition);
-    if (recent) sql.append(byLastViewedCondition);
+    if (recent)
+      sql.append(byLastViewedCondition);
     sql.append(modTimeSortSql);
 
     List<Strategy> strategies;
     ResultSet resultSet = null;
     try {
       long start = System.currentTimeMillis();
-      PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, sql.toString());
+      PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource,
+          sql.toString());
       ps.setString(1, wdkModel.getProjectId());
       ps.setInt(2, user.getUserId());
       ps.setBoolean(3, saved);
@@ -800,11 +804,12 @@ public class StepFactory {
     try {
       String publicStratsSql = unsortedPublicStratsSql + modTimeSortSql;
       long start = System.currentTimeMillis();
-      PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource, publicStratsSql);
+      PreparedStatement ps = SqlUtils.getPreparedStatement(dataSource,
+          publicStratsSql);
       ps.setString(1, wdkModel.getProjectId());
       resultSet = ps.executeQuery();
       QueryLogger.logStartResultsProcessing(publicStratsSql,
-              "wdk-step-factory-load-public-strategies", start, resultSet);
+          "wdk-step-factory-load-public-strategies", start, resultSet);
       return loadStrategies(null, resultSet);
     } catch (SQLException e) {
       throw new WdkModelException("Unable to load public strategies", e);
@@ -813,7 +818,8 @@ public class StepFactory {
     }
   }
 
-  public void setStrategyPublicStatus(int stratId, boolean isPublic) throws WdkModelException {
+  public void setStrategyPublicStatus(int stratId, boolean isPublic)
+      throws WdkModelException {
     long startTime = System.currentTimeMillis();
     PreparedStatement ps = null;
     try {
@@ -822,17 +828,15 @@ public class StepFactory {
       ps.setInt(2, stratId);
       int rowsUpdated = ps.executeUpdate();
       if (rowsUpdated != 1) {
-        throw new WdkModelException("Non-singular (" + rowsUpdated +
-                ") row updated during public strat status update.");
+        throw new WdkModelException("Non-singular (" + rowsUpdated
+            + ") row updated during public strat status update.");
       }
-    }
-    catch (SQLException e) {
-      throw new WdkModelException("Unable to update public strategy status" +
-              " (" + stratId + "," + isPublic + ")", e);
-    }
-    finally {
+    } catch (SQLException e) {
+      throw new WdkModelException("Unable to update public strategy status"
+          + " (" + stratId + "," + isPublic + ")", e);
+    } finally {
       QueryLogger.logEndStatementExecution(updatePublicStratStatusSql,
-              "wdk-step-factory-update-public-strat-status", startTime);
+          "wdk-step-factory-update-public-strat-status", startTime);
       SqlUtils.closeStatement(ps);
     }
   }
@@ -846,7 +850,7 @@ public class StepFactory {
       ps.setString(1, wdkModel.getProjectId());
       resultSet = ps.executeQuery();
       QueryLogger.logStartResultsProcessing(countSql,
-              "wdk-step-factory-count-public-strategies", start, resultSet);
+          "wdk-step-factory-count-public-strategies", start, resultSet);
       if (resultSet.next()) {
         return resultSet.getInt(1);
       }
@@ -857,15 +861,15 @@ public class StepFactory {
       SqlUtils.closeResultSetAndStatement(resultSet);
     }
   }
-  
+
   private List<Strategy> loadStrategies(User user, ResultSet resultSet)
       throws WdkModelException, SQLException {
     List<Strategy> strategies = new ArrayList<>();
     boolean loadUserPerStrat = (user == null);
-    Map<Integer,User> userMap = new HashMap<Integer,User>();
-    
+    Map<Integer, User> userMap = new HashMap<Integer, User>();
+
     while (resultSet.next()) {
-    
+
       // load user if needed
       if (loadUserPerStrat) {
         Integer userId = resultSet.getInt(Utilities.COLUMN_USER_ID);
@@ -911,8 +915,9 @@ public class StepFactory {
       String signature = strategy.getSignature();
       if (signature == null || signature.trim().length() == 0) {
         signature = getStrategySignature(user.getUserId(), strategyId);
-        String sql = "UPDATE " + userSchema + TABLE_STRATEGY + " SET signature = "
-            + "'" + signature + "' WHERE strategy_id = " + strategyId;
+        String sql = "UPDATE " + userSchema + TABLE_STRATEGY
+            + " SET signature = " + "'" + signature + "' WHERE strategy_id = "
+            + strategyId;
         SqlUtils.executeUpdate(dataSource, sql,
             "wdk-step-factory-update-strategy-signature");
         strategy.setSignature(signature);
@@ -930,7 +935,8 @@ public class StepFactory {
     logger.debug("import strategy #" + oldStrategy.getStrategyId()
         + "(internal) to user #" + user.getUserId());
 
-    if (stepIdsMap == null) stepIdsMap = new LinkedHashMap<Integer, Integer>();
+    if (stepIdsMap == null)
+      stepIdsMap = new LinkedHashMap<Integer, Integer>();
 
     Step oldRootStep = oldStrategy.getLatestStep();
     String name = getNextName(user, oldStrategy.getName(), false);
@@ -989,16 +995,18 @@ public class StepFactory {
     newStep.setCollapsedName(oldStep.getCollapsedName());
     newStep.setCollapsible(oldStep.isCollapsible());
     String customName = oldStep.getBaseCustomName();
-    if (customName != null) newStep.setCustomName(customName);
+    if (customName != null)
+      newStep.setCustomName(customName);
     newStep.setValid(oldStep.isValid());
     newStep.update(false);
     return newStep;
   }
 
-  public Strategy getStrategyById(int strategyId) throws WdkModelException, WdkUserException {
+  public Strategy getStrategyById(int strategyId) throws WdkModelException,
+      WdkUserException {
     return loadStrategy(null, strategyId, false);
   }
-  
+
   Strategy loadStrategy(User user, int strategyId, boolean allowDeleted)
       throws WdkModelException, WdkUserException {
     PreparedStatement psStrategy = null;
@@ -1018,7 +1026,8 @@ public class StepFactory {
 
       if (strategies.size() == 0) {
         throw new WdkUserException("The strategy " + strategyId
-            + " does not exist " + "for user " + (user == null ? "null" : user.getEmail()));
+            + " does not exist " + "for user "
+            + (user == null ? "null" : user.getEmail()));
       } else if (strategies.size() > 1) {
         throw new WdkModelException("More than one strategy of id "
             + strategyId + " exists.");
@@ -1042,7 +1051,7 @@ public class StepFactory {
       SqlUtils.closeResultSetAndStatement(rsStrategy);
     }
   }
-  
+
   Strategy loadStrategy(String strategySignature) throws WdkModelException,
       WdkUserException {
     ResultSet resultSet = null;
@@ -1132,7 +1141,8 @@ public class StepFactory {
         // unsaved name
         String name = getNextName(user, strategy.getName(), false);
         Strategy newStrat = createStrategy(user, strategy.getLatestStep(),
-            name, strategy.getName(), false, strategy.getDescription(), false, strategy.getIsPublic());
+            name, strategy.getName(), false, strategy.getDescription(), false,
+            strategy.getIsPublic());
         strategy.setName(newStrat.getName());
         strategy.setSavedName(newStrat.getSavedName());
         strategy.setStrategyId(newStrat.getStrategyId());
@@ -1239,8 +1249,8 @@ public class StepFactory {
           + COLUMN_ROOT_STEP_ID + ", " + COLUMN_IS_SAVED + ", " + COLUMN_NAME
           + ", " + COLUMN_SAVED_NAME + ", " + COLUMN_PROJECT_ID + ", "
           + COLUMN_IS_DELETED + ", " + COLUMN_SIGNATURE + ", "
-          + COLUMN_DESCRIPTION + ", " + COLUMN_VERSION + ", " + COLUMN_IS_PUBLIC
-          + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+          + COLUMN_DESCRIPTION + ", " + COLUMN_VERSION + ", "
+          + COLUMN_IS_PUBLIC + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
       long start = System.currentTimeMillis();
       psStrategy = SqlUtils.getPreparedStatement(dataSource, sql);
       psStrategy.setInt(1, strategyId);
@@ -1306,17 +1316,23 @@ public class StepFactory {
   }
 
   public Map<String, String> parseParamContent(String paramContent)
-      throws JSONException {
+      throws WdkModelException {
     Map<String, String> params = new LinkedHashMap<String, String>();
     if (paramContent != null && paramContent.length() > 0) {
-      JSONObject json = new JSONObject(paramContent);
-      String[] paramNames = JSONObject.getNames(json);
-      if (paramNames != null) {
-        for (String paramName : paramNames) {
-          String paramValue = json.getString(paramName);
-          logger.trace("param '" + paramName + "' = '" + paramValue + "'");
-          params.put(paramName, paramValue);
+      try {
+        JSONObject json = new JSONObject(paramContent);
+        String[] paramNames = JSONObject.getNames(json);
+        if (paramNames != null) {
+          for (String paramName : paramNames) {
+            String paramValue = json.getString(paramName);
+            // decompress param values
+            paramValue = decompressValue(paramValue);
+            logger.trace("param '" + paramName + "' = '" + paramValue + "'");
+            params.put(paramName, paramValue);
+          }
         }
+      } catch (JSONException ex) {
+        throw new WdkModelException(ex);
       }
     }
     return params;
@@ -1344,7 +1360,8 @@ public class StepFactory {
       QueryLogger.logEndStatementExecution(sql,
           "wdk-step-factory-strategy-name-exist", start);
 
-      if (rsCheckName.next()) return true;
+      if (rsCheckName.next())
+        return true;
 
       return false;
     } catch (SQLException e) {
@@ -1373,7 +1390,8 @@ public class StepFactory {
     User user = strategy.getUser();
     Step root = strategy.getLatestStep().deepClone();
     String name = strategy.getName();
-    if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
+    if (!name.toLowerCase().endsWith(", copy of"))
+      name += ", Copy of";
     name = getNextName(user, name, false);
     return createStrategy(user, root, name, null, false, null, false, false);
   }
@@ -1396,7 +1414,8 @@ public class StepFactory {
     User user = strategy.getUser();
     Step step = strategy.getStepById(stepId).deepClone();
     String name = step.getCustomName();
-    if (!name.toLowerCase().endsWith(", copy of")) name += ", Copy of";
+    if (!name.toLowerCase().endsWith(", copy of"))
+      name += ", Copy of";
     name = getNextName(user, name, false);
     return createStrategy(user, step, name, null, false, null, false, false);
   }
@@ -1494,4 +1513,23 @@ public class StepFactory {
       SqlUtils.closeStatement(psUpdate);
     }
   }
+
+  private String decompressValue(String value) throws WdkModelException {
+    if (value == null || value.length() == 0)
+      return null;
+
+    // check if the value is compressed; that is, if it has a compression
+    // prefix
+    if (!value.startsWith(Utilities.PARAM_COMPRESSE_PREFIX))
+      return value;
+
+    // decompress the value
+    QueryFactory queryFactory = wdkModel.getQueryFactory();
+    String checksum = value.substring(Utilities.PARAM_COMPRESSE_PREFIX.length()).trim();
+    String decompressed = queryFactory.getClobValue(checksum);
+    if (decompressed != null)
+      value = decompressed.trim();
+    return value;
+  }
+
 }

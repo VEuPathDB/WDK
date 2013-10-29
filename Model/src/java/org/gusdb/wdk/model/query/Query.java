@@ -15,6 +15,7 @@ import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
 import org.gusdb.wdk.model.WdkModelBase;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.EnumParamCache;
 import org.gusdb.wdk.model.query.param.AbstractEnumParam;
 import org.gusdb.wdk.model.query.param.AnswerParam;
@@ -569,7 +570,7 @@ public abstract class Query extends WdkModelBase {
   }
 
   public Map<String, String> rawOrDependentValuesToDependentValues(User user,
-      Map<String, String> rawValues) throws WdkModelException {
+      Map<String, String> rawValues) throws WdkModelException, WdkUserException {
     Map<String, String> dependentValues = new LinkedHashMap<String, String>();
     for (String paramName : rawValues.keySet()) {
       Param param = paramMap.get(paramName);
@@ -583,6 +584,7 @@ public abstract class Query extends WdkModelBase {
         continue;
       }
       String rawValue = rawValues.get(paramName);
+      rawValue = param.processRawValue(user, rawValue);
       String dependentValue = param.rawOrDependentValueToDependentValue(user,
           rawValue);
       dependentValues.put(paramName, dependentValue);
