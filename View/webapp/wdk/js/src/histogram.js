@@ -9,7 +9,7 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
 
     // get the label for histogram
     var mode = histogram.find("#data").attr("mode");
-    if (mode == "") mode = null;
+    if (mode == "") mode = "categories";
     var header = histogram.find("#data thead tr");
     var binLabel = header.children(".bin").text();
     var sizeLabel = header.children(".size").text();
@@ -28,7 +28,7 @@ wdk.util.namespace("wdk.result.histogram", function(ns, $) {
         points: { show: true }
       },
       grid: { hoverable: true, clickable: true },
-      xaxis: { mode: "categories", tickLength: 0, axisLabel: binLabel },
+      xaxis: { mode: mode, tickLength: 0, axisLabel: binLabel },
       yaxis: { axisLabel: sizeLabel }
     };
     var graph = histogram.find("#graph .plot");

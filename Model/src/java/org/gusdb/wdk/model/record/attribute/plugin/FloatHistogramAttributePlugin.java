@@ -90,6 +90,7 @@ public class FloatHistogramAttributePlugin extends
       from += binSize;
       to = from + binSize;
     }
-    return "[" + from + "-" + to + ")";
+    return "[" + Double.toString(Math.round(from * 100) / 100)
+           + "-" + Double.toString(Math.round(to * 100) / 100) + ")";
   }
 }
