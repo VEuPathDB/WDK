@@ -80,6 +80,10 @@ public class DatasetFactory {
         this.userSchema = userDB.getUserSchema();
         this.wdkSchema = userDB.getWdkEngineSchema();
     }
+    
+    public Dataset getDataset(User user, List<String[]> ids, String content, String contentType, String uploadFile) {
+      
+    }
 
     public Dataset getDataset(User user, RecordClass recordClass,
             String uploadFile, String strValues)
@@ -89,7 +93,7 @@ public class DatasetFactory {
     }
 
     public Dataset getDataset(User user, RecordClass recordClass,
-            String uploadFile, List<String[]> values)
+            String uploadFile, List<String[]> values, String originalContent)
             throws WdkModelException {
         if (values.size() == 0)
             throw new WdkDatasetException("The dataset is empty. User #"

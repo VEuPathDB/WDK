@@ -227,9 +227,6 @@
     <optional>
       <attribute name="default" />
     </optional>
-    <optional>
-      <attribute name="handlerClass" />
-    </optional>
   </define>
 
   <define name="ParamBaseTags">
@@ -243,6 +240,17 @@
            <attribute name="value">
                <data type="boolean" />
            </attribute>
+        </element>
+        <element name="handler">
+          <ref name="IncludeExclude" />
+          <attribute name="implementation" />
+          <zeroOrMore>
+            <element name="property">
+              <attribute name="name" />
+              <ref name="IncludeExclude" />
+              <text />
+            </element>
+          </zeroOrMore>
         </element>
     </choice>
   </define>

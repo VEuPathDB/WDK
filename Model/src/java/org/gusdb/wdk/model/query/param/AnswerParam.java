@@ -25,16 +25,18 @@ import org.json.JSONObject;
  * An answer param is typed, that is, the author needs to define a set of
  * RecordClasses that can be accepted as the types of the input steps.
  * 
+ * The checksum in the value is needed to support in-place step editing, so that
+ * combined steps can generate new cache when a child step is revised.
+ * 
  * @author xingao
  * 
- *         raw data: same as user-dependent data, it is a step id;
+ *         raw value: a combo of step_id:step_checksum;
  * 
- *         user-dependent data: same as raw data, a step id;
+ *         reference value: same as raw value, step_id:step_checksum;
  * 
- *         user-independent data: a key such as: answer_checksum:filter_name;
- *         the ":filter_name" is optional;
- * 
- *         internal data: a sql that represents the cached result
+ *         internal value: an sql that represents the cached result; if
+ *         noTranslation is true, the value is step_id (no checksum appended to
+ *         it).
  * 
  */
 public class AnswerParam extends Param {
@@ -45,6 +47,9 @@ public class AnswerParam extends Param {
   public AnswerParam() {
     recordClassRefs = new ArrayList<RecordClassReference>();
     recordClasses = new LinkedHashMap<String, RecordClass>();
+
+    // register the handler
+    setHandler(new AnswerParamHandler());
   }
 
   private AnswerParam(AnswerParam param) {
@@ -152,63 +157,6 @@ public class AnswerParam extends Param {
     int stepId = Integer.parseInt(dependentValue);
     Step step = user.getStep(stepId);
     return step.getAnswerValue();
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#dependentValueToIndependentValue
-   * (org.gusdb.wdk.model.user.User, java.lang.String)
-   */
-  @Override
-  public String dependentValueToIndependentValue(User user,
-      String dependentValue) throws WdkModelException {
-    int stepId = Integer.parseInt(dependentValue);
-    Step step = user.getStep(stepId);
-    return step.getAnswerValue(false).getChecksum();
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#independentValueToInternalValue
-   * (java.lang.String)
-   */
-  @Override
-  public String dependentValueToInternalValue(User user, String dependentValue)
-      throws WdkModelException {
-    int stepId = Integer.parseInt(dependentValue);
-
-    if (isNoTranslation())
-      return Integer.toString(stepId);
-
-    Step step = user.getStep(stepId);
-    AnswerValue answerValue = step.getAnswerValue();
-    return "(" + answerValue.getIdSql() + ")";
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#independentValueToRawValue(java
-   * .lang.String)
-   */
-  @Override
-  public String dependentValueToRawValue(User user, String dependentValue)
-      throws WdkModelException {
-    return dependentValue;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#rawValueToIndependentValue(java
-   * .lang.String)
-   */
-  @Override
-  public String rawOrDependentValueToDependentValue(User user, String rawValue)
-      throws WdkModelException {
-    return rawValue;
   }
 
   /*

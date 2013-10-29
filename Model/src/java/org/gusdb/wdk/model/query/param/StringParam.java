@@ -26,19 +26,18 @@ import org.json.JSONObject;
  * 
  * @author xingao
  * 
- *         raw data: same as internal data, a raw string;
+ *         raw value: a raw string;
  * 
- *         user-dependent data: same as user-independent data, can be either a
- *         raw string or a compressed checksum;
+ *         reference value: same as raw value;
  * 
- *         user-independent data: same as user-dependent data;
- * 
- *         internal data: similar to raw data, but the single quotes are
- *         escaped, and the outer quotes are added if necessary;
+ *         internal value: if number is true, the internal is a string
+ *         representation of a parsed Double; otherwise, quotes are properly
+ *         applied; If noTranslation is true, the raw value is used without any
+ *         change.
  */
 public class StringParam extends Param {
 
-  private List<WdkModelText> regexes = new ArrayList<WdkModelText>();
+  private List<WdkModelText> regexes;
   private String regex;
   private int length = 0;
   /**
@@ -47,7 +46,12 @@ public class StringParam extends Param {
   private boolean number = false;
   private boolean multiLine = false;
 
-  public StringParam() {}
+  public StringParam() {
+    regexes = new ArrayList<WdkModelText>();
+
+    // register handler
+    setHandler(new StringParamHandler());
+  }
 
   public StringParam(StringParam param) {
     super(param);
@@ -168,63 +172,6 @@ public class StringParam extends Param {
     // nothing to be added
   }
 
-  /**
-   * the dependent value is the same as the independent value
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#dependentValueToIndependentValue(org.gusdb.wdk.model.user.User,
-   *      java.lang.String)
-   */
-  @Override
-  public String dependentValueToIndependentValue(User user,
-      String dependentValue) {
-    return dependentValue;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#independentValueToInternalValue
-   * (java.lang.String)
-   */
-  @Override
-  public String dependentValueToInternalValue(User user, String dependentValue)
-      throws WdkModelException {
-    String rawValue = decompressValue(dependentValue);
-    if (rawValue == null || rawValue.length() == 0)
-      rawValue = emptyValue;
-    if (isNoTranslation())
-      return rawValue;
-
-    rawValue = rawValue.replaceAll("'", "''");
-    if (!number)
-      rawValue = "'" + rawValue + "'";
-    return rawValue;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#independentValueToRawValue(java
-   * .lang.String)
-   */
-  @Override
-  public String dependentValueToRawValue(User user, String dependentValue)
-      throws WdkModelException {
-    return decompressValue(dependentValue);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.gusdb.wdk.model.query.param.Param#rawValueToIndependentValue(java
-   * .lang.String)
-   */
-  @Override
-  public String rawOrDependentValueToDependentValue(User user, String rawValue)
-      throws WdkModelException {
-    return compressValue(rawValue);
-  }
-
   /*
    * (non-Javadoc)
    * 
@@ -234,32 +181,31 @@ public class StringParam extends Param {
   protected void validateValue(User user, String dependentValue,
       Map<String, String> contextValues) throws WdkUserException,
       WdkModelException {
-    String rawValue = decompressValue(dependentValue);
     if (number) {
       try {
         // strip off the comma, if any
-        String value = rawValue.replaceAll(",", "");
+        String value = dependentValue.replaceAll(",", "");
         Double.valueOf(value);
       } catch (NumberFormatException ex) {
         throw new WdkUserException("stringParam " + getFullName()
-            + " is declared as a number, but the Value '" + rawValue
+            + " is declared as a number, but the Value '" + dependentValue
             + "' is invalid number format.");
       }
     }
-    if (regex != null && !rawValue.matches(regex)) {
-      if (rawValue.equals("*"))
+    if (regex != null && !dependentValue.matches(regex)) {
+      if (dependentValue.equals("*"))
         throw new WdkUserException("stringParam " + getFullName() + ": value '"
-            + rawValue
+            + dependentValue
             + "' cannot be used on its own, it needs to be part of a word.");
       else
         throw new WdkUserException("stringParam " + getFullName() + " value '"
-            + rawValue + "' does not match regular " + "expression '" + regex
-            + "'");
+            + dependentValue + "' does not match regular " + "expression '"
+            + regex + "'");
     }
-    if (length != 0 && rawValue.length() > length)
+    if (length != 0 && dependentValue.length() > length)
       throw new WdkModelException("stringParam " + getFullName()
           + " value cannot be longer than " + length + " characters."
-          + " (It is " + rawValue.length() + ".)");
+          + " (It is " + dependentValue.length() + ".)");
   }
 
   /*

@@ -3,6 +3,8 @@
  */
 package org.gusdb.wdk.model.query.param;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.gusdb.wdk.model.Utilities;
@@ -26,21 +28,26 @@ import org.json.JSONObject;
  * 
  * @author xingao
  * 
- *         raw data: a comma separated list of entities;
+ *         raw value: can be any kind of string. The default handler only
+ *         support a list of values.
  * 
- *         user-dependent data: user dataset id;
+ *         reference value: user_dataset_id; which references to dataset_id,
+ *         then to actual list of values.
  * 
- *         user-independent data: dataset checksum;
- * 
- *         internal data: dataset id; in the future the return will be a SQL
- *         that represents the
+ *         internal data: an SQL that represents the list of values.
  * 
  */
 public class DatasetParam extends Param {
 
-  public static final String TYPE_DATA = "data";
-  public static final String TYPE_FILE = "file";
+  public static final String METHOD_DATA = "data";
+  public static final String METHOD_FILE = "file";
+  
+  public static final String TYPE_LIST = "list";
   public static final String TYPE_BASKET = "basket";
+
+  private static final String SUB_PARAM_METHOD = "_method";
+  private static final String SUB_PARAM_TYPE = "_type";
+  private static final String SUB_PARAM_FILE = "_file";
 
   private String recordClassRef;
   private RecordClass recordClass;
@@ -51,7 +58,9 @@ public class DatasetParam extends Param {
    */
   private String defaultType;
 
-  public DatasetParam() {}
+  public DatasetParam() {
+    setHandler(new DatasetParamHandler());
+  }
 
   public DatasetParam(DatasetParam param) {
     super(param);
@@ -70,6 +79,12 @@ public class DatasetParam extends Param {
   public void resolveReferences(WdkModel model) throws WdkModelException {
     super.resolveReferences(model);
     recordClass = (RecordClass) wdkModel.resolveReference(recordClassRef);
+
+    // make sure the handler is a DatasetParamHandler
+    if (handler == null || !(handler instanceof DatasetParamHandler))
+      throw new WdkModelException("The handler for datasetParam "
+          + getFullName() + " has to be DatasetParamHandler or a subclass "
+          + "of it.");
   }
 
   /*
@@ -249,5 +264,26 @@ public class DatasetParam extends Param {
   @Override
   protected void applySuggection(ParamSuggestion suggest) {
     defaultType = suggest.getDefaultType();
+  }
+
+  public String getTypeSubParam() {
+    return name + SUB_PARAM_TYPE;
+  }
+
+  public String getMethodSubParam() {
+    return name + SUB_PARAM_METHOD;
+  }
+  
+  public String getFileSubParam() {
+    return name + SUB_PARAM_FILE;
+  }
+
+  public Map<String, String> getTypes() {
+    Map<String, String> types = new LinkedHashMap<>();
+    DatasetParamHandler datasetHandler = (DatasetParamHandler) handler;
+    for (DatasetParser parser : datasetHandler.getParsers()) {
+      types.put(parser.getName(), parser.getDisplay());
+    }
+    return types;
   }
 }
