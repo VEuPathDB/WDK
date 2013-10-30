@@ -251,7 +251,7 @@ public class StringParam extends Param {
         		"' cannot be used on its own; it needs to be part of a word.");
       else
         throw new WdkUserException("value '" + rawValue + "' is " +
-        		"invalid and probably contains illegals characters. " +
+        		"invalid and probably contains illegal characters. " +
         		"It must match the regular expression '" + regex + "'");
     }
     if (length != 0 && rawValue.length() > length)
