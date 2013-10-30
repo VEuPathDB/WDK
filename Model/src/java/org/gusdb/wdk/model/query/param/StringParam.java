@@ -241,25 +241,22 @@ public class StringParam extends Param {
         String value = rawValue.replaceAll(",", "");
         Double.valueOf(value);
       } catch (NumberFormatException ex) {
-        throw new WdkUserException("stringParam " + getFullName()
-            + " is declared as a number, but the Value '" + rawValue
-            + "' is invalid number format.");
+        throw new WdkUserException("value must be numerical; '" +
+        		rawValue +"' is invalid.");
       }
     }
     if (regex != null && !rawValue.matches(regex)) {
       if (rawValue.equals("*"))
-        throw new WdkUserException("stringParam " + getFullName() + ": value '"
-            + rawValue
-            + "' cannot be used on its own, it needs to be part of a word.");
+        throw new WdkUserException("value '" + rawValue +
+        		"' cannot be used on its own; it needs to be part of a word.");
       else
-        throw new WdkUserException("stringParam " + getFullName() + " value '"
-            + rawValue + "' does not match regular " + "expression '" + regex
-            + "'");
+        throw new WdkUserException("value '" + rawValue + "' is " +
+        		"invalid and probably contains illegals characters. " +
+        		"It must match the regular expression '" + regex + "'");
     }
     if (length != 0 && rawValue.length() > length)
-      throw new WdkModelException("stringParam " + getFullName()
-          + " value cannot be longer than " + length + " characters."
-          + " (It is " + rawValue.length() + ".)");
+      throw new WdkUserException("value cannot be longer than " +
+    		  length + " characters (it is " + rawValue.length() + ").");
   }
 
   /*
