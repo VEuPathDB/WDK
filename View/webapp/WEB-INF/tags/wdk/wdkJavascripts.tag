@@ -24,6 +24,7 @@
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery-ui.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/es5-shim.min.js"><jsp:text/></script>
+  <script type="text/javascript" src="${urlBase}/wdk/js/lib/chosen.jquery.min.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.blockUI.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.cookie.js"><jsp:text/></script>
   <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.dataTables-1.9.0.min.js"><jsp:text/></script>

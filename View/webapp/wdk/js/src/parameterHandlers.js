@@ -130,24 +130,225 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
     $("input:hidden.typeAhead").each(function() {
       var questionName = $(this).closest("form").find("input:hidden[name=questionFullName]").val();
       var paramName = getParamName($(this).attr('name'));
-      $("#" + paramName + "_display").attr('disabled',true);
+      $("#" + paramName + "_display .input").prop('disabled',true);
       if (isEdit) {
         oldValues[paramName] = $(this).val();
       }
       if ($(this).parent('div').hasClass('dependentParam')) {
         updateDependentParam(paramName);
       } else {
-        $("#" + paramName + "_display").val('Loading options...');
+        $("#" + paramName + "_display .input").val('Loading options...');
         var sendReqUrl = 'getVocab.do?questionFullName=' + questionName + '&name=' + paramName + '&xml=true';
         $.ajax({
           url: sendReqUrl,
           dataType: "xml",
           success: function(data){
-            createAutoComplete(data, paramName);
+            // createAutoComplete(data, paramName);
+            createFilteredSelect(data, paramName);
           }
         });
       }
     });
+  }
+
+  //==============================================================================
+  function createFilteredSelect(xmlDOM, paramName) {
+    // xmlDOM is an XML DOM object - it needs to be convered into a select list
+    var values = [],
+        displayDiv = $('#' + paramName + '_display').html(''), // may want to cache
+        removeAllDiv = $('<div class="remove-all"><a href="#">Remove all</a></div>'),
+        multiDelimRegExp = /\s*[,;\n\s]\s*/,
+        isMultiple = displayDiv.data('multiple'),
+        maxSelected = displayDiv.data('max-selected'),
+        select = $('<select/>').prop('multiple', isMultiple),
+        // Object[] => [{ jqElement, event, handler }, ...]
+        chosenEvents = [],
+        chosenOpts = {
+          disable_search_threshold: 10,
+
+          placeholder_text_multiple: 'Select some items',
+
+          // allow eg 'kinase binding' as term
+          enable_split_word_search: false,
+
+          // TODO - allow paramRef override
+          max_selected_options: maxSelected,
+
+          // search any part of term
+          search_contains: true,
+
+          width: '35em'
+        };
+
+    if (oldValues[paramName]) {
+      values = oldValues[paramName].split(/\s*,\s*/);
+    }
+
+    maxSelected = $.isNumeric(maxSelected) ? maxSelected : 1000;
+
+
+    $(xmlDOM).find('term').each(function(idx, term) {
+      $('<option/>')
+        .val($(term).attr('id'))
+        .text($(term).text())
+        .prop('selected', values.indexOf($(term).attr('id')) > -1)
+        .appendTo(select);
+    });
+
+    select
+      .appendTo(displayDiv)
+
+      .on('chosen:ready', function(event, chosenObj) {
+        var input = chosenObj.chosen.container.find('input');
+
+        if (isMultiple) {
+          // allow for pasted list of IDs
+          input[0].onpaste = function() {
+            // event fires before input value is updated, so we need to
+            // push the function call down the stack
+            setTimeout(parsePastedInput.bind(this), 0);
+          };
+        }
+
+        // if first term contains asterisk, 'turn off' plugin and use raw value
+        input
+          .one('keyup', function() {
+            cacheChosenEvents(chosenObj);
+          })
+
+          .on('keyup', function(e) {
+            if (isMultiple && select.find(':selected').length > 0) return;
+
+            if (this.value.indexOf('*') > -1) {
+              turnOffChosen(chosenObj);
+              if (isMultiple) {
+                chosenObj.chosen.search_field.width('35em');
+              }
+            } else {
+              turnOnChosen(chosenObj);
+            }
+          });
+      })
+
+      // configure chosen
+      .chosen(chosenOpts);
+
+    if (isMultiple) {
+      // only show Clear all if there are selected items
+      select.on('change', function() {
+        removeAllDiv.toggle(select.find(':selected').length > 0);
+      })
+
+      // attach behavior to Clear all link
+      removeAllDiv.hide().appendTo(displayDiv)
+        .on('click', 'a', function(e) {
+          e.preventDefault();
+          select.find(':selected').prop('selected', false);
+          select.trigger('chosen:updated');
+          $(e.delegateTarget).hide();
+        });
+    }
+
+    // 1. split values
+    // 2. select options
+    // 3. refresh chosen
+    function parsePastedInput() {
+      var value = this.value,
+          unfound = [],
+          values;
+      if (!multiDelimRegExp.test(value) /* || !chosen.multi */) {
+        return;
+      }
+      values = value.split(multiDelimRegExp);
+
+      // find values in select list, set selected to true, and pop from values
+      values.forEach(function(value) {
+        if (value == '') return;
+
+        if (select.find('option[value="' + value + '"]')
+          .prop('selected', true).length !== 1) {
+          unfound.push(value);
+        }
+      });
+      select.trigger('chosen:updated');
+
+      $(this).val(unfound.join(', ') || null).focus()
+    }
+
+    function cacheChosenEvents(chosenObj) {
+      chosenEvents.push({ jqElement: chosenObj.chosen.container, events: {} });
+      chosenEvents.push({ jqElement: chosenObj.chosen.search_field, events: {} });
+      chosenEvents.push({ jqElement: $(document), events: {} });
+
+      chosenEvents.forEach(function(eventsObj) {
+        var events = $._data(eventsObj.jqElement[0], 'events');
+        for (var type in events) {
+          events[type].forEach(function(o) {
+            if (o.namespace === 'chosen') {
+              eventsObj.events[type] = eventsObj.events[type] || [];
+              eventsObj.events[type].push(o);
+            }
+          });
+        }
+      });
+    }
+
+    function turnOffChosen(chosenObj) {
+      if (select.data('chosen-off')) return;
+
+      chosenEvents.forEach(function(eventsObj) {
+        for (var type in eventsObj.events) {
+          eventsObj.jqElement.unbind(type + '.chosen');
+        }
+      });
+
+      //chosenObj.chosen.dropdown.hide();
+      chosenObj.chosen.search_results.hide();
+
+      select.data('chosen-off', true);
+    }
+
+    function turnOnChosen(chosenObj) {
+      if (!select.data('chosen-off')) return;
+
+      chosenEvents.forEach(function(eventsObj) {
+        for (var type in eventsObj.events) {
+          eventsObj.events[type].forEach(function(eventObj) {
+            eventsObj.jqElement.bind(type + '.chosen', eventObj.handler);
+          });
+        }
+      });
+
+      //chosenObj.chosen.dropdown.show();
+      chosenObj.chosen.search_results.show();
+
+      select.data('chosen-off', false);
+    }
+
+    function parsePastedInputjQuery(input, data) {
+      var value = input.val(),
+          unfound = [],
+          multiDelimRegExp = /\s*\n\s*/,
+          values;
+
+      if (!multiDelimRegExp.test(value) /* || !chosen.multi */) {
+        return;
+      }
+
+      values = value.split(multiDelimRegExp);
+
+      // find values in select list, set selected to true, and pop from values
+      for (var i = 0; i < values.length; i++) {
+        if (values[i] == '') continue;
+
+        if (data.indexOf(value[i]) === -1) {
+          unfound.push(values[i]);
+        }
+      }
+
+      return unfound;
+    }
+
   }
 
   //==============================================================================
@@ -271,14 +472,15 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
 
       if ($('input.typeAhead',dependentParam).length > 0) {
         sendReqUrl = sendReqUrl + '&xml=true';
-        $("#" + paramName + "_display").attr('disabled',true).val('Loading options...');
+        $("#" + paramName + "_display .input").prop('disabled',true).val('Loading options...');
         return $.ajax({
           url: sendReqUrl,
           dataType: "xml",
           success: function(data) {
             $('input',dependentParam).removeAttr('disabled');
             $(".param[name='" + paramName + "']").attr("ready", "");
-            createAutoComplete(data, paramName);
+            // createAutoComplete(data, paramName);
+            createFilteredSelect(data, paramName);
           }
         });
       } else {
@@ -321,11 +523,38 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
   //==============================================================================
   function mapTypeAheads() {
     $("input:hidden.typeAhead").each(function() {
-      var paramName = $(this).attr('name');
-      paramName = getParamName(paramName);
-      var newValue = displayTermMap[paramName][$("#" + paramName + "_display").val()];
-      if (!newValue) newValue = $("#" + paramName + "_display").val();
-      $(this).val(newValue);
+      var paramName,
+          value,
+          newValue,
+          select,
+          values,
+          isMulti = $(this).data('max-selectable') >= 2;
+
+      paramName = getParamName($(this).attr('name'));
+      value = $('#' + paramName + '_display .input').val();
+
+      // old way
+      // if (isMulti || true) {
+      //   // split on comma and map
+      //   value = value.split(/\s*\n\s*/).map(function(v) {
+      //     return termDisplayMap[paramName][v] || v;
+      //   }).join(', ');
+      // } else {
+      //   value = displayTermMap[paramName][value] || value;
+      // }
+      // $(this).val(value);
+
+      // new way
+      var select = $('#' + paramName + '_display').find('select');
+      if (select.data('chosen-off')) {
+        // get values from input
+        values = select.next().find('input').val();
+      } else {
+        values = select.find(":selected").map(function() {
+          return $(this).val();
+        }).toArray().join(', ');
+      }
+      $(this).val(values);
     });
   }
 

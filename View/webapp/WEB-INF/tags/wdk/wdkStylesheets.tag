@@ -17,6 +17,7 @@
 
   <!-- styles for JS libraries -->
   <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/jquery-ui.css"/>
+  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/chosen.min.css"/>
   <!--
   <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/jquery.multiSelect.css"/>
   -->
