@@ -87,6 +87,19 @@ Otherwise a standard select menu is used.
               buttonAlignment="left" onchange="${updateCountFunc}" onload="${updateCountFunc}"/>
         </div>
       </c:when>
+
+      <%-- use a type ahead --%>
+      <c:when test="${displayType eq 'typeAhead'}">
+        <div class="${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+          <div id="${pNam}_display" data-multiple="true"></div>
+          <html:hidden styleClass="typeAhead" property="value(${pNam})" />
+          <div class="type-ahead-help" style="margin:2px;">
+            Begin typing to see suggestions to choose from (CTRL or CMD click to select multiple)<br/>
+            Or paste a list of IDs separated by a comma, new-line, white-space, or semi-colon.<br/>
+            Or use * as a wildcard, like this: *your-term*
+          </div>
+        </div>
+      </c:when>
   
       <%-- use a multi-select box --%>
       <c:otherwise>
@@ -118,9 +131,14 @@ Otherwise a standard select menu is used.
       
         <%-- use a type ahead --%>
         <c:when test="${displayType eq 'typeAhead'}">
-          <input type="text" id="${pNam}_display" size="50" value=""/>
-          <html:hidden styleClass="typeAhead" property="value(${pNam})" />
-          <div class="type-ahead-help">Type three characters to see suggestions.<br>Or use * as a wildcard, like this: *your-term*</div>
+          <div class="${dependentClass}" dependson="${dependedParam}" name="${pNam}">
+            <div id="${pNam}_display" data-multiple="false"></div>
+            <html:hidden styleClass="typeAhead" property="value(${pNam})" />
+            <div class="type-ahead-help" style="margin:2px;">
+              Begin typing to see suggestions to choose from<br/>
+              Or use * as a wildcard, like this: *your-term*
+            </div>
+          </div>
         </c:when>
   
         <c:otherwise>
