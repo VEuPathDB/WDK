@@ -212,4 +212,5 @@ public class CConstants {
     protected static final String DEFAULT_XMLDATA_DIR = "/WEB-INF/wdk-model/lib/xml";
     
     public static final int MIN_PAGE_SIZE = 5;
+    public static final String WDK_EXCEPTION = "exception";
 }

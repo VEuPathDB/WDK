@@ -13,6 +13,7 @@ import org.gusdb.wdk.controller.CConstants;
 import org.gusdb.wdk.controller.actionutil.ActionUtility;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModelException;
+import org.gusdb.wdk.model.WdkUserException;
 import org.gusdb.wdk.model.jspwrap.DatasetParamBean;
 import org.gusdb.wdk.model.jspwrap.EnumParamBean;
 import org.gusdb.wdk.model.jspwrap.ParamBean;
@@ -102,10 +103,10 @@ public class QuestionForm extends MapActionForm {
             rawOrDependentValue);
 
         // cannot validate datasetParam here
-        if (!(param instanceof DatasetParamBean))
+        if (!(param instanceof DatasetParamBean)) {
           param.validate(user, dependentValue, contextValues);
+        }
       } catch (Exception ex) {
-        ex.printStackTrace();
         ActionMessage message = new ActionMessage("mapped.properties", prompt,
             ex.getMessage());
         errors.add(ActionErrors.GLOBAL_MESSAGE, message);
@@ -127,6 +128,11 @@ public class QuestionForm extends MapActionForm {
             "Assigned weight", message);
         errors.add(ActionErrors.GLOBAL_MESSAGE, am);
       }
+    }
+    
+    // add explicit exception to request for access later
+    if (!errors.isEmpty()) {
+    	request.setAttribute(CConstants.WDK_EXCEPTION, new WdkUserException("Unable to validate params in request."));
     }
 
     logger.debug("finish validation...\n\n\n\n\n");

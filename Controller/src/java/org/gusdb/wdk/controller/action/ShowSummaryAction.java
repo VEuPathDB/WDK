@@ -464,7 +464,7 @@ public class ShowSummaryAction extends ShowQuestionAction {
             request.setAttribute("customName", customName);
             request.setAttribute("params", params);
             request.setAttribute("paramNames", paramNames);
-            request.setAttribute("exception", ex);
+            request.setAttribute(CConstants.WDK_EXCEPTION, ex);
         } catch (Exception ex2) {
             ex2.printStackTrace();
         }
