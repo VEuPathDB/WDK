@@ -85,6 +85,9 @@ public class ApplicationInitListener implements ServletContextListener {
         logger.info("Initialized model object.  Setting on servlet context.");
         servletContext.setAttribute(CConstants.WDK_MODEL_KEY, wdkModel);
 
+        // set assetsUrl attribtue
+        servletContext.setAttribute(CConstants.WDK_ASSETS_URL_KEY, getAssetsUrl(wdkModel, servletContext));
+
         // load wizard
         Wizard wizard = Wizard.loadWizard(gusHome, wdkModel);
         servletContext.setAttribute(CConstants.WDK_WIZARD_KEY, wizard);
@@ -95,5 +98,15 @@ public class ApplicationInitListener implements ServletContextListener {
 
         // set the context to WsfService so that it can be accessed in the local mode.
         WsfService.SERVLET_CONTEXT = servletContext;
+    }
+
+    private String getAssetsUrl(WdkModelBean wdkModel, ServletContext servletContext) {
+        String url = wdkModel.getModel().getModelConfig().getAssetsUrl();
+        if (url == null || url == "") {
+          // set context url
+          url = servletContext.getContextPath();
+        }
+        logger.debug("Assets URL: " + url);
+        return url;
     }
 }
