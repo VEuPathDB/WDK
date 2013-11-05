@@ -56,6 +56,14 @@ td {
     padding: 4px 4px 4px 4px;
 }
 
+img[data-assets-src] {
+  visibility: hidden;
+}
+
+img[data-assets-src][src] {
+  visibility: visible;
+}
+
 .h2center {
 	font-size: 150%;
 	font-family: Verdana, Arial, Helvetica, sans-serif;
