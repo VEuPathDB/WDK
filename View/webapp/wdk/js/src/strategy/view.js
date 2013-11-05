@@ -89,7 +89,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
             .html("<a onclick='wdk.strategy.controller.closeStrategy(" +
                 strat.frontId + ")' href='javascript:void(0)'>"+
                 "<img alt='Click here to close the strategy (it will only be " +
-                "removed from the display)' src='wdk/images/close.gif' " +
+                "removed from the display)' src='" + wdk.assetsUrl('/wdk/images/close.gif') + "'" +
                 "title='Click here to close the strategy (you can open it from the All tab)'/></a>");
         $(div_strat).append(close_span);
 
@@ -196,7 +196,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     }
 
     if (jsonStep.filtered) {
-      filterImg = "<span class='filterImg'><img src='wdk/images/filter-short.png' " +
+      filterImg = "<span class='filterImg'><img src='" + wdk.assetsUrl('/wdk/images/filter-short.png') + "'" +
           "style='height:10px;position:relative;top:0px'/></span>";
     }
 
@@ -206,7 +206,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "<div id='" + sid + "|" + modelstep.back_boolean_Id + "|" + jsonStep.operation + "' class='divlink step-elem' "+
         "     title=\""+stepBoxTooltip(jsonStep.filterName)+"\" href='javascript:void(0)' style='cursor:pointer' onclick='" + bool_link + "'> " +
         //"     onmouseover=\"jQuery(this).find('.edit-icon').css('display','inline')\" onmouseout=\"jQuery(this).find('.edit-icon').css('display','inline')\">" +
-        "  <img style='width:50px;height:26px' src='wdk/images/transparent1.gif'>" +
+        "  <img style='width:50px;height:26px' src='" + wdk.assetsUrl('/wdk/images/transparent1.gif') + "'>" +
         "  <div style='position:absolute;top:-9px;right:10px;width:19px;height:19px;'></div>"+
         "  <a href='javascript:void(0)' class='edit-icon step-elem' style='display:inline;position:absolute;top:-8px;right:2px' " +
         "     onclick='!event.stopPropagation ? event.cancelBubble = true : event.stopPropagation(); wdk.step.showDetails(this)'>" + getEditImage('boolean')+"</a><br/>"+
@@ -252,7 +252,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     var childfilterImg = "";
 
     if (childStp.filtered) {
-      childfilterImg = "<span class='filterImg'><img src='wdk/images/filter-short.png' " +
+      childfilterImg = "<span class='filterImg'><img src='" + wdk.assetsUrl('/wdk/images/filter-short.png') + "' " +
           "style='height:10px;position:relative;top:1px'/></span>";
     }
 
@@ -271,7 +271,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
       "      <h6 class='resultCount'>" + childStp.results + "&nbsp;" + wdk.util.getDisplayType(childStp) + "</h6>"+
       childfilterImg +
       "    </div>"+
-      "<img class='arrow down' src='wdk/images/arrow_chain_down2.png' alt='equals'>";
+      "<img class='arrow down' src='" + wdk.assetsUrl('/wdk/images/arrow_chain_down2.png') + "' alt='equals'>";
 
     var child_invalid = null;
 
@@ -363,7 +363,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     var filterImg = "";
     if (jsonStep.filtered) {
       var filterImgOffset = modelstep.isTransform ? ";right:5px" : "";
-      filterImg = "<span class='filterImg'><img src='wdk/images/filter-short.png' " +
+      filterImg = "<span class='filterImg'><img src='" + wdk.assetsUrl('/wdk/images/filter-short.png') + "' " +
           "style='height:10px;position:relative;top:1px"+filterImgOffset+"'/></span>";
     }
 
@@ -664,7 +664,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
 
     var close_button = "<a title='" + x_popup +
         "' class='close_link' href='javascript:void(0)' " +
-        "onclick='wdk.step.hideDetails(this)'><img src=\"wdk/images/close.gif\" /></a>";
+        "onclick='wdk.step.hideDetails(this)'><img src=\"" + wdk.assetsUrl('/wdk/images/close.gif') + "\" /></a>";
 
     var inner = ""+  
         "    <div class='crumb_menu'>" + close_button + rename_step +
@@ -702,7 +702,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     var set_weight = "<div name='All_weighting' class='param-group' " +
         "type='ShowHide'><div class='group-title'> "+
         "<img style='position:relative;top:5px;'  class='group-handle' " +
-        "src='wdk/images/plus.gif' onclick=''/>Give this search a weight</div>" +
+        "src='" + wdk.assetsUrl('/wdk/images/plus.gif') + "' onclick=''/>Give this search a weight</div>" +
         "<div class='group-detail' style='display:none;text-align:center'>"+
         "<div class='group-description'>"+
         "<p><input type='text' name='weight' value='" +
@@ -847,7 +847,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
         "<span class='h3left'>" + sTitle + "</span>" + 
         "</div>"+ 
         "<a class='close_window' href='javascript:wdk.addStepPopup.closeModal()'>"+
-        "<img alt='Close' src='wdk/images/close.gif' />" +
+        "<img alt='Close' src='" + wdk.assetsUrl('/wdk/images/close.gif') + "' />" +
         "</a>"+
         "</div>"+
         "<form id='save_strat_form' onsubmit='return wdk.addStepPopup.validateSaveForm(this);'" +
@@ -959,7 +959,7 @@ window.wdk.util.namespace("window.wdk.strategy.view", function(ns, $) {
     has_invalid = true;
     inval.setAttribute("class","invalidStep");
     var i = document.createElement('img');
-    $(i).attr("src","wdk/images/InvalidStep.png")
+    $(i).attr("src",wdk.assetsUrl("/wdk/images/InvalidStep.png"))
         .attr("style","height:36;width:98;cursor:pointer")
         .attr("onclick","wdk.strategy.view.reviseInvalidSteps(this)");
     $(inval).append(i);

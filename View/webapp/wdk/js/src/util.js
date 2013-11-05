@@ -34,7 +34,7 @@ wdk.util.namespace("window.wdk.util", function(ns, $) {
     var l = document.createElement('span');
     $(l).attr("id","loadingGIF");
     var i = document.createElement('img');
-    $(i).attr("src","wdk/images/" + l_gif);
+    $(i).attr("src",wdk.assetsUrl("/wdk/images/" + l_gif));
     $(i).attr("height",sz);
     $(i).attr("width",sz);
     $(l).prepend(i);

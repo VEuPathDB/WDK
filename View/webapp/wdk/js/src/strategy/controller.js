@@ -382,9 +382,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   }
 
   function getInstructionsHtml() {
-    var arrow_image = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='wdk/images/lookUp2.png' width='45px'/>"; 
+    var arrow_image = "<img id='bs-arrow' alt='Arrow pointing to Browse Strategy Tab' src='" + wdk.assetsUrl('/wdk/images/lookUp2.png') + "' width='45px'/>"; 
     if ($("#tab_strategy_new").length > 0) {
-      arrow_image = "<img id='ns-arrow' alt='Arrow pointing to New Search Button' src='wdk/images/lookUp.png' width='45px'/>" + arrow_image;
+      arrow_image = "<img id='ns-arrow' alt='Arrow pointing to New Search Button' src='" + wdk.assetsUrl('/wdk/images/lookUp.png') + "' width='45px'/>" + arrow_image;
     }
     
     arrow_image += getInstructionsText();

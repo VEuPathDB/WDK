@@ -44,10 +44,10 @@
    <c:if test="${fn:length(basketCounts) > 0}">
       <c:choose>
 	       <c:when test="${wdkUser.guest}">
-            <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:wdk.user.login();"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
+            <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:wdk.user.login();"><imp:image class="basket" src="/wdk/images/basket_gray.png" width="15" height="15"/>&nbsp;Basket</a></li>
 	       </c:when>
 	       <c:otherwise>
-            <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:wdk.addStepPopup.showPanel('basket')"><img class="basket" src="<c:url value='/wdk/images/basket_gray.png'/>" width="15" height="15"/>&nbsp;Basket</a></li>
+            <li><a style="padding-left:5px;" id="tab_basket" title="${basketTitle}" onclick="this.blur()" href="javascript:wdk.addStepPopup.showPanel('basket')"><imp:image class="basket" src="/wdk/images/basket_gray.png" width="15" height="15"/>&nbsp;Basket</a></li>
 	       </c:otherwise>
       </c:choose>
    </c:if>

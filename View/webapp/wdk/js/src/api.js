@@ -280,7 +280,7 @@ wdk.util.namespace("window.wdk.api", function(ns, $) {
         .attr("id", "imgMapDivId_loading"))
         .attr("class", "gbGnCtx")
         .append($("<img/>")
-        .attr("src", "wdk/images/loading.gif"))
+        .attr("src", wdk.assetsUrl("/wdk/images/loading.gif")))
         .append("<br>Loading...");
 
 

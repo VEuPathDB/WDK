@@ -79,7 +79,7 @@
       </c:forEach>
 
 <%--
-      <td><img id="img_${strategyId}" class="plus-minus plus" src="<c:url value='/wdk/images/sqr_bullet_plus.png'/>" alt="" onclick="wdk.history.toggleSteps2(${strategyId})"/></td>
+      <td><imp:image id="img_${strategyId}" class="plus-minus plus" src="/wdk/images/sqr_bullet_plus.png" alt="" onclick="wdk.history.toggleSteps2(${strategyId})"/></td>
 --%>
 
       <c:set var="dispNam" value="${strategy.name}"/>
@@ -98,7 +98,7 @@
             <c:out value="${dispNam}"/>
           </span>
           <c:if test="${!strategy.isSaved}">*</c:if>
-          <c:if test="${!strategy.valid}">&nbsp;&nbsp;&nbsp;<img title="This strategy has one or more steps that need to be revised, due to release updates; click to revise!" src="<c:url value='/wdk/images/invalidIcon.png'/>" width="12"/></c:if>
+          <c:if test="${!strategy.valid}">&nbsp;&nbsp;&nbsp;<imp:image title="This strategy has one or more steps that need to be revised, due to release updates; click to revise!" src="/wdk/images/invalidIcon.png" width="12"/></c:if>
         </div> 
 
       </td>
@@ -201,7 +201,7 @@
         <c:set var="checkedProp">checked="checked"</c:set>
       </c:if>
       <td nowrap style="text-align:center;width:5em">
-        <img style="display:none" src="wdk/images/filterLoading.gif"/>
+        <imp:image style="display:none" src="/wdk/images/filterLoading.gif"/>
         <input title="${checkboxTitle}" class="isPublicCheckbox" type="checkbox" ${disabledProp} ${checkedProp} onclick="${makePublicAction}"/>
       </td>
     </tr>

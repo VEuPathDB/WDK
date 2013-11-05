@@ -1,5 +1,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="allFavorites" value="${wdkUser.favorites}" /><%-- a map of (RecordClass, List<Favorite>) --%>
@@ -83,11 +84,11 @@
                                         <span key="${pk_item.key}">${pk_item.value}</span>
                                     </c:forEach>
                                 </span>
-                                <img class="clickable" src="<c:url value='/wdk/images/favorite_color.gif'/>" 
+                                <imp:image class="clickable" src="/wdk/images/favorite_color.gif" 
                                      title="Click to remove this item from favorites and reload page"
 				     height="16px" style="vertical-align:text-bottom"
                                      onClick="wdk.favorite.updateFavorite(this, 'remove')"/>&nbsp;
-                                <img class="clickable" src="<c:url value='/wdk/images/basket_${basketColor}.png'/>" 
+                                <imp:image class="clickable" src="/wdk/images/basket_${basketColor}.png" 
                                      title="Click to add/remove this item from your basket."
 				     height="16px"  style="vertical-align:text-bottom"
                                      onClick="wdk.basket.updateBasket(this,'recordPage', '${id}', '${pid}', '${recordClass.fullName}')" value="${basketValue}"/>&nbsp;

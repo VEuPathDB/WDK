@@ -40,9 +40,9 @@
         </c:if>
         
         <div class="layout-info">
-            <img class="handle" src="<c:url value="/wdk/images/${image}" />" />
+            <imp:image class="handle" src="/wdk/images/${image}" />
             <span class="display">
-              <img height="14px" src="${pageContext.request.contextPath}/wdk/images/filter-short.png"/> 
+              <imp:image height="14px" src="/wdk/images/filter-short.png"/> 
               <b>${layout.displayName}</b>&nbsp;&nbsp;
             </span>
             <span style="font-size:90%;font-style:italic">

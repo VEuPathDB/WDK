@@ -5,7 +5,7 @@
     xmlns:c="http://java.sun.com/jsp/jstl/core"
     xmlns:imp="urn:jsptagdir:/WEB-INF/tags/imp">
 
-  <c:set var="urlBase" value="${pageContext.request.contextPath}"/>
+  <c:set var="urlBase" value="${applicationScope.wdkModel.model.modelConfig.assetsUrl}"/>
 
   <jsp:directive.attribute name="refer" required="false" 
               description="Page calling this tag. The list of WDK recognized refer values are: home, question, summary, record"/>
@@ -16,14 +16,14 @@
   <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
   <!-- styles for JS libraries -->
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/jquery-ui.css"/>
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/chosen.min.css"/>
+  <imp:stylesheet rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/jquery-ui.css"/>
+  <imp:stylesheet rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/chosen.min.css"/>
   <!--
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/jquery.multiSelect.css"/>
+  <imp:stylesheet rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/jquery.multiSelect.css"/>
   -->
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/datatables.css"/>
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/js/lib/qtip2/jquery.qtip.css"/>
-  <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/wdkCommon.css"/>
+  <imp:stylesheet rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/datatables.css"/>
+  <imp:stylesheet rel="stylesheet" type="text/css" href="${urlBase}/wdk/js/lib/qtip2/jquery.qtip.css"/>
+  <imp:stylesheet rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/wdkCommon.css"/>
 
 
   <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
@@ -32,13 +32,13 @@
   <c:if test="${refer == 'summary'}">
 
    <!-- Did you know popup -->
-    <link rel="stylesheet" type="text/css" href='${urlBase}/wdk/css/dyk.css'/>
+    <imp:stylesheet rel="stylesheet" type="text/css" href='${urlBase}/wdk/css/dyk.css'/>
 
-    <link rel="stylesheet" type="text/css" href='${urlBase}/wdk/css/Strategy.css'/>
+    <imp:stylesheet rel="stylesheet" type="text/css" href='${urlBase}/wdk/css/Strategy.css'/>
 
     <!-- Results Page  -->
-    <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/flexigrid.css"/>
-    <link rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/wdkFilter.css"/>
+    <imp:stylesheet rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/flexigrid.css"/>
+    <imp:stylesheet rel="stylesheet" type="text/css" href="${urlBase}/wdk/css/wdkFilter.css"/>
 
   </c:if>
 </jsp:root>

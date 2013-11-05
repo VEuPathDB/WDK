@@ -26,7 +26,7 @@ Provides form input element for a given term tree node of EnumParam.
             <c:set var="nodeValue" value="${node.term}" />
         </c:when>
         <c:otherwise>
-            <img class="plus-minus plus" title="Click to expand(+) or collapse(-)" src="${pageContext.request.contextPath}/wdk/images/plus.gif" style="vertical-align:bottom" onclick="toggleChildren(this)"/>
+        <imp:image class="plus-minus plus" title="Click to expand(+) or collapse(-)" src="/wdk/images/plus.gif" style="vertical-align:bottom" onclick="toggleChildren(this)"/>
             <c:set var="nodeValue" />
         </c:otherwise>
     </c:choose>

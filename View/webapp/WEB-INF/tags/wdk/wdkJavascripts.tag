@@ -12,8 +12,6 @@
       type="java.lang.Boolean"
       required="false"/>
 
-  <c:set var="urlBase" value="${pageContext.request.contextPath}"/>
-
   <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!-- Scripts and styles that are used on the whole site                    -->
   <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
@@ -21,64 +19,65 @@
   <!-- JS libraries -->
   <!-- comment out the production code. need to revert this on check in -->
 
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery-ui.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/es5-shim.min.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/chosen.jquery.min.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.blockUI.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.cookie.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.dataTables-1.9.0.min.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/jstree/jquery.jstree.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/qtip2/jquery.qtip.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/json.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/handlebars.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.flot-0.8.1.min.js"><jsp:text/></script>
-  <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.flot.categories-0.8.1.min.js"><jsp:text/></script>
+  <imp:script src="/wdk/js/lib/jquery.js"/>
+  <imp:script src="/wdk/js/lib/jquery-ui.js"/>
+  <imp:script src="/wdk/js/lib/es5-shim.min.js"/>
+  <imp:script src="/wdk/js/lib/chosen.jquery.min.js"/>
+  <imp:script src="/wdk/js/lib/jquery.blockUI.js"/>
+  <imp:script src="/wdk/js/lib/jquery.cookie.js"/>
+  <imp:script src="/wdk/js/lib/jquery.dataTables-1.9.0.min.js"/>
+  <imp:script src="/wdk/js/lib/jstree/jquery.jstree.js"/>
+  <imp:script src="/wdk/js/lib/qtip2/jquery.qtip.js"/>
+  <imp:script src="/wdk/js/lib/chosen.jquery.min.js"/>
+  <imp:script src="/wdk/js/lib/json.js"/>
+  <imp:script src="/wdk/js/lib/handlebars.js"/>
+  <imp:script src="/wdk/js/lib/jquery.flot-0.8.1.min.js"/>
+  <imp:script src="/wdk/js/lib/jquery.flot.categories-0.8.1.min.js"/>
 
   <!-- WDK js and css -->
 
   <c:choose>
     <c:when test="${param._js eq 'min' or min}">
       <!-- minified files -->
-      <script src="${urlBase}/wdk/js/wdk-min.js"><jsp:text/></script>
+      <imp:script src="/wdk/js/wdk-min.js"/>
     </c:when>
     <c:when test="${param._js eq 'concat'}">
       <!-- concatenated files -->
-      <script src="${urlBase}/wdk/js/wdk.js"><jsp:text/></script>
+      <imp:script src="/wdk/js/wdk.js"/>
     </c:when>
     <c:otherwise>
       <!-- individual files -->
-      <script src="${urlBase}/wdk/js/src/util/namespace.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/addStepPopup.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/api.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/basket.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/checkboxTree.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/dyk.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/event.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/favorite.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/filter.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/history.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/publicStrats.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/parameterHandlers.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/question.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/resultsPage.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/step.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/stratTabCookie.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/tooltips.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/user.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/util.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/reporter.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/wdk.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/wordCloud.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/histogram.js"><jsp:text/></script>      
-      <script src="${urlBase}/wdk/js/src/plugins/wdkDataTables.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/plugins/wdkEditable.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/plugins/wdkSimpleToggle.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/plugins/wdkTooltip.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/strategy/controller.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/strategy/error.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/strategy/model.js"><jsp:text/></script>
-      <script src="${urlBase}/wdk/js/src/strategy/view.js"><jsp:text/></script>
+      <imp:script src="/wdk/js/src/util/namespace.js"/>
+      <imp:script src="/wdk/js/src/addStepPopup.js"/>
+      <imp:script src="/wdk/js/src/api.js"/>
+      <imp:script src="/wdk/js/src/basket.js"/>
+      <imp:script src="/wdk/js/src/checkboxTree.js"/>
+      <imp:script src="/wdk/js/src/dyk.js"/>
+      <imp:script src="/wdk/js/src/event.js"/>
+      <imp:script src="/wdk/js/src/favorite.js"/>
+      <imp:script src="/wdk/js/src/filter.js"/>
+      <imp:script src="/wdk/js/src/history.js"/>
+      <imp:script src="/wdk/js/src/publicStrats.js"/>
+      <imp:script src="/wdk/js/src/parameterHandlers.js"/>
+      <imp:script src="/wdk/js/src/question.js"/>
+      <imp:script src="/wdk/js/src/resultsPage.js"/>
+      <imp:script src="/wdk/js/src/step.js"/>
+      <imp:script src="/wdk/js/src/stratTabCookie.js"/>
+      <imp:script src="/wdk/js/src/tooltips.js"/>
+      <imp:script src="/wdk/js/src/user.js"/>
+      <imp:script src="/wdk/js/src/util.js"/>
+      <imp:script src="/wdk/js/src/reporter.js"/>
+      <imp:script src="/wdk/js/src/wdk.js"/>
+      <imp:script src="/wdk/js/src/wordCloud.js"/>
+      <imp:script src="/wdk/js/src/histogram.js"/>
+      <imp:script src="/wdk/js/src/plugins/wdkDataTables.js"/>
+      <imp:script src="/wdk/js/src/plugins/wdkEditable.js"/>
+      <imp:script src="/wdk/js/src/plugins/wdkSimpleToggle.js"/>
+      <imp:script src="/wdk/js/src/plugins/wdkTooltip.js"/>
+      <imp:script src="/wdk/js/src/strategy/controller.js"/>
+      <imp:script src="/wdk/js/src/strategy/error.js"/>
+      <imp:script src="/wdk/js/src/strategy/model.js"/>
+      <imp:script src="/wdk/js/src/strategy/view.js"/>
     </c:otherwise>
   </c:choose>
 
@@ -110,12 +109,12 @@
 
     <!-- JQuery Drag And Drop Plugin -->
     <!--
-    <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.multiSelect.js"><jsp:text/></script>
-    <script type="text/javascript" src="${urlBase}/wdk/js/lib/jquery.form.js"><jsp:text/></script>
+    <imp:script src="/wdk/js/lib/jquery.multiSelect.js"/>
+    <imp:script src="/wdk/js/lib/jquery.form.js"/>
     -->
 
     <!-- Results Page  -->
-    <script type="text/javascript" src="${urlBase}/wdk/js/lib/flexigrid.js"><jsp:text/></script>
+    <imp:script src="/wdk/js/lib/flexigrid.js"/>
 
     <script>
       jQuery(wdk.step.init);

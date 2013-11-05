@@ -124,7 +124,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
 
     // show processing icon, will remove it when the process is completed.
     var oldImage = i.attr("src");
-    i.attr("src","wdk/images/loading.gif");
+    i.attr("src",wdk.assetsUrl("/wdk/images/loading.gif"));
 
     var a = [];
     var action = null;
@@ -193,11 +193,11 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
 
         if (type == "single" || type == "recordPage") {
           if (action == "add") {
-            i.attr("src","wdk/images/basket_color.png");
+            i.attr("src",wdk.assetsUrl("/wdk/images/basket_color.png"));
             i.attr("value", "1");
             i.attr("title","Click to remove this item from the basket.");
           } else {
-            i.attr("src","wdk/images/basket_gray.png");
+            i.attr("src",wdk.assetsUrl("/wdk/images/basket_gray.png"));
             i.attr("value", "0");
             i.attr("title","Click to add this item to the basket.");
           }
@@ -216,11 +216,11 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
         } else {
           var image = currentDiv.find(".Results_Div img.basket");
           if (action == "add-all" || action == "add") {
-            image.attr("src","wdk/images/basket_color.png");
+            image.attr("src",wdk.assetsUrl("/wdk/images/basket_color.png"));
             image.attr("title","Click to remove this item from the basket.");
             image.attr("value", "1");
           } else {
-            image.attr("src","wdk/images/basket_gray.png");
+            image.attr("src",wdk.assetsUrl("/wdk/images/basket_gray.png"));
             image.attr("title","Click to add this item to the basket.");
             image.attr("value", "0");
           }
@@ -262,7 +262,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
 
     if (wdk.user.isGuest()) {
 
-      headImage.attr("src","wdk/images/basket_gray.png");
+      headImage.attr("src",wdk.assetsUrl("/wdk/images/basket_gray.png"));
       headImage.attr("title","Please log in to use the basket.");
 
     } else {
@@ -278,13 +278,13 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
 
       if (allIn) {
 
-        headImage.attr("src","wdk/images/basket_color.png");
+        headImage.attr("src",wdk.assetsUrl("/wdk/images/basket_color.png"));
         headImage.attr("title","Click to remove the items in this page from the basket.");
         headImage.attr("value", "1");
 
       } else {
 
-        headImage.attr("src","wdk/images/basket_gray.png");
+        headImage.attr("src",wdk.assetsUrl("/wdk/images/basket_gray.png"));
         headImage.attr("title","Click to add the items in this page to the basket.");
         headImage.attr("value", "0");
 

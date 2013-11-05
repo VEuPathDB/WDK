@@ -24,7 +24,7 @@ wdk.util.namespace("window.wdk.step", function(ns, $) {
     $("div#Strategies").find("div.crumb_details").each(function() {
       $(this).attr("disp","0");
     });
-    $("a.crumb_name img").attr("src","wdk/images/plus.gif");
+    $("a.crumb_name img").attr("src",wdk.assetsUrl("/wdk/images/plus.gif"));
     if (disp == "0") {
       ns.openDetail.attr("disp","1");
       var det2 = ns.openDetail.clone();
@@ -47,10 +47,10 @@ wdk.util.namespace("window.wdk.step", function(ns, $) {
         op.addClass("operation");
         $("input[value='" + opstring + "']", det2).attr('checked','checked');
       }
-      if ($(det).hasClass('crumb_name')) $(det).children("img").attr("src","wdk/images/minus.gif");
+      if ($(det).hasClass('crumb_name')) $(det).children("img").attr("src",wdk.assetsUrl("/wdk/images/minus.gif"));
     } else {
       ns.openDetail.attr("disp","0");
-      if ($(det).hasClass('crumb_name')) $(det).children("img").attr("src","wdk/images/plus.gif");
+      if ($(det).hasClass('crumb_name')) $(det).children("img").attr("src",wdk.assetsUrl("/wdk/images/plus.gif"));
     }
   }
 
@@ -62,7 +62,7 @@ wdk.util.namespace("window.wdk.step", function(ns, $) {
     $("body > div.crumb_details").each(function() {
       $(this).remove();
     });
-    $("a.crumb_name img").attr("src","wdk/images/plus.gif");
+    $("a.crumb_name img").attr("src",wdk.assetsUrl("/wdk/images/plus.gif"));
   }
 
   function Edit_Step(ele, questionName, url, hideQuery, hideOp, assignedWeight) {
