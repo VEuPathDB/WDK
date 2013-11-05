@@ -219,14 +219,14 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
     if (edit == 0) {
       close_link = "<a class='close_window' " +
           "href='javascript:closeAll(false)'> " +
-          "<img src='wdk/images/Close-X-box.png'/></a>";
+          "<img src='" + wdk.assetsUrl('/wdk/images/Close-X-box.png') + "'/></a>";
       back_link = "<a id='back_to_selection' href='javascript:close()'>" + 
-          "<img src='wdk/images/backbox.png'/></a>";
+          "<img src='" + wdk.assetsUrl('/wdk/images/backbox.png') + "'/></a>";
 
     } else {
       close_link = "<a class='close_window' " +
           "href='javascript:closeAll(false)'>" +
-          "<img src='wdk/images/Close-X-box.png'/></a>";
+          "<img src='" + wdk.assetsUrl('/wdk/images/Close-X-box.png') + "'/></a>";
     }
 
     var quesTitle = data.substring(data.indexOf("<h1>") + 4,

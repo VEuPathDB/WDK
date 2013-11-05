@@ -131,14 +131,14 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
       $("tbody#steps_" + strat + " tr").each(function() {
         this.style.display = "";
       });
-      img[0].src = "wdk/images/sqr_bullet_minus.png";
+      img[0].src = wdk.assetsUrl("/wdk/images/sqr_bullet_minus.png");
       img.removeClass("plus");
       img.addClass("minus");
     } else {
       $("tbody#steps_" + strat + " tr").each(function() {
         this.style.display = "none";
       });
-      img[0].src = "wdk/images/sqr_bullet_plus.png";
+      img[0].src = wdk.assetsUrl("/wdk/images/sqr_bullet_plus.png");
       img.removeClass("minus");
       img.addClass("plus");
     }
@@ -157,7 +157,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
       $("tr#desc_" + strat).each(function() {
         this.style.display = "";
       });
-      img[0].src = "wdk/images/sqr_bullet_minus.png";
+      img[0].src = wdk.assetsUrl("/wdk/images/sqr_bullet_minus.png");
       img.removeClass("plus");
       img.addClass("minus");
 
@@ -168,7 +168,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
       $("tr#desc_" + strat).each(function() {
         this.style.display = "none";
       });
-      img[0].src = "wdk/images/sqr_bullet_plus.png";
+      img[0].src = wdk.assetsUrl("/wdk/images/sqr_bullet_plus.png");
       img.removeClass("minus");
       img.addClass("plus");
     }

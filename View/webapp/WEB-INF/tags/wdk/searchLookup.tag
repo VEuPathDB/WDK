@@ -2,6 +2,7 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="bean" uri="http://jakarta.apache.org/struts/tags-bean" %>
 <%@ taglib prefix="html" uri="http://jakarta.apache.org/struts/tags-html" %>
+<%@ taglib prefix="imp" tagdir="/WEB-INF/tags/imp" %>
 
 <c:set var="wdkModel" value="${applicationScope.wdkModel}" />
 
@@ -157,7 +158,7 @@ $("img#close-table").live("click", function () {
 	title='Enter a keyword; searches that contain the keyword in its name, category or description will be listed'>
 
 <a style="position:absolute;top:8px;right:50px;" href='javascript:void(0)'>
-	<img id="close-table" style='vertical-align:middle' src='wdk/images/close.gif'>
+	<imp:image id="close-table" style='vertical-align:middle' src='/wdk/images/close.gif'/>
 </a>
 
   <table id="search-lookup" class="datatables" width="100%">

@@ -197,6 +197,16 @@ function getWebAppUrl() {
 //   return scriptPath;
 // }
 
+  /**
+   * Returns the complete path to the assets dir
+   * and appends the given url
+   */
+  function assetsUrl(path) {
+    var assetsUrl = $("#wdk-assets-url").attr("value");
+    path = (path.indexOf('/') === 0) ? path : '/' + path;
+    return assetsUrl + (path || '');
+  }
+
 
   var registerToggle = function() {
     // register toggles
@@ -668,7 +678,7 @@ function getWebAppUrl() {
         }
 
         ui.tab.find("span:last").append('<img style="margin-left:4px; ' +
-          'position: relative; top:2px;" src="wdk/images/filterLoading.gif"/>');
+          'position: relative; top:2px;" src="' + wdk.assetsUrl('/wdk/images/filterLoading.gif') + '"/>');
 
         ui.jqXHR.done(function() {
           ui.tab.data("loaded", true);
@@ -713,6 +723,7 @@ function getWebAppUrl() {
   ns.findActiveView = findActiveView;
   ns.chooseAll = chooseAll;
   ns.getWebAppUrl = getWebAppUrl;
+  ns.assetsUrl = assetsUrl;
   ns.isUserLoggedIn = isUserLoggedIn;
   ns.checkFields = checkFields;
   ns.uncheckFields = uncheckFields;
