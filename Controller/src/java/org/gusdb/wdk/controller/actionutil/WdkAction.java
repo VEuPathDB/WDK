@@ -271,7 +271,6 @@ public abstract class WdkAction implements SecondaryValidator {
     _request.setAttribute(CConstants.WDK_REFERRER_URL_KEY, getRequestData().getReferrer());
     _request.setAttribute(CConstants.WDK_USER_KEY, getCurrentUser());
     _request.setAttribute(CConstants.WDK_MODEL_KEY, getWdkModel());
-    _request.setAttribute(CConstants.WDK_ASSETS_URL_KEY, getAssetsUrl());
     for (String attribKey : result) {
       _request.setAttribute(attribKey, result.getRequestAttribute(attribKey));
     }
@@ -331,19 +330,6 @@ public abstract class WdkAction implements SecondaryValidator {
    */
   protected WdkModelBean getWdkModel() {
     return _wdkModel;
-  }
-
-  /**
-   * @return assetsUrl string
-   */
-  protected String getAssetsUrl() {
-    String url = _wdkModel.getModel().getModelConfig().getAssetsUrl();
-    if (url == null || url == "") {
-      // set context url
-      url = _request.getContextPath();
-    }
-    LOG.debug("Assets URL: " + url);
-    return url;
   }
   
   /**
