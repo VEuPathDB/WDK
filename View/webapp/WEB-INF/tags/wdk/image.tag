@@ -7,20 +7,11 @@
 
   <!-- writes an html <img/> tag with the provided attributes -->
  
-  <c:set var="assetsUrl">
-    <c:choose>
-      <c:when test="${wdkModel.model.modelConfig.assetsUrl ne null}">${wdkModel.model.modelConfig.assetsUrl}</c:when>
-      <c:otherwise>${pageContext.request.contextPath}</c:otherwise>
-    </c:choose>
-  </c:set>
-
-
-
   <![CDATA[<img]]>
 
   <c:forEach items="${dynattrs}" var="a">
     <c:choose>
-      <c:when test="${a.key eq 'src'}"> ${a.key}="${assetsUrl}${a.value}" </c:when>
+      <c:when test="${a.key eq 'src'}"> ${a.key}="${applicationScope.assetsUrl}${a.value}" </c:when>
       <c:otherwise> ${a.key}="${a.value}" </c:otherwise>
     </c:choose>
   </c:forEach>

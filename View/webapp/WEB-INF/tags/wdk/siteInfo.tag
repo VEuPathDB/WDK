@@ -30,6 +30,6 @@
     data-is-guest="${wdkUser.guest}"></div>
 
   <div id="wdk-web-app-url" value="<c:url value='/'/>"></div>
-  <div id="wdk-assets-url" value="${assetsUrl}"></div>
+  <div id="wdk-assets-url" value="${applicationScope.assetsUrl}"></div>
 </div>
 
