@@ -29,6 +29,11 @@ public class ModelConfig {
   private String supportEmail;
 
   /**
+   * the relative or absolute url to find assets
+   */
+  private String assetsUrl;
+
+  /**
    * the recipient of the super slow query log.
    */
   private String adminEmail;
@@ -212,6 +217,14 @@ public class ModelConfig {
 
   public void setSupportEmail(String supportEmail) {
     this.supportEmail = supportEmail;
+  }
+
+  public String getAssetsUrl() {
+    return assetsUrl;
+  }
+
+  public void setAssetsUrl(String assetsUrl) {
+    this.assetsUrl = assetsUrl;
   }
 
   /**
