@@ -17,7 +17,7 @@
   Internet Explorer. If possible, upgrade to IE8 or later,
   or use another browser such as Chrome or Firefox.</p>
 <p>If you are unable or not allowed to upgrade your browser, please
-  <a href="${pageContext.request.contextPath}/contact.do"
+  <a href="contact.do"
     class="new-window" data-name="contact_us">contact us</a>.
 </p>
 <div style="text-align:center;">
@@ -40,7 +40,7 @@
     <br><br><br>
     </li><li>When parameters have been modified and we cannot easily map your old choices into the new search, the search will be covered with a <span style="font-size:140%;color:darkred;font-family:sans-serif">X</span>. It means it needs to be revised.
     <br><br><br>
-    </li><li>Please open strategies marked with <img style="vertical-align:bottom" src="wdk/images/invalidIcon.png" width="12"> and click each search that needs revision.
+            </li><li>Please open strategies marked with <img style="vertical-align:bottom" data-assets-src="wdk/images/invalidIcon.png" width="12"> and click each search that needs revision.
     <br><br><br>
     <!-- maybe too much info
     <li>In some rare cases, the search name you had in your history, does not exist in the new release and cannot be mapped to a new search. Your only choice will be to delete the search from the strategy.
@@ -105,7 +105,7 @@
         are.<br/><b>Results might change</b> with subsequent releases of the site if the 
         underlying data has changed.<br/><b>Strategies that require revision</b> are marked 
         with <a href="#" class="open-dialog-revise-search">
-        <img style="vertical-align:bottom" src="wdk/images/invalidIcon.png" width="12"></a>.
+          <img style="vertical-align:bottom" data-assets-src="wdk/images/invalidIcon.png" width="12"></a>.
         <a href="#" class="open-dialog-revise-search"> Why?</a></p>
         ]]>
         </attribute>

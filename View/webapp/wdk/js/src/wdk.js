@@ -640,8 +640,15 @@ function getWebAppUrl() {
     });
   };
 
+  function resolveAssetsUrls() {
+    $('img[data-assets-src]:not([src])').each(function() {
+      $(this).attr('src', assetsUrl($(this).data('assets-src')));
+    });
+  }
+
   // when a portion (or all) of the DOM is loaded...
   function load() {
+    resolveAssetsUrls();
     wdk.util.executeOnloadFunctions("body");
     registerTable();
     registerTooltips();
