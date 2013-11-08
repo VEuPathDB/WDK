@@ -224,5 +224,8 @@ public class RecordClassBean {
         return recordClass.hasMultipleRecords(user.getUser(), pkValues);
     }
     
-    
+    public AnswerFilterInstanceBean getDefaultFilter() {
+        AnswerFilterInstance filter = recordClass.getDefaultFilter();
+        return (filter == null) ? null : new AnswerFilterInstanceBean(filter);
+    }    
 }
