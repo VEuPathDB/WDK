@@ -180,9 +180,10 @@ public class ProcessStepAction extends Action {
       Map<String, String> params = ProcessQuestionAction.prepareParams(user,
           request, form);
       // reuse the filter of the current step
-      // but only if it's valid for the revised recordclass
+      // but only if it's valid for the revised recordclass, and if the step
+      // uses the same question as the assigned question
       String filterName = step.getFilterName();
-      if (!question.getRecordClass().getFilterMap().containsKey(filterName)) {
+      if (!step.getQuestionName().equals(questionName) || !question.getRecordClass().getFilterMap().containsKey(filterName)) {
         filterName = null;
       }
 
