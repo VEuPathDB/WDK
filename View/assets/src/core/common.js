@@ -670,6 +670,8 @@ function getWebAppUrl() {
     // delete $.blockUI.defaults.css.border;
     $.blockUI.defaults.css = {};
 
+    $.jstree._themes = wdk.assetsUrl('/wdk/lib/jstree/themes/');
+
     // Override jQueryUI tabs defaults
     //
     // We add two pieces of functionality:

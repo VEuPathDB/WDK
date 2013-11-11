@@ -20,7 +20,7 @@
   <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/jquery.multiSelect.css"/>
   -->
   <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/datatables.css"/>
-  <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/js/lib/qtip2/jquery.qtip.css"/>
+  <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/lib/qtip2/jquery.qtip.css"/>
   <imp:stylesheet rel="stylesheet" type="text/css" href="/wdk/css/wdkCommon.css"/>
 
 

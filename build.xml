@@ -218,12 +218,35 @@
       <property name="project" value="WDK"/>
       <property name="component" value="View"/>
     </ant>
+
+    <echo message="Installing npm packages"/>
+    <exec dir="${projectsDir}/WDK/View/assets"
+          executable="npm"
+          failonerror="true"
+          failifexecutionfails="true">
+      <arg line="install"/>
+    </exec>
+
+    <echo message="Running npm run dist"/>
+    <exec dir="${projectsDir}/WDK/View/assets"
+          executable="npm"
+          failonerror="true"
+          failifexecutionfails="true">
+      <arg line="run dist"/>
+    </exec>
+
+    <echo message="Copying WDK assets to webapp"/>
+    <copy todir="${webappTargetDir}/assets/wdk">
+      <fileset dir="${projectsDir}/WDK/View/assets/dist"/>
+    </copy>
+    <!--
     <ant target="webinstall-javascript">
       <property name="srcDir" value="${webappTargetDir}/wdk/js/src"/>
       <property name="initialFiles" value="util/namespace.js"/>
       <property name="destDir" value="${webappTargetDir}/wdk/js"/>
       <property name="destFilename" value="wdk.js"/>
     </ant>
+    -->
   </target>  
 
   <target name="WebitePlusGusHome" depends="WDK-Installation,
