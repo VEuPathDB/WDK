@@ -13,9 +13,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   ns.p_state = null;
   ns.sidIndex = 0;
 
-  function init() {
+  function init(element, attrs) {
     // Make the strategies window resizable
-    $(".resizable-wrapper").resizable({
+    wdk.step.init();
+
+    element.find(".resizable-wrapper").resizable({
       handles: 's',
       minHeight: 150,
       stop: function(event, ui) {
@@ -80,6 +82,8 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         // });;
       }
     });
+
+    setStrategyStatusCounts(attrs.allCount, attrs.openCount, attrs.publicCount);
   }
 
   function setStrategyStatusCounts(myAllCount, myOpenCount) {
@@ -1032,7 +1036,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   ns.loadModel = loadModel;
   ns.openStrategy = openStrategy;
   ns.saveOrRenameStrategy = saveOrRenameStrategy;
-  ns.setStrategyStatusCounts = setStrategyStatusCounts;
+  //ns.setStrategyStatusCounts = setStrategyStatusCounts;
   ns.showStrategies = showStrategies;
   ns.updateStrategies = updateStrategies;
   ns.updateStrategyName = updateStrategyName;

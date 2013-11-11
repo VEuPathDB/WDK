@@ -5,6 +5,8 @@
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 <c:set var="allFavorites" value="${wdkUser.favorites}" /><%-- a map of (RecordClass, List<Favorite>) --%>
 
+<div data-controller="wdk.favorite.init">
+
 <span class ="h3left">My Favorites</span><br><br>
 
 <c:choose>
@@ -125,4 +127,5 @@
     </c:otherwise> <%-- END has favorites --%>
 </c:choose>
 
+</div>
 

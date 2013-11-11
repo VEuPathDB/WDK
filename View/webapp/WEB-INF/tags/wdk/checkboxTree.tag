@@ -84,8 +84,8 @@
               description="image used for leaf nodes within the tree" %>
               
 <c:if test="${empty leafImage}" >
-  <c:set var="leafImage" value="/wdk/js/lib/jstree/graphFileIcon-16x16.gif"/>
-  <%--<c:set var="leafImage" value="/wdk/js/lib/jstree/clear2x16.gif"/>--%>
+  <c:set var="leafImage" value="/wdk/lib/jstree/graphFileIcon-16x16.gif"/>
+  <%--<c:set var="leafImage" value="/wdk/lib/jstree/clear2x16.gif"/>--%>
 </c:if>
 
 <%@ attribute name="segregateLeaves"

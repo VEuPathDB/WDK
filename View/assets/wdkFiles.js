@@ -2,6 +2,7 @@ module.exports = {
 
   src: [
     'src/core/console.js',
+    'src/core/bootstrap.js',
     'src/core/namespace.js',
     'src/core/event.js',
     'src/core/common.js',

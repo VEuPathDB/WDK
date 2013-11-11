@@ -1,8 +1,8 @@
 wdk.util.namespace("window.wdk.favorite", function(ns, $) {
   "use strict";
 
-  function init() {
-    var firstType = $(".menubar li a:first");
+  function init(element) {
+    var firstType = element.find(".menubar li a:first");
     if (firstType.length > 0) {
       loadFavoriteGroups();
       var current = wdk.stratTabCookie.getCurrentTabCookie("favorites");
