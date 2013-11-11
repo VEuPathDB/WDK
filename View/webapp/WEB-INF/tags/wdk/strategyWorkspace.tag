@@ -13,17 +13,18 @@
 
 <div id="stage-stack"> </div>
 
-<div id="contentwrapper">
+<div id="contentwrapper"
+    data-controller="wdk.strategy.controller.init"
+    data-all-count="${allCount}"
+    data-open-count="${openCount}"
+    data-public-count="${publicCount}" >
+
    <div id="contentcolumn2">
       <div class="innertube">
 
 <c:if test="${includeDYK}">
   <imp:dyk/>
 </c:if>
-
-<script type="text/javascript">
-  wdk.strategy.controller.setStrategyStatusCounts('${allCount}','${openCount}','${publicCount}');
-</script>
 
 <%------------MY STRATEGIES MENU (TABs)----------%>
 <ul id="strategy_tabs">

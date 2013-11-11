@@ -21,14 +21,6 @@
   <imp:script src="/wdk/wdk.libs.js"/>
   <imp:script src="/wdk/wdk.js"/>
 
-  <!-- TODO - move these calls to data-controller invokation -->
-  <!-- All pages -->
-  <script>
-    jQuery(wdk.init);
-    jQuery(wdk.user.init);
-    jQuery(wdk.favorite.init);
-  </script>
-
   <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
   <!-- scripts and styles used on the QUESTION page. all question content are 
        also included in summary page to support the addStep popup            -->
@@ -50,20 +42,13 @@
 
     <!-- JQuery Drag And Drop Plugin -->
     <!--
-    <imp:script src="/wdk/js/lib/jquery.multiSelect.js"/>
-    <imp:script src="/wdk/js/lib/jquery.form.js"/>
+    <imp:script src="/wdk/lib/jquery.multiSelect.js"/>
+    <imp:script src="/wdk/lib/jquery.form.js"/>
     -->
 
     <!-- TODO - add async loading capabilities for not-commonly used libraries -->
     <!-- Results Page  -->
-    <imp:script src="/wdk/js/lib/flexigrid.js"/>
-
-    <!-- TODO - move these calls to data-controller invokation -->
-    <script>
-      jQuery(wdk.step.init);
-      jQuery(wdk.strategy.controller.init);
-      jQuery(wdk.wordCloud.init);
-    </script>
+    <imp:script src="/wdk/lib/flexigrid.js"/>
 
     <jsp:text><![CDATA[
     <!--[if lt IE 7]>
