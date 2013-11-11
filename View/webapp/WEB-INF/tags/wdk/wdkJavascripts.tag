@@ -16,71 +16,12 @@
   <!-- Scripts and styles that are used on the whole site                    -->
   <!-- +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ -->
 
-  <!-- JS libraries -->
-  <!-- comment out the production code. need to revert this on check in -->
+  <!-- WDK libraries and source files -->
+  <!-- see WDK/View/assets/wdkFiles.js for details about these files -->
+  <imp:script src="/wdk/wdk.libs.js"/>
+  <imp:script src="/wdk/wdk.js"/>
 
-  <imp:script src="/wdk/js/lib/jquery.js"/>
-  <imp:script src="/wdk/js/lib/jquery-ui.js"/>
-  <imp:script src="/wdk/js/lib/es5-shim.min.js"/>
-  <imp:script src="/wdk/js/lib/chosen.jquery.min.js"/>
-  <imp:script src="/wdk/js/lib/jquery.blockUI.js"/>
-  <imp:script src="/wdk/js/lib/jquery.cookie.js"/>
-  <imp:script src="/wdk/js/lib/jquery.dataTables-1.9.0.min.js"/>
-  <imp:script src="/wdk/js/lib/jstree/jquery.jstree.js"/>
-  <imp:script src="/wdk/js/lib/qtip2/jquery.qtip.js"/>
-  <imp:script src="/wdk/js/lib/chosen.jquery.min.js"/>
-  <imp:script src="/wdk/js/lib/json.js"/>
-  <imp:script src="/wdk/js/lib/handlebars.js"/>
-  <imp:script src="/wdk/js/lib/jquery.flot-0.8.1.min.js"/>
-  <imp:script src="/wdk/js/lib/jquery.flot.categories-0.8.1.min.js"/>
-
-  <!-- WDK js and css -->
-
-  <c:choose>
-    <c:when test="${param._js eq 'min' or min}">
-      <!-- minified files -->
-      <imp:script src="/wdk/js/wdk-min.js"/>
-    </c:when>
-    <c:when test="${param._js eq 'concat'}">
-      <!-- concatenated files -->
-      <imp:script src="/wdk/js/wdk.js"/>
-    </c:when>
-    <c:otherwise>
-      <!-- individual files -->
-      <imp:script src="/wdk/js/src/util/namespace.js"/>
-      <imp:script src="/wdk/js/src/addStepPopup.js"/>
-      <imp:script src="/wdk/js/src/api.js"/>
-      <imp:script src="/wdk/js/src/basket.js"/>
-      <imp:script src="/wdk/js/src/checkboxTree.js"/>
-      <imp:script src="/wdk/js/src/dyk.js"/>
-      <imp:script src="/wdk/js/src/event.js"/>
-      <imp:script src="/wdk/js/src/favorite.js"/>
-      <imp:script src="/wdk/js/src/filter.js"/>
-      <imp:script src="/wdk/js/src/history.js"/>
-      <imp:script src="/wdk/js/src/publicStrats.js"/>
-      <imp:script src="/wdk/js/src/parameterHandlers.js"/>
-      <imp:script src="/wdk/js/src/question.js"/>
-      <imp:script src="/wdk/js/src/resultsPage.js"/>
-      <imp:script src="/wdk/js/src/step.js"/>
-      <imp:script src="/wdk/js/src/stratTabCookie.js"/>
-      <imp:script src="/wdk/js/src/tooltips.js"/>
-      <imp:script src="/wdk/js/src/user.js"/>
-      <imp:script src="/wdk/js/src/util.js"/>
-      <imp:script src="/wdk/js/src/reporter.js"/>
-      <imp:script src="/wdk/js/src/wdk.js"/>
-      <imp:script src="/wdk/js/src/wordCloud.js"/>
-      <imp:script src="/wdk/js/src/histogram.js"/>
-      <imp:script src="/wdk/js/src/plugins/wdkDataTables.js"/>
-      <imp:script src="/wdk/js/src/plugins/wdkEditable.js"/>
-      <imp:script src="/wdk/js/src/plugins/wdkSimpleToggle.js"/>
-      <imp:script src="/wdk/js/src/plugins/wdkTooltip.js"/>
-      <imp:script src="/wdk/js/src/strategy/controller.js"/>
-      <imp:script src="/wdk/js/src/strategy/error.js"/>
-      <imp:script src="/wdk/js/src/strategy/model.js"/>
-      <imp:script src="/wdk/js/src/strategy/view.js"/>
-    </c:otherwise>
-  </c:choose>
-
+  <!-- TODO - move these calls to data-controller invokation -->
   <!-- All pages -->
   <script>
     jQuery(wdk.init);
@@ -113,9 +54,11 @@
     <imp:script src="/wdk/js/lib/jquery.form.js"/>
     -->
 
+    <!-- TODO - add async loading capabilities for not-commonly used libraries -->
     <!-- Results Page  -->
     <imp:script src="/wdk/js/lib/flexigrid.js"/>
 
+    <!-- TODO - move these calls to data-controller invokation -->
     <script>
       jQuery(wdk.step.init);
       jQuery(wdk.strategy.controller.init);

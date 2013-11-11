@@ -63,4 +63,9 @@
     return namespace(ns, function (exports) {
         exports.namespace = namespace;
     });
-}("window.wdk.util", window.jQuery));
+}("wdk", window.jQuery));
+
+// for legacy
+wdk.namespace('wdk.util', function(ns) {
+  ns.namespace = wdk.namespace;
+});
