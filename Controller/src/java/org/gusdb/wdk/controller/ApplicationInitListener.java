@@ -103,8 +103,11 @@ public class ApplicationInitListener implements ServletContextListener {
     private String getAssetsUrl(WdkModelBean wdkModel, ServletContext servletContext) {
         String url = wdkModel.getModel().getModelConfig().getAssetsUrl();
         if (url == null || url.isEmpty()) {
-          // set context url
-          url = servletContext.getContextPath();
+          // default to [contextPath]/assets
+          url = servletContext.getContextPath() + "/assets";
+        } else if (!url.startsWith("/")) {
+          // if relative, make relative to [contextPath]
+          url = servletContext.getContextPath() + "/" + url;
         }
         logger.debug("Assets URL: " + url);
         return url;
