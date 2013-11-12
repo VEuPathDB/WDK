@@ -26,7 +26,7 @@
           "core" : { "initially_open" : [ "root" ] },
           "plugins" : [ "themes", "html_data", "types" ],
           "themes" : { "theme" : "classic" },
-          "types" : { "types" : { "file" : { "icon" : { "image" : "<c:url value='/wdk/lib/jstree/graphFileIcon-16x16.gif'/>" }}}}
+          "types" : { "types" : { "file" : { "icon" : { "image" : wdk.assetsUrl('/wdk/lib/jstree/graphFileIcon-16x16.gif') }}}}
       });
     });
 </script>    

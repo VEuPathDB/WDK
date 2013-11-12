@@ -107,7 +107,7 @@
 <script type="text/javascript">
   // configure the tree
   wdk.checkboxTree.addTreeToPage("${id}", "${checkboxName}", ${useIcons}, 
-      ${rootNode.isAllSelected}, "<c:url value='${leafImage}'/>", 
+      ${rootNode.isAllSelected}, wdk.assetsUrl('${leafImage}'), 
       [${rootNode.selectedAsList}], [${rootNode.defaultAsList}], [${initiallySetList}],
       function(){ setTimeout(function() { ${onchange}; }, 0); }, function(){ ${onload}; });
   $(function() {
