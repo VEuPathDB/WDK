@@ -1,5 +1,5 @@
 {
-  "name": "wdk.js",
+  "name": "wdk",
   "version": "0.1.0",
   "devDependencies": {
     "grunt-contrib-concat": "~0.3.0",
