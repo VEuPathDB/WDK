@@ -964,9 +964,14 @@ tr.headerRow th {
   filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=3);
 }
 
-.histogram #graph .plot { width:700px; height:400px; margin:0px auto 10px auto; }
+.histogram #graph .plot { width:700px; height:400px; margin:0px auto 40px auto; }
 .histogram .plot .flot-x-axis .flot-tick-label { margin:5px 0px 0px 0px; }
-.histogram #data .plot-data { display:none; }
+.histogram #data .data { display:none; }
+.histogram .control-panel { margin: 5px; padding:3px 5px 5px 5px; background:#EEE; }
+.histogram .bin-slider { display:inline-block; width:500px; }
+.histogram .bin-size { width:40px; text-align:right; }
+.histogram .update { text-align:center; }
+
 #flot-tooltip { position:absolute; display:block; border:1px solid #fdd; padding:3px; border-radius:3px; background-color:#ffe; z-index:100; }
 
 
