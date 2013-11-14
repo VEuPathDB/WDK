@@ -844,7 +844,7 @@ b.strat_help_title > span {
 }
 
 .filter.params {
-  overflow-x: auto;
+  /*overflow-x: auto;*/
 }
 
 .filter.operators {
