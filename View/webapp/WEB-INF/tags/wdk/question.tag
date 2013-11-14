@@ -31,7 +31,9 @@
   </c:choose>
 </c:set>
 
-<div class="params" data-controller="wdk.question.init"
+<div class="params"
+    data-controller="wdk.question.init"
+    data-question-full-name="${wdkQuestion.fullName}"
     data-show-params="${showParamsAttr}">
     <imp:questionParams />
 </div> <!-- end of params div -->
