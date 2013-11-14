@@ -96,7 +96,9 @@ Otherwise a standard select menu is used.
           <div class="type-ahead-help" style="margin:2px;">
             Begin typing to see suggestions to choose from (CTRL or CMD click to select multiple)<br/>
             Or paste a list of IDs separated by a comma, new-line, white-space, or semi-colon.<br/>
+            <%-- wildcard support has been dropped due to SQL complications
             Or use * as a wildcard, like this: *your-term*
+            --%>
           </div>
         </div>
       </c:when>

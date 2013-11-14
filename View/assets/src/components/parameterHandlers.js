@@ -211,23 +211,25 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         }
 
         // if first term contains asterisk, 'turn off' plugin and use raw value
-        input
-          .one('keyup', function() {
-            cacheChosenEvents(chosenObj);
-          })
+        // due to complications with SQL, wildcard support has been dropped
+        //
+        // input
+        //   .one('keyup', function() {
+        //     cacheChosenEvents(chosenObj);
+        //   })
 
-          .on('keyup', function(e) {
-            if (isMultiple && select.find(':selected').length > 0) return;
+        //   .on('keyup', function(e) {
+        //     if (isMultiple && select.find(':selected').length > 0) return;
 
-            if (this.value.indexOf('*') > -1) {
-              turnOffChosen(chosenObj);
-              if (isMultiple) {
-                chosenObj.chosen.search_field.width('35em');
-              }
-            } else {
-              turnOnChosen(chosenObj);
-            }
-          });
+        //     if (this.value.indexOf('*') > -1) {
+        //       turnOffChosen(chosenObj);
+        //       if (isMultiple) {
+        //         chosenObj.chosen.search_field.width('35em');
+        //       }
+        //     } else {
+        //       turnOnChosen(chosenObj);
+        //     }
+        //   });
       })
 
       // configure chosen
@@ -550,9 +552,7 @@ wdk.util.namespace("window.wdk.parameterHandlers", function(ns, $) {
         // get values from input
         values = select.next().find('input').val();
       } else {
-        values = select.find(":selected").map(function() {
-          return $(this).val();
-        }).toArray().join(', ');
+        values = select.val();
       }
       $(this).val(values);
     });
