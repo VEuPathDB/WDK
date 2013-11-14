@@ -13,11 +13,11 @@ wdk.util.namespace("window.wdk.question", function(ns, $) {
       wdk.parameterHandlers.init();
     }
  
-     // invoke the registered question events
-     if (window.wdk != undefined) {
-         window.wdk.onloadQuestion();
-         wdk.event.publish("questionload");
-     }
+    // invoke the registered question events
+    if (window.wdk != undefined) {
+      window.wdk.onloadQuestion();
+      wdk.event.publish("questionload");
+    }
 
   }
 
