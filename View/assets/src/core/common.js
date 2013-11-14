@@ -661,6 +661,7 @@ function getWebAppUrl() {
     invokeControllers();
   }
 
+  ns.$ = $;
   ns.load = load;
   ns.cookieTest = cookieTest;
   ns.setUpDialogs = setUpDialogs;
