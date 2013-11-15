@@ -90,7 +90,7 @@ module.exports = function(grunt) {
       return 'document.writeln(\'<scr\' + \'ipt src="\' + wdkConfig.assetsUrl + \'/wdk/' +
           script + '"></scr\' + \'ipt>\');';
     }).join('');
-    grunt.file.write('dist/wdkScriptLoader.js', scriptLoaderStr);
+    grunt.file.write('dist/wdk.debug.js', scriptLoaderStr);
   });
 
   grunt.loadNpmTasks('grunt-contrib-clean');
