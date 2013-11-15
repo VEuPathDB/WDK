@@ -4,7 +4,6 @@
 package org.gusdb.wdk.model.record.attribute.plugin;
 
 import java.sql.ResultSet;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
