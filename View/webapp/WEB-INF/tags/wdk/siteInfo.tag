@@ -13,6 +13,31 @@
 <c:set var="webAppUrl" value = "${scheme}://${serverName}/${request_uri}/" />
 <c:set var="wdkUser" value="${sessionScope.wdkUser}"/>
 
+<c:set var="isGuest">
+  <c:choose>
+    <c:when test="${wdkUser.guest eq true}">true</c:when>
+    <c:otherwise>false</c:otherwise>
+  </c:choose>
+</c:set>
+
+<script>
+  var wdkConfig = {
+    modelName: '${siteName}',
+    assetsUrl: '${applicationScope.assetsUrl}',
+    webappUrl: '${pageContext.request.contextPath}',
+    guestUser: ${isGuest},
+    exportBaseUrl: '${exportBaseUrl}',
+    wdkUser: {
+      id: '${wdkUser.userId}',
+      name: '${wdkUser.firstName} ${wdkUser.lastName}',
+      country: '${wdkUser.country}',
+      email: '${wdkUser.email}',
+      isGuest: ${isGuest}
+    }
+  };
+</script>
+
+<%--
 <div style="display:none">
   <!-- used by goToIsolate()    -->
   <div id="modelName" name="${siteName}"></div>
@@ -32,4 +57,4 @@
   <div id="wdk-web-app-url" value="<c:url value='/'/>"></div>
   <div id="wdk-assets-url" value="${applicationScope.assetsUrl}"></div>
 </div>
-
+--%>

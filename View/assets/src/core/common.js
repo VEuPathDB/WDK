@@ -8,11 +8,13 @@ wdk.util.namespace("window.wdk", function(ns, $) {
   // =============================================================================
 
   function exportBaseURL() {
-    return $("#exportBaseURL").attr("name");
+    //return $("#exportBaseURL").attr("name");
+    return wdkConfig.exportBaseUrl;
   }
 
   function modelName() {
-    return $("#modelName").attr("name");
+    //return $("#modelName").attr("name");
+    return wdkConfig.modelName;
   }
 
   var cookieTest = function() {
@@ -177,7 +179,8 @@ function isUserLoggedIn() {
 }
 
 function getWebAppUrl() {
-  return $("#wdk-web-app-url").attr("value");
+  //return $("#wdk-web-app-url").attr("value");
+  return wdkConfig.webappUrl;
 }
 
 // function getWebAppUrl() {
@@ -202,9 +205,8 @@ function getWebAppUrl() {
    * and appends the given url
    */
   function assetsUrl(path) {
-    var assetsUrl = $("#wdk-assets-url").attr("value");
     path = (path.indexOf('/') === 0) ? path : '/' + path;
-    return assetsUrl + (path || '');
+    return wdkConfig.assetsUrl + (path || '');
   }
 
 

@@ -10,11 +10,7 @@
   <jsp:directive.attribute name="debug" required="false" description="Use wdk.debug.js"/>
 
   <!-- needed for wdk.debug.js -->
-  <script>
-    var wdkConfig = {
-      assetsUrl: '${applicationScope.assetsUrl}'
-    };
-  </script>
+  <imp:siteInfo/>
 
   <c:choose>
     <c:when test="${debug eq true}">

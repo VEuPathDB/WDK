@@ -1,18 +1,19 @@
 wdk.util.namespace("window.wdk.user", function(ns, $) {
   "use strict";
 
-  var userData;
+  //var userData;
 
   // init function
-  ns.init = function() {
-    userData = $("#wdk-user").data();
-  };
+  // values are set in wdkConfig global var in siteInfo.tag
+  //ns.init = function() {
+  //  userData = $("#wdk-user").data();
+  //};
 
-  ns.id = function() { return userData.id; };
-  ns.name = function() { return userData.name; };
-  ns.country = function() { return userData.country; };
-  ns.email = function() { return userData.email; };
-  ns.isGuest = function() { return userData.isGuest; };
+  ns.id = function() { return wdkConfig.wdkUser.id; };
+  ns.name = function() { return wdkConfig.wdkUser.name; };
+  ns.country = function() { return wdkConfig.wdkUser.country; };
+  ns.email = function() { return wdkConfig.wdkUser.email; };
+  ns.isGuest = function() { return wdkConfig.wdkUser.isGuest; };
   ns.isUserLoggedIn = function() { return !ns.isGuest(); }
 
   // var to hold reference to login dialog
