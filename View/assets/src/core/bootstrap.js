@@ -48,7 +48,7 @@ jQuery(function($) {
     load: wdk.load
   });
 
-  wdk.user.init();
+  //wdk.user.init();
 
   wdk.cookieTest();
   wdk.setUpDialogs();
