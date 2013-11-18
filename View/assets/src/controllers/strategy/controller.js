@@ -738,6 +738,14 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       },
       success: function(data) {
         if (wdk.strategy.error.ErrorHandler("EditStep", data, strategy, $("div#query_form"))) {
+
+          // kludge to force a redraw of top level strategy by dirtying the checksum
+          var topStrategy = (strategy.subStratOf !== null) ?
+              wdk.strategy.model.getStrategy(strategy.subStratOf) :
+              strategy;
+          topStrategy.checksum += '_';
+          // endkludge
+
           updateStrategies(data);
         } else {
           wdk.util.removeLoading(f_strategyId);
@@ -835,6 +843,14 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       },
       success: function(data) {
         if (wdk.strategy.error.ErrorHandler("CloseStrategy", data, strat, null)) {
+
+          // kludge to force a redraw of top level strategy by dirtying the checksum
+          var topStrategy = (strat.subStratOf !== null) ?
+              wdk.strategy.model.getStrategy(strat.subStratOf) :
+              strat;
+          topStrategy.checksum += '_';
+          // endkludge
+
           updateStrategies(data);
           if ($('#search_history').css('display') != 'none') {
             wdk.history.update_hist(true);
