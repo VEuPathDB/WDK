@@ -17,9 +17,6 @@
 wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   "use strict";
 
-  var xmldoc = null;
-  //var exportBaseURL; now defined as function in wdkCommon.js
-  var recordType= [];   //stratid, recordType which is the type of the last step
   var ajaxTimeout = 1000 * 60 * 5; // 5 minutes. was 180000 seconds (3 min);
   var allCount = 0;
   var openCount = 0;
@@ -30,9 +27,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   ns.sidIndex = 0;
 
   function init(element, attrs) {
-    // Make the strategies window resizable
     wdk.step.init();
 
+    // Make the strategies window resizable
     element.find(".resizable-wrapper").resizable({
       handles: 's',
       minHeight: 150,
@@ -40,6 +37,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         wdk.stratTabCookie.setCurrentTabCookie('strategyWindow', $(".resizable-wrapper").height())
       }
     });
+
     // tell jQuery not to cache ajax requests.
     // generic error handling of ajax calls
     $.ajaxSetup ({
@@ -107,12 +105,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     openCount = myOpenCount;
   }
 
-  // constants for the next two functions
-  var openTabName = 'strategy_results';
-  var allTabName = 'search_history';
-
   function chooseStrategyTab() {
+    var openTabName = 'strategy_results';
+    var allTabName = 'search_history';
     var current = wdk.stratTabCookie.getCurrentTabCookie('application');
+
     if (!current || current == null) {
       // no cookie set
       return (openCount > 0 || allCount == 0 ? openTabName : allTabName);
