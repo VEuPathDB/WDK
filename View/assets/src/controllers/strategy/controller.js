@@ -17,10 +17,6 @@
 wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   "use strict";
 
-  var ajaxTimeout = 1000 * 60 * 5; // 5 minutes. was 180000 seconds (3 min);
-  var allCount = 0;
-  var openCount = 0;
-
   ns.state = null;
   ns.strats = {};
   ns.p_state = null;
@@ -42,7 +38,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     // generic error handling of ajax calls
     $.ajaxSetup ({
       cache: false,
-      timeout: ajaxTimeout,
+      timeout: 1000 * 60 * 5, // was 180000 ms
       error: function(data, msg, e) {
         if (msg == "timeout") {
           var c = confirm("This request has timed out.\n" +
@@ -75,7 +71,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     });
 
     initStrategyPanels();
-    wdk.addStepPopup.showPanel(chooseStrategyTab());
+    wdk.addStepPopup.showPanel(chooseStrategyTab(attrs.allCount, attrs.openCount));
     initDisplay();
 
     // strategyselect event fired when a step in a strategy is selected
@@ -96,16 +92,9 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         // });;
       }
     });
-
-    setStrategyStatusCounts(attrs.allCount, attrs.openCount, attrs.publicCount);
   }
 
-  function setStrategyStatusCounts(myAllCount, myOpenCount) {
-    allCount = myAllCount;
-    openCount = myOpenCount;
-  }
-
-  function chooseStrategyTab() {
+  function chooseStrategyTab(allCount, openCount) {
     var openTabName = 'strategy_results';
     var allTabName = 'search_history';
     var current = wdk.stratTabCookie.getCurrentTabCookie('application');
@@ -187,28 +176,13 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       dataType: "json",
       data:"state=",
       beforeSend: function() {
+        // it doesn't make sense for this to be in util
         wdk.util.showLoading();
       },
       success: function(data) {
         updateStrategies(data);
       }
     });
-  }
-
-  /**
-   * Wrapper around NewResults
-   *
-   * @deprecated see NewResults
-   */
-  function highlightStep(str, stp, v, pagerOffset, ignoreFilters, action, deferred) {
-    if (!str || stp == null) {
-      // don't show result, remove anything that is there,
-      // and empty the result section
-      NewResults(-1);
-    } else {
-      NewResults(str.frontId, stp.frontId, v, pagerOffset, ignoreFilters,
-          action, deferred);
-    }
   }
 
   function updateStrategies(data, ignoreFilters) {
