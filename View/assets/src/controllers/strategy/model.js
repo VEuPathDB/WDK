@@ -209,7 +209,7 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
         save: false,
         isPublic: this.isPublic,
         strategy_checksum: checksum,
-        state: wdk.strategy.controller.p_state
+        state: wdk.strategy.controller.stateString
       }
     });
   };
@@ -356,7 +356,7 @@ wdk.util.namespace("window.wdk.strategy.model", function (ns, $) {
       url:"showStrategy.do?strategy=" + backId + "&open=false",
       type: "POST",
       dataType: "json",
-      data:"pstate=" + wdk.strategy.controller.p_state,
+      data:"pstate=" + wdk.strategy.controller.stateString,
       success: function(data){
         for(var s in data.strategies){
           if(s != "length") {

@@ -527,7 +527,7 @@ wdk.util.namespace("wdk.addStepPopup", function(ns, $) {
           url: url,
           type: "post",
           dataType: "html",
-          data: wdk.util.parseInputs() + "&state=" + wdk.strategy.controller.p_state,
+          data: wdk.util.parseInputs() + "&state=" + wdk.strategy.controller.stateString,
 
           beforeSend: function() {
             //$(".crumb_details").block( {message: "Loading..."} );

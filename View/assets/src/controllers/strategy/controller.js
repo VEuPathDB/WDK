@@ -19,7 +19,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
 
   ns.state = null;
   ns.strats = {};
-  ns.p_state = null;
+  ns.stateString = '';
   ns.sidIndex = 0;
 
   function init(element, attrs) {
@@ -70,7 +70,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       }
     });
 
-    initStrategyPanels();
+    initStrategyTabs();
     wdk.addStepPopup.showPanel(chooseStrategyTab(attrs.allCount, attrs.openCount));
     initDisplay();
 
@@ -117,7 +117,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     }
   }
 
-  function initStrategyPanels() {
+  // TODO - we should make this a configuration option.
+  // Then users can name the files whatever they want
+  // and we don't have to perform unnecessary HTTP requests
+  // if nothing is configured.
+  function initStrategyTabs() {
     // Fetch sample, new strat, and help tab contents
     // If no page is found for a given tab, remove
     // that tab from the page
@@ -189,21 +193,21 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     var deferred = $.Deferred();
 
     ns.state = data.state;
-    ns.p_state = $.json.serialize(ns.state);
+    ns.stateString = JSON.stringify(ns.state);
     removeClosedStrategies();
-    for (var st in ns.state) {
-      if (st == "count") {
+    for (var newOrdering in ns.state) {
+      if (newOrdering == "count") {
         // it appears the span was removed, so this code does nothing.
-        $("#mysearch span").text('My Strategies ('+ns.state[st]+')');
-      } else if (st != "length") {
-        var str = ns.state[st].id;
-        if (wdk.strategy.model.isLoaded(str)) {
-          if (wdk.strategy.model.getStrategyFromBackId(ns.state[st].id).checksum !=
-              ns.state[st].checksum) {
-            loadModel(data.strategies[ns.state[st].checksum], st);
+        $("#mysearch span").text('My Strategies ('+ns.state[newOrdering]+')');
+      } else if (newOrdering != "length") {
+        var strategyId = ns.state[newOrdering].id;
+        if (wdk.strategy.model.isLoaded(strategyId)) {
+          if (wdk.strategy.model.getStrategyFromBackId(ns.state[newOrdering].id).checksum !=
+              ns.state[newOrdering].checksum) {
+            loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
           }
         } else {
-          loadModel(data.strategies[ns.state[st].checksum], st);
+          loadModel(data.strategies[ns.state[newOrdering].checksum], newOrdering);
         }
       }
     }
@@ -211,58 +215,60 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     return deferred.promise();
   }
 
-  // remove closed strategies from the strategies array @ns.strats
+  /**
+   * Removes and reorders ns.strats
+   */
   function removeClosedStrategies(){
-    for (var s in ns.strats) {
-      if (s.indexOf(".") == -1) {
-        var x = true;
-        for (var t in ns.state) {
-          if (t != "length") {
-            if (ns.strats[s].checksum == ns.state[t].checksum) {
-              x = false;
-              if (t != s) {
-                ns.strats[t] = ns.strats[s];
-                removeSubStrategies(s, t);
-                delete ns.strats[s];
+    for (var newOrder in ns.strats) {
+      if (newOrder.indexOf(".") == -1) {
+        var removeTopStrategy = true;
+        for (var oldOrder in ns.state) {
+          if (oldOrder != "length") {
+            if (ns.strats[newOrder].checksum == ns.state[oldOrder].checksum) {
+              removeTopStrategy = false;
+              if (oldOrder != newOrder) {
+                ns.strats[oldOrder] = ns.strats[newOrder];
+                removeSubStrategies(newOrder, oldOrder);
+                delete ns.strats[newOrder];
                 break;
               }
-            } else if(ns.strats[s].backId == ns.state[t].id) {
-              x = false;
-              removeSubStrategies(s, t);
-              if (t != s) {
-                ns.strats[t] = ns.strats[s];
+            } else if(ns.strats[newOrder].backId == ns.state[oldOrder].id) {
+              removeTopStrategy = false;
+              removeSubStrategies(newOrder, oldOrder);
+              if (oldOrder != newOrder) {
+                ns.strats[oldOrder] = ns.strats[newOrder];
                 break;
               }
             }
           }
         }
-        if (x) {
-          removeSubStrategies(s);
-          delete ns.strats[s];
+        if (removeTopStrategy) {
+          removeSubStrategies(newOrder);
+          delete ns.strats[newOrder];
           wdk.history.update_hist(true); //set update flag for history if anything was closed.
         }
       }
     }
   }
 
-  function removeSubStrategies(ord1, ord2){
-    for (var f in ns.strats) {
-      if (f.split(".").length > 1 && f.split(".")[0] == ord1) {
-        if (ord2 == undefined) {
-          delete ns.strats[f];
+  function removeSubStrategies(newOrder, oldOrder){
+    for (var order in ns.strats) {
+      if (order.split(".").length > 1 && order.split(".")[0] == newOrder) {
+        if (oldOrder == undefined) {
+          delete ns.strats[order];
         } else {
-          var n_ord = f.split(".");
-          n_ord[0] = ord2;
+          var n_ord = order.split(".");
+          n_ord[0] = oldOrder;
           n_ord = n_ord.join(".");
-          ns.strats[n_ord] = ns.strats[f];
-          delete ns.strats[f];
+          ns.strats[n_ord] = ns.strats[order];
+          delete ns.strats[order];
         }
       }
     }
   }
 
-  function showStrategies(view, ignoreFilters, besc, deferred){
-    $("#tab_strategy_results font.subscriptCount").text("(" + besc + ")");
+  function showStrategies(view, ignoreFilters, count, deferred){
+    $("#tab_strategy_results font.subscriptCount").text("(" + count + ")");
     var sC = 0;
     for (var s in ns.strats) {
       if (s.indexOf(".") == -1) {
@@ -547,7 +553,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     $.ajax({
       url: url,
       dataType: "html",
-      data: "state=" + ns.p_state,
+      data: "state=" + ns.stateString,
       beforeSend: function() {
         wdk.util.showLoading(s);
       },
@@ -577,7 +583,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       url: url,
       type: "POST",
       dataType: "json",
-      data: d + "&state=" + ns.p_state,
+      data: d + "&state=" + ns.stateString,
       beforeSend: function(){
         wdk.util.showLoading(f_strategyId);
       },
@@ -622,7 +628,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     $.ajax({
       url: "processFilter.do?questionFullName=" + quesName + "&strategy=" +
           cstrt.backId + "&strategy_checksum=" + cstrt.checksum,
-      data: d + "&state=" + ns.p_state,
+      data: d + "&state=" + ns.stateString,
       type: "post",
       dataType: "json",
       beforeSend: function(){
@@ -657,7 +663,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       url: url,
       type: "POST",
       dataType:"json",
-      data: d + "&state=" + ns.p_state,
+      data: d + "&state=" + ns.stateString,
       beforeSend: function(obj){
         wdk.addStepPopup.closeAll(true);
         wdk.util.showLoading(ss.frontId);
@@ -696,7 +702,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       url: url,
       type: "post",
       dataType: "json",
-      data: "state=" + ns.p_state,
+      data: "state=" + ns.stateString,
       beforeSend: function(obj) {
         wdk.util.showLoading(f_strategyId);
       },
@@ -726,7 +732,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       url: url,
       type: "post",
       dataType: "json",
-      data: "state=" + ns.p_state,
+      data: "state=" + ns.stateString,
       beforeSend: function() {
         wdk.util.showLoading(f_strategyId);
       },
@@ -754,7 +760,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     $.ajax({
       url: url,
       dataType: "json",
-      data: "state=" + ns.p_state,
+      data: "state=" + ns.stateString,
       beforeSend: function() {
         $("body").block();
       },
@@ -799,7 +805,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       $.ajax({
         url: url,
         dataType: "json",
-        data: "state=" + ns.p_state,
+        data: "state=" + ns.stateString,
         beforeSend: function() {
           if (!fromHist) wdk.util.showLoading(stratId);
         },
@@ -831,7 +837,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     $.ajax({
       url: url,
       dataType: "json",
-      data: "state=" + ns.p_state,
+      data: "state=" + ns.stateString,
       beforeSend: function() {
         wdk.util.showLoading(stratId);
       },
@@ -886,7 +892,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     $.ajax({  
       url: url,
       dataType: "json", 
-      data: "state=" + ns.p_state,
+      data: "state=" + ns.stateString,
       beforeSend: function() {
         if (!fromHist) {
           wdk.util.showLoading(ss.frontId);
@@ -920,7 +926,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
             wdk.strategy.model.getStrategy(strategy.subStratOf).checksum :
             strategy.checksum,
         showHistory: fromHist,
-        state: ns.p_state
+        state: ns.stateString
       },
       beforeSend: function() {
         if (!fromHist) {
@@ -960,7 +966,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       url: url,
       type: "GET",
       dataType: "json",
-      data: "state=" + ns.p_state,
+      data: "state=" + ns.stateString,
       beforeSend: function() {
         $("#strategy_results > div.Workspace").block();
         wdk.util.showLoading(f_strategyId);
@@ -998,7 +1004,7 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
       url: url,
       type: "post",
       dataType: "json",
-      data: "state=" + ns.p_state,
+      data: "state=" + ns.stateString,
       beforeSend: function() {
         wdk.util.showLoading(f_strategyId);
       },

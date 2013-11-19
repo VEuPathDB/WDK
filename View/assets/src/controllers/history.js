@@ -384,7 +384,7 @@ wdk.util.namespace("window.wdk.history", function(ns, $) {
     $.ajax({
       url: url,
       dataType: "json",
-      data:"state=" + wdk.strategy.controller.p_state,
+      data:"state=" + wdk.strategy.controller.stateString,
       success: function(data) {
         selectNoneHist();
         wdk.strategy.controller.updateStrategies(data);

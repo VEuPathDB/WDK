@@ -210,7 +210,7 @@ wdk.util.namespace("window.wdk.favorite", function(ns, $) {
       });
       pkArray.push(pkValues);
     });
-    return $.json.serialize(pkArray);
+    return JSON.stringify(pkArray);
   }
 
   /***************** Favorite functions to support favorites manipulation from GBrowse ********************/
