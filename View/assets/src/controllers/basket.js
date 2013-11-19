@@ -144,7 +144,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
         o[$(this).attr("key")] = $(this).text();
       });
       a.push(o);
-      da = $.json.serialize(a);
+      da = JSON.stringify(a);
       action = (i.attr("value") == '0') ? "add" : "remove";
 
     } else if (type == "single") {
@@ -153,7 +153,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
         o[$(this).attr("key")] = $(this).text();
       });
       a.push(o);
-      da = $.json.serialize(a);
+      da = JSON.stringify(a);
       action = (i.attr("value") == '0') ? "add" : "remove";
 
     } else if (type == "page") {
@@ -165,7 +165,7 @@ wdk.util.namespace("window.wdk.basket", function(ns, $) {
         a.push(o);
       });
       action = (i.attr("value") == '0') ? "add" : "remove";
-      da = $.json.serialize(a);
+      da = JSON.stringify(a);
     } else if (type == "clear") {
       action = "clear";
     } else {
