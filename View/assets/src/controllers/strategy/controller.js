@@ -1,3 +1,19 @@
+/**
+ * This file contains functions used to communicate strategy operations between
+ * the client and the server.
+ *
+ * The current contract between client and server is as follows:
+ *  - Client sends a request to the server to perform a strategy operation.
+ *  - Server fulfills request and returns a new state object
+ *  - Client resolves differences between new state object and local state
+ *    object.
+ *  - Client calls updateStrategies function which uses the resolved local
+ *    state object to determine if a strategy's UI should be redrawn. The
+ *    strategy's checksum is used to determine this action: if the checksum
+ *    for a strategy changes between requests, it is redrawn.
+ *
+ */
+
 wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
   "use strict";
 
@@ -182,6 +198,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
     });
   }
 
+  /**
+   * Wrapper around NewResults
+   *
+   * @deprecated see NewResults
+   */
   function highlightStep(str, stp, v, pagerOffset, ignoreFilters, action, deferred) {
     if (!str || stp == null) {
       // don't show result, remove anything that is there,
@@ -315,9 +336,11 @@ wdk.util.namespace("window.wdk.strategy.controller", function (ns, $) {
         var isVenn = (initStp.back_boolean_Id == view.step);
         var pagerOffset = view.pagerOffset;
         if (view.action != undefined && view.action.match("^basket")) {
-          highlightStep(initStr, initStp, isVenn, pagerOffset, ignoreFilters, view.action, deferred);
+          NewResults(initStr.frontId, initStp.frontId, isVenn, pagerOffset,
+              ignoreFilters, view.action, deferred);
         } else {
-          highlightStep(initStr, initStp, isVenn, pagerOffset, ignoreFilters, null, deferred);
+          NewResults(initStr.frontId, initStp.frontId, isVenn, pagerOffset,
+              ignoreFilters, null, deferred);
         }
       }
     } else {
