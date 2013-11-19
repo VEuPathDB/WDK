@@ -175,7 +175,8 @@ function checkAll(bool, form, node) {
 
 // returns whether or not user is logged in
 function isUserLoggedIn() {
-  return ($('#loginStatus').attr('loggedIn') == "true");
+  //return ($('#loginStatus').attr('loggedIn') == "true");
+  return !wdkConfig.wdkUser.IsGuest;
 }
 
 function getWebAppUrl() {
