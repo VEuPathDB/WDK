@@ -31,18 +31,16 @@ $(function() {
 <c:set var="recordName" value="${step.question.recordClass.displayName}" />
 
 <div class="h2center">Download ${step.estimateSize} ${recordName}s from the search:</div>
-
 <i><div class="h3center">${step.displayName}</div></i>
 
-<br><br>
-<b>Please select a format from the dropdown list to create the download report. </b>
-<br><i>**Note:  ${type} IDs will automatically be included in the report.</i>
+<div class="download-block"> 
+<h3>Please select a format from the dropdown list to create the download report. </h3>
+<div class="download-note">**Note:  ${type} IDs will automatically be included in the report.</div>
+
 <!-- handle empty result set situation -->
 <c:choose>
 <c:when test='${step.estimateSize != 0}'>
-
-<br /><br />
-<!-- the supported format -->
+<br>
 <form name="formatForm" method="get" action="<c:url value='/downloadStep.do' />">
 	<input type="hidden" name="step_id" value="${step_id}"/>
 	<select name="wdkReportFormat" onChange="return changeFormat();">
@@ -55,7 +53,8 @@ $(function() {
            <input type="hidden" name="signature" value="${param.signature}" />
         </c:if>
 </form>
-<hr>
+</div> 
+
 </c:when> <%-- end of ${step.estimateSize != 0} --%>
 
 <c:otherwise>
