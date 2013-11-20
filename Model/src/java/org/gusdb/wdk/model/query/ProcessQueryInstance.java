@@ -264,11 +264,13 @@ public class ProcessQueryInstance extends QueryInstance {
 
     ProcessResponse response;
     if (local) { // invoke the process query locally
+      logger.info("Using local service");
       // call the service directly
       org.gusdb.wsf.service.WsfService service = new org.gusdb.wsf.service.WsfService();
       org.gusdb.wsf.service.WsfResponse wsfResponse = service.invoke(jsonRequest);
       response = new ServiceProcessResponse(service, wsfResponse);
     } else { // invoke the process query via web service
+      logger.info("Using remote service");
       // call the service through client
       WsfServiceServiceLocator locator = new WsfServiceServiceLocator();
       org.gusdb.wsf.client.WsfService client = locator.getWsfService(new URL(
