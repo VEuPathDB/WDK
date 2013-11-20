@@ -9,6 +9,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import org.apache.log4j.Logger;
+import org.gusdb.fgputil.runtime.GusHome;
 import org.gusdb.wdk.controller.wizard.Wizard;
 import org.gusdb.wdk.model.Utilities;
 import org.gusdb.wdk.model.WdkModel;
@@ -59,6 +60,7 @@ public class ApplicationInitListener implements ServletContextListener {
 
         logger.info("Initializing WDK web application");
         ServletContext servletContext = sce.getServletContext();
+        GusHome.webInit(servletContext);
 
         String projectId = servletContext.getInitParameter(Utilities.ARGUMENT_PROJECT_ID);
         String gusHome = servletContext.getRealPath(servletContext.getInitParameter(Utilities.SYSTEM_PROPERTY_GUS_HOME));
